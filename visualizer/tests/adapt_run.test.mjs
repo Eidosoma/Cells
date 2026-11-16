@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 import { Run, validateReplay } from "../src/replay/run.js";
 import { layersFor, readDeclarations } from "../src/layers/layers.js";
 import { MARKS } from "../src/layers/marks/index.js";
-import { readLoop } from "../src/layers/loop.js";
+import { readLoop, loopStreams, closesWords, engineWords } from "../src/layers/loop.js";
 import declaredLayers from "../data/layers/layers.json" with { type: "json" };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -1173,7 +1173,7 @@ test("a view the adapter cannot read whole is refused with the reason, and nothi
     return [tool("--experiment", WORLD, "--root", path.join(copy, "run-world"), "--run", "viewed", ...SHARED, "--out", target), target];
   };
   for (const [name, change, message] of [
-    ["subset", (view) => (view.recording.subset = { fields: ["amount"], elements: null, every: 2 }), /its view records a subset of the run .*which the adapter does not read yet/],
+    ["subset", (view) => (view.recording.subset = { fields: ["amount"], elements: null, every: 2 }), /its view gives records of .*, which its recording subset does not keep/],
     ["format", (view) => (view.format = "cells.run_view@2"), /its view\.json is not a run view \(cells\.run_view@1\)/],
     ["keys", (view) => delete view.unstated, /its view\.json lacks unstated/],
     ["array", (view) => (view.records.find((item) => item.id === "observed_amount").array = "observed_amounts"), /trajectory\.npz does not hold observed_amounts, which its view says is saved there/],
@@ -1209,7 +1209,7 @@ test("no machine path, host name or traceback is written for any experiment", ()
 const WRITER = path.join(ROOT, "tests", "engine-views", "run-view-fd008813");
 const VIEWS = "engine-views";
 const VIEW_ARGS = ["--overlay", path.join(scratch, "views-overlay.json"), "--selection", path.join(scratch, "views-selection.json")];
-writeFileSync(VIEW_ARGS[1], JSON.stringify({ format: "cells.visualizer.replay_overlay@1", experiments: { [VIEWS]: { adapter: "standard-history", development: true, label: "The run view's writer (test fixture)", plain: "Two unit-test worlds the engine's run-view writer wrote on its branch.", sources: [], engine_entities: [], outcome: { judged: false, status: "A development run: not judged" }, parameters: {}, readouts: {} } } }));
+writeFileSync(VIEW_ARGS[1], JSON.stringify({ format: "cells.visualizer.replay_overlay@1", experiments: { [VIEWS]: { adapter: "standard-history", development: true, label: "The run view's writer (test fixture)", plain: "Two unit-test worlds the engine's run-view writer wrote on its branch.", sources: [], engine_entities: [], outcome: { judged: false, status: "A development run: not judged" }, parameters: {}, readouts: {}, events: { current: { label: "Electrode current", plain: "The electrode's current changes." } }, stops: { complete: { label: "Ran to its end" } } } } }));
 writeFileSync(VIEW_ARGS[3], JSON.stringify({ [VIEWS]: { evidence_folder: path.basename(WRITER), runs: ["secretion", "division"] } }));
 const viewsOut = path.join(scratch, "views-out");
 const viewsDone = tool("--experiment", VIEWS, "--root", WRITER, ...VIEW_ARGS, "--out", viewsOut);
@@ -1245,8 +1245,8 @@ test("the kept views are the writer's own, of the revision their note names", ()
   assert.match(note, /fd00881394d10fd33c05e47e17c88838fcf2b7c7/);
   // The writer learns its source only from an execution snapshot, which an export is not: the one revision in the views is a planted label.
   assert.match(note, /is a caller's label \*\*planted\*\* by the script;\s+it is not the engine's own word for its source/);
-  assert.deepEqual([writtenView("secretion").run.revision, writtenView("division").run.revision], ["fd008813", undefined]);
-  for (const world of ["secretion", "division"]) {
+  assert.deepEqual([writtenView("secretion").run.revision, writtenView("subset").run.revision, writtenView("division").run.revision], ["fd008813", undefined, undefined]);
+  for (const world of ["secretion", "subset", "division"]) {
     const view = writtenView(world);
     assert.equal(view.run.source, undefined, `${world}: no engine source`);
     assert.equal(view.format, "cells.run_view@1");
@@ -1386,10 +1386,12 @@ test("a loop block is carried in the shape the page's loop reader takes", () => 
   const read = readLoop(run, "planarian");
   assert.equal(read.ok, true, read.why);
   assert.deepEqual([read.loop.cell, read.loop.revision, read.loop.closes, read.loop.length], [0, planted.revision, closes, 0.01]);
-  // With only the kept view's caller's label, the adapter says that it is no record of the engine's source.
-  const [labelled, labelledOut, labelledId] = changedView("loop-label", (view) => (view.loop = { species: "planarian", cell: "cell_0", period: 0.01, closes }));
-  assert.equal(labelled.status, 0, labelled.stderr);
-  assert.ok(open(labelledOut, labelledId).view.derivation.some((line) => line.includes("is the caller's label for the run (run.revision), not the engine's own record of its source")));
+  // With only the kept view's caller's label, a loop is refused: the writer writes one only for a run that names its
+  // engine's source, and a caller's label is no engine's word for a looping package's revision.
+  const [labelled, labelledOut] = changedView("loop-label", (view) => (view.loop = { species: "planarian", cell: "cell_0", period: 0.01, closes }));
+  assert.notEqual(labelled.status, 0);
+  assert.match(labelled.stderr, /its view gives a loop for a run that names no engine source \(run\.source\)/);
+  assert.ok(!existsSync(path.join(labelledOut, "index.json")));
   // Refused, each with what and where.
   for (const [label, loop, message] of [
     ["loop-open", { species: "planarian", cell: "cell_0", period: 0.01, closes: { ...closes, within: 2e-4 } }, /its view's loop says its last record meets its first within 0\.0002, above its own tolerance of 0\.0001/],
@@ -1428,6 +1430,164 @@ test("a view of the writer's shape that contradicts itself, or that the page cou
     ["constant-and-view", (view) => view.constants.push({ id: "membrane_area", axes: ["membrane"], unit: "m2", values: [1e-10, 1e-10, 1e-10], from: "the definition (the bound layout)", says: "said" }), /its view states membrane_area both as a constant of the definition and as the merged view the composition changes \(view_<field>\)/, "division"],
   ]) {
     const [result, target] = changedView(`bad-${label}`, change, world);
+    assert.notEqual(result.status, 0, label);
+    assert.match(result.stderr, message, label);
+    assert.ok(!existsSync(path.join(target, "index.json")), `${label}: nothing is catalogued`);
+  }
+});
+
+// ---------------------------------------------------------------- a recorded subset, and the engine's first looping run
+//
+// tests/engine-views/run-view-fd008813/subset: the short secretion world with a recording subset, as the branch's own test
+// records one (four fields, of the species only S, every second observed row). tests/engine-views/loop-d7a11d5b: the
+// interim planarian loop, a development run with no verdict that the writer at d7a11d5b wrote from an execution snapshot,
+// copied unchanged from the engine's lead's folder; its writer is not on main.
+
+const LOOPS = path.join(ROOT, "tests", "engine-views", "loop-d7a11d5b");
+const LOOP_RUN = "planarian-d7a11d5b", LOOP_ID = `${VIEWS}--${LOOP_RUN}`;
+const loopsOut = path.join(scratch, "loops-out");
+const loopsDone = tool("--experiment", VIEWS, "--root", LOOPS, "--run", LOOP_RUN, ...VIEW_ARGS, "--out", loopsOut);
+assert.equal(loopsDone.status, 0, `the adapter failed on the looping run:\n${loopsDone.stderr}`);
+const loopView = () => readJson(path.join(LOOPS, LOOP_RUN, "view.json"));
+
+/** The looping run with its view changed in a copy, adapted; [result, output folder]. */
+function changedLoop(label, change) {
+  const copy = path.join(scratch, `loop-${label}`);
+  cpSync(LOOPS, copy, { recursive: true });
+  const file = path.join(copy, LOOP_RUN, "view.json");
+  const view = readJson(file);
+  change(view);
+  writeFileSync(file, JSON.stringify(view));
+  const target = path.join(scratch, `loop-${label}-out`);
+  return [tool("--experiment", VIEWS, "--root", copy, "--run", LOOP_RUN, ...VIEW_ARGS, "--out", target), target];
+}
+
+test("a recorded subset: what the run kept is packaged, for the recorded species and rows only, and what it did not keep is said", () => {
+  const [result, target, id] = changedView("subset-read", () => {}, "subset");
+  assert.equal(result.status, 0, result.stderr);
+  const { view, file, run } = open(target, id);
+  assert.deepEqual(validateReplay(file), []);
+  const written = writtenView("subset");
+  assert.deepEqual(written.recording.subset, { elements: { species: ["S"] }, every: 2, fields: ["membrane_voltage_V", "cell_potential_V", "amount", "exchange_moved_fmol"] });
+  // The species set stays whole; a field saved for each species is packaged for the recorded one only.
+  assert.deepEqual(view.sets.find((item) => item.id === "species").ids, ["Na", "K", "Cl", "S"]);
+  assert.deepEqual(view.records.filter((item) => item.field === "amount").map((item) => item.id), ["amount.S"]);
+  // Every second observed row: the replay's records are the rows the run kept.
+  assert.deepEqual(Array.from(run.t, (time) => Number(time.toFixed(6))), [0, 0.004, 0.008]);
+  // A field the page has a name for and the subset does not list: no record, nothing standing in, and the run's reason.
+  assert.equal(view.records.some((item) => item.id.startsWith("extracellular_amount")), false);
+  const why = "The run's recording subset does not list it (recording.subset.fields): the run kept only the fields that list names";
+  assert.deepEqual(view.unstated.find((item) => item.id === "extracellular_amount"), { id: "extracellular_amount", what: "record", why });
+  assert.ok(view.derivation.includes("The run recorded a subset of itself (recording.subset, its own statement): 4 field(s) (membrane_voltage_V, cell_potential_V, amount, exchange_moved_fmol), and of the species only S, one observed row in every 2, from its first. The replay's records are the rows it kept."));
+  const unkept = view.derivation.find((line) => line.startsWith("Of the fields the page has a name for, the run's recording subset lists none of these, and its view gives no record of them: "));
+  assert.ok(unkept && ["extracellular_potential_V", "extracellular_amount", "membrane_transferred", "pump_cycles", "face_transferred", "turnover_produced_fmol"].every((field) => unkept.includes(field)) && !/[:,] amount[,.]/.test(unkept) && !unkept.includes("exchange_moved_fmol"), unkept);
+  // This world has no junctions: what lies on them is no field the run could have kept, and is not named.
+  assert.ok(!unkept.includes("junction_voltage_V") && !unkept.includes("junction_transferred"), unkept);
+  assert.ok(view.derivation.includes("A field saved once for each species is packaged for the recorded species only (S); the others were not recorded."));
+  // A layer that needs what the run did not keep says so, in the run's words.
+  const offers = Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer]));
+  assert.equal(offers["ion-push-pull"].ok, false);
+  assert.match(offers["ion-push-pull"].why, /The run's recording subset does not list it/);
+});
+
+test("the engine's first looping run: its subset, its source, its own geometry and its junction voltage, read as it states them", () => {
+  const { view, file, record, run } = openWhole(loopsOut, LOOP_ID);
+  assert.deepEqual(validateReplay(file), []);
+  const written = loopView();
+  // The note says what the run is and where it came from; the source is the run's own, from its execution snapshot.
+  const note = readFileSync(path.join(LOOPS, "README.md"), "utf8");
+  assert.match(note, /a development run with no verdict/);
+  assert.match(note, /not on main/);
+  assert.match(note, /copied unchanged from the engine's lead's folder/);
+  assert.deepEqual(written.run.source, { dirty: false, from: "the execution snapshot's record (SNAPSHOT.json)", revision: "d7a11d5b0e20f3133c081386e487fe21b8b8f893" });
+  assert.deepEqual([view.run.revision, view.run.source], [written.run.source.revision, written.run.source]);
+  assert.ok(view.derivation.includes("The engine's revision is the run's own record of its source (run.source, from the execution snapshot's record (SNAPSHOT.json)): d7a11d5b0e20f3133c081386e487fe21b8b8f893; its tree was clean when the run was made."));
+  // 17 fields recorded, every observed row of the one period: 101 records from 8 s to 10 s.
+  assert.equal(written.recording.subset.fields.length, 17);
+  assert.deepEqual([run.count, run.start, run.end], [101, 8, 10]);
+  for (const field of ["extracellular_amount", "membrane_dissipated_energy_pJ", "reservoir_supplied"]) assert.match(run.unstated.get(field), /^The run's recording subset does not list it/, field);
+  // Only what the run could have recorded is said to be left out: not a ledger of an operator it does not have, nor a
+  // field over a set it has no entity of (it has no faces). Of those, as for a full recording, nothing is said.
+  const unkept = view.derivation.find((line) => line.startsWith("Of the fields the page has a name for, the run's recording subset lists none of these"));
+  assert.ok(unkept.includes("extracellular_amount") && !unkept.includes("turnover_produced_fmol") && !unkept.includes("exchange_moved_fmol") && !unkept.includes("face_transferred"), unkept);
+  assert.deepEqual([run.unstated.has("turnover_produced_fmol"), run.unstated.has("face_transferred")], [false, false]);
+  assert.equal(new Set(written.run.composition.operators).has("scheduled_species_turnover@1"), false);
+  const offers = Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer]));
+  assert.deepEqual([offers["energy-glow"].ok, offers["ion-push-pull"].ok, offers["junction-drops"].ok, offers["ion-traffic"].ok, offers.transfers.ok], [false, false, true, true, true]);
+  assert.equal(offers["energy-glow"].why, "This run did not save it. The run's recording subset does not list it (recording.subset.fields): the run kept only the fields that list names.");
+  // The cells stand where the run's own geometry places them: its hexagons, with the vertices they share given one index.
+  const cells = view.sets.find((item) => item.id === "cell");
+  const given = written.sets.find((item) => item.id === "cell").geometry;
+  assert.deepEqual([given.vertices.length, cells.geometry.vertices.length, cells.geometry.faces.length], [42, 24, 7]);
+  for (const [k, face] of cells.geometry.faces.entries()) {
+    face.forEach((v, corner) => {
+      const [x, y] = given.vertices[given.faces[k][corner]];
+      assert.ok(Math.hypot(cells.geometry.vertices[v][0] - x, cells.geometry.vertices[v][1] - y) < 1e-12, `cell ${k}: its corners where the run puts them`);
+    });
+  }
+  assert.ok(view.derivation.some((line) => /Vertices that coincide are given one index \(42 given, 24 kept\), so that the page finds the edge two cells share; the corners so joined were at most \de-1\d um apart\.$/.test(line)));
+  assert.ok(view.derivation.some((line) => line.startsWith("Cell positions and shapes are the run's own geometry (prescribed, from validation/replay/planarian.py")));
+  assert.ok(!view.derivation.some((line) => line.includes("the run saves no coordinates")), "nothing says the run saves no coordinates");
+  // Joined corners let the page find the seam of every junction: its two cells share exactly two vertices.
+  const links = view.sets.find((item) => item.id === "junction").geometry.ends;
+  assert.equal(links.length, 12);
+  for (const [a, b] of links) assert.equal(cells.geometry.faces[a].filter((v) => cells.geometry.faces[b].includes(v)).length, 2, `cells ${a} and ${b} share an edge`);
+  // The run's events: ten current changes from 0 s. A replay runs over its records: the two that lie within the recorded
+  // period are its events, and the eight before it are said, with when, never dropped in silence.
+  assert.deepEqual(loopView().events.map((event) => event.time), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(view.events.map((event) => [event.time, event.kind, event.at]), [[8, "current", { set: "cell", index: 3 }], [9, "current", { set: "cell", index: 3 }]]);
+  assert.ok(view.derivation.includes("Of the run's 10 events (of the kind 'current'), 8 lie before its recorded period, which begins at 8 s: the first at 0 s, the last at 7 s. They are not shown, because the replay runs over its records; the 2 that lie within them are."));
+  for (const event of view.events) assert.ok(event.time >= run.start && event.time <= run.end, "every event lies within the records");
+  // The junction voltage is the sender's potential less the receiver's: the sender is the first end the page draws from.
+  assert.deepEqual([record("junction_voltage_V").sign.high, record("junction_voltage_V").difference.plus], ["first", "sender"]);
+});
+
+test("the engine's first looping run: its loop block is carried as the writer built it, and the page's loop reader takes it", () => {
+  const { view, run } = openWhole(loopsOut, LOOP_ID);
+  const written = loopView().loop;
+  assert.deepEqual(written.closes.within, 2.7606981408476794e-05);
+  assert.deepEqual([written.species, written.cell, written.period, written.closes.tolerance, written.closes.zero, written.not_measured.map((group) => group.records.length)], ["planarian", "cell_3", 2, 0.0001, [], [7]]);
+  assert.deepEqual(view.loop, { species: written.species, cell: written.cell, period: written.period, closes: written.closes, not_measured: written.not_measured });
+  assert.ok(view.derivation.includes(`The loop's closure leaves out 7 record(s), in the run's words '${written.not_measured[0].why}': ${written.not_measured[0].records.join(", ")}. Not measured says nothing of how they stand at the seam.`));
+  const read = readLoop(run, "planarian");
+  assert.equal(read.ok, true, read.why);
+  const { loop } = read;
+  assert.deepEqual([loop.cell, loop.membrane, loop.start, loop.length, loop.revision, loop.dirty], [3, 3, 8, 2, "d7a11d5b0e20f3133c081386e487fe21b8b8f893", false]);
+  assert.deepEqual([loop.notMeasured, loop.zero], [written.not_measured, []]);
+  assert.equal(engineWords(loop), "Made by the engine at revision d7a11d5b0e20f3133c081386e487fe21b8b8f893, from a clean tree");
+  assert.equal(closesWords(loop), `Its last record meets its first within 2.8e-5 (tolerance 1.0e-4), in the records it measures; of its records, 7 are not measured (${written.not_measured[0].why})`);
+  // The streams through the loop's cell: its channel populations, its pump, its membrane, and its six junctions.
+  const streams = loopStreams(loop);
+  assert.equal(streams.ok, true, streams.why);
+  const count = (kind) => streams.streams.filter((stream) => stream.kind === kind).length;
+  assert.deepEqual([count("channel"), count("pump"), count("membrane"), count("junction"), count("route")], [8, 2, 3, 18, 0]);
+  assert.deepEqual([...new Set(streams.streams.filter((stream) => stream.kind === "junction").map((stream) => stream.name))].sort(), ["junction_0", "junction_10", "junction_4", "junction_6", "junction_7", "junction_8"]);
+  assert.equal(readLoop(run, "human").ok, false, "the planarian's loop is no other species' run");
+});
+
+test("a recorded subset or a loop block that contradicts itself, or that the page could not lay out, is refused with what and where", () => {
+  const cellSet = (view) => view.sets.find((item) => item.id === "cell");
+  for (const [label, change, message] of [
+    ["every", (view) => (view.recording.subset.every = 0), /its view's recording subset does not give the fields it keeps, the elements it keeps and its cadence/],
+    ["stray", (view) => (view.recording.subset.fields = view.recording.subset.fields.filter((field) => field !== "junction_gate")), /its view gives records of junction_gate, which its recording subset does not keep/],
+    ["cells", (view) => {
+      view.recording.subset.elements = { cell: ["cell_3"] };
+      cellSet(view).recorded = [3];
+    }, /its view records only some entities of cell \(recording\.subset\.elements\), which the adapter does not lay out yet/],
+    ["recorded-alone", (view) => (cellSet(view).recorded = [3]), /its view's set cell and its recording subset disagree on whether only some of its entities were recorded/],
+    ["recorded-other", (view) => {
+      view.recording.subset.elements = { species: ["K"] };
+      view.sets.find((item) => item.id === "species").recorded = [0];
+    }, /its view's set species records entities \(recorded\) that are not the ones its recording subset names/],
+    ["not-measured", (view) => (view.loop.not_measured[0].records.push("observed_no_such_record")), /its view's loop does not give, for each group of records its closure leaves out, the records by the view's ids and the reason/],
+    ["zero", (view) => (view.loop.closes.zero = ["observed_no_such_record"]), /its view's loop names, as records identically zero over the loop, what are not records of the view/],
+    ["above", (view) => (view.loop.closes.within = 2e-4), /its view's loop says its last record meets its first within 0\.0002, above its own tolerance of 0\.0001/],
+    ["no-source", (view) => {
+      delete view.run.source;
+      view.unstated.push({ id: "source", what: "engine source", why: "planted by this test" });
+    }, /its view gives a loop for a run that names no engine source \(run\.source\)/],
+  ]) {
+    const [result, target] = changedLoop(label, change);
     assert.notEqual(result.status, 0, label);
     assert.match(result.stderr, message, label);
     assert.ok(!existsSync(path.join(target, "index.json")), `${label}: nothing is catalogued`);

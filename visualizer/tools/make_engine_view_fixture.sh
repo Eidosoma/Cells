@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Two small runs written by the engine's own run-view writer, kept as fixtures for the adapter's
+# Three small runs written by the engine's own run-view writer, kept as fixtures for the adapter's
 # reading of a view (tools/adapt_run.py, adapt_engine_view; schema/RUN_VIEW.md, "The engine's view").
 #
 # The writer is not on main yet: it lives on the branch run-view-d154. This script exports one
 # revision of that branch with `git archive` (src, tests and validation; no worktree is registered),
-# runs two of the branch's own unit-test worlds there with the engine's Python, out of process, and
+# runs the branch's own unit-test worlds there with the engine's Python, out of process, and
 # copies what the writer wrote into tests/engine-views/run-view-<rev8>/. Nothing of the engine is
 # copied into the visualizer: only the runs' saved files (view.json and the arrays it names, the
 # definition and the summary).
@@ -13,6 +13,9 @@
 #              makes S and secretes it into a finite node that leaks to a held bath; 10 steps of
 #              1 ms, 6 observed rows), through io.write_run. No declaration is planted: turnover and
 #              exchange declare their own run-view items at this revision.
+#   subset     the same short secretion world through io.write_run with a recording subset, as the branch's
+#              own test of it records one (tests/unit/test_run_view.py): four fields, of the species only S,
+#              every second observed row. No declaration is planted.
 #   division   S5's compact partition world (tests/partition_fixtures.py, divided(): a cell divides
 #              into two daughters at 2 ms; 5 observed rows), through window_io.write_windowed_run
 #              with two windows. The membrane state's and the partition's run-view declarations are
@@ -23,7 +26,7 @@
 # The engine's source. An export made with `git archive` has no .git and no execution snapshot's
 # record (SNAPSHOT.json), and the writer learns its source only from such a record: each view
 # therefore lists the engine source as unstated, with the writer's own reason, and has no run.source.
-# The secretion run is given the revision's short form as the caller's label (run.revision), which
+# The secretion run (not the subset run) is given the revision's short form as the caller's label (run.revision), which
 # this script plants; the division run is given none. Neither is the engine's own word for its source.
 # The division run's helper (declare_division) also patches the writer's source lookup to give none,
 # as the branch's tests do; from an export the lookup gives none anyway, as the unpatched secretion run shows.
@@ -87,6 +90,12 @@ write_run(
     run(secretion()),
     view=run_view.Request({"id": "secretion-short", "label": f"{label}: the short secretion world", "revision": short}),
 )
+keep = run_view.Recording(fields=("membrane_voltage_V", "cell_potential_V", "amount", "exchange_moved_fmol"), elements={"species": ("S",)}, every=2)
+write_run(
+    out / "subset",
+    run(secretion()),
+    view=run_view.Request({"id": "secretion-subset", "label": f"{label}: the short secretion world, a recorded subset"}, recording=keep),
+)
 with pytest.MonkeyPatch.context() as patch:
     declare_division(patch)
     raw = pf.divided()
@@ -113,7 +122,7 @@ if [ ! -f "$WORK/written.json" ]; then
 fi
 
 rm -rf "$DEST"
-for world in secretion division; do
+for world in secretion subset division; do
   mkdir -p "$DEST/$world"
   cp "$WORK/$world/view.json" "$WORK/$world/resolved_config.json" "$WORK/$world/summary.json" "$DEST/$world/"
   if [ -f "$WORK/$world/trajectory.npz" ]; then cp "$WORK/$world/trajectory.npz" "$DEST/$world/"; fi
@@ -125,7 +134,7 @@ if grep -rlE '/(home|mnt|Users|tmp|var|root|opt|srv)/' "$DEST"; then
   exit 1
 fi
 cat > "$DEST/README.md" <<NOTE
-# Two runs written by the engine's run-view writer (branch run-view-d154, $SHORT)
+# Three runs written by the engine's run-view writer (branch run-view-d154, $SHORT)
 
 Written by \`tools/make_engine_view_fixture.sh $SHORT\` on the branch \`run-view-d154\` at revision
 \`$REVISION\`, exported with \`git archive\` (src, tests, validation) and run with the engine's own
@@ -137,6 +146,9 @@ are left out). Do not edit by hand; run the script again.
 - \`secretion\`: the worked example's short world (one cell makes S and secretes it into a finite
   node that leaks to a held bath; 10 steps, 6 observed rows) through \`io.write_run\`. No declaration
   is planted.
+- \`subset\`: the same world through \`io.write_run\` with a recording subset, as the branch's own
+  test records one: four fields, of the species only S, every second observed row. Nothing is
+  planted.
 - \`division\`: S5's compact partition world (a cell divides into two daughters) through
   \`window_io.write_windowed_run\` with two windows. The membrane state's and the partition's
   run-view declarations are planted for the run only, as the branch's own test does
@@ -144,14 +156,14 @@ are left out). Do not edit by hand; run the script again.
   operators' files'.
 
 **The engine's source is not stated.** An export has no execution snapshot's record
-(\`SNAPSHOT.json\`), from which alone the writer learns its source, so neither view has
+(\`SNAPSHOT.json\`), from which alone the writer learns its source, so no view here has
 \`run.source\`: each lists the engine source as unstated, with the writer's reason. The
 \`run.revision\` of the secretion view, \`$SHORT\`, is a caller's label **planted** by the script;
-it is not the engine's own word for its source, and nothing may read it as that. The division view
-names no revision. The division run's helper (\`declare_division\`) also patches the writer's
-source lookup to give none, as the branch's tests do; from an export the lookup gives none
-anyway, as the unpatched secretion run shows. The exported code is that of \`$REVISION\`, the
-branch's tip when it was exported.
+it is not the engine's own word for its source, and nothing may read it as that. The subset view and
+the division view name no revision. The division run's helper (\`declare_division\`) also patches
+the writer's source lookup to give none, as the branch's tests do; from an export the lookup gives
+none anyway, as the unpatched secretion and subset runs show. The exported code is that of
+\`$REVISION\`, the branch's tip when it was exported.
 
 These are development runs of unit-test worlds: no result and no evidence.
 NOTE

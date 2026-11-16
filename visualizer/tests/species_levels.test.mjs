@@ -413,7 +413,7 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
   // experiments. The stage and its controls are left out: they know nothing of species, and an
   // everyday word there (a species called Mouse, say) would be a false alarm.
   const files = [];
-  for (const folder of ["lenses", "ui"]) {
+  for (const folder of ["lenses", path.join("lenses", "parts"), "ui"]) {
     for (const name of await readdir(path.join(ROOT, "src", folder))) if (name.endsWith(".js") && name !== "replay.js") files.push(path.join("src", folder, name));
   }
   for (const name of ["cell.js", "cell_parts.js", "shapes.js", "outline_parts.js", "proteins.js", "protein_parts.js"]) assert.ok(files.includes(path.join("src", "lenses", name)), name);

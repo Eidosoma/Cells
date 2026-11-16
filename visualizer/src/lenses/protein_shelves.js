@@ -459,12 +459,21 @@ export class Shelves {
    * holds: those on a line; those on the lines a gathering holds; for a protein, itself if
    * it is one of them. Each { id, gene }.
    */
-  highlightOf(item, name, value) {
+  highlightOf(item, name, value, ids = null) {
     const set = this.highlight.get(name)?.get(String(value));
     if (!set || !item) return [];
-    if (item.type === "p") return set.ids.has(item.id) ? [{ id: item.id, gene: item.gene || null }] : [];
-    if (item.holds) return item.holds.flatMap((line) => set.lines.get(line.key) || []);
-    return set.lines.get(item.key) || [];
+    // A door may name some proteins of the set (the proteins of one part of a machine): only those are picked out.
+    const keep = ids ? (protein) => ids.has(protein.id) : () => true;
+    if (item.type === "p") return set.ids.has(item.id) && keep(item) ? [{ id: item.id, gene: item.gene || null }] : [];
+    if (item.holds) return item.holds.flatMap((line) => set.lines.get(line.key) || []).filter(keep);
+    return (set.lines.get(item.key) || []).filter(keep);
+  }
+
+  /** How many proteins of a set there are, or of the ones of it a door names: what a marker's tag counts against. */
+  highlightTotal(name, value, ids = null) {
+    const set = this.highlight.get(name)?.get(String(value));
+    if (!set) return 0;
+    return ids ? [...set.ids].filter((id) => ids.has(id)).length : set.total;
   }
 
   get(key) {

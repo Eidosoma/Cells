@@ -28,8 +28,9 @@ class CellsLegend extends HTMLElement {
    *          Cell view ("Illustration: not a run"); `compact` the one line under which a view with little room keeps the
    *          signs, the `cannot` entries and the door to the panel (the Cell view's flux), with the channel's name beside its options
    * folded   the keys and the note start closed (a short window)
+   * layersFirst  the switch for layers stands first (a phone with a panel open, where the legend has little room)
    */
-  render({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false }) {
+  render({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false }) {
     this.replaceChildren();
     const rows = items.map((item) =>
       h(
@@ -47,7 +48,11 @@ class CellsLegend extends HTMLElement {
       )
     );
     const body = h("div", { class: "legend-body" }, scale ? this.scale(scale) : null, rows);
-    if (layers?.rows?.length || layers?.cannot?.length) body.append(this.layers(layers));
+    if (layers?.rows?.length || layers?.cannot?.length) {
+      const block = this.layers(layers);
+      if (layersFirst) body.prepend(block);
+      else body.append(block);
+    }
     const lines = (keys || []).map((item) => h("p", { class: "legend-key" }, h("span", { class: `key key-${item.key}`, "aria-hidden": "true" }), item.text));
     // On a short window the marks fold away, so the card above the legend has room.
     if (lines.length && folded) body.append(h("details", { class: "legend-keys" }, h("summary", {}, "Marks on the sheet"), lines));
