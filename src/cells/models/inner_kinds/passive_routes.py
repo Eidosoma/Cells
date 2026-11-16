@@ -43,9 +43,11 @@ which must be B4's proton_row when B4 is declared). `factors` is a list of facto
   books, per step, its exact divided-difference shares of each row's exact free-energy decrease:
   Q = -1e-3 RT moved (mu-bar_in - mu-bar_out) (the kernel's divided_potential_RT and
   route_heat_pJ). No clamp, no scaling. A negative share, or a row whose shares miss its exact
-  decrease by more than RAW_SUM_FACTOR eps times its terms, refuses the step ("negative exact
-  share: step-bound breach"). Every other route, the leak always, keeps the tableau's booking of
-  its dissipation rate (the leak's: the kernel's heat_pJ_s, >= 0).
+  decrease by more than RAW_SUM_FACTOR eps times its terms and its inputs' rounding (the stored
+  amounts, increments and cumulative transfers times |mu-bar|: §7.5's raw-sum bound, amended 16
+  November 2026), refuses the step ("negative exact share: step-bound breach"). Every other
+  route, the leak always, keeps the tableau's booking of its dissipation rate (the leak's: the
+  kernel's heat_pJ_s, >= 0).
 - **Its step (ruled):** the neutral law's dt L <= 1, L = 1e15 P A (1/V_a + 1/V_b) summed over
   the routes at each node, as its bound term (bound_rate); the leak's slope conductance (the
   kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term).
@@ -69,7 +71,7 @@ LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
 LAWS = (LAW_ID, LEAK_LAW_ID)
 DEFAULT_PROTON = "H"
-RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps sum|terms|, per row.
+RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps (own + inputs), per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
 HOSTS = ("patch", "junction")
 MULTIPLIER = "passive_multiplier"  # The sink's control field (§7.4 (n) 6).
@@ -378,7 +380,26 @@ def raw_sum_check(start, end, p, *, xp=np):
     return residual, bound, rows
 
 
+def raw_sum_terms(start, end, p, *, xp=np):
+    """(residual, own, inputs, rows) over one step: the bound's two magnitudes apart, the row's own
+    terms and its inputs' rounding (§7.5, the raw-sum bound); bound = RAW_SUM_FACTOR eps (own +
+    inputs). For the bound's tests and probes."""
+    _, _, residual, own, inputs, rows = _raw_sums(start, end, p, xp=xp)
+    return residual, own, inputs, rows
+
+
+def _increments(state, xp):
+    """[species, node] stored increments, cells then outside nodes (_amounts less its reference)."""
+    return xp.concatenate((state.amount_increment, state.extracellular_amount_increment), axis=1)
+
+
 def _booking(start, end, p, *, xp):
+    heat, positive, residual, own, inputs, rows = _raw_sums(start, end, p, xp=xp)
+    bound = RAW_SUM_FACTOR * np.finfo(float).eps * (own + inputs)
+    return heat, positive, residual, bound, rows
+
+
+def _raw_sums(start, end, p, *, xp):
     volume, _ = _volumes(p, xp)
     n0, n1 = _amounts(start, p, xp), _amounts(end, p, xp)
     moved = end.passive_transferred - start.passive_transferred  # [species, route], inward.
@@ -388,7 +409,7 @@ def _booking(start, end, p, *, xp):
     exact = p.passive_exact[None, :] & (p.passive_permeability > 0)
     negative = xp.any(xp.where(exact, shares < 0, False))
     # Raw sums: each exact row's shares (mu-bar times every route's transfer at it) against its
-    # exact change of G, within RAW_SUM_FACTOR eps of the terms' magnitudes.
+    # exact change of G, within RAW_SUM_FACTOR eps of the terms' magnitudes (§7.5's bound).
     carried = xp.where(exact, moved, 0.0)
     zero = xp.zeros_like(n0)
 
@@ -399,15 +420,27 @@ def _booking(start, end, p, *, xp):
     rows = at_ends(xp.where(exact, 1.0, 0.0)) > 0  # Every row an exact route touches.
     g0, g1 = _row_energy(n0, volume[None, :], xp), _row_energy(n1, volume[None, :], xp)
     summed = mu * _net(carried, p, volume.shape[0], xp)
-    magnitude = (
+    own = (  # The row's own terms: its G at both ends and its shares' products.
         xp.abs(g0)
         + xp.abs(g1)
         + scatter(xp.abs(mu_in * carried), zero, (p.passive_inside,), xp=xp)
         + scatter(xp.abs(mu_out * carried), zero, (p.passive_outside,), xp=xp)
     )
-    bound = RAW_SUM_FACTOR * np.finfo(float).eps * magnitude
+    # Its inputs' rounding (§7.5, the raw-sum bound): the stored amounts are reference +
+    # increment, rounded to the result, and each tableau term adds onto the increments and onto
+    # the exact routes' cumulative transfers (_combine), rounded to the running sum. The recorded
+    # net transfer and n1 - n0 therefore differ by about eps times these magnitudes, and the
+    # shares carry |mu-bar| times that difference.
+    cumulative = xp.abs(start.passive_transferred) + xp.abs(end.passive_transferred)
+    inputs = xp.abs(mu) * (
+        xp.abs(n0)
+        + xp.abs(n1)
+        + xp.abs(_increments(start, xp))
+        + xp.abs(_increments(end, xp))
+        + at_ends(xp.where(exact, cumulative, 0.0))
+    )
     heat = species_sum(xp.where(exact, shares, 0.0), xp=xp)  # A7: the species fold.
-    return heat, ~negative, xp.abs(summed - (g1 - g0)), bound, rows
+    return heat, ~negative, xp.abs(summed - (g1 - g0)), own, inputs, rows
 
 
 def book(applied, start, end, control, p, dt, *, xp):

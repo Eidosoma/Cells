@@ -17,7 +17,11 @@ only.**
 **Status.** Proposed on 14 November 2026 by Track E (D155). **It contains no code** (D142:
 design before code). The lead reviewed it with the advisor on 14 November and accepts it only
 for the generic-cell work on @3, and only after one cheap probe. Probe 2 (§1.2) is that probe.
-This revision carries its result and the lead's rulings (§12).
+This revision carries its result and the lead's rulings (§12). **Since 16 November** the human
+ventricular law set (§3.3, §7, and M4 and M5 in §11) is brought forward as its own lane (D183),
+with its choices made in D184 and its design in
+[HUMAN_CARDIAC_LAWS_DESIGN.md](HUMAN_CARDIAC_LAWS_DESIGN.md) (proposed); M1–M3 on the generic cell
+are unchanged.
 
 **The question it serves.** D155's: do weakly coupled cells with low sodium conductance, as
 dividing cardiomyocytes become, slow or block conduction, and does their clustering matter? It

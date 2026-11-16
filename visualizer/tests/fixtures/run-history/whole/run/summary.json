@@ -1,0 +1,8 @@
+{
+ "status": "complete",
+ "start_time": 0.0,
+ "end_time": 40.0,
+ "executed_steps": 8000,
+ "active_cells": 19,
+ "note": "synthetic fixture: no engine ran"
+}

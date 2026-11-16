@@ -57,7 +57,7 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 /* ---------------------------------------------------------------- cards */
 .card { background: color-mix(in srgb, var(--bg-raised) 94%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; backdrop-filter: blur(8px); }
 
-cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 236px; padding: 6px; }
+cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 236px; padding: 6px; overflow-y: auto; }
 .legend-toggle { display: none; width: 100%; justify-content: space-between; align-items: center; padding: 6px 8px; font-family: var(--font-display); font-weight: 600; }
 .chevron { width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-135deg); transition: transform .15s; }
 .is-open .chevron { transform: rotate(45deg); }
@@ -173,6 +173,12 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .scalebar-line { height: 5px; border: 1.5px solid var(--fg); border-top: 0; }
 .scalebar-text { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .has-panel .scalebar { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+/* The resting look's switch and its few words, over the scale bar: there they take no room from the labels' column.
+   Like the scale bar they let the pointer through to the picture; the switch alone takes it. */
+.look-box { display: grid; justify-items: end; gap: 4px; margin-bottom: 6px; }
+.look-switch { padding: 3px 3px 3px 10px; pointer-events: auto; }
+.look-switch .seg-row { grid-template-columns: auto 124px; }
+.look-note { max-width: 250px; font-size: 11.5px; line-height: 1.4; text-align: right; color: var(--muted); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
 
 /* ---------------------------------------------------------------- replay: the run's card */
@@ -239,6 +245,57 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .key-ring { width: 12px; height: 12px; margin-left: 4px; border: 2px solid var(--fg); border-radius: 50%; }
 .key-mark::before { content: ""; position: absolute; left: 9px; top: -1px; bottom: -1px; width: 2px; background: var(--fg); }
 .legend-note-plain { grid-template-columns: 1fr; }
+/* The switch for quantity layers: a row for each visual channel. */
+.legend-layers { padding-bottom: 2px; }
+.layer-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 3px 8px; }
+.layer-channel { font-size: 11.5px; color: var(--muted); }
+.layer-seg button { padding: 3px 2px; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layer-seg button[aria-busy="true"] { font-style: italic; }
+.layer-cannot, .layer-problem { padding: 2px 8px; font-size: 12px; line-height: 1.35; color: var(--muted); }
+.layer-cannot-name { color: var(--fg); font-weight: 500; }
+.layer-more { padding: 3px 8px 2px; font-size: 12px; }
+.key-wedge, .key-wedge-hollow { width: 14px; height: 12px; margin-left: 3px; background: var(--fg); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.key-wedge-hollow::after { content: ""; position: absolute; inset: 0; background: var(--bg-raised); clip-path: polygon(16% 26%, 68% 50%, 16% 74%); }
+.key-break { width: 12px; height: 12px; margin-left: 4px; background: linear-gradient(to right, var(--fg) 0 4px, transparent 4px 8px, var(--fg) 8px 12px); }
+.key-level { height: 3px; margin-top: 7px; background: var(--fg); border-radius: 2px; }
+.layer-hint { padding: 3px 8px; font-size: 12px; line-height: 1.35; color: var(--fg); }
+.experiments + .eyebrow { margin-top: 10px; }
+.legend-key-chips { grid-template-columns: 1fr; }
+.key-chips { display: inline-flex; gap: 9px; margin-right: 8px; color: var(--fg); font-weight: 500; }
+.key-chip i { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; }
+.key-arrow-hollow, .key-arrow-faint, .key-arrow-solid { width: 12px; height: 13px; margin-left: 4px; background: var(--fg); clip-path: polygon(50% 0, 100% 46%, 68% 46%, 68% 100%, 32% 100%, 32% 46%, 0 46%); }
+.key-arrow-faint { opacity: .45; }
+.key-arrow-hollow::after { content: ""; position: absolute; inset: 0; background: var(--bg-raised); clip-path: polygon(50% 20%, 76% 37%, 57% 37%, 57% 100%, 43% 100%, 43% 37%, 24% 37%); }
+.key-charges { width: 20px; height: 13px; }
+.key-charges::before, .key-charges::after { position: absolute; top: -3px; font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--fg); }
+.key-charges::before { content: "+"; left: 1px; }
+.key-charges::after { content: "\\2212"; left: 11px; }
+.key-bead { width: 9px; height: 9px; margin: 3px 0 0 6px; border-radius: 50%; background: var(--fg); }
+.key-time { width: 11px; height: 11px; margin: 2px 0 0 5px; border: 1.5px solid var(--fg); border-radius: 50%; }
+.key-time::after { content: ""; position: absolute; left: 4px; top: 1px; width: 1.5px; height: 5px; background: var(--fg); }
+.label-closeup { font-size: 11.5px; font-weight: 500; line-height: 1.25; color: var(--fg); pointer-events: none; text-align: center; white-space: pre-line; font-variant-numeric: tabular-nums; }
+.label-closeup-ion::first-line { font-weight: 700; }
+.label-closeup-number { font-size: 10.5px; color: var(--muted); }
+.label-closeup-side { font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.label-closeup-caption { font-size: 11px; font-weight: 400; color: var(--muted); white-space: pre-line; }
+.label-closeup-caption::first-line { font-weight: 600; color: var(--fg); }
+.layer-example { margin: 2px 8px 5px; padding: 3px 7px; border: 1px solid var(--fg); border-radius: 5px; font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--fg); }
+.key-tile, .key-tile-held { height: 11px; border: 1.5px solid var(--muted); border-radius: 2px; }
+.key-tile-held { outline: 1.5px solid var(--muted); outline-offset: -5px; }
+.key-amount { width: 12px; height: 12px; margin-left: 4px; border-radius: 50%; background: linear-gradient(to right, var(--seq-1), var(--seq-4)); }
+.key-way { width: 15px; height: 2px; margin: 7px 0 0 1px; background: var(--fg); }
+.key-way::after { content: ""; position: absolute; right: -4px; top: -3px; border-left: 6px solid var(--fg); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.key-unplaced { width: 9px; height: 9px; margin: 3px 0 0 6px; border: 1.5px dashed var(--muted); border-radius: 50%; }
+.key-pump { width: 12px; height: 12px; margin-left: 4px; border: 1.5px solid var(--fg); border-radius: 2px; }
+.key-glow, .key-glow-spot, .key-glow-route { height: 11px; border-radius: 6px; background: radial-gradient(closest-side, #dd7a14, transparent); }
+.key-glow-rim { width: 13px; height: 13px; margin-left: 3px; border-radius: 50%; background: radial-gradient(closest-side, transparent 42%, #dd7a14 68%, transparent); }
+.key-glow-spot { width: 11px; margin-left: 5px; }
+.key-glow-route { opacity: .55; }
+.label-example { font-weight: 700; border: 1px solid var(--fg); background: var(--bg-raised); }
+.label-flow { font-weight: 500; font-variant-numeric: tabular-nums; white-space: pre-line; text-align: center; }
+.key-head { width: 0; height: 0; margin: 3px 0 0 6px; border-left: 9px solid var(--fg); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.legend-layers.is-dense .layer-row { grid-template-columns: 50px minmax(0, 1fr); column-gap: 5px; align-items: center; padding: 2px 8px; }
+.legend-layers.is-dense .layer-channel, .legend-layers.is-dense .layer-seg button { font-size: 11px; }
 
 /* ---------------------------------------------------------------- replay: the timeline */
 cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 780px; margin-inline: auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 12px 8px; }
@@ -264,6 +321,15 @@ cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16p
 .tl-read b { color: var(--fg); font-weight: 600; }
 .tl-speed { min-width: 48px; padding: 6px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tl-speed:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.tl-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 1px; width: min(330px, calc(100vw - 24px)); max-height: min(60vh, 420px); overflow: auto; padding: 5px; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); }
+.tl-speeds[hidden] { display: none; }
+cells-timeline.is-choosing { z-index: 4; }
+.tl-speed-step { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 5px 8px; border-radius: 8px; text-align: left; font-size: 12.5px; line-height: 1.3; color: var(--fg); }
+.tl-speed-step b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tl-speed-step span { color: var(--muted); }
+.tl-speed-step:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.tl-speed-step[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.tl-speed-step[aria-pressed="true"] span { color: var(--fg); }
 .has-timeline.has-panel .scalebar { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .label-read { font-variant-numeric: tabular-nums; pointer-events: none; }
 .label-region { font-style: normal; font-weight: 600; color: var(--fg); padding: 1px 7px; border-radius: 5px; background: color-mix(in srgb, var(--bg) 66%, transparent); }
@@ -298,14 +364,33 @@ cells-trace { display: grid; gap: 4px; }
 .panel-more ul { display: grid; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
 
 /* ---------------------------------------------------------------- protein atlas: one species' side */
-/* The switch between species takes any number of them and wraps onto more rows. */
-.seg-many { display: flex; flex-wrap: wrap; gap: 2px; }
 /* The species switch: in the bar on a wide window, at the head of a card on a narrow one. */
 .species { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .species-label { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.species .seg { background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); border-radius: 999px; padding: 3px; flex-wrap: nowrap; }
-.species .seg button { padding: 5px 12px; border-radius: 999px; font-size: 13px; }
-.species .seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 12%, transparent); box-shadow: none; }
+/* The switch is a dropdown: a pill that names the species in view, and a list of the page's own under it. */
+.species-pick { display: inline-flex; align-items: center; gap: 9px; padding: 6px 12px 6px 14px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.species-pick:hover, .species-pick[aria-expanded="true"] { background: color-mix(in srgb, var(--fg) 8%, var(--bg-raised)); }
+/* Every species' name lies in the pill, one over the other: its width is that of the longest and does not change with the species. */
+.species-pick-name { display: inline-grid; text-align: left; }
+.species-pick-name > * { grid-area: 1 / 1; }
+.species-pick-name > [aria-hidden="true"] { visibility: hidden; }
+.species-pick-caret { flex: none; width: 7px; height: 7px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); opacity: .7; }
+.species-pick[aria-expanded="true"] .species-pick-caret { margin-top: 3px; transform: rotate(225deg); }
+.seg-species .species-pick { width: 100%; justify-content: space-between; padding: 5px 10px 5px 11px; border-radius: 8px; font-size: 12.5px; }
+.species-veil { position: absolute; inset: 0; z-index: 5; }
+.species-list { position: absolute; z-index: 6; display: grid; align-content: start; gap: 2px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 16px 36px -16px rgb(0 0 0 / .5); }
+.species-group { display: grid; gap: 2px; }
+.species-group + .species-group { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.species-group-name { padding: 3px 9px 2px; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+/* A row: the name and what Cells models of it on one line, the organism under them across the row. */
+.species-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1px 10px; padding: 7px 9px; border-radius: 8px; cursor: pointer; }
+.species-option-name { grid-column: 1; grid-row: 1; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.species-option-organism { grid-column: 1 / -1; grid-row: 2; font-size: 12px; font-style: italic; line-height: 1.3; color: var(--muted); overflow-wrap: break-word; }
+.species-option-state { grid-column: 2; grid-row: 1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
+.species-option-state[data-state="proposed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.species-option.is-active { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+/* The species in view carries a tick after its name. */
+.species-option[aria-selected="true"] .species-option-name::after { content: ""; display: inline-block; width: 4px; height: 8px; margin: 0 0 1px 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
 .species-state { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
 .species-state::after { content: "›"; margin-left: 6px; opacity: .6; }
 .species-state:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
@@ -313,7 +398,6 @@ cells-trace { display: grid; gap: 4px; }
 .species-state[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .species-line { margin: -1px 0 1px; }
 .rail-note { max-width: 148px; font-size: 11.5px; line-height: 1.35; color: var(--muted); padding: 6px 8px 3px; margin-top: 2px; border-top: 1px solid var(--line); }
-@media (max-width: 1460px) { .species-label { display: none; } }
 /* With the species switch in it, the bar stays on one line: the date gives way first. */
 .with-species { flex-wrap: nowrap; }
 .with-species .bar-end { flex: 0 1 auto; overflow: hidden; }
@@ -328,7 +412,6 @@ cells-trace { display: grid; gap: 4px; }
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
 .with-species[data-tight="2"] .stamp { display: none; }
-.seg-many button { flex: 1 1 auto; padding: 4px 9px; white-space: nowrap; }
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
 .view-card:not(.run-card) > * { min-width: 0; }
@@ -409,11 +492,10 @@ cells-trace { display: grid; gap: 4px; }
   .view-note { display: none; }
   .seg-row { grid-template-columns: 46px 1fr; }
   .has-panel .scalebar, .has-panel .view { display: none; }
-  .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  /* Clear of a caveat that wraps to three lines, as it does where the page's own font did not arrive. */
+  .scalebar { bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
   .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
-  .seg-many button { padding: 4px 7px; }
-  .seg-row.seg-species { grid-template-columns: 1fr; }
-  .seg-species .seg-label { display: none; }
+  .species-option { padding: 9px 9px; }
   .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .rail { top: 124px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
   .rail .rail-title { display: none; }

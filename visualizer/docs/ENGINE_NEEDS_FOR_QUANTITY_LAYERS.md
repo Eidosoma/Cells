@@ -293,3 +293,210 @@ levels-of-detail fields will be carried for a record's law when they land; a set
 for a compartment node will carry its role and owner from the compartment map; whether a
 route's cumulative heat never falls under the exact heat booking is asked of the core's
 owner, answer to follow.
+
+### From the owner of the core, through the lead (15 November 2026)
+
+- **Signs in the tissue family: this note's reading is right.** A positive
+  `membrane_transferred` leaves the patch's cell for its outside node.
+  `channel_transferred` is added unchanged into its patch's membrane total, so it has the
+  same sign. A positive junction or face transfer leaves the sender for the receiver.
+- **Two exceptions.** Pump cycles are positive inwards (stoichiometry times cycles, which
+  the balance subtracts from the membrane total). `reservoir_supplied` is positive into
+  the outside node.
+- The single-cell specification's flux, positive from bath into cell, is that model's
+  own convention.
+- **Heat.** Every `*_dissipated_energy_pJ` field that exists today is checked to be zero
+  or more and never to fall, per element, at each accepted row (with an allowance of
+  1e-12 pJ); a run that would lower one is refused. So the energy layer may take them as
+  totals that only grow. Under the exact booking of the rework a route's own share can
+  be negative while its row's total is not: whether a route's heat still only grows
+  there awaits the lead's ruling.
+- **The lead's ruling on heat under the exact booking (15 November 2026).** A route's heat
+  stays a total that only grows: in the rework's first version a step with any negative
+  share for a route is refused, so every `*_dissipated_energy_pJ` field stays zero or more
+  and never falls per element, as today. A value for one route is an exact attribution of
+  its row's fall in free energy between the routes that move it; it cannot be measured
+  apart, and the energy layer's legend says so wherever it shows routes and not elements.
+  Elsewhere (pumped rows, tableau-booked routes) today's booking and checks are unchanged.
+
+### The first real feed (15 November 2026)
+
+- **Ready:** one development run of a secreted species, written through the engine's
+  shared output path from snapshot 5c2b04d6: one passive cell secretes a species into a
+  finite node that leaks to a held bath (`scheduled_species_turnover@1` and
+  `scheduled_species_exchange@1`; 4 s at a step of 1 ms; 21 records 0.2 s apart). It is
+  kept under `/mnt/workspaces/Cells/viewer-feed-20261115-01/secreted-species-dev-run/`
+  with a note that says "development run, no verdict". It is the first run the layers'
+  reader meets that the engine wrote by its own writer.
+- **Not yet:** the sheet with a written voltage pattern. Neither existing sheet builder
+  writes one through the shared writer unchanged, so it comes with the run view's writer
+  in the rework's round. Until then ion traffic and the energy glow on a sheet are shown
+  on examples with invented numbers, marked as such.
+
+### The worked example of the run view, read by the layers (15 November 2026)
+
+The engine's run-view writer was shown on a worked example: a `view.json` for the
+development run above (`run-view-20261115-01/secreted-species-dev-run-view-01fa27d9`).
+The viewer's adapter now packages a run from such a view and from nothing else: under a
+view it uses none of its own tables and reads no kind and no sign out of the arrays
+(`schema/RUN_VIEW.md`, "A run with the engine's own view beside its files"). Read that
+way, the worked example feeds the fog, the beads across the face and the glow. What it
+cannot feed is listed here for the writer's owner. **Items 1 and 10 change a picture;**
+the rest are smaller. The lead answered items 1 and 10 the same day, as written under
+each; items 2 to 9 and 11 are in the queue of the run view's writer, after the modular
+rework lands.
+
+1. **`exchange_moved_fmol` has no `kind` and no `sign`** (on both time bases). So it gives
+   no rate, and the two exchange routes get no beads: on this run that is the whole of "a
+   species leaving the cell". Needed: `kind: cumulative`, and a sign by the roles of the
+   route's membrane patch (`inside`, `outside`). The run's own amounts add up with a
+   positive total read as leaving the cell, for the export route and for the import
+   route alike, and under no other reading. The published page shows this run packaged
+   with the viewer's own table, which draws the routes by that reading and says that it
+   is the viewer's; a word from the core's owner would let the legend say "confirmed".
+   **Answered by the lead the same day: yes, that is the convention.** The total is
+   cumulative and positive outwards, from the inside of the route's patch to its outside,
+   for both directions: an export route's value is nought or more and an import route's
+   nought or less, and the operator's own domain check enforces it
+   (`src/cells/models/operators/species_exchange.py`: the state's axes mark the field
+   "Export positive", and the validity rule asks for a total of nought or more on an
+   export and nought or less on an import). The writer will declare it (`kind:
+   cumulative`, a sign by roles, with item 2). Until it does, the page says that the
+   direction is the engine's convention, confirmed, and no longer the viewer's reading;
+   the adapter still draws it only where the run's amounts agree.
+2. **The writer's `SIGN_ROLES` has no entry for `exchange_route`,** so its own reader would
+   refuse a sign on that record as things stand.
+3. **No route states the species it carries.** `exchange_route` has ids, the membrane each
+   lies on and its owner, and the record has no species axis. A bead needs the species
+   for its colour and its name. (The run's `summary.json` does name each route's species
+   and declared direction; the viewer's own table reads it there.)
+4. **The turnover ledgers have no `kind`** (`turnover_produced_fmol`,
+   `turnover_cleared_fmol`, `turnover_outside_cleared_fmol`; the view lists them under
+   `unstated`). The page shows the saved numbers and can neither call them totals since
+   the start nor take a rate of them.
+5. **The voltages have no sign** (`membrane_voltage_V`, `junction_voltage_V`: "not
+   confirmed"). The push and pull on ions, the membrane charge and the junctions' own
+   drops need to know which side is the higher when the value is positive. The viewer's
+   own table reads that from the arrays (the cell's potential less that of its outside),
+   which it does not do under a view.
+6. **Nothing marks the secreted species.** The viewer takes the species whose identity
+   names an operator of the run as its source, and says that this is its own reading.
+7. **Which entities restart at a retirement.** `resets` names the retiring laws and the
+   events name cells. Nothing says which entities outside the cell set restart (a
+   membrane of the cell, a channel population, a junction to a neighbour, a face). The
+   viewer assumes the cell, its membranes and what lies on them, and its junctions;
+   anything it cannot trace to a cell gets no rate in an interval that holds such an
+   event.
+8. **An event at a record's own time.** The view does not say whether the row saved at
+   that time shows the state before the event or after it, so the viewer takes no rate
+   in either interval the event bounds.
+9. **Geometry is null** (no builder for this world), so the three tiles are the viewer's
+   own layout, and the page says so. Nothing to change; only to know.
+10. **A question on `membrane_transferred`.** The view's sign on `channel_transferred`
+    says "added unchanged into the patch's membrane total", as the core's owner said
+    above; the view's note on `membrane_transferred` says "the passive membrane routes
+    only: each channel population's and each pump's transfers are their own ledgers".
+    The viewer rests on the note: on the close-up of a cell it draws the channels'
+    totals, the pump's cycles and `membrane_transferred` as three ledgers side by side.
+    If the saved `membrane_transferred` did contain what the channels carried, that
+    picture would count the channels twice. Is "the patch's membrane total" in the
+    sign's words the balance's sum, and not the saved array? Until a saved run of a
+    sheet carries these totals the close-up is shown on an example only, so no real
+    picture rests on the answer yet.
+    **Answered by the lead the same day: yes.** The saved `membrane_transferred` holds
+    the passive membrane routes only. "The patch's membrane total" is the balance's sum
+    when the balance is checked: `membrane_transferred` plus `channel_transferred` mapped
+    to its patch. The pump's moves are a third, separate term (its stoichiometry times
+    `pump_cycles`). Drawing the channels, the pump and the membrane side by side counts
+    nothing twice.
+11. **Reading notes, not gaps.** The view has no `id`, no `arm` and no end state for the
+    run: the catalogue names it, and how it ended still comes from `summary.json`. The
+    run's own files name no revision of the engine by its commit (the note beside the
+    folder does), so the page gives none for this run. A
+    recording subset (`recording.subset`) is refused by the viewer's adapter until there
+    is an example of one, and a builder's geometry in a view is not read yet for the same
+    reason.
+
+### What a species' looping run must carry (16 November 2026)
+
+Flux in the Cell view is published. No species has a looping run of its own yet, so it
+shows as illustration ("Illustration: not a run", direction only). The first real flux
+there needs a run the engine made of one cell of a species, packaged to loop
+(`schema/QUANTITY_LAYERS.md`, rule 7). The viewer's reader refuses a run as a loop unless
+all of this holds, so that a run written the way the development run of 15 November was
+would be refused:
+
+- **`loop` in the run's view** (`schema/RUN_VIEW.md`): `{"species", "cell", "closes":
+  {"within", "says"}}`. The species by the viewer's id (`human`, `planarian`,
+  `fruitfly`, `syn3a`, `mpneumoniae`, `ecoli`, `thalecress`), the cell's id in the run's
+  set of cells, and the run's own word that its last record meets its first: the largest
+  relative difference of any level between the two, and a sentence the page may show.
+- **The engine's models and its revision** (`run.engine_models`, `run.revision`). The
+  development run names no revision in its own files (item 11 above, then a reading
+  note). For a loop that is a gap: a run with no revision is refused.
+- **Not an example.** A run with invented numbers is never a loop.
+- **The totals whose rates feed the beads,** each with its kind and its sign as the run
+  view declares them: what crossed through each channel population, the pump's cycles
+  with what one cycle moves, and what crossed the membrane itself. Those three are read
+  today. What crossed junctions, water, the exchange routes and fuel is not read from a
+  loop yet; where a run carries them the page names them as not read.
+- Every rate is a mean between two records that both lie inside the loop; no difference
+  is taken across its seam.
+
+### The lead's news on the format (16 November 2026)
+
+The run view's writer has moved on, on its branch (`run-view-d154`, RUN_VIEW_DESIGN §9);
+it lands on main after the modular rework. The eleven items above are answered there.
+What the viewer's reader has to take, when it lands:
+
+- **`view_<field>` records:** the merged view of each field that an operator changes, for
+  each observed row.
+- **Roles on sets,** in place of the writer's table of sign roles.
+- **`difference` beside `sign` for voltages** (plus, minus, says): the membrane's voltage is
+  the cell less its outside node; a junction's is the sender less the receiver. This
+  answers item 5.
+- **`carries`, `direction`, `kinds` and `at` on an operator's sets:** an exchange route then
+  states its species and its direction (items 1 to 3).
+- **`resets.mask`:** which entities restart at a retirement (item 7).
+- **`time.event_rows`:** a row saved at an event's time holds the state before the event
+  (item 8).
+- **`run.id`, `run.end` and `run.source`:** the engine's revision and whether its tree was
+  clean, from the execution snapshot (item 11).
+- Geometry stays the caller's input (item 9).
+
+**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the same branch; ruled by
+the lead on 16 November 2026, with the human loop amended by D183 the same day; nothing
+built): `loop: {"species", "cell", "period", "closes": {"within", "says",
+"tolerance"}, "follows"?}`. The writer measures `within` on the saved arrays and refuses a
+block without `run.source`. The revision is read from `run.source.revision`, the one
+source of truth; the viewer's packaged replay fills its own `run.revision` from it.
+`follows` is for a cell cycle: the cell the loop follows after a division. The order of
+the loops: a planarian patch loop first; then the human loop, which by D183 is a paced
+human ventricular cell built on the human cardiac law set that the user brought forward,
+with no generic stand-in, and which waits for those laws; then the minimal cells' cycle,
+after its probe.
+
+**The viewer's side, done on 16 November 2026.** The adapter reads a view as the writer
+gives it on `run-view-d154` at `fd008813`, and still reads the shape of 15 November
+(`schema/RUN_VIEW.md`, "The engine's view"; two small runs written by that writer are kept
+under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`). The page's loop
+reader takes the block's shape. Reading the branch's code corrected three things in the
+list above:
+
+- a voltage's `difference` stands in place of its `sign`, not beside it;
+- `run.source` also carries `from`, and the writer states a source only from an execution
+  snapshot's record: a run from a checkout or an export states none, and its view lists
+  the engine's source as unstated;
+- the loop block is designed and not in the writer: the writer's own check refuses a
+  top-level key it does not know.
+
+Also read now, and not in the list: turnover and exchange declare their own kinds and
+signs, so under a view the sign of what an exchange route moved is the run's own and no
+longer the viewer's reading.
+
+**Still to close on the viewer's side:** a view that records a subset
+(`recording.subset`) is refused, and FR-11's looping packages record one, so the adapter
+must read `recorded` before the first loop package arrives; the builder's geometry is not
+read; the page does not yet use `time.event_rows` or `resets.mask`, and takes no rate in
+either interval an event bounds, which is the careful reading.
+

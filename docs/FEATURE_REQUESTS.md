@@ -6,17 +6,17 @@ and a general feature, never one built for one study (D144).
 
 | ID | Feature | Priority | Status | Next step |
 | --- | --- | --- | --- | --- |
-| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls | Its protocol as exchange's first judged acceptance; the charged door with the inner-model round |
+| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls | Its protocol as exchange's first judged acceptance. The charged door's version 1.1, refusal 4 for FR-4's kinds, landed with the inner-model round (16 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §3.4.1) |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
-| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls | Its independent references, then its protocol and judged run; the shared SSPRK(3,3) block in D172's round |
-| [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November); implementation in D172's round (D176) | Its law modules, world and protocol on the integration branch |
+| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls | Its independent references, then its protocol and judged run; a shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
+| [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its implementation follows on its own branch after D172's landing (16 November) | Its law modules and world on its own branch, then its protocol's registration and judged run on the landed core |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations | The channel target, qualified with the coupling operator (A5); the routing door; the regulatory state as a prior condition (below) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged, and registered as a consumer of the coupling operator's routing and abundance-source doors, with removal and surface insertion under FR-2 (D177). Most of part (b) is the coupling operator's channel target | A design note after D172's integrated landing; the closed loop's unit is the user's choice (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down) | Further ions and faster faces as each is measured; its protocol |
-| [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November); implementation in D172's round (D176) | Its law modules, world and protocol on the integration branch |
-| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope | A design note when the run-view writer lands in D172's round; the interim planarian loop first |
+| [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Its registration, rehearsal and judged run on the landed core |
+| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November) and the interim planarian loop are on branch `run-view-d154`, with one development run; they merge with the run-view writer after its gate. The human loop waits for the human cardiac laws |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -150,11 +150,15 @@ So the definition can dose from nothing in a mixed world under the known limit, 
 D150's ruling to doses (FR-10 §3.2, way (a)). Guard worlds dose between resolved levels, at a step
 ratio that registration pins; no probe has yet stepped a bath between two levels.
 
-**Status.** Exchange and turnover exist; the declaration and the bath schedule are designs, not code.
-FR-1's protocol is exchange's first judged acceptance. Until the two new operators land, the same
-transport runs today with the compartment as an anonymous face-free node (D150's face-free world)
-and the dose as a bath held at the dose from time 0. That form has no identity refusals and no dose
-time.
+**Status.** Exchange and turnover exist; when this world was written, the declaration and the bath
+schedule were designs, not code. Both have landed since: `cell_owned_compartments@1` (FR-1's
+milestone 1, 15 November) and `scheduled_bath_composition@1` (FR-10's milestones 1 and 2, 14–15
+November). Door S, which landed with D172's round (16 November), admits D152's reactions in the
+compartment beside the dose, so they are no longer refused beside this world (door S's integration
+world, `tests/unit/test_delivery_world.py`). FR-1's protocol is exchange's first judged acceptance.
+Before the two operators landed, the same transport ran with the compartment as an anonymous
+face-free node (D150's face-free world) and the dose as a bath held at the dose from time 0. That
+form has no identity refusals and no dose time.
 
 ## FR-2 — Internalisation of membrane and its populations
 
@@ -611,3 +615,12 @@ explored.
   - **Timing:** after D172's round, at least to the stage where the run-view writer can carry the
     interim planarian loop. The planarian loop comes first.
 - **Next:** a design note when the run-view writer lands (D142).
+- **Since then (16 November 2026):**
+  - **The human loop** is a paced human ventricular cell on Track E's human law set, O'Hara–Rudy
+    2011's endocardial cell, and it waits for those laws (D183, D184;
+    [design note](HUMAN_CARDIAC_LAWS_DESIGN.md), proposed). No generic stand-in is used: that was
+    the lead's reading of the user's answer, kept under the user's delegation (D184).
+  - **The run-view writer** did not land with D172's round. It is built on branch `run-view-d154`
+    and merges after its own gate ([current plan](CURRENT_PLAN.md)).
+  - **The design note** is written there, `docs/LOOPING_REPLAY_DESIGN.md` (ruled 16 November), with
+    the interim planarian loop's builder and one development run of that loop.

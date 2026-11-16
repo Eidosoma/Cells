@@ -334,9 +334,12 @@ class KindView(NamedTuple):
     """A kind's run-view declarations (docs/RUN_VIEW_DESIGN.md §3; D154), in the operator
     contract's forms, for its state fields and readout columns: the inner model's implementation
     object folds them in after @3's own (UNITS, OBSERVATION_AXES, RECORD_KINDS, ORIENTATION,
-    RECORD_LAYERS, VIEW_LAYERS). axis_sets maps an axis of its fields to an existing view set
-    (the buffer's "node": cells, then outside nodes); a kind's own axes get their sets from its
-    view_sets(spec, declaration) hook, {axis: {"id", "ids", "roles", per-entity facts}}."""
+    RECORD_LAYERS, VIEW_LAYERS, RECORD_DIAGNOSTICS, RECORD_REFERENCES). axis_sets maps an axis of
+    its fields to an existing view set (the buffer's "node": cells, then outside nodes); a kind's
+    own axes get their sets from its view_sets(spec, declaration) hook, {axis: {"id", "ids",
+    "roles", per-entity facts}}. record_diagnostics names its fields that are residuals of its own
+    checks (none for today's kinds) and record_references {increment field: reference layout
+    field} (none: today's kinds store no increment against a reference)."""
 
     units: object = MappingProxyType({})  # {field: unit}
     observation_axes: object = MappingProxyType({})  # {readout column: (axis, ...)}
@@ -345,6 +348,8 @@ class KindView(NamedTuple):
     record_layers: object = MappingProxyType({})  # {field: layer id}
     view_layers: tuple = ()  # Layers it adds: ({id, label, representation}, ...)
     axis_sets: object = MappingProxyType({})  # {axis: existing view set id}
+    record_diagnostics: tuple = ()  # Its fields that are residuals of its own checks.
+    record_references: object = MappingProxyType({})  # {increment field: reference layout field}
 
 
 @cache

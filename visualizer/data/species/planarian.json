@@ -5,6 +5,7 @@
  "organism": "Schmidtea mediterranea",
  "taxon": 79327,
  "plain": "A freshwater flatworm that regrows its whole body from a fragment. Its protein atlas is of Schmidtea mediterranea; the outlines drawn are of a planarian in general, with indicative sizes.",
+ "group": "Animals",
  "order": 20,
  "default": true,
  "made": "2026-11-15",

@@ -1,0 +1,67 @@
+{
+ "note": "synthetic fixture: no engine ran",
+ "composition": {
+  "model": "resolved_pump_composite@1",
+  "inner_model": "resolved_pump_tissue@3",
+  "operators": [
+   "scheduled_species_turnover@1",
+   "scheduled_species_exchange@1"
+  ]
+ },
+ "field_owners": {
+  "observations": {
+   "amount": [
+    "inner"
+   ],
+   "extracellular_amount": [
+    "inner"
+   ],
+   "membrane_voltage_V": [
+    "inner"
+   ],
+   "cell_potential_V": [
+    "inner"
+   ],
+   "extracellular_potential_V": [
+    "inner"
+   ],
+   "membrane_transferred": [
+    "inner"
+   ],
+   "face_transferred": [
+    "inner"
+   ],
+   "reservoir_supplied": [
+    "inner"
+   ],
+   "pump_cycles": [
+    "inner"
+   ],
+   "membrane_dissipated_energy_pJ": [
+    "inner"
+   ],
+   "face_dissipated_energy_pJ": [
+    "inner"
+   ],
+   "pump_dissipated_energy_pJ": [
+    "inner"
+   ],
+   "metabolic_work_pJ": [
+    "inner"
+   ],
+   "turnover_produced_fmol": [
+    "scheduled_species_turnover@1"
+   ],
+   "turnover_cleared_fmol": [
+    "scheduled_species_turnover@1"
+   ],
+   "turnover_outside_cleared_fmol": [
+    "scheduled_species_turnover@1"
+   ],
+   "exchange_moved_fmol": [
+    "scheduled_species_exchange@1"
+   ]
+  },
+  "views": {}
+ }
+}

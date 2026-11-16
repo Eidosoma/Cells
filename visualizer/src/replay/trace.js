@@ -116,12 +116,15 @@ class CellsTrace extends HTMLElement {
     for (const level of lines) {
       key.push(h("span", {}, h("i", { class: "trace-key trace-key-level", "aria-hidden": "true" }), `${number(level.value * this.shown.factor, 1)}${this.shown.unit ? ` ${this.shown.unit}` : ""}: ${level.label}`));
     }
+    // Only what there is: a chart with no event and no level to explain has no line of keys.
     this.replaceChildren(
-      h("h4", { class: "trace-title" }, this.spec.title, this.shown.unit ? h("span", { class: "quiet" }, ` · ${this.shown.unit}`) : null),
-      h("p", { class: "trace-read", "aria-live": "off" }, this.reading, this.when),
-      this.plot,
-      key.length ? h("p", { class: "trace-keys" }, key) : null,
-      this.table()
+      ...[
+        h("h4", { class: "trace-title" }, this.spec.title, this.shown.unit ? h("span", { class: "quiet" }, ` · ${this.shown.unit}`) : null),
+        h("p", { class: "trace-read", "aria-live": "off" }, this.reading, this.when),
+        this.plot,
+        key.length ? h("p", { class: "trace-keys" }, key) : null,
+        this.table(),
+      ].filter(Boolean)
     );
 
     const nearest = (event) => {

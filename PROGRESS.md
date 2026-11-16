@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-15 UTC.
+Last updated: 2026-11-16 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **15 November 2026.** The levels and the working order are in
+- **16 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
   (D156, with D176's round). The runs below are newest first.
   - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
@@ -20,13 +20,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
     the phase start and failure records, Track E's M1 development work, and independent references
     for FR-3, FR-4 and the passive law.
-  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
-    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
-    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
-  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
+    `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
+    landed on main" below.
+    The lanes built on it merge next, each after its own gate, and FR-5 follows on its own branch.
+  - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
+    its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
-    flag (15 of 15 bitwise pairs, D181). Its judged run follows tonight's GPU column. The W1
-    full-tissue hold runs its fourth segment.
+    flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
+    the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
+    retention; its comparison with the predictions written before the run is still to do.
 - **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
   14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
   tagged.
@@ -76,6 +79,159 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **core-next merged into main (16 November 2026, evening).** It's the first lane built on D172's
+  round to land ([handoff](/mnt/workspaces/Cells/core-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - kinds' time-varying controls (gap 6);
+    - the stored-energy rate and the `produced` ledger role (gap 2);
+    - the routing door;
+    - @3's and the kinds' own view declarations, and their record roles;
+    - A7's allow-list fix;
+    - insertion@2's gate at opening (item 4);
+    - FR-5's raw-sum bound, derived from a rounding analysis;
+    - ledger lists read from the model object (item 5).
+  - **The gate,** at 5230f43b with main merged in:
+    - **tiers 1+2:** 502 files, none changed;
+    - **heavy:** 228 passed;
+    - **crossrev:** identical in every set, apart from the intended changes, each recorded:
+      item 4's onset select in the three insertion@2 division worlds, and the raw-sum bound's
+      input term in the kind worlds;
+    - **G1:** 113 of 113, bitwise;
+    - **the in-place guard:** identical on 50 worlds.
+  - **The raw-sum bound's teeth:** a planted sign flip is still refused, by about eleven orders of
+    magnitude. FR-4's declared world is bitwise identical over 900 s with and without the fix.
+  - **Found on the way:** the 825-node world's binding-time Cholesky is threaded by the linear
+    algebra library, so its bits depend on the run's CPU count.
+    - crossrev and G1 now log the count, and compare runs only at equal counts.
+    - A design that removes the dependence is queued.
+
+- **D172's round landed on main (16 November 2026, about 17:40 UTC).** Main ab267c39 merges candidate
+  c1 = integration-d172 3c10b833 and is tagged `d172-landed-2026-11-16`.
+  - **What lands:**
+    - the inner model's declared laws, and dispatch per declared structure (`resolved_pump_tissue@3`);
+    - the kind interface, with three built-in kinds (passive routes, a rapid proton buffer, the
+      transporter);
+    - the operators, with door S's scoped composition;
+    - the species registry;
+    - FR-1's compartments;
+    - A7's fixed summation order (D182).
+  - **The gates** (records in [RUN-c1.md](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/RUN-c1.md)):
+    - **results:** c0 bitwise on 113 of 113 worlds; c1 within A7's frozen tolerance file, with
+      every physical field bitwise;
+    - **crossrev:** c1 against c0, with constants and bindings identical in all eight sets;
+    - **tiers 1+2:** 492 files, none changed;
+    - **G2:** all 23 steps pass;
+    - **the L4 block,** attempt 2: 103 pass, 0 fail, 28 report. W1, W2 and G2-Q1's Q1–Q7 pass, and
+      all ten parity cases pass. The six cases judged in both attempts are identical;
+    - **tier 3:** 229 files. 187 pass. All 42 non-passing files are classified
+      ([table](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-table.md)), and none is the round's or A7's:
+      - 23 pre-existing failures;
+      - 16 pre-existing timeouts, whose roughly 280 tail tests never ran in either tree;
+      - 2 stale tests from the round, fixed in the next commit with their masked checks
+        verified;
+      - 1 that passes when run alone.
+  - **Privacy:** clean across the tree, the full history and the 157 commit messages. The merge
+    differs from c1 only in docs, `visualizer/` and the root Markdown files.
+  - **Not run as separate end-game steps, and owed (CURRENT_PLAN):**
+    - G3's negative controls on the final candidate. These are planted changes that must fail the
+      results gate. The round's per-commit contract tests ran in the tiers, and the results gate's
+      planted-difference self-test exists;
+    - G4's measurements of compile time, memory and end-to-end time.
+  - **Open after the landing,** for D187's audit:
+    - six pre-existing engine-side findings: the [anchor] refusal missing in surface_kinetic and
+      surface_tissue, the cotransport/water energy failure, surface_excision's NumericalError, the
+      fixed_step tracing trio, a behavioural assertion, and a missing MODEL_ID;
+    - the never-run tails.
+
+- **The visualizer merged into main twice, and the README brought to 16 November (16 November
+  2026, the user's requests).** All three merges touch only `visualizer/` and `README.md`. No
+  engine code reads `visualizer/`.
+  - **df5b5cb3** (visualizer 39a20f75) adds:
+    - the fruit fly and thale cress;
+    - flagella and pili;
+    - the quantity layers through flux in the Cell view;
+    - the run-view reader and its note on what the layers need from the engine;
+    - the published map through Version 16.
+
+    The visualizer reported 428 tests passed and 1 skipped.
+  - **7c023576** (visualizer 9b780f33) adds:
+    - four screenshots for the README ([captions](visualizer/docs/screenshots/README.md));
+    - the species tools sharing one module, each writing byte-identical files;
+    - a research note on typical flux values. It keeps no number whose original is
+      non-commercial.
+
+    **Checks:**
+    - `npm test` on a clean copy of 9b780f33 (Node, pinned to one CPU): 425 passed, 4 skipped,
+      0 failed;
+    - the BETSE-boundary guard and the D131 source-order guards on the merged tree: 5 passed and
+      46 skipped, the skips all D131's
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/guards.log));
+    - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
+    - This is a smaller guard set than the 15 November merge's (68 passed).
+  - **A fifth visualizer merge** (visualizer 35098c8e) adds:
+    - two cell-view screenshots, now in the README: the human's generic cell with its planned
+      nucleus, Golgi apparatus and ribosomes, and E. coli, which is proposed and not modelled;
+    - the published page's revision stamp, corrected. A local, amended commit had been stamped;
+    - a build guard that refuses a revision on no remote branch.
+
+    **Checks:** `npm test` on a clean copy gave 443 passed, 2 skipped and 0 failed.
+  - **A fourth visualizer merge** (visualizer 5830bfdf) adds:
+    - the nucleus, the Golgi apparatus and the ribosomes, as planned parts of the map that are
+      illustration only (by the user's decision of 16 November);
+    - the replay's own clock and speeds;
+    - the run-view reader at the writer's fd008813, with two engine-written fixtures;
+    - the published pages' new links.
+
+    **Checks:**
+    - `npm test` on a clean copy (two CPUs): 443 passed, 2 skipped (both need adapted replays), 0
+      failed;
+    - the BETSE-boundary guard and the snapshot test on the merged tree: 29 passed
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116-b/guards.log)).
+  - **A third visualizer merge** (visualizer c91d8cd2) brings the engine map and the
+    layers-needs note to D183, so the human loop is shown as waiting for the human cardiac
+    laws.
+    - `npm test` on two CPUs: 427 passed and 2 skipped. Both skipped tests need adapted replays,
+      which a clean checkout lacks.
+    - The earlier run's two extra skips came from pinning to one CPU: one test needs two
+      processors, and one skipped without need (now fixed).
+  - **The README** (462469dd, from readme-update) has:
+    - the status table as of 16 November, with the levels defined;
+    - a new section, "The visualizer and its replays", with two of the screenshots;
+    - corrections from the visualizer session, which ran the six build commands from a clean
+      checkout.
+
+    The advisor reviewed it. FR-11 is described as proposed, and its human loop waits for the
+    human cardiac laws (D183). The restructure's "in progress" sentences flip at D172's landing
+    (the list is in the round's LEAD-NOTES).
+
+- **D172's end game, paused for a planned machine restart (16 November 2026, 10:33 UTC).** Records
+  are under `/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/`, and the resume steps are
+  in the round's `LEAD-NOTES.md`.
+  - **c0 = integration-d172 22356272** (the integrated candidate before A7, main merged in):
+    - G1 bitwise, 113 of 113 worlds;
+    - crossrev identical in all eight sets;
+    - tiers 1+2: 491 files, 0 changed.
+  - **c1 = integration-d172 3c10b833** (c0 plus A7, D182):
+    - crossrev against c0: constants and bindings identical in all eight sets, program texts
+      changed by A7 as intended;
+    - G1 under the frozen tolerance file: 113 of 113 within it, physical fields bitwise, and the
+      same 31 bitwise and 82 moved worlds as the rehearsal;
+    - tiers 1+2: 492 files, 0 changed.
+  - **G2 at c1:** every registered small protocol re-run passes. That is Track R, D150, S3, Rm1,
+    S5a, MG0b, MG0c, cell replacement and stationary E: 23 steps, every verdict read. E07-v1 is on
+    hold (D181).
+  - **L4 block at c1, under the deterministic flag:**
+    - phase 1 is complete: W1, W2, G2-Q1 and the ten parity cases repeat bitwise, the backend terms
+      are at most 4.2e-14 V, and every tolerance is unchanged. The ten parity CPU reruns are bitwise
+      equal to their registered judged results;
+    - the three flagged variants are registered;
+    - W1's judged run C **passed**.
+    - C's other items and the parity judged pass stopped for the restart before any verdict was
+      written. They are re-attempted after it.
+  - **Tier 3 at c1** was partial when stopped. It resumes for the remaining files, with every
+    failure attributed against the tag and c0.
 
 - **G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026;
   `resolved_pump_replacement@1`, `resolved_pump_tissue@3`).**

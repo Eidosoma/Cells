@@ -42,7 +42,11 @@ if (!replays) {
 } else if (inlineRuns) {
   console.log(`${replays.runs.length} replays are inside the page`);
 } else {
-  for (const run of replays.runs) await beside(run.file, path.join(runsDir, path.basename(run.file)));
+  for (const run of replays.runs) {
+    await beside(run.file, path.join(runsDir, path.basename(run.file)));
+    // A layer's records come in files of their own beside the replay (schema/QUANTITY_LAYERS.md, rule 10).
+    for (const part of run.parts || []) await beside(part.file, path.join(runsDir, path.basename(part.file)));
+  }
 }
 // The species' own proteins, for the protein atlas's shelves.
 const proteins = await proteinFiles(JSON.parse(await readFile(scenePath, "utf8")));

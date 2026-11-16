@@ -775,6 +775,12 @@ def read_links(evidence):
 # A paper of the last two classes is a pointer. Where it is cited for a gene's name, the
 # name must stand in a permissive record as well (a sequence record, or the UniProtKB entry).
 PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+# A value that a permissive database gives out and a tool or rule system of another owner
+# computed stands on the terms of the database it was read from, and the tool behind it is
+# named and counted (the user's ruling of 15 November 2026). So each such tool is a source
+# of the shelves in its own right, with its own terms and class and with `through`, the
+# database or databases its results were read in.
+RULING = "By the project's rule (the user, 15 November 2026), a value stands on the terms of the database it was read from, and the tool behind it is named and counted"
 
 
 def licence_class(licence):
@@ -2349,7 +2355,8 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
                 "UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry; its sequence analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out. "
                 "Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together. "
                 f"So {by_programs:,} of the {all_predicted:,} predicted sides rest on what TMHMM, SignalP and Phobius found or did not find. "
-                "The three programs are given out for academic use; neither database's terms speak for them, and WormBase ParaSite says that third-party constraints may apply to what it gives out. Each is named among the sources, with its own terms and what rests on it."
+                "The three programs are given out for academic use, and WormBase ParaSite says that third-party constraints may apply to what it gives out. "
+                f"{RULING}: each program is named among the sources, with its own terms and what rests on it."
             ),
             "by function": f"Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt. Of the {rests['entries']['by function']:,} entries placed by a rule's location, {rests['entries']['by function, on a place that names a PROSITE rule']:,} rest on a statement that names a PROSITE rule; the others rest on UniProt's own rule systems or, for {rests['entries']['by function, on a place that names a HAMAP rule']:,}, on HAMAP's.",
             "stated": "A reviewed UniProtKB entry states the location, by similarity to another species' protein.",
@@ -2740,10 +2747,15 @@ classed separately: {rests['entries']["in a membrane, by segments of UniProt's o
 the programs: they say who may run them and say nothing of predictions made with them,
 and it was WormBase ParaSite and UniProt that ran them. PROSITE's terms are of the
 database itself, of which its rules are part, and its page says that commercial users pay
-a licence fee "irrespective of the method by which they access the database". Whether
-sides that rest on the academic programs, or on PROSITE's rules, may stay in a commercial
-project is the project's to decide and is not settled here. Until it is, every such side
-is counted above and is said to be predicted wherever it is shown.
+a licence fee "irrespective of the method by which they access the database".
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** Every side
+counted above was read in WormBase ParaSite's or UniProt's records, which the two
+databases give out under their own open terms, so each stands as its database gives it.
+Each tool and rule system is named in the table with its own terms and its count, and
+each such side is said to be predicted wherever it is shown. This is the project's rule,
+and not a legal opinion.
 
 **Papers named, with nothing taken beyond a name.** The atlas names planarian genes by
 the papers that reported them. A paper under CC BY may stand behind a name. A paper

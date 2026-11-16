@@ -17,12 +17,16 @@
 
 import * as THREE from "../three.js";
 import { statusToken } from "../core/theme.js";
-import { glyphSprite, soften } from "../core/materials.js";
+import { glyphSprite, soften, enrich, jostle } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
-import { makeEnvironment } from "../core/environment.js";
+import { makeEnvironment, makeStudio } from "../core/environment.js";
+import { LookTrial } from "../core/look_trial.js";
 import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
+import { middle, words } from "./cell_scenery.js";
+import { structureAbsence, structureDoors } from "./cell_structures.js";
+import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -44,9 +48,57 @@ const GENERIC = {
   levels: [{ id: "molecules" }, { id: "cell", shape: { kind: "prism", sides: 6, radius_um: REF.radius, height_um: 13, corner_um: 2.4, edge_um: 1.3 } }, { id: "tissue", shape: { kind: "cell sheet", rings: 6 } }],
   cell: { facts: [], parts: { nucleus: true }, capabilities: {} },
 };
+// The resting look (core/look.js), as this view asks for it. Contact shade: how far one part
+// shades another, in micrometres of a cell twenty across and as a share of the camera's
+// distance (the smaller counts), and how much of the shade is laid over the picture. At
+// twice this reach the sheets of the endoplasmic reticulum went dark all over, which reads
+// as density; at this one a shade shows only where parts meet. Drawn to scale the parts are
+// several times smaller and stand closer, so the reach is shorter there, or stacks of sheets
+// and shelves go dark between. Filmic light: how much light it lets in, a little over 1,
+// which makes up for the curve's dark foot in the middle tones.
+export const LOOK = { reach: 0.7, reachToScale: 0.3, reachOnScreen: 0.016, shade: 0.65, exposure: 1.08 };
 // The camera's half view on a wide screen, for working out where one level gives way to the next.
 const HALF_VIEW = Math.tan((34 * Math.PI) / 360);
 const nominal = (size) => Math.max(size[1] / (2 * HALF_VIEW), size[0] / (2 * HALF_VIEW * 1.5));
+
+/**
+ * A piece of the species' own scenery as the panel describes it: that it is scenery, what the
+ * species' file gives of it with its sources, and what was drawn. The foot of a thread says
+ * what machine it is and opens the Protein atlas on the species' proteins that make it.
+ */
+export function describeScenery(item, species, links) {
+  const SCENERY = { label: "Scenery", title: "Nothing in the engine stands behind it: it is drawn so that the cell looks as the species' cell does" };
+  const of = (value, unit) => words(value, unit);
+  const facts = item.facts || {};
+  const given = [];
+  if (facts.count !== undefined) given.push({ label: "How many on a cell", detail: of(facts.count) });
+  if (facts.length_um !== undefined) given.push({ label: "Length", detail: of(facts.length_um, "µm") });
+  if (facts.width_nm !== undefined) given.push({ label: "Width", detail: of(facts.width_nm, "nm") });
+  if (facts.across_um !== undefined) given.push({ label: "Across", detail: of(facts.across_um, "µm") });
+  if (facts.volume_fl !== undefined) given.push({ label: "Volume", detail: of(facts.volume_fl, "fl") });
+  if (facts.share !== undefined) given.push({ label: "Share of the cell's volume", detail: `${Math.round(middle(facts.share) * 100)}%` });
+  if (facts.where) given.push({ label: "Where on the cell", detail: facts.where });
+  if (facts.from) given.push({ label: "Starts at", detail: `the ${facts.from}` });
+  if (given.length) given[given.length - 1].links = links(item.sources);
+  if (item.kind === "base") {
+    const base = item.base;
+    return {
+      id: item.id, kind: "scenery", group: "biology", label: item.label, eyebrow: `${species.label} · scenery`, chips: [SCENERY],
+      plain: `The machine at the foot of each of the cell's ${String(item.of).toLowerCase()}. Nothing in the engine stands behind it, and no closer view of it is drawn yet.`,
+      note: "Its parts are among the species' own proteins: the Protein atlas shows them as one set.",
+      doors: base.mark && base.value ? [{ label: `Show the proteins of the ${item.label.toLowerCase()} in the Protein atlas`, lens: "proteins", show: "own", mark: base.mark, value: base.value }] : [],
+      sections: [{ title: "Sources", items: links(item.sources).length ? [{ label: "What the species' file gives of it", links: links(item.sources) }] : [] }],
+    };
+  }
+  return {
+    id: item.id, kind: "scenery", group: "biology", label: item.label, eyebrow: `${species.label} · scenery`, chips: [SCENERY],
+    plain: "Drawn as scenery: nothing in the engine stands behind it, so it has no status.",
+    sections: [
+      { title: "As the species' file gives it", items: given },
+      { title: "As drawn", items: (item.sizes || []).map(([label, text]) => ({ label, lines: [text] })) },
+    ],
+  };
+}
 
 // What Cells models of a species, in two or three words (schema/SPECIES.md, `modelled.state`).
 export const MODELLED = { generic: "Generic cell", proposed: "Proposed, not modelled", modelled: "Modelled" };
@@ -85,9 +137,16 @@ class Part {
     this.group = new THREE.Group();
     if (entity) this.group.userData.pick = entity.id;
     else this.group.userData.unpickable = true;
-    this.group.userData.seeThrough = this.status === "planned";
+    // A planned part is drawn whole where colour shows the kind of part, and as a sketch where it
+    // shows status (the user, 16 November 2026): see colour(). Picked through only as a sketch.
+    this.group.userData.seeThrough = false;
     zone.root.add(this.group);
     zone.parts.push(this);
+  }
+
+  /** Whether this part is drawn as a sketch now: a planned part, where colour shows status. */
+  get sketching() {
+    return this.status === "planned" && this.lens.colourBy === "status";
   }
 
   add(...objects) {
@@ -96,34 +155,52 @@ class Part {
 
   /**
    * A material for this part. hue names its biology colour (used with "Colour: Biology");
-   * shade lightens (+) or darkens (-). A planned part is a sketch whatever is asked for:
-   * thin outlines (line) or a wire mesh (wire). rim and alphaRim give solid parts a soft lit edge.
+   * shade lightens (+) or darkens (-). A planned part is drawn whole with "Colour: Biology"
+   * and is a sketch with "Colour: Status": its material has a twin, a wire mesh, which takes
+   * its place there (colour()). line or wire ask for a sketch in both. rim and alphaRim give solid parts a soft lit edge.
+   * For the resting look (core/look.js): thin is how much light the part lets through,
+   * texture a surface texture ("grain", "folds" with its long way as axis, "pores"),
+   * shimmer marks a membrane, and drift is how far a crowd of copies jostles about.
+   * contact: false keeps a solid part out of contact shade (a shell cut open, whose inside
+   * would otherwise go dark like a pit).
    */
-  material({ hue = null, opacity = 1, wire = false, line = false, shade = 0, emissive = 0, roughness = 0.42, flat = false, side = THREE.FrontSide, clip = false, depthWrite, rim = 0.3, alphaRim = 0 } = {}) {
-    const sketch = wire || line || this.status === "planned";
+  material({ hue = null, opacity = 1, wire = false, line = false, shade = 0, emissive = 0, roughness = 0.42, flat = false, side = THREE.FrontSide, clip = false, depthWrite, rim = 0.3, alphaRim = 0, thin = 0, texture = null, axis = null, shimmer = false, drift = 0, contact = true } = {}) {
+    const sketch = wire || line;
     let material;
     if (sketch) {
       material = new THREE.MeshBasicMaterial({ wireframe: !line, transparent: true, opacity: line ? 0.9 : 0.6, depthWrite: false });
       opacity = material.opacity;
     } else {
-      if (this.status === "designed") opacity *= 0.45;
       material = new THREE.MeshStandardMaterial({ roughness, metalness: 0, flatShading: flat, side, transparent: opacity < 1, opacity, depthWrite: depthWrite ?? opacity === 1 });
-      soften(material, { rim, alphaRim });
+      const numbers = this.lens.stage.numbers;
+      if (thin || texture || shimmer) enrich(material, numbers, { rim, alphaRim, thin, texture, axis, shimmer, unit: this.zone.root.scale.x });
+      else soften(material, { rim, alphaRim });
+      if (drift) jostle(material, numbers, { reach: drift });
+      if (!contact) material.userData.noContact = true;
     }
     if (clip) material.clippingPlanes = this.zone.cutPlanes;
-    return this.register(material, { base: opacity, hue, shade, emissive, sketch });
+    this.register(material, { base: opacity, full: opacity, hue, shade, emissive, sketch });
+    if (!sketch && this.status === "planned") {
+      // Its sketch, for "Colour: Status": a grey wire mesh, swapped in for it by colour().
+      const twin = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true, opacity: 0.6, depthWrite: false, side });
+      if (clip) twin.clippingPlanes = this.zone.cutPlanes;
+      this.register(twin, { base: 0.6, full: 0.6, hue: null, shade: 0, emissive: 0, sketch: true, twinOf: material });
+      material.userData.twin = twin;
+    }
+    return material;
   }
 
   /** Dots, for what is too small to draw as shapes. size is in screen pixels. */
-  points({ hue = null, shade = 0, size = 1.6, opacity = 0.9 } = {}) {
+  points({ hue = null, shade = 0, size = 1.6, opacity = 0.9, drift = 0 } = {}) {
     const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, opacity, depthWrite: false });
-    return this.register(material, { base: opacity, hue, shade, emissive: 0, sketch: this.status === "planned", dust: true });
+    if (drift) jostle(material, this.lens.stage.numbers, { reach: drift });
+    return this.register(material, { base: opacity, full: opacity, hue, shade, emissive: 0, sketch: false, dust: true });
   }
 
-  /** Thin lines: outlines of a planned part, or fine structure of a built one. */
+  /** Thin lines: fine structure of a part, or a sketch where no hue is given. */
   lineMaterial({ hue = null, opacity = 0.8 } = {}) {
     const material = new THREE.LineBasicMaterial({ transparent: true, opacity, depthWrite: false });
-    return this.register(material, { base: opacity, hue, shade: 0, emissive: 0, sketch: this.status === "planned" || !hue });
+    return this.register(material, { base: opacity, full: opacity, hue, shade: 0, emissive: 0, sketch: !hue });
   }
 
   /** Draws nothing, but can be clicked: the body of a part that is drawn only as outlines. */
@@ -133,15 +210,39 @@ class Part {
 
   register(material, data) {
     material.userData = { ...material.userData, ...data, solidDepth: material.depthWrite };
+    // Filmic light is for the natural colours of lit parts. A sketch's grey says "planned": it
+    // stays as the legend shows it. And what gives off light of its own (the fuel's sparks, ions)
+    // keeps the colour it has: rolled off, the fuel's yellow turned to the mitochondria's orange.
+    material.toneMapped = !data.sketch && !(data.emissive > 0);
     this.materials.push(material);
     return material;
   }
 
   colour(palette) {
     const byBiology = this.lens.colourBy === "biology";
+    // A planned part: whole, or its sketch. Each mesh wears the one of its two materials that fits.
+    const sketching = this.sketching;
+    this.group.userData.seeThrough = sketching;
+    if (this.status === "planned") {
+      this.group.traverse((object) => {
+        const worn = object.material;
+        if (sketching && worn?.userData?.twin) object.material = worn.userData.twin;
+        else if (!sketching && worn?.userData?.twinOf) object.material = worn.userData.twinOf;
+      });
+    }
     for (const material of this.materials) {
       const data = material.userData;
-      const name = data.sketch ? "ghost" : byBiology && data.hue ? data.hue : statusToken(this.status);
+      // Dots and lines of a planned part turn grey where it is a sketch; a designed part is faint where colour shows status.
+      const sketch = data.sketch || (sketching && !data.twinOf && !data.twin);
+      if (material.isPointsMaterial || material.isLineBasicMaterial) {
+        const toneMapped = !sketch && !(data.emissive > 0);
+        if (material.toneMapped !== toneMapped) {
+          material.toneMapped = toneMapped;
+          material.needsUpdate = true;
+        }
+      }
+      data.base = data.full * (!byBiology && this.status === "designed" && !data.sketch ? 0.45 : 1);
+      const name = sketch ? "ghost" : byBiology && data.hue ? data.hue : statusToken(this.status);
       const colour = new THREE.Color(palette[name] || palette.ghost);
       if (data.shade > 0) colour.lerp(WHITE, data.shade);
       else if (data.shade < 0) colour.lerp(BLACK, -data.shade);
@@ -174,6 +275,7 @@ export class CellLens {
     this.root = new THREE.Group();
     this.zones = [];
     this.byEntity = new Map(); // entity id -> [Part]
+    this.sceneryLooks = new Map(); // id of a piece of scenery that can be chosen -> its materials
     this.selected = null;
     this.hovered = null;
     this.isolate = null;
@@ -185,13 +287,28 @@ export class CellLens {
     this.clock = 0;
     this.active = false;
     this.capabilityByPart = new Map(model.ofKind("capability").map((entity) => [entity.part, entity]));
+    // Parts of the cell that the scene leaves out of the picture for now (its `left_out`):
+    // they have no capability in the scene, and are not drawn as scenery either.
+    this.leftOut = new Set((model.raw?.left_out || []).map((item) => item.part).filter(Boolean));
     this.environment = makeEnvironment(stage.renderer);
+    this.studio = null; // the studio the rich look reflects, made when first asked for
+    this.reach = 0; // how far contact shade reaches now, in micrometres
+    this.near = true; // whether anything solid is near enough for contact shade to show
+    this.trial = null; // the readout a visitor asks for with "fps" in the address
+    // The look may change while the lens is shown: the visitor chooses, or the device gives part of it up.
+    this.stopLook = stage.look.onChange(() => {
+      if (!this.active) return;
+      this.light();
+      this.onChrome?.();
+    });
     this.fill = new THREE.DirectionalLight(0xffffff, 0.7);
     this.fill.position.set(-70, 25, -40);
     this.root.add(this.fill);
     // The species the scene holds; the page shows one at a time (schema/SPECIES.md).
     this.list = model.raw.species || [];
     this.species = null;
+    // What flows in the cell: shown for a chosen part, or all of it with the Flux switch (layers/cellflux.js).
+    this.flux = new CellFlux(this);
     this.setSpecies(defaultSpecies(model.raw));
   }
 
@@ -238,17 +355,32 @@ export class CellLens {
       if (said[entity.id]?.place === "absent") this.absent.set(entity.id, said[entity.id].why);
       else if (entity.scale !== "cell" && !this.levels[entity.scale]) this.absent.set(entity.id, further);
     }
+    // Drawn at a structure the cell does not hold (a nucleus, a Golgi), where its file says nothing of it: cell_structures.js.
+    for (const [id, why] of structureAbsence(this.model.ofKind("capability"), species)) if (!this.absent.has(id)) this.absent.set(id, why);
     for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
+  }
+
+  /**
+   * Whether a part of the cell is drawn for the species shown. A part that the scene leaves
+   * out of the picture for now is not, even as scenery; nor is one whose capability has no
+   * place in the species. A part with no capability at all is scenery, and is drawn.
+   */
+  draws(part) {
+    if (this.leftOut.has(part)) return false;
+    const entity = this.capabilityByPart.get(part);
+    return !entity || !this.absent.has(entity.id);
   }
 
   /** Takes down what was drawn for the species shown before. */
   clear() {
+    this.flux.clear();
     for (const zone of this.zones) {
       this.root.remove(zone.root);
       disposeTree(zone.root);
     }
     this.zones = [];
     this.byEntity.clear();
+    this.sceneryLooks.clear();
   }
 
   // ------------------------------------------------------------ building
@@ -271,15 +403,22 @@ export class CellLens {
         return this.bind(entity && this.absent.has(entity.id) ? null : entity, zone, anchor, entity ? null : name);
       },
       scale: (id, anchor) => this.bind(this.model.get(id), zone, anchor, id),
+      // Whether the scene has a capability drawn at this part (a scene made before a part was added has none).
+      known: (name) => this.capabilityByPart.has(name),
       neutral: (options = {}) => {
         const material = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0, transparent: true, side: options.side ?? THREE.FrontSide, depthWrite: options.depthWrite ?? false });
-        if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
+        // Scenery takes the resting look as parts do: light through what is thin, a texture where one is asked for.
+        if (options.thin || options.texture) enrich(material, this.stage.numbers, { rim: 0.2, alphaRim: options.glass || 0, thin: options.thin || 0, texture: options.texture || null, unit: zone.root.scale.x });
+        else if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
+        if (options.drift) jostle(material, this.stage.numbers, { reach: options.drift });
+        if (options.contact === false) material.userData.noContact = true; // solid scenery that stays out of contact shade
         if (options.clip) material.clippingPlanes = zone.cutPlanes;
         return this.neutral(zone, material, options);
       },
-      neutralPoints: ({ size = 1.4, opacity = 0.6 } = {}) => {
+      neutralPoints: ({ size = 1.4, opacity = 0.6, drift = 0 } = {}) => {
         const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, depthWrite: false });
         material.userData = { dust: true };
+        if (drift) jostle(material, this.stage.numbers, { reach: drift });
         return this.neutral(zone, material, { opacity });
       },
       neutralLine: (options = {}) =>
@@ -288,10 +427,18 @@ export class CellLens {
         object.userData.unpickable = true;
         (zoneName ? this.zones.find((item) => item.name === zoneName) : zone).root.add(object);
       },
+      // Scenery that can be chosen (cell_scenery.js): no capability stands behind it, and the lens describes it by this id.
+      scenery: (object, id) => {
+        object.userData.pick = id;
+        if (!this.sceneryLooks.has(id)) this.sceneryLooks.set(id, new Set());
+        object.traverse((item) => item.material && this.sceneryLooks.get(id).add(item.material));
+        zone.root.add(object);
+      },
       sprite: (part, text, position, size) => {
         const sprite = glyphSprite(text, "#ffffff", size);
         sprite.position.copy(position);
         sprite.userData.unpickable = true;
+        sprite.material.toneMapped = false; // a mark, in the page's own ink
         this.neutral(part.zone, sprite.material, { opacity: 0.85, colour: "fg" });
         part.add(sprite);
       },
@@ -302,10 +449,7 @@ export class CellLens {
     const species = this.species, u = this.u;
     const notesOf = (level) => (level?.notes || []).map((item) => (typeof item === "string" ? { text: item } : item));
     // The cell, in each size mode it is drawn in. It is built in its own frame and scaled to its size.
-    const has = (part) => {
-      const entity = this.capabilityByPart.get(part);
-      return !entity || !this.absent.has(entity.id);
-    };
+    const has = (part) => this.draws(part);
     const cell = { shape: this.levels.cell.shape, parts: species.cell.parts || {}, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
     const toWorld = (zones) => {
       for (const zone of zones) for (const part of zone.parts) part.anchor?.multiplyScalar(u);
@@ -324,7 +468,7 @@ export class CellLens {
     if (tissue) {
       const zone = this.zone("tissue", null, u);
       const rings = tissue.shape.rings, height = this.cells[this.modes[0]].frame.top * 2;
-      this.sheet = buildTissue(this.context(zone), { rings, height, beyond: tissue.shape.beyond ?? [[rings + 2, 0.34], [rings + 4, 0.2], [rings + 5, 0.1]], notes: notesOf(tissue) });
+      this.sheet = buildTissue(this.context(zone), { rings, height, beyond: tissue.shape.beyond ?? [[rings + 2, 0.34], [rings + 4, 0.2], [rings + 5, 0.1]], notes: notesOf(tissue), sides: cell.shape.kind === "prism" ? cell.shape.sides : 6 });
       this.sheet.height = height;
       toWorld([zone]);
     }
@@ -340,6 +484,7 @@ export class CellLens {
     if (species.no_further_levels && !tissue && !this.outlines.organ && !this.outlines.organism) this.zone("beyond");
     this.stops = Object.fromEntries(this.modes.map((mode) => [mode, this.makeStops(mode)]));
     this.setRanges();
+    this.flux.build();
   }
 
   bind(entity, zone, anchor, missing) {
@@ -352,8 +497,12 @@ export class CellLens {
     return part;
   }
 
-  neutral(zone, material, { opacity = 0.5, colour = "ghost" } = {}) {
-    material.userData = { ...material.userData, base: opacity, colour };
+  neutral(zone, material, { opacity = 0.5, colour = "ghost", natural = null } = {}) {
+    // `natural` names the colour a piece of scenery has in life (a chloroplast's green). It wears it
+    // where the cell is coloured by kind, and the neutral colour where colour shows status.
+    material.userData = { ...material.userData, base: opacity, colour, natural };
+    // Scenery in the page's own ink (outlines, marks) stays out of filmic light; glass takes it with the parts.
+    material.toneMapped = material.isMeshStandardMaterial === true;
     material.opacity = opacity;
     zone.neutrals.push(material);
     return material;
@@ -371,7 +520,8 @@ export class CellLens {
     ];
     if (this.sheet) {
       const extent = this.sheet.extent;
-      stops.push({ id: "tissue", level: "tissue", zone: "tissue", anchor: new THREE.Vector3(0, this.sheet.height * 2.6, -extent * 0.5).multiplyScalar(u), size: [extent * 1.42 * u, extent * 1.0 * u], target: new THREE.Vector3(0, -6, 0).multiplyScalar(u), azimuth: 0.55, polar: 0.86 });
+      const spread = this.sheet.spread; // a sheet of squares is wider from corner to corner than a sheet of sixes
+      stops.push({ id: "tissue", level: "tissue", zone: "tissue", anchor: new THREE.Vector3(0, this.sheet.height * 2.6, -extent * 0.5).multiplyScalar(u), size: [extent * 1.42 * spread * u, extent * 1.0 * spread * u], target: new THREE.Vector3(0, -6, 0).multiplyScalar(u), azimuth: 0.55, polar: 0.86 });
     }
     // The organ with its surroundings and the sheet's ring in front; then the whole body. Both
     // are seen at a slant, so they have depth. Their frames are as tall as a wide screen needs,
@@ -421,7 +571,9 @@ export class CellLens {
     this.ranges = ranges;
     // The camera may go out as far as the largest level needs, and a little beyond. A very long
     // cell is framed at its middle, where its parts are; zooming out shows the whole of it.
-    this.maxDistance = Math.max(...stops.map((stop) => stop.size[0]), this.cells[this.modes[0]].frame.long * 1.3 * u) * 4;
+    // A thread that stands out from the cell may be many times its length: the cell stays framed
+    // as it is, and the camera may go out until the whole of the longest thread is in the picture.
+    this.maxDistance = Math.max(Math.max(...stops.map((stop) => stop.size[0]), this.cells[this.modes[0]].frame.long * 1.3 * u) * 4, (this.cells[this.modes[0]].reach || 0) * 3.5 * u);
   }
 
   /** The camera view that frames a stop on the current screen. */
@@ -445,6 +597,7 @@ export class CellLens {
 
   has(id) {
     if (this.species.id && id === `species:${this.species.id}`) return true;
+    if (this.sceneryItem(id) || this.flux.has(id)) return true;
     return this.model.get(id)?.group === "biology" && !this.absent.has(id);
   }
 
@@ -454,13 +607,16 @@ export class CellLens {
    */
   describe(id) {
     const species = this.species;
-    if (!species.id || id !== `species:${species.id}`) return null;
     const sources = species.sources || {};
     const links = (keys) =>
       (keys || [])
         .map((key) => sources[key])
         .filter(Boolean)
         .map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+    const scenery = this.sceneryItem(id);
+    if (scenery) return describeScenery(scenery, species, links);
+    if (this.flux.has(id)) return this.flux.describe(id);
+    if (!species.id || id !== `species:${species.id}`) return null;
     const absent = [...this.absent].map(([part, why]) => ({ entity: this.model.get(part), why })).filter((item) => item.entity?.kind === "capability");
     const drawn = LEVELS.filter(({ id: level }) => this.levels[level]).map(({ id: level, entity }) => ({ level: this.levels[level], entity: this.model.get(entity) }));
     return {
@@ -480,6 +636,12 @@ export class CellLens {
     };
   }
 
+  /** A piece of the species' own scenery that can be chosen (a thread, its foot, a chloroplast), as the size mode shown drew it. */
+  sceneryItem(id) {
+    if (typeof id !== "string" || !id.startsWith("scenery:")) return null;
+    return (this.cells?.[this.sizeMode]?.scenery || []).find((item) => item.id === id) || null;
+  }
+
   entities() {
     return this.model.entities.filter((entity) => entity.group === "biology" && !this.absent.has(entity.id)).map((entity) => this.inSpecies(entity));
   }
@@ -493,7 +655,23 @@ export class CellLens {
       return { ...entity, label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") };
     }
     const said = this.species.cell.capabilities?.[entity.id];
-    return said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity;
+    // With what flows through the part, and on what basis it is drawn (layers/cellflux.js).
+    return this.flux.inPanel(this.structural(said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity));
+  }
+
+  /**
+   * A part with what the picture drew of it, where the picture chose a size or a number
+   * (cell_structures.js), and a door into the Protein atlas where the species' own proteins
+   * can show its set: a shelf of its membrane, or a set its marks name.
+   */
+  structural(entity) {
+    if (entity?.kind !== "capability") return entity;
+    const summary = (this.model.raw.proteins?.shelves || []).find((item) => item.id === this.species.id) || null;
+    const doors = structureDoors(entity, this.species, summary);
+    const drawn = this.cells?.[this.sizeMode]?.structures?.[entity.part];
+    if (!doors.length && !drawn) return entity;
+    const sections = drawn ? [...(entity.sections || []), { title: "As drawn", items: drawn.map(([label, text]) => ({ label, lines: [text] })) }] : entity.sections;
+    return { ...entity, doors: [...(entity.doors || []), ...doors], ...(sections ? { sections } : {}) };
   }
 
   sections() {
@@ -520,10 +698,12 @@ export class CellLens {
       railNote: LEVELS.every(({ id }) => this.levels[id]) ? null : species.no_further_levels || null,
       together: (this.model.raw.model_groups || []).map((group) => ({ id: group.id, label: group.label, title: group.description })),
       togetherActive: this.together,
+      flux: this.flux.legend(), // the Flux switch and what it shows, for the legend
       view: {
         colour: this.colourBy,
         size: this.sizeMode,
         sizes: this.modes,
+        look: this.lookChrome(),
         across: cellAcross(this.levels.cell.shape),
         species: species.id
           ? {
@@ -573,9 +753,78 @@ export class CellLens {
     stage.sun.castShadow = false;
     stage.sun.position.set(55, 100, 80);
     stage.sun.target.position.set(0, 0, 0);
+    this.dress();
     this.light();
     this.enter();
     this.refresh();
+    if (stage.look.trial) (this.trial ??= new LookTrial(stage)).show();
+  }
+
+  // ------------------------------------------------------------ the look at rest
+
+  /**
+   * Asks the stage for the rich look (core/look.js), as far as it fits what is shown now.
+   * Filmic light is for natural colours: with "Colour: Status" every colour says a status,
+   * so it stays as the legend shows it. Contact shade reaches under a micrometre in a cell
+   * of twenty, and less when the camera is close (never more than about a fortieth of the
+   * picture's height), so that it stays a shade where parts meet and never a haze.
+   */
+  dress() {
+    this.reach = this.reachNow();
+    this.stage.dress({ rich: true, filmic: this.colourBy === "biology", exposure: LOOK.exposure, contact: this.near, reach: this.reach, shade: LOOK.shade });
+  }
+
+  reachNow() {
+    const reach = this.sizeMode === "real" ? LOOK.reachToScale : LOOK.reach;
+    return Math.min(reach * this.u, LOOK.reachOnScreen * this.stage.rig.distance);
+  }
+
+  /** The legend's Flux switch (layers/cellflux.js): all that flows in the cell, or nothing but a chosen part's. */
+  setLayer(id, on) {
+    if (id === FLUX_SWITCH) this.flux.setOn(on);
+  }
+
+  /** How much a looping run is slowed: 1 is true speed. */
+  setSlow(slow) {
+    this.flux.setSlow(slow);
+  }
+
+  /** The page's address named this part: it is chosen as the page opens and shows no flux until the visitor chooses a part or presses the switch. */
+  openedWith(id) {
+    this.flux.hold(id);
+  }
+
+  /** A choice is about to be set that was made through the page: the same part chosen again counts as the visitor's choice. */
+  chosen() {
+    this.flux.release();
+  }
+
+  /** "rich", "plain", or "full": rich, with every effect held on whatever the frame rate. */
+  setLook(word) {
+    if (!this.stage.look.choose(word)) return;
+    this.stage.invalidate();
+    this.onChrome?.();
+  }
+
+  /**
+   * What the page shows of the look beside its switch: the choice, and a few plain lines.
+   * First, in the legend's own word, that what the look adds to surfaces and what it moves
+   * is scenery; then what a device that could not keep up has given up; then that motion
+   * is held still for a visitor who asks for less of it.
+   */
+  lookChrome() {
+    const look = this.stage.look, still = this.stage.decoration.still;
+    const notes = [];
+    if (look.rich) {
+      const scenery = [look.on("texture") ? "surface texture" : null, look.on("drift") && !still ? "the crowd's slow jostling" : null, look.on("shimmer") && !still ? "the membrane's shimmer" : null].filter(Boolean);
+      if (scenery.length) {
+        const list = scenery.length > 1 ? `${scenery.slice(0, -1).join(", ")} and ${scenery.at(-1)}` : scenery[0];
+        notes.push(`${list[0].toUpperCase()}${list.slice(1)} ${scenery.length > 1 ? "are" : "is"} scenery.`);
+      }
+      if (look.says()) notes.push(look.says());
+      if (still && (look.on("drift") || look.on("shimmer"))) notes.push("The crowd and the membrane are held still: this device asks for less motion.");
+    }
+    return { active: look.choice, notes };
   }
 
   /** Puts the camera at the stop the lens stands on, for the species shown, and writes its labels. */
@@ -590,6 +839,9 @@ export class CellLens {
 
   deactivate() {
     this.active = false;
+    this.flux.shine(); // the bloom and the hold on the look's motion go with the view
+    this.trial?.hide();
+    this.stage.dress({ rich: false }); // the other views keep the look they had
     this.stage.scene.remove(this.root);
     this.stage.scene.environment = null;
     this.stage.applyPalette(); // back to the stage's own lighting
@@ -600,9 +852,11 @@ export class CellLens {
   /** This lens's lighting: reflections from its environment, and a little less direct light. */
   light() {
     const { stage } = this;
-    const dark = stage.palette.dark;
-    stage.scene.environment = this.environment;
-    stage.scene.environmentIntensity = dark ? 0.5 : 0.62;
+    const dark = stage.palette.dark, look = stage.look;
+    // Studio reflections: large soft lights to catch, in place of the pale dome.
+    const studio = look.on("reflections") ? (this.studio ??= makeStudio(stage.renderer)) : null;
+    stage.scene.environment = studio || this.environment;
+    stage.scene.environmentIntensity = studio ? (dark ? 0.66 : 0.8) : dark ? 0.5 : 0.62;
     stage.sky.intensity = dark ? 0.95 : 1.2;
     stage.sun.intensity = dark ? 1.45 : 1.2;
     this.fill.intensity = dark ? 0.9 : 0.6;
@@ -627,7 +881,7 @@ export class CellLens {
           id: part.entity.id,
           text: isScale ? this.inSpecies(part.entity).label : part.entity.label,
           anchor: part.anchor,
-          priority: isScale ? 300 : this.model.isBuilt(part.entity) ? 40 : 50,
+          priority: isScale ? 300 : (part.priority ?? (this.model.isBuilt(part.entity) ? 40 : 50)), // a builder may let a name give way (cell_structures.js)
           kind: isScale ? "scale" : "part",
           lift: isScale ? 4 : 9,
           swatch: isScale ? undefined : part.entity.status || "unstated",
@@ -668,6 +922,7 @@ export class CellLens {
     }
     // Past the cell of a species with no further levels: its own sentence, where they would be.
     if (zoneOf("beyond")) note("beyond", { text: this.species.no_further_levels, anchor: new THREE.Vector3(0, 0, R * 1.9 * u), priority: 290 });
+    this.flux.label(labels); // what the picture says of the flux it shows
   }
 
   goToScale(id, immediate = false) {
@@ -706,6 +961,7 @@ export class CellLens {
   /** "biology": each kind of part has its own colour. "status": colour shows status, as in the engine lens. */
   setColourBy(mode) {
     this.colourBy = mode === "status" ? "status" : "biology";
+    if (this.active) this.dress(); // filmic light is for natural colours only
     this.applyPalette(this.stage.palette);
     this.onChrome?.();
   }
@@ -746,6 +1002,12 @@ export class CellLens {
         }
       }
     }
+    // Scenery that is chosen or under the pointer lights up a little, in its own neutral colour.
+    for (const [id, materials] of this.sceneryLooks) {
+      const hot = id === this.selected || id === this.hovered;
+      for (const material of materials) material.emissive?.copy(material.color).multiplyScalar(hot ? 0.55 : 0);
+    }
+    this.flux.refresh(); // a chosen part shows its flux
     this.stage.invalidate();
   }
 
@@ -807,6 +1069,16 @@ export class CellLens {
       this.activeStop = nearest;
       this.onChrome?.();
     }
+    // Contact shade is worked out only while something solid is near enough to show it, and its
+    // reach follows the camera when it comes close.
+    if (this.active) {
+      const near = this.zones.some((zone) => zone.name !== "organ" && zone.name !== "organism" && zone.name !== "beyond" && zone.fade > 0.02);
+      const reach = this.reachNow();
+      if (near !== this.near || Math.abs(reach - this.reach) > 0.04 * this.reach) {
+        this.near = near;
+        this.dress();
+      }
+    }
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
     const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth({ x: rig.target.x / u, z: rig.target.z / u }));
     rig.limits.minDistance = (R + 6 + (0.03 - R - 6) * atEdge) * u;
@@ -815,36 +1087,55 @@ export class CellLens {
 
   update(dt) {
     const changed = this.fades();
+    const flowing = this.flux.frame(); // beads keep their own time
     const near = this.zones.some((zone) => zone.mode === this.sizeMode && zone.fade > 0.02);
-    if (!near) return changed;
+    if (!near) return changed || flowing;
     if (this.stage.reducedMotion) {
       this.animate(0.35);
       return changed;
     }
     this.clock += dt / 1000;
-    this.animate(this.clock);
+    // The cell's own tokens keep a clock of their own: it runs at rest, and holds while any flux shows or the picture
+    // is a still one, so that nothing jumps when a part is chosen and they move on from where they stood.
+    this.resting ??= 0.35;
+    if (!this.flux.flowing && !this.flux.still()) this.resting += dt / 1000;
+    this.animate(this.clock, this.resting);
     return true;
   }
 
-  /** Small motions that say what a part does: water crossing, signals leaving, ions through a channel. */
-  animate(time) {
+  /**
+   * The drops where water crosses, the signals that leave and the ions in the close-up's channel
+   * are the bodies of their parts, and at rest they move as they always did (the user, 16
+   * November 2026: "bring motion back"). Their motion is the picture's own, not a measured
+   * flow, and the Flux legend says so (layers/cellflux.js). They stand where they stood for a
+   * visitor who asked for less motion, and hold still while any flux shows; while the flux of
+   * their part shows they give way to its beads, which are a layer's: drawn out of the look,
+   * marked to glow, and holding the look's own motion still. The cages turn in place. The look's
+   * motion is not here: the crowd's drift and the membrane's shimmer live in the materials
+   * (core/materials.js) and have no direction.
+   */
+  animate(time, resting = time) {
     const cell = this.cells[this.sizeMode];
+    const rest = resting, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
     for (const stream of cell.streams) {
       stream.drops.forEach((drop, index) => {
-        const t = (time * 0.2 + index / stream.drops.length) % 1;
+        drop.visible = water;
+        const t = (rest * 0.2 + index / stream.drops.length) % 1;
         const offset = stream.inward ? stream.reach - t * stream.reach * 1.9 : -stream.reach * 0.9 + t * stream.reach * 1.9;
         drop.position.copy(stream.at(offset));
         drop.scale.setScalar(0.55 + 0.45 * Math.sin(Math.PI * t));
       });
     }
     cell.signals.forEach((bead, index) => {
-      const t = (time * 0.08 + index / cell.signals.length) % 1;
+      bead.visible = leaving;
+      const t = (rest * 0.08 + index / cell.signals.length) % 1;
       bead.position.copy(cell.signalPath(t));
       bead.scale.setScalar(0.5 + 0.7 * Math.sin(Math.PI * Math.min(1, t * 1.15)));
     });
     cell.cages.forEach((cage, index) => cage.rotation.set(time * 0.22 + index, time * 0.35 + index * 2, 0));
     cell.molecule.ions.forEach((ion, index) => {
-      const t = (time * 0.3 + index / cell.molecule.ions.length) % 1;
+      ion.visible = crossing;
+      const t = (rest * 0.3 + index / cell.molecule.ions.length) % 1;
       ion.position.copy(cell.molecule.ionPath(t));
     });
   }
@@ -853,7 +1144,8 @@ export class CellLens {
     for (const zone of this.zones) {
       for (const part of zone.parts) part.colour(palette);
       for (const material of zone.neutrals) {
-        material.color.set(palette[material.userData.colour] || palette.ghost);
+        const natural = this.colourBy === "biology" ? material.userData.natural : null;
+        material.color.set(palette[natural || material.userData.colour] || palette.ghost);
         material.userData.rim?.uRimColor.value.copy(material.color).lerp(WHITE, 0.5);
       }
     }
@@ -863,7 +1155,11 @@ export class CellLens {
   }
 
   dispose() {
+    this.flux.dispose();
+    this.stopLook();
+    this.trial?.dispose();
     disposeTree(this.root);
     this.environment?.dispose();
+    this.studio?.dispose();
   }
 }

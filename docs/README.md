@@ -9,6 +9,10 @@ the [project README](../README.md) gives the short feature overview.
 | Guide | What it explains |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | State ownership, numerical execution, experiments, checkpoints and outputs |
+| [Inner model design](INNER_MODEL_V4_DESIGN.md) | D172's one modular inner model (`resolved_pump_tissue@3`): declared laws, dispatch per declared structure, kinds and the results gate. Landed on 16 November 2026 |
+| [Scoped composition (door S)](SCOPED_COMPOSITION_DESIGN.md) | How operators change and read slots of one view field, admitted per slot and merged in declared order. Landed with D172's round |
+| [Module system design](MODULE_SYSTEM_DESIGN.md) | External and contributed modules: one registration path, a conformance kit and stages set by real consumers. Proposed, with its five decisions made by the user (D185) |
+| [Run view design](RUN_VIEW_DESIGN.md) | The `view.json` record that makes every run visualizable (D154). Proposed; its writer is built on a development branch |
 | [Current plan](CURRENT_PLAN.md) | The current order, adopted 12 November 2026 (D145): gates and their completion evidence, after two architecture reviews |
 | [Composite tissue model](PUMP_COMPOSITE.md) | `resolved_pump_composite@1`: `@3`'s step plus declared operators (water, symport, replacement), its contract and its bitwise guards |
 | [Composite v2 design](PUMP_COMPOSITE_V2_DESIGN.md) | Reviewed design before code: declared energy roles, observation ownership, cross-operator writes, membrane state (S2), current injection, the L4 agreement protocol |
@@ -21,9 +25,18 @@ the [project README](../README.md) gives the short feature overview.
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
 | [E07-v1 renewal-stage design](E07_V1_DESIGN.md) | Registered by the lead on 13 November 2026: donor copies with state-blind donors, an isolated threshold-finding set, the copy-only null, and composite v2's decision 4 for donor copies |
-| [Secreted-species transport design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) | Accepted design (D150): secreted species as rows of @3's one inventory, moved by @3's faces, with turnover and exchange operators; version 1 code in progress |
-| [Shared-inventory reactions design](SHARED_INVENTORY_REACTIONS_DESIGN.md) | Accepted 14 November 2026 (D152): local reactions on @3's species rows, with exact energy bookings and MG0c's Turing qualification; code follows D150 v1 |
+| [Secreted-species transport design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) | Accepted design (D150): secreted species as rows of @3's one inventory, moved by @3's faces, with turnover and exchange operators; version 1 landed on 14 November and is numerically qualified for transport, decay and clearance |
+| [Shared-inventory reactions design](SHARED_INVENTORY_REACTIONS_DESIGN.md) | Accepted 14 November 2026 (D152): local reactions on @3's species rows, with exact energy bookings and MG0c's Turing qualification; its operator, `local_species_reactions@1`, is numerically qualified within MG0c's scope (15 November, CPU only) |
 | [Feature requests](FEATURE_REQUESTS.md) | Requested engine features with priority and status. FR-1, a closed internal compartment on the shared inventory, is high priority (D157) |
+| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (v1.1 and v1.2 of refusals 4 and 5 on fr45-next) |
+| [Site occupancy design](SITE_OCCUPANCY_DESIGN.md) | FR-3's binding to sites (`site_occupancy@1`) |
+| [Bath schedule design](BATH_SCHEDULE_DESIGN.md) | Scheduled changes of bath composition |
+| [Inventory coupling design](INVENTORY_COUPLING_DESIGN.md) | Coupling out of the shared inventory (D155, D156) |
+| [Compartment pH and transfer design](COMPARTMENT_PH_TRANSFER_DESIGN.md) | FR-4's compartment acidification and FR-5's transfer across a damaged membrane |
+| [Excitable tissue design](EXCITABLE_TISSUE_DESIGN.md) | Track E: conduction in excitable tissue (D155, D170) |
+| [Human cardiac laws design](HUMAN_CARDIAC_LAWS_DESIGN.md) | The human ventricular law set (D183, D184): proposed, nothing built |
+| [Syn3A minimal-cell track](SYN3A_MINIMAL_CELL_TRACK.md) | JCVI-syn3A as the first whole cell: evidence audit and probes, no engine code |
+| [Packed GPU execution design](PACKED_GPU_EXECUTION_DESIGN.md) | Packing independent worlds on one GPU, and its qualification criterion |
 | [E15 pattern-recovery experiment path](EXPERIMENT_PATH_PATTERN_RECOVERY.md) | Backlog, not active (13 November 2026): the engine features needed to test which layers restore a pattern after damage rather than only generating it, and a version 0 as E07-v2 arms |
 | [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |
 | [Protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md) | Path to protein identities linked to atlases (UniProt, Human Protein Atlas, PDB, Reactome) |

@@ -1,10 +1,13 @@
 # The inner model made modular, in place (design)
 
-**Status: in implementation (D176, 15 November 2026), on `integration-d172` from tag
-`d172-base-2026-11-15` (44227075). Proposed 14–15 November; revised for D172, D174 and D176.**
+**Status: landed on main on 16 November 2026** (merge ab267c39 of candidate 3c10b833, tag
+`d172-landed-2026-11-16`), after the integrated gate; the records are in PROGRESS. **It was built
+(D176, from 15 November) on `integration-d172` from tag `d172-base-2026-11-15` (44227075).
+Proposed 14–15 November; revised for D172, D174 and D176.**
 - **D176, in force:** F2 fuel; FR-4's first case on maintained fuel; the summation order chosen by
   a measured comparison (§10.6); every affected registered protocol re-run on the integrated
-  candidate, E07 included; the name kept; and eight design corrections, entered where they apply
+  candidate, E07 included (D181 later held E07-v1's re-run, its worlds covered by the results
+  gate); the name kept; and eight design corrections, entered where they apply
   (§3, §8, §10, §15). The dependency table and the critical path, refreshed against main f791294,
   are §15.6. The interface the streams build against is §7.4.
 - **D172, the user:** "lets just have one model for now, we don't need backwards compatbility at
@@ -50,7 +53,8 @@
      - Through an action potential the channel gates move too, by up to 36 units in the last
        place.
      - **So R re-runs every registered protocol in full,** on the integrated candidate, E07 included
-       (D176, item 4). Door S's merge (A6) is still unprobed.
+       (D176, item 4). Door S's merge (A6) is still unprobed. *At the landing:* D181 held E07-v1's
+       re-run, and its worlds were covered by the results gate instead.
 4. **R is accepted by results, not by identical programs** (§3).
    - A named list of required scientific results must actually execute and match.
    - Every existing world gives the same CPU results.
@@ -77,8 +81,9 @@
 9. **The name** (§6). **Decided (D176): kept,** `resolved_pump_tissue@3`, with the snapshot, tag
    and results-gate provenance.
 10. **When** (§15.5, refreshed). MG0c and Track R are judged, and main is tagged
-    `d172-base-2026-11-15`. R is built now on `integration-d172` and lands once, after the
-    integrated gate (§3). Track E's M2 is judged wholly before or wholly after the landing.
+    `d172-base-2026-11-15`. R was built on `integration-d172` and landed once, on 16 November,
+    after the integrated gate (§3). Track E's M2 is judged wholly before or wholly after the
+    landing: after, since it was not judged before it.
 11. **What R must contain, and what waits** (§15). Three lists:
     - **(a) What R needs to land:** the declarations with build-time selection, the operators that
       depend on today's tables, the results gate, the GPU audit's tests, one added law (the
@@ -1720,6 +1725,124 @@ active), with check_onsets' refusal kept.
   early and late, starts at its declared gate whatever the padding drifted to; the write is idle in
   today's worlds; the refusal stays.
 
+#### (p) Ledger lists read from the implementation object (item 5; designed 16 November 2026, before code)
+
+**What it must do.**
+- A model's ledgers are today the shared literals of @1, `surface_pump`:
+  - `LEDGERS`, ten names in `balances()` order;
+  - `LEDGER_DIAGNOSTICS`, their residual diagnostics;
+  - `ledger_limits`, their bounds;
+  - `ENERGY_RTOL`, the energy ledger's tolerance by solver.
+  `DEVICE_CHECKS` and `DEVICE_DIAGNOSTICS` are built from these lists.
+- The shared check paths read these as module globals:
+  - `surface_pump.checked_rows`, the host check of @1, @2, @3 and the composite. It reads
+    `LEDGER_DIAGNOSTICS`, `ledger_limits` and `ENERGY_RTOL`, and takes `limits[5]` for the
+    global-charge ratio.
+  - `surface_pump_checks.row_checks`, the device check, which takes `bounds[5]`.
+  - @2's and @3's `DEVICE_CHECKS = first.DEVICE_CHECKS`, and `limits=first.ledger_limits` in
+    their `device_checks`.
+  - @3's `channel_magnitudes`, which takes `first.LEDGERS.index(...)`.
+- The composite already reads `inner.LEDGERS`, `LEDGER_DIAGNOSTICS`, `ENERGY_RTOL` and
+  `ledger_limits` from its inner object. Its host check, though, calls `inner.checked_rows`, which
+  reads @1's globals, and checks its operators' ledgers after that.
+- (k) kept the literals for D176's round: reading them from the object changes @1's and @2's
+  shared check code, so it is a D148 change, made after the landing.
+- **The goal ((k)):** every model object exposes its ledger lists, and the shared paths read the
+  lists from the object they are given. A later kind with a new conserved quantity then adds a
+  ledger to its structure's object by declaration, and no check function changes.
+
+**The design.**
+1. **The ledger protocol: four names on every model object.** They are `LEDGERS`,
+   `LEDGER_DIAGNOSTICS`, `ledger_limits` and `ENERGY_RTOL`.
+   - @1's module defines them. @2's and @3's modules carry `ENERGY_RTOL` from @1 and gain the
+     other three as aliases of @1's objects.
+   - @3's `InnerImplementation` sets them from its structure (`ledger_lists(structure)`). Today
+     these are @1's own objects, so `impl.LEDGERS is surface_pump.LEDGERS`.
+   - The adapter forwards them from its implementation.
+   - The composite's object keeps its own: inner's, then its operators'.
+   - No new type is needed: the protocol is just these names, the ones the composite already
+     reads from its inner object. The two ratio diagnostics keep their ledgers by name, "energy"
+     and "global_charge".
+2. **The shared paths take the object.** The new keyword is `ledgers`:
+   `checked_rows(..., ledgers=None)` and `row_checks(..., ledgers=None)`. They read the diagnostic
+   names, the bounds function and the tolerance from it. `None` means @1's module, so every
+   caller that passes nothing makes today's call.
+   - `limits[5]` (host) and `bounds[5]` (device) become the position of "global_charge" in the
+     object's `LEDGERS`. That is a Python-level index, so no program changes.
+3. **@3 reads its own object.**
+   - `check_values` and `device_checks` pass `ledgers=` the structure's object.
+   - `channel_magnitudes` takes its indices from the structure's `LEDGERS`.
+   - `DEVICE_CHECKS` and `DEVICE_DIAGNOSTICS` become the object's attributes, built from its
+     lists: ("domain", *LEDGERS, "dissipation") and the max_ names.
+4. **The composite** passes `ledgers=self.inner` to `inner.checked_rows`, so the inner lists come
+   from its inner object, not from @1's module. Its operators' ledgers stay its own, checked after
+   as today.
+5. **Unchanged.**
+   - The lists' values and order: every object's lists are today's tuples, and the same objects.
+   - `device_check_constants`, which reads `ENERGY_RTOL[solver]` (the same table everywhere).
+   - The validation tools that read `first.LEDGERS` (@1's lists stay where they are).
+   - The in-place guard's quiet host check (`inplace_fix_guard._quiet_host_checks`) gains the
+     `ledgers` keyword.
+
+**What a later kind declares (the seam this prepares; a sketch, not built in this item).**
+- A `ledgers(declaration)` hook returns ((ledger, diagnostic), ...).
+- The kind's `ledger_terms` gives each ledger's value under its own name, beside today's roles.
+- A `ledger_bounds(row, p, tol, steps, *, xp)` hook returns their bounds.
+- The structure's object then appends these to its lists (`ledger_lists`), `balances` to its
+  values and `ledger_limits` to its bounds. `checked_rows`, `row_checks`, `DEVICE_CHECKS` and the
+  windows' failure codes take them with no edit.
+- **Option A (recommended):** this item builds the protocol and the reads only. The hook follows
+  with its first consumer, a kind with a conserved quantity that is not one of today's ten.
+- **Option B:** the hook now, with a planted kind under `tests.` that declares a neutral conserved
+  quantity and its ledger. This costs about 0.5 day more, and the hook's shape would be fixed
+  before any real consumer exists.
+
+**The lead's ruling (16 November 2026): Option A.**
+- Build the protocol and the reads now. The kind's own ledger hook waits for its first real
+  consumer: probably finite fuel with the transporter's fuel rows, queued right after the landing.
+  Its shape is then fixed against real needs.
+- This follows D180's rule of staging by consumer. The sketch above is the finite-fuel owner's
+  starting point: `ledgers(declaration)`, values under their own names in `ledger_terms`, and
+  `ledger_bounds`.
+
+**As built (core-next):**
+- `surface_pump.checked_rows(..., ledgers=None)` and `surface_pump_checks.row_checks(...,
+  ledgers=None)` read the object's lists. The global-charge bound is found by name in its
+  `LEDGERS`, and `None` is @1's module, today's call.
+- @2's and @3's modules alias @1's `LEDGERS`, `LEDGER_DIAGNOSTICS` and `ledger_limits` beside
+  `ENERGY_RTOL`. @2 passes its own module.
+- `surface_pump_v3.ledger_lists(structure)` gives the four names, with `DEVICE_CHECKS` and
+  `DEVICE_DIAGNOSTICS`; today these are @1's own objects for every structure.
+  - The implementation object carries them, and the adapter forwards them.
+  - `check_values`, `device_checks` and `channel_magnitudes` read them.
+- The composite passes its inner adapter to `inner.checked_rows` and itself to `row_checks`.
+- The in-place guard's quiet host check takes `ledgers`.
+- The tests are in `tests/unit/test_ledger_lists.py`.
+
+**The D148 case.** This is an in-place change to shared qualified code, `checked_rows` and
+`row_checks`. Nothing should change, so the criteria are checked as "identical":
+1. Programs: crossrev, all eight sets, and the kinds pair, against 82d3d67a's saved outputs, the
+   head after the raw-sum fix (3c10b833's differ by item 4): every jaxpr, binding and constant
+   identical.
+2. Records:
+   - `validation/tissue/inplace_fix_guard.py` dump at 82d3d67a and at the change, then
+     compare. The parts are `pump` (@1's and @2's registered worlds, RK4 and IMEX), `base`,
+     `injection`, `qualification`, `dumps` and `cohorts`. Every state field, observation, `max_`
+     diagnostic and device row-check result must be identical, the ledger diagnostics included.
+   - G1, bitwise 113 of 113 against c1's merged save.
+3. Verdicts and registered numbers: unchanged, as a consequence of 2. There is no ledger-level
+   change to list.
+4. The crossrev baseline needs no renewal, since nothing differs.
+
+**Acceptance (tests).**
+- Each model object (@1, @2, @3 with and without kinds, a composite) exposes the four names, with
+  values equal to today's tuples.
+- A planted object (test-local) with one extra ledger: `checked_rows` and `row_checks` check it
+  against its own bound, report its own diagnostic, and fail with its name. They read the object,
+  not @1's literals.
+- `ledgers=None` is today's result, bit for bit, on @1's and @3's test worlds, host and device.
+- Tiers 1+2 pass against the record.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
@@ -1775,8 +1898,11 @@ active), with check_onsets' refusal kept.
         small pool c).
       - So version 1 fails loudly if it ever happens. If real runs show refusals, R3 is revisited
         with that evidence;
-    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ about 16 × eps × Σ|terms|
-      (`increment_terms`, the references' rounding scale).
+    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ 16 × eps × (own + inputs).
+      Here own is the row's own terms, |G0| + |G1| + Σ|μ̄ m|, and inputs is their inputs'
+      rounding, |μ̄| (|n0| + |n1| + |Δ0| + |Δ1| + Σ(|T0| + |T1|)). This was amended on 16
+      November 2026; the analysis is below ("The raw-sum bound's inputs"). The bound as first
+      built had own alone, so FR-5's arm R was refused at rounding.
       - At the probe's case-4 magnitudes that is about 1.3e-14 pJ. The honest sum, 7.5e-15 pJ,
         passes it, and a planted sign flip, 1.84e-3 pJ, fails it.
       - The factor is confirmed by a test at implementation;
@@ -1812,6 +1938,88 @@ active), with check_onsets' refusal kept.
   another route moves keeps the tableau's booking bitwise; binding refuses a charged species and
   a carrying host. On the device and host path a refusal is the step's (the booking's validity);
   the reason's text is the module's `NEGATIVE_SHARE`.
+- **The raw-sum bound's inputs (16 November 2026; FR-5's arm R; the lead's ruling, derived here
+  before code).**
+  - **What failed.** FR-5's arm R starts from the engine's 1800 s state (fr45-next d9323e1a,
+    `fr45/pipeline/fr5-raw-sum-diag/`). About 1 s into the injury it was refused ("trial/endpoint
+    domain failure"); every other check passed at that state.
+    - Over the release (1.9–4.0 s, 4200 steps), 459 steps exceeded the bound as built, by up to
+      2.80 times.
+    - After the burst the lumen holds about 1.5% of its X. Its stored amount is a small difference
+      of its reference (0.0654 fmol) and its increment (−0.0644 fmol), and the routes' cumulative
+      transfers are of the same size. The bound's own terms, evaluated at the small current
+      amount, fall below the rounding those inputs carry.
+  - **The analysis.** For an exact row (a species at a node) over one step, with u = eps/2:
+    1. **The amounts.** The booking forms n_k = reference + Δ_k (`_amounts`), rounded relative to
+       its result, so |n_k − (reference + Δ_k)| ≤ u|n_k|. The reference does not enter on its
+       own.
+    2. **The accumulators.** The step forms Δ_1 and each exact route's cumulative transfer T_1 by
+       adding the tableau's terms one at a time onto Δ_0 and T_0 (`surface_pump._combine`). Each
+       addition rounds to its running sum.
+       - The last stage of ARS(2,2,2) has q = 2 explicit terms; imex_euler has q = 1.
+       - Its implicit terms are exactly zero at an exact row, because exact routes alone move it,
+         and adding zero is exact.
+       - So the increment's accumulated rounding is at most q·u·max|Δ|, and each route's at most
+         q·u·max|T|.
+    3. **The terms.** Both accumulators add the same stage fluxes: the kind's node changes and its
+       transfer derivative. So their terms agree to about u·Σ|m|, the scatter over several routes
+       and the weights' products.
+    4. **The mismatch.** The recorded net transfer N = Σ ±(T_1 − T_0) and n1 − n0 therefore differ
+       by at most u(|n0| + |n1|) + q·u(max|Δ| + Σ max|T|) + c·u·Σ|m|.
+    5. **The residual.** The divided potential is exact for the stored amounts:
+       μ̄(n1 − n0) = G(n1) − G(n0). So Σ shares − ΔG = μ̄(N − (n1 − n0)) plus the evaluation
+       rounding of μ̄, G and the products. The evaluation rounding is the bound's own terms:
+       |G0| + |G1| + Σ|μ̄ m|, with the u·|n|(|ln c| + 1) of evaluating G covered by
+       |G| + |μ̄||n|.
+    6. **The bound.** |Σ shares − ΔG| ≤ 16 eps [|G0| + |G1| + Σ_i |μ̄ m_i| + |μ̄| (|n0| + |n1| +
+       |Δ0| + |Δ1| + Σ_i (|T_i,0| + |T_i,1|))], where i runs over the exact routes at the row.
+       - 16 eps = 32u, against the 1 + q ≤ 3 roundings the inputs carry. Both ends' magnitudes
+         enter, so the margin is at least 10 times. The factor is unchanged.
+       - Where the inputs are small (a fresh start), the bound is today's.
+  - **Measured on the fix's tree** (d9323e1a with the patch; `core-next-20261116/rawsum/`), over
+    FR-5's arm R release (1.9–4.0 s, 4200 steps, no factor relaxed):
+    - **Ratios:** the derived bound's largest is 0.051, with 0 steps over. The bound as built is
+      exceeded by 459 steps, by up to 2.80. The FR lane's candidate, which keeps a |reference|
+      term, also gives 0.051.
+      - The candidate is looser where the inputs dominate: 0.022 against 0.027 at the step the old
+        bound fails most.
+      - The candidate is not wrong, only not derived: the reference rounds relative to the sum it
+        forms.
+    - **The exact decomposition,** with Fractions of the stored floats:
+      - the amounts' part reaches 0.93 of u(|n0| + |n1|);
+      - the accumulation part reaches 0.89 of its q = 2 ceiling, so two roundings, not one;
+      - |μ̄| times the mismatch accounts for the residual, a median 92% of it.
+    - **The run:** arm R completes its 10 s on the host and vector paths of the development
+      world. Its records match R-transfer as with the factor relaxed: X_L within 3.8e-5 of X's
+      budget, pH within 2.9e-9.
+      - The declared world is not admitted for FR-5 at d9323e1a: FR-1's operator refuses the
+        lumen's charge anchor at binding. That is not the bound.
+  - **The teeth (accepted by the lead, 16 November 2026).**
+    - The bound scales with the stored fields' precision. The smallest unrecorded transfer it
+      refuses at a row is bound/|μ̄|, about 16 eps (|n0| + |n1| + |Δ0| + |Δ1| + Σ(|T0| + |T1|))
+      in fmol. It grows with the increments and cumulative transfers: that is the resolution limit
+      of a cumulative field, not a weakening by choice.
+    - **Its scaling.** The threshold rises in proportion to the cumulative transfer, so roughly
+      with elapsed steps. A route that carries a steady m per step has |T| ≈ K·m after K steps,
+      so the threshold relative to m is about 16 eps × 2K ≈ 7e-15 K. That is about 7e-9 of a
+      step's transfer after 10⁶ steps.
+    - **Measured today:** over FR-5's release it is a median 1.2e-15 fmol, 6.2e-10 of the step's
+      transfer.
+    - In the test's drained pair it is 2e-15 fmol, 6e-10 of the step's transfer. There the minor
+      route's planted sign flip is refused, and so are unrecorded transfers of 1e-6 and 1e-8 of
+      the step's.
+  - **What changes.**
+    - **Programs** (an intended change, accepted): every world that declares
+      `cells.passive_routes@1`, since its `book` traces the bound and exactness is a layout value.
+      That is FR-4's (the proton leak, with no exact route, where the term is masked) and FR-5's.
+      The kinds pair records +32 equations in the checked step of fr4_development, fr4_declared
+      and fr5_t_development, none removed, with rhs, device checks and bindings identical.
+    - **Unaffected:** no G1 world and no crossrev world declares a kind.
+    - **Records:** FR-4's declared world gives the same records, bit for bit.
+  - **Tests** (`tests/unit/test_passive_routes_kind.py`):
+    - 300 honest steps in the drained, large-increment pair are all admitted. At 17a3863b the
+      first of them was refused.
+    - In the same state the planted flip and the unrecorded transfers are refused.
 - **Acceptance, with its first consumer:**
   - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
     with the factor 16 confirmed by a test;
@@ -2528,10 +2736,12 @@ f791294 (15 November).**
 ### 15.5 Order
 
 Refreshed against main f791294 (15 November):
+- **R landed on 16 November** (main ab267c39, tag `d172-landed-2026-11-16`), after the integrated
+  gate (PROGRESS).
 - **R lands after MG0c and Track R's qualification are judged: done.** Both were judged on 15
   November, and both protocols join G2.
-- **Track E's M2 is judged wholly before or wholly after it: still open.** Its protocol is PROPOSED.
-  If it is judged before the landing, it joins G2.
+- **Track E's M2 is judged wholly before or wholly after it: after.** It was not judged before the
+  landing, so it did not join G2. Its protocol is PROPOSED.
 - **Main is tagged just before it: done,** as `d172-base-2026-11-15` (44227075), with the frozen
   snapshot `snapshot-base-44227075`. R is built on `integration-d172` from the tag, and `src/` does
   not land on main until the single landing (D176).

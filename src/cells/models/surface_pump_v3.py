@@ -132,6 +132,11 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
 )
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
+# The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
+# check paths read from the model object (ledger_lists: per structure).
+LEDGERS = first.LEDGERS
+LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
+ledger_limits = first.ledger_limits
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
 # RK4 reference steps keep the resolved channel family's qualified bounds
@@ -1695,8 +1700,9 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
         if kind.ledger_terms is None:
             continue
         terms = kind.ledger_terms(row, p, xp=xp)
+        names = ledger_lists(structure).LEDGERS
         for key, ledger in (("cell", "local"), ("outside", "outside"), ("produced", "total")):
-            index = first.LEDGERS.index(ledger)
+            index = names.index(ledger)
             if key in terms and magnitudes[index] is not None:
                 magnitudes[index] = magnitudes[index] + xp.abs(terms[key])
         # The energy ledger's bound scales with the flows, which take every *_dissipated_energy_pJ
@@ -1722,6 +1728,7 @@ def check_values(state, spec, steps=None, *, structure=None):
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
         steps=steps,
+        ledgers=ledger_lists(structure),
     )
 
 
@@ -1745,6 +1752,19 @@ DEVICE_CHECKS = first.DEVICE_CHECKS
 DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
 device_failure_message = first.device_failure_message
 device_check_constants = first.device_check_constants
+LEDGER_NAMES = ("LEDGERS", "LEDGER_DIAGNOSTICS", "ledger_limits", "ENERGY_RTOL")
+
+
+@cache
+def ledger_lists(structure):
+    """The ledger protocol of a structure (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): LEDGERS,
+    LEDGER_DIAGNOSTICS, ledger_limits and ENERGY_RTOL, which the shared check paths read
+    (surface_pump.checked_rows, surface_pump_checks.row_checks), with DEVICE_CHECKS and
+    DEVICE_DIAGNOSTICS built from them. Every structure has today's: @1's own objects. A kind
+    that declares a ledger of its own will append to them here (the hook, ledgers(declaration),
+    follows its first consumer; §7.4 (p)). None is the module's."""
+    names = LEDGER_NAMES + ("DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
+    return SimpleNamespace(**{name: getattr(first, name) for name in names})
 
 
 def device_balances(state, p, *, structure=None):
@@ -1775,11 +1795,12 @@ def device_checks(previous, row, p, constants, steps, *, structure=None):
         steps,
         domain_valid=domain_valid if structure is None else _bound_checks(structure).domain_valid,
         balances=partial(device_balances, structure=structure) if kinds else device_balances,
-        limits=first.ledger_limits,
+        limits=ledger_lists(structure).ledger_limits,
         magnitudes=partial(channel_magnitudes, structure=structure)
         if kinds
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
+        ledgers=ledger_lists(structure),
     )
 
 
@@ -1947,21 +1968,38 @@ RECORD_LAYERS = MappingProxyType({k: v[2] for k, v in _VIEW_TABLE.items()})
 OBSERVATION_AXES = MappingProxyType({k: v[3] for k, v in _VIEW_TABLE.items() if v[3] is not None})
 ORIENTATION = MappingProxyType({k: v[4] for k, v in _VIEW_TABLE.items() if v[4] is not None})
 VIEW_AXIS_SETS = MappingProxyType({})  # A kind's axis that maps to an existing view set.
+# Records that are residuals of the step's own balances, each with its own tolerance, apart from
+# the physical records (the run view's loop closure measure, FR-11): the field solve's charge
+# residual (CHARGE_ATOL_C + CHARGE_RTOL x scale) and the floating components' current residual
+# (the Newton target or the attainable floor), both held by the step, and the stage energy-rate
+# balance, zero to rounding (§7.4 (m)).
+RECORD_DIAGNOSTICS = ("charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s")
+# {increment field: its reference layout field}: a stored amount is reference + increment.
+RECORD_REFERENCES = MappingProxyType(
+    {
+        "amount_increment": "amount_reference",
+        "extracellular_amount_increment": "extracellular_amount_reference",
+    }
+)
 _VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
+_RECORD_ROLES = ("RECORD_DIAGNOSTICS", "RECORD_REFERENCES")
 
 
 def view_declarations(structure):
     """The run view's declarations for a structure (D154): @3's own, then each declared kind's
-    KindView entries for the fields its structure's types hold, its layers and its axis sets.
-    A structure without kinds gets the module's own objects."""
+    KindView entries for the fields its structure's types hold, its layers and its axis sets, its
+    residual records (RECORD_DIAGNOSTICS) and its increments' references (RECORD_REFERENCES,
+    where the reference is a field of the structure's layout). A structure without kinds gets the
+    module's own objects."""
     kinds = _kinds(structure)
     if not kinds:
-        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS")
+        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
     present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
     merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
     layers, axis_sets = list(VIEW_LAYERS), {}
+    diagnostics, references = list(RECORD_DIAGNOSTICS), dict(RECORD_REFERENCES)
     for kind in kinds:
         view = kind.view
         if view is None:
@@ -1978,8 +2016,19 @@ def view_declarations(structure):
         known = {layer["id"] for layer in layers}
         layers += [MappingProxyType(dict(x)) for x in view.view_layers if x["id"] not in known]
         axis_sets |= dict(view.axis_sets)
+        diagnostics += [k for k in view.record_diagnostics if k in present and k not in diagnostics]
+        references |= {
+            k: v
+            for k, v in view.record_references.items()
+            if k in present and v in types.LAYOUT_TYPE._fields
+        }
     out = {name: MappingProxyType(value) for name, value in merged.items()}
-    return out | dict(VIEW_LAYERS=tuple(layers), VIEW_AXIS_SETS=MappingProxyType(axis_sets))
+    return out | dict(
+        VIEW_LAYERS=tuple(layers),
+        VIEW_AXIS_SETS=MappingProxyType(axis_sets),
+        RECORD_DIAGNOSTICS=tuple(diagnostics),
+        RECORD_REFERENCES=MappingProxyType(references),
+    )
 
 
 # Notes a record carries, in the model's own words (its summary's membrane_transfer_ledger).
@@ -2342,6 +2391,8 @@ class InnerImplementation:
         self.domain_valid.with_control = self.control_domain_valid
         self.batch_signature = structured_batch_signature
         for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
+            setattr(self, name, value)
+        for name, value in vars(ledger_lists(structure)).items():  # The ledger protocol, (p).
             setattr(self, name, value)
         if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
             for name, value in view_declarations(structure).items():

@@ -1,9 +1,12 @@
 # External modules: one assembly path for Cells and independent packages (design)
 
-**Status: PROPOSED, 15 November 2026, for the lead and the advisor. Docs only.** Code read at
+**Status: PROPOSED, 15 November 2026, for the lead and the advisor; §6 decided on 16 November (D185). Docs only.** Code read at
 main 9f60417b, `integration-d172` d732781d and `core-d172` 119ffb74; only main counts as "holds
 today". `file`:N cites main unless a branch is named; §7.4–§15.6 and items such as A7, B1, F3
-and P2 are INNER_MODEL_V4_DESIGN.md's.
+and P2 are INNER_MODEL_V4_DESIGN.md's. D172's round landed on main on 16 November (ab267c39, tag
+`d172-landed-2026-11-16`), so what the Round column names now holds on main, except what it marks
+reserved. Line numbers cited on `integration-d172` and `core-d172` are as read on 15 November, and
+main's line numbers as read at 9f60417b.
 
 **The requirement (the user's, paraphrased).**
 - Cells stays MIT, for broad adoption. Independently maintained packages use, extend and compose
@@ -27,10 +30,10 @@ column cites `integration-d172`); **planned** (staged here); **not designed**.
 
 | Level | Contract on main | Round | External | Closed point; v1 limit |
 | --- | --- | --- | --- | --- |
-| Registration | The `get_model` isinstance chain (`models/registry.py`:139–779; "no dynamic plugins", :1); the `parse_spec` chain on ID strings (`core/specs.py`:1469); the import-time `OPERATORS` dict (`models/operators/__init__.py`:29); `INNER_MODEL_IDS`, `INNERS` (`pump_composite_spec.py`:41; `pump_composite.py`:67) | A build-scoped kind registry (seams 1–4 below) | Kinds: round. Laws, operators: planned | Module-level tables and chains |
+| Registration | The `get_model` isinstance chain (`models/registry.py`:139–779; "no dynamic plugins", :1); the `parse_spec` chain on ID strings (`core/specs.py`:1469); the import-time `OPERATORS` dict (`models/operators/__init__.py`:29); `INNER_MODEL_IDS`, `INNERS` (`pump_composite_spec.py`:41; `pump_composite.py`:67) | A build-scoped kind registry (seams 1–4 below) | Kinds: holds, since the round. Laws, operators: planned | Module-level tables and chains |
 | Definitions, parameters | JSON with exact key sets (`specs.py`:74, :1470); values are data; no organism definition (ARCHITECTURE.md:52) | The species registry (`core/species_registry.py`) | **Holds** for definitions and builders on built-in IDs | — |
 | Laws | Five channel laws in literal tables, all others refused (`surface_pump_v3_spec.py`:53, :113) | Declarations (`inner_laws.py`:132, :171, :183); per-law dispatch; the structure in the compile key | Planned: stage 1 | Module-level tables; codes "next free, never reused" (integration-d172 `inner_laws.py`:6–7); the RK4 bound by law-ID literal (core-d172 `surface_pump_v3.py`:1042); two gates only (:233) |
-| Stateful mechanisms | The operator contract (`contract.py`:103–335), checked at registration (:379) | Kinds: fields and eight hooks (§7.4 (k)); door S; `USES_INNER` | Planned: stage 2 | The composite is cached by law-ID strings (`pump_composite.py`:92–102), with one instance per law (:150). Kinds: rules (a)–(c) |
+| Stateful mechanisms | The operator contract (`contract.py`:103–335), checked at registration (:379) | Kinds: fields and optional hooks (§7.4 (k); 20 in the landed `Kind`); door S; `USES_INNER` | Planned: stage 2 | The composite is cached by law-ID strings (`pump_composite.py`:92–102), with one instance per law (:150). Kinds: rules (a)–(c) |
 | Composite models | One inner model plus ordered operators (`pump_composite_spec.py`:1–27); FR-1's compartments | The compartment identity map (B2) | Not designed; §3 | Nested compartments "not now" (ARCHITECTURE.md:152) |
 | Geometry, connectivity | Topology in the definition; geometry from builders (RUN_VIEW_DESIGN.md §4); vertex mechanics as its own family (`apical_vertex_spec.py`:29) | — | Not designed | Topology changes only through operators |
 | Controls, events | `EVENT`, `EXPERIMENT_KEYS`, `CONTROL_FIELDS`, `CONTROL_FACTORS` (`contract.py`:109–124) | Kinds' `control_values` | Planned: stage 2 | Kinds: rule (d) |
@@ -40,8 +43,9 @@ column cites `integration-d172`); **planned** (staged here); **not designed**.
 | Backends | JAX on CPU or GPU, float64 (`core/devices.py`:22–35) | — | Not designed; §5 | — |
 
 **What the round commits to for modules.** These are the core owner's answers and the lead's
-rulings, relayed on 15 November and now in §7.4 (j)–(k). They are ruled but not yet built: no kind
-module or kind registry exists on `integration-d172`, `core-d172` or `fr45-transporter`.
+rulings, relayed on 15 November and now in §7.4 (j)–(k). They were ruled before any kind module or
+kind registry existed, and they landed with the round on 16 November: the kind registry
+(`core/kind_registry.py`) and three built-in kinds (`models/inner_kinds/`) are on main.
 
 **Seams:**
 1. Core imports no kind module. Every kind, built-in or not, registers through one call into a
@@ -205,14 +209,14 @@ module identity; built-in entries stay IDs, so today's keys hold.
   one ID to different objects never share an executable.
 - JAX's persistent cache (`output_paths.py`:25) keys on the lowered program.
 
-**The record, per module used** (the shape of §6 decision 1's options; pending the user's
-answer, since it changes AGENTS.md's provenance rule): namespace, distribution, version and interfaces; the VCS
+**The record, per module used** (the shape of §6 decision 1's options, which D185 decided as (c);
+AGENTS.md's provenance rule is amended to match): namespace, distribution, version and interfaces; the VCS
 revision and dirty flag where recorded (PEP 610 `direct_url.json`); and its files' SHA-256,
 computed at run time as `source_hashes()` does, with no literals and no per-call layer. It is
 written as `modules` into `manifest.json` (absent when none, like `composition`,
 `io.py`:293–300) and into the checkpoint manifest.
 
-**Loading** (also pending decision 1) refuses a missing or different module, as it refuses changed Cells source
+**Loading** (decision 1, decided by D185) refuses a missing or different module, as it refuses changed Cells source
 (`io.py`:159). D153's record can admit a change. Loading imports nothing.
 
 ### 2.6 The example package, and what Cells changes
@@ -309,6 +313,21 @@ accuracy, validity and performance are qualified apart.
 
 ## 6. Decisions for the user
 
+**Decided by the user on 16 November 2026 (D185):**
+- 1: (c);
+- 2: new physics goes into `src/cells` as modules of its structure. (b) was confirmed first and
+  revised by the user the same day (D185);
+- 3: the conformance kit, where a pass means the kit's checks passed, not that the science is
+  qualified;
+- 4: (a);
+- 5: (b) first.
+
+D185 adds a declarations manifest and a contributor guide with a pull-request template.
+
+Still open: §6.3's question of whether the project lists the modules that pass, and provenance
+for in-tree contributed modules (stage 1's design). AGENTS.md's physics rule stands (D185, item
+3).
+
 1. **Provenance.** AGENTS.md's provenance (Git revision, dirty diff, frozen snapshot) cannot
    cover an out-of-tree module.
    - (a) The recorded identity (§2.5) counts, which changes that rule.
@@ -347,8 +366,8 @@ accuracy, validity and performance are qualified apart.
 
 ## 7. The seams this round must leave open
 
-**Confirmed: the core owner's four answers** (§1; §7.4 (j)–(k)). Stage 1 builds on all four, and
-nothing more is asked of the round:
+**Confirmed: the core owner's four answers** (§1; §7.4 (j)–(k)), which landed with the round on 16
+November. Stage 1 builds on all four, and nothing more is asked of the round:
 1. a build-scoped kind lookup;
 2. namespaced IDs;
 3. a sorted-ID canonical order;
@@ -358,8 +377,11 @@ nothing more is asked of the round:
 - **Order 3 sets both field layout and hook evaluation,** so kinds whose stage reads or bookings
   do not commute would compose alphabetically, not physically.
   - Cheap now, costly later: name the two orders apart in the seam code, equal in version 1. A
-    later dependency order then moves no fields or snapshot layout.
-  - Until then, refuse non-commuting hooks on the same rows (a request for §7.4 (k)).
+    later dependency order then moves no fields or snapshot layout. *Met in the round:* the hook
+    order is named apart from the field order (`tests/unit/test_kind_rules.py`).
+  - Until then, refuse non-commuting hooks on the same rows (a request for §7.4 (k)). *Met in the
+    round:* two kinds' stage reads on a shared row are refused at binding, and each booking writes
+    only its own kind's fields (`tests/unit/test_kind_rules.py`).
 - **Seam 1 covers kinds, not member laws.** Stage 1 opens the channel table after the landing, so
   the round need only avoid hardening:
   - a global code sequence for non-`cells` laws, or `code` as a field a module must supply;

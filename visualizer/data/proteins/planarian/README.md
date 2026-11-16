@@ -241,10 +241,15 @@ classed separately: 38 entries are placed by a segment or a signal peptide they 
 the programs: they say who may run them and say nothing of predictions made with them,
 and it was WormBase ParaSite and UniProt that ran them. PROSITE's terms are of the
 database itself, of which its rules are part, and its page says that commercial users pay
-a licence fee "irrespective of the method by which they access the database". Whether
-sides that rest on the academic programs, or on PROSITE's rules, may stay in a commercial
-project is the project's to decide and is not settled here. Until it is, every such side
-is counted above and is said to be predicted wherever it is shown.
+a licence fee "irrespective of the method by which they access the database".
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** Every side
+counted above was read in WormBase ParaSite's or UniProt's records, which the two
+databases give out under their own open terms, so each stands as its database gives it.
+Each tool and rule system is named in the table with its own terms and its count, and
+each such side is said to be predicted wherever it is shown. This is the project's rule,
+and not a legal opinion.
 
 **Papers named, with nothing taken beyond a name.** The atlas names planarian genes by
 the papers that reported them. A paper under CC BY may stand behind a name. A paper

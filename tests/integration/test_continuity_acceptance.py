@@ -116,14 +116,14 @@ EDITS = {
     ],
     "constant": [
         (
-            "models/cell_replacement.py",
-            "device_check_constants = _model.device_check_constants\n",
-            "def device_check_constants(spec):  # Acceptance-test edit: arrays one ulp up.\n"
-            "    import jax\n\n"
-            "    return jax.tree.map(  # A scalar would print in the jaxpr text: arrays only.\n"
-            "        lambda v: np.nextafter(np.asarray(v), np.inf) if np.ndim(v) else v,\n"
-            "        _model.device_check_constants(spec),\n"
-            "    )\n",
+            "models/pump_composite.py",
+            "    device_check_constants = staticmethod(pump3.device_check_constants)\n",
+            "    @staticmethod\n"
+            "    def device_check_constants(spec):  # Acceptance-test edit: arrays one ulp up.\n"
+            "        return jax.tree.map(  # A scalar would print in the jaxpr text: arrays only.\n"
+            "            lambda v: np.nextafter(np.asarray(v), np.inf) if np.ndim(v) else v,\n"
+            "            pump3.device_check_constants(spec),\n"
+            "        )\n",
         )
     ],
     "binding": [
