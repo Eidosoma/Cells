@@ -509,7 +509,7 @@ run outputs ──adapters (next)── run view ──────────�
 | Path | Holds |
 | --- | --- |
 | `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells` |
-| `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map |
+| `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map. Each part names the engine files it holds by pattern; the first part whose pattern matches a file takes it, so the catch-all parts stand last. It was last reviewed entry by entry against the record on 16 November 2026, after the landing of the engine's rework, at main 3b7f1cff |
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
 | `tools/lib/protein_atlas.py` | Turns the snapshot into the atlas's parts, and checks every law record against the checkout |
@@ -686,8 +686,10 @@ Ideas kept for after the basics (the user, 14 November 2026):
   no-WebGL list has no species switch.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
-  exist. Its shapes are schematic, and where an auxiliary subunit sits is textbook
-  knowledge, not a field of the inventory.
+  exist, and the scene says that the inventory no longer covers every law. The landing of
+  16 November 2026 added laws it has no unit for, a proton pump, an ATP-driven
+  transporter and a proton leak among them. Its shapes are schematic, and where an
+  auxiliary subunit sits is textbook knowledge, not a field of the inventory.
 - Only one hue marks a named protein in the atlas. Six family colours could not be told
   apart under colour-vision deficiency (the palette check failed), so families are told by
   their labelled districts.

@@ -284,7 +284,7 @@ Nothing of this is on main yet.
 | 4. Owner down to the law | Yes. Each entry of a set carries its law's `law_id`, and its provenance once declared; both are readable where the writer works |
 | 5. Inputs of the two derivations | Choice (a): a view field is written as a record whenever an operator of the composition declares a change to it, and is a named constant of the definition otherwise. The two potential terms stay the viewer's declared derivation |
 | 6. Pumps | Yes. The view states each pump's rows per cycle by role, from its law declaration. In version 1 pumps stay columns of the membrane set, and the view says so |
-| 7. Species | Yes. Each species' identity comes from the species registry (on the integration branch) |
+| 7. Species | Yes. Each species' identity comes from the species registry (on main since the landing of 16 November 2026) |
 | 8. Records over several files | One entry for a record, with a list of file and row range |
 | 9. A first real feed | Approved by the user the same day, as the lead reported: two small development runs through existing drivers and the shared output path, keeping the standard history at a modest cadence (a sheet of a few dozen cells with a written voltage pattern; one small world with a secreted species). They are development runs, not experiments, and apart from the user's further request for looping replays of each species' cell |
 
