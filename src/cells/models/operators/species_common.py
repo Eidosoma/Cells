@@ -38,14 +38,14 @@ from dataclasses import dataclass, replace
 import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
+from cells.core import species_registry as registry
 from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields
-from cells.models.operators.membrane_state import parse_catalogue
 
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
 SPECIES_LAWS = ("scheduled_species_turnover@1", "scheduled_species_exchange@1")
 MAX_SPECIES = 16  # FR-9 / D165 (from 7): the W4 probe; above it, another.
-EVIDENCE_KINDS = ("label_only", "expressed_isoform", "native_current", "model")
+EVIDENCE_KINDS = registry.EVIDENCE_KINDS
 # Version 1 is transport on a static tissue (§5.5): both operators read the declared volumes and
 # masks, so no other operator may provide them, and a closer counts as a mask's provider (S5). This
 # refuses water, the lumens, insertion, partition and the bridge.
@@ -109,15 +109,8 @@ def parse_species(raw, base, law):
                 f"{valence[name]}"
             )
         check_impermeant(m, name, law)
-        catalogue, evidence = parse_catalogue(entry["catalogue"]), entry["evidence"]
-        if catalogue is None and evidence is not None:
-            raise ConfigError(f"{law}: the kind of evidence is given with a catalogue reference")
-        if catalogue is not None and evidence not in EVIDENCE_KINDS:
-            raise ConfigError(
-                f"{law}: a catalogue reference records its kind of evidence, one of "
-                + ", ".join(EVIDENCE_KINDS)
-            )
-        species.append(SpeciesIdentity(name, catalogue, evidence))
+        identity = registry.parse_identity(entry["catalogue"], entry["evidence"], law)
+        species.append(SpeciesIdentity(name, identity.catalogue, identity.evidence))
     if len({s.id for s in species}) != len(species):
         raise ConfigError(f"{law} lists a species twice")
     return tuple(species)
@@ -145,15 +138,8 @@ def parse_read_species(raw, base, law):
         name = identifier(entry["id"])
         if name not in declared:
             raise ConfigError(f"{law} reads a species the model does not declare: {name!r}")
-        catalogue, evidence = parse_catalogue(entry["catalogue"]), entry["evidence"]
-        if catalogue is None and evidence is not None:
-            raise ConfigError(f"{law}: the kind of evidence is given with a catalogue reference")
-        if catalogue is not None and evidence not in EVIDENCE_KINDS:
-            raise ConfigError(
-                f"{law}: a catalogue reference records its kind of evidence, one of "
-                + ", ".join(EVIDENCE_KINDS)
-            )
-        species.append(ReadSpecies(name, catalogue, evidence))
+        identity = registry.parse_identity(entry["catalogue"], entry["evidence"], law)
+        species.append(ReadSpecies(name, identity.catalogue, identity.evidence))
     if len({s.id for s in species}) != len(species):
         raise ConfigError(f"{law} lists a species twice")
     return tuple(species)
@@ -212,21 +198,10 @@ def check_species_cap(spec, law):
 
 
 def check_identities(spec, law, identities):
-    """Refuse a species that another secreted-species operator declares with another identity."""
-    mine = {s.id: s for s in identities}
-    for op, declaration, _ in composite_spec.entries(spec):
-        if op.LAW_ID == law or op.LAW_ID not in SPECIES_LAWS:
-            continue
-        for other in declaration.species:
-            own = mine.get(other.id)
-            if own is not None and (own.catalogue, own.evidence) != (
-                other.catalogue,
-                other.evidence,
-            ):
-                raise ConfigError(
-                    f"{law} declares species {other.id!r} with another identity than "
-                    f"{op.LAW_ID} (catalogue reference and kind of evidence must agree)"
-                )
+    """Refuse a species this law declares with another identity than its one authority: the
+    species registry (core/species_registry.py; D176), resolved from the model's entries and the
+    operators' declared identities, authors before users. One call per law, no pairwise check."""
+    registry.check_identities(spec, law, identities)
 
 
 def summary_identities(identities):

@@ -31,6 +31,7 @@ implementation on the model's test and qualification worlds (evidence:
 here; the definition format is unchanged.
 """
 
+import sys
 from dataclasses import replace
 
 import jax.numpy as jnp
@@ -66,6 +67,7 @@ rebind = w1.rebind
 
 # The composition this identity runs (one cached implementation).
 _model = pump_composite.implementation(ionic.MODEL_ID, (WATER_LAW_ID, operator.LAW_ID))
+LAWS = (WATER_LAW_ID, operator.LAW_ID)
 STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
@@ -140,6 +142,7 @@ control_domain_valid = _model.control_domain_valid
 
 
 def check_definition(spec):
+    pump_composite.refuse_kinds(MODEL_ID, spec.model)  # Fixed-field internals (schema A).
     _model.check_definition(composite(spec))
 
 
@@ -211,3 +214,9 @@ def summarize(history, diagnostics, spec):
         "symport_routes": [r.membrane_id for r in y.routes],
         "composition": composition_identity(spec),
     }
+
+
+def model_for(model):
+    """registry.get_model's answer (I2): this family for its declared inner structure,
+    one composition per structure (pump_composite.FamilyModel)."""
+    return pump_composite.family_model(sys.modules[__name__], LAWS, ionic.structure(model))

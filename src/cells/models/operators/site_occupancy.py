@@ -54,6 +54,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
 from cells.models.operators.membrane_state import parse_catalogue
+from cells.numerics.species_sums import entity_sum
 from cells.processes.electrochemistry import R as R_GAS
 
 LAW_ID = "site_occupancy@1"
@@ -67,7 +68,6 @@ TRACE_LIMIT = 1e-6  # A ligand's trace at most 1e-6 K_d of every population bind
 TRACE_RTOL = 1e-12  # A node declared at its trace, to representation (amount / volume).
 DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
-REACTIONS_LAW = "local_species_reactions@1"
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
@@ -464,23 +464,9 @@ def route_tables(declaration, schedule):
 
 
 def check_identities(spec, declaration):
-    """A ligand that D150's or D152's operators declare with another identity is refused, whichever
-    comes first (§1.6; the coupling operator's pattern)."""
-    mine = {ligand.identity.id: ligand.identity for ligand in declaration.species}
-    for op, other, _ in composite_spec.entries(spec):
-        if op.LAW_ID in common.SPECIES_LAWS:
-            theirs = other.species
-        elif op.LAW_ID == REACTIONS_LAW:
-            theirs = tuple(s.identity for s in other.species)
-        else:
-            continue
-        for item in theirs:
-            own = mine.get(item.id)
-            if own is not None and (own.catalogue, own.evidence) != (item.catalogue, item.evidence):
-                raise ConfigError(
-                    f"{LAW_ID} declares species {item.id!r} with another identity than "
-                    f"{op.LAW_ID} (catalogue reference and kind of evidence must agree)"
-                )
+    """A ligand declared with another identity than its one authority is refused (the species
+    registry: D150's and D152's operators come first, as authors, in either order; §1.6, D176)."""
+    common.check_identities(spec, LAW_ID, tuple(ligand.identity for ligand in declaration.species))
 
 
 def check_slots(spec, declaration):
@@ -1102,7 +1088,9 @@ def site_energy(row, p, *, xp):
     dg_r, terms_r = site_free_energy(
         p.site_free_anchor_fmol, row.site_free_increment_fmol, 0.0, capacity, rt, xp=xp
     )
-    return xp.sum(dg_b + dg_r), xp.sum(terms_b + terms_r)
+    return entity_sum(dg_b + dg_r, axis=None, xp=xp), entity_sum(
+        terms_b + terms_r, axis=None, xp=xp
+    )
 
 
 def material_terms(row, p, shape_cell, shape_outside, *, xp):
@@ -1188,6 +1176,11 @@ def stage_report(state, control, p, dt):
 
 class SiteOccupancy(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "user"  # Species registry (D176): its ligands are species others declare.
+
+    def species_identities(self, declaration):
+        return tuple(ligand.identity for ligand in declaration.species)
+
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"  # Declared; RK4 is refused at the definition (§4.6).
@@ -1332,14 +1325,16 @@ class SiteOccupancy(Operator):
         )
         result["local"] = result["local"] + local
         result["outside"] = result["outside"] + outside
-        result["total"] = result["total"] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        result["total"] = (
+            result["total"] + entity_sum(local, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         energy, _ = site_energy(row, p, xp=xp)
         result["energy"] = (
             result["energy"]
             + energy
-            + xp.sum(row.site_dissipated_energy_pJ)
-            + xp.sum(row.site_outside_dissipated_energy_pJ)
-            - xp.sum(row.site_work_pJ)
+            + entity_sum(row.site_dissipated_energy_pJ, axis=None, xp=xp)
+            + entity_sum(row.site_outside_dissipated_energy_pJ, axis=None, xp=xp)
+            - entity_sum(row.site_work_pJ, axis=None, xp=xp)
         )
         return result, self.own_ledgers(row, p, xp=xp)
 
@@ -1370,9 +1365,11 @@ class SiteOccupancy(Operator):
         )
         magnitudes[0] = magnitudes[0] + local
         magnitudes[1] = magnitudes[1] + outside
-        magnitudes[2] = magnitudes[2] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        magnitudes[2] = (
+            magnitudes[2] + entity_sum(local, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         _, terms = site_energy(row, p, xp=xp)
-        energy = terms + xp.sum(row.site_energy_magnitude_pJ)
+        energy = terms + entity_sum(row.site_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

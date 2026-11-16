@@ -52,6 +52,7 @@ from cells.models import surface_pump_v3 as ionic
 from cells.models.operators.contract import Operator
 from cells.numerics import osmotic_water as water
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import R
 
 LAW_ID = water.LAW_ID
@@ -152,7 +153,7 @@ def water_rate(state, availability, p, *, xp=jnp):
     """
     q = water_parameters(p)
     volume = xp.where(q.active, volumes(state, p, xp=xp), 1.0)
-    total = xp.sum(amounts(state, p, xp=xp), axis=0) + q.impermeant_amount_fmol
+    total = species_sum(amounts(state, p, xp=xp), xp=xp) + q.impermeant_amount_fmol
     slope = xp.where(
         finite_nodes(p, xp=xp),
         q.bulk_modulus_Pa / q.reference_volume_pL + R * q.temperature_K * total / volume**2,
@@ -226,9 +227,10 @@ def water_energy_rate(w, p, *, xp=jnp):
     rate = xp.concatenate((w.cell, w.outside))
     e = w.edges
     return (
-        1e-3 * xp.sum((e.hydrostatic_pressure_Pa - e.osmotic_pressure_Pa) * rate)
-        + xp.sum(w.heat)
-        - xp.sum(w.work)
+        1e-3
+        * entity_sum((e.hydrostatic_pressure_Pa - e.osmotic_pressure_Pa) * rate, axis=None, xp=xp)
+        + entity_sum(w.heat, axis=None, xp=xp)
+        - entity_sum(w.work, axis=None, xp=xp)
     )
 
 
@@ -258,7 +260,11 @@ def water_ledgers(state, p, *, xp):
     into = scatter(moved, dve, (p.membrane_outside,), xp=xp)
     local = xp.where(p.active, dv + scatter(moved, dv, (p.membrane_cell,), xp=xp), 0.0)
     outside = xp.where(p.outside_active, xp.where(p.water_bath, supplied + into, dve - into), 0.0)
-    total = xp.sum(dv) + xp.sum(dve) - xp.sum(supplied)
+    total = (
+        entity_sum(dv, axis=None, xp=xp)
+        + entity_sum(dve, axis=None, xp=xp)
+        - entity_sum(supplied, axis=None, xp=xp)
+    )
     work = state.bath_water_work_pJ - 1e-3 * p.water_bath_potential_Pa * supplied
     # Endpoint free-energy terms. F_mix(N, V) - F_mix(N, V0) = -RT N_tot log(V/V0)
     # at the current amounts (the ionic term already holds F(N, V0) - F(N0, V0)),
@@ -266,24 +272,24 @@ def water_ledgers(state, p, *, xp):
     finite = finite_nodes(p, xp=xp)
     initial = xp.concatenate((p.volume, p.extracellular_volume))
     delta = xp.concatenate((dv, dve))
-    total_osmolytes = xp.sum(amounts(state, p, xp=xp), axis=0) + q.impermeant_amount_fmol
+    total_osmolytes = species_sum(amounts(state, p, xp=xp), xp=xp) + q.impermeant_amount_fmol
     ratio = xp.where(finite, delta / initial, 0.0)
     dilution = (
         -1e-3
         * R
         * q.temperature_K
-        * xp.sum(xp.where(finite, total_osmolytes * xp.log1p(ratio), 0.0))
+        * entity_sum(xp.where(finite, total_osmolytes * xp.log1p(ratio), 0.0), axis=None, xp=xp)
     )
     stiffness = xp.where(finite, q.bulk_modulus_Pa / q.reference_volume_pL, 0.0)
     pressure = xp.where(
         finite, stiffness * (initial - q.reference_volume_pL) + q.pressure_offset_Pa, 0.0
     )
-    elastic = 1e-3 * xp.sum(pressure * delta + 0.5 * stiffness * delta**2)
+    elastic = 1e-3 * entity_sum(pressure * delta + 0.5 * stiffness * delta**2, axis=None, xp=xp)
     energy = (
         dilution
         + elastic
-        + xp.sum(state.water_dissipated_energy_pJ)
-        - xp.sum(state.bath_water_work_pJ)
+        + entity_sum(state.water_dissipated_energy_pJ, axis=None, xp=xp)
+        - entity_sum(state.bath_water_work_pJ, axis=None, xp=xp)
     )
     return energy, dict(
         water_local=local, water_outside=outside, water_total=total, bath_water_work=work
@@ -306,7 +312,7 @@ def node_free_energy_pJ(state, p, *, xp=jnp):
     finite = finite_nodes(p, xp=xp)
     initial = xp.concatenate((p.volume, p.extracellular_volume))
     delta = xp.concatenate((state.volume_increment_pL, state.extracellular_volume_increment_pL))
-    total_osmolytes = xp.sum(amounts(state, p, xp=xp), axis=0) + q.impermeant_amount_fmol
+    total_osmolytes = species_sum(amounts(state, p, xp=xp), xp=xp) + q.impermeant_amount_fmol
     ratio = xp.where(finite, delta / initial, 0.0)
     rt = 1e-3 * R * q.temperature_K
     dilution = -rt * xp.where(finite, total_osmolytes * xp.log1p(ratio), 0.0)
@@ -323,7 +329,11 @@ def water_magnitudes(row, p, *, xp=np):
     moved, supplied = xp.abs(row.water_transferred_pL), xp.abs(row.bath_water_supplied_pL)
     local = xp.abs(dv) + scatter(moved, dv, (p.membrane_cell,), xp=xp)
     outside = xp.abs(dve) + scatter(moved, dve, (p.membrane_outside,), xp=xp) + supplied
-    total = xp.sum(xp.abs(dv)) + xp.sum(xp.abs(dve)) + xp.sum(supplied)
+    total = (
+        entity_sum(xp.abs(dv), axis=None, xp=xp)
+        + entity_sum(xp.abs(dve), axis=None, xp=xp)
+        + entity_sum(supplied, axis=None, xp=xp)
+    )
     work = xp.abs(row.bath_water_work_pJ) + 1e-3 * xp.abs(p.water_bath_potential_Pa) * supplied
     return local, outside, total, work
 

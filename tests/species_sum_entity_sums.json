@@ -1,0 +1,685 @@
+{
+ "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, models/operators/*.py and models/inner_kinds/*.py as [module, enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added.",
+ "entity_sums": [
+  [
+   "inner_kinds/passive_routes.py",
+   "rates",
+   "entity_sum(heat, axis=None, xp=xp)"
+  ],
+  [
+   "operators/bath_schedule.py",
+   "check_isosmotic",
+   "entity_sum(species_sum(declared, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/bath_schedule.py",
+   "check_isosmotic",
+   "entity_sum(species_sum(np.asarray(amounts) - declared, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "_terms",
+   "entity_sum(net, axis=1, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "_terms",
+   "entity_sum(state.replacement_charge_C, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "_terms",
+   "entity_sum(state.replacement_free_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "event_map",
+   "entity_sum(due, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "event_map",
+   "entity_sum(work, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "event_map",
+   "entity_sum(xp.abs(work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "magnitude_terms",
+   "entity_sum(row.replacement_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement.py",
+   "magnitude_terms",
+   "entity_sum(species_sum(xp.abs(p.valence) * moved, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement_v2.py",
+   "external_ledger_terms",
+   "entity_sum(net, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement_v2.py",
+   "external_magnitude_terms",
+   "entity_sum(moved, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement_v2.py",
+   "ledger_terms",
+   "entity_sum(row.replacement_water_free_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/cell_replacement_v2.py",
+   "magnitude_terms",
+   "entity_sum(row.replacement_water_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "injected",
+   "entity_sum(cells, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "injected",
+   "entity_sum(work, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "injected",
+   "entity_sum(xp.abs(work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "ledger_terms",
+   "entity_sum(net, axis=1, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "ledger_terms",
+   "entity_sum(row.injection_charge_C, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "ledger_terms",
+   "entity_sum(row.injection_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "magnitude_terms",
+   "entity_sum(row.injection_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/current_injection.py",
+   "magnitude_terms",
+   "entity_sum(species_sum(xp.abs(p.valence) * moved, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/k_anion_symport.py",
+   "ledger_terms",
+   "entity_sum(row.symport_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "inserted",
+   "entity_sum(moving, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "inserted",
+   "entity_sum(xp.abs(work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "ledger_terms",
+   "entity_sum(row.insertion_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "magnitude_terms",
+   "entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "magnitude_terms",
+   "entity_sum(row.insertion_image_charge_C, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion_v2.py",
+   "inserted",
+   "entity_sum(moving, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion_v2.py",
+   "inserted",
+   "entity_sum(xp.abs(work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion_v2.py",
+   "ledger_terms",
+   "entity_sum(row.insertion_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion_v2.py",
+   "magnitude_terms",
+   "entity_sum(image, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion_v2.py",
+   "magnitude_terms",
+   "entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_energy_rate",
+   "entity_sum((e.hydrostatic_pressure_Pa - e.osmotic_pressure_Pa) * rate, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_energy_rate",
+   "entity_sum(w.heat, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_energy_rate",
+   "entity_sum(w.work, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(dv, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(dve, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(pressure * delta + 0.5 * stiffness * delta ** 2, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(state.bath_water_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(state.water_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(supplied, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_ledgers",
+   "entity_sum(xp.where(finite, total_osmolytes * xp.log1p(ratio), 0.0), axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_magnitudes",
+   "entity_sum(supplied, axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_magnitudes",
+   "entity_sum(xp.abs(dv), axis=None, xp=xp)"
+  ],
+  [
+   "operators/osmotic_water.py",
+   "water_magnitudes",
+   "entity_sum(xp.abs(dve), axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "capacitor_state",
+   "entity_sum(c * v * v, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "event_map",
+   "entity_sum(due, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "event_map",
+   "entity_sum(work, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "event_map",
+   "entity_sum(xp.abs(work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "ledger_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "ledger_terms",
+   "entity_sum(row.partition_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "magnitude_terms",
+   "entity_sum(image, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "magnitude_terms",
+   "entity_sum(row.partition_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_ledgers",
+   "entity_sum(row.partition_area_moved_m2, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_ledgers",
+   "entity_sum(row.partition_capacitance_moved_F, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_ledgers",
+   "entity_sum(row.partition_moved_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_ledgers",
+   "entity_sum(row.partition_units_moved, axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.partition_area_moved_m2), axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.partition_capacitance_moved_F), axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.partition_moved_fmol), axis=1, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.partition_units_moved), axis=None, xp=xp)"
+  ],
+  [
+   "operators/partition.py",
+   "summary",
+   "entity_sum(inner + kept, axis=None, xp=np)"
+  ],
+  [
+   "operators/partition.py",
+   "summary",
+   "entity_sum(inner, axis=None, xp=np)"
+  ],
+  [
+   "operators/partition.py",
+   "summary",
+   "entity_sum(kept, axis=None, xp=np)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "dilution",
+   "entity_sum(xp.where(p.lumen_node, total * xp.log1p(ratio), 0.0), axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "energy_magnitude",
+   "entity_sum(species_sum(xp.abs(d * (xp.log(a / v0) - 1)) + xp.abs((a + d) * xp.log1p(d / a)), xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "filled",
+   "entity_sum(lumen, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "filled",
+   "entity_sum(xp.abs(clamp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "ledger_terms",
+   "entity_sum(row.lumen_fill_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "ledger_terms",
+   "entity_sum(row.lumen_fluid_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "magnitude_terms",
+   "entity_sum(image, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "magnitude_terms",
+   "entity_sum(row.lumen_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "parse_lumens",
+   "entity_sum(species_sum(np.abs(z) * c, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/restricted_lumen.py",
+   "parse_lumens",
+   "entity_sum(species_sum(z * c, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/restricted_lumen_v2.py",
+   "filled",
+   "entity_sum(lumen, axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen_v2.py",
+   "filled",
+   "entity_sum(xp.abs(clamp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/restricted_lumen_v2.py",
+   "parse_lumens",
+   "entity_sum(species_sum(np.abs(z) * c, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/restricted_lumen_v2.py",
+   "parse_lumens",
+   "entity_sum(species_sum(z * c, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(local, axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_outside_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(local, axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(row.site_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(dg_b + dg_r, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(terms_b + terms_r, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_exchange.py",
+   "ledger_terms",
+   "entity_sum(row.exchange_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_exchange.py",
+   "magnitude_terms",
+   "entity_sum(row.exchange_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(cell, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_outside_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_outside_standard_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_outside_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_standard_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "ledger_terms",
+   "entity_sum(row.reaction_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "magnitude_terms",
+   "entity_sum(cell, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "magnitude_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "magnitude_terms",
+   "entity_sum(row.reaction_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "magnitude_terms",
+   "entity_sum(row.reaction_outside_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_reactions.py",
+   "route_rates",
+   "entity_sum(log_f, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_regulated_availability.py",
+   "state_inputs",
+   "entity_sum(log_f, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "ledger_terms",
+   "entity_sum(net, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "ledger_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "ledger_terms",
+   "entity_sum(row.turnover_outside_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "ledger_terms",
+   "entity_sum(row.turnover_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "magnitude_terms",
+   "entity_sum(cell, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "magnitude_terms",
+   "entity_sum(outside, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "magnitude_terms",
+   "entity_sum(row.turnover_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/species_turnover.py",
+   "magnitude_terms",
+   "entity_sum(row.turnover_outside_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "_fold_kind_ledgers",
+   "entity_sum(terms['heat_pJ'], axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "_fold_kind_ledgers",
+   "entity_sum(terms['stored_pJ'], axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "_fold_kind_ledgers",
+   "entity_sum(terms['work_pJ'], axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "balances",
+   "entity_sum(species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "device_balances",
+   "entity_sum(species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "imex_step",
+   "entity_sum(explicit_matrix[i], axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(ca_metabolic, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(electrode_work, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(kr.heat_pJ_s, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(kr.work_pJ_s, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(metabolic, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(p.membrane_capacitance * r.membrane_voltage_V * dvm, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(r.face_dissipation_pJ_s, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(r.junction_dissipation_pJ_s, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(reservoir_work + electrode_work, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(reservoir_work, axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(species_sum(xp.log(ci) * cell, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(species_sum(xp.log(co) * outside, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "surface_pump_v3.py",
+   "readouts",
+   "entity_sum(total_membrane_d, axis=None, xp=xp)"
+  ]
+ ]
+}

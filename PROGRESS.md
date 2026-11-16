@@ -103,6 +103,32 @@ machine-readable inputs, results, checks and failures.
     - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
       ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
     - This is a smaller guard set than the 15 November merge's (68 passed).
+  - **A fifth visualizer merge** (visualizer 35098c8e) adds:
+    - two cell-view screenshots, now in the README: the human's generic cell with its planned
+      nucleus, Golgi apparatus and ribosomes, and E. coli, which is proposed and not modelled;
+    - the published page's revision stamp, corrected. A local, amended commit had been stamped;
+    - a build guard that refuses a revision on no remote branch.
+
+    **Checks:** `npm test` on a clean copy gave 443 passed, 2 skipped and 0 failed.
+  - **A fourth visualizer merge** (visualizer 5830bfdf) adds:
+    - the nucleus, the Golgi apparatus and the ribosomes, as planned parts of the map that are
+      illustration only (by the user's decision of 16 November);
+    - the replay's own clock and speeds;
+    - the run-view reader at the writer's fd008813, with two engine-written fixtures;
+    - the published pages' new links.
+
+    **Checks:**
+    - `npm test` on a clean copy (two CPUs): 443 passed, 2 skipped (both need adapted replays), 0
+      failed;
+    - the BETSE-boundary guard and the snapshot test on the merged tree: 29 passed
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116-b/guards.log)).
+  - **A third visualizer merge** (visualizer c91d8cd2) brings the engine map and the
+    layers-needs note to D183, so the human loop is shown as waiting for the human cardiac
+    laws.
+    - `npm test` on two CPUs: 427 passed and 2 skipped. Both skipped tests need adapted replays,
+      which a clean checkout lacks.
+    - The earlier run's two extra skips came from pinning to one CPU: one test needs two
+      processors, and one skipped without need (now fixed).
   - **The README** (462469dd, from readme-update) has:
     - the status table as of 16 November, with the levels defined;
     - a new section, "The visualizer and its replays", with two of the screenshots;

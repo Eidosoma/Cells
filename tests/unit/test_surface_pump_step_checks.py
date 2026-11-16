@@ -278,7 +278,7 @@ def test_composites_bind_their_step_checks(monkeypatch):
     builds = []
     for chunks in (3, 6):
         spec = parse_spec(water.with_water(water.heredity_cell(end_time=chunks * 1.0)))
-        assert get_model(spec.model) is surface_pump_water
+        assert get_model(spec.model).module is surface_pump_water  # I2: per structure.
         layouts[0] = tables[0] = 0
         grid = checked_grid(spec)
         assert -(-(len(grid) - 1) // 1024) == chunks and tables[0] == 0

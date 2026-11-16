@@ -2,9 +2,12 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-Cells is a GPU-native multiscale simulator for investigating how
-molecular assembly, cell physiology and communication shape memory, inheritance
-and tissue organisation. We are building toward integrated whole-cell models,
+Cells is a GPU-native multiscale simulator: an instrument of science for
+exploring and understanding biology, and in a way a virtual microscope. Its
+models span molecular assembly, cells and tissues, and its runs can be followed
+through time. Its first questions are how molecular
+assembly, cell physiology and communication shape memory, inheritance and tissue
+organisation. We are building toward integrated whole-cell models,
 whole organs and interacting organ systems. It is written in **Python and JAX**,
 so the same models compile for NVIDIA GPUs and for CPUs, and the CPU runs serve
 as independent references. A [3D visualizer](#the-visualizer-and-its-replays)
@@ -18,11 +21,44 @@ whole-cell integration is ongoing.
 
 ## Why we are building Cells
 
-One of Cells' central goals is to test the ideas in our
+We are building Cells as an instrument of science: a way to explore and
+understand biology by building cells and tissues from explicit physical
+mechanisms, running them, and asking what they do and why.
+
+In a way, it is a virtual, multidimensional microscope of the AI age. A real
+microscope, even with voltage dyes and live imaging, sees a few quantities at a
+time and cannot replay a moment with one thing changed. Cells shows them together and in physical units: the membrane voltage
+of every cell, the ions crossing each channel and junction, the energy each
+process dissipates, and the state a cell carries from its past. Its models span
+molecular assembly, cells and tissues, and a run can be replayed, paused, or
+branched into alternative futures. Its [3D viewer](#the-visualizer-and-its-replays)
+is the eyepiece. It also belongs to this age in how it is made and used: AI
+agents help write and check its models, and its experiments are declared
+definitions with machine-readable records, so people and AI systems alike can
+design, run and read them.
+
+Unlike a real microscope, it shows a model, not the cell itself, so it is only
+as true as what goes into it. That is why every law names its source, every
+quantity of matter, charge and energy is accounted for, every result traces back
+to the code, parameters and measurements behind it, and a mechanism is qualified
+before a judged experiment relies on it. In return, it lets us do what a
+laboratory often cannot: remove a single cue, give two cells the same visible
+state but different histories, or replace every cell in a tissue and watch what
+survives.
+
+We also think a project like Cells can only be done through collective
+intelligence and open source. A cell is a puzzle of a great many pieces: the law
+of each channel, pump and junction, the assembly of each molecular machine, the
+measurements that calibrate them and the experiments that test them. No single
+group, and no single mind, human or artificial, holds them all. So Cells is open
+source under the MIT licence, with its code, tests and decisions in public, so
+that the people and AI systems who know each piece can check it, correct it, add
+what is missing and help assemble the whole.
+
+Its first questions are our own. Cells began as a way to test the ideas in our
 [*Plastic Heredity*](https://doi.org/10.5281/zenodo.22143269) and
 [*How Patterns Return*](https://doi.org/10.5281/zenodo.23327869) (early draft)
-preprints in the most biologically and physically realistic simulations we can
-build and verify.
+preprints, and they remain its first experiments:
 
 ![Cells research goals: ask questions from Plastic Heredity and How Patterns Return, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
 
@@ -32,16 +68,14 @@ build and verify.
   state and tissue organisation affect which patterns and functions can be
   expressed, repaired or reconstructed?
 
-We are building toward experiments that remove cues, disrupt candidate memory
-mechanisms, change cell membership and challenge cells with matched visible
-states but different histories. The aim is to identify what carries history,
-what it changes, and when it survives replacement.
+We are building toward experiments that disrupt candidate memory mechanisms
+and change cell membership, to identify what carries history, what it changes,
+and when it survives replacement.
 
-Realism means explicit physical mechanisms, material and energy accounting, and
-calibration against measurements. Bioelectricity, chemistry and assembly provide
-the starting point; metabolism, mechanics, growth and turnover are planned
-extensions. Cells' purpose is to study how these processes work together in the
-same evolving cells and tissues. When an experiment shows that a mechanism is
+Bioelectricity, chemistry and assembly were the starting point. Water and cell
+volume, cell replacement, prescribed division and 2-D tissue mechanics have
+joined them, and metabolism and growth are planned. Cells' purpose is to study
+how these processes work together in the same evolving cells and tissues. When an experiment shows that a mechanism is
 missing, we add it to the engine as a cited, biologically grounded model rather
 than working around it. The goal is to find where
 the ideas hold, fail or need revision. See the
@@ -168,6 +202,21 @@ fruit fly and thale cress lend names and outlines to the generic cell and sheet
 that Cells models; JCVI-syn3A, *M. pneumoniae* and *E. coli* are proposed, with
 nothing of them in the engine. A review of the viewer's statuses against the
 record is still owed, so [Progress](PROGRESS.md) remains the record.
+
+![The viewer's Cell view of a generic animal cell under the human's names: a six-sided cell cut open, with a nucleus opened like a globe, purple endoplasmic reticulum, a pink Golgi stack, orange mitochondria, and named parts with status dots](visualizer/docs/screenshots/cell-view-human-structures.webp)
+
+*The Cell view under the human's names: the generic cell that Cells models, cut open, with the
+nucleus opened to show its envelope, pores, chromatin and nucleolus, and the endoplasmic
+reticulum, the Golgi apparatus, ribosomes and mitochondria around it. The nucleus, the Golgi
+apparatus and the ribosomes are planned parts, illustration only: nothing of them is in the engine
+yet. No human cell type is modelled.*
+
+![The viewer's Cell view of E. coli: a cut-open rod-shaped bacterium with long flagella and many fine fimbriae standing out from it, ribosomes and a tangled chromosome inside, and named parts; a chip in the top bar reads "Proposed, not modelled"](visualizer/docs/screenshots/cell-view-ecoli.webp)
+
+*The Cell view of E. coli: a rod-shaped bacterium about 1 by 2 µm, cut open, with its two
+membranes and the wall between them, flagella, fimbriae, ribosomes and its free chromosome. E. coli
+is proposed, not modelled: nothing of it is in the engine, and the picture shows where the
+capabilities of Cells would have a place in it.*
 
 | Part | Where | Status |
 | --- | --- | --- |

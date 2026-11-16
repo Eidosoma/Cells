@@ -33,6 +33,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from cells.core.multispecies_spec import identifier
+from cells.core.species_registry import parse_catalogue  # Moved there (D176); kept here.
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models import surface_pump as first
 from cells.models.operators.contract import Operator
@@ -69,15 +70,6 @@ class Population:
 class MembraneState:
     law: str
     populations: tuple
-
-
-def parse_catalogue(raw):
-    if raw is None:
-        return None
-    _fields(raw, {"catalogue", "entry"}, "catalogue reference")
-    if any(type(raw[k]) is not str or not raw[k] for k in ("catalogue", "entry")):
-        raise ConfigError("A catalogue reference names a catalogue and an entry")
-    return (raw["catalogue"], raw["entry"])
 
 
 def parse_state(raw, base):

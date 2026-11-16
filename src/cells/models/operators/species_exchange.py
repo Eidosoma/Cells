@@ -83,6 +83,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
 from cells.models.operators.species_turnover import scatter_add, set_rows
+from cells.numerics.species_sums import entity_sum
 
 LAW_ID = "scheduled_species_exchange@1"
 STEP_ID = "palindromic_exact_exchange_stages@1"
@@ -450,6 +451,7 @@ def key_of(route):
 
 class ScheduledSpeciesExchange(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -496,6 +498,9 @@ class ScheduledSpeciesExchange(Operator):
         )
         values = common.control_arrays(tables, times, 2)
         return values[..., 0], values[..., 1]
+
+    def species_identities(self, declaration):
+        return declaration.species
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
@@ -571,7 +576,7 @@ class ScheduledSpeciesExchange(Operator):
         result["outside"] = scatter_add(
             result["outside"], (species, p.exchange_route_outside), -moved, xp=xp
         )
-        result["energy"] = result["energy"] - xp.sum(row.exchange_work_pJ)
+        result["energy"] = result["energy"] - entity_sum(row.exchange_work_pJ, axis=None, xp=xp)
         return result, {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
@@ -586,6 +591,6 @@ class ScheduledSpeciesExchange(Operator):
             magnitudes[1], (species, p.exchange_route_outside), moved, xp=xp
         )
         magnitudes[2] = scatter_add(magnitudes[2], (species,), 2.0 * moved, xp=xp)
-        energy = xp.sum(row.exchange_energy_magnitude_pJ)
+        energy = entity_sum(row.exchange_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes

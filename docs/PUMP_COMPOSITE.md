@@ -99,14 +99,16 @@ Each refusal is tagged:
 - **real**: the other operator can change a slot the reader reads or acts on, or the two are
   versions of one law. This includes "real, not shown nominal".
 - **nominal**: in no admissible definition can the other operator change a slot the reader reads
-  or acts on. A finer declaration, such as slot-scoped provision (door S of the
-  [bath-schedule design](BATH_SCHEDULE_DESIGN.md) §3.1), would admit the pair without new
-  physics. Each nominal tag cites the code that shows it. A nominal tag means the slots are
-  disjoint, not that the pair is safe to admit under today's adapter: the adapter's view replaces
-  whole fields per provider ([ARCHITECTURE](ARCHITECTURE.md#scoped-composition-door-s), D174).
+  or acts on. Slot-scoped declarations (door S,
+  [SCOPED_COMPOSITION_DESIGN.md](SCOPED_COMPOSITION_DESIGN.md)) admit such a pair without new
+  physics once both operators declare their slots. Each nominal tag cites the code that shows it.
+  A nominal tag means the slots are disjoint, not that the pair is safe to admit while either
+  operator still declares whole fields, which the adapter's view merges on every slot.
 
-The bath-schedule design (§3.1) found D152's conflict with the bath schedule nominal, and the
-matrix records it so. It classes insertion@1's second provision and the closers' padding (the
+The bath-schedule design (§3.1) found D152's conflict with the bath schedule nominal. With door S
+the bath schedule declares its change at its held baths and D152 its outside reads at finite nodes,
+so the pair is admitted (D176; SCOPED_COMPOSITION_DESIGN.md §5), and the delivery world runs with
+reactions in a compartment beside a bath dose. The bath-schedule design classes insertion@1's second provision and the closers' padding (the
 partition, insertion@2) as refusals, and the matrix keeps them real, citing §3.1 (the lead, 14
 November 2026). For insertion@1 and @2 there is a further reason: the lumens need them, and a lumen
 fills from its source bath at the declared composition without declaring that read.
@@ -160,9 +162,9 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | **12** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | · | R | R | R | n | R | R | R |
 | **13** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **14** | R | R | ✓ | R | ✓ | R | R | R | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | n | ✓ | ✓ |
+| **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ |
 | **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ |
-| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | n | ✓ | · | ✓ | n |
+| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | n |
 | **18** | R | R | ✓ | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d |
 | **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | n | d | · |
 
@@ -216,7 +218,6 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | species_reactions (15) reads `active` as declared; partition (9) closes it | 4 | real | D152's cell sites can be in a cell the partition retires (not shown nominal) |
 | species_reactions (15) reads `outside_active` as declared; membrane_insertion_v2 (11) closes it | 4 | real | D152 reads the declared outside mask at its finite sites; insertion@2 closes onset nodes until their onset |
 | species_reactions (15) reads `extracellular_volume` as declared; restricted_lumen_v2 (12) provides it | 2 | real | Concentrations and dG read the declared volumes; a lumen changes its node's volume |
-| species_reactions (15) reads `extracellular_amount_reference` as declared; bath_schedule (17) provides it | 2 | nominal | D152 reads the anchors only at finite nodes (node_amounts and reactions_domain_valid mask held baths) and refuses held-bath sites (_sites); the bath schedule provides the declared array off its baths and schedules held baths only (held_view, parse_declaration). The bath-schedule design §3.1 |
 | species_regulated_availability (16) reads `extracellular_volume` as declared; osmotic_water (1) provides it | 6 | nominal | The coupling's runtime reads are cell amounts, cell volumes and its own fields (route_factors, state_inputs, state_half_step, event_map), and it books nothing; it reads no outside node |
 | species_regulated_availability (16) reads `volume` as declared; osmotic_water (1) provides it | 6 | real | The coupling's Hill factors read cell volumes as declared (route_factors, state_inputs); water changes them |
 | species_regulated_availability (16) reads `membrane_active`, `outside_active` as declared; membrane_insertion (7) provides them | 4 | nominal | The coupling's runtime reads are cell amounts, cell volumes and its own fields (route_factors, state_inputs, state_half_step, event_map), and it books nothing; it reads no mask, and insertion@1 writes no cell amount or volume and refuses a channel population on an onset patch (check_onsets), so no coupling target sits on one |

@@ -441,6 +441,10 @@ def explicit_rate_bound(spec):
     capacitance (the outside is held near equipotential by the implicit drift):
     2 max_i sum_j G_j / C_i and max_i sum_m G_m / C_i, with constant-field slope
     conductances bounded by F^2/RT sum z^2 P A max(c) at the declared state.
+    Two terms close the gaps docs/INNER_MODEL_V4_DESIGN.md §13.6 found (I0, B7): neutral
+    species' material relaxation (neutral_material_rate) and the charge relaxation of a
+    free face-free node against its own patches (face_free_node_rate). All terms read one
+    layout, built once.
     """
     _, p = kinetic.initial_values(spec)
     z2 = p.valence**2
@@ -479,7 +483,60 @@ def explicit_rate_bound(spec):
         * np.where(p.membrane_active, p.membrane_area, 0.0)
     )
     membranes = scatter(gm, np.zeros(p.active.size), (p.membrane_cell,), xp=np)
-    return max(face, 2 * np.max(cells / capacitance), np.max(membranes / capacitance))
+    return max(
+        face,
+        2 * np.max(cells / capacitance),
+        np.max(membranes / capacitance),
+        neutral_material_rate(p, volume),
+        face_free_node_rate(spec, p, gm),
+    )
+
+
+def neutral_material_rate(p, outside_volume):
+    """Finding 3's z = 0 term (1/s; §13.6): 2 max over neutral species and nodes of
+    sum P A / V over junction and membrane routes. A neutral species carries no charge, so the
+    charge-relaxation terms miss it; its own amounts relax at P A (1/V_a + 1/V_b). Held baths
+    count as infinite volume (outside_volume, the face term's)."""
+    neutral = np.asarray(p.valence).reshape(-1) == 0
+    if not neutral.any():
+        return 0.0
+    species = neutral.size
+    cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
+    pj = p.junction_permeability * np.where(p.junction_active, p.junction_area, 0.0)
+    pm = p.membrane_permeability * np.where(p.membrane_active, p.membrane_area, 0.0)
+    cells = scatter(pj, np.zeros((species, p.active.size)), (p.junction_sender,), xp=np)
+    cells += scatter(pj, np.zeros((species, p.active.size)), (p.junction_receiver,), xp=np)
+    cells += scatter(pm, np.zeros((species, p.active.size)), (p.membrane_cell,), xp=np)
+    outside = scatter(pm, np.zeros((species, p.outside_active.size)), (p.membrane_outside,), xp=np)
+    rates = np.concatenate((cells / cell_volume, outside / outside_volume), axis=1)[neutral]
+    return 2 * float(np.max(rates, initial=0.0))
+
+
+def face_free_node_rate(spec, p, gm):
+    """The face-free-node term (1/s; §13.6, B7): max over free face-free finite nodes of
+    sum_m G_m / C_node over the patches facing the node, with gm the bound's own max-side
+    constant-field slope per patch. A finite outside node that no active face names has no
+    implicit drift holding it near equipotential, so its patches relax its charge explicitly.
+    Excluded: held baths, the gauge, the field layout's fixed nodes and inactive nodes."""
+    nodes = p.outside_active.size
+    named = np.zeros(nodes, dtype=bool)
+    named[p.face_sender[p.face_active]] = True
+    named[p.face_receiver[p.face_active]] = True
+    gauge = np.zeros(nodes, dtype=bool)
+    ids = [node.id for node in spec.model.extracellular]
+    reference = getattr(spec.model, "gauge_reference", None)
+    if reference in ids:
+        gauge[ids.index(reference)] = True
+    fixed = np.zeros(nodes, dtype=bool)
+    if hasattr(p, "field_fixed"):
+        fixed = np.asarray(p.field_fixed)[p.active.size :]
+    free = p.outside_active & ~p.reservoir & ~named & ~gauge & ~fixed
+    patches = np.where(p.membrane_active, p.membrane_capacitance, 0.0)
+    capacitance = scatter(patches, np.zeros(nodes), (p.membrane_outside,), xp=np)
+    conductance = scatter(gm, np.zeros(nodes), (p.membrane_outside,), xp=np)
+    held = free & (capacitance > 0)
+    rate = conductance / np.where(held, capacitance, 1.0)
+    return float(np.max(np.where(held, rate, 0.0), initial=0.0))
 
 
 def moved_charge(row, p, *, xp=np):

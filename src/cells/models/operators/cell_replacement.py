@@ -68,6 +68,7 @@ from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import junction_formation as formation
 from cells.processes import junction_gate
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
@@ -253,7 +254,7 @@ def event_map(state, due, control, p, *, xp=jnp):
     template = xp.where(copy[None, :], old[:, donor], p.template_amount_fmol[row].T)
     slot = due[None, :]
     increment = xp.where(slot, template - reference, state.amount_increment)
-    dq = CHARGE_PER_FMOL * xp.sum(p.valence * (template - old), axis=0)
+    dq = CHARGE_PER_FMOL * species_sum(p.valence * (template - old), xp=xp)
     cell = p.membrane_cell[p.channel_membranes]
     replaced = (due[cell] & p.channel_active)[None, :] & p.channel_gate_active
     source = xp.maximum(p.cell_law_channel[donor[cell], p.channel_laws], 0)
@@ -299,9 +300,13 @@ def event_map(state, due, control, p, *, xp=jnp):
     g0 = _chemical(state.amount_increment, p, xp=xp)
     g1 = _chemical(increment, p, xp=xp)
     e0, e1 = _electric(dv0, p, xp=xp), _electric(dv1, p, xp=xp)
-    count = xp.maximum(xp.sum(due), 1)
-    shared = (e1 - e0 - xp.sum(work)) / count
-    magnitude = xp.abs(g0) + xp.abs(g1) + (xp.abs(e0) + xp.abs(e1) + xp.sum(xp.abs(work))) / count
+    count = xp.maximum(entity_sum(due, axis=None, xp=xp), 1)
+    shared = (e1 - e0 - entity_sum(work, axis=None, xp=xp)) / count
+    magnitude = (
+        xp.abs(g0)
+        + xp.abs(g1)
+        + (xp.abs(e0) + xp.abs(e1) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
+    )
     return new._replace(
         electrode_charge_transferred_C=state.electrode_charge_transferred_C + electrode,
         replacement_image_charge_C=state.replacement_image_charge_C + xp.abs(electrode),
@@ -390,9 +395,13 @@ def _terms(result, state, *, xp):
     """@3's ledgers with the replacement terms, in @3's order and keys."""
     net = state.replacement_removed_fmol - state.replacement_supplied_fmol
     result["local"] = result["local"] + net
-    result["total"] = result["total"] + xp.sum(net, axis=1)
-    result["global_charge"] = result["global_charge"] + xp.sum(state.replacement_charge_C)
-    result["energy"] = result["energy"] - xp.sum(state.replacement_free_energy_pJ)
+    result["total"] = result["total"] + entity_sum(net, axis=1, xp=xp)
+    result["global_charge"] = result["global_charge"] + entity_sum(
+        state.replacement_charge_C, axis=None, xp=xp
+    )
+    result["energy"] = result["energy"] - entity_sum(
+        state.replacement_free_energy_pJ, axis=None, xp=xp
+    )
     return result
 
 
@@ -410,7 +419,7 @@ def replaced_charge_magnitude(row, p, *, xp=np):
     for founders, so it vanishes without events.
     """
     replaced = row.generation > 0
-    cell = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence * row.amount_increment), axis=0)
+    cell = CHARGE_PER_FMOL * species_sum(xp.abs(p.valence * row.amount_increment), xp=xp)
     per_patch = xp.where(p.membrane_active & replaced[p.membrane_cell], cell[p.membrane_cell], 0.0)
     return scatter(per_patch, xp.zeros_like(p.boundary_V), (p.membrane_outside,), xp=xp)
 
@@ -637,6 +646,9 @@ class ScheduledReplacement(Operator):
         "amount_increment": ("replacement_removed_fmol", "replacement_supplied_fmol"),
     }
     READOUT_COLUMNS = REPLACEMENT_READOUTS
+    # Its event map and controls build @3's state, layout and control with today's fields
+    # (IONIC_FIELDS, ionic_layout, the family spec's controls): refused beside declared kinds.
+    FIXED_INNER_FIELDS = True
 
     # ------------------------------------------------------------ definition
 
@@ -804,13 +816,15 @@ class ScheduledReplacement(Operator):
         events every bound is @3's exactly (bound + 0)."""
         moved = row.replacement_removed_fmol + row.replacement_supplied_fmol
         magnitudes[0] = magnitudes[0] + moved
-        magnitudes[2] = magnitudes[2] + xp.sum(moved, axis=1)
-        charge = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
+        magnitudes[2] = magnitudes[2] + entity_sum(moved, axis=1, xp=xp)
+        charge = CHARGE_PER_FMOL * entity_sum(
+            species_sum(xp.abs(p.valence) * moved, xp=xp), axis=None, xp=xp
+        )
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
         held = xp.where(p.reservoir, replaced_charge_magnitude(row, p, xp=xp), 0.0)
         image = row.replacement_image_charge_C + held
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        energy = xp.sum(row.replacement_energy_magnitude_pJ)
+        energy = entity_sum(row.replacement_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

@@ -52,11 +52,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry, species_registry
 from cells.core import pump_composite_spec as composite_spec
 from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
 from cells.models import pump_composite_adapter as pump3
+from cells.models.operators.contract import COMMUTING
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
@@ -89,9 +91,21 @@ def _checked_above(row, p, active, *, xp):
     return xp.asarray(True)
 
 
+def implementation(inner_model, laws, structure=None):
+    """The composite for one inner identity, ordered operator law tuple and, from a definition,
+    the inner model's declared structure (I2: the composite then takes the inner protocol from
+    that structure's implementation object; None keeps the module's own, the full catalogue).
+
+    Cached: equal arguments share one composition. A structure that declares kinds is also keyed
+    on the active kind registry, whose kinds its types are built from (schema A, §7.4 (j)), as
+    the inner implementation object is; one that declares none shares its composition across
+    registries, so a registered but undeclared kind changes nothing."""
+    kinds = structure is not None and bool(structure.kinds)
+    return _implementation(inner_model, laws, structure, kind_registry.active() if kinds else None)
+
+
 @cache
-def implementation(inner_model, laws):
-    """The composite for one inner identity and ordered operator law tuple."""
+def _implementation(inner_model, laws, structure, registry):
     from cells.models.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -99,15 +113,132 @@ def implementation(inner_model, laws):
     unknown = [law for law in laws if law not in OPERATORS]
     if unknown:
         raise ConfigError("Unregistered operator laws: " + ", ".join(unknown))
-    return Composition(INNERS[inner_model], tuple(OPERATORS[law] for law in laws))
+    inner = INNERS[inner_model]
+    if structure is not None:
+        inner = inner.for_structure(structure)
+    return Composition(inner, tuple(OPERATORS[law] for law in laws))
 
 
 def model_for(spec_model):
-    return implementation(spec_model.inner_model, composite_spec.operator_laws(spec_model))
+    inner = INNERS[spec_model.inner_model] if spec_model.inner_model in INNERS else None
+    structure = None if inner is None else inner.inner_structure(spec_model)
+    return implementation(
+        spec_model.inner_model, composite_spec.operator_laws(spec_model), structure
+    )
 
 
 def check_definition(spec):
     model_for(spec.model).check_definition(spec)
+
+
+class FamilyModel:
+    """A model family that runs as one composition (water@1 and @2, cell replacement@1), for one
+    declared inner structure (I2; docs/INNER_MODEL_V4_DESIGN.md §7.4 (c)).
+
+    Each such module binds its names to one full-catalogue composition (its `_model`) and rewrites
+    its definitions as that composition's (its `composite(spec)`). This object is the module with
+    the composition of one structure instead: the names the module takes from its `_model`, and
+    the functions that pass `composite(spec)` to it, come from that composition; every other name
+    is the module's own.
+    """
+
+    BOUND = (
+        "STATE_AXES",
+        "STATE_TYPE",
+        "LAYOUT_TYPE",
+        "FLOOR_LAYOUT_TYPE",
+        "checked_step",
+        "readouts",
+        "field_values",
+        "rhs",
+        "domain_valid",
+        "control_domain_valid",
+        "balances",
+        "device_balances",
+        "magnitudes",
+        "ledger_limits",
+        "DISSIPATION_FIELDS",
+        "DEVICE_CHECKS",
+        "DEVICE_DIAGNOSTICS",
+        "device_check_constants",
+        "device_failure_message",
+        "device_checks",
+        "OBSERVATION_FIELDS",
+        "Observations",
+        "structure_key",
+    )
+    ALIASES = dict(
+        Values="VALUES_TYPE",
+        ionic_balances="inner_balances",
+        ionic_magnitudes="inner_magnitudes",
+        imex_step="split_step",
+    )
+
+    def __init__(self, module, composition):
+        self.module, self.composition = module, composition
+        for name in self.BOUND:
+            setattr(self, name, getattr(composition, name))
+        for name, source in self.ALIASES.items():
+            if hasattr(module, name):  # Only the names the module itself exports.
+                setattr(self, name, getattr(composition, source))
+
+    def __getattr__(self, name):
+        # Only reached for names not set above: the module's own.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        return getattr(self.module, name)
+
+    def __repr__(self):
+        return f"<{self.module.MODEL_ID} for {self.composition!r}>"
+
+    def initial_values(self, spec):
+        return self.composition.initial_values(self.module.composite(spec))
+
+    def check_definition(self, spec):
+        self.composition.check_definition(self.module.composite(spec))
+
+    def check_steps(self, spec, steps, controls):
+        self.composition.check_steps(self.module.composite(spec), steps, controls)
+
+    def bind_step_checks(self, spec):
+        return self.composition.bind_step_checks(self.module.composite(spec))
+
+    def check_values(self, state, spec, steps=None):
+        return self.composition.check_values(state, self.module.composite(spec), steps=steps)
+
+    def observe_history(self, times, history, layout, requested, spec):
+        return self.composition.observe_history(
+            times, history, layout, requested, self.module.composite(spec)
+        )
+
+    def ensemble_voltage(self, state, layout, spec, time):
+        return self.composition.ensemble_voltage(state, layout, self.module.composite(spec), time)
+
+    def field_owners(self, spec):
+        return self.composition.field_owners(self.module.composite(spec))
+
+
+@cache
+def family_model(module, laws, structure):
+    """A family's model for one declared inner structure (cached: equal structures share it). A
+    structure that declares kinds is refused at binding (refuse_kinds)."""
+    refuse_kinds(module.MODEL_ID, structure)
+    return FamilyModel(module, implementation(module.ionic.MODEL_ID, laws, structure))
+
+
+def refuse_kinds(model_id, declared):
+    """The families' refusal of declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), the lead's
+    ruling 2). Water@1, water@2 and replacement@1 bind @3's full-catalogue types and build its
+    states, layouts and controls with today's fields (the replacement operator's arrival field
+    solve among them), so a definition that declares a kind is refused, at its definition check
+    and at binding, until each family has per-structure internals. declared: a parsed model block
+    or an InnerStructure; each carries `kinds`, ((kind ID, ...), ...)."""
+    kinds = [kind_id for kind_id, _ in getattr(declared, "kinds", ())]
+    if kinds:
+        raise ConfigError(
+            f"{model_id} does not run declared kinds ({', '.join(kinds)}): it builds the inner "
+            "model's states, layouts and controls with today's fixed fields"
+        )
 
 
 def compact(spec):
@@ -142,6 +273,201 @@ def held_schedules(base, control, names):
     return replace(base, experiment=replace(e, **held))
 
 
+def _both_scoped(changer, other, name):
+    """Door S: whether a change of `name` by `changer` and other's change or read of it are both
+    scoped, so they meet only on the slots both name (decided at the definition, scope_errors)."""
+    if not changer.view_change(name).scoped:
+        return False
+    if name in other.VIEW_FIELDS and other is not changer:
+        return other.view_change(name).scoped
+    read = other.scoped_read(name)
+    return read is not None and read.scoped
+
+
+def _whole_field_overlap(earlier, later, name):
+    """The refusal of two changes of `name` that meet on every slot (None: admitted or decided per
+    slot at the definition): commuting contributions apply in declared order, others overlap."""
+    if _both_scoped(earlier, later, name):
+        return None
+    a, b = earlier.view_change(name).contribution, later.view_change(name).contribution
+    if a == b and a in COMMUTING:
+        return None
+    if a == b == "replace":
+        return f"two providers of the view field {name}"
+    return (
+        f"{earlier.LAW_ID} and {later.LAW_ID} both change the view field {name} ({a} and {b}), "
+        "which only commuting changes in declared order may"
+    )
+
+
+def scope_errors(inner, entries, spec):
+    """Door S's admission per slot (docs/SCOPED_COMPOSITION_DESIGN.md §3), for the pairs whose
+    changes and reads are both scoped (the structure check decides every other pair).
+
+    entries: (operator, its declaration) in declared order. Every refusal names the field, both
+    laws and the slots they share, by entity ID."""
+    errors = []
+    ids = {}
+
+    def entity(name):
+        kind = inner.VIEW_FIELD_ENTITIES[name]
+        if kind not in ids:
+            ids[kind] = [e.id for e in getattr(spec.model, kind)]
+        return ids[kind]
+
+    def declared(op, declaration, name, slots_of):
+        given = slots_of(spec, declaration)
+        if name not in given:
+            errors.append(f"{op.LAW_ID} scopes {name} but names no slots for it")
+            return frozenset()
+        n = len(entity(name))
+        slots = frozenset(int(k) for k in given[name])
+        if any(not 0 <= k < n for k in slots):
+            errors.append(f"{op.LAW_ID} names a slot of {name} outside its {n} entities")
+        return slots
+
+    def shared(a, b, name):
+        return ", ".join(entity(name)[k] for k in sorted(a & b))
+
+    changes, reads = {}, {}
+    for i, (op, declaration) in enumerate(entries):
+        for name in op.VIEW_FIELDS:
+            if op.view_change(name).scoped:
+                slots = declared(op, declaration, name, op.changed_slots)
+                changes.setdefault(name, []).append((i, op, slots))
+        for name in dict.fromkeys((*op.VIEW_READS, *op.CONFLICTS_VIEW, *op.SCOPED_READS)):
+            read = op.scoped_read(name)
+            if read is not None and read.scoped and read.mode != "reference":
+                slots = declared(op, declaration, name, op.read_slots)
+                reads.setdefault(name, []).append((i, op, read, slots))
+    for name, listed in changes.items():
+        for k, (_, a, slots_a) in enumerate(listed):
+            for _, b, slots_b in listed[k + 1 :]:
+                both = (a.view_change(name).contribution, b.view_change(name).contribution)
+                if slots_a & slots_b and not (both[0] == both[1] and both[0] in COMMUTING):
+                    errors.append(
+                        f"{a.LAW_ID} and {b.LAW_ID} both change {name} ({both[0]} and {both[1]}) "
+                        f"at {shared(slots_a, slots_b, name)}"
+                    )
+        for j, reader, read, slots_r in reads.get(name, ()):
+            for i, changer, slots_c in listed:
+                if changer is reader or not slots_r & slots_c:
+                    continue
+                if read.mode == "fixed":
+                    errors.append(
+                        f"{reader.LAW_ID} reads {name} as declared at "
+                        f"{shared(slots_r, slots_c, name)}, which {changer.LAW_ID} changes"
+                    )
+                elif i > j:
+                    errors.append(
+                        f"{reader.LAW_ID} reads the view {name} at "
+                        f"{shared(slots_r, slots_c, name)} before {changer.LAW_ID} changes it"
+                    )
+    return errors
+
+
+def slot_mask_errors(entries, spec, p):
+    """Door S: each scoped change's device mask (view_slots, from the bound layout) marks exactly
+    the slots its changed_slots names (empty: consistent)."""
+    errors = []
+    for op, declaration in entries:
+        scoped = [k for k in op.VIEW_FIELDS if op.view_change(k).scoped]
+        if not scoped:
+            continue
+        given, masks = op.changed_slots(spec, declaration), op.view_slots(p, xp=np)
+        for name in scoped:
+            mask = np.asarray(masks.get(name, ()))
+            if mask.dtype != bool or mask.ndim != 1:
+                errors.append(f"{op.LAW_ID} gives no bool slot mask for {name}")
+                continue
+            if set(np.flatnonzero(mask).tolist()) != {int(k) for k in given.get(name, ())}:
+                errors.append(f"{op.LAW_ID}'s slot mask for {name} differs from its slots")
+    return errors
+
+
+# The operators' in-step writers beside declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)
+# gap 8, §7.5 version 1): the core's binding refuses inner movers by node (moved_nodes) and
+# leaves the operators' writers to the composite's admission. An operator's in-step process
+# (PROCESS) declares its writers by node kind (the contract's moves_in_step: (species, "cell" |
+# "outside")), so it is taken to move its species at every node of that kind. The species
+# registry's moved_in_step is not read here: it joins the inner movers by node kind, and an inner
+# route at another node would be a false refusal.
+PASSIVE_ROUTES_ID = "cells.passive_routes@1"
+
+
+def operator_writers(entries, spec):
+    """{(species, node ID): (law ID, ...)}: every row a PROCESS operator's in-step process moves
+    (entries: (operator, its declaration) pairs), each node kind expanded to the definition's
+    nodes of that kind; {} without a PROCESS operator."""
+    m = spec.model
+    nodes = dict(cell=[c.id for c in m.cells], outside=[o.id for o in m.extracellular])
+    out = {}
+    for op, declaration in entries:
+        if not op.PROCESS:
+            continue
+        for species, kind in op.moves_in_step(spec, declaration):
+            if kind not in nodes:
+                raise ConfigError(f"{op.LAW_ID}: moves_in_step gives node kinds cell or outside")
+            for node in nodes[kind]:
+                laws = out.setdefault((species, node), [])
+                if op.LAW_ID not in laws:
+                    laws.append(op.LAW_ID)
+    return {row: tuple(laws) for row, laws in out.items()}
+
+
+def _node_kind(spec, node):
+    return "cell" if node in {c.id for c in spec.model.cells} else "outside"
+
+
+def held_row_errors(entries, spec):
+    """Gap 8, the composite's part: a row a declared kind holds (held_rows: read at every stage,
+    never moved, such as held fuel) is moved by no operator's in-step process (one writer)."""
+    declared = tuple(getattr(spec.model, "kinds", ()))
+    writers = operator_writers(entries, spec) if declared else {}
+    if not writers:
+        return []
+    errors, registry = [], kind_registry.active()
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.held_rows is None:
+            continue
+        for species, node in kind.held_rows(declaration):
+            for law in writers.get((species, node), ()):
+                errors.append(
+                    f"Kind {kind_id} holds {species} at {node}, which {law} moves in the step (its "
+                    f"in-step process moves {species} at every {_node_kind(spec, node)} node); a "
+                    "held row is moved by nothing in the step (one writer)"
+                )
+    return errors
+
+
+def exact_row_errors(entries, spec, p):
+    """§7.5 version 1, the operators' half: a row that an exact-booked passive route moves (its
+    bound passive_exact, the kind's fixpoint over shared rows, and a nonzero permeability, as the
+    booking's own mask) is written by no operator's in-step process. Version 1 refuses such a
+    composition: the route's exact share would average over a change it did not make, and the
+    operators' writers cannot yet join the kind's scope to downgrade it to tableau booking (a
+    seam queued after the landing). A tableau-booked route's rows are not refused."""
+    routes = dict(getattr(spec.model, "kinds", ())).get(PASSIVE_ROUTES_ID)
+    writers = operator_writers(entries, spec) if routes else {}
+    if not writers:
+        return []
+    errors, exact = [], np.asarray(p.passive_exact)
+    for k, route in enumerate(routes):
+        if not (exact[k] and route.permeability > 0):
+            continue
+        for node in (route.inside, route.outside):
+            for law in writers.get((route.species, node), ()):
+                errors.append(
+                    f"{law} moves {route.species} at every {_node_kind(spec, node)} node in the "
+                    f"step (its in-step process), and the passive route {route.id} books "
+                    f"{route.species} at {node} exactly (§7.5); version 1 refuses this because it "
+                    "cannot yet downgrade the route to tableau booking where an operator writes "
+                    "its row"
+                )
+    return errors
+
+
 def structure_errors(inner, operators):
     """Contract violations of an ordered operator list on an inner model (empty: none)."""
     errors = []
@@ -158,13 +484,19 @@ def structure_errors(inner, operators):
             names += list(getattr(op, attribute))
         if len(set(names)) != len(names):
             errors.append(f"two owners of one {kind} field")
-    providers = {}
+    # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §3): two changes, or a change and a read, of one
+    # field meet on every slot unless both are scoped; a pair of scoped ones is admitted per slot
+    # at the definition (scope_errors).
+    providers, changers = {}, {}
     for op in operators:
         for name in op.VIEW_FIELDS:
             if name not in inner.VIEW_FIELDS:
                 errors.append(f"{op.LAW_ID} provides {name}, which is not an inner view field")
-            if name in providers:
-                errors.append(f"two providers of the view field {name}")
+            for earlier in changers.get(name, ()):
+                overlap = _whole_field_overlap(earlier, op, name)
+                if overlap:
+                    errors.append(overlap)
+            changers.setdefault(name, []).append(op)
             providers[name] = op.LAW_ID
         for name in op.CONTROL_FACTORS:
             if name not in inner.CONTROL_FIELDS:
@@ -188,7 +520,7 @@ def structure_errors(inner, operators):
                 f"{name} has closers or a provider, never both ({providers[name]} provides it)"
             )
     accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
-    for op in operators:
+    for i, op in enumerate(operators):
         # Writers follow owners: an entity write targets inner state or a field an
         # earlier operator accepts.
         for name in op.ENTITY_WRITES:
@@ -201,6 +533,17 @@ def structure_errors(inner, operators):
         for name in op.VIEW_READS:
             if name not in provided:
                 errors.append(f"{op.LAW_ID} reads the view {name}; no earlier operator provides it")
+            # A current read follows every changer of what it reads. A later replacement on every
+            # slot is already refused (two providers, or a provider beside a closer), so this
+            # names a later scoped or commuting change, which door S admits beside an earlier one.
+            for changer in operators[i + 1 :]:
+                if name not in changer.VIEW_FIELDS or _both_scoped(changer, op, name):
+                    continue
+                change = changer.view_change(name)
+                if change.scoped or change.contribution != "replace":
+                    errors.append(
+                        f"{op.LAW_ID} reads the view {name} before {changer.LAW_ID} changes it"
+                    )
         provided.update(op.VIEW_FIELDS)
         provided.update(op.CLOSES)
         # One owner per observation column; replacement is a declared chain in order.
@@ -216,10 +559,11 @@ def structure_errors(inner, operators):
                 errors.append(f"{op.LAW_ID} replaces {name}, which no earlier owner observes")
     for op in operators:
         for name in op.CONFLICTS_VIEW:
-            if providers.get(name, op.LAW_ID) != op.LAW_ID:
-                errors.append(
-                    f"{op.LAW_ID} reads {name} as declared, but {providers[name]} provides it"
-                )
+            for changer in changers.get(name, ()):
+                if changer is not op and not _both_scoped(changer, op, name):
+                    errors.append(
+                        f"{op.LAW_ID} reads {name} as declared, but {changer.LAW_ID} provides it"
+                    )
             if closed.get(name, op.LAW_ID) != op.LAW_ID:
                 errors.append(f"{op.LAW_ID} reads {name} as declared, but {closed[name]} closes it")
     for i, op in enumerate(operators):  # A mask's reader follows every closer of it.
@@ -230,6 +574,45 @@ def structure_errors(inner, operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
                 errors.append(f"{op.LAW_ID} requires {law} before it")
+    # Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): an operator that reads or writes a kind's
+    # fields declares the kind (REQUIRES_KINDS), refused where the definition does not declare it;
+    # its declared writes and resets of a kind's fields name the kind too. A factor of a kind's
+    # control is refused: observation holds only today's schedules (held_schedules). An operator
+    # that builds the inner types with today's fields (FIXED_INNER_FIELDS) is refused beside any
+    # declared kind, and so is one that opens, closes or retires slots (CLOSES, RETIRES, or an
+    # activity mask it provides): no closer resets a kind's per-slot fields (state on cell_slot,
+    # membrane_slot, ...), which would be left stale where a slot closes, retires or opens.
+    kinds = tuple(getattr(inner, "KINDS", ()))
+    declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
+    masks = set(getattr(inner, "MASK_FIELDS", ()))
+    for op in operators:
+        if kinds and op.FIXED_INNER_FIELDS:
+            errors.append(
+                f"{op.LAW_ID} builds the inner model's state, layout or control with today's "
+                f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
+            errors.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and no closer resets a kind's "
+                f"per-slot fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
+        for kind_id in sorted(required - declared):
+            errors.append(
+                f"{op.LAW_ID} requires the kind {kind_id}, which the definition does not declare"
+            )
+        for name in dict.fromkeys((*op.ENTITY_WRITES, *op.STATE_RESETS)):
+            if owners.get(name, None) not in (None, *required):
+                errors.append(
+                    f"{op.LAW_ID} writes {name}, a field of the kind {owners[name]}, which it "
+                    "does not require (REQUIRES_KINDS)"
+                )
+        for name in op.CONTROL_FACTORS:
+            if name in owners:
+                errors.append(
+                    f"{op.LAW_ID} multiplies {name}, a control of the kind {owners[name]}; a "
+                    "kind's control is not factored (observation holds only today's schedules)"
+                )
     if sum(op.PROCESS for op in operators) > 1:
         errors.append(
             "at most one in-step membrane process (the inner hook books one combined transfer)"
@@ -264,6 +647,16 @@ def field_map(inner, operators):
         for op in operators
         for k in op.VIEW_FIELDS
     }
+    # Door S: a field several operators change records each change in declared order, the order
+    # it is merged in (docs/SCOPED_COMPOSITION_DESIGN.md §3). Only then, so every other map, and so
+    # its manifests, are unchanged.
+    for k, view in views.items():
+        changers = [op for op in operators if k in op.VIEW_FIELDS]
+        if len(changers) > 1:
+            view["changes"] = [
+                [op.LAW_ID, op.view_change(k).contribution, op.view_change(k).scoped]
+                for op in changers
+            ]
     for k in dict.fromkeys(k for op in operators for k in op.CLOSES):  # Only with closers.
         views[k] = {
             "closers": [op.LAW_ID for op in operators if k in op.CLOSES],
@@ -307,6 +700,8 @@ class Composition:
         self.writers_of = accepted_writers(operators)
         self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
+        # The executable's structure (I2): the inner structure's key and the operator list.
+        self.structure_key = (MODEL_ID, getattr(inner, "structure_key", None), self.laws)
         # Declarations contribute nothing to the step (contract.DECLARATION_ONLY): a composition
         # of declarations alone steps as the empty composition does (FR-1 design §1.6, S5).
         self.stepping = tuple(op for op in operators if not op.DECLARATION_ONLY)
@@ -330,6 +725,22 @@ class Composition:
         )
         self.field_inputs = any(
             set((*op.VIEW_FIELDS, *op.CLOSES)) & set(inner.FIELD_INPUTS) for op in operators
+        )
+        # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2, §4): operators with scoped changes (their
+        # bound slot masks are checked at binding), and the parts that declare a current read at
+        # stage event or split of a field some operator changes, which receive the merged view
+        # (static: by declarations; BOOKS_AT_VIEW keeps its own condition).
+        self.scoped_changers = tuple(
+            op for op in operators if any(op.view_change(k).scoped for k in op.VIEW_FIELDS)
+        )
+        changed = {k for op in operators for k in (*op.VIEW_FIELDS, *op.CLOSES)}
+        self.view_readers = tuple(
+            op
+            for op in operators
+            if any(
+                r.mode == "current" and r.stage in ("event", "split") and k in changed
+                for k, r in op.SCOPED_READS.items()
+            )
         )
         # Topology (S5 design §2, §3.5). With a closer the composite owns the capacitor-energy
         # correction at the view, referenced to the view of the initial state through two
@@ -443,7 +854,9 @@ class Composition:
         state, p = self.inner.initial_values(projection(spec))
         values, layout = state._asdict(), p._asdict()
         for op, declaration, schedule in entries(spec):
-            owned, bound = op.initial_values(spec, declaration, schedule, state, p)
+            owned, bound = op.initial_values(
+                spec, declaration, schedule, state, p, **self._inner_keyword(op)
+            )
             values.update(owned)
             layout.update(bound)
         kind = (
@@ -452,7 +865,12 @@ class Composition:
         if self.owns_view_energy:
             values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)
             layout.update(self._view_references(self.STATE_TYPE(**values), kind, layout))
-        return self.STATE_TYPE(**values), kind(**layout)
+        p = kind(**layout)
+        if self.scoped_changers:  # Door S: each bound slot mask marks its declared slots.
+            masks = slot_mask_errors([(op, d) for op, d, _ in entries(spec)], spec, p)
+            if masks:
+                raise ConfigError("Invalid operator composition: " + "; ".join(masks))
+        return self.STATE_TYPE(**values), p
 
     def _closed_initial_state(self, state, kind, layout):
         """The bound state with closed contacts' gates at @3's padded 0 (S5 design §2).
@@ -540,12 +958,10 @@ class Composition:
         valid, current = None, state
         for op in self.events:
             if op in active:
-                if op.BOOKS_AT_VIEW and self.field_inputs:  # Static: S5's partition.
-                    current, ok = op.event(
-                        current, control, p, xp=xp, view=lambda s: self.view(p, s, xp=xp)
-                    )
-                else:
-                    current, ok = op.event(current, control, p, xp=xp)
+                keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
+                if self._passes_view(op):  # Static: S5's partition; door S's current readers.
+                    keywords["view"] = lambda s: self.view(p, s, xp=xp)
+                current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
         h = 0.5 * dt
         splits = tuple(op for op in self.splits if op in active)
@@ -596,12 +1012,24 @@ class Composition:
 
     imex_step = split_step
 
+    def _inner_keyword(self, op):
+        """{"inner": the inner implementation object} for an operator that declares USES_INNER,
+        else {} (static: every other call is unchanged)."""
+        return {"inner": self.inner} if op.USES_INNER else {}
+
+    def _passes_view(self, op):
+        """Whether op's event or half-step receives the merged view (static): one that books at
+        the view when a field input is provided, or a door S current reader (view_readers)."""
+        return (op.BOOKS_AT_VIEW and self.field_inputs) or op in self.view_readers
+
     def _half_step(self, op, state, h, control, p, *, xp):
         """op's half-step; one that books at the view gets the current view when a field
-        input is provided (static: otherwise the call is unchanged)."""
-        if op.BOOKS_AT_VIEW and self.field_inputs:
-            return op.half_step(state, h, control, p, xp=xp, view=self.view(p, state, xp=xp))
-        return op.half_step(state, h, control, p, xp=xp)
+        input is provided, and a door S current reader gets the merged view (static: otherwise
+        the call is unchanged)."""
+        keywords = self._inner_keyword(op)
+        if self._passes_view(op):
+            keywords["view"] = self.view(p, state, xp=xp)
+        return op.half_step(state, h, control, p, xp=xp, **keywords)
 
     def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""
@@ -632,7 +1060,10 @@ class Composition:
         if self.process_operator is not None:
             hook = dict(membrane_process=self.process_operator.process(control, p))
         v = self.inner.readouts(self.inner.inner_state(state), inner_control, view, xp=xp, **hook)
-        computed = [op.rates(state, control, p, view, xp=xp) for op in self.operators]
+        computed = [
+            op.rates(state, control, p, view, xp=xp, **self._inner_keyword(op))
+            for op in self.operators
+        ]
         derivative = list(v.derivative)
         for op, (rates, _, _) in zip(self.operators, computed, strict=True):
             derivative.extend(rates[k] for k in op.STATE_AXES)
@@ -698,6 +1129,21 @@ class Composition:
         The inner definition was checked by its own parser. Each change of the
         schedule union is checked on the compact initial state (the domain and a
         valid field), then each operator's own checks run.
+
+        The RK4 composition rule comes first: it reads only the solver, so it refuses from the
+        declarations before the definition is read. Then the definition's declared kinds must be
+        the inner structure's (schema A): a composition bound without the definition's structure
+        (the full catalogue) would drop them.
+
+        The species registry's checks run next, ahead of every other check of the definition: the
+        inner parser's hook sees the inner definition only, so an operator's in-step mover of a
+        two-form row, or an operator that names one, is refused here (core/species_registry.py;
+        D176).
+
+        Beside declared kinds, an operator's in-step process (moves_in_step) that writes a row a
+        kind holds is refused (held_row_errors, gap 8), and so is one that writes a row an
+        exact-booked passive route moves, read from the bound layout (exact_row_errors, §7.5
+        version 1).
         """
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
@@ -710,6 +1156,24 @@ class Composition:
                     "An RK4 composition with a coupled operator cannot hold event maps, "
                     "split-only parts or integer state"
                 )
+        kinds = tuple(kind_id for kind_id, _ in getattr(spec.model, "kinds", ()))
+        if kinds != tuple(getattr(self.inner, "KINDS", ())):
+            raise ConfigError(
+                f"The definition declares the kinds {list(kinds)}, but the composition's inner "
+                f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
+            )
+        species_registry.check_definition(spec)
+        pairs = [(op, d) for op, d, _ in entries(spec)]
+        scoped = scope_errors(self.inner, pairs, spec)
+        if scoped:
+            raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
+        # The operators' in-step writers beside declared kinds (held_row_errors,
+        # exact_row_errors): only with kinds and an in-step process, so no world without them
+        # makes either call.
+        writing = bool(kinds) and self.process_operator is not None
+        held = held_row_errors(pairs, spec) if writing else []
+        if held:
+            raise ConfigError("Invalid operator composition: " + "; ".join(held))
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
@@ -720,6 +1184,9 @@ class Composition:
                 )
         small = compact(spec)
         state, p = self.initial_values(small)
+        exact = exact_row_errors(pairs, spec, p) if writing else []
+        if exact:
+            raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
             x = spec.execution
             self.inner.check_field_inputs(p, x.capacity + x.extracellular_capacity)
