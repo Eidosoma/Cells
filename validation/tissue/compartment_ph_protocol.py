@@ -633,6 +633,25 @@ MODULE_PATHS = (
     "earlier text naming the old ones (the execution path's correction, the questions as asked) "
     "reads with the new folder. Nothing else changes"
 )
+DECLARED_WORLD_FR4 = (
+    "pre-run correction, 16 November 2026, the lead's ruling on the judged world: every engine "
+    "part runs the declared world, fr4_world with FR-1's compartment operator, which is what the "
+    "world's builder describes (validation/compartment_ph_engine/definitions.declared_world: the "
+    "composite resolved_pump_composite@1, @3 inner, cell_owned_compartments@1 with refusal 4's "
+    "version 1.1), in place of the development world without the operator, which development runs "
+    "keep. Measured before any judged run (fr45-compartment-op e73e4afd, CPU 1, the vector path; "
+    "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-e73e4afd-declared/): the "
+    "declared world's records are bitwise equal to the development world's at 20 s and at all 901 "
+    "records over 900 s (every series, amount row, stage extremum and ledger), since the operator "
+    "adds identity and refusals only"
+)
+DECLARED_WORLD_FR5 = (
+    "pre-run correction, 16 November 2026, the lead's ruling on the judged world, as FR-4's: every "
+    "engine part runs the declared world with FR-1's compartment operator (the composite, "
+    "definitions.declared_world), in place of the development world without it; FR-4's world "
+    "showed the two bitwise equal over 900 s (fr45-compartment-op e73e4afd, "
+    "dev-e73e4afd-declared/), and FR-5's world is checked the same way once its kinds are wired"
+)
 EXECUTION_PATH = (
     "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
     "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
@@ -676,6 +695,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         COST_FR4,
         J3_START_NODES,
         MODULE_PATHS,
+        DECLARED_WORLD_FR4,
         "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
         "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
         "zero envelope refusals in a completed part and the engine's reported running maximum of "
@@ -696,6 +716,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         COST_FR5,
         J3_START_NODES,
         MODULE_PATHS,
+        DECLARED_WORLD_FR5,
         "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
