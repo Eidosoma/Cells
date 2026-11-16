@@ -1,10 +1,12 @@
-"""FR-5's source kinds (the FR-4/FR-5 note's §16): cells.patch_damage@1 and cells.ph_condition@1.
+"""FR-5's source kinds (the FR-4/FR-5 note's §16; INNER §7.4 (l), (n)): cells.patch_damage@1 and
+cells.ph_condition@1.
 
-Their declarations and refusals through the real parse (FR-4's development world with the kinds
-declared), and their hooks on the host: the damage's exact step from the applied hazards
-(composition, the equilibrium, [0, 1] at any step, no schedule leaves d unchanged), the
-derivatives the tableau carries, and both kinds' factors for the routing door (the core's seam).
-The engine's run of both kinds is test_fr5_source_kinds_engine.py.
+Their declarations, the damage's schedules (`damage_controls`, the core's Schedule) and their
+refusals through the real parse (FR-4's development world with the kinds declared), and their
+hooks on the host: the damage's exact step at the step's held control (composition, the
+equilibrium, [0, 1] at any step), the derivative the tableau carries, and both kinds' factors for
+the routing door. The engine's runs are test_fr5_source_kinds_engine.py and
+test_fr5_world_engine.py.
 """
 
 import copy
@@ -14,9 +16,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from cells.core.kind_registry import declared_schedule
 from cells.core.specs import ConfigError, parse_spec
+from cells.core.surface_pump_v3_spec import control_values
 from cells.models.inner_kinds import patch_damage as damage
 from cells.models.inner_kinds import ph_condition as condition
+from cells.processes import patch_damage as law
 from cells.processes import ph_condition as phc
 from cells.processes import rapid_proton_buffer as closure
 from validation.compartment_ph_engine import definitions as defs
@@ -25,23 +30,30 @@ DAMAGE = dict(id="damage_0", patch=defs.BOUNDING, law="bounding_patch_damage@1",
               initial_damage=0.25, injury_rate_per_s=1.0, resealing_rate_per_s=0.05)
 CONDITION = dict(id="acid_0", node=defs.LUMEN, law="ph_conditioned_factor@1", ph50=5.5,
                  slope=4.0)
+SCHEDULE = [dict(damage_id="damage_0",
+                 injury=[dict(time=0.0, value=0.0), dict(time=0.25, value=1.0),
+                         dict(time=0.5, value=0.0)],
+                 resealing=[dict(time=0.0, value=0.0), dict(time=0.5, value=1.0)])]
 
 
-def world(damages=(DAMAGE,), conditions=(CONDITION,)):
-    """FR-4's development world with the source kinds declared (no route reads them yet)."""
+def world(damages=(DAMAGE,), conditions=(CONDITION,), schedule=None):
+    """FR-4's development world (1 s) with the source kinds declared (no route reads them)."""
     d = defs.development_world(defs.fr4_world())
+    d["experiment"]["end_time"] = 1.0
+    d["experiment"]["observation_times"] = [0.0, 1.0]
+    d["execution"]["max_steps"] = 1008
     if damages is not None:
         d["model"]["patch_damage"] = [copy.deepcopy(x) for x in damages]
     if conditions is not None:
         d["model"]["ph_conditions"] = [copy.deepcopy(x) for x in conditions]
+    if schedule is not None:
+        d["experiment"]["damage_controls"] = copy.deepcopy(schedule)
     return d
 
 
 def refused(match, **changes):
-    damages = changes.pop("damages", (DAMAGE,))
-    conditions = changes.pop("conditions", (CONDITION,))
     with pytest.raises(ConfigError, match=match):
-        parse_spec(world(damages, conditions))
+        parse_spec(world(**changes))
 
 
 # ------------------------------------------------------------------------ declarations
@@ -57,14 +69,15 @@ def test_both_kinds_parse_round_trip_and_append_their_fields():
     assert damage.parse(damage.to_dict(kinds[damage.KIND_ID]), spec) == kinds[damage.KIND_ID]
     assert condition.parse(condition.to_dict(kinds[condition.KIND_ID]), spec) == kinds[
         condition.KIND_ID]
-    assert damage.factor_sources(kinds[damage.KIND_ID]) == ("damage_0",)
-    assert condition.factor_sources(kinds[condition.KIND_ID]) == ("acid_0",)
+    # The routing door's source hooks, registered (§7.4 (n)).
+    for kind, sources in ((damage.PATCH_DAMAGE, ("damage_0",)),
+                          (condition.PH_CONDITION, ("acid_0",))):
+        assert kind.factor_sources(dict(spec.model.kinds)[kind.kind_id]) == sources
+        assert kind.factors is not None and kind.routed_controls is None
     from cells.models.registry import get_model
 
     model = get_model(spec.model)
-    fields = model.STATE_TYPE._fields
-    assert {"patch_damage", "patch_damage_injury_hazard", "patch_damage_resealing_hazard"} <= set(
-        fields)
+    assert "patch_damage" in model.STATE_TYPE._fields
     state, p = model.initial_values(spec)
     bounding = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
     assert float(state.patch_damage[bounding]) == 0.25
@@ -116,12 +129,56 @@ def test_an_undeclared_source_kind_is_absent():
 
     fields = get_model(spec.model).STATE_TYPE._fields
     assert not any(f.startswith("patch_damage") for f in fields)
+    refused("damage_controls", damages=None, schedule=SCHEDULE)  # An undeclared kind's key.
+
+
+# ------------------------------------------------------------------------ the schedules
+
+
+def test_the_schedules_are_the_cores_with_breakpoints_in_the_change_times():
+    spec = parse_spec(world(schedule=SCHEDULE))
+    schedule = declared_schedule(spec, damage.KIND_ID)
+    assert schedule.names == ("damage_0.injury", "damage_0.resealing")
+    assert dict(schedule.series) == {"damage_0.injury": ((0.0, 0.0), (0.25, 1.0), (0.5, 0.0)),
+                                     "damage_0.resealing": ((0.0, 0.0), (0.5, 1.0))}
+    times = [c.time for c in spec.experiment.changes]
+    assert {0.25, 0.5} <= set(times)
+    bounding = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
+    table = control_values(spec, [0.0, 0.2, 0.25, 0.4999, 0.5, 0.9])
+    assert list(table.patch_damage_injury[:, bounding]) == [0, 0, 1, 1, 0, 0]
+    assert list(table.patch_damage_resealing[:, bounding]) == [0, 0, 0, 0, 1, 1]
+    assert not np.delete(np.asarray(table.patch_damage_injury), bounding, axis=1).any()
+    # Round trip, and the default omitted: the definition without the key keeps its form.
+    again = parse_spec(spec.to_dict())
+    assert again.fingerprint == spec.fingerprint
+    assert spec.to_dict()["experiment"]["damage_controls"] == SCHEDULE
+    plain = parse_spec(world())
+    assert "damage_controls" not in plain.to_dict()["experiment"]
+    assert declared_schedule(plain, damage.KIND_ID) == damage.default_schedule(
+        dict(plain.model.kinds)[damage.KIND_ID])
+
+
+@pytest.mark.parametrize("entry, match", [
+    (dict(SCHEDULE[0], damage_id="damage_9"), "unknown damage entity"),
+    ({k: v for k, v in SCHEDULE[0].items() if k != "resealing"}, "missing"),
+    (dict(SCHEDULE[0], injury=[dict(time=0.0, value=1.5)]), r"in \[0, 1\]"),
+    (dict(SCHEDULE[0], injury=[dict(time=0.1, value=1.0)]), "starts at time 0"),
+    (dict(SCHEDULE[0], injury=[dict(time=0.0, value=0.0), dict(time=2.0, value=1.0)]),
+     "horizon|end"),
+])
+def test_a_schedule_outside_its_contract_is_refused(entry, match):
+    refused(match, schedule=[entry])
+
+
+def test_an_entity_is_scheduled_at_most_once_and_the_list_is_nonempty():
+    refused("scheduled twice", schedule=SCHEDULE * 2)
+    refused("non-empty list", schedule=[])
 
 
 # ------------------------------------------------------------------------ the damage's step
 
 
-def layout(k=3, present=(False, True, False), injury=1.0, resealing=0.05):
+def layout(present=(False, True, False), injury=1.0, resealing=0.05):
     present = np.asarray(present)
     return SimpleNamespace(
         patch_damage_present=present,
@@ -142,47 +199,40 @@ def closed_form(d0, a, b, t):
 @pytest.mark.parametrize("d0, a, b", [(0.0, 1.0, 0.0), (0.25, 1.0, 0.05), (0.99995, 0.0, 0.05),
                                        (0.5, 0.0, 0.0), (1.0, 1.0, 0.0), (0.3, 2e3, 7e2)])
 def test_the_exact_step_composes_and_matches_the_closed_form(d0, a, b):
-    """n steps of the exact step from the applied hazards equal the closed form to rounding, and
-    two half steps equal one step: d is exact at every step's end."""
+    """n steps of the law's exact step equal the closed form to rounding, and two half steps equal
+    one step: d is exact at every step's end."""
     h, n = 5e-4, 2000
     d = np.asarray(d0)
     for _ in range(n):
-        d = damage.exact_damage(d, a * h, b * h, xp=np)
+        d = law.exact_step(d, a, b, 1.0, 1.0, h, xp=np)
     assert abs(float(d) - closed_form(d0, a, b, n * h)) <= 8 * n * np.finfo(float).eps
-    one = damage.exact_damage(np.asarray(d0), a * h, b * h, xp=np)
-    half = damage.exact_damage(damage.exact_damage(np.asarray(d0), a * h / 2, b * h / 2, xp=np),
-                               a * h / 2, b * h / 2, xp=np)
+    one = law.exact_step(np.asarray(d0), a, b, 1.0, 1.0, h, xp=np)
+    half = law.exact_step(law.exact_step(np.asarray(d0), a, b, 1.0, 1.0, h / 2, xp=np),
+                          a, b, 1.0, 1.0, h / 2, xp=np)
     assert abs(float(one) - float(half)) <= 4 * np.finfo(float).eps
     assert 0.0 <= float(d) <= 1.0
+    for big in (1e4, 1e8):  # Any step stays in [0, 1].
+        assert 0.0 <= float(law.exact_step(np.asarray(d0), a, b, 1.0, 1.0, big, xp=np)) <= 1.0
 
 
-def test_d_stays_in_unit_interval_at_any_step_and_no_hazard_leaves_it_unchanged():
-    for d0 in (0.0, 0.1, 0.5, 0.9, 1.0):
-        for a_h, b_h in ((1e4, 0.0), (0.0, 1e4), (3e3, 5e3), (1e-20, 1e-20)):
-            d = float(damage.exact_damage(np.asarray(d0), a_h, b_h, xp=np))
-            assert 0.0 <= d <= 1.0
-        assert float(damage.exact_damage(np.asarray(d0), 0.0, 0.0, xp=np)) == d0
-
-
-def test_book_takes_the_applied_hazards_and_rates_carry_the_derivatives():
+def test_book_takes_the_held_control_and_rates_carry_the_derivative():
     p = layout()
     control = SimpleNamespace(patch_damage_injury=np.array([0.0, 1.0, 0.0]),
                               patch_damage_resealing=np.array([0.0, 1.0, 0.0]))
-    a, b = damage.hazard_rates(control, p)
-    assert list(a) == [0.0, 1.0, 0.0] and list(b) == [0.0, 0.05, 0.0]
     start = SimpleNamespace(patch_damage=np.array([0.0, 0.4, 0.0]))
-    applied = {"patch_damage_injury_hazard": a, "patch_damage_resealing_hazard": b}.__getitem__
-    booked, ok = damage.book(applied, start, None, p, 1e-3, xp=np)
+    booked, ok = damage.book(None, start, None, control, p, 1e-3, xp=np)
     expected = closed_form(0.4, 1.0, 0.05, 1e-3)
     assert ok and abs(booked["patch_damage"][1] - expected) <= 4 * np.finfo(float).eps
     assert booked["patch_damage"][0] == booked["patch_damage"][2] == 0.0
+    off = SimpleNamespace(patch_damage_injury=np.zeros(3), patch_damage_resealing=np.zeros(3))
+    assert damage.book(None, start, None, off, p, 1e-3, xp=np)[0]["patch_damage"][1] == 0.4
     state = SimpleNamespace(patch_damage=np.array([0.0, 0.4, 0.0]),
                             amount_increment=np.zeros((9, 1)),
                             extracellular_amount_increment=np.zeros((9, 2)))
     rates = damage.rates(state, None, control, p, xp=np)
     assert rates.valid and not rates.cell.any() and not rates.outside.any()
     assert rates.derivatives["patch_damage"][1] == pytest.approx(1.0 * 0.6 - 0.05 * 0.4)
-    assert list(rates.derivatives["patch_damage_injury_hazard"]) == list(a)
+    assert set(rates.derivatives) == {"patch_damage"}
     assert float(rates.heat_pJ_s) == float(rates.work_pJ_s) == 0.0
     out_of_range = SimpleNamespace(**{**vars(state), "patch_damage": np.array([0.0, 1.2, 0.0])})
     assert not damage.rates(out_of_range, None, control, p, xp=np).valid
@@ -190,22 +240,17 @@ def test_book_takes_the_applied_hazards_and_rates_carry_the_derivatives():
 
 def test_the_damage_domain_and_its_factor():
     p = layout()
-    good = SimpleNamespace(patch_damage=np.array([0.0, 0.7, 0.0]),
-                           patch_damage_injury_hazard=np.array([0.0, 3.0, 0.0]),
-                           patch_damage_resealing_hazard=np.array([0.0, 0.1, 0.0]))
+    good = SimpleNamespace(patch_damage=np.array([0.0, 0.7, 0.0]))
     assert damage.domain(good, p, xp=np)
-    for name, value in (("patch_damage", [0.0, 1.0 + 1e-12, 0.0]),
-                        ("patch_damage", [0.1, 0.7, 0.0]),
-                        ("patch_damage_injury_hazard", [0.0, -1e-30, 0.0])):
-        assert not damage.domain(SimpleNamespace(**{**vars(good), name: np.array(value)}), p,
-                                 xp=np)
+    for value in ([0.0, 1.0 + 1e-12, 0.0], [0.1, 0.7, 0.0], [0.0, -1e-30, 0.0]):
+        assert not damage.domain(SimpleNamespace(patch_damage=np.array(value)), p, xp=np)
     assert list(damage.factors(good, p, xp=np)) == [0.7]
 
 
 # ------------------------------------------------------------------------ the condition's factor
 
 
-def test_the_condition_reads_free_h_at_its_node_as_b4s_ph():
+def test_the_condition_reads_free_h_at_its_node_as_every_rate_does():
     spec = parse_spec(world())
     from cells.models.registry import get_model
 

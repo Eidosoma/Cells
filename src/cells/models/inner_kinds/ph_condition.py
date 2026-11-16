@@ -23,7 +23,7 @@ with an optional `proton` row (default "H"), which must be B4's proton row where
 - **Layout,** per condition: its node (cells, then outside nodes, as the passive routes index
   them), its proton row, pH50 and the slope.
 - **readouts:** f per condition (`ph_condition_factor`), on the observed row's read.
-- **The routing door's source** (§16.2; the core's seam, its API as the core lands it):
+- **The routing door's source** (INNER_MODEL_V4_DESIGN.md §7.4 (n), the core's seam):
   `factor_sources(declaration)`, the condition IDs in declared order, and `factors(read, p, *,
   xp)`, f of each on the stage's read. h > 0 at the node is the read's and @3's domain (a failed
   read and a non-positive amount refuse the step before any factor); the door's [0, 1] check
@@ -207,5 +207,7 @@ PH_CONDITION = BUILTIN.register(
         initial=initial,
         readouts=readouts,
         check_definition=check_definition,
+        factor_sources=factor_sources,
+        factors=factors,
     )
 )
