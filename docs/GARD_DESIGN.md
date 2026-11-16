@@ -1,6 +1,8 @@
 # GARD in Cells: catalytic assemblies, exchange, fission and lineage (design)
 
-**Status: PROPOSED, 16 November 2026.** Written by the GARD design lane for the lead. The advisor
+**Status: DECIDED, 16 November 2026: the recommendations of §4, and the comparison of §6.2 (D192).**
+Built in step 4 of D194's order. An independent check of §2.2's finding, and its scope, is in §2.5.
+Proposed the same day, written by the GARD design lane for the lead. The advisor
 reviews it before its options go to the user (D142: options first, then discussion). Docs only;
 nothing here is built. Branch `gard-design` from 3c10b833 (integration-d172's c1).
 
@@ -32,7 +34,8 @@ registry's identities and the run-view writer (with additions, §5). The composi
    - **The rate law (mean field) is admissible.** Each type's net flux has the sign of its own
      affinity, so catalysis is kinetic only. With the preprint's numbers no composition can
      equilibrate: the held reservoir drives growth, and composomes are non-equilibrium states.
-   - **The jump process as published is not microscopically reversible (**S**, new).** A join is
+   - **The single-event jump process the preprint states is not microscopically reversible (**S**,
+     new; checked independently, §2.5).** A join is
      evaluated before the molecule arrives, and its reverse leave after. Kolmogorov's cycle test
      fails. In a closed two-type world, the published kernel's stationary law departs from
      equilibrium (total variation 0.58) with no free-energy source.
@@ -223,6 +226,10 @@ heat rate RT Σ_i J_i A_i is non-negative term by term. What follows (**S**):
 
 ### 2.2 The jump process (single-molecule events)
 
+**What "published" means in this section.** It means the single-event kernel that the preprint
+states (S01, p. 10 and Appendix F): the event-by-event split of the original rate law, Eq. 4 of
+Segrè, Ben-Eli and Lancet 2000. See §2.5 for what the original papers state.
+
 A join takes n → n + e_i at rate a_i⁺(n), and its reverse leave takes n + e_i → n at rate
 a_i⁻(n + e_i). Their ratio, in the published form, is
 
@@ -288,6 +295,29 @@ non-negative for any positive rates, so it cannot fail; mean heat alone is not b
 law bounds heat plus the ensemble's entropy change); and a fluctuation theorem in a closed world
 started at equilibrium is trivially satisfied. The kernel identity, the product-form stationary law
 and the ln π closure carry the teeth, each with its planted control (§6.1).
+
+
+### 2.5 The independent check, and its scope (16 November 2026)
+
+An agent that had read neither this note nor the engine checked §2.2's finding by exact rational
+enumeration (evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/`).
+- **The preprint's kernel.** In a closed two-type world, with 15 to 48 states, the preprint's
+  single-event kernel fails Kolmogorov's criterion on every unit square for generic β. One
+  hand-checkable square gives a cycle ratio of 44/63. The events-only form of T2-02 has the same
+  cycle ratios, and so does the preprint's buffered reservoir.
+- **A rank-one β is the exception:** the chain is reversible, with a shifted equilibrium. So
+  "different factors, hence irreversible" holds generically, not always.
+- **The original authors' kernel is not established either way.** The three papers read (2000,
+  2014, 2018) state the rate law but no event rates. The 2000 paper's stochastic scheme draws
+  Poisson changes on the net rate. That is a different kernel, irreversible even at β = 0, for a
+  reason unrelated to this finding. The preprint's code repository was not inspected.
+- **Not tested:** the preprint's vector-Poisson contracts.
+- **The preprint's runs are not affected.** They are driven (a held reservoir, growth and
+  fission), where detailed balance is not expected. The finding is about the kernel's microscopic
+  consistency.
+- **The pair-consistent form** (the leaving molecule does not catalyse its own leave) has no failing
+  square for any β. It keeps the β-independent equilibrium exactly, and agrees with the preprint's
+  rates to leading order in 1/N, except for strongly self-catalytic types.
 
 ## 3. What exists and what is new
 

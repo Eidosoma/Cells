@@ -384,6 +384,20 @@ def test_a_complete_fr5_run_passes_every_criterion_and_its_claims_and_controls_c
     assert "J11_R_release" in failed(parts, protocol)
 
 
+def test_records_that_end_inside_the_injury_window_leave_the_release_undefined_not_a_crash():
+    """A completed part whose records end inside arm R's window (100 to 160 s), as a 20 s quick
+    pass's do (found by FR-5's dry run, 16 November 2026): the release through the pore is
+    undefined (None), so J11_R_release fails, and the judge still writes its verdict."""
+    parts = fr5_parts()
+    rung = parts["R_rung_0p5ms"]
+    rung["record_s"] = rung["record_s"][:121]
+    rung["series"] = {k: v[:121] for k, v in rung["series"].items()}
+    derived = judge.derive(parts, PROTOCOLS["fr5"])
+    assert derived["R"]["claims"]["engine"]["released_in_window"] is None
+    assert derived["R"]["claims"]["reference"]["released_in_window"] is not None
+    assert "J11_R_release" in failed(parts, PROTOCOLS["fr5"])
+
+
 def test_an_exact_damage_state_passes_and_a_resolved_one_fails_its_exactness():
     """FR-5's Q3, ruled: d exact at rounding on every rung pair, fixed before the run."""
     assert failed(fr5_parts(exact_d=True), PROTOCOLS["fr5"]) == []

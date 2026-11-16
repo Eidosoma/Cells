@@ -550,7 +550,9 @@ def claims(eng, ref, a, budget):
         if pore and usable(part, pore):
             x_l = part["series"]["X_L"]
             moved = part["series"][pore]
-            out_of_lumen = at_time(t, moved, w0) - at_time(t, moved, w1)
+            # None where the records do not reach the window (a refused or quick part).
+            at_start, at_end = at_time(t, moved, w0), at_time(t, moved, w1)
+            out_of_lumen = None if at_start is None or at_end is None else at_start - at_end
             entry["released_in_window"] = ratio(out_of_lumen, x_l[0])
         out[label] = entry
     e, r = out.get("engine"), out.get("reference")

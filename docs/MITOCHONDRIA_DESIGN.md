@@ -1,6 +1,8 @@
 # Mitochondria: design (proposed)
 
-**Status: PROPOSED, 16 November 2026. Design only: no engine code.** Written on branch
+**Status: DECIDED, 16 November 2026: the options of §3 and the questions of §9.1 (D193).** Built
+in step 4 of D194's order. Beard 2005's legibility, since checked, is under the screen items. Proposed
+the same day; design only, no engine code. Written on branch
 `mito-design` from 3c10b833, integration-d172's landing candidate. The note reaches main after
 D172's landing. It gives the user options with recommendations, and asks the D138 question (§9.1).
 
@@ -280,6 +282,14 @@ Cells refuses a flux that runs against its own gradient.
 
 **The screen items for the reference agent.** Beard's equations and both Table 1s are images on the
 article pages, so no formula was read here.
+- **Checked later the same day, by an independent agent:** both are legible from PLOS's open XML
+  (the article, e36, and the 2006 correction, e8).
+  - The 25 display equations carry their MathML inside XML comments. 15 are well-formed, and all
+    are readable once the tags are stripped.
+  - Table 1's 35 parameters are text in a comment. The correction changes 9 of them.
+  - The comment text was not checked against the typeset images. One apparent slip, an ATP label
+    on the ADP flux in e013, is to be checked against the image.
+  - Evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/` (`beard_table1.json`).
 1. **The complexes and the synthesis flux** are described as mass action driven toward equilibrium,
    with each complex's standard energy in its driving force, and F1F0 by "the thermodynamically
    balanced expression" [full].

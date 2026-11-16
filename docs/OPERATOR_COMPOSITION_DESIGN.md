@@ -1,6 +1,7 @@
 # Operator composition: operators that read each other's current state (design)
 
-**Status: PROPOSED, 16 November 2026.** Written by this lane's operators owner for the lead. The
+**Status: DECIDED, 16 November 2026: option A, one general rule (D191).** Built in step 3 of D194's
+order. Proposed the same day, written by this lane's operators owner for the lead. The
 advisor reviews it before its options go to the user (D142: options first, then discussion). Docs
 only; nothing here is built. Branch `composition-design` from 3c10b833 (integration-d172's c1).
 

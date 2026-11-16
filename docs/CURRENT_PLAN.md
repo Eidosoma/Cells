@@ -41,11 +41,11 @@ experiment).
 | Reactions on the shared inventory (D152 v1) | **Numerically qualified** within MG0c's scope (15 November): the judged run of `mg0c-turing-v1` passed 55 of 55, with the guards and every kept control. CPU only |
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
 | Phase markers | Start, completion and failure records implemented (`core/phases.py`'s `Recorder`, 15 November) |
-| Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)). The operator contract's view interface landed with D172's round (16 November); the operators' declarations and the writer are built on branch `run-view-d154` and merge after their own gate (working order, item 2.3) |
+| Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)). The operator contract's view interface landed with D172's round (16 November); the operators' declarations and the writer (`cells.run_view@1`) merged into main the same evening, with FR-11's first looping development run (PROGRESS) |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November). Its [design note](HUMAN_CARDIAC_LAWS_DESIGN.md) is proposed and on main since 16 November, and its choices are recorded in D184: O'Hara–Rudy 2011's endocardial cell, with the whole-cell comparison approved. Engine work starts after the landing |
-| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), for development, not judged |
-| The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **Landed on 16 November** (tag `d172-landed-2026-11-16`, merge ab267c39 of candidate 3c10b833). It passed the results gate, crossrev, tiers 1–3 (every non-passing tier-3 file classified, none the round's), G2 and the L4 block; the records are in PROGRESS. The lanes built on it (core-next, FR-4/FR-5, the run view, windows, the packed planner) merge next, each after its own gate |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), and FR-5's source kinds, refusal 4 version 1.2 and refusal 5 version 1.1 merged with fr45-next the same evening, all for development, not judged. Their protocols, `fr4-acidification-v1` and `fr5-transfer-v1`, are proposed |
+| The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **Landed on 16 November** (tag `d172-landed-2026-11-16`, merge ab267c39 of candidate 3c10b833). It passed the results gate, crossrev, tiers 1–3 (every non-passing tier-3 file classified, none the round's), G2 and the L4 block; the records are in PROGRESS. The lanes built on it merged the same evening, each after its own gate: core-next, windows (the packed planner's seams and opt-in device row checks; the planner itself merges after its own gate), fr45-next, the run view and core-fixes. G1 has since run at core-next, at core-fixes and on main a83d8f15, 113 of 113 each. G3's negative controls and G4's measurements are owed, and run with tier 3 on D188's final tree (D194) |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | The kind and species registries landed with D172 (16 November). The model-level declarative registry and the one production path are not started. D147's policy for composite definitions landed on 14 November |
 
@@ -58,11 +58,20 @@ experiment).
    - **In parallel it carried:** B4's stage read and the passive law's insertion point (the core);
      the adapter and the families' refusals (the integration owner); O3's run-view declarations
      (the operators).
-2. **Now, after the landing, in order:**
-   0. **Merging the lanes built on the round,** each after its gate on main plus the branch:
-      core-next first, then fr45-next, run-view-d154 and windows-next-clean. Then D188's
-      source-tree restructure (step 0's legacy list and probe, then two scripted moves). Owed
-      from the landing's acceptance plan:
+2. **Now, after the landing, in order** (from 16 November evening, D194's order supersedes the rest
+   of this list where they differ):
+   - **Done, 16 November:** the lanes built on the round merged, each after its gate: core-next,
+     windows, fr45-next, run-view-d154, core-fixes and the test audit. The full verification of
+     main a83d8f15 passed (tiers 1+2 517 files 0 changed, G1 113 of 113, crossrev's new record).
+   - **D194's order:**
+     1. D188's moves. The retire (D189) and the BLAS pin (D190) land first.
+     2. One core-seams pass, with the core's built but unlanded items on `core-fixes` (the
+        fuel-potential check, the material-slope seam, the passive-route view set).
+     3. Then in parallel: the human cardiac laws, composition A (D191) and finite fuel.
+     4. Mitochondria (D193) and GARD (D192), after their prerequisites.
+   0. **Merging the lanes built on the round** (done, above). Then D188's source-tree restructure
+      (step 0's legacy list, settled in D189, and its probe, then two scripted moves). Owed from
+      the landing's acceptance plan, and run with tier 3 on D188's final tree (D194):
       - G3's negative controls on landed main (planted changes that must fail the results
         gate; about 1–2 CPU-hours);
       - G4's measurements (compile time, memory and end-to-end time) on a quiet machine.
@@ -71,8 +80,8 @@ experiment).
       tiers, and the results gate's own planted-difference self-test exists.
    1. FR-4 and FR-5: registration, rehearsal and judged runs on the landed core.
    2. The finite-fuel case (D176 item 2) against its independent reference.
-   3. The run-view writer (D154). It is built on branch `run-view-d154` (01fa27d9, from
-      integration-d172 at 0ae1943a), with a worked example on the secreted-species development run
+   3. The run-view writer (D154). **Merged into main on 16 November** (050aa741; built on branch
+      `run-view-d154` from integration-d172 at 0ae1943a), with a worked example on the secreted-species development run
       (`/mnt/workspaces/Cells/run-view-20261115-01/`). It merges with its tier records and a tier
       gate. Its seam requests follow:
       - the operator contract's view declarations, and the default `view_events` entity form fixed
@@ -90,7 +99,8 @@ experiment).
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
       FR-11's interim planarian loop comes after these. Its design is
-      `docs/LOOPING_REPLAY_DESIGN.md` on run-view-d154 (49848ce0; ruled 16 November):
+      `docs/LOOPING_REPLAY_DESIGN.md`, on main with the writer since 16 November (ruled the same
+      day):
       - a loop block whose closure the writer measures;
       - the planarian patch driven by a subthreshold current train;
       - the human loop: a paced human ventricular cell on Track E's human law set, brought
@@ -169,7 +179,10 @@ experiment).
      moving those routes to tableau booking. Design it with the core under D180. Until then the
      composite refuses an operator that writes an exact-booked route's row (fail-closed, version 1);
    - ledger lists read from the implementation object;
-   - moving the host-side window checks, 91% of long-run time, into device windows;
+   - moving the host-side window checks, 91% of long-run time, into device windows. The first part
+     merged with windows on 16 November: opt-in device row checks for scalar windows on the CPU
+     (`WindowPolicy(row_checks="device")`). The vector path and the GPU follow, the GPU after its
+     own measurement;
    - the summation tree, if species counts go well past 150 (D182).
 4. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction workloads
    in the measurement plan.
