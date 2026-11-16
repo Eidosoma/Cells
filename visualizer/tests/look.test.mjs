@@ -5,7 +5,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import * as THREE from "three";
@@ -290,7 +290,7 @@ test("crowd drift: bounded, with no net direction, and out of contact shade", ()
 });
 
 test("the cell's parts ask for the look where the user chose it, and for nothing where no data would excuse it", () => {
-  const parts = read("src/lenses/cell_parts.js"), structures = read("src/lenses/cell_structures.js");
+  const parts = ["src/lenses/cell_parts.js", ...readdirSync(path.join(ROOT, "src", "lenses", "parts")).filter((name) => name.endsWith(".js")).sort().map((name) => `src/lenses/parts/${name}`)].map(read).join("\n"), structures = read("src/lenses/cell_structures.js"); // the builder and its part modules
   const asks = (pattern) => assert.match(parts, pattern);
   asks(/membrane\.material\(\{ hue: "bioMembrane", opacity: style\.shellOpacity,[^}]*shimmer: true \}\)/); // the membrane shimmers
   assert.match(structures, /envelope\.material\(\{ hue: "bioNucleus", opacity: 0\.74,[^}]*texture: "pores" \}\)/); // pores on the nucleus
