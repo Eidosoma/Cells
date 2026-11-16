@@ -854,6 +854,236 @@ isolates it.
 3. **The pump's stoichiometry and capacity** come from evidence records when a calibrated world is
    wanted. The values here are generic.
 
+## 16. FR-5 on the kind interface (design, 16 November 2026, before code; D142)
+
+**Status: proposed, for the lead's and the core's review.** FR-4 now runs as kinds
+(`cells.rapid_proton_buffer@1`, `cells.transporter@1`, `cells.passive_routes@1`; INNER §7.4 (k)).
+This section puts §8 and §9 on the same interface. The equations are §9's, unchanged, and
+R-transfer (`validation/compartment_ph/transfer_reference.py`) computes the same ones. Where §8 or
+§9 differ (the split-timing fallback, "a control state"), this section supersedes them. **S**
+throughout: nothing here has run.
+
+### 16.1 What FR-5's world needs from the engine
+
+- **The damage** d per damaged patch, with dd/dt = a(1 − d) − b d, a = k_inj u_inj(t) and
+  b = k_res u_res(t).
+  - u_inj and u_res are piecewise-constant schedules in [0, 1].
+  - d is exact at every step's end, since the protocol's J2 reads d "at rounding on every rung
+    pair". It stays in [0, 1] and books nothing.
+- **Three routes on the bounding patch,** each one of FR-4's laws scaled by a rate multiplier
+  m_r ∈ [0, 1]:
+  - the conditioned transfer: X by `passive_neutral_permeation@1`, with m = f(pH_L);
+  - the cargo pore (arm R only): X by the same law, with m = d;
+  - the proton pore: H by `proton_constant_field_leak@1` through the closure, with m = d.
+- **The factors:** m_r is the product of the route's factors in declared order.
+  - They are evaluated on each stage's state. This is the stage form: second order, as the
+    references compute it.
+  - A factor outside [0, 1] refuses the step. Factors book nothing.
+- **The bookings.** The cargo routes keep §7.5's exact booking: X is moved by them alone, and the
+  protocol's J7 ruling reads them that way. The proton pore keeps the tableau's booking, and its
+  slope × m joins B7's stage term.
+- **Observations:** d, f, and each route's cumulative transfer and heat (the generator's
+  `ENGINE_READOUTS`).
+- **The start:** FR-4's declared world at 1800 s (§16.6).
+
+### 16.2 The design: two source kinds, one routing door, the passive routes as its sink
+
+One owner per entity:
+
+| Entity | Kind (module) and law | Owner | State and controls | Exposes |
+| --- | --- | --- | --- | --- |
+| A patch's damage | `cells.patch_damage@1` (`models/inner_kinds/patch_damage.py`); law `cells.bounding_patch_damage@1` (`processes/patch_damage.py`) | FR45 | d and the integrated hazards [damage]; controls u_inj, u_res [damage], scheduled (gap 6) | the factor d, per damage entity |
+| A node's pH condition | `cells.ph_condition@1` (`models/inner_kinds/ph_condition.py`); law `cells.ph_conditioned_factor@1` (`processes/ph_condition.py`) | FR45 | none: algebraic, from the stage's read | the factor f(pH), per condition; the readout column f |
+| A route's rate multiplier | `cells.passive_routes@1`'s reserved `factors` key | CORE's insertion, FR45's kernels | control `passive_multiplier` [route], written by the door | — |
+| The routing door | a seam in `kind_registry.Kind` and `surface_pump_v3` | CORE | — | writes each routed control slot at every stage |
+
+**`cells.patch_damage@1`** (model key `patch_damage`):
+
+```json
+"patch_damage": [{"id": "damage_0", "patch": "bounding_0", "law": "bounding_patch_damage@1",
+                  "initial_damage": 0.0, "injury_rate_per_s": 1.0, "resealing_rate_per_s": 0.05}]
+```
+
+- **Admission:** at most one damage entity per membrane patch, on any patch. The law is general,
+  as the older family's injury of plasma patches is; FR-5 declares the bounding patch. The ID is
+  unique among the definition's entity IDs, d₀ ∈ [0, 1], and both rates are finite and ≥ 0.
+- **State:** `patch_damage` (d) and `patch_damage_injury_hazard`, `patch_damage_resealing_hazard`,
+  each [damage]. The hazards are the cumulative ∫a dt and ∫b dt, dimensionless; the older family
+  keeps such integrals too (`damage_opened`, `damage_closed`).
+- **Controls:** `patch_damage_injury` and `patch_damage_resealing` [damage], the schedules (§16.4),
+  in [0, 1] by the kinds' default rule.
+- **`rates`:** derivatives only. d' = a(1 − d) − b d at the stage's d gives the stage values the
+  routes read (second order); the hazards' derivatives are a and b. There are no node rates, no
+  heat and no work, and `valid` is the kernel's domain.
+- **`book`:** d's end value is replaced by the exact solution over the step,
+  d_end = d_eq + (d_start − d_eq) e^(−(A+B)) with d_eq = A/(A + B) (`patch_damage.exact_step`).
+  - A = dt × applied(injury hazard) and B = dt × applied(resealing hazard). Within a step a and b
+    are constant, so this is exact.
+  - The applied rate is used, not the difference of the cumulative fields. That keeps A at one
+    rounding of a dt; the difference would lose about |hazard|/(a dt) ulps, near 1e-11 relative
+    late in a window at 0.5 ms.
+- **`domain`:** d ∈ [0, 1] and finite hazards, traced on the device. It has no `ledger_terms` and
+  no `stage_term`, since d moves nothing.
+- **As a factor source:** d per damage entity, at the stage's state.
+
+**`cells.ph_condition@1`** (model key `ph_conditions`):
+
+```json
+"ph_conditions": [{"id": "acid_0", "node": "lumen_0", "law": "ph_conditioned_factor@1",
+                   "ph50": 5.5, "slope": 4.0}]
+```
+
+- **The node by its ID.** A kind's parse sees the base model's nodes, not FR-1's identity map, so
+  the condition names the compartment's node. In the declared world FR-1's operator gives that
+  node its identity.
+- **The factor:** f = 1/(1 + 10^(m (pH − pH₅₀))) (`ph_condition.factor`), with pH = −log₁₀(h/1 M).
+  h is the read's free h at the node; at an unbuffered node it is the stored row. This is B4's
+  readout convention (`rapid_proton_buffer.PH_REFERENCE_mM`).
+- **Admission:** a finite pH₅₀, a slope > 0, an existing active node, and unique IDs.
+- **No state.** `readouts` gives f per condition as an observation column; its domain is the
+  read's.
+
+**The routing door** (CORE). This is the seam in the form proposed here; the core's design decides
+the form.
+- **Sources:** a kind declares `factor_sources(declaration)` → (entity ID, ...) and
+  `factors(read, p, *, xp)` → its [source] values, from its own fields and the stage's read state,
+  never another kind's fields.
+- **Sinks:** a kind declares `routed_controls(declaration)` → ((control field, slot, (source ID,
+  ...)), ...).
+- **Binding** resolves every named source. It refuses an unknown ID, an ID two kinds expose, and a
+  slot routed twice.
+- **At every stage,** after the stage read and before any kind's `rates`, `stage_term` or
+  `readouts` (observed rows included), each routed slot becomes its own control value × Π its
+  sources' values in declared order.
+  - The product is a left fold, so its rounding is fixed.
+  - It is written into the control every kind receives.
+  - The kinds' [0, 1] rule then refuses a factor or a product outside [0, 1]; each source's
+    values are checked in [0, 1] too.
+- **No ledger and no state.** With no sink declared the door is absent, so today's programs are
+  unchanged (A4).
+- **Why a control slot,** rather than passing factors to the hooks: every hook keeps its
+  signature, and the sink reads only its own field, so there is no cross-kind read. Scheduled
+  controls (gap 6) and routed ones compose: a slot's own value may itself be a schedule.
+
+**The sink, `cells.passive_routes@1`:**
+- **Factors:** a route's `factors` is a list of source IDs, in declared order.
+- **The slot:** the kind adds the control field `passive_multiplier` [route], 1 from
+  `control_values`, and declares each factored route's slot in `routed_controls`.
+- **Its use:** each route's opening is multiplied by it in `rates`, `stage_term` and the readouts.
+- **What does not change:** §7.5's booking, `bound_rate` (its bound holds at m ≤ 1), `moved_rows`
+  and the exact scope (`_exact`). So FR-5's cargo routes are booked exactly, and the pores and the
+  leak by the tableau.
+- **Ionic pores stay refused** by construction (§9): the leak's law carries only the proton row,
+  and the neutral law only valence 0.
+
+### 16.3 Why this design, against the alternatives
+
+1. **d inside `passive_routes`** (no routing seam): rejected. It ties a patch's state to one
+   consumer, so a channel population or a transporter could never read d, and it puts FR-5's
+   physics in the core's file.
+2. **FR-5's routes in a new kind of this lane's** (no routing seam): rejected.
+   - It duplicates `passive_routes`' kernels, booking and B7 terms.
+   - The cargo pore and the conditioned transfer would sit in two kinds on one row, X. Each would
+     see the other as another mover, so both would lose §7.5's exact booking, which the protocol's
+     J7 ruling assumes.
+3. **The door at the split** (an operator writing route controls between steps, §8's fallback):
+   rejected. It is first order in dt during damage, so FR-5's J2 classes for X and pH (second
+   order) would fail by construction.
+4. **d exact at the stages too,** through a kind relaxation seam: the core would advance a kind's
+   linear-relaxation field exactly at each stage fraction, as `stage_gates` advances channel gates
+   (`exponential_gates.advance`). It is not needed for second order, so it is offered as a later
+   improvement. The baseline needs nothing beyond gap 6 and the door.
+5. **`control` passed to `book`** would replace the two hazard fields. The hazards need nothing
+   from the core and are observables. Either works; the core decides.
+
+### 16.4 What FR-5 needs from the core's gap 6 (time-varying kind controls)
+
+- **Schedules:** a kind's control field may be a piecewise-constant schedule declared in the
+  definition, its values in [0, 1] (or the kind's `control_domain`). The format is the core's
+  design's; FR-5's draft writes `experiment.damage_controls`, one entry per damage entity, with
+  `injury` and `resealing` lists of {time, value}.
+- **Breakpoints:** every breakpoint joins `experiment.changes`.
+  - That covers the EventGrid, `event_index`, and the vector path's `held_controls`, which
+    refuses a control that varies within a held segment.
+  - So each step's control is the schedule's value on that step, and a checkpoint restores its
+    event position.
+- **`control_values(spec, declaration, times)`** keeps its signature and returns the schedule at
+  each step's start.
+
+FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every rung's grid.
+
+### 16.5 Checks and tests, before any judged use
+
+- **The kernels** (exist; tests in `test_fr45_damage_and_worlds.py`):
+  - `exact_step` against the closed form in high precision;
+  - d ∈ [0, 1] at any h;
+  - composition: two half steps equal one step at constant rates, to rounding;
+  - f(pH₅₀) = 1/2, monotone, in [0, 1] without overflow;
+  - the multiply's [0, 1] check.
+- **The kinds:**
+  - parse and refusals;
+  - a damage run whose records equal the closed form at rounding on piecewise schedules, and d
+    unchanged under zero schedules;
+  - a route with factor d at a held d equals a route of permeability d P, to rounding;
+  - a condition's f equals `ph_condition.factor` of the closure's pH readout;
+  - a factor above 1 is refused, and so is an unknown source;
+  - an undeclared kind is absent: FR-4's world is bitwise unchanged on both paths;
+  - the hooks trace on the device.
+- **Planted errors,** each of which must be caught:
+  - the condition read at the cytosol instead of the lumen (the X budget against R-transfer);
+  - the injury schedule shifted by one step (d's exactness);
+  - the factor applied twice to the proton pore (the pH budget against R-transfer).
+- **FR-5's world:** both arms' quick passes against R-transfer, started from the engine's own quick
+  start. Then FR-5's dt study (`dt_study.FR5_CRITERIA`), the rehearsal and registration, as FR-4's.
+- **Refusal 4, version 1.2** (`compartments.py`, this lane's file). Version 1.1 fails closed on any
+  kind outside `ROUTE_KINDS` and `READ_KINDS`, so it would refuse FR-5's declared world.
+  - Version 1.2 admits the two kinds as factor kinds: they move no row and carry no charge.
+  - The declared world is then shown bitwise equal to the development world, as FR-4's was. FR-5's
+    protocol's correction of 16 November expects this.
+
+### 16.6 FR-5's start: FR-4's checkpoint at 1800 s
+
+- **The run:** the generator's `start` part runs FR-4's declared world at 1 ms to 1800 s (1.8e6
+  steps, about 30 min on the vector path).
+- **What it writes:**
+  - the engine's snapshot of the final state (`cells.io.write_snapshot`, in OUT/start/
+    engine_snapshot), for provenance;
+  - the start extract (`definitions.start_extract(producer="engine", ...)`): each node's nine rows
+    and its charge (`surface_pump_v3.node_charge` of the final state), the last record's pH_c, pH_L
+    and V_b, the time, the step, and the snapshot's identity.
+- **How FR-5's parts use it:** they build their definition from the extract
+  (`definitions.fr5_world(start=...)`: the amounts, the charges and the fixed charges that follow,
+  with X at its declared start). They never load the snapshot, since FR-5's world has another
+  structure: the X row and three more kinds. The references read the same extract (`tr.Start`).
+- **Two fixes found while designing:**
+  - `fr5_world` adds a top-level `start` record, which `parse_spec` refuses (a definition holds
+    exactly schema_version, model, experiment and execution). It moves into the part's record,
+    where the generator's `_with_start` already records the extract's identity.
+  - The drafted condition names FR-1's compartment ID, which a kind's parse cannot see. It names
+    the node instead.
+
+### 16.7 Who does what, and the cost (agent-days, S)
+
+- **FR45 (this lane):**
+  - the two kinds, with their tests and planted errors: 1–1.5;
+  - the start part and its extract: 0.5;
+  - FR-5's world in the kinds' forms, refusal 4 version 1.2, the generator's stand-ins removed,
+    and the quick passes against R-transfer: 0.5–1;
+  - then FR-5's dt study and rehearsal, on CPU.
+- **CORE:**
+  - gap 6 (in progress);
+  - the routing door, with a planted source and sink under `tests.`: about 0.5–1;
+  - `passive_routes`' sink (`factors`, `passive_multiplier`): about 0.25. This lane can write it
+    for the core's review instead, as the lead assigns.
+
+### 16.8 Questions for the lead and the core
+
+1. **The routing door:** as §16.2 states it (sources, routed control slots, at every stage), or the
+   form the core's gap-6 design has already chosen?
+2. **`passive_routes`' sink:** the core's change, or this lane's for the core's review?
+3. **d's exactness:** the hazards through `applied` (no seam), or `control` passed to `book`?
+4. **The schedules' format** (gap 6).
+
 ## Appendix A. Equations for the independent references
 
 Write these from this appendix alone. The state per node is the amounts. Everything else is
