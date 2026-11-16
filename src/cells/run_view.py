@@ -48,10 +48,33 @@ Declarations read, and their interim stand-ins
   and rows per cycle by role (inward-positive), from the law's declaration.
 * Species (requirement 7): identities from core/species_registry.identities, with each declared
   standard potential and background.
-* View fields (requirement 5): a field of the inner layout that operators may provide is a named
-  constant of the definition (its bound value) where no operator of the composition changes it.
-  Where one does, the run saves no merged view of it today, so it is listed as unstated, naming
-  the operators (recording the observe stage's merged view is a requested seam).
+* View fields (requirement 5; the visualizer's request 5, the lead's choice (a)): a field of the
+  inner layout that operators may provide is a named constant of the definition (its bound value)
+  where nothing of the composition changes it, and a record where something does (door S below).
+
+Door S: the merged view at the observe stage (route B, the lead's ruling of 16 November 2026)
+------------------------------------------------------------------------------------------
+A view field is changed where an operator provides it (the composition's field map: each provider,
+or the chain of changes in merge order) or, with any closer, where close() changes it: closure
+propagates to every activity mask and pads the padded view fields on closed slots. That last rule
+is read from the adapter's tables (MASK_FIELDS, PADDED_FIELDS), a stopgap named as such: after
+D172's landing the composite declares its changed set in one method and the writer reads that.
+
+The shared paths save, beside the observation base, an array ``view_<field>`` per changed field:
+the merged view at each observed row, re-formed at write time by the composite's own host view
+function (``model.view(p, state, xp=np)``, the call pump_composite.observe_history makes for that
+row) from the run's bound layout and the observed state, before the recording subset (whose
+cadence and elements then apply). It is the view the host observer formed for the row's saved
+readouts, bitwise, not the device step's own formation. Two refusals at write time: a field of the
+table that no change declares but that differs from its bound value at an observed row, and an
+operator that REPLACES a column named like a state field (the observed state would not be the
+state). Not covered, and listed as unstated with the reason: a run already on disk (write_view:
+its manifest's checksums cover its payload, so nothing is added) and a run that saved no observed
+rows (recording "checkpoints", or no observation times).
+
+Event rows: every event in a view is an operator's event map, which acts at the start of the step
+that leaves the event's time (the operator contract): the row saved at that time holds the state
+before the event, the next row the state after it (``time.event_rows``).
 
 Records and time bases
 ----------------------
@@ -123,6 +146,19 @@ BASES = {
     "accepted": ("accepted_times", "the state's accepted rows"),
     "observation": ("observation_times", "the observed rows"),
 }
+# Door S (module docstring).
+VIEW_PREFIX = "view_"
+VIEW_NOTE = (
+    "Door S's merged view at the observe stage: the bound value with each change merged in "
+    "declared order and closures applied, as the host observer formed it for this row's saved "
+    "readouts (pump_composite.observe_history); re-formed at write time by the composite's own "
+    "view function on the observed state, bitwise the same. Not the device step's own formation."
+)
+EVENT_ROWS = (
+    "Every event here is an operator's event map, which acts at the start of the step that leaves "
+    "the event's time: the row saved at that time holds the state before the event, the next row "
+    "the state after it."
+)
 # Roles a sign may name, by the record's entity set.
 SIGN_ROLES = {
     "membrane": ("inside", "outside"),
@@ -484,10 +520,16 @@ class Plan:
     output exists (prepare). The shared paths keep its recording subset (keeper) and write the
     view from it (write)."""
 
-    def __init__(self, spec, request, layout):
+    def __init__(self, spec, request, layout, recompute=True):
         self.spec, self.request = spec, request or Request()
         self.model, self.inner_id, self.entries = _family(spec)
         self.problems, self.unstated = [], []
+        # Door S (module docstring): the shared paths re-form the merged view from the bound
+        # layout (the run's checkpoint layout); a run already on disk gets no new arrays.
+        self.recompute = recompute and hasattr(layout, "_fields")
+        self.layout = (
+            type(layout)(*(np.asarray(v) for v in layout)) if hasattr(layout, "_fields") else None
+        )
         self.retiring = tuple(op.LAW_ID for op, _, _ in self.entries if op.RETIRES)
         table, inner_layers, notes = INNER_TABLES[self.inner_id]
         inner = _inner(self.model)
@@ -512,6 +554,7 @@ class Plan:
         self.axis_sets = dict(AXIS_SETS)
         self._operator_sets()
         self.fields = self._fields()
+        self.changes = self._view_changes()
         self.constants = self._constants(layout)
         self.events = self._events()
         self.space = self._geometry()
@@ -918,28 +961,81 @@ class Plan:
 
     # -------------------------------------------------------------- constants (requirement 5)
 
-    def _constants(self, layout):
-        changers = {}
-        for op, _, _ in self.entries:
-            for name in (*op.VIEW_FIELDS, *op.CLOSES):
-                change = op.view_change(name)
-                changers.setdefault(name, []).append(
-                    f"{op.LAW_ID} ({change.contribution}, {change.stage}"
-                    + (", scoped" if change.scoped else "")
-                    + ")"
+    def _view_changes(self):
+        """Door S (module docstring): {view field: FieldInfo} of each field of the table that the
+        composition's merge can change, in the table's order, its writers in merge order and its
+        owner the last of them. Also refuses where the observed state is not the state."""
+        if not self.entries:
+            return {}
+        from cells.models import pump_composite_adapter as adapter
+
+        owners = self.model.field_owners(self.spec)
+        chains = {}
+        for name, entry in owners["views"].items():
+            if "provider" in entry:  # Providers, in merge order (the field map's chain).
+                chains[name] = (
+                    [law for law, _, _ in entry["changes"]]
+                    if "changes" in entry
+                    else [entry["provider"]]
                 )
+        closers = [op.LAW_ID for op, _, _ in self.entries if op.CLOSES]
+        if closers:
+            # Stopgap until the composite declares its changed set (after D172's landing): what
+            # close() changes, from the adapter's tables. Closure propagates to every mask and
+            # pads the padded fields on closed slots, after the providers' merge.
+            for name in (*adapter.MASK_FIELDS, *adapter.PADDED_FIELDS):
+                if name in VIEW_FIELD_AXES:
+                    chains[name] = [*chains.get(name, []), *closers]
+        unknown = sorted(set(chains) - set(VIEW_FIELD_AXES))
+        if unknown:
+            self.problems.append("changed view fields the view cannot place: " + ", ".join(unknown))
+        if not chains:
+            return {}
+        replaced = sorted(
+            k for k in self.model.STATE_TYPE._fields if len(owners["observations"].get(k, ())) > 1
+        )
+        if replaced:
+            self.problems.append(
+                "an operator replaces the observed state columns "
+                + ", ".join(replaced)
+                + " (REPLACES), so the observe stage's merged view cannot be re-formed from them"
+            )
+        operators = {op.LAW_ID: op for op, _, _ in self.entries}
+        out = {}
+        for name, (axes, unit) in VIEW_FIELD_AXES.items():
+            if name not in chains:
+                continue
+            chain = chains[name]
+            layer = self._operator_layer(operators[chain[-1]], name)
+            if layer is None:
+                continue
+            out[name] = FieldInfo(
+                name=name,
+                axes=tuple(self.axis_sets[a] for a in axes),
+                unit=unit,
+                layer=layer,
+                owner=chain[-1],
+                kind="level",
+                sign=None,
+                writers=tuple(chain),
+            )
+        return out
+
+    def _constants(self, layout):
         out = []
         for name, (axes, unit) in VIEW_FIELD_AXES.items():
-            if name in changers:
-                self.unstated.append(
-                    {
-                        "id": name,
-                        "what": "view field",
-                        "why": "changed by "
-                        + "; ".join(changers[name])
-                        + ": the run saves no merged view of it",
-                    }
-                )
+            if name in self.changes:  # A record (door S), unless the run is already on disk.
+                if not self.recompute:
+                    self.unstated.append(
+                        {
+                            "id": name,
+                            "what": "view field",
+                            "why": "changed by "
+                            + ", ".join(self.changes[name].writers)
+                            + ": a run already on disk, whose manifest's checksums cover its "
+                            "payload, so the writer adds no merged view of it",
+                        }
+                    )
                 continue
             value = _layout_value(layout, name)
             if name == "valence":
@@ -961,7 +1057,8 @@ class Plan:
                     "axes": sets,
                     "values": values,
                     "from": "the definition (the bound layout)",
-                    "says": "no operator of this composition changes it",
+                    "says": "nothing of this composition changes it (checked at every observed "
+                    "row where the composition changes another view field)",
                 }
             )
         return out
@@ -1136,7 +1233,8 @@ class Plan:
         if type(recording.every) is not int or recording.every < 1:
             problems.append("recording: every is an integer >= 1")
         if recording.fields is not None:
-            unknown = [f for f in recording.fields if f not in self.fields]
+            known = set(self.fields) | {VIEW_PREFIX + k for k in self.changes}
+            unknown = [f for f in recording.fields if f not in known]
             if unknown or not recording.fields:
                 problems.append("recording: unknown or no fields " + ", ".join(map(str, unknown)))
         selected = {}
@@ -1190,14 +1288,57 @@ class Plan:
     # -------------------------------------------------------------- the recording subset
 
     def keeper(self):
-        """A selector of one run's arrays under the recording subset (requirement 1), or None.
+        """The arrays one run saves under its view, or None when they are the run's own.
 
-        Called on each dict of arrays a shared path saves, in order: history fields and
-        observed_<field> arrays keep the declared fields and elements; observation rows (and
-        observation_times) every n-th from the run's first; every other array is unchanged."""
-        if self.request.recording is None:
+        Called on each dict of arrays a shared path saves, in order. Door S's merged view is
+        added first (view_<field>, from that dict's observed rows; module docstring); then the
+        recording subset (requirement 1): history fields, observed_<field> and view_<field>
+        arrays keep the declared fields and elements, observation rows (and observation_times)
+        every n-th from the run's first; every other array is unchanged."""
+        if self.request.recording is None and not (self.recompute and self.changes):
             return None
         return _Keeper(self)
+
+    def merged_views(self, arrays):
+        """Door S (module docstring): {view_<field>: [rows, ...]} for each changed field at each
+        observed row of `arrays` (a shared path's arrays, before the recording subset), re-formed
+        by the composite's own host view function from the bound layout and the observed state.
+        Refused where a field of the table that no change declares differs from its bound value
+        at an observed row (the view would state a wrong constant)."""
+        fields = self.model.STATE_TYPE._fields
+        names = {VIEW_PREFIX + k: k for k in self.changes}
+        clash = sorted(k for k in names if k in arrays)
+        missing = sorted(k for k in fields if f"observed_{k}" not in arrays)
+        if clash or missing:
+            raise ViewRefused(
+                "The run view cannot add the merged view: "
+                + (f"arrays {clash} exist already" if clash else f"no observed state {missing}")
+            )
+        p = self.layout
+        bound = {k: np.asarray(getattr(p, k)) for k in VIEW_FIELD_AXES if k not in self.changes}
+        observed = {k: np.asarray(arrays[f"observed_{k}"]) for k in fields}
+        rows, differing = {k: [] for k in self.changes}, set()
+        for j in range(len(arrays["observation_times"])):
+            state = self.model.STATE_TYPE(*(observed[k][j] for k in fields))
+            q = self.model.view(p, state, xp=np)
+            for k, values in rows.items():
+                values.append(np.asarray(getattr(q, k)))
+            differing |= {
+                k for k, v in bound.items() if not np.array_equal(np.asarray(getattr(q, k)), v)
+            }
+        if differing:
+            raise ViewRefused(
+                f"The run view cannot be written: the view fields {sorted(differing)} differ from "
+                "their bound values at an observed row, but no change of this composition "
+                "declares them"
+            )
+        out = {}
+        for name, k in names.items():
+            empty = np.asarray(getattr(p, k))
+            out[name] = (
+                np.stack(rows[k]) if rows[k] else np.empty((0, *empty.shape), dtype=empty.dtype)
+            )
+        return out
 
     # -------------------------------------------------------------- the view
 
@@ -1250,17 +1391,48 @@ class Plan:
                 if not resets and info.owner == self.inner_id and name in self.notes:
                     record["note"] = self.notes[name]
                 records.append(record)
+            if base == "observation" and self.recompute:  # Door S: the merged view.
+                for name, info in self.changes.items():
+                    array = VIEW_PREFIX + name
+                    if kept is not None and array not in kept:
+                        continue
+                    records.append(
+                        {
+                            "id": array,
+                            "field": name,
+                            "array": array,
+                            "base": base,
+                            "axes": ["time", *info.axes],
+                            "set": info.axes[-1] if info.axes else None,
+                            "unit": info.unit,
+                            "layer": info.layer,
+                            "owner": info.owner,
+                            "writers": list(info.writers),
+                            "kind": info.kind,
+                            "note": VIEW_NOTE,
+                        }
+                    )
+        unstated = list(self.unstated)
+        if self.recompute and "observation" not in bases:
+            unstated += [
+                {
+                    "id": name,
+                    "what": "view field",
+                    "why": f"changed by {', '.join(info.writers)}: the run saved no observed rows",
+                }
+                for name, info in self.changes.items()
+            ]
         return {
             "format": FORMAT,
             "run": self.run,
-            "time": {"unit": "s", "bases": time},
+            "time": {"unit": "s", "bases": time, "event_rows": EVENT_ROWS},
             "space": self.space,
             "layers": self.layers,
             "sets": list(self.sets.values()),
             "records": records,
             "events": self.events,
             "constants": self.constants,
-            "unstated": sorted(self.unstated, key=lambda u: (u["what"], u["id"])),
+            "unstated": sorted(unstated, key=lambda u: (u["what"], u["id"])),
             "recording": {"mode": mode, "subset": self.recording},
         }
 
@@ -1281,32 +1453,45 @@ class Plan:
 
 
 class _Keeper:
-    """The recording subset applied to one run's arrays, in the order they are saved."""
+    """One run's arrays as saved under its view, in the order they are saved: door S's merged
+    view added from the observed rows, then the recording subset (Plan.keeper)."""
 
     def __init__(self, plan):
         recording = plan.request.recording
-        self.fields = None if recording.fields is None else set(recording.fields)
-        self.every = recording.every
+        self.plan, self.subset = plan, recording is not None
+        self.fields = (
+            None if recording is None or recording.fields is None else set(recording.fields)
+        )
+        self.every = 1 if recording is None else recording.every
         self.seen = 0
+        self.views = {VIEW_PREFIX + k for k in plan.changes} if plan.recompute else set()
+        infos = dict(plan.fields) | {VIEW_PREFIX + k: info for k, info in plan.changes.items()}
         self.select = {
             name: [
                 (i + 1, plan.sets[s]["recorded"])
                 for i, s in enumerate(info.axes)
                 if "recorded" in plan.sets[s]
             ]
-            for name, info in plan.fields.items()
+            for name, info in infos.items()
         }
         self.history = set(plan.model.STATE_AXES)
 
     def __call__(self, arrays):
+        if self.views and "observation_times" in arrays:
+            arrays = {**arrays, **self.plan.merged_views(arrays)}
+        if not self.subset:
+            return arrays
         out, rows = {}, None
         if "observation_times" in arrays:
             count = len(arrays["observation_times"])
             rows = [i for i in range(count) if (self.seen + i) % self.every == 0]
             self.seen += count
         for key, value in arrays.items():
-            name = key[len("observed_") :] if key.startswith("observed_") else key
-            observed = key.startswith("observed_") and name in self.select
+            if key in self.views:  # Door S's merged view: an observed record of its own name.
+                name, observed = key, True
+            else:
+                name = key[len("observed_") :] if key.startswith("observed_") else key
+                observed = key.startswith("observed_") and name in self.select
             if not observed and key not in self.history:
                 out[key] = value[rows] if key == "observation_times" else value
                 continue
@@ -1319,12 +1504,13 @@ class _Keeper:
         return out
 
 
-def prepare(spec, request=None, *, layout):
+def prepare(spec, request=None, *, layout, recompute=True):
     """The plan of a run's view, from the definition, declarations, caller inputs and the bound
-    layout; refused (ViewRefused) before any output exists."""
+    layout; refused (ViewRefused) before any output exists. recompute: the shared paths add door
+    S's merged view to the arrays they save (False for a run already on disk)."""
     if request is not None and not isinstance(request, Request):
         raise ViewRefused("A view is requested with a run_view.Request")
-    return Plan(spec, request, layout)
+    return Plan(spec, request, layout, recompute)
 
 
 def requests_for(view, world_ids):
@@ -1409,7 +1595,9 @@ def write_view(directory, spec=None, *, out=None, run=None, geometry=None, bases
             mode = mode or manifest["policy"]["recording"]
         else:
             raise ViewRefused(f"{directory} holds no run written by a shared output path")
-    plan = prepare(spec, Request(run or {}, geometry), layout=saved_layout(directory))
+    plan = prepare(
+        spec, Request(run or {}, geometry), layout=saved_layout(directory), recompute=False
+    )
     return plan.write(directory, bases, mode or "write_run", out=out, files=True)
 
 
@@ -1523,6 +1711,12 @@ def validate(view, directory=None):
             )
     time = view.get("time") or {}
     _check(time.get("unit") == "s", problems, "time is in s")
+    if "event_rows" in time:
+        _check(
+            isinstance(time["event_rows"], str) and time["event_rows"],
+            problems,
+            "time: event_rows says which row holds an event's time",
+        )
     bases = {}
     for base in time.get("bases") or []:
         files = base.get("files") or []

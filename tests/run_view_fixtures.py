@@ -3,13 +3,17 @@
 The worked example's world, short: one cell secreting S into a finite node that leaks to its held
 bath (validation/tissue/secreted_species_fixtures; scheduled_species_turnover@1 and
 scheduled_species_exchange@1). Declarations an operator does not carry yet are planted for a
-test's duration only (plant), never in a source file.
+test's duration only (plant), never in a source file: the secretion world's (declare_secretion)
+and S5's partition world's (declare_division: the membrane state and the partition).
 """
 
 import json
 
+import numpy as np
+
 from cells import run_view
 from cells.core.specs import parse_spec
+from cells.models import pump_composite
 from cells.models.operators import OPERATORS
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -73,5 +77,87 @@ def declare_secretion(patch):
     plant(patch, EXCHANGE, VIEW_LAYERS=layers("exchange", "Species exchange"), view_sets=route_set)
 
 
+def division_set(self, spec, declaration):
+    """The partition's division axis as the view's set."""
+    return {
+        "division_slot": {
+            "id": "division",
+            "ids": tuple(d.id for d in declaration.divisions),
+            "holds": "division",
+        }
+    }
+
+
+def declare_division(patch):
+    """The membrane state's and the partition's view declarations (S5's partition world)."""
+    plant(
+        patch,
+        STATE,
+        VIEW_LAYERS=layers("membrane_state", "Membrane entity state", "simulated"),
+        UNITS={"population_abundance_increment": "1", "population_units": "1"},
+        OBSERVATION_AXES={
+            "membrane_area_m2": ("membrane_slot",),
+            "membrane_capacitance_F": ("membrane_slot",),
+            "population_units": ("channel_slot",),
+        },
+    )
+    plant(
+        patch,
+        PARTITION,
+        VIEW_LAYERS=layers("division", "Cell division"),
+        UNITS={"division_applied": "1", "partition_units_moved": "1", "partition_slot_phase": "1"},
+        OBSERVATION_AXES={"partition_slot_phase": ("cell_slot",)},
+        view_sets=division_set,
+    )
+
+
 def load(directory):
     return json.loads((directory / run_view.FILE).read_text())
+
+
+def observed(directory, view, array):
+    """(times, values) of an observation-base array, over the files its view names, in order."""
+    base = next(b for b in view["time"]["bases"] if b["id"] == "observation")
+    times, values = [], []
+    for part in base["files"]:
+        with np.load(directory / part["file"], allow_pickle=False) as saved:
+            times.append(saved[base["array"]])
+            values.append(saved[array])
+    return np.concatenate(times), np.concatenate(values)
+
+
+def capture(patch):
+    """The views the host observer forms inside observe_history, in order: the composite's own
+    view function, wrapped through a MonkeyPatch (door S's bitwise check)."""
+    seen, inside = [], [False]
+    observe = pump_composite.Composition.observe_history
+    form = pump_composite.Composition.view
+
+    def observing(self, *args, **kwargs):
+        inside[0] = True
+        try:
+            return observe(self, *args, **kwargs)
+        finally:
+            inside[0] = False
+
+    def viewing(self, p, state, **kwargs):
+        q = form(self, p, state, **kwargs)
+        if inside[0]:
+            seen.append(q)
+        return q
+
+    patch.setattr(pump_composite.Composition, "observe_history", observing)
+    patch.setattr(pump_composite.Composition, "view", viewing)
+    return seen
+
+
+def same_as_observed(directory, view, seen):
+    """Each merged-view record of a saved run equals, bitwise and in dtype, the views the observer
+    formed (capture), row by row; the number of records checked."""
+    records = [r for r in view["records"] if r["id"].startswith(run_view.VIEW_PREFIX)]
+    for record in records:
+        _, values = observed(directory, view, record["array"])
+        expected = np.stack([np.asarray(getattr(q, record["field"])) for q in seen])
+        assert values.dtype == expected.dtype, record["id"]
+        assert np.array_equal(values, expected), record["id"]
+    return len(records)

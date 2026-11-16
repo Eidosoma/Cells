@@ -153,6 +153,22 @@ def test_the_run_view_record_declarations_are_checked(declared, message):
         check_declarations(operator(**OWN, VIEW_LAYERS=(LAYER,), **declared))
 
 
+def test_record_layers_may_name_the_view_fields_it_changes():
+    second = dict(LAYER, id="volumes")
+    check_declarations(
+        operator(
+            VIEW_FIELDS=("volume",),
+            VIEW_LAYERS=(LAYER, second),
+            RECORD_LAYERS={"volume": "volumes"},
+        )
+    )
+    check_declarations(
+        operator(CLOSES=("active",), VIEW_LAYERS=(LAYER, second), RECORD_LAYERS={"active": "sites"})
+    )
+    with pytest.raises(ValueError, match="RECORD_LAYERS names fields not its own"):
+        check_declarations(operator(VIEW_LAYERS=(LAYER,), RECORD_LAYERS={"volume": "sites"}))
+
+
 def test_a_declaration_declares_no_records():
     base = dict(LAW_ID="test_declaration@1", DECLARATION_ONLY=True)
     with pytest.raises(ValueError, match="declares UNITS"):

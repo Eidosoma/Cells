@@ -98,6 +98,14 @@ say.
   event operators'. Those files have owners (S5's, D152's, the coupling operator's, the bath
   schedule's); the lead coordinates them (§9).
 
+**As built (16 November 2026).** The operator contract carries these declarations
+(`models/operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
+the births and retirements of `living_intervals`, each at `{"cell": id}`), `view_sets(spec,
+declaration)` for an operator's own axes, `OBSERVATION_AXES`, `UNITS`, `RECORD_KINDS`,
+`ORIENTATION` and `RECORD_LAYERS`, checked at registration against the operator's own fields. The
+inner model's own declarations come from the core's owner; until then the writer keeps its
+interim table for `resolved_pump_tissue@3`.
+
 ## 4. The writer
 
 - **One module, `cells/run_view.py`:** `view(spec, record_files, *, run=None, geometry=None)`
@@ -161,7 +169,37 @@ say.
 - It writes nothing per driver, and it adds no viewer code to the engine.
 - It covers the cell scale; molecule, tissue, organ and organism stay placeholders.
 
-## 9. For the lead
+## 9. Door S's merged view at observation (route B; the lead, 16 November 2026)
+
+The visualizer's request 5, answered (a): a view field a layer reads is a record wherever the
+composition changes it, and a constant of the definition otherwise.
+
+- **What counts as changed:** each provider's fields (the field map's provider, or its chain of
+  changes in merge order) and, with any closer, every activity mask and the padded view fields
+  (`extracellular_amount_reference`, `initial_cell_charge_C`), since `close()` propagates closure
+  and pads closed slots. Before this, the writer stated those masks and the initial charge as
+  constants in a division world, which was wrong.
+- **What is saved:** with `view=` only, an array `view_<field>` per changed field beside the
+  observation base (in `trajectory.npz`, or in each chunk). It is re-formed at write time by the
+  composite's own host view function, the call `observe_history` makes for that row, from the
+  run's bound layout and the observed state; so it is the view the host observer formed for the
+  row's saved readouts, bitwise (the tests capture the observer's views and compare), not the
+  device step's own formation. The recording subset's cadence and elements apply to it.
+- **Refused at write time:** a field of the table that no change declares but that differs from
+  its bound value at an observed row; an operator that replaces a column named like a state field.
+- **Not covered, and stated as unstated with the reason:** a run already on disk (`write_view`:
+  its manifest's checksums cover its payload) and a run that saved no observed rows.
+- **Event rows** (`time.event_rows`): an event acts at the start of the step that leaves its time,
+  so the row saved at that time holds the state before it and the next row the state after it
+  (shown on S5's division and on a bath dose).
+- **Why not the composite's own columns (route A):** new observation columns would change every
+  such composition's outputs, its field map and manifests; the results baseline's comparison takes
+  the union of array names, so the bitwise gate would fail on them.
+- **After D172's landing (the cleaner variant):** the composite declares its changed set in one
+  method of `pump_composite.py`, and the writer reads that instead of the adapter's tables
+  (`MASK_FIELDS`, `PADDED_FIELDS`), a stopgap named as such in the code until then.
+
+## 10. For the lead
 
 1. **Geometry from the builders** (§4, §7): accepted for version 1?
 2. **One view per world in a batch,** beside that world's definition?

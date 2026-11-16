@@ -132,7 +132,8 @@ Declarations (class attributes):
   - ``ORIENTATION`` ({field: {"from", "to", "says"}}): which way a positive value moves, by
     the roles of the record's entity set (the writer checks the roles; ``confirmed`` may
     name who confirmed it);
-  - ``RECORD_LAYERS`` ({field: layer id}): an own field's layer, one of its VIEW_LAYERS;
+  - ``RECORD_LAYERS`` ({field: layer id}): the layer, one of its VIEW_LAYERS, of an own field
+    or of a view field it provides or closes (door S's merged view, a record of the view);
     needed only with more than one layer.
   None of them changes a program, a binding or a checkpoint.
 
@@ -660,14 +661,16 @@ def check_declarations(operator):
 
 def _check_records(operator):
     """The run view's record declarations (module docstring), each keyed by the operator's own
-    fields: OBSERVATION_AXES by its readout columns only (its state's axes are STATE_AXES)."""
+    fields: OBSERVATION_AXES by its readout columns only (its state's axes are STATE_AXES), and
+    RECORD_LAYERS also by the view fields it provides or closes."""
     name, own = operator.LAW_ID, set(operator.observed_columns())
+    changed = own | set(operator.VIEW_FIELDS) | set(operator.CLOSES)
     tables = {
         "OBSERVATION_AXES": (operator.OBSERVATION_AXES, set(operator.READOUT_COLUMNS)),
         "UNITS": (operator.UNITS, own),
         "RECORD_KINDS": (operator.RECORD_KINDS, own),
         "ORIENTATION": (operator.ORIENTATION, own),
-        "RECORD_LAYERS": (operator.RECORD_LAYERS, own),
+        "RECORD_LAYERS": (operator.RECORD_LAYERS, changed),
     }
     for table, (values, fields) in tables.items():
         if not hasattr(values, "items"):

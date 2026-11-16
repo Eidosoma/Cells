@@ -5,7 +5,11 @@ source: the J2 bright line): the parent's slot retires and the daughters' slots 
 division, from living_intervals; the events name the parent and both daughters. The partition
 retires slots, so the inner ledgers restart at zero on a retired slot (its history moves into the
 partition's record): their records say so and claim no monotonicity, and the reader's check
-passes on the saved arrays. The fields operators change are listed as unstated, naming them.
+passes on the saved arrays. Door S: the masks the partition closes, every mask closure reaches and
+the fields it pads, and the fields the membrane state provides, are records of the merged view at
+each observed row (view_<field>), never constants, and bitwise the views the host observer formed
+for those rows (across the run's two windows); the row saved at the division's time holds the state
+before it (time.event_rows).
 
 The membrane state's and the partition's view declarations are planted for the test only.
 """
@@ -17,56 +21,28 @@ import pytest
 from cells import run_view
 from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy
-from cells.models.operators import OPERATORS
 from cells.window_io import write_windowed_run
 from tests import partition_fixtures as pf
-
-PARTITION = "isopotential_partition@1"
-STATE = "membrane_entity_state@1"
-
-
-def plant(patch, law, **declarations):
-    for name, value in declarations.items():
-        patch.setattr(type(OPERATORS[law]), name, value, raising=False)
-
-
-def layer(layer_id, label, representation):
-    return (dict(id=layer_id, label=label, representation=representation),)
+from tests.run_view_fixtures import (
+    PARTITION,
+    STATE,
+    capture,
+    declare_division,
+    observed,
+    same_as_observed,
+)
 
 
 @pytest.fixture
 def declared(monkeypatch):
-    plant(
-        monkeypatch,
-        STATE,
-        VIEW_LAYERS=layer("membrane_state", "Membrane entity state", "simulated"),
-        UNITS={"population_abundance_increment": "1", "population_units": "1"},
-        OBSERVATION_AXES={
-            "membrane_area_m2": ("membrane_slot",),
-            "membrane_capacitance_F": ("membrane_slot",),
-            "population_units": ("channel_slot",),
-        },
-    )
-    plant(
-        monkeypatch,
-        PARTITION,
-        VIEW_LAYERS=layer("division", "Cell division", "prescribed"),
-        UNITS={"division_applied": "1", "partition_units_moved": "1", "partition_slot_phase": "1"},
-        OBSERVATION_AXES={"partition_slot_phase": ("cell_slot",)},
-        view_sets=lambda self, spec, declaration: {
-            "division_slot": {
-                "id": "division",
-                "ids": tuple(d.id for d in declaration.divisions),
-                "holds": "division",
-            }
-        },
-    )
+    declare_division(monkeypatch)
 
 
-def test_a_division_through_the_windowed_path(declared, tmp_path):
+def test_a_division_through_the_windowed_path(declared, monkeypatch, tmp_path):
     raw = pf.divided()
     raw["experiment"]["observation_times"] = [0.0, 0.001, 0.002, 0.003, 0.004]
     spec = parse_spec(raw)
+    seen = capture(monkeypatch)
     write_windowed_run(tmp_path / "w", spec, WindowPolicy(2, "full"), view=run_view.Request())
     view = json.loads((tmp_path / "w" / run_view.FILE).read_text())
     run_view.validate(view, tmp_path / "w")  # The saved arrays: no monotonicity is claimed.
@@ -91,5 +67,41 @@ def test_a_division_through_the_windowed_path(declared, tmp_path):
     assert "resets" not in records["observed_amount"]  # Not a cumulative ledger.
     unstated = {(u["id"], u["what"]) for u in view["unstated"]}
     assert ("partition_retired_membrane_heat_pJ", "kind") in unstated
-    assert {("active", "view field"), ("membrane_area", "view field")} <= unstated
     assert sets["division"]["ids"] == ["first"]
+    # Door S: what the composition's merge changes is recorded at each observed row.
+    merged = {r["field"]: r for r in view["records"] if r["id"].startswith(run_view.VIEW_PREFIX)}
+    assert set(merged) == {
+        "active",
+        "outside_active",
+        "membrane_active",
+        "channel_active",
+        "junction_active",
+        "face_active",
+        "extracellular_amount_reference",
+        "initial_cell_charge_C",
+        "membrane_area",
+        "membrane_capacitance",
+        "channel_abundance",
+    }
+    assert merged["membrane_active"]["writers"] == [PARTITION]
+    assert merged["membrane_active"]["layer"] == "division"
+    assert merged["membrane_area"]["owner"] == STATE
+    assert merged["active"]["base"] == "observation" and merged["active"]["kind"] == "level"
+    assert not {c["id"] for c in view["constants"]} & set(merged)
+    assert len(seen) == 5 and same_as_observed(tmp_path / "w", view, seen) == len(merged)
+    assert not [u for u in view["unstated"] if u["what"] == "view field"]
+    # The row saved at the division's time holds the state before it, the next row after it.
+    assert view["time"]["event_rows"] == run_view.EVENT_ROWS
+    times, active = observed(tmp_path / "w", view, "view_active")
+    at = times.tolist().index(pf.EVENT)
+    cells = sets["cell"]["ids"]
+    assert dict(zip(cells, active[at].tolist(), strict=True)) == {
+        "cell_0": True,
+        "d1": False,
+        "d2": False,
+    }
+    assert dict(zip(cells, active[at + 1].tolist(), strict=True)) == {
+        "cell_0": False,
+        "d1": True,
+        "d2": True,
+    }

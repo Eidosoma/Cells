@@ -222,7 +222,6 @@ def write_run(
     plan = None if view is None else run_view.prepare(result.spec, view, layout=result.final.layout)
     keep = None if plan is None else plan.keeper()
     directory = Path(directory)
-    directory.mkdir(parents=True, exist_ok=False)
     started = perf_counter()
     obs = result.observations
     model = get_model(result.spec.model)
@@ -239,8 +238,9 @@ def write_run(
             for name, value in vars(obs).items()
         }
     )
-    if keep is not None:  # The view's recording subset.
+    if keep is not None:  # The view's merged view and recording subset (refused: no output).
         arrays = keep(arrays)
+    directory.mkdir(parents=True, exist_ok=False)
     np.savez(
         directory / "trajectory.npz",
         accepted_times=result.times,

@@ -122,7 +122,10 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert {"kind", "sign"}.isdisjoint(records["observed_exchange_moved_fmol"])
     assert records["face_dissipated_energy_pJ"]["monotone"] == "non-decreasing"
     assert "resets" not in records["face_dissipated_energy_pJ"]  # Nothing retires here.
-    assert {c["id"] for c in view["constants"]} >= {"temperature", "valence", "volume"}
+    # Nothing here changes a view field: every one is a constant, and no merged view is saved.
+    assert {c["id"] for c in view["constants"]} == set(run_view.VIEW_FIELD_AXES)
+    with np.load(root / "a" / "trajectory.npz") as saved:
+        assert not [k for k in saved.files if k.startswith(run_view.VIEW_PREFIX)]
     assert {(u["id"], u["what"]) for u in view["unstated"]} >= {
         ("exchange_moved_fmol", "kind"),
         ("turnover_energy_magnitude_pJ", "kind"),
@@ -514,7 +517,6 @@ PENDING_SETS = frozenset(
         ("species_regulated_availability@1", "coupling"),
         ("species_regulated_availability@1", "one"),
         ("species_regulated_availability@1", "regulatory_slot"),
-        (EXCHANGE, "exchange_route"),  # Until its declaration commit lands.
     }
 )
 
@@ -523,13 +525,13 @@ def _pending():
     units, axes, sets = set(), set(), set()
     for law, op in OPERATORS.items():
         for name in (*op.STATE_AXES, *op.READOUT_COLUMNS):
-            if not (getattr(op, "UNITS", {}).get(name) or run_view._suffix_unit(name)):
+            if not (op.UNITS.get(name) or run_view._suffix_unit(name)):
                 units.add((law, name))
         for name in op.READOUT_COLUMNS:
-            if name not in getattr(op, "OBSERVATION_AXES", {}):
+            if name not in op.OBSERVATION_AXES:
                 axes.add((law, name))
         own = {a for v in op.STATE_AXES.values() for a in v if a not in run_view.AXIS_SETS}
-        if own and getattr(op, "view_sets", None) is None:
+        if own and type(op).view_sets is Operator.view_sets:  # The contract's default: none.
             sets |= {(law, a) for a in own}
     return units, axes, sets
 
