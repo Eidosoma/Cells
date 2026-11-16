@@ -2,8 +2,11 @@
 
 **Status: approved by the user (D189), retired at 6ac27c38, tag `pre-retire-2026-11-16`** (at fa19d80c,
 before any removal). Every retired test stays recoverable from the tag, and the frozen evidence (each
-row's log) is kept (D187). Seven firm rows moved to held before anything was deleted; they are listed
-below with their reasons. The tables after that section are the list as approved.
+row's log) is kept (D187). Eight firm rows moved to held:
+- seven before anything was deleted;
+- one restored at 351d7b6b, after the gate showed a remaining test reads it by path.
+
+They are listed below with their reasons. The tables after that section are the list as approved.
 
 ## As retired (D189)
 
@@ -19,7 +22,7 @@ D189's two checks ran first. Rows that failed one, and rows a remaining test nee
 
 | | Tier 3 | Tiers 1/2 |
 | --- | --- | --- |
-| Whole files retired | 11 (844 tests) | 41 |
+| Whole files retired | 11 (844 tests) | 40 |
 | Cases retired | 23, in 4 files | 788, in 38 files |
 | Saved per run | 5.5 core-hours per tier-3 run | 2.0 minutes per tier 1+2 gate |
 
@@ -28,10 +31,13 @@ cases from the frozen record, and the tier-1/2 cases from one JUnit run of each 
 the list's clusters on each message's first line, as the list counted them. Each file's count equals
 the list's.
 
-The collected IDs went from 20792 before to 18463 after: exactly the 2329 retired IDs fewer, in the
-same order. `tests/tier3_record.json` lost the retired files and IDs and names D189 and the tag. Its
-218 files' IDs equal the tree's. The evidence is in
-`/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/`.
+**Checks on the result:**
+- The edited files' 1731 remaining tier-1/2 tests keep their outcomes per test ID.
+- At the final head the collected IDs are 18473: the 20792 before, minus exactly the 2322 retired IDs,
+  plus the three tests added on the branch since (one merged from fr45-next, two for the tier tool).
+- `tests/tier3_record.json` lost the retired files and IDs, and names D189 and the tag. Its 218 files'
+  IDs equal the tree's.
+- The evidence is in `/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/`.
 
 **Moved to held, with the reasons:**
 
@@ -44,6 +50,7 @@ same order. `tests/tier3_record.json` lost the retired files and IDs and names D
 | unit/test_betse_junction_runtime.py | 1 | file | A remaining test depends on it: test_betse_charge_precision's two remaining tests use its `definition_arrays`, `common.evidence` and `BACKEND` |
 | unit/test_betse_spatial_runtime.py | 1 | file | A remaining test depends on it, through test_betse_junction_runtime, which imports it |
 | unit/test_cells_betse_compare.py | 1 | cases (3) | The 3 listed cases pass in a checkout with Git history (20 passed, 0 skipped at fa19d80c). They skip only in history-less snapshots, so they are not dead: the user's call |
+| unit/test_voltage_gated_artifact_audit.py | 1 | file | A remaining test depends on it, by path: test_voltage_gated_dynamics' `test_shortened_synthetic_session_roundtrip_and_budget_receipt` copies the source files that `scripts/qualify_voltage_gated_reference.py` lists, this file among them. The gate found it (a FileNotFoundError), and the file was restored at 351d7b6b |
 
 Regenerated at main a83d8f15 (16 November 2026), after today's lanes landed. Sources:
 - the frozen tier-3 record, `tests/tier3_record.json`: D172's final tier-3 table per test ID, c1-3c10b833 (ab267c39's tests). At a83d8f15 its 229 files keep the same test IDs; tier 3 adds the four files F6's fix moved there;
