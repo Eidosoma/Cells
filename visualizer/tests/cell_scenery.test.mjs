@@ -95,7 +95,9 @@ test("E. coli's flagella and fimbriae are drawn from the species' own words, in 
   const copy = new THREE.Matrix4(), at = new THREE.Vector3();
   fimbriae.getMatrixAt(0, copy);
   at.setFromMatrixPosition(copy);
-  assert.ok(Math.abs(frame.inside(at.clone().multiplyScalar(1 / 1.035))) < 0.05, "a fimbria starts at the outer membrane's shell");
+  // The wall of a cell with two membranes lies between them, so the second membrane is the outermost shell.
+  assert.ok(handles.shells.wall > 1 && handles.shells.outer > handles.shells.wall, JSON.stringify(handles.shells));
+  assert.ok(Math.abs(frame.inside(at.clone().multiplyScalar(1 / handles.shells.outer))) < 0.05, "a fimbria starts at the outer membrane's shell");
   // All of it is neutral glass: scenery, with no status.
   for (const { item } of chosen) assert.ok(item.material.userData.options.opacity <= 0.9 && item.material.userData.options.hue === undefined, "neutral glass, not a part's own colour");
 });

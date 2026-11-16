@@ -544,7 +544,9 @@ stay out of git (61 runs in 327 files, 96 MB).
    frozen evidence folders that `data/replays/selection.json` names. Skip it when
    `out/runs/` is still on disk.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
-   the map states the revision main is at.
+   the map states the revision main is at. A strict build fails where that revision is
+   on no remote branch as last fetched (a commit not yet pushed, or amended before it
+   was), so that the map never states a revision others cannot find.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look` and
    `check:flux` once, four at a time, and writes a log for each and `summary.json`. Each

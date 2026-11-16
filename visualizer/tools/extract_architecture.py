@@ -664,6 +664,12 @@ def main():
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
+    # The revision the map states must be one that others can find. The checkout read may stand at a commit that was
+    # never pushed, or that was amended before it was: on 16 November 2026 the map, a published page and a picture
+    # for the project's README stated one that exists nowhere else. So where the checkout has a remote, its HEAD must
+    # be on a remote branch as last fetched; a checkout with no remote (an export, a test's copy) is taken as it is.
+    if git(repo, "remote").strip() and not git(repo, "branch", "-r", "--contains", "HEAD").strip():
+        build.warnings.append(f"the checkout read stands at {revision}, which is on no remote branch as last fetched: the map would state a revision that others cannot find (read it again once that revision is pushed)")
     # The species the viewer can show (schema/SPECIES.md): any number of files, or none. A species'
     # place for a capability that is left out of the picture stays in its file and is not shown.
     hidden = {item["id"] for item in build.left_out if item["kind"] == "capability"}
