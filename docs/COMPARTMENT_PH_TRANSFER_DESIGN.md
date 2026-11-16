@@ -1177,10 +1177,17 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
   - Today, `moved_rows` already lists finite fuel's rows, and the parse refuses the fuel kind
     (`GAP_FINITE_FUEL`) **(code)**.
   - To be written: the rates' fuel moves, the stored rate and the two ledger roles below.
-- **Stored energy:** the standard part of the fuel rows' change, Δ_rG'°_hyd × cycles, with
-  Δ_rG'°_hyd = μ°'(ADP) + μ°'(Pi) − μ°'(ATP) from the registry only. It is booked as `stored_pJ`,
-  and its rate Δ_rG'°_hyd × J_cyc as `KindRates.stored_pJ_s`. That is (m)'s rule for a kind's
-  author: @3's RT ln c terms carry the rest.
+- **Stored energy:** the standard part of the fuel rows' change, booked as `stored_pJ` (per
+  cycle × cycles) and as its rate `KindRates.stored_pJ_s` (per cycle × J_cyc). One helper serves
+  both. That is (m)'s rule for a kind's author: @3's RT ln c terms carry the rest.
+  - **Its frame.** @3's rows carry RT n (ln(n/V) − 1), with n/V in mM: a 1 mM frame with no
+    standard part. So each row's standard part is μ°' = RT (μ°/RT − ln c0), with μ°/RT the
+    registry's at its c0 in mM. That is D152's own convention (§3.3 of its note).
+  - Hydrolysis has Σν = +1 (ATP → ADP + Pi), so c0 does not cancel. The stored part per cycle is
+    RT (Σν μ°/RT − ln c0) = `transporter_drive0_J_mol` − RT ln `transporter_c0_mM` **(code: the
+    layout's names)**.
+  - It is not the kernel's Δ_rG'° at 1 M, which adds RT ln(1000 mM / c0). Nor is it R-fuel's
+    −30.5 kJ/mol, which is at 1 M. The two differ by RT ln 1000 per cycle.
 - **Material:** the role `produced` records ATP −cycles, ADP +cycles and Pi +cycles. It is
   charge-neutral, so the global ledger `total` closes. Without it, `total` fails by exactly that
   record (the core's (m) finding).
@@ -1188,8 +1195,13 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
   stored rows.
 - **Near zero ATP:** the kernel's rational form is already written. ATP falls to about 1.7e-4 mM
   in R-fuel's window.
-- **Refusals kept:** finite fuel at a node with a dynamic proton row; a fuel row without a
-  registry potential; a held row any other mover writes (held fuel only).
+- **Refusals kept:** a fuel row without a registry potential, and a held row any other mover
+  writes (held fuel only).
+- **§5.2's refusal, made fail-closed.** Today only the proton law refuses finite fuel. Once the
+  gap's refusal is lifted, a neutral finite-fuel pump beside FR-4's protons would be admitted. So
+  version 1 refuses finite fuel in any world with a dynamic proton row. That is any proton row
+  that a declared kind names: the buffer's (`cells.rapid_proton_buffer@1`), a proton law's role,
+  or the proton leak's row. Its test is FR-4's world with a neutral finite-fuel pump added.
 
 ### 17.3 What the code shows for R-fuel's world
 
@@ -1239,7 +1251,8 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
 - **Budgets:** 1e-3 relative, as FR-4's J3 and J4. R-fuel's floor resolves this: ATP within
   6.3e-14 mM and J_cyc within 4.3e-16 fmol/s.
 - **Planted errors**, each of which must be caught:
-  - the stored rate omitted: the observation's residual is exactly −Δ_rG'°_hyd J_cyc;
+  - the stored rate omitted: the observation's residual is exactly minus the stored part's rate,
+    in §17.2's 1 mM frame, at a test c0 other than 1 mM, so a missing ln c0 would show;
   - `produced` omitted: `total` fails by the record;
   - a fuel stoichiometry off by one: the moiety check;
   - the regeneration's potentials declared unlike the registry's: D3's check, under its option
