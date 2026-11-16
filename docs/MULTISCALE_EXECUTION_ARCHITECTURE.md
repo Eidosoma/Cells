@@ -20,18 +20,20 @@ the 8 November reset, when BETSE became an out-of-process reference (D131). The
 design principles below are unchanged. [Progress](../PROGRESS.md) remains the
 source of current status; this page keeps only numbers that constrain the
 architecture. The JUPITER and JAX source checks below are still those of
-October.
+October. The status rows were refreshed again on 16 November 2026, after D172's
+round landed; the [modular core](ARCHITECTURE.md#the-modular-core-d172-d174)
+gives the composite's current contracts.
 
 ## Current foundation and remaining design gaps
 
 | Area | Foundation in the current stack | Still needed |
 | --- | --- | --- |
-| Shared physical dynamics | Versioned array models for ions, fields, gates, chemistry and selected coupled families. The bioelectric tissue family is `resolved_pump_tissue@1`–`@3` (pumps, channel populations, voltage-gated junctions, extracellular field), checked against BETSE run separately. Osmotic water and volume (`resolved_pump_water@1`) is qualified; its volume-regulation extension `@2` has stationary states judged | Mechanics coupled to transport, growth, gene regulation coupled to tissue, membrane trafficking; biological calibration of each new mechanism |
-| Turnover and mechanics | In development on branches, not on main: cell replacement (`resolved_pump_replacement@1`, a wrapper with a junction-formation law) and 2-D vertex mechanics (`apical_vertex_mechanics@1`, whose first judged run failed and is being revised) | Qualification of both; vacancies, division and growth; coupling mechanics to transport on moving geometry |
+| Shared physical dynamics | Versioned array models for ions, fields, gates, chemistry and selected coupled families. The bioelectric tissue family is `resolved_pump_tissue@1`–`@3` (pumps, channel populations, voltage-gated junctions, extracellular field), checked against BETSE run separately. Since D172's landing (16 November), `@3` is one modular inner model, with declared laws and kinds built per declared structure, under the composite `resolved_pump_composite@1` and its operators. Osmotic water and volume (`resolved_pump_water@1`) is qualified; its volume-regulation extension `@2` has stationary states judged | Mechanics coupled to transport, growth, gene regulation coupled to tissue, membrane trafficking; biological calibration of each new mechanism |
+| Turnover and mechanics | On main and qualified: cell replacement (`resolved_pump_replacement@1`, with a junction-formation law, from 11 November) and 2-D vertex mechanics (`apical_vertex_mechanics@1`, on its revised second judged run after the first failed). Prescribed division's operators are numerically qualified on the composite | Vacancies, state-triggered division and growth; coupling mechanics to transport on moving geometry |
 | Assembly and history | [Finite-pool stochastic assembly](CAPSID_ASSEMBLY.md) retains bonds, event clocks and material; assembly can regulate selected ionic channels. Molecular scope: protein folding is the one level skipped, with gene regulation beneath and assembly of complexes and machines, and their use, above (see the [README's Ambition section](../README.md#ambition)) | Physically justified feedback into assembly, resource-dependent synthesis/remodelling and additional writable slow state |
 | Measurements and interventions | [Model observations](../src/cells/observers.py), scheduled controls, complete checkpoints and branching | A reusable collection of versioned task/readout definitions, restricted physical consumers and simultaneous-task assays |
 | Resolution and clocks | Fixed-geometry fields, common-step IMEX integration, event-split assembly/ionic coupling, an operator split for water, and a qualified stationary/continuation analysis mode | Qualified fine/coarse maps, a coarse time mode that meets the parity tolerances, multirate solvers and preservation of task-relevant histories |
-| GPU execution | CPU/L4 paths, independent-world queues, stable world identities, [offline plans for up to 16 GPUs](../src/cells/ensemble/plan.py), and batched (`vmap`) worlds with on-device row checks for the pump-tissue family | JUPITER (GH200) throughput and qualification, deterministic GPU replay, multi-node queue/failure handling and partitioning one interacting world |
+| GPU execution | CPU/L4 paths, independent-world queues, stable world identities, [offline plans for up to 16 GPUs](../src/cells/ensemble/plan.py), and batched (`vmap`) worlds with on-device row checks for the pump-tissue family | JUPITER (GH200) throughput and qualification, deterministic GPU replay beyond the L4's declared flagged mode (D181), multi-node queue/failure handling and partitioning one interacting world |
 | Field scaling | Explicit graph ownership and bounded dense field/linear solves in current families | Sparse or matrix-free solvers, preconditioning and communication costs qualified on larger fixtures |
 
 This is a map of architectural responsibilities. Passing one model family does
@@ -127,13 +129,17 @@ composition mechanism. As features multiply (water, replacement, division,
 mechanics, regulation), they should compose through shared entity and operator
 interfaces, rather than through a new model family per combination.
 
-**Composition by wrapping (current practice).** New mechanisms are added as
-versioned, opt-in models that call an already qualified model's own step rather
-than copying it. Examples:
+**Composition by wrapping (the practice before D143).** New mechanisms were added
+as versioned, opt-in models that call an already qualified model's own step rather
+than copying it. Since D143 (11 November) new tissue mechanisms are operators of
+one composite, `resolved_pump_composite@1` over `resolved_pump_tissue@3`, and since
+D172's landing (16 November) @3's own laws and kinds are declared modules (see
+ARCHITECTURE's [modular core](ARCHITECTURE.md#the-modular-core-d172-d174)). The
+wrapping examples:
 - `resolved_pump_water@1` runs water half-steps around `resolved_pump_tissue@3`'s
   checked step (a Strang split).
-- The cell-replacement wrapper, still on a branch, applies events and a formation
-  law around the same step.
+- The cell-replacement wrapper applies events and a formation law around the same
+  step.
 - `@3` itself accepts opt-in hooks, such as an extra membrane process or a
   nonnegative junction-heat booking.
 
@@ -519,9 +525,15 @@ Repeat runs on one L4 were observed not to be bitwise identical (11 November,
 one development observation; the likely cause, atomic scatter-adds, is not
 confirmed). Two consequences follow:
 - Bitwise restart and replay are CPU guarantees for now.
-- GPU parity protocols being drafted add a measured run-to-run term.
+- The registered L4 variants carry a measured run-to-run term.
 
-Deterministic GPU operations, and what they cost, are still to be measured.
+Under XLA's deterministic flag (`--xla_gpu_deterministic_ops=true`), 15 of 15
+repeats of the 825-node tissue were bitwise (15 November), and Q7 and the landing's
+L4 block were judged in that declared mode, where the run-to-run term is exactly
+zero (D181). Unflagged repeats differ by up to 1.9e-11 relative. The flag's cost
+was measured only for one world, where compiling took about 30–40% longer and the
+step time stayed within the repeats' spread; on large batches it is still to be
+measured.
 
 Stochastic assembly already derives draws from world identity, registered
 seeds and event counters, with per-cell stream identities in coupled clusters.

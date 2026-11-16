@@ -97,7 +97,10 @@ of the engine was restructured in November 2026, so that its laws, transporters
 and solvers are declared modules, built only where a world declares them. A
 [design for external modules](docs/MODULE_SYSTEM_DESIGN.md) is proposed,
 so that independently maintained packages can extend Cells under the same
-contracts as built-in models.
+contracts as built-in models. Its open choices were settled on 16 November: new
+physics enters the engine as declared modules, and contributors add a module by
+pull request, in its own namespace and checked by a conformance kit that ships
+with Cells.
 
 On the molecular side, the one level we skip is protein folding itself. Beneath
 it, we aim to simulate the gene regulation that sets how much of each protein is
@@ -130,7 +133,7 @@ judged results.
 | **Checking the physics against BETSE** | We run the established BETSE simulator separately and compare its saved outputs with Cells' own physics, under rules fixed before each run. | Passes for every mechanism tested so far (one rung only after a revised method): BETSE's default tissue, calcium and its pump, extracellular barriers, scheduled interventions (pump block, sodium and potassium permeability, junction block), and voltage-gated channels including the heredity channels NaV1.2 and Kir2.1. These later rungs also pass on the L4 GPU. Still open: several intervention types, noise, networks and channel time constants. See the [current results](PROGRESS.md#plan-betse-parity-on-cpu-and-l4-then-jupiter-from-8-november), the [coverage map](docs/BETSE_CAPABILITY_ROADMAP.md) (which also records the earlier, superseded comparison track) and the [comparison tools](validation/betse/README.md) |
 | **First heredity experiment** | Can a brief signal write a voltage pattern into a tissue, and does the pattern survive while its cells are replaced? | **Judged (13–14 November): when its cells were replaced one at a time by copies of neighbours, the written disc did not renew.** The pattern followed neutral copying closely, and 8 of 15 scored predictions held. In earlier development runs a brief cue wrote a depolarised disc and freshly written discs held for 70 minutes, but no disc renewed when newcomers arrived uncoupled and formed junctions over time, as the literature describes. A successor that writes, clears and then challenges the pattern is proposed. See the [registered design](docs/E07_V1_DESIGN.md), the [results](PROGRESS.md#runs) and the [proposal](docs/E07_V2_DESIGN.md) |
 | **New biology in the engine** | Mechanisms that experiments showed were missing, and requested features, each added as a general model. | Qualified and on main from 11 November: osmotic water and cell volume, and cell replacement in which new cells form junctions over time. Volume regulation is on main with its stationary states judged. Numerically qualified since, on the composite tissue model: membrane added during cleavage, current injection and the partition of a dividing cell (division is prescribed, not yet set off by the cell's own state; [plan](docs/CELL_DIVISION_PLAN.md)); the transport of secreted species outside cells, with decay and clearance (their production and exchange across membranes are guarded only); and, on CPU only, reactions on the shared species inventory and species that regulate a channel's availability. Landed for development, not judged: a closed internal compartment, binding to sites, and scheduled changes of bath composition. In development: conduction in excitable tissue. Planned and on hold: gene regulation coupled to tissue. See the [feature requests](docs/FEATURE_REQUESTS.md) |
-| **Engine restructure** | One tissue model whose laws, transporters, fuel and solvers become declared modules, compiled only where a world declares them. | **Landed on 16 November** (tag `d172-landed-2026-11-16`) in one merge. It passed a results gate (existing worlds' outputs unchanged, bit for bit or within a stated rounding), crossrev of the compiled programs, the full test suite, the affected registered protocols and a block of GPU runs. The compartment pH model's pieces (a proton pump, a pH buffer and passive routes) landed with it. Transfer across a damaged internal membrane follows on its own branch, and the judged runs of both come next. See the [design](docs/INNER_MODEL_V4_DESIGN.md) |
+| **Engine restructure** | One tissue model whose laws, transporters, fuel and solvers become declared modules, compiled only where a world declares them. | **Landed on 16 November** (tag `d172-landed-2026-11-16`) in one merge. It passed a results gate (existing worlds' outputs unchanged, bit for bit or within a stated rounding), crossrev of the compiled programs, the test tiers (no changed outcome in tiers 1 and 2; in tier 3, every file that did not pass was classified, none as a fault of the restructure), the affected registered protocols and a block of GPU runs. The compartment pH model's pieces (a proton pump, a pH buffer and passive routes) landed with it. Transfer across a damaged internal membrane follows on its own branch, and the judged runs of both come next. See the [design](docs/INNER_MODEL_V4_DESIGN.md) |
 | **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A quasi-steady electrical mode is planned |
 | **Morphogenesis** | How tissues take and repair shape. | A morphogen gradient and a bistable voltage domain wall passed, and Turing patterning at its predicted wavelength passed on CPU (15 November). 2-D cell mechanics (a vertex model) is qualified and on main, after a revised second judged run. See the [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) |
 | **Papers to test** | Published models we review and test in Cells. | Nine reviewed: three with test plans (Cortés-Poza, Deb et al., Shin et al.); the Myc–cyclin T1 heart papers, at high priority, which led to species regulating channels and to an excitable-tissue track; and five as notes (partial reprogramming, granzyme K and tissue ageing, kinetochore protein counts, bone mechanosensing and ageing, and a whole-cell model of the minimal cell). Secreted-species transport was promoted from the granzyme K review. A track of gene-network models validated against wet-lab experiments is logged for the coming gene-regulation layer. See the [paper backlog](docs/PAPER_BACKLOG.md) and [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) |
@@ -223,10 +226,10 @@ capabilities of Cells would have a place in it.*
 | --- | --- | --- |
 | The viewer, with its quantity layers and flux in the Cell view | [`visualizer/`](visualizer/README.md) | On main |
 | The reader that packages saved runs for the viewer | `visualizer/tools/adapt_run.py`; format in [`visualizer/schema/RUN_VIEW.md`](visualizer/schema/RUN_VIEW.md) | On main. Its reading of `view.json` is tested on synthetic views and was tried on the writer's worked example; no replay comes from an engine-written view yet |
-| The loop reader, for a species' looping run | `visualizer/src/layers/loop.js` | On main, tested on a fixture; no species has a looping run yet |
+| The loop reader, for a species' looping run | `visualizer/src/layers/loop.js` | On main, tested on a fixture; the first looping run, the planarian's development run, is not on main yet |
 | The run view's design | [`docs/RUN_VIEW_DESIGN.md`](docs/RUN_VIEW_DESIGN.md) | On main, proposed |
 | The engine's run-view writer | `src/cells/run_view.py`, on a development branch | Not on main. Shown on a worked example (the secreted-species development run) and on a first looping planarian run; it merges after its own gate, now that the restructure has landed |
-| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note is on a development branch, not yet on main; nothing is built |
+| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note and the interim planarian loop are on a development branch, not yet on main, with one development run of that loop |
 
 **Replays** draw what a run saved and nothing else: the sheet coloured by
 membrane voltage, a timeline, events such as cell replacement, and the class
@@ -264,7 +267,7 @@ otherwise, as for every replay so far, it derives what it needs with its own
 adapters and lists each derived piece.
 
 **Flux in the Cell view.** A Flux switch, off as the page opens, shows what
-flows as beads. No species has a looping run yet, so this is illustration,
+flows as beads. No looping run reaches the Cell view yet, so this is illustration,
 marked "Illustration: not a run", with direction only. Pumps and secreted
 signals are drawn one way, as the engine's own law declarations give it, and
 only for a species shown as the generic cell; channels, junctions and water are
@@ -277,8 +280,9 @@ not new physics: laws the engine has or gains through their own milestones, at
 a declared low level of detail, written by the run-view writer and labelled an
 illustration, never an experiment or a qualified result. The choices recorded
 with it are periodic loops (a periodic drive, one period played and its seam
-checked), a paced heart cell for human (it waits for the human cardiac laws, now being
-designed), the cell cycle in scope for Syn3A and
+checked), a paced heart cell for human (it waits for the human cardiac laws, whose
+[design](docs/HUMAN_CARDIAC_LAWS_DESIGN.md) is proposed with the user's choices made, and
+nothing of them is built yet), the cell cycle in scope for Syn3A and
 *M. pneumoniae*, and the planarian's loop first. Its design note is on a
 development branch, not yet on main. The loop reader on main already refuses a run that
 does not declare its loop and say that it closes, names no engine model or

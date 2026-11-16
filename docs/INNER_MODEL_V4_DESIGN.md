@@ -1,10 +1,13 @@
 # The inner model made modular, in place (design)
 
-**Status: in implementation (D176, 15 November 2026), on `integration-d172` from tag
-`d172-base-2026-11-15` (44227075). Proposed 14–15 November; revised for D172, D174 and D176.**
+**Status: landed on main on 16 November 2026** (merge ab267c39 of candidate 3c10b833, tag
+`d172-landed-2026-11-16`), after the integrated gate; the records are in PROGRESS. **It was built
+(D176, from 15 November) on `integration-d172` from tag `d172-base-2026-11-15` (44227075).
+Proposed 14–15 November; revised for D172, D174 and D176.**
 - **D176, in force:** F2 fuel; FR-4's first case on maintained fuel; the summation order chosen by
   a measured comparison (§10.6); every affected registered protocol re-run on the integrated
-  candidate, E07 included; the name kept; and eight design corrections, entered where they apply
+  candidate, E07 included (D181 later held E07-v1's re-run, its worlds covered by the results
+  gate); the name kept; and eight design corrections, entered where they apply
   (§3, §8, §10, §15). The dependency table and the critical path, refreshed against main f791294,
   are §15.6. The interface the streams build against is §7.4.
 - **D172, the user:** "lets just have one model for now, we don't need backwards compatbility at
@@ -50,7 +53,8 @@
      - Through an action potential the channel gates move too, by up to 36 units in the last
        place.
      - **So R re-runs every registered protocol in full,** on the integrated candidate, E07 included
-       (D176, item 4). Door S's merge (A6) is still unprobed.
+       (D176, item 4). Door S's merge (A6) is still unprobed. *At the landing:* D181 held E07-v1's
+       re-run, and its worlds were covered by the results gate instead.
 4. **R is accepted by results, not by identical programs** (§3).
    - A named list of required scientific results must actually execute and match.
    - Every existing world gives the same CPU results.
@@ -77,8 +81,9 @@
 9. **The name** (§6). **Decided (D176): kept,** `resolved_pump_tissue@3`, with the snapshot, tag
    and results-gate provenance.
 10. **When** (§15.5, refreshed). MG0c and Track R are judged, and main is tagged
-    `d172-base-2026-11-15`. R is built now on `integration-d172` and lands once, after the
-    integrated gate (§3). Track E's M2 is judged wholly before or wholly after the landing.
+    `d172-base-2026-11-15`. R was built on `integration-d172` and landed once, on 16 November,
+    after the integrated gate (§3). Track E's M2 is judged wholly before or wholly after the
+    landing: after, since it was not judged before it.
 11. **What R must contain, and what waits** (§15). Three lists:
     - **(a) What R needs to land:** the declarations with build-time selection, the operators that
       depend on today's tables, the results gate, the GPU audit's tests, one added law (the
@@ -2190,10 +2195,12 @@ f791294 (15 November).**
 ### 15.5 Order
 
 Refreshed against main f791294 (15 November):
+- **R landed on 16 November** (main ab267c39, tag `d172-landed-2026-11-16`), after the integrated
+  gate (PROGRESS).
 - **R lands after MG0c and Track R's qualification are judged: done.** Both were judged on 15
   November, and both protocols join G2.
-- **Track E's M2 is judged wholly before or wholly after it: still open.** Its protocol is PROPOSED.
-  If it is judged before the landing, it joins G2.
+- **Track E's M2 is judged wholly before or wholly after it: after.** It was not judged before the
+  landing, so it did not join G2. Its protocol is PROPOSED.
 - **Main is tagged just before it: done,** as `d172-base-2026-11-15` (44227075), with the frozen
   snapshot `snapshot-base-44227075`. R is built on `integration-d172` from the tag, and `src/` does
   not land on main until the single landing (D176).
