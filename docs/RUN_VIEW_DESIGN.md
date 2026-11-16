@@ -2,8 +2,10 @@
 
 **Status: proposed, 14 November 2026, for the lead's review (the architecture block's item 4,
 D154); revised 15 November for D174's requirement (§1).** Docs only. No engine code is added or
-changed by this note; the declarations and the writer it proposes are `src/` work that waits for
-the lead's word.
+changed by this note. The declarations and the writer it proposes are `src/` work: the operator
+contract's view interface (`VIEW_LAYERS`, `view_events`) reached main with D172's round on 16
+November, and the operators' declarations and the writer are built on branch `run-view-d154`,
+which merges after its own gate ([current plan](CURRENT_PLAN.md)).
 
 D154 asks that every experiment can eventually be visualized, through one run-view record that
 every run writes beside its definition by one shared output path, never one per driver. The
@@ -12,7 +14,8 @@ It is not fields in the definition, so definitions, bindings and crossrev stay u
 viewer is a read-only consumer.
 
 **The consumer's draft.** The visualizer drafted the schema it reads, `cells.run_view@1`
-(`visualizer/schema/RUN_VIEW.md` on branch `visualizer`, read here as a reference only). This
+(`visualizer/schema/RUN_VIEW.md`, on main since the visualizer's merges, read here as a reference
+only). This
 note keeps its file and field names and answers its four open points (§6). Its packaged replay
 (`cells.visualizer.replay@1`: base64 payloads, catalogue, curated outcomes) stays the viewer's own.
 
@@ -96,7 +99,19 @@ say.
   operator without it, so no event reaches the view without its entities.
 - **The cost:** one declaration in every registered operator's file, and `view_events` in the
   event operators'. Those files have owners (S5's, D152's, the coupling operator's, the bath
-  schedule's); the lead coordinates them (§9).
+  schedule's); the lead coordinates them (§10).
+
+**As built (16 November 2026).** The operator contract carries these declarations
+(`models/operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
+the births and retirements of `living_intervals`, each at `{"cell": id}`), `view_sets(spec,
+declaration)` for an operator's own axes, `OBSERVATION_AXES`, `UNITS`, `RECORD_KINDS`,
+`ORIENTATION` and `RECORD_LAYERS`, checked at registration against the operator's own fields
+(and `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES`, for a looping package's closure). The inner
+model declares its own in the same forms: `resolved_pump_tissue@3`'s view declarations, with
+`RECORD_NOTES` and its record roles, each structure's with its kinds' folded in
+(`models/surface_pump_v3.view_declarations`; the kinds' `VIEW_AXIS_SETS` and `view_sets`). The
+writer reads them from the inner object and keeps no table of its own (the interim one went
+when they reached main, a2af3899).
 
 ## 4. The writer
 
@@ -161,7 +176,67 @@ say.
 - It writes nothing per driver, and it adds no viewer code to the engine.
 - It covers the cell scale; molecule, tissue, organ and organism stay placeholders.
 
-## 9. For the lead
+## 9. Door S's merged view at observation (route B; the lead, 16 November 2026)
+
+The visualizer's request 5, answered (a): a view field a layer reads is a record wherever the
+composition changes it, and a constant of the definition otherwise.
+
+- **What counts as changed:** each provider's fields (the field map's provider, or its chain of
+  changes in merge order) and, with any closer, every activity mask and the padded view fields
+  (`extracellular_amount_reference`, `initial_cell_charge_C`), since `close()` propagates closure
+  and pads closed slots. Before this, the writer stated those masks and the initial charge as
+  constants in a division world, which was wrong.
+- **What is saved:** with `view=` only, an array `view_<field>` per changed field beside the
+  observation base (in `trajectory.npz`, or in each chunk). It is re-formed at write time by the
+  composite's own host view function, the call `observe_history` makes for that row, from the
+  run's bound layout and the observed state; so it is the view the host observer formed for the
+  row's saved readouts, bitwise (the tests capture the observer's views and compare), not the
+  device step's own formation. The recording subset's cadence and elements apply to it.
+- **Refused at write time:** a field of the table that no change declares but that differs from
+  its bound value at an observed row; an operator that replaces a column named like a state field.
+- **Not covered, and stated as unstated with the reason:** a run already on disk (`write_view`:
+  its manifest's checksums cover its payload) and a run that saved no observed rows.
+- **Event rows** (`time.event_rows`): an event acts at the start of the step that leaves its time,
+  so the row saved at that time holds the state before it and the next row the state after it
+  (shown on S5's division and on a bath dose).
+- **Why not the composite's own columns (route A):** new observation columns would change every
+  such composition's outputs, its field map and manifests; the results baseline's comparison takes
+  the union of array names, so the bitwise gate would fail on them.
+- **After D172's landing (the cleaner variant):** the composite declares its changed set in one
+  method of `pump_composite.py`, and the writer reads that instead of the adapter's tables
+  (`MASK_FIELDS`, `PADDED_FIELDS`), a stopgap named as such in the code until then.
+
+**Additions to `cells.run_view@1` as built (16 November 2026),** from door S and the visualizer's
+reading of the worked example (its eleven items):
+- **`view_<field>` records** on the observation base: the merged view (above).
+- **`roles` on every set with ends** (`{role: what it is}`): the inner sets' from the writer, an
+  operator's from its `view_sets`. A flow's `sign` names two of them as `from` and `to`; a
+  difference (a voltage) gives `difference` with `plus` and `minus` instead (plus less minus).
+  The voltages' were read from the code and said so (`source`); @3's own declarations now state
+  them, `confirmed` by the core's owner.
+- **Per-entity facts on an operator's sets:** `carries` (species), `direction` and `kinds`
+  (words), `at` (`{set id: entity id}`); a set may describe entities no field has as an axis
+  (turnover's routes). A label such as "secreted" stays the reader's, from these facts.
+- **`resets.mask`:** the mask whose closing marks the slots that restart.
+- **`time.event_rows`:** the row saved at an event's time holds the state before it.
+- **`run.id`** (a caller label), **`run.end`** (status, time, step) and **`run.source`** (the
+  running engine's revision and dirty flag, from its execution snapshot's record, where a shared
+  path writes the view; unstated with the reason otherwise). A view written later by
+  `write_view` therefore differs from the run's own in its source.
+- **`loop`** (optional; FR-11, [LOOPING_REPLAY_DESIGN](LOOPING_REPLAY_DESIGN.md) §3): a looping
+  package's block, written only when the run's observed rows close within its tolerance.
+- **`diagnostic` and `reference` on records:** the owner's `RECORD_DIAGNOSTICS` (a residual of
+  the step's own check) and `RECORD_REFERENCES` (stored as an increment over a fixed reference,
+  stated as a named constant of the view, or the merged view's record under door S).
+
+**The lead's rulings on these (16 November 2026):** the voltages' plus and minus are to be stated
+in the core's own @3 declarations (core-next), and until then the view's `source` citing the code
+stays; no "secreted" label (the facts are stated, the label is the reader's); `run.source` from
+the execution snapshot's own record is AGENTS.md's provenance, with no source-file hashes in the
+view; `resets.mask` as worded, with a junction fixture to cover it and the junction voltage on data;
+a later `write_view` view names no engine source and says why.
+
+## 10. For the lead
 
 1. **Geometry from the builders** (§4, §7): accepted for version 1?
 2. **One view per world in a batch,** beside that world's definition?

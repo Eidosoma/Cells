@@ -101,6 +101,12 @@ def _parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--recording", choices=("full", "observations", "checkpoints"), default="observations"
         )
+        command.add_argument(
+            "--row-checks",
+            choices=("host", "device"),
+            default="host",
+            help="where every accepted row is checked (core/row_checks.py; default host)",
+        )
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-at", type=float, action="append", default=[])
@@ -282,7 +288,7 @@ def main(argv=None) -> int:
 
 
 def _window_main(args):
-    policy = WindowPolicy(args.window_steps, args.recording)
+    policy = WindowPolicy(args.window_steps, args.recording, args.row_checks)
     if args.window_command == "validate":
         plan = plan_windows(load_spec(args.config), policy)
         return {

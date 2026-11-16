@@ -328,3 +328,38 @@ start graph and version 3 for the rest, and resumed from a version-3 snapshot. A
 `run` from a version-2 preparation needs `--field-solver 2`. The restart itself is
 prepared, not launched: `heredity-pilot-w1-20261110-01/launch8.sh` and
 `restart-v3-note.md`.
+
+## Component net charge: gauge option 2 and the neutrality rule at definition
+
+**Gauge option 2 (9 November 2026, the lead's decision, 88866b60).** Each capacitor component's
+representative is fixed in the reduction: the gauge of a closed world, or a floating component's
+lowest outside node. Its row residual is the component's net charge, a conservation quantity
+rather than a solve residual, and it enters no potential. `solve()` still reports it
+(`charge_residual_C`, `charge_normalized`), but convergence tests the solved rows only. The
+capacitor ledgers check the representative rows with `surface_field.charge_tolerance`:
+`CHARGE_ATOL_C + CHARGE_RTOL |q|` plus `COMPONENT_STEP_ROUNDING` eps x steps x the summed
+|z F dn| of the component's stored increments (the world's, for the gauge's component). Without
+steps the allowance is zero. The derivation and measurements are in the `COMPONENT_STEP_ROUNDING`
+comment of `numerics/surface_field.py`, PROGRESS of 9 November (03a28537) and
+`/mnt/workspaces/Cells/ledger-fix-20261109-01/` (gauge-bitwise, gauge-closed, gauge-w225,
+gauge-floor). No separate note was written at the time; this section is its record.
+
+**The neutrality rule at definition (16 November 2026, audit findings F1 and F3).** A component's
+capacitor rows sum to zero, so its charges are consistent only if they sum to zero. Definition
+checks had refused a charged component through the solve's convergence. After gauge option 2 such
+a definition passed parse:
+- the run paths failed late, at step 0, at the capacitor ledger's first row;
+- the stationary analysis was fail-open: W1's P5 world with 1e-17 C on its cell converged to a
+  membrane voltage of 6.13e-7 V (1e-17 C / Cm);
+- unsolvable excision cuts reached their own ledgers first.
+
+`surface_field.check_neutral_components` now refuses at parse, at the one site that binds the
+field (`surface_tissue.initial_values`, which every identity on the field solver uses). It applies
+the capacitor ledger's own first-row test, `charge_tolerance` at zero steps, to the initial solve.
+It is host-only and changes no program, and runs keep gauge option 2. No registered world was
+affected: of the 116 worlds of the results baseline and the kinds pair, 7 have a representative,
+and each residual is exactly 0 C (`/mnt/workspaces/Cells/core-fixes-20261116/f1/`). An excision
+cut, the only definition re-anchored from a running state, meets the same zero-step bound that
+its own check applies. Tests: `tests/unit/test_component_net_charge.py`, the `[anchor]` cases of
+`test_surface_tissue.py` and `test_surface_kinetic.py`, and `test_surface_excision.py`'s
+unsolvable cuts.

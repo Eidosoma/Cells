@@ -395,7 +395,7 @@ REFUSALS = {
     ),
     "a pump on the bounding patch": (
         pumped,
-        "carries an ion route version 1.1 refuses there, pump_c",
+        "carries an ion route version 1.2 refuses there, pump_c",
     ),
     "an ID that is its node's": (
         lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
@@ -425,7 +425,7 @@ REFUSALS = {
     ),
     "a channel population on the bounding patch": (
         channelled,
-        "carries an ion route version 1.1 refuses there, leak_0",
+        "carries an ion route version 1.2 refuses there, leak_0",
     ),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
@@ -467,6 +467,82 @@ def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
     with kind_registry.scope(kind_fixtures.registry()):
         with pytest.raises(ConfigError, match="which refusal 4 does not know"):
             parse_spec(kind_fixtures.declare(w(), species="S"))
+
+
+def fr5_sources(definition):
+    """FR-5's routing-door sources (the FR-4/FR-5 note's §16.2) added to a world: the bounding
+    patch's damage and the lumen's pH condition."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    definition["model"]["patch_damage"] = [dict(
+        id="damage_0", patch=defs.BOUNDING, law="bounding_patch_damage@1", initial_damage=0.0,
+        injury_rate_per_s=1.0, resealing_rate_per_s=0.05)]
+    definition["model"]["ph_conditions"] = [dict(
+        id="acid_0", node=defs.LUMEN, law="ph_conditioned_factor@1", ph50=5.5, slope=4.0)]
+    return definition
+
+
+def test_refusal_4_version_1_2_admits_the_routing_doors_source_kinds():
+    """Refusal 4, version 1.2 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.2; the lead's ruling of 16
+    November 2026): FR-5's source kinds, cells.patch_damage@1 and cells.ph_condition@1, are
+    admitted beside a compartment (they declare no route, move no row and carry no charge), with
+    FR-4's known kinds; any other kind is still refused (the test above), and so is every declared
+    kind under RK4 (the test below)."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(fr5_sources(defs.declared_world(defs.fr4_world())))
+    assert {k for k, _ in spec.model.kinds} == set(comp.KNOWN_KINDS)
+    assert set(comp.KNOWN_KINDS) == {*comp.ROUTE_KINDS, *comp.READ_KINDS, *comp.FACTOR_KINDS}
+    assert comp.FACTOR_KINDS == ("cells.patch_damage@1", "cells.ph_condition@1")
+
+
+def charged_start(charge_C=5.757025696278586e-14):
+    """An FR-5 start extract with FR-4's steady state's charge split: the lumen +q, the cell -q
+    (the engine's 1800 s checkpoint carries q = 5.757e-14 C), FR-4's declared amounts otherwise."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    declared = defs.fr4_world()
+    nodes = {n["id"]: dict(amounts_fmol=dict(n["initial_amount_fmol"]), charge_C=0.0)
+             for n in declared["model"]["cells"] + declared["model"]["extracellular"]}
+    nodes[defs.LUMEN]["charge_C"], nodes[defs.CELL]["charge_C"] = charge_C, -charge_C
+    return defs.start_extract(producer="engine", nodes=nodes,
+                              readouts=dict(pH_c=7.218, pH_L=5.0946, V_b_V=-7.33e-3),
+                              time_s=1800.0, dt_s=1e-3, source=dict(kind="test"))
+
+
+def test_refusal_5_version_1_1_admits_a_charged_start_where_charged_routes_are_admitted():
+    """Refusal 5, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.3; the lead's ruling of 16
+    November 2026): a world whose admitted routes charge the lumen must be able to resume from
+    its own checkpoint, so FR-5's declared world from FR-4's charged steady state (the lumen +q,
+    the cell -q) is admitted with its nonzero anchor. A nonzero anchor stays refused without kinds
+    (the silent version, REFUSALS' "a charge anchor") and under RK4 (fails closed)."""
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine.parameters import ARM_R
+
+    spec = parse_spec(defs.declared_world(defs.fr5_world(ARM_R, start=charged_start())))
+    lumen = next(o for o in spec.model.extracellular if o.id == defs.LUMEN)
+    assert lumen.initial_charge_C == 5.757025696278586e-14
+    assert {k for k, _ in spec.model.kinds} <= set(comp.KNOWN_KINDS)
+    # Refusal 5's own rule: admitted only with kinds declared and an IMEX tableau.
+    compartment = type("Node", (), dict(initial_charge_C=1e-17))()
+    comp.refuse_charge_anchor("lumen_0", compartment, kinds=True, imex=True)
+    for kinds, imex in ((False, True), (True, False), (False, False)):
+        with pytest.raises(ConfigError, match="nonzero charge anchor"):
+            comp.refuse_charge_anchor("lumen_0", compartment, kinds=kinds, imex=imex)
+    neutral = type("Node", (), dict(initial_charge_C=0.0))()
+    for kinds, imex in ((False, True), (True, False), (False, False)):
+        comp.refuse_charge_anchor("lumen_0", neutral, kinds=kinds, imex=imex)
+    # Under RK4, on @3's parsed base: the operator refuses it (refusal 4's RK4 rule first).
+    import dataclasses
+
+    base = parse_spec(defs.development_world(defs.fr5_world(ARM_R, start=charged_start())))
+    block = defs.fr4_world()["model"]["operators"][0]
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
 
 
 STIFF_DT = 1e-4  # RK4's largest step (surface_tissue.check_steps).
@@ -519,6 +595,18 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     )
     with pytest.raises(ConfigError, match="version 1's refusal stands"):
         comp.parse_declaration(block, rk4)
+    # Version 1.2: the routing door's source kinds alone open nothing under RK4 (fails closed).
+    sources_only = stiff_fr4(operator=False)
+    for key in ("transporters", "passive_routes", "stage_reads"):
+        sources_only["model"].pop(key)
+    base = parse_spec(fr5_sources(sources_only))
+    assert {k for k, _ in base.model.kinds} == set(comp.FACTOR_KINDS)
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
 
 
 def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
@@ -538,6 +626,12 @@ def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
         kind = registry.lookup(kind_id)
         assert kind.stage_read is not None, kind_id
         assert kind.rates is None and kind.moved_rows is None and kind.stage_term is None, kind_id
+    # Version 1.2 (§3.4.2): the routing door's source kinds declare no route and move no row.
+    for kind_id in comp.FACTOR_KINDS:
+        kind = registry.lookup(kind_id)
+        for hook in ("moved_rows", "stage_term", "bound_rate", "held_rows", "stage_read",
+                     "stage_check", "ledger_terms"):
+            assert getattr(kind, hook) is None, (kind_id, hook)
 
 
 def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(

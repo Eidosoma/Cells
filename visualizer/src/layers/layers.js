@@ -186,6 +186,18 @@ function tryParts(run, quantity) {
   return { ok: true, why: null, source: lead.record || lead.members?.[0] || null, across: null, inputs, parts: [...files], livesOn: "membrane" };
 }
 
+/**
+ * Why a run saved none of a quantity's records, in its own words where its view gives them: "This run did not save it.",
+ * and the reason the view lists for one of those records (`unstated`) where it says why the record is absent (a record
+ * a recording subset did not keep; a merged view a later view could not add). A reason about something else of the
+ * record, its kind say, is no reason for its absence, and is not given here.
+ */
+function notSaved(run, quantity) {
+  const wanted = recordNames(quantity);
+  const said = (run.view?.unstated || []).find((item) => (item?.what === "record" || item?.what === "view field") && wanted.includes(item.id) && text(item.why) && item.why.trim());
+  return said ? `${NOT_SAVED} ${said.why.trim().replace(/\.?$/, ".")}` : NOT_SAVED;
+}
+
 /** Whether a run can feed one quantity through a mark: { ok, why, source, across, parts }. */
 function tryQuantity(run, quantity, mark) {
   if (partsOf(quantity)) {
@@ -219,13 +231,13 @@ function tryQuantity(run, quantity, mark) {
         } else sources.push(record);
       }
     }
-    if (!sources.length) return { ok: false, why: whys[0] || NOT_SAVED };
+    if (!sources.length) return { ok: false, why: whys[0] || notSaved(run, quantity) };
     // A total saved once for each species is left out once, by its field.
     const leftOut = [...new Map(left.map((item) => [item.record.field || item.record.id, item])).values()];
     return { ok: true, why: null, source: sources[0], sources, left: leftOut, across: null, parts: [...new Set(sources.filter((record) => !record.loaded && record.part).map((record) => record.part))], species: speciesOf(run, quantity) ?? null };
   }
   const source = sourceOf(run, quantity);
-  if (!source) return { ok: false, why: NOT_SAVED };
+  if (!source) return { ok: false, why: notSaved(run, quantity) };
   if (quantity.signed && !source.sign) return { ok: false, why: "This run saved it, but does not say which way it is positive." };
   if (quantity.derivation === "rate") {
     // A mean rate is the growth of a total between two records: only a total can be differenced, and only a declared sign gives the way.

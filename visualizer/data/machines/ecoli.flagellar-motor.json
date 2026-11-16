@@ -1,0 +1,1600 @@
+{
+  "format": "cells.visualizer.machine@1",
+  "id": "flagellar-motor",
+  "species": "ecoli",
+  "label": "Flagellar motor",
+  "called": "motor",
+  "plain": "The rotary motor at the foot of each flagellum. A rotor of rings sits in the inner membrane; stator units round it let protons into the cell and push on it; a straight drive shaft passes through the wall and the outer membrane to a flexible hook, which turns the long filament.",
+  "plain_says": [
+    "n-ms",
+    "n-cring",
+    "n-inward",
+    "n-axial",
+    "n-lp"
+  ],
+  "modelled": {
+    "state": "none",
+    "text": "Cells has no model of this motor: no law of the engine drives it, and E. coli is proposed, not modelled. What is drawn is an illustration, built from sizes and counts that papers give.",
+    "capability": "cap.machines"
+  },
+  "at": {
+    "appendage": "flagellum",
+    "base": "flagellar-motor"
+  },
+  "set": {
+    "mark": "complex",
+    "value": "flagellum"
+  },
+  "frame": {
+    "unit": "nm",
+    "axis": "out of the cell, along the flagellum",
+    "zero": "the middle of the inner membrane",
+    "note": "A position along the axis (`z_nm`) is how far a part's middle lies outside the middle of the inner membrane; a negative one lies in the cytoplasm. Across the axis every part is round it, unless it is a unit set round it at a radius."
+  },
+  "levels": [
+    {
+      "id": 1,
+      "label": "Outline",
+      "says": "The envelope, the rotor as one body, the stator units, the bearing rings, the hook and the start of the filament."
+    },
+    {
+      "id": 2,
+      "label": "Parts",
+      "says": "Each part a body of its own, with the export gate and its ATPase ring, so that each can be chosen. The default."
+    },
+    {
+      "id": 3,
+      "label": "Subunits",
+      "says": "Where a sentence gives how many copies of a protein a part holds, that many blocks; every other part as at level 2."
+    }
+  ],
+  "layers": [
+    {
+      "id": "inner-membrane",
+      "label": "Inner membrane",
+      "kind": "layer",
+      "z_nm": {
+        "nm": 0,
+        "choice": "The frame's zero."
+      },
+      "thick_nm": {
+        "nm": 4.5,
+        "choice": "No source read here gives the thickness of either membrane; the viewer's membrane close-up draws a bilayer about 4.5 nm thick, and this keeps to it."
+      },
+      "across_nm": {
+        "nm": 160,
+        "choice": "How much of the envelope the picture shows round the motor."
+      },
+      "proteins_in": "the stator units, the MS ring and the export gate (below)",
+      "role": "membrane"
+    },
+    {
+      "id": "wall",
+      "label": "Cell wall (peptidoglycan)",
+      "kind": "layer",
+      "z_nm": {
+        "nm": [
+          19.2,
+          22.3
+        ],
+        "derived": "The distance between the two membranes' middles less the distance from the outer membrane's middle to the wall's middle: 30 to 32 nm less 9.7 to 10.8 nm. The middle of that range is drawn, 20.75 nm.",
+        "from": [
+          "envelope-im-om",
+          "envelope-om-wall"
+        ]
+      },
+      "thick_nm": {
+        "nm": 4,
+        "choice": "No source saved here gives the wall's thickness."
+      },
+      "across_nm": {
+        "nm": 160,
+        "choice": "As the inner membrane."
+      },
+      "role": "wall"
+    },
+    {
+      "id": "outer-membrane",
+      "label": "Outer membrane",
+      "kind": "layer",
+      "z_nm": {
+        "nm": [
+          30,
+          32
+        ],
+        "says": [
+          "m-im-om",
+          "m-of",
+          "m-hyper"
+        ],
+        "measured_in": "E. coli",
+        "how": "Electron cryotomography of wild-type cells of strain BW25113, from the middle of one membrane to the middle of the other, in hyperosmotic conditions, which the paper says made the distance larger than in standard laboratory media. The middle is drawn, 31 nm."
+      },
+      "thick_nm": {
+        "nm": 4.5,
+        "choice": "As the inner membrane."
+      },
+      "across_nm": {
+        "nm": 160,
+        "choice": "As the inner membrane."
+      },
+      "role": "membrane"
+    }
+  ],
+  "spacings": {
+    "envelope-im-om": {
+      "nm": [
+        30,
+        32
+      ],
+      "says": [
+        "m-im-om",
+        "m-of",
+        "m-hyper"
+      ],
+      "measured_in": "E. coli"
+    },
+    "envelope-om-wall": {
+      "nm": [
+        9.7,
+        10.8
+      ],
+      "says": [
+        "m-om-pg",
+        "m-om-pg-how"
+      ],
+      "measured_in": "E. coli",
+      "how": "Centre of the outer membrane to centre of the wall, measured in intact wild-type cells."
+    }
+  },
+  "parts": [
+    {
+      "id": "ms-ring",
+      "label": "MS ring",
+      "role": "rotor",
+      "kind": "ring",
+      "in": "inner-membrane",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "A ring of one protein in the inner membrane; part of the rotor.",
+        "says": [
+          "n-ms"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P25798",
+          "gene": "fliF"
+        }
+      ],
+      "across_nm": {
+        "nm": 30,
+        "about": true,
+        "says": "n-diameters",
+        "measured_in": "Salmonella",
+        "of": "the M ring"
+      },
+      "step_nm": {
+        "nm": 24.5,
+        "about": true,
+        "says": "n-diameters",
+        "measured_in": "Salmonella",
+        "of": "the S ring",
+        "also": {
+          "text": "24 nm, by a paper on the ring itself",
+          "says": "k-sring",
+          "measured_in": "not stated"
+        }
+      },
+      "drawn_as": {
+        "choice": "Two rings on one axis: the M ring (30 nm) in the membrane, the S ring (24.5 nm) on its periplasmic side. Which of the two lies higher is the picture's reading of their names; the sentence gives their widths only."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P25798",
+            "gene": "fliF",
+            "count": {
+              "n": 34,
+              "says": "k-flif",
+              "measured_in": "Salmonella"
+            },
+            "arranged": "round the ring",
+            "layout": "round"
+          }
+        ]
+      },
+      "z_nm": {
+        "nm": [
+          -3,
+          6
+        ],
+        "choice": "The M ring in the membrane from 3 nm below its middle, the S ring above it to 6 nm: no source read here gives the rings' heights."
+      },
+      "bore_nm": {
+        "nm": 14,
+        "choice": "Room for the export gate drawn inside it; no source read here gives the ring's bore."
+      }
+    },
+    {
+      "id": "c-ring",
+      "label": "C ring (switch)",
+      "role": "rotor",
+      "kind": "ring",
+      "under": "ms-ring",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "Hangs on the cytoplasmic face of the MS ring. It is the central part of the rotor, and the switch that turns the motor the other way.",
+        "says": [
+          "n-cring",
+          "n-cring-role",
+          "n-chey"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P0ABZ1",
+          "gene": "fliG"
+        },
+        {
+          "id": "P06974",
+          "gene": "fliM"
+        },
+        {
+          "id": "P15070",
+          "gene": "fliN"
+        }
+      ],
+      "across_nm": {
+        "nm": 45,
+        "about": true,
+        "says": "n-diameters",
+        "measured_in": "Salmonella",
+        "disagree": "Another paper gives 41.6 nm turning one way and 40.7 nm the other, and names no species in that sentence."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P06974",
+            "gene": "fliM",
+            "count": {
+              "n": 34,
+              "about": true,
+              "says": "n-flim-34",
+              "measured_in": "not stated"
+            },
+            "arranged": "round, at the ring's wall",
+            "layout": "round"
+          },
+          {
+            "id": "P15070",
+            "gene": "fliN",
+            "count": null,
+            "arranged": "one band round the ring's lower edge",
+            "says": "n-flin",
+            "why": "The sentence gives three FliN to each FliM's end and calls them one spiral round the lower edge; the band is drawn, not the copies.",
+            "layout": "band"
+          },
+          {
+            "id": "P0ABZ1",
+            "gene": "fliG",
+            "count": null,
+            "arranged": "one smooth ring at the top, where the stator units bear on it",
+            "why": "One sentence gives FliM bound one to one to FliG, another 26 steps a turn consistent with the FliG ring's symmetry: the two do not give one count, so none is drawn.",
+            "layout": "smooth"
+          }
+        ]
+      },
+      "z_nm": {
+        "nm": [
+          -24,
+          -4
+        ],
+        "choice": "Under the MS ring, 20 nm tall: no source read here gives its height."
+      },
+      "bore_nm": {
+        "nm": 35,
+        "choice": "Room inside for the FlhA ring and the ATPase ring."
+      }
+    },
+    {
+      "id": "stator-units",
+      "label": "Stator units",
+      "role": "stator",
+      "kind": "units",
+      "in": "inner-membrane",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": false,
+      "does": {
+        "text": "Each unit is a channel for protons in the inner membrane that pushes on the rotor; an arm of each holds on to the wall.",
+        "says": [
+          "n-motab",
+          "n-pgb",
+          "n-two-paths"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P09348",
+          "gene": "motA"
+        },
+        {
+          "id": "P0AF06",
+          "gene": "motB"
+        }
+      ],
+      "count": {
+        "n": 10,
+        "about": true,
+        "says": "n-stators-10",
+        "measured_in": "E. coli and Salmonella",
+        "when": "at high load",
+        "also": [
+          {
+            "text": "a dozen in the figure of a Salmonella basal body",
+            "says": "n-stators-dozen",
+            "measured_in": "Salmonella"
+          },
+          {
+            "text": "at least 11 at the most, in the paper's section on the E. coli flagellum",
+            "says": "s-stators-11",
+            "measured_in": "not stated"
+          },
+          {
+            "text": "from 10 down to a few when the load is low",
+            "says": "n-stators-few",
+            "measured_in": "not stated"
+          }
+        ]
+      },
+      "radius_nm": {
+        "nm": 20,
+        "about": true,
+        "says": "n-stator-radius",
+        "measured_in": "Salmonella",
+        "of": "where a unit meets the rotor, from the axis"
+      },
+      "body": {
+        "across_nm": {
+          "nm": 7,
+          "choice": "No source read here gives a unit's size."
+        },
+        "z_nm": {
+          "nm": [
+            -5,
+            4
+          ],
+          "choice": "Through the membrane, its cytoplasmic end resting on the C ring's upper rim, where the units meet FliG."
+        },
+        "placed": {
+          "choice": "The body's inner face stands at the 20 nm where a unit meets the rotor, so its middle is 23.5 nm from the axis."
+        }
+      },
+      "arm": {
+        "to": "wall",
+        "says": "n-pgb",
+        "drawn_as": {
+          "choice": "A thin stalk from each unit up to the wall; its length follows from where the wall is drawn."
+        },
+        "z_nm": {
+          "derived": "From the top of a unit's body (4 nm) to the middle of the wall (20.75 nm).",
+          "from": [
+            "stator-units",
+            "wall"
+          ],
+          "nm": [
+            4,
+            20.75
+          ]
+        }
+      },
+      "subunits": {
+        "level": 3,
+        "of": [],
+        "why": "A unit is one body at every level (the coordinator's decision of 16 November 2026). The one saved sentence on what a unit holds names no species."
+      },
+      "channels_per_unit": {
+        "n": 2,
+        "says": "s-channels",
+        "measured_in": "not stated",
+        "also_says": "n-two-paths"
+      },
+      "holds": {
+        "of": "each unit",
+        "figures": [
+          {
+            "text": "four MotA and two MotB",
+            "n": [
+              4,
+              2
+            ],
+            "says": "n-motab",
+            "measured_in": "not stated"
+          }
+        ]
+      }
+    },
+    {
+      "id": "export-gate",
+      "label": "Export gate",
+      "role": "export",
+      "kind": "ring",
+      "in": "inner-membrane",
+      "inside": "ms-ring",
+      "levels": [
+        2,
+        3
+      ],
+      "turns": false,
+      "turns_why": "No source read here says whether it turns with the rotor; it is drawn still.",
+      "does": {
+        "text": "Inside the MS ring: it passes the proteins of the rod, the hook and the filament out through the membranes, letting protons in as it does.",
+        "says": [
+          "n-gate",
+          "n-gate-place",
+          "n-pqr"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P76298",
+          "gene": "flhA"
+        },
+        {
+          "id": "P76299",
+          "gene": "flhB"
+        },
+        {
+          "id": "P0AC05",
+          "gene": "fliP"
+        },
+        {
+          "id": "P0AC07",
+          "gene": "fliQ"
+        },
+        {
+          "id": "P33135",
+          "gene": "fliR"
+        }
+      ],
+      "across_nm": {
+        "nm": 12,
+        "choice": "No source read here gives its width; drawn within the S ring."
+      },
+      "channel_nm": {
+        "nm": 1.5,
+        "says": "n-pqr-channel",
+        "measured_in": "not stated"
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P0AC05",
+            "gene": "fliP",
+            "count": {
+              "n": 5,
+              "says": "n-pqr",
+              "measured_in": "not stated"
+            },
+            "arranged": "a right-handed helical bundle",
+            "layout": "bundle"
+          },
+          {
+            "id": "P0AC07",
+            "gene": "fliQ",
+            "count": {
+              "n": 4,
+              "says": "n-pqr",
+              "measured_in": "not stated"
+            },
+            "arranged": "in the same bundle",
+            "layout": "bundle"
+          },
+          {
+            "id": "P33135",
+            "gene": "fliR",
+            "count": {
+              "n": 1,
+              "says": "n-pqr",
+              "measured_in": "not stated"
+            },
+            "arranged": "in the same bundle",
+            "layout": "bundle"
+          },
+          {
+            "id": "P76298",
+            "gene": "flhA",
+            "count": {
+              "n": 9,
+              "says": "n-flha",
+              "measured_in": "not stated"
+            },
+            "arranged": "a ring of nine below the bundle, in the cytoplasm",
+            "layout": "round",
+            "z_nm": {
+              "nm": [
+                -12,
+                -5
+              ],
+              "choice": "Under the bundle, in the cytoplasm: the sentence says the ring is formed by FlhA's cytoplasmic domain, not how far below the membrane it hangs."
+            },
+            "radius_nm": {
+              "nm": 8,
+              "choice": "Wider than the bundle above it and within the C ring's bore."
+            }
+          },
+          {
+            "id": "P76299",
+            "gene": "flhB",
+            "count": null,
+            "arranged": "one body beside the bundle",
+            "says": "n-gate",
+            "why": "Named as part of the gate; no count is given.",
+            "layout": "beside"
+          }
+        ]
+      },
+      "z_nm": {
+        "nm": [
+          -12,
+          4
+        ],
+        "choice": "The bundle in the membrane from -4 to 4 nm, the FlhA ring under it from -12 to -5 nm."
+      }
+    },
+    {
+      "id": "atpase-ring",
+      "label": "ATPase ring",
+      "role": "export",
+      "kind": "ring",
+      "under": "export-gate",
+      "levels": [
+        2,
+        3
+      ],
+      "turns": false,
+      "turns_why": "No source read here says whether it turns with the rotor; it is drawn still.",
+      "does": {
+        "text": "In the cytoplasm under the gate; it splits ATP to drive the gate, and holds on to the gate and to the C ring.",
+        "says": [
+          "n-atpase",
+          "n-atpase-attach",
+          "n-atpase-work"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P31068",
+          "gene": "fliH"
+        },
+        {
+          "id": "P52612",
+          "gene": "fliI"
+        },
+        {
+          "id": "P52613",
+          "gene": "fliJ"
+        }
+      ],
+      "across_nm": {
+        "nm": 12,
+        "choice": "No source read here gives its width."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P52612",
+            "gene": "fliI",
+            "count": {
+              "n": 6,
+              "says": "n-atpase",
+              "measured_in": "not stated"
+            },
+            "arranged": "a ring of six",
+            "layout": "round"
+          },
+          {
+            "id": "P31068",
+            "gene": "fliH",
+            "count": {
+              "n": 12,
+              "says": "n-atpase",
+              "measured_in": "not stated"
+            },
+            "arranged": "stalks out from the ring to the C ring",
+            "layout": "spokes",
+            "to": "c-ring"
+          },
+          {
+            "id": "P52613",
+            "gene": "fliJ",
+            "count": {
+              "n": 1,
+              "says": "n-atpase",
+              "measured_in": "not stated",
+              "agrees": "s-copies gives one FliJ in a single E. coli flagellum"
+            },
+            "arranged": "a stalk up the middle of the ring",
+            "layout": "axis"
+          }
+        ]
+      },
+      "within": "c-ring",
+      "z_nm": {
+        "nm": [
+          -21,
+          -13
+        ],
+        "choice": "Inside the C ring, under the FlhA ring."
+      }
+    },
+    {
+      "id": "rod",
+      "label": "Rod (drive shaft)",
+      "role": "rotor",
+      "kind": "rod",
+      "from": "ms-ring",
+      "to": "outer-membrane",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "Straight and stiff: the drive shaft from the MS ring out through the wall and the outer membrane.",
+        "says": [
+          "n-axial",
+          "n-rod",
+          "n-flie"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P0A8T5",
+          "gene": "fliE",
+          "where": "where the rod meets the MS ring"
+        },
+        {
+          "id": "P0ABW9",
+          "gene": "flgB",
+          "where": "proximal"
+        },
+        {
+          "id": "P0ABX2",
+          "gene": "flgC",
+          "where": "proximal"
+        },
+        {
+          "id": "P75938",
+          "gene": "flgF",
+          "where": "proximal"
+        },
+        {
+          "id": "P0ABX5",
+          "gene": "flgG",
+          "where": "distal"
+        }
+      ],
+      "across_nm": {
+        "nm": 12,
+        "choice": "No source read here gives its width; drawn narrower than the LP ring it passes through."
+      },
+      "z_nm": {
+        "nm": [
+          6,
+          31
+        ],
+        "derived": "From the top of the MS ring (6 nm) to the middle of the outer membrane (31 nm), as they are drawn.",
+        "from": [
+          "ms-ring",
+          "outer-membrane"
+        ]
+      }
+    },
+    {
+      "id": "p-ring",
+      "label": "P ring",
+      "role": "bearing",
+      "kind": "ring",
+      "in": "wall",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": false,
+      "turns_why": "With the L ring it is a bearing for the rod.",
+      "does": {
+        "text": "Set in the wall; with the L ring, a bearing for the rod.",
+        "says": [
+          "n-lp"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P0A6S3",
+          "gene": "flgI"
+        }
+      ],
+      "across_nm": {
+        "nm": 25,
+        "about": true,
+        "says": "n-diameters",
+        "measured_in": "Salmonella",
+        "of": "the LP ring complex"
+      },
+      "z_nm": {
+        "nm": [
+          17.75,
+          23.75
+        ],
+        "choice": "Centred on the wall, 6 nm tall: no source read here gives its height."
+      },
+      "bore_nm": {
+        "nm": 14,
+        "choice": "Room for the rod."
+      }
+    },
+    {
+      "id": "l-ring",
+      "label": "L ring",
+      "role": "bearing",
+      "kind": "ring",
+      "in": "outer-membrane",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": false,
+      "turns_why": "With the P ring it is a bearing for the rod.",
+      "does": {
+        "text": "Set in the outer membrane; with the P ring, a bearing for the rod.",
+        "says": [
+          "n-lp"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P0A6S0",
+          "gene": "flgH"
+        }
+      ],
+      "across_nm": {
+        "nm": 25,
+        "about": true,
+        "says": "n-diameters",
+        "measured_in": "Salmonella",
+        "of": "the LP ring complex"
+      },
+      "z_nm": {
+        "nm": [
+          28,
+          34
+        ],
+        "choice": "Centred on the outer membrane, 6 nm tall: no source read here gives its height."
+      },
+      "bore_nm": {
+        "nm": 14,
+        "choice": "Room for the rod."
+      }
+    },
+    {
+      "id": "hook",
+      "label": "Hook (universal joint)",
+      "role": "rotor",
+      "kind": "tube",
+      "from": "outer-membrane",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "Curved and flexible: it passes the motor's turning on to the filament.",
+        "says": [
+          "n-axial"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P75937",
+          "gene": "flgE"
+        }
+      ],
+      "length_nm": {
+        "nm": 50,
+        "about": true,
+        "says": "z-filament-hook",
+        "measured_in": "not stated"
+      },
+      "across_nm": {
+        "nm": 24,
+        "choice": "No source read here gives the hook's width; drawn as wide as the filament."
+      },
+      "bend": {
+        "choice": "One gentle curve, as a hook is drawn in the cell view; the sentence says only that it is supercoiled and flexible."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P75937",
+            "gene": "flgE",
+            "count": {
+              "n": 100,
+              "says": "s-copies",
+              "measured_in": "E. coli",
+              "disagree": "about 120 in Salmonella"
+            },
+            "arranged": "helical, along the tube",
+            "layout": "along"
+          }
+        ],
+        "strands": {
+          "n": 11,
+          "says": "n-protofilaments",
+          "measured_in": "bacteria in general"
+        }
+      },
+      "z_nm": {
+        "nm": [
+          34,
+          82
+        ],
+        "choice": "From the L ring's top. With its bend, its 50 nm along its own line reach about 48 nm out."
+      }
+    },
+    {
+      "id": "junction",
+      "label": "Hook-associated proteins",
+      "role": "rotor",
+      "kind": "band",
+      "between": [
+        "hook",
+        "filament"
+      ],
+      "levels": [
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "Where the hook meets the filament, by their entries' names.",
+        "says": [
+          "u-names"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P33235",
+          "gene": "flgK"
+        },
+        {
+          "id": "P29744",
+          "gene": "flgL"
+        }
+      ],
+      "z_nm": {
+        "nm": [
+          82,
+          86
+        ],
+        "choice": "No source read here gives their place or size; their entries call them hook-associated, and the picture sets them where hook and filament meet."
+      }
+    },
+    {
+      "id": "filament",
+      "label": "Filament (its start)",
+      "role": "rotor",
+      "kind": "tube",
+      "from": "junction",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "turns": true,
+      "does": {
+        "text": "A hollow tube of one protein, flagellin; its turning pushes the cell. Only its start is drawn here: it goes on for micrometres.",
+        "says": [
+          "z-tube",
+          "n-flic-30000",
+          "s-copies"
+        ]
+      },
+      "proteins": [
+        {
+          "id": "P04949",
+          "gene": "fliC"
+        }
+      ],
+      "across_nm": {
+        "nm": 24,
+        "says": "z-tube",
+        "measured_in": "not stated",
+        "disagree": "about 20 nm by the same paper's opening and 40 nm by another: the species file gives 20 to 40 nm"
+      },
+      "bore_nm": {
+        "nm": 2,
+        "says": "z-tube",
+        "measured_in": "not stated"
+      },
+      "copies": {
+        "n": [
+          10000,
+          30000
+        ],
+        "says": [
+          "s-copies",
+          "n-flic-30000"
+        ],
+        "measured_in": "E. coli",
+        "disagree": "Two papers: 10⁴ FliC in a single E. coli flagellum, and about 30,000. A number in the panel; not drawn.",
+        "of": "one flagellum"
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P04949",
+            "gene": "fliC",
+            "count": null,
+            "arranged": "eleven strands along the tube",
+            "why": "As many blocks as fill the 150 nm drawn; how long one block is, is the picture's choice: no source read here gives the step along a strand.",
+            "layout": "along",
+            "step_nm": {
+              "nm": 5,
+              "choice": "How long one block is along a strand: no source read here gives the step, so as many blocks are drawn as fill the 150 nm at this step."
+            }
+          }
+        ],
+        "strands": {
+          "n": 11,
+          "says": "n-protofilaments",
+          "measured_in": "bacteria in general"
+        }
+      },
+      "z_nm": {
+        "nm": [
+          86,
+          236
+        ],
+        "choice": "Its first 150 nm; it goes on for 5 to 10 µm (the species file)."
+      }
+    }
+  ],
+  "not_drawn": [
+    {
+      "id": "P52614",
+      "gene": "fliK",
+      "why": "The ruler that sets the hook's length; it is sent out through the export gate while the hook is built, and is not a part of the finished motor.",
+      "says": "n-flik"
+    },
+    {
+      "id": "P22586",
+      "gene": "fliO",
+      "why": "Needed for the gate's bundle to be put together; the sentence does not make it a part of the gate.",
+      "says": "n-pqr"
+    },
+    {
+      "id": "P24216",
+      "gene": "fliD",
+      "why": "The cap at the far end of the filament, 5 to 10 µm away: not in this close view. Ten in a single E. coli flagellum.",
+      "says": "s-copies"
+    },
+    {
+      "id": "P0AE67",
+      "gene": "cheY",
+      "why": "The signal: phosphorylated, it binds FliM and FliN and turns the motor the other way. Named in the C ring's panel; not a fixed part.",
+      "says": "n-chey"
+    },
+    {
+      "id": "P0A9H9",
+      "gene": "cheZ",
+      "why": "Takes the phosphate off CheY in the cytoplasm, ending the signal. Not a part of the motor.",
+      "says": "z-chez"
+    },
+    {
+      "id": "P76010",
+      "gene": "ycgR",
+      "why": "Named \"flagellar brake protein\" by its entry; no source read here says where it sits.",
+      "says": "u-names"
+    },
+    {
+      "id": "P0ABX8",
+      "gene": "fliL",
+      "why": "Named \"flagellar protein FliL\" by its entry, which states it in the inner membrane; no source read here says where at the motor.",
+      "says": "u-names"
+    },
+    {
+      "id": "P76297",
+      "gene": "flhE",
+      "why": "Named \"flagellar protein FlhE\" by its entry; no source read here says where it sits.",
+      "says": "u-names"
+    },
+    {
+      "id": "Q47154",
+      "gene": "lafU",
+      "why": "Named a \"putative truncated flagellar export/assembly protein\" by its entry; no source read here says that it is part of this motor.",
+      "says": "u-names"
+    }
+  ],
+  "motion": {
+    "form": "illustration: a paper's words, not a run",
+    "rotor": {
+      "parts": [
+        "ms-ring",
+        "c-ring",
+        "rod",
+        "hook",
+        "junction",
+        "filament"
+      ],
+      "way": "counter-clockwise",
+      "as": "in a run, when the cell swims straight",
+      "says": "n-run-ccw",
+      "measured_in": "E. coli and Salmonella",
+      "seen_from": {
+        "text": "from behind the cell, that is from outside it, looking along the filament towards it",
+        "says": [
+          "d-ccw-view",
+          "d-cw-distal"
+        ],
+        "measured_in": "not stated",
+        "reading": "That the motor turns the way its filament is seen to turn is this design's reading: the sentence that gives the motor's direction does not say from where it is seen, and the two that do speak of the bundle in a run and of one filament in a tumble.",
+        "short": "seen from outside the cell"
+      },
+      "other_way": {
+        "text": "Clockwise when the cell tumbles, seen from the same side. Not drawn: the picture shows a run.",
+        "says": [
+          "n-tumble",
+          "d-cw-distal"
+        ]
+      },
+      "rate": {
+        "most_turns_per_s": 300,
+        "says": "n-speed",
+        "measured_in": "E. coli and Salmonella",
+        "also": [
+          {
+            "text": "at most 380 a second",
+            "says": "s-380",
+            "measured_in": "E. coli"
+          },
+          {
+            "text": "slower under a heavier load",
+            "says": "s-load",
+            "measured_in": "E. coli"
+          }
+        ]
+      },
+      "drawn": {
+        "turns_per_s": 150,
+        "derived": "The middle of the 100 to 200 turns a second that one paper gives for a motor while the cell swims; another gives 150 for Salmonella at its mean swimming speed, and a third saw swimming cells' flagella turn about 100 times a second.",
+        "from_says": [
+          "d-rate",
+          "s-150",
+          "m-swim"
+        ],
+        "as": "while the cell swims",
+        "proposed": "Proposed by the motor agent on 16 November 2026 in place of the top speed; the coordinator may set it to 300 here."
+      },
+      "caveat": "The ten stator units drawn and the top speed are not of one moment: about ten work when the load is high and the motor turns slowly, only a few near its top speed.",
+      "caveat_says": [
+        "n-stators-10",
+        "n-stators-few"
+      ],
+      "sign": "Positive (right-handed) about the outward axis: counter-clockwise to an eye outside the cell looking in. A test pins it.",
+      "about": {
+        "axis": [
+          "ms-ring",
+          "c-ring",
+          "rod"
+        ],
+        "own_line": [
+          "hook",
+          "junction",
+          "filament"
+        ],
+        "why": {
+          "text": "The hook keeps its bend and passes the turning on, as a universal joint does: it and the filament turn about their own line, not round the motor's axis.",
+          "says": "n-axial"
+        }
+      },
+      "shows": {
+        "1": "One mark on each turning part: a ridge on the rotor's body, a stripe along the hook and along the filament.",
+        "2": "One mark on each turning part: a ridge on the MS ring and on the C ring, a stripe along the rod, the hook and the filament.",
+        "3": "The blocks: 34 FliF, 34 FliM, 100 FlgE and the 11 strands of FliC; and the single marks of level 2 on the rod."
+      },
+      "seams": {
+        "choice": "The marks are the picture's, so that a turn can be seen on smooth bodies; there is one on each part, so that no pattern of like marks can seem to run the wrong way. They stand for no structure, and the panel says so."
+      },
+      "speed": {
+        "from": "the Cell view's flux",
+        "default": "real life: no slow-down",
+        "note": "The rotor keeps the flux's slow-down (1 is real life). It has no speed of its own and no words of its own for the steps."
+      },
+      "blur": {
+        "choice": "Above an eighth of a turn in a frame for a single mark, and above a quarter of their spacing for a set of like blocks, a turning part's marks give way to a smooth band, the mark smeared round, so that no drawn mark can be read as a direction or a rate. The change is a fade over the half step below the limit.",
+        "single": 0.125,
+        "set": 0.25,
+        "fade": 0.5
+      },
+      "arrowhead": {
+        "where": "a curved arrow round the rod, above the P ring, pointing the way the rotor turns",
+        "choice": "Its place is the picture's; it shows the way whenever the rotor is drawn, turning or still."
+      },
+      "when": "in a run"
+    },
+    "held": [
+      {
+        "parts": [
+          "p-ring",
+          "l-ring"
+        ],
+        "why": "A bearing for the rod.",
+        "says": "n-lp"
+      },
+      {
+        "parts": [
+          "stator-units"
+        ],
+        "why": "Held to the wall by their arms.",
+        "says": "n-pgb"
+      },
+      {
+        "parts": [
+          "export-gate",
+          "atpase-ring"
+        ],
+        "why": "No source read here says whether they turn with the rotor."
+      }
+    ],
+    "protons": {
+      "through": "stator-units",
+      "way": "in: from the space between the membranes into the cytoplasm, whichever way the rotor turns",
+      "says": [
+        "n-inward",
+        "n-ion-exterior"
+      ],
+      "per_turn_per_unit": {
+        "n": 100,
+        "derived": "Two channels in each unit, each passing 50 protons in a turn: one paper's estimate.",
+        "from_says": [
+          "s-channels"
+        ]
+      },
+      "token": {
+        "stands_for": 10,
+        "words": "one bead stands for 10 protons",
+        "colour": "the one neutral tone, named H+"
+      },
+      "drawn": false,
+      "why_not": "Not drawn: the user's decision of 16 November 2026 was to wait with protons."
+    },
+    "export": {
+      "way": "protons in, proteins out",
+      "says": "n-gate-place",
+      "rate": null,
+      "drawn": "nothing moves: no source read here gives a rate"
+    },
+    "still": {
+      "when": "while the motor is not the part being shown, when the page is opened still, and for a visitor who asks for reduced motion",
+      "words": "shown still",
+      "arrowhead": true
+    }
+  },
+  "disagreements": [
+    {
+      "of": "the C ring's width",
+      "values": "about 45 nm (Salmonella); 41.6 nm turning one way and 40.7 nm the other (no species named in the sentence)",
+      "says": [
+        "n-diameters",
+        "z-cring"
+      ],
+      "drawn": "45 nm",
+      "part": "c-ring"
+    },
+    {
+      "of": "the filament's width",
+      "values": "about 20 nm; 24 nm outside with a 2 nm bore (both one paper, no species named); 40 nm (another paper)",
+      "says": [
+        "z-filament-hook",
+        "z-tube",
+        "d-40"
+      ],
+      "drawn": "24 nm with its bore, the one sentence that gives both",
+      "part": "filament"
+    },
+    {
+      "of": "FlgE in the hook",
+      "values": "100 in a single E. coli flagellum; about 120 in Salmonella",
+      "says": [
+        "s-copies",
+        "n-hook-120"
+      ],
+      "drawn": "100, at level 3",
+      "part": "hook"
+    },
+    {
+      "of": "FliC in the filament",
+      "values": "10⁴; about 30,000 (both of E. coli)",
+      "says": [
+        "s-copies",
+        "n-flic-30000"
+      ],
+      "drawn": "not drawn: a number in the panel",
+      "part": "filament"
+    },
+    {
+      "of": "stator units",
+      "values": "about 10 at high load (E. coli and Salmonella); a dozen (a Salmonella figure); at least 11 at the most",
+      "says": [
+        "n-stators-10",
+        "n-stators-dozen",
+        "s-stators-11"
+      ],
+      "drawn": "10",
+      "part": "stator-units"
+    },
+    {
+      "of": "the top speed",
+      "values": "300 turns a second (E. coli and Salmonella); 380 (E. coli)",
+      "says": [
+        "n-speed",
+        "s-380",
+        "d-rate",
+        "s-150"
+      ],
+      "drawn": "neither: the rotor is drawn at about 150 turns a second, a swimming cell's; the picture names the top speed",
+      "part": "motion"
+    },
+    {
+      "of": "how many FliG",
+      "values": "one to one with FliM, which has about 34; 26 steps a turn, said to match the FliG ring's symmetry",
+      "says": [
+        "n-flim-flig",
+        "n-flim-34",
+        "n-steps"
+      ],
+      "drawn": "a smooth ring, uncounted",
+      "part": "c-ring"
+    }
+  ],
+  "sentences": {
+    "n-diameters": {
+      "source": "nakamura2019",
+      "text": "Diameters of the LP ring complex, the S ring, the M ring, and the C ring are ~25 nm, ~24.5 nm, ~30 nm, and ~45 nm, respectively, in Salmonella."
+    },
+    "n-ms": {
+      "source": "nakamura2019",
+      "text": "The MS ring is composed of the transmembrane protein FliF and is part of a rotor"
+    },
+    "n-cring": {
+      "source": "nakamura2019",
+      "text": "FliG, FliM, and FliN form the C ring on the cytoplasmic face of the MS ring."
+    },
+    "n-cring-role": {
+      "source": "nakamura2019",
+      "text": "The C ring acts not only as a central part of the rotor for torque generation but also as a structural device to switch the direction of motor rotation in E. coli and Salmonella"
+    },
+    "n-lp": {
+      "source": "nakamura2019",
+      "text": "The L and P rings, which are formed by the lipoprotein FlgH and the periplasmic protein FlgI, respectively, are embedded in the outer membrane and the peptidoglycan (PG) layer, respectively, and they together act as a bearing for the rod."
+    },
+    "n-stator-radius": {
+      "source": "nakamura2019",
+      "text": "The stator units are assembled on the FliG ring (Figure 1c), and so stator–rotor interactions occur about 20 nm away from the center of the C ring in Salmonella."
+    },
+    "n-stators-10": {
+      "source": "nakamura2019",
+      "text": "The flagellar motor can accommodate about 10 stator units around a rotor in E. coli and Salmonella when the motor operates at high load"
+    },
+    "n-stators-dozen": {
+      "source": "nakamura2019",
+      "text": "A dozen MotAB complex are associated with the basal body to act as a stator unit in the motor but is gone during purification.",
+      "where": "the caption of the paper's Figure 1, headed \"Salmonella flagellum\""
+    },
+    "n-stators-few": {
+      "source": "nakamura2019",
+      "text": "the stator number is decreased from 10 to a few when external load becomes quite low"
+    },
+    "n-motab": {
+      "source": "nakamura2019",
+      "text": "The MotAB complex is composed of four copies of MotA and two copies of MotB and acts as a transmembrane H+ channel"
+    },
+    "n-two-paths": {
+      "source": "nakamura2019",
+      "text": "The MotAB stator complex has two H+ pathways formed by MotA-TM3, MotA-TM4 and MotB-TM"
+    },
+    "n-pgb": {
+      "source": "nakamura2019",
+      "text": "The PGB domains of MotB (MotBPGB) and PomB (PomBPGB) bind to the PG layer to allow the MotAB and PomAB complexes to become an active stator unit around a rotor"
+    },
+    "n-inward": {
+      "source": "nakamura2019",
+      "text": "The flagellum of E. coli and Salmonella is a supramolecular rotary motor powered by an inward-directed H+ translocation through a transmembrane H+ channel of the MotAB stator complex and can spin in both CCW and CW directions without changing the direction of H+ flow."
+    },
+    "n-ion-exterior": {
+      "source": "nakamura2019",
+      "text": "Asp-33 of Salmonella MotB, which corresponds to Asp-32 in E. coli MotB, is critical for the binding of H+ from the cell exterior"
+    },
+    "n-run-ccw": {
+      "source": "nakamura2019",
+      "text": "E. coli and Salmonella cells can swim in a straight line by bundling left-handed helical filaments behind the cell body (run) when all of them rotate in CCW direction."
+    },
+    "n-tumble": {
+      "source": "nakamura2019",
+      "text": "When one or multiple motors switch the direction of rotation from CCW to CW, the flagellar bundle is disrupted, enabling the cell to tumble and change the swimming direction."
+    },
+    "n-speed": {
+      "source": "nakamura2019",
+      "text": "The maximum motor speed reaches 300 revolutions per second in E. coli and Salmonella"
+    },
+    "n-gate": {
+      "source": "nakamura2019",
+      "text": "The type III protein export apparatus consists of an export gate complex made of five transmembrane proteins, FlhA, FlhB, FliP, FliQ and FliR, and a cytoplasmic ATPase ring complex consisting of FliH, FliI and FliJ"
+    },
+    "n-gate-place": {
+      "source": "nakamura2019",
+      "text": "The transmembrane export gate complex is located within the basal body MS ring and acts as a H+–protein antiporter to couple an inward-directed H+ translocation through the export gate with an outward-directed protein export"
+    },
+    "n-pqr": {
+      "source": "nakamura2019",
+      "text": "FliP, FliQ, and FliR form a right-handed helical assembly with a 5 FliP to 4 FliQ to 1 FliR stoichiometry inside the MS ring, and FliO is required for efficient assembly of the FliPQR complex"
+    },
+    "n-pqr-channel": {
+      "source": "nakamura2019",
+      "text": "The FliPQR complex has a central channel with a diameter of 1.5 nm"
+    },
+    "n-flha": {
+      "source": "nakamura2019",
+      "text": "FlhA forms a nonameric ring structure through its C-terminal cytoplasmic domain"
+    },
+    "n-atpase": {
+      "source": "nakamura2019",
+      "text": "FliH, FliI and FliJ form the cytoplasmic ATPase ring complex with a 12 FliH to 6 FliI to 1 FliJ stoichiometry"
+    },
+    "n-atpase-attach": {
+      "source": "nakamura2019",
+      "text": "The ATPase ring complex is associated with the basal body through interactions of FliH with FlhA and a C ring protein FliN"
+    },
+    "n-atpase-work": {
+      "source": "nakamura2019",
+      "text": "The FliI6 ring hydrolyzes ATP to activate the transmembrane export gate complex"
+    },
+    "n-rod": {
+      "source": "nakamura2019",
+      "text": "The rod is composed of three proximal rod proteins, FlgB, FlgC, FlgF, and the distal rod protein FlgG"
+    },
+    "n-flie": {
+      "source": "nakamura2019",
+      "text": "FliE is postulated to connect the MS ring and the most proximal part of the rod formed by FlgB"
+    },
+    "n-axial": {
+      "source": "nakamura2019",
+      "text": "The rod is straight and rigid against bending and twisting and acts as a drive shaft. The hook is supercoiled and flexible against bending and acts as a universal joint to smoothly transmit torque produced by the motor to the filament."
+    },
+    "n-protofilaments": {
+      "source": "nakamura2019",
+      "text": "The axial structure of the bacterial flagellum is commonly a helical assembly composed of 11 protofilaments"
+    },
+    "n-hook-120": {
+      "source": "nakamura2019",
+      "text": "The Salmonella hook is formed by about 120 copies of the hook protein FlgE."
+    },
+    "n-flik": {
+      "source": "nakamura2019",
+      "text": "The hook length is controlled by the molecular ruler protein FliK, which is secreted via a type III protein export apparatus during hook assembly"
+    },
+    "n-flic-30000": {
+      "source": "nakamura2019",
+      "text": "The flagellar filament of E. coli is formed by ~30,000 copies of flagellin, FliC."
+    },
+    "n-flim-34": {
+      "source": "nakamura2019",
+      "text": "in spite of the switch complex contains ~34 FliM subunits, the binding of about 13 CheY-P molecules can reverse the motor"
+    },
+    "n-flim-flig": {
+      "source": "nakamura2019",
+      "text": "The middle domain of FliM (FliMM) binds to FliGM with a one-to-one stoichiometry to form the C ring wall"
+    },
+    "n-flin": {
+      "source": "nakamura2019",
+      "text": "FliMC and FliN together form a doughnut-shaped hetero-tetramer consisting of one copies of FliMC and three copies of FliN, and this hetero-tetrameric block produces a continuous spiral density along the circumference at the bottom edge of the C ring"
+    },
+    "n-chey": {
+      "source": "nakamura2019",
+      "text": "The binding of the phosphorylated form of CheY (CheY-P) to FliM and FliN induces the structural remodeling of the C ring responsible for the switching of direction of flagellar motor rotation from CCW to CW."
+    },
+    "n-steps": {
+      "source": "nakamura2019",
+      "text": "The flagellar motor containing a single stator unit rotates with 26 steps per revolution in both CCW and CW directions"
+    },
+    "s-stators-11": {
+      "source": "schavemaker2022",
+      "text": "The maximum number of stators, per flagellum, is at least 11",
+      "where": "the section \"Bacteria – cost of the E. coli flagellum\""
+    },
+    "s-channels": {
+      "source": "schavemaker2022",
+      "text": "each of which has two channels (Braun and Blair, 2001), and each channel passes 50 protons per revolution"
+    },
+    "s-copies": {
+      "source": "schavemaker2022",
+      "text": "a single E. coli flagellum contains 1 FliJ protein (part of exporter), 10 FliD’s (filament cap), 100 FlgE’s (hook), and 104 FliCs (filament)",
+      "note": "\"104\" is 10⁴: the superscript is lost in the paper's text as saved."
+    },
+    "s-380": {
+      "source": "schavemaker2022",
+      "text": "The E. coli flagellum can spin at a maximal rate of 380 Hz"
+    },
+    "s-150": {
+      "source": "schavemaker2022",
+      "text": "The mean swimming speed for Salmonella, a close relative of E. coli, occurs at a rotation rate of 150 Hz"
+    },
+    "z-filament-hook": {
+      "source": "zhuang2025",
+      "text": "This system consists of a long extracellular filament approximately 20 nm in diameter, a hook about 50 nm in length, and rotary bacterial flagellar motors (BFM) embedded in the cell envelope."
+    },
+    "z-tube": {
+      "source": "zhuang2025",
+      "text": "The flagellar filament is a hollow tube 5–20 μm in length, with typical outer and inner diameters of 24 nm and 2 nm, respectively"
+    },
+    "z-cring": {
+      "source": "zhuang2025",
+      "text": "Cryo-electron microscopy has revealed that the C-ring diameters are 416 Å for CCW and 407 Å for CW, indicating that the C-ring subunits are closer together in the CW state"
+    },
+    "z-chez": {
+      "source": "zhuang2025",
+      "text": "CheZ catalyzes the dephosphorylation of CheY-P, terminating the signal and resetting the chemotaxis system to prepare for the next round of signal transduction"
+    },
+    "d-ccw-view": {
+      "source": "dvoriashyna2021",
+      "text": "its filaments are gathered in a helical bundle behind the cell body, which rotates in a counter-clockwise (CCW) fashion when viewed from behind the cell"
+    },
+    "d-cw-distal": {
+      "source": "dvoriashyna2021",
+      "text": "it remains in semi-coiled form during a time ts rotating in the CW direction (when viewed from the distal end)"
+    },
+    "d-40": {
+      "source": "dvoriashyna2021",
+      "text": "The helical filament of a flagellum, typically O(5–10) μm in length and 40 nm in diameter"
+    },
+    "d-rate": {
+      "source": "dvoriashyna2021",
+      "text": "at a rate of about 100–200 Hz"
+    },
+    "m-im-om": {
+      "source": "mandela2022",
+      "text": "As shown in Figure 1E, the averaged distance from the IM to the OM were somewhat greater in the Lpp+21 strain (32–36 nm) compared to the isogenic wild-type strain (30–32 nm)"
+    },
+    "m-of": {
+      "source": "mandela2022",
+      "text": "To establish the extent to which the periplasm had been remodeled in the Lpp+21 strain of E. coli, we compared the periplasms of WT and Lpp+21 strains using electron cryotomography"
+    },
+    "m-hyper": {
+      "source": "mandela2022",
+      "text": "the average distance from the middle of the IM density to the middle of the OM density was increased in both strains under hyperosmotic conditions when compared to previously reported data where cells were grown in standard laboratory media"
+    },
+    "m-om-pg": {
+      "source": "mandela2022",
+      "text": "In wild-type E. coli (i.e. Lpp+ OmpA), the centre-centre distance in the simulations is 10.7±2.2 nm (Figure 4B), similar to the 9.7–10.8 nm measured in intact cells"
+    },
+    "m-om-pg-how": {
+      "source": "mandela2022",
+      "text": "We also compared our simulations to the distances that were measured by EM (centre of the OM to centre of the PG)."
+    },
+    "u-names": {
+      "source": "uniprot",
+      "text": "The recommended names of the entries, as data/proteins/ecoli/proteins.tsv holds them (column `name`): P33235 \"Flagellar hook-associated protein 1\", P29744 \"Flagellar hook-associated protein 3\", P76010 \"Flagellar brake protein YcgR\", P0ABX8 \"Flagellar protein FliL\", P76297 \"Flagellar protein FlhE\", Q47154 \"Putative truncated flagellar export/assembly protein LafU\".",
+      "check": "each name equals the tsv's"
+    },
+    "s-load": {
+      "source": "schavemaker2022",
+      "text": "in E. coli rotation rates decrease with an increased load"
+    },
+    "m-swim": {
+      "source": "mears2014",
+      "text": "To obtain clear images of the flagella as they rotated at angular frequencies ∼100 Hz, it was necessary to take short exposures"
+    },
+    "k-flif": {
+      "source": "kawamoto2021",
+      "text": "Here, using cryoEM structural analysis of the flagellar basal body and the MS ring formed by full-length FliF from Salmonella enterica, we show that the native MS ring is formed by 34 FliF subunits with no symmetry variation."
+    },
+    "k-sring": {
+      "source": "kawamoto2021",
+      "text": "The S ring is made up of 34 RBM3 domains horizontally packed with their major axis oriented in the radial direction to form a ring with a diameter of 24 nm."
+    }
+  },
+  "sources": {
+    "nakamura2019": {
+      "text": "Nakamura S, Minamino T (2019) Flagella-Driven Motility of Bacteria. Biomolecules 9:279.",
+      "doi": "10.3390/biom9070279",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "ecoli/europepmc-open-papers/nakamura2019_fulltext.xml"
+    },
+    "schavemaker2022": {
+      "text": "Schavemaker PE, Lynch M (2022) Flagellar energy costs across the tree of life. eLife 11:e77266.",
+      "doi": "10.7554/eLife.77266",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "ecoli/europepmc-open-papers/schavemaker2022_fulltext.xml"
+    },
+    "zhuang2025": {
+      "text": "Zhuang XY, Lo CJ (2025) Decoding Bacterial Motility: From Swimming States to Patterns and Chemotactic Strategies. Biomolecules 15:170.",
+      "doi": "10.3390/biom15020170",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "ecoli/europepmc-open-papers/zhuang2025_fulltext.xml"
+    },
+    "dvoriashyna2021": {
+      "text": "Dvoriashyna M, Lauga E (2021) Hydrodynamics and direction change of tumbling bacteria. PloS one 16:e0254551.",
+      "doi": "10.1371/journal.pone.0254551",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "ecoli/europepmc-open-papers/dvoriashyna2021_fulltext.xml"
+    },
+    "mandela2022": {
+      "text": "Mandela E, Stubenrauch CJ, Ryoo D, Hwang H, Cohen EJ, Torres VL, Deo P, Webb CT, Huang C, Schittenhelm RB, Beeby M, Gumbart JC, Lithgow T, Hay ID (2022) Adaptation of the periplasm to maintain spatial constraints essential for cell envelope processes and cell viability. eLife 11:e73516.",
+      "doi": "10.7554/eLife.73516",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-16",
+      "saved": "ecoli/europepmc-motor-papers/mandela2022_fulltext.xml",
+      "caveat": "Measured in hyperosmotic conditions, which the paper says made the distance larger than in standard laboratory media."
+    },
+    "uniprot": {
+      "text": "UniProt Consortium, UniProt release 2026_04: the reviewed entries of the reference proteome UP000000625 (Escherichia coli strain K-12).",
+      "url": "https://www.uniprot.org/proteomes/UP000000625",
+      "licence": "CC BY 4.0",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "data/proteins/ecoli/proteins.tsv (names), from ecoli/uniprot-ecoli-k12-reviewed-proteome"
+    },
+    "mears2014": {
+      "text": "Mears PJ, Koirala S, Rao CV, Golding I, Chemla YR (2014) Escherichia coli swimming is robust against variations in flagellar number. eLife 3:e01916.",
+      "doi": "10.7554/eLife.01916",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-15",
+      "saved": "ecoli/europepmc-open-papers/mears2014_fulltext.xml"
+    },
+    "kawamoto2021": {
+      "text": "Kawamoto A, Miyata T, Makino F, Kinoshita M, Minamino T, Imada K, Kato T, Namba K (2021) Native flagellar MS ring is formed by 34 subunits with 23-fold and 11-fold subsymmetries. Nature Communications 12:4223.",
+      "doi": "10.1038/s41467-021-24507-9",
+      "licence": "CC BY",
+      "class": "permissive",
+      "accessed": "2026-11-16",
+      "saved": "ecoli/europepmc-motor-papers/kawamoto2021_fulltext.xml"
+    }
+  },
+  "made": "2026-11-16",
+  "decided": "The user, 16 November 2026: the motor turns, at real-life speed, as part of the Cell view's flux, and slowed only when flux is slowed; \"Look closer\" from the foot's panel; protons wait; the Protein Data Bank may be used. The parts are drawn from the papers here; no shape is taken from a structure yet."
+}

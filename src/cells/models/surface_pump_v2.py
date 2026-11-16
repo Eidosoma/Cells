@@ -11,6 +11,7 @@ operations with the calcium terms appended, so with no calcium pump this
 identity reproduces resolved_pump_tissue@1.
 """
 
+import sys
 from dataclasses import make_dataclass, replace
 from functools import cached_property
 from typing import NamedTuple
@@ -64,6 +65,11 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
 )
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
+# The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
+# check paths read from this module.
+LEDGERS = first.LEDGERS
+LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
+ledger_limits = first.ledger_limits
 
 parameters = first.parameters
 batch_signature = first.batch_signature
@@ -650,6 +656,7 @@ def check_values(state, spec, steps=None):
         magnitudes=calcium_magnitudes,
         dissipation=DISSIPATION_FIELDS,
         steps=steps,
+        ledgers=_MODULE,
     )
 
 
@@ -686,8 +693,11 @@ def device_balances(state, p):
     return result
 
 
-def device_checks(previous, row, p, constants, steps):
-    """check_values' tests for one accepted row on the device: (failed, diagnostics)."""
+def device_checks(previous, row, p, constants, steps, *, margins=False):
+    """check_values' tests for one accepted row on the device: (failed, diagnostics).
+
+    margins=True also returns each ledger's ratio to its bound (row_checks).
+    """
     from cells.models.surface_pump_checks import row_checks
 
     return row_checks(
@@ -698,9 +708,11 @@ def device_checks(previous, row, p, constants, steps):
         steps,
         domain_valid=domain_valid,
         balances=device_balances,
-        limits=first.ledger_limits,
+        limits=ledger_limits,
         magnitudes=calcium_magnitudes,
         dissipation=DISSIPATION_FIELDS,
+        ledgers=_MODULE,
+        margins=margins,
     )
 
 
@@ -803,3 +815,6 @@ def summarize(history, diagnostics, spec):
         "calcium_pump_law": calcium_atpase.LAW_ID,
         "membrane_transfer_ledger": "baseline passive only; pump ledgers separate",
     }
+
+
+_MODULE = sys.modules[__name__]  # The ledger protocol's object (§7.4 (p)).

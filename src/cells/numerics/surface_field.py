@@ -247,6 +247,32 @@ def charge_tolerance(charge_C, increment_C, steps, p, *, xp=np):
     return bound + xp.where(representatives(p, xp=xp), rounding, 0.0)
 
 
+def check_neutral_components(charge_C, potential_V, p):
+    """Host, at definition: refuse a capacitor component that carries net charge.
+
+    A component's capacitor rows sum to zero, so its charges have a solution only if they sum
+    to zero. solve() fixes each component's representative, whose row residual C phi - charge
+    is then the component's net charge: it enters no potential, so a definition that declares
+    one would run as a different world. A run's capacitor ledgers bound that residual with
+    charge_tolerance, whose allowance grows with the accepted steps because node increments
+    round; a definition has taken no step, so its bound is charge_tolerance's fixed part, the
+    ledger's own test of its first row. Field convergence applied that bound to these rows
+    until gauge option 2 (9 November 2026) moved them to the ledgers. potential_V is the
+    definition's capacitor solve (_capacitor_solve). ValueError, as bind's topology refusals,
+    which the families' parsers report as a ConfigError.
+    """
+    charge_C = np.asarray(charge_C, dtype=float)
+    residual = np.asarray(p.capacitor_matrix) @ np.asarray(potential_V) - charge_C
+    bound = charge_tolerance(charge_C, np.zeros_like(charge_C), 0, p)
+    charged = representatives(p) & ~(np.abs(residual) <= bound)  # NaN is refused too.
+    if np.any(charged):
+        worst = int(np.argmax(np.where(charged, np.abs(residual) / bound, -np.inf)))
+        raise ValueError(
+            f"A capacitor component carries net charge ({-residual[worst]:.3g} C against a "
+            f"bound of {bound[worst]:.3g} C): its charges must sum to zero"
+        )
+
+
 def cholesky_solve(factor, rhs, *, xp):
     """Solve L L^T x = rhs with a lower factor; rhs may carry trailing columns."""
     if xp is not np:

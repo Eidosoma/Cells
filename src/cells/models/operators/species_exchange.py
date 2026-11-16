@@ -466,6 +466,42 @@ class ScheduledSpeciesExchange(Operator):
         "amount_increment": ("exchange_moved_fmol",),
         "extracellular_amount_increment": ("exchange_moved_fmol",),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): scheduled rates, prescribed.
+    VIEW_LAYERS = ({"id": "exchange", "label": "Species exchange", "representation": "prescribed"},)
+    # Its records in the run view (the contract): every accumulator is a total since the start; a
+    # route's moved amount is positive outward (export positive, the module's convention).
+    RECORD_KINDS = {
+        "exchange_moved_fmol": "cumulative",
+        "exchange_energy_magnitude_pJ": "cumulative",
+    }
+    ORIENTATION = {
+        "exchange_moved_fmol": {
+            "from": "inside",
+            "to": "outside",
+            "says": "a positive amount leaves the cell of the route's patch for that patch's "
+            "outside node: an export route's total is zero or more, an import route's zero or less",
+            "confirmed": "the lead, 16 November 2026",
+        }
+    }
+
+    def view_sets(self, spec, declaration):
+        """The run view's set of its own axis (cells/run_view.py): its routes, in declared order,
+        each on its patch, with the species it carries, its declared direction and its roles."""
+        routes = declaration.routes
+        return {
+            "exchange_route": {
+                "id": "exchange_route",
+                "ids": tuple(r.id for r in routes),
+                "holds": "exchange route",
+                "on": ("membrane", tuple(r.patch for r in routes)),
+                "carries": tuple(r.species for r in routes),
+                "direction": tuple(r.direction for r in routes),
+                "roles": {
+                    "inside": "the cell of the route's patch",
+                    "outside": "that patch's outside node",
+                },
+            }
+        }
 
     # ------------------------------------------------------------ definition
 

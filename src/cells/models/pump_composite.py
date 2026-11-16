@@ -1380,6 +1380,7 @@ class Composition:
             magnitudes=magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
             steps=steps,
+            ledgers=self.inner,  # The inner ledgers' lists, from its object (§7.4 (p)).
         )
         if not self.own_ledger_operators:
             return diagnostics
@@ -1427,12 +1428,13 @@ class Composition:
                 return op.LEDGER_MESSAGE + check
         return self.inner.device_failure_message(check)
 
-    def device_checks(self, previous, row, p, constants, steps):
+    def device_checks(self, previous, row, p, constants, steps, *, margins=False):
         """check_values' tests for one accepted row on the device: (failed, diagnostics).
 
         With a retiring operator both rows are the adjusted ones (the record added back), so
         the domain, every ledger and each heat element's monotonicity read the history as if
         nothing moved; the balances and magnitudes then do not adjust again (S5 design §3.5).
+        margins=True also returns each ledger's ratio to its bound (row_checks).
         """
         if self._live_retiring(p):
             domain = self.domain_valid(row, p, p.active, xp=jnp)  # The actual row, at its view.
@@ -1447,6 +1449,8 @@ class Composition:
                 limits=self.ledger_limits,
                 magnitudes=lambda r, q, *, xp: self.magnitudes(r, q, xp=xp, adjust=False),
                 dissipation=self.DISSIPATION_FIELDS,
+                ledgers=self,
+                margins=margins,
             )
         return row_checks(
             previous,
@@ -1459,6 +1463,8 @@ class Composition:
             limits=self.ledger_limits,
             magnitudes=self.magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
+            ledgers=self,
+            margins=margins,
         )
 
     # ------------------------------------------------------------ observations

@@ -103,3 +103,29 @@ test("a cell without a nucleus: its chromosome carries the circuits, and its rib
   const { parts: old } = built("syn3a", "schematic", []);
   assert.ok(old.has("nucleus") && !old.has("chromatin") && !old.has("ribosomes"), "a scene made before: the chromosome under the nucleus's part, the ribosomes scenery");
 });
+
+test("a small cell's ribosomes are drawn about 20 nm across, as its panel says, however thin the cell", () => {
+  for (const id of ["ecoli", "syn3a", "mpneumoniae"]) {
+    const { handles, parts } = built(id, "schematic");
+    const meshes = parts.get("ribosomes")[0].objects.filter((object) => object.isInstancedMesh);
+    const large = meshes[0].geometry.parameters.radius * 2 * handles.frame.u * 1000; // the large subunit, in nanometres
+    assert.ok(large > 18 && large < 22, `${id}: the large subunit is ${large.toFixed(1)} nm across`);
+    assert.match(handles.structures.ribosomes[0][1], /Each is drawn about 20 nm across/);
+  }
+});
+
+test("a free chromosome's panel says what was drawn: the thread's width and length against what its length in base pairs makes", () => {
+  for (const id of ["ecoli", "syn3a", "mpneumoniae"]) {
+    const file = species(id), kbp = file.cell.parts.chromosome_kbp;
+    const { handles, parts } = built(id, "schematic");
+    const tube = parts.get("chromatin")[0].objects.find((object) => object.geometry?.type === "TubeGeometry").geometry;
+    const drawn = tube.parameters.path.getLength() * handles.frame.u, whole = kbp * 0.34;
+    const [[label, text]] = handles.structures.chromatin;
+    assert.equal(label, "Drawn");
+    assert.ok(text.startsWith(`One closed thread ${Number((tube.parameters.radius * 2 * handles.frame.u * 1000).toPrecision(2))} nm thick and ${Number(drawn.toPrecision(2)).toLocaleString("en-US")} µm long`), text);
+    assert.ok(text.includes(`Its ${kbp.toLocaleString("en-US")} kbp would make about ${Math.round(whole).toLocaleString("en-US")} µm of DNA`), text);
+    assert.ok(text.includes(`about ${Math.max(1, Math.round((drawn / whole) * 100))}% of that length`) && /the picture's choice\.$/.test(text), text);
+  }
+  const { handles } = built("human", "schematic");
+  assert.equal(handles.structures.chromatin, undefined, "a cell with a nucleus: its chromatin is the nucleus's, and says nothing of a free thread");
+});

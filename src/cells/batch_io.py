@@ -6,6 +6,7 @@ from time import perf_counter
 from typing import Mapping
 
 from cells import continuity as _continuity
+from cells import run_view
 from cells.core.batch import (
     BatchSpec,
     _checkpoint_map,
@@ -167,13 +168,19 @@ def load_batch_snapshot(directory, *, continuity=None):
     return BatchSnapshot(spec, checkpoints, fingerprint, admission)
 
 
-def write_batch_run(directory, result, *, checkpoint_times=(), provenance=None):
+def write_batch_run(directory, result, *, checkpoint_times=(), provenance=None, view=None):
+    """view: a run_view.Request for every world, or {world ID: Request}: each world's run folder
+    gets its view.json (io.write_run); every request is checked before any output."""
     spec = plan_batch(parse_batch(result.spec.to_dict())).spec
     final = {identity: world.final for identity, world in result.worlds.items()}
     _validate(spec, final)
     for world in spec.worlds:
         if result.worlds[world.world_id].spec != world.simulation:
             raise ConfigError("Batch result world definition differs")
+    views = run_view.requests_for(view, [w.world_id for w in spec.worlds])
+    for identity, request in views.items():
+        world = result.worlds[identity]
+        run_view.prepare(world.spec, request, layout=world.final.layout)
     # Validate the entire request before creating any output, including every
     # world clock. A scalar time is only a convenience for a shared boundary.
     requested = [result.checkpoint_at(time) for time in sorted(set(checkpoint_times))]
@@ -194,6 +201,7 @@ def write_batch_run(directory, result, *, checkpoint_times=(), provenance=None):
                 "batch_definition_sha256": spec.fingerprint,
                 "execution_timings": "shared; see enclosing batch manifest",
             },
+            view=views.get(world.world_id),
         )
         records.append(
             {

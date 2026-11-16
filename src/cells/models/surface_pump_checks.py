@@ -109,7 +109,19 @@ def tissue_balances(state, membrane_total, p):
 
 
 def row_checks(
-    previous, row, p, constants, steps, *, domain_valid, balances, limits, magnitudes, dissipation
+    previous,
+    row,
+    p,
+    constants,
+    steps,
+    *,
+    domain_valid,
+    balances,
+    limits,
+    magnitudes,
+    dissipation,
+    ledgers=None,
+    margins=False,
 ):
     """(failed [checks], values [diagnostics]) for one accepted row and its predecessor.
 
@@ -118,8 +130,18 @@ def row_checks(
     each ledger's max |residual|, then the energy residual relative to its flows
     and the global-charge residual relative to its bound. steps is the row's
     accepted-step count (running-ledger rounding allowance). Nothing is skipped
-    for an invalid row; a failed check marks the row, never repairs it.
+    for an invalid row; a failed check marks the row, never repairs it. ledgers:
+    the model object whose LEDGERS place the global-charge bound (§7.4 (p)); None
+    reads surface_pump's, today's list.
+
+    margins=True also returns ratios [ledgers]: each ledger's largest |residual| /
+    bound, 0 for a zero residual and +inf for a NaN one (core/row_checks.py's guard
+    band, docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.3). It is a static branch: with
+    the default, the traced program is unchanged.
     """
+    if ledgers is None:
+        from cells.models import surface_pump as ledgers
+    charge = ledgers.LEDGERS.index("global_charge")
     failed = [~domain_valid(row, p, p.active, xp=jnp)]
     b = balances(row, p)
     flows, bounds = limits(
@@ -131,17 +153,22 @@ def row_checks(
         magnitudes=magnitudes(row, p, xp=jnp),
         xp=jnp,
     )
-    values = []
+    values, ratios = [], []
     for value, bound in zip(b.values(), bounds, strict=True):
         magnitude = jnp.abs(value)
         failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
         values.append(jnp.max(magnitude, initial=0.0))
+        if margins:
+            ratio = jnp.where(magnitude == 0, 0.0, magnitude / bound)
+            ratios.append(jnp.max(jnp.where(jnp.isnan(ratio), jnp.inf, ratio), initial=0.0))
     values.append(jnp.abs(b["energy"]) / jnp.maximum(flows, tissue.ENERGY_ATOL_PJ))
-    values.append(jnp.abs(b["global_charge"]) / bounds[5])
+    values.append(jnp.abs(b["global_charge"]) / bounds[charge])
     decreasing = jnp.asarray(False)
     for name in dissipation:
         value = getattr(row, name)
         decreasing |= jnp.min(value, initial=0.0) < -DISSIPATION_ATOL_PJ
         decreasing |= jnp.min(value - getattr(previous, name), initial=0.0) < -DISSIPATION_ATOL_PJ
     failed.append(decreasing)
+    if margins:
+        return jnp.stack(failed), jnp.stack(values), jnp.stack(ratios)
     return jnp.stack(failed), jnp.stack(values)

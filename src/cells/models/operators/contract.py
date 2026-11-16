@@ -116,9 +116,37 @@ Declarations (class attributes):
   ("author" for an operator that declares the species it writes, "user" for one that refers to
   species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
   process moves inside the inner step, which an operator with ``PROCESS`` declares.
-* The run view (docs/RUN_VIEW_DESIGN.md §3): ``VIEW_LAYERS`` (its layers, each
-  {"id", "label", "representation"}; None: undeclared, which the run-view writer refuses) and
-  ``view_events`` (its events with their entities by id).
+* The run view (docs/RUN_VIEW_DESIGN.md §3; cells/run_view.py reads them, host side only):
+  - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
+    which the run-view writer refuses;
+  - ``view_events``: its events with their entities by id, each entity one {set: id}; the
+    default gives the births and retirements of ``living_intervals`` at {"cell": id};
+  - ``view_sets(spec, declaration)``: the view's set of each axis of its own (an axis of its
+    STATE_AXES or OBSERVATION_AXES that the inner model does not have), and of any other kind
+    of entity it declares (routes, sites), as {axis or key: {"id", "ids", optional "holds",
+    "on": (set id, entity ids), "roles": {role: what it is}, and per-entity facts: "carries"
+    (species ids), "direction" and "kinds" (words), "at" ({set id: entity id})}}; the default
+    declares none;
+  - ``OBSERVATION_AXES`` ({readout column: axes}): its READOUT_COLUMNS' axes, as STATE_AXES
+    gives its state's;
+  - ``UNITS`` ({field: unit}): the unit of an own field whose name carries no unit suffix;
+  - ``RECORD_KINDS`` ({field: kind}), kind one of RECORD_KIND_VALUES: ``level``, ``amount``,
+    ``cumulative`` (a total since the start) or ``rate``;
+  - ``ORIENTATION`` ({field: {"from", "to", "says"}} for a flow, which way a positive value
+    moves; {field: {"plus", "minus", "says"}} for a difference, plus less minus), by the roles
+    of the record's entity set (the writer checks the roles; ``confirmed`` may name who
+    confirmed it, ``source`` where it was read);
+  - ``RECORD_LAYERS`` ({field: layer id}): the layer, one of its VIEW_LAYERS, of an own field
+    or of a view field it provides or closes (door S's merged view, a record of the view);
+    needed only with more than one layer;
+  - ``RECORD_DIAGNOSTICS`` (own fields): the residuals of the step's own checks, held to their
+    own absolute tolerances there, not quantities of the simulated world (a looping package's
+    closure leaves them out; docs/LOOPING_REPLAY_DESIGN.md §2);
+  - ``RECORD_REFERENCES`` ({own state field: own layout field}): a field stored as an increment
+    over a fixed reference, whose quantity is reference + increment (a loop's closure measures
+    that sum, the reference from the bound layout or from its merged view where door S changes
+    it). The inner model declares both in the same forms, read by getattr.
+  None of them changes a program, a binding or a checkpoint.
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -136,6 +164,11 @@ RK4_MODES = ("coupled", "split")
 IDENTITY_ROLES = ("author", "user")
 REPRESENTATIONS = ("simulated", "modelled", "prescribed")
 LAYER_KEYS = frozenset({"id", "label", "representation"})
+# The run view's record kinds and sign keys (docs/RUN_VIEW_DESIGN.md §3; cells/run_view.py).
+RECORD_KIND_VALUES = ("level", "amount", "cumulative", "rate")
+# An orientation is a flow's (from, to) or a difference's (plus, minus), each with says.
+ORIENTATION_FORMS = (("from", "to"), ("plus", "minus"))
+ORIENTATION_OPTIONAL = frozenset({"confirmed", "source"})
 # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2).
 CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer's is "and".
 COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
@@ -234,6 +267,14 @@ class Operator:
     # "representation"}, ...), representation one of REPRESENTATIONS. None: undeclared, which the
     # run-view writer refuses.
     VIEW_LAYERS = None
+    # Its records in the run view (module docstring), by its own field names.
+    OBSERVATION_AXES = MappingProxyType({})
+    UNITS = MappingProxyType({})
+    RECORD_KINDS = MappingProxyType({})
+    ORIENTATION = MappingProxyType({})
+    RECORD_LAYERS = MappingProxyType({})
+    RECORD_DIAGNOSTICS = ()
+    RECORD_REFERENCES = MappingProxyType({})
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
 
@@ -345,9 +386,10 @@ class Operator:
 
     def view_events(self, spec, declaration, schedule):
         """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
-        entities by id ({"set": id}), "from" optional. The default gives the births and
-        retirements of living_intervals, with their cells' ids; an operator with an event map or
-        a schedule overrides it, so that no event reaches the view without its entities."""
+        each entity one {set id: entity id} ("from" optional). The default gives the births and
+        retirements of living_intervals, each at {"cell": id}; an operator with an event map or a
+        schedule overrides it, so that no event reaches the view without its entities, and keeps
+        those births and retirements (the run-view writer refuses an override without them)."""
         layer = self.VIEW_LAYERS[0]["id"] if self.VIEW_LAYERS else None
         events = []
         lives = self.living_intervals(spec, declaration, schedule)
@@ -359,11 +401,18 @@ class Operator:
                             time=float(time),
                             kind=kind,
                             layer=layer,
-                            at=({"cells": cell},),
+                            at={"cell": cell},
                             label=f"{cell} {'born' if kind == 'birth' else 'retired'}",
                         )
                     )
         return tuple(sorted(events, key=lambda e: (e["time"], e["kind"], e["label"])))
+
+    def view_sets(self, spec, declaration):
+        """The run view's set of each axis of its own (module docstring): {axis: {"id", "ids",
+        optional "holds", optional "on": (set id, entity ids)}}, host side. The default declares
+        none: an operator whose fields have an axis the inner model lacks declares its set, or the
+        run-view writer refuses the composition."""
+        return {}
 
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
@@ -619,8 +668,73 @@ def check_declarations(operator):
     if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
         raise ValueError(f"{name}: IDENTITY_ROLE is one of {IDENTITY_ROLES}")
     _check_layers(operator)
+    _check_records(operator)
     _check_kinds(operator)
     return operator
+
+
+def _check_records(operator):
+    """The run view's record declarations (module docstring), each keyed by the operator's own
+    fields: OBSERVATION_AXES by its readout columns only (its state's axes are STATE_AXES), and
+    RECORD_LAYERS also by the view fields it provides or closes."""
+    name, own = operator.LAW_ID, set(operator.observed_columns())
+    changed = own | set(operator.VIEW_FIELDS) | set(operator.CLOSES)
+    tables = {
+        "OBSERVATION_AXES": (operator.OBSERVATION_AXES, set(operator.READOUT_COLUMNS)),
+        "UNITS": (operator.UNITS, own),
+        "RECORD_KINDS": (operator.RECORD_KINDS, own),
+        "ORIENTATION": (operator.ORIENTATION, own),
+        "RECORD_LAYERS": (operator.RECORD_LAYERS, changed),
+    }
+    for table, (values, fields) in tables.items():
+        if not hasattr(values, "items"):
+            raise ValueError(f"{name}: {table} maps its own fields")
+        unknown = sorted(set(values) - fields)
+        if unknown:
+            raise ValueError(f"{name}: {table} names fields not its own: {unknown}")
+    for column, axes in operator.OBSERVATION_AXES.items():
+        if not (isinstance(axes, tuple) and all(isinstance(a, str) and a for a in axes)):
+            raise ValueError(f"{name}: OBSERVATION_AXES gives {column} a tuple of axis names")
+    for field, unit in operator.UNITS.items():
+        if not (isinstance(unit, str) and unit):
+            raise ValueError(f"{name}: UNITS gives {field} a non-empty unit")
+    for field, kind in operator.RECORD_KINDS.items():
+        if kind not in RECORD_KIND_VALUES:
+            raise ValueError(f"{name}: the kind of {field} is one of {RECORD_KIND_VALUES}")
+    for field, sign in operator.ORIENTATION.items():
+        keys = set(sign) if hasattr(sign, "keys") else set()
+        form = next((f for f in ORIENTATION_FORMS if {*f, "says"} <= keys), None)
+        if (
+            form is None
+            or not keys <= {*form, "says", *ORIENTATION_OPTIONAL}
+            or not all(isinstance(sign[k], str) and sign[k] for k in keys)
+        ):
+            raise ValueError(
+                f"{name}: the orientation of {field} gives from, to and says (a flow) or plus, "
+                "minus and says (a difference), and may name who confirmed it or its source, each "
+                "a non-empty string"
+            )
+        if sign[form[0]] == sign[form[1]]:
+            raise ValueError(f"{name}: the orientation of {field} names two different roles")
+    layers = {layer["id"] for layer in operator.VIEW_LAYERS or ()}
+    for field, layer in operator.RECORD_LAYERS.items():
+        if layer not in layers:
+            raise ValueError(f"{name}: RECORD_LAYERS gives {field} a layer not of its VIEW_LAYERS")
+    diagnostics = operator.RECORD_DIAGNOSTICS
+    if not (isinstance(diagnostics, tuple) and len(set(diagnostics)) == len(diagnostics)):
+        raise ValueError(f"{name}: RECORD_DIAGNOSTICS is a tuple of distinct field names")
+    unknown = sorted(set(diagnostics) - own)
+    if unknown:
+        raise ValueError(f"{name}: RECORD_DIAGNOSTICS names fields not its own: {unknown}")
+    references = operator.RECORD_REFERENCES
+    if not hasattr(references, "items"):
+        raise ValueError(f"{name}: RECORD_REFERENCES maps its own fields")
+    for field, reference in references.items():
+        if field not in operator.STATE_AXES or reference not in operator.LAYOUT_FIELDS:
+            raise ValueError(
+                f"{name}: RECORD_REFERENCES maps an own state field to an own layout field, not "
+                f"{field} to {reference!r}"
+            )
 
 
 def _check_kinds(operator):

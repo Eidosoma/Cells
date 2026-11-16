@@ -148,6 +148,15 @@ class CellsTimeline extends HTMLElement {
     this.speedButton.setAttribute("aria-expanded", String(Boolean(open)));
     if (open) {
       this.fillSpeeds();
+      // The list opens upward from the timeline and stays under the page's bar. On a phone with a panel open the
+      // timeline stands high, on the panel's top edge: where there is more room below it, the list opens downward,
+      // over the panel. Either way it scrolls within the room it has (styles.js shades its edge).
+      const frame = this.offsetParent?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
+      const at = this.getBoundingClientRect();
+      const above = at.top - frame.top - 6 - 68, below = frame.bottom - at.bottom - 6 - 8;
+      const down = above < 220 && below > above;
+      this.speedList.classList.toggle("opens-down", down);
+      this.speedList.style.maxHeight = `${Math.round(Math.max(88, Math.min(420, window.innerHeight * 0.6, down ? below : above)))}px`;
       document.addEventListener("pointerdown", this.closeSpeeds, true);
       this.speedList.querySelector('[aria-pressed="true"]')?.focus();
     } else document.removeEventListener("pointerdown", this.closeSpeeds, true);

@@ -9,6 +9,7 @@ Energy is checked against a declared integrator tolerance, because a
 first/second-order step does not integrate the energy identity exactly.
 """
 
+import sys
 from dataclasses import replace
 from functools import cached_property
 from typing import NamedTuple
@@ -675,12 +676,19 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=No
     )
 
 
-def checked_rows(state, spec, p, *, domain, balances, magnitudes, dissipation, steps=None):
+def checked_rows(
+    state, spec, p, *, domain, balances, magnitudes, dissipation, steps=None, ledgers=None
+):
     """Host checks of every accepted row (one row or a [time, ...] history).
 
     steps: accepted steps at each row (its global step index). Without them the
-    running ledgers get no rounding allowance (the fixed bounds alone).
+    running ledgers get no rounding allowance (the fixed bounds alone). ledgers: the
+    model object whose ledger lists the check reads (LEDGERS, LEDGER_DIAGNOSTICS,
+    ledger_limits and ENERGY_RTOL; docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)); None reads
+    this module's, today's lists.
     """
+    ledgers = _MODULE if ledgers is None else ledgers
+    charge = ledgers.LEDGERS.index("global_charge")
     rows = (
         [state]
         if state.amount_increment.ndim == 2
@@ -689,21 +697,21 @@ def checked_rows(state, spec, p, *, domain, balances, magnitudes, dissipation, s
     steps = [0] * len(rows) if steps is None else list(steps)
     if len(steps) != len(rows):
         raise ValueError("Require one accepted-step count per checked row")
-    diagnostics = {"max_" + k: 0.0 for k in LEDGER_DIAGNOSTICS}
+    diagnostics = {"max_" + k: 0.0 for k in ledgers.LEDGER_DIAGNOSTICS}
     diagnostics["max_energy_balance_relative"] = 0.0
     diagnostics["max_global_charge_bound_ratio"] = 0.0
-    rtol = ENERGY_RTOL[spec.execution.solver]
+    rtol = ledgers.ENERGY_RTOL[spec.execution.solver]
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
     with np.errstate(all="ignore"):
         for row, count in zip(rows, steps, strict=True):
             if not domain(row, p, p.active, xp=np):
                 raise NumericalError(DOMAIN_MESSAGE)
             b = balances(row, p)
-            flows, limits = ledger_limits(
+            flows, limits = ledgers.ledger_limits(
                 row, p, tol, rtol, steps=count, magnitudes=magnitudes(row, p, xp=np)
             )
             for (name, value), key, bound in zip(
-                b.items(), LEDGER_DIAGNOSTICS, limits, strict=True
+                b.items(), ledgers.LEDGER_DIAGNOSTICS, limits, strict=True
             ):
                 if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
                     raise NumericalError(LEDGER_MESSAGE + name)
@@ -715,7 +723,7 @@ def checked_rows(state, spec, p, *, domain, balances, magnitudes, dissipation, s
             )
             diagnostics["max_global_charge_bound_ratio"] = max(
                 diagnostics["max_global_charge_bound_ratio"],
-                float(abs(b["global_charge"]) / limits[5]),
+                float(abs(b["global_charge"]) / limits[charge]),
             )
     for name in dissipation:
         value = getattr(state, name)
@@ -792,10 +800,11 @@ def device_balances(state, p):
     return result
 
 
-def device_checks(previous, row, p, constants, steps):
+def device_checks(previous, row, p, constants, steps, *, margins=False):
     """check_values' tests for one accepted row on the device: (failed, diagnostics).
 
     steps is the row's accepted-step count, the host check's value for that row.
+    margins=True also returns each ledger's ratio to its bound (row_checks).
     """
     from cells.models.surface_pump_checks import row_checks
 
@@ -810,6 +819,7 @@ def device_checks(previous, row, p, constants, steps):
         limits=ledger_limits,
         magnitudes=pump_magnitudes,
         dissipation=DISSIPATION_FIELDS,
+        margins=margins,
     )
 
 
@@ -830,3 +840,6 @@ def rebind(spec, **execution):
     from cells.core.specs import parse_spec
 
     return parse_spec(replace(spec, execution=replace(spec.execution, **execution)).to_dict())
+
+
+_MODULE = sys.modules[__name__]  # checked_rows' lists when its caller passes none.

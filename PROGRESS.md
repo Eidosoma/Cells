@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-15 UTC.
+Last updated: 2026-11-16 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **15 November 2026.** The levels and the working order are in
+- **16 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
   (D156, with D176's round). The runs below are newest first.
   - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
@@ -20,13 +20,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
     the phase start and failure records, Track E's M1 development work, and independent references
     for FR-3, FR-4 and the passive law.
-  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
-    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
-    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
-  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
+    `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
+    landed on main" below.
+    The lanes built on it merge next, each after its own gate, and FR-5 follows on its own branch.
+  - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
+    its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
-    flag (15 of 15 bitwise pairs, D181). Its judged run follows tonight's GPU column. The W1
-    full-tissue hold runs its fourth segment.
+    flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
+    the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
+    retention; its comparison with the predictions written before the run is still to do.
 - **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
   14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
   tagged.
@@ -77,6 +80,137 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **core-fixes merged into main (16 November 2026, late evening).** It fixes two of the test
+  audit's findings ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/)).
+  - **F1, a real validation gap since 88866b60** (9 November, gauge option 2). A definition with a
+    charged floating or gauge component was accepted at parse.
+    - Runs refused it late, at step 0. The stationary analysis was fail-open: it reported 6.13e-7 V
+      for a planted 1e-17 C.
+    - The fix: a host-only neutrality check at the initial capacitor solve, refusing with
+      ConfigError. It changes no program.
+    - No registered world is affected. Of the 116, 7 have a representative, and every residual is
+      exactly 0 C, so today's W1/W2 results stand.
+    - It also closes F3: test_surface_excision goes from 40 of 43 to 43 of 43.
+  - **F6, a crash since 9b6e85ed:** `schedule.py`'s UnboundLocalError for spatial_calcium@2–@5. The
+    four files go from 44 failed and 45 errors to all passing, and move to tier 3 for their run
+    time.
+  - **Also:**
+    - the kinds world set in `composite_crossrev` (D187 rule 2);
+    - the design for allocation-independent linear algebra, proposed, which awaits the user.
+  - **Checks:**
+    - crossrev, 8 sets plus the kinds pair, identical;
+    - G1: 113 of 113, bitwise;
+    - tiers 1+2: 507 files, none changed;
+    - quick checks on the merged heads, FR-5's charged starts included: none failed.
+
+- **The run-view writer merged into main (16 November 2026, evening): run-view-d154,
+  `cells.run_view@1`.** ([handoff](/mnt/workspaces/Cells/run-view-20261115-01/HANDOFF.md).)
+  - **What it adds:**
+    - the engine's writer of `view.json`. It reads the engine's own view declarations and record
+      roles (`RECORD_DIAGNOSTICS`, `RECORD_REFERENCES`), keeps no per-model tables, and writes door
+      S's merged view;
+    - the loop block, with its closure measure: per record, over levels, amounts and rates, with
+      diagnostics and cumulatives listed as not measured;
+    - FR-11's first looping run: a planarian development run (not judged) that closes within
+      2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption;
+    - the cycle's admission probe, whose refusals went to the composition design;
+    - a junction fixture at division.
+  - **Gates:**
+    - tiers 1+2 on b08af640: 508 files, none changed;
+    - the re-check after windows landed: tier 1 (366 files) and seven tier-2 files, none changed;
+    - the quick check on the merged head: none changed.
+  - **Follow-up:** three format items from the visualizer's reader.
+
+- **fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core.**
+  ([handoff](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/transporter/HANDOFF.md).)
+  - **What it adds:**
+    - FR-5's source kinds, patch damage and a pH condition, on the routing door;
+    - refusal 4 version 1.2 and refusal 5 version 1.1 for FR-1's compartments, so a charged lumen can
+      resume from its own checkpoint;
+    - FR-5's start part and engine records;
+    - `fr5_quick_check` and `world_agreement`.
+  - **Development evidence, not verdicts:**
+    - **FR-4's dt study** (snapshot 3c10b833) passes J1–J7. pH, V_b, K_L and the cycles all class at
+      rounding. pH is within 1.4e-12 of the independent reference at 1 ms. Energy converges at
+      orders 2.02–2.04. The planted controls are caught.
+      ([reading](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-3c10b833-dt/reading/verdict.json)).
+    - **FR-5's world agreement:** the development and declared worlds are bitwise equal over 400 s
+      on both arms, 800,000 steps each, including arm R's release burst
+      ([check](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/worlds-d82e1935/check.json)). FR-5 runs at 1.2–1.4 ms per step on quiet
+      cores. An earlier "9 ms per step" was CPU starvation on a shared foreground CPU.
+  - **Gates:**
+    - tiers 1+2 on 32a72dab: 506 files, none changed;
+    - the light re-check on 7f9bf71f: 371 files, none changed;
+    - the admission-change files on the merged head 3bda393d.
+
+- **windows-next-clean merged into main (16 November 2026, evening).** It brings the planner seams and
+  opt-in device-resident row checks ([handoff](/mnt/workspaces/Cells/windows-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - `window_arguments`, `WorldRefusal`, `MemoryRefusal` and the world-mode refusals;
+    - `WindowPolicy(row_checks="device")`, which checks rows on the device and hands a window back to
+      the host checks on any failure or any ratio above 1/2 (R3's margins);
+    - the design note `docs/WINDOW_DEVICE_CHECKS_DESIGN.md`.
+  - **The gate,** at 74ebb91b, with main merged in:
+    - tiers 1+2: 510 files, none changed;
+    - the vector set and 14 tier-3 files against c1's frozen rows: no change;
+    - the continuity acceptance from a writable copy: 13 of 13;
+    - crossrev: 8 of 8 sets identical.
+  - **Speed against the host checks, on the same cores.**
+    - **Both arms measured:**
+      - the export: 4.8× at 80,000 steps, 1.4× at 8,000 (compile-dominated);
+      - FR-4's 20 s pass: 3.7×;
+      - the 825-node tissue: 1.05×.
+    - **Long runs, device arm measured, host arm estimated** from the measured per-row host cost:
+      - the export, 480,000 steps: about 9.4× (96.3 s against about 908 s);
+      - FR-4, 900,000 steps: about 13.7× (453 s against about 6,220 s).
+
+    Every run made in both modes is bitwise, and no window was handed back.
+  - **Follow-up, fail-closed:** device mode is refused for a live retiring composition, until a planted
+    dissipation test exists, and on a GPU backend, until a GPU measurement exists.
+
+- **The visualizer merged into main (16 November 2026, evening): visualizer a4ef7492.**
+  `visualizer/` only.
+  - **What it adds:**
+    - an "Origin of life" heading, with GARD as a model system. It plays an example run of
+      invented numbers, marked as such, and its kernel finding is quoted only as the engine note's
+      open finding, under review;
+    - the Laws library's first phase;
+    - cell types as first-class data;
+    - the bacteria and phone fixes;
+    - the builder split into part modules;
+    - a GPU wrapper for the browsers that takes the shared `gpu.lock`.
+  - **Checks:**
+    - `npm test` on a clean copy: 511 passed, 2 skipped, 0 failed;
+    - the BETSE-boundary and snapshot guards on the merged tree pass.
+  - The branch's history holds an earlier wording of the kernel finding, corrected before the
+    merge.
+
+- **core-next merged into main (16 November 2026, evening).** It's the first lane built on D172's
+  round to land ([handoff](/mnt/workspaces/Cells/core-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - kinds' time-varying controls (gap 6);
+    - the stored-energy rate and the `produced` ledger role (gap 2);
+    - the routing door;
+    - @3's and the kinds' own view declarations, and their record roles;
+    - A7's allow-list fix;
+    - insertion@2's gate at opening (item 4);
+    - FR-5's raw-sum bound, derived from a rounding analysis;
+    - ledger lists read from the model object (item 5).
+  - **The gate,** at 5230f43b with main merged in:
+    - **tiers 1+2:** 502 files, none changed;
+    - **heavy:** 228 passed;
+    - **crossrev:** identical in every set, apart from the intended changes, each recorded:
+      item 4's onset select in the three insertion@2 division worlds, and the raw-sum bound's
+      input term in the kind worlds;
+    - **G1:** 113 of 113, bitwise;
+    - **the in-place guard:** identical on 50 worlds.
+  - **The raw-sum bound's teeth:** a planted sign flip is still refused, by about eleven orders of
+    magnitude. FR-4's declared world is bitwise identical over 900 s with and without the fix.
+  - **Found on the way:** the 825-node world's binding-time Cholesky is threaded by the linear
+    algebra library, so its bits depend on the run's CPU count.
+    - crossrev and G1 now log the count, and compare runs only at equal counts.
+    - A design that removes the dependence is queued.
+
 - **D172's round landed on main (16 November 2026, about 17:40 UTC).** Main ab267c39 merges candidate
   c1 = integration-d172 3c10b833 and is tagged `d172-landed-2026-11-16`.
   - **What lands:**
@@ -98,12 +232,18 @@ machine-readable inputs, results, checks and failures.
     - **tier 3:** 229 files. 187 pass. All 42 non-passing files are classified
       ([table](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-table.md)), and none is the round's or A7's:
       - 23 pre-existing failures;
-      - 16 pre-existing timeouts, whose roughly 280 tail tests never ran in either tree;
+      - 16 pre-existing timeouts, whose 328 tail tests never ran in either tree (the heads-up said
+        about 280; the audit's count is 328);
       - 2 stale tests from the round, fixed in the next commit with their masked checks
         verified;
       - 1 that passes when run alone.
   - **Privacy:** clean across the tree, the full history and the 157 commit messages. The merge
     differs from c1 only in docs, `visualizer/` and the root Markdown files.
+  - **Not run as separate end-game steps, and owed (CURRENT_PLAN):**
+    - G3's negative controls on the final candidate. These are planted changes that must fail the
+      results gate. The round's per-commit contract tests ran in the tiers, and the results gate's
+      planted-difference self-test exists;
+    - G4's measurements of compile time, memory and end-to-end time.
   - **Open after the landing,** for D187's audit:
     - six pre-existing engine-side findings: the [anchor] refusal missing in surface_kinetic and
       surface_tissue, the cotransport/water energy failure, surface_excision's NumericalError, the

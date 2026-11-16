@@ -5,6 +5,7 @@ from time import perf_counter
 
 import numpy as np
 
+from cells import run_view
 from cells.core.devices import execution_device
 from cells.core.runner import validate_checkpoint
 from cells.core.specs import ConfigError, _number, canonical_json
@@ -14,8 +15,9 @@ from cells.io import _sha256, _write_json, _write_snapshot_payload, runtime_iden
 from cells.models.registry import get_model
 
 
-def _write_window_chunk(directory, window, policy, window_index):
-    """Shared scalar payload format; callers own indexing and cohort publication."""
+def _write_window_chunk(directory, window, policy, window_index, keep=None):
+    """Shared scalar payload format; callers own indexing and cohort publication. keep: a run
+    view's recording subset (cells/run_view.py), applied to the arrays saved."""
     arrays = {}
     skip = 0 if window_index == 0 else 1
     accepted = len(window.times) - skip if policy.recording == "full" else 0
@@ -32,6 +34,9 @@ def _write_window_chunk(directory, window, policy, window_index):
                 for k, v in vars(window.observations).items()
             }
         )
+    if keep is not None and arrays:
+        arrays = keep(arrays)
+        observed = len(arrays["observation_times"]) if observed else 0
     filename, checksum, payload_bytes = None, None, 0
     if arrays:
         filename = f"chunks/window-{window_index:08d}.npz"
@@ -41,6 +46,8 @@ def _write_window_chunk(directory, window, policy, window_index):
             np.savez(handle, **arrays)
         checksum = _sha256(path)
         payload_bytes = path.stat().st_size
+    # A window checked on the device (WindowPolicy row_checks="device") records who decided it.
+    checked = getattr(window, "row_checks", None)
     return {
         "kind": "window",
         "index": window_index,
@@ -52,15 +59,24 @@ def _write_window_chunk(directory, window, policy, window_index):
         "observation_records": observed,
         "validated_observations": len(window.observations.times),
         "diagnostics": window.diagnostics,
+        **({} if checked is None else {"row_checks": checked.to_dict()}),
         "path": filename,
         "sha256": checksum,
     }, payload_bytes
 
 
 def write_windowed_run(
-    directory, spec, policy=DEFAULT_POLICY, checkpoint=None, *, checkpoint_times=(), provenance=None
+    directory,
+    spec,
+    policy=DEFAULT_POLICY,
+    checkpoint=None,
+    *,
+    checkpoint_times=(),
+    provenance=None,
+    view=None,
 ):
-    """Run and record incrementally, without a horizon-sized payload/hash inventory."""
+    """Run and record incrementally, without a horizon-sized payload/hash inventory. view: a
+    run_view.Request, refused before any output; its view.json is written before the manifest."""
     started = perf_counter()
     directory = Path(directory)
     if directory.exists():
@@ -74,6 +90,8 @@ def write_windowed_run(
         plan.grid.exact_index(time)
     checkpoint = initialise(spec) if checkpoint is None else checkpoint
     validate_checkpoint(spec, checkpoint, plan.grid)
+    shown = None if view is None else run_view.prepare(spec, view, layout=checkpoint.layout)
+    keep = None if shown is None else shown.keeper()
     preflight_seconds = perf_counter() - started
     directory.mkdir(parents=True, exist_ok=False)
     _write_json(directory / "resolved_config.json", spec.to_dict())
@@ -91,7 +109,7 @@ def write_windowed_run(
                 saved_accepted, \
                 saved_observations, \
                 payload_bytes
-            record, size = _write_window_chunk(directory, window, policy, window_index)
+            record, size = _write_window_chunk(directory, window, policy, window_index, keep)
             saved_accepted += record["accepted_records"]
             saved_observations += record["observation_records"]
             payload_bytes += size
@@ -126,6 +144,13 @@ def write_windowed_run(
     _write_snapshot_payload(directory / "checkpoint_final", spec, result.final)
     summary = result.summary()
     _write_json(directory / "summary.json", summary)
+    if shown is not None:  # Its parts from the index; covered by the manifest below.
+        shown.write(
+            directory,
+            run_view.window_bases(index_path),
+            policy.recording,
+            end=run_view.end_of(result.final),
+        )
     model = get_model(spec.model)
     fixed = (
         "resolved_config.json",
@@ -135,7 +160,7 @@ def write_windowed_run(
         "checkpoint_initial/state.npz",
         "checkpoint_final/manifest.json",
         "checkpoint_final/state.npz",
-    )
+    ) + ((run_view.FILE,) if shown is not None else ())
     _write_json(
         directory / "manifest.json",
         {

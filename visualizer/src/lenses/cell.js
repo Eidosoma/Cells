@@ -727,7 +727,8 @@ export class CellLens {
     if (this.sizeMode === "schematic" && distance < 13 * u) return { note: "Close-up not to scale" };
     // From where the sheet starts to give way to the outlines, the bar says what they are.
     if (this.ranges.tissue?.out && distance > this.ranges.tissue.out[0]) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
-    return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && distance < 190 * u ? "small parts enlarged" : null };
+    // A cell that gives way to no larger level (a single cell) is drawn with its parts enlarged however far out the camera goes.
+    return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && (distance < 190 * u || !this.ranges.cell?.out) ? "small parts enlarged" : null };
   }
 
   /** Where callout labels go: the cell's centre and radius on screen, or null to label parts in place. */
