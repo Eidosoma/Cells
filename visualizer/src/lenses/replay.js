@@ -1426,14 +1426,15 @@ export class ReplayLens {
     }
   }
 
-  update(dt) {
+  update(dt, time, real = dt) {
     // One clock: the beads of a layer that moves are advanced by the run's time the playhead covered in this frame,
     // over its speed, so that as much of the run passes for them as for the playhead, on a slow device as on a fast
     // one. Paused, nothing passes and they stand; a jump of the playhead sets no bead out.
-    // The playhead takes the stage's frame (at most a tenth of a second), as it always did: on a slow device the replay,
-    // and its beads with it, run more slowly than the speed stated, together.
+    // The playhead takes the time that really passed in the frame (the stage's `real`: a long frame counts in full,
+    // up to half a second), so that the speed the picture states holds on a slow device too. It once took the stage's
+    // step of at most a tenth of a second, and a replay drawn at fewer than ten frames a second ran slower than it said.
     const before = this.player.time, was = this.player.playing;
-    const playing = this.active ? this.player.tick(dt) : false;
+    const playing = this.active ? this.player.tick(real) : false;
     const covered = was && this.active ? Math.max(0, this.player.time - before) : 0;
     this.placeCloseup();
     this.placeFlow();

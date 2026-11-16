@@ -11,6 +11,19 @@ import { lookNumbers } from "./materials.js";
 // What a view that asks for nothing gets of the look at rest: nothing (see dress()).
 const FIT = { rich: false, filmic: true, exposure: 1.08, contact: true, reach: 1, shade: 0.6 };
 
+/**
+ * The two times of a frame, from the gap since the frame before, in milliseconds. `dt` is a
+ * step for what glides (the camera, a look that settles): never more than a tenth of a
+ * second, so that a hitch is no jump. `real` is the time that really passed, for what keeps a
+ * stated clock (a replay's playhead says its speed): the long frames of a slow device count
+ * in full, up to half a second. A longer gap is no frame but a pause (the window was hidden,
+ * the machine slept), and counts as one step, as it always did.
+ */
+export function frameTimes(gap) {
+  const passed = Math.max(0, gap), dt = Math.min(100, passed);
+  return { dt, real: passed > 500 ? dt : passed };
+}
+
 export class Stage {
   constructor({ canvas, host }) {
     this.canvas = canvas;
@@ -86,7 +99,7 @@ export class Stage {
     }
   }
 
-  /** A lens registers a tick(dt, time) that returns true while it is animating. */
+  /** A lens registers a tick(dt, time, real) that returns true while it is animating (frameTimes says what dt and real are). */
   onTick(callback) {
     this.listeners.add(callback);
     return () => this.listeners.delete(callback);
@@ -94,11 +107,11 @@ export class Stage {
 
   frame(time) {
     // A frame's timestamp can be a little earlier than the clock read when it was asked for.
-    const dt = Math.max(0, Math.min(100, time - this.last));
+    const { dt, real } = frameTimes(time - this.last);
     this.last = time;
     let animating = this.rig.update(dt);
     if (document.visibilityState === "visible") {
-      for (const tick of this.listeners) animating = tick(dt, time) || animating;
+      for (const tick of this.listeners) animating = tick(dt, time, real) || animating;
     }
     // What moves for decoration only keeps no frame coming by itself: it moves while a view does.
     if (animating && this.decoration.tick(dt)) this.numbers.time.value = this.decoration.time;

@@ -172,7 +172,7 @@ class CellsViewer extends HTMLElement {
       this.labels.blocked = () => this.blockedRects();
       this.stage.afterRender.add(() => this.labels.layout());
       this.stage.afterRender.add(() => this.updateScaleBar());
-      this.stage.onTick((dt, time) => this.current?.update(dt, time) || false);
+      this.stage.onTick((dt, time, real) => this.current?.update(dt, time, real) || false);
       this.stage.onPalette((palette) => {
         for (const lens of this.lenses.values()) lens.applyPalette(palette);
       });
