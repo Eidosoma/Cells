@@ -112,6 +112,15 @@ def test_the_fr5_world_adds_cargo_damage_and_three_routes_without_ionic_pores():
     assert routes["proton_pore_0"]["law"] == "proton_constant_field_leak@1"
     assert not DamageWorld().ionic_pores
     assert "damage_controls" not in defs.today_only(d)["experiment"]
+    # The note's §16.2 forms: the sources by ID, the condition at the lumen's node.
+    (damage,) = d["model"]["patch_damage"]
+    (condition,) = d["model"]["ph_conditions"]
+    assert (damage["id"], damage["patch"]) == (defs.DAMAGE, defs.BOUNDING)
+    assert (condition["id"], condition["node"]) == (defs.CONDITION, defs.LUMEN)
+    assert routes["cargo_transfer_0"]["factors"] == [defs.CONDITION]
+    assert routes["cargo_pore_0"]["factors"] == routes["proton_pore_0"]["factors"] == [
+        defs.DAMAGE]
+    assert "factors" not in routes["proton_leak_0"]
 
 
 def test_the_dt_study_ladder_and_criteria():
@@ -170,7 +179,8 @@ def test_the_revised_fr5_arms_their_start_horizon_and_budget():
         assert arm.x_budget_fraction == 1e-3 and arm.control_margin == 10.0
         assert arm.dt_s == 5e-4
         d = defs.fr5_world(arm)
-        assert d["start"]["checkpoint_time_s"] == 1800.0
+        # parse_spec's keys only: the start's identity is the part's record's (_with_start).
+        assert set(d) == {"schema_version", "model", "experiment", "execution"}
         assert d["experiment"]["end_time"] == pytest.approx(arm.horizon_s)
         assert "start" not in defs.today_only(d)
     # The proton pore stays explicit at 1 ms: max-side dt x G/C_b at pH 5.1 is about 0.029.

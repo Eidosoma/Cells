@@ -40,6 +40,12 @@ from validation.compartment_ph_engine import definitions as defs
 
 WINDOW_STEPS = 1000  # One record per window at 1 ms.
 FR4_ROWS = ("H", "K")
+MOVED = {  # Route ID -> (series, species): its cumulative transfer, cytosol to lumen positive.
+    "proton_leak_0": ("moved_H_leak", "H"),
+    "proton_pore_0": ("moved_H_pore", "H"),
+    "cargo_transfer_0": ("moved_X_transfer", "X"),
+    "cargo_pore_0": ("moved_X_pore", "X"),
+}
 PATHS = ("host", "vector")  # Where every accepted row is checked: run()'s `path`.
 WORLDS = ("development", "declared")  # run()'s `world`: without or with FR-1's operator.
 VECTOR_WORLD_ID = 1  # The one world of a vector-window run.
@@ -61,8 +67,13 @@ class Records:
         self.cells = [c.id for c in m.cells]
         self.outside = [o.id for o in m.extracellular]
         self.bounding = [p.id for p in m.membranes].index(defs.BOUNDING)
-        routes = dict(m.kinds).get("cells.passive_routes@1", ())
-        self.routes = [r.id for r in routes]
+        kinds = dict(m.kinds)
+        routes = kinds.get("cells.passive_routes@1", ())
+        self.routes = [r.id for r in routes]  # The parsed (sorted) order: the route axis.
+        damages = [d.patch for d in kinds.get("cells.patch_damage@1", ())]
+        self.damage = defs.BOUNDING if defs.BOUNDING in damages else None
+        conditions = [c.id for c in kinds.get("cells.ph_condition@1", ())]
+        self.condition = conditions.index(defs.CONDITION) if defs.CONDITION in conditions else None
         _, self.p = model.initial_values(spec)
         from cells.core import kind_registry
 
@@ -94,7 +105,6 @@ class Records:
         fields = self.model.STATE_TYPE._fields
         state = self.model.STATE_TYPE(*(np.asarray(getattr(obs, f))[j] for f in fields))
         v3, p, b = self.v3, self.p, self.bounding
-        h = self.ids.index("H")
         row = dict(
             pH_c=float(obs.pH[j, self.cells.index(defs.CELL)]),
             pH_L=float(obs.pH[j, len(self.cells) + self.outside.index(defs.LUMEN)]),
@@ -113,10 +123,18 @@ class Records:
             for node, key in ((defs.CELL, "c"), (defs.LUMEN, "L")):
                 name = f"Heq_{key}" if species == "H" else f"{species}_{key}"
                 row[name] = self.amount(obs, j, species, node)
-        if "proton_leak_0" in self.routes:
-            k = self.routes.index("proton_leak_0")
-            row["moved_H_leak"] = -float(state.passive_transferred[h, k])  # c to L positive.
-            row["heat_proton_leak_0_pJ"] = float(state.passive_dissipated_energy_pJ[k])
+        for k, route in enumerate(self.routes):  # Every passive route's transfer, and its heat.
+            if route in MOVED:
+                name, species = MOVED[route]  # c to L positive: the routes are inward-positive.
+                row[name] = -float(state.passive_transferred[self.ids.index(species), k])
+            row[f"heat_{route}_pJ"] = float(state.passive_dissipated_energy_pJ[k])
+        if "X" in self.ids:  # FR-5: the cargo, the damage and the condition.
+            for node, key in ((defs.CELL, "c"), (defs.LUMEN, "L")):
+                row[f"X_{key}"] = self.amount(obs, j, "X", node)
+        if self.damage is not None:
+            row["d"] = float(state.patch_damage[b])
+        if self.condition is not None:
+            row["f"] = float(np.asarray(obs.ph_condition_factor)[j, self.condition])
         ledgers = v3.balances(state, p, structure=self.structure)
         heat = sum(float(np.sum(getattr(state, f))) for f in self.heat_fields)
         work = sum(float(np.sum(getattr(state, f))) for f in self.work_fields)
@@ -173,6 +191,23 @@ class Records:
             ledgers=dict(charge_residual_C=self.charge[1], charge_tolerance_C=self.charge[2]),
         )
 
+    def start(self):
+        """FR-5's start (§13.2) from the last record: (nodes, readouts) for
+        definitions.start_extract. Each node's FR-4 rows (fmol) and its charge (C), the engine's
+        own (surface_pump_v3.node_charge of the last state: cells, then outside nodes), and the
+        last record's pH_c, pH_L and V_b."""
+        charges = np.asarray(self.v3.node_charge(self.last, self.p, xp=np))
+        nodes = {}
+        for k, node in enumerate(self.cells + self.outside):
+            index = k if k < len(self.cells) else self.p.active.size + k - len(self.cells)
+            nodes[node] = dict(
+                amounts_fmol={s: self.amounts[node][s][-1] for s, _ in defs.SPECIES},
+                charge_C=float(charges[index]),
+            )
+        readouts = dict(pH_c=self.series["pH_c"][-1], pH_L=self.series["pH_L"][-1],
+                        V_b_V=self.series["V_b"][-1])
+        return nodes, readouts
+
 
 def envelope_reason(definition):
     """ "envelope" when the development world, refused at the definition, is admitted with B4's
@@ -221,7 +256,7 @@ def one_world(sink, world_id=VECTOR_WORLD_ID):
 def _run_vector(spec, sink, window_steps):
     """The one world through cells.core.vector_windows (every accepted row checked on the device:
     the model's device_checks, the kinds' check hooks included): (steps, diagnostics, timings,
-    resources), the windowed runner's result fields."""
+    resources, final checkpoint), the windowed runner's result fields."""
     from cells.core.batch import BatchSpec, WorldSpec
     from cells.core.vector_windows import run_vector_windowed
     from cells.core.windows import WindowPolicy
@@ -232,11 +267,12 @@ def _run_vector(spec, sink, window_steps):
     )
     world = result.worlds[VECTOR_WORLD_ID]
     steps = int(world.final.step_index - world.start_step)
-    return steps, dict(world.diagnostics), dict(result.timings), dict(result.resources)
+    return (steps, dict(world.diagnostics), dict(result.timings), dict(result.resources),
+            world.final)
 
 
 def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
-        world="development"):
+        world="development", checkpoint_dir=None):
     """The engine part's record of `definition`'s development world (module docstring). With
     `registry` the build runs inside kind_registry.scope(registry) (a planted control's). `path`
     is "host" (cells.core.windows.run_windowed: every accepted row checked on the host) or
@@ -244,7 +280,11 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
     device, the observations through `one_world`); the records are the same fields. `world` is
     "development" (definitions.development_world: without FR-1's compartment operator) or
     "declared" (definitions.declared_world: the composite with it, which must give the same
-    records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1)."""
+    records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1). With `checkpoint_dir` (FR-5's
+    start part) a run that completes also writes the engine's snapshot of its final state there
+    (cells.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`
+    (Records.start, from its last record: the run ends on a record), for
+    definitions.start_extract."""
     from cells.core import kind_registry
     from cells.core.errors import NumericalError
     from cells.core.specs import ConfigError, parse_spec
@@ -283,17 +323,26 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
         sink = Records(spec, model)
         try:
             if path == "vector":
-                steps, diagnostics, timings, resources = _run_vector(spec, sink, window_steps)
+                steps, diagnostics, timings, resources, final = _run_vector(
+                    spec, sink, window_steps
+                )
             else:
                 result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=sink)
                 steps = int(result.final.step_index - result.start_step)
                 diagnostics, timings = dict(result.diagnostics), dict(result.timings)
-                resources = dict(result.resources)
+                resources, final = dict(result.resources), result.final
         except (ConfigError, NumericalError) as error:
             out["refusal"] = f"run: {error}"
             out.update(sink.record(completed=False))
             out["steps"] = int(round(sink.record_s[-1] / spec.execution.dt)) if sink.record_s else 0
             return out
+        if checkpoint_dir is not None:  # FR-5's start: the snapshot, then the start's parts.
+            from cells.io import write_snapshot
+
+            if sink.record_s[-1] != final.time:
+                raise ValueError("FR-5's start needs a record at the run's end")
+            write_snapshot(checkpoint_dir, spec, final)
+            out["start_nodes"], out["start_readouts"] = sink.start()
     out.update(sink.record(completed=True))
     out.update(
         completed=True,
