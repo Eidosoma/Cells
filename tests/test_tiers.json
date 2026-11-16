@@ -96,7 +96,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-8435dceb/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/tier-gate/tiers-207a86c9/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/compartment/tiers-7eb1f5be/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json",
+  "/mnt/workspaces/Cells/run-view-20261115-01/rows-0407c088/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -794,6 +795,14 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/snapshot-f991fce1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T05:31:51+00:00"
+  },
+  {
+   "git_revision": "0407c0880c0bafe80bfb5968b502eaf32d2dfc07",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/run-view-20261115-01/snapshot-0407c088",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T16:44:16+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1625,10 +1634,10 @@
    },
    {
     "file": "tests/unit/test_contract_additions.py",
-    "seconds": 10.13,
+    "seconds": 2.87,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 34
     }
    },
    {
@@ -2845,6 +2854,14 @@
     }
    },
    {
+    "file": "tests/unit/test_replay_packages.py",
+    "seconds": 3.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_restricted_lumen.py",
     "seconds": 3.43,
     "exit_code": 0,
@@ -2866,6 +2883,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_door_s.py",
+    "seconds": 17.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -4467,6 +4492,38 @@
     "exit_code": 0,
     "counts": {
      "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view.py",
+    "seconds": 52.08,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_division.py",
+    "seconds": 44.71,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_loop.py",
+    "seconds": 34.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_windows.py",
+    "seconds": 50.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
