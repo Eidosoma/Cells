@@ -630,6 +630,40 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
   gains a coupling (**S**).
 - D150 §3's exact-zero argument, rewritten for charged species.
 
+### 3.4.1 Version 1.1: refusal 4 for the admitted kinds (FR-4; the lead's ruling, 16 November 2026)
+
+**Why now.** FR-4's declared world puts its charged routes on the bounding patch: the proton pump
+(cells.transporter@1), the proton leak (cells.passive_routes@1) and the K⁺ counterion (@3's
+constant-field permeability), with B4's closure (cells.rapid_proton_buffer@1) buffering the lumen.
+Door (1) above now exists: B7's definition-time bound holds every free face-free node against its
+own patches (`surface_pump.face_free_node_rate`), and, when a world declares kinds, the per-stage
+rule does too (`surface_pump_v3.membrane_rate` with `free_outside_nodes`, core-d172 2c780f9f), with
+each kind's slope at both ends of its patch (`stage_term` per node). Version 1 still refused every
+ion route on a bounding patch, and it saw no kind at all, so a kind's route there passed unchecked:
+it failed open.
+
+**The rule (refusal 4, version 1.1).** For each declared compartment's bounding patch:
+- **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused. A constant-field
+  permeability is admitted **only when the world declares kinds**, because only then does the
+  per-stage rule hold the compartment's node; without kinds it stays refused, as in version 1.
+- **The kinds a world declares:** the known ones are admitted. cells.transporter@1's populations
+  and cells.passive_routes@1's routes (the neutral law and the proton leak) hold the node through
+  their per-node `stage_term` and their `bound_rate`. cells.rapid_proton_buffer@1 is a stage read
+  and declares no route. **Any other kind is refused** while a compartment is declared: the operator
+  cannot know whether its routes cross the bounding patch (D180's external kinds), so it fails
+  closed, as §4's admitted list does for operators.
+- Refusals 1–3 and 5–7 are unchanged. Refusal 5 (no charge anchor) still holds the content
+  electroneutral at the start; FR-4's world declares none.
+
+**What it adds.** Identity and refusals only, as before. The operator still owns no state, runs no
+part and contributes nothing to any program, so FR-4's declared world (with the operator) must run
+bitwise equal to its development world (without it). FR-4's lane checks that on the vector path:
+a 20 s pass first, then 900 s.
+
+**Tests.** An admitted kind on the bounding patch is accepted (FR-4's declared world, in the
+composite's form). An unknown planted kind is refused. Refusal 4's other cases are unchanged,
+including a permeability in a world without kinds.
+
 ### 3.5 Floating components and the gauge
 
 - **Version 1 requires a held-bath topology** (refusal 6). The owner's capacitor component holds a
