@@ -396,7 +396,7 @@ npm run check:input         # real clicks, drags and wheel in headless Chrome (p
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
 npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
-                            # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tests/fixtures/references/secreted-species-dev-run-0.4.json
+                            # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)

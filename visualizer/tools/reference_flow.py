@@ -6,7 +6,7 @@ Worked out outside the viewer, for `tools/check_layers.mjs flow` (REFERENCE name
 totals at the record at TIME and at the one before, the mean rate between them, the busiest lane over the
 whole run and the token that follows from it, the largest mean power and the scale's end. Standard
 library only (the adapter's own reader of .npz files). The reference for the engine's first development
-run at 0.4 s is kept in tests/fixtures/references/.
+run at 0.4 s is kept in tools/references/.
 """
 import json, math, sys
 from pathlib import Path
