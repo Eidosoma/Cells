@@ -203,6 +203,35 @@ which the lead had ruled for now earlier the same day (§9, ruling 4).
     S's admissions; the padded-field rule), and the refusal above, stated by the engine;
   - how many divisions one world's slots allow (one is enough for a loop).
   - An engine gap found here becomes a general feature, not a workaround in a driver.
+- **Found by the probe (16 November 2026; accepted by the lead): it does not pass, so nothing is
+  built for the cycle (ruling 5).**
+  - **Evidence:** `validation/replay/cycle_probe.py`, run host-only from an execution snapshot of
+    run-view-d154 at 0407c088. Files:
+    `/mnt/workspaces/Cells/replay-20261116/cycle-probe-0407c088.json` (every answer in full),
+    `.log` and `.md`. Each composition was tried in the cycle's declared order, with each
+    operator's prerequisites placed before it.
+  - **Admitted:** the area law with insertion, with production and with division; insertion with
+    division; and S5's world with one and with two rounds of division, so a world's slots allow a
+    loop's one division.
+  - **The gaps, in the engine's own words.** The lead queues them as general composition features
+    for the user to schedule (D144):
+    1. **Production and the partition reading the current volume.**
+       "scheduled_species_turnover@1 reads volume as declared, but
+       ideal_osmosis_linear_compliance_water@1 provides it" (and extracellular_volume likewise).
+       "isopotential_partition@1 reads volume as declared, but
+       ideal_osmosis_linear_compliance_water@1 provides it": its daughters' volumes are declared
+       anchors.
+    2. **Water reading the current area.** "ideal_osmosis_linear_compliance_water@1 reads
+       membrane_area as declared, but membrane_entity_state@1 provides it"; beside insertion as
+       well.
+    3. **Turnover reading the current masks.** "scheduled_species_turnover@1 reads active as
+       declared, but isopotential_partition@1 closes it". Beside insertion, it reads
+       outside_active and membrane_active as declared, which scheduled_membrane_insertion@2
+       closes.
+    4. **Pumps on a dividing cell.** "Pumps on a dividing cell are later work (pump capacity as
+       state)": the partition's definition check.
+  - The refusals expected above were the turnover ones. The probe adds the partition beside water,
+    water beside the area law, and the pump.
 - **The organisms:** neither has an organism definition yet (D173). The package is "a lumped
   minimal cell from the engine's general laws (illustration)" for both, and differs only in its
   declared sizes and rates until their definitions exist.
