@@ -856,12 +856,26 @@ isolates it.
 
 ## 16. FR-5 on the kind interface (design, 16 November 2026, before code; D142)
 
-**Status: proposed, for the lead's and the core's review.** FR-4 now runs as kinds
-(`cells.rapid_proton_buffer@1`, `cells.transporter@1`, `cells.passive_routes@1`; INNER §7.4 (k)).
-This section puts §8 and §9 on the same interface. The equations are §9's, unchanged, and
-R-transfer (`validation/compartment_ph/transfer_reference.py`) computes the same ones. Where §8 or
-§9 differ (the split-timing fallback, "a control state"), this section supersedes them. **S**
-throughout: nothing here has run.
+**Status: accepted (the lead's rulings, 16 November 2026), with these answers to §16.8:**
+1. The routing door is accepted as designed, and the **core** builds it, as part of the kind
+   interface (D180's public surface). It may refine the API.
+2. The core changes `passive_routes`.
+3. d is made exact at every step end from the integrated hazards, and the kind's tests show it.
+4. The schedules take the core's gap-6 format, with breakpoints joining `experiment.changes`.
+5. No `@2` if it can be avoided: the multiplier field exists only when some route declares factors,
+   so FR-4's structure stays untouched. `passive_routes@2` is the core's fallback, with a reason.
+
+**Built on fr45-next:**
+- the two source kinds, without their door hooks' registration (module functions until the seam
+  lands) and with zero schedules until gap 6;
+- refusal 4 version 1.2 (CLOSED_COMPARTMENT_DESIGN §3.4.2);
+- FR-5's start part (§16.6).
+
+FR-4 now runs as kinds (`cells.rapid_proton_buffer@1`, `cells.transporter@1`,
+`cells.passive_routes@1`; INNER §7.4 (k)). This section puts §8 and §9 on the same interface. The
+equations are §9's, unchanged, and R-transfer (`validation/compartment_ph/transfer_reference.py`)
+computes the same ones. Where §8 or §9 differ (the split-timing fallback, "a control state"), this
+section supersedes them. **S** throughout: no FR-5 world has run.
 
 ### 16.1 What FR-5's world needs from the engine
 

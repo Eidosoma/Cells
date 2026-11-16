@@ -694,6 +694,27 @@ including a permeability in a world without kinds. The review's probe is a test:
 world with the stiff K⁺ permeability is refused under RK4 and admitted under IMEX, where the
 explicit-rate bound then refuses its step, as before.
 
+### 3.4.2 Version 1.2: the routing door's source kinds (FR-5; the lead's ruling, 16 November 2026)
+
+**Why.** FR-5's declared world adds two kinds beside the compartment: the bounding patch's damage
+(cells.patch_damage@1) and the lumen's pH condition (cells.ph_condition@1), the routing door's
+sources (the FR-4/FR-5 note's §16). Version 1.1 knows neither, so it refuses that world.
+
+**The rule.** Version 1.2 adds `FACTOR_KINDS`, the source kinds, to the known kinds:
+- **What admits them:** they declare no route, move no row and carry no charge. They have no
+  `moved_rows`, `stage_term`, `bound_rate`, `held_rows`, stage read, stage check or ledger term.
+  The damage's `rates` holds its own state's derivatives only, with zero node rates.
+- **How their factors act:** they reach a route only through the door, as its rate multiplier in
+  [0, 1], on a known route kind's route. That route's slope at full opening is what the per-stage
+  rule and its definition-time term already hold.
+- **What stays:** every version 1.1 rule. Any other kind is refused (fails closed), and under RK4
+  no declared kind is admitted, the source kinds included.
+
+**Tests.** FR-4's declared world with FR-5's two source kinds is admitted. A world declaring only
+the source kinds is refused under RK4 by the operator's own rule. The source kinds' registrations
+carry none of the hooks their admission excludes, and the engine runs them beside FR-4's world
+with every FR-4 record bitwise unchanged (`tests/unit/test_fr5_source_kinds_engine.py`).
+
 ### 3.5 Floating components and the gauge
 
 - **Version 1 requires a held-bath topology** (refusal 6). The owner's capacitor component holds a

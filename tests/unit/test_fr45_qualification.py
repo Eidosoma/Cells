@@ -512,7 +512,7 @@ def test_compare_checks_records_bit_for_bit_with_run_times_apart(tmp_path):
     parts = fr4_parts()
     a = results(parts, "fr4")
     b = json.loads(json.dumps(a))
-    for name, value in b["parts"].items():  # Every run-time leaf differs, at any depth.
+    for value in b["parts"].values():  # Every run-time leaf differs, at any depth.
         value.update(wall_s=1.5, seconds=2.5, timings=dict(compile_seconds=3.5))
         for world in value.get("worlds", {}).values():
             world["seconds"] = 4.5

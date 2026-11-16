@@ -395,7 +395,7 @@ REFUSALS = {
     ),
     "a pump on the bounding patch": (
         pumped,
-        "carries an ion route version 1.1 refuses there, pump_c",
+        "carries an ion route version 1.2 refuses there, pump_c",
     ),
     "an ID that is its node's": (
         lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
@@ -425,7 +425,7 @@ REFUSALS = {
     ),
     "a channel population on the bounding patch": (
         channelled,
-        "carries an ion route version 1.1 refuses there, leak_0",
+        "carries an ion route version 1.2 refuses there, leak_0",
     ),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
@@ -467,6 +467,33 @@ def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
     with kind_registry.scope(kind_fixtures.registry()):
         with pytest.raises(ConfigError, match="which refusal 4 does not know"):
             parse_spec(kind_fixtures.declare(w(), species="S"))
+
+
+def fr5_sources(definition):
+    """FR-5's routing-door sources (the FR-4/FR-5 note's §16.2) added to a world: the bounding
+    patch's damage and the lumen's pH condition."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    definition["model"]["patch_damage"] = [dict(
+        id="damage_0", patch=defs.BOUNDING, law="bounding_patch_damage@1", initial_damage=0.0,
+        injury_rate_per_s=1.0, resealing_rate_per_s=0.05)]
+    definition["model"]["ph_conditions"] = [dict(
+        id="acid_0", node=defs.LUMEN, law="ph_conditioned_factor@1", ph50=5.5, slope=4.0)]
+    return definition
+
+
+def test_refusal_4_version_1_2_admits_the_routing_doors_source_kinds():
+    """Refusal 4, version 1.2 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.2; the lead's ruling of 16
+    November 2026): FR-5's source kinds, cells.patch_damage@1 and cells.ph_condition@1, are
+    admitted beside a compartment (they declare no route, move no row and carry no charge), with
+    FR-4's known kinds; any other kind is still refused (the test above), and so is every declared
+    kind under RK4 (the test below)."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(fr5_sources(defs.declared_world(defs.fr4_world())))
+    assert {k for k, _ in spec.model.kinds} == set(comp.KNOWN_KINDS)
+    assert set(comp.KNOWN_KINDS) == {*comp.ROUTE_KINDS, *comp.READ_KINDS, *comp.FACTOR_KINDS}
+    assert comp.FACTOR_KINDS == ("cells.patch_damage@1", "cells.ph_condition@1")
 
 
 STIFF_DT = 1e-4  # RK4's largest step (surface_tissue.check_steps).
@@ -519,6 +546,18 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     )
     with pytest.raises(ConfigError, match="version 1's refusal stands"):
         comp.parse_declaration(block, rk4)
+    # Version 1.2: the routing door's source kinds alone open nothing under RK4 (fails closed).
+    sources_only = stiff_fr4(operator=False)
+    for key in ("transporters", "passive_routes", "stage_reads"):
+        sources_only["model"].pop(key)
+    base = parse_spec(fr5_sources(sources_only))
+    assert {k for k, _ in base.model.kinds} == set(comp.FACTOR_KINDS)
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
 
 
 def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
@@ -538,6 +577,12 @@ def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
         kind = registry.lookup(kind_id)
         assert kind.stage_read is not None, kind_id
         assert kind.rates is None and kind.moved_rows is None and kind.stage_term is None, kind_id
+    # Version 1.2 (§3.4.2): the routing door's source kinds declare no route and move no row.
+    for kind_id in comp.FACTOR_KINDS:
+        kind = registry.lookup(kind_id)
+        for hook in ("moved_rows", "stage_term", "bound_rate", "held_rows", "stage_read",
+                     "stage_check", "ledger_terms"):
+            assert getattr(kind, hook) is None, (kind_id, hook)
 
 
 def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(

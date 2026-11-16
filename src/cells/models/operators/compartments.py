@@ -14,10 +14,11 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 2. a patch that is not declared, is not the only patch whose outside is the node, or whose inside
    is not the declared owner (a declared cell);
 3. two compartments on one node (an owner may own several);
-4. an ion route on the bounding patch (version 1.1, §3.4.1): a Na/K or Ca pump or a channel
-   population; a nonzero permeability unless the world declares kinds; any declared kind outside
-   the known ones (ROUTE_KINDS, READ_KINDS), which fails closed; and, under an RK4 step, any
-   declared kind, so that version 1's refusal stands there. That is the charged door (§3.4): a
+4. an ion route on the bounding patch (version 1.2, §3.4.1 and §3.4.2): a Na/K or Ca pump or a
+   channel population; a nonzero permeability unless the world declares kinds; any declared kind
+   outside the known ones (ROUTE_KINDS, READ_KINDS and, since version 1.2, FACTOR_KINDS), which
+   fails closed; and, under an RK4 step, any declared kind, so that version 1's refusal stands
+   there. That is the charged door (§3.4): a
    compartment has no face, so its charge relaxation is held only by B7's face-free term and,
    with kinds declared, by the per-stage rule at free outside nodes, where the known kinds'
    charged routes put their slopes (ROUTE_KINDS' comment names the neutral laws' terms). Both run
@@ -68,6 +69,13 @@ LAW_ID = "cell_owned_compartments@1"
 # declares no route. Any other declared kind is refused while a compartment is declared.
 ROUTE_KINDS = ("cells.passive_routes@1", "cells.transporter@1")
 READ_KINDS = ("cells.rapid_proton_buffer@1",)
+# Version 1.2 (§3.4.2; the lead's ruling, 16 November 2026, on the FR-4/FR-5 note's §16.5): the
+# routing door's source kinds. They declare no route, move no row and carry no charge (no node
+# rate, no moved_rows, no stage_term, no bound_rate, no held_rows, no stage read, no ledger term),
+# so they cannot cross a bounding patch: their factors reach the known route kinds' openings
+# through the door, whose [0, 1] rule bounds each route at its declared slope.
+FACTOR_KINDS = ("cells.patch_damage@1", "cells.ph_condition@1")
+KNOWN_KINDS = ROUTE_KINDS + READ_KINDS + FACTOR_KINDS
 # @3's step for an empty tableau (surface_pump_v3.checked_step). Every other solver steps with
 # imex_step, whose per-stage rule holds a compartment's node, and only those solvers' step checks
 # hold B7's and the kinds' definition-time terms (surface_pump_v3.StepChecks). Refusal 4 admits
@@ -172,47 +180,48 @@ def capacitor_components(model):
 
 
 def refuse_ion_routes(model, node, bounding, imex):
-    """Refusal 4 (version 1.1, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1), the charged door: on
-    the bounding patch @3's Na/K or Ca pump and channel populations are refused, and a
+    """Refusal 4 (version 1.2, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1 and §3.4.2), the charged
+    door: on the bounding patch @3's Na/K or Ca pump and channel populations are refused, and a
     constant-field permeability unless the world declares kinds (only then does the per-stage
-    rule hold the compartment's node); a declared kind outside ROUTE_KINDS and READ_KINDS is
-    refused, since its routes may cross the patch (fails closed). `imex` is whether @3 steps with
-    an IMEX tableau: under RK4 neither the per-stage rule nor the definition-time terms run, so no
-    declared kind is admitted beside a compartment and version 1's refusal stands."""
+    rule hold the compartment's node); a declared kind outside KNOWN_KINDS (ROUTE_KINDS,
+    READ_KINDS and the routing door's FACTOR_KINDS) is refused, since its routes may cross the
+    patch (fails closed). `imex` is whether @3 steps with an IMEX tableau: under RK4 neither the
+    per-stage rule nor the definition-time terms run, so no declared kind is admitted beside a
+    compartment and version 1's refusal stands."""
     kinds = [kind_id for kind_id, _ in getattr(model, "kinds", ())]
     pumps = [p.id for p in (bounding.pump, bounding.calcium_pump) if p is not None]
     channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
     if pumps or channels:
         raise ConfigError(
             f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
-            f"route version 1.1 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
+            f"route version 1.2 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
             "or a channel population): the per-stage rule does not hold its slope at the "
             "compartment's node (a pump's slope is in no per-stage term, a channel's gating "
-            "slope neither), so on a bounding patch version 1.1 admits only @3's constant-field "
+            "slope neither), so on a bounding patch version 1.2 admits only @3's constant-field "
             "permeability and the known kinds' routes"
         )
     if any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds:
         raise ConfigError(
             f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
             "route, a nonzero constant-field permeability, in a world that declares no kind. "
-            "Version 1.1 admits it only when the world declares kinds and steps with an IMEX "
+            "Version 1.2 admits it only when the world declares kinds and steps with an IMEX "
             "tableau: only then does the per-stage rule hold the compartment's node at every "
             "stage, where B7's definition-time term holds only the declared state"
         )
     if kinds and not imex:
         raise ConfigError(
             f"{LAW_ID}: compartment {node!r} is declared with kinds in a world that steps with "
-            "RK4. Version 1.1 admits kinds and a constant-field permeability on a bounding patch "
+            "RK4. Version 1.2 admits kinds and a constant-field permeability on a bounding patch "
             "only with an IMEX tableau, whose per-stage rule and definition-time bound terms hold "
             "the compartment's node; an RK4 step runs neither, so version 1's refusal stands "
             "(fails closed)"
         )
-    unknown = sorted(k for k in kinds if k not in ROUTE_KINDS + READ_KINDS)
+    unknown = sorted(k for k in kinds if k not in KNOWN_KINDS)
     if unknown:
         raise ConfigError(
             f"{LAW_ID}: compartment {node!r} is declared with the kind(s) {', '.join(unknown)}, "
             "which refusal 4 does not know: a kind's routes may cross its bounding patch "
-            f"{bounding.id!r}, so version 1.1 admits only {', '.join(ROUTE_KINDS + READ_KINDS)} "
+            f"{bounding.id!r}, so version 1.2 admits only {', '.join(KNOWN_KINDS)} "
             "(fails closed)"
         )
 
@@ -423,7 +432,7 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "version 1.1: a zero charge anchor and a held-bath topology at a fixed volume; "
+                "version 1.2: a zero charge anchor and a held-bath topology at a fixed volume; "
                 "on a bounding patch no ion route but refusal 4's admitted ones (the known "
                 "kinds' routes, and @3's permeabilities when the world declares kinds, with an "
                 "IMEX step); owners are never replaced, used as donors or divided"

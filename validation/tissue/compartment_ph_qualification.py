@@ -45,12 +45,12 @@ Modes:
 A judged run is refused, before anything is computed or written, unless the protocol is registered
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
 blocks any of the protocol's parts, FR-5's start extract was written by the engine from this same
-snapshot, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
-check reaches the code under test in minutes (AGENTS.md's 30-minute rule); the judge refuses quick
-results. A judged run takes the protocols' execution path, `vector` (the lead's ruling, a dated
-pre-run correction of 15 November 2026): every accepted row checked on the device in a vector
-window (engine_records.run), and refuses any other; a development run takes `host` (every accepted
-row checked on the host) unless `--path` names one.
+snapshot, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development only) runs every
+part to QUICK_END_S, so a check reaches the code under test in minutes (AGENTS.md's 30-minute
+rule); the judge refuses quick results. A judged run takes the protocols' execution path,
+`vector` (the lead's ruling, a dated pre-run correction of 15 November 2026): every accepted row
+checked on the device in a vector window (engine_records.run), and refuses any other; a
+development run takes `host` (every accepted row checked on the host) unless `--path` names one.
 """
 
 import argparse
@@ -118,7 +118,9 @@ ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PAR
 # What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
 # everything is wired.
 STAND_INS = {
-    "fr5_kinds": "FR-5's damage state and its routes' factors are not in the engine yet",
+    "fr5_kinds": "FR-5's routing door (the core's: the routes' factors from cells.patch_damage@1 "
+                 "and cells.ph_condition@1) and the damage schedules (the core's gap 6) are not "
+                 "in the engine yet",
 }
 STAND_IN_PARTS = {
     "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
