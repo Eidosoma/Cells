@@ -208,12 +208,11 @@ def initial_values(spec):
                 p.initial_charge_C,
             )
     v["boundary_V"][: len(m.extracellular)] = [p.boundary_potential_V for p in m.extracellular]
-    base = field._capacitor_solve(
-        np.r_[v["initial_cell_charge_C"], v["initial_outside_charge_C"]],
-        np.r_[np.zeros(n), v["boundary_V"]],
-        bound,
-        xp=np,
-    )
+    charge = np.r_[v["initial_cell_charge_C"], v["initial_outside_charge_C"]]
+    base = field._capacitor_solve(charge, np.r_[np.zeros(n), v["boundary_V"]], bound, xp=np)
+    # This is the one site that binds the field, for every identity on it: a definition whose
+    # capacitor component carries net charge is refused here, at parse (check_definition).
+    field.check_neutral_components(charge, base, bound)
     v["initial_membrane_voltage_V"] = np.where(
         v["membrane_active"], base[v["membrane_cell"]] - base[n + v["membrane_outside"]], 0.0
     )
