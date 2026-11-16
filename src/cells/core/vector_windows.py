@@ -205,6 +205,11 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
 
 
 def _plan_vector_windows(spec, policy, checkpoints, record):
+    if getattr(policy, "row_checks", "host") != "host":
+        raise ConfigError(
+            "row_checks device runs on the scalar windowed path only; vector windows always "
+            "check rows on the device"
+        )
     spec, bound = cohort_limits(spec)
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)

@@ -58,6 +58,11 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
 
 
 def _plan_batch_windows(spec, policy, checkpoints, record):
+    if getattr(policy, "row_checks", "host") != "host":
+        raise ConfigError(
+            "row_checks device runs on the scalar windowed path only; the batch path checks "
+            "each world's rows on the host"
+        )
     planning = perf_counter()
     record.start("plan")
     spec, bound = checkpoint_batch_limits(spec)
