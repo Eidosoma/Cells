@@ -412,7 +412,11 @@ would be blocked when published is reported in the terminal while developing.
 
 Every check that starts Chrome takes one lock (`tools/lib/browser_lock.mjs`), so only one
 browser runs at a time, on one processor (`CELLS_BROWSER_CPU`, 3 unless set), with its
-profile on disk and not in memory-backed `/tmp`.
+profile on disk and not in memory-backed `/tmp`. Chrome's software renderer pins its own
+worker threads to the first processors by number, whatever the run is allowed, so the
+lock looks at every thread of what a run started once a second and puts a process with a
+thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
+the cpuset controller, which a user's session is not given on this machine.)
 
 ## How it is built
 

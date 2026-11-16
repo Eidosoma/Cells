@@ -10,7 +10,7 @@
 // that died left behind.
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, rmSync, statSync, utimesSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, utimesSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { ROOT } from "./build_page.mjs";
@@ -24,6 +24,92 @@ const gone = (folder) => {
 };
 const STALE_MS = 3 * 60 * 1000; // a holder refreshes the lock every 30 s; older than this, it is gone
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// ---------------------------------------------------------------- keeping a run on its processor
+//
+// The affinity a run is given is inherited by the Chrome it starts, but it is no fence: a
+// process may move its own threads. Chrome's software renderer does. It counts the processors
+// it is allowed (one) and pins its worker threads to that many processors counted from nought,
+// so with the run on processor 3 its eight threads sat on processor 0, where an engine job
+// ran (seen on 16 November 2026). A scope bound to a processor would hold them, but this
+// user's session is given no cpuset controller. So, while a run holds the lock, every thread
+// of what it started is looked at once a second, and a process with a thread elsewhere is
+// put back.
+
+/** The processors a list names, as the kernel and taskset write one ("3", "0-3,7"). */
+export function cpusOf(list) {
+  const cpus = new Set();
+  for (const part of String(list).split(",")) {
+    const [from, to = from] = part.trim().split("-").map(Number);
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < from) continue;
+    for (let cpu = from; cpu <= to; cpu++) cpus.add(cpu);
+  }
+  return cpus;
+}
+
+/** Every process that `root` started, directly or through another, from what each process says its parent is (Linux's /proc). */
+export function descendants(root, proc = "/proc") {
+  const children = new Map();
+  let entries = [];
+  try {
+    entries = readdirSync(proc);
+  } catch {
+    return [];
+  }
+  for (const name of entries) {
+    if (!/^\d+$/.test(name)) continue;
+    try {
+      // "pid (name) state parent ...": the name may hold spaces and brackets, so read from its last bracket on.
+      const stat = readFileSync(path.join(proc, name, "stat"), "utf8");
+      const parent = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1]);
+      if (!children.has(parent)) children.set(parent, []);
+      children.get(parent).push(Number(name));
+    } catch {} // gone between the listing and the read
+  }
+  const found = [];
+  for (const queue = [Number(root)]; queue.length; ) {
+    for (const child of children.get(queue.shift()) || []) {
+      found.push(child);
+      queue.push(child);
+    }
+  }
+  return found;
+}
+
+/** Those of `pids` with a thread that may run on a processor outside `allowed`. */
+export function strays(pids, allowed, proc = "/proc") {
+  const out = [];
+  for (const pid of pids) {
+    let tasks = [];
+    try {
+      tasks = readdirSync(path.join(proc, String(pid), "task"));
+    } catch {
+      continue; // the process has ended
+    }
+    for (const task of tasks) {
+      try {
+        const line = readFileSync(path.join(proc, String(pid), "task", task, "status"), "utf8").match(/^Cpus_allowed_list:\s*(.*)$/m);
+        if (line && [...cpusOf(line[1])].some((cpu) => !allowed.has(cpu))) {
+          out.push(pid);
+          break;
+        }
+      } catch {} // the thread has ended
+    }
+  }
+  return out;
+}
+
+/** Puts every thread of what `root` started back on the processors of `list`. Returns the processes it moved. */
+export function keepOn(list, root = process.pid) {
+  const moved = [];
+  for (const pid of strays(descendants(root), cpusOf(list))) {
+    try {
+      execFileSync("taskset", ["-a", "-cp", String(list), String(pid)], { stdio: "ignore" });
+      moved.push(pid);
+    } catch {} // ended meanwhile, or no taskset on this machine
+  }
+  return moved;
+}
 
 /** Waits for the lock and returns the function that gives it back. */
 export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
@@ -62,10 +148,18 @@ export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
     } catch {}
   }
   const cpu = process.env.CELLS_BROWSER_CPU || "3";
+  let keep = null;
   if (cpu !== "any") {
     try {
       execFileSync("taskset", ["-a", "-cp", cpu, String(process.pid)], { stdio: "ignore" });
     } catch {}
+    // The Chrome this run starts moves some of its own threads elsewhere (see keepOn): bring them back, once a second.
+    keep = setInterval(() => {
+      try {
+        keepOn(cpu);
+      } catch {}
+    }, 1000);
+    keep.unref();
   }
   const beat = setInterval(() => {
     try {
@@ -83,6 +177,7 @@ export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
     if (!held) return;
     held = false;
     clearInterval(beat);
+    if (keep) clearInterval(keep);
     gone(profile);
     rmSync(LOCK, { recursive: true, force: true });
   };
