@@ -70,7 +70,15 @@ experiment).
         `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
-      FR-11's interim planarian loop comes after these.
+      FR-11's interim planarian loop comes after these. Its run must carry what the viewer's loop
+      reader requires: the visualizer's "What a species' looping run must carry", on its branch at
+      cf11924a.
+      - a `loop` block in the view: the species, the cell, and the run's own closure statement
+        (`within`, `says`);
+      - the engine's models and its revision, since the reader refuses a loop run that names no
+        revision;
+      - a real run, not an example;
+      - the totals that feed the rates, each with its kind and sign.
    4. The packed GPU planner. It is built on branch `packed-gpu-planner` (cf919da3) and passes its
       CPU evidence, including a rehearsal of the staged L4 plan on the 825-node tissue.
       - Its one-time GPU qualification runs on the merged head, under the lead's rulings. Packed
