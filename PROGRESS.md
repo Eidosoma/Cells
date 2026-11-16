@@ -77,6 +77,39 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The visualizer merged into main twice, and the README brought to 16 November (16 November
+  2026, the user's requests).** All three merges touch only `visualizer/` and `README.md`. No
+  engine code or test reads `visualizer/`.
+  - **df5b5cb3** (visualizer 39a20f75) adds:
+    - the fruit fly and thale cress;
+    - flagella and pili;
+    - the quantity layers through flux in the Cell view;
+    - the run-view reader and its note on what the layers need from the engine;
+    - the published map through Version 16.
+
+    The visualizer reported 428 tests passed and 1 skipped.
+  - **7c023576** (visualizer 9b780f33) adds:
+    - four screenshots for the README ([captions](visualizer/docs/screenshots/README.md));
+    - the species tools sharing one module, each writing byte-identical files;
+    - a research note on typical flux values. It keeps no number whose original is
+      non-commercial.
+
+    **Checks:**
+    - `npm test` on a clean copy of 9b780f33 (Node, pinned to one CPU): 425 passed, 4 skipped,
+      0 failed;
+    - the BETSE-boundary guard and the D131 source-order guards on the merged tree: 5 passed and
+      46 skipped, the skips all D131's
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/guards.log)).
+  - **The README** (462469dd, from readme-update) has:
+    - the status table as of 16 November, with the levels defined;
+    - a new section, "The visualizer and its replays", with two of the screenshots;
+    - corrections from the visualizer session, which ran the six build commands from a clean
+      checkout.
+
+    The advisor reviewed it. FR-11 is described as proposed, and its human loop waits for the
+    human cardiac laws (D183). The restructure's "in progress" sentences flip at D172's landing
+    (the list is in the round's LEAD-NOTES).
+
 - **D172's end game, paused for a planned machine restart (16 November 2026, 10:33 UTC).** Records
   are under `/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/`, and the resume steps are
   in the round's `LEAD-NOTES.md`.
