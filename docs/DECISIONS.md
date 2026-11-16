@@ -6066,6 +6066,49 @@ inventory, sorted into three classes:
 - The retire list goes to the user in one batch before the removal commit lands.
 - AGENTS.md is unchanged.
 
+## D188: The engine's source tree takes the modular layout by two scripted moves; older families go to src/cells/legacy/
+
+2026-11-16. The user asked whether `src/cells` should be cleaned up "according to our framing so maybe
+laws folder with sub folders". The user then chose: "I'm leaning towards 3. but if we can go as quick
+as possible to 2. and just move files to src/legacy then that is good". The user confirmed the plan,
+reviewed with the advisor: "sounds good and yes src/cells/legacy".
+
+**The target layout** (option 2):
+- `laws/`, one module per law, grouped by mechanism: `channels/`, `junctions/`, `pumps/`, `routes/`,
+  `reactions/`, `transport/`;
+- `kinds/`, `operators/`, `models/`, `numerics/`, `execution/`, `registry/`, `definitions/` and
+  `records/`;
+- `legacy/`, for the older model families.
+
+**How it is reached:** a design note and probe (step 0), then two scripted moves.
+- **Step 0.**
+  - Derive the legacy list from the import graph of the active entry points, and from each
+    family's consumers in the record. The list goes to the user, and it is built together with
+    D187's audit inventory.
+  - Run a probe in a scratch copy: move one family and one shared kernel, then check crossrev, the
+    kinds pair, a continuity resume and test collection.
+- **Move 1:** the older families go to `src/cells/legacy/`. Nothing outside `legacy/` imports from
+  it, and the model registry's dispatch chain is refactored to keep it that way.
+- **Move 2:** the modular parts go into the target folders.
+
+**Each move** is one move map plus one import rewriter.
+- A verifier checks that every changed pin equals the rewriter applied to its old content.
+- **Gates per commit:**
+  - the same collected test IDs;
+  - crossrev and the kinds pair identical;
+  - G1 at 113 of 113;
+  - tiers 1+2 with 0 changed.
+- Tier 3 runs once, on the final tree, against the frozen table (D187).
+- Test file paths do not move.
+- Open branches apply the same script to their heads before merging.
+
+**Refactors are separate.** These belong to the core-seams pass:
+- putting each law's declaration, math and citation in one module, and the law template;
+- the stable import surface for contributed modules (D185);
+- how a moved law names its frozen original.
+
+**It starts** after core-next lands on main.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
