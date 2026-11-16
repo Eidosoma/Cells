@@ -1134,6 +1134,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     valid &= dt * membrane_rate(
         state, control, p, xp=xp, structure=structure, potentials=start
     ) <= (EXPLICIT_STEP_BOUND)
+    material = material_rate(state, control, p, xp=xp, structure=structure, potentials=start)
+    if material is not None:  # D4: a kind's material slope joins the same per-stage bound.
+        valid &= dt * material <= EXPLICIT_STEP_BOUND
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     potential, stage = start, state
@@ -1172,6 +1175,11 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
                 * membrane_rate(stage, control, p, xp=xp, structure=structure, potentials=potential)
                 <= EXPLICIT_STEP_BOUND
             )
+            material = material_rate(
+                stage, control, p, xp=xp, structure=structure, potentials=potential
+            )
+            if material is not None:
+                valid &= dt * material <= EXPLICIT_STEP_BOUND
     last = stages - 1
 
     def applied(name):
@@ -1537,6 +1545,28 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
     outside = xp.max(xp.where(free, node_total / xp.where(free, node_capacitance, 1.0), 0.0))
     return xp.maximum(cells, outside)
+
+
+def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
+    """D4: the declared kinds' material relaxation rate (1/s) at a stage, or None without a kind
+    that declares material_term (so no program changes). Each such kind's term is per node (cells,
+    then outside nodes) at the stage's read amounts and node potentials, after the routing door;
+    the terms add per node, and the rate is their largest over cells and outside nodes that are not
+    held baths (a held row does not relax). The step holds dt x rate <= EXPLICIT_STEP_BOUND at
+    every explicit stage, as membrane_rate's charge rule (the FR-4/FR-5 note's §17, D4)."""
+    kinds = _kinds(structure)
+    sloped = [kind for kind in kinds if kind.material_term is not None]
+    if not sloped:
+        return None
+    read, _ = _stage_read(state, p, kinds, xp=xp)
+    control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
+    n = p.active.size
+    nodes = xp.zeros(n + p.outside_active.size)
+    for kind in sloped:
+        nodes = nodes + kind.material_term(read, potentials, control, p, xp=xp)
+    cells = xp.max(xp.where(p.active, nodes[:n], 0.0), initial=0.0)
+    moving = p.outside_active & ~p.reservoir
+    return xp.maximum(cells, xp.max(xp.where(moving, nodes[n:], 0.0), initial=0.0))
 
 
 def free_outside_nodes(p, *, xp=jnp):
@@ -2458,6 +2488,7 @@ STRUCTURED_FUNCTIONS = (
     "imex_step",
     "checked_step",
     "membrane_rate",
+    "material_rate",
     "check_definition",
     "check_values",
     "device_checks",

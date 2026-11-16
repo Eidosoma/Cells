@@ -240,7 +240,14 @@ class Kind:
       <= EXPLICIT_STEP_BOUND, then holds at every cell and every free outside node (a face-free
       compartment's included); `bound_rate(spec,
       declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
-      bound (the passive law's dt L <= 1).
+      bound (the passive law's dt L <= 1); `material_term(read, potentials, control, p, *, xp)`
+      -> [cells, then outside nodes] the kind's material slope (1/s) at the stage's read amounts
+      and node potentials: per node, the largest |dJ/dn| of a row it moves there (a neutral
+      transporter's k S n e^a / n near its static head grows as the node empties, which no
+      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms per
+      node, and the step refuses at every explicit stage where dt x its largest over cells and
+      non-held outside nodes exceeds the same bound (the material counterpart of stage_term; the
+      FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program changes.
     - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
       never moves (held fuel); binding refuses any inner route or other kind that moves one.
     - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
@@ -292,6 +299,7 @@ class Kind:
     stage_check: Callable | None = None
     stage_term: Callable | None = None
     bound_rate: Callable | None = None
+    material_term: Callable | None = None
     held_rows: Callable | None = None
     stage_values: Callable | None = None
     stage_extrema: tuple = ()
