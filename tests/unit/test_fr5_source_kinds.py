@@ -175,6 +175,33 @@ def test_an_entity_is_scheduled_at_most_once_and_the_list_is_nonempty():
     refused("non-empty list", schedule=[])
 
 
+def test_fr5s_world_declares_every_field_and_column_for_the_run_view():
+    """D154 (the kinds' KindView, core-next 74a75241), as test_inner_view_declarations' kind-world
+    test, on FR-5's world: every state field and readout column of the structure, the source
+    kinds' among them, has a unit, a record kind and a layer; every readout has its axes; every
+    axis has a view set (the condition's own included)."""
+    from cells.models.registry import get_model
+    from tests.unit.test_inner_view_declarations import INNER_AXES, RECORD_KINDS
+    from validation.compartment_ph_engine.parameters import ARM_R
+
+    spec = parse_spec(defs.development_world(defs.fr5_world(ARM_R)))
+    impl = get_model(spec.model)
+    assert {damage.KIND_ID, condition.KIND_ID} <= {k for k, _ in impl.structure.kinds}
+    names = [*impl.STATE_TYPE._fields, *(f for f in impl.OBSERVATION_FIELDS if f != "times")]
+    assert {"patch_damage", "ph_condition_factor"} <= set(names)
+    layers = {layer["id"] for layer in impl.VIEW_LAYERS}
+    for name in names:
+        assert impl.UNITS[name] and impl.RECORD_KINDS[name] in RECORD_KINDS, name
+        assert impl.RECORD_LAYERS[name] in layers, name
+    readouts = [f for f in names if f not in impl.STATE_TYPE._fields]
+    assert set(readouts) <= set(impl.OBSERVATION_AXES)
+    sets = impl.view_sets(spec)
+    assert sets["ph_condition"]["ids"] == ["acid_0"]
+    assert sets["ph_condition"]["at"] == [{"node": defs.LUMEN}]
+    axes = {a for name in names for a in (impl.STATE_AXES.get(name) or impl.OBSERVATION_AXES[name])}
+    assert axes <= INNER_AXES | set(impl.VIEW_AXIS_SETS) | set(sets), axes - INNER_AXES
+
+
 # ------------------------------------------------------------------------ the damage's step
 
 

@@ -41,6 +41,7 @@ keeps its start, and the definition keeps its form.
   declared order, and `factors(read, p, *, xp)`, d at each one's patch on the stage's state.
 """
 
+from types import MappingProxyType
 from typing import NamedTuple
 
 import numpy as np
@@ -49,6 +50,7 @@ from cells.core.kind_registry import (
     BUILTIN,
     ConfigError,
     Kind,
+    KindView,
     Schedule,
     declared_schedule,
     finite_number,
@@ -299,6 +301,14 @@ def factors(read, p, *, xp):
     return read.patch_damage[p.patch_damage_source_slot]
 
 
+# The run view's declarations (D154): d is a level per membrane slot, the patch's damaged fraction.
+VIEW = KindView(
+    units=MappingProxyType({"patch_damage": "1"}),
+    record_kinds=MappingProxyType({"patch_damage": "level"}),
+    record_layers=MappingProxyType({"patch_damage": "membrane"}),
+)
+
+
 PATCH_DAMAGE = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -319,5 +329,6 @@ PATCH_DAMAGE = BUILTIN.register(
         schedule_to_dict=schedule_to_dict,
         factor_sources=factor_sources,
         factors=factors,
+        view=VIEW,
     )
 )

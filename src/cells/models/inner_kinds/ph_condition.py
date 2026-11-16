@@ -30,6 +30,7 @@ with an optional `proton` row (default "H"), which must be B4's proton row where
   refuses anything else.
 """
 
+from types import MappingProxyType
 from typing import NamedTuple
 
 import numpy as np
@@ -38,6 +39,7 @@ from cells.core.kind_registry import (
     BUILTIN,
     ConfigError,
     Kind,
+    KindView,
     finite_number,
     qualified,
     require_fields,
@@ -195,6 +197,31 @@ def readouts(state, read, potentials, control, p, *, xp):
     return (factors(read, p, xp=xp),)
 
 
+# The run view's declarations (D154): f is a level per condition, on the kind's own axis.
+AXIS = "ph_condition"
+VIEW = KindView(
+    units=MappingProxyType({"ph_condition_factor": "1"}),
+    observation_axes=MappingProxyType({"ph_condition_factor": (AXIS,)}),
+    record_kinds=MappingProxyType({"ph_condition_factor": "level"}),
+    record_layers=MappingProxyType({"ph_condition_factor": "membrane"}),
+)
+
+
+def view_sets(spec, declaration):
+    """The view's set of the conditions' axis: one entry per condition, in declared order."""
+    return {
+        AXIS: {
+            "id": AXIS,
+            "ids": [c.id for c in declaration],
+            "roles": {"node": "the node whose free proton read sets the condition's pH"},
+            "kinds": [LAW_ID for _ in declaration],
+            "at": [{"node": c.node} for c in declaration],
+            "ph50": [c.ph50 for c in declaration],
+            "slope": [c.slope for c in declaration],
+        }
+    }
+
+
 PH_CONDITION = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -209,5 +236,7 @@ PH_CONDITION = BUILTIN.register(
         check_definition=check_definition,
         factor_sources=factor_sources,
         factors=factors,
+        view=VIEW,
+        view_sets=view_sets,
     )
 )
