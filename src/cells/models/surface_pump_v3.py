@@ -132,6 +132,11 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
 )
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
+# The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
+# check paths read from the model object (ledger_lists: per structure).
+LEDGERS = first.LEDGERS
+LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
+ledger_limits = first.ledger_limits
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
 # RK4 reference steps keep the resolved channel family's qualified bounds
@@ -1695,8 +1700,9 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
         if kind.ledger_terms is None:
             continue
         terms = kind.ledger_terms(row, p, xp=xp)
+        names = ledger_lists(structure).LEDGERS
         for key, ledger in (("cell", "local"), ("outside", "outside"), ("produced", "total")):
-            index = first.LEDGERS.index(ledger)
+            index = names.index(ledger)
             if key in terms and magnitudes[index] is not None:
                 magnitudes[index] = magnitudes[index] + xp.abs(terms[key])
         # The energy ledger's bound scales with the flows, which take every *_dissipated_energy_pJ
@@ -1722,6 +1728,7 @@ def check_values(state, spec, steps=None, *, structure=None):
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
         steps=steps,
+        ledgers=ledger_lists(structure),
     )
 
 
@@ -1745,6 +1752,19 @@ DEVICE_CHECKS = first.DEVICE_CHECKS
 DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
 device_failure_message = first.device_failure_message
 device_check_constants = first.device_check_constants
+LEDGER_NAMES = ("LEDGERS", "LEDGER_DIAGNOSTICS", "ledger_limits", "ENERGY_RTOL")
+
+
+@cache
+def ledger_lists(structure):
+    """The ledger protocol of a structure (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): LEDGERS,
+    LEDGER_DIAGNOSTICS, ledger_limits and ENERGY_RTOL, which the shared check paths read
+    (surface_pump.checked_rows, surface_pump_checks.row_checks), with DEVICE_CHECKS and
+    DEVICE_DIAGNOSTICS built from them. Every structure has today's: @1's own objects. A kind
+    that declares a ledger of its own will append to them here (the hook, ledgers(declaration),
+    follows its first consumer; §7.4 (p)). None is the module's."""
+    names = LEDGER_NAMES + ("DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
+    return SimpleNamespace(**{name: getattr(first, name) for name in names})
 
 
 def device_balances(state, p, *, structure=None):
@@ -1775,11 +1795,12 @@ def device_checks(previous, row, p, constants, steps, *, structure=None):
         steps,
         domain_valid=domain_valid if structure is None else _bound_checks(structure).domain_valid,
         balances=partial(device_balances, structure=structure) if kinds else device_balances,
-        limits=first.ledger_limits,
+        limits=ledger_lists(structure).ledger_limits,
         magnitudes=partial(channel_magnitudes, structure=structure)
         if kinds
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
+        ledgers=ledger_lists(structure),
     )
 
 
@@ -2370,6 +2391,8 @@ class InnerImplementation:
         self.domain_valid.with_control = self.control_domain_valid
         self.batch_signature = structured_batch_signature
         for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
+            setattr(self, name, value)
+        for name, value in vars(ledger_lists(structure)).items():  # The ledger protocol, (p).
             setattr(self, name, value)
         if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
             for name, value in view_declarations(structure).items():

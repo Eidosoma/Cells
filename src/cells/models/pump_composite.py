@@ -1380,6 +1380,7 @@ class Composition:
             magnitudes=magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
             steps=steps,
+            ledgers=self.inner,  # The inner ledgers' lists, from its object (§7.4 (p)).
         )
         if not self.own_ledger_operators:
             return diagnostics
@@ -1447,6 +1448,7 @@ class Composition:
                 limits=self.ledger_limits,
                 magnitudes=lambda r, q, *, xp: self.magnitudes(r, q, xp=xp, adjust=False),
                 dissipation=self.DISSIPATION_FIELDS,
+                ledgers=self,
             )
         return row_checks(
             previous,
@@ -1459,6 +1461,7 @@ class Composition:
             limits=self.ledger_limits,
             magnitudes=self.magnitudes,
             dissipation=self.DISSIPATION_FIELDS,
+            ledgers=self,
         )
 
     # ------------------------------------------------------------ observations

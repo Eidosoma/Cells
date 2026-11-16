@@ -1779,19 +1779,40 @@ active), with check_onsets' refusal kept.
    - The in-place guard's quiet host check (`inplace_fix_guard._quiet_host_checks`) gains the
      `ledgers` keyword.
 
-**What a later kind declares (the seam this prepares; not built in this item unless the lead
-rules otherwise).**
+**What a later kind declares (the seam this prepares; a sketch, not built in this item).**
 - A `ledgers(declaration)` hook returns ((ledger, diagnostic), ...).
 - The kind's `ledger_terms` gives each ledger's value under its own name, beside today's roles.
 - A `ledger_bounds(row, p, tol, steps, *, xp)` hook returns their bounds.
-- The structure's object then appends these to its lists, `balances` to its values and
-  `ledger_limits` to its bounds. `checked_rows`, `row_checks`, `DEVICE_CHECKS` and the windows'
-  failure codes take them with no edit.
+- The structure's object then appends these to its lists (`ledger_lists`), `balances` to its
+  values and `ledger_limits` to its bounds. `checked_rows`, `row_checks`, `DEVICE_CHECKS` and the
+  windows' failure codes take them with no edit.
 - **Option A (recommended):** this item builds the protocol and the reads only. The hook follows
   with its first consumer, a kind with a conserved quantity that is not one of today's ten.
 - **Option B:** the hook now, with a planted kind under `tests.` that declares a neutral conserved
   quantity and its ledger. This costs about 0.5 day more, and the hook's shape would be fixed
   before any real consumer exists.
+
+**The lead's ruling (16 November 2026): Option A.**
+- Build the protocol and the reads now. The kind's own ledger hook waits for its first real
+  consumer: probably finite fuel with the transporter's fuel rows, queued right after the landing.
+  Its shape is then fixed against real needs.
+- This follows D180's rule of staging by consumer. The sketch above is the finite-fuel owner's
+  starting point: `ledgers(declaration)`, values under their own names in `ledger_terms`, and
+  `ledger_bounds`.
+
+**As built (core-next):**
+- `surface_pump.checked_rows(..., ledgers=None)` and `surface_pump_checks.row_checks(...,
+  ledgers=None)` read the object's lists. The global-charge bound is found by name in its
+  `LEDGERS`, and `None` is @1's module, today's call.
+- @2's and @3's modules alias @1's `LEDGERS`, `LEDGER_DIAGNOSTICS` and `ledger_limits` beside
+  `ENERGY_RTOL`. @2 passes its own module.
+- `surface_pump_v3.ledger_lists(structure)` gives the four names, with `DEVICE_CHECKS` and
+  `DEVICE_DIAGNOSTICS`; today these are @1's own objects for every structure.
+  - The implementation object carries them, and the adapter forwards them.
+  - `check_values`, `device_checks` and `channel_magnitudes` read them.
+- The composite passes its inner adapter to `inner.checked_rows` and itself to `row_checks`.
+- The in-place guard's quiet host check takes `ledgers`.
+- The tests are in `tests/unit/test_ledger_lists.py`.
 
 **The D148 case.** This is an in-place change to shared qualified code, `checked_rows` and
 `row_checks`. Nothing should change, so the criteria are checked as "identical":
