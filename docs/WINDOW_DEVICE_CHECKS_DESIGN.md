@@ -1,9 +1,12 @@
 # Device row checks for scalar windows, and the vector path's seams (design, 16 November 2026)
 
-**Status: ruled by the lead on 16 November 2026 (below).** The seams are built first, on branch
-`windows-next-clean` (from c1 = integration-d172 3c10b833). Device checks wait for the
-clean-core measurement. The measurement probe is `validation/execution/window_check_probe.py`.
-Every timing below is development evidence, not a verdict.
+**Status: ruled by the lead on 16 November 2026 (below).** The seams are built (step a), on branch
+`windows-next-clean` (from c1 = integration-d172 3c10b833). The clean-core measurement (step b,
+§1.4) is done, and the lead then approved the device checks (step c) under five conditions. §9
+settles the details §4 left open, before the code. The branch now holds main and core-next, and
+lands after core-next (§9.1). The measurement probe is
+`validation/execution/window_check_probe.py`. Every timing below is development evidence, not a
+verdict.
 
 **The two asks:**
 1. Move the host-side row checks of the scalar windowed runner into device windows. The coupling
@@ -164,6 +167,43 @@ about 1,300–2,300 rows: 1.3–2.3 s of model time at dt 1 ms. That is why a de
 slow every short run and tier test (§4.1).
 
 The GPU cost of the checks is unmeasured, since the GPU is busy.
+
+### 1.4 The clean-core measurement (step b, 16 November 2026)
+
+Run at 0a4e1d24 (clean) on one clean core, CPU 5. The records are in
+`/mnt/workspaces/Cells/windows-next-20261116/probes/`: `small-clean/`, `tissue825/`, `export/`,
+`long/` and `long-short/`.
+
+**Per-row costs, in ms.** "Host" is `check_values`; "scan" and "vmap" are the model's
+`device_checks` compiled over the same rows.
+
+| World | Step | Host | Device scan | Device vmap | Scan compile, s | Host share |
+| --- | --- | --- | --- | --- | --- | --- |
+| Eight small worlds (G1 sets) | 0.14–0.88 | 1.9–2.3 | 0.035–0.114 | 0.025–0.079 | 5.2–8.9 | 74–82% where measured |
+| The export's world | 0.14 | 1.80 | 0.016 | 0.006 | 4.8 | 90% |
+| FR-4's world (kinds; `long/`) | 0.31 | 7.0 | 0.17 | — | — | — |
+| The 825-node tissue (S825) | 57.4 | 21.5 | 2.8 | 1.4 | 14.3 | **28%** |
+
+- **The 825-node tissue gains least:** its host share is 28%, so device checks can save it at most
+  about a quarter of its wall time.
+- **Parity:** host and device gave the same verdict on every sampled row. `replacement_steady`
+  is refused by dissipation in both.
+
+**Ratios to the bounds over long runs (`--long`), under the guard band of 1/2.**
+
+| Run | Windows | Largest ratio (ledger, where) | Late ratio (last tenth) | Handed back |
+| --- | --- | --- | --- | --- |
+| The export's 480,000 steps | 480 | 0.068 (`local`, window 8) | 7.0e-4 | 0 |
+| FR-4's world at dt 1 ms, 900,000 steps | 900 | 3.2e-3 (`local`) | 8.7e-5 | 0 |
+| RK4 D150 (`rk4_dr2.5_dt0.1`), 5,000 steps | 5 | **0.257** (`total`, first window) | 1.5e-3 | 0 |
+| RK4 water (crossrev base), 40 steps | 1 | 5.0e-6 | — | 0 |
+| The 825-node tissue, 200 steps | 1 | 9.8e-3 (`global_charge`) | — | 0 |
+
+- **The margin of record is 0.257,** RK4 D150's first window: about 2× below the band.
+- **Ratios peak in a run's first windows.** There the rounding allowance, which grows with the
+  step count, is smallest. They then fall.
+- **Host samples:** the host's `check_values`, sampled every 50th window, refused no sampled
+  window. The diagnostics differ at rounding.
 
 ## 2. Options for ask 1
 
@@ -478,6 +518,8 @@ executable, the world count and every other world's inputs stay the same.
 
 ## 6. The equivalence evidence plan
 
+**The plan as written before the build.** §9.6 maps the lead's five conditions to the evidence actually run, and lists what is dropped. Since the core-next merge, the reference revision for E1 and E2 is d6814d57 (§9.1), not c1.
+
 **What the baseline cannot show by itself.**
 - Every G1 world runs one scalar window of at most 200 steps (13,740 rows over 110 worlds). So no
   predecessor row or step offset crosses a window boundary.
@@ -505,7 +547,7 @@ executable, the world count and every other world's inputs stay the same.
   - The comparison tool gains a report-only rule for `diagnostics.*`.
 - **E6, window partitions.**
   - One world per family and operator set (about 12 worlds) runs at 4-, 7- and 200-step windows
-    in mode on. The export's own world runs at 256 steps.
+    in mode on. The export's own world runs at its record's window size.
   - At each partition, states and observations must be bitwise to mode off, and refusals
     identical. Across partitions, mode on must show what mode off shows.
   - The number of windows the host decided is reported (expected: none), with the diagnostics' run
@@ -614,6 +656,133 @@ Answered on 16 November 2026: see "The lead's rulings" at the top.
 8. **Order:** part 1 and the seams are independent files apart from `vector_windows.py`, which
    only part 2 touches. They can land separately, part 2 first if the planner's qualification is
    nearer.
+
+## 9. Step (c): the open details, decided before the build (16 November 2026)
+
+The lead approved step (c) after reading §1.4, under five conditions:
+- **C1:** outputs are bitwise identical with and without device checks (checks only, no physics);
+- **C2:** a host-against-device agreement test;
+- **C3:** a planted window over the band is handed back and refused on the host;
+- **C4:** crossrev shows programs changing only where a world opts in;
+- **C5:** the measured speedups are recorded beside the projections.
+
+### 9.1 Base and dependency
+
+- **The branch holds main b92b4c2b** (merge f3292423) **and core-next 5f4d79ad** (merge d6814d57;
+  the lead's Option A).
+- **Why core-next:** `margins` is built on core-next's `row_checks(..., ledgers=None)` and on its
+  `device_checks` calls (INNER_MODEL_V4_DESIGN §7.4 (p)), which rewrote the lines §4.3 changes.
+- **So the branch lands after core-next.** If core-next moves first, it is merged here again; it is
+  never rebased.
+- **The default path's reference revision is d6814d57,** not c1, since core-next changed @3 and the
+  kinds. Crossrev's base set was traced there before any model edit
+  (`/mnt/workspaces/Cells/windows-next-20261116/crossrev/before-d6814d57/`).
+
+### 9.2 The switch and its refusals
+
+- **`WindowPolicy.row_checks`** is `"host"` (the default) or `"device"`. As §4.1 says, `to_dict()`
+  writes it only for `"device"`.
+- **Admission,** in `plan_windows`, via `row_checks.admit` (fail-closed, `ConfigError`):
+  - the run must be compiled (`jit: true`);
+  - the model must have `device_checks` taking `margins`, `device_check_constants`,
+    `DEVICE_CHECKS` and `DEVICE_DIAGNOSTICS`.
+
+  The hook list lives in `row_checks.py`, because `windows.py` importing `vector_windows` would be
+  an import cycle.
+- **The batch path and the vector path refuse `"device"`:**
+  - the batch path checks rows on the host, and vector windows always check them on the device;
+  - their records keep today's policy dictionary. That covers `batch_window_io`, cohort snapshots,
+    and continuity's `_policy`, which demands exactly `{window_steps, recording}`.
+- **Continuity requests** with a device-mode policy are refused by continuity's own `_policy`.
+  That is fail-closed, and continuity is unchanged.
+- **The CLI's scalar `windowed` commands** gain `--row-checks {host,device}`.
+
+### 9.3 The check program (`cells/core/row_checks.py`)
+
+- **The form: a `lax.scan`** over the window's full-width device history. This is the form §1.4
+  measured, and the projections rest on it.
+- **The rows:**
+  - row 0 is the window's start, its own predecessor;
+  - row k (1 to width) has predecessor k − 1;
+  - slots past the real step count are masked;
+  - row k's step count is row 0's global step index + k, passed in as a traced input.
+- **The outputs:**
+  - `first [checks]`: each check's first failing row, or −1;
+  - `maxima [diagnostics]`;
+  - `ratios [ledgers]`: each ledger's largest |residual| / bound over the window. A zero residual
+    gives 0 and a NaN gives +inf, as in the probe, so §1.4's margin stays comparable.
+- **The decision.** The device decides a window only when no check failed and every ratio is at most
+  `HOST_DECIDES_ABOVE = 0.5`. The test is written so that a NaN ratio goes to the host. A window
+  with no steps stays on the host: it has one row.
+- **The executable.** There is one per run (per `_WindowExecution`), compiled at the first window.
+  Its compile seconds join that window's compile time. Its temporary bytes, from the executable's
+  memory analysis, go into the run's resources.
+- **The key-set guard.** When the checks are built, the host's `check_values` runs once on the
+  start row. If its keys differ from `DEVICE_DIAGNOSTICS` as a set, device mode is refused, so a
+  model whose two diagnostic lists drift apart fails closed.
+  - The device's diagnostics are then given in the host's key order, so a run's records keep one
+    key order in both modes. A composite with an operator's own ledger orders it differently in
+    the two lists: the host appends it after the energy and charge ratios.
+- **Later, not now:** vmap was 1.3–2.7× faster per row than the scan in §1.4, and a batched
+  `lax.map` would bound its memory. That changes the check program, so it needs its own
+  agreement evidence.
+
+### 9.4 The runner and the records
+
+- **`_segment`** launches the check program on the device-resident full-width history before slicing
+  it, then transfers the history as it does today.
+- **`_analyse_segment(..., row_checks=outcome)`:**
+  - a host-decided window runs today's `check_values`, raising today's exception class and message;
+  - a device-decided window takes the device's maxima.
+- **The per-window channel.** In device mode `_segment` returns a `CheckedRunResult(RunResult)`,
+  following `ProjectiveRunResult`'s pattern. Its one field, `row_checks`, records:
+  - who decided the window;
+  - why it was handed back, if it was: a device failure, or a ratio above the band;
+  - the window's ratios.
+
+  In host mode `_segment` returns today's `RunResult`, so nothing in host mode changes type, key or
+  byte. `RunResult` itself cannot gain a defaulted field, because `ProjectiveRunResult` extends it.
+- **In device mode only:**
+  - each window's timings gain `device_row_check_seconds` and `host_row_check_seconds`;
+  - `windows.jsonl` records each window's outcome;
+  - `WindowedResult.resources["row_checks"]` holds the mode, the windows, the windows the host
+    decided (by reason), and each ledger's largest ratio over the run. That gives every run's
+    handback rate (ruling 2).
+
+### 9.5 What "bitwise" covers
+
+- **Bitwise between the modes:** times, histories, observations and checkpoints. The step
+  executable is the same one, and the check program only reads the history.
+- **Not bitwise:** the diagnostics (ruling 3). So `windows.jsonl`, `summary.json` and the manifest
+  differ between modes.
+- **So the tests compare arrays, not manifests.**
+
+### 9.6 Evidence for the five conditions
+
+Under D187, each claim is proven once, at its cheapest level.
+
+| Condition | Evidence | Cost |
+| --- | --- | --- |
+| C1, bitwise | A unit test: one world per family runs in both modes at windows of 4 and 7 steps, with a partial last window. The families are @1, @2, @3 with kinds, a composite with an operator's own ledger, and a retiring composition. Arrays must be bitwise. It also has one restart in device mode from a host-mode checkpoint. The C5 runs compare their arrays where both modes run | Test files under the 90 s cap |
+| C2, agreement | A unit test of the check program with a stub model: rows, predecessors, step counts, masking and the decision. Each device-decided window's diagnostics are compared with the host's `check_values` on the same rows, under the established criteria (2% of the smallest bound; energy at 1e-9 relative; `test_surface_pump_device_checks.py`). Faults planted at a window's first and last rows, and a dissipation decrease across a boundary, must be caught. In the long runs the host is sampled every 50th window, reported | As above |
+| C3, the band | A ledger residual is planted over the host's bound, with the device under-reading that ledger by half, so its ratio lies in (1/2, 1]. The window must be handed back and refused with the host's class and message. **Control:** with the band at 1, the same run is accepted. A residual in the band that the host accepts is handed back and the run goes on. It runs on a world with an operator's own ledger, so host- and device-decided windows pass `merge_diagnostics` together. A device failure is refused as in host mode | As above |
+| C4, crossrev | The eight sets' jaxprs and bindings at the branch head against d6814d57: identical. Crossrev also gains the `margins=True` device-check trace for every world, the opted-in program (D187 rule 2). An older side lacks it, and `compare` reads only the older side's files | About 1 CPU-hour, detached |
+| C5, speed | `run_windowed` in device mode at the records' window size: the export's 8,000, 80,000 and 480,000 steps; FR-4's 20 s pass and its 900,000 steps; the 825-node world. Host mode is re-run on the same cores for the short arms. The long host arms (the export's 480,000 steps, FR-4's 900,000) come from records and projections | About 1 hour on the timed lane |
+
+**Dropped from §6, with the reason:**
+- **E5, G1 in mode on** (2.5 CPU-hours). C1's families and C5's long runs cover the bitwise claim.
+  - D187 rule 2 instead asks for one device-mode run in the results baseline. A
+    `run_windowed_device` path in the run-paths set is proposed to the lead. It is not built here,
+    because the baseline's `compare` fails on an array missing from either side, so the next
+    baseline save must include it.
+- **E6's 12 worlds × 3 partitions:** C1's five families at two partitions, plus C5.
+- **E7's full fault list:** under R3 the host decides every flagged window with today's code, and
+  each class's detection is already proven per row by the device-check tests. C2 and C3 keep the
+  routing cases.
+- **E8 over G1's 13,740 rows** (0.7 CPU-hours): per-row parity is proven in three files. C3 covers
+  the margin output, and the long runs sample the host. It stays optional.
+- **E1, G1 in mode off,** belongs to the results gate at landing, if the lead runs it. Crossrev
+  (C4) and the tiers cover the default path here.
 
 ## Sources
 
