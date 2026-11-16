@@ -3,7 +3,8 @@ host-checked path and the vector-window path (every accepted row checked on the 
 field by field. Analysis only (it ran from fr45/pipeline/ until it moved here, its logic
 unchanged):
 
-    python -m validation.compartment_ph.path_agreement HOST_RESULTS VECTOR_RESULTS PART OUT_JSON
+    python -m validation.compartment_ph_engine.path_agreement HOST_RESULTS VECTOR_RESULTS PART
+        OUT_JSON
 
 Per series and per amount row: bitwise equal or not, the largest absolute difference and the
 largest relative one (|a - b| / max(|a|, |b|)); the stage extrema, the ledgers, the steps and the

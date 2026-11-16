@@ -183,7 +183,7 @@ def test_the_revised_fr5_arms_their_start_horizon_and_budget():
 def test_the_fr4_pump_is_the_transporter_kinds_entry_with_the_registrys_drive():
     """FR-4's pump in cells.transporter@1's form (held fuel, which the kind holds; no ΔG° of its
     own), and the fuel rows' registry potentials give the world's declared Δ_rG'°."""
-    from validation.compartment_ph.parameters import R
+    from validation.compartment_ph_engine.parameters import R
 
     d = defs.fr4_world()
     (pump,) = d["model"]["transporters"]

@@ -36,7 +36,7 @@ from contextlib import nullcontext
 
 import numpy as np
 
-from validation.compartment_ph import definitions as defs
+from validation.compartment_ph_engine import definitions as defs
 
 WINDOW_STEPS = 1000  # One record per window at 1 ms.
 FR4_ROWS = ("H", "K")

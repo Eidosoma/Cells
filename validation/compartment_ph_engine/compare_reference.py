@@ -3,7 +3,7 @@ against R-closure at the same records, with the judge's own arithmetic, and the 
 ledgers as the judge reads them. Analysis only, from an execution snapshot's root (it ran from
 fr45/pipeline/ until it moved here, its logic unchanged):
 
-    python -m validation.compartment_ph.compare_reference RESULTS PART WORLD OUT_JSON
+    python -m validation.compartment_ph_engine.compare_reference RESULTS PART WORLD OUT_JSON
         [--lag-horizon T]
 
 WORLD: `declared` (R-closure on FR-4's declared world, the reference stage's base_world) or `k2b`
@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 
 from validation.compartment_ph import ph_reference as ph
-from validation.compartment_ph.parameters import World
+from validation.compartment_ph_engine.parameters import World
 from validation.tissue import compartment_ph_judge as judge
 from validation.tissue import compartment_ph_reference_stage as stage
 

@@ -10,7 +10,7 @@ each file. The helpers stay there.
 import pytest
 
 from tests.unit.test_fr4_world_engine import short
-from validation.compartment_ph import definitions as defs
+from validation.compartment_ph_engine import definitions as defs
 
 
 def test_k2_the_reversed_pump_closes_every_ledger_and_alkalinizes_the_lumen():
@@ -20,7 +20,7 @@ def test_k2_the_reversed_pump_closes_every_ledger_and_alkalinizes_the_lumen():
     import dataclasses
 
     from cells.models.inner_kinds import transporter
-    from validation.compartment_ph import engine_records, planted
+    from validation.compartment_ph_engine import engine_records, planted
 
     record = engine_records.run(
         short(defs.fr4_world()), registry=planted.registry(planted.reversed_pump())
