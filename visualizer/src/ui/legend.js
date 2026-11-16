@@ -30,7 +30,57 @@ class CellsLegend extends HTMLElement {
    * folded   the keys and the note start closed (a short window)
    * layersFirst  the switch for layers stands first (a phone with a panel open, where the legend has little room)
    */
-  render({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false }) {
+  render(chrome) {
+    // The same words and the same switches as were drawn last: nothing is drawn again. Drawing
+    // them again replaces every button, which loses the place a visitor had scrolled to, and a
+    // press that has begun on a button that is then replaced never arrives. While a press is
+    // held inside the legend, a change waits until it is let go. (Seen on 16 November 2026: a
+    // real press on the Flux switch did not take while the view, flying back from a part, was
+    // still reporting changes; frames that come fast make it more likely, not less.)
+    let said = null;
+    try {
+      said = JSON.stringify(chrome ?? null);
+    } catch {
+      said = null; // what cannot be written out is drawn every time, as before
+    }
+    if (said !== null && said === this.said && this.firstChild) return;
+    if (this.pressed) {
+      this.waiting = chrome;
+      return;
+    }
+    this.said = said;
+    this.waiting = null;
+    this.draw(chrome ?? {});
+  }
+  connectedCallback() {
+    if (this.letGo) return;
+    this.letGo = () => {
+      clearTimeout(this.holding);
+      if (!this.pressed) return;
+      this.pressed = false;
+      // What waited is drawn once the press's own click has been dealt with.
+      setTimeout(() => {
+        if (this.waiting && !this.pressed) this.render(this.waiting);
+      }, 0);
+    };
+    this.addEventListener("pointerdown", () => {
+      this.pressed = true;
+      // A press let go where the page cannot see it (outside the window) must not hold changes back for good.
+      clearTimeout(this.holding);
+      this.holding = setTimeout(this.letGo, 2000);
+    });
+    window.addEventListener("pointerup", this.letGo);
+    window.addEventListener("pointercancel", this.letGo);
+  }
+  disconnectedCallback() {
+    if (!this.letGo) return;
+    clearTimeout(this.holding);
+    window.removeEventListener("pointerup", this.letGo);
+    window.removeEventListener("pointercancel", this.letGo);
+    this.letGo = null;
+    this.pressed = false;
+  }
+  draw({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false }) {
     this.replaceChildren();
     const rows = items.map((item) =>
       h(

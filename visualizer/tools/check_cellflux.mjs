@@ -322,6 +322,19 @@ try {
     check("a panel says what stands behind all of it", s.panel?.title === "What flows in this cell" && /Not drawn|Drawn/.test(s.panel.text), s.panel?.title ?? "no panel");
     await evaluate(`${V}.select(null)`);
   } else note("the door to the panel behind the flux could not be pressed at this size");
+  // A press that has begun must arrive even where the view asks the legend to draw itself again before the
+  // press is let go: a real press on this switch was lost that way (16 November 2026, when the checks first
+  // ran on a graphics card and the view's changes came between the press and its release).
+  const offSwitch = 'cells-legend .layer-row[data-channel="motion"] button[data-layer=""]';
+  const held = await middle(offSwitch);
+  if (held) {
+    await mouse("mouseMoved", held.x, held.y, { button: "none", buttons: 0 });
+    await mouse("mousePressed", held.x, held.y);
+    const waited = await evaluate(`(() => { const v = ${V}, legend = v.shadowRoot.querySelector("cells-legend"); legend.said = null; v.renderChrome(); return Boolean(legend.waiting); })()`);
+    await mouse("mouseReleased", held.x, held.y, { buttons: 0 });
+    s = await until((now) => now.on === false);
+    check("a press on the Flux switch arrives although the legend was asked to draw again while it was held", s.on === false && waited, JSON.stringify([s.on, waited]));
+  } else note("the Flux switch's Off could not be pressed at this size");
   await evaluate(`${L}.setLayer("flux", false)`);
   // The picture's own tokens come back with the next frame drawn: wait for it.
   s = await until((now) => now.tokens.length === 0 && now.old.drops === atRest.drops && now.old.signals === atRest.signals && now.old.ions === atRest.ions);
