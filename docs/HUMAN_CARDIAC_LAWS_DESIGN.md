@@ -811,10 +811,11 @@ about 1, the stage-read slot 1–1.5, the transporter kind 2.5–3.5, the passiv
 5. **The D138 question, for O'Hara–Rudy 2011's endocardial cell (§5.2).** Do you approve:
    - **(A)** an independent whole-cell reference of the model, written from the paper and Text S1
      by an agent who never reads the engine, run out of process, in two arms: as published, and
-     with the departures listed in §3.9, and any later addition reported before the judged run?
-   - **(B)** running the published model itself, unmodified and out of process, in Myokit (BSD
-     3-Clause) in its own environment, from the model repository's CellML encoding (used by
-     reference, never committed) or the authors' own code, keeping only saved outputs?
+     with §3.9's listed departures (any later addition reported to you before the judged run)?
+   - **(B)** running the published model itself, unmodified and out of process, keeping only saved
+     outputs: in Myokit (BSD 3-Clause, in its own environment) from the model repository's CellML
+     encoding (used by reference, never committed), or the authors' own C++ code, compiled and run
+     as published?
    - **(C)** comparing the Cells cell over one beat at 1 Hz as §5.2 lists: judged against the
      declared arm at tolerances registered before the run; the two references judged against
      each other; and the Cells cell against the published model reported, not judged, with each
