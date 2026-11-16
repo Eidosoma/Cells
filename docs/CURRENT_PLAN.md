@@ -58,11 +58,20 @@ experiment).
    - **In parallel it carried:** B4's stage read and the passive law's insertion point (the core);
      the adapter and the families' refusals (the integration owner); O3's run-view declarations
      (the operators).
-2. **Now, after the landing, in order:**
-   0. **Merging the lanes built on the round,** each after its gate on main plus the branch:
-      core-next first, then fr45-next, run-view-d154 and windows-next-clean. Then D188's
-      source-tree restructure (step 0's legacy list and probe, then two scripted moves). Owed
-      from the landing's acceptance plan:
+2. **Now, after the landing, in order** (from 16 November evening, D194's order supersedes the rest
+   of this list where they differ):
+   - **Done, 16 November:** the lanes built on the round merged, each after its gate: core-next,
+     windows, fr45-next, run-view-d154, core-fixes and the test audit. The full verification of
+     main a83d8f15 passed (tiers 1+2 517 files 0 changed, G1 113 of 113, crossrev's new record).
+   - **D194's order:**
+     1. D188's moves. The retire (D189) and the BLAS pin (D190) land first.
+     2. One core-seams pass, with the core's built but unlanded items on `core-fixes` (the
+        fuel-potential check, the material-slope seam, the passive-route view set).
+     3. Then in parallel: the human cardiac laws, composition A (D191) and finite fuel.
+     4. Mitochondria (D193) and GARD (D192), after their prerequisites.
+   0. **Merging the lanes built on the round** (done, above). Then D188's source-tree restructure
+      (step 0's legacy list, settled in D189, and its probe, then two scripted moves). Owed from
+      the landing's acceptance plan, and run with tier 3 on D188's final tree (D194):
       - G3's negative controls on landed main (planted changes that must fail the results
         gate; about 1–2 CPU-hours);
       - G4's measurements (compile time, memory and end-to-end time) on a quiet machine.

@@ -6111,6 +6111,189 @@ reviewed with the advisor: "sounds good and yes src/cells/legacy".
 
 **It starts** after core-next lands on main.
 
+## D189: The four undecided families stay active, and the firm retire list is approved
+
+2026-11-16. D187's audit and D188's step 0 left two calls for the user, put with the advisor's
+review. The user: "1. agreed all four" and "2. as you suggest".
+
+**The families (D188 step 0's legacy list).**
+- Four families stay active. The modular path does not use them, but registered protocols name
+  them:
+  - `apical_vertex_mechanics@1`: MG1's vertex mechanics;
+  - `reaction_transport@1`: MG0a's morphogen gradient;
+  - `resolved_pump_tissue@1` and `@2`: the stationary analysis and the L4 physical protocols.
+- The shared code of the four moves into the modular core in D188, not into `legacy/`.
+- With the five families already active, 9 are active and 102 are legacy. The list is
+  `scripts/legacy_inventory.py`'s at a83d8f15 (its output is in
+  `/mnt/workspaces/Cells/test-audit-20261116-01/a83d8f15/inventory/`). This settles step 0's list;
+  its probe follows.
+
+**The retire list** (`docs/TEST_AUDIT_RETIRE_LIST.md`, regenerated at a83d8f15).
+- **The firm list retires by its Unit column:**
+  - tier 3: 15 whole files, and the listed cases of 4 more;
+  - tiers 1 and 2: 43 whole files, and the listed cases of 39 more.
+- **Two checks run before anything is deleted.** A row that fails either moves to the held list,
+  with its reason:
+  - a whole file that tests a module on the list of 42 couplings from the modular path into older
+    modules;
+  - a skipped case that the L4 block runs.
+- **The tree is tagged first.** The tier record and tier 3's frozen record are then updated to match
+  the collected tests.
+- **Kept for now:** the held list and the 91 passing tier-3 files of frozen families. They are
+  reviewed again once D188 has cut the 42 couplings.
+- **The saving:** about 7.5 of tier 3's 29.8 core-hours per run, and 2.1 minutes per tier 1+2 gate.
+
+## D190: BLAS is pinned to one thread, in a lean form
+
+2026-11-16. The core found that a CPU run's bits follow its CPU allocation through OpenBLAS's thread
+count (ARCHITECTURE.md, "Allocation-independent linear algebra"). Asked to approve a pin, the user
+answered: "lets not go overboard here but take your adviser". The form below was chosen with the
+advisor.
+
+**What is built:** the proposal as committed in ARCHITECTURE.md.
+- One small module force-loads scipy's LAPACK, then sets every loaded BLAS to 1 thread through
+  threadpoolctl (BSD). It runs at `import cells` and again at each run entry point.
+- **The run is refused** if, at run entry, a read-back finds any loaded BLAS not at 1 thread.
+- **The run manifest records** each library's version, kernel architecture and thread count.
+- **Two tests,** each with a planted error.
+
+**What is dropped:**
+- a scoped pin that restores the caller's setting, with its reference count and lock. A pin that is
+  never released needs no count;
+- a re-check at every window. One read-back when the manifest is written covers the run, and
+  AGENTS.md rules out per-call attestation.
+
+**The cost:**
+- A process that imports cells runs BLAS single-threaded throughout, including the caller's own
+  numpy work.
+- Multi-core CPU runs of large worlds lose the threaded per-step factorization: 21 ms of the
+  825-node world's 91 ms one-core step.
+- One-core runs and GPU runs are unchanged.
+
+**The baselines:**
+- G1 is unchanged.
+- crossrev's two S825 bindings are renewed once.
+- If a tier test with stored bit-exact values moves, it is attributed before anything is renewed.
+
+**When:** the pin lands before D188's move 1, so the moves' gates no longer depend on the CPU
+allocation.
+
+## D191: Operator composition takes one general rule (option A)
+
+2026-11-16. The composition design (`docs/OPERATOR_COMPOSITION_DESIGN.md`) put the D147 question:
+does reading a field's current value, instead of its declared value, change a law's semantics? The
+user: "4. as you and adviser suggest".
+
+**The ruling: A.** A current read keeps the law's ID, under D148's four conditions.
+- Each operator declares, per field, whether it reads the current or the declared value.
+- The composite resolves each read when the model is built: current if some operator of the
+  composition changes the field, otherwise the declared value.
+- Worlds that do not compose keep their programs bit for bit.
+
+**What it implies:**
+- **D150's registered protocol.** Q5's test asserts two version-1 refusals that A lifts: turnover
+  beside water, and turnover beside insertion@1.
+  - Q5's file keeps those refusals for the static-tissue scope its verdict covers.
+  - A's admissions are tested in a file outside Q5's list.
+  - The verdict judged at f7f0592 stands.
+- **Gaps 2 and 5 land together.**
+- **It is qualified numerically only,** since no judged experiment needs it yet.
+- **The cost:** about 9.5–12.5 agent-days, plus 3–4 for the references. That excludes pumps on
+  dividing cells (about 3 more), the furrow world, and how ions join growth.
+
+**When:** step 3 of D194's order.
+
+## D192: GARD: the design choices, and the comparison approved
+
+2026-11-16. The GARD design (`docs/GARD_DESIGN.md`) proposes the engine's first origin-of-life model
+family. The user: "5. as you and adviser suggest". On the comparison (D138): "6. yes to all three".
+
+**The choices** (the note's §4):
+- **Kinetics:** the exact stochastic simulation (direct method), one molecule per event. τ-leaping
+  comes later, only as a qualified fast mode.
+- **Assemblies:** abstract ones first, over a generic ideal-mixing phase.
+- **Matrix:** dense lognormal, β = exp(−4 + 4Z), with about 100 types, as per-world data.
+- **Kernel form:** both.
+  - The preprint's single-event form, for the reference comparison.
+  - The pair-consistent form, as the engine's passive law.
+  - The first experiment measures the difference.
+- **Reference experiment:** the preprint's reconstructed GARD, contract T2-02.
+- **Architecture:** a stochastic family, registered as modules (D185).
+- **Cost:** about 20–29 agent-days, CPU only.
+
+**When:** step 4 of D194's order.
+
+**The reversibility finding, as checked** (the note's §2.5; evidence in
+`/mnt/workspaces/Cells/verify-gard-beard-20261116/`). An independent check by exact enumeration
+found:
+- **In a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's
+  cycle criterion.** That kernel is the event split of the original rate law (Eq. 4 of Segrè,
+  Ben-Eli and Lancet 2000).
+  - A rank-one catalysis matrix is the exception: it stays reversible, with a shifted
+    equilibrium.
+- **The original authors' kernel is not established either way.** Their papers state the rate law
+  but no event rates. Their 2000 scheme, Poisson draws on the net rate, is a different kernel.
+- **Not tested:** the preprint's vector-Poisson contracts.
+- **The preprint's driven runs are not affected,** because detailed balance is not expected there.
+- **The pair-consistent form is exactly reversible.** In it, the leaving molecule does not catalyse
+  its own leave.
+
+**The comparison (D138), approved:**
+- **(A)** an independent reference, written from the preprint's Appendix F by an agent who has read
+  neither the engine nor the programme's code;
+- **(B)** the programme's clean-room test code (MIT), run unmodified and out of process;
+- **(C)** a distributional comparison on 40 fresh matrices, at tolerances registered in advance,
+  with planted controls that must be caught.
+
+## D193: Mitochondria: the direction, and the comparison approved
+
+2026-11-16. The mitochondria design (`docs/MITOCHONDRIA_DESIGN.md`). The user: "7. agreed" and
+"8. agreed".
+
+**The direction:**
+- **One law set** for mitochondria and bacteria (*E. coli*, JCVI-syn3A), with one thermodynamic
+  cycle form.
+- **One effective mitochondrion per cell first.**
+- **Isolated cardiac mitochondria first,** then mitochondria in a cardiac cell (D183).
+- **The source:** Beard 2005 (PLoS Comput Biol 1(4):e36), with its 2006 correction (2(1):e8). An
+  independent check found both legible in PLOS's open XML:
+  - the display equations' MathML sits in XML comments;
+  - Table 1's 35 parameters are text. The correction changes 9 of them;
+  - the comment text was not checked against the typeset images.
+- **Probe P1 comes first,** because the membrane-potential mode is stiff.
+- **Not put separately:** the note's questions 3 and 4 (the respiration drive and the
+  intermembrane space). Its recommendations stand as working defaults. Host P or C remains the
+  lead's call (§3.6).
+- **The cost:** about 23–46 agent-days.
+
+**When:** step 4 of D194's order.
+
+**The comparison (D138), approved:**
+- **(A)** an independent whole-organelle reference, by an agent who has read neither the engine
+  nor any model file. It runs in two arms: as published, and with the note's listed departures;
+- **(B)** the published model, run unmodified and out of process, from the public CellML in
+  libOpenCOR. Whether that file carries the 2006 correction is checked first;
+- **(C)** a comparison over the source's steady-state and low-oxygen protocols, judged against the
+  declared arm, with the differences from the published model reported.
+
+## D194: The order after 16 November
+
+2026-11-16. The user: "9. lets go".
+1. **D188's moves, now.**
+   - The full verification of main's head comes first.
+   - The retire (D189) and the pin (D190) land before move 1, which starts from a head that holds
+     both.
+2. **One core-seams pass:** the shared transporter and cycle kind, populations, binding, and heat
+   booking. It serves the cardiac laws, mitochondria, composition's pumps and finite fuel. It also
+   takes:
+   - D188's separate refactors;
+   - the fuel-potential check and the material-slope seam, from the compartment-pH design's §17.7;
+   - the visualizer's three run-view format items.
+3. **Then in parallel:** the human cardiac laws (D183, D184), composition (D191), and finite fuel.
+4. **Mitochondria (D193) and GARD (D192),** after their prerequisites.
+- **G3 and G4,** owed since D172's landing, run once with tier 3 on D188's final tree.
+- **No dates** until the core-seams pass is scoped.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
