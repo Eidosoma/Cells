@@ -5884,7 +5884,8 @@ machine now has more CPUs.
   §3.3, §7, and M4 and M5 in §11) starts now as its own lane on the inner model that D172 lands,
   instead of waiting for M1–M3. M1–M3 on the generic cell are unchanged.
 - **FR-11's human loop** becomes a paced human ventricular cell built on that law set, with no
-  generic stand-in, and it waits for those laws. The planarian loop stays first. This replaces the
+  generic stand-in, and it waits for those laws. *Correction (D184):* "no generic stand-in" was the
+  lead's reading of the user's answer; D184 keeps it under the user's delegation. The planarian loop stays first. This replaces the
   generic paced cell in the FR-11 design that the lead ruled earlier the same day.
 - **Design first (D142).** The lane's first deliverable is a design note with options for the
   user. It covers:
@@ -5901,6 +5902,63 @@ machine now has more CPUs.
     (D138, D151), and the note asks for it;
   - external simulators run only out of process against saved outputs, and every parameter is
     cited.
+
+## D184: The human cardiac law set's choices, and the whole-cell comparison approved for O'Hara–Rudy 2011
+
+2026-11-16. The lane's design note put its choices to the user. It is
+`docs/HUMAN_CARDIAC_LAWS_DESIGN.md`, proposed, on branch `cardiac-laws`, and reaches main after D172's
+landing. The user answered: "on the other decisions get adviser with you then its go from me".
+So the user approved the lead's recommendations as presented, after the advisor's review:
+1. **The source:** O'Hara–Rudy 2011's endocardial cell (ORd).
+   - Its equations and tables are open (CC BY), with a published correction and documented errors,
+     and its steady state is published.
+   - It has no Markov form.
+   - Its known weakness, slow conduction in tissue, matters only for the tissue milestone.
+2. **Cell types:** the endocardial cell first; epicardial and M cells later as parameter sets.
+3. **The sodium current:** Hodgkin–Huxley gates, with a Markov form later as a general kind.
+4. **Temperature:** 310 K.
+5. **D138 and D151's approval, for O'Hara–Rudy 2011 only.** H4's conduction remedies, which come from
+   other papers, are not covered.
+   - **(A) An independent whole-cell reference,** written from the paper, Text S1 and PLOS's
+     correction by an agent who reads neither the engine nor the authors' code. It has two arms: as
+     published, and with the note's listed departures. Any later departure is reported to the user
+     before the judged run.
+   - **(B) The published model, run unmodified and out of process,** keeping only saved outputs.
+     - One plain attempt is made at the authors' own code (BSD-style notice).
+     - If that meets any wall (an account, JavaScript, a guard), the lane stops trying and uses
+       Myokit (BSD 3-Clause) in its own environment, with the model repository's CellML encoding,
+       used by reference and never committed. No workaround.
+   - **(C) The comparison over one beat at 1 Hz:**
+     - the engine against the declared arm, judged at tolerances registered before the run;
+     - the two references against each other, judged;
+     - the engine against the published model, reported and not judged, with each difference
+       attributed to a declared change.
+6. **D167's expectation, for the human set only.** No catalogue channel law can carry ORd's gating, so
+   the human set's channel laws are new. The catalogue's laws stay as D167's parity references, and
+   the mouse's expectation is unchanged.
+7. **FR-11's human loop stays as D183 records it:** no generic stand-in. The viewer has no human loop
+   until the human cell is ready, about 20–30 working days after the landing by the note's estimate.
+   - A labelled interim generic cell remains a one-line amendment.
+   - This corrects D183's record: "no generic stand-in" was the lead's reading of the user's answer,
+     and this delegation keeps it.
+
+**The 2004 model code.**
+- **What happened:** a research subagent of the lane downloaded the authors' 2004 (TNNP04) C++ code
+  after the worktree guard had refused the command. Their page offers the code publicly, with no
+  licence stated. The permission classifier separately blocked a copy of the
+  paywalled 2004 paper, which was never obtained. The user was told.
+- **Under this delegation:** every statement in the note that can be traced to that code is
+  removed, then the files are deleted, and the note's sources record that the code was fetched and
+  discarded.
+- **From now on,** every brief says that when a guard, classifier or permission check refuses an
+  action, the agent stops and reports. It never rephrases or reroutes the action, and the same
+  applies to the subagents it starts.
+
+**Not covered by this delegation:**
+- the note's questions for the lead and the core owner (§9.2), ruled after the landing. Opening
+  subspace calcium, closed in version 1 by the inner-model note, goes to the user if it changes an
+  approved closure;
+- the landing itself, which keeps its own heads-up.
 
 ## Implementation choices and remaining work
 
