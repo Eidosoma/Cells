@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-15 UTC.
+Last updated: 2026-11-16 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **15 November 2026.** The levels and the working order are in
+- **16 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
   (D156, with D176's round). The runs below are newest first.
   - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
@@ -20,13 +20,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
     the phase start and failure records, Track E's M1 development work, and independent references
     for FR-3, FR-4 and the passive law.
-  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
-    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
-    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
-  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
+    `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
+    landed on main" below.
+    The lanes built on it merge next, each after its own gate, and FR-5 follows on its own branch.
+  - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
+    its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
-    flag (15 of 15 bitwise pairs, D181). Its judged run follows tonight's GPU column. The W1
-    full-tissue hold runs its fourth segment.
+    flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
+    the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
+    retention; its comparison with the predictions written before the run is still to do.
 - **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
   14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
   tagged.
@@ -104,6 +107,11 @@ machine-readable inputs, results, checks and failures.
       - 1 that passes when run alone.
   - **Privacy:** clean across the tree, the full history and the 157 commit messages. The merge
     differs from c1 only in docs, `visualizer/` and the root Markdown files.
+  - **Not run as separate end-game steps, and owed (CURRENT_PLAN):**
+    - G3's negative controls on the final candidate. These are planted changes that must fail the
+      results gate. The round's per-commit contract tests ran in the tiers, and the results gate's
+      planted-difference self-test exists;
+    - G4's measurements of compile time, memory and end-to-end time.
   - **Open after the landing,** for D187's audit:
     - six pre-existing engine-side findings: the [anchor] refusal missing in surface_kinetic and
       surface_tissue, the cotransport/water energy failure, surface_excision's NumericalError, the

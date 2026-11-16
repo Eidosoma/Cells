@@ -1,6 +1,8 @@
 # Scoped composition: door S's interface (design)
 
-**Status: proposed, 15 November 2026, by the integration owner of D172's round, for the lead (D176).**
+**Status: proposed, 15 November 2026, by the integration owner of D172's round, for the lead (D176);
+built in that round, and landed on main with it on 16 November 2026 (merge ab267c39, tag
+`d172-landed-2026-11-16`).**
 It is the interface that [ARCHITECTURE.md](ARCHITECTURE.md#scoped-composition-door-s), "Scoped
 composition (door S)", requires, as the [inner-model note](INNER_MODEL_V4_DESIGN.md) §8 sketches it,
 with D176's two corrections:
@@ -8,7 +10,8 @@ with D176's two corrections:
 - a reference read of an anchor is not an assumption that a physical field is unchanged.
 
 It is published before code (D142), so that FR-4's and FR-5's laws can be written against it. It
-lands in R, the single restructure round, on `integration-d172`, behind the gates of §7.
+landed in R, the single restructure round, built on `integration-d172` behind the gates of §7. §1
+describes the code before it.
 
 **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with every operator
 that provides, closes or reads a view field (§5).

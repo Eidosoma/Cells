@@ -12,7 +12,7 @@ The user delegated the choices to the lead with the advisor and gave the go (D18
 
 The questions for the lead and the core owner (§9.2) are ruled after the landing. Design only: no
 engine code yet. Written on branch `cardiac-laws` from 3c10b833, integration-d172's landing
-candidate; the note reaches main after D172's landing.
+candidate; the note reached main after D172's landing (merge b92b4c2b, 16 November 2026).
 
 **The decision it serves: D183** (16 November 2026; on main at e9f19dff). The user: "let's bring
 the human cardiac laws forward". Track E's human ventricular law set
