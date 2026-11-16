@@ -77,6 +77,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026;
+  `resolved_pump_replacement@1`, `resolved_pump_tissue@3`).**
+  - **The failure it answers.** On 14 November the composite's L4 judged run C passed W1, W2 and
+    G2-Q1's Q1–Q6, and failed Q7. Q7 claims the replacement model without events equals @3
+    bitwise on the 825-node world. The cause was the L4's own run-to-run nondeterminism: unflagged
+    repeats differ by up to 1.9e-11 relative.
+  - **The flag.** Under `--xla_gpu_deterministic_ops=true`, 15 of 15 repeats were bitwise across
+    processes.
+  - **The judged run.** Q7 was then judged alone under the flag, with the registered G2 variant,
+    from a clean snapshot of main cfbe7122, at 03:06–03:10 UTC. It passed: every state field and
+    observation is bitwise, every diagnostic equal, the replacement fields zero, and `XLA_FLAGS`
+    is in the item record.
+  - **Its scope.** The verdict holds in the declared flagged mode only (D168, D181). C's Q7
+    failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged
+    mode's run-to-run term stays as measured.
+  - **Records:** [record](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/record.json),
+    [Q7](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/q7-judged/judged-q7/Q7.json),
+    [determinism test](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/determinism/l4-20261115/analysis.json).
+  - **The flagged block's amendment** for D172's 13-run L4 block is registered before its first run
+    (`validation/tissue/l4_variants/flagged_block_amendment.json`).
+  - **Also overnight:**
+    - the summation GPU column settled A7's barrier placement (D182);
+    - the W1 full-tissue hold completed its 70-minute retention (segment 4 ended 02:28 UTC). Its
+      comparison with the predictions written before the run is development analysis, still to
+      do.
+
 - **D172's round on the evening of 15 November 2026: schema A landed on the integration branch,
   the core's kinds cleared, and FR-4's first development rung.** Evidence is under
   `/mnt/workspaces/Cells/d172-restructure-20261115-01/` (`integration/`, `core/c8`, `core/c9`,
