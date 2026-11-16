@@ -1,0 +1,97 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "gard",
+ "label": "GARD assembly",
+ "is": "A model, not an organism",
+ "plain": "A model of how heredity could begin before genes: a small assembly of molecules of many types, in which the molecules inside speed the joining and leaving of others, so that a mix of types can grow, split in two and pass something of itself on. It is a model, not an organism: it has no cell, no shape, no place and no clock of real life. The preprint Plastic Heredity uses it.",
+ "group": "Origin of life",
+ "order": 100,
+ "made": "2026-11-16",
+ "modelled": {
+  "state": "proposed",
+  "text": "Nothing of GARD is in the engine. The user asked for GARD as one theory an origin-of-life simulation needs, and asked the engine's lead to look into it (16 November 2026). The engine's lead has proposed a design for it, on a development branch, not on main. The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”, and that “GARD, Boolean regulation, and continuous biochemical equations need explicit contracts if supported”.",
+  "record": [
+   {
+    "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
+    "where": "Its opening: the user's request of 16 November 2026; and Decided"
+   },
+   {
+    "path": "docs/SCIENTIFIC_BASIS.md",
+    "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
+   },
+   {
+    "path": "docs/ARCHITECTURE.md",
+    "where": "GARD, Boolean regulation, and continuous biochemical equations need explicit contracts if supported"
+   }
+  ]
+ },
+ "view": {
+  "kind": "assembly"
+ },
+ "levels": [
+  {
+   "id": "molecules",
+   "label": "Molecules",
+   "shows": "The model's molecule types, and the fixed table by which each type speeds the joining and leaving of every other. That table and the supply of molecules are the environment: no assembly writes them."
+  },
+  {
+   "id": "assembly",
+   "label": "One assembly",
+   "shows": "One assembly growing molecule by molecule and splitting in two, drawn as a micelle, which is the picture's choice, with its mix of types beside it. Molecule by molecule only where a run saved each event; otherwise from one fission to the next."
+  },
+  {
+   "id": "population",
+   "label": "Population",
+   "shows": "Many assemblies at once, in a fixed number of places, each fission taking the place of one removed.",
+   "waits": "a run of a population: one lineage comes first"
+  },
+  {
+   "id": "lineage",
+   "label": "Lineages",
+   "shows": "Generations across fissions: the line of daughters that carry on, and at each fission how alike the parent and that daughter are. The line at 0.9 is drawn on that comparison only."
+  }
+ ],
+ "clock": {
+  "base": "fission",
+  "says": "Its runs count fissions, not seconds: GARD has no clock of real life."
+ },
+ "runs": [
+  {
+   "file": "data/origin/example-run.json",
+   "label": "An example of invented numbers",
+   "kind": "example"
+  }
+ ],
+ "facts": [
+  {
+   "label": "Molecule types",
+   "value": "100",
+   "sources": [
+    "preprint"
+   ]
+  },
+  {
+   "label": "In the preprint, an assembly grows to",
+   "value": "80 molecules, then splits in two",
+   "sources": [
+    "preprint"
+   ]
+  },
+  {
+   "label": "In the preprint, a fission is inherited when",
+   "value": "the similarity H between the parent just before the fission and the daughter that carries on is above 0.9; 0.9 itself is a break",
+   "sources": [
+    "preprint"
+   ]
+  }
+ ],
+ "sources": {
+  "preprint": {
+   "text": "Plastic heredity: Predicting and steering how inheritance breaks, returns, and persists. Preprint, version 5.0. Read for the viewer's note docs/ORIGIN_OF_LIFE.md, whose section 1.1 gives these values from its common experimental framework and its appendix F.",
+   "doi": "10.5281/zenodo.22143269",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ }
+}

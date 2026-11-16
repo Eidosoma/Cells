@@ -1,0 +1,62 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "toyworld",
+ "label": "Toy assembly",
+ "is": "A model, not an organism",
+ "plain": "A made-up model system, to show that an entry that is not an organism is read from a file alone.",
+ "group": "Origin of life",
+ "order": 100,
+ "made": "2026-11-16",
+ "modelled": {
+  "state": "proposed",
+  "text": "A made-up request asks for it to be looked into; nothing of it is in the engine.",
+  "record": [
+   {
+    "path": "visualizer/docs/TOY.md",
+    "where": "Decided"
+   }
+  ]
+ },
+ "view": {
+  "kind": "assembly"
+ },
+ "levels": [
+  {
+   "id": "molecules",
+   "shows": "The made-up molecule types."
+  },
+  {
+   "id": "assembly",
+   "label": "One assembly",
+   "shows": "One made-up assembly, growing and splitting."
+  },
+  {
+   "id": "lineage",
+   "shows": "Its made-up generations.",
+   "waits": "a run of more than one generation"
+  }
+ ],
+ "clock": {
+  "base": "fission",
+  "says": "Its runs count fissions, not seconds."
+ },
+ "runs": [],
+ "facts": [
+  {
+   "label": "Molecule types",
+   "value": "10",
+   "sources": [
+    "made"
+   ]
+  }
+ ],
+ "sources": {
+  "made": {
+   "text": "Made up for the entries reader's tests.",
+   "url": "https://example.org/made-up",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ }
+}
