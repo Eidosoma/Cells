@@ -57,7 +57,9 @@ lead logs one.
      space (IMS), and its outside is the matrix.
    - **An isolated organelle can also be a @3 cell** (host P): its patches are the inner membrane,
      the IMS a finite node, and the outer membrane a face to a held buffer.
-     - Probe P0 found the base parses and binds this topology. Nothing was stepped.
+     - Probe P0 found the base parses and binds this topology, with no kinds declared. Nothing was
+       stepped.
+     - Host P is the lead's call. Its fallback is host C with two respiration cycles (§1.1).
      - It is the topology of a Gram-negative bacterium, and of the source model.
    - Each law population declares which end of its patch is the matrix-like N side.
 2. **The matrix can carry its own voltage today, in the field** (§2.1). FR-1's capacitor relation
@@ -92,13 +94,13 @@ lead logs one.
      one.
    - **The others:** Wu et al. 2007, its successor, is CC BY but was not reachable. Cortassa 2003 is
      free to read with no licence stated, and its CellML encoding does not integrate yet. The
-     Magnus–Keizer papers were refused (403).
+     1997 Magnus–Keizer paper's page was refused (403); the 1998 pages were not tried.
 7. **The other options:**
    - **Detail:** one effective mitochondrion per cell first;
    - **Respiration drive:** the source's driven NADH supply (booked work) for the organelle, held
      NADH and NAD⁺ for single-law checks, and substrate reactions later;
-   - **The IMS:** a finite node for the isolated organelle, merged with the cytosol for the first
-     in-cell world, a pool at the cell's potential later;
+   - **The IMS:** a finite node for the isolated organelle (host P, the lead's call), merged with
+     the cytosol for the first in-cell world, a pool at the cell's potential later;
    - **Cell type:** isolated cardiac mitochondria first, then a cardiac cell (§3).
 8. **Generality (D144)** (§4).
    - *E. coli* is host P with its periplasm and outer membrane.
@@ -138,8 +140,9 @@ lets them back from P to N and makes ATP on the N side.
 | Status | FR-1 is on the base; its admissions in §2.1 | **Probe P0:** the base parses and binds it (§2.3). Unrun |
 
 - **Signs, three conventions in play.**
-  - Beard 2005 defines ΔΨ as "the outer potential minus the inner potential" [full], positive at the
-    operating point.
+  - Beard 2005 defines ΔΨ as "the outer potential minus the inner potential" [full]. That is
+    positive at the operating point, since the matrix is the negative side (**S**; the text read
+    gives no value).
   - Host C's V_b equals Beard's ΔΨ when the IMS is merged with the cytosol (**S**). FR-1 §1.1 notes
     that V_b has the opposite sign of the usual matrix-minus-cytosol Δψ_m.
   - Host P's V has Δψ_m's sign, the opposite of Beard's.
@@ -155,6 +158,19 @@ lets them back from P to N and makes ATP on the N side.
 - **Nested capacitors stay out.** FR-1 §1.4 states that two membranes between two outside nodes are
   a topology limit of @3. Neither host needs them, because the outer membrane carries no potential
   in the source: "these cations rapidly equilibrate across the outer membrane" [full].
+- **Unlike the SR, the matrix cannot be a pool at the cell's potential.**
+  - The cardiac note's pools give the SR and the subspace the cell's potential, since its source
+    models give them none of their own (its §3.2).
+  - The matrix's own membrane potential, ΔΨ, is the point here. So the matrix must be a capacitor
+    node (host C) or a cell (host P).
+  - Only the IMS, which has no potential of its own, could be such a pool (§3.4).
+- **Host P is the lead's call, not settled** (§3.6, item 1). Wherever this note assumes it, the
+  fallback is host C:
+  - a large owner cell standing for the medium;
+  - the IMS merged into it;
+  - respiration as two cycles, NADH:Q and QH₂:O₂ (§3.2).
+
+  On host C, cytochrome c's redox state cannot be observed.
 
 ### 1.2 The pieces, one by one
 
@@ -166,11 +182,11 @@ lets them back from P to N and makes ATP on the N side.
 | IMS | The P-side pool between the membranes | Host C: none, merged with the cytosol. Host P: a finite outside node | A pool at the cell's potential later (the cardiac note's §3.2 (a), unruled) | — |
 | Inner membrane capacitor | Its own capacitor and voltage, ΔΨ | FR-1's patch capacitance, V_b = −q/C_b exact at a face-free node (FR-1 §3.1); host P's patches | Exists (§2.1) | — |
 | Outer membrane | Porin permeation for small solutes, no voltage | Host P: a face (`logmean_electrodiffusion@1`, passive, heat) | Its reuse for porin permeation is checked against ARCHITECTURE.md's reuse rule (§3.4) | — |
-| Proton-motive force | Δp = ΔΨ − (RT ln 10/F)·ΔpH, from the field and each side's closure | The voltage and free h exist; Δp is no readout | A readout of the cycle kind | — |
-| Respiration | A redox-driven proton-pumping cycle per complex: complex I pumps four protons per electron pair, complex III "also pumps four", complex IV "transfers two protons across the membrane with four charges in total" [full] | None. The transporter kind's laws hydrolyse one ATP and move one role, n = 1–4 (`inner_kinds/transporter.py`: `STOICHIOMETRY_RANGE`) | New laws of one cycle kind, each complex a population with declared roles (§1.4) | `cells.membrane_cycles@1`; law `redox_driven_proton_cycle@1` |
+| Proton-motive force | Δp = ΔΨ + (RT ln 10/F)·(pH_N − pH_P), with ΔΨ = φ_P − φ_N: the free energy per proton moved from N to P, over F. Both terms are positive when the matrix is negative and alkaline (**S**). From the field and each side's closure | The voltage and free h exist; Δp is no readout | A readout of the cycle kind | — |
+| Respiration | A redox-driven proton-pumping cycle per complex. The source's counts, as the fetch tool reported them: complex I pumps four protons per electron pair, complex III four, and complex IV moves two protons across the membrane with four charges in all [full] | None. The transporter kind's laws hydrolyse one ATP and move one role, n = 1–4 (`inner_kinds/transporter.py`: `STOICHIOMETRY_RANGE`) | New laws of one cycle kind, each complex a population with declared roles (§1.4) | `cells.membrane_cycles@1`; law `redox_driven_proton_cycle@1` |
 | ATP synthesis | A reversible cycle coupling c H⁺ (P→N) to 3 ATP, or n_A ≈ 3 per ATP in the source [full] | FR-4's `proton_atp_mass_action_positive@1` reverses past its static head (FR-4/FR-5 note §6) | An extension: rational ratio, saturation on both sides, fuel at the N side, charged rows (§1.4) | `proton_coupled_atp_synthesis_cycle@1` |
 | Nucleotide exchange | Electrogenic antiport: ATP⁴⁻ out of N, ADP³⁻ in; "involves the displacement of one negative charge from the matrix to the IM space" [full] | None | A cycle with two roles in opposite directions, no fuel (the cardiac exchanger's sibling) | `electrogenic_nucleotide_exchange@1` |
-| Phosphate carrier | Electroneutral H₂PO₄⁻/H⁺ symport [full: "electroneutral 1:1 H+/Pi co-transport"] | None | A cycle with two roles in one direction | `phosphate_proton_symport@1` |
+| Phosphate carrier | Electroneutral H₂PO₄⁻/H⁺ symport, one proton per phosphate [full] | None | A cycle with two roles in one direction | `phosphate_proton_symport@1` |
 | K⁺/H⁺ exchange | Electroneutral antiport. The source keeps matrix pH "nearly constant" with it [full] | None | A cycle with two roles | `potassium_proton_exchange@1` |
 | Proton leak | Constant-field H⁺ route [full: Nernst–Goldman] | `proton_constant_field_leak@1` (FR-4; `processes/proton_leak.py`), in `cells.passive_routes@1` | Exists | — |
 | Matrix buffering | Rapid protonation of buffers and of ATP, ADP and Pi | `cells.rapid_proton_buffer@1`: one ligand (H⁺), two-form rows; a law that moves a two-form row is refused (`species_registry.check_two_form_rows`) | An extension: multi-form rows and a second ligand (Mg²⁺), with laws that declare the forms they move (§1.3) | `rapid_binding_closure@1` |
@@ -264,26 +280,26 @@ Cells refuses a flux that runs against its own gradient.
 
 **The screen items for the reference agent.** Beard's equations and both Table 1s are images on the
 article pages, so no formula was read here.
-1. **The complexes and the synthesis flux** are described as mass action driven toward equilibrium
-   (a "driving force" with each complex's standard energy; F1F0 by "the thermodynamically balanced
-   expression") [full].
+1. **The complexes and the synthesis flux** are described as mass action driven toward equilibrium,
+   with each complex's standard energy in its driving force, and F1F0 by "the thermodynamically
+   balanced expression" [full].
    - If they are J = X(K′·Π[substrates] − Π[products]), they are this form with S equal to the
      forward term (**S**).
    - The reference confirms it on the printed equations.
-2. **The nucleotide exchange is "an empirical expression"** after Korzeniewski and Zoladz [full].
+2. **The nucleotide exchange is an "empirical expression"** after Korzeniewski and Zoladz [full].
    - In its common form the flux is a difference of two saturating terms, each with a share of
      FΔΨ/RT in an exponent.
    - Its zero is the exchange's equilibrium only if the two shares sum to one (**S**, a reading of
      the common form).
    - The screen checks its sign against −ΔG on a grid. A form that fails is refused, never repaired.
-3. **The phosphate carrier,** a "reversible Michaelis–Menten flux" [full], passes if its numerator
-   is the mass-action difference.
+3. **The phosphate carrier,** a reversible Michaelis–Menten flux [full], passes if its numerator is
+   the mass-action difference.
 4. **The NADH supply** is "an arbitrary four-parameter function" outside the thermodynamic framework
    [full].
    - Cells runs it as a driven route that books its ΔG as signed work, as D150's exchange does
      (D174).
    - That is a declared supply, not a fuel.
-5. **Mg²⁺ binding is kinetic in the source** ("a forward rate X_MgA" [full]). The closure is its
+5. **Mg²⁺ binding is kinetic in the source,** with a forward rate X_MgA [full]. The closure is its
    rapid-equilibrium limit, a declared reduction (D175) with its envelope checked by a kinetic
    reference (§5.1).
 
@@ -301,11 +317,28 @@ article pages, so no formula was read here.
 **Stoichiometry.**
 - Respiration lumped moves ten protons to the P side per NADH: the source's counts are 4, 4 and 2
   [full].
-  - The charges per complex are 4, 2 and 4, since complex III's protons include two taken up on the
-    N side and complex IV moves "four charges in total" [full; **S**].
+  - The charges per complex are 4, 2 and 4: complex III's four include two taken up on the N side,
+    and complex IV moves four charges in all [full; the split **S**].
   - Either way, ten is beyond the kind's 1–4.
 - The synthesis cycle's c/3 need not be an integer (§4).
 - Integer roles per rotation (c H⁺ and 3 ATP) keep the cycle exact.
+
+### 1.5 The review's accounting requirements, mapped
+
+The mitochondria review (PAPER_REVIEW_MITOCHONDRIA.md) sets three requirements.
+- **One capacitor per membrane, each voltage from its own charge.**
+  - The inner membrane is the bounding patch (host C) or the cell's patches (host P). Its voltage
+    comes from the field (§1.1, §2.1). The outer membrane has none (§1.1).
+- **Distinct inventories, each exchange counted once on each side.**
+  - Matrix, IMS, cytosol and, later, ER rows are @3 node columns. Every cycle moves its roles
+    between its two ends in one booking, with the stage's charge from the valences (§1.3, §1.4).
+- **Standard states.**
+  - Every potential comes from the registry at its one standard concentration c0. The source's
+    standard energies are at 1 M [full: its kJ/mol values], and enter with the registry's own
+    conversion, ΔG° = RT (Σ ν μ°/RT + (Σ ν) ln(1000 mM/c0)) (`core/species_registry.py`).
+  - FR-4's closure term keeps @3's 1 mM convention for stored rows (FR-4/FR-5 note §4.4).
+  - No law carries its own ΔG°. A world whose source disagrees with the registry is refused, as
+    INNER_MODEL_V4_DESIGN §10.2 rules for pumps (§5.4, C2).
 
 ## 2. The key engine question: can a cell-owned compartment carry its own voltage?
 
@@ -346,7 +379,9 @@ article pages, so no formula was read here.
     (`validation/compartment_ph_engine/dt_study.py`).
 - **The voltage's size.**
   - @3's −120 to +60 mV domain applies to channel populations only (FR-4/FR-5 note §13), and
-    refusal 4 keeps channels off a bounding patch. So V_b ≈ +0.18 V is admissible there.
+    refusal 4 keeps channels off a bounding patch. So a matrix potential of the size of FR-4's
+    static head is admissible there: −0.266 V, **S** in that note. The text read here gives no ΔΨ
+    value for the source.
   - A Ca²⁺ uniport must therefore be a kind's law, never a @3 channel population.
 
 **What must change for mitochondria on host C:**
@@ -427,16 +462,26 @@ article pages, so no formula was read here.
   Jacobian would not stay diagonal-plus-rank-one:
   - the cycles couple rows;
   - the closure sits inside it.
+- **Branch I is host-specific (S).**
+  - The designed Newton form is admitted only on a face-free node with exactly one bounding patch
+    (INNER_MODEL_V4_DESIGN §7.4 (g) 4). Its self-containment rests on V_b = −q_j/C_b there.
+  - On host P the N side is a cell whose patches face a faced node. Its charge mode reaches the
+    global field solve, so a local block does not carry over.
+  - Host P would need the implicit route inside the global operator, that note's fallback form:
+    another solver ID, unbuilt.
 
-**The first engine step is a measurement, its criterion written before it runs.** Probe P1:
-- **The world:** one cycle on a bounding patch: FR-4's proton law, the nearest existing cycle, run
-  past its static head at large capacity, with n = 4.
-- **The ladder:** dt × ΣG/C_b from 0.01 to 2.
+**The first engine step is a measurement, its criterion written before it runs.** Probe P1 has two
+arms, one per host, since its result must match the host of M4:
+- **Host C:** one cycle on a bounding patch.
+- **Host P:** the same cycle on a cell's plasma patch facing a faced finite node.
+- **The cycle:** FR-4's proton law, the nearest existing cycle, run past its static head at large
+  capacity, with n = 4.
+- **The ladder:** dt × ΣG/C from 0.01 to 2.
 - **What it records:** where the per-stage rule refuses, where the energy ledger refuses, and the
   state's error against an independent two-capacitor reference.
 
-Its result picks the effort branch of §8:
-- **E:** explicit steps at a declared dt × ΣG/C_b suffice for the first protocols;
+Its result picks the effort branch of §8, for the host the lead chooses:
+- **E:** explicit steps at a declared dt × ΣG/C suffice for the first protocols;
 - **I:** an implicit cycle block is needed.
 
 **Probe P0, already run** (host-side parse only; record and script in the evidence folder).
@@ -444,7 +489,8 @@ Its result picks the effort branch of §8:
   - a cell standing for the matrix, with three patches to one finite node (the IMS);
   - a face from that node to a held bath, its diffusivity zero for two rows;
   - rows of valence +2, −1, −2, −3 and −4;
-  - a start charged at C × (−0.18 V).
+  - a start charged at C × (−0.18 V), the probe's own chosen input;
+  - no kinds declared. Whether the existing kinds parse on such a plasma patch was not checked.
 - **The result:** `get_model` binds it with finite initial values.
 - **The limit:** nothing was stepped, so it shows no stability, accounting or field consistency.
 
@@ -452,8 +498,10 @@ Its result picks the effort branch of §8:
 
 ### 3.1 The source of equations and parameters
 
-Read on 16 November (Sources). "Free" means readable without a licence statement. D186 lets its
-numbers be cited.
+Read on 16 November (Sources).
+- "Free" means readable in PMC without a licence statement.
+- Whether D186's "open papers" covers such papers, which the index does not mark open access, is the
+  lead's reading (§9.2). This note does not assume it.
 
 | | **Beard 2005 + 2006 correction** | Wu et al. 2007 | Cortassa et al. 2003 | Magnus–Keizer 1997/98; Bertram et al. 2006 | Vinnakota et al. 2016; Bazil et al. 2016 | A reduced Cells model |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -461,7 +509,7 @@ numbers be cited.
 | Open and licence | CC BY, both [full] | Licence "cc by" in Europe PMC's record; the full text not reached (the publisher served a redirect page) | Free in PMC (PMC1201507), no licence stated; the full text not read (Europe PMC's XML: HTTP 500) | Not in PMC; the APS page refused (HTTP 403). Bertram 2006: Elsevier, not in PMC | Free in PMC (PMC4776028, PMC4776027), no licence stated; abstracts only | — |
 | An IMS of its own | Yes: cytochrome c and adenylate kinase there; the IMS "1/10 of the mitochondrial water volume" [full] | Not read | Not read | Not read | Not read | Declared |
 | States | 17 [full] | Not read | 12 [abs] | Not read | Not read | 9–16 rows |
-| The screen (§1.4) | Mass action toward equilibrium, except the NADH supply (driven) and the empirical exchange (items 1–5) | Abstract: "thermodynamically balanced reactions" [abs] | Not read; its formulas need the screen | Not read | Not read | By construction |
+| The screen (§1.4) | Mass action toward equilibrium, except the NADH supply (driven) and the empirical exchange (items 1–5) | Thermodynamically balanced reactions, in the fetch tool's summary of the abstract [abs] | Not read; its formulas need the screen | Not read | Not read | By construction |
 | A reference from the paper alone | Expected: CC BY. Equations and tables are images, so a fresh agent confirms they are legible in the PDF | Not until the full text is reached | Not until the full text is read | No | Not read | Its own appendix |
 | Model files | CellML, curated (Physiome Model Repository; CC BY 3.0 on its metadata page; "edited to correct dimensional errors"; runs in COR and OpenCell) [code]; a BioModels auto-conversion, CC0 per a mirror [sec]; the authors' code "available from the author upon request" [full] | CellML, curated, CC BY 3.0 per a search summary; needs steps near 1e-6 and tolerances of 1e-12 [code] | CellML, "will not integrate at the moment" [code] | CellML, "original unchecked version" [code]; BioModels auto-conversions [sec] | None found | — |
 | Data it was fitted to | Bose et al. 2003 (fitted); Wilson et al. 1988, Gnaiger 2001, Gnaiger and Kuznetsov 2002 (compared) [full]. Bose 2003 not read (the JBC pages refused or redirected) | Not read | Not read | Not read | Not read | — |
@@ -524,7 +572,7 @@ numbers be cited.
   isolated organelle and the comparison.
   - **The face's law** is passive electrodiffusion with heat (`logmean_electrodiffusion@1`). It
     stands in for porin permeation, parameterised from the source's outer-membrane permeabilities
-    [full: "pA and pPi"].
+    [full: p_A and p_Pi].
   - **The reuse needs the lead's check:** ARCHITECTURE.md lets a law be reused only where its
     physical contract matches.
 - **A pool at the cell's potential (host C, later).** This is the cardiac note's §3.2 (a), unruled:
@@ -554,7 +602,10 @@ numbers be cited.
 1. **Host P for the isolated organelle**, or host C with a large owner cell standing for the medium.
    - Host P is Beard's topology and needs no FR-1 change.
    - Host C exercises the in-cell path from the start.
-   - Recommended: host P, with host C at M6.
+   - **Branch I is host-specific** (§2.3). A local implicit block fits host C only; host P would need
+     the global form.
+   - Recommended: host P, with host C at M6. Host C with two respiration cycles is the fallback
+     (§1.1), and P1's arm for the chosen host sets the branch.
 2. **The cycle kind.**
    - A new kind, recommended; it leaves FR-4's world bitwise, with an agreement test against
      `cells.transporter@1` at FR-4's stoichiometry.
@@ -629,6 +680,8 @@ Single cited laws need no approval (the cardiac note's §5.1; EXCITABLE_TISSUE_D
 
 - **The world:** host P with generic, declared parameters, not the source's set. It reproduces no
   published model.
+  - **The fallback,** if the lead rules for host C: a large owner cell standing for the medium, the
+    IMS merged, two respiration cycles (§1.1).
 - **The protocol:** the first experiment (§7).
 - **Checked against an independent integration of the same declared equations** (Radau, tight
   tolerances):
@@ -642,6 +695,8 @@ Single cited laws need no approval (the cardiac note's §5.1; EXCITABLE_TISSUE_D
 **What runs.**
 - **The engine:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, host P, with the
   source's parameters.
+  - **On host C,** the fallback, the IMS merge and two-cycle respiration become departures (§5.4),
+    and the cytochrome c curve drops from the comparison.
 - **Who writes the references.** This note's author has read the engine, so it writes neither R1 nor
   R2. Both go to fresh agents.
 - **R1, an independent reference.** A fresh agent writes it from Beard 2005 and its 2006 correction,
@@ -755,6 +810,8 @@ By the research subagent unless marked. None states a non-commercial clause.
 order: "Reproduce an isolated-mitochondria reference before connecting it to the tissue model".
 
 - **The world:** host P, the matrix holding a lumped population; the IMS node; a held buffer.
+  - The fallback is host C with a large owner cell standing for the medium, the IMS merged and two
+    respiration cycles (§1.1). The steps below are the same on either host.
 - **The steps, each scheduled on the step grid:**
   1. **An ADP step in the buffer** from 0 to 1.3 mM and back: state 4 → 3 → 4, through FR-10's
      `scheduled_bath_composition@1`, which acts on held baths (its note). Whether it composes with
@@ -791,7 +848,7 @@ note's §7.4 (h): the transporter kind 2.5–3.5, the stage-read slot 1–1.5 an
 | M1: the seams | @3 with the new kinds declared | The cycle kind; multi-form rows and the binding closure; the cycle booking; refusal 4 version 1.3. Crossrev identity for every existing world; FR-4's world bitwise | 8.5–13.5 (kind 4–6, closure 3–5, booking 1–2, refusal 0.5) |
 | M2: the implicit cycle block (branch I only) | @3 with a new IMEX ID | The per-node Newton with the closure inside; its qualification against references | 6–9 |
 | M3: the laws and their references | As M1 | The cycles of §1.2 as parameter sets; the driven supply; component references by a fresh agent (§5.1), in parallel | Laws 2–4; references 3–4 |
-| M4: Cells' own organelle | `resolved_pump_composite@1` over @3, host P | §7's protocol, registered and judged (§5.2) | 3–5, plus CPU |
+| M4: Cells' own organelle | `resolved_pump_composite@1` over @3, host P (fallback host C, §1.1) | §7's protocol, registered and judged (§5.2) | 3–5, plus CPU |
 | M5: the comparison with Beard 2005 (if approved) | As M4, the source's parameters | R1, R2 and the judged comparison (§5.3) | 6–9 |
 | M6: in a cell | Host C with `cell_owned_compartments@1` | One effective mitochondrion feeding a cytosolic ATP consumer on finite fuel; the cap raise; the compartment map's addressing | 5–8, plus 2–3 for the map |
 | M7: calcium | As M6, with pools | Uniport, exchange and matrix Ca²⁺ buffering; a reduced ER-contact pool (the review's third priority) | 6–10 |
@@ -846,6 +903,9 @@ note's §7.4 (h): the transporter kind 2.5–3.5, the stage-read slot 1–1.5 an
    single-law checks, and substrate reactions later (recommended, §3.3)?
 4. **The intermembrane space.** A finite node for the isolated organelle, merged with the cytosol in
    the first in-cell world, and pools later (recommended, §3.4)?
+   - The finite node needs host P, which is the lead's call (§3.6).
+   - If the lead rules for host C, the isolated organelle also merges its IMS, and its respiration
+     takes two cycles.
 5. **The cell type.** Isolated cardiac mitochondria first, then a cardiac cell beside the human
    cardiac lane (recommended, §3.5)?
 6. **The D138 question, for Beard 2005 with its 2006 correction only (§5.3).** Do you approve:
@@ -865,6 +925,8 @@ note's §7.4 (h): the transporter kind 2.5–3.5, the stage-read slot 1–1.5 an
      - The authors' own code is available only on request, and we contact no one.
    - **(C)** comparing the Cells organelle over the source's steady-state protocols and its
      low-oxygen sweep, as §5.3 lists them?
+     - If the lead rules for host C, the cytochrome c curve drops, and the merged IMS and two-cycle
+       respiration join the declared departures.
      - judged against the declared arm, at tolerances registered before the run;
      - the two references judged against each other;
      - the Cells organelle against the published model reported, not judged, with each difference
@@ -903,6 +965,14 @@ These overlap the cardiac note's open questions (its §9.2), so one ruling could
 10. **The viewer's status mismatch** (§8): established in the older family, against the brief's
     "planned".
 11. **Fresh agents** for the component references, R1 and R2. This note's author has read the engine.
+12. **D167's staged move for the older family.** `resolved_calcium_energy_mitochondria@1`'s passive
+    mitochondrial law (`processes/mitochondrial_passive.py`) has no energetics. Once the cycle kind
+    covers its passive ion transport, is it frozen as a reference with a parity check (its
+    constant-field law against the passive routes on host C), or without one?
+13. **D186's reach.** Does "numbers from open papers" cover papers free to read in PMC with no
+    licence stated, which Europe PMC does not mark open access? Examples are Cortassa 2003 and
+    Vinnakota and Bazil 2016. This note uses none of their parameter values until the lead says so.
+    It cites only facts from their abstract records.
 
 ## Sources
 
