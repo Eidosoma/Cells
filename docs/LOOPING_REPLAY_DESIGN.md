@@ -1,13 +1,15 @@
 # Looping replay packages of living cells (FR-11): design
 
-**Status: accepted by the lead with rulings, 16 November 2026 (§9).** Docs only; building follows
-the lead's order (§9). It is the design note FR-11 asks for when the run-view writer lands
+**Status: ruled by the lead on 16 November 2026 (§9), with the human loop amended by D183 the
+same day (§5).** Docs only; building follows the lead's order (§9). It is the design note FR-11
+asks for when the run-view writer lands
 ([FEATURE_REQUESTS](FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer)),
 on the run view's branch (D154, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)).
 
 **The user's choices (15 November 2026), which this note keeps:**
 - loops are periodic: a periodic drive, one period played, its seam checked;
-- the human cell is a paced heart cell;
+- the human cell is a paced heart cell: since D183 (16 November), a human ventricular cell on
+  Track E's human cardiac law set, with no generic stand-in;
 - for Syn3A and *M. pneumoniae*, one cell cycle is in scope as a loop: grow, divide, follow one
   daughter (an illustration, since division is prescribed);
 - the interim planarian loop comes first, once the run-view writer can carry it.
@@ -107,28 +109,37 @@ already supports that continuation. The first observed row is at t0 and the last
 - **Size:** seven cells, T = 2 s, observed every 10 ms: about 200 rows, well under 1 MB with the
   layers' fields.
 
-## 5. The paced human heart cell
+## 5. The paced human heart cell (amended by D183)
 
-- **What @3 has:** `nav1p2_m3h_regularized@1`, `kir2p1_mh2@1` (an IK1-like inward rectifier),
-  `kv1p5_mh@1` (IKur-like), leaks, the Na/K pump and a Ca pump. These are D155's generic
-  excitable cell (M1 and M2, accepted narrowly, D170). It has no L-type Ca channel, no hERG or
-  KCNQ1, no NCX and no Ca release, so it has no plateau.
-- **Options:**
-  - **(a) Now: a paced generic excitable cell.** D155's generic cell (0.01 F/m², candidate A),
-    paced at 1 Hz by `electrode_current_injection@1`. It is labelled "a paced excitable cell
-    with generic laws (illustration), not a human cardiomyocyte model". The engine models are
-    `resolved_pump_composite@1` over `resolved_pump_tissue@3` with D155's laws
-    (`nav1p2_m3h_regularized@1`, `kir2p1_mh2@1`, `kv1p5_mh@1`, `kleak_always_open@1`,
-    `naleak_always_open@1`) and the Na/K pump, plus `electrode_current_injection@1`.
-  - **(b) Later: cardiac laws as general laws.** Nav1.5, CaV1.2, hERG (IKr), KCNQ1/KCNE1 (IKs),
-    Kv4.3 (Ito), NCX and a Ca release unit. Each is a law with provenance (published human
-    ventricular models, for example O'Hara–Rudy 2011 and ToR-ORd 2019, cited, never copied)
-    and its own milestone, tests and tier gate. A human ventricular cell definition then uses
-    them. This is substantial work.
+**D183 (the user, 16 November 2026).** Track E's human cardiac law set is brought forward as its
+own lane, design first. FR-11's human loop is a paced human ventricular cell built on that law
+set. It has no generic stand-in, and it waits for those laws. This replaces option (a) below,
+which the lead had ruled for now earlier the same day (§9, ruling 4).
+
+- **Why @3's laws give no human cell:** @3 has `nav1p2_m3h_regularized@1`, `kir2p1_mh2@1` (an
+  IK1-like inward rectifier), `kv1p5_mh@1` (IKur-like), leaks, the Na/K pump and a Ca pump. These
+  are D155's generic excitable cell (M1 and M2, accepted narrowly, D170). It has no L-type Ca
+  channel, no hERG or KCNQ1, no NCX and no Ca release, so it has no plateau.
+- **The options, as they now stand:**
+  - **(a) A paced generic excitable cell: dropped by D183.** It was D155's generic cell (0.01
+    F/m², candidate A), paced at 1 Hz and labelled "not a human cardiomyocyte model".
+  - **(b) Cardiac laws as general laws: chosen, as Track E's lane** ([excitable tissue
+    design](EXCITABLE_TISSUE_DESIGN.md) §3.3, §7, and M4 and M5 in §11). The lane adds what @3
+    lacks for a plateau and repolarization, each a general law named by its mechanism (D144),
+    cited, with its own tests and the tier gate. Its design note puts the options to the user
+    first: the source of equations and parameters (O'Hara–Rudy 2011, its ToR-ORd successor, or
+    ten Tusscher–Panfilov 2006; cited, never copied), the cell types, the sodium current's form,
+    the temperature and the verification. No engine code is written before the user chooses.
   - **(c) A phenomenological action-potential model:** rejected. It has no ions, so there are no
     conserved totals to feed the beads (D144, D142).
-- **Recommended:** (a) as the interim heart package, and (b) when the user wants a human heart
-  cell proper, as its own track.
+- **What FR-11 adds once those laws land:** a builder in `validation/replay/` for a human
+  ventricular cell definition on the law set, paced by `electrode_current_injection@1`, through
+  the same generic driver and loop block (§2, §3). Its cell type, pacing cycle length (the loop's
+  period) and temperature follow the lane's note. Its engine models are the composite over the
+  inner model D172 lands, the law set's laws and the injection operator, named in full when it is
+  built. FR-11 designs and builds none of the laws.
+- **The lane's gates stay its own:** a whole-cell action-potential comparison against a published
+  model needs the user's approval (D138, D151), which the lane's note asks for.
 
 ## 6. The minimal cells' cycle (Syn3A, *M. pneumoniae*)
 
@@ -168,10 +179,12 @@ already supports that continuation. The first observed row is at t0 and the last
    train.
 2. **The interim planarian loop** (§4): about 1 agent-day, plus the injection operator's view
    declarations from its owner.
-3. **The paced heart cell (a)** (§5): about 0.5 agent-day on the same machinery.
-4. **The minimal cell's cycle** (§6): the probe first (about 0.5 agent-day). Then about 1
+3. **The minimal cell's cycle** (§6): the probe first (about 0.5 agent-day). Then about 1
    agent-day if the composite admits the composition, plus the growth law's own milestone if
    the probe confirms the refusal (§6).
+4. **The paced human ventricular cell** (§5): it waits for Track E's human law set (D183). Once
+   those laws land, FR-11's part is about 0.5 agent-day on the same machinery; the laws are the
+   lane's work.
 
 Every package run is a development run from a snapshot, written with its source and
 `closes.within`. Each runs at most a few minutes on one CPU core.
@@ -201,9 +214,13 @@ Every package run is a development run from a snapshot, written with its source 
 4. **The heart cell is (a) now:** D155's generic excitable cell paced at 1 Hz, labelled "not a
    human cardiomyocyte model". **(b) is Track E's work** (cardiac channel laws as general laws with
    provenance: the plan's M4 and M5), not FR-11's. A phenomenological model stays rejected.
+   **Amended the same day by D183 (the user):** (a) is dropped, with no generic stand-in. Track
+   E's human cardiac law set is brought forward as its own lane, and FR-11's human loop is a
+   paced human ventricular cell on it, which waits for those laws (§5). The laws stay Track E's.
 5. **The cycle: the probe first,** with nothing built until it passes.
 6. **`validation/replay/`** holds the drivers and builders; outputs go under
    `/mnt/workspaces/Cells/replay-<date>/`.
 
-**Order:** after run-view-d154's tier rows, its cut-off I/O tests and a tier-1 gate (at the CPU
-release), the loop block and the planarian loop, then the heart cell (a), then the cycle's probe.
+**Order (as amended by D183):** after run-view-d154's tier rows, its cut-off I/O tests and a
+tier-1 gate (at the CPU release), the loop block and the planarian loop first, then the cycle's
+probe. The human loop follows when the human law set lands.
