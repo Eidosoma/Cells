@@ -14,9 +14,14 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 2. a patch that is not declared, is not the only patch whose outside is the node, or whose inside
    is not the declared owner (a declared cell);
 3. two compartments on one node (an owner may own several);
-4. an ion route on the bounding patch (version 1): a nonzero permeability, a Na/K or Ca pump, or a
-   channel population. That is the charged door (§3.4): a compartment has no face, so @3's per-cell
-   bound would not see its own charge relaxation;
+4. an ion route on the bounding patch (version 1.1, §3.4.1): a Na/K or Ca pump or a channel
+   population; a nonzero permeability unless the world declares kinds; any declared kind outside
+   the known ones (ROUTE_KINDS, READ_KINDS), which fails closed; and, under an RK4 step, any
+   declared kind, so that version 1's refusal stands there. That is the charged door (§3.4): a
+   compartment has no face, so its charge relaxation is held only by B7's face-free term and,
+   with kinds declared, by the per-stage rule at free outside nodes, where the known kinds'
+   charged routes put their slopes (ROUTE_KINDS' comment names the neutral laws' terms). Both run
+   only with an IMEX tableau;
 5. a nonzero charge anchor (version 1): the content is electroneutral, so q = 0 and V_b = 0;
 6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
    numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
@@ -53,6 +58,21 @@ from cells.core.specs import ConfigError, _fields
 from cells.models.operators.contract import Operator
 
 LAW_ID = "cell_owned_compartments@1"
+# Refusal 4's known kinds (version 1.1, §3.4.1). Their charged routes on a bounding patch (the
+# transporter's proton law, the passive routes' proton leak) put their slopes at the compartment's
+# node through stage_term, which the per-stage rule holds; the proton law also has a
+# definition-time bound_rate, the leak none. The passive neutral law moves no charge: its
+# definition-time bound_rate (dt L <= 1, the compartment's own volume in L) holds its material
+# relaxation. The transporter's neutral law has neither term: its material stiffness at a small
+# node is an open question (§3.4.1), not the charged door's. The buffer is a stage read and
+# declares no route. Any other declared kind is refused while a compartment is declared.
+ROUTE_KINDS = ("cells.passive_routes@1", "cells.transporter@1")
+READ_KINDS = ("cells.rapid_proton_buffer@1",)
+# @3's step for an empty tableau (surface_pump_v3.checked_step). Every other solver steps with
+# imex_step, whose per-stage rule holds a compartment's node, and only those solvers' step checks
+# hold B7's and the kinds' definition-time terms (surface_pump_v3.StepChecks). Refusal 4 admits
+# routes beside a compartment only with an IMEX tableau (§3.4.1).
+RK4_SOLVER = "rk4"
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model.
 ADMITTED = (
@@ -151,20 +171,49 @@ def capacitor_components(model):
     return {name: root(name) for name in parent}
 
 
-def refuse_ion_routes(model, node, bounding):
-    """Refusal 4: no ion route on the bounding patch (version 1), the charged door (§3.4)."""
+def refuse_ion_routes(model, node, bounding, imex):
+    """Refusal 4 (version 1.1, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1), the charged door: on
+    the bounding patch @3's Na/K or Ca pump and channel populations are refused, and a
+    constant-field permeability unless the world declares kinds (only then does the per-stage
+    rule hold the compartment's node); a declared kind outside ROUTE_KINDS and READ_KINDS is
+    refused, since its routes may cross the patch (fails closed). `imex` is whether @3 steps with
+    an IMEX tableau: under RK4 neither the per-stage rule nor the definition-time terms run, so no
+    declared kind is admitted beside a compartment and version 1's refusal stands."""
+    kinds = [kind_id for kind_id, _ in getattr(model, "kinds", ())]
+    pumps = [p.id for p in (bounding.pump, bounding.calcium_pump) if p is not None]
     channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
-    if (
-        any(v != 0.0 for v in bounding.permeability_m_per_s)
-        or bounding.pump is not None
-        or bounding.calcium_pump is not None
-        or channels
-    ):
+    if pumps or channels:
         raise ConfigError(
             f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
-            "route (a nonzero permeability, a pump or a channel population). Version 1 is "
-            "neutral and silent: a charged compartment is the charged door (FR-4, FR-5), "
-            "since its patch's charge relaxation is outside @3's per-cell explicit bound"
+            f"route version 1.1 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
+            "or a channel population): the per-stage rule does not hold its slope at the "
+            "compartment's node (a pump's slope is in no per-stage term, a channel's gating "
+            "slope neither), so on a bounding patch version 1.1 admits only @3's constant-field "
+            "permeability and the known kinds' routes"
+        )
+    if any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds:
+        raise ConfigError(
+            f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
+            "route, a nonzero constant-field permeability, in a world that declares no kind. "
+            "Version 1.1 admits it only when the world declares kinds and steps with an IMEX "
+            "tableau: only then does the per-stage rule hold the compartment's node at every "
+            "stage, where B7's definition-time term holds only the declared state"
+        )
+    if kinds and not imex:
+        raise ConfigError(
+            f"{LAW_ID}: compartment {node!r} is declared with kinds in a world that steps with "
+            "RK4. Version 1.1 admits kinds and a constant-field permeability on a bounding patch "
+            "only with an IMEX tableau, whose per-stage rule and definition-time bound terms hold "
+            "the compartment's node; an RK4 step runs neither, so version 1's refusal stands "
+            "(fails closed)"
+        )
+    unknown = sorted(k for k in kinds if k not in ROUTE_KINDS + READ_KINDS)
+    if unknown:
+        raise ConfigError(
+            f"{LAW_ID}: compartment {node!r} is declared with the kind(s) {', '.join(unknown)}, "
+            "which refusal 4 does not know: a kind's routes may cross its bounding patch "
+            f"{bounding.id!r}, so version 1.1 admits only {', '.join(ROUTE_KINDS + READ_KINDS)} "
+            "(fails closed)"
         )
 
 
@@ -189,6 +238,7 @@ def parse_declaration(raw, base):
     cells = {c.id for c in m.cells}
     components = capacitor_components(m)
     held = {components[c.id] for c in m.extracellular if c.reservoir}
+    imex = base.execution.solver != RK4_SOLVER  # Refusal 4's admissions need an IMEX tableau.
     taken = world_ids(m)
     compartments = []
     for entry in raw["compartments"]:
@@ -246,7 +296,7 @@ def parse_declaration(raw, base):
                 f"{LAW_ID}: the patch {patch!r} of compartment {node!r} lies on "
                 f"{bounding.inside!r}, not on its declared owner {owner!r}"
             )
-        refuse_ion_routes(m, node, bounding)  # 4.
+        refuse_ion_routes(m, node, bounding, imex)  # 4.
         refuse_charge_anchor(node, outside[node])  # 5.
         # 6. A held-bath topology.
         if components[owner] not in held:
@@ -373,8 +423,9 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "version 1: neutral and electrically silent (no ion route on a bounding patch, a "
-                "zero charge anchor, a held-bath topology), at a fixed volume; owners are never "
-                "replaced, used as donors or divided"
+                "version 1.1: a zero charge anchor and a held-bath topology at a fixed volume; "
+                "on a bounding patch no ion route but refusal 4's admitted ones (the known "
+                "kinds' routes, and @3's permeabilities when the world declares kinds, with an "
+                "IMEX step); owners are never replaced, used as donors or divided"
             ),
         }

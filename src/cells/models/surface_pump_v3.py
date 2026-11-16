@@ -1197,6 +1197,7 @@ def check_definition(spec, *, structure=None):
             channel_capacity=len(m.channels),
         ),
     )
+    _check_kinds_solver(spec)  # Ahead of the kinds' own checks: under RK4 they are moot.
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -1219,6 +1220,23 @@ def check_definition(spec, *, structure=None):
                 structure=structure,
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
+
+
+def _check_kinds_solver(spec):
+    """Declared kinds need an IMEX solver; under RK4 they are refused, fail-closed (the core's
+    review of refusal 4 version 1.1, finding 6; the lead's ruling, 16 November 2026). Every kind
+    guard that bounds or books a step belongs to the IMEX step: StepChecks holds B7's term and the
+    kinds' bound_rate (kind_rate) for the IMEX solvers only, and the per-stage rule (membrane_rate
+    with each kind's stage_term) and the end-of-step bookings (book, §7.5's exact booking) run in
+    imex_step only. An RK4 step keeps only its 0.1 ms cap. A design for kinds under RK4 can lift
+    this refusal."""
+    declared = [kind_id for kind_id, _ in getattr(spec.model, "kinds", ())]
+    if declared and spec.execution.solver == "rk4":
+        raise ConfigError(
+            f"Declared kinds ({', '.join(declared)}) require an IMEX solver: under RK4 none of "
+            "the kinds' step guards run (the definition-time bound terms, the per-stage rule, the "
+            "end-of-step bookings), so @3 refuses them (fails closed)"
+        )
 
 
 def _check_stage_rows(spec, kinds):

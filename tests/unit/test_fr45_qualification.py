@@ -490,10 +490,10 @@ def test_judged_runs_take_the_vector_path_and_development_runs_either(tmp_path):
     assert generator.default_path(judged=True) == "vector"
     assert generator.default_path(judged=False) == "host"
     why = generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
-                                           quick=False, path="host")
+                                           quick=False, path="host", world="declared")
     assert "execution path (vector" in why
     assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
-                                            quick=False, path="vector") is None
+                                            quick=False, path="vector", world="declared") is None
     for path in generator.PATHS:
         assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=False,
                                                 quick=True, path=path) is None
@@ -501,6 +501,29 @@ def test_judged_runs_take_the_vector_path_and_development_runs_either(tmp_path):
         disclosures = PROTOCOLS[which]["disclosures"]
         assert drafter.EXECUTION_PATH in disclosures
         assert any("the lead's ruling on the cost and the rehearsal" in d for d in disclosures)
+    assert not out.exists()
+
+
+def test_judged_runs_take_the_declared_world_and_development_runs_either(tmp_path):
+    """The lead's ruling (16 November 2026, a dated pre-run correction in both protocols): a
+    judged run takes the declared world, FR-1's compartment operator included (the composite,
+    shown bitwise the development world's over 900 s), and refuses the development world; a
+    development run takes the development world unless --world names the declared one."""
+    out = tmp_path / "out"
+    assert generator.JUDGED_WORLD == "declared"
+    assert set(generator.WORLDS) == {"development", "declared"}
+    assert generator.default_world(judged=True) == "declared"
+    assert generator.default_world(judged=False) == "development"
+    why = generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
+                                           quick=False, path="vector", world="development")
+    assert "the protocols' world (declared" in why
+    assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
+                                            quick=False, path="vector", world="declared") is None
+    for world in generator.WORLDS:
+        assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=False,
+                                                quick=True, path="vector", world=world) is None
+    assert drafter.DECLARED_WORLD_FR4 in PROTOCOLS["fr4"]["disclosures"]
+    assert drafter.DECLARED_WORLD_FR5 in PROTOCOLS["fr5"]["disclosures"]
     assert not out.exists()
 
 
