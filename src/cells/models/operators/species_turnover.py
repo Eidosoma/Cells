@@ -428,6 +428,33 @@ class ScheduledSpeciesTurnover(Operator):
         "amount_increment": ("turnover_produced_fmol", "turnover_cleared_fmol"),
         "extracellular_amount_increment": ("turnover_outside_cleared_fmol",),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): scheduled rates, prescribed.
+    VIEW_LAYERS = ({"id": "turnover", "label": "Species turnover", "representation": "prescribed"},)
+    # Its records in the run view (the contract): every accumulator is a total since the start
+    # (produced and cleared grow by P h and n f + P (h - g), both >= 0; the magnitudes by absolute
+    # terms; the work is a declared work field).
+    RECORD_KINDS = {
+        "turnover_produced_fmol": "cumulative",
+        "turnover_cleared_fmol": "cumulative",
+        "turnover_outside_cleared_fmol": "cumulative",
+        "turnover_energy_magnitude_pJ": "cumulative",
+        "turnover_outside_energy_magnitude_pJ": "cumulative",
+    }
+
+    def view_sets(self, spec, declaration):
+        """The run view's set of its routes (cells/run_view.py; no field has that axis): each with
+        the species it carries, its kind and the cell or outside node it acts at."""
+        routes = declaration.routes
+        return {
+            "turnover_route": {
+                "id": "turnover_route",
+                "ids": tuple(r.id for r in routes),
+                "holds": "turnover route",
+                "carries": tuple(r.species for r in routes),
+                "kinds": tuple(r.kind for r in routes),
+                "at": tuple({"cell" if r.cell is not None else "outside": r.node} for r in routes),
+            }
+        }
 
     # ------------------------------------------------------------ definition
 

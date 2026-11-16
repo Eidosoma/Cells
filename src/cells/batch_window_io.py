@@ -3,6 +3,7 @@
 from pathlib import Path
 from time import perf_counter
 
+from cells import run_view
 from cells.batch_io import _write_batch_snapshot_payload
 from cells.core.batch_windows import (
     _consume_batch_windows,
@@ -25,8 +26,11 @@ def write_windowed_batch(
     *,
     checkpoint_every_windows=0,
     provenance=None,
+    view=None,
 ):
-    """Record fully checked rounds; cadence counts rounds, never biological time."""
+    """Record fully checked rounds; cadence counts rounds, never biological time. view: a
+    run_view.Request for every world, or {world ID: Request}; each world's view.json is written
+    in its folder, worlds/world-<id>/, before the manifest."""
     started = perf_counter()
     directory = Path(directory)
     if directory.exists():
@@ -35,6 +39,15 @@ def write_windowed_batch(
     plan = plan_batch_windows(spec, policy, checkpoints)
     spec, policy = plan.spec, plan.policy
     starts = _initial_checkpoints(plan, checkpoints)
+    requests = run_view.requests_for(view, [w.world_id for w in spec.worlds])
+    shown = {
+        w.world_id: run_view.prepare(
+            w.simulation, requests[w.world_id], layout=starts[w.world_id].layout
+        )
+        for w in spec.worlds
+        if w.world_id in requests
+    }
+    keeps = {identity: p.keeper() for identity, p in shown.items()}
     preflight_seconds = perf_counter() - started
     directory.mkdir(parents=True, exist_ok=False)
     _write_json(directory / "resolved_batch.json", spec.to_dict())
@@ -58,7 +71,7 @@ def write_windowed_batch(
                 total = records[identity]
                 prefix = f"worlds/world-{identity}"
                 record, size = _write_window_chunk(
-                    directory / prefix, world, policy, total["windows"]
+                    directory / prefix, world, policy, total["windows"], keeps.get(identity)
                 )
                 record.update(kind="world_window", world_id=identity, round=window.index)
                 if record["path"] is not None:
@@ -106,9 +119,19 @@ def write_windowed_batch(
         "world_summaries": {str(i): w.summary() for i, w in result.worlds.items()},
     }
     _write_json(directory / "summary.json", summary)
+    for identity, view_plan in shown.items():  # Each world's view, beside its chunks.
+        prefix = f"worlds/world-{identity}"
+        bases = run_view.window_bases(directory / "windows.jsonl", world_id=identity, prefix=prefix)
+        view_plan.write(
+            directory / prefix,
+            bases,
+            policy.recording,
+            end=run_view.end_of(result.worlds[identity].final),
+        )
     # Fixed O(worlds) inventory. The index authenticates all chunk payloads and
     # periodic cohort manifests; each cohort manifest authenticates its children.
     fixed = ["resolved_batch.json", "summary.json", "windows.jsonl"]
+    fixed += [f"worlds/world-{identity}/{run_view.FILE}" for identity in shown]
     for checkpoint in ("checkpoint_initial", "checkpoint_final"):
         fixed.append(f"{checkpoint}/manifest.json")
         for world in spec.worlds:

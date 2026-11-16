@@ -238,11 +238,16 @@ _compiled_window_rollout = jax.jit(_window_rollout, static_argnums=(6, 7, 8))
 
 @dataclass
 class _WindowExecution:
-    """One iterator owns one compiled shape and its complete fixed definition."""
+    """One iterator owns one compiled shape and its complete fixed definition.
+
+    row_checks: the run's compiled device row checks (core.row_checks.DeviceRowChecks) under
+    WindowPolicy row_checks="device", else None (every row checked by check_values).
+    """
 
     spec: SimulationSpec
     width: int
     compiled: Any = None
+    row_checks: Any = None
 
 
 def _checked_eager_rollout(state, steps, controls, parameters, active, rhs, domain):
@@ -303,6 +308,18 @@ class RunResult:
             self.start_step + index,
             event_index(self.spec, time),
         )
+
+
+@dataclass(frozen=True)
+class CheckedRunResult(RunResult):
+    """A window whose rows the device checked (WindowPolicy row_checks="device").
+
+    row_checks is the window's core.row_checks.Outcome: whether the device or the host's
+    check_values decided it, why it was handed back, and the device's ratios to the bounds.
+    Its diagnostics are the device's maxima when the device decided (reported, not judged).
+    """
+
+    row_checks: Any
 
 
 def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult:
@@ -378,6 +395,7 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
     prepared = perf_counter()
     record.end("preparation", debug=later, steps=len(times) - 1, seconds=prepared - started)
     compile_seconds = 0.0
+    window_history = None  # The window rollout's full-width device history (row checks).
     if len(times) > 1:
         if window_execution is not None:
             args = (state, steps, controls, parameters, layout.active, enabled)
@@ -393,6 +411,7 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
             record.start("execute", debug=later, steps=len(times) - 1)
             execute_started = perf_counter()
             final_state, history, valid = window_execution.compiled(*args)
+            window_history = history
             real_steps = len(times) - 1
             history = jax.tree.map(lambda values: values[:real_steps], history)
             failed = np.flatnonzero(~np.asarray(valid[:real_steps]))
@@ -466,20 +485,39 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
         jax.block_until_ready((final_state, history))
         execute_seconds = perf_counter() - execute_started
         record.end("execute", debug=later, steps=len(times) - 1, seconds=execute_seconds)
+        launched = None
+        if window_history is not None and window_execution.row_checks is not None:
+            checks = window_execution.row_checks
+            if checks.executable is None:
+                record.start("compile", program="row_checks")
+                seconds = checks.compile(state, window_history, parameters)
+                record.end("compile", seconds=seconds, program="row_checks")
+                compile_seconds += seconds
+            launch_started = perf_counter()
+            pending = checks.launch(
+                state, window_history, len(times) - 1, checkpoint.step_index, parameters
+            )
+            launched = (checks, pending, launch_started)
         transfer_started = perf_counter()
         arrays = tuple(
             np.concatenate((np.asarray(start)[None, :], np.asarray(values)), axis=0)
             for start, values in zip(state, history, strict=True)
         )
     else:
+        launched = None
         transfer_started = perf_counter()
         final_state = state
         arrays = tuple(np.array(v, copy=True)[None, :] for v in state)
         execute_seconds = 0.0
     analysis_started = perf_counter()
-    accepted_history, observations, final, diagnostics = _analyse_segment(
-        spec, checkpoint, times, arrays, final_state, layout, requested
-    )
+    if launched is None:
+        accepted_history, observations, final, diagnostics = _analyse_segment(
+            spec, checkpoint, times, arrays, final_state, layout, requested
+        )
+    else:
+        (accepted_history, observations, final, diagnostics), checked = _analyse_checked_segment(
+            spec, checkpoint, times, arrays, final_state, layout, requested, launched
+        )
     timings = {
         "preparation_seconds": prepared - started,
         "compile_or_cache_seconds": compile_seconds,
@@ -488,7 +526,7 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
         "analysis_seconds": perf_counter() - analysis_started,
         "total_run_seconds": perf_counter() - started,
     }
-    return RunResult(
+    values = (
         spec,
         final,
         checkpoint.step_index,
@@ -498,6 +536,14 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
         timings,
         diagnostics,
     )
+    if launched is None:
+        return RunResult(*values)
+    outcome, device_seconds, host_seconds = checked
+    # From launch to the summary (overlapping the transfer), and a handed-back window's host
+    # check (within analysis); phase_totals lists both under "other", counted once.
+    timings["device_row_check_seconds"] = device_seconds
+    timings["host_row_check_seconds"] = host_seconds
+    return CheckedRunResult(*values, outcome)
 
 
 def takes_steps(model):
@@ -523,6 +569,45 @@ def _analyse_segment(spec, checkpoint, times, arrays, final_state, layout, reque
     diagnostics = model.check_values(
         accepted_history, spec, **check_steps(model, checkpoint.step_index, len(times))
     )
+    return _accept_segment(
+        model, spec, checkpoint, times, arrays, accepted_history, final_state, layout, requested
+    ) + (diagnostics,)
+
+
+def _analyse_checked_segment(
+    spec, checkpoint, times, arrays, final_state, layout, requested, launched
+):
+    """_analyse_segment for a window whose rows the device checked (core/row_checks.py).
+
+    launched: (DeviceRowChecks, the launched summary, its launch time). A window the device
+    hands back is decided by today's check_values, which raises today's exception class and
+    message; a clean one takes the device's maxima as its diagnostics. Returns
+    _analyse_segment's values and (outcome, device seconds from launch, host check seconds).
+    """
+    checks, pending, launched_at = launched
+    summary, outcome = checks.outcome(pending)
+    device_seconds = perf_counter() - launched_at
+    model = get_model(spec.model)
+    accepted_history = model.STATE_TYPE(*arrays)
+    host_seconds = 0.0
+    if outcome.decided_by == "host":
+        began = perf_counter()
+        diagnostics = model.check_values(
+            accepted_history, spec, **check_steps(model, checkpoint.step_index, len(times))
+        )
+        host_seconds = perf_counter() - began
+    else:
+        diagnostics = checks.diagnostics(summary)
+    accepted = _accept_segment(
+        model, spec, checkpoint, times, arrays, accepted_history, final_state, layout, requested
+    )
+    return accepted + (diagnostics,), (outcome, device_seconds, host_seconds)
+
+
+def _accept_segment(
+    model, spec, checkpoint, times, arrays, accepted_history, final_state, layout, requested
+):
+    """(history, observations, final checkpoint) of a segment whose rows passed their checks."""
     observations = model.observe_history(times, accepted_history, layout, requested, spec)
     for values in (times, *arrays):
         values.setflags(write=False)
@@ -533,4 +618,4 @@ def _analyse_segment(spec, checkpoint, times, arrays, final_state, layout, reque
         checkpoint.step_index + len(times) - 1,
         event_index(spec, float(times[-1])),
     )
-    return accepted_history, observations, final, diagnostics
+    return accepted_history, observations, final

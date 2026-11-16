@@ -6,7 +6,10 @@
 * IDENTITY_ROLE ("author" or "user") and species_identities (default: none);
 * VIEW_LAYERS (docs/RUN_VIEW_DESIGN.md §3): None (undeclared) or a non-empty tuple of
   {"id", "label", "representation"}, the representation simulated, modelled or prescribed;
-* view_events: the default gives the births and retirements of living_intervals with their cells;
+* view_events: the default gives the births and retirements of living_intervals, each at
+  {"cell": id};
+* the run view's record declarations (view_sets, OBSERVATION_AXES, UNITS, RECORD_KINDS,
+  ORIENTATION, RECORD_LAYERS), checked at registration against the operator's own fields;
 * the pending lists: the registered operators still without VIEW_LAYERS, and the event or schedule
   operators still on the default view_events, until each owner declares them (the run-view note's
   test). A newly registered operator must declare both.
@@ -30,7 +33,6 @@ PENDING_LAYERS = frozenset(
     {
         "cell_owned_compartments@1",
         "cytoplasmic_bridge_closure@1",
-        "electrode_current_injection@1",
         "ideal_osmosis_linear_compliance_water@1",
         "isopotential_partition@1",
         "k_anion_symport_mass_action@1",
@@ -43,14 +45,15 @@ PENDING_LAYERS = frozenset(
         "scheduled_cell_replacement@2",
         "scheduled_membrane_insertion@1",
         "scheduled_membrane_insertion@2",
-        "scheduled_species_exchange@1",
-        "scheduled_species_turnover@1",
         "site_occupancy@1",
         "species_regulated_availability@1",
     }
 )
-# Those with an event map or a schedule: the default view_events until each declares its own.
-PENDING_EVENTS = PENDING_LAYERS - {
+# Those with an event map or a schedule: the default view_events until each declares its own
+# (D150's two schedules declare their layers already, on the run view's branch).
+PENDING_EVENTS = (
+    PENDING_LAYERS | {"scheduled_species_exchange@1", "scheduled_species_turnover@1"}
+) - {
     "cell_owned_compartments@1",
     "membrane_entity_state@1",
     "restricted_cleft_lumen@1",
@@ -110,10 +113,99 @@ def test_the_default_view_events_are_the_births_and_retirements():
     )()
     events = op.view_events(None, None, None)
     assert [(e["time"], e["kind"], e["at"], e["layer"]) for e in events] == [
-        (0.5, "birth", ({"cells": "cell_1"},), "sites"),
-        (0.5, "retirement", ({"cells": "cell_0"},), "sites"),
+        (0.5, "birth", {"cell": "cell_1"}, "sites"),
+        (0.5, "retirement", {"cell": "cell_0"}, "sites"),
     ]
     assert Operator().view_events(None, None, None) == ()
+    assert Operator().view_sets(None, None) == {}
+
+
+OWN = dict(STATE_AXES={"moved_fmol": ("species", "cell_slot")}, READOUT_COLUMNS=("rate_fmol_s",))
+SIGN = {"from": "inside", "to": "outside", "says": "a positive amount leaves the cell"}
+
+
+@pytest.mark.parametrize(
+    "declared, message",
+    [
+        (dict(OBSERVATION_AXES={"moved_fmol": ("cell_slot",)}), "OBSERVATION_AXES names fields"),
+        (dict(OBSERVATION_AXES={"rate_fmol_s": ["cell_slot"]}), "a tuple of axis names"),
+        (dict(UNITS={"other_fmol": "fmol"}), "UNITS names fields not its own"),
+        (dict(UNITS={"moved_fmol": ""}), "a non-empty unit"),
+        (dict(RECORD_KINDS={"moved_fmol": "total"}), "is one of"),
+        (dict(ORIENTATION={"moved_fmol": {"from": "inside", "to": "outside"}}), "from, to and"),
+        (dict(ORIENTATION={"moved_fmol": dict(SIGN, to="inside")}), "two different roles"),
+        (dict(ORIENTATION={"moved_fmol": dict(SIGN, extra="x")}), "from, to and says"),
+        (dict(ORIENTATION={"moved_fmol": dict(SIGN, plus="inside")}), "from, to and says"),
+        (dict(ORIENTATION={"rate_fmol_s": dict(plus="a", minus="a", says="s")}), "two different"),
+        (dict(RECORD_LAYERS={"moved_fmol": "elsewhere"}), "not of its VIEW_LAYERS"),
+        (dict(UNITS=[("moved_fmol", "fmol")]), "UNITS maps its own fields"),
+    ],
+)
+def test_the_run_view_record_declarations_are_checked(declared, message):
+    whole = dict(
+        OBSERVATION_AXES={"rate_fmol_s": ("cell_slot",)},
+        UNITS={"moved_fmol": "fmol"},
+        RECORD_KINDS={"moved_fmol": "cumulative", "rate_fmol_s": "rate"},
+        ORIENTATION={
+            "moved_fmol": dict(SIGN, confirmed="its owner"),
+            "rate_fmol_s": dict(
+                plus="inside", minus="outside", says="inside less outside", source="x"
+            ),
+        },
+        RECORD_LAYERS={"moved_fmol": "sites"},
+    )
+    check_declarations(operator(**OWN, VIEW_LAYERS=(LAYER,), **whole))
+    with pytest.raises(ValueError, match=message):
+        check_declarations(operator(**OWN, VIEW_LAYERS=(LAYER,), **declared))
+
+
+@pytest.mark.parametrize(
+    "declared, message",
+    [
+        (dict(RECORD_DIAGNOSTICS=["rate_fmol_s"]), "a tuple of distinct field names"),
+        (dict(RECORD_DIAGNOSTICS=("rate_fmol_s", "rate_fmol_s")), "a tuple of distinct"),
+        (dict(RECORD_DIAGNOSTICS=("other_C",)), "RECORD_DIAGNOSTICS names fields not its own"),
+        (dict(RECORD_REFERENCES=[("moved_fmol", "moved_reference")]), "maps its own fields"),
+        (dict(RECORD_REFERENCES={"rate_fmol_s": "moved_reference"}), "an own state field to"),
+        (dict(RECORD_REFERENCES={"moved_fmol": "amount_reference"}), "an own layout field"),
+    ],
+)
+def test_diagnostics_and_references_are_checked(declared, message):
+    """RECORD_DIAGNOSTICS (own fields: the step's own check residuals) and RECORD_REFERENCES (an
+    own state field stored as an increment over an own layout field), checked at registration
+    (the lead's ruling on a loop's closure, 16 November 2026)."""
+    own = dict(OWN, LAYOUT_FIELDS=("moved_reference",))
+    references = {"moved_fmol": "moved_reference"}
+    check_declarations(
+        operator(**own, RECORD_DIAGNOSTICS=("rate_fmol_s",), RECORD_REFERENCES=references)
+    )
+    with pytest.raises(ValueError, match=message):
+        check_declarations(operator(**own, **declared))
+    assert Operator.RECORD_DIAGNOSTICS == () and dict(Operator.RECORD_REFERENCES) == {}
+
+
+def test_record_layers_may_name_the_view_fields_it_changes():
+    second = dict(LAYER, id="volumes")
+    check_declarations(
+        operator(
+            VIEW_FIELDS=("volume",),
+            VIEW_LAYERS=(LAYER, second),
+            RECORD_LAYERS={"volume": "volumes"},
+        )
+    )
+    check_declarations(
+        operator(CLOSES=("active",), VIEW_LAYERS=(LAYER, second), RECORD_LAYERS={"active": "sites"})
+    )
+    with pytest.raises(ValueError, match="RECORD_LAYERS names fields not its own"):
+        check_declarations(operator(VIEW_LAYERS=(LAYER,), RECORD_LAYERS={"volume": "sites"}))
+
+
+def test_a_declaration_declares_no_records():
+    base = dict(LAW_ID="test_declaration@1", DECLARATION_ONLY=True)
+    with pytest.raises(ValueError, match="declares UNITS"):
+        check_declarations(type("D", (Operator,), base | dict(UNITS={"x": "1"})))
+    with pytest.raises(ValueError, match="overrides view_sets"):
+        check_declarations(type("D", (Operator,), base | dict(view_sets=lambda s, a, b: {})))
 
 
 def test_the_pending_run_view_declarations_only_shrink():
@@ -127,6 +219,27 @@ def test_the_pending_run_view_declarations_only_shrink():
         if (op.EVENT or op.EXPERIMENT_KEYS) and "view_events" not in vars(type(op))
     }
     assert events <= PENDING_EVENTS
+
+
+def test_the_injection_declares_its_run_view():
+    """electrode_current_injection@1's run view (declared by the run view's owner: ruling 3 of
+    docs/LOOPING_REPLAY_DESIGN.md §9): one prescribed layer, every accumulator a total since the
+    start, and an event for each scheduled current at its electrode's cell, in time order."""
+    from cells.core import pump_composite_spec as cs
+    from tests.run_view_fixtures import INJECTION, injection_world
+
+    op = OPERATORS[INJECTION]
+    assert [layer["representation"] for layer in op.VIEW_LAYERS] == ["prescribed"]
+    assert op.RECORD_KINDS == dict.fromkeys(op.STATE_AXES, "cumulative")
+    spec = parse_spec(injection_world([(0, 1e-12), (2, -1e-12), (4, 0.0)], end=0.006))
+    ((_, declaration, schedule),) = cs.entries(spec)
+    events = op.view_events(spec, declaration, schedule)
+    cell = spec.model.cells[0].id
+    assert [(e["time"], e["kind"], e["at"], e["layer"]) for e in events] == [
+        (time, "current", {"cell": cell}, "injection") for time in (0.0, 0.002, 0.004)
+    ]
+    assert events[1]["label"].endswith(" -1e-12 A")
+    assert op.living_intervals(spec, declaration, schedule) == {}
 
 
 def test_declarations_may_declare_their_run_view():

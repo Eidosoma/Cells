@@ -813,6 +813,59 @@ backend. Cross-device verification uses specified numerical tolerances and, for
 stochastic models, distributional and endpoint comparisons; bitwise equality is
 not presumed.
 
+### Allocation-independent linear algebra (proposed, 16 November 2026)
+
+**The finding.** A CPU run's bits follow its CPU allocation through one channel: OpenBLAS's thread
+count, which defaults to the CPUs in the process's affinity and cannot exceed them. Two OpenBLAS
+builds are in play:
+- numpy's, for host work: the binding-time Cholesky of `surface_field.bind`, host solves and the
+  analysis tools;
+- scipy's, which jaxlib's CPU LAPACK kernels call from inside compiled programs: @3's IMEX step
+  factors the full node-space operator every step, plus the triangular and offset solves.
+
+On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`):
+- The binding's factor has two bit classes, one at 1 thread and one shared by 2, 3, 4, 8 and 16.
+  The jitted Cholesky gives the same two classes.
+- A 20-step run is bitwise equal on 1 CPU and on 4 CPUs with both libraries at 1 thread, so XLA's
+  own threading moves no bits there.
+- Setting one library to 1 thread and the other to 4 gives a third and a fourth result. Both
+  libraries matter.
+- A 1-CPU allocation cannot reach the multi-thread class.
+
+**Proposal: the engine sets both libraries to 1 thread.**
+- One small module sets every loaded BLAS to 1 thread through threadpoolctl. It loads scipy's
+  OpenBLAS first, since jaxlib loads it only at the first LAPACK call.
+- It runs once at `import cells` and again at each run entry point, so a later change cannot
+  leave a run multi-threaded.
+- Run manifests record each library's version, kernel architecture and thread count. Bits stay
+  machine-dependent: OpenBLAS picks kernels by CPU type.
+
+Alternatives:
+- A ctypes shim on the two builds' exported setters avoids a dependency but supports only these
+  builds.
+- An `OPENBLAS_NUM_THREADS=1` launcher policy fails open when a launcher forgets it.
+- An order-fixed factorization of our own would be slower and would move every factored world's
+  bits.
+
+**Effect on the recorded baselines.**
+- G1 (c1's save, 1-CPU shards) is already in the 1-thread class: unchanged.
+- crossrev's records were made on 2 CPUs. Only the bindings of S825_closed_water and
+  S825_event_free change, as the 1- and 2-CPU runs showed; they are renewed once. The kinds pair
+  is unchanged.
+- Trajectories recorded with more than one thread are not reproduced bitwise afterwards. They
+  were not reproduced across allocations before either, and their verdicts, judged at
+  tolerances, stand.
+- Pinning at 2 instead would keep crossrev's records but change G1's 825-node worlds, and a 1-CPU
+  allocation cannot reach 2 threads.
+
+**Cost.**
+- One-core runs, the measured profile in [the field-solver note](FIELD_SOLVER_INTERFACE_DESIGN.md)
+  §2 and GPU runs (device LAPACK) are unchanged.
+- Multi-core CPU runs of large worlds give up the threaded speedup of the per-step factorization:
+  21 ms of the 825-node world's 91 ms one-core step.
+- Multi-process CPU work, such as the tier runner and batch shards, no longer oversubscribes
+  cores.
+
 ## Experiment records and storage
 
 Preparation is an explicit experiment phase or preceding run, with its full

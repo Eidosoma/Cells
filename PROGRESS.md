@@ -80,6 +80,94 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **core-fixes merged into main (16 November 2026, late evening).** It fixes two of the test
+  audit's findings ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/)).
+  - **F1, a real validation gap since 88866b60** (9 November, gauge option 2). A definition with a
+    charged floating or gauge component was accepted at parse.
+    - Runs refused it late, at step 0. The stationary analysis was fail-open: it reported 6.13e-7 V
+      for a planted 1e-17 C.
+    - The fix: a host-only neutrality check at the initial capacitor solve, refusing with
+      ConfigError. It changes no program.
+    - No registered world is affected. Of the 116, 7 have a representative, and every residual is
+      exactly 0 C, so today's W1/W2 results stand.
+    - It also closes F3: test_surface_excision goes from 40 of 43 to 43 of 43.
+  - **F6, a crash since 9b6e85ed:** `schedule.py`'s UnboundLocalError for spatial_calcium@2–@5. The
+    four files go from 44 failed and 45 errors to all passing, and move to tier 3 for their run
+    time.
+  - **Also:**
+    - the kinds world set in `composite_crossrev` (D187 rule 2);
+    - the design for allocation-independent linear algebra, proposed, which awaits the user.
+  - **Checks:**
+    - crossrev, 8 sets plus the kinds pair, identical;
+    - G1: 113 of 113, bitwise;
+    - tiers 1+2: 507 files, none changed;
+    - quick checks on the merged heads, FR-5's charged starts included: none failed.
+
+- **The run-view writer merged into main (16 November 2026, evening): run-view-d154,
+  `cells.run_view@1`.** ([handoff](/mnt/workspaces/Cells/run-view-20261115-01/HANDOFF.md).)
+  - **What it adds:**
+    - the engine's writer of `view.json`. It reads the engine's own view declarations and record
+      roles (`RECORD_DIAGNOSTICS`, `RECORD_REFERENCES`), keeps no per-model tables, and writes door
+      S's merged view;
+    - the loop block, with its closure measure: per record, over levels, amounts and rates, with
+      diagnostics and cumulatives listed as not measured;
+    - FR-11's first looping run: a planarian development run (not judged) that closes within
+      2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption;
+    - the cycle's admission probe, whose refusals went to the composition design;
+    - a junction fixture at division.
+  - **Gates:**
+    - tiers 1+2 on b08af640: 508 files, none changed;
+    - the re-check after windows landed: tier 1 (366 files) and seven tier-2 files, none changed;
+    - the quick check on the merged head: none changed.
+  - **Follow-up:** three format items from the visualizer's reader.
+
+- **fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core.**
+  ([handoff](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/transporter/HANDOFF.md).)
+  - **What it adds:**
+    - FR-5's source kinds, patch damage and a pH condition, on the routing door;
+    - refusal 4 version 1.2 and refusal 5 version 1.1 for FR-1's compartments, so a charged lumen can
+      resume from its own checkpoint;
+    - FR-5's start part and engine records;
+    - `fr5_quick_check` and `world_agreement`.
+  - **Development evidence, not verdicts:**
+    - **FR-4's dt study** (snapshot 3c10b833) passes J1–J7. pH, V_b, K_L and the cycles all class at
+      rounding. pH is within 1.4e-12 of the independent reference at 1 ms. Energy converges at
+      orders 2.02–2.04. The planted controls are caught.
+      ([reading](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-3c10b833-dt/reading/verdict.json)).
+    - **FR-5's world agreement:** the development and declared worlds are bitwise equal over 400 s
+      on both arms, 800,000 steps each, including arm R's release burst
+      ([check](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/worlds-d82e1935/check.json)). FR-5 runs at 1.2–1.4 ms per step on quiet
+      cores. An earlier "9 ms per step" was CPU starvation on a shared foreground CPU.
+  - **Gates:**
+    - tiers 1+2 on 32a72dab: 506 files, none changed;
+    - the light re-check on 7f9bf71f: 371 files, none changed;
+    - the admission-change files on the merged head 3bda393d.
+
+- **windows-next-clean merged into main (16 November 2026, evening).** It brings the planner seams and
+  opt-in device-resident row checks ([handoff](/mnt/workspaces/Cells/windows-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - `window_arguments`, `WorldRefusal`, `MemoryRefusal` and the world-mode refusals;
+    - `WindowPolicy(row_checks="device")`, which checks rows on the device and hands a window back to
+      the host checks on any failure or any ratio above 1/2 (R3's margins);
+    - the design note `docs/WINDOW_DEVICE_CHECKS_DESIGN.md`.
+  - **The gate,** at 74ebb91b, with main merged in:
+    - tiers 1+2: 510 files, none changed;
+    - the vector set and 14 tier-3 files against c1's frozen rows: no change;
+    - the continuity acceptance from a writable copy: 13 of 13;
+    - crossrev: 8 of 8 sets identical.
+  - **Speed against the host checks, on the same cores.**
+    - **Both arms measured:**
+      - the export: 4.8× at 80,000 steps, 1.4× at 8,000 (compile-dominated);
+      - FR-4's 20 s pass: 3.7×;
+      - the 825-node tissue: 1.05×.
+    - **Long runs, device arm measured, host arm estimated** from the measured per-row host cost:
+      - the export, 480,000 steps: about 9.4× (96.3 s against about 908 s);
+      - FR-4, 900,000 steps: about 13.7× (453 s against about 6,220 s).
+
+    Every run made in both modes is bitwise, and no window was handed back.
+  - **Follow-up, fail-closed:** device mode is refused for a live retiring composition, until a planted
+    dissipation test exists, and on a GPU backend, until a GPU measurement exists.
+
 - **The visualizer merged into main (16 November 2026, evening): visualizer a4ef7492.**
   `visualizer/` only.
   - **What it adds:**
