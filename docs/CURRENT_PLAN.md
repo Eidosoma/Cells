@@ -121,6 +121,18 @@ experiment).
           long packed-against-lone pair that settles the horizon.
    5. The module system's stage 1, one external law (D180), with §6 decided by D185: in-tree contributed modules, a conformance kit, a declarations manifest, and a contributor guide.
 3. **Queued follow-ups** (each its own gated change):
+   - **Operator composition: operators reading each other's current state.** FR-11's cycle probe
+     (16 November, `/mnt/workspaces/Cells/replay-20261116/cycle-probe-0407c088.md`) found four
+     general gaps, each refused by the engine today. These are general composition features
+     (D144), for the user to schedule. The cell cycle of the minimal cells needs all four, and
+     division with water needs the first.
+     1. Production that reads the current volume (door V, D150 §5.1's fallback), and the
+        partition's daughter volumes taken from the current volume beside water.
+     2. Water that reads the current membrane area beside an area provider (membrane state or
+        insertion).
+     3. Turnover that reads the current masks beside the operators that close them (partition,
+        insertion).
+     4. Pumps on a dividing cell (pump capacity as state).
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
    - the BETSE physiology validation's dangling reference, found by tier 3 at c1 and pre-existing at
      the tag: `validation/betse/physiology/core/physiology_protein_block_calendar.py:106` reads
