@@ -4,7 +4,7 @@ engine's material ledger makes, test_fr4_world_engine), over FR-4's development 
 steps, through engine_records.run on both paths. Analysis only, from an execution snapshot's root
 (it ran from fr45/pipeline/ until it moved here, its logic unchanged, its body now in main()):
 
-    python -m validation.compartment_ph.refusal_paths OUT_JSON
+    python -m validation.compartment_ph_engine.refusal_paths OUT_JSON
 """
 
 import copy
@@ -14,8 +14,8 @@ import sys
 import time
 
 from cells.models.inner_kinds import transporter
-from validation.compartment_ph import definitions as defs
-from validation.compartment_ph import engine_records, planted
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine import engine_records, planted
 
 STEPS = 5
 

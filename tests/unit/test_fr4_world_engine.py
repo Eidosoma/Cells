@@ -1,4 +1,5 @@
-"""FR-4's world through the engine (validation/compartment_ph/definitions.py; the note's §13.1).
+"""FR-4's world through the engine (validation/compartment_ph_engine/definitions.py; the note's
+§13.1).
 
 The development world (the declared world without FR-1's compartment operator, the lead's ruling) at
 the declared 1 ms, for a few steps from its pH 7.2 start, with the built-in kinds on BUILTIN: B4's
@@ -20,7 +21,7 @@ import pytest
 from cells.core.runner import run
 from cells.core.specs import parse_spec
 from cells.models.registry import get_model
-from validation.compartment_ph import definitions as defs
+from validation.compartment_ph_engine import definitions as defs
 
 STEPS = 5
 
@@ -62,10 +63,10 @@ def test_the_development_world_runs_with_every_ledger_closing():
 
 
 def test_the_engine_records_give_the_judges_readouts_on_the_development_world():
-    """validation/compartment_ph/engine_records.run, the generator's engine path: every
+    """validation/compartment_ph_engine/engine_records.run, the generator's engine path: every
     ENGINE_READOUTS series of FR-4 at each record, the energy identity from the engine's ledger,
     every row at every node, B4's running extrema and the charge ledger within its tolerance."""
-    from validation.compartment_ph import engine_records
+    from validation.compartment_ph_engine import engine_records
 
     record = engine_records.run(short(defs.fr4_world()))
     assert record["admitted"] and record["completed"] and record["refusal"] is None
@@ -99,8 +100,8 @@ def test_k3_is_refused_at_the_definition_through_the_envelope():
     removed); a refusal for another reason is not."""
     from dataclasses import replace
 
-    from validation.compartment_ph import engine_records
-    from validation.compartment_ph.parameters import World
+    from validation.compartment_ph_engine import engine_records
+    from validation.compartment_ph_engine.parameters import World
 
     w = World()
     k3 = replace(w, lumen_buffer=replace(w.lumen_buffer, k_on_per_mM_s=1e-3))
@@ -128,7 +129,7 @@ def test_k2s_planted_slope_follows_the_patch_voltage_in_its_exchanged_frame():
     from cells.models import surface_pump_v3
     from cells.models.inner_kinds import proton_buffer, transporter
     from cells.processes.electrochemistry import F, R
-    from validation.compartment_ph import planted
+    from validation.compartment_ph_engine import planted
 
     kind = planted.reversed_pump()
     with kind_registry.scope(planted.registry(kind)):
@@ -178,7 +179,7 @@ def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
     from cells.models import surface_pump_v3
     from cells.models.inner_kinds import proton_buffer, transporter
     from cells.processes.electrochemistry import F, R
-    from validation.compartment_ph import planted
+    from validation.compartment_ph_engine import planted
 
     spec = parse_spec(defs.development_world(defs.fr4_world()))
     structure = surface_pump_v3.structure(spec.model)

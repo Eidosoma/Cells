@@ -10,7 +10,7 @@ Parts of fr4-acidification-v1 (`judge.units` in the protocol):
 * rung_2ms, rung_1ms, rung_0p5ms, rung_0p25ms: definitions.fr4_world(World()) at each dt of
   dt_study.LADDER_S, 900 s, records every 1 s;
 * control_k1 (P_K = 0), control_k2 (the self-consistent reversed pump, the lead's ruling (b):
-  validation/compartment_ph/planted.py's planted law, registered only inside its block) and
+  validation/compartment_ph_engine/planted.py's planted law, registered only inside its block) and
   control_k3 (the lumen buffer's k_on at 1e-3 /mM/s on the closure's declaration, refused at the
   definition through the envelope), each at the declared 1 ms;
 * reference: R-closure on the declared world, its floor, P_K = 0 and R-kinetic with the lumen's
@@ -25,13 +25,14 @@ Parts of fr5-transfer-v1:
 * reference: R-transfer from the extract, both arms, their controls and floors
   (compartment_ph_reference_stage.fr5_reference).
 
-**The engine path is one function, `engine_run`:** validation/compartment_ph/engine_records.run
-on the development world (the declared world without FR-1's compartment operator, the lead's
-ruling), as the one world of a vector window checking every accepted row on the device (judged
-runs: the protocols' execution path) or on the windowed runner checking them on the host
-(development's default); ENGINE_READOUTS is what it returns per record. What is not wired yet is
-a stand-in (STAND_INS), each blocking only its own parts (STAND_IN_PARTS): every entry refuses
-those parts before anything is written, and a judged run is refused while any stand-in remains.
+**The engine path is one function, `engine_run`:**
+validation/compartment_ph_engine/engine_records.run on the development world (the declared world
+without FR-1's compartment operator, the lead's ruling), as the one world of a vector window
+checking every accepted row on the device (judged runs: the protocols' execution path) or on the
+windowed runner checking them on the host (development's default); ENGINE_READOUTS is what it
+returns per record. What is not wired yet is a stand-in (STAND_INS), each blocking only its own
+parts (STAND_IN_PARTS): every entry refuses those parts before anything is written, and a judged run
+is refused while any stand-in remains.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
@@ -58,9 +59,9 @@ import time
 from dataclasses import replace
 from pathlib import Path
 
-from validation.compartment_ph import definitions as defs
-from validation.compartment_ph import dt_study
-from validation.compartment_ph.parameters import World
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine import dt_study
+from validation.compartment_ph_engine.parameters import World
 from validation.tissue import compartment_ph_reference_stage as stage
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -171,8 +172,8 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH)
     start part) it is to write the engine's snapshot there at the end (cells.io.write_snapshot)
     and return, under `extract`, definitions.start_extract(producer="engine", ...) of that state,
     a stand-in (STAND_INS)."""
-    from validation.compartment_ph import engine_records
-    from validation.compartment_ph import planted as plants
+    from validation.compartment_ph_engine import engine_records
+    from validation.compartment_ph_engine import planted as plants
 
     if checkpoint_dir is not None:
         raise NotWired(STAND_INS["start_checkpoint"])
