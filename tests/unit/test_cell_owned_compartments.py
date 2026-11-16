@@ -519,6 +519,56 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
         comp.parse_declaration(block, rk4)
 
 
+def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(
+    monkeypatch,
+):
+    """Refusal 4's premise (§3.4.1; the core's review, finding 3): with kinds declared, @3's
+    per-stage rule (surface_pump_v3.membrane_rate) counts @3's own constant-field permeability at
+    the compartment's free node, so an IMEX step at dt G_b / C_b > 1 is refused there. FR-4's world
+    with its K+ permeability scaled k, at its own 1 ms: at k = 60 the lumen's row from the K+ route
+    alone is about 1.5 / dt while the owner's whole row stays under 1 / dt (the cells-only rate
+    would have passed the step), and the step is refused by the stage bound; at k = 20 (about 0.5)
+    it is accepted. The declared world (with the operator) is admitted at both."""
+    import numpy as np
+
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3
+    from cells.processes.electrochemistry import F, R
+    from validation.compartment_ph_engine import definitions as defs
+
+    def scaled(k, world):
+        raw = world(defs.fr4_world())
+        patch(raw, defs.BOUNDING)["permeability_m_per_s"]["K"] *= k
+        return raw
+
+    for k, accepted in ((20, True), (60, False)):
+        parse_spec(scaled(k, defs.declared_world))  # Refusal 4 admits it (kinds, IMEX).
+        spec = parse_spec(scaled(k, defs.development_world))  # The same @3 world and kinds.
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        dt = spec.execution.dt
+        b = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
+        cell, node = int(p.membrane_cell[b]), int(p.membrane_outside[b])
+        assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[node])  # The lumen is free.
+        row = spec.model.species_ids.index("K")
+        c_in = p.amount_reference[row, cell] / p.volume[cell]
+        c_out = p.extracellular_amount_reference[row, node] / p.extracellular_volume[node]
+        slope = F * F / (R * spec.model.temperature_K)  # @3's constant-field slope factor.
+        g_k = slope * p.membrane_permeability[row, b] * max(c_in, c_out) * p.membrane_area[b]
+        node_rate = g_k / p.membrane_capacitance[b]  # The K+ route alone, at the lumen (1/s).
+        assert (dt * node_rate > 1.0) == (not accepted), (k, dt * node_rate)
+        rate = float(impl.membrane_rate(state, control, p, xp=np))
+        cells_only = float(surface_pump_v3.membrane_rate(state, control, p, xp=np))
+        assert rate >= node_rate and dt * cells_only < 1.0, (k, rate, cells_only)
+        _, valid = impl.imex_step(state, dt, control, p, xp=np)
+        assert bool(valid) == accepted, (k, dt * rate)
+        if not accepted:  # The stage bound is what refuses it.
+            monkeypatch.setattr(surface_pump_v3, "EXPLICIT_STEP_BOUND", np.inf)
+            assert bool(impl.imex_step(state, dt, control, p, xp=np)[1])
+            monkeypatch.undo()
+
+
 def replaced(events):
     raw = two_cells(
         contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_1")),
