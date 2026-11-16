@@ -22,7 +22,7 @@ import { Ramp } from "../src/replay/ramp.js";
 import { display, rateDisplay, clock } from "../src/replay/format.js";
 import { Player, SPEEDS, LADDER, speedsFor, openingSpeed, speedWords } from "../src/replay/player.js";
 import { Catalogue } from "../src/replay/catalogue.js";
-import { frameTimes } from "../src/core/stage.js";
+import { frameTimes, PAUSE_MS } from "../src/core/stage.js";
 import { difference, rate, charge, chargesIn, potentialTerms, DERIVATIONS, FARADAY, GAS, ELEMENTARY } from "../src/layers/derive.js";
 import { declared, declaredOn, behind, family, constantOf, fromFirst, signedBy, cellsOf, restartsBetween, livesOn, LIVES_ON, KINDS } from "../src/layers/records.js";
 import { layersFor, feeds, readDeclarations, validateLayer, account, partsOf, Switch, CHANNELS, LAYERS_FORMAT, NOT_SAVED } from "../src/layers/layers.js";
@@ -1605,13 +1605,21 @@ test("where things may move, beads set out and cross, the look's own motion stan
   for (let frame = 0; frame < 5; frame++) lens.update(100, 0, 400);
   assert.ok(near((lens.player.time - 2) / 1e-3, 2, 1e-6), `five frames of 400 ms covered ${(lens.player.time - 2) / 1e-3} s of watching`);
   assert.ok(Math.abs(secrete.beads.length - fine.beads) <= 1, `${secrete.beads.length} beads after five long frames, ${fine.beads} after 120 short ones`);
+  // Frames a second apart, as the slowest device that still counts draws them: two of them are the same two seconds.
+  lens.player.pause();
+  lens.seek(2);
+  lens.player.play();
+  for (let frame = 0; frame < 2; frame++) lens.update(100, 0, 1000);
+  assert.ok(near((lens.player.time - 2) / 1e-3, 2, 1e-6), `two frames of a second covered ${(lens.player.time - 2) / 1e-3} s of watching`);
+  assert.ok(Math.abs(secrete.beads.length - fine.beads) <= 1, `${secrete.beads.length} beads after two frames of a second, ${fine.beads} after 120 short ones`);
   // The stage's two times of a frame: a hitch is no jump for what glides, a long frame counts in full for the playhead,
-  // and a gap of more than half a second (a hidden window) is a pause, one step as it always was.
+  // and a gap of more than two seconds (a hidden window, a machine that slept) is a pause, one step as it always was.
+  assert.equal(PAUSE_MS, 2000);
   assert.deepEqual(frameTimes(16), { dt: 16, real: 16 });
   assert.deepEqual(frameTimes(100), { dt: 100, real: 100 });
   assert.deepEqual(frameTimes(400), { dt: 100, real: 400 });
-  assert.deepEqual(frameTimes(500), { dt: 100, real: 500 });
-  assert.deepEqual(frameTimes(501), { dt: 100, real: 100 });
+  assert.deepEqual(frameTimes(2000), { dt: 100, real: 2000 });
+  assert.deepEqual(frameTimes(2001), { dt: 100, real: 100 });
   assert.deepEqual(frameTimes(60000), { dt: 100, real: 100 });
   assert.deepEqual(frameTimes(-3), { dt: 0, real: 0 }, "a frame's timestamp can be a little earlier than the clock read when it was asked for");
   // A jump of the playhead sets no bead out; back at the first record nothing sets out, and what was on its way is gone at once.

@@ -11,17 +11,22 @@ import { lookNumbers } from "./materials.js";
 // What a view that asks for nothing gets of the look at rest: nothing (see dress()).
 const FIT = { rich: false, filmic: true, exposure: 1.08, contact: true, reach: 1, shade: 0.6 };
 
+/** A gap between two frames longer than this, in milliseconds, is no frame but a pause: the window was hidden, the machine slept. */
+export const PAUSE_MS = 2000;
+
 /**
  * The two times of a frame, from the gap since the frame before, in milliseconds. `dt` is a
  * step for what glides (the camera, a look that settles): never more than a tenth of a
  * second, so that a hitch is no jump. `real` is the time that really passed, for what keeps a
  * stated clock (a replay's playhead says its speed): the long frames of a slow device count
- * in full, up to half a second. A longer gap is no frame but a pause (the window was hidden,
- * the machine slept), and counts as one step, as it always did.
+ * in full, up to two seconds. A longer gap is a pause and counts as one step, as it always
+ * did. (Half a second was tried first: the checks' own browser, which draws in software and
+ * at times leaves more than half a second between frames, then ran a replay at a fifth of
+ * the speed it stated.)
  */
 export function frameTimes(gap) {
   const passed = Math.max(0, gap), dt = Math.min(100, passed);
-  return { dt, real: passed > 500 ? dt : passed };
+  return { dt, real: passed > PAUSE_MS ? dt : passed };
 }
 
 export class Stage {

@@ -660,8 +660,16 @@ try {
       await wait(1200);
       paused.later = lane.beads.slice();
       player.setSpeed(0.001);
+      // What the stage hands each frame while the replay plays: its step for what glides (at most a tenth of a
+      // second) and the time that really passed. The playhead keeps the second, so that the speed stated holds.
+      const handed = [], began = player.time;
+      const unhook = viewer.stage.onTick((dt, at, real) => { if (player.playing) handed.push([dt, real]); return false; });
+      const wall = performance.now();
       player.play();
-      await wait(2600);
+      await wait(600);
+      // One long frame, made here: the page is kept busy for a third of a second, as a slow device would be.
+      for (const until = performance.now() + 330; performance.now() < until; );
+      await wait(1700);
       const first = lane.beads.slice(), drawn = mark.drawn, statement = lens.tags.flow.text, time = player.time;
       // A later look, once a frame has come (the browser of a check draws few frames a second): at most twenty seconds.
       let later = first;
@@ -670,12 +678,14 @@ try {
         later = lane.beads.slice();
       }
       player.pause();
+      unhook();
       const covered = player.time - time;
+      const clock = { watched: (player.time - began) / player.speed, real: handed.reduce((sum, [, real]) => sum + real, 0) / 1000, steps: handed.reduce((sum, [dt]) => sum + dt, 0) / 1000, frames: handed.length, longest: Math.max(0, ...handed.map(([, real]) => real)), wall: (performance.now() - wall) / 1000, gaps: handed.map(([, real]) => Math.round(real)) };
       player.setSpeed(1);
       viewer.stage.rig.instant = true;
       lens.draw();
       viewer.stage.invalidate();
-      return { paused, first, later, drawn, statement, covered, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, still: lens.still(), standing: lane.beads.length };
+      return { paused, first, later, drawn, statement, covered, clock, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, still: lens.still(), standing: lane.beads.length };
     })()`);
     check(
       "paused, the beads stand although the view may move, and the picture says it is paused",
@@ -686,6 +696,13 @@ try {
       "played, beads set out one after another and travel in the replay's time: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
       moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * 1.6) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1 && /slowed 1,000 times · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
       JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn, statement: moving.statement, covered: moving.covered })
+    );
+    // From the stage through the viewer to the playhead: a frame longer than a tenth of a second counts in full. Were
+    // the time that really passed dropped on the way, the playhead would have covered the steps only.
+    check(
+      "the playhead covers the time that really passed, a long frame in full, so the speed stated holds on a slow device",
+      moving.clock.frames >= 2 && moving.clock.longest > 150 && moving.clock.real - moving.clock.steps > 0.05 && Math.abs(moving.clock.watched - moving.clock.real) < 1e-6,
+      JSON.stringify(moving.clock)
     );
     check("put back to a still picture, the beads stand again as many as would be crossing", moving.still === true && moving.standing === Math.min(18, Math.round(moving.rate * 1.6)), JSON.stringify([moving.still, moving.standing]));
 
