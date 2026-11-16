@@ -7,7 +7,7 @@ model RHS knows about the world axis. Scalar RK4 and observer contracts apply.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from time import perf_counter
 from types import MappingProxyType
 from typing import Mapping
@@ -49,6 +49,56 @@ from cells.numerics.fixed_step import rk4_checked_step, rk4_step
 class WorldSpec:
     world_id: int
     simulation: SimulationSpec
+
+
+class MemoryRefusal(ConfigError):
+    """A cohort's working memory exceeds its declared max_working_bytes: the batch's size, never
+    one world's refusal (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §5.4).
+
+    stage is "checkpoints" (the cohort's checkpoint storage), "estimate" (the planned working
+    arrays) or "compiled" (a compiled window's argument, output and temporary bytes);
+    required_bytes is what the stage needs and limit_bytes the declared limit. The messages are
+    those of the plain ConfigError raised before, so callers that catch ConfigError or match
+    "max_working_bytes" see no change; only the class name is new.
+    """
+
+    def __init__(self, message, *, required_bytes=None, limit_bytes=None, stage=None):
+        super().__init__(message)  # The defaults keep type(exc)(message) re-raises working.
+        self.required_bytes, self.limit_bytes, self.stage = required_bytes, limit_bytes, stage
+
+
+@dataclass(frozen=True)
+class WorldRefusal:
+    """One world's refusal in a cohort, carried as `exc.refusal` by the exception that reports it
+    (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §5.3). The exception's class and message are unchanged.
+
+    stage: "admission" (the cohort's planning of this world), "start" (its start checkpoint),
+    "step" (a refused step), "check" (a failed device row check) or "observation" (its host
+    observers or observation-continuity check). error: the class name of the exception raised
+    for it when the batch is refused; message: its reason, "World N: ...", without any
+    batch-outcome suffix. checkpoint: its last accepted checkpoint, at window granularity (its
+    checkpoint at the start of the refusing window), where a run had started.
+    """
+
+    world_id: int
+    stage: str
+    error: str
+    message: str
+    step_index: int | None = None  # The first rejected row (step and check refusals).
+    time_interval: tuple | None = None
+    checks: tuple = ()
+    checkpoint: Checkpoint | None = field(default=None, compare=False)  # Arrays: no ==.
+
+
+def _refusing(exc, refusal):
+    """exc, carrying its world's refusal record as exc.refusal."""
+    exc.refusal = refusal
+    return exc
+
+
+def _world_error(error, world_id, stage, message):
+    """error(message) for one world's refusal, with its record."""
+    return _refusing(error(message), WorldRefusal(world_id, stage, error.__name__, message))
 
 
 @dataclass(frozen=True)
@@ -154,7 +204,12 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
         trace_bytes(w.simulation, steps) + trace_bytes(w.simulation, 0, 0) for w in spec.worlds
     )
     if working > spec.max_working_bytes:
-        raise ConfigError("Estimated aggregate arrays exceed batch max_working_bytes")
+        raise MemoryRefusal(
+            "Estimated aggregate arrays exceed batch max_working_bytes",
+            required_bytes=working,
+            limit_bytes=spec.max_working_bytes,
+            stage="estimate",
+        )
     grids = []
     for world in spec.worlds:
         try:
@@ -174,14 +229,23 @@ def _checkpoint_map(spec, checkpoints):
 
 
 def checkpoint_batch_limits(spec):
-    """Cohort identity/work/state bounds, independent of recording policy."""
+    """Cohort identity/work/state bounds, independent of recording policy.
+
+    A refusal of one world carries its WorldRefusal (stage "admission") as exc.refusal; the
+    cohort's checkpoint storage above max_working_bytes is a MemoryRefusal.
+    """
     spec = parse_batch(spec.to_dict())
     upper = []
     for world in spec.worlds:
         s = world.simulation
         nominal = s.experiment.end_time / s.execution.dt
         if not math.isfinite(nominal) or nominal > s.execution.max_steps:
-            raise ConfigError(f"World {world.world_id}: nominal grid exceeds max_steps")
+            raise _world_error(
+                ConfigError,
+                world.world_id,
+                "admission",
+                f"World {world.world_id}: nominal grid exceeds max_steps",
+            )
         upper.append(
             max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
         )
@@ -190,10 +254,20 @@ def checkpoint_batch_limits(spec):
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
     storage = 2 * sum(trace_bytes(w.simulation, 0, 0) for w in spec.worlds)
     if storage > spec.max_working_bytes:
-        raise ConfigError("Checkpoint aggregate arrays exceed batch max_working_bytes")
+        raise MemoryRefusal(
+            "Checkpoint aggregate arrays exceed batch max_working_bytes",
+            required_bytes=storage,
+            limit_bytes=spec.max_working_bytes,
+            stage="checkpoints",
+        )
     for world in spec.worlds:
         if trace_bytes(world.simulation, 0, 0) > world.simulation.execution.max_trace_bytes:
-            raise ConfigError(f"World {world.world_id}: checkpoint exceeds max_trace_bytes")
+            raise _world_error(
+                ConfigError,
+                world.world_id,
+                "admission",
+                f"World {world.world_id}: checkpoint exceeds max_trace_bytes",
+            )
     return spec, bound
 
 

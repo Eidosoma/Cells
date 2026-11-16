@@ -12,6 +12,7 @@ import numpy as np
 from cells.core import phases
 from cells.core.batch import (
     BatchSpec,
+    MemoryRefusal,
     _array_bytes,
     _batch_rollout,
     _checkpoint_map,
@@ -91,7 +92,12 @@ def _plan_batch_windows(spec, policy, checkpoints, record):
         for p in plans
     )
     if estimate > spec.max_working_bytes:
-        raise ConfigError("Estimated window aggregate arrays exceed batch max_working_bytes")
+        raise MemoryRefusal(
+            "Estimated window aggregate arrays exceed batch max_working_bytes",
+            required_bytes=estimate,
+            limit_bytes=spec.max_working_bytes,
+            stage="estimate",
+        )
     # No control arrays or model-capacity allocation before aggregate refusal.
     for world, plan in zip(spec.worlds, plans, strict=True):
         record.start("plan.world", world=world.world_id)
@@ -333,6 +339,9 @@ class WindowedBatchResult:
     worlds: Mapping[int, WindowedResult]
     timings: dict
     resources: dict
+    # Worlds refused alone (vector windows with refusals="world"): world ID -> WorldRefusal.
+    # worlds then holds the completed worlds only.
+    refusals: Mapping[int, object] = MappingProxyType({})
 
     @property
     def checkpoints(self):
