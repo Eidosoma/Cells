@@ -5832,6 +5832,35 @@ execution and accounting contracts as a built-in one.
     unflagged mode.
   - The amendment is registered before the block's first run.
 
+## D182: A7's summation order: a serial left fold in declared species order, with barriers at every listed site
+
+2026-11-16. This settles D176's A7 for D172's round. It is the round's last program change, c0 → c1
+in the end game.
+- **The order.** Every species summation site the operators listed
+  (`operators/summation/SITES.md`) uses the shared helper's serial left fold in declared species
+  order, with an optimisation barrier at each site. That is the configuration rehearsed on all
+  113 worlds.
+- **Why barriers everywhere.** The L4 column (`operators/summation/out/gpu/NOTE.md`, 16 November)
+  found:
+  - the barrier costs nothing at 16 species on the 825-node world, within noise in window time
+    and compile;
+  - at 150 species the barrier is cheaper than the plain fold, at about +4% step time against
+    today's code where the plain fold costs +10%. The tree would cost +34% step time.
+  - Host and GPU agree bitwise for the fold, with or without the barrier, at 8 to 150 species,
+    the inexact products included. Today's reduction does not.
+- **What it changes.** The CPU rehearsal on all 113 worlds kept physical fields bitwise. Only
+  ledger and diagnostic arrays moved, at rounding.
+  - The final tolerance file (`a7-g1-tolerance.json`, 862 patterns, three post-data floors named
+    in it) holds all 113 worlds. It is the results gate's file at c1, frozen in the end game.
+  - At c1, constants and bindings must be identical to c0 while program texts may differ. The
+    results gate at this tolerance is A7's semantic check.
+- **Open, not blocking.** Whole 825-node runs on the L4 differ between every pair of arms at
+  2–5e-16 of each field's scale, without the deterministic flag. With one run per arm this cannot
+  be separated from run-to-run variation, most likely the order of atomic scatter-adds. G1 runs
+  on the CPU, and D148 excludes GPUs from bitwise claims. Two repeats of today's code (about
+  3 min of L4 time) settle it in a later gap.
+- **The tree** stays the option if species counts go well past 150.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
