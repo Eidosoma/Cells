@@ -36,13 +36,13 @@ Precision: the read writes h V into the proton row through the state's increment
 see h to about eps H_eq / h relative (about 1e-10 in a 50 mM buffer at pH 7.2).
 """
 
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 from typing import NamedTuple
 
 import numpy as np
 
 from cells.core import species_registry
-from cells.core.kind_registry import BUILTIN, ConfigError, Kind
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind, KindView
 from cells.processes import rapid_proton_buffer as closure
 from cells.processes.electrochemistry import R
 
@@ -340,6 +340,17 @@ def check_definition(spec):
                 )
 
 
+# The run view's declarations (D154): per node, cells then outside nodes (the view's node set).
+_PH_FIELDS = ("proton_buffer_max_lag_pH", "proton_buffer_min_pH", "proton_buffer_max_pH")
+VIEW = KindView(
+    units=MappingProxyType({**dict.fromkeys(_PH_FIELDS, "pH"), "free_proton_mM": "mM", "pH": "pH"}),
+    observation_axes=MappingProxyType({"free_proton_mM": ("node",), "pH": ("node",)}),
+    record_kinds=MappingProxyType(dict.fromkeys((*_PH_FIELDS, *COLUMNS), "level")),
+    record_layers=MappingProxyType(dict.fromkeys((*_PH_FIELDS, *COLUMNS), "membrane")),
+    axis_sets=MappingProxyType({"node": "node"}),
+)
+
+
 PROTON_BUFFER = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -378,5 +389,6 @@ PROTON_BUFFER = BUILTIN.register(
         ledger_terms=ledger_terms,
         readouts=readouts,
         check_definition=check_definition,
+        view=VIEW,
     )
 )

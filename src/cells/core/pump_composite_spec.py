@@ -34,6 +34,7 @@ from typing import NamedTuple
 
 import numpy as np
 
+from cells.core import kind_registry
 from cells.core import surface_pump_v3_spec as ionic
 from cells.core.specs import ConfigError
 
@@ -184,6 +185,15 @@ def parse(data):
     keys = [k for op in operators for k in op.EXPERIMENT_KEYS]
     if len(keys) != len(set(keys)):
         raise ConfigError("Two operators declare the same experiment key")
+    # An inner kind's schedule keys are its own (docs/INNER_MODEL_V4_DESIGN.md §7.4 (l)): an
+    # operator that declared one would take the kind's schedule before the inner parse reads it.
+    claimed = kind_registry.active().experiment_keys()
+    taken = sorted(k for k in keys if k in claimed)
+    if taken:
+        raise ConfigError(
+            f"An operator declares the experiment key {taken[0]!r}, which kind "
+            f"{kind_registry.qualified(claimed[taken[0]].kind_id)} owns"
+        )
     scheduled = {}
     for key in keys:
         if key not in e:

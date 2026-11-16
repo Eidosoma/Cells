@@ -243,9 +243,10 @@ def structure_names(implementation):
     work = tuple(k for k in added if k.endswith("_work_pJ"))
     kinds = tuple(kind_id for kind_id, _ in implementation.structure.kinds)
     owned = {}
+    entries = dict(implementation.structure.kinds)
     for kind_id in kinds:  # The registry the object's types were built from (its cache key).
-        kind = kind_registry.active().lookup(kind_id)
-        owned |= dict.fromkeys(
+        kind = kind_registry.bound(kind_registry.active().lookup(kind_id), entries[kind_id])
+        owned |= dict.fromkeys(  # Its fields for the declaration (§7.4 (n) 5).
             (*kind.state_fields, *kind.layout_fields, *kind.control_fields), kind_id
         )
     return dict(
