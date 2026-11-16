@@ -276,10 +276,11 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
-- **Speed.** The timeline's speed lists the steps a run is offered, each in words: slowed
-  a million, a thousand or four times, true speed, and 4, 15, 60 or 240 times faster where
-  the run still lasts five seconds of watching. A run under two minutes opens at true
-  speed, a longer one at 60 times. The beads of a layer that moves keep the replay's
+- **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
+  run is offered slowed a million, a thousand or four times, true speed, and four times
+  faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
+  of watching. A run under two minutes opens at true speed; a longer one at 60 times, or
+  at 15 times where 60 is not offered. The beads of a layer that moves keep the replay's
   clock: paused, they stand.
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own: the engine's first run made for the viewer (one cell that secretes

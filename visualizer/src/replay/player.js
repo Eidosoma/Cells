@@ -30,9 +30,15 @@ export function speedsFor(seconds) {
   return LADDER.filter((speed) => speed <= 4 || seconds / speed >= SHORTEST);
 }
 
-/** The speed a run opens at: true speed for a run under two minutes, a minute of the run each second for a longer one. */
+/**
+ * The speed a run opens at, always one it is offered: true speed for a run under two minutes;
+ * for a longer one a minute of the run each second, or the fastest step it is offered where
+ * that is slower (a run of two to five minutes is not offered 60 times: it would be over in
+ * under five seconds, so it opens at 15 times).
+ */
 export function openingSpeed(seconds) {
-  return seconds < 120 ? 1 : 60;
+  if (seconds < 120) return 1;
+  return Math.max(...speedsFor(seconds).filter((speed) => speed <= 60));
 }
 
 const count = (value) => Math.round(value).toLocaleString("en-US");

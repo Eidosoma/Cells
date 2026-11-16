@@ -1209,7 +1209,12 @@ test("a replay is slowed or made faster from its timeline: a short run opens at 
   const slow = [1e-6, 1e-3, 0.25, 1, 4];
   assert.deepEqual(LADDER, [...slow, 15, 60, 240]);
   assert.deepEqual([speedsFor(4), speedsFor(12), speedsFor(119), speedsFor(2340)], [slow, slow, [...slow, 15], [...slow, 15, 60, 240]]);
-  assert.deepEqual([openingSpeed(4), openingSpeed(119), openingSpeed(120), openingSpeed(2340)], [1, 1, 60, 60]);
+  assert.deepEqual([openingSpeed(4), openingSpeed(119), openingSpeed(120), openingSpeed(299), openingSpeed(300), openingSpeed(2340)], [1, 1, 15, 15, 60, 60]);
+  // A run opens at a speed it is offered, whatever its length: a run of two to five minutes is not offered 60 times.
+  for (const seconds of [0.004, 4, 60, 119, 120, 150, 299, 300, 1199, 1200, 2340, 4080, 86400]) assert.ok(speedsFor(seconds).includes(openingSpeed(seconds)), `a run of ${seconds} s opens at ${openingSpeed(seconds)}, which it is not offered`);
+  const middling = new Player();
+  middling.load({ start: 0, end: 150, t: Float32Array.of(0, 150), count: 2, indexAt: () => 0 });
+  assert.deepEqual([middling.speed, [...SPEEDS]], [15, [...slow, 15]], "a run of two and a half minutes opens at 15 times, the fastest step in its list");
   const player = new Player();
   player.load({ start: 0, end: 4, t: Float32Array.of(0, 4), count: 2, indexAt: () => 0 });
   assert.deepEqual([player.speed, [...SPEEDS]], [1, slow], "a second of watching is a second of the run");
