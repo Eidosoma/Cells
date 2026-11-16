@@ -173,6 +173,23 @@ class Records:
             ledgers=dict(charge_residual_C=self.charge[1], charge_tolerance_C=self.charge[2]),
         )
 
+    def start(self):
+        """FR-5's start (§13.2) from the last record: (nodes, readouts) for
+        definitions.start_extract. Each node's FR-4 rows (fmol) and its charge (C), the engine's
+        own (surface_pump_v3.node_charge of the last state: cells, then outside nodes), and the
+        last record's pH_c, pH_L and V_b."""
+        charges = np.asarray(self.v3.node_charge(self.last, self.p, xp=np))
+        nodes = {}
+        for k, node in enumerate(self.cells + self.outside):
+            index = k if k < len(self.cells) else self.p.active.size + k - len(self.cells)
+            nodes[node] = dict(
+                amounts_fmol={s: self.amounts[node][s][-1] for s, _ in defs.SPECIES},
+                charge_C=float(charges[index]),
+            )
+        readouts = dict(pH_c=self.series["pH_c"][-1], pH_L=self.series["pH_L"][-1],
+                        V_b_V=self.series["V_b"][-1])
+        return nodes, readouts
+
 
 def envelope_reason(definition):
     """ "envelope" when the development world, refused at the definition, is admitted with B4's
@@ -221,7 +238,7 @@ def one_world(sink, world_id=VECTOR_WORLD_ID):
 def _run_vector(spec, sink, window_steps):
     """The one world through cells.core.vector_windows (every accepted row checked on the device:
     the model's device_checks, the kinds' check hooks included): (steps, diagnostics, timings,
-    resources), the windowed runner's result fields."""
+    resources, final checkpoint), the windowed runner's result fields."""
     from cells.core.batch import BatchSpec, WorldSpec
     from cells.core.vector_windows import run_vector_windowed
     from cells.core.windows import WindowPolicy
@@ -232,11 +249,12 @@ def _run_vector(spec, sink, window_steps):
     )
     world = result.worlds[VECTOR_WORLD_ID]
     steps = int(world.final.step_index - world.start_step)
-    return steps, dict(world.diagnostics), dict(result.timings), dict(result.resources)
+    return (steps, dict(world.diagnostics), dict(result.timings), dict(result.resources),
+            world.final)
 
 
 def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
-        world="development"):
+        world="development", checkpoint_dir=None):
     """The engine part's record of `definition`'s development world (module docstring). With
     `registry` the build runs inside kind_registry.scope(registry) (a planted control's). `path`
     is "host" (cells.core.windows.run_windowed: every accepted row checked on the host) or
@@ -244,7 +262,11 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
     device, the observations through `one_world`); the records are the same fields. `world` is
     "development" (definitions.development_world: without FR-1's compartment operator) or
     "declared" (definitions.declared_world: the composite with it, which must give the same
-    records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1)."""
+    records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1). With `checkpoint_dir` (FR-5's
+    start part) a run that completes also writes the engine's snapshot of its final state there
+    (cells.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`
+    (Records.start, from its last record: the run ends on a record), for
+    definitions.start_extract."""
     from cells.core import kind_registry
     from cells.core.errors import NumericalError
     from cells.core.specs import ConfigError, parse_spec
@@ -283,17 +305,26 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
         sink = Records(spec, model)
         try:
             if path == "vector":
-                steps, diagnostics, timings, resources = _run_vector(spec, sink, window_steps)
+                steps, diagnostics, timings, resources, final = _run_vector(
+                    spec, sink, window_steps
+                )
             else:
                 result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=sink)
                 steps = int(result.final.step_index - result.start_step)
                 diagnostics, timings = dict(result.diagnostics), dict(result.timings)
-                resources = dict(result.resources)
+                resources, final = dict(result.resources), result.final
         except (ConfigError, NumericalError) as error:
             out["refusal"] = f"run: {error}"
             out.update(sink.record(completed=False))
             out["steps"] = int(round(sink.record_s[-1] / spec.execution.dt)) if sink.record_s else 0
             return out
+        if checkpoint_dir is not None:  # FR-5's start: the snapshot, then the start's parts.
+            from cells.io import write_snapshot
+
+            if sink.record_s[-1] != final.time:
+                raise ValueError("FR-5's start needs a record at the run's end")
+            write_snapshot(checkpoint_dir, spec, final)
+            out["start_nodes"], out["start_readouts"] = sink.start()
     out.update(sink.record(completed=True))
     out.update(
         completed=True,

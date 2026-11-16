@@ -118,12 +118,9 @@ ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PAR
 # What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
 # everything is wired.
 STAND_INS = {
-    "start_checkpoint": "FR-5's start part (the engine's snapshot and the start extract) is not "
-                        "wired yet",
     "fr5_kinds": "FR-5's damage state and its routes' factors are not in the engine yet",
 }
 STAND_IN_PARTS = {
-    "start_checkpoint": {"start"},
     "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
 }
 
@@ -177,10 +174,6 @@ ENGINE_READOUTS = dict(
 )
 
 
-class NotWired(RuntimeError):
-    """The engine path is a stand-in on this branch."""
-
-
 def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
                world=DEVELOPMENT_WORLD):
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
@@ -189,18 +182,17 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
     backend in float64, every accepted row checked on the host (`path` "host", development) or
     on the device in a vector window ("vector", the protocols' execution path). `planted`
     names a planted law registered only inside its block (K2). With `checkpoint_dir` (FR-5's
-    start part) it is to write the engine's snapshot there at the end (cells.io.write_snapshot)
-    and return, under `extract`, definitions.start_extract(producer="engine", ...) of that state,
-    a stand-in (STAND_INS)."""
+    start part) a completed run also writes the engine's snapshot there at the end
+    (cells.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`,
+    which fr5_start makes the start extract (definitions.start_extract, producer "engine")."""
     from validation.compartment_ph_engine import engine_records
     from validation.compartment_ph_engine import planted as plants
 
-    if checkpoint_dir is not None:
-        raise NotWired(STAND_INS["start_checkpoint"])
     if planted is not None:  # K2's reversed pump, registered only inside its block.
         registry = plants.registry(plants.PLANTED[planted]())
-        return engine_records.run(definition, registry=registry, path=path, world=world)
-    return engine_records.run(definition, path=path, world=world)
+        return engine_records.run(definition, registry=registry, path=path, world=world,
+                                  checkpoint_dir=checkpoint_dir)
+    return engine_records.run(definition, path=path, world=world, checkpoint_dir=checkpoint_dir)
 
 
 def engine_part(definition, context, *, planted=None, checkpoint_dir=None):
@@ -242,16 +234,24 @@ def fr4_reference(name, context):
 
 
 def fr5_start(name, context):
-    """FR-4's declared world to the checkpoint time, then the snapshot and the extract."""
+    """FR-4's declared world to the checkpoint time, then the engine's snapshot and the start
+    extract (OUT_DIR/start.json) every other FR-5 part reads. A run the engine refuses writes
+    neither: its record carries the refusal, and FR-5's other parts have no start."""
     del name
     end = QUICK_END_S if context["quick"] else stage.START_TIME_S
     definition = defs.fr4_world(replace(World(), end_s=end), dt_s=FR4_DECLARED_DT)
-    record = engine_part(definition, context,
-                         checkpoint_dir=context["out_dir"] / "engine_snapshot")
-    extract = record.pop("extract")
+    snapshot = context["out_dir"] / "engine_snapshot"
+    record = engine_part(definition, context, checkpoint_dir=snapshot)
+    nodes, readouts = record.pop("start_nodes", None), record.pop("start_readouts", None)
+    if nodes is None:
+        return record
+    extract = defs.start_extract(
+        producer="engine", nodes=nodes, readouts=readouts, time_s=record["record_s"][-1],
+        dt_s=FR4_DECLARED_DT, source=snapshot_identity(), engine_snapshot=str(snapshot),
+        world=f"fr4_world(replace(World(), end_s={end!r}))")
     path = context["out_dir"] / "start.json"
-    path.write_text(json.dumps(extract, indent=1, allow_nan=False) + "\n")
-    record["extract_sha256"] = defs.start_sha256(extract)
+    path.write_text(json.dumps(plain(extract), indent=1, allow_nan=False) + "\n")
+    record["extract_sha256"] = defs.start_sha256(plain(extract))
     return record
 
 

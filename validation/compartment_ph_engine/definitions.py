@@ -16,7 +16,11 @@ the declared world runs with the operator and is shown bitwise equal to it, or t
 is corrected as a dated pre-run correction.
 
 `today_only(definition)` strips what today's parser refuses: the compartment operator, FR-5's
-damage state and controls, and the passive routes that declare factors (FR-5's, dropped whole).
+damage state, conditions and schedules, and the passive routes that declare factors (FR-5's,
+dropped whole). FR-5's parts are the FR-4/FR-5 note's §16 forms: `patch_damage`
+(cells.patch_damage@1) and `ph_conditions` (cells.ph_condition@1, at a node by its ID) are the
+routing door's sources, and a route's `factors` lists their IDs in declared order; the schedules
+take the core's gap-6 format when it lands (`damage_controls` is the draft's placeholder).
 Rows that do not apply at a node carry the world's declared trace (absent rows are refused, the
 operators' PLAN §2.4), with `background` (trace_mM, floor_fmol) on B_c, B_L, ATP, ADP and Pi. The
 closure's mask is the declared (node, row) pairs, so a trace is never a live buffer.
@@ -41,7 +45,7 @@ from validation.compartment_ph_engine.parameters import CHARGE_PER_FMOL, R, Worl
 
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
-PENDING_MODEL_KEYS = ("operators", "patch_damage")
+PENDING_MODEL_KEYS = ("operators", "patch_damage", "ph_conditions")
 COMPOSITE_MODEL = "resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
 PENDING_EXPERIMENT_KEYS = ("damage_controls",)
@@ -54,6 +58,7 @@ RECORD_EVERY_S = 1.0
 START_KIND = "cells.compartment_ph_start@1"
 START_PRODUCERS = ("engine", "reference_self_check")
 FR5_CONTROLS = ("f_equals_1", "d_equals_0")  # arm T's control (no condition); arm R's (no damage)
+DAMAGE, CONDITION = "damage_0", "acid_0"  # FR-5's routing-door sources (the note's §16.2)
 
 
 def record_stride(end_s, dt_s, every_s=RECORD_EVERY_S):
@@ -184,20 +189,18 @@ def fr5_world(damage_world, *, dt_s=None, start=None, control=None):
     dw.start_checkpoint_s: each node takes its amounts and charge, and its fixed charge follows
     from them (charge / CHARGE_PER_FMOL - sum z n); X is added at its declared start amounts
     (neutral, so the charges stand). Without it the definition keeps FR-4's pH 7.2 start, which is
-    not FR-5's declared start: the qualification generator refuses to run it. `control` is
+    not FR-5's declared start: the qualification generator refuses to run it. The definition
+    holds exactly schema_version, model, experiment and execution (parse_spec's keys): the
+    extract's identity is the part's record's (the generator's `_with_start`). `control` is
     "f_equals_1" (the conditioned route without its factor: arm T's control) or "d_equals_0" (no
     injury, so d stays 0: arm R's control). A cargo pore of zero permeability is left out (arm T's
-    proton-only pore), as in the references' arms."""
+    proton-only pore), as in the references' arms. The condition names the lumen's node (a kind's
+    parse sees the base model's nodes, not FR-1's identity map: the note's §16.2)."""
     dw = damage_world
     if control not in (None, *FR5_CONTROLS):
         raise ValueError(f"unknown FR-5 control {control!r}")
     base = fr4_world(replace(dw.base, end_s=dw.horizon_s), dt_s=dt_s or dw.dt_s)
     m, e = base["model"], base["experiment"]
-    base["start"] = dict(from_world="fr4", checkpoint_time_s=dw.start_checkpoint_s,
-                         extract_sha256=None if start is None else start_sha256(start),
-                         producer=None if start is None else start["producer"],
-                         note="FR-4's engine checkpoint at steady state; the cargo X is added "
-                              "at its declared start amounts")
     z = dict(SPECIES)
     if start is not None:
         if abs(start["time_s"] - dw.start_checkpoint_s) > 1e-9 * dw.start_checkpoint_s:
@@ -218,27 +221,26 @@ def fr5_world(damage_world, *, dt_s=None, start=None, control=None):
     for patch in m["membranes"]:
         patch["permeability_m_per_s"]["X"] = 0.0
     base["execution"]["material_balance_atol_fmol"]["X"] = 1e-12
-    m["patch_damage"] = [dict(id="damage_0", patch=BOUNDING, law="bounding_patch_damage@1",
+    m["patch_damage"] = [dict(id=DAMAGE, patch=BOUNDING, law="bounding_patch_damage@1",
                               initial_damage=0.0, injury_rate_per_s=dw.injury_rate_per_s,
                               resealing_rate_per_s=dw.resealing_rate_per_s)]
-    condition = [dict(law="ph_conditioned_factor@1", compartment="compartment_0", ph50=dw.ph50,
-                      slope=dw.ph_slope)]
+    m["ph_conditions"] = [dict(id=CONDITION, node=LUMEN, law="ph_conditioned_factor@1",
+                               ph50=dw.ph50, slope=dw.ph_slope)]
     m["passive_routes"].append(
         dict(id="cargo_transfer_0", patch=BOUNDING, law="passive_neutral_permeation@1",
              species="X", permeability_m_per_s=dw.cargo_transfer_m_s,
-             factors=[] if control == "f_equals_1" else condition))
+             factors=[] if control == "f_equals_1" else [CONDITION]))
     if dw.pore_cargo_m_s > 0:
         m["passive_routes"].append(
             dict(id="cargo_pore_0", patch=BOUNDING, law="passive_neutral_permeation@1",
-                 species="X", permeability_m_per_s=dw.pore_cargo_m_s,
-                 factors=[dict(law="damage", id="damage_0")]))
+                 species="X", permeability_m_per_s=dw.pore_cargo_m_s, factors=[DAMAGE]))
     m["passive_routes"].append(
         dict(id="proton_pore_0", patch=BOUNDING, law="proton_constant_field_leak@1",
-             permeability_m_per_s=dw.pore_proton_m_s, factors=[dict(law="damage", id="damage_0")]))
+             permeability_m_per_s=dw.pore_proton_m_s, factors=[DAMAGE]))
     t0, t1 = dw.injury_window_s
     injury = [dict(time=0.0, value=0.0)] + ([] if control == "d_equals_0" else [
         dict(time=t0, value=1.0), dict(time=t1, value=0.0)])
-    e["damage_controls"] = [dict(damage_id="damage_0", injury=injury,
+    e["damage_controls"] = [dict(damage_id=DAMAGE, injury=injury,
                                  resealing=[dict(time=0.0, value=0.0), dict(time=t1, value=1.0)])]
     return base
 

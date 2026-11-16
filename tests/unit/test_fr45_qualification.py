@@ -724,7 +724,10 @@ def test_fr5_takes_the_extracts_amounts_and_charges_and_its_controls():
         net = node["fixed_charge_equivalent_fmol"] + math.fsum(
             z.get(s, 0) * n for s, n in node["initial_amount_fmol"].items())
         assert net * CHARGE_PER_FMOL == pytest.approx(taken["charge_C"], rel=1e-9, abs=1e-24)
-    assert d["start"]["extract_sha256"] == defs.start_sha256(extract)
+    assert "start" not in d  # The part's record carries the extract's identity instead.
+    recorded = generator._with_start({}, dict(start=extract))["start"]
+    assert recorded == dict(extract_sha256=defs.start_sha256(extract),
+                            producer="reference_self_check", time_s=1800.0)
     routes = {r["id"]: r for r in defs.fr5_world(ARM_T, start=extract,
                                                  control="f_equals_1")["model"]["passive_routes"]}
     assert routes["cargo_transfer_0"]["factors"] == [] and "cargo_pore_0" not in routes
