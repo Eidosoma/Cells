@@ -101,6 +101,7 @@ const shapeFiles = await listed(path.join(DATA, "species", "shapes"), isJson);
 const atlasFiles = await listed(path.join(DATA, "proteins", "atlases"), isJson);
 const shelfFiles = (await listed(path.join(DATA, "proteins"), (entry) => entry.isDirectory())).map((folder) => path.join(folder, "shelves.json")).filter((file) => existsSync(file));
 const evidenceFiles = await listed(path.join(DATA, "evidence"), isJson);
+const machineFiles = await listed(path.join(DATA, "machines"), isJson);
 const rel = (file) => path.relative(ROOT, file);
 
 /** A source's class and licence, checked: both there, the class one of three, and the two in agreement. */
@@ -123,9 +124,9 @@ function paperOf(text) {
 const toName = new Map();
 const mustName = (note, label, pattern) => toName.set(note, [...(toName.get(note) || []), [label, pattern]]);
 
-test("the records are found: species, shapes, atlases, shelves and the evidence inventory", () => {
-  assert.ok(speciesFiles.length >= 4 && atlasFiles.length >= 3 && shelfFiles.length >= 3 && evidenceFiles.length >= 1, "a folder of records is missing or empty");
-  for (const file of [...speciesFiles, ...atlasFiles, ...shelfFiles, ...evidenceFiles]) assert.ok(existsSync(file), rel(file));
+test("the records are found: species, shapes, atlases, shelves, the evidence inventory and the machines", () => {
+  assert.ok(speciesFiles.length >= 4 && atlasFiles.length >= 3 && shelfFiles.length >= 3 && evidenceFiles.length >= 1 && machineFiles.length >= 1, "a folder of records is missing or empty");
+  for (const file of [...speciesFiles, ...atlasFiles, ...shelfFiles, ...evidenceFiles, ...machineFiles]) assert.ok(existsSync(file), rel(file));
 });
 
 test("a species file: every source has its class; facts, levels and capabilities rest on permissive sources; any other source is a pointer", async () => {
@@ -182,6 +183,38 @@ test("a species file: every source has its class; facts, levels and capabilities
       assert.ok(paper, `${where}: the citation of ${key} does not begin with an author and a year`);
       mustName(note, `${key} (${where})`, named(...paper));
     }
+  }
+});
+
+// The open papers whose numbers alone a machine file may take, with no licence declared: the
+// user's ruling of 16 November 2026 ("you can use any numbers from open papers even if no
+// licence is decrlared"). Each is named here, by machine file and key, so that a new one is
+// seen; the file holds the number, the citation and the place in the paper, and none of its text.
+// None yet: Deme and others 2020 was taken out on 16 November 2026, because its manuscript's
+// own text states terms for academic research, and the ruling is for papers with none.
+const NUMBERS_ONLY = {};
+
+test("a machine file: every source has its class; its sentences are of permissive sources; an open paper with no licence gives numbers alone, and is in the register", async () => {
+  assert.ok(machineFiles.length >= 1, "no machine file was found");
+  for (const file of machineFiles) {
+    const machine = await json(file);
+    const where = rel(file), name = path.basename(file);
+    const sources = machine.sources || {};
+    for (const [key, source] of Object.entries(sources)) held(source, `${where}: source ${key}`);
+    const register = NUMBERS_ONLY[name] || [];
+    for (const [key, source] of Object.entries(sources)) {
+      if (source.class === "permissive") continue;
+      assert.equal(source.standing, "open paper, numbers only", `${where}: ${key} is ${source.class} and is not an open paper whose numbers alone are taken`);
+      assert.ok(register.includes(key), `${where}: ${key} gives numbers with no licence declared and is not in the register NUMBERS_ONLY: put it to the user`);
+      assert.equal(source.class, "no stated terms", `${where}: ${key}`);
+      assert.ok(source.doi, `${where}: ${key} has no DOI`);
+    }
+    for (const key of register) assert.equal(sources[key]?.standing, "open paper, numbers only", `${where}: the register names ${key}, which the file does not take numbers from`);
+    // A sentence quoted in the file is of a permissive source; a number from another rests on its place in the paper.
+    for (const [key, sentence] of Object.entries(machine.sentences || {})) assert.equal(sources[sentence.source]?.class, "permissive", `${where}: the sentence ${key} is of ${sentence.source}`);
+    const reads = [];
+    JSON.stringify(machine, (field, value) => (field === "read" && value && !Array.isArray(value) && typeof value === "object" ? (reads.push(value), value) : value));
+    for (const read of reads) assert.ok(register.includes(read.source) && read.where, `${where}: a number read from ${read.source} with ${read.where ? "" : "no place, and "}${register.includes(read.source) ? "" : "no entry in the register"}`);
   }
 });
 
