@@ -22,17 +22,19 @@ programs on identical inputs run identically on a CPU. Outputs written before co
 were recorded (13 November 2026) have no .consts.json files: compare says so, and its
 verdict then covers the texts and bindings only.
 
-Four world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+Five world sets: base (small worlds of every structure: routes, sheets, RK4, events,
 donors, padding), qualification (the guarded qualification worlds themselves:
 W1's trajectories, W2's arms and G2-Q1's cases), injection (electrode injection
-without a field-input provider, the Rm1 egg included) and volume (replacement@2 over
-water, v2 design §2; recorded from its first revision on, with constants). For the
+without a field-input provider, the Rm1 egg included), volume (replacement@2 over
+water, v2 design §2; recorded from its first revision on, with constants) and kinds
+(kind-declaring worlds, D187 rule 2: FR-4's development and declared worlds and FR-5's arm
+T; recorded from 16 November 2026, after D172's landing). For the
 qualification set, bindings are also saved at every step size of the dt studies the
 guards did not repeat (W1's and Q5's), since dt enters the bound inputs (step counts,
 event steps) as well as the traced program.
 
 Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification,
-injection or volume):
+injection, volume or kinds):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -230,6 +232,40 @@ def volume_worlds():
     )
 
 
+def _first_steps(definition, steps=5):
+    """The definition over its first steps, recorded at its start and end."""
+    import copy
+
+    out = copy.deepcopy(definition)
+    dt = out["execution"]["dt"]
+    out["experiment"]["end_time"] = steps * dt
+    out["experiment"]["observation_times"] = [0.0, steps * dt]
+    out["execution"]["max_steps"] = steps + 8
+    return out
+
+
+def kinds_worlds():
+    """Kind-declaring worlds (validation/compartment_ph_engine/definitions.py), the other sets
+    declaring none: FR-4's development world (@3 with the three built-in kinds, the
+    transporter's controls and the exact-booked neutral route), its declared world (the
+    composite with FR-1's compartment operator) and FR-5's arm T development world in the form
+    today's parser reads (definitions.today_only: its damage factors and patch operator are
+    pending), each over its first five steps. Out of tree until 16 November 2026 (core-next's
+    kinds_crossrev.py)."""
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine import parameters as par
+
+    fr4 = _first_steps(defs.fr4_world())
+    declared = defs.declared_world(fr4)
+    declared.pop("start", None)
+    fr5 = _first_steps(defs.fr5_world(par.ARM_T, control="f_equals_1"))
+    return {
+        "fr4_development": defs.development_world(fr4),
+        "fr4_declared": declared,
+        "fr5_t_development": defs.today_only(defs.development_world(fr5)),
+    }
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
@@ -239,7 +275,11 @@ def _worlds(world_set, all_steps):
         return injection_worlds()
     if world_set == "volume":
         return volume_worlds()
-    raise SystemExit(f"Unknown world set {world_set!r} (base, qualification, injection or volume)")
+    if world_set == "kinds":
+        return kinds_worlds()
+    raise SystemExit(
+        f"Unknown world set {world_set!r} (base, qualification, injection, volume or kinds)"
+    )
 
 
 def _setup(raw):
