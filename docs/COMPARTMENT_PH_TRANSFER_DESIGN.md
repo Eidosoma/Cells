@@ -10,7 +10,8 @@ design before code (D142).
 
   Its protocol, `fr4-acidification-v1`, is proposed. Its dt study's development reading passed on
   16 November. Registration is the lead's.
-- **FR-5 (§16) is accepted,** and built on branch `fr45-next`, not yet on main:
+- **FR-5 (§16) is accepted,** and built and on main since fr45-next merged (16 November), for
+  development, not judged. Its protocol, `fr5-transfer-v1`, is proposed. What merged:
   - the two source kinds;
   - refusal 4 version 1.2 and refusal 5 version 1.1 (CLOSED_COMPARTMENT_DESIGN §3.4.2–3.4.3);
   - FR-5's start part.

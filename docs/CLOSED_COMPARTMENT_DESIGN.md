@@ -6,7 +6,7 @@
 
 **Refusals 4 and 5, later versions (status 16 November 2026):**
 - **On main,** with D172's round (ab267c39): refusal 4 version 1.1 (§3.4.1, FR-4's kinds).
-- **On branch `fr45-next`, not yet on main:**
+- **On main since fr45-next merged (16 November):**
   - refusal 4 version 1.2 (§3.4.2, FR-5's source kinds);
   - refusal 5 version 1.1 (§3.4.3, the charge anchor where charged routes are admitted).
 
