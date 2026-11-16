@@ -11,9 +11,9 @@ from dataclasses import replace
 
 import pytest
 
-from validation.compartment_ph import definitions as defs
 from validation.compartment_ph import ph_reference as ph
-from validation.compartment_ph.parameters import ARM_R, ARM_T, World
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, World
 from validation.tissue import compartment_ph_reference_stage as stage
 
 

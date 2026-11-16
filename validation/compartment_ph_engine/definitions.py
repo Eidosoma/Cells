@@ -37,7 +37,7 @@ import json
 import math
 from dataclasses import replace
 
-from validation.compartment_ph.parameters import CHARGE_PER_FMOL, R, World, h_from_ph
+from validation.compartment_ph_engine.parameters import CHARGE_PER_FMOL, R, World, h_from_ph
 
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))

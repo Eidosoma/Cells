@@ -58,9 +58,9 @@ import time
 from dataclasses import replace
 from pathlib import Path
 
-from validation.compartment_ph import definitions as defs
-from validation.compartment_ph import dt_study
-from validation.compartment_ph.parameters import World
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine import dt_study
+from validation.compartment_ph_engine.parameters import World
 from validation.tissue import compartment_ph_reference_stage as stage
 
 ROOT = Path(__file__).resolve().parents[2]

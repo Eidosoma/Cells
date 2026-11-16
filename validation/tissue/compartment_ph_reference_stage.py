@@ -8,19 +8,19 @@ Constants and ph.integrate; tr.Start, TransferWorld, CargoRoute, Damage, Window,
 tr.integrate. Nothing here changes them.
 
 * **The worlds** are built from the engine's declared parameters
-  (validation/compartment_ph/parameters: World, ARM_T, ARM_R), so the reference integrates the same
-  declared values the engine's definitions carry (exact geometry and constants). The references'
-  own transcriptions of §13 (ph.acceptance_world; transfer_arms_crosschecks.ARMS and its damage
-  rates; tr.steady_start's X) are checked against them first (`consistency`): geometry within
-  1e-5 relative (they typed six digits), the pump's capacity within 1e-4 (typed 8.3027e-3), the
-  constants within 1e-9, every other value exactly. A disagreement refuses the stage.
-* **FR-5's start** is the start extract (validation/compartment_ph/definitions.read_start): FR-4's
-  engine checkpoint at 1800 s, passed as tr.Start(Heq_fmol, ions_fmol, X_fmol), each a (cytosol,
-  lumen) pair, the ions as {Na, K, Cl} fmol (the usage note's `steady_start`); X at its declared
-  start amounts, the same products of volume and concentration as definitions.fr5_world's. The
-  stage refuses unless the reference's row 0 reproduces the extract's pH_c, pH_L and V_b within
-  START_TOLERANCE: rounding, about 1e-15 in pH and 4e-14 V for V_b here (eps x sum |z n| x
-  F 1e-15 / C_b), with a margin of about 25 x.
+  (validation/compartment_ph_engine/parameters: World, ARM_T, ARM_R), so the reference integrates
+  the same declared values the engine's definitions carry (exact geometry and constants). The
+  references' own transcriptions of §13 (ph.acceptance_world; transfer_arms_crosschecks.ARMS and
+  its damage rates; tr.steady_start's X) are checked against them first (`consistency`): geometry
+  within 1e-5 relative (they typed six digits), the pump's capacity within 1e-4 (typed 8.3027e-3),
+  the constants within 1e-9, every other value exactly. A disagreement refuses the stage.
+* **FR-5's start** is the start extract (validation/compartment_ph_engine/definitions.read_start):
+  FR-4's engine checkpoint at 1800 s, passed as tr.Start(Heq_fmol, ions_fmol, X_fmol), each a
+  (cytosol, lumen) pair, the ions as {Na, K, Cl} fmol (the usage note's `steady_start`); X at its
+  declared start amounts, the same products of volume and concentration as definitions.fr5_world's.
+  The stage refuses unless the reference's row 0 reproduces the extract's pH_c, pH_L and V_b within
+  START_TOLERANCE: rounding, about 1e-15 in pH and 4e-14 V for V_b here (eps x sum |z n| x F 1e-15
+  / C_b), with a margin of about 25 x.
 * **Records** every 1 s on the engine's grid (keyed by integer second): FR-4's 901 rows, FR-5's
   401. Each world also runs at rtol 1e-12 (the floor: the reference's own term).
 
@@ -50,11 +50,11 @@ import sys
 import time
 from pathlib import Path
 
-from validation.compartment_ph import definitions as defs
 from validation.compartment_ph import ph_reference as ph
 from validation.compartment_ph import transfer_arms_crosschecks as references_arms
 from validation.compartment_ph import transfer_reference as tr
-from validation.compartment_ph.parameters import ARM_R, ARM_T, F, R, World
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, F, R, World
 
 RTOL, FLOOR_RTOL = 1e-11, 1e-12  # the references' declared rtol, and their floor's
 START_TOLERANCE = dict(pH_c=1e-11, pH_L=1e-11, V_b_V=1e-11)

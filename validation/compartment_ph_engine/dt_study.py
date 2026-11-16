@@ -6,17 +6,19 @@ study confirms its world's declared step once the laws are wired: it extends the
 both sides, and judges the state's convergence and the energy residual against the criteria
 written here before any run.
 
-This module is engine-free (it sits beside the independent references, whose folder imports
-nothing from the engine). The runs themselves are the qualification generator's parts
+It lives in validation/compartment_ph_engine/, the lane's engine-facing package (parameters,
+definitions and this study; on fr45-transporter the engine's records and planted laws), apart from
+the independent references' code-blind folder validation/compartment_ph/ (the lead's ruling, 16
+November 2026). The runs themselves are the qualification generator's parts
 (validation/tissue/compartment_ph_qualification.py): a development dt study is its `dev` entry
 on the ladder's parts, and its verdict is the judge's development verdict
 (validation/tissue/compartment_ph_judge.py) against the protocol's criteria, which carry C1-C9
 and F1-F5 below.
 
 Usage:
-    python -B -m validation.compartment_ph.dt_study OUTDIR --write-criteria   # before any run
-    python -B -m validation.compartment_ph.dt_study OUTDIR --dry              # builds, no engine
-    python -B -m validation.compartment_ph.dt_study OUTDIR --run              # names the generator
+    python -B -m validation.compartment_ph_engine.dt_study OUTDIR --write-criteria  # first
+    python -B -m validation.compartment_ph_engine.dt_study OUTDIR --dry  # builds, no engine
+    python -B -m validation.compartment_ph_engine.dt_study OUTDIR --run  # names the generator
 """
 
 import json
@@ -24,8 +26,8 @@ import math
 import sys
 from pathlib import Path
 
-from validation.compartment_ph.definitions import fr4_world, fr5_world, today_only
-from validation.compartment_ph.parameters import ARM_R, ARM_T, World
+from validation.compartment_ph_engine.definitions import fr4_world, fr5_world, today_only
+from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, World
 
 LADDER_S = (2e-3, 1e-3, 5e-4, 2.5e-4)  # dt x G/C_b = 0.051, 0.025, 0.013, 0.0063 (max-side)
 OBSERVABLES = ("lumen_pH", "patch_voltage_V", "lumen_K_fmol", "pump_cycles_fmol")
