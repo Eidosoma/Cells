@@ -1006,9 +1006,10 @@ the insertion point is CORE's. Its conventions, fixed here:
   longer signals an overshoot by itself (§7.5).
 - **As built (core-d172 6a43f189, 7af1382f; the lead's ruling: one kind, laws by contract):** the
   kind `cells.passive_routes@1` (`models/inner_kinds/passive_routes.py`), model key
-  `passive_routes` in FR-4's form (`validation/compartment_ph/definitions.py`): a list of {id,
-  patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row; the
-  leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's laws)}.
+  `passive_routes` in FR-4's form (`validation/compartment_ph_engine/definitions.py`): a list of
+  {id, patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row;
+  the leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's
+  laws)}.
   - `passive_neutral_permeation@1`: the kernel's Fick flux on the read amounts, inward from the
     host's outside end to its inside end; §7.5's exact booking where version 1's scope mask
     (`passive_exact`, set at binding from `moved_nodes`; a route touching a held bath is never
@@ -1297,14 +1298,23 @@ undeclared built-in changes nothing:
    - **Per-stage diagnostics (gap 7, dfe1234c):** `stage_values(read, cell, outside, p, *, xp)` →
      {own state field: value} at every explicit IMEX stage, with `stage_extrema` = ((field,
      "max" | "min"), ...); the step's end state holds each field's running extremum over every
-     stage so far (RK4 leaves them). B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
+     stage so far. B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
      `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
 3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
    `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
    state field (the tableau's explicit and implicit weights). Every kind receives the same end
    state (before any kind books) and may write only its own state fields, so bookings commute. A
    false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
-   booking is one. Under RK4 the kind's derivative fields integrate like any state.
+   booking is one.
+   - **Kinds need an IMEX solver (the lead's ruling, 16 November 2026; compartment-op-fixes
+     9a48041c).** @3 refuses a definition that declares kinds under RK4, fail-closed
+     (`surface_pump_v3._check_kinds_solver`). Every step guard above belongs to the IMEX step:
+     the host step checks hold B7's term and the kinds' `bound_rate` for the IMEX solvers only,
+     and the per-stage rule (`stage_term`) and the bookings run in `imex_step` only, so an RK4
+     step ran none of them and kept only its 0.1 ms cap. The earlier reading here, that under
+     RK4 a kind's derivative fields integrate like any state, described that unguarded path; no
+     test or world used it. A design for kinds under RK4 can lift the refusal. The core's review
+     of FR-1's refusal 4, version 1.1, found the gap (CLOSED_COMPARTMENT_DESIGN.md §3.4.1).
 4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
    (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
    `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
