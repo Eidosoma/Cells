@@ -5,6 +5,7 @@
  "organism": "Homo sapiens",
  "taxon": 9606,
  "plain": "The law inventory names its candidate proteins by their human genes, so the human side of the protein atlas is the inventory's own.",
+ "group": "Animals",
  "order": 10,
  "default": false,
  "made": "2026-11-15",

@@ -3306,7 +3306,34 @@
         {
           "path": "docs/CAPSID_ASSEMBLY.md"
         }
-      ]
+      ],
+      "left_out": {
+        "since": "2026-11-15",
+        "says": "protein-cage assembly",
+        "reason": "the cage is a designed protein, not a part of a cell",
+        "why": "The user, 15 November 2026: protein assemblies are one feature today and out of character with the rest of the picture, whose parts are all real or planned things of a cell; assembly may return later for a real machine, such as a proteasome. While this entry stands, the scene builder leaves the capability out of the scene, with every link to it, puts the note below on the engine parts that implement it, and uses the wordings below in place of the texts that name cages. Remove this entry and all of that comes back as it was.",
+        "engine_note": "Its cage is left out of the Cell view and the Protein atlas for now: it is a designed protein, not a part of a cell.",
+        "rewords": [
+          {
+            "in": "scales",
+            "id": "scale.molecule",
+            "field": "plain",
+            "to": "Channels and pumps are modelled as populations and counts, not atom by atom. Shapes drawn at this scale are illustrations."
+          },
+          {
+            "in": "scales",
+            "id": "scale.molecule",
+            "field": "note",
+            "to": null
+          },
+          {
+            "in": "model_groups",
+            "id": "separate",
+            "field": "description",
+            "to": "Models that run on their own: vertex mechanics and the regulatory circuits."
+          }
+        ]
+      }
     },
     {
       "id": "cap.machines",
@@ -4357,5 +4384,6 @@
       "origin": "curated",
       "description": "A capability and the engine parts behind it."
     }
-  ]
+  ],
+  "species_held": {}
 }

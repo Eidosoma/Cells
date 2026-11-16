@@ -4,6 +4,12 @@
 import * as THREE from "../three.js";
 import { OrbitRig } from "./controls.js";
 import { readPalette, watchTheme } from "./theme.js";
+import { Look, Decoration } from "./look.js";
+import { Finish } from "./passes.js";
+import { lookNumbers } from "./materials.js";
+
+// What a view that asks for nothing gets of the look at rest: nothing (see dress()).
+const FIT = { rich: false, filmic: true, exposure: 1.08, contact: true, reach: 1, shade: 0.6 };
 
 export class Stage {
   constructor({ canvas, host }) {
@@ -36,7 +42,23 @@ export class Stage {
     this.afterRender = new Set();
     this.paletteListeners = new Set();
     this.palette = readPalette(host);
-    this.reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.motion = matchMedia("(prefers-reduced-motion: reduce)");
+    this.reducedMotion = this.motion.matches;
+    // The look at rest (core/look.js): which effects are drawn, the clock of what moves only for
+    // decoration, the numbers every enriched material shares, and what the view shown asks for.
+    this.look = new Look();
+    this.decoration = new Decoration({ still: this.reducedMotion });
+    this.numbers = lookNumbers();
+    this.fit = { ...FIT };
+    this.finish = null; // the finishing passes (core/passes.js), made when first asked for
+    this.moving = false;
+    this.look.onChange(() => this.applyLook());
+    // A visitor may ask for less motion while the page is open: what the page says of the look follows.
+    this.onMotion = () => {
+      this.reducedMotion = this.decoration.still = this.motion.matches;
+      this.look.changed();
+    };
+    this.motion.addEventListener("change", this.onMotion);
     this.width = 1;
     this.height = 1;
     this.needsRender = true;
@@ -78,16 +100,94 @@ export class Stage {
     if (document.visibilityState === "visible") {
       for (const tick of this.listeners) animating = tick(dt, time) || animating;
     }
+    // What moves for decoration only keeps no frame coming by itself: it moves while a view does.
+    if (animating && this.decoration.tick(dt)) this.numbers.time.value = this.decoration.time;
     if (this.needsRender || animating) {
-      this.renderer.render(this.scene, this.camera);
+      this.draw();
       for (const callback of this.afterRender) callback();
       this.needsRender = false;
+      // A device that cannot keep a moving picture smooth gives up part of the rich look.
+      if (animating && this.moving) this.look.frame(dt);
     }
+    this.moving = animating;
     if (animating && document.visibilityState === "visible") {
       requestAnimationFrame((next) => this.frame(next));
     } else {
       this.running = false;
     }
+  }
+
+  /** One picture: the scene as it always was drawn, with the finishing passes over it where a view asked for them. */
+  draw() {
+    const finish = this.finish?.active ? this.finish : null;
+    if (!finish) {
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
+    // The counts of what was drawn are then of the whole frame, not of its last pass.
+    const info = this.renderer.info;
+    info.autoReset = false;
+    info.reset();
+    finish.setSize(this.width, this.height);
+    finish.before(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera);
+    finish.after();
+    info.autoReset = true;
+  }
+
+  // ------------------------------------------------------------ the look at rest
+
+  /**
+   * A view asks for the rich look while it is shown, and says what of it fits now:
+   *   rich      whether it wants the look at all (a view that never asks keeps the look it had);
+   *   filmic    false while its colours carry a meaning (status colours): those stay as their legend shows them;
+   *   exposure  how much light filmic light lets in: a little over 1 keeps the middle tones where they were;
+   *   contact   false while nothing solid is near enough for contact shade to show;
+   *   reach     how far one part closes another in, in the scene's units; shade  how dark, 0 to 1.
+   */
+  dress(fit = {}) {
+    this.fit = { ...FIT, ...fit };
+    this.look.want(this.fit.rich);
+    this.applyLook();
+  }
+
+  /** Bring the renderer, the shared numbers and the passes in line with the look as it now is. */
+  applyLook() {
+    const { look, fit, numbers } = this;
+    numbers.translucency.value = look.on("translucency") ? 1 : 0;
+    numbers.texture.value = look.on("texture") ? 1 : 0;
+    numbers.shimmer.value = look.on("shimmer") ? 1 : 0;
+    numbers.drift.value = look.on("drift") ? 1 : 0;
+    // Filmic light: highlights roll off instead of clipping (three.js's "neutral" curve, the
+    // Khronos one made to keep colours true). A mark whose colour carries a meaning stays out
+    // of it by its own material (toneMapped false).
+    const filmic = look.on("filmic") && fit.filmic;
+    this.renderer.toneMapping = filmic ? THREE.NeutralToneMapping : THREE.NoToneMapping;
+    this.renderer.toneMappingExposure = filmic ? fit.exposure : 1;
+    const size = fit.contact ? look.contact : 0;
+    if (size > 0 || this.finish) {
+      this.finish ??= new Finish(this.renderer);
+      this.finish.setContact(size, { reach: fit.reach, strength: fit.shade });
+    }
+    this.invalidate();
+  }
+
+  /**
+   * Bloom, for flux: on at this strength, off at 0. Only what was marked with glow() shines.
+   * `radius` is how wide the glow spreads (0 to 1); `floor` how bright a marked thing must be.
+   */
+  setBloom(strength = 0, options = {}) {
+    if (!(strength > 0) && !this.finish) return;
+    this.finish ??= new Finish(this.renderer);
+    this.finish.setBloom(strength, options);
+    this.invalidate();
+  }
+
+  /** Mark an object, with all it holds, as something the bloom shines from; glow(object, false) unmarks it. */
+  glow(object, on = true) {
+    this.finish ??= new Finish(this.renderer);
+    this.finish.glow(object, on);
+    this.invalidate();
   }
 
   resize() {
@@ -187,6 +287,8 @@ export class Stage {
     this.stopWatching();
     this.observer.disconnect();
     document.removeEventListener("visibilitychange", this.onVisibility);
+    this.motion.removeEventListener("change", this.onMotion);
+    this.finish?.dispose();
     this.rig.dispose();
     this.renderer.dispose();
   }

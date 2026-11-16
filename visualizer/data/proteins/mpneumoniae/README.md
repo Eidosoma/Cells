@@ -192,10 +192,14 @@ part, and its page says that commercial users pay a licence fee "irrespective of
 method by which they access the database". The licences of TMHMM, SignalP and TargetP and
 the terms of Phobius are of the programs: they say who may run them and say nothing of
 predictions made with them, and it was UniProt that ran them. HAMAP is distributed under
-CC BY 4.0. Whether placements that rest on PROSITE's rules, or on the academic programs,
-may stay in a commercial project is the project's to decide and is not settled here.
-Until it is, every such placement is counted above and is said to be predicted wherever
-it is shown.
+CC BY 4.0.
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** Every placement
+counted above was read in UniProt's entries, which UniProt gives out under CC BY 4.0, so
+each stands as UniProt gives it. Each tool and rule system is named in the table with its
+own terms and its count, and each such placement is said to be predicted wherever it is
+shown. This is the project's rule, and not a legal opinion.
 
 Cite:
 

@@ -34,12 +34,13 @@ const READER = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from lib import species as reader
-found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]))
+found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]))
 print(json.dumps({"species": found, "shapes": shapes, "warnings": warnings, "remarks": remarks,
                   "words": {"levels": reader.LEVELS, "states": reader.STATES, "kinds": sorted(reader.CELL_KINDS), "parts": sorted(reader.PARTS), "part_kinds": sorted(reader.PART_KINDS), "organelles": reader.ORGANELLES}}))
 `;
-function readFolder(folder) {
-  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES)], { encoding: "utf8" });
+/** `leftOut` names the capabilities the map leaves out of the picture for now, as the build passes them. */
+function readFolder(folder, leftOut = []) {
+  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES), JSON.stringify(leftOut)], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr);
   return JSON.parse(run.stdout);
 }
@@ -48,12 +49,12 @@ const scratch = await mkdtemp(path.join(os.tmpdir(), "cells-levels-"));
 test.after(() => rm(scratch, { recursive: true, force: true }));
 let folders = 0;
 /** Reads a folder made of the given species files (id -> data, or text) and shape files. */
-async function read(files, shapes = {}) {
+async function read(files, shapes = {}, leftOut = []) {
   const folder = path.join(scratch, `set-${++folders}`);
   await mkdir(path.join(folder, "shapes"), { recursive: true });
   for (const [name, data] of Object.entries(files)) await writeFile(path.join(folder, `${name}.json`), typeof data === "string" ? data : JSON.stringify(data));
   for (const [name, data] of Object.entries(shapes)) await writeFile(path.join(folder, "shapes", `${name}.json`), typeof data === "string" ? data : JSON.stringify(data));
-  return readFolder(folder);
+  return readFolder(folder, leftOut);
 }
 
 // A made-up species: a rod-shaped cell in a small sheet, with a body of its own.
@@ -137,6 +138,8 @@ test("what breaks the contracts is warned about, and the species is left out", a
     ["a shape file that is not there", (data) => (data.levels[3].shape.ref = "missing"), /cannot be read/],
     ["a part the shape file does not have", (data) => (data.levels[3].shape.parts = ["wings"]), /no part named wings/],
     ["a machine path", (data) => (data.plain = "See /home/someone/notes."), /machine path/],
+    ["a heading for the list that is not a few words", (data) => (data.group = ["Bacteria"]), /group is a heading of a few words/],
+    ["an empty heading for the list", (data) => (data.group = " "), /group is a heading of a few words/],
     ["framing the level does not take", (data) => (data.levels[3].camera = "near"), /does not take camera/],
   ];
   for (const [name, change, expected] of cases) {
@@ -339,6 +342,38 @@ test("a solid is closed and no larger than its shape", () => {
   }
 });
 
+// ---------------------------------------------------------------- a capability left out of the picture
+
+test("a species' place for a capability that the map leaves out is read and checked, and not carried into the scene", async () => {
+  // The made-up species names a place for the regulatory circuits; say the map leaves those out for now.
+  const kept = await read({ rodlet: madeUp() }, { rodlet: body() });
+  assert.ok("cap.circuits" in kept.species[0].cell.capabilities);
+  const result = await read({ rodlet: madeUp() }, { rodlet: body() }, ["cap.circuits"]);
+  assert.deepEqual(result.warnings, []);
+  assert.ok(!("cap.circuits" in result.species[0].cell.capabilities), "the place is not in what the scene gets");
+  assert.ok("cap.calcium" in result.species[0].cell.capabilities, "every other place stays");
+  assert.ok(result.remarks.some((remark) => /rodlet\.json: its place for cap\.circuits is not shown: left out of the picture for now/.test(remark)), result.remarks.join("; "));
+  // It is still held to the contract: a place that breaks it is warned about, left out or not.
+  const broken = await read({ rodlet: madeUp((data) => (data.cell.capabilities["cap.circuits"] = { place: "absent" })) }, { rodlet: body() }, ["cap.circuits"]);
+  assert.match(broken.warnings.join("; "), /cap\.circuits is absent without a why/);
+  // The repository's own files: whatever the map's overlay flags as left out is in no species' scene entry.
+  const flagged = overlay.capabilities.filter((item) => item.left_out).map((item) => item.id);
+  const shown = readFolder(SPECIES, flagged);
+  assert.deepEqual(shown.warnings, []);
+  for (const species of shown.species) for (const id of flagged) assert.ok(!(id in species.cell.capabilities), `${species.id}: ${id}`);
+});
+
+test("the cell does not draw a part that the scene leaves out of the picture, even as scenery", () => {
+  const lens = { leftOut: new Set(["cage"]), capabilityByPart: new Map([["er", { id: "cap.calcium" }], ["wound", { id: "cap.repair" }]]), absent: new Map([["cap.calcium", "It has no endoplasmic reticulum."]]) };
+  const draws = (part) => CellLens.prototype.draws.call(lens, part);
+  assert.equal(draws("cage"), false, "left out of the picture");
+  assert.equal(draws("er"), false, "its capability has no place in the species");
+  assert.equal(draws("wound"), true, "a capability with a place");
+  assert.equal(draws("cytoskeleton"), true, "a part with no capability is scenery, and is drawn");
+  // Brought back: with nothing left out, the same part with no capability in the scene is scenery again.
+  assert.equal(CellLens.prototype.draws.call({ ...lens, leftOut: new Set() }, "cage"), true);
+});
+
 // ---------------------------------------------------------------- what the lens works out for a species
 
 /** What the lens plans for a species, before anything is drawn (it needs no 3D stage). */
@@ -398,4 +433,23 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
 
 test("the page has styles for the species switch and the rail's note", () => {
   for (const selector of [".species", ".species-state", ".rail-note", ".with-species"]) assert.ok(css.includes(selector), selector);
+});
+
+test("the species switch is a dropdown: a pill, a list of the page's own with its rows and headings, and a sheet under it", () => {
+  for (const selector of [".species-pick", ".species-pick-caret", ".species-list", ".species-veil", ".species-group-name", ".species-option", ".species-option-organism", ".species-option-state", ".species-option.is-active"]) assert.ok(css.includes(selector), selector);
+  // The organism is written in italics, and the row of buttons the switch used to be is gone from the bar's rules.
+  assert.match(css, /\.species-option-organism \{[^}]*font-style: italic/);
+  assert.ok(!css.includes(".species .seg button"), "the bar no longer styles a row of species buttons");
+});
+
+test("a species may say under which heading it stands in the list, and the scene carries it", async () => {
+  const grouped = await read({ rodlet: madeUp((data) => (data.group = "Bacteria")) }, { rodlet: body() });
+  assert.deepEqual(grouped.warnings, []);
+  assert.equal(grouped.species[0].group, "Bacteria");
+  assert.ok(!("group" in sound.species[0]), "a species without one has none in the scene");
+  // The repository's own: each has a heading, and the species of one heading stand together in the files' order.
+  const headings = own.species.map((item) => item.group);
+  assert.ok(headings.every((group) => typeof group === "string" && group.trim()), JSON.stringify(headings));
+  const firsts = [...new Set(headings)];
+  assert.deepEqual(headings, firsts.flatMap((group) => headings.filter((other) => other === group)), "the species of one heading follow one another");
 });

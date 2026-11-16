@@ -12,7 +12,8 @@ export function number(value, decimals = 1) {
 /** A time in the run: "13.8 s", "12 min 30 s", "1 h 5 min". */
 export function clock(seconds, { precise = false } = {}) {
   if (!Number.isFinite(seconds)) return "";
-  if (seconds < 60) return `${precise ? number(seconds, 1) : Math.round(seconds)} s`;
+  // Under ten seconds a tenth matters (a run of four seconds): it is kept unless the time is whole.
+  if (seconds < 60) return `${precise || (seconds < 10 && Math.abs(seconds - Math.round(seconds)) >= 0.05) ? number(seconds, 1) : Math.round(seconds)} s`;
   const whole = Math.round(seconds);
   const hours = Math.floor(whole / 3600), minutes = Math.floor((whole % 3600) / 60), rest = whole % 60;
   if (hours) return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
@@ -28,10 +29,31 @@ export function duration(seconds) {
 
 // A record keeps the unit it was saved in; some read better in another.
 const DISPLAY = { V: { unit: "mV", factor: 1000, decimals: 1 } };
+// An amount or an energy far under one unit reads in a smaller one: the largest in which the record's largest value is at least a tenth.
+const SMALLER = { fmol: [["fmol", 1], ["amol", 1e3], ["zmol", 1e6]], pJ: [["pJ", 1], ["fJ", 1e3], ["aJ", 1e6]] };
+const RATES = { fmol: [["fmol a second", 1], ["amol a second", 1e3], ["zmol a second", 1e6]], pJ: [["pW", 1], ["fW", 1e3], ["aW", 1e6]] };
+const fitting = (steps, most) => (most > 0 ? steps.find(([, factor]) => most * factor >= 0.1) || steps[steps.length - 1] : steps[0]);
 
 /** The unit a record is shown in, and how to get there from the stored value. */
 export function display(record) {
-  return DISPLAY[record?.unit] || { unit: record?.unit && record.unit !== "1" ? record.unit : "", factor: 1, decimals: record?.dtype?.startsWith("float") ? 3 : 0 };
+  if (DISPLAY[record?.unit]) return DISPLAY[record.unit];
+  const steps = SMALLER[record?.unit];
+  if (steps && Array.isArray(record.range)) {
+    const [unit, factor] = fitting(steps, Math.max(Math.abs(record.range[0]), Math.abs(record.range[1])));
+    return { unit, factor, decimals: 3 };
+  }
+  return { unit: record?.unit && record.unit !== "1" ? record.unit : "", factor: 1, decimals: record?.dtype?.startsWith("float") ? 3 : 0 };
+}
+
+/**
+ * The unit a rate is shown in, for the unit of the total it is worked out from and the
+ * largest rate there is to show: { unit, factor }. An energy a second is a power.
+ */
+export function rateDisplay(unit, most) {
+  const steps = RATES[unit];
+  if (!steps) return { unit: unit && unit !== "1" ? `${unit} a second` : "a second", factor: 1 };
+  const [name, factor] = fitting(steps, Math.abs(most));
+  return { unit: name, factor };
 }
 
 /** A recorded value with its unit, or null for a record that may only be drawn. */

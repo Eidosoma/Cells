@@ -1,0 +1,4 @@
+{"accepted_records": 0, "end_time": 20.0, "index": 0, "kind": "window", "observation_records": 3, "path": "chunks/window-00000000.npz", "start_time": 0.0}
+{"accepted_records": 0, "end_time": 40.0, "index": 1, "kind": "window", "observation_records": 3, "path": "chunks/window-00000001.npz", "start_time": 20.0}
+{"accepted_records": 0, "end_time": 40.0, "index": 2, "kind": "window", "observation_records": 0, "path": null, "start_time": 40.0}
+{"kind": "checkpoint", "path": "snapshots/step-0000008000", "step_index": 8000, "time": 40.0}

@@ -5,7 +5,11 @@
 //
 //   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|species|experiments|cell|zoom runs one part;
 //                                          CHECK_RUNS=DIR serves replays from another folder;
-//                                          CHECK_SCENE=FILE draws another scene file)
+//                                          CHECK_SCENE=FILE draws another scene file;
+//                                          CHECK_SPECIES=ID runs the cell and zoom parts on that species' cell;
+//                                          CHECK_LOOK=plain draws the Cell view with the look as it was, which
+//                                          a server that draws in software does much faster: the cell and zoom
+//                                          parts test clicks, not the look (tools/check_look.mjs tests that))
 //
 // Only one browser runs at a time (tools/lib/browser_lock.mjs), so a call may wait its turn.
 
@@ -111,6 +115,15 @@ const press = async (selector) => {
   await click(at.x, at.y);
   await sleep(250);
 };
+// The species switch is a dropdown: press its pill, wait for the list, press the species' row.
+const pickSpecies = async (id) => {
+  const listOpen = () => evaluate(`(() => { const box = ${VIEWER}.shadowRoot.querySelector(".species-list"); return Boolean(box && !box.hidden); })()`);
+  if (!(await listOpen())) await press(".species-pick");
+  for (let tries = 0; tries < 30 && !(await listOpen()); tries++) await sleep(100);
+  await press(`.species-list [data-atlas="${id}"]`);
+  for (let tries = 0; tries < 30 && (await listOpen()); tries++) await sleep(100);
+  await sleep(150);
+};
 // The species whose side of the atlas is the inventory's own. The page opens on the species whose
 // file says default, which may be another, so the checks of the inventory's side ask for it by name.
 const ownAtlas = () => evaluate(`(() => { const atlases = ${VIEWER}.model.raw.proteins.atlases || []; return (atlases.find((atlas) => atlas.reference) || atlases[0])?.id ?? null; })()`);
@@ -124,7 +137,8 @@ const speciesState = () =>
       lens: viewer.state.lens,
       atlas: viewer.state.atlas ?? null,
       attribute: viewer.dataset.atlas ?? null,
-      species: [...root.querySelectorAll("[data-atlas]")].filter((button) => button.offsetParent).map((button) => ({ id: button.dataset.atlas, label: button.textContent, pressed: button.getAttribute("aria-pressed") === "true" })),
+      // The species the dropdown offers, with the one in view (the switch is one pill and a list since 15 November 2026).
+      species: [...root.querySelectorAll(".species-pick")].some((button) => button.offsetParent) && viewer.speciesShown ? viewer.speciesShown.rows.map((row) => ({ id: row.id, label: row.label, pressed: row.id === viewer.speciesShown.active })) : [],
       heading: text(".view-card .card-title"),
       organism: text(".view-card .card-organism"),
       stats: [...root.querySelectorAll(".view-card .stat b")].map((item) => item.textContent).join(" "),
@@ -249,7 +263,7 @@ try {
       const human = s;
       check("species: the inventory's own side has the page's species switch, no rings and no findings", s.species.find((item) => item.pressed)?.id === s.atlas && s.marks === 0 && s.findings === "", JSON.stringify([s.atlas, s.species, s.marks, s.findings]));
 
-      await press(`[data-atlas="${other.id}"]`);
+      await pickSpecies(other.id);
       s = await speciesState();
       check("species: a click on another species shows its atlas", s.atlas === other.id && s.attribute === other.id && s.heading !== human.heading && s.species.find((item) => item.id === other.id).pressed, JSON.stringify([s.atlas, s.attribute, s.heading]));
       check("species: the card gives the species' own name, counts and sources", Boolean(s.organism) && s.stats !== human.stats && /How it was made/.test(s.details) && /Sources and licences/.test(s.details), JSON.stringify([s.organism, s.stats, s.details]));
@@ -312,7 +326,7 @@ try {
       s = await speciesState();
       check("species: the species is kept when another view is visited", s.lens === "proteins" && s.atlas === other.id && s.marks > 0, JSON.stringify([s.lens, s.atlas, s.marks]));
       if (family) await evaluate(`${VIEWER}.select(${JSON.stringify(family)})`);
-      await press(`[data-atlas="${human.atlas}"]`);
+      await pickSpecies(human.atlas);
       s = await speciesState();
       check("species: back on the inventory's atlas, the card, the legend and the picture are as before", s.atlas === human.atlas && s.heading === human.heading && s.stats === human.stats && s.findings === "" && s.marks === 0 && s.lit === s.units && s.mapping === human.mapping, JSON.stringify([s.atlas, s.heading, s.findings, s.marks, s.lit]));
       check("species: the selected unit lists the inventory's candidates again", !family || (Boolean(s.panel) && s.panel.finding === null && /Candidate products/.test(s.panel.heads) && s.panel.lawNote === null), JSON.stringify(s.panel));
@@ -439,11 +453,41 @@ try {
   }
 
   // ---------------------------------------------------------------- cell lens
+  // The Cell view's look (src/core/look.js) is rich unless CHECK_LOOK names another: "plain", or "full" for every effect held on.
+  const cellView = `lens=cell${process.env.CHECK_LOOK ? `&look=${process.env.CHECK_LOOK}` : ""}${process.env.CHECK_SPECIES ? `&species=${process.env.CHECK_SPECIES}` : ""}`;
+  // On a busy machine, or with the rich look drawn in software, one frame may take seconds. The
+  // cell and zoom parts therefore wait for what they are about to read or click, never for a fixed time.
+  const until = async (expression, seconds = 180) => {
+    for (let tries = 0; tries < seconds * 4; tries++) {
+      if (await evaluate(expression).catch(() => false)) return true;
+      await sleep(250);
+    }
+    return false;
+  };
+  // Two more frames have been drawn (or one, where the view then stands still) and the camera holds still: what is on the screen is what a click meets.
+  const settled = async () => {
+    await evaluate(`(() => { const stage = ${VIEWER}.stage; if (window.__drawn === undefined) { window.__drawn = 0; stage.afterRender.add(() => { window.__drawn += 1; }); } window.__from = window.__drawn; stage.invalidate(); })()`);
+    await until(`window.__drawn >= window.__from + 2 || (window.__drawn > window.__from && !${VIEWER}.stage.running)`);
+    let last = null;
+    for (let tries = 0, same = 0; tries < 240 && same < 2; tries++) {
+      const now = await evaluate(`JSON.stringify([${VIEWER}.stage.camera.position.toArray(), ${VIEWER}.stage.camera.quaternion.toArray()].flat().map((n) => Math.round(n * 1000) / 1000))`);
+      same = now === last ? same + 1 : 0;
+      last = now;
+      await sleep(250);
+    }
+  };
+  // How long a part took, in the look it was drawn with: the rich look costs a server that draws in software several times more a frame.
+  const took = (part, from) => console.log(`note  the ${part} part took ${Math.round((Date.now() - from) / 1000)} s, drawn with ${process.env.CHECK_LOOK ? `look=${process.env.CHECK_LOOK}` : "the rich look"}`);
   if (wants("cell")) {
-  await open("lens=cell");
+  const cellFrom = Date.now();
+  await open(cellView);
+  await settled();
   const nucleus = await screen(probe("nucleus"));
   await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
-  check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
+  // A cell without a nucleus has a free chromosome under the cut face of its cytoplasm: a click over it
+  // meets the cytoplasm first, and the chromosome is chosen by its name (the label checks below).
+  if (await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`)) check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
+  else check("cell: a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", "cap.circuits"].includes(await selected()), String(await selected()));
   await clear();
 
   // Above the cut the membrane is clipped; a click there must not select it.
@@ -472,7 +516,11 @@ try {
   await press("Status");
   check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
   await press("Biology");
+  // A cell under two micrometres is drawn in one size mode: its card has no Sizes switch to press.
+  if (await evaluate(`${VIEWER}.current.modes.length > 1`)) {
   await press("To scale");
+  await until(`(() => { const lens = ${VIEWER}.current; return lens.sizeMode === "real" && lens.zones.some((zone) => zone.root.visible && zone.name === "cell" && zone.mode === "real"); })()`, 120);
+  await settled();
   const real = await evaluate(`(() => { const lens = ${VIEWER}.current; return { mode: lens.sizeMode, shown: lens.zones.filter((zone) => zone.root.visible).map((zone) => zone.name + ":" + zone.mode).join(" ") }; })()`);
   check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
   const nucleusToScale = await screen(probe("nucleus"));
@@ -480,11 +528,15 @@ try {
   check("switch: the to-scale nucleus can be clicked", (await selected()) === "cap.circuits", String(await selected()));
   await clear();
   await press("Schematic");
+  } else {
+    check("switch: a cell drawn in one size mode has no Sizes switch", !(await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".seg button")].some((item) => item.textContent === "To scale")`)));
+  }
   // Labels are rebuilt for the mode and shown after the next drawn frame; wait for one.
   for (let tries = 0; tries < 60; tries++) {
     if (await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)"))`)) break;
     await sleep(250);
   }
+  await settled();
 
   // ---------------------------------------------------------------- input that starts on a label
   const label = await evaluate(`(() => {
@@ -496,7 +548,7 @@ try {
   const before = await evaluate(`({ distance: ${VIEWER}.stage.rig.distance, azimuth: ${VIEWER}.stage.rig.azimuth })`);
   await mouse("mouseMoved", label.x, label.y, { button: "none", buttons: 0 });
   await wheel(label.x, label.y, 200);
-  await sleep(300);
+  await until(`${VIEWER}.stage.rig.distance > ${before.distance * 1.05}`, 120);
   const afterWheel = await evaluate(`${VIEWER}.stage.rig.distance`);
   check("label: a wheel over a label zooms the camera", afterWheel > before.distance * 1.05, `${before.distance.toFixed(1)} -> ${afterWheel.toFixed(1)}`);
 
@@ -509,21 +561,25 @@ try {
   await mouse("mousePressed", spot.x, spot.y);
   for (let step = 1; step <= 6; step++) await mouse("mouseMoved", spot.x + step * 20, spot.y);
   await mouse("mouseReleased", spot.x + 120, spot.y, { buttons: 0 });
-  await sleep(300);
+  await until(`Math.abs(${VIEWER}.stage.rig.azimuth - ${before.azimuth}) > 0.2`, 120);
   const afterDrag = await evaluate(`${VIEWER}.stage.rig.azimuth`);
   check("label: a drag that starts on a label turns the camera", Math.abs(afterDrag - before.azimuth) > 0.2, `${before.azimuth.toFixed(2)} -> ${afterDrag.toFixed(2)}`);
   check("label: that drag selects nothing", (await selected()) === null, String(await selected()));
 
   // The drag leaves the camera gliding; on a busy machine it glides for longer than a fixed
-  // wait. Read the label's place only once it has stopped moving, then click there.
+  // wait. With the rich look drawn in software one frame may take seconds, so two reads a
+  // moment apart can agree while the camera still moves: wait for drawn frames and a camera
+  // that holds still (settled), read the label's place, and click there only once it is the
+  // same after the next such wait.
   const place = () => evaluate(`(() => {
     const el = ${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)");
     const box = el.getBoundingClientRect();
     return { id: el.dataset.label, x: box.left + box.width / 2, y: box.top + box.height / 2 };
   })()`);
+  await settled();
   let tap = await place();
   for (let tries = 0; tries < 40; tries++) {
-    await sleep(150);
+    await settled();
     const next = await place();
     const still = next.id === tap.id && Math.abs(next.x - tap.x) < 0.5 && Math.abs(next.y - tap.y) < 0.5;
     tap = next;
@@ -533,27 +589,56 @@ try {
   check("label: a plain click on a label selects its part", (await selected()) === tap.id, `${tap.id} -> ${await selected()}`);
   await clear();
 
+  // A thread with a foot (E. coli's flagellum): the foot's panel has a door into the Protein atlas, on the
+  // species' own proteins with the foot's set picked out. The foot is a few pixels wide, so it is chosen
+  // by its name here; the door is pressed as a visitor presses it.
+  const foot = await evaluate(`(() => { const lens = ${VIEWER}.current; const item = (lens.cells?.[lens.sizeMode]?.scenery || []).find((entry) => entry.kind === "base"); return item ? { id: item.id, mark: item.base?.mark ?? null, value: item.base?.value ?? null } : null; })()`);
+  if (foot) {
+    await evaluate(`${VIEWER}.select(${JSON.stringify(foot.id)})`);
+    const door = `${VIEWER}.shadowRoot.querySelector("cells-panel .panel-door button")`;
+    await until(`Boolean(${door})`, 60);
+    const at = await evaluate(`(() => { const el = ${door}; if (!el) return null; el.scrollIntoView({ block: "nearest" }); const box = el.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2, words: el.textContent }; })()`);
+    check("door: the foot of a thread has a panel with a door into the Protein atlas", Boolean(at) && /Protein atlas/.test(at.words), at ? at.words : "no door in the panel");
+    if (at) {
+      await click(at.x, at.y);
+      await until(`${VIEWER}.state.lens === "proteins" && ${VIEWER}.current.mode === "own" && Boolean(${VIEWER}.current.mounted?.mark)`, 180);
+      const there = await evaluate(`(() => { const lens = ${VIEWER}.current; return { lens: ${VIEWER}.state.lens, mode: lens.mode ?? null, mark: lens.mounted?.mark ?? null }; })()`);
+      check("door: pressing it opens the species' own proteins with the foot's set picked out", there.lens === "proteins" && there.mode === "own" && there.mark?.name === foot.mark && there.mark?.value === String(foot.value), JSON.stringify(there));
+      // Back to the Cell view, as the parts that follow expect.
+      await evaluate(`${VIEWER}.setLens("cell", true)`);
+      await until(`${VIEWER}.state.lens === "cell" && ${VIEWER}.current.active !== false`, 120);
+    }
+  }
+  took("cell", cellFrom);
+
   }
 
   // ---------------------------------------------------------------- zoom across scales
   if (wants("zoom")) {
-  await open("lens=cell");
+  const zoomFrom = Date.now();
+  await open(cellView);
+  await settled();
   for (let step = 0; step < 6; step++) {
     await wheel(640, 420, 240);
     await sleep(60);
   }
-  await sleep(700);
+  await until(`(() => { const lens = ${VIEWER}.current; const fade = (name) => lens.zones.find((zone) => zone.name === name && lens.shows(zone)).fade; return fade("tissue") > 0.9 && fade("cell") < 0.1 && lens.activeStop === "tissue"; })()`, 300);
+  await settled();
   const zoomed = await evaluate(`(() => { const lens = ${VIEWER}.current; const fade = (name) => lens.zones.find((zone) => zone.name === name && lens.shows(zone)).fade; return { distance: lens.stage.rig.distance, cell: fade("cell"), tissue: fade("tissue"), stop: lens.activeStop }; })()`);
   check("zoom: wheeling out from the cell fades in the sheet", zoomed.tissue > 0.9 && zoomed.cell < 0.1, JSON.stringify(zoomed));
   check("zoom: the scale rail follows", zoomed.stop === "tissue", zoomed.stop);
   const cellOfSheet = await screen(`${VIEWER}.current.probes.sheetCell.clone()`);
   await click(cellOfSheet.x, cellOfSheet.y);
   check("zoom: at the sheet, a click selects the sheet and not the faded cell", (await selected()) === "cap.sheet", String(await selected()));
+  took("zoom", zoomFrom);
   }
 } catch (error) {
   check("the run completed", false, error.message);
 } finally {
   for (const line of pageLog) console.log(line);
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  console.log(`note  the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
   // Stop the browser and wait until it is gone, so that its profile folder can be removed.

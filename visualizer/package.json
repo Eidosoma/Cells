@@ -15,11 +15,16 @@
     "check": "npm run extract -- --strict && npm test",
     "serve": "node tools/serve.mjs",
     "export": "node tools/export_page.mjs",
+    "stage": "python3 tools/stage_publish.py",
     "shot": "node tools/screenshot.mjs",
     "check:input": "node tools/check_input.mjs",
     "test": "node --test tests/*.test.mjs",
     "check:species": "node tools/check_species.mjs",
-    "check:shelves": "node tools/check_shelves.mjs"
+    "check:shelves": "node tools/check_shelves.mjs",
+    "check:layers": "node tools/check_layers.mjs",
+    "check:look": "node tools/check_look.mjs",
+    "check:flux": "node tools/check_cellflux.mjs",
+    "check:all": "node tools/check_all.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

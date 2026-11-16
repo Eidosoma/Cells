@@ -3,7 +3,7 @@
   "species": "testcell",
   "made": "2026-11-15",
   "made_up": true,
-  "from": "A made-up catalogue for the tests of several shelves: 117 invented proteins. Every name and number is made up; nothing here is real.",
+  "from": "A made-up catalogue for the tests of several shelves: 131 invented proteins. Every name and number is made up; nothing here is real.",
   "shelves": [
     {
       "id": "cell",
@@ -75,29 +75,56 @@
     "sides",
     "file",
     "at",
-    "units"
+    "units",
+    "total"
   ],
   "families": [
-    ["IPR900001","Glimmer channel","cell","in","channels",7,{"in":6,"inside":1},"members-00.json",[0,7],["U01"]],
-    ["IPR900001","Glimmer channel","er","in","channels",3,{"in":3},"members-00.json",[7,10],[]],
-    ["IPR900001","Glimmer channel","mito","in","channels",3,{"in":2,"not known":1},"members-00.json",[10,13],[]],
-    ["IPR900002","Lantern kinase","cell","inside","signalling",8,{"inside":8},"members-00.json",[13,21],[]],
-    ["IPR900002","Lantern kinase","nucleus","inside","signalling",6,{"inside":5,"outside":1},"members-00.json",[21,27],[]],
-    ["IPR900003","Quill receptor","cell","in","signalling",5,{"in":4,"outside":1},"members-00.json",[27,32],["U37"]],
-    ["IPR900003","Quill receptor","membrane","in","signalling",2,{"in":2},"members-00.json",[32,34],[]],
-    ["IPR900003","Quill receptor",null,"not known","signalling",3,{"not known":3},"members-00.json",[34,37],[]],
-    ["IPR900004","Ember oxidase","mito","inside","enzymes",9,{"inside":6,"outside":1,"in":2},"members-00.json",[37,46],[]],
-    ["IPR900004","Ember oxidase","other","inside","enzymes",2,{"inside":2},"members-00.json",[46,48],[]],
-    ["IPR900005","Tally transferase","er","inside","enzymes",3,{"inside":2,"in":1},"members-00.json",[48,51],[]],
-    ["IPR900005","Tally transferase","other","in","enzymes",4,{"in":3,"not known":1},"members-00.json",[51,55],[]],
-    ["IPR900006","Harbour pore","nucleus","in","channels",5,{"in":5},"members-00.json",[55,60],["U02"]],
-    ["IPR900007","Drift factor","nucleus","not known","signalling",6,{"inside":2,"not known":4},"members-00.json",[60,66],[]],
-    ["IPR900008","Veil protein","membrane","in","signalling",7,{"in":5,"outside":1,"not known":1},"members-00.json",[66,73],[]],
-    ["IPR900009","Lone cap","er","in","enzymes",1,{"in":1},"members-00.json",[73,74],[]],
-    ["IPR900010","Mist binder","cell","inside","signalling",1,{"inside":1},"members-00.json",[74,75],[]],
-    ["IPR900010","Mist binder",null,"not known","signalling",6,{"not known":6},"members-00.json",[75,81],[]]
+    ["IPR900001","Glimmer channel","cell","in","channels",7,{"in":6,"inside":1},"members-00.json",[0,7],["U01"],13],
+    ["IPR900001","Glimmer channel","er","in","channels",3,{"in":3},"members-00.json",[7,10],[],13],
+    ["IPR900001","Glimmer channel","mito","in","channels",3,{"in":2,"not known":1},"members-00.json",[10,13],[],13],
+    ["IPR900002","Lantern kinase","cell","inside","signalling",8,{"inside":8},"members-00.json",[13,21],[],14],
+    ["IPR900002","Lantern kinase","nucleus","inside","signalling",6,{"inside":5,"outside":1},"members-00.json",[21,27],[],14],
+    ["IPR900003","Quill receptor","cell","in","signalling",5,{"in":4,"outside":1},"members-00.json",[27,32],["U37"],10],
+    ["IPR900003","Quill receptor","membrane","in","signalling",2,{"in":2},"members-00.json",[32,34],[],10],
+    ["IPR900003","Quill receptor",null,"not known","signalling",3,{"not known":3},"members-00.json",[34,37],[],10],
+    ["IPR900004","Ember oxidase","mito","inside","enzymes",9,{"inside":6,"outside":1,"in":2},"members-00.json",[37,46],[],11],
+    ["IPR900004","Ember oxidase","other","inside","enzymes",2,{"inside":2},"members-00.json",[46,48],[],11],
+    ["IPR900005","Tally transferase","er","inside","enzymes",3,{"inside":2,"in":1},"members-00.json",[48,51],[],7],
+    ["IPR900005","Tally transferase","other","in","enzymes",4,{"in":3,"not known":1},"members-00.json",[51,55],[],7],
+    ["IPR900006","Harbour pore","nucleus","in","channels",5,{"in":5},"members-00.json",[55,60],["U02"],5],
+    ["IPR900007","Drift factor","nucleus","not known","signalling",6,{"inside":2,"not known":4},"members-00.json",[60,66],[],6],
+    ["IPR900008","Veil protein","membrane","in","signalling",7,{"in":5,"outside":1,"not known":1},"members-00.json",[66,73],[],7],
+    ["IPR900009","Lone cap","er","in","enzymes",1,{"in":1},"members-00.json",[73,74],[],1],
+    ["IPR900010","Mist binder","cell","inside","signalling",1,{"inside":1},"members-00.json",[74,75],[],7],
+    ["IPR900010","Mist binder",null,"not known","signalling",6,{"not known":6},"members-00.json",[75,81],[],7]
   ],
   "distinct_families": 10,
+  "families_in_all": 24,
+  "lone": {
+    "label": "The only member of its family",
+    "count": 14,
+    "parts_from": "A made-up family with one member has no line: its protein is listed here, in parts by shelf, district and side, and names its family in its mark 'family'.",
+    "part_columns": [
+      "id",
+      "label",
+      "kind",
+      "shelf",
+      "side",
+      "group",
+      "count",
+      "sides",
+      "file",
+      "at",
+      "units"
+    ],
+    "parts": [
+      ["lone-channels-in","The only member of its family","lone","cell","in","channels",4,{"in":4},"members-01.json",[0,4],["U03"]],
+      ["lone-signalling-inside","The only member of its family","lone","cell","inside","signalling",3,{"inside":3},"members-01.json",[4,7],[]],
+      ["lone-signalling-inside","The only member of its family","lone","nucleus","inside","signalling",2,{"inside":2},"members-01.json",[7,9],[]],
+      ["lone-enzymes-not-known","The only member of its family","lone","mito","not known","enzymes",2,{"not known":2},"members-01.json",[9,11],[]],
+      ["lone-enzymes-not-known","The only member of its family","lone",null,"not known","enzymes",3,{"not known":3},"members-01.json",[11,14],[]]
+    ]
+  },
   "no_family": {
     "label": "No family assigned",
     "count": 36,
@@ -121,15 +148,15 @@
       "at"
     ],
     "parts": [
-      ["IPR910001","Wide fold superfamily","superfamily","cell","inside","signalling",12,{"inside":11,"in":1},"members-01.json",[0,12]],
-      ["IPR910001","Wide fold superfamily","superfamily","nucleus","inside","signalling",4,{"inside":4},"members-01.json",[12,16]],
-      ["IPR910002","Narrow fold superfamily","superfamily","cell","inside","enzymes",3,{"inside":3},"members-01.json",[16,19]],
-      ["IPR910002","Narrow fold superfamily","superfamily","mito","inside","enzymes",3,{"inside":2,"not known":1},"members-01.json",[19,22]],
-      ["other-signature","A domain, repeat or site signature, and no family","other signature","cell","inside","unclassed",3,{"inside":2,"outside":1},"members-01.json",[22,25]],
-      ["other-signature","A domain, repeat or site signature, and no family","other signature","other","in","unclassed",2,{"in":2},"members-01.json",[25,27]],
-      ["no-signature","No signature of any kind","no signature","cell","inside","unclassed",2,{"inside":2},"members-01.json",[27,29]],
-      ["no-signature","No signature of any kind","no signature","membrane","in","unclassed",2,{"in":1,"outside":1},"members-01.json",[29,31]],
-      ["no-signature","No signature of any kind","no signature",null,"not known","unclassed",5,{"not known":5},"members-01.json",[31,36]]
+      ["IPR910001","Wide fold superfamily","superfamily","cell","inside","signalling",12,{"inside":11,"in":1},"members-02.json",[0,12]],
+      ["IPR910001","Wide fold superfamily","superfamily","nucleus","inside","signalling",4,{"inside":4},"members-02.json",[12,16]],
+      ["IPR910002","Narrow fold superfamily","superfamily","cell","inside","enzymes",3,{"inside":3},"members-02.json",[16,19]],
+      ["IPR910002","Narrow fold superfamily","superfamily","mito","inside","enzymes",3,{"inside":2,"not known":1},"members-02.json",[19,22]],
+      ["other-signature","A domain, repeat or site signature, and no family","other signature","cell","inside","unclassed",3,{"inside":2,"outside":1},"members-02.json",[22,25]],
+      ["other-signature","A domain, repeat or site signature, and no family","other signature","other","in","unclassed",2,{"in":2},"members-02.json",[25,27]],
+      ["no-signature","No signature of any kind","no signature","cell","inside","unclassed",2,{"inside":2},"members-02.json",[27,29]],
+      ["no-signature","No signature of any kind","no signature","membrane","in","unclassed",2,{"in":1,"outside":1},"members-02.json",[29,31]],
+      ["no-signature","No signature of any kind","no signature",null,"not known","unclassed",5,{"not known":5},"members-02.json",[31,36]]
     ]
   },
   "member_columns": [
@@ -144,8 +171,8 @@
   ],
   "members_from": {
     "format": "cells.visualizer.species_protein_members@1",
-    "order": "The members follow the lines in order: every line of the families as listed, then every line of the parts.",
-    "files": "Two files, kept beside this one: the members of the families, then those of the parts."
+    "order": "The members follow the lines in order: every line of the families as listed, then every part of lone, then every line of the parts of no family.",
+    "files": "Three files, kept beside this one: the members of the families, the only members of their families, and those with no family."
   },
   "side_notes": {
     "stated": "As a made-up curated entry states it.",
@@ -174,19 +201,25 @@
       "values": "text",
       "measured": false,
       "source": "Made-up catalogue"
+    },
+    "family": {
+      "label": "Family, of which it is the only member here",
+      "values": "text",
+      "measured": false,
+      "source": "Made-up catalogue"
     }
   },
   "counts": {
     "outside": 6,
-    "in": 38,
-    "inside": 51,
-    "not known": 22
+    "in": 42,
+    "inside": 56,
+    "not known": 27
   },
   "shelf_counts": {
     "cell": {
       "outside": 2,
-      "in": 11,
-      "inside": 28,
+      "in": 15,
+      "inside": 31,
       "not known": 0
     },
     "er": {
@@ -199,12 +232,12 @@
       "outside": 1,
       "in": 4,
       "inside": 8,
-      "not known": 2
+      "not known": 4
     },
     "nucleus": {
       "outside": 1,
       "in": 5,
-      "inside": 11,
+      "inside": 13,
       "not known": 4
     },
     "other": {
@@ -223,7 +256,7 @@
       "outside": 0,
       "in": 0,
       "inside": 0,
-      "not known": 14
+      "not known": 17
     }
   },
   "by_basis": {
@@ -232,14 +265,14 @@
       "predicted": 2
     },
     "in": {
-      "stated": 30,
+      "stated": 34,
       "predicted": 8
     },
     "inside": {
-      "stated": 51
+      "stated": 56
     },
     "not known": {
-      "none": 22
+      "none": 27
     }
   },
   "sources": [

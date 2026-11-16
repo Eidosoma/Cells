@@ -72,7 +72,7 @@ const column = (name) => COLUMNS.indexOf(name);
 
 test("the species file says what it is, as the contract sets out", () => {
   assert.equal(species.format, "cells.visualizer.species@1");
-  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
+  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "group", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
   assert.equal(species.id, "mpneumoniae");
   assert.equal(path.basename(SPECIES), `${species.id}.json`);
   assert.equal(species.label, "M. pneumoniae");
@@ -461,8 +461,9 @@ test("every source of the shelves states its terms, and the file makes no claim 
   // A tool or rule system whose results UniProt's entries give out is a source of its own:
   // its own terms as its own page states them, `through` the source its results were read
   // in, and what rests on it. None of them was downloaded or run. One is permissive
-  // (HAMAP); the others are not, and each is named here: the list is what awaits the
-  // user's decision, and it may not grow unseen.
+  // (HAMAP); the others are not, and each is named here. By the user's ruling of 15
+  // November 2026 a value stands on the terms of the database it was read from, and the
+  // tool behind it is named and counted: this list is the count, and it may not grow unseen.
   const byName = new Map(shelves.sources.map((source) => [source.name, source]));
   const upstream = shelves.sources.filter((source) => source.through);
   assert.deepEqual(upstream.map((source) => [source.name, source.class, source.through]), [
@@ -479,6 +480,7 @@ test("every source of the shelves states its terms, and the file makes no claim 
   assert.match(byName.get("Phobius").licence, /^For academic users only: /);
   for (const name of ["Memsat", "Predotar"]) assert.match(byName.get(name).licence, /^Terms not read: /, name);
   assert.match(shelves.side_notes.predicted, /PROSITE's terms are non-commercial, and TMHMM, SignalP, TargetP and Phobius are given out for academic use: each is named among the sources/);
+  assert.match(shelves.side_notes.predicted, /By the project's rule \(the user, 15 November 2026\), a value stands on the terms of the database it was read from, and the tool behind it is named and counted\.$/);
   // What rests on each is counted, and the counts are those of the lines.
   const { rests_on: rests, predicted, predicted_by_similarity_alone: likeness } = shelves.checks;
   const sum = (counts) => Object.values(counts).reduce((total, n) => total + n, 0);
@@ -494,11 +496,15 @@ test("every source of the shelves states its terms, and the file makes no claim 
   assert.ok(shelves.side_notes.stated.includes(`(${lines("in", "stated")} proteins), the segments it gives are predicted ones in every case: by UniProt's sequence analysis for ${rests["sequence analysis"].of_which_nothing_else_on_the_features.in}, by a PROSITE rule for ${rests.PROSITE.of_which_nothing_else_on_the_features.in} and by a HAMAP rule for ${rests.HAMAP.of_which_nothing_else_on_the_features.in}.`));
   assert.ok(byName.get("PROSITE").holds.includes(`${sum(rests.PROSITE.predicted)} predicted placements rest on them`) && byName.get("HAMAP").holds.includes(`${sum(rests.HAMAP.predicted)} predicted placements rest on them`));
   assert.ok(said.includes(`for ${shelves.checks.lipoprotein_rule} of the proteins`) && shelves.checks.lipoprotein_rule > 30, "the README does not say how many proteins the rule places");
-  // The README lists each of them with its terms, quotes what the two databases say, and leaves the decision open.
+  // The README lists each of them with its terms, quotes what the two databases say, and
+  // states the rule the values stand on, as the project's rule and not as law.
   for (const source of upstream) assert.ok(readme.includes(`| ${source.name} | ${source.licence} | ${source.class} | `), `the README's table does not list ${source.name}`);
   assert.match(said, /"We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights\."/);
   assert.match(said, /commercial users pay a licence fee "irrespective of the method by which they access the database"/);
-  assert.match(said, /is the project's to decide and is not settled here/);
+  assert.match(said, /\*\*The project's rule \(the user, 15 November 2026\): a value stands on the terms of the database it was read from, and the tool behind it is named and counted\.\*\*/);
+  assert.match(said, /Every placement counted above was read in UniProt's entries, which UniProt gives out under CC BY 4\.0, so each stands as UniProt gives it\./);
+  assert.match(said, /This is the project's rule, and not a legal opinion\./);
+  assert.ok(!/not settled here|to decide/.test(said), "the README still says the question is open");
   assert.ok(!/engine/i.test(shelvesText), "the shelves speak of the engine");
 });
 

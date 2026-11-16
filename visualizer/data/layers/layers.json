@@ -1,0 +1,283 @@
+{
+  "format": "cells.visualizer.quantity_layers@1",
+  "contract": "visualizer/schema/QUANTITY_LAYERS.md",
+  "note": "The layers the viewer can draw: each maps a record a run saved, or a number worked out from saved ones by a declared rule, to a mark. A record is named as a run's view names it: the engine's own readout name, or the name an adapter gave it, in the order tried. Where a layer lists several quantities (first_of), it takes the first the run can feed: the engine's own readout where the run kept it, a worked-out number otherwise. A rule with several inputs names, for each part it is worked out from, what may fill it, in the order tried: a record the run saved, a named constant of its definition (stated by the run's view only where nothing the run schedules changes it), or an amount over a volume. A rate may be worked out from every one of several saved totals (any_of): each total the run saved is read, and a total saved once for each species is read for every species. A layer may ask for the run's secreted species (species: secreted). A layer is offered for a run only when the run saved what it needs; what a run did not save is said. A record laid over the cells that no layer here names is still offered as a colouring and a relief, under the record's own name. A layer that says `opens` is on as a run opens, where the run can feed it.",
+  "layers": [
+    {
+      "id": "voltage-tint",
+      "label": "Membrane voltage",
+      "idea": 0,
+      "quantity": {
+        "record": [
+          "vm",
+          "membrane_voltage_V"
+        ]
+      },
+      "mark": "tint",
+      "channels": [
+        "colour"
+      ],
+      "says": "Each cell is coloured by its membrane voltage."
+    },
+    {
+      "id": "voltage-relief",
+      "label": "Membrane voltage",
+      "idea": 1,
+      "quantity": {
+        "record": [
+          "vm",
+          "membrane_voltage_V"
+        ]
+      },
+      "mark": "relief",
+      "channels": [
+        "height"
+      ],
+      "says": "Each cell stands as high as its membrane voltage. Nothing is smoothed between cells."
+    },
+    {
+      "id": "junction-drops",
+      "label": "Voltage drops",
+      "idea": 2,
+      "quantity": {
+        "first_of": [
+          {
+            "record": [
+              "junction_voltage_V",
+              "junction_voltage"
+            ],
+            "signed": true
+          },
+          {
+            "derivation": "difference",
+            "of": [
+              "cell_potential_V",
+              "cell_potential"
+            ],
+            "across": "junction"
+          },
+          {
+            "derivation": "difference",
+            "of": [
+              "vm",
+              "membrane_voltage_V"
+            ],
+            "across": "junction",
+            "where": "shared surroundings"
+          }
+        ]
+      },
+      "also": [
+        {
+          "record": "junction_gate",
+          "says": "A hollow wedge: the junction's gate is under half open.",
+          "without": "This run did not save each junction's gate, so every wedge is drawn solid.",
+          "role": "gate"
+        },
+        {
+          "record": "junction_abundance",
+          "says": "Two bars: the two cells differ in voltage, and no junction has formed between them.",
+          "without": "This run did not save how far each junction has formed, so a wedge is drawn wherever the voltages differ.",
+          "role": "formed"
+        }
+      ],
+      "mark": "wedge",
+      "channels": [
+        "links"
+      ],
+      "says": "A wedge on a junction points down the voltage drop across it, and is as wide as the drop is large. It is a difference of voltages, not a current: it never moves."
+    },
+    {
+      "id": "ion-push-pull",
+      "label": "Push and pull on ions",
+      "idea": 3,
+      "quantity": {
+        "derivation": "potential terms",
+        "of": {
+          "voltage": [
+            "membrane_voltage_V",
+            "vm"
+          ],
+          "inside": [
+            "concentration_mM",
+            {
+              "amount": "amount",
+              "over": "volume"
+            }
+          ],
+          "outside": [
+            "extracellular_concentration_mM",
+            {
+              "amount": "extracellular_amount",
+              "over": "extracellular_volume"
+            }
+          ],
+          "temperature": [
+            "temperature"
+          ],
+          "valence": [
+            "valence"
+          ]
+        }
+      },
+      "mark": "arrows",
+      "channels": [
+        "arrows"
+      ],
+      "says": "For each ion at the chosen cell's membrane: the push of its concentration difference, the pull of the voltage, and what is left of the two, in millivolts. An arrow is a drive, not a flow: it never moves."
+    },
+    {
+      "id": "membrane-charge",
+      "label": "Membrane charge",
+      "idea": 4,
+      "quantity": {
+        "derivation": "charge",
+        "of": {
+          "voltage": [
+            "membrane_voltage_V",
+            "vm"
+          ],
+          "capacitance": [
+            "membrane_capacitance"
+          ],
+          "area": [
+            "membrane_area"
+          ]
+        }
+      },
+      "mark": "stipple",
+      "channels": [
+        "surface"
+      ],
+      "piece": {
+        "width_nm": 100,
+        "depth_nm": 25
+      },
+      "says": "Plus and minus marks at the two faces of the chosen cell's membrane, as many as the charge its voltage stands for on a piece of that size. How many there are is worked out; where each sits is illustration."
+    },
+    {
+      "id": "transfers",
+      "label": "Transfers",
+      "idea": 5,
+      "quantity": {
+        "derivation": "rate",
+        "any_of": [
+          "junction_transferred",
+          "face_transferred",
+          "membrane_transferred",
+          "exchange_moved_fmol"
+        ]
+      },
+      "mark": "stream",
+      "channels": [
+        "motion"
+      ],
+      "says": "Beads cross from one place to the next (between two cells through their junction, between a cell and the space outside it, between two spaces outside), as many a second as the run's saved totals grew between two records. A bead is a token of a rate, not a particle: the legend says how much one stands for and what time the picture keeps."
+    },
+    {
+      "id": "ion-traffic",
+      "label": "Ion traffic",
+      "idea": 5,
+      "quantity": {
+        "derivation": "rate",
+        "any_of": [
+          "channel_transferred"
+        ]
+      },
+      "also": [
+        {
+          "record": "pump_cycles",
+          "role": "pump",
+          "says": "Beads through the pump: its cycles between two records, times the ions one cycle moves as the pump's declaration gives them.",
+          "without": "This run did not save its pumps' cycles, so no beads cross through a pump."
+        },
+        {
+          "record": "membrane_transferred",
+          "role": "leak",
+          "says": "Beads through the membrane itself: what its own passive routes carried, beside its channel populations and its pump.",
+          "without": "This run did not save what crossed the membrane itself, beside its channel populations and its pump."
+        }
+      ],
+      "mark": "beads",
+      "channels": [
+        "motion"
+      ],
+      "says": "Beads cross the chosen cell's membrane through each of its channel populations, through its pump and through the membrane itself, as many a second as the run's saved totals grew between two records. A bead is a token of a rate, not an ion: the legend says how many ions one stands for and what time the picture keeps."
+    },
+    {
+      "id": "energy-glow",
+      "label": "Energy dissipated",
+      "idea": 6,
+      "quantity": {
+        "derivation": "rate",
+        "any_of": [
+          "junction_dissipated_energy_pJ",
+          "face_dissipated_energy_pJ",
+          "membrane_dissipated_energy_pJ"
+        ]
+      },
+      "also": [
+        {
+          "record": "pump_dissipated_energy_pJ",
+          "role": "pump",
+          "says": "A glowing spot on a cell: what the pump of its membrane dissipated.",
+          "without": "This run did not save what its pumps dissipated."
+        },
+        {
+          "record": "channel_dissipated_energy_pJ",
+          "role": "channels",
+          "says": "A glowing spot on a cell for each of its channel populations: what it dissipated.",
+          "without": "This run did not save what its channel populations dissipated."
+        }
+      ],
+      "mark": "glow",
+      "channels": [
+        "glow"
+      ],
+      "says": "A glow where energy is dissipated: on a junction, on a face between two spaces outside, on a membrane. The brighter, the more a second, as the run's saved totals grew between two records. A magnitude with a scale, not a temperature."
+    },
+    {
+      "id": "signal-fog",
+      "label": "Secreted species",
+      "idea": 7,
+      "quantity": {
+        "record": [
+          "amount"
+        ],
+        "species": "secreted"
+      },
+      "also": [
+        {
+          "record": "extracellular_amount",
+          "role": "outside",
+          "says": "The spaces outside the cells are coloured too, on the same scale, by the amount in each.",
+          "without": "This run did not save the amount in each space outside the cells, so only the cells are coloured."
+        },
+        {
+          "record": "turnover_produced_fmol",
+          "role": "made",
+          "says": "What was made in each cell since the start is given with the cell's numbers.",
+          "without": "This run did not save what was made in each cell."
+        },
+        {
+          "record": "turnover_cleared_fmol",
+          "role": "cleared",
+          "says": "What was cleared in each cell since the start is given with the cell's numbers.",
+          "without": "This run did not save what was cleared in each cell."
+        },
+        {
+          "record": "turnover_outside_cleared_fmol",
+          "role": "cleared outside",
+          "says": "What was cleared in each space outside since the start is given in the panel.",
+          "without": "This run did not save what was cleared outside the cells."
+        }
+      ],
+      "mark": "fog",
+      "channels": [
+        "colour"
+      ],
+      "opens": true,
+      "says": "Each cell, and each space outside the cells that the picture gives a tile, is coloured by the amount of the secreted species in it. An amount, not a concentration: places differ in volume."
+    }
+  ]
+}

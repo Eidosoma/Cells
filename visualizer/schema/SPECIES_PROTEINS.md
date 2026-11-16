@@ -13,7 +13,8 @@ half: **the species' own proteins**, whether or not Cells has a law for them, la
 same way for every species.
 
 **One format for every species: a shelf is a membrane, and every protein sits outside
-it, in it or inside it.** A bacterium has one shelf, its cell membrane. An animal cell
+it, in it or inside it.** A bacterium with one membrane has one shelf, its cell membrane; one with two has a
+shelf for each. An animal cell
 has several: the cell membrane, and one for each internal membrane the data can tell
 apart.
 
@@ -112,10 +113,15 @@ catalogue table, the same bytes every time.
   - `holds` begins "Nothing was downloaded from it" and says what rests on it, with counts.
   - A mark's `source` names the database its values were taken from; it may name the tool
     beside it.
-  - Where the tool's class is not permissive, the dependence awaits the project's
-    decision. The note beside the file lists it with its terms and its counts, and
-    `tests/licence_classes.test.mjs` names it under its species; one the test does not
-    name fails it. A permissive one (HAMAP) needs no listing.
+  - **A value stands on the terms of the database it was read from, and the tool behind
+    it is named and counted** (the user's ruling of 15 November 2026: the project's rule,
+    not a legal opinion). It holds for every species: asked the same day whether it does,
+    the user said "yes it holds for this open source project". So where the tool's class
+    is not permissive, the value stays.
+    The note beside the file lists the tool with its terms and its counts, and
+    `tests/licence_classes.test.mjs` keeps it in a register under its species; one the
+    register does not hold fails the test, so that a new one is noticed and put to the
+    user. A permissive one (HAMAP) needs no listing.
 - **Every source has a `class`, and a file holds no value from a source that is not
   permissive** (D173, 15 November 2026). `class` is one of `permissive` (CC BY, CC0, or
   a plain statement that no restriction is placed on use), `non-commercial` (a CC BY-NC
@@ -125,10 +131,10 @@ catalogue table, the same bytes every time.
   taken from it and what is to be read there; or, where a permissive source gives out
   results that originate in it (a database's record of another database's signature),
   with `through`, the name of that permissive source, and a `holds` that says nothing
-  was downloaded from it and what rests on it, as the bullet above sets out. Whether
-  such a dependence may stay is the project's decision, asked of the user on 15 November
-  2026; until it is made, each one is named and counted and the test lists it.
-  `tests/licence_classes.test.mjs` holds every file to it.
+  was downloaded from it and what rests on it, as the bullet above sets out. Such a
+  value may stay: by the user's ruling of 15 November 2026 it stands on the terms of the
+  database it was read from, and the tool behind it is named and counted, in the file
+  and in the test's register. `tests/licence_classes.test.mjs` holds every file to it.
 - A file may carry further keys of its own, such as the checks its tool ran. The drawing
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
@@ -248,6 +254,65 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   is null and its side `not known`, and a family has one line with a null shelf for such
   members. It counts for no shelf and stands in the page's one set-apart area, in front
   of every shelf.
+- **A family of one has no line.** A family with a single member in the whole catalogue
+  does not open, and a line for each would make the file too large (the human's 5,164
+  families of one would bring it to 1.4 MB). Its protein is listed under `lone`, which
+  is shaped like `no_family` in parts: one part for each shelf, district and side
+  (`kind` `lone`), opening straight to its proteins, each of which names its family in
+  its mark `family`. A part of `lone` is never called a family. Counts are over the
+  families' lines, the parts of `lone` and the parts of `no_family` together.
+  `distinct_families` counts the families that have lines, and `families_in_all` those
+  of one as well. The members follow the families' lines, then the parts of `lone`, then
+  the parts of `no_family`.
+- **Each line of a family carries `total`,** its family's members on every shelf and on
+  none, so that the drawing can let a family of five or more stand on its own on a shelf
+  where it has fewer.
+- **Where the first stated place names no side,** a later statement of the same entry
+  that names a part of that place and its side settles it, as `stated`. Failing that, a
+  membrane segment in the entry, where one membrane is meant, or a signal peptide with
+  no segment, settles it as `predicted`. The file counts how many proteins each rule
+  places (`placed_by`).
+- **Marks of a curated proteome.** `seen` is there the database's level of evidence that
+  the protein exists, and its label says so; `where` is the database's own words for the
+  place; `family` names the family of a protein listed under `lone`.
+- **A plant cell has three shelves more:** `plastid` (the plastid's envelope), `thylakoid`
+  (the thylakoid membrane) and `vacuole` (the vacuole's membrane), after `mito` and before
+  `nucleus`. A membrane has a shelf of its own where enough proteins stand on it to be
+  read as one; the plant's other membranes stay on `other`.
+  - The plastid's envelope has two membranes, which stand as one shelf: a protein in
+    either, or held between them, is `in`; the stroma is `inside`; the envelope's
+    cytoplasmic face is `outside`. A protein stated to be in the plastid with no part of
+    it named stands beside this shelf, side `not known`.
+  - The thylakoid membrane lies within the stroma: its lumen is `inside`, the stroma
+    `outside`. A protein free in the stroma stands on `plastid`, side `inside`; a protein
+    held at the thylakoid membrane and facing the stroma stands on `thylakoid`, side
+    `outside`.
+  - The vacuole is `inside` of `vacuole`; its membrane's cytoplasmic face is `outside`.
+  - A protein of the cell wall, or of the space outside the cell membrane, stands on
+    `cell`, side `outside`, with the wall in its mark `where`. A protein of the
+    plasmodesmata, which join a plant's cells, stands on `cell`.
+  - The file counts these apart, under `plant`.
+- **A whole reference proteome.** Where a species' catalogue is its whole reference
+  proteome, reviewed and unreviewed entries together (the fruit fly, at the user's word of
+  15 November 2026), one marker stands for each gene: the protein that the database's own
+  gene-by-gene set gives for it. The mark `reviewed` says whether its entry was written by
+  a curator, and the mark `entries` counts the proteome's entries for its gene. A place
+  that a rule system states in an unreviewed entry is `stated` with the evidence `rule`.
+  The file gives, under `curated`, how many places rest on each kind of evidence, for
+  reviewed and for unreviewed entries apart, so that the page can say how sure it is.
+- **A cell with two membranes of its own** (a bacterium with an inner and an outer
+  membrane) has the shelves `inner`, `outer` and `membrane`, in that order. The cytoplasm
+  is `inside` of `inner`; what is outside the cell is `outside` of `outer`. Of the space
+  between the two membranes (the periplasm, and the wall that lies in it): a protein free
+  in that space stands on `inner`, side `outside`, as a protein between the
+  mitochondrion's two membranes stands on `mito`; a protein held at one of the two
+  membranes and facing that space stands on that membrane's shelf, on the side that faces
+  it, `outside` of `inner` or `inside` of `outer`. On `membrane`, `outside` is whatever
+  lies beyond the inner membrane. The file counts these apart, under `between`.
+- **`highlights`** lists, for a catalogue in families, each protein that carries one of
+  the marks the page may pick out as a set (a pathway, an assembly), with its line, shelf
+  and side, so that the view can light the markers that hold them without fetching every
+  member.
 - **Counts on several shelves.** `counts` stays the four sides over the whole catalogue.
   `shelf_counts` gives the same four for each shelf, under the shelf's id, and under
   `no shelf` for the proteins on none. `distinct_families` gives the number of families,

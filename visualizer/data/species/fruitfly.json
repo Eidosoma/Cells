@@ -1,0 +1,163 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "fruitfly",
+ "label": "Fruit fly",
+ "organism": "Drosophila melanogaster",
+ "taxon": 7227,
+ "plain": "The fruit fly of the laboratory: 13,814 genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps Cells has laws for have a counterpart of the same family in it.",
+ "group": "Animals",
+ "order": 25,
+ "default": false,
+ "made": "2026-11-15",
+ "modelled": {
+  "state": "generic",
+  "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet is drawn on a wing for the scales only. The wings and the fly are placeholder outlines: nothing at those scales is simulated."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 6,
+    "radius_um": 10.6,
+    "height_um": 13,
+    "corner_um": 2.4,
+    "edge_um": 1.3
+   },
+   "note": "The cell drawn is a generic animal cell, as one of a layer; it is not a model of a cell type of the fly. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, about 20 µm across.",
+   "notes": [
+    {
+     "text": "A generic animal cell, as one of a layer"
+    },
+    {
+     "text": "Its flat-sided shape is the picture's choice",
+     "roomy": true
+    }
+   ],
+   "fade_out_um": [
+    120,
+    190
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 6,
+    "beyond": [
+     [
+      8,
+      0.34
+     ],
+     [
+      10,
+      0.2
+     ],
+     [
+      11,
+      0.1
+     ]
+    ]
+   },
+   "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular tissue of the fly.",
+   "notes": [
+    {
+     "text": "The sheet Cells simulates: a single layer of coupled cells",
+     "short": "The simulated sheet"
+    }
+   ],
+   "fade_in_um": [
+    100,
+    190
+   ]
+  },
+  {
+   "id": "organ",
+   "label": "Wing",
+   "shape": {
+    "kind": "outline",
+    "ref": "fruitfly",
+    "parts": [
+     "wings"
+    ],
+    "context": [
+     "body"
+    ]
+   },
+   "note": "The outline drawn is a fly's two wings, folded back over its body, as a placeholder. The wing is the picture's choice of organ: a visitor knows it, and the project's record names the Drosophila wing disc as a long-term target of its work on how a tissue takes its shape (the user's decisions of 9 November 2026 on the morphogenesis plan). No wing and no wing disc is modelled. The sheet of cells is drawn on a wing so that the scales follow one another; it is not the wing's tissue. Each wing is drawn 2 mm long: the picture's choice, since no measurement was read for this file.",
+   "sheet_mark": {
+    "band": 0.05,
+    "note": "The sheet, to scale: drawn on a wing for the scales only"
+   },
+   "notes": [
+    {
+     "text": "A fly's wings: a placeholder outline"
+    },
+    {
+     "text": "The wing's own cells are not modelled",
+     "lift": -22,
+     "roomy": true
+    }
+   ]
+  },
+  {
+   "id": "organism",
+   "label": "Whole fly",
+   "shape": {
+    "kind": "outline",
+    "ref": "fruitfly"
+   },
+   "note": "The outline drawn is a fruit fly with its wings folded back, 2.5 mm long, as a placeholder. The sheet of cells is drawn on a wing for the scales only. The fly's length, its width and its proportions are the picture's choice: no measurement was read for this file.",
+   "sheet_mark": {
+    "band": 0.05,
+    "note": "The sheet, to scale",
+    "roomy": true
+   },
+   "notes": [
+    {
+     "text": "A fruit fly: a placeholder outline"
+    }
+   ]
+  }
+ ],
+ "cell": {
+  "facts": [
+   {
+    "label": "Proteins",
+    "value": "13,814 genes in UniProt's reference proteome, with 21,941 entries: 3,885 reviewed by a curator and 18,056 annotated automatically. One protein is shown for each gene",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Cells' machines",
+    "value": "of the 49 units of the law inventory, 38 have proteins of the same family in the fly and 3 are built from another family; 2 were not found",
+    "sources": [
+     "uniprot"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": true,
+   "organelles": [
+    "er",
+    "golgi",
+    "mitochondria"
+   ]
+  }
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000000803 (Drosophila melanogaster), its entries and its gene-by-gene set.",
+   "url": "https://www.uniprot.org/proteomes/UP000000803",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  }
+ }
+}

@@ -20,6 +20,11 @@ Species atlases beside it (data/proteins/atlases/, see schema/SPECIES_ATLAS.md) 
 gene products of another species would make each unit; each file is checked against its
 contract, and a file that breaks it is warned about.
 
+What an overlay flags as left out of the picture for now (`left_out`, on a capability of the
+cell map or on a unit of the protein atlas) is not added to the scene: no part, no link, no
+count. The scene names it once, in `left_out`, with how the page says it and why. Removing
+the flag brings it back.
+
 Standard library only. It parses source with ``ast`` and never imports ``cells``.
 
     python3 tools/extract_architecture.py            # reads the main checkout
@@ -41,7 +46,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from lib.protein_atlas import LENS_GROUPS, RELATION_KINDS, Atlas  # noqa: E402
+from lib.protein_atlas import LENS_GROUPS, RELATION_KINDS, Atlas, left_out_flag  # noqa: E402
 from lib.species import read_species  # noqa: E402
 from lib.static_eval import Evaluator, Package, Unresolved, plain  # noqa: E402
 
@@ -160,6 +165,34 @@ class Build:
         self.git = lambda *arguments: git(repo, *arguments)
         self.owner = {}  # repo-relative path -> entity id
         self.statuses = {status["id"] for status in overlay["statuses"]}
+        # What an overlay flags as left out of the picture for now (`left_out` on a capability
+        # or on a unit of the protein atlas): never added to the scene, and named once in it.
+        self.left_out = []
+        # Texts that stand in while something is left out: (where, id, field) -> the wording, or None for none.
+        self.rewords = {}
+        self.reworded = set()
+
+    # ------------------------------------------------------------ what is left out of the picture
+
+    def is_left_out(self, identifier):
+        return any(item["id"] == identifier for item in self.left_out)
+
+    def leave_out(self, identifier, kind, label, flag, **more):
+        """Record a part that its overlay flags as left out, with the wordings that stand in meanwhile."""
+        left_out_flag(identifier, flag)
+        self.left_out.append({"id": identifier, "kind": kind, "label": label, **more, "since": flag["since"], "says": flag["says"], "reason": flag["reason"]})
+        for change in flag.get("rewords", []):
+            if not isinstance(change, dict) or not all(isinstance(change.get(key), str) for key in ("in", "id", "field")) or "to" not in change:
+                raise SystemExit(f"{identifier}: a wording under left_out needs 'in', 'id', 'field' and 'to'")
+            self.rewords[(change["in"], change["id"], change["field"])] = change["to"]
+
+    def reword(self, where, identifier, field, text):
+        """The text of a field as the page shows it: its own, unless something left out gives another wording."""
+        key = (where, identifier, field)
+        if key not in self.rewords:
+            return text
+        self.reworded.add(key)
+        return self.rewords[key]
 
     # ------------------------------------------------------------ entities and edges
 
@@ -498,7 +531,19 @@ class Build:
     # ------------------------------------------------------------ biology map
 
     def capabilities(self):
+        # A capability flagged `left_out` is not in the scene. The engine parts that implement
+        # it stay on the map, and each says so in its own text (the flag's `engine_note`).
         for capability in self.overlay["capabilities"]:
+            flag = capability.get("left_out")
+            if not flag:
+                continue
+            self.leave_out(capability["id"], "capability", capability["label"], flag, part=capability["part"])
+            for target in capability.get("implemented_by", []):
+                if flag.get("engine_note") and target in self.entities:
+                    self.entities[target]["plain"] = f"{self.entities[target].get('plain', '')} {flag['engine_note']}".strip()
+        for capability in self.overlay["capabilities"]:
+            if capability.get("left_out"):
+                continue
             self.add(
                 {
                     "id": capability["id"],
@@ -526,8 +571,8 @@ class Build:
                     "group": "biology",
                     "status": scale.get("status"),
                     "order": scale["order"],
-                    "plain": scale.get("plain", ""),
-                    "note": scale.get("note"),
+                    "plain": self.reword("scales", scale["id"], "plain", scale.get("plain", "")),
+                    "note": self.reword("scales", scale["id"], "note", scale.get("note")),
                     "sources": list(scale.get("sources", [])),
                 }
             )
@@ -549,6 +594,8 @@ class Build:
             self.pending.append((relation["from"], relation["to"], relation["kind"], relation.get("label")))
         kinds = {kind["id"] for kind in self.overlay["relation_kinds"]}
         for source, target, kind, label in self.pending:
+            if self.is_left_out(source) or self.is_left_out(target):
+                continue  # what is left out of the picture takes its links with it
             for end in (source, target):
                 if end not in self.entities:
                     raise SystemExit(f"relation {source} -> {target} ({kind}): unknown part {end}")
@@ -598,9 +645,37 @@ def main():
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
-    # The species the viewer can show (schema/SPECIES.md): any number of files, or none.
-    species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]})
+    # The species the viewer can show (schema/SPECIES.md): any number of files, or none. A species'
+    # place for a capability that is left out of the picture stays in its file and is not shown.
+    hidden = {item["id"] for item in build.left_out if item["kind"] == "capability"}
+    species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden)
     build.warnings.extend(breaches)
+    # A species may be held back from the picture for now (the overlay's `species_held`): its
+    # files stay in the repository and are read and checked like any other, and the scene
+    # carries nothing of it (no species, shape, atlas or proteins) but one line among what is
+    # left out, which says why. Taking the entry out of the overlay brings the species in.
+    for identifier, hold in sorted((overlay.get("species_held") or {}).items()):
+        if not all(isinstance(hold.get(key), str) and hold[key].strip() for key in ("since", "says", "reason")):
+            build.warnings.append(f"held back: {identifier} needs since, says and reason")
+            continue
+        known = [item for item in species if item["id"] == identifier]
+        if not known:
+            build.warnings.append(f"held back: there is no species file for {identifier}")
+            continue
+        species = [item for item in species if item["id"] != identifier]
+        used = {level["shape"]["ref"] for item in species for level in item["levels"] if level.get("shape", {}).get("kind") == "outline"}
+        shapes = {key: value for key, value in shapes.items() if key in used}
+        if build.proteins:
+            for key in ("atlases", "shelves"):
+                build.proteins[key] = [item for item in build.proteins.get(key, []) if item["id"] != identifier]
+        build.left_out.append({"id": f"species.{identifier}", "kind": "species", "label": known[0].get("label") or identifier, "since": hold["since"], "says": hold["says"], "reason": hold["reason"]})
+    model_groups = [
+        {**group, "description": build.reword("model_groups", group["id"], "description", group.get("description"))} if "description" in group else group
+        for group in overlay["model_groups"]
+    ]
+    # A wording that stands in for a text that is not there was written for nothing: say so.
+    for where, identifier, field in sorted(set(build.rewords) - build.reworded):
+        build.warnings.append(f"left out: the wording for {field} of {identifier} ({where}) stands in for nothing the scene has")
     remarks = []
     if build.proteins:
         build.proteins["stamp"]["checked_at"] = revision
@@ -632,12 +707,15 @@ def main():
         },
         "statuses": overlay["statuses"],
         "representations": overlay["representations"],
-        "model_groups": overlay["model_groups"],
+        "model_groups": model_groups,
         "relation_kinds": overlay["relation_kinds"] + (RELATION_KINDS if build.proteins else []),
         "groups": [{**layer, "lens": "engine"} for layer in overlay["layers"]] + LENS_GROUPS,
         "proteins": build.proteins,
         "species": species,
         "shapes": shapes,
+        # What the overlays flag as left out of the picture for now, each with how the page
+        # names it and why. Nothing else in the scene points at these: no part, link or count.
+        "left_out": build.left_out,
         "entities": entities,
         "relations": relations,
         "timeline": None,
@@ -672,6 +750,8 @@ def main():
     for item in species:
         levels = ", ".join(level["id"] for level in item["levels"])
         print(f"species {item['id']}{' (the page opens on it)' if item['default'] else ''}: {levels}; modelled: {item['modelled']['state']}")
+    for item in build.left_out:
+        print(f"left out of the picture since {item['since']}: {item['id']} ({item['says']}): {item['reason']}")
     for remark in remarks:
         print("remark:", remark)
     for warning in build.warnings:
