@@ -617,6 +617,10 @@ stay out of git (61 runs in 327 files, 96 MB).
    the map states the revision main is at. A strict build fails where that revision is
    on no remote branch as last fetched (a commit not yet pushed, or amended before it
    was), so that the map never states a revision others cannot find.
+   The map's statuses are reviewed by hand at one revision of main. Once main has moved
+   past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
+   statuses and the stamp agree, until the map is reviewed again: the map of 16 November
+   2026 states main 3b7f1cff.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look` and
    `check:flux` once, four at a time, and writes a log for each and `summary.json`. Each
@@ -710,6 +714,13 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - A species atlas repeats a family's candidates on every unit of that family (68 innexin
   candidates on each of three units), which makes the scene about twice as large. The
   no-WebGL list has no species switch.
+- The shelves draw a protein that is listed with a unit in that unit's shape, and say it
+  would make that machine, also where the atlas calls it no candidate: a protein found
+  only by the signature of a family that goes with the machine. And the shared table of
+  families gives two signatures for the sodium channels' beta subunits, one of which
+  (IPR000920) is InterPro's "Myelin P0 protein-related": in the mouse it lists `Mpz`,
+  `Mpzl1` to `Mpzl3`, `Jaml` and `Vsig1` with the sodium channels (`docs/MOUSE.md`). Both
+  are to be mended for every species at once.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
   exist, and the scene says that the inventory no longer covers every law. The landing of
@@ -723,7 +734,9 @@ Ideas kept for after the basics (the user, 14 November 2026):
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
-- Screenshots use software WebGL; performance on real hardware is not measured.
+- The checks' pictures are drawn by software WebGL or on the project machine's one graphics
+  card, as each run's record says. Frame times have been measured only on that card, not on
+  a phone or a laptop.
 - On a phone the scale rail folds behind one button under the bar, and while a panel is
   open the view's card folds behind another; the legend's title and the look's switch then
   stand on the panel's top edge. The open legend is tall there and scrolls; a card that
