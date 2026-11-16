@@ -119,7 +119,7 @@ experiment).
           - `LOCKED_LIMIT_S = 4800`.
           Not frozen until a held-out development pass at a batch of 128 on the merged head, and a
           long packed-against-lone pair that settles the horizon.
-   5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
+   5. The module system's stage 1, one external law (D180), with §6 decided by D185: in-tree contributed modules, a conformance kit, a declarations manifest, and a contributor guide.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
    - the BETSE physiology validation's dangling reference, found by tier 3 at c1 and pre-existing at

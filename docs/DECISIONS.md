@@ -5960,6 +5960,56 @@ So the user approved the lead's recommendations as presented, after the advisor'
   approved closure;
 - the landing itself, which keeps its own heads-up.
 
+## D185: The module system's five decisions, and contributions by pull request
+
+2026-11-16. The user's direction: "yes modular and easy for others to add PRs with new modules / laws".
+The lead listed the five defaults of the [module design](MODULE_SYSTEM_DESIGN.md)'s §6, with two
+additions, and asked the user to confirm them. The user replied: "sounds good".
+1. **A module PR (§6.5): in-tree contributed modules first.**
+   - Each module has its own folder and namespace, an MIT licence and a named owner, and is gated
+     by the conformance kit and the tiers.
+   - Core physics PRs continue under D142, D144 and the full tier gate.
+   - Out-of-tree modules, listed by a docs PR with their conformance record, may follow.
+2. **Qualifying outside modules (§6.3): a conformance kit shipped in Cells.**
+   - The contributor runs it before opening the PR. It runs the declaration and error checks, I1–I4,
+     ledger closure with planted controls, executable reuse, a fresh-process restart, CPU/GPU
+     agreement and the matrix report, and it scans for reference-simulator imports.
+   - It records both identities and each claim separately.
+   - *The lead's reading:* a pass means the kit's checks passed. It does not qualify the science,
+     which still needs a registered protocol.
+   - Still open from §6.3: whether the project lists the modules that pass.
+3. **D144 with modules (§6.2): modules incubate.**
+   - New physics may live in a module first. It enters `cells` when a second consumer needs it, with
+     its qualification. D144 still governs what enters `cells`.
+   - *The lead's reading:* a contributed module counts as engine physics in its own namespace, not as
+     validation code, so `validation/` still holds no physics.
+   - AGENTS.md's rule that physics an experiment needs is added to `src/cells` stands as written for
+     now. Its amendment for modules goes to the user before stage 1's first commit.
+4. **The example (§6.4): in this repository.**
+   - It is a separately installable folder (for example `examples/modules/cells-example-law/`),
+     installed as a wheel in tier 2, with a test that it imports only Cells' public interface.
+   - It doubles as the template contributors copy.
+5. **Provenance (§6.1): identity for development runs, frozen files for registered and judged runs.**
+   - Development runs record each outside module's identity (§2.5), computed at run time.
+   - Registered and judged runs also freeze the module's files beside Cells' snapshot, so the freeze
+     tool takes a root outside the checkout.
+   - There is no attestation layer.
+   - AGENTS.md's provenance rule is amended to say so. Provenance for in-tree contributed modules,
+     which are installed as packages, is settled in stage 1's design.
+
+**The two additions:**
+- **A declarations manifest.** The engine writes a JSON list of every registered law, operator and kind,
+  with its ID, what it reads and writes, what it conserves, and its units and signs. Contributed modules
+  then appear in the docs and in the viewer's laws library without hand edits.
+- **A contributor guide and a pull-request template.** They say how to add a law or a module: name it by
+  mechanism, cite its source, test it, and run it through the kit.
+
+**Asked separately later:** automatic checks on GitHub for outside pull requests, because that changes the
+public repository's setup.
+
+**When:** stage 1 (one external law, registered explicitly) starts after D172's landing. The manifest and
+the guide follow with it.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

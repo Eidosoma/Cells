@@ -1,6 +1,6 @@
 # External modules: one assembly path for Cells and independent packages (design)
 
-**Status: PROPOSED, 15 November 2026, for the lead and the advisor. Docs only.** Code read at
+**Status: PROPOSED, 15 November 2026, for the lead and the advisor; §6 decided on 16 November (D185). Docs only.** Code read at
 main 9f60417b, `integration-d172` d732781d and `core-d172` 119ffb74; only main counts as "holds
 today". `file`:N cites main unless a branch is named; §7.4–§15.6 and items such as A7, B1, F3
 and P2 are INNER_MODEL_V4_DESIGN.md's.
@@ -308,6 +308,20 @@ the reproducibility mode (Q7's flag), the RNG and the qualification scope. Inter
 accuracy, validity and performance are qualified apart.
 
 ## 6. Decisions for the user
+
+**Decided by the user on 16 November 2026 (D185):**
+- 1: (c);
+- 2: (b);
+- 3: the conformance kit, where a pass means the kit's checks passed, not that the science is
+  qualified;
+- 4: (a);
+- 5: (b) first.
+
+D185 adds a declarations manifest and a contributor guide with a pull-request template.
+
+Still open: §6.3's question of whether the project lists the modules that pass; provenance for
+in-tree contributed modules (stage 1's design); and AGENTS.md's physics rule for modules, which
+goes to the user before stage 1's first commit.
 
 1. **Provenance.** AGENTS.md's provenance (Git revision, dirty diff, frozen snapshot) cannot
    cover an out-of-tree module.
