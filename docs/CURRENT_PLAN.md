@@ -65,7 +65,12 @@ experiment).
       - the operator contract's view declarations, and the default `view_events` entity form fixed
         to `{"cell": id}`;
       - @3's own units, readout axes and layers, which replace the writer's interim table;
-      - door S recording the merged view of each changed field;
+      - door S's merged view of each changed field at observation. It is built by route B on
+        run-view-d154 (61a2f4e7): with `view=` only, the writer re-forms the view with the
+        composite's own view function, bitwise the observer's. After the landing the composite
+        declares its changed set in one method of pump_composite.py, and the writer reads that
+        instead of the adapter's tables (MASK_FIELDS, PADDED_FIELDS), a stopgap named in the code
+        until then;
       - the visualizer's reading of the worked example: its eleven items, in
         `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
