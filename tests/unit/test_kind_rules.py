@@ -8,6 +8,7 @@
   calls and moves no field.
 - Check-path hooks trace on the device: a domain that branches on a value in Python, a ledger
   term of an unknown role or a non-scalar domain is refused at binding.
+- Declared kinds are refused under RK4 (fail-closed): their step guards are the IMEX step's.
 """
 
 import copy
@@ -223,6 +224,33 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
     with kind_registry.scope(registry(bounded(2000.0))):
         with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):
             surface_pump_v3.check_steps(parse_spec(declaring("alpha_block")), steps, None)
+
+
+def test_declared_kinds_are_refused_under_rk4():
+    """@3 refuses declared kinds under RK4, fail-closed (the core's review of refusal 4 version 1.1,
+    finding 6; the lead's ruling): the step guards above (the definition-time bound term, the
+    per-stage rule, the end-of-step bookings) are the IMEX step's, and an RK4 step runs none of
+    them (its step checks read no kind's bound term). A kind whose bound term the IMEX checks
+    refuse is refused under RK4 at the definition; the world without it still parses and passes
+    its RK4 step checks (D's NaV1.2 at 2.5 us), and the kind is admitted and held under IMEX."""
+
+    def rk4(raw):
+        out = copy.deepcopy(raw)
+        out["execution"].update(solver="rk4", dt=2.5e-6, max_steps=2000)  # 1600 steps to 4 ms.
+        return out
+
+    def bounded(rate):
+        return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
+
+    with kind_registry.scope(registry(bounded(2e5))):
+        with pytest.raises(ConfigError, match=r"\(tests\.alpha@1\) require an IMEX solver"):
+            parse_spec(rk4(declaring("alpha_block")))
+        imex = parse_spec(declaring("alpha_block"))  # Admitted under IMEX ...
+        with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):
+            surface_pump_v3.check_steps(imex, np.asarray([1e-4]), None)  # ... and held there.
+        plain = parse_spec(rk4(declaring()))  # No kind: RK4 as before.
+        assert plain.execution.solver == "rk4" and not plain.model.kinds
+        surface_pump_v3.check_steps(plain, np.asarray([2.5e-6]), None)
 
 
 def test_stage_values_give_running_extrema_over_the_steps_stages():

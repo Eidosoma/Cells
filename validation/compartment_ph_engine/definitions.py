@@ -42,6 +42,7 @@ from validation.compartment_ph_engine.parameters import CHARGE_PER_FMOL, R, Worl
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
 PENDING_MODEL_KEYS = ("operators", "patch_damage")
+COMPOSITE_MODEL = "resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
 PENDING_EXPERIMENT_KEYS = ("damage_controls",)
 FUEL_ROWS = ("ATP", "ADP", "Pi")
@@ -297,6 +298,18 @@ def development_world(definition):
     @3 plus the kinds (the lead's ruling, 15 November 2026)."""
     out = copy.deepcopy(definition)
     out["model"].pop("operators", None)
+    return out
+
+
+def declared_world(definition):
+    """The definition as the declared world runs, FR-1's compartment operator included: the
+    composite's form (resolved_pump_composite@1 with @3 as its inner model and the definition's
+    own operators block). The operator adds identity and refusals only, so its records must be
+    bitwise development_world's (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1)."""
+    out = copy.deepcopy(definition)
+    m = out["model"]
+    m["inner_model"] = m["id"]
+    m["id"] = COMPOSITE_MODEL
     return out
 
 

@@ -26,19 +26,20 @@ Parts of fr5-transfer-v1:
   (compartment_ph_reference_stage.fr5_reference).
 
 **The engine path is one function, `engine_run`:**
-validation/compartment_ph_engine/engine_records.run on the development world (the declared world
-without FR-1's compartment operator, the lead's ruling), as the one world of a vector window
-checking every accepted row on the device (judged runs: the protocols' execution path) or on the
-windowed runner checking them on the host (development's default); ENGINE_READOUTS is what it
-returns per record. What is not wired yet is a stand-in (STAND_INS), each blocking only its own
-parts (STAND_IN_PARTS): every entry refuses those parts before anything is written, and a judged run
-is refused while any stand-in remains.
+validation/compartment_ph_engine/engine_records.run on the declared world (fr4_world with FR-1's
+compartment operator, the composite: judged runs, a dated pre-run correction of 16 November 2026,
+bitwise the development world's over 900 s) or on the development world without the operator
+(development's default), as the one world of a vector window checking every accepted row on the
+device (judged runs: the protocols' execution path) or on the windowed runner checking them on the
+host (development's default); ENGINE_READOUTS is what it returns per record. What is not wired yet
+is a stand-in (STAND_INS), each blocking only its own parts (STAND_IN_PARTS): every entry refuses
+those parts before anything is written, and a judged run is refused while any stand-in remains.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
-      [--start START_JSON] [--quick] [--path host|vector]
+      [--start START_JSON] [--quick] [--path host|vector] [--world development|declared]
   python -m validation.tissue.compartment_ph_qualification judged PROTOCOL_JSON OUT_DIR PART
-      [PART ...] [--start START_JSON]   (the vector path)
+      [PART ...] [--start START_JSON]   (the vector path, the declared world)
 A judged run is refused, before anything is computed or written, unless the protocol is registered
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
 remains, FR-5's start extract was written by the engine from this same snapshot, and OUT_DIR is
@@ -75,8 +76,18 @@ K3_LUMEN_K_ON = 1e-3  # /mM/s: the protocol's K3 (1 /M/s)
 HOST_PATH = "host"  # Every accepted row checked on the host (the windowed runner): development.
 VECTOR_PATH = "vector"  # Every accepted row checked on the device (a vector window).
 PATHS = (HOST_PATH, VECTOR_PATH)  # engine_records.PATHS.
+DEVELOPMENT_WORLD = "development"  # engine_records.WORLDS: without FR-1's compartment operator
+DECLARED_WORLD = "declared"  # the composite with it (definitions.declared_world)
+WORLDS = (DEVELOPMENT_WORLD, DECLARED_WORLD)
+JUDGED_WORLD = DECLARED_WORLD  # The protocols' world (the lead's ruling, a dated pre-run correction
+# of 16 November 2026: bitwise the development world's over 900 s); development keeps both.
 JUDGED_PATH = VECTOR_PATH  # The protocols' execution path (the lead's ruling, a dated pre-run
 # correction of 15 November 2026); development runs default to the host path.
+
+
+def default_world(*, judged):
+    """The world a run takes unless --world names one: the protocols' for a judged run."""
+    return JUDGED_WORLD if judged else DEVELOPMENT_WORLD
 
 
 def default_path(*, judged):
@@ -162,7 +173,8 @@ class NotWired(RuntimeError):
     """The engine path is a stand-in on this branch."""
 
 
-def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH):
+def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
+               world=DEVELOPMENT_WORLD):
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
     integer second, and the stage diagnostics and ledgers): engine_records.run, which parses the
     development world (a refusal there is `admitted` false) and runs it in windows on the CPU
@@ -179,14 +191,14 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH)
         raise NotWired(STAND_INS["start_checkpoint"])
     if planted is not None:  # K2's reversed pump, registered only inside its block.
         registry = plants.registry(plants.PLANTED[planted]())
-        return engine_records.run(definition, registry=registry, path=path)
-    return engine_records.run(definition, path=path)
+        return engine_records.run(definition, registry=registry, path=path, world=world)
+    return engine_records.run(definition, path=path, world=world)
 
 
 def engine_part(definition, context, *, planted=None, checkpoint_dir=None):
     started = time.perf_counter()
     record = engine_run(definition, planted=planted, checkpoint_dir=checkpoint_dir,
-                        path=context["path"])
+                        path=context["path"], world=context["world"])
     record.update(kind="engine", dt_s=definition["execution"]["dt"],
                   end_s=definition["experiment"]["end_time"],
                   definition_sha256=defs.canonical_sha256(definition),
@@ -337,7 +349,7 @@ def plain(value):
 
 
 def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick, root=ROOT,
-                           path=HOST_PATH):
+                           path=HOST_PATH, world=DEVELOPMENT_WORLD):
     """Every refusal an entry makes before anything is computed or written."""
     unknown = sorted(set(requested) - set(PARTS[which]))
     if unknown or not requested:
@@ -347,6 +359,10 @@ def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick,
     if judged and path != JUDGED_PATH:
         return (f"a judged run takes the protocols' execution path ({JUDGED_PATH}, a dated pre-run "
                 f"correction); the {path} path is for development")
+    if judged and world != JUDGED_WORLD:
+        return (f"a judged run takes the protocols' world ({JUDGED_WORLD}: FR-1's compartment "
+                f"operator included, a dated pre-run correction); the {world} world is for "
+                "development")
     blocked = {name: sorted(set(requested) & STAND_IN_PARTS[name]) for name in STAND_INS}
     blocked = {name: parts for name, parts in blocked.items() if parts}
     if blocked:
@@ -361,13 +377,14 @@ def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick,
     return None
 
 
-def run(which, requested, out_dir, *, status, extract=None, quick=False, path=HOST_PATH):
+def run(which, requested, out_dir, *, status, extract=None, quick=False, path=HOST_PATH,
+        world=DEVELOPMENT_WORLD):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True)
     results = dict(status=status, protocol_id=IDS[which], source=snapshot_identity(),
                    requested_parts=list(requested), complete=False, quick=quick, path=path,
-                   stand_ins=sorted(STAND_INS), parts={})
-    context = dict(quick=quick, start=extract, out_dir=out_dir, path=path)
+                   world=world, stand_ins=sorted(STAND_INS), parts={})
+    context = dict(quick=quick, start=extract, out_dir=out_dir, path=path, world=world)
     for name in [p for p in PARTS[which] if p in requested]:
         started = time.perf_counter()
         value = FUNCTIONS[which][name](name, context)
@@ -390,6 +407,9 @@ def main(argv=None):
     parser.add_argument("--path", choices=PATHS, default=None,
                         help="where every accepted row is checked (engine_records.run): judged "
                              "runs the protocols' vector path, development runs host unless named")
+    parser.add_argument("--world", choices=WORLDS, default=None,
+                        help="declared (the composite with FR-1's compartment operator: judged "
+                             "runs) or development (without it: development's default)")
     args = parser.parse_args(argv)
     if args.mode == "judged":
         protocol = json.loads(Path(args.target).read_text())
@@ -404,13 +424,15 @@ def main(argv=None):
     if why is None and args.start is not None:
         extract = defs.read_start(args.start)
     path = args.path or default_path(judged=args.mode == "judged")
+    world = args.world or default_world(judged=args.mode == "judged")
     if why is None:
         why = refusal_before_writing(which, args.parts, args.out_dir, extract,
-                                     judged=args.mode == "judged", quick=args.quick, path=path)
+                                     judged=args.mode == "judged", quick=args.quick, path=path,
+                                     world=world)
     if why:
         raise SystemExit("Refused: " + why)
     run(which, args.parts, args.out_dir, status=status, extract=extract, quick=args.quick,
-        path=path)
+        path=path, world=world)
     return 0
 
 
