@@ -99,6 +99,10 @@ experiment).
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - the BETSE physiology validation's dangling reference, found by tier 3 at c1 and pre-existing at
+     the tag: `validation/betse/physiology/core/physiology_protein_block_calendar.py:106` reads
+     `scoped.PINS`, which its scope module doesn't define, so those tests never reach their
+     assertions;
    - A7's allow-list note (`tests/species_sum_entity_sums.json`) wrongly says no entry includes the
      species axis. Three entries, partition's host-only end-of-run summary, sum mixed
      [species, slot] and [slot] fields. Either fix the wording, or fold those fields per field;
