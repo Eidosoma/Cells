@@ -93,7 +93,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-427e4a05/tiers-measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/tiers-50e25cec/measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-a45af8e6/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-8435dceb/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-8435dceb/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/tier-gate/tiers-207a86c9/measured.json"
  ],
  "measured_provenance": [
   {
@@ -767,6 +768,14 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/snapshot-8435dceb",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T00:50:37+00:00"
+  },
+  {
+   "git_revision": "207a86c9379be2217b2895894bf949597e1afa52",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/tier-gate/snapshot-207a86c9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T02:26:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1166,10 +1175,10 @@
    },
    {
     "file": "tests/unit/test_betse_emulator_laws.py",
-    "seconds": 2.37,
+    "seconds": 3.33,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 6
     }
    },
    {
@@ -1395,10 +1404,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 3.73,
+    "seconds": 5.43,
     "exit_code": 0,
     "counts": {
-     "passed": 121
+     "passed": 134
     }
    },
    {
@@ -1590,10 +1599,10 @@
    },
    {
     "file": "tests/unit/test_continuity_tools.py",
-    "seconds": 4.66,
+    "seconds": 7.99,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 21
     }
    },
    {
@@ -1638,10 +1647,10 @@
    },
    {
     "file": "tests/unit/test_current_injection.py",
-    "seconds": 3.68,
+    "seconds": 4.28,
     "exit_code": 0,
     "counts": {
-     "passed": 12
+     "passed": 13
     }
    },
    {
@@ -1718,10 +1727,10 @@
    },
    {
     "file": "tests/unit/test_engine_betse_boundary.py",
-    "seconds": 4.51,
+    "seconds": 10.85,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 5
     }
    },
    {
@@ -2313,10 +2322,10 @@
    },
    {
     "file": "tests/unit/test_morphogenesis_mg0b.py",
-    "seconds": 13.36,
+    "seconds": 10.35,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 6
     }
    },
    {
@@ -2541,10 +2550,10 @@
    },
    {
     "file": "tests/unit/test_partition_reference.py",
-    "seconds": 2.31,
+    "seconds": 2.47,
     "exit_code": 0,
     "counts": {
-     "passed": 37
+     "passed": 41
     }
    },
    {
@@ -2643,18 +2652,18 @@
    },
    {
     "file": "tests/unit/test_projective_judge.py",
-    "seconds": 0.88,
+    "seconds": 2.72,
     "exit_code": 0,
     "counts": {
-     "passed": 7
+     "passed": 10
     }
    },
    {
     "file": "tests/unit/test_projective_study.py",
-    "seconds": 3.5,
+    "seconds": 3.58,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 12
     }
    },
    {
@@ -2851,10 +2860,10 @@
    },
    {
     "file": "tests/unit/test_s5_protocol_binding.py",
-    "seconds": 4.13,
+    "seconds": 4.03,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -3265,10 +3274,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability_protocol.py",
-    "seconds": 7.41,
+    "seconds": 6.49,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 13
     }
    },
    {
@@ -3576,6 +3585,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_tier_gate.py",
+    "seconds": 0.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
     }
    },
    {
