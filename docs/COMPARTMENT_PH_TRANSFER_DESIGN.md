@@ -17,7 +17,7 @@ design before code (D142).
 
   The routing door and the kind schedules it uses are the core's (INNER_MODEL_V4_DESIGN §7.4 (l),
   (n)).
-- **Finite fuel (§17) is proposed:** docs only, with five decisions for the user.
+- **Finite fuel (§17) is accepted,** ruled by the lead on 16 November; it is built after FR-5's dt study is launched.
 - **Its first readers:**
   - the references agent, who writes independent references from Appendix A without reading
     engine code;
@@ -1140,8 +1140,9 @@ FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every 
 
 ## 17. Finite fuel on the kind interface (design, 16 November 2026, before code; D142, D176 item 2)
 
-**Status: proposed, for the user's and the lead's ruling (§17.5).** Docs only: no code is written
-until the rulings. Tags: **(code)** read in code on main 7c8bfa47; **S** this owner's arithmetic.
+**Status: accepted, ruled by the lead on 16 November 2026 (§17.5), within D176 item 2.** It is
+built after FR-5's dt study is launched. Tags: **(code)** read in code on main 7c8bfa47; **S** this
+owner's arithmetic.
 
 ### 17.1 What it is, and what it claims
 
@@ -1245,7 +1246,7 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
 - **The record:** a third protocol beside FR-4's and FR-5's (generic name `finite-fuel-v1`),
   drafted, rehearsed and registered as theirs are. It uses the same generator and judge.
 
-### 17.5 Decisions for the user, each with its cost and a recommendation
+### 17.5 The decisions, each with its cost and a recommendation, and the rulings
 
 - **D1. The first finite-fuel world.**
   - (a) R-fuel's neutral pump (D176 item 2, as planned).
@@ -1284,6 +1285,21 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
     correction would declare the ladder; for example 8, 4, 2 and 1 ms costs about 0.6 CPU-h.
 
   **Recommended: (b).** Either way the criteria stay fixed before any judged run.
+
+**Ruled by the lead, 16 November 2026** (within D176 item 2, which was already planned):
+- **D1: (a).** R-fuel's neutral pump comes first. The proton pump on finite fuel follows later, on
+  the same kind path.
+- **D2: (a).** The store is FR-1's owned compartment.
+- **D3: (a) now, fail-closed; (b) later.**
+  - The evidence includes every registered world still parsing under the check.
+  - First, main is searched for any world that declares one species' potential both through
+    D152's `standard_mu_RT` and through the registry, so the check cannot newly refuse an existing
+    world unannounced.
+  - The check's location waits on the core's answer (§17.7 question 2).
+- **D4:** (a) if the core confirms a seam, otherwise (b), with the item kept open. This waits on
+  the core's answer (§17.7 question 1).
+- **D5: (b).** The probe runs at 1 and 10 ms first. Then a dated pre-run correction declares the
+  ladder, and the criteria stay fixed before any judged run.
 
 ### 17.6 Who does what, and the cost (agent-days, S)
 
