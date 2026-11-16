@@ -356,7 +356,7 @@ def build(datasets_folder, snapshot):
         "family_notes": {
             "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
             "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-            "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+            "units": P.UNITS_NOTE,
             "total": "The family's members on every shelf and on none.",
             "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'.",
         },
@@ -383,6 +383,8 @@ def build(datasets_folder, snapshot):
         "place_kinds": P.KINDS,
         "place_columns": P.PLACE_COLUMNS,
         "place_notes": "Every place the entries state, in UniProt's words, with the shelf and what the place names against its membrane (place_kinds), how the table's line was reached and which of the table's terms it rests on, and how many proteins it places as the statement that decided.",
+        # How the atlas found each protein listed with a unit, where it is not the default (schema/SPECIES_PROTEINS.md).
+        **({"found_by": found_by} if (found_by := P.found_by_block(units, P.line_families(lines))) else {}),
     }
     marks = {
         "reviewed": {"label": "Curated entry", "values": [True, False], "measured": False, "note": "Whether the protein's UniProtKB entry is reviewed, written by a curator, or unreviewed, annotated automatically.", "source": "UniProt"},

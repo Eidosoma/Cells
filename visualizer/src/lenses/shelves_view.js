@@ -241,13 +241,30 @@ export class ShelvesView {
 
   // ------------------------------------------------------------ building
 
-  /** The scene's part for the first of an item's units that the scene has, or null. */
+  /**
+   * The scene's part for the first of an item's units that the scene has, or null. A protein, or a
+   * family, that the atlas lists with a unit only as going with its machine has none: it is drawn plain.
+   */
   unitOf(item) {
+    if (!this.makes(item)) return null;
     for (const id of item.units || []) {
       const entity = this.lens.model.get(this.shelves.units.get(id));
       if (entity?.form) return entity;
     }
     return null;
+  }
+
+  /**
+   * Whether an item is drawn as making a machine Cells has a law for: it has a unit, and not only as going with the
+   * machine. Such a one takes the units' tone and its unit's form; one that only goes with it is drawn plain, in grey.
+   */
+  makes(item) {
+    return Boolean(item.units?.length) && !this.shelves.goesWithOnly(item);
+  }
+
+  /** A marker's tone: "more" for what gathers several, "unit" for what makes a machine, "plain" for the rest. */
+  toneOf(item, many = false) {
+    return many ? "more" : this.makes(item) ? "unit" : "plain";
   }
 
   /** A unit's form, copied from one made once: { entity, group, meshes, reach }. */
@@ -350,7 +367,7 @@ export class ShelvesView {
           const unknown = item.side === "not known";
           // A gathering of smaller families, and the only members of their families standing together, are many and not one.
           const many = Boolean(item.holds) || item.type === "l";
-          const node = { item, area: area.id, frame, base, radius: families ? place.radius : BEAD, tone: many ? "more" : item.units.length ? "unit" : "plain", many };
+          const node = { item, area: area.id, frame, base, radius: families ? place.radius : BEAD, tone: this.toneOf(item, many), many };
           const entity = this.unitOf(item);
           if (families) {
             // A family stands as a round box: through the membrane, on a stalk above it, or on the glass.
@@ -731,7 +748,7 @@ export class ShelvesView {
         shade = 1 - shade;
         last = member.under;
       }
-      const entry = { item: member, local: new THREE.Vector3(place.dx, 0, place.dz), radius: BEAD, tone: member.units.length ? "unit" : "plain", shade: item.holds ? shade : 0 };
+      const entry = { item: member, local: new THREE.Vector3(place.dx, 0, place.dz), radius: BEAD, tone: this.toneOf(member), shade: item.holds ? shade : 0 };
       const entity = this.unitOf(member);
       const onGlass = place.zone !== "plate";
       if (entity) {
@@ -1041,7 +1058,8 @@ export class ShelvesView {
       const named = this.frames.length === 1 ? all.slice(0, 64) : [...new Set([...this.frames.flatMap((frame) => all.filter((node) => node.frame === frame).slice(0, 40)), ...greatest])];
       for (const [index, node] of greatest.entries()) node.great = index + 1;
       for (const node of named) {
-        const held = node.item.units.length > 0;
+        // A gathering is marked by what it holds; a family by whether it makes a machine (gatherings' pips are as before).
+        const held = node.many ? node.item.units.length > 0 : this.makes(node.item);
         // The only members of their families, standing together: named as a gathering is, by how many they are.
         const text = node.item.type === "l" ? plural(node.item.count, "family of one", "families of one") : node.item.label;
         node.label = labels.add({ id: node.item.key, text, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 20 + Math.log2(node.item.count + 1) + (held ? 6 : 0), kind: "part label-unit", lift: 6, swatch: held ? "map-assigned" : null });

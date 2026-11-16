@@ -17,6 +17,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { ROOT } from "../tools/lib/build_page.mjs";
@@ -128,6 +129,53 @@ test("a unit's note calls no accessory family's protein a candidate: it names th
   }
 });
 
+// ---------------------------------------------------------------- the accessory families' signatures
+
+const TABLES = `
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import build_mpneumoniae_atlas as M, build_syn3a_atlas as S, build_planarian_atlas as PL
+from lib import proteome_shelves as P
+print(json.dumps({"accessory": sorted(P.ACCESSORY), "shared": M.FAMILIES, "syn3a": S.FAMILIES, "planarian": PL.FAMILIES}))
+`;
+const ENTRY_LIST = "/mnt/datasets/Cells/human/interpro-entries-tree-and-go/entry.list";
+
+test("an accessory family's signature is what InterPro names for the role, and a broader one finds no product, said in the note instead", async () => {
+  const run = spawnSync("python3", ["-I", "-c", TABLES, path.join(ROOT, "tools")], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  assert.equal(run.status, 0, run.stderr);
+  const { accessory, shared, syn3a, planarian } = JSON.parse(run.stdout);
+  // IPR000920, "Myelin P0 protein-related", is no signature of the sodium channel's beta subunits in any table.
+  for (const [name, table] of Object.entries({ shared, syn3a, planarian })) assert.deepEqual(table.nav_beta.signatures, ["IPR027098"], name);
+  assert.deepEqual([shared.nav_beta.broader, syn3a.nav_beta.broader], [["IPR000920"], ["IPR000920"]]);
+  // Every accessory signature beside InterPro's own name for it, as read in the saved release (where it is on this machine).
+  const pairs = accessory.flatMap((key) => shared[key].signatures.map((signature) => [key, shared[key].of, signature]));
+  if (existsSync(ENTRY_LIST)) {
+    const names = new Map((await readFile(ENTRY_LIST, "utf8")).split("\n").map((line) => line.split("\t")).filter((parts) => parts.length >= 3).map(([id, , name]) => [id, name]));
+    assert.deepEqual(pairs.map(([key, , signature]) => [key, signature, names.get(signature)]), [
+      ["bk_beta", "IPR003930", "Potassium channel, calcium-activated, BK, beta subunit"],
+      ["cav_a2d", "IPR051173", "Voltage-dependent calcium channel subunit alpha-2/delta"],
+      ["cav_a2d", "IPR013680", "Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region"],
+      ["cav_beta", "IPR000584", "Voltage-dependent calcium channel, L-type, beta subunit"],
+      ["emre", "IPR018782", "Essential MCU regulator, mitochondrial"],
+      ["fxyd", "IPR000272", "Ion-transport regulator, FXYD family"],
+      ["kv_beta", "IPR005983", "Potassium channel, voltage-dependent, beta subunit, KCNAB"],
+      ["micu", "IPR039800", "Calcium uptake protein 1/2/3"],
+      ["nav_beta", "IPR027098", "Sodium channel subunit beta-1/beta-3"],
+      ["nka_beta", "IPR000402", "Sodium/potassium-transporting ATPase subunit beta"],
+    ]);
+    assert.equal(names.get("IPR000920"), "Myelin P0 protein-related");
+  }
+  for (const [id, atlas] of atlases) {
+    for (const [unit, entry] of Object.entries(atlas.units)) for (const product of entry.products) assert.ok(!/IPR000920/.test(product.evidence_note || ""), `${id} ${unit}: ${product.gene} rests on IPR000920`);
+  }
+  // In the mouse the broader signature's carriers are said in the unit's note, Scn2b and Scn4b among them, and none is listed.
+  const mouse = Object.fromEntries(atlases).mouse;
+  for (const unit of ["U01", "U02", "U03", "U04"]) {
+    assert.match(mouse.units[unit].note, /8 proteins of its 21,872 carry IPR000920 \(Myelin P0 protein-related\), a family broader than sodium channel beta subunits: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn2b, Scn4b and Vsig1\. The unit's human candidates SCN2B and SCN4B carry it and no signature of sodium channel beta subunits of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit\./, unit);
+    assert.ok(!mouse.units[unit].products.some((product) => ["Mpz", "Scn2b", "Scn4b", "Vsig1"].includes(product.gene)), unit);
+  }
+});
+
 // ---------------------------------------------------------------- 3. the card's counts, from the files
 
 /** What the card counts for one atlas, worked out from its file: each product once, by its first id, in the units drawn. */
@@ -165,8 +213,9 @@ test("the counts the builder gives each species are those worked out from its fi
     assert.deepEqual(Object.fromEntries(theirs.entries.filter((item) => item.count).map((item) => [item.id, item.count])), mine.entries, id);
   }
   // The two the user saw wrong, as the files now count them: every product found by a family's signature.
-  assert.deepEqual(counted(Object.fromEntries(atlases).mouse).found, { "family signature": 116, "accessory signature": 42 });
-  assert.deepEqual(counted(Object.fromEntries(atlases).mouse).entries, { reviewed: 155, unreviewed: 3 });
+  // The mouse's since 16 November 2026, round 2: the eight carriers of IPR000920 alone (Myelin P0 protein-related) are no products.
+  assert.deepEqual(counted(Object.fromEntries(atlases).mouse).found, { "family signature": 116, "accessory signature": 34 });
+  assert.deepEqual(counted(Object.fromEntries(atlases).mouse).entries, { reviewed: 147, unreviewed: 3 });
   assert.deepEqual(counted(Object.fromEntries(atlases).fruitfly).found, { "family signature": 37, "accessory signature": 17 });
   assert.deepEqual(counted(Object.fromEntries(atlases).fruitfly).entries, { reviewed: 28, unreviewed: 26 });
 });
@@ -191,8 +240,8 @@ test("each species' card says how its products were found, then what their recor
   }
   // The mouse and the fly, word for word.
   const mouse = speciesWords(proteins, summary.find((item) => item.id === "mouse")).card.check;
-  assert.match(mouse, /How they were found: 116 by the signature of a family that makes the machine, candidates by family, not established counterparts; 42 only by that of a family that goes with one/);
-  assert.match(mouse, /Their records: 155 UniProtKB entries reviewed by a curator, 3 annotated automatically;/);
+  assert.match(mouse, /How they were found: 116 by the signature of a family that makes the machine, candidates by family, not established counterparts; 34 only by that of a family that goes with one/);
+  assert.match(mouse, /Their records: 147 UniProtKB entries reviewed by a curator, 3 annotated automatically;/);
   const fly = speciesWords(proteins, summary.find((item) => item.id === "fruitfly")).card.check;
   assert.match(fly, /How they were found: 37 by the signature of a family that makes the machine, candidates by family, not established counterparts; 17 only by/);
   assert.match(fly, /Their records: 28 UniProtKB entries reviewed by a curator, 26 annotated automatically;/);

@@ -44,7 +44,7 @@
  "units": {
   "U01": {
    "finding": "found",
-   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 10 more proteins carry only the signature of sodium channel beta subunits (IPR027098, IPR000920), which go with the machine and make none by themselves: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn1b, Scn2b, Scn3b, Scn4b and Vsig1. They are listed with the unit and are no candidates for its own work.",
+   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 2 more proteins carry only the signature of sodium channel beta subunits (IPR027098), which go with the machine and make none by themselves: Scn1b and Scn3b. They are listed with the unit and are no candidates for its own work. 8 proteins of its 21,872 carry IPR000920 (Myelin P0 protein-related), a family broader than sodium channel beta subunits: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn2b, Scn4b and Vsig1. The unit's human candidates SCN2B and SCN4B carry it and no signature of sodium channel beta subunits of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit.",
    "products": [
     {
      "name": "Sodium channel protein type 1 subunit alpha",
@@ -207,86 +207,6 @@
      "citation": null
     },
     {
-     "name": "Junctional adhesion molecule-like",
-     "gene": "Jaml",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q80UL9"
-      }
-     ],
-     "length": 379,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein P0",
-     "gene": "Mpz",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "P27573"
-      }
-     ],
-     "length": 248,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 1",
-     "gene": "Mpzl1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3TEW6"
-      }
-     ],
-     "length": 270,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 2",
-     "gene": "Mpzl2",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "O70255"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 3",
-     "gene": "Mpzl3",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3V3F6"
-      }
-     ],
-     "length": 237,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-1",
      "gene": "Scn1b",
      "role": "sodium channel beta subunits",
@@ -303,22 +223,6 @@
      "citation": null
     },
     {
-     "name": "Sodium channel regulatory subunit beta-2",
-     "gene": "Scn2b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q56A07"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-3",
      "gene": "Scn3b",
      "role": "sodium channel beta subunits",
@@ -332,45 +236,13 @@
      "found_by": "accessory signature",
      "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR027098 (Sodium channel subunit beta-1/beta-3). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Sodium channel regulatory subunit beta-4",
-     "gene": "Scn4b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q7M729"
-      }
-     ],
-     "length": 228,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "V-set and immunoglobulin domain-containing protein 1",
-     "gene": "Vsig1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q9D2J4"
-      }
-     ],
-     "length": 407,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
      "citation": null
     }
    ]
   },
   "U02": {
    "finding": "found",
-   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 10 more proteins carry only the signature of sodium channel beta subunits (IPR027098, IPR000920), which go with the machine and make none by themselves: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn1b, Scn2b, Scn3b, Scn4b and Vsig1. They are listed with the unit and are no candidates for its own work.",
+   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 2 more proteins carry only the signature of sodium channel beta subunits (IPR027098), which go with the machine and make none by themselves: Scn1b and Scn3b. They are listed with the unit and are no candidates for its own work. 8 proteins of its 21,872 carry IPR000920 (Myelin P0 protein-related), a family broader than sodium channel beta subunits: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn2b, Scn4b and Vsig1. The unit's human candidates SCN2B and SCN4B carry it and no signature of sodium channel beta subunits of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit.",
    "products": [
     {
      "name": "Sodium channel protein type 1 subunit alpha",
@@ -533,86 +405,6 @@
      "citation": null
     },
     {
-     "name": "Junctional adhesion molecule-like",
-     "gene": "Jaml",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q80UL9"
-      }
-     ],
-     "length": 379,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein P0",
-     "gene": "Mpz",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "P27573"
-      }
-     ],
-     "length": 248,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 1",
-     "gene": "Mpzl1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3TEW6"
-      }
-     ],
-     "length": 270,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 2",
-     "gene": "Mpzl2",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "O70255"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 3",
-     "gene": "Mpzl3",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3V3F6"
-      }
-     ],
-     "length": 237,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-1",
      "gene": "Scn1b",
      "role": "sodium channel beta subunits",
@@ -629,22 +421,6 @@
      "citation": null
     },
     {
-     "name": "Sodium channel regulatory subunit beta-2",
-     "gene": "Scn2b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q56A07"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-3",
      "gene": "Scn3b",
      "role": "sodium channel beta subunits",
@@ -658,45 +434,13 @@
      "found_by": "accessory signature",
      "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR027098 (Sodium channel subunit beta-1/beta-3). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Sodium channel regulatory subunit beta-4",
-     "gene": "Scn4b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q7M729"
-      }
-     ],
-     "length": 228,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "V-set and immunoglobulin domain-containing protein 1",
-     "gene": "Vsig1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q9D2J4"
-      }
-     ],
-     "length": 407,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
      "citation": null
     }
    ]
   },
   "U03": {
    "finding": "found",
-   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 10 more proteins carry only the signature of sodium channel beta subunits (IPR027098, IPR000920), which go with the machine and make none by themselves: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn1b, Scn2b, Scn3b, Scn4b and Vsig1. They are listed with the unit and are no candidates for its own work.",
+   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 2 more proteins carry only the signature of sodium channel beta subunits (IPR027098), which go with the machine and make none by themselves: Scn1b and Scn3b. They are listed with the unit and are no candidates for its own work. 8 proteins of its 21,872 carry IPR000920 (Myelin P0 protein-related), a family broader than sodium channel beta subunits: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn2b, Scn4b and Vsig1. The unit's human candidates SCN2B and SCN4B carry it and no signature of sodium channel beta subunits of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit.",
    "products": [
     {
      "name": "Sodium channel protein type 1 subunit alpha",
@@ -859,86 +603,6 @@
      "citation": null
     },
     {
-     "name": "Junctional adhesion molecule-like",
-     "gene": "Jaml",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q80UL9"
-      }
-     ],
-     "length": 379,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein P0",
-     "gene": "Mpz",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "P27573"
-      }
-     ],
-     "length": 248,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 1",
-     "gene": "Mpzl1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3TEW6"
-      }
-     ],
-     "length": 270,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 2",
-     "gene": "Mpzl2",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "O70255"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 3",
-     "gene": "Mpzl3",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3V3F6"
-      }
-     ],
-     "length": 237,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-1",
      "gene": "Scn1b",
      "role": "sodium channel beta subunits",
@@ -955,22 +619,6 @@
      "citation": null
     },
     {
-     "name": "Sodium channel regulatory subunit beta-2",
-     "gene": "Scn2b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q56A07"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-3",
      "gene": "Scn3b",
      "role": "sodium channel beta subunits",
@@ -984,45 +632,13 @@
      "found_by": "accessory signature",
      "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR027098 (Sodium channel subunit beta-1/beta-3). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Sodium channel regulatory subunit beta-4",
-     "gene": "Scn4b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q7M729"
-      }
-     ],
-     "length": 228,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "V-set and immunoglobulin domain-containing protein 1",
-     "gene": "Vsig1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q9D2J4"
-      }
-     ],
-     "length": 407,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
      "citation": null
     }
    ]
   },
   "U04": {
    "finding": "found",
-   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 10 more proteins carry only the signature of sodium channel beta subunits (IPR027098, IPR000920), which go with the machine and make none by themselves: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn1b, Scn2b, Scn3b, Scn4b and Vsig1. They are listed with the unit and are no candidates for its own work.",
+   "note": "10 proteins of its 21,872 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): Scn1a, Scn2a, Scn3a, Scn4a, Scn5a, Scn7a, Scn8a, Scn9a, Scn10a and Scn11a. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the mouse. 2 more proteins carry only the signature of sodium channel beta subunits (IPR027098), which go with the machine and make none by themselves: Scn1b and Scn3b. They are listed with the unit and are no candidates for its own work. 8 proteins of its 21,872 carry IPR000920 (Myelin P0 protein-related), a family broader than sodium channel beta subunits: Jaml, Mpz, Mpzl1, Mpzl2, Mpzl3, Scn2b, Scn4b and Vsig1. The unit's human candidates SCN2B and SCN4B carry it and no signature of sodium channel beta subunits of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit.",
    "products": [
     {
      "name": "Sodium channel protein type 1 subunit alpha",
@@ -1185,86 +801,6 @@
      "citation": null
     },
     {
-     "name": "Junctional adhesion molecule-like",
-     "gene": "Jaml",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q80UL9"
-      }
-     ],
-     "length": 379,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein P0",
-     "gene": "Mpz",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "P27573"
-      }
-     ],
-     "length": 248,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 1",
-     "gene": "Mpzl1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3TEW6"
-      }
-     ],
-     "length": 270,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 2",
-     "gene": "Mpzl2",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "O70255"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Myelin protein zero-like protein 3",
-     "gene": "Mpzl3",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q3V3F6"
-      }
-     ],
-     "length": 237,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-1",
      "gene": "Scn1b",
      "role": "sodium channel beta subunits",
@@ -1281,22 +817,6 @@
      "citation": null
     },
     {
-     "name": "Sodium channel regulatory subunit beta-2",
-     "gene": "Scn2b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q56A07"
-      }
-     ],
-     "length": 215,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
      "name": "Sodium channel regulatory subunit beta-3",
      "gene": "Scn3b",
      "role": "sodium channel beta subunits",
@@ -1310,38 +830,6 @@
      "found_by": "accessory signature",
      "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR027098 (Sodium channel subunit beta-1/beta-3). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "Sodium channel regulatory subunit beta-4",
-     "gene": "Scn4b",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q7M729"
-      }
-     ],
-     "length": 228,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
-     "citation": null
-    },
-    {
-     "name": "V-set and immunoglobulin domain-containing protein 1",
-     "gene": "Vsig1",
-     "role": "sodium channel beta subunits",
-     "ids": [
-      {
-       "db": "uniprot",
-       "id": "Q9D2J4"
-      }
-     ],
-     "length": 407,
-     "found_by": "accessory signature",
-     "entry": "reviewed",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR000920 (Myelin P0 protein-related). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
      "citation": null
     }
    ]

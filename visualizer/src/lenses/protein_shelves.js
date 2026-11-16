@@ -247,7 +247,7 @@ function within(label) {
  *   byShelf   what stands on each shelf, and on none
  */
 export class Shelves {
-  constructor(data, { label = null, organism = null, links = null, units = null } = {}) {
+  constructor(data, { label = null, organism = null, links = null, units = null, found = null } = {}) {
     const problems = validateShelves(data);
     if (problems.length) throw new Error(`the file of proteins does not follow its format: ${problems.slice(0, 3).join("; ")}`);
     this.data = data;
@@ -256,6 +256,13 @@ export class Shelves {
     this.organism = organism;
     this.links = links || {};
     this.units = units || new Map(); // inventory unit id -> the scene's part for it
+    // How the species' atlas found each protein it lists with a unit (schema/SPECIES_PROTEINS.md, found_by), and the
+    // atlas's own words for each way (the scene's product_found_by). A file without the block says nothing of it.
+    const block = data.found_by || null;
+    this.foundWords = new Map((found || []).map((word) => [word.id, word]));
+    this.foundDefault = block?.default || null;
+    this.foundOf = new Map(Object.entries(block?.proteins || {}).flatMap(([how, ids]) => ids.map((id) => [id, how])));
+    this.goesWith = new Set(block?.families?.["accessory signature"] || []);
     this.kind = Array.isArray(data.proteins) ? "proteins" : "families";
     this.shelves = data.shelves;
     this.shelf = data.shelves[0];
@@ -367,6 +374,7 @@ export class Shelves {
   protein(line, under) {
     const unit = Array.isArray(line.unit) ? line.unit : line.unit ? [line.unit] : [];
     const protein = { ...line, type: "p", key: keyOf(this.id, "p", line.id), marks: line.marks || {}, units: unit, under, count: 1 };
+    protein.found = unit.length ? this.foundOf.get(line.id) || this.foundDefault : null;
     protein.label = line.label || under?.label || line.id;
     protein.group = line.group ?? under?.group;
     protein.shelf = this.shelfIdOf(line, under);
@@ -648,6 +656,18 @@ export class Shelves {
     return facts;
   }
 
+  /**
+   * Whether the atlas lists this protein, or every protein of this family that has a unit, with
+   * the unit only because it carries the signature of a family that goes with the machine (a
+   * regulator, or a subunit that makes none by itself). Such a one is drawn plain, not in the
+   * unit's shape, and is no candidate for the machine's own work.
+   */
+  goesWithOnly(item) {
+    if (!item?.units?.length) return false;
+    if (item.type === "p") return item.found === "accessory signature";
+    return item.type === "f" && this.goesWith.has(item.id);
+  }
+
   /** Everything the panel says of one protein. */
   describeProtein(protein) {
     const words = this.sideWords(protein.shelf)[protein.side], basis = this.basisWords(protein.basis);
@@ -661,10 +681,13 @@ export class Shelves {
       : shelf
         ? `${this.predicted ? "A predicted protein. Its" : "Its"} side of ${this.membraneOf(shelf).split(",")[0]} is not known. No source states it and nothing predicts it, so it is set apart beside its shelf and not placed by guess.`
         : `${this.predicted ? "A predicted protein. No" : "No"} place is known for it: no source states where it is and nothing predicts it, so it stands apart from every shelf and is not placed by guess.`;
+    const goes = this.goesWithOnly(protein);
     const chips = [
-      modelled
-        ? { label: "Would make a machine Cells has a law for", swatch: "map-assigned", title: "The species' atlas lists it among the gene products that would make a unit of the law inventory. The law is the unit's: the engine does not model this protein." }
-        : { label: "No law in Cells", swatch: "own-plain", title: "Cells has no law for this protein. It is one of the species' own proteins, drawn as a plain marker." },
+      !modelled
+        ? { label: "No law in Cells", swatch: "own-plain", title: "Cells has no law for this protein. It is one of the species' own proteins, drawn as a plain marker." }
+        : goes
+          ? { label: "Goes with a machine Cells has a law for", swatch: "own-plain", title: "The species' atlas lists it with a unit of the law inventory because its own record carries only the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein." }
+          : { label: "Would make a machine Cells has a law for", swatch: "map-assigned", title: "The species' atlas lists it among the gene products that would make a unit of the law inventory. The law is the unit's: the engine does not model this protein." },
       { label: words.short, swatch: words.swatch, title: words.long },
       { label: basis.label, title: basis.sentence },
     ];
@@ -672,6 +695,12 @@ export class Shelves {
     const facts = [["Identifier", protein.id]];
     if (protein.gene) facts.push(["Gene", protein.gene]);
     if (protein.length) facts.push(["Length", `${Number(protein.length).toLocaleString("en-US")} amino acids`]);
+    // How the atlas found it, and what that makes it a candidate for, in the atlas panel's own words.
+    const found = modelled ? this.foundWords.get(protein.found) : null;
+    if (found) {
+      facts.push(["How the atlas found it", found.label]);
+      if (found.line) facts.push(["In the atlas", found.line]);
+    }
     // One listed among the only members of their families names its own family in a mark: [accession, name].
     const alone = under?.type === "l";
     const family = alone ? [].concat(protein.marks?.family || []) : [];
@@ -701,7 +730,7 @@ export class Shelves {
         this.notes[protein.basis] ? { title: `How a side is ${protein.basis === "none" ? "left unknown" : protein.basis === "by function" ? "taken from function" : protein.basis}`, lines: [this.notes[protein.basis]] } : null,
         notes.length ? { title: "What its marks mean", lines: notes } : null,
       ].filter(Boolean),
-      related: modelled ? [{ title: "Drawn in the atlas as", ids: protein.units.map((unit) => this.units.get(unit)).filter(Boolean) }] : [],
+      related: modelled ? [{ title: goes ? "Listed in the atlas with" : "Drawn in the atlas as", ids: protein.units.map((unit) => this.units.get(unit)).filter(Boolean) }] : [],
       opens: under ? [{ title: under.type === "g" ? "Filed under" : alone ? "Listed with" : "Its family", items: [{ id: under.within?.key && !under.members ? under.within.key : under.key, label: under.label, swatch: under.units.length ? "map-assigned" : "own-family" }] }] : [],
       keywords: [protein.id, protein.gene, alone ? family.join(" ") : under?.label].filter(Boolean).join(" "),
       swatch: modelled ? "map-assigned" : "own-plain",
@@ -776,7 +805,11 @@ export class Shelves {
       label: item.label,
       eyebrow: gathered ? `${this.label} proteins` : lone ? `${this.label} proteins, each the only one of its family` : part ? `${this.label} proteins with no family` : `${this.label} protein family`,
       chips: [
-        modelled ? { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its machine, or parts that go with it. The law is the unit's: the engine does not model these proteins." } : { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." },
+        !modelled
+          ? { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." }
+          : this.goesWithOnly(item)
+            ? { label: "Holds parts that go with a machine Cells has a law for", swatch: "own-family", title: "Its members are listed with a unit of the law inventory only because they carry the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
+            : { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its machine, or parts that go with it. The law is the unit's: the engine does not model these proteins." },
         { label: loose ? "No place known" : `Most ${lower(sides[item.side].short)}`, swatch: sides[item.side].swatch, title: "A family stands on the side where most of its members sit; each member keeps its own." },
       ],
       plain: `${what} ${this.membersBasis()}`,

@@ -230,7 +230,7 @@
  "family_notes": {
   "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
   "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-  "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+  "units": "The inventory units with which the species' atlas lists a member on this line: as a candidate for the machine, where the member was found by the signature of a family that makes it, or as a part that goes with the machine, where 'found_by' names the member or the line.",
   "total": "The family's members on every shelf and on none.",
   "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'."
  },
@@ -249,7 +249,7 @@
   ["IPR029569","Calcium homeostasis modulator family","cell","in","channels",6,{"in":6},"members-00.json",[108,114],[],6],
   ["IPR001862","Membrane attack complex component/perforin/complement C9","cell","outside","channels",5,{"outside":5},"members-00.json",[114,119],[],5],
   ["IPR050866","Cyclic nucleotide-gated cation channel","cell","in","channels",5,{"in":5},"members-00.json",[119,124],[],5],
-  ["IPR000920","Myelin P0 protein-related","cell","in","channels",4,{"in":4},"members-00.json",[124,128],["U01","U02","U03","U04"],7],
+  ["IPR000920","Myelin P0 protein-related","cell","in","channels",4,{"in":4},"members-00.json",[124,128],[],7],
   ["IPR003915","Polycystic kidney disease type 2 protein","cell","in","channels",4,{"in":4},"members-00.json",[128,132],[],6],
   ["IPR004727","Calcium-activated chloride channel protein, chordata","cell","in","channels",4,{"outside":2,"in":2},"members-00.json",[132,136],[],7],
   ["IPR013282","Bcl-2-related protein A1","cell","inside","channels",4,{"inside":4},"members-00.json",[136,140],[],4],
@@ -3709,7 +3709,7 @@
   ["IPR050467","Leucine-rich repeat and fibronectin type-III domain-containing","membrane","in","structure",7,{"in":7},"members-05.json",[638,645],[],15],
   ["IPR013295","Myelin and lymphocyte (MAL) protein","membrane","in","structure",4,{"in":4},"members-05.json",[645,649],[],5],
   ["IPR051036","Sialic acid-binding Ig-like lectin","membrane","in","structure",4,{"in":4},"members-05.json",[649,653],[],8],
-  ["IPR000920","Myelin P0 protein-related","membrane","in","structure",3,{"in":3},"members-05.json",[653,656],["U01","U02","U03","U04"],7],
+  ["IPR000920","Myelin P0 protein-related","membrane","in","structure",3,{"in":3},"members-05.json",[653,656],[],7],
   ["IPR026617","Transmembrane and coiled-coil domain-containing protein 2/5","membrane","in","structure",3,{"in":3},"members-05.json",[656,659],[],4],
   ["IPR039808","Cadherin","membrane","in","structure",3,{"in":3},"members-05.json",[659,662],[],26],
   ["IPR050579","Peripheral myelin protein 22/Epithelial membrane protein-like","membrane","in","structure",3,{"in":3},"members-05.json",[662,665],[],3],
@@ -4744,7 +4744,7 @@
    ["lone-metabolism-outside","The only member of its family","lone","membrane","outside","metabolism",4,{"outside":4},"members-08.json",[1525,1529],[]],
    ["lone-metabolism-in","The only member of its family","lone","membrane","in","metabolism",6,{"in":6},"members-08.json",[1529,1535],[]],
    ["lone-other-outside","The only member of its family","lone","membrane","outside","other",3,{"outside":3},"members-08.json",[1535,1538],[]],
-   ["lone-other-in","The only member of its family","lone","membrane","in","other",147,{"in":147},"members-08.json",[1538,1685],["U01","U02","U03","U04"]],
+   ["lone-other-in","The only member of its family","lone","membrane","in","other",147,{"in":147},"members-08.json",[1538,1685],[]],
    ["lone-other-inside","The only member of its family","lone","membrane","inside","other",1,{"inside":1},"members-08.json",[1685,1686],[]],
    ["lone-other-not-known","The only member of its family","lone","membrane","not known","other",2,{"not known":2},"members-08.json",[1686,1688],[]],
    ["lone-unclassed-outside","The only member of its family","lone","membrane","outside","unclassed",7,{"outside":7},"members-08.json",[1688,1695],[]],
@@ -5568,6 +5568,58 @@
   "first"
  ],
  "place_notes": "Every place the entries state, in UniProt's words, with the shelf and what the place names against its membrane (place_kinds), how the table's line was reached and which of the table's terms it rests on, and how many proteins it places as the statement that decided.",
+ "found_by": {
+  "note": "How the species' atlas found each protein that it lists with a unit (schema/SPECIES_ATLAS.md, found_by). A protein with a unit is found by the signature of a family that makes the machine unless it is named under 'proteins'; one found only by the signature of a family that goes with the machine (a regulator, or a subunit that makes none by itself) is listed with the unit and is no candidate for its own work, and the page draws it plain. A family is named under 'families' where every protein of it that has a unit was found so.",
+  "default": "family signature",
+  "proteins": {
+   "accessory signature": [
+    "E9Q7U0",
+    "O08532",
+    "P14094",
+    "P14231",
+    "P50992",
+    "P54285",
+    "P59648",
+    "P62482",
+    "P63143",
+    "P97370",
+    "P97382",
+    "P97808",
+    "P97952",
+    "Q5RJF7",
+    "Q6PDJ1",
+    "Q6PHS9",
+    "Q8BHK2",
+    "Q8CAE3",
+    "Q8CC27",
+    "Q8CD10",
+    "Q8R0S4",
+    "Q8R3Z5",
+    "Q8VCX5",
+    "Q9CTY5",
+    "Q9CZM9",
+    "Q9D2W0",
+    "Q9D164",
+    "Q9DB10",
+    "Q9JIN6",
+    "Q9Z1L5",
+    "Q9Z239",
+    "Q99ME6",
+    "Q04646",
+    "Q61835"
+   ]
+  },
+  "families": {
+   "accessory signature": [
+    "IPR000272",
+    "IPR000402",
+    "IPR003930",
+    "IPR027098",
+    "IPR039800",
+    "IPR051173"
+   ]
+  }
+ },
  "places": [
   ["SL-0039","Cell membrane","cell","membrane","table","Cell membrane",3567],
   ["SL-0191","Nucleus","nucleus","inside","table","Nucleus",3230],

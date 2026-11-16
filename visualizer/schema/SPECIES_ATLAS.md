@@ -92,7 +92,10 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
   A product found by `family signature` or `similarity search` is a candidate, never an
   established counterpart, and the atlas says so. One found by `accessory signature` is a
   candidate for no machine's own work. A product listed in several units is found the same
-  way in each; a build stops where it would not be. Under `extra`, which matches no unit,
+  way in each; a build stops where it would not be. A signature broader than the family it
+  is asked for (a table's `broader`: IPR000920, InterPro's "Myelin P0 protein-related",
+  beside the sodium channels' beta subunits, since 16 November 2026) finds no product: the
+  unit's note names what carries it and says why none is listed. Under `extra`, which matches no unit,
   `family signature` means the signature of the family the product is listed for, and it is
   a candidate for no unit.
 - **`entry`** on each product says what its record is, read from the record the build read:

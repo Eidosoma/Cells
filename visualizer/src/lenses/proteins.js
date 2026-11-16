@@ -512,7 +512,7 @@ export class ProteinLens {
       .then((data) => {
         if (data.species !== id) throw new Error(`${summary.file} holds the proteins of ${data.species}`);
         const units = new Map(this.model.inGroup("proteins").map((unit) => [unit.id.replace(/^unit\./, ""), unit.id]));
-        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units });
+        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units, found: this.atlas.product_found_by });
         state.status = "ready";
       })
       .catch((error) => {
@@ -771,7 +771,7 @@ export class ProteinLens {
       ? families
         ? several
           ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold proteins listed with machines Cells has laws for. Cells has no law for any other protein here.`
-          : `${number(withUnit)} families hold proteins listed with machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
+          : `${number(withUnit)} families hold proteins listed with machines Cells has laws for: one that makes a machine carries its shape, one that only goes with it is drawn plain. Cells has no law for any other protein here.`
         : `${number(withUnit)} of them are drawn as the machine Cells has a law for. Every other is a plain marker: Cells has no law for it.`
       : "Cells has no law for any of these proteins: every one is a plain marker.";
     const sides =

@@ -320,6 +320,56 @@ test("a protein's panel gives its name, gene, identifier, side and how that is k
   assert.equal(shelves.describe("own:testbug:p:nobody"), null);
 });
 
+test("a protein the atlas lists with a unit only as going with its machine says so, in the atlas's words, and is drawn plain", async () => {
+  // The made-up bug's sodium channel (TB_001, U01) and a regulator listed with the same unit only by an accessory family's signature.
+  const data = madeUpSmall({
+    change: (made) => {
+      made.proteins.push(["TB_010", "Channel regulator", "nacr", "cell", "inside", "predicted", "transport", 190, "U01", {}]);
+      made.counts.inside += 1;
+      made.found_by = { note: "made up", default: "family signature", proteins: { "accessory signature": ["TB_010"] }, families: {} };
+    },
+  });
+  const words = OVERLAY.species.found_by;
+  const shelves = new Shelves(data, { label: "Test bug", links: LINKS, units: UNITS, found: words });
+  const channel = shelves.describe(keyOf("testbug", "p", "TB_001"));
+  const regulator = shelves.describe(keyOf("testbug", "p", "TB_010"));
+  assert.equal(channel.chips[0].label, "Would make a machine Cells has a law for");
+  assert.deepEqual(channel.related, [{ title: "Drawn in the atlas as", ids: ["unit.U01"] }]);
+  assert.deepEqual([Object.fromEntries(channel.facts)["How the atlas found it"], Object.fromEntries(channel.facts)["In the atlas"]], ["Family signature", "Candidate by family, not an established counterpart"]);
+  assert.equal(regulator.chips[0].label, "Goes with a machine Cells has a law for");
+  assert.match(regulator.chips[0].title, /no candidate for the machine's own work, and is drawn as a plain marker/);
+  assert.deepEqual(regulator.related, [{ title: "Listed in the atlas with", ids: ["unit.U01"] }]);
+  assert.deepEqual([Object.fromEntries(regulator.facts)["How the atlas found it"], Object.fromEntries(regulator.facts)["In the atlas"]], ["Accessory family", "Goes with the machine, no candidate for its own work"]);
+  assert.ok(!regulator.chips.some((chip) => /Would make/.test(chip.label)));
+  assert.deepEqual([channel.chips[0].swatch, regulator.chips[0].swatch], ["map-assigned", "own-plain"]);
+  // Drawn plain: the view gives it no unit's form and the plain grey tone, while the channel keeps its own form and the units' tone.
+  const { ShelvesView } = await import("../src/lenses/shelves_view.js");
+  const view = Object.assign(Object.create(ShelvesView.prototype), { shelves, lens: { model: { get: (id) => (id === "unit.U01" ? { id, form: {} } : null) } } });
+  const byId = (id) => shelves.byKey.get(keyOf("testbug", "p", id));
+  assert.equal(view.unitOf(byId("TB_010")), null);
+  assert.equal(view.unitOf(byId("TB_001"))?.id, "unit.U01");
+  assert.deepEqual([view.toneOf(byId("TB_010")), view.toneOf(byId("TB_001")), view.toneOf(byId("TB_001"), true)], ["plain", "unit", "more"]);
+  // A file without the block says nothing of how its proteins were found, and draws them as before.
+  const older = new Shelves(madeUpSmall(), { label: "Test bug", links: LINKS, units: UNITS, found: words });
+  assert.equal(Object.fromEntries(older.describe(keyOf("testbug", "p", "TB_001")).facts)["How the atlas found it"], undefined);
+  assert.equal(older.goesWithOnly(older.byKey.get(keyOf("testbug", "p", "TB_001"))), false);
+});
+
+test("every species' shelves name the proteins their atlas lists with a unit only as going with its machine, and the families all of whose such proteins are so", async () => {
+  for (const id of ["fruitfly", "mouse", "thalecress", "planarian"]) {
+    const shelves = JSON.parse(await readFile(path.join(PROTEINS, id, "shelves.json"), "utf8"));
+    const atlas = JSON.parse(await readFile(path.join(PROTEINS, "atlases", `${id}.json`), "utf8"));
+    const found = new Map();
+    for (const unit of Object.values(atlas.units)) for (const product of unit.products) for (const item of product.ids) found.set(item.id, product.found_by);
+    const going = [...found].filter(([, how]) => how === "accessory signature").map(([key]) => key).sort();
+    assert.deepEqual([...(shelves.found_by?.proteins?.["accessory signature"] || [])].sort(), going, `${id}: the accessory proteins`);
+    assert.equal(shelves.found_by.default, "family signature", id);
+    assert.ok(!/candidates by family alone/.test(JSON.stringify(shelves.family_notes || {})), `${id}: the family note's older words`);
+  }
+  // E. coli lists no protein with a unit: its shelves carry no block.
+  assert.equal(JSON.parse(await readFile(path.join(PROTEINS, "ecoli", "shelves.json"), "utf8")).found_by, undefined);
+});
+
 test("only a protein with a unit is tied to a machine Cells has a law for, and the words stop there", () => {
   const shelves = small();
   const channel = shelves.describe(keyOf("testbug", "p", "TB_001"));

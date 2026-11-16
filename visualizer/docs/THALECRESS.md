@@ -115,7 +115,10 @@ Nine shelves: the animal cell's six, and three for membranes an animal cell lack
   are listed, all with reviewed entries. How they were found is said apart from that
   (since 16 November 2026): 18 by the signature of a family that makes the machine,
   candidates by family, and 1 only by that of a family that goes with one (a MICU
-  regulator of the uniporter), no candidate for the machine's own work.
+  regulator of the uniporter), no candidate for the machine's own work. On the shelves
+  (second round, 16 November 2026) it is drawn as a plain grey marker, not in the unit's
+  shape or the units' tone, and its panel says how the atlas found it and that it goes
+  with the machine (`found_by` in `shelves.json`).
 - **Found:** the plasma-membrane calcium pumps' family (U40: ten ACA proteins), the
   store's calcium pump (U41: `ECA3`), the chloride cotransporters (U44, U45: `CCC1`), and
   the mitochondrial uniporter with its regulator (U47: `MCU1` to `MCU6`, `MICU`).

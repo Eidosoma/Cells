@@ -436,7 +436,8 @@ def fetch_datasets(datasets, refresh=False, pause=2.0, tries=6):
 
 FAMILIES = {
     "nav_alpha": {"name": "Voltage-gated sodium channel alpha subunit", "signatures": ["IPR001696"]},
-    "nav_beta": {"name": "Sodium channel beta subunit", "signatures": ["IPR027098", "IPR000920"]},
+    # IPR000920 ("Myelin P0 protein-related") was given here too until 16 November 2026: it is broader than the beta subunits.
+    "nav_beta": {"name": "Sodium channel beta subunit", "signatures": ["IPR027098"]},
     "kv1": {"name": "Kv1-type voltage-gated potassium channel", "signatures": ["IPR003972"]},
     "kv2": {"name": "Kv2-type voltage-gated potassium channel", "signatures": ["IPR003973"]},
     "kv3": {"name": "Kv3-type voltage-gated potassium channel", "signatures": ["IPR003974"]},
@@ -1123,7 +1124,7 @@ def note_nav(spec, c):
     return (
         f"{c.carry('nav_alpha')} the signature of the sodium channel's pore subunit, and a {years[0]} paper named {len(named)} short planarian sequences as sodium channels ({named[0]} to {named[-1]}), which match {len(joined)} of those gene models. "
         f"{c.close(spec, 'nav_alpha') or 'Nothing here says which of them, if any, carries such a current.'} "
-        f"No planarian sequence carries either signature of the beta subunits; they mark {sum(v['human'] for v in beta.values())} reviewed human entries."
+        f"{'No planarian sequence carries either signature of the beta subunits; they mark' if len(beta) > 1 else 'No planarian sequence carries the signature of the beta subunits (' + ', '.join(beta) + '); it marks'} {sum(v['human'] for v in beta.values())} reviewed human entries."
     )
 
 
@@ -2238,6 +2239,26 @@ def ordered_sides(counts):
     return {side: counts[side] for side in SIDES if counts.get(side)}
 
 
+def found_by_block(atlas, members):
+    """shelves.json's 'found_by' (schema/SPECIES_PROTEINS.md): how the atlas found the proteins it
+    lists with a unit, apart from the default (a making family's signature), and the families every
+    one of whose proteins with a unit was found only by an accessory family's signature."""
+    found = {}
+    for unit in atlas["units"].values():
+        for product in unit["products"]:
+            for item in product["ids"]:
+                if found.setdefault(item["id"], product["found_by"]) != product["found_by"]:
+                    raise SystemExit(f"{item['id']} is found two ways by the atlas")
+    proteins = {how: sorted((key for key, said in found.items() if said == how), key=natural) for how in (FOUND_ACCESSORY, FOUND_NAMED)}
+    going = sorted((family for family, held in members.items() if any(protein in found for protein in held) and all(found[protein] == FOUND_ACCESSORY for protein in held if protein in found)), key=natural)
+    return {
+        "note": "How the planarian atlas found each protein that it lists with a unit (schema/SPECIES_ATLAS.md, found_by). A protein with a unit is found by the signature of a family that makes the machine unless it is named under 'proteins'; one found only by the signature of a family that goes with the machine (a regulator, or a subunit that makes none by itself) is listed with the unit and is no candidate for its own work, and the page draws it plain. A family is named under 'families' where every protein of it that has a unit was found so.",
+        "default": FOUND_SIGNATURE,
+        "proteins": {how: ids for how, ids in proteins.items() if ids},
+        "families": {FOUND_ACCESSORY: going} if going else {},
+    }
+
+
 def build_shelves(c, d, rows, atlas, facts):
     """shelves.json and shelf_members.tsv, with what the README and the summary say of them."""
     s = Shelves(c, d, rows, atlas)
@@ -2333,7 +2354,7 @@ def build_shelves(c, d, rows, atlas, facts):
         "family_columns": ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units", "where"],
         "family_notes": {
             "side": "The side most of the family's members sit on; of equal counts, a membrane first.",
-            "units": "The inventory units whose candidate products, in the planarian atlas, are members of this family.",
+            "units": "The inventory units with which the planarian atlas lists members of this family: as candidates for the machine, where a member was found by the signature of a family that makes it or named in a publication, or as parts that go with the machine, where 'found_by' names the member or the family.",
             "where": "The places in the cell that the same Gene Ontology terms name for at least half of the family's members that are given any: an annotation carried by signatures, not a prediction for these proteins. " + "; ".join(f"{key}: {name} ({term})" for key, term, name in WHERE) + ".",
         },
     }
@@ -2379,6 +2400,8 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
             "kind": {"label": "What the line is", "values": ["gene model", "unreviewed entry", "reviewed entry"], "measured": False, "source": FULL_FILE},
             "same": {"label": "The other line of the same sequence: a gene model's UniProtKB entries, or an entry's gene model", "measured": False, "source": FULL_FILE},
         },
+        # How the atlas found each protein listed with a unit, where it is not the default (schema/SPECIES_PROTEINS.md).
+        "found_by": found_by_block(atlas, members),
         "counts": {side: all_sides.get(side, 0) for side in SIDES},
         "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "by function", "none") if bases.get((side, basis))} for side in SIDES},
         "rests_on": rests,

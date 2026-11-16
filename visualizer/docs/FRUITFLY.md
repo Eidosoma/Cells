@@ -106,6 +106,9 @@ the human's table has a line for every one.
   Kv-beta subunits, the calcium channels' beta and alpha-2/delta subunits, the pump's beta
   subunit), no candidates for the machine's own work. Until then one word mixed the two,
   and the page's card counted 26 of the 54 as found by signature: the unreviewed ones.
+  On the shelves (second round, 16 November 2026) the 17 are drawn as plain grey markers,
+  not in the unit's shape or the units' tone, and each one's panel says how the atlas found
+  it and that it goes with the machine (`found_by` in `shelves.json`).
 - **`found` asks for a family that makes the machine itself.** No unit here rests on an
   accessory family alone.
 - **Found, for example:** the sodium channel (`para`, `NaCP60E`), the Shaker-type

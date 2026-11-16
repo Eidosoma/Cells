@@ -169,6 +169,12 @@ products. Since 16 November 2026 each product says the two apart (`found_by` and
 | accessory signature, only of a family that goes with the machine | 32 | gene models of beta subunits, alpha-2/delta subunits, regulators and the like: no candidates for the machine's own work |
 | similarity search | 0 | None was run |
 
+On the shelves (second round, 16 November 2026) the 32 found only by an accessory family's
+signature are drawn as plain grey markers, not in the unit's shape or the units' tone, and
+each one's panel says how the atlas found it and that it goes with the machine (`found_by`
+in `shelves.json`). The table's signature of the sodium channels' beta subunits is now
+IPR027098 alone; no planarian sequence carries it, as none carried the two before.
+
 | Their records (`entry`) | Products |
 | --- | --- |
 | UniProtKB entries, annotated automatically | 14 (the 4 named and the 10 found by signature) |

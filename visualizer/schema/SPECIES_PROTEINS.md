@@ -75,7 +75,26 @@ catalogue table, the same bytes every time.
   then calls each a predicted protein and its side a prediction on a predicted protein.
 - **`unit`** is the inventory unit the atlas already draws for this protein, or null. A
   protein with a unit is drawn as that unit; every other protein is a plain marker,
-  labelled as not modelled.
+  labelled as not modelled. A protein that the species' atlas lists with a unit only as
+  going with the machine (below, `found_by`) is a plain marker too, and its panel says so.
+- **`found_by`** (16 November 2026): how the species' atlas found each protein it lists
+  with a unit, in the atlas's own words (`schema/SPECIES_ATLAS.md`, `found_by`). Optional,
+  and given where the atlas lists any protein with a unit:
+
+  ```json
+  "found_by": {"note": "…", "default": "family signature",
+               "proteins": {"accessory signature": ["Q80UL9"], "named in a publication": ["A0A0A0"]},
+               "families": {"accessory signature": ["IPR005983"]}}
+  ```
+
+  A protein with a unit is found the `default` way unless `proteins` names it under
+  another; `families` names the families every one of whose proteins with a unit was found
+  only by an accessory family's signature. Such a protein, and such a family's line, is
+  listed with the unit and is no candidate for the machine's own work: the page draws it
+  plain, a grey marker in neither the unit's shape nor the units' tone (a gathering that
+  holds such a family keeps its small sign of a unit), and its panel says how the atlas
+  found it and what that makes it, in the atlas panel's words. The members' files are
+  unchanged by it.
 - **`marks`** are what else can be shown or filtered: whether it was seen in proteomics,
   its essentiality, a measured or estimated amount. Each mark is declared once, with its
   values, whether it is measured, and its source (the name of an entry in `sources`). A

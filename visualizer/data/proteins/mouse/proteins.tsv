@@ -123,10 +123,10 @@ Q9JJZ8	Cnga3	Cyclic nucleotide-gated channel alpha-3	631	1	1	IPR050866	cell	in	s
 Q3UW12	Cnga4	Cyclic nucleotide-gated channel alpha-4	575	2	2	IPR050866	cell	in	s	s	0305.9909					1	1
 E1AZ71	Cngb1	Cyclic nucleotide-gated channel beta-1	1325	1	1	IPR050866	cell	in	s	e	0513.9909	0305.9909				1	8
 Q9JJZ9	Cngb3	Cyclic nucleotide-gated channel beta-3	694	1	1	IPR050866	cell	in	s	c	0513.9909	0039.9909				1	1
-Q80UL9	Jaml	Junctional adhesion molecule-like	379	1	1	IPR000920	cell	in	s	e	0039.9905	0038	U01;U02;U03;U04			1	3
-P27573	Mpz	Myelin protein P0	248	1	1	IPR000920	cell	in	s	s	0039.9905		U01;U02;U03;U04			1	7
-Q56A07	Scn2b	Sodium channel regulatory subunit beta-2	215	1	1	IPR000920	cell	in	s	s	0039.9905	0279	U01;U02;U03;U04			1	1
-Q7M729	Scn4b	Sodium channel regulatory subunit beta-4	228	1	1	IPR000920	cell	in	s	s	0039.9905		U01;U02;U03;U04			1	2
+Q80UL9	Jaml	Junctional adhesion molecule-like	379	1	1	IPR000920	cell	in	s	e	0039.9905	0038				1	3
+P27573	Mpz	Myelin protein P0	248	1	1	IPR000920	cell	in	s	s	0039.9905					1	7
+Q56A07	Scn2b	Sodium channel regulatory subunit beta-2	215	1	1	IPR000920	cell	in	s	s	0039.9905	0279				1	1
+Q7M729	Scn4b	Sodium channel regulatory subunit beta-4	228	1	1	IPR000920	cell	in	s	s	0039.9905					1	2
 Q2EG98	Pkd1l3	Polycystin-1-like protein 3	2151	8	1	IPR003915	cell	in	s	e	0039.9909					1	2
 O35245	Pkd2	Polycystin-2	966	5	1	IPR003915	cell	in	s	e	0305.9909	0039.9909,0026.9909,0089,0097,0132,0498,0466				1	17
 A2A259	Pkd2l1	Polycystin-2-like protein 1	760	1	1	IPR003915	cell	in	s	e	0305.9909	0039.9909,0088				1	1
@@ -10598,9 +10598,9 @@ Q91Y57	Siglece	Sialic acid-binding Ig-like lectin 12	467	1	1	IPR051036	membrane	
 Q920G3	Siglecf	Sialic acid-binding Ig-like lectin 5	569	1	2	IPR051036	membrane	in	s	n	0162.9905					1	4
 F6Q528	Siglech	Sialic acid binding Ig-like lectin H	332	1	3	IPR051036	membrane	in	s	r	0162.9905					0	11
 A0A087WNS1	Siglecl2	Siglec family like 2	367	1	4	IPR051036	membrane	in	s	r	0162.9904					0	6
-Q3TEW6	Mpzl1	Myelin protein zero-like protein 1	270	2	1	IPR000920	membrane	in	s	c	0162.9905		U01;U02;U03;U04			1	19
-O70255	Mpzl2	Myelin protein zero-like protein 2	215	1	1	IPR000920	membrane	in	s	c	0162.9905		U01;U02;U03;U04			1	4
-Q3V3F6	Mpzl3	Myelin protein zero-like protein 3	237	2	1	IPR000920	membrane	in	s	c	0162.9905		U01;U02;U03;U04			1	6
+Q3TEW6	Mpzl1	Myelin protein zero-like protein 1	270	2	1	IPR000920	membrane	in	s	c	0162.9905					1	19
+O70255	Mpzl2	Myelin protein zero-like protein 2	215	1	1	IPR000920	membrane	in	s	c	0162.9905					1	4
+Q3V3F6	Mpzl3	Myelin protein zero-like protein 3	237	2	1	IPR000920	membrane	in	s	c	0162.9905					1	6
 A0A338P6G2	Ccdc188	Coiled-coil domain containing 188	436	1	1	IPR026617	membrane	in	s	r	0162.9904					0	4
 Q9DA21	Smco2	Single-pass membrane and coiled-coil domain-containing protein 2	347	1	1	IPR026617	membrane	in	s	c	0162.9904					1	6
 Q80X59	Tmco5b	Transmembrane and coiled-coil domain-containing protein 5B	307	1	2	IPR026617	membrane	in	s	c	0162.9904					1	1
@@ -17319,7 +17319,7 @@ Q6UJB9	Tmem270	Transmembrane protein 270	264	2	2	IPR029166	membrane	in	s	c	0162.
 A0A0U1RQ45	Tmem275	Transmembrane protein 275	177	1	3	IPR062110	membrane	in	s	r	0162.9909			Transmembrane protein 275		1	1
 Q8K467	Tmie	Transmembrane inner ear expressed protein	153	1	1	IPR032006	membrane	in	s	c	0162.9905			Transmembrane inner ear expressed protein		1	5
 Q4QQM4	Trp53i11	Tumor protein p53-inducible protein 11	189	1	1	IPR028266	membrane	in	s	c	0162.9909			Tumor protein p53-inducible protein 11		1	6
-Q9D2J4	Vsig1	V-set and immunoglobulin domain-containing protein 1	407	2	1	IPR029861	membrane	in	s	c	0162.9905		U01;U02;U03;U04	V-set and immunoglobulin domain-containing protein 1		1	2
+Q9D2J4	Vsig1	V-set and immunoglobulin domain-containing protein 1	407	2	1	IPR029861	membrane	in	s	c	0162.9905			V-set and immunoglobulin domain-containing protein 1		1	2
 Q9Z109	Vsig2	V-set and immunoglobulin domain-containing protein 2	328	2	2	IPR042475	membrane	in	s	c	0162.9905			V-set and immunoglobulin domain-containing protein 2		1	4
 F6TUL9	Vsig4	V-set and immunoglobulin domain containing 4	280	1	1	IPR039939	membrane	in	p					V-set and immunoglobulin domain-containing protein 4		0	2
 Q6P3A4	Vsig8	V-set and immunoglobulin domain-containing protein 8	417	2	2	IPR052871	membrane	in	s	c	0162.9905			V-set and immunoglobulin domain-containing protein		1	1

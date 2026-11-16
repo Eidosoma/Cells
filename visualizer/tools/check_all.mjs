@@ -75,6 +75,7 @@ const SUITE = [
   { name: "shelves-ecoli", tool: "check_shelves.mjs", args: ["ecoli"], minutes: 1 },
   { name: "shelves-stack-thalecress", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "thalecress" }, minutes: 1 },
   { name: "shelves-stack-mouse", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "mouse" }, minutes: 1 },
+  { name: "shelves-accessory-mouse", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "mouse" }, minutes: 1 },
   { name: "layers-zero", tool: "check_layers.mjs", args: ["zero"], minutes: 1 },
   { name: "layers-switch", tool: "check_layers.mjs", args: ["switch"], minutes: 1 },
   { name: "layers-flow", tool: "check_layers.mjs", args: ["flow", DEFAULT_RUNS, pictures], env: { RUN: DEV, REFERENCE: path.join(ROOT, "tools", "references", "secreted-species-dev-run-0.4.json") }, minutes: 1 },

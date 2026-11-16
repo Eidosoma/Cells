@@ -77,7 +77,7 @@
  "units": {
   "U01": {
    "finding": "found",
-   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.2. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
+   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.2. No planarian sequence carries the signature of the beta subunits (IPR027098); it marks 2 reviewed human entries.",
    "products": [
     {
      "name": "Scna-1",
@@ -174,7 +174,7 @@
   },
   "U02": {
    "finding": "found",
-   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.3. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
+   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.3. No planarian sequence carries the signature of the beta subunits (IPR027098); it marks 2 reviewed human entries.",
    "products": [
     {
      "name": "Scna-1",
@@ -271,7 +271,7 @@
   },
   "U03": {
    "finding": "found",
-   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.6. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
+   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.6. No planarian sequence carries the signature of the beta subunits (IPR027098); it marks 2 reviewed human entries.",
    "products": [
     {
      "name": "Scna-1",
@@ -368,7 +368,7 @@
   },
   "U04": {
    "finding": "found",
-   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of the unnamed neuronal sodium channel. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
+   "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of the unnamed neuronal sodium channel. No planarian sequence carries the signature of the beta subunits (IPR027098); it marks 2 reviewed human entries.",
    "products": [
     {
      "name": "Scna-1",

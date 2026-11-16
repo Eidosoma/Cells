@@ -149,18 +149,21 @@ this file's own").
 - **43 of the 49 units are found,** and 6 have nothing to look for (lumped properties, a
   default current, a configured slot and the designed cage). None is built from another
   family and none is not found: the mouse has connexins for its gap junctions, as the
-  human has. 446 products are listed over the units, 158 proteins in all: 155 with a
+  human has. 414 products are listed over the units, 150 proteins in all: 147 with a
   reviewed entry and 3 with an unreviewed one (`Cacna1g`, `Cacna1i`, `Kcnmb3`). Each names
-  its units on the shelves (`unit`).
+  its units on the shelves (`unit`). (Until the second round of 16 November 2026 there were
+  446 and 158: the eight carriers of IPR000920, below, are no longer listed.)
 - **Every product was found by its family's signature, and its entry is said apart.** Until
   16 November 2026 one word mixed how a product was found with what its entry is, so the
   page's card said that 3 of the 158 products were found by signature or similarity, when
   all 158 were. Each product now gives both (`found_by`, `entry`; `schema/SPECIES_ATLAS.md`),
   and the card says: 116 found by the signature of a family that makes the machine,
-  candidates by family; 42 only by that of a family that goes with one, no candidates for
-  the machine's own work; and, apart, 155 UniProtKB entries reviewed by a curator and 3
+  candidates by family; 34 only by that of a family that goes with one, no candidates for
+  the machine's own work; and, apart, 147 UniProtKB entries reviewed by a curator and 3
   annotated automatically, which says how the entries were written, not which protein does
-  a unit's work.
+  a unit's work. On the shelves the 34 are drawn as plain grey markers, not in the unit's
+  shape or the units' tone, and each one's panel says how the atlas found it and that it
+  goes with the machine (`found_by` in `shelves.json`).
 - **By family, never by a look-alike symbol.** The inventory names its candidates by human
   genes. A mouse protein is listed only because its own entry carries the InterPro
   signature of the unit's family, the signature the build first checks the human candidates
@@ -168,11 +171,11 @@ this file's own").
   the 14 other inward rectifiers that carry it, not because its name looks like `KCNJ2`.
   No source of orthology was read and nothing is called an ortholog, so no unit says which
   family member is the human candidate's counterpart.
-- **So the lists are long where the family is large:** 20 proteins for each sodium channel
-  unit (ten alpha subunits and ten carriers of the beta subunits' signatures), 11 for each
+- **So the lists are long where the family is large:** 12 proteins for each sodium channel
+  unit (ten alpha subunits and the two beta subunits that carry their family's signature), 11 for each
   Kv1 unit with its beta subunits, 18 for each CaV2 unit with the subunits that go with it,
   20 connexins for each gap junction. The carriers of a family that makes the machine (the
-  ten alpha subunits, the Kv1 channels, the connexins) are candidates by family alone; the
+  ten alpha subunits, the Kv1 channels, the connexins) are candidates by their family; the
   carriers of a family that only goes with it (the beta and alpha-2/delta subunits, the
   regulators) are named apart in each unit's note and are no candidates for its own work.
 - **A near miss, said in the unit's note: `Atp2b3`, a calcium pump of the cell membrane
@@ -184,16 +187,22 @@ this file's own").
   carries the signature of the MICU regulators, an accessory family; and an entry tied to
   the MGI gene `Gm21985`, which has no marker of its own, carries the chloride
   cotransporters' (analysis folder, `gene_families.txt`).
-- **The shared table of families sweeps in six relatives of myelin protein zero.** One of
-  the two signatures the table gives for the sodium channels' beta subunits, IPR000920, is
-  InterPro's "Myelin P0 protein-related". In the mouse it is carried, besides `Scn2b` and
-  `Scn4b`, by `Mpz`, `Mpzl1`, `Mpzl2`, `Mpzl3`, `Jaml` and `Vsig1`, so these stand under
-  U01 to U04 in the role "sodium channel beta subunits". Each product's own note names the
-  signature it carries, and the beta subunits are an accessory family, which makes no unit
-  found: these products are found by `accessory signature`, and the page calls them no
-  candidates for the machine's own work. The table is shared by every species
-  (`tools/build_mpneumoniae_atlas.py`), so it is not changed here; the fly's, the
-  planarian's and thale cress's sides of the atlas list no sodium channel beta subunit.
+- **A signature broader than the beta subunits is no longer one of theirs** (second round,
+  16 November 2026). The shared table gave two signatures for the sodium channels' beta
+  subunits: IPR027098, InterPro's "Sodium channel subunit beta-1/beta-3", and IPR000920,
+  InterPro's "Myelin P0 protein-related". The second swept in myelin protein zero and its
+  relatives: in the mouse `Mpz`, `Mpzl1`, `Mpzl2`, `Mpzl3`, `Jaml` and `Vsig1` stood under
+  U01 to U04 as going with the sodium channel, which they do not. Read from the saved
+  downloads, no signature tells the beta-2 and beta-4 subunits from those relatives:
+  `Scn2b` and `Scn4b` (and the human candidates `SCN2B` and `SCN4B`) carry IPR000920 and
+  only signatures of immunoglobulin-like domains that the relatives carry too (InterPro's
+  `entry.list`, release 111.0). So the table now gives IPR027098 alone (in
+  `tools/build_mpneumoniae_atlas.py`, in Syn3A's copy and in the planarian's table), and
+  each sodium channel unit's note names the eight carriers of IPR000920, `Scn2b` and `Scn4b`
+  among them, and says that a search by signature cannot tell a beta subunit from the
+  family's other members, so none of them is listed. `Scn1b` and `Scn3b` carry IPR027098
+  and stay. The two names are given as UniProt gives them; no name is matched to the human
+  gene's.
 
 ## Sources and terms
 

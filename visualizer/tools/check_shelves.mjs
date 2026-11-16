@@ -6,8 +6,10 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, human, ecoli, stack, nofiles, resize, units-small, shots or
-// pictures. stack checks any species with several shelves against its own file (SPECIES names it; thale
+// SCENARIO is syn3a (the default), planarian, human, ecoli, stack, accessory, nofiles, resize, units-small, shots or
+// pictures. accessory checks a species whose atlas lists proteins with a unit only as going with its machine (SPECIES
+// names it; the mouse by default): those families and members are drawn plain and their panels say so.
+// MEMBERS=DIR serves the members' files from DIR (written there when missing), for a copy of the tree whose out/ is shared. stack checks any species with several shelves against its own file (SPECIES names it; thale
 // cress by default): a frame and a legend line for every shelf, a shelf in focus, the stack back. human checks a species with several shelves, on the human's file: the stack,
 // a shelf in focus, a family over its own shelf, the same family on another shelf, the
 // families of one, what is set apart, the list, the keyboard and a phone-sized window; with
@@ -41,7 +43,8 @@ const check = (name, ok, detail = "") => {
 const note = (text) => console.log(`note  ${text}`);
 const pageLog = [];
 const release = await acquireBrowser();
-const server = createServer({ offline: true, scene, log: (line) => pageLog.push(line), ...(scenario === "nofiles" ? { proteins: null } : {}) });
+// MEMBERS names a folder of the members' files of the run's own (a copy of the tree beside another shares out/proteins).
+const server = createServer({ offline: true, scene, log: (line) => pageLog.push(line), ...(scenario === "nofiles" ? { proteins: null } : {}), ...(process.env.MEMBERS ? { members: process.env.MEMBERS } : {}) });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/`;
 const WIDTH = Number(process.env.WIDTH || 1400), HEIGHT = Number(process.env.HEIGHT || 900);
@@ -766,6 +769,39 @@ try {
     await shot(`stack-${id}`);
   }
 
+  if (scenario === "accessory") {
+    // A species whose atlas lists proteins with a unit only as going with its machine (SPECIES names it; the mouse
+    // by default): such a family's line is drawn plain and its panel says so; such a member is drawn plain and its
+    // panel says how the atlas found it and what that makes it, in the atlas's words; a family that makes the
+    // machine keeps the machine's form, and its member is still "drawn in the atlas as" the unit.
+    const id = process.env.SPECIES || "mouse";
+    const file = JSON.parse(await readFile(new URL(`../data/proteins/${id}/shelves.json`, import.meta.url), "utf8"));
+    const goes = file.found_by?.families?.["accessory signature"] || [];
+    const member = file.found_by?.proteins?.["accessory signature"]?.[0];
+    await open(`lens=proteins&species=${id}&show=own`);
+    for (let tries = 0; tries < 480 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    const lines = await evaluate(`(() => { const view = ${L}.mounted; return [...view.nodes.values()].filter((node) => node.item.type === "f" && !node.many && node.item.units.length).map((node) => ({ key: node.item.key, id: node.item.id, form: Boolean(node.form), shaped: Boolean(view.unitOf(node.item)), tone: node.tone, goes: view.shelves.goesWithOnly(node.item) })); })()`);
+    const plain = lines.filter((line) => goes.includes(line.id)), making = lines.filter((line) => !goes.includes(line.id));
+    check("every line of a family that only goes with a machine is drawn plain, in grey and without a form", plain.length > 0 && plain.every((line) => line.goes && !line.form && !line.shaped && line.tone === "plain"), JSON.stringify(plain.filter((line) => !line.goes || line.form || line.tone !== "plain").slice(0, 4)));
+    check("every other line with a unit takes the units' tone, and carries the machine's form where the scene has one", making.length > 0 && making.every((line) => !line.goes && line.tone === "unit" && line.form === line.shaped) && making.some((line) => line.form), JSON.stringify({ wrong: making.filter((line) => line.goes || line.tone !== "unit" || line.form !== line.shaped).slice(0, 4), counts: [plain.length, making.length, making.filter((line) => line.form).length] }));
+    const family = plain[0];
+    await evaluate(`${V}.select(${JSON.stringify(family?.key)}, { fly: true })`);
+    let s = await until((now) => now.panel?.chips?.includes("go with"));
+    check("such a family's panel says its members go with a machine Cells has a law for", /Holds parts that go with a machine Cells has a law for/.test(s.panel?.chips || ""), JSON.stringify(s.panel?.chips));
+    // The family opens; one of its members, found only by the accessory family's signature, is chosen.
+    const opened = await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened?.key === ${JSON.stringify(family?.key)} || performance.now() - began > 30000 ? resolve(lens.mounted?.opened?.key ?? null) : setTimeout(wait, 50)); wait(); })`);
+    await still();
+    const key = await evaluate(`(() => { const view = ${L}.mounted, item = view.shelves.byKey.get(${JSON.stringify(family?.key)}); const members = item ? view.shelves.membersOf(item) : null; return members?.find((one) => one.found === "accessory signature")?.key ?? null; })()`);
+    if (opened === family?.key && key) {
+      await evaluate(`${V}.select(${JSON.stringify(key)})`);
+      s = await until((now) => now.selected === key && Boolean(now.panel?.title));
+      const plainMember = await evaluate(`(() => { const view = ${L}.mounted, entry = view.dish?.nodes.get(${JSON.stringify(key)}); return view.unitOf(view.shelves.byKey.get(${JSON.stringify(key)})) === null && Boolean(entry) && entry.tone === "plain" && !entry.form; })()`);
+      check("a member found only by an accessory family's signature says so in the atlas's words, is listed with the unit and is drawn plain", plainMember && /Goes with a machine Cells has a law for/.test(s.panel?.chips || "") && !/Would make a machine/.test(s.panel?.chips || "") && /How the atlas found it: Accessory family/.test(s.panel?.facts || "") && /In the atlas: Goes with the machine, no candidate for its own work/.test(s.panel?.facts || "") && /Listed in the atlas with/.test(s.panel?.heads || ""), JSON.stringify([key, plainMember, s.panel?.chips, s.panel?.facts, s.panel?.heads]));
+    } else check("the accessory family opens and holds a member found so", false, JSON.stringify([opened, family?.key, key, member]));
+    await shot(`accessory-${id}-member`);
+  }
+
   if (scenario === "motion") {
     // Not still: the opening as it moves.
     await open("lens=proteins&species=planarian&show=own", false);
@@ -819,7 +855,9 @@ try {
         return { species: view.shelves.id, stands: view.shelves.stands, columns: view.arranged?.columns, frames: view.frames?.length, focused: view.focused === undefined ? "the whole stack" : view.focused, ...view.drawn(), labels: viewer.shadowRoot.querySelectorAll(".label:not([hidden])").length, frame_ms: Number(frame.toFixed(1)), calls: stage.renderer.info.render.calls, opened: view.opened?.key || null, status: view.status || null };
       })()`);
       note(`${item.name}: ${JSON.stringify(facts)}`);
-      await shot(item.name);
+      // An item with "shot": false is only loaded: a fresh browser's first page, whose WebGL context is lost and restored
+      // a few seconds after it starts, is loaded so and not pictured.
+      if (item.shot !== false) await shot(item.name);
     }
   }
 

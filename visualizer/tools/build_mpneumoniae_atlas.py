@@ -143,7 +143,10 @@ EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
 FAMILIES = {
     "nav_alpha": {"of": "voltage-gated sodium channel alpha subunits", "signatures": ["IPR001696"]},
-    "nav_beta": {"of": "sodium channel beta subunits", "signatures": ["IPR027098", "IPR000920"]},
+    # IPR027098 is InterPro's "Sodium channel subunit beta-1/beta-3". IPR000920, "Myelin P0 protein-related", was given here too
+    # until 16 November 2026: it is broader than the beta subunits (myelin protein zero and its relatives carry it), so it finds no
+    # subunit and is only said in a unit's note, where a species' proteins carry it ("broader").
+    "nav_beta": {"of": "sodium channel beta subunits", "signatures": ["IPR027098"], "broader": ["IPR000920"]},
     "kv1": {"of": "Kv1-type potassium channels", "signatures": ["IPR003972"]},
     "kv2": {"of": "Kv2-type potassium channels", "signatures": ["IPR003973"]},
     "kv3": {"of": "Kv3-type potassium channels", "signatures": ["IPR003974"]},

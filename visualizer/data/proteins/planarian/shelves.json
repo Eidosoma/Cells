@@ -94,7 +94,7 @@
  ],
  "family_notes": {
   "side": "The side most of the family's members sit on; of equal counts, a membrane first.",
-  "units": "The inventory units whose candidate products, in the planarian atlas, are members of this family.",
+  "units": "The inventory units with which the planarian atlas lists members of this family: as candidates for the machine, where a member was found by the signature of a family that makes it or named in a publication, or as parts that go with the machine, where 'found_by' names the member or the family.",
   "where": "The places in the cell that the same Gene Ontology terms name for at least half of the family's members that are given any: an annotation carried by signatures, not a prediction for these proteins. nucleus: nucleus (GO:0005634); mitochondrion: mitochondrion (GO:0005739); endoplasmic reticulum: endoplasmic reticulum (GO:0005783); Golgi apparatus: Golgi apparatus (GO:0005794); lysosome: lysosome (GO:0005764); peroxisome: peroxisome (GO:0005777); cilium: cilium (GO:0005929); cytoskeleton: cytoskeleton (GO:0005856); ribosome: ribosome (GO:0005840); cytosol: cytosol (GO:0005829); plasma membrane: plasma membrane (GO:0005886); extracellular: extracellular region (GO:0005576)."
  },
  "families": [
@@ -4142,6 +4142,64 @@
    "label": "The other line of the same sequence: a gene model's UniProtKB entries, or an entry's gene model",
    "measured": false,
    "source": "predicted_proteins.tsv"
+  }
+ },
+ "found_by": {
+  "note": "How the planarian atlas found each protein that it lists with a unit (schema/SPECIES_ATLAS.md, found_by). A protein with a unit is found by the signature of a family that makes the machine unless it is named under 'proteins'; one found only by the signature of a family that goes with the machine (a regulator, or a subunit that makes none by itself) is listed with the unit and is no candidate for its own work, and the page draws it plain. A family is named under 'families' where every protein of it that has a unit was found so.",
+  "default": "family signature",
+  "proteins": {
+   "accessory signature": [
+    "h1SMcG0000634",
+    "h1SMcG0000727",
+    "h1SMcG0001455",
+    "h1SMcG0001646",
+    "h1SMcG0001647",
+    "h1SMcG0001648",
+    "h1SMcG0001651",
+    "h1SMcG0002095",
+    "h1SMcG0002720",
+    "h1SMcG0003961",
+    "h1SMcG0005093",
+    "h1SMcG0005317",
+    "h1SMcG0007169",
+    "h1SMcG0007452",
+    "h1SMcG0008245",
+    "h1SMcG0008945",
+    "h1SMcG0009706",
+    "h1SMcG0010103",
+    "h1SMcG0010104",
+    "h1SMcG0010573",
+    "h1SMcG0012122",
+    "h1SMcG0013103",
+    "h1SMcG0013104",
+    "h1SMcG0014050",
+    "h1SMcG0016335",
+    "h1SMcG0017114",
+    "h1SMcG0017115",
+    "h1SMcG0019860",
+    "h1SMcG0020732",
+    "h1SMcG0021519",
+    "h1SMcG0022706",
+    "h1SMcG0023063"
+   ],
+   "named in a publication": [
+    "A0A0A1CQM0",
+    "A0A0A1CRL5",
+    "A0A0A1CVW3",
+    "A7RDN9",
+    "h1SMcG0013155",
+    "h1SMcG0014796",
+    "h1SMcG0020152"
+   ]
+  },
+  "families": {
+   "accessory signature": [
+    "IPR000402",
+    "IPR000584",
+    "IPR003930",
+    "IPR005400",
+    "IPR039800"
+   ]
   }
  },
  "counts": {

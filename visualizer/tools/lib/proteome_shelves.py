@@ -1642,6 +1642,39 @@ ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
 FOUND_SIGNATURE = "family signature"       # its own record carries the signature of a family that makes the machine
 FOUND_ACCESSORY = "accessory signature"    # its own record carries only that of a family that goes with the machine
 ENTRY_REVIEWED, ENTRY_UNREVIEWED = "reviewed", "unreviewed"  # a UniProtKB entry a curator reviewed, or one annotated automatically
+FOUND_NAMED = "named in a publication"
+# The shelves' note on a line's units, and their block on how the atlas found the proteins listed with a unit
+# (schema/SPECIES_PROTEINS.md, "How the atlas found a protein"): a protein of a family that only goes with the
+# machine is listed with the unit, and is no candidate for its own work.
+UNITS_NOTE = "The inventory units with which the species' atlas lists a member on this line: as a candidate for the machine, where the member was found by the signature of a family that makes it, or as a part that goes with the machine, where 'found_by' names the member or the line."
+FOUND_BY_NOTE = "How the species' atlas found each protein that it lists with a unit (schema/SPECIES_ATLAS.md, found_by). A protein with a unit is found by the signature of a family that makes the machine unless it is named under 'proteins'; one found only by the signature of a family that goes with the machine (a regulator, or a subunit that makes none by itself) is listed with the unit and is no candidate for its own work, and the page draws it plain. A family is named under 'families' where every protein of it that has a unit was found so."
+
+
+def found_by_block(units, families):
+    """shelves.json's 'found_by': how the atlas found the proteins it lists with a unit, apart from
+    the default (a making family's signature). units: the atlas's units; families: a family's id ->
+    its proteins, on every shelf. None where the atlas lists no protein with a unit."""
+    found = {}
+    for unit in units.values():
+        for product in unit["products"]:
+            for item in product["ids"]:
+                if found.setdefault(item["id"], product["found_by"]) != product["found_by"]:
+                    raise SystemExit(f"{item['id']} is found two ways by the atlas")
+    if not found:
+        return None
+    proteins = {how: sorted((key for key, said in found.items() if said == how), key=natural) for how in (FOUND_ACCESSORY, FOUND_NAMED)}
+    going = sorted((family for family, members in families.items() if any(member in found for member in members) and all(found[member] == FOUND_ACCESSORY for member in members if member in found)), key=natural)
+    return {"note": FOUND_BY_NOTE, "default": FOUND_SIGNATURE, "proteins": {how: ids for how, ids in proteins.items() if ids}, "families": {FOUND_ACCESSORY: going} if going else {}}
+
+
+def line_families(lines):
+    """A family's id -> its proteins, over its lines on every shelf (for found_by_block)."""
+    out = defaultdict(list)
+    for line in lines:
+        out[line["id"]].extend(line["proteins"])
+    return dict(out)
+
+
 # The line of a species atlas's method that says so, for the species whose catalogue is a reference proteome.
 TWO_FACTS = "Each product says, apart, how it was found and what its entry is. Found: by the signature of a family that makes the machine itself, which makes it a candidate by family, or only by that of a family that goes with the machine (a regulator, or a subunit that makes no channel or pump by itself), which makes it no candidate for the machine's own work. Its entry: reviewed by a curator, or annotated automatically; that says how the entry was written, not that the protein does the unit's work."
 
@@ -1674,6 +1707,25 @@ def find_units(snapshot, entries, filing, human, families_table, units_table, no
     carried = lambda family: order(accession for signature in family["signatures"] for accession in carriers.get(signature, []))
     said = lambda families: f"{listed(family['of'] for family in families)} ({', '.join(signature for family in families for signature in family['signatures'])})"
     units, unit_of, beside, found_of = {}, defaultdict(set), {}, {}
+
+    def broader_said(unit, families, listed_here):
+        """A sentence on the proteins that carry a signature broader than a family of the unit
+        ("broader" in the table): they are not listed with the unit, and the note says why."""
+        said_here = ""
+        for key, family in families:
+            for signature in family.get("broader", []):
+                broad = order(accession for accession in carriers.get(signature, []) if accession not in listed_here)
+                if not broad:
+                    continue
+                # The unit's human candidates that carry the broader signature and none of the family's own.
+                humans = [product["gene"] for product in unit.get("products") or [] if product.get("human_uniprot") and signature in human.get(product["human_uniprot"], set()) and not set(family["signatures"]) & human.get(product["human_uniprot"], set())]
+                said_here += f" {plural(len(broad), 'protein')} of its {len(entries):,} carr{'ies' if len(broad) == 1 else 'y'} {signature} ({signature_name(signature)}), a family broader than {family['of']}: {some(by_gene(broad))}."
+                if humans:
+                    said_here += f" The unit's human candidates {listed(humans)} carry it and no signature of {family['of']} of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit."
+                else:
+                    said_here += " None of these is listed with the unit."
+        return said_here
+
     for unit in snapshot["units"]:
         spec = units_table[unit["id"]]
         if spec.get("finding"):
@@ -1735,6 +1787,7 @@ def find_units(snapshot, entries, filing, human, families_table, units_table, no
             for family, found in only:
                 for accession in found:
                     beside[accession] = family["of"]
+        note += broader_said(unit, families, listed_here)
         if more:
             note = more(unit["id"], families, finding, note)
         units[unit["id"]] = {"finding": finding, "note": note, "products": products}
