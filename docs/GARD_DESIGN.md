@@ -217,7 +217,6 @@ heat rate RT Σ_i J_i A_i is non-negative term by term. What follows (**S**):
   - Fission resets the size every cycle, so the assembly is always growing and never near an
     equilibrium. Composomes are non-equilibrium kinetic states sustained by that drive, not
     equilibria shaped by catalysis.
-  - With k_b = 1e-5 (Segrè 2000 as read), K_i ρ_i = 10, which drives even harder.
 - **So the mean-field law is admissible as a passive law.** It books heat and never work, and its
   free energy comes from the held reservoir. In @3's terms the reservoir is a chemostat, the role a
   held bath plays (D152 §2.2).
@@ -264,7 +263,7 @@ So Kolmogorov's cycle criterion fails. Probes (CPU 22, NumPy, `probe/probe_resul
 ### 2.4 The guard for stochastic laws, and event heat
 
 "Heat never decreases" is a deterministic, per-element check. A single stochastic leave in a
-supersaturated state legitimately goes uphill, so for stochastic laws the check is replaced by four
+supersaturated state legitimately goes uphill, so for stochastic laws the check is replaced by three
 others (**S**):
 1. **Local detailed balance, a static property checked at the kernel.**
    - For every propensity pair on random states (S5's R-ops form, 200 states),
@@ -276,15 +275,19 @@ others (**S**):
      events, declared non-monotone;
    - for the pair-consistent law that ledger is a state function: cumulative heat =
      k_BT [ln π(n_t) − ln π(n_0)], plus the fission and sink terms below. So the ledger closes
-     exactly at every saved row.
+     exactly at every saved row;
+   - for the published form the same booking leaves a residual against ln π, the unsourced cycle
+     work, which is reported rather than closed.
 3. **Fission and sink bookings:**
    - the split's change in −k_BT ln π is booked as signed work, from an unmodelled agent: a
      prescribed operator, as the partition operator books its work;
    - an unfollowed daughter's material and −k_BT ln π leave to the declared sink.
-4. **Ensemble checks:**
-   - the expected entropy production rate Σ_i (a_i⁺ − a_i⁻) ln(a_i⁺/a_i⁻) ≥ 0 at every state;
-   - the ensemble mean heat ≥ 0;
-   - in a closed world started at equilibrium, the integral fluctuation theorem ⟨e^{−Σ}⟩ = 1.
+
+Ensemble inequalities are not used as checks. The entropy-production rate at a state is
+non-negative for any positive rates, so it cannot fail; mean heat alone is not bounded (the second
+law bounds heat plus the ensemble's entropy change); and a fluctuation theorem in a closed world
+started at equilibrium is trivially satisfied. The kernel identity, the product-form stationary law
+and the ln π closure carry the teeth, each with its planted control (§6.1).
 
 ## 3. What exists and what is new
 
@@ -481,7 +484,7 @@ Written by an agent that never reads the engine's code.
 | The SSA is exact | The host oracle with common random variates (the capsid pattern); at β = 0 the total size is a linear birth–death process, with closed-form mean and variance of N(t) | A biased channel choice |
 | The fission partition | Exact binomial and multivariate hypergeometric pmfs: enumeration at small N, a χ² test at N = 80 with registered power | A split at 0.55 |
 | Conservation | The exact integer identity per slot (§5.1) | A dropped molecule |
-| The thermodynamic ledger | Cumulative heat equals k_BT Δln π plus the fission and sink terms, at every row; the ensemble mean heat ≥ 0; the fluctuation theorem in a closed world | A heat sign error |
+| The thermodynamic ledger (pair-consistent form) | Cumulative heat equals k_BT Δln π plus the fission and sink terms, at every saved row | A heat sign error |
 | Streams | Bitwise replay on one backend; batch-partition invariance; independence of branches; restart mid-growth and across a fission | A reused key |
 | Observers | H against NumPy; F12 against an independent predicate on all 4,096 twelve-boundary sequences (exhaustive, as the preprint did) | H = 0.9 counted as inherited |
 | CPU against GPU | Distributional; event sequences are also compared, measured rather than presumed (ARCHITECTURE.md). P4: summation orders differ by ≤ 1.1e-15 relative, and gave 0 changed choices in 600,000 shared-uniform draws | — |
@@ -498,15 +501,19 @@ Then:
 > - **(A) An independent reference,** written from the preprint's Appendix F (contract T2-02 and the
 >   common kinetics) by an agent who reads neither the engine nor the programme's code.
 > - **(B) The programme's own clean-room test 2 code** (Eidosoma/PlasticHeredity, MIT, at the
->   commit the preprint pins), run unmodified and out of process, keeping only saved outputs. One
->   plain attempt is made; if it needs anything beyond its recorded environment, the lane stops
->   and reports.
-> - **(C) The comparison,** on 40 fresh matrices, with five post-fission landmarks each (generations
->   20, 35, 50, 65, 80) and 64 F12 futures per state. The matrix is the inference unit. Random
->   streams are not portable, so every comparison is distributional, at tolerances registered
->   before the run:
+>   commit the preprint pins), run unmodified and out of process, keeping only saved outputs. Its
+>   exact package versions were not retained (the preprint's limitation 10), so the lane records
+>   the environment it uses; a distributional comparison needs no bit-exact one. One plain attempt
+>   is made; if the code does not run unmodified, the lane stops and reports.
+> - **(C) The comparison,** on 40 fresh matrices, saved once and given to all three arms, with five
+>   post-fission landmarks each (generations 20, 35, 50, 65, 80) and 64 F12 futures per state. The
+>   matrix is the inference unit, and the arms are matrix-paired. Whether (B) loads a supplied
+>   matrix unmodified is not yet confirmed; if it cannot, (B) draws its own 40 and the (A)–(B)
+>   comparison is unpaired, with tolerances registered for that case. Random streams are not
+>   portable, so every comparison is distributional, at tolerances registered before the run:
 >   - the engine (published kernel) against (A), judged: per-matrix boundary-H distribution,
->     inherited-boundary fraction, F12 prevalence and branch-half reliability;
+>     inherited-boundary fraction and F12 prevalence; branch-half reliability, a campaign-level
+>     correlation, by a matrix bootstrap;
 >   - (A) against (B), judged, on the same quantities;
 >   - the engine against the preprint's published values (F12 33.0–38.8%, reliability
 >     0.911–0.938), reported and not judged;
@@ -637,12 +644,13 @@ reversibility, and energy accounting.
 ## Sources
 
 Each web source was attempted once, through the web fetch tool, with no account and no identity.
-The preprint's text was read from the author's own copy of version 5.0, the version on Zenodo.
-Nothing was copied into the repository.
+The preprint's Zenodo PDF (16 MB) exceeded the fetch tool's 10 MB limit, so its text was read from
+the author's own copy of version 5.0 and was not compared with the Zenodo PDF. Nothing was copied
+into the repository.
 
 | Source | Result |
 | --- | --- |
-| *Plastic Heredity*, Zenodo 10.5281/zenodo.22143269 (resolves to v5, 10.5281/zenodo.22799362, CC BY 4.0) | The record was read; the text of v5.0 was read (abstract, Part I's framework, Part II, discussion, Appendices A, B and F); S01 (v2.3) was compared on its GARD sections |
+| *Plastic Heredity*, Zenodo 10.5281/zenodo.22143269 (resolves to v5, 10.5281/zenodo.22799362, CC BY 4.0) | The record was read; the PDF exceeded the fetch tool's size limit. The author's copy of v5.0 was read (abstract, Part I's framework, Part II, discussion, Appendices A, B and F), not compared with the PDF; S01 (v2.3) was compared on its GARD sections |
 | Segrè D, Ben-Eli D, Lancet D (2000), PNAS 97:4112, PMC18166 | Read; the equations are images and were not read |
 | Segrè D, Ben-Eli D, Deamer DW, Lancet D (2001), Orig Life Evol Biosph 31:119 | Not retrieved: Springer redirected to its authorization service |
 | Vasas V, Szathmáry E, Santos M (2010), PNAS 107:1470, PMC2824406 | Read; the equations are images |
