@@ -3,12 +3,13 @@
 The scheduled exchange of tests/kind_fixtures.py (test_kind_schedules.py has the definition-level
 tests), run once for the module:
 - each step's control is the schedule's value at the step's start, held over the step, so the
-  move is exact: rate x sum(availability x duration), on the scalar runner and the vector-window
-  path, and an observation reads the value held from its time;
+  move is exact: rate x sum(availability x duration), on the scalar runner, and an observation
+  reads the value held from its time;
 - branch_checkpoint refuses a branch that rewrites a kind's past schedule and admits one that
   changes its future;
-- a restart across a breakpoint continues bitwise, in a fresh process as well;
-- an empty composition of the scheduled world is its resolved_pump_tissue@3 run, bitwise.
+- a restart across a breakpoint continues bitwise, in a fresh process as well.
+The paths' tests (an empty composition, the vector-window path) are in
+test_kind_schedules_runs_paths.py, split from this file to keep each under the tier cap.
 """
 
 import subprocess
@@ -18,14 +19,10 @@ import numpy as np
 import pytest
 
 from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core import surface_pump_v3_spec as ionic
 from cells.core.runner import branch_checkpoint, run
 from cells.core.specs import ConfigError, parse_spec
 from cells.io import write_snapshot
-from cells.models.registry import get_model
-from tests.unit.test_kind_schedules import GRID, MOVED, POINTS, RATE, scheduled, world
-from validation.tissue import composite_guard as guard
+from tests.unit.test_kind_schedules import GRID, MOVED, RATE, scheduled, world
 
 
 @pytest.fixture(scope="module")
@@ -90,38 +87,3 @@ def test_a_restart_across_a_breakpoint_continues_bitwise(whole, tmp_path):
     value, times = done.stdout.splitlines()
     assert float(value) == float(result.final.state.exchange_moved_fmol[0])
     assert tuple(float(t) for t in times.split()) == GRID[2:]
-
-
-def test_an_empty_composition_holds_the_same_controls_bitwise(whole):
-    registry, _, reference = whole
-    with kind_registry.scope(registry):
-        spec = parse_spec(cs.frozen_definition(world()))
-        assert [c.time for c in spec.experiment.changes] == [t for t, _ in POINTS]
-        assert all(type(c.inner) is ionic.KindChange for c in spec.experiment.changes)
-        result = run(spec)
-    assert guard.assert_same(reference, result)["bitwise"]
-    assert tuple(result.times) == GRID
-
-
-def test_the_vector_window_path_holds_the_same_controls(whole):
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
-
-    registry, spec, result = whole
-    big = 2**53 - 1
-    with kind_registry.scope(registry):
-        specs = [spec, parse_spec(world(((0.0, 0.5), (0.0025, 1.0))))]
-        batch = BatchSpec(tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs)), 2, big, big)
-        window = next(
-            iter(vector_windows.iter_vector_windows(batch, WindowPolicy(8, "checkpoints")))
-        )
-        names = get_model(specs[0].model).STATE_TYPE._fields
-    expected = (MOVED, RATE * (0.5 * 0.0025 + 1.0 * 0.0015))
-    for world_id, moved in enumerate(expected, start=1):
-        final = window.checkpoints[world_id].state
-        value = float(np.ravel(final[names.index("exchange_moved_fmol")])[0])
-        assert value == pytest.approx(moved, rel=1e-12)
-    alone = float(result.final.state.exchange_moved_fmol[0])
-    first = float(np.ravel(window.checkpoints[1].state[names.index("exchange_moved_fmol")])[0])
-    assert first == pytest.approx(alone, rel=1e-12)
