@@ -41,6 +41,7 @@ from validation.compartment_ph_engine import definitions as defs
 WINDOW_STEPS = 1000  # One record per window at 1 ms.
 FR4_ROWS = ("H", "K")
 PATHS = ("host", "vector")  # Where every accepted row is checked: run()'s `path`.
+WORLDS = ("development", "declared")  # run()'s `world`: without or with FR-1's operator.
 VECTOR_WORLD_ID = 1  # The one world of a vector-window run.
 VECTOR_LIMIT = 2**53 - 1  # Its batch's padded-step and working-byte limits: one world, no cap.
 
@@ -52,6 +53,9 @@ class Records:
         from cells.models import surface_pump_v3
 
         self.spec, self.model, self.v3 = spec, model, surface_pump_v3
+        # The inner structure: @3's own, or the composite's inner model's (the declared world).
+        inner = getattr(model, "inner", model)
+        self.structure = getattr(model, "structure", None) or inner.structure
         m = spec.model
         self.ids = list(m.species_ids)
         self.cells = [c.id for c in m.cells]
@@ -113,12 +117,12 @@ class Records:
             k = self.routes.index("proton_leak_0")
             row["moved_H_leak"] = -float(state.passive_transferred[h, k])  # c to L positive.
             row["heat_proton_leak_0_pJ"] = float(state.passive_dissipated_energy_pJ[k])
-        ledgers = v3.balances(state, p, structure=self.model.structure)
+        ledgers = v3.balances(state, p, structure=self.structure)
         heat = sum(float(np.sum(getattr(state, f))) for f in self.heat_fields)
         work = sum(float(np.sum(getattr(state, f))) for f in self.work_fields)
         residual = float(ledgers["energy"])
         steps = int(round(float(obs.times[j]) / self.dt))
-        magnitudes = v3.channel_magnitudes(state, p, structure=self.model.structure)
+        magnitudes = v3.channel_magnitudes(state, p, structure=self.structure)
         flows, bounds = first.ledger_limits(
             state, p, self.tol, self.rtol, steps=steps, magnitudes=magnitudes
         )
@@ -231,18 +235,25 @@ def _run_vector(spec, sink, window_steps):
     return steps, dict(world.diagnostics), dict(result.timings), dict(result.resources)
 
 
-def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host"):
+def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
+        world="development"):
     """The engine part's record of `definition`'s development world (module docstring). With
     `registry` the build runs inside kind_registry.scope(registry) (a planted control's). `path`
     is "host" (cells.core.windows.run_windowed: every accepted row checked on the host) or
     "vector" (one world in a cells.core.vector_windows window: every accepted row checked on the
-    device, the observations through `one_world`); the records are the same fields."""
+    device, the observations through `one_world`); the records are the same fields. `world` is
+    "development" (definitions.development_world: without FR-1's compartment operator) or
+    "declared" (definitions.declared_world: the composite with it, which must give the same
+    records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1)."""
     from cells.core import kind_registry
     from cells.core.errors import NumericalError
     from cells.core.specs import ConfigError, parse_spec
     from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.registry import get_model
 
+    if world not in WORLDS:
+        raise ValueError(f"world is one of {WORLDS}, not {world!r}")
+    build = defs.development_world if world == "development" else defs.declared_world
     if path not in PATHS:
         raise ValueError(f"path is one of {PATHS}, not {path!r}")
     out = dict(
@@ -257,10 +268,11 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host"):
         stage={},
         ledgers={},
         path=path,
+        world=world,
     )
     with kind_registry.scope(registry) if registry is not None else nullcontext():
         try:
-            spec = parse_spec(defs.development_world(definition))
+            spec = parse_spec(build(definition))
         except ConfigError as error:
             out["refusal"] = f"definition: {error}"
             if registry is None:
