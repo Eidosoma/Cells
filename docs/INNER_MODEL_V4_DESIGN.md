@@ -1654,6 +1654,55 @@ follow a schedule ((l)).
 - **The sink:** `cells.passive_routes@1`'s entry is `Factored(laws)` only where a route declares
   factors; otherwise it is today's tuple of laws.
 
+#### (o) insertion@2's gate at opening (item 4; options for a ruling, 16 November 2026, before code)
+
+**What it must do** ((j), "A padding artifact kept for bitwise identity"):
+- A closed or not-yet-open channel slot carries code 0, Kv1.5's, and keeps its gate update.
+- The partition and replacement set the gate when they open a slot. Insertion@2's onset does not.
+  So a gated population on an onset patch would start from the gate the artifact evolved while
+  the patch was closed.
+- `membrane_insertion_v2.check_onsets` refuses such populations today ("later work"). So no
+  accepted world reaches the inherited gate, and the fix is a precondition for lifting that
+  refusal, as its own gated change.
+
+**What constrains it** (read in code at core-next):
+- Insertion@2's `event(state, control, p, *, xp, view)` is static per operator class: it gets no
+  declaration. Anything it does per definition comes from its layout or state.
+- The declared initial gate exists only in the inner model's initial state.
+
+**Option 1, recommended: set at opening, in insertion@2.**
+- At binding, `initial_values` gets the inner initial state. Insertion@2 binds two layout fields:
+  `insertion_onset_channel` [channel], marking a population whose patch is an onset patch, and
+  `insertion_onset_gate` [gate, channel], its declared initial gate.
+- Its event sets `channel_gate = where(opening, onset_gate, channel_gate)` for the populations
+  whose patch opens at that event. `channel_gate` joins its STATE_RESETS.
+- A population on an onset patch therefore starts at its declared gate at the onset, however long
+  its patch was closed: the declared gate is the population's gate at its opening.
+- **Programs:** every insertion@2 world (crossrev's division set: division_furrow,
+  division_quartered) gains two layout leaves and one select. This is an intended program change.
+- **Records:** bitwise unchanged. No accepted world has a population on an onset patch, so the
+  mask is all false and the select returns the old gate exactly.
+- **Ownership:** the operators stream's file (`operators/membrane_insertion_v2.py`).
+- **Cost:** about 0.5 day.
+- **Test:** a planted population on an onset patch, with check_onsets' refusal lifted inside the
+  test only. Its gate after the onset equals its declared gate whether the patch opens early or
+  late, while today's code would give the artifact's.
+
+**Option 2: gates frozen while closed, in @3.**
+- `stage_gates` keeps a closed slot's gate: `where(channel_active, updated, old)`, on structures
+  with `padding_fill`.
+- A slot never opened keeps its declared gate. A slot that closes keeps its gate from closing.
+- The artifact goes for every closer, and the code-0 kernel's padding result is no longer read.
+- **Programs and records:** every closer world (partition, replacement, insertion@1 and @2, so the
+  division and replacement worlds) changes its program and its closed slots' gate records. That
+  is not physics, but it is a results-gate difference to accept, world by world.
+- **Cost:** about 1 day, mostly evidence.
+
+**The recommendation is Option 1:** it changes no record, it is local to the one opener that lacks
+the write, and it keeps the partition's and replacement's own rules. Option 2 is the cleaner
+long-term model, but its records change across the closer worlds. It can follow when the padding
+fill is retired (the "explicit absent marker" of (b)).
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
