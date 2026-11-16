@@ -643,7 +643,9 @@ ion route on a bounding patch, and it saw no kind at all, so a kind's route ther
 it failed open.
 
 **The rule (refusal 4, version 1.1).** For each declared compartment's bounding patch:
-- **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused. A constant-field
+- **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused: the per-stage
+  rule does not hold its slope at the compartment's node (a pump's slope is in no per-stage term,
+  a channel's gating slope neither), and the refusal's message says so. A constant-field
   permeability is admitted **only when the world declares kinds**, because only then does the
   per-stage rule hold the compartment's node; without kinds it stays refused, as in version 1.
 - **The kinds a world declares:** the known ones are admitted. cells.transporter@1's populations

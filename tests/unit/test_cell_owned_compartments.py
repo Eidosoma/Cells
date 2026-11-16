@@ -388,8 +388,15 @@ REFUSALS = {
         lambda: declared(w(), [cfx.compartment(), cfx.compartment(cid="lys_1", label="again")]),
         "one compartment per node",
     ),
-    "an ion route on the bounding patch": (permeable, "carries an ion route"),
-    "a pump on the bounding patch": (pumped, "carries an ion route"),
+    "an ion route on the bounding patch": (
+        permeable,
+        "carries an ion route, a nonzero constant-field permeability, in a world that declares "
+        "no kind",
+    ),
+    "a pump on the bounding patch": (
+        pumped,
+        "carries an ion route version 1.1 refuses there, pump_c",
+    ),
     "an ID that is its node's": (
         lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
         "collides with an ID the world already declares",
@@ -416,7 +423,10 @@ REFUSALS = {
         lambda: declared(w(), [cfx.compartment(role=5)]),
         "a short string",
     ),
-    "a channel population on the bounding patch": (channelled, "carries an ion route"),
+    "a channel population on the bounding patch": (
+        channelled,
+        "carries an ion route version 1.1 refuses there, leak_0",
+    ),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
     "an empty label": (

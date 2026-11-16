@@ -174,18 +174,24 @@ def refuse_ion_routes(model, node, bounding, imex):
     an IMEX tableau: under RK4 neither the per-stage rule nor the definition-time terms run, so no
     declared kind is admitted beside a compartment and version 1's refusal stands."""
     kinds = [kind_id for kind_id, _ in getattr(model, "kinds", ())]
+    pumps = [p.id for p in (bounding.pump, bounding.calcium_pump) if p is not None]
     channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
-    if (
-        (any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds)
-        or bounding.pump is not None
-        or bounding.calcium_pump is not None
-        or channels
-    ):
+    if pumps or channels:
         raise ConfigError(
             f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
-            "route (a nonzero permeability, a pump or a channel population). Version 1 is "
-            "neutral and silent: a charged compartment is the charged door (FR-4, FR-5), "
-            "since its patch's charge relaxation is outside @3's per-cell explicit bound"
+            f"route version 1.1 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
+            "or a channel population): the per-stage rule does not hold its slope at the "
+            "compartment's node (a pump's slope is in no per-stage term, a channel's gating "
+            "slope neither), so on a bounding patch version 1.1 admits only @3's constant-field "
+            "permeability and the known kinds' routes"
+        )
+    if any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds:
+        raise ConfigError(
+            f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
+            "route, a nonzero constant-field permeability, in a world that declares no kind. "
+            "Version 1.1 admits it only when the world declares kinds and steps with an IMEX "
+            "tableau: only then does the per-stage rule hold the compartment's node at every "
+            "stage, where B7's definition-time term holds only the declared state"
         )
     if kinds and not imex:
         raise ConfigError(
