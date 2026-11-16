@@ -393,9 +393,10 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
-npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles, human, ecoli)
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
+npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
@@ -511,8 +512,10 @@ stay out of git (61 runs in 327 files, 96 MB).
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at.
 4. The real-click checks in headless Chrome, one at a time: `npm run check:input`,
-   `check:species`, `check:shelves` (each scenario), `check:layers` (each scenario) and
-   `check:look`. About an hour in all on one processor with the browser to themselves.
+   `check:species`, `check:shelves` (each scenario), `check:layers` (each scenario),
+   `check:look` and `check:flux`. About an hour in all on one processor with the browser
+   to themselves. Each says at its end whether the page's own font had arrived: with the
+   stand-in, words run longer and cards stand taller, and a miss is read against that.
 5. `npm run export`
 6. Publish `out/cells-architecture.html` with every file listed in
    `out/cells-architecture.files.json` beside it, under the same relative paths

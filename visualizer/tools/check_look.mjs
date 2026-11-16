@@ -543,6 +543,9 @@ try {
 } finally {
   for (const line of [...pageLog, ...consoleErrors]) console.log(line);
   if (scenarios.some((name) => name !== "pictures") || pageLog.length || consoleErrors.length) {
+    // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+    // taller, and a miss is read against that.
+    note(`the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
     check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
     check("the page's console reported no error (a shader that does not compile is said there)", consoleErrors.length === 0, `${consoleErrors.length} errors`);
   }

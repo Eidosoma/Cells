@@ -6,8 +6,9 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, human, ecoli, nofiles, resize, units-small, shots or
-// pictures. human checks a species with several shelves, on the human's file: the stack,
+// SCENARIO is syn3a (the default), planarian, human, ecoli, stack, nofiles, resize, units-small, shots or
+// pictures. stack checks any species with several shelves against its own file (SPECIES names it; thale
+// cress by default): a frame and a legend line for every shelf, a shelf in focus, the stack back. human checks a species with several shelves, on the human's file: the stack,
 // a shelf in focus, a family over its own shelf, the same family on another shelf, the
 // families of one, what is set apart, the list, the keyboard and a phone-sized window; with
 // OUT_DIR it also writes pictures of what it reaches (the whole stack and a shelf, wide and
@@ -709,6 +710,40 @@ try {
     check("show by the shelves again: every marker is lit, and the legend lists the shelves", plain.mark === null && plain.lit === plain.markers && plain.tags === 0 && /The whole stack=[\d,]+\*/.test(s.legend), JSON.stringify([plain, s.legend]));
   }
 
+  if (scenario === "stack") {
+    // A species with several shelves, held to its own file (SPECIES names it; thale cress by default):
+    // every shelf of the file has a frame with its proteins and a line in the legend, a press on a
+    // shelf's line brings that shelf into focus, and a press on "The whole stack" brings the stack back.
+    const id = process.env.SPECIES || "thalecress";
+    const file = JSON.parse(await readFile(new URL(`../data/proteins/${id}/shelves.json`, import.meta.url), "utf8"));
+    await open(`lens=proteins&species=${id}&show=own`);
+    for (let tries = 0; tries < 480 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    const drawn = () => evaluate(`(() => { const view = ${L}.mounted; if (!view) return null; return { species: view.shelves.id, frames: view.frames.map((item) => [item.id, item.proteins]), focused: view.focused === undefined ? "stack" : view.focused, ...view.drawn() }; })()`);
+    const line = async (label) => {
+      const at = await evaluate(`(() => { const el = [...${V}.shadowRoot.querySelectorAll("cells-legend .legend-item")].find((item) => item.querySelector(".legend-label")?.textContent === ${JSON.stringify(label)}); if (!el) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (!at) throw new Error(`no line in the legend is called ${label}`);
+      await click(at.x, at.y, 500);
+      await still();
+    };
+    let d = await drawn();
+    let s = await state();
+    const has = (frames, shelf) => frames.some(([frame, proteins]) => frame === shelf.id && proteins === shelf.proteins);
+    check("every shelf of the file has a frame with its proteins, one more holds what has no place, and markers stand on them", Boolean(d) && d.species === id && file.shelves.every((shelf) => has(d.frames, shelf)) && d.frames.length === file.shelves.length + 1 && d.markers > 0 && d.instances > 0 && d.focused === "stack", JSON.stringify(d));
+    check("the legend lists the whole stack, pressed, and every shelf with its count", /(^|, )The whole stack=\d+\*/.test(s.legend) && file.shelves.every((shelf) => s.legend.includes(`${shelf.label}=${shelf.proteins}`)), s.legend);
+    const one = file.shelves[Math.min(3, file.shelves.length - 1)];
+    await line(one.label);
+    d = await drawn();
+    s = await state();
+    check("a press on a shelf's line brings that shelf into focus", d.focused === one.id && s.legend.includes(`${one.label}=${one.proteins}*`), JSON.stringify([d.focused, s.legend]));
+    await shot(`stack-${id}-shelf`);
+    await line("The whole stack");
+    d = await drawn();
+    s = await state();
+    check("a press on the whole stack brings the stack back", d.focused === "stack" && /(^|, )The whole stack=\d+\*/.test(s.legend), JSON.stringify([d.focused, s.legend]));
+    await shot(`stack-${id}`);
+  }
+
   if (scenario === "motion") {
     // Not still: the opening as it moves.
     await open("lens=proteins&species=planarian&show=own", false);
@@ -907,6 +942,9 @@ try {
   check("the run completed", false, error.stack || error.message);
 } finally {
   for (const line of pageLog) console.log(line);
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  note(`the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
   {

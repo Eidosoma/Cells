@@ -588,6 +588,27 @@ try {
   await click(tap.x, tap.y);
   check("label: a plain click on a label selects its part", (await selected()) === tap.id, `${tap.id} -> ${await selected()}`);
   await clear();
+
+  // A thread with a foot (E. coli's flagellum): the foot's panel has a door into the Protein atlas, on the
+  // species' own proteins with the foot's set picked out. The foot is a few pixels wide, so it is chosen
+  // by its name here; the door is pressed as a visitor presses it.
+  const foot = await evaluate(`(() => { const lens = ${VIEWER}.current; const item = (lens.cells?.[lens.sizeMode]?.scenery || []).find((entry) => entry.kind === "base"); return item ? { id: item.id, mark: item.base?.mark ?? null, value: item.base?.value ?? null } : null; })()`);
+  if (foot) {
+    await evaluate(`${VIEWER}.select(${JSON.stringify(foot.id)})`);
+    const door = `${VIEWER}.shadowRoot.querySelector("cells-panel .panel-door button")`;
+    await until(`Boolean(${door})`, 60);
+    const at = await evaluate(`(() => { const el = ${door}; if (!el) return null; el.scrollIntoView({ block: "nearest" }); const box = el.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2, words: el.textContent }; })()`);
+    check("door: the foot of a thread has a panel with a door into the Protein atlas", Boolean(at) && /Protein atlas/.test(at.words), at ? at.words : "no door in the panel");
+    if (at) {
+      await click(at.x, at.y);
+      await until(`${VIEWER}.state.lens === "proteins" && ${VIEWER}.current.mode === "own" && Boolean(${VIEWER}.current.mounted?.mark)`, 180);
+      const there = await evaluate(`(() => { const lens = ${VIEWER}.current; return { lens: ${VIEWER}.state.lens, mode: lens.mode ?? null, mark: lens.mounted?.mark ?? null }; })()`);
+      check("door: pressing it opens the species' own proteins with the foot's set picked out", there.lens === "proteins" && there.mode === "own" && there.mark?.name === foot.mark && there.mark?.value === String(foot.value), JSON.stringify(there));
+      // Back to the Cell view, as the parts that follow expect.
+      await evaluate(`${VIEWER}.setLens("cell", true)`);
+      await until(`${VIEWER}.state.lens === "cell" && ${VIEWER}.current.active !== false`, 120);
+    }
+  }
   took("cell", cellFrom);
 
   }
@@ -615,6 +636,9 @@ try {
   check("the run completed", false, error.message);
 } finally {
   for (const line of pageLog) console.log(line);
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  console.log(`note  the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
   // Stop the browser and wait until it is gone, so that its profile folder can be removed.

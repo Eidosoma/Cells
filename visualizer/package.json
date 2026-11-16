@@ -22,7 +22,8 @@
     "check:species": "node tools/check_species.mjs",
     "check:shelves": "node tools/check_shelves.mjs",
     "check:layers": "node tools/check_layers.mjs",
-    "check:look": "node tools/check_look.mjs"
+    "check:look": "node tools/check_look.mjs",
+    "check:flux": "node tools/check_cellflux.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

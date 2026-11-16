@@ -469,6 +469,9 @@ try {
   check("the run completed", false, error.stack || error.message);
 } finally {
   for (const line of pageLog) console.log(line);
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  console.log(`note  the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
   { const closed = new Promise((resolve) => chrome.once("close", resolve)); chrome.kill(); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 4000))]); if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill("SIGKILL"); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 2000))]); }
