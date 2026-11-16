@@ -95,7 +95,12 @@ says the engine models an organism unless the project's record says so.
   - `modelled`: the project's record says a registered model of this organism exists.
     The text cites the record. No species has this state today.
 - **`cell.capabilities`** is keyed by the map's capability ids (`cap.…`). A capability
-  that is left out has a place in this cell. `absent` needs `why`; `present` may carry a
+  that is left out has a place in this cell, unless the cell does not hold the structure
+  it is drawn at, as `cell.parts` says: the nucleus (`nucleus`), the Golgi or the vesicles
+  of trafficking (`golgi` among the `organelles`), the endoplasmic reticulum (`er`) or
+  the mitochondria (`mitochondria`). It then has no place, and the page reads the reason
+  from `cell.parts` ("It has no nucleus: its chromosome lies free in the cytoplasm").
+  `absent` needs `why`; `present` may carry a
   `note` where the place differs from an animal cell's. A capability has a place when the
   organism has the structure or the process it concerns. That says nothing about whether
   Cells has a model of this organism; `modelled` says that.

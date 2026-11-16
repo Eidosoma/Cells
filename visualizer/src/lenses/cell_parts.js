@@ -34,6 +34,7 @@
 import * as THREE from "../three.js";
 import { REF, cellFrame, packing } from "./shapes.js";
 import { buildScenery, vacuoleOf, middle } from "./cell_scenery.js";
+import { buildStructures } from "./cell_structures.js";
 
 // The layer's packing in the frame: six-sided, this far from a cell's centre to a corner.
 export const HEX = { radius: REF.radius };
@@ -168,7 +169,7 @@ const SPOT = {
 const GAP_CORNER = (3 * Math.PI) / 2; // the corner at which the space between cells is named
 // Where the nucleus, the ER beside it and the Golgi sit in a cell that has room for them in its
 // middle. In a cell with a large vacuole each is pressed out to the side (buildCell).
-const NUCLEUS_HOME = new THREE.Vector3(2.6, CUT - 0.3, -2.2);
+const NUCLEUS_HOME = new THREE.Vector3(2.6, CUT, -2.2); // its middle at the cut, so that the wedge cut away from it starts at the cut face (cell_structures.js)
 const ER_HOME = 2.42; // the side of the nucleus the ER wraps, as an angle
 const GOLGI_HOME = new THREE.Vector3(-4.9, CUT + 0.15, 4.3);
 const MACHINE = new THREE.Vector3(-7.2, CUT + 0.9, -1.0);
@@ -466,6 +467,8 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     chemistry.material({ hue: "bioCyto", opacity: real ? 0.42 : 0.3, side: THREE.DoubleSide, roughness: 0.12, depthWrite: false, rim: 0 })
   );
   gel.renderOrder = 3;
+  // Over the nucleus the cut face is the nucleus's own: a click there goes on to what is in it.
+  if (parts.nucleus) gel.userData.pickFilter = (hit) => Math.hypot(hit.point.x / frame.u - NUCLEUS.x, hit.point.z / frame.u - NUCLEUS.z) > style.nucleusRadius;
   chemistry.add(gel);
   if (!real) {
     const specks = instanced(new THREE.SphereGeometry(0.09, 8, 6), chemistry.material({ hue: "bioCyto", shade: -0.3, drift: 0.09 }), scatter(190).map((position) => ({ position, scale: 0.6 + random() * 0.9 })));
@@ -485,69 +488,24 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   }
   const cagesAt = CAGES_AT_SURFACE.map((point) => seat(point, 2.2)), machineAt = seat(MACHINE, 1.9);
 
-  // ---------------------------------------------------------------- nucleus
+  // ---------------------------------------------------------------- nucleus, ER, Golgi, ribosomes (cell_structures.js)
   // The middle of what regulation acts on, and how far it reaches: the nucleus, or the free chromosome.
   const slim = outline.apothem; // half the cell's width across its narrow way, where the cut passes
   const coreAt = parts.nucleus ? NUCLEUS : new THREE.Vector3(frame.middle, CUT - slim * 0.46, 0), coreRadius = parts.nucleus ? style.nucleusRadius : slim * 0.42;
   // In a long cell the chromosome lies along it: how far it reaches each way from its middle.
   const coreReach = coreRadius + Math.max(0, frame.long / 2 - frame.equator.apothem) * 0.8;
-  if (parts.nucleus) {
-  const nucleus = ctx.part("nucleus", NUCLEUS.clone().add(new THREE.Vector3(0, style.nucleusRadius + 0.1, 0)));
-  const envelope = new THREE.Mesh(new THREE.SphereGeometry(style.nucleusRadius, 56, 40), nucleus.material({ hue: "bioNucleus", opacity: 0.78, roughness: 0.3, rim: 0.55, depthWrite: true, thin: 0.9, texture: "pores" }));
-  envelope.position.copy(NUCLEUS);
-  envelope.renderOrder = 2;
-  const nucleolus = new THREE.Mesh(new THREE.SphereGeometry(style.nucleolus, 28, 20), nucleus.material({ hue: "bioNucleus", shade: -0.38, roughness: 0.5, thin: 0.5 }));
-  nucleolus.position.copy(NUCLEUS).add(new THREE.Vector3(0.55, 1.15, 0.85));
-  nucleus.add(nucleolus, envelope);
-  const pores = [];
-  while (pores.length < (real ? 1500 : 80)) {
-    const direction = unit(random);
-    if (real || direction.y > -0.25) pores.push(NUCLEUS.clone().addScaledVector(direction, style.nucleusRadius + 0.01));
-  }
-  if (real) nucleus.add(dots(pores, nucleus.points({ hue: "bioNucleus", shade: 0.4, size: 1.4, opacity: 0.8 })));
-  else nucleus.add(instanced(new THREE.SphereGeometry(0.085, 8, 6), nucleus.material({ hue: "bioNucleus", shade: 0.32 }), pores.map((position) => ({ position }))));
-  } else if (parts.chromosome_kbp) {
-    // A cell without a nucleus: its chromosome lies free in the cell, one closed thread.
-    // Regulation acts there, so it is where the regulatory circuits are drawn. The thread
-    // is a tangle through the cell's middle; its true length would fill the cell far more.
-    const chromosome = ctx.part("nucleus", coreAt.clone().add(new THREE.Vector3(0, coreRadius + 0.3, 0)));
-    const turns = Math.round(Math.min(900, Math.max(60, parts.chromosome_kbp / 2)));
-    const knots = [];
-    let at = coreAt.clone(), heading = unit(random);
-    // In a long cell the thread runs to and fro along it, so that it lies through the whole length.
-    const lengthwise = coreReach > coreRadius * 1.5 ? new THREE.Vector3(0.5, 0, 0) : null;
-    for (let step = 0; step < turns; step++) {
-      // Each step keeps most of its heading and is turned back when it would leave the middle of the cell.
-      heading.add(unit(random).multiplyScalar(0.9));
-      if (lengthwise) {
-        if (Math.abs(at.x - coreAt.x) > coreReach * 0.86) lengthwise.x = at.x > coreAt.x ? -0.5 : 0.5;
-        heading.add(lengthwise);
-      }
-      heading.normalize();
-      const next = at.clone().addScaledVector(heading, coreRadius * 0.34);
-      const away = next.clone().sub(coreAt);
-      if (Math.hypot(away.x * (coreRadius / coreReach), away.y, away.z) > coreRadius || next.y > CUT - 0.15 || inside(next) < 0.9) {
-        heading.addScaledVector(away.normalize(), -1.5).normalize();
-        next.copy(at).addScaledVector(heading, coreRadius * 0.34);
-      }
-      knots.push(next);
-      at = next;
-    }
-    const thread = new THREE.CatmullRomCurve3(knots, true, "catmullrom", 0.5);
-    const strand = new THREE.Mesh(new THREE.TubeGeometry(thread, turns * 5, 0.075, 5, true), chromosome.material({ hue: "bioNucleus", roughness: 0.35, clip: true, thin: 0.5 }));
-    strand.renderOrder = 2;
-    chromosome.add(strand);
-    const reach = new THREE.Mesh(new THREE.SphereGeometry(coreRadius * 0.92, 20, 14), chromosome.proxyMaterial());
-    reach.position.copy(coreAt);
-    reach.scale.set(coreReach / coreRadius, 1, 1);
-    chromosome.add(reach);
-  }
-
-  // Gene regulation coupled to tissue is planned: a sketched network round the nucleus.
+  const structures = buildStructures({
+    ctx, mode, real, style, frame, parts, has, organelle, cut: CUT, outline, inside, inCytoplasm, instanced, dots,
+    nucleusAt: parts.nucleus ? NUCLEUS : null, erFacing: ER_FACING, golgiAt: GOLGI, core: { at: coreAt, radius: coreRadius, reach: coreReach },
+    random: seeded(real ? 3103 : 3101),
+  });
+  handles.structures = structures.drawn; // what the panel says was drawn of each, by part
+  // Gene regulation coupled to tissue is planned: a network round the nucleus, its knots and threads in the
+  // nucleus's own colour (with "Colour: Status" a sketch, as every planned part is).
   if (has("genome")) {
   const genome = ctx.part("genome", coreAt.clone().add(new THREE.Vector3(coreRadius + 0.3, 1.5, 1.9)));
   const net = new THREE.IcosahedronGeometry(coreRadius + 0.6, 1);
-  const cage = new THREE.LineSegments(new THREE.EdgesGeometry(net, 1), genome.lineMaterial({ opacity: 0.75 }));
+  const cage = new THREE.LineSegments(new THREE.EdgesGeometry(net, 1), genome.lineMaterial({ hue: "bioNucleus", opacity: 0.3 }));
   cage.position.copy(coreAt);
   const knots = [], seen = new Set(), corner = new THREE.Vector3();
   for (let index = 0; index < net.attributes.position.count; index++) {
@@ -560,86 +518,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   }
   const body = new THREE.Mesh(net, genome.proxyMaterial());
   body.position.copy(coreAt);
-  genome.add(cage, body, instanced(new THREE.SphereGeometry(0.1, 8, 6), genome.material({ line: true }), knots));
-  }
-
-  // Free ribosomes, where the species gives a count: scenery, since protein synthesis is not a
-  // capability. A ribosome is about 20 nm across, so in a small cell it is a shape of its own.
-  if (parts.ribosomes) {
-    const size = Math.min(0.46, Math.max(0.085, 0.01 / frame.u));
-    // Only those below the cut are drawn: the cut takes the rest away with the top of the cell.
-    const free = scatter(Math.round(parts.ribosomes * 0.6), (point) => inside(point) > size + 0.25 && point.y < CUT - size * 0.4);
-    ctx.illustrate(instanced(new THREE.SphereGeometry(size, 10, 8), ctx.neutral({ opacity: 0.5, glass: 0.35, depthWrite: false, drift: 0.1 }), free.map((position) => ({ position, scale: 0.85 + random() * 0.3 }))));
-  }
-
-  // ---------------------------------------------------------------- endoplasmic reticulum, the calcium store
-  if (organelle("er")) {
-  const er = ctx.part("er", NUCLEUS.clone().addScaledVector(radial(ER_FACING), style.er.first + style.er.gap * 1.5).setY(CUT + style.er.height * 0.45));
-  const sheet = er.material({ hue: "bioEr", roughness: 0.4, side: THREE.DoubleSide, thin: 0.8, texture: "grain" });
-  const studs = [];
-  for (let layer = 0; layer < style.er.layers; layer++) {
-    const radius = style.er.first + layer * style.er.gap;
-    const span = Math.max(0.9, style.er.span - layer * style.er.shrink);
-    const start = ER_FACING - span / 2 + (layer % 2 ? 0.12 : -0.08);
-    const wall = arcWall(radius, start, span, style.er.thickness, style.er.height);
-    wall.material = sheet;
-    wall.position.copy(NUCLEUS).setY(CUT - style.er.height * 0.12);
-    er.add(wall);
-    // Ribosomes on the sheets. Protein synthesis is not a capability, so they are scenery: neutral grey.
-    const perLayer = real ? Math.round(span * radius * 22) : Math.round(span * radius * 1.7);
-    for (let index = 0; index < perLayer; index++) {
-      const angle = start + (span * (index + random() * 0.6)) / perLayer;
-      const out = (random() < 0.5 ? 1 : -1) * (style.er.thickness / 2 + (real ? 0.012 : 0.07));
-      studs.push(NUCLEUS.clone().addScaledVector(radial(angle), radius + out).setY(CUT - style.er.height * 0.12 + (random() - 0.5) * style.er.height * 0.9));
-    }
-  }
-  if (real) {
-    ctx.illustrate(dots(studs, ctx.neutralPoints({ size: 1.3, opacity: 0.8 })));
-    // The network reaches through the cell as tubules; free ribosomes (scenery) fill the cytosol.
-    const tubes = [];
-    for (let strand = 0; strand < 70; strand++) {
-      const point = NUCLEUS.clone().addScaledVector(unit(random), style.nucleusRadius + 0.4 + random() * 2.5);
-      const heading = unit(random);
-      for (let step = 0; step < 14; step++) {
-        const next = point.clone().addScaledVector(heading.add(unit(random).multiplyScalar(0.55)).normalize(), 0.42);
-        if (!inCytoplasm(next, 0.2)) break;
-        tubes.push(point.x, point.y, point.z, next.x, next.y, next.z);
-        point.copy(next);
-      }
-    }
-    const web = new THREE.BufferGeometry();
-    web.setAttribute("position", new THREE.Float32BufferAttribute(tubes, 3));
-    er.add(new THREE.LineSegments(web, er.lineMaterial({ hue: "bioEr", opacity: 0.55 })));
-    ctx.illustrate(dots(scatter(6000), ctx.neutralPoints({ size: 1.1, opacity: 0.35, drift: 0.1 })));
-  } else {
-    ctx.illustrate(instanced(new THREE.SphereGeometry(0.085, 8, 6), ctx.neutral({ opacity: 0.8, depthWrite: true }), studs.map((position) => ({ position }))));
-  }
-  }
-
-  // ---------------------------------------------------------------- Golgi and trafficking: planned, so sketched as outlines
-  if (organelle("golgi")) {
-  const golgi = ctx.part("golgi", GOLGI.clone().add(new THREE.Vector3(0, 0.7, 0)));
-  const sketch = golgi.material({ line: true });
-  const facing = Math.atan2(GOLGI.z - NUCLEUS.z, GOLGI.x - NUCLEUS.x);
-  const hub = GOLGI.clone().addScaledVector(radial(facing), -(style.golgi.inner + style.golgi.gap * 2));
-  for (let index = 0; index < style.golgi.count; index++) {
-    const radius = style.golgi.inner + index * style.golgi.gap;
-    const span = style.golgi.span - index * 0.1;
-    const points = [];
-    for (let step = 0; step <= 14; step++) points.push(hub.clone().addScaledVector(radial(facing - span / 2 + (span * step) / 14), radius + style.golgi.half));
-    for (let step = 14; step >= 0; step--) points.push(hub.clone().addScaledVector(radial(facing - span / 2 + (span * step) / 14), radius - style.golgi.half));
-    golgi.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points, true, "catmullrom", 0.25), 110, style.golgi.tube, 6, true), sketch));
-  }
-  const far = style.golgi.inner + style.golgi.count * style.golgi.gap;
-  for (const [turn, reach] of [[-0.5, 1.5], [0.05, 1.8], [0.55, 1.45], [0.2, 2.6]]) {
-    const vesicle = new THREE.Mesh(new THREE.TorusGeometry(style.golgi.half * 1.5, style.golgi.tube, 6, 22), sketch);
-    vesicle.position.copy(hub).addScaledVector(radial(facing + turn), far + reach * style.golgi.gap);
-    vesicle.rotation.x = Math.PI / 2;
-    golgi.add(vesicle);
-  }
-  const golgiBody = new THREE.Mesh(new THREE.CylinderGeometry(far * 0.75, far * 0.75, 0.5, 16), golgi.proxyMaterial());
-  golgiBody.position.copy(GOLGI);
-  golgi.add(golgiBody);
+  // A network is mostly open space: a click goes through it to what is solid within, and chooses it only where nothing is.
+  const nodes = instanced(new THREE.SphereGeometry(real ? 0.06 : 0.1, 10, 8), genome.material({ hue: "bioNucleus", shade: 0.3, roughness: 0.35, emissive: 0.08 }), knots);
+  cage.userData.seeThrough = body.userData.seeThrough = nodes.userData.seeThrough = true;
+  genome.add(cage, body, nodes);
   }
 
   // ---------------------------------------------------------------- mitochondria and fuel
@@ -766,7 +648,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   }
   }
 
-  // ---------------------------------------------------------------- protein cages (assembly) and larger machines (planned)
+  // ---------------------------------------------------------------- protein cages (assembly) and larger machines (planned: drawn whole, a sketch with "Colour: Status")
   const assembly = has("cage") ? ctx.part("cage", cagesAt[0].clone().add(new THREE.Vector3(0, 1.25, 0))) : null;
   const machine = has("machine") ? ctx.part("machine", machineAt.clone().add(new THREE.Vector3(0, 1.2, 0))) : null;
   if (!real) {
@@ -788,13 +670,13 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     }
     }
     if (machine) {
-    const rings = machine.material({ line: true });
+    // A barrel of four rings of seven subunits, as a proteasome's core is: the outer two rings a little narrower.
+    const subunits = [];
     for (let index = 0; index < 4; index++) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(index % 3 ? 0.62 : 0.5, 0.035, 6, 30), rings);
-      ring.position.copy(machineAt).add(new THREE.Vector3(0, (index - 1.5) * 0.36, 0));
-      ring.rotation.x = Math.PI / 2;
-      machine.add(ring);
+      const radius = index % 3 ? 0.5 : 0.4;
+      for (let one = 0; one < 7; one++) subunits.push({ position: machineAt.clone().add(new THREE.Vector3(0, (index - 1.5) * 0.36, 0)).addScaledVector(radial((one + index * 0.5) * (Math.PI * 2 / 7)), radius) });
     }
+    machine.add(instanced(new THREE.SphereGeometry(0.2, 14, 10), machine.material({ hue: "bioProtein", shade: -0.12, roughness: 0.38, thin: 0.3 }), subunits));
     const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.4, 12), machine.proxyMaterial());
     barrel.position.copy(machineAt);
     machine.add(barrel);
@@ -802,16 +684,15 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   } else {
     // A cage is tens of nanometres across: dots at this scale.
     if (assembly) assembly.add(dots(scatter(2200), assembly.points({ hue: "bioProtein", shade: 0.12, size: 1.7, opacity: 0.85 })));
-    // Planned machines: a sketched ring marks where their dots would be.
+    // Larger machines are tens of nanometres across: dots at this scale.
     if (machine) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.014, 6, 40), machine.material({ line: true }));
+    const ring = new THREE.Object3D(); // where their dots stand
     ring.position.copy(machineAt).setY(CUT + 0.03);
-    ring.rotation.x = Math.PI / 2;
     const spot = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.3, 16), machine.proxyMaterial());
     spot.position.copy(ring.position);
     const few = [];
     for (let index = 0; index < 140; index++) few.push(ring.position.clone().add(new THREE.Vector3((random() - 0.5) * 1.1, (random() - 0.6) * 0.5, (random() - 0.5) * 1.1)));
-    machine.add(ring, spot, dots(few, machine.points({ size: 1.6, opacity: 0.8 })));
+    machine.add(spot, dots(few, machine.points({ hue: "bioProtein", shade: -0.12, size: 1.6, opacity: 0.8 })));
     machine.anchor.copy(ring.position).y += 0.4;
     }
     if (assembly) assembly.anchor.copy(cagesAt[0]).setY(CUT + 0.3);
@@ -945,6 +826,8 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   handles.probes = {
     // In the nucleus, or in the middle of the free chromosome where a cell has no nucleus.
     nucleus: parts.nucleus ? NUCLEUS.clone().add(new THREE.Vector3(-0.9, style.nucleusRadius * 0.9, 0.9)) : coreAt.clone().add(new THREE.Vector3(-coreRadius * 0.2, coreRadius * 0.85, coreRadius * 0.2)),
+    // On the cut faces of the opened nucleus, where a click reaches the chromatin within (cell_structures.js).
+    ...(structures.nucleus ? { chromatin: structures.nucleus.probe } : {}),
     cutGel: outline.point(Math.atan2(-7.6, -3.9), -1.7, CUT), // on the cut face of the cytoplasm, well inside the membrane's edge
     uncutSide: frame.skin(1.14, -2.5), // on the side that faces the viewer, below the cut
     sheetCell: new THREE.Vector3(73.4, 6.5, 31.8),

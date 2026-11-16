@@ -33,7 +33,7 @@
       "id": "planned",
       "label": "Planned",
       "built": false,
-      "description": "Named in the plan or roadmap; not started."
+      "description": "Named in the plan or roadmap, or decided by the user; not started."
     },
     {
       "id": "failed",
@@ -3502,16 +3502,34 @@
       ]
     },
     {
+      "id": "cap.nucleus",
+      "label": "Nucleus",
+      "part": "nucleus",
+      "scale": "cell",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "representation": "illustration",
+      "runs_in": [],
+      "plain": "The nucleus holds the cell's DNA inside a double membrane, the nuclear envelope, whose pores let molecules in and out; the nucleolus inside it is where ribosomes are put together. Nothing of it is in the engine yet: it is planned. The user decided on 16 November 2026 that Cells will model the nucleus to some extent, not down to the folding of proteins.",
+      "implemented_by": [],
+      "sources": [
+        {
+          "path": "visualizer/docs/CELL_STRUCTURES.md",
+          "where": "What each status rests on: Nucleus"
+        }
+      ]
+    },
+    {
       "id": "cap.circuits",
       "label": "Regulatory circuits",
-      "part": "nucleus",
+      "part": "chromatin",
       "scale": "cell",
       "status": "established",
       "representation": "simulated",
       "runs_in": [
         "separate"
       ],
-      "plain": "Small gene circuits that switch a cell between states, alone or in a two-cell model.",
+      "plain": "Small gene circuits that switch a cell between states, alone or in a bounded two-cell model of regulation and ions. A separate small model: it runs on its own, apart from the tissue models, and does not model the nucleus. It is drawn at the cell's DNA, where such circuits act.",
       "implemented_by": [
         "models.early",
         "laws.regulation"
@@ -3547,9 +3565,49 @@
       ]
     },
     {
-      "id": "cap.trafficking",
-      "label": "Golgi and trafficking",
+      "id": "cap.golgi",
+      "label": "Golgi apparatus",
       "part": "golgi",
+      "scale": "cell",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "representation": "illustration",
+      "runs_in": [],
+      "plain": "The Golgi apparatus is a stack of flattened sacs where new proteins made at the endoplasmic reticulum are modified, sorted and packed into vesicles. Nothing of it is in the engine yet: it is planned. The user decided on 16 November 2026 that Cells will model the Golgi to some extent, not down to the folding of proteins. The roadmap's trafficking item leaves the Golgi's own structure out of its scope.",
+      "implemented_by": [],
+      "sources": [
+        {
+          "path": "visualizer/docs/CELL_STRUCTURES.md",
+          "where": "What each status rests on: Golgi apparatus"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "where": "Current development priorities, item 9"
+        }
+      ]
+    },
+    {
+      "id": "cap.ribosomes",
+      "label": "Ribosomes",
+      "part": "ribosomes",
+      "scale": "cell",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "representation": "illustration",
+      "runs_in": [],
+      "plain": "Ribosomes are the machines that make proteins, reading a messenger RNA. They lie free in the cytoplasm, often several on one messenger, and on the rough endoplasmic reticulum. Nothing of them is in the engine yet: they are planned. The user decided on 16 November 2026 that Cells will model ribosomes to some extent, not down to the folding of proteins.",
+      "implemented_by": [],
+      "sources": [
+        {
+          "path": "visualizer/docs/CELL_STRUCTURES.md",
+          "where": "What each status rests on: Ribosomes"
+        }
+      ]
+    },
+    {
+      "id": "cap.trafficking",
+      "label": "Membrane trafficking",
+      "part": "vesicles",
       "scale": "cell",
       "status": "planned",
       "representation": "illustration",

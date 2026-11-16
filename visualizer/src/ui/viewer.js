@@ -348,9 +348,10 @@ class CellsViewer extends HTMLElement {
   /**
    * A door from a part of one view into another view: open that view and show there what the
    * door names. The foot of a flagellum opens the Protein atlas on the species' own proteins
-   * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value).
+   * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
+   * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value }) {
+  openDoor({ lens, show, mark, value, shelf }) {
     if (!this.views.some((view) => view.id === lens)) return;
     this.select(null);
     this.setLens(lens, true);
@@ -359,6 +360,10 @@ class CellsViewer extends HTMLElement {
       if (this.current !== view) return; // another view was chosen meanwhile
       if (mark) view.setMark?.(mark);
       if (value !== undefined) view.setFinding?.(String(value));
+      if (shelf !== undefined) {
+        view.setMark?.(null); // a set picked out before would stand in the way of the shelf
+        view.setFinding?.(shelf);
+      }
       this.renderChrome();
     });
   }
@@ -1059,7 +1064,7 @@ class CellsViewer extends HTMLElement {
       const text =
         chrome.view?.colour === "status"
           ? "Colour and form show status. Clear glass shapes and grey lines are scenery."
-          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes and grey outlines are scenery.";
+          : "Colour shows the kind of part, and every part is drawn whole. The dot beside each name is its status; Colour: Status shows what is not built as grey sketches. Clear glass shapes and grey outlines are scenery.";
       note = { swatch: "illustration", text };
     }
     this.legend.render({ ...base, title: "Status", items, filter, note, layers: chrome.flux || null });

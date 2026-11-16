@@ -244,7 +244,8 @@ const timed = (prepare = "", count = 2) =>
   })()`);
 const SEVEN = "reflections,filmic,translucency,contact,texture,drift,shimmer";
 const zero = (numbers) => Object.values(numbers).every((value) => value === 0);
-const HEAD_LEGEND = "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes and grey outlines are scenery.";
+// Since 16 November 2026 every part is drawn whole where colour shows the kind of part (the user; docs/CELL_STRUCTURES.md).
+const HEAD_LEGEND = "Colour shows the kind of part, and every part is drawn whole. The dot beside each name is its status; Colour: Status shows what is not built as grey sketches. Clear glass shapes and grey outlines are scenery.";
 
 try {
  for (const scenario of scenarios) {

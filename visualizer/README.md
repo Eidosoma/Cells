@@ -27,7 +27,10 @@ opens the engine part that holds its law, and that part lists the units it holds
 Three things are encoded, and kept apart:
 
 - **Status**: qualified or judged, implemented and guarded, established, designed, planned,
-  failed, external reference. The first two follow the plan's four levels (D156). Built parts are solid; parts not built are sketches. In the engine
+  failed, external reference. The first two follow the plan's four levels (D156). Where
+  colour shows the kind of part, every part is drawn whole, whatever its status (the user,
+  16 November 2026: "in the default mode show it all in the coolest possible way");
+  "Colour: Status" shows what is not built as grey sketches. In the engine
   lens colour shows status too. In the cell lens colour shows the kind of part by default
   (purple nucleus, orange mitochondria), and the dot beside each name shows its status;
   the "Colour" switch turns the cell to status colours.
@@ -46,6 +49,12 @@ Rules the map keeps, so it can be shown outside the team:
   exception, by the user's decision of 16 November 2026: chloroplasts are green, as they
   are in life, where the cell is coloured by kind. They are still scenery, their panel
   says so, and they are neutral where colour shows status.
+- The nucleus, the Golgi apparatus and the ribosomes are parts of the map of their own,
+  planned, by the user's decision of 16 November 2026 (`docs/CELL_STRUCTURES.md`):
+  nothing of them is in the engine, each panel says so, and none is called simulated.
+  "Regulatory circuits" is drawn at the cell's DNA, as the separate small model it is,
+  and no longer names the nucleus. Choosing a structure offers a door into the Protein
+  atlas where the species' own proteins can show its set.
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
@@ -381,7 +390,9 @@ indicative.
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
 | Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
-| Ribosomes, vesicles | grey dots and clear bubbles: scenery, since protein synthesis and vesicles are not capabilities | grey beads and a few clear bubbles |
+| Ribosomes | free, in strings on a messenger, and on the rough endoplasmic reticulum: dots | two-subunit beads |
+| Golgi apparatus | a small stack of five or six curved cisternae, with buds at the rims | the same, enlarged |
+| Trafficking vesicles | eight: three on their way from the endoplasmic reticulum to the Golgi, four from the Golgi to the membrane, and one that meets it; their number and size are the picture's choice | the same |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | ATP, ions, small molecules | dots and haze | a few beads and clusters |

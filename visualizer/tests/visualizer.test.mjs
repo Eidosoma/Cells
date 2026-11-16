@@ -5,6 +5,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
@@ -24,6 +25,14 @@ test("the generated scene is structurally valid", () => {
 test("the extractor placed every engine file and raised no warning", () => {
   assert.equal(scene.meta.counts.engine_files_placed, scene.meta.counts.engine_files);
   assert.deepEqual(scene.meta.warnings, []);
+});
+
+test("a cited source that is the viewer's own is a file of this folder", () => {
+  // The extractor takes such a source on this folder's word (it reaches main with the branch's next merge):
+  // a note that is cited and was never committed fails here, in a fresh checkout.
+  const own = new Set(scene.entities.flatMap((entity) => entity.sources || []).map((source) => source.path).filter((file) => file.startsWith("visualizer/")));
+  assert.ok(own.size > 0);
+  for (const file of own) assert.ok(existsSync(path.join(ROOT, file.slice("visualizer/".length))), `${file} is cited and is not in this folder`);
 });
 
 test("every status claim beyond established carries a source", () => {
