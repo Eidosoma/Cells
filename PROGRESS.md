@@ -80,6 +80,49 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The visualizer merged into main (16 November 2026, evening): visualizer a4ef7492.**
+  `visualizer/` only.
+  - **What it adds:**
+    - an "Origin of life" heading, with GARD as a model system. It plays an example run of
+      invented numbers, marked as such, and its kernel finding is quoted only as the engine note's
+      open finding, under review;
+    - the Laws library's first phase;
+    - cell types as first-class data;
+    - the bacteria and phone fixes;
+    - the builder split into part modules;
+    - a GPU wrapper for the browsers that takes the shared `gpu.lock`.
+  - **Checks:**
+    - `npm test` on a clean copy: 511 passed, 2 skipped, 0 failed;
+    - the BETSE-boundary and snapshot guards on the merged tree pass.
+  - The branch's history holds an earlier wording of the kernel finding, corrected before the
+    merge.
+
+- **core-next merged into main (16 November 2026, evening).** It's the first lane built on D172's
+  round to land ([handoff](/mnt/workspaces/Cells/core-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - kinds' time-varying controls (gap 6);
+    - the stored-energy rate and the `produced` ledger role (gap 2);
+    - the routing door;
+    - @3's and the kinds' own view declarations, and their record roles;
+    - A7's allow-list fix;
+    - insertion@2's gate at opening (item 4);
+    - FR-5's raw-sum bound, derived from a rounding analysis;
+    - ledger lists read from the model object (item 5).
+  - **The gate,** at 5230f43b with main merged in:
+    - **tiers 1+2:** 502 files, none changed;
+    - **heavy:** 228 passed;
+    - **crossrev:** identical in every set, apart from the intended changes, each recorded:
+      item 4's onset select in the three insertion@2 division worlds, and the raw-sum bound's
+      input term in the kind worlds;
+    - **G1:** 113 of 113, bitwise;
+    - **the in-place guard:** identical on 50 worlds.
+  - **The raw-sum bound's teeth:** a planted sign flip is still refused, by about eleven orders of
+    magnitude. FR-4's declared world is bitwise identical over 900 s with and without the fix.
+  - **Found on the way:** the 825-node world's binding-time Cholesky is threaded by the linear
+    algebra library, so its bits depend on the run's CPU count.
+    - crossrev and G1 now log the count, and compare runs only at equal counts.
+    - A design that removes the dependence is queued.
+
 - **D172's round landed on main (16 November 2026, about 17:40 UTC).** Main ab267c39 merges candidate
   c1 = integration-d172 3c10b833 and is tagged `d172-landed-2026-11-16`.
   - **What lands:**
@@ -101,7 +144,8 @@ machine-readable inputs, results, checks and failures.
     - **tier 3:** 229 files. 187 pass. All 42 non-passing files are classified
       ([table](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-table.md)), and none is the round's or A7's:
       - 23 pre-existing failures;
-      - 16 pre-existing timeouts, whose roughly 280 tail tests never ran in either tree;
+      - 16 pre-existing timeouts, whose 328 tail tests never ran in either tree (the heads-up said
+        about 280; the audit's count is 328);
       - 2 stale tests from the round, fixed in the next commit with their masked checks
         verified;
       - 1 that passes when run alone.

@@ -597,6 +597,7 @@ export class ProteinLens {
 
   setMark(name) {
     this.markName = name;
+    this.pickedIds = null;
     if (this.mounted) this.mounted.mark = null;
     // A set with one value (the proteins of chemotaxis) is picked out as soon as it is chosen.
     const chosen = this.mounted ? this.markShown(this.mounted.shelves) : null;
@@ -1022,8 +1023,23 @@ export class ProteinLens {
     this.onChrome?.();
   }
 
+  /**
+   * Of the set picked out, only some proteins: those a door names (the proteins of one part of
+   * a machine, schema/MACHINES.md). The legend's choice of the set stays; choosing again in it
+   * picks out the whole set. Returns how many of them the species' own proteins hold.
+   */
+  pickIds(ids) {
+    const view = this.mounted, wanted = ids?.length ? new Set(ids.map(String)) : null;
+    this.pickedIds = wanted;
+    if (view?.mark) view.mark = wanted ? { ...view.mark, ids: wanted } : { name: view.mark.name, value: view.mark.value };
+    this.refresh();
+    this.onChrome?.();
+    return view?.mark && wanted ? view.shelves.highlightTotal(view.mark.name, view.mark.value, wanted) : 0;
+  }
+
   /** Show only the units for which the species' atlas found one thing (the legend's third block). */
   setFinding(finding) {
+    this.pickedIds = null;
     const view = this.mounted, mark = view ? this.markShown(view.shelves) : null;
     if (view && !mark && view.shelves.several && view.shelves.kind === "families") {
       // Of several shelves the block lists the shelves: one comes into focus, or the whole stack does.

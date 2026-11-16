@@ -18,8 +18,10 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; touch-action: none; user-select: none; will-change: transform; transition: opacity .16s ease; }
 .labels .label.is-off { opacity: 0; pointer-events: none; }
 .label-part { font-size: 11.5px; font-weight: 500; line-height: 1.2; padding: 2px 6px; border-radius: 5px; color: var(--fg); background: color-mix(in srgb, var(--bg) 80%, transparent); }
-.label-part::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: var(--muted); opacity: .7; }
+/* The tick under a name points at its part: in the middle, or where the name was moved along to stay inside the window (core/labels.js). */
+.label-part::after { content: ""; position: absolute; left: var(--tick, 50%); top: 100%; width: 1px; height: 8px; background: var(--muted); opacity: .7; }
 .label-part.is-callout::after { display: none; }
+.label-part.is-below::after { top: auto; bottom: 100%; }
 .label-unit { font-size: 10.5px; padding: 1px 5px; }
 .label-unit::after { height: 6px; }
 .label-part .swatch { width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
@@ -56,6 +58,17 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 
 /* ---------------------------------------------------------------- cards */
 .card { background: color-mix(in srgb, var(--bg-raised) 94%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; backdrop-filter: blur(8px); }
+/* A card or list that scrolls inside itself shows that it does: a shade along an edge that has more beyond it.
+   The covers scroll with the content and hide the shade where nothing is beyond (no script, both themes). */
+cells-legend.card, .view.card, .panel-body, .tl-speeds, .index-list, .species-list {
+  --cover: var(--bg-raised);
+  --shade: color-mix(in srgb, var(--fg) 24%, transparent);
+  background-image: linear-gradient(var(--cover) 40%, transparent), linear-gradient(transparent, var(--cover) 60%), linear-gradient(var(--shade), transparent), linear-gradient(transparent, var(--shade));
+  background-position: top, bottom, top, bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 18px, 100% 18px;
+  background-attachment: local, local, scroll, scroll;
+}
 
 cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 236px; padding: 6px; overflow-y: auto; }
 .legend-toggle { display: none; width: 100%; justify-content: space-between; align-items: center; padding: 6px 8px; font-family: var(--font-display); font-weight: 600; }
@@ -153,6 +166,8 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .rail button[aria-pressed="true"]::before { background: currentColor; }
 .rail .rail-title { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 2px; }
 .has-panel .rail { display: none; }
+/* On a phone the rail folds behind one button that names the level shown (viewer.js); a wide window has no need of it. */
+.rail-toggle, .view-toggle, .view-notice { display: none; }
 
 .view { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 64px; padding: 8px 10px 9px; display: grid; gap: 6px; width: 236px; }
 .seg-row { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; }
@@ -247,6 +262,7 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .legend-note-plain { grid-template-columns: 1fr; }
 /* The switch for quantity layers: a row for each visual channel. */
 .legend-layers { padding-bottom: 2px; }
+.legend-body > .legend-layers:first-child > .legend-title { border-top: 0; margin-top: 0; }
 .layer-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 3px 8px; }
 .layer-channel { font-size: 11.5px; color: var(--muted); }
 .layer-seg button { padding: 3px 2px; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -321,8 +337,9 @@ cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16p
 .tl-read b { color: var(--fg); font-weight: 600; }
 .tl-speed { min-width: 48px; padding: 6px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tl-speed:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.tl-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 1px; width: min(330px, calc(100vw - 24px)); max-height: min(60vh, 420px); overflow: auto; padding: 5px; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); }
+.tl-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 1px; width: min(330px, calc(100vw - 24px)); max-height: min(60vh, 420px); overflow: auto; padding: 5px; border-radius: 12px; background-color: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); }
 .tl-speeds[hidden] { display: none; }
+.tl-speeds.opens-down { top: calc(100% + 6px); bottom: auto; }
 cells-timeline.is-choosing { z-index: 4; }
 .tl-speed-step { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 5px 8px; border-radius: 8px; text-align: left; font-size: 12.5px; line-height: 1.3; color: var(--fg); }
 .tl-speed-step b { font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -378,7 +395,7 @@ cells-trace { display: grid; gap: 4px; }
 .species-pick[aria-expanded="true"] .species-pick-caret { margin-top: 3px; transform: rotate(225deg); }
 .seg-species .species-pick { width: 100%; justify-content: space-between; padding: 5px 10px 5px 11px; border-radius: 8px; font-size: 12.5px; }
 .species-veil { position: absolute; inset: 0; z-index: 5; }
-.species-list { position: absolute; z-index: 6; display: grid; align-content: start; gap: 2px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 16px 36px -16px rgb(0 0 0 / .5); }
+.species-list { position: absolute; z-index: 6; display: grid; align-content: start; gap: 2px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; background-color: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 16px 36px -16px rgb(0 0 0 / .5); }
 .species-group { display: grid; gap: 2px; }
 .species-group + .species-group { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
 .species-group-name { padding: 3px 9px 2px; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
@@ -475,42 +492,92 @@ cells-trace { display: grid; gap: 4px; }
   .card-marks { display: none; }
   .seg.seg-wide button { padding: 4px 3px; font-size: 11.5px; }
   .brand span, .stamp { display: none; }
-  .bar { gap: 8px 10px; padding-block: 10px; }
-  .switch button { padding: 6px 11px; }
+  .bar { gap: 8px 10px; padding-block: 8px; }
+  /* A thing to press is at least 44 px in its smaller dimension on a phone. The names on the picture are
+     the exception: they stand for their parts, and the List gives every part as a row to press. */
+  .switch { padding: 0; }
+  .switch button { min-height: 44px; padding: 6px 11px; }
+  .pill-button, .icon-button, .legend-toggle, .rail-toggle, .view-toggle, .species-pick, .species-state, .run-select, .index-search, .tl-speed, .tl-speed-step, .legend-item, .rail button, .run-row, .exp-row, .index-row { min-height: 44px; }
+  .seg { padding: 0; }
+  .seg button, .layer-seg button { min-height: 44px; }
+  .icon-button { width: 44px; height: 44px; margin: -8px -8px 0 0; }
+  .species-state { display: inline-flex; align-items: center; }
+  .panel-body summary, .legend-keys summary, .legend-fold > summary, .view details summary { min-height: 44px; padding-block: 12px; }
+  .panel-body .link-button, .layer-more .link-button { min-height: 44px; align-items: center; }
+  /* A door into another view is a button of its own, its words wrapping inside it. */
+  .panel-door .link-button { display: flex; width: 100%; padding: 8px 12px; border-radius: 9px; box-shadow: inset 0 0 0 1px var(--line); text-decoration: none; text-wrap: pretty; }
+  .panel-door .link-button:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
   .switch .long { display: none; }
   .switch .short { display: inline; }
   .view-card { width: 216px; padding: 8px 10px; }
-  .view-card .card-text, .view-card details { display: none; }
+  /* How a view's data was made and its sources and licences stay a press away: their lines, not their words, are shown. */
+  .view-card .card-text { display: none; }
+  /* The atlas's card keeps to the top of the picture: what is below its fold is a scroll away, and its edge says so. */
+  .view-card:not(.run-card) { max-height: min(40%, 260px); }
   .stat b { font-size: 17px; }
-  .hint { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .hint { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   cells-legend { width: auto; right: auto; max-width: calc(100% - 32px); }
   .legend-toggle { display: flex; gap: 14px; }
   cells-legend:not(.is-open) .legend-body { display: none; }
   cells-panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 56%; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 3; }
-  cells-index { top: 56px; }
-  .view { top: 54px; width: 208px; padding: 6px 8px; gap: 4px; }
+  cells-index { top: 68px; }
+  .view { top: 68px; width: 208px; max-height: calc(100% - 68px - 160px); padding: 6px 8px; gap: 4px; }
   .view-note { display: none; }
   .seg-row { grid-template-columns: 46px 1fr; }
-  .has-panel .scalebar, .has-panel .view { display: none; }
-  /* Clear of a caveat that wraps to three lines, as it does where the page's own font did not arrive. */
-  .scalebar { bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
+  /* With a panel open the view's card folds behind one button under the bar; a press opens it over the picture. */
+  .has-panel:not(.view-open) .view { display: none; }
+  .has-panel .view-toggle { display: flex; position: absolute; top: 68px; left: max(16px, env(safe-area-inset-left, 0px)); align-items: center; gap: 12px; padding: 0 14px; font-weight: 500; z-index: 4; }
+  .view-toggle .chevron { transform: rotate(45deg); margin-top: -4px; }
+  .view-toggle.is-open .chevron { transform: rotate(-135deg); margin-top: 3px; }
+  .has-panel.view-open .view { top: 118px; max-height: calc(100% - var(--sheet, 56%) - 126px); z-index: 4; }
+  .has-panel.view-open .view-notice { display: block; margin: 0 0 2px; }
+  /* Clear of a caveat that wraps to three lines, as it does where the page's own font did not arrive (and lifted further where it would still meet it: viewer.js). */
+  .scalebar { bottom: calc(148px + env(safe-area-inset-bottom, 0px)); }
   .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
   .species-option { padding: 9px 9px; }
-  .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
-  .rail { top: 124px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
+  .caveat { width: calc(100% - 32px); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  /* The scale rail folds behind one button under the bar, at the right; open, its levels stand under it. */
+  .rail-toggle { display: flex; position: absolute; top: 68px; right: max(16px, env(safe-area-inset-right, 0px)); align-items: center; gap: 12px; padding: 0 14px; font-weight: 500; }
+  .rail-toggle .seg-label { margin-right: -4px; }
+  .rail-toggle .chevron { transform: rotate(45deg); margin-top: -4px; }
+  .rail-toggle.is-open .chevron { transform: rotate(-135deg); margin-top: 3px; }
+  .rail { top: 118px; transform: none; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 2; }
+  .frame:not(.rail-open) .rail, .has-panel .rail-toggle { display: none; }
   .rail .rail-title { display: none; }
-  .rail button { padding: 5px 8px 5px 6px; font-size: 12.5px; }
-  .has-panel cells-legend, .has-panel .caveat { display: none; }
-  .run-card { width: min(232px, calc(100% - 32px)); max-height: none; padding: 8px 10px; gap: 6px; }
+  .rail button { padding: 5px 12px 5px 8px; font-size: 12.5px; }
+  .has-panel .caveat { display: none; }
+  /* With a panel open the switches of the foot stand on its top edge: the legend's title at the left, the look's switch
+     at the right, a replay's timeline over them. The sheet's height is the viewer's (--sheet). */
+  .has-panel cells-legend { bottom: calc(var(--sheet, 56%) + 8px); z-index: 3; }
+  .has-panel .scalebar { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(var(--sheet, 56%) + 8px); }
+  .has-panel .scalebar-line, .has-panel .scalebar-text, .has-panel .look-note { display: none; }
+  .has-panel .look-box { margin-bottom: 0; }
+  .run-card { width: min(232px, calc(100% - 32px)); max-height: 40%; padding: 8px 10px; gap: 6px; }
   .run-card .run-plain, .run-card .run-class-note, .run-card details, .run-card .eyebrow { display: none; }
-  .run-row { padding: 4px 7px; }
-  cells-timeline { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-width: none; gap: 8px; padding: 6px 9px 7px; }
-  .has-panel cells-timeline { display: none; }
-  .has-timeline .scalebar { bottom: calc(146px + env(safe-area-inset-bottom, 0px)); }
-  .tl-play { width: 34px; height: 34px; }
+  .run-row { padding: 4px 7px; align-content: center; }
+  .run-card .run-select { font-size: 12px; padding: 6px 4px; }
+  .exp-row { align-content: center; }
+  cells-timeline { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); max-width: none; gap: 8px; padding: 5px 9px 6px; }
+  .has-panel cells-timeline { right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(var(--sheet, 56%) + 72px); }
+  .has-timeline .scalebar { bottom: calc(168px + env(safe-area-inset-bottom, 0px)); }
+  .tl-play { width: 44px; height: 44px; }
+  .tl-speed { min-width: 52px; }
+  /* The read-out wraps to a second line rather than being cut where the row is narrow. */
+  .tl-read { white-space: normal; line-height: 1.3; }
+  /* The playhead is pressed and dragged over the full 44 px of its row. */
+  .tl-track { height: 44px; }
+  .tl-rail { top: 20px; }
+  .tl-marks { top: 10px; }
+  .tl-flag { top: -4px; }
+  .tl-range { top: 0; height: 44px; }
+  .tl-range::-webkit-slider-runnable-track { height: 44px; }
+  .tl-range::-webkit-slider-thumb { width: 18px; height: 18px; margin-top: 13px; }
+  .tl-range::-moz-range-track { height: 44px; }
 }
 @media (max-width: 440px) {
   .bar { gap: 8px; }
+  /* The folded rail's button keeps clear of the view's card: the level's name alone, its button says "Scale" to a reader. */
+  .rail-toggle .seg-label { display: none; }
   .brand b { font-size: 18px; }
   .switch button { padding: 6px 8px; font-size: 13px; }
   .pill-button { padding: 6px 10px; }

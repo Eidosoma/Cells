@@ -392,6 +392,45 @@ try {
       const sought = await evaluate(`${VIEWER}.current.player.time / ${VIEWER}.current.run.end`);
       check("timeline: a click on the track goes to that time", Math.abs(sought - 0.8) < 0.06, sought.toFixed(3));
 
+      // A phone: the timeline's speed list, the longest a run is offered, stays on the screen and under the bar, each
+      // step at least 44 px tall, and a real press takes one. With a cell's panel open the timeline stands on the
+      // panel's top edge, and its play button and its list still take a press.
+      await page("Emulation.setDeviceMetricsOverride", { width: 400, height: 780, deviceScaleFactor: 1, mobile: false });
+      await sleep(1200);
+      const speeds = () =>
+        evaluate(`(() => {
+          const root = ${VIEWER}.shadowRoot, list = root.querySelector(".tl-speeds"), edges = (el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); };
+          const bar = root.querySelector(".bar .switch"), panel = root.querySelector("cells-panel");
+          return { open: !list.hidden, box: list.hidden ? null : edges(list), steps: [...list.querySelectorAll(".tl-speed-step")].map((step) => Math.round(step.getBoundingClientRect().height)), speed: ${VIEWER}.current.player.speed,
+            bar: edges(bar)[3], timeline: edges(root.querySelector("cells-timeline")), panel: panel.hidden ? null : edges(panel), width: innerWidth, height: innerHeight, length: ${VIEWER}.current.run.end - ${VIEWER}.current.run.start };
+        })()`);
+      const onScreen = (now) => Boolean(now.box) && now.box[0] >= 0 && now.box[2] <= now.width && now.box[1] >= now.bar && now.box[3] <= now.height;
+      let speedButton = await spot("cells-timeline .tl-speed");
+      await click(speedButton.x, speedButton.y);
+      let list = await speeds();
+      check(`phone: a real press opens the speed list of a ${Math.round(list.length / 60)}-minute run on the screen, under the bar, each of its ${list.steps.length} steps at least 44 px tall`, list.open && onScreen(list) && list.steps.length >= 5 && list.steps.every((height) => height >= 44), JSON.stringify(list));
+      const step = await evaluate(`(() => { const el = [...${VIEWER}.shadowRoot.querySelectorAll('.tl-speed-step[aria-pressed="false"]')][0]; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, speed: Number(el.dataset.speed) }; })()`);
+      await click(step.x, step.y);
+      list = await speeds();
+      check("phone: a real press on a step takes that speed and closes the list", list.speed === step.speed && !list.open, JSON.stringify([step.speed, list.speed, list.open]));
+      // A cell chosen through the page (choosing is checked above): its panel is a sheet along the bottom.
+      await evaluate(`${VIEWER}.select(${JSON.stringify(cell.id)})`);
+      await sleep(900);
+      list = await speeds();
+      check("phone: with a cell's panel open the timeline stands on the panel's top edge", Boolean(list.panel) && list.timeline[3] <= list.panel[1] && list.timeline[1] >= list.bar, JSON.stringify([list.timeline, list.panel, list.bar]));
+      const phonePlay = await spot("cells-timeline .tl-play");
+      await click(phonePlay.x, phonePlay.y);
+      const phonePlaying = await evaluate(`${VIEWER}.current.player.playing`);
+      await click(phonePlay.x, phonePlay.y);
+      speedButton = await spot("cells-timeline .tl-speed");
+      await click(speedButton.x, speedButton.y);
+      list = await speeds();
+      check("phone: there a real press still plays the run, and its speed list opens on the screen under the bar", phonePlaying && list.open && onScreen(list), JSON.stringify([phonePlaying, list.box, list.bar]));
+      await click(speedButton.x, speedButton.y); // a press on the speed button closes the list again
+      await clear();
+      await page("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+      await sleep(1200);
+
       // Another run of the same experiment: the card switches, and the recorded class follows the run.
       // A few runs are rows to press; many are a list, which is set as a person choosing would set it.
       const loaded = async (not) => {
