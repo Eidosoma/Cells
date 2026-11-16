@@ -254,6 +254,22 @@ test("a sign the run does not declare itself says where it comes from, and a rec
 
 // ------------------------------------------------------------ what a run can feed
 
+test("a layer whose records the run did not save says why, where the run's view gives the reason for their absence", () => {
+  const reason = "The run's recording subset does not list it (recording.subset.fields): the run kept only the fields that list names";
+  const withReason = (item) => {
+    const { file, entry } = syntheticRun();
+    file.view.unstated = [...(file.view.unstated || []), item];
+    return openReplay(file, entry);
+  };
+  // A record the run did not keep, with the run's own reason (the adapter's word for a recording subset): the layer says it.
+  assert.equal(offer(withReason({ id: "membrane_dissipated_energy_pJ", what: "record", why: reason }), "energy-glow").why, `${NOT_SAVED} ${reason}.`);
+  // A merged view a later view could not add says why too.
+  assert.equal(offer(withReason({ id: "face_dissipated_energy_pJ", what: "view field", why: "changed by an operator: a run already on disk" }), "energy-glow").why, `${NOT_SAVED} changed by an operator: a run already on disk.`);
+  // A reason about something else of the record, its kind, is no reason for its absence; and with none, the plain words.
+  assert.equal(offer(withReason({ id: "membrane_dissipated_energy_pJ", what: "kind", why: "an operator declares no kind for it" }), "energy-glow").why, NOT_SAVED);
+  assert.equal(offer(made().run, "energy-glow").why, NOT_SAVED);
+});
+
 test("a run is offered the layers it can feed: the declared ones, and a colouring and a relief of every other record over its cells", () => {
   const { run } = made();
   const offers = layersFor(run, LAYERS, MARKS);

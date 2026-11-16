@@ -285,9 +285,11 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
-- **Runs written by the engine's own run-view writer** (on its branch, not on main yet)
-  are kept small under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`;
-  the adapter's tests read them.
+- **Runs written by the engine's own run-view writer** (on its development branch, not
+  on main yet) are kept small under `tests/engine-views/`: three unit-test worlds made by
+  `tools/make_engine_view_fixture.sh`, and the engine's first looping run, an interim
+  planarian loop copied from the engine's lead. The adapter's tests read them; none is on
+  the page.
 - **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
   run is offered slowed a million, a thousand or four times, true speed, and four times
   faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds

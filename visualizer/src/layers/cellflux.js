@@ -646,7 +646,7 @@ export class CellFlux {
       eyebrow: "Flux",
       chips: [{ label: run ? "From the looping run" : flux.illustration.notice, title: run ? "The species' own run, made by the engine and packaged to loop" : "Nothing here is a number from a run" }],
       plain: run
-        ? `${loopWords(this.loop, name, clock)}. ${this.loop.closes.says.replace(/\.?$/, ".")} ${closesWords(this.loop)}. ${engineWords(this.loop)}.${this.loop.follows.length ? " Where the loop follows a daughter cell, the beads are still read for its first cell: the hand-over is not drawn yet." : ""}`
+        ? `${loopWords(this.loop, name, clock)}. ${this.loop.closes.says.replace(/^./, (first) => first.toUpperCase()).replace(/\.?$/, ".")} ${closesWords(this.loop)}. ${engineWords(this.loop)}.${this.loop.follows.length ? " Where the loop follows a daughter cell, the beads are still read for its first cell: the hand-over is not drawn yet." : ""}`
         : `${flux.illustration.notice}. ${name} has no looping run of its own cell, so what flows is shown as illustration. ${forms["direction only"].says}.`,
       note: run ? "Every rate is a mean between two records that both lie inside the loop: no difference is taken across the seam." : flux.illustration.speaks_for,
       sections: [
