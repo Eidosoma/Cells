@@ -19,8 +19,15 @@ definitions.py), each route on one host (`patch`, or `junction` for the neutral 
       "species": "X", "permeability_m_per_s": 1e-9}]
 
 `species` is the neutral law's carried row; the leak's is the proton row (`species`, default "H",
-which must be B4's proton_row when B4 is declared). `factors` (FR-5's damage and pH condition)
-come with FR-5's laws: an entry may carry an empty list only.
+which must be B4's proton_row when B4 is declared). `factors` is a list of factor-source IDs
+(§7.4 (n): FR-5's damage d and pH condition f), in declared order; omitted or empty, none.
+
+- **The routing door's sink (§7.4 (n) 6):** where any route declares factors, the kind's entry
+  records it and its fields gain the control `passive_multiplier` [route], held at 1; each
+  factored route's slot is routed (`routed_controls`), so at every stage it is the left fold of
+  its sources' factors. Each route's opening is multiplied by it in rates and stage_term.
+  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A definition whose routes
+  declare no factors keeps today's entry, fields and programs.
 
 - **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
   to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
@@ -36,19 +43,22 @@ come with FR-5's laws: an entry may carry an empty list only.
   books, per step, its exact divided-difference shares of each row's exact free-energy decrease:
   Q = -1e-3 RT moved (mu-bar_in - mu-bar_out) (the kernel's divided_potential_RT and
   route_heat_pJ). No clamp, no scaling. A negative share, or a row whose shares miss its exact
-  decrease by more than RAW_SUM_FACTOR eps times its terms, refuses the step ("negative exact
-  share: step-bound breach"). Every other route, the leak always, keeps the tableau's booking of
-  its dissipation rate (the leak's: the kernel's heat_pJ_s, >= 0).
+  decrease by more than RAW_SUM_FACTOR eps times its terms and its inputs' rounding (the stored
+  amounts, increments and cumulative transfers times |mu-bar|: §7.5's raw-sum bound, amended 16
+  November 2026), refuses the step ("negative exact share: step-bound breach"). Every other
+  route, the leak always, keeps the tableau's booking of its dissipation rate (the leak's: the
+  kernel's heat_pJ_s, >= 0).
 - **Its step (ruled):** the neutral law's dt L <= 1, L = 1e15 P A (1/V_a + 1/V_b) summed over
   the routes at each node, as its bound term (bound_rate); the leak's slope conductance (the
   kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term).
 """
 
+from types import MappingProxyType
 from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.kind_registry import BUILTIN, ConfigError, Kind
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import passive_permeation as passive
@@ -61,9 +71,25 @@ LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
 LAWS = (LAW_ID, LEAK_LAW_ID)
 DEFAULT_PROTON = "H"
-RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps sum|terms|, per row.
+RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps (own + inputs), per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
 HOSTS = ("patch", "junction")
+MULTIPLIER = "passive_multiplier"  # The sink's control field (§7.4 (n) 6).
+STATE_AXES = (
+    ("passive_transferred", ("species", "passive_route")),
+    ("passive_dissipated_energy_pJ", ("passive_route",)),
+)
+LAYOUT_FIELDS = (
+    "passive_permeability",
+    "passive_area",
+    "passive_inside",
+    "passive_outside",
+    "passive_membrane",
+    "passive_junction",
+    "passive_on_junction",
+    "passive_leak",
+    "passive_exact",
+)
 
 
 class Route(NamedTuple):
@@ -75,6 +101,7 @@ class Route(NamedTuple):
     outside: str  # A patch's outside node, a junction's receiver.
     species: str
     permeability: float  # m/s
+    factors: tuple = ()  # Factor-source IDs, in declared order (§7.4 (n)).
 
 
 def parse(entries, base):
@@ -98,11 +125,13 @@ def parse(entries, base):
         law = raw["law"]
         if law not in LAWS:
             raise ConfigError(f"{MODEL_KEY} {rid}: law must be one of {', '.join(LAWS)}")
-        if raw.get("factors"):
-            raise ConfigError(
-                f"{MODEL_KEY} {rid}: route factors (FR-5's damage and pH condition) come with "
-                "FR-5's laws"
-            )
+        factors = raw.get("factors", [])
+        if (
+            not isinstance(factors, list)
+            or any(not isinstance(f, str) or not f for f in factors)
+            or len(set(factors)) != len(factors)
+        ):
+            raise ConfigError(f"{MODEL_KEY} {rid}: factors is a list of distinct factor-source IDs")
         kind, host = hosts[0], raw[hosts[0]]
         if kind == "patch":
             if host not in patches:
@@ -123,7 +152,7 @@ def parse(entries, base):
         value = float(value)
         if not (np.isfinite(value) and value >= 0):
             raise ConfigError(f"{MODEL_KEY} {rid}: permeability_m_per_s is finite and >= 0")
-        routes.append(Route(rid, law, kind, host, inside, outside, species, value))
+        routes.append(Route(rid, law, kind, host, inside, outside, species, value, tuple(factors)))
     ids = [r.id for r in routes]
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{MODEL_KEY}: route IDs must be unique")
@@ -141,13 +170,42 @@ def to_dict(declaration):
         }
         if r.law == LAW_ID or r.species != DEFAULT_PROTON:
             entry["species"] = r.species
+        if r.factors:
+            entry["factors"] = list(r.factors)
         out.append(entry)
     return out
 
 
+class Factored(NamedTuple):
+    """The structure entry of a declaration whose routes declare factors (§7.4 (n) 6)."""
+
+    laws: tuple
+
+
 def structure_entry(declaration):
-    """Value-free: the declared laws (the leak traces its own kernel)."""
-    return tuple(sorted({route.law for route in declaration}))
+    """Value-free: the declared laws (the leak traces its own kernel); Factored(laws) where any
+    route declares factors, so today's declarations keep today's entry."""
+    laws = tuple(sorted({route.law for route in declaration}))
+    return Factored(laws) if any(route.factors for route in declaration) else laws
+
+
+def declared_fields(entry):
+    """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored."""
+    return KindFields(
+        STATE_AXES, LAYOUT_FIELDS, (MULTIPLIER,) if isinstance(entry, Factored) else (), ()
+    )
+
+
+def control_values(spec, declaration, times):
+    """The multiplier's held value, 1 on every route; the door routes the factored ones."""
+    return {MULTIPLIER: np.ones((len(times), len(declaration)))}
+
+
+def routed_controls(declaration):
+    """Each factored route's multiplier slot and its sources, in declared order (§7.4 (n))."""
+    return tuple(
+        (MULTIPLIER, k, route.factors) for k, route in enumerate(declaration) if route.factors
+    )
 
 
 def _node_ids(spec):
@@ -249,13 +307,16 @@ def _net(moved, p, nodes, xp):
 
 
 def _opening(state, control, p, xp):
-    """Each route's opening: its patch's availability, or its junction's gate x availability."""
+    """Each route's opening: its patch's availability, or its junction's gate x availability,
+    times its routed multiplier where the declaration has one (§7.4 (n) 6)."""
     opening = xp.ones(p.passive_area.shape)
     if control.membrane.shape[-1]:  # Static: membrane routes need a patch to exist.
         opening = control.membrane[p.passive_membrane]
     if control.junction.shape[-1]:  # Static: junction routes need a junction to exist.
         gated = control.junction * state.junction_gate
         opening = xp.where(p.passive_on_junction, gated[p.passive_junction], opening)
+    if MULTIPLIER in type(control)._fields:  # Static: a factored declaration's field.
+        opening = opening * getattr(control, MULTIPLIER)
     return opening
 
 
@@ -319,7 +380,26 @@ def raw_sum_check(start, end, p, *, xp=np):
     return residual, bound, rows
 
 
+def raw_sum_terms(start, end, p, *, xp=np):
+    """(residual, own, inputs, rows) over one step: the bound's two magnitudes apart, the row's own
+    terms and its inputs' rounding (§7.5, the raw-sum bound); bound = RAW_SUM_FACTOR eps (own +
+    inputs). For the bound's tests and probes."""
+    _, _, residual, own, inputs, rows = _raw_sums(start, end, p, xp=xp)
+    return residual, own, inputs, rows
+
+
+def _increments(state, xp):
+    """[species, node] stored increments, cells then outside nodes (_amounts less its reference)."""
+    return xp.concatenate((state.amount_increment, state.extracellular_amount_increment), axis=1)
+
+
 def _booking(start, end, p, *, xp):
+    heat, positive, residual, own, inputs, rows = _raw_sums(start, end, p, xp=xp)
+    bound = RAW_SUM_FACTOR * np.finfo(float).eps * (own + inputs)
+    return heat, positive, residual, bound, rows
+
+
+def _raw_sums(start, end, p, *, xp):
     volume, _ = _volumes(p, xp)
     n0, n1 = _amounts(start, p, xp), _amounts(end, p, xp)
     moved = end.passive_transferred - start.passive_transferred  # [species, route], inward.
@@ -329,7 +409,7 @@ def _booking(start, end, p, *, xp):
     exact = p.passive_exact[None, :] & (p.passive_permeability > 0)
     negative = xp.any(xp.where(exact, shares < 0, False))
     # Raw sums: each exact row's shares (mu-bar times every route's transfer at it) against its
-    # exact change of G, within RAW_SUM_FACTOR eps of the terms' magnitudes.
+    # exact change of G, within RAW_SUM_FACTOR eps of the terms' magnitudes (§7.5's bound).
     carried = xp.where(exact, moved, 0.0)
     zero = xp.zeros_like(n0)
 
@@ -340,18 +420,30 @@ def _booking(start, end, p, *, xp):
     rows = at_ends(xp.where(exact, 1.0, 0.0)) > 0  # Every row an exact route touches.
     g0, g1 = _row_energy(n0, volume[None, :], xp), _row_energy(n1, volume[None, :], xp)
     summed = mu * _net(carried, p, volume.shape[0], xp)
-    magnitude = (
+    own = (  # The row's own terms: its G at both ends and its shares' products.
         xp.abs(g0)
         + xp.abs(g1)
         + scatter(xp.abs(mu_in * carried), zero, (p.passive_inside,), xp=xp)
         + scatter(xp.abs(mu_out * carried), zero, (p.passive_outside,), xp=xp)
     )
-    bound = RAW_SUM_FACTOR * np.finfo(float).eps * magnitude
+    # Its inputs' rounding (§7.5, the raw-sum bound): the stored amounts are reference +
+    # increment, rounded to the result, and each tableau term adds onto the increments and onto
+    # the exact routes' cumulative transfers (_combine), rounded to the running sum. The recorded
+    # net transfer and n1 - n0 therefore differ by about eps times these magnitudes, and the
+    # shares carry |mu-bar| times that difference.
+    cumulative = xp.abs(start.passive_transferred) + xp.abs(end.passive_transferred)
+    inputs = xp.abs(mu) * (
+        xp.abs(n0)
+        + xp.abs(n1)
+        + xp.abs(_increments(start, xp))
+        + xp.abs(_increments(end, xp))
+        + at_ends(xp.where(exact, cumulative, 0.0))
+    )
     heat = species_sum(xp.where(exact, shares, 0.0), xp=xp)  # A7: the species fold.
-    return heat, ~negative, xp.abs(summed - (g1 - g0)), bound, rows
+    return heat, ~negative, xp.abs(summed - (g1 - g0)), own, inputs, rows
 
 
-def book(applied, start, end, p, dt, *, xp):
+def book(applied, start, end, control, p, dt, *, xp):
     """§7.5: exact routes book their exact shares; the others keep the tableau's heat."""
     heat, positive, within = exact_booking(start, end, p, xp=xp)
     booked = xp.where(
@@ -459,25 +551,59 @@ def check_definition(spec):
             )
 
 
+# The run view's declarations (D154): the routes' own set (axis passive_route), with each route's
+# ends as roles, its carried species, law and host; transfers are inward-positive (rates: `flux`).
+VIEW = KindView(
+    units=MappingProxyType({"passive_transferred": "fmol", "passive_dissipated_energy_pJ": "pJ"}),
+    record_kinds=MappingProxyType(
+        {"passive_transferred": "cumulative", "passive_dissipated_energy_pJ": "cumulative"}
+    ),
+    orientation=MappingProxyType(
+        {
+            "passive_transferred": MappingProxyType(
+                {
+                    "from": "outside",
+                    "to": "inside",
+                    "says": "inward-positive: a positive amount moves from the route's outside "
+                    "end (its patch's outside node, or its junction's receiver) into its inside "
+                    "end (its patch's cell, or its junction's sender)",
+                    "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+                }
+            )
+        }
+    ),
+    record_layers=MappingProxyType(
+        {"passive_transferred": "membrane", "passive_dissipated_energy_pJ": "membrane"}
+    ),
+)
+
+
+def view_sets(spec, declaration):
+    """The view's set of the routes' axis: one entry per route, in the declaration's order."""
+    return {
+        "passive_route": {
+            "id": "passive_route",
+            "ids": [route.id for route in declaration],
+            "roles": {
+                "inside": "the route's inside end: its patch's cell, or its junction's sender",
+                "outside": "its outside end: its patch's outside node, or its junction's receiver",
+            },
+            "carries": [[route.species] for route in declaration],
+            "kinds": [route.law for route in declaration],
+            "at": [
+                {"membrane" if route.host_kind == "patch" else "junction": route.host}
+                for route in declaration
+            ],
+        }
+    }
+
+
 PASSIVE_ROUTES = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
         model_key=MODEL_KEY,
-        state_axes=(
-            ("passive_transferred", ("species", "passive_route")),
-            ("passive_dissipated_energy_pJ", ("passive_route",)),
-        ),
-        layout_fields=(
-            "passive_permeability",
-            "passive_area",
-            "passive_inside",
-            "passive_outside",
-            "passive_membrane",
-            "passive_junction",
-            "passive_on_junction",
-            "passive_leak",
-            "passive_exact",
-        ),
+        state_axes=STATE_AXES,
+        layout_fields=LAYOUT_FIELDS,
         parse=parse,
         to_dict=to_dict,
         structure_entry=structure_entry,
@@ -490,5 +616,10 @@ PASSIVE_ROUTES = BUILTIN.register(
         moved_rows=moved_rows,
         bound_rate=bound_rate,
         check_definition=check_definition,
+        declared_fields=declared_fields,
+        control_values=control_values,
+        routed_controls=routed_controls,
+        view=VIEW,
+        view_sets=view_sets,
     )
 )

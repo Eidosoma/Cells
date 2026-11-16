@@ -131,7 +131,7 @@ def test_a_failed_stage_read_refuses_the_row_and_the_step():
     def gated(state, p, *, xp):
         return state, xp.all(state.alpha_value < 0.5)
 
-    def book(applied, start, end, p, dt, *, xp):
+    def book(applied, start, end, control, p, dt, *, xp):
         return {"alpha_value": end.alpha_value + 1.0}, True
 
     rows = dict(stage_read=gated, stage_rows=lambda declaration: ())
@@ -354,8 +354,9 @@ def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     seen = {}
 
     def probe(name, ok=True):
-        def book(applied, start, end, p, dt, *, xp):
+        def book(applied, start, end, control, p, dt, *, xp):
             seen[name] = end
+            seen[name + "_control"] = control
             return {f"{name}_value": getattr(end, f"{name}_value") + dt}, ok
 
         return planted(name, f"{name}_block", book=book)
@@ -366,6 +367,7 @@ def test_bookings_see_one_end_state_and_write_only_their_own_fields():
         new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
     assert valid
     assert seen["alpha"] is seen["beta"]  # One end state for every kind: bookings commute.
+    assert seen["alpha_control"] is seen["beta_control"] is control  # The step's held control.
     assert float(new.alpha_value[0]) == float(new.beta_value[0]) == spec.execution.dt
 
     with kind_registry.scope(registry(probe("alpha"), probe("beta", ok=False))):
@@ -375,7 +377,7 @@ def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     assert not valid  # A booking that refuses (a negative exact share) refuses the step.
     assert float(new.alpha_value[0]) == 0.0
 
-    def trespass(applied, start, end, p, dt, *, xp):
+    def trespass(applied, start, end, control, p, dt, *, xp):
         return {"amount_increment": end.amount_increment}, True
 
     with kind_registry.scope(registry(planted("alpha", "alpha_block", book=trespass))):

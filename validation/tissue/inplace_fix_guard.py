@@ -206,8 +206,11 @@ def _quiet_host_checks():
     from cells.models import pump_composite_adapter as adapter
     from cells.models import surface_pump as first
 
-    def quiet(state, spec, p, *, domain, balances, magnitudes, dissipation, steps=None):
-        keys = (*("max_" + k for k in first.LEDGER_DIAGNOSTICS), "max_energy_balance_relative")
+    def quiet(
+        state, spec, p, *, domain, balances, magnitudes, dissipation, steps=None, ledgers=None
+    ):
+        names = (ledgers or first).LEDGER_DIAGNOSTICS  # The model object's lists (§7.4 (p)).
+        keys = (*("max_" + k for k in names), "max_energy_balance_relative")
         return {**dict.fromkeys(keys, 0.0), "max_global_charge_bound_ratio": 0.0}
 
     first.checked_rows = quiet

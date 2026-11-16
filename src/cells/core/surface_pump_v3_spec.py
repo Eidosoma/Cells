@@ -28,7 +28,8 @@ enters the constant-field flux, the affinities and the pumps only.
 """
 
 import copy
-from dataclasses import asdict, dataclass, replace
+from bisect import bisect_right
+from dataclasses import asdict, dataclass, field, fields, replace
 
 import numpy as np
 
@@ -91,8 +92,41 @@ class SurfacePumpChannelModel:
 
 
 @dataclass(frozen=True)
+class KindChange(second.Change):
+    """@2's change record plus each scheduled kind's values at its time (§7.4 (l))."""
+
+    kinds: tuple  # One Schedule.at(time) per entry of Experiment.kinds, in canonical order.
+
+
+@dataclass(frozen=True)
 class Experiment(second.Experiment):
-    """@2's experiment with populated channel schedules (one per population)."""
+    """@2's experiment with populated channel schedules (one per population).
+
+    kinds: the declared kinds' parsed schedules (docs/INNER_MODEL_V4_DESIGN.md §7.4 (l)), ((kind
+    ID, kind_registry.Schedule), ...) in canonical order, for the declared kinds that declare
+    experiment keys; () for every other definition, whose change records stay today's, by value
+    and type. With a schedule, the change times also hold its breakpoints (so each is a step
+    boundary: core/grid.EventGrid) and each record is a KindChange carrying its values (so
+    branch_checkpoint refuses a branch that rewrites them before its checkpoint).
+    """
+
+    kinds: tuple = field(default=(), kw_only=True)
+
+    def _held_availabilities(self):
+        held = super()._held_availabilities()
+        if not self.kinds:
+            return held  # Today's records.
+        clock = [c.time for c in held]
+        times = sorted({*clock, *(t for _, schedule in self.kinds for t in schedule.times)})
+        names = [f.name for f in fields(second.Change) if f.name != "time"]
+        return tuple(
+            KindChange(
+                time,
+                **{name: getattr(held[bisect_right(clock, time) - 1], name) for name in names},
+                kinds=tuple(schedule.at(time) for _, schedule in self.kinds),
+            )
+            for time in times
+        )
 
 
 def projection(spec):
@@ -186,8 +220,37 @@ def to_dict(spec):
         dict(channel_id=p.id, schedule=[asdict(c) for c in g])
         for p, g in zip(m.channels, e.channels, strict=True)
     ]
+    declarations = dict(m.kinds)
+    for kind_id, schedule in e.kinds:  # §7.4 (l): each scheduled kind's experiment keys.
+        kind = kind_registry.active().lookup(kind_id)
+        written = kind.schedule_to_dict(schedule, declarations[kind_id])
+        if not set(written) <= set(kind.experiment_keys):
+            raise ConfigError(f"Kind {kind_id}'s schedule_to_dict writes keys it does not declare")
+        raw["experiment"].update(written)
     raw["execution"]["channel_capacity"] = x.channel_capacity
     return raw
+
+
+def _kind_schedules(registry, declared, given, base):
+    """((kind ID, Schedule), ...): each declared kind with experiment keys parses its schedule from
+    the keys the definition gives (its default where none), in canonical order (§7.4 (l)); every
+    breakpoint lies within the horizon."""
+    out = []
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if not kind.experiment_keys:
+            continue
+        schedule = kind.parse_schedule(given.get(kind_id, {}), base, declaration)
+        if type(schedule) is not kind_registry.Schedule:
+            raise ConfigError(f"Kind {kind_id}'s parse_schedule must return a Schedule")
+        end = base.experiment.end_time
+        if schedule.times[-1] > end:
+            raise ConfigError(
+                f"Kind {kind_id}'s schedule has a breakpoint past the horizon "
+                f"({schedule.times[-1]} > {end})"
+            )
+        out.append((kind_id, schedule))
+    return tuple(out)
 
 
 def parse(data):
@@ -218,6 +281,18 @@ def parse(data):
     # strict parse; its entries are parsed with the base definition below.
     kinds = kind_registry.active()
     pending = {key: (kind, m.pop(key)) for key, kind in kinds.model_keys().items() if key in m}
+    # §7.4 (l): a declared kind's experiment keys (its schedule) leave the experiment too; a
+    # registered kind's experiment key without its model key is refused.
+    given = {}
+    for key, kind in kinds.experiment_keys().items():
+        if key not in e:
+            continue
+        if kind.model_key not in pending:
+            raise ConfigError(
+                f"Experiment key {key!r} belongs to kind {kind_registry.qualified(kind.kind_id)}, "
+                f"which the model does not declare (model key {kind.model_key!r})"
+            )
+        given.setdefault(kind_registry.qualified(kind.kind_id), {})[key] = e.pop(key)
     m["id"] = second.MODEL_ID
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
@@ -267,6 +342,7 @@ def parse(data):
             if k != "channels"
         },
         channels=tuple(schedules[c.id] for c in parsed),
+        kinds=_kind_schedules(kinds, model.kinds, given, base),
     )
     execution = replace(
         base.execution,
@@ -288,7 +364,8 @@ def control_values(spec, times):
     """resolved_pump_tissue@2 controls with the channel availabilities filled in."""
     base = second.control_values(projection(spec), times)
     changes = spec.experiment.changes
-    indices = np.searchsorted([c.time for c in changes], times, side="right") - 1
+    clock = [c.time for c in changes]
+    indices = np.searchsorted(clock, times, side="right") - 1
     values = np.asarray([c.channel for c in changes], dtype=np.float64)
     padded = np.zeros((len(times), spec.execution.channel_capacity))
     padded[:, : values.shape[-1]] = values[indices]
@@ -296,13 +373,18 @@ def control_values(spec, times):
     if not spec.model.kinds:
         return result
     # §7.4 (k): the declared kinds' controls follow today's, in the structure's Control type
-    # (availabilities, rule (d); constant over the run in version 1, so they add no change time).
+    # (availabilities, rule (d)). §7.4 (l): each kind's controls are evaluated once per change
+    # record, at the change times, and each row is held over the steps that record governs (the
+    # families' own indices), so they are constant between change times on every path; a kind's
+    # schedule breakpoints are change times (Experiment.kinds).
     from cells.models import surface_pump_v3 as inner
 
-    control = inner.kind_types(inner.structure(spec.model)).Control
-    registry, extra = kind_registry.active(), {}
-    for kind_id, declaration in spec.model.kinds:
-        kind = registry.lookup(kind_id)
+    structure = inner.structure(spec.model)
+    control = inner.kind_types(structure).Control
+    registry, entries, extra = kind_registry.active(), dict(structure.kinds), {}
+    for kind_id, declaration in spec.model.kinds:  # Each bound to its entry's fields ((n) 5).
+        kind = kind_registry.bound(registry.lookup(kind_id), entries[kind_id])
         if kind.control_fields:
-            extra |= kind.control_values(spec, declaration, times)
+            held = kind.control_values(spec, declaration, clock)
+            extra |= {name: np.asarray(value)[indices] for name, value in held.items()}
     return control(*result, *(extra[name] for name in control._fields[len(result) :]))
