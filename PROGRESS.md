@@ -103,6 +103,18 @@ machine-readable inputs, results, checks and failures.
     - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
       ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
     - This is a smaller guard set than the 15 November merge's (68 passed).
+  - **A fourth visualizer merge** (visualizer 5830bfdf) adds:
+    - the nucleus, the Golgi apparatus and the ribosomes, as planned parts of the map that are
+      illustration only (by the user's decision of 16 November);
+    - the replay's own clock and speeds;
+    - the run-view reader at the writer's fd008813, with two engine-written fixtures;
+    - the published pages' new links.
+
+    **Checks:**
+    - `npm test` on a clean copy (two CPUs): 443 passed, 2 skipped (both need adapted replays), 0
+      failed;
+    - the BETSE-boundary guard and the snapshot test on the merged tree: 29 passed
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116-b/guards.log)).
   - **A third visualizer merge** (visualizer c91d8cd2) brings the engine map and the
     layers-needs note to D183, so the human loop is shown as waiting for the human cardiac
     laws.
