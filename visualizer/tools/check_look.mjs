@@ -320,6 +320,24 @@ try {
     check("it shines from what was marked, and from nothing else", marked > 0 && shining.light > on.light && shining.light < on.light * 1.2, `${marked} part(s) marked; ${((shining.light / on.light - 1) * 100).toFixed(3)}% more light`);
     check("and with the mark taken away the picture is as it was", same(unmarkedAgain.light, on.light) && s.bloom === 0, JSON.stringify([unmarkedAgain.light, on.light, s.bloom]));
 
+    // A lost context that comes back (a phone does it to a page that was put away; one of the graphics
+    // card's back ends does it once to a fresh browser's first page): three.js sends again what it holds a
+    // copy of, and the page makes its surroundings again, so the picture is as it was.
+    const restored = await evaluate(`(async () => {
+      const v = ${V}, s = v.stage, gl = s.renderer.getContext(), ext = gl.getExtension("WEBGL_lose_context");
+      if (!ext) return { asked: false };
+      const back = new Promise((done) => s.canvas.addEventListener("webglcontextrestored", () => done(true), { once: true }));
+      ext.loseContext();
+      await new Promise((r) => setTimeout(r, 300));
+      const lost = gl.isContextLost();
+      ext.restoreContext();
+      const came = await Promise.race([back, new Promise((r) => setTimeout(() => r(false), 10000))]);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return { asked: true, lost, came, lostNow: gl.isContextLost() };
+    })()`);
+    const afterLoss = restored.came ? await atRest() : null;
+    check("a lost context that comes back leaves the picture as it was: the surroundings are made again", restored.asked && restored.lost && restored.came && !restored.lostNow && afterLoss !== null && same(afterLoss.light, on.light) && same(afterLoss.cover, on.cover), JSON.stringify([restored, afterLoss?.light, on.light]));
+
     // What a frame costs here, said with the renderer that drew it: in software the numbers say
     // what the look costs a software-drawn check, and nothing of a graphics card.
     const cost = { rich: await timed(), none: await timed(`s.finish.setContact(0);`) };

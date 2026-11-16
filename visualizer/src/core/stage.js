@@ -88,6 +88,10 @@ export class Stage {
     this.observer.observe(host);
     this.onVisibility = () => this.invalidate();
     document.addEventListener("visibilitychange", this.onVisibility);
+    // A lost context that has come back: three.js sets itself up again and core/environment.js makes its
+    // surroundings again, each in its own listener; the picture is then drawn again.
+    this.onRestored = () => this.invalidate();
+    canvas.addEventListener("webglcontextrestored", this.onRestored);
     this.resize();
     this.applyPalette();
   }
@@ -341,6 +345,7 @@ export class Stage {
     this.stopWatching();
     this.observer.disconnect();
     document.removeEventListener("visibilitychange", this.onVisibility);
+    this.canvas.removeEventListener("webglcontextrestored", this.onRestored);
     this.motion.removeEventListener("change", this.onMotion);
     this.finish?.dispose();
     this.rig.dispose();
