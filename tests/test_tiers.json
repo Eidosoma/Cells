@@ -96,7 +96,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-8435dceb/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/tier-gate/tiers-207a86c9/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/compartment/tiers-7eb1f5be/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json",
+  "/mnt/workspaces/Cells/test-audit-20261116-01/measure-2570fd4d/run/measured.json"
  ],
  "measured_provenance": [
   {
@@ -794,6 +795,13 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/snapshot-f991fce1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T05:31:51+00:00"
+  },
+  {
+   "git_revision": "2570fd4d592b344ce098b4976f056d98a58f5cdd",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a02ed0aeacaf26235",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T18:16:26+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3611,6 +3619,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_tier3_record.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
     }
    },
    {
