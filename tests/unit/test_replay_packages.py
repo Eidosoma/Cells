@@ -8,6 +8,7 @@
   each current at the centre cell.
 * The driver refuses before any output when the engine runs from a checkout (a package names
   its engine source, so it runs from an execution snapshot).
+* The cycle's admission probe answers in the engine's words, prerequisites placed and named.
 """
 
 import math
@@ -71,3 +72,17 @@ def test_the_driver_refuses_from_a_checkout(monkeypatch, tmp_path):
 def test_the_driver_names_its_packages(argv, capsys):
     assert driver.main(argv) == 2
     assert "Usage" in capsys.readouterr().err
+
+
+def test_the_cycle_probe_asks_the_engine():
+    """The cycle's admission probe (validation/replay/cycle_probe.py, host only) gives each
+    composition's answer in the engine's words, with any prerequisite an operator requires placed
+    before it and named: S5's own composition (the area law, then division) is admitted, and
+    insertion takes the membrane state before it."""
+    from validation.replay import cycle_probe
+
+    item = cycle_probe.admission(("area", "division"))
+    assert (item["admitted"], item["errors"], item["added_prerequisites"]) == (True, [], [])
+    inserted = cycle_probe.admission(("insertion", "division"))
+    assert inserted["added_prerequisites"] == ["membrane_entity_state@1"]
+    assert inserted["laws"][0] == "membrane_entity_state@1"
