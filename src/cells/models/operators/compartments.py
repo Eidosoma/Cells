@@ -23,7 +23,10 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    with kinds declared, by the per-stage rule at free outside nodes, where the known kinds'
    charged routes put their slopes (ROUTE_KINDS' comment names the neutral laws' terms). Both run
    only with an IMEX tableau;
-5. a nonzero charge anchor (version 1): the content is electroneutral, so q = 0 and V_b = 0;
+5. a nonzero charge anchor (version 1.1, §3.4.3), except where refusal 4 admits charged routes (a
+   world that declares kinds and steps with an IMEX tableau), since such a world must be able to
+   resume from its own checkpoint; elsewhere (the silent version, and RK4) the content is
+   electroneutral, so q = 0 and V_b = 0;
 6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
    numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
    representative is chosen, so the compartment is a free node of the capacitor solve (§3.5);
@@ -226,13 +229,18 @@ def refuse_ion_routes(model, node, bounding, imex):
         )
 
 
-def refuse_charge_anchor(node, compartment):
-    """Refusal 5: electroneutral content (version 1), so V_b = 0 (§3.3)."""
-    if compartment.initial_charge_C != 0.0:
+def refuse_charge_anchor(node, compartment, kinds=False, imex=False):
+    """Refusal 5 (version 1.1, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.3): a nonzero charge anchor
+    is admitted only where refusal 4 admits charged routes on the bounding patch, a world that
+    declares kinds (`kinds`) and steps with an IMEX tableau (`imex`): a world whose admitted
+    routes charge the lumen must be able to resume from its own checkpoint. Elsewhere, the silent
+    version (§3.3) and under RK4, the content is electroneutral, so V_b = 0 (fails closed)."""
+    if compartment.initial_charge_C != 0.0 and not (kinds and imex):
         raise ConfigError(
             f"{LAW_ID}: compartment {node!r} declares a nonzero charge anchor "
-            f"({compartment.initial_charge_C} C); version 1's content is electroneutral, so "
-            "V_b = 0 (a resting potential needs charged content: FR-4)"
+            f"({compartment.initial_charge_C} C); version 1.1 admits one only where charged "
+            "routes are admitted on its bounding patch (a world that declares kinds and steps "
+            "with an IMEX tableau); elsewhere the content is electroneutral, so V_b = 0"
         )
 
 
@@ -306,7 +314,9 @@ def parse_declaration(raw, base):
                 f"{bounding.inside!r}, not on its declared owner {owner!r}"
             )
         refuse_ion_routes(m, node, bounding, imex)  # 4.
-        refuse_charge_anchor(node, outside[node])  # 5.
+        # 5., version 1.1: where refusal 4 admits charged routes (positional: bypasses in the
+        # silence tests replace it with a positional-only lambda).
+        refuse_charge_anchor(node, outside[node], bool(getattr(m, "kinds", ())), imex)
         # 6. A held-bath topology.
         if components[owner] not in held:
             raise ConfigError(
@@ -432,9 +442,10 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "version 1.2: a zero charge anchor and a held-bath topology at a fixed volume; "
-                "on a bounding patch no ion route but refusal 4's admitted ones (the known "
-                "kinds' routes, and @3's permeabilities when the world declares kinds, with an "
-                "IMEX step); owners are never replaced, used as donors or divided"
+                "refusal 4 version 1.2, refusal 5 version 1.1: a held-bath topology at a fixed "
+                "volume; on a bounding patch no ion route but refusal 4's admitted ones (the "
+                "known kinds' routes, and @3's permeabilities when the world declares kinds, with "
+                "an IMEX step), and a zero charge anchor except in those same worlds; owners are "
+                "never replaced, used as donors or divided"
             ),
         }

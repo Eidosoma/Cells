@@ -262,6 +262,12 @@ its own node.
    Na/K or Ca pump and no channel population on it. The refusal names the charged door (§3.4).
 5. **Electroneutral content (version 1).** The node's charge anchor is 0, so V_b = 0. A declared
    resting potential needs charged content, which is FR-4's.
+   - **Version 1.1** (the lead's ruling, 16 November 2026; §3.4.3): a nonzero anchor is admitted
+     only where refusal 4 already admits charged routes, that is, the world declares kinds and
+     steps with an IMEX tableau.
+   - **Why:** a world whose admitted routes charge the lumen must be able to resume from its own
+     checkpoint. FR-5 starts from FR-4's charged steady state.
+   - **Still refused:** the no-kind world (the silent version, §3.3) and RK4.
 6. **A held-bath topology (version 1).** The owner's capacitor component holds a held bath, so the
    compartment is a free node of the reduction (§3.5).
 7. **The composition** is on the admitted list of §4, which fails closed. Replacement@1 schedules
@@ -529,6 +535,14 @@ which is why lumping is exact here (§1.3).
 - nothing else can charge the node. It has no face. Injection targets cells only
   (`current_injection.py`). Exchange, turnover and reactions move neutral species only.
 
+**The silent version is the world without kinds,** and every condition above still holds there.
+Refusal 4 version 1.1 (§3.4.1) admits charged routes on the bounding patch in a world that
+declares kinds and steps with an IMEX tableau, and refusal 5 version 1.1 (§3.4.3) admits a
+nonzero charge anchor in the same worlds only. A world whose admitted routes charge the lumen
+must be able to resume from its own checkpoint. Such a world is no longer silent, and claims
+S1–S3 are not made for it. Without kinds, or under RK4, the anchor stays 0 and the claims stand
+as written.
+
 **The silence claims are pending milestone 1.** None has been run. Each criterion below is written
 before any run, as the coupling note's channel target was, and none is weakened afterwards. Their
 basis is the code reading of §3.1 (**S**).
@@ -714,6 +728,53 @@ sources (the FR-4/FR-5 note's §16). Version 1.1 knows neither, so it refuses th
 the source kinds is refused under RK4 by the operator's own rule. The source kinds' registrations
 carry none of the hooks their admission excludes, and the engine runs them beside FR-4's world
 with every FR-4 record bitwise unchanged (`tests/unit/test_fr5_source_kinds_engine.py`).
+
+**The summary's scope text** changed with this version, from "version 1.1: ..." to "version
+1.2: ...". Frozen operator summaries see that string differ.
+
+### 3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted (FR-5; the lead's ruling, 16 November 2026)
+
+**Why.** FR-5 starts from FR-4's engine checkpoint at 1800 s, its steady state.
+- There the pump has charged the bounding patch. The lumen carries +5.757e-14 C and the cell
+  −5.757e-14 C, so V_b = −q/C_b = −7.33 mV, exactly the checkpoint's own V_b.
+- FR-5's definition takes each node's charge from the checkpoint as its anchor, with the fixed
+  charge following from it. So its declared world is refused by refusal 5, version 1's
+  electroneutral content.
+- Neutralizing the start would put V_b at 0, which is not the checkpoint the protocol requires.
+- **The principle:** a world whose admitted routes charge the lumen must be able to resume from its
+  own checkpoint.
+
+**The rule (refusal 5, version 1.1).** A nonzero charge anchor at a compartment's node is admitted
+only where refusal 4 already admits charged routes on its bounding patch:
+- the world declares kinds;
+- @3 steps with an IMEX tableau.
+
+**What stays refused** (fails closed):
+- a nonzero anchor in a world without kinds: the silent version, §3.3, whose claims S1–S3 depend
+  on it;
+- any declared kind under RK4. Version 1's refusal stands there, as refusal 4's RK4 rule does.
+
+**What it does not change.**
+- The operator still owns no state, runs no part and contributes nothing to any program. The
+  anchor is a host-side check at binding, so no program changes.
+- @3's own definition check still holds the anchor to F (fixed + Σ z n) within 1e-20 C
+  (`surface_tissue.check_definition`). At a face-free free node V_b = −q/C_b exactly (§3.1), for
+  any q.
+- Refusals 1–4, 6 and 7 are unchanged.
+
+**The summary's scope text** changes again, beside version 1.2's change above, from "version 1.2:
+a zero charge anchor and ..." to the text naming refusal 5 version 1.1. Frozen operator summaries
+see that string differ.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- FR-5's declared world from a charged start is admitted;
+- a world without kinds with a nonzero anchor is still refused;
+- under RK4 the operator's own rule still refuses the anchor;
+- the planted 1e-17 C control of the silence claims still fails
+  (`tests/unit/test_cell_owned_compartments_silence.py`, through its bypass).
+
+**Then the protocol's check:** FR-5's declared world must run bitwise equal to its development
+world, as FR-4's did (§3.4.1).
 
 ### 3.5 Floating components and the gauge
 

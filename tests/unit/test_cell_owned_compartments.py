@@ -496,6 +496,55 @@ def test_refusal_4_version_1_2_admits_the_routing_doors_source_kinds():
     assert comp.FACTOR_KINDS == ("cells.patch_damage@1", "cells.ph_condition@1")
 
 
+def charged_start(charge_C=5.757025696278586e-14):
+    """An FR-5 start extract with FR-4's steady state's charge split: the lumen +q, the cell -q
+    (the engine's 1800 s checkpoint carries q = 5.757e-14 C), FR-4's declared amounts otherwise."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    declared = defs.fr4_world()
+    nodes = {n["id"]: dict(amounts_fmol=dict(n["initial_amount_fmol"]), charge_C=0.0)
+             for n in declared["model"]["cells"] + declared["model"]["extracellular"]}
+    nodes[defs.LUMEN]["charge_C"], nodes[defs.CELL]["charge_C"] = charge_C, -charge_C
+    return defs.start_extract(producer="engine", nodes=nodes,
+                              readouts=dict(pH_c=7.218, pH_L=5.0946, V_b_V=-7.33e-3),
+                              time_s=1800.0, dt_s=1e-3, source=dict(kind="test"))
+
+
+def test_refusal_5_version_1_1_admits_a_charged_start_where_charged_routes_are_admitted():
+    """Refusal 5, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.3; the lead's ruling of 16
+    November 2026): a world whose admitted routes charge the lumen must be able to resume from
+    its own checkpoint, so FR-5's declared world from FR-4's charged steady state (the lumen +q,
+    the cell -q) is admitted with its nonzero anchor. A nonzero anchor stays refused without kinds
+    (the silent version, REFUSALS' "a charge anchor") and under RK4 (fails closed)."""
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine.parameters import ARM_R
+
+    spec = parse_spec(defs.declared_world(defs.fr5_world(ARM_R, start=charged_start())))
+    lumen = next(o for o in spec.model.extracellular if o.id == defs.LUMEN)
+    assert lumen.initial_charge_C == 5.757025696278586e-14
+    assert {k for k, _ in spec.model.kinds} <= set(comp.KNOWN_KINDS)
+    # Refusal 5's own rule: admitted only with kinds declared and an IMEX tableau.
+    compartment = type("Node", (), dict(initial_charge_C=1e-17))()
+    comp.refuse_charge_anchor("lumen_0", compartment, kinds=True, imex=True)
+    for kinds, imex in ((False, True), (True, False), (False, False)):
+        with pytest.raises(ConfigError, match="nonzero charge anchor"):
+            comp.refuse_charge_anchor("lumen_0", compartment, kinds=kinds, imex=imex)
+    neutral = type("Node", (), dict(initial_charge_C=0.0))()
+    for kinds, imex in ((False, True), (True, False), (False, False)):
+        comp.refuse_charge_anchor("lumen_0", neutral, kinds=kinds, imex=imex)
+    # Under RK4, on @3's parsed base: the operator refuses it (refusal 4's RK4 rule first).
+    import dataclasses
+
+    base = parse_spec(defs.development_world(defs.fr5_world(ARM_R, start=charged_start())))
+    block = defs.fr4_world()["model"]["operators"][0]
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
+
+
 STIFF_DT = 1e-4  # RK4's largest step (surface_tissue.check_steps).
 STIFF_STEPS = 20
 
