@@ -28,10 +28,10 @@ Declarations read, and their interim stand-ins
   when it declares them; until then this module's table for resolved_pump_tissue@3 (TISSUE_3),
   pending the core owner's declaration. A field of the model that no declaration describes (a
   kind's new field, say) is refused, never guessed.
-* Each operator: ``VIEW_LAYERS`` (the contract; None is refused), ``view_events`` (the contract,
-  where the operator overrides it) and ``living_intervals`` (births and retirements); and, read by
-  getattr until the contract carries them: ``view_sets(spec, declaration)`` for its own axes,
-  ``OBSERVATION_AXES`` for its readout columns, ``UNITS`` for names without a unit suffix,
+* Each operator, by the contract (models/operators/contract.py, "The run view"): ``VIEW_LAYERS``
+  (None is refused), ``view_events`` (the default gives the births and retirements of
+  ``living_intervals``; an override must keep them), ``view_sets(spec, declaration)`` for its own
+  axes, ``OBSERVATION_AXES`` for its readout columns, ``UNITS`` for names without a unit suffix,
   ``RECORD_KINDS``, ``ORIENTATION`` and ``RECORD_LAYERS``. Without a declared kind, a field the
   contract books as heat or work (HEAT_FIELDS, WORK_FIELDS) is cumulative; any other is listed as
   unstated.
@@ -743,24 +743,17 @@ class Plan:
         }
 
     def _operator_sets(self):
-        """Each operator's own axes, from its view_sets declaration (a requested seam)."""
+        """Each operator's own axes, from its view_sets declaration (the contract)."""
         for op, declaration, _ in self.entries:
             own = {
                 axis
-                for axes in op.STATE_AXES.values()
-                for axis in axes
-                if axis not in self.axis_sets
-            }
-            own |= {
-                axis
-                for axes in getattr(op, "OBSERVATION_AXES", {}).values()
+                for axes in (*op.STATE_AXES.values(), *op.OBSERVATION_AXES.values())
                 for axis in axes
                 if axis not in self.axis_sets
             }
             if not own:
                 continue
-            declare = getattr(op, "view_sets", None)
-            declared = {} if declare is None else declare(self.spec, declaration)
+            declared = op.view_sets(self.spec, declaration)
             for axis in sorted(own):
                 if axis not in declared:
                     self.problems.append(f"{op.LAW_ID} declares no set for its axis {axis}")
@@ -863,7 +856,7 @@ class Plan:
         layers = self.operator_layers.get(op.LAW_ID)
         if layers is None:
             return None  # Refused already: no VIEW_LAYERS.
-        layer = getattr(op, "RECORD_LAYERS", {}).get(name)
+        layer = op.RECORD_LAYERS.get(name)
         if layer is None and len(layers) == 1:
             layer = layers[0]
         if layer not in layers:
@@ -873,18 +866,18 @@ class Plan:
 
     def _operator_field(self, name, axes, op):
         if axes is None:
-            axes = getattr(op, "OBSERVATION_AXES", {}).get(name)
+            axes = op.OBSERVATION_AXES.get(name)
         if axes is None:
             self.problems.append(f"{op.LAW_ID} declares no axes for its readout column {name}")
             return None
-        unit = getattr(op, "UNITS", {}).get(name) or _suffix_unit(name)
+        unit = op.UNITS.get(name) or _suffix_unit(name)
         if unit is None:
             self.problems.append(f"{op.LAW_ID} declares no unit for its field {name}")
             return None
         layer = self._operator_layer(op, name)
         if layer is None:
             return None
-        kind = getattr(op, "RECORD_KINDS", {}).get(name)
+        kind = op.RECORD_KINDS.get(name)
         if kind is None:
             # Only the contract's energy roles say what a field is: heat and work are booked
             # totals. An entity write's accumulator may be a retirement record, whose jump is
@@ -895,7 +888,7 @@ class Plan:
                 self.unstated.append(
                     {"id": name, "what": "kind", "why": f"{op.LAW_ID} declares no kind for it"}
                 )
-        sign = getattr(op, "ORIENTATION", {}).get(name)
+        sign = op.ORIENTATION.get(name)
         return self._info(name, axes, unit, layer, op.LAW_ID, kind, sign)
 
     def _info(self, name, axes, unit, layer, owner, kind, sign):
@@ -976,28 +969,30 @@ class Plan:
     # -------------------------------------------------------------- events
 
     def _events(self):
-        from cells.models.operators.contract import Operator
-
         events = []
         for op, declaration, schedule in self.entries:
-            layers = self.operator_layers.get(op.LAW_ID) or [None]
+            if op.LAW_ID not in self.operator_layers:
+                continue  # Refused already: no VIEW_LAYERS.
+            own = [dict(event) for event in op.view_events(self.spec, declaration, schedule)]
+            # Births and retirements come from living_intervals (the contract's default); an
+            # override keeps them, so no life reaches the sets without its events.
+            stated = {
+                (float(e["time"]), e.get("kind"), json.dumps(e.get("at"), sort_keys=True))
+                for e in own
+                if isinstance(e.get("time"), (int, float, np.floating))
+            }
             lives = op.living_intervals(self.spec, declaration, schedule)
-            for cell, (birth, retirement) in lives.items():
+            for cell, (birth, retirement) in sorted(lives.items()):
                 for time, kind in ((birth, "birth"), (retirement, "retirement")):
-                    if time is not None:
-                        events.append(
-                            {
-                                "time": float(time),
-                                "kind": kind,
-                                "layer": layers[0],
-                                "at": {"cell": cell},
-                                "label": f"{cell} {'born' if kind == 'birth' else 'retired'}",
-                            }
+                    if time is None:
+                        continue
+                    key = (float(time), kind, json.dumps({"cell": cell}, sort_keys=True))
+                    if key not in stated:
+                        self.problems.append(
+                            f"{op.LAW_ID}: its view_events leave out the {kind} of {cell} at "
+                            f"{float(time)} s (living_intervals)"
                         )
-            if type(op).view_events is Operator.view_events:
-                continue  # The default restates living_intervals, taken above.
-            for event in op.view_events(self.spec, declaration, schedule):
-                events.append(self._event(op, dict(event)))
+            events += [self._event(op, event) for event in own]
         unique = {json.dumps(e, sort_keys=True): e for e in events if e is not None}
         return sorted(
             unique.values(), key=lambda e: (e["time"], e["kind"], json.dumps(e, sort_keys=True))
