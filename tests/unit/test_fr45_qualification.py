@@ -474,11 +474,59 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, which):
     assert "clean execution snapshot" in generator.judged_run_refusal(registered, tmp_path)
     clean_snapshot(tmp_path / "snap")
     refusal = generator.judged_run_refusal(registered, tmp_path / "snap")
-    if generator.STAND_INS:
+    if generator.blocking_stand_ins(which):
         assert "stand-ins remain" in refusal
     else:
         assert refusal is None
     assert not out.exists()
+
+
+def test_a_stand_in_blocks_only_the_judged_runs_of_the_protocol_whose_parts_it_blocks(
+        tmp_path, monkeypatch):
+    """FR-4's judged run does not wait for FR-5's stand-ins (the start checkpoint, FR-5's kinds):
+    a stand-in blocks a protocol's judged run only when it blocks one of that protocol's parts,
+    and every run records the stand-ins that block its own protocol (the judge refuses any)."""
+    for which in ("fr4", "fr5"):
+        blocking = generator.blocking_stand_ins(which)
+        assert blocking == sorted(n for n in generator.STAND_INS
+                                  if generator.STAND_IN_PARTS[n] & set(generator.PARTS[which]))
+    assert generator.blocking_stand_ins("fr4") == []  # FR-4's parts are wired.
+    # The run's record, without an engine or a reference run: the reference part stubbed.
+    monkeypatch.setitem(generator.FUNCTIONS["fr4"], "reference",
+                        lambda name, context: dict(kind="reference"))
+    out = tmp_path / "dev"
+    record = generator.run("fr4", ["reference"], out, status="Development run")
+    assert record["stand_ins"] == generator.blocking_stand_ins("fr4") == []
+    assert json.loads((out / "results.json").read_text())["stand_ins"] == []
+    clean_snapshot(tmp_path / "snap")
+    for which in ("fr4", "fr5"):
+        registered = json.loads(copy(tmp_path, which, "registered (a test copy)").read_text())
+        refusal = generator.judged_run_refusal(registered, tmp_path / "snap")
+        if generator.blocking_stand_ins(which):
+            assert "stand-ins remain" in refusal and "this protocol's parts" in refusal
+        else:
+            assert refusal is None
+
+
+def test_compare_checks_records_bit_for_bit_with_run_times_apart(tmp_path):
+    parts = fr4_parts()
+    a = results(parts, "fr4")
+    b = json.loads(json.dumps(a))
+    for name, value in b["parts"].items():  # Every run-time leaf differs, at any depth.
+        value.update(wall_s=1.5, seconds=2.5, timings=dict(compile_seconds=3.5))
+        for world in value.get("worlds", {}).values():
+            world["seconds"] = 4.5
+    paths = [tmp_path / "a.json", tmp_path / "b.json"]
+    for path, data in zip(paths, (a, b), strict=True):
+        path.write_text(json.dumps(data))
+    report = judge.compare(*paths, tmp_path / "same.json")
+    assert all(p["identical"] for p in report["parts"].values())
+    b["parts"]["rung_1ms"]["series"]["pH_L"][3] += 1e-15
+    paths[1].write_text(json.dumps(b))
+    report = judge.compare(*paths, tmp_path / "differ.json")
+    assert not report["parts"]["rung_1ms"]["identical"]
+    assert report["parts"]["rung_1ms"]["differences"] == [".series.pH_L[3]"]
+    assert all(p["identical"] for n, p in report["parts"].items() if n != "rung_1ms")
 
 
 def test_judged_runs_take_the_vector_path_and_development_runs_either(tmp_path):

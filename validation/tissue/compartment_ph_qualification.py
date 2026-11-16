@@ -33,7 +33,9 @@ bitwise the development world's over 900 s) or on the development world without 
 device (judged runs: the protocols' execution path) or on the windowed runner checking them on the
 host (development's default); ENGINE_READOUTS is what it returns per record. What is not wired yet
 is a stand-in (STAND_INS), each blocking only its own parts (STAND_IN_PARTS): every entry refuses
-those parts before anything is written, and a judged run is refused while any stand-in remains.
+those parts before anything is written, and a judged run of a protocol is refused while a stand-in
+blocks any of that protocol's parts (`blocking_stand_ins`), so FR-4's judged run does not wait for
+FR-5's parts; each run records the stand-ins that block its protocol, which the judge refuses.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
@@ -42,8 +44,8 @@ Modes:
       [PART ...] [--start START_JSON]   (the vector path, the declared world)
 A judged run is refused, before anything is computed or written, unless the protocol is registered
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
-remains, FR-5's start extract was written by the engine from this same snapshot, and OUT_DIR is
-new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
+blocks any of the protocol's parts, FR-5's start extract was written by the engine from this same
+snapshot, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
 check reaches the code under test in minutes (AGENTS.md's 30-minute rule); the judge refuses quick
 results. A judged run takes the protocols' execution path, `vector` (the lead's ruling, a dated
 pre-run correction of 15 November 2026): every accepted row checked on the device in a vector
@@ -124,6 +126,12 @@ STAND_IN_PARTS = {
     "start_checkpoint": {"start"},
     "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
 }
+
+
+def blocking_stand_ins(which):
+    """The stand-ins that block any of protocol `which`'s parts ("fr4" or "fr5"), sorted: a judged
+    run of that protocol is refused while this is not empty, and every run records it."""
+    return sorted(name for name in STAND_INS if STAND_IN_PARTS[name] & set(PARTS[which]))
 
 # The readouts the engine path returns per record (the judge reads these names), for the core:
 ENGINE_READOUTS = dict(
@@ -309,7 +317,8 @@ def snapshot_identity(root=ROOT):
 
 
 def judged_run_refusal(protocol, root=ROOT):
-    """Why a judged run may not start (None: it may): MG0c's and D150's guard, and the stand-ins."""
+    """Why a judged run may not start (None: it may): MG0c's and D150's guard, and the stand-ins
+    that block this protocol's parts."""
     status = protocol.get("status")
     if not (isinstance(status, str) and status.lower().startswith("registered")):
         return "the protocol is not registered (its status does not begin 'registered')"
@@ -323,8 +332,11 @@ def judged_run_refusal(protocol, root=ROOT):
     clean = snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest()
     if snapshot.get("status") != "complete" or not clean:
         return "the execution snapshot is incomplete or carries uncommitted changes"
-    if STAND_INS:
-        return f"stand-ins remain on this branch ({sorted(STAND_INS)}): the engine is not wired"
+    which = next((k for k, v in IDS.items() if v == protocol.get("id")), None)
+    blocking = sorted(STAND_INS) if which is None else blocking_stand_ins(which)
+    if blocking:
+        return (f"stand-ins remain on this branch for this protocol's parts ({blocking}): the "
+                "engine is not wired")
     return None
 
 
@@ -383,7 +395,7 @@ def run(which, requested, out_dir, *, status, extract=None, quick=False, path=HO
     out_dir.mkdir(parents=True)
     results = dict(status=status, protocol_id=IDS[which], source=snapshot_identity(),
                    requested_parts=list(requested), complete=False, quick=quick, path=path,
-                   world=world, stand_ins=sorted(STAND_INS), parts={})
+                   world=world, stand_ins=blocking_stand_ins(which), parts={})
     context = dict(quick=quick, start=extract, out_dir=out_dir, path=path, world=world)
     for name in [p for p in PARTS[which] if p in requested]:
         started = time.perf_counter()
