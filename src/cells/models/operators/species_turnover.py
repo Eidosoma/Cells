@@ -64,10 +64,17 @@ from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
+from cells.numerics.species_sums import entity_sum, species_sum
 
 LAW_ID = "scheduled_species_turnover@1"
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
+# A7 (the summation SPEC.md §2; D182): the former row_sum folds, here and in D152's half step,
+# are species_sum in the same order and without the device barrier, as the 113-world rehearsal
+# of A7's tolerance file ran them (its call-site patch folded the S0 and SF sites only and left
+# row_sum as it was). A barrier here is a separate change: turnover's ledgers have no pattern in
+# that file, so a rounding move would fail G1.
+ROW_BARRIER = False
 
 STATE_AXES = {
     "turnover_produced_fmol": ["species", "cell_slot"],
@@ -226,14 +233,6 @@ def set_rows(full, rows, values, *, xp):
     return out
 
 
-def row_sum(values):
-    """Sum over the leading (species row) axis with explicit adds in row order."""
-    total = values[0]
-    for k in range(1, values.shape[0]):
-        total = total + values[k]
-    return total
-
-
 def produced_cleared(n, production, clearance, h, *, xp):
     """(produced, cleared) over h from amount n (module docstring): P h and n f + P (h - g)."""
     x = clearance * h
@@ -342,21 +341,24 @@ def turnover_half_step(state, rate, h, p, *, xp=jnp):
             xp=xp,
         ),
         turnover_work_pJ=xp.where(
-            cell_touched, state.turnover_work_pJ + row_sum(work), state.turnover_work_pJ
+            cell_touched,
+            state.turnover_work_pJ + species_sum(work, xp=xp, barrier=ROW_BARRIER),
+            state.turnover_work_pJ,
         ),
         turnover_outside_work_pJ=xp.where(
             outside_touched,
-            state.turnover_outside_work_pJ + row_sum(out_work),
+            state.turnover_outside_work_pJ + species_sum(out_work, xp=xp, barrier=ROW_BARRIER),
             state.turnover_outside_work_pJ,
         ),
         turnover_energy_magnitude_pJ=xp.where(
             cell_touched,
-            state.turnover_energy_magnitude_pJ + row_sum(mag),
+            state.turnover_energy_magnitude_pJ + species_sum(mag, xp=xp, barrier=ROW_BARRIER),
             state.turnover_energy_magnitude_pJ,
         ),
         turnover_outside_energy_magnitude_pJ=xp.where(
             outside_touched,
-            state.turnover_outside_energy_magnitude_pJ + row_sum(out_mag),
+            state.turnover_outside_energy_magnitude_pJ
+            + species_sum(out_mag, xp=xp, barrier=ROW_BARRIER),
             state.turnover_outside_energy_magnitude_pJ,
         ),
     )
@@ -525,9 +527,13 @@ class ScheduledSpeciesTurnover(Operator):
         outside = row.turnover_outside_cleared_fmol
         result["local"] = result["local"] + net
         result["outside"] = result["outside"] + outside
-        result["total"] = result["total"] + xp.sum(net, axis=1) + xp.sum(outside, axis=1)
+        result["total"] = (
+            result["total"] + entity_sum(net, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         result["energy"] = (
-            result["energy"] - xp.sum(row.turnover_work_pJ) - xp.sum(row.turnover_outside_work_pJ)
+            result["energy"]
+            - entity_sum(row.turnover_work_pJ, axis=None, xp=xp)
+            - entity_sum(row.turnover_outside_work_pJ, axis=None, xp=xp)
         )
         return result, {}
 
@@ -538,9 +544,11 @@ class ScheduledSpeciesTurnover(Operator):
         outside = row.turnover_outside_cleared_fmol
         magnitudes[0] = magnitudes[0] + cell
         magnitudes[1] = magnitudes[1] + outside
-        magnitudes[2] = magnitudes[2] + xp.sum(cell, axis=1) + xp.sum(outside, axis=1)
-        energy = xp.sum(row.turnover_energy_magnitude_pJ) + xp.sum(
-            row.turnover_outside_energy_magnitude_pJ
+        magnitudes[2] = (
+            magnitudes[2] + entity_sum(cell, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
+        energy = entity_sum(row.turnover_energy_magnitude_pJ, axis=None, xp=xp) + entity_sum(
+            row.turnover_outside_energy_magnitude_pJ, axis=None, xp=xp
         )
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes

@@ -66,6 +66,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import membrane_state
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 LAW_ID = "isopotential_partition@1"
@@ -686,7 +687,7 @@ def capacitor_state(state, q, *, xp):
     v = adapter.patch_voltages(phi, q, xp=xp)
     c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
     plates = (q.field_capacitor_matrix @ phi)[n:]
-    return phi, v, c, plates, 0.5e12 * xp.sum(c * v * v)
+    return phi, v, c, plates, 0.5e12 * entity_sum(c * v * v, axis=None, xp=xp)
 
 
 def event_map(state, due, p, *, xp, view):
@@ -822,13 +823,13 @@ def event_map(state, due, p, *, xp, view):
     g0 = adapter.chemical_free_energy_pJ(state.amount_increment, p, xp=xp)
     g1 = adapter.chemical_free_energy_pJ(increment, p, xp=xp)
     chemical = (g1[parent] + g1[one] + g1[two]) - (g0[parent] + g0[one] + g0[two])
-    count = xp.maximum(xp.sum(due), 1)
-    shared = (u1 - u0 - xp.sum(work)) / count
+    count = xp.maximum(entity_sum(due, axis=None, xp=xp), 1)
+    shared = (u1 - u0 - entity_sum(work, axis=None, xp=xp)) / count
     magnitude = (
         xp.abs(g0[parent])
         + xp.abs(g1[one])
         + xp.abs(g1[two])
-        + (xp.abs(u0) + xp.abs(u1) + xp.sum(xp.abs(work))) / count
+        + (xp.abs(u0) + xp.abs(u1) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
     )
     booked = new.partition_work_pJ
     booked = _put(
@@ -1012,9 +1013,9 @@ class IsopotentialPartition(Operator):
                 inner = np.asarray(getattr(history, field))[-1]
                 kept = np.asarray(getattr(history, record))[-1]
                 totals[field] = dict(
-                    live=float(np.sum(inner)),
-                    record=float(np.sum(kept)),
-                    total=float(np.sum(inner + kept)),
+                    live=float(entity_sum(inner, axis=None, xp=np)),
+                    record=float(entity_sum(kept, axis=None, xp=np)),
+                    total=float(entity_sum(inner + kept, axis=None, xp=np)),
                 )
         return {
             "partition_history_totals": totals,
@@ -1075,36 +1076,36 @@ class IsopotentialPartition(Operator):
     def ledger_terms(self, result, row, p, *, xp):
         moved = row.partition_moved_fmol
         result["local"] = result["local"] - moved
-        result["total"] = result["total"] - xp.sum(moved, axis=1)
-        result["energy"] = result["energy"] - xp.sum(row.partition_work_pJ)
+        result["total"] = result["total"] - entity_sum(moved, axis=1, xp=xp)
+        result["energy"] = result["energy"] - entity_sum(row.partition_work_pJ, axis=None, xp=xp)
         return result, self.own_ledgers(row, p, xp=xp)
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
         moved = xp.abs(row.partition_moved_fmol)
         magnitudes[0] = magnitudes[0] + moved
-        magnitudes[2] = magnitudes[2] + xp.sum(moved, axis=1)
+        magnitudes[2] = magnitudes[2] + entity_sum(moved, axis=1, xp=xp)
         image = row.partition_image_charge_C
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        charge = xp.sum(image)
+        charge = entity_sum(image, axis=None, xp=xp)
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = xp.sum(row.partition_energy_magnitude_pJ)
+        energy = entity_sum(row.partition_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 
     def own_ledgers(self, row, p, *, xp):
         return dict(
-            partition_material=xp.sum(row.partition_moved_fmol, axis=1),
-            partition_area=xp.sum(row.partition_area_moved_m2),
-            partition_capacitance=xp.sum(row.partition_capacitance_moved_F),
-            partition_units=xp.sum(row.partition_units_moved),
+            partition_material=entity_sum(row.partition_moved_fmol, axis=1, xp=xp),
+            partition_area=entity_sum(row.partition_area_moved_m2, axis=None, xp=xp),
+            partition_capacitance=entity_sum(row.partition_capacitance_moved_F, axis=None, xp=xp),
+            partition_units=entity_sum(row.partition_units_moved, axis=None, xp=xp),
         )
 
     def own_magnitudes(self, row, p, *, xp):
         return (
-            xp.sum(xp.abs(row.partition_moved_fmol), axis=1),
-            xp.sum(xp.abs(row.partition_area_moved_m2)),
-            xp.sum(xp.abs(row.partition_capacitance_moved_F)),
-            xp.sum(xp.abs(row.partition_units_moved)),
+            entity_sum(xp.abs(row.partition_moved_fmol), axis=1, xp=xp),
+            entity_sum(xp.abs(row.partition_area_moved_m2), axis=None, xp=xp),
+            entity_sum(xp.abs(row.partition_capacitance_moved_F), axis=None, xp=xp),
+            entity_sum(xp.abs(row.partition_units_moved), axis=None, xp=xp),
         )
 
     def own_bounds(self, magnitudes, steps):

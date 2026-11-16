@@ -159,6 +159,41 @@ budget.
 Radau at rtol 1e-11 against 1e-12: lumen pH within 5.2e-14 (R-closure) and 7.1e-15 (R-kinetic).
 This is far below every difference above.
 
+### K2(b): the self-consistent reversed pump, against J4 (D176's G3)
+
+- **The control:** fr4_acidification_v1's `controls.K2_planted_sign` (branch fr45-physics,
+  e71f1200). It is the declared world with its pump's two sides exchanged in the law:
+  `ph.acceptance_world(reversed_pump=True)`, that is `Pump(reversed_sides=True)`.
+  - A forward cycle moves n H⁺ from the lumen to the cytosol.
+  - ΔG_cyc = Δ_rG'_ATP + n [RT ln(h_c/h_L) + F V_b], with S saturating on h_L.
+  - The fuel stays at the cytosol, and the work and heat are as declared.
+  - Every use of the pump's protons reads its signed flux, `J_H_pump` (c to L).
+- **The run:** `compartment-k2b-crosschecks-01`, from snapshot `compartment-k2b-snapshot-01`
+  (cdc84042), with the protocol file copied beside it as the input. Both worlds run over 900 s at
+  the protocol's records (901 rows, every 1 s), by R-closure at rtol 1e-11. It took 23 s of CPU.
+
+| | Lumen | Cytosol |
+| --- | --- | --- |
+| The effect, max over the records of \|pH(K2b) − pH(declared)\| | **3.276** (at 900 s: 8.372 against 5.096) | 0.0192 (at 900 s) |
+| First record ≥ J4's budget (1e-3) | **1 s** (0.0269 there) | 16 s |
+| First record ≥ K2's catch threshold (2e-3) | **1 s** | 35 s |
+
+- **Beside it, at 900 s, K2(b) against declared:**
+  - V_b: +0.42 mV against −7.33 mV;
+  - the lumen's K⁺: 9.307 fmol against 6.991 (it gains K⁺);
+  - the pump's cycles: 0.084 fmol against 1.975. The reversed pump stalls as h_L falls, through
+    S on h_L.
+- **K2(b)'s own ledgers close:**
+  - the energy residual is ≤ 1.9e-11 pJ (W 4.32 pJ, Q 4.01 pJ), and the heat never decreases;
+  - H_eq drifts by ≤ 3.5e-15 and K by ≤ 1.7e-15; |φ_c| ≤ 7.5e-12 V;
+  - |ΔG_cyc/RT| ≤ 19.9, inside §6's domain of 80;
+  - the cytosol stays within 0.0012 of 7.2, inside the band.
+- **Floor** (rtol 1e-11 against 1e-12): 7.1e-15 (declared) and 1.2e-14 (K2(b)) in pH_L.
+- **Self-test:** `test_k2b_the_reversed_pump_is_opposite_at_the_start_and_closes_its_ledgers`.
+  - At the start, the two pumps' proton fluxes are equal and opposite.
+  - The protocol's ΔG_cyc and S hold at an arbitrary state.
+  - Over 20 s its ledgers close, it alkalinizes the lumen, and K⁺ follows in.
+
 ## Readings and findings, for the lead
 
 1. **§4.2's envelope does not imply its budget.**

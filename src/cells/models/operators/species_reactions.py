@@ -109,7 +109,8 @@ from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator, Read
-from cells.models.operators.species_turnover import row_sum, set_rows
+from cells.models.operators.species_turnover import ROW_BARRIER, set_rows
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import R
 from cells.processes.mass_action import reversible_flux
 
@@ -901,7 +902,7 @@ def network(p, multiplier, *, xp):
         on=multiplier > 0,
         driven_scale=multiplier * rate * route_volume,
         passive_scale=multiplier * route_volume * c0 * rate,
-        delta_mu_RT=xp.sum(nu * p.reaction_standard_mu_RT[:, None], axis=0),
+        delta_mu_RT=species_sum(nu * p.reaction_standard_mu_RT[:, None], xp=xp),
         standard_pJ=RT * (p.reaction_standard_mu_RT - xp.log(c0)),
         RT=RT,
     )
@@ -938,8 +939,10 @@ def route_rates(amounts, net, p, *, xp):
         activity, net.alpha, net.beta, net.delta_mu_RT, net.passive_scale, xp=xp
     )
     log_a = xp.log(activity)
-    forward = net.passive_scale * xp.exp(xp.sum(net.alpha * log_a, axis=-2))
-    reverse = net.passive_scale * xp.exp(xp.sum(net.beta * log_a, axis=-2) + net.delta_mu_RT)
+    forward = net.passive_scale * xp.exp(species_sum(xp.moveaxis(net.alpha * log_a, -2, 0), xp=xp))
+    reverse = net.passive_scale * xp.exp(
+        species_sum(xp.moveaxis(net.beta * log_a, -2, 0), xp=xp) + net.delta_mu_RT
+    )
     # Driven: m F k V prod c^alpha (mass action), m F k V c_E c_S / (K_M + c_S) (Michaelis-Menten,
     # with or without its catalyst), the factors in log space.
     x = xp.take_along_axis(log_c.T, p.reaction_factor_species, axis=1)  # [route, factor] ln x.
@@ -948,11 +951,13 @@ def route_rates(amounts, net, p, *, xp):
     log_f = xp.where(
         kind == 1, -xp.logaddexp(0.0, -z), xp.where(kind == 2, -xp.logaddexp(0.0, z), 0.0)
     )
-    factor = xp.exp(xp.sum(log_f, axis=1))
+    factor = xp.exp(entity_sum(log_f, axis=1, xp=xp))
     substrate = xp.take_along_axis(held, p.reaction_route_substrate[None, :], axis=0)[0]
     c_s = substrate / net.route_volume
     saturation = xp.where(net.saturable, p.reaction_saturation_mM + c_s, 1.0)
-    driven = net.driven_scale * factor * xp.exp(xp.sum(net.catalysis * log_c, axis=0)) / saturation
+    driven = (
+        net.driven_scale * factor * xp.exp(species_sum(net.catalysis * log_c, xp=xp)) / saturation
+    )
     rate = xp.where(net.passive, net_rate, driven)
     consumed, produced = xp.maximum(-net.nu, 0.0), xp.maximum(net.nu, 0.0)
     consumption = xp.where(
@@ -1043,9 +1048,9 @@ def half_step_terms(state, multiplier, h, p, *, xp):
         n, change, net.volume[None, :], p.temperature, xp=xp
     )
     standard_rows = net.standard_pJ[:, None] * change
-    free_energy = row_sum(chemical + standard_rows)
-    standard = row_sum(standard_rows)
-    magnitude = row_sum(chemical_terms + xp.abs(standard_rows))
+    free_energy = species_sum(chemical + standard_rows, xp=xp, barrier=ROW_BARRIER)
+    standard = species_sum(standard_rows, xp=xp, barrier=ROW_BARRIER)
+    magnitude = species_sum(chemical_terms + xp.abs(standard_rows), xp=xp, barrier=ROW_BARRIER)
     # The hybrid at mixed nodes (§3.3): a passive route keeps its share unless it reverses within
     # the step (three stage rates and the end-state affinity of one nonzero sign), else its stage
     # quadrature of RT A J, which is non-negative by construction.
@@ -1065,7 +1070,7 @@ def half_step_terms(state, multiplier, h, p, *, xp):
         & (xp.sign(end_affinity) == sign)
     )
     potential = divided_potential(n, change, net, xp=xp)
-    share = -extent * xp.sum(net.nu * potential[:, net.node], axis=0)
+    share = -extent * species_sum(net.nu * potential[:, net.node], xp=xp)
     quadrature = (
         h
         * net.RT
@@ -1420,15 +1425,17 @@ class LocalSpeciesReactions(Operator):
         outside = row.reaction_outside_consumed_fmol - row.reaction_outside_produced_fmol
         result["local"] = result["local"] + cell
         result["outside"] = result["outside"] + outside
-        result["total"] = result["total"] + xp.sum(cell, axis=1) + xp.sum(outside, axis=1)
+        result["total"] = (
+            result["total"] + entity_sum(cell, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         result["energy"] = (
             result["energy"]
-            + xp.sum(row.reaction_standard_energy_pJ)
-            + xp.sum(row.reaction_outside_standard_energy_pJ)
-            + xp.sum(row.reaction_dissipated_energy_pJ)
-            + xp.sum(row.reaction_outside_dissipated_energy_pJ)
-            - xp.sum(row.reaction_work_pJ)
-            - xp.sum(row.reaction_outside_work_pJ)
+            + entity_sum(row.reaction_standard_energy_pJ, axis=None, xp=xp)
+            + entity_sum(row.reaction_outside_standard_energy_pJ, axis=None, xp=xp)
+            + entity_sum(row.reaction_dissipated_energy_pJ, axis=None, xp=xp)
+            + entity_sum(row.reaction_outside_dissipated_energy_pJ, axis=None, xp=xp)
+            - entity_sum(row.reaction_work_pJ, axis=None, xp=xp)
+            - entity_sum(row.reaction_outside_work_pJ, axis=None, xp=xp)
         )
         return result, {}
 
@@ -1448,9 +1455,11 @@ class LocalSpeciesReactions(Operator):
         outside = row.reaction_outside_produced_fmol + row.reaction_outside_consumed_fmol
         magnitudes[0] = magnitudes[0] + cell
         magnitudes[1] = magnitudes[1] + outside
-        magnitudes[2] = magnitudes[2] + xp.sum(cell, axis=1) + xp.sum(outside, axis=1)
-        energy = xp.sum(row.reaction_energy_magnitude_pJ) + xp.sum(
-            row.reaction_outside_energy_magnitude_pJ
+        magnitudes[2] = (
+            magnitudes[2] + entity_sum(cell, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
+        energy = entity_sum(row.reaction_energy_magnitude_pJ, axis=None, xp=xp) + entity_sum(
+            row.reaction_outside_energy_magnitude_pJ, axis=None, xp=xp
         )
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes

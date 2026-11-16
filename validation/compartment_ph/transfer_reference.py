@@ -234,8 +234,7 @@ class _TransferModel:
         b = self.base
         st = self.state(t, y)
         tr = st["tr"]
-        n = self.w.base.pump.n if self.w.base.pump is not None else 0
-        dH = n * tr["J_cyc"] + tr["J_H"] + st["J_H_pore"]
+        dH = tr["J_H_pump"] + tr["J_H"] + st["J_H_pore"]
         JX = sum(st["J_X"].values())
         out = np.zeros(self.size)
         out[0], out[1] = -dH, dH

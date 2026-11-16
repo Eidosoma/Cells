@@ -176,6 +176,7 @@ def compact(spec):
 
 def check_definition(spec):
     """Stage-1 scope, then each template in the domain at its first slot."""
+    pump_composite.refuse_kinds(MODEL_ID, spec.model)  # Fixed-field internals (schema A).
     _model.check_definition(composite(spec))
 
 

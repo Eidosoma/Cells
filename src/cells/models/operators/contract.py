@@ -44,7 +44,16 @@ Declarations (class attributes):
   and to their rounding magnitudes (methods below).
 * Domain and refusal: ``domain_valid`` and ``control_valid``; any failure refuses
   the whole step, which returns the start state. ``REQUIRES``: laws that must
-  precede it in the operator list.
+  precede it in the operator list. ``REQUIRES_KINDS``: the inner model's kinds
+  (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)) whose fields it reads or writes, by
+  kind ID; the composite refuses it where the definition does not declare one, and
+  refuses a declared write or reset of a kind's field by an operator that does not
+  require that kind (pump_composite.structure_errors). ``FIXED_INNER_FIELDS``: its
+  parts build the inner model's state, layout or control with today's fixed fields
+  (the inner module's own types), so the composite refuses it where the definition
+  declares any kind. Beside a declared kind the composite also refuses an operator
+  that opens, closes or retires slots (``CLOSES``, ``RETIRES`` or a provided activity
+  mask): no closer resets a kind's per-slot fields, which would be left stale.
 * Schedule: ``EXPERIMENT_KEYS`` (its schedule in the definition's experiment),
   parsed and checked at the definition (event times are exact multiples of dt).
 * Ownership (docs/PUMP_COMPOSITE_V2_DESIGN.md §1.2–§1.4), checked when a
@@ -118,6 +127,8 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 
 from types import MappingProxyType
 from typing import NamedTuple
+
+from cells.core import kind_registry
 
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 WORK_SUFFIX = "_work_pJ"
@@ -194,6 +205,11 @@ class Operator:
     READOUT_COLUMNS = ()
     FINITE_RATES = False
     REQUIRES = ()
+    # The inner kinds whose fields it reads or writes, by kind ID (schema A; module docstring).
+    REQUIRES_KINDS = ()
+    # Its parts build the inner model's types with today's fixed fields: refused beside declared
+    # kinds (schema A; module docstring).
+    FIXED_INNER_FIELDS = False
     # Ownership (module docstring).
     REPLACES = MappingProxyType({})
     VIEW_READS = ()
@@ -603,7 +619,26 @@ def check_declarations(operator):
     if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
         raise ValueError(f"{name}: IDENTITY_ROLE is one of {IDENTITY_ROLES}")
     _check_layers(operator)
+    _check_kinds(operator)
     return operator
+
+
+def _check_kinds(operator):
+    """REQUIRES_KINDS (schema A): a tuple of distinct kind IDs (a bare ID is in the cells
+    namespace, core/kind_registry.py); FIXED_INNER_FIELDS a bool, and never with REQUIRES_KINDS."""
+    name, kinds = operator.LAW_ID, operator.REQUIRES_KINDS
+    if not isinstance(operator.FIXED_INNER_FIELDS, bool):
+        raise ValueError(f"{name}: FIXED_INNER_FIELDS is a bool")
+    if operator.FIXED_INNER_FIELDS and kinds:
+        raise ValueError(f"{name}: an operator with fixed inner fields cannot require kinds")
+    if not isinstance(kinds, tuple):
+        raise ValueError(f"{name}: REQUIRES_KINDS is a tuple of kind IDs")
+    try:
+        qualified = [kind_registry.qualified(k) for k in kinds]
+    except ValueError as error:
+        raise ValueError(f"{name}: {error}") from None
+    if len(set(qualified)) != len(qualified):
+        raise ValueError(f"{name}: REQUIRES_KINDS names a kind twice")
 
 
 def _check_layers(operator):

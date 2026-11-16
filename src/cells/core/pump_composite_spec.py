@@ -228,9 +228,21 @@ def control_fields(model):
     from cells.models.operators import OPERATORS
 
     return (
-        *ionic.Control._fields,
+        *inner_control_type(model)._fields,
         *(k for law in operator_laws(model) for k in OPERATORS[law].CONTROL_FIELDS),
     )
+
+
+def inner_control_type(model):
+    """The inner model's control type for this model block: @3's Control, or, where the block
+    declares kinds, its structure's, the implementation object's own (schema A,
+    docs/INNER_MODEL_V4_DESIGN.md §7.4 (j): today's fields, then the kinds' controls in canonical
+    order)."""
+    if not getattr(model, "kinds", ()):
+        return ionic.Control
+    from cells.models import surface_pump_v3 as inner
+
+    return inner.implementation(inner.structure(model)).Control
 
 
 def control_values(spec, times):

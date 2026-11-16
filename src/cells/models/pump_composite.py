@@ -52,8 +52,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry, species_registry
 from cells.core import pump_composite_spec as composite_spec
-from cells.core import species_registry
 from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
@@ -91,11 +91,21 @@ def _checked_above(row, p, active, *, xp):
     return xp.asarray(True)
 
 
-@cache
 def implementation(inner_model, laws, structure=None):
     """The composite for one inner identity, ordered operator law tuple and, from a definition,
     the inner model's declared structure (I2: the composite then takes the inner protocol from
-    that structure's implementation object; None keeps the module's own, the full catalogue)."""
+    that structure's implementation object; None keeps the module's own, the full catalogue).
+
+    Cached: equal arguments share one composition. A structure that declares kinds is also keyed
+    on the active kind registry, whose kinds its types are built from (schema A, §7.4 (j)), as
+    the inner implementation object is; one that declares none shares its composition across
+    registries, so a registered but undeclared kind changes nothing."""
+    kinds = structure is not None and bool(structure.kinds)
+    return _implementation(inner_model, laws, structure, kind_registry.active() if kinds else None)
+
+
+@cache
+def _implementation(inner_model, laws, structure, registry):
     from cells.models.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -210,8 +220,25 @@ class FamilyModel:
 
 @cache
 def family_model(module, laws, structure):
-    """A family's model for one declared inner structure (cached: equal structures share it)."""
+    """A family's model for one declared inner structure (cached: equal structures share it). A
+    structure that declares kinds is refused at binding (refuse_kinds)."""
+    refuse_kinds(module.MODEL_ID, structure)
     return FamilyModel(module, implementation(module.ionic.MODEL_ID, laws, structure))
+
+
+def refuse_kinds(model_id, declared):
+    """The families' refusal of declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), the lead's
+    ruling 2). Water@1, water@2 and replacement@1 bind @3's full-catalogue types and build its
+    states, layouts and controls with today's fields (the replacement operator's arrival field
+    solve among them), so a definition that declares a kind is refused, at its definition check
+    and at binding, until each family has per-structure internals. declared: a parsed model block
+    or an InnerStructure; each carries `kinds`, ((kind ID, ...), ...)."""
+    kinds = [kind_id for kind_id, _ in getattr(declared, "kinds", ())]
+    if kinds:
+        raise ConfigError(
+            f"{model_id} does not run declared kinds ({', '.join(kinds)}): it builds the inner "
+            "model's states, layouts and controls with today's fixed fields"
+        )
 
 
 def compact(spec):
@@ -358,6 +385,89 @@ def slot_mask_errors(entries, spec, p):
     return errors
 
 
+# The operators' in-step writers beside declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)
+# gap 8, §7.5 version 1): the core's binding refuses inner movers by node (moved_nodes) and
+# leaves the operators' writers to the composite's admission. An operator's in-step process
+# (PROCESS) declares its writers by node kind (the contract's moves_in_step: (species, "cell" |
+# "outside")), so it is taken to move its species at every node of that kind. The species
+# registry's moved_in_step is not read here: it joins the inner movers by node kind, and an inner
+# route at another node would be a false refusal.
+PASSIVE_ROUTES_ID = "cells.passive_routes@1"
+
+
+def operator_writers(entries, spec):
+    """{(species, node ID): (law ID, ...)}: every row a PROCESS operator's in-step process moves
+    (entries: (operator, its declaration) pairs), each node kind expanded to the definition's
+    nodes of that kind; {} without a PROCESS operator."""
+    m = spec.model
+    nodes = dict(cell=[c.id for c in m.cells], outside=[o.id for o in m.extracellular])
+    out = {}
+    for op, declaration in entries:
+        if not op.PROCESS:
+            continue
+        for species, kind in op.moves_in_step(spec, declaration):
+            if kind not in nodes:
+                raise ConfigError(f"{op.LAW_ID}: moves_in_step gives node kinds cell or outside")
+            for node in nodes[kind]:
+                laws = out.setdefault((species, node), [])
+                if op.LAW_ID not in laws:
+                    laws.append(op.LAW_ID)
+    return {row: tuple(laws) for row, laws in out.items()}
+
+
+def _node_kind(spec, node):
+    return "cell" if node in {c.id for c in spec.model.cells} else "outside"
+
+
+def held_row_errors(entries, spec):
+    """Gap 8, the composite's part: a row a declared kind holds (held_rows: read at every stage,
+    never moved, such as held fuel) is moved by no operator's in-step process (one writer)."""
+    declared = tuple(getattr(spec.model, "kinds", ()))
+    writers = operator_writers(entries, spec) if declared else {}
+    if not writers:
+        return []
+    errors, registry = [], kind_registry.active()
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.held_rows is None:
+            continue
+        for species, node in kind.held_rows(declaration):
+            for law in writers.get((species, node), ()):
+                errors.append(
+                    f"Kind {kind_id} holds {species} at {node}, which {law} moves in the step (its "
+                    f"in-step process moves {species} at every {_node_kind(spec, node)} node); a "
+                    "held row is moved by nothing in the step (one writer)"
+                )
+    return errors
+
+
+def exact_row_errors(entries, spec, p):
+    """§7.5 version 1, the operators' half: a row that an exact-booked passive route moves (its
+    bound passive_exact, the kind's fixpoint over shared rows, and a nonzero permeability, as the
+    booking's own mask) is written by no operator's in-step process. Version 1 refuses such a
+    composition: the route's exact share would average over a change it did not make, and the
+    operators' writers cannot yet join the kind's scope to downgrade it to tableau booking (a
+    seam queued after the landing). A tableau-booked route's rows are not refused."""
+    routes = dict(getattr(spec.model, "kinds", ())).get(PASSIVE_ROUTES_ID)
+    writers = operator_writers(entries, spec) if routes else {}
+    if not writers:
+        return []
+    errors, exact = [], np.asarray(p.passive_exact)
+    for k, route in enumerate(routes):
+        if not (exact[k] and route.permeability > 0):
+            continue
+        for node in (route.inside, route.outside):
+            for law in writers.get((route.species, node), ()):
+                errors.append(
+                    f"{law} moves {route.species} at every {_node_kind(spec, node)} node in the "
+                    f"step (its in-step process), and the passive route {route.id} books "
+                    f"{route.species} at {node} exactly (§7.5); version 1 refuses this because it "
+                    "cannot yet downgrade the route to tableau booking where an operator writes "
+                    "its row"
+                )
+    return errors
+
+
 def structure_errors(inner, operators):
     """Contract violations of an ordered operator list on an inner model (empty: none)."""
     errors = []
@@ -464,6 +574,45 @@ def structure_errors(inner, operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
                 errors.append(f"{op.LAW_ID} requires {law} before it")
+    # Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): an operator that reads or writes a kind's
+    # fields declares the kind (REQUIRES_KINDS), refused where the definition does not declare it;
+    # its declared writes and resets of a kind's fields name the kind too. A factor of a kind's
+    # control is refused: observation holds only today's schedules (held_schedules). An operator
+    # that builds the inner types with today's fields (FIXED_INNER_FIELDS) is refused beside any
+    # declared kind, and so is one that opens, closes or retires slots (CLOSES, RETIRES, or an
+    # activity mask it provides): no closer resets a kind's per-slot fields (state on cell_slot,
+    # membrane_slot, ...), which would be left stale where a slot closes, retires or opens.
+    kinds = tuple(getattr(inner, "KINDS", ()))
+    declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
+    masks = set(getattr(inner, "MASK_FIELDS", ()))
+    for op in operators:
+        if kinds and op.FIXED_INNER_FIELDS:
+            errors.append(
+                f"{op.LAW_ID} builds the inner model's state, layout or control with today's "
+                f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
+            errors.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and no closer resets a kind's "
+                f"per-slot fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
+        for kind_id in sorted(required - declared):
+            errors.append(
+                f"{op.LAW_ID} requires the kind {kind_id}, which the definition does not declare"
+            )
+        for name in dict.fromkeys((*op.ENTITY_WRITES, *op.STATE_RESETS)):
+            if owners.get(name, None) not in (None, *required):
+                errors.append(
+                    f"{op.LAW_ID} writes {name}, a field of the kind {owners[name]}, which it "
+                    "does not require (REQUIRES_KINDS)"
+                )
+        for name in op.CONTROL_FACTORS:
+            if name in owners:
+                errors.append(
+                    f"{op.LAW_ID} multiplies {name}, a control of the kind {owners[name]}; a "
+                    "kind's control is not factored (observation holds only today's schedules)"
+                )
     if sum(op.PROCESS for op in operators) > 1:
         errors.append(
             "at most one in-step membrane process (the inner hook books one combined transfer)"
@@ -981,11 +1130,21 @@ class Composition:
         schedule union is checked on the compact initial state (the domain and a
         valid field), then each operator's own checks run.
 
-        The species registry's checks run first, on this definition: the inner parser's hook sees
-        the inner definition only, so an operator's in-step mover of a two-form row, or an operator
-        that names one, is refused here (core/species_registry.py; D176).
+        The RK4 composition rule comes first: it reads only the solver, so it refuses from the
+        declarations before the definition is read. Then the definition's declared kinds must be
+        the inner structure's (schema A): a composition bound without the definition's structure
+        (the full catalogue) would drop them.
+
+        The species registry's checks run next, ahead of every other check of the definition: the
+        inner parser's hook sees the inner definition only, so an operator's in-step mover of a
+        two-form row, or an operator that names one, is refused here (core/species_registry.py;
+        D176).
+
+        Beside declared kinds, an operator's in-step process (moves_in_step) that writes a row a
+        kind holds is refused (held_row_errors, gap 8), and so is one that writes a row an
+        exact-booked passive route moves, read from the bound layout (exact_row_errors, §7.5
+        version 1).
         """
-        species_registry.check_definition(spec)
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
             if (
@@ -997,9 +1156,24 @@ class Composition:
                     "An RK4 composition with a coupled operator cannot hold event maps, "
                     "split-only parts or integer state"
                 )
-        scoped = scope_errors(self.inner, [(op, d) for op, d, _ in entries(spec)], spec)
+        kinds = tuple(kind_id for kind_id, _ in getattr(spec.model, "kinds", ()))
+        if kinds != tuple(getattr(self.inner, "KINDS", ())):
+            raise ConfigError(
+                f"The definition declares the kinds {list(kinds)}, but the composition's inner "
+                f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
+            )
+        species_registry.check_definition(spec)
+        pairs = [(op, d) for op, d, _ in entries(spec)]
+        scoped = scope_errors(self.inner, pairs, spec)
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
+        # The operators' in-step writers beside declared kinds (held_row_errors,
+        # exact_row_errors): only with kinds and an in-step process, so no world without them
+        # makes either call.
+        writing = bool(kinds) and self.process_operator is not None
+        held = held_row_errors(pairs, spec) if writing else []
+        if held:
+            raise ConfigError("Invalid operator composition: " + "; ".join(held))
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
@@ -1010,6 +1184,9 @@ class Composition:
                 )
         small = compact(spec)
         state, p = self.initial_values(small)
+        exact = exact_row_errors(pairs, spec, p) if writing else []
+        if exact:
+            raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
             x = spec.execution
             self.inner.check_field_inputs(p, x.capacity + x.extracellular_capacity)

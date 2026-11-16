@@ -41,6 +41,7 @@ from cells.models.operators import membrane_state
 from cells.models.operators import restricted_lumen as v1
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum, species_sum
 
 LAW_ID = "restricted_cleft_lumen@2"
 STEP_ID = v1.STEP_ID
@@ -93,7 +94,9 @@ def parse_lumens(raw, base):
         if not any(p.outside == node for p in m.membranes):
             raise ConfigError("A lumen is faced by a membrane patch, whose area it follows")
         c = np.asarray(outside[source].initial_amount_fmol) / outside[source].volume_pL
-        if not abs(np.sum(z * c)) <= v1.NEUTRALITY_RTOL * np.sum(np.abs(z) * c):
+        if not abs(
+            entity_sum(species_sum(z * c, xp=np), axis=None, xp=np)
+        ) <= v1.NEUTRALITY_RTOL * entity_sum(species_sum(np.abs(z) * c, xp=np), axis=None, xp=np):
             raise ConfigError(
                 "A lumen's source must be electroneutral: its background charge cannot enter "
                 "the lumen with its fluid"
@@ -228,7 +231,7 @@ def filled(state, p, view, *, xp=jnp):
     dn = adapter.barrier(bath * dv, xp=xp)
     mu = v1.potentials(p, xp=xp)
     supplied = scatter(dn, dn, (p.lumen_source,), xp=xp)  # At the source baths.
-    work = 1e-3 * xp.sum(mu * supplied, axis=0)  # As @3 books its own supply.
+    work = 1e-3 * species_sum(mu * supplied, xp=xp)  # As @3 books its own supply.
     amounts = p.extracellular_amount_reference + state.extracellular_amount_increment
     heat, fluid = v1.fill_energy(amounts, v1.lumen_volume(state, p, xp=xp), bath, dv, p, xp=xp)
     new = state._replace(
@@ -245,9 +248,10 @@ def filled(state, p, view, *, xp=jnp):
     _, end, _ = tissue.capacitor_change(adapter.inner_state(new), view, xp=xp)
     electrode = xp.where(p.reservoir, end[n:] - start[n:], 0.0)
     clamp = 1e12 * p.boundary_V * electrode
-    count = xp.maximum(xp.sum(lumen), 1)
-    booked = 1e-3 * xp.sum(xp.abs(mu[:, p.lumen_source]) * dn, axis=0)  # Each lumen's supply work.
-    magnitude = booked + xp.abs(fluid) + heat + xp.sum(xp.abs(clamp)) / count
+    count = xp.maximum(entity_sum(lumen, axis=None, xp=xp), 1)
+    # Each lumen's supply work.
+    booked = 1e-3 * species_sum(xp.abs(mu[:, p.lumen_source]) * dn, xp=xp)
+    magnitude = booked + xp.abs(fluid) + heat + entity_sum(xp.abs(clamp), axis=None, xp=xp) / count
     new = new._replace(
         electrode_charge_transferred_C=new.electrode_charge_transferred_C + electrode,
         electrode_work_pJ=new.electrode_work_pJ + clamp,

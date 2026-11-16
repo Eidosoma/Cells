@@ -14,7 +14,9 @@ import numpy as np
 from cells.core import vector_windows
 from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.specs import parse_spec
+from cells.core.state import initialise
 from cells.core.windows import WindowPolicy
+from cells.models.registry import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 STEPS = 8
@@ -62,6 +64,10 @@ def test_parameter_only_change_reuses_the_executable():
     vector_windows._EXECUTABLES.clear()
     compiled, base_state = first_window(base)
     assert compiled > 0.0
+    (stored,) = vector_windows._EXECUTABLES  # compile_window keys on world_key first...
+    spec = parse_spec(base)
+    host = vector_windows.spec_world_key(get_model(spec.model), spec, initialise(spec))
+    assert stored[0] == host  # ...which a planner computes on the host, before any compile.
     reused, twin_state = first_window(twin)
     assert reused == 0.0  # The value twin compiled nothing.
     assert not same(base_state, twin_state)  # Its values did change the result.
