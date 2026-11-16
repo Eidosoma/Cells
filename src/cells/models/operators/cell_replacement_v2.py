@@ -59,6 +59,7 @@ from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second
 from cells.models.operators import cell_replacement as replacement
 from cells.models.operators import osmotic_water as water
+from cells.numerics.species_sums import entity_sum
 
 LAW_ID = "scheduled_cell_replacement@2"
 
@@ -454,23 +455,27 @@ class ScheduledReplacementOverWater(replacement.ScheduledReplacement):
     def ledger_terms(self, result, row, p, *, xp):
         """@1's terms, then water's free-energy change booked at events."""
         result, own = super().ledger_terms(result, row, p, xp=xp)
-        result["energy"] = result["energy"] - xp.sum(row.replacement_water_free_energy_pJ)
+        result["energy"] = result["energy"] - entity_sum(
+            row.replacement_water_free_energy_pJ, axis=None, xp=xp
+        )
         return result, own
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
         """@1's magnitudes, then water's energy magnitudes in the energy bound (zero for
         founders, so without events the bounds are @1's)."""
         magnitudes = super().magnitude_terms(magnitudes, row, p, xp=xp)
-        magnitudes[6] = magnitudes[6] + xp.sum(row.replacement_water_energy_magnitude_pJ)
+        magnitudes[6] = magnitudes[6] + entity_sum(
+            row.replacement_water_energy_magnitude_pJ, axis=None, xp=xp
+        )
         return magnitudes
 
     def external_ledger_terms(self, ledgers, row, p, *, xp):
         """Water's local and total ledgers with the volumes supplied less removed at events."""
         net = row.replacement_volume_supplied_pL - row.replacement_volume_removed_pL
-        terms = dict(water_local=net, water_total=xp.sum(net))
+        terms = dict(water_local=net, water_total=entity_sum(net, axis=None, xp=xp))
         return {k: v - terms[k] for k, v in ledgers.items()}
 
     def external_magnitude_terms(self, magnitudes, row, p, *, xp):
         moved = row.replacement_volume_removed_pL + row.replacement_volume_supplied_pL
-        terms = dict(water_local=moved, water_total=xp.sum(moved))
+        terms = dict(water_local=moved, water_total=entity_sum(moved, axis=None, xp=xp))
         return {k: v + terms[k] for k, v in magnitudes.items()}

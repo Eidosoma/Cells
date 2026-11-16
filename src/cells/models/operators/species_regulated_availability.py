@@ -70,6 +70,7 @@ from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
+from cells.numerics.species_sums import entity_sum
 from cells.processes import hill_factors
 
 LAW_ID = "species_regulated_availability@1"
@@ -707,7 +708,7 @@ def state_inputs(state, p, *, xp):
         p.regulatory_input_kind,
         xp=xp,
     )
-    return xp.exp(xp.sum(log_f, axis=1))
+    return xp.exp(entity_sum(log_f, axis=1, xp=xp))
 
 
 def state_half_step(state, h, p, *, xp):

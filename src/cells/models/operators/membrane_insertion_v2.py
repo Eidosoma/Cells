@@ -54,6 +54,7 @@ from cells.models.operators import membrane_insertion as v1
 from cells.models.operators import membrane_state
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum
 
 LAW_ID = "scheduled_membrane_insertion@2"
 STEP_ID = v1.STEP_ID
@@ -207,8 +208,8 @@ def inserted(state, h, control, p, view, *, xp):
     )
     work = 1e12 * p.boundary_V * image
     moving = area > 0
-    count = xp.maximum(xp.sum(moving), 1)
-    spread = (xp.abs(second) + xp.sum(xp.abs(work))) / count
+    count = xp.maximum(entity_sum(moving, axis=None, xp=xp), 1)
+    spread = (xp.abs(second) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
     valid &= xp.all(xp.isfinite(image)) & xp.all(xp.isfinite(heat)) & xp.all(heat >= 0)
     new = state._replace(
         membrane_area_increment_m2=state.membrane_area_increment_m2 + area,
@@ -349,7 +350,9 @@ class ScheduledMembraneInsertionV2(Operator):
 
     def ledger_terms(self, result, row, p, *, xp):
         """The heat in the energy ledger; the view's capacitor terms are the composite's."""
-        result["energy"] = result["energy"] + xp.sum(row.insertion_dissipated_energy_pJ)
+        result["energy"] = result["energy"] + entity_sum(
+            row.insertion_dissipated_energy_pJ, axis=None, xp=xp
+        )
         return result, {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
@@ -358,9 +361,9 @@ class ScheduledMembraneInsertionV2(Operator):
         zero without insertion."""
         image = row.insertion_image_charge_C
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        charge = xp.sum(image)
+        charge = entity_sum(image, axis=None, xp=xp)
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = xp.sum(row.insertion_energy_magnitude_pJ)
+        energy = entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

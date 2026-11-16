@@ -54,6 +54,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
 from cells.models.operators.membrane_state import parse_catalogue
+from cells.numerics.species_sums import entity_sum
 from cells.processes.electrochemistry import R as R_GAS
 
 LAW_ID = "site_occupancy@1"
@@ -1087,7 +1088,9 @@ def site_energy(row, p, *, xp):
     dg_r, terms_r = site_free_energy(
         p.site_free_anchor_fmol, row.site_free_increment_fmol, 0.0, capacity, rt, xp=xp
     )
-    return xp.sum(dg_b + dg_r), xp.sum(terms_b + terms_r)
+    return entity_sum(dg_b + dg_r, axis=None, xp=xp), entity_sum(
+        terms_b + terms_r, axis=None, xp=xp
+    )
 
 
 def material_terms(row, p, shape_cell, shape_outside, *, xp):
@@ -1322,14 +1325,16 @@ class SiteOccupancy(Operator):
         )
         result["local"] = result["local"] + local
         result["outside"] = result["outside"] + outside
-        result["total"] = result["total"] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        result["total"] = (
+            result["total"] + entity_sum(local, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         energy, _ = site_energy(row, p, xp=xp)
         result["energy"] = (
             result["energy"]
             + energy
-            + xp.sum(row.site_dissipated_energy_pJ)
-            + xp.sum(row.site_outside_dissipated_energy_pJ)
-            - xp.sum(row.site_work_pJ)
+            + entity_sum(row.site_dissipated_energy_pJ, axis=None, xp=xp)
+            + entity_sum(row.site_outside_dissipated_energy_pJ, axis=None, xp=xp)
+            - entity_sum(row.site_work_pJ, axis=None, xp=xp)
         )
         return result, self.own_ledgers(row, p, xp=xp)
 
@@ -1360,9 +1365,11 @@ class SiteOccupancy(Operator):
         )
         magnitudes[0] = magnitudes[0] + local
         magnitudes[1] = magnitudes[1] + outside
-        magnitudes[2] = magnitudes[2] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        magnitudes[2] = (
+            magnitudes[2] + entity_sum(local, axis=1, xp=xp) + entity_sum(outside, axis=1, xp=xp)
+        )
         _, terms = site_energy(row, p, xp=xp)
-        energy = terms + xp.sum(row.site_energy_magnitude_pJ)
+        energy = terms + entity_sum(row.site_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 
