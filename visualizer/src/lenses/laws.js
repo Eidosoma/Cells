@@ -5,19 +5,20 @@
 // slot. Choose a piece and it slides out of the wall and glows, and light runs from it along a
 // route to every slot that declares it; choose a rack and its pieces glow on the wall.
 //
-// Drawn from data/laws/pieces.json (schema/LAWS_LIBRARY.md), read from the engine's code. Every
-// visual difference stands for one thing the list says, and the legend names each one drawn
-// (MARKS, below): solid slate, a dark band, a glass outline, a narrower bar higher up, a
-// column's height, a rack, a card, a block, an empty socket marked "free", a box on the plinth,
-// forward and faint under a search, a faint empty place, and blue light for what is chosen.
-// Nothing else differs: the glass, rails, planks, dividers, sockets and plinth are the room.
-// No colour, glow or height is a status; a status is said only in the panel, with its source.
+// Drawn from data/laws/pieces.json (schema/LAWS_LIBRARY.md), read from the engine's declarations
+// manifest alone. Every visual difference stands for one thing the list says, and the legend
+// names each one drawn (MARKS, below): solid slate, a glass outline, a column's height, a rack, a
+// card, a block, an empty socket marked "free" or with a row's name, a closed case on the
+// plinth, forward and faint under a search, a faint empty place, and blue light for what is
+// chosen. Nothing else differs: the glass, rails, planks, dividers, sockets and plinth are the
+// room. No colour, glow or height is a status; a status is said only in the panel, where the
+// manifest gives one, with its source.
 
 import * as THREE from "../three.js";
 import { roundedSlab } from "../core/materials.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { disposeTree } from "../core/stage.js";
-import { Library, WHERE, pageId, engineId } from "./laws_data.js";
+import { Library, WHERE, pageId, engineId, namespaced, isId } from "./laws_data.js";
 import { describe as describePart, sections as listSections } from "./laws_card.js";
 import { layoutOf, WIDE } from "./laws_layout.js";
 import { PLANK, FOOT, PLINTH, plaquesOf, plaqueMesh, routeMaterial, mergeTubes, fitView } from "./laws_marks.js";
@@ -42,27 +43,23 @@ const now = () => (typeof performance !== "undefined" ? performance.now() : Date
  * `when` says when a mark is drawn at all; the legend lists only what is drawn.
  */
 export const MARKS = [
-  { id: "laws-main", label: "Solid slate: on main", description: "A solid slate bar on the wall, or a slate card in a rack: a piece read on main.", when: (lens) => lens.library.counts().where.main > 0 },
-  { id: "laws-candidate", label: "Dark band: on the landing candidate, not main", description: "A dark band across a bar or card: the piece is read on the landing candidate and is not on main yet.", when: (lens) => lens.library.counts().where.candidate > 0 },
-  { id: "laws-design", label: "Glass outline: a design note's; no code", description: "A bar of clear glass with an outline: a design note names the piece; there is no code for it.", when: (lens) => lens.library.counts().where.design > 0 },
-  { id: "laws-older", label: "Narrower, higher: a law of a model family's table, or in no registry", description: "A narrower bar on the upper part of its column, above a gap: a law of a model family's table (a LAW_CODES table inside its own module), or a named law in no registry. Neither is a declared piece of the one model.", when: (lens) => lens.layout.bars.some((bar) => bar.id && bar.older) },
+  { id: "laws-declared", label: "Solid slate: declared by an active model", description: "A solid slate bar on the wall, or a slate card in a rack: a piece the engine's declarations list, declared by an active model. Being declared is not a level: a status is said only in the panel, where the declarations give one.", when: (lens) => lens.library.counts().where.declared > 0 },
+  { id: "laws-design", label: "Glass outline: named in a design note; not declared", description: "A bar of clear glass with an outline, on a shelf apart: a design note names the law, and the engine's declarations do not list it.", when: (lens) => lens.library.counts().where.design > 0 },
   { id: "laws-height", label: "Column height: the family's count", description: "Each column holds one bar for each piece of its family, so its height is the family's count.", when: () => true },
-  { id: "laws-rack", label: "Rack: a model, by its MODEL_ID", description: "Each rack in front of the wall is a model the engine names by its MODEL_ID; its rows are the kinds of piece it declares.", when: (lens) => lens.layout.frames.length > 0 },
-  { id: "laws-case", label: "A closed case: a model family; its laws are a table inside it", description: "Each closed case on the plinth is a model family the engine names by its MODEL_ID: one module for each combination of features, whose laws are a table inside it. It declares no piece of the list.", when: (lens) => lens.cases.mesh.count > 0 },
-  { id: "laws-slot", label: "Card: a piece the model declares", description: "A card seated in a rack's slot: a piece the model declares there, drawn in the piece's own form.", when: (lens) => lens.cardList.length > 0 },
+  { id: "laws-rack", label: "Rack: a model with rows", description: "Each rack in front of the wall is an active model of the engine's declarations; its rows are its pieces by their roles.", when: (lens) => lens.layout.frames.length > 0 },
+  { id: "laws-case", label: "A closed case: a model family with no rows", description: "Each closed case on the plinth is a model family the engine's declarations list with no rows: its laws are tables inside it, and none of them is listed as a piece.", when: (lens) => lens.cases.mesh.count > 0 },
+  { id: "laws-slot", label: "Card: a piece the model declares", description: "A card seated in a rack's slot: a piece that is a row of the model there, with its code, its key or its position where the model has slots.", when: (lens) => lens.cardList.length > 0 },
   { id: "laws-block", label: "Block: the inner model a rack holds", description: "A long block across the head of a rack: the inner model that model holds whole.", when: (lens) => lens.blocks.mesh.count > 0 },
-  { id: "laws-next", label: "Empty socket, 'free': a next code; no piece", description: "An empty socket at the end of a row, marked with a number and 'free': the row's next free registry code, as read from the code. No piece stands there.", when: (lens) => lens.nextCount > 0 },
+  { id: "laws-next", label: "Empty socket, 'free': the next channel code", description: "An empty socket at the end of the inner model's channel laws, marked with a number and 'free': its next free channel code, which a new channel law takes. No piece stands there.", when: (lens) => lens.nextCount > 0 },
+  { id: "laws-none", label: "Empty socket with a name: a row with no piece", description: "An empty socket with a name in it: a row of the model that has no entry of its own in the engine's declarations, such as the fuel kind its cycle laws run on.", when: (lens) => lens.noneCount > 0 },
   { id: "laws-found", label: "Forward: found; faint: not found", description: "While a search, a filter or a mark of the legend is chosen, what it picks out stands forward in its own form, and the rest fades.", when: (lens) => Boolean(lens.filter.family || lens.filter.where || lens.filter.query || lens.filter.box || lens.isolate) },
   { id: "laws-empty", label: "Faint bar: an empty place (size test)", description: "A faint bar is no piece: an empty place added to test the wall at a larger size.", when: (lens) => lens.size > 0 },
   { id: "laws-chosen", label: "Blue light: your choice, its slots and routes", description: "Blue light marks what you chose, every slot that declares it and a route from the piece to each slot; after a choice the light runs along each route from the piece to its slot, then holds.", when: () => true },
 ];
 /** The legend's marks that pick out pieces, for its own choice (setIsolate). */
-const OLDER = new Set(["an older family", "no registry"]);
 const ISOLATES = {
-  "laws-main": (piece) => piece?.where === "main",
-  "laws-candidate": (piece) => piece?.where === "candidate",
+  "laws-declared": (piece) => piece?.where === "declared",
   "laws-design": (piece) => piece?.where === "design",
-  "laws-older": (piece) => OLDER.has(piece?.registry),
 };
 /** What the legend says of everything else. */
 export const LAWS_NOTE = "Glass, rails, planks, dividers, sockets and the plinth are the room, and stand for nothing.";
@@ -221,13 +218,10 @@ export class LawsLens {
     ]);
     this.rim.mesh.userData.unpickable = true;
 
-    // Each column stands on a plank, its narrower part on a plank of its own; dividers keep the columns apart.
+    // Each column stands on a plank; dividers keep the columns apart.
     const planks = [], dividers = [];
     const { col, gap } = WIDE.bar;
-    for (const head of heads) {
-      planks.push({ x: head.x, y: head.foot - PLANK.h / 2, z: zWall, w: col + gap * 0.6, h: PLANK.h, d: PLANK.d });
-      if (head.olderFoot !== null) planks.push({ x: head.x, y: head.olderFoot - 0.03, z: zWall, w: col * 0.82, h: 0.06, d: PLANK.d * 0.8 });
-    }
+    for (const head of heads) planks.push({ x: head.x, y: head.foot - PLANK.h / 2, z: zWall, w: col + gap * 0.6, h: PLANK.h, d: PLANK.d });
     const bands = new Map();
     for (const head of heads) bands.set(head.band, [...(bands.get(head.band) || []), head]);
     for (const group of bands.values()) {
@@ -247,7 +241,7 @@ export class LawsLens {
     bars.forEach((bar, index) => {
       const piece = bar.id ? library.piece(bar.id) : null;
       bar.index = index;
-      bar.form = !piece ? "empty" : piece.where === "design" ? "design" : piece.where === "candidate" ? "band" : "solid";
+      bar.form = !piece ? "empty" : piece.where === "design" ? "design" : "solid";
       forms[bar.form === "band" ? "solid" : bar.form].push(bar);
       if (bar.form === "band") forms.band.push(bar);
     });
@@ -274,7 +268,7 @@ export class LawsLens {
 
     // The racks: two uprights on feet, a top rail, a rail under every row, a dark socket for every
     // slot with its piece seated in it, and the inner model's block where a rack holds it.
-    const panels = [], rails = [], sockets = [], cards = [], blocks = [], nexts = [];
+    const panels = [], rails = [], sockets = [], cards = [], blocks = [], nexts = [], nones = [];
     for (const frame of frames) {
       const id = pageId(frame.id);
       panels.push({ x: frame.x, y: frame.y + frame.h / 2, z: frame.z - 0.16, w: frame.w, h: frame.h, d: 0.05, id });
@@ -289,7 +283,7 @@ export class LawsLens {
       );
       if (frame.block) blocks.push({ ...frame.block, z: frame.z + 0.03, d: 0.18, frame: frame.id, id: pageId(frame.block.id) });
       for (const row of frame.rows) {
-        const all = [...row.slots, ...(row.next ? [row.next] : [])];
+        const all = [...row.slots, ...(row.next ? [row.next] : []), ...(row.none || [])];
         if (all.length) {
           const left = Math.min(...all.map((slot) => slot.x - slot.w / 2)) - 0.08, right = Math.max(...all.map((slot) => slot.x + slot.w / 2)) + 0.08;
           // A rail under the slots of each row of the inner model; the operators' cards hang on one rail each in their column.
@@ -303,6 +297,8 @@ export class LawsLens {
           sockets.push({ x: row.next.x, y: row.next.y, z: frame.z - 0.04, w: row.next.w + 0.08, h: row.next.h + 0.07, d: 0.08 });
           nexts.push({ ...row.next, z: frame.z + 0.05 });
         }
+        // A row with no entry of its own: an empty socket, its name written in it, that opens what the model says of it.
+        for (const none of row.none || []) nones.push({ x: none.x, y: none.y, z: frame.z - 0.04, w: none.w + 0.08, h: none.h + 0.07, d: 0.08, id: none.id, frame: frame.id });
       }
     }
     const pickFrame = (item) => item?.id || null;
@@ -310,21 +306,20 @@ export class LawsLens {
     this.rails = boxes(this.root, box, this.materials.rail, rails, { pick: pickFrame });
     this.sockets = boxes(this.root, box, this.materials.socket, sockets);
     this.sockets.mesh.userData.unpickable = true;
+    this.noneSockets = boxes(this.root, box, this.materials.socket, nones, { pick: (item) => (item ? pageId(item.id) : null) });
+    this.noneCount = nones.length;
     this.blocks = boxes(this.root, box, this.materials.rail, blocks, { pick: pickFrame });
     // The model families: a closed case each on the plinth, in front of the racks; their laws are tables inside them.
     this.cases = boxes(this.root, box, this.materials.rail, cases, { pick: (item) => (item ? pageId(item.id) : null) });
     this.cases.mesh.castShadow = true;
-    for (const card of cards) {
-      const piece = library.piece(card.piece);
-      card.form = piece?.where === "candidate" ? "band" : piece?.where === "design" ? "design" : "solid";
-    }
+    for (const card of cards) card.form = library.piece(card.piece)?.where === "design" ? "design" : "solid";
     const cardBands = cards.filter((card) => card.form === "band");
     this.slots = boxes(this.root, box, this.materials.slate, cards, { pick: (card) => (card ? pageId(card.piece) : null) });
     this.slotBands = boxes(this.root, box, this.materials.band, cardBands.map((item) => ({ ...item, x: item.x - item.w / 2 + 0.09, w: 0.12, d: item.d * 1.2 })), { pick: (card) => (card ? pageId(card.piece) : null) });
     this.cardList = cards;
     this.cardBandList = cardBands;
     this.rails.mesh.castShadow = this.slots.mesh.castShadow = true;
-    // The next free registry code: an empty socket, its number written in it (laws_marks.js).
+    // The next free channel code: an empty socket, its number written in it (laws_marks.js).
     this.nextCount = nexts.length;
 
 
@@ -336,7 +331,7 @@ export class LawsLens {
     const capacity = Math.max(1, bars.length);
     this.litBars = new Instances(box, this.materials.lit, capacity);
     this.litBars.mesh.count = 0;
-    this.litSlots = new Instances(box, this.materials.lit, Math.max(1, cards.length + blocks.length + rails.length + 1));
+    this.litSlots = new Instances(box, this.materials.lit, Math.max(1, cards.length + blocks.length + rails.length + nones.length + 1));
     this.litSlots.mesh.count = 0;
     this.lines = new THREE.Group();
     this.lines.userData.unpickable = true;
@@ -382,9 +377,17 @@ export class LawsLens {
 
   // ------------------------------------------------------------ the lens interface
 
+  /** Whether an address names something this view answers: a piece, a model, a row with no piece, a legacy ID, or any other ID (said not declared). */
   has(id) {
     const name = engineId(id);
-    return Boolean(name && (this.library.piece(name) || this.library.frame(name) || this.library.notShown(name)));
+    return Boolean(name && (this.library.piece(name) || this.library.frame(name) || this.library.rowOf(name) || this.library.legacyOf(name) || isId(name)));
+  }
+
+  /** An address in the spelling the view draws: a piece's or a model's declared ID, whichever spelling named it (D185). */
+  canonical(id) {
+    const name = engineId(id);
+    const known = name && (this.library.piece(name) || this.library.frame(name));
+    return known ? pageId(known.id) : id;
   }
 
   describe(id) {
@@ -413,9 +416,8 @@ export class LawsLens {
     const shown = MARKS.filter((mark) => mark.when(this));
     const lit = this.lit || { bars: new Set(), cards: new Set(), blocks: new Set() };
     const count = {
-      "laws-main": counts.where.main, "laws-candidate": counts.where.candidate, "laws-design": counts.where.design,
-      "laws-older": this.layout.bars.filter((bar) => bar.id && bar.older).length, "laws-height": this.layout.heads.length, "laws-case": this.cases.mesh.count,
-      "laws-rack": this.layout.frames.length, "laws-slot": this.cardList.length, "laws-block": this.blocks.mesh.count, "laws-next": this.nextCount,
+      "laws-declared": counts.where.declared, "laws-design": counts.where.design, "laws-height": this.layout.heads.length, "laws-case": this.cases.mesh.count,
+      "laws-rack": this.layout.frames.length, "laws-slot": this.cardList.length, "laws-block": this.blocks.mesh.count, "laws-next": this.nextCount, "laws-none": this.noneCount,
       "laws-found": this.library.pieces.filter((piece) => this.library.passes(piece, this.filter) && (!ISOLATES[this.isolate] || ISOLATES[this.isolate](piece))).length, "laws-empty": this.layout.bars.filter((bar) => !bar.id).length,
       "laws-chosen": lit.bars.size + lit.cards.size + lit.blocks.size,
     };
@@ -427,15 +429,15 @@ export class LawsLens {
         // Only where a piece stands today: a choice that would show nothing is not offered.
         modes: { label: "Where it stands", options: [["all", "All"], ...WHERE.filter((item) => counts.where[item.id] > 0 || this.filter.where === item.id).map((item) => [item.id, item.short])], active: this.filter.where || "all" },
         marks: { label: "Family", options: [["all", "All families"], ...this.library.families.map((family) => [family.id, family.label])], active: this.filter.family || "all" },
-        stats: [[counts.pieces, "pieces"], [counts.frames, "frames"], ...(counts.where.candidate ? [[counts.where.candidate, "on the landing candidate"]] : []), [counts.where.design, "named in a design note"]],
-        text: `Read from the engine's code at main ${stamp.main.revision}${stamp.candidate ? ` and the landing candidate ${stamp.candidate.ref} ${stamp.candidate.revision}, not on main yet` : ""}. No level is shown that a record does not state.`,
+        stats: [[counts.declared, "declared pieces"], [this.library.frames.length, "models"], [counts.where.design, "named in a design note"]],
+        text: `${stamp.read}. No level is shown that the declarations do not state.`,
         sources: [
-          { name: "The engine's code", holds: "the pieces, their tables and contracts, and the models that declare them, read without running it (tools/extract_laws.py)", licence: "the project's own, MIT" },
-          { name: "The viewer's records", holds: "the families, the units a law acts on (the protein inventory) and the Engine view's statuses with their sources", licence: "the project's own, MIT" },
+          { name: "The engine's declarations", holds: `every registered law, kind and operator and every active model, as the engine's own manifest lists them (${this.library.manifest.kind}, data/engine/declarations.json, written at main ${this.library.manifest.short})`, licence: "the project's own, MIT" },
+          { name: "The viewer's records", holds: "how the wall shelves the pieces, the models' short names, the Engine view's boxes, and the laws design notes name", licence: "the project's own, MIT" },
         ],
       },
       legend: { title: "What the marks stand for", items: shown.map((mark) => ({ id: mark.id, label: mark.label, description: mark.description, count: count[mark.id] ?? 0, swatch: mark.id })), note: { swatch: "laws-room", text: LAWS_NOTE } },
-      stamp: `Read at main ${stamp.main.revision}`,
+      stamp: `Read at main ${this.library.manifest.short}`,
     };
   }
 
@@ -562,7 +564,7 @@ export class LawsLens {
   }
 
   setSelection(id) {
-    const next = id && this.has(id) ? id : null;
+    const next = id && this.has(id) ? this.canonical(id) : null;
     if (next !== this.selected) {
       this.focused = null;
       if (next) this.homeHeld = null; // a choice ends the opening view's hold // a move asked for the last choice is not fitted again for this one
@@ -576,7 +578,7 @@ export class LawsLens {
   }
 
   setHover(id) {
-    const next = id && this.has(id) ? id : null;
+    const next = id && this.has(id) ? this.canonical(id) : null;
     if (next === this.hovered) return;
     this.hovered = next;
     this.refresh();
@@ -609,9 +611,15 @@ export class LawsLens {
 
   /**
    * The door from an Engine view box (the viewer's openDoor, `value`): the pieces whose file that
-   * box holds stand forward, and the camera goes to them. setFinding(null) lets them go.
+   * box holds stand forward, and the camera goes to them. setFinding(null) lets them go. A door
+   * onto one piece (`laws:<id>`) chooses it.
    */
   setFinding(box) {
+    // A door onto one piece (a unit's law, an Engine view operator): the page chooses it, as a press would.
+    if (engineId(box) && this.has(box)) {
+      this.stage.canvas?.dispatchEvent(new CustomEvent("cells-select", { detail: { id: this.canonical(box), fly: true }, bubbles: true, composed: true }));
+      return;
+    }
     const pieces = box ? this.library.inBox(box) : [];
     this.filter.box = pieces.length ? box : null;
     this.refresh();
@@ -650,8 +658,9 @@ export class LawsLens {
   }
 
   /** The ids of what passes the filters, in the wall's order: what the arrow keys step through. */
+  /** The pieces that pass the filters, in the wall's order: family by family, as the columns stand. */
   order() {
-    return this.library.pieces.filter((piece) => this.library.passes(piece, this.filter)).map((piece) => pageId(piece.id));
+    return this.library.families.flatMap((family) => this.library.inFamily.get(family.id)).filter((piece) => this.library.passes(piece, this.filter)).map((piece) => pageId(piece.id));
   }
 
   /** The next or previous piece of the order, from the one chosen: for the arrow keys. */
@@ -667,6 +676,7 @@ export class LawsLens {
     const name = engineId(this.selected);
     const piece = name ? this.library.piece(name) : null;
     const frame = name && !piece ? this.library.frame(name) : null;
+    const none = name && !piece && !frame ? this.library.rowOf(name) : null;
     const bars = new Set(), cards = new Set(), blocks = new Set();
     if (piece) {
       bars.add(piece.id);
@@ -680,7 +690,7 @@ export class LawsLens {
       frame.rows.forEach((row, r) => row.pieces.forEach((_, index) => cards.add(`${frame.id}|${r}|${index}`)));
       if (frame.inner) blocks.add(`${frame.id}|${frame.inner}`);
     }
-    return { piece, frame, bars, cards, blocks };
+    return { piece, frame, none, bars, cards, blocks };
   }
 
   refresh() {
@@ -729,7 +739,7 @@ export class LawsLens {
     this.markChosen(lit);
     this.labelChosen(lit);
     // Bloom only while something is chosen, and only from what was marked: the chosen and its routes.
-    const any = Boolean(lit.piece || lit.frame); // a chosen rack, piece or model family; an address naming what is not shown lights nothing
+    const any = Boolean(lit.piece || lit.frame || lit.none); // a chosen rack, piece, model family or row with no piece; an address naming what is not shown lights nothing
     const bloom = this.palette?.dark ? LAWS_BLOOM : LAWS_BLOOM_LIGHT;
     this.stage.setBloom?.(any && this.active ? bloom.strength : 0, { radius: bloom.radius, floor: bloom.floor });
     this.stage.invalidate?.();
@@ -756,8 +766,9 @@ export class LawsLens {
     });
     const slots = [];
     this.cardList.forEach((card, index) => lit.cards.has(`${card.frame}|${card.row}|${card.index}`) && slots.push({ item: card, set: this.slots, index }));
-    // A chosen model family: its case.
+    // A chosen model family: its case. A chosen row with no piece: its socket.
     this.cases.items.forEach((item, index) => pageId(item.id) === this.selected && slots.push({ item, set: this.cases, index, lift: 0, whole: true }));
+    if (lit.none) this.noneSockets.items.forEach((item, index) => namespaced(item.id) === namespaced(lit.none.id) && slots.push({ item, set: this.noneSockets, index, lift: 0, whole: true }));
     this.blocks.items.forEach((block, index) => lit.blocks.has(`${block.frame}|${engineId(block.id)}`) && slots.push({ item: block, set: this.blocks, index }));
     if (light && lit.frame) this.rails.items.forEach((rail, index) => engineId(rail.id) === lit.frame.id && slots.push({ item: rail, set: this.rails, index, lift: 0, whole: true }));
     this.litSlots.mesh.count = slots.length;
@@ -842,9 +853,11 @@ export class LawsLens {
 
   /** A move toward what was chosen: a piece's column and the racks it plugs into, a rack and its pieces on the wall, or a model family's case. */
   focus(id) {
+    id = this.canonical(id); // an address in the other spelling moves the camera as its piece's own does
     const name = engineId(id);
     const frame = this.layout.frames.find((item) => item.id === name);
     const family = this.layout.cases.find((item) => item.id === name);
+    const none = !frame && !family && this.library.rowOf(name) ? this.noneSockets.items.find((item) => namespaced(item.id) === namespaced(name)) : null;
     // The whole of what is lit, and the chosen thing alone for when the whole cannot be seen beside the panel.
     const box = new THREE.Box3(), core = new THREE.Box3();
     let approach = false; // a rack is come up to: its own box
@@ -856,6 +869,14 @@ export class LawsLens {
       }
       for (const piece of this.library.piecesOf(frame.id)) add(this.barPoint(piece), 0.4);
       approach = true;
+    } else if (none) {
+      // A row with no piece: its socket, in its rack.
+      const rack = this.layout.frames.find((item) => item.id === none.frame);
+      for (const into of [box, core]) {
+        add(new THREE.Vector3(none.x - none.w / 2, none.y, none.z), 0.6, into);
+        add(new THREE.Vector3(none.x + none.w / 2, none.y, none.z), 0.6, into);
+      }
+      if (rack) add(new THREE.Vector3(rack.x - rack.w / 2, rack.y + rack.h, rack.z), 0.4);
     } else if (family) {
       // The case among its neighbours, with the racks behind it.
       add(new THREE.Vector3(family.x - 3, family.y, family.z + 0.5), 0.4);

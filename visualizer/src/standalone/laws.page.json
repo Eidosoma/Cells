@@ -1,12 +1,25 @@
 {
   "view": "laws",
   "title": "Laws Library Preview",
-  "description": "Every declared piece of the Cells engine on a wall of shelves, with the models that declare them, read from the engine's code: the Laws library of Cells, standing alone.",
+  "description": "Every piece the Cells engine declares, on a wall of shelves, with the models that declare them, read from the engine's declarations manifest: the Laws library of Cells, standing alone.",
   "boot": "Loading the Laws library…",
   "scene": {
     "from": "data/architecture/architecture.scene.json",
-    "keep": ["format", "kind", "title", "meta", "statuses", "relation_kinds", "groups"]
+    "keep": [
+      "format",
+      "kind",
+      "title",
+      "meta",
+      "statuses",
+      "relation_kinds",
+      "groups"
+    ]
   },
-  "data": [{ "into": "laws", "from": "data/laws/pieces.json" }],
-  "stamp": "The list was read from the engine's code at main {laws.stamp.main.revision}, committed {laws.stamp.main.date|date}. No level is shown that a record does not state."
+  "data": [
+    {
+      "into": "laws",
+      "from": "data/laws/pieces.json"
+    }
+  ],
+  "stamp": "The list was read from the engine's declarations at main {laws.stamp.manifest.short}. No level is shown that the declarations do not state."
 }

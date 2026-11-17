@@ -43,8 +43,10 @@ test("the preview says on itself that it is a preview, and the revision the list
   const laws = JSON.parse(await readFile(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
   const notice = /<p class="standalone-notice" role="note">(.*?)<\/p>/s.exec(content)?.[1] || "";
   assert.ok(notice.includes(`${NOTICE}.`), "the notice is in the page itself, before any script runs");
-  assert.ok(notice.includes(`main ${laws.stamp.main.revision}`) && notice.includes(longDate(laws.stamp.main.date)), notice);
-  assert.match(notice, /No level is shown that a record does not state/);
+  // The manifest states the revision it was written at, and no date: the notice says the one and invents no other.
+  assert.ok(notice.includes(`read from the engine's declarations at main ${laws.stamp.manifest.short}`), notice);
+  assert.ok(!/committed|20[0-9]{2}/.test(notice), notice);
+  assert.match(notice, /No level is shown that the declarations do not state/);
   const shell = await readFile(path.join(ROOT, "src", "standalone", "shell.js"), "utf8");
   assert.ok(shell.includes(`"${NOTICE}"`), "the page's mount says the same words");
 });
@@ -61,7 +63,7 @@ test("the preview carries exactly the list it was built from, and a scene the pa
   assert.equal(scene.meta.source_base_url, whole.meta.source_base_url, "the address its sources link to");
   assert.equal(scene.entities.length, 0, "no part of the map is carried: the view draws none");
   const model = new SceneModel({ ...scene, laws });
-  assert.equal(model.raw.laws.stamp.main.revision, laws.stamp.main.revision);
+  assert.equal(model.raw.laws.stamp.manifest.revision, laws.stamp.manifest.revision);
 });
 
 test("the tool knows no view: every view with a mount and a page file builds, and its words are checked", async () => {

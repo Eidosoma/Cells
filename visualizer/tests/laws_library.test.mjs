@@ -5,11 +5,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
-import { LAWS_FORMAT, Library, problemsOf } from "../src/lenses/laws_data.js";
+import { LAWS_FORMAT, Library, problemsOf, namespaced } from "../src/lenses/laws_data.js";
 import { LawsLens, LAWS_LOOK, LAWS_BLOOM, LAWS_BLOOM_LIGHT, MARKS } from "../src/lenses/laws.js";
 import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND } from "../src/lenses/laws_layout.js";
@@ -18,176 +18,241 @@ import { sections as listSections } from "../src/lenses/laws_card.js";
 
 const raw = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 const overlay = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "overlay.json"), "utf8"));
+// The tests' oracle is the engine's own file, not the list made from it.
+const MANIFEST_PATH = path.join(ROOT, "data", "engine", "declarations.json");
+const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const contract = readFileSync(path.join(ROOT, "schema", "LAWS_LIBRARY.md"), "utf8");
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
-const byId = new Map(raw.pieces.map((piece) => [piece.id, piece]));
-const frameById = new Map(raw.frames.map((frame) => [frame.id, frame]));
+const library = new Library(raw);
+const byId = new Map(library.pieces.map((piece) => [piece.id, piece]));
+const frameById = new Map(library.frames.map((frame) => [frame.id, frame]));
+const tool = (args) => spawnSync("python3", ["-I", path.join(ROOT, "tools", "extract_laws.py"), ...args], { encoding: "utf8" });
 
-// ------------------------------------------------------------ the list
+// ------------------------------------------------------------ the list, held to the manifest
 
-test("the list holds to its contract: one entry for each id, every family and frame named, where each piece stands", () => {
+test("the list is the manifest's: every piece and model of the engine's file, carried unchanged, and nothing else declared", () => {
   assert.equal(raw.format, LAWS_FORMAT);
   assert.deepEqual(problemsOf(raw), []);
   assert.equal(raw.stamp.generator, "visualizer/tools/extract_laws.py");
-  assert.match(raw.stamp.main.revision, /^[0-9a-f]{7,40}$/);
-  assert.notEqual(raw.stamp.main.on_remote, false, "the list states a main revision that others can find");
+  assert.deepEqual(raw.stamp.manifest, { path: "data/engine/declarations.json", kind: manifest.kind, revision: manifest.revision, short: manifest.revision.slice(0, 8), dirty: false, origin: manifest.origin });
+  assert.equal(raw.stamp.read, `Read from the engine's declarations at main ${manifest.revision.slice(0, 8)}`);
   assert.ok(!MACHINE.test(JSON.stringify(raw)), "a machine path leaked into the list");
-  for (const piece of raw.pieces) {
-    assert.ok(contract.includes(`\`${piece.kind}\``), `${piece.id}: its kind ${piece.kind} is not one the contract names`);
-    assert.ok(["main", "candidate", "design"].includes(piece.where), piece.id);
-    if (piece.where === "candidate") assert.equal(piece.read.revision, raw.stamp.candidate.revision, `${piece.id}: a candidate's piece is read at the candidate`);
-    if (piece.where === "main") assert.equal(piece.read.revision, raw.stamp.main.revision, `${piece.id}: a piece on main is read at main`);
-    if (piece.where === "design") assert.ok(piece.curated.named_in?.length && piece.curated.named_in.every((note) => note.path && note.ref), `${piece.id}: a design piece names the notes that name it`);
-  }
-  const counted = raw.counts;
-  assert.equal(counted.pieces, raw.pieces.length);
-  for (const family of raw.families) assert.equal(counted.by_family[family.id], raw.pieces.filter((piece) => piece.family === family.id).length, family.id);
+  // Every piece of the manifest, once, unchanged; every declared piece of the list is one of them.
+  const declared = raw.pieces.filter((piece) => piece.where === "declared");
+  assert.deepEqual(declared.map((piece) => piece.declared), manifest.pieces);
+  assert.deepEqual(declared.map((piece) => piece.id), manifest.pieces.map((piece) => piece.declared_id));
+  assert.deepEqual(raw.models.map((model) => model.declared), manifest.models);
+  assert.deepEqual([raw.legacy, raw.not_extracted], [manifest.legacy, manifest.not_extracted]);
+  // Anything else on the wall is a design note's, and declares nothing.
+  for (const piece of raw.pieces.filter((item) => item.where !== "declared")) assert.ok(piece.where === "design" && piece.declared === null, piece.id);
+  assert.equal(raw.counts.pieces, manifest.pieces.length);
+  assert.equal(library.counts().declared, manifest.pieces.length);
+  for (const family of raw.families) assert.equal(raw.counts.by_family[family.id], raw.pieces.filter((piece) => piece.family === family.id).length, family.id);
+  // No level from any other record: the manifest gives none today, and the list adds none.
+  for (const piece of raw.pieces) assert.ok(!("status" in piece) && !piece.box?.level, `${piece.id}: a level that is not the manifest's`);
+  assert.ok(contract.includes(LAWS_FORMAT), "the contract names the list's format");
 });
 
-test("what counts as a piece follows the lead's provisional answers of 16 November 2026", () => {
-  assert.match(raw.stamp.what_counts.by, /the lead's provisional answers of 16 November 2026/);
-  assert.match(contract, /the lead's provisional answers of 16 November 2026/);
-  // A kernel in the code that no kind imports is not a piece yet: apart, and never counted.
-  const apart = new Set(raw.unregistered.map((item) => item.id));
-  for (const id of ["bounding_patch_constant_field@1"]) {
-    assert.ok(apart.has(id), `${id} is kept apart as not registered`);
-    assert.ok(!byId.has(id), `${id} is not a piece yet`);
-  }
-  // "It becomes one when registered": since fa19d80c two kinds import these two kernels, and they are pieces through them.
-  for (const [id, kind] of [["bounding_patch_damage@1", "cells.patch_damage@1"], ["ph_conditioned_factor@1", "cells.ph_condition@1"]]) {
-    if (!byId.has(kind)) continue; // a list read before the kinds were registered
-    assert.ok(!apart.has(id), `${id} is registered through ${kind}, and no longer kept apart`);
-    assert.equal(byId.get(id)?.registry, "a registered kind", id);
-    assert.equal(byId.get(id)?.registered_in?.kind, kind, id);
-  }
-  for (const item of raw.unregistered) assert.match(item.words, /not a piece yet/, item.id);
-  assert.equal(raw.counts.unregistered, raw.unregistered.length);
-  assert.equal(raw.counts.pieces, raw.pieces.length, "what is apart is not counted");
-  // Every other piece says where it stands registered; the older families' laws are marked as theirs.
-  const inner = raw.frames.find((frame) => frame.kind === "inner model");
-  const innerLaws = new Set(inner.rows.filter((row) => row.read.path.endsWith("inner_laws.py")).flatMap((row) => row.pieces));
-  for (const piece of raw.pieces) {
-    if (piece.where === "design") continue;
-    if (piece.registry === "inner_laws.py") assert.ok(innerLaws.has(piece.id) && piece.registered_in.path.endsWith("inner_laws.py"), `${piece.id}: registered in inner_laws.py, and @3's rows say so`);
-    if (piece.kind === "operator") assert.equal(piece.registry, "OPERATORS", piece.id);
-    if (piece.kind === "kind") assert.equal(piece.registry, "the kind registry", piece.id);
-    if (piece.registry === "an older family") assert.ok(piece.declared_by.every((entry) => entry.how !== "direct") && piece.read.found_by === "LAW_CODES table", `${piece.id}: an older family's law is a catalogue table's, and no frame declares it directly`);
-    if (piece.registry === "a registered operator") assert.ok(byId.get(piece.registered_in.operator)?.kind === "operator", `${piece.id}: named in an operator's module`);
-  }
-  // inner_laws' provenance tag is a source tag, never a level; rk4 keeps its missing version.
-  const tagged = raw.pieces.filter((piece) => piece.read?.fields?.provenance);
-  assert.ok(tagged.length >= 1 && tagged.every((piece) => piece.registry === "inner_laws.py" && piece.status === null), "a provenance tag is read only from inner_laws.py, and gives no level");
-  const rk4 = byId.get("rk4");
-  assert.ok(rk4 && rk4.read.fields.unversioned === true, "rk4 is shown as it is, with no version");
+test("making the list again from the manifest gives the committed bytes", () => {
+  const run = tool(["--out", "-"]);
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(run.stdout, readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 });
 
-test("no status without a source; a box's status is the box's; no level is inferred", () => {
-  for (const piece of raw.pieces) {
-    if (piece.status) {
-      assert.ok(piece.status.source?.path && piece.status.level && piece.status.label, `${piece.id}: a status with no source`);
-      assert.equal(piece.kind, "operator", `${piece.id}: today only the operators have a level recorded for the piece`);
+test("the reader refuses another major of the manifest, a tree that was not clean, and a revision that is not whole", () => {
+  mkdirSync(path.join(ROOT, "out"), { recursive: true });
+  const scratch = mkdtempSync(path.join(ROOT, "out", "laws-reader-"));
+  try {
+    for (const [change, says] of [
+      [{ kind: "cells.declarations@3" }, /another major/],
+      [{ kind: "cells.declarations@1" }, /another major/],
+      [{ kind: "something.else@2" }, /not a cells\.declarations manifest/],
+      [{ dirty: true }, /not clean/],
+      [{ dirty: null }, /not clean/],
+      [{ revision: manifest.revision.slice(0, 8) }, /not a full Git revision/],
+    ]) {
+      const file = path.join(scratch, "declarations.json");
+      writeFileSync(file, JSON.stringify({ ...manifest, ...change }));
+      const run = tool(["--manifest", file, "--out", path.join(scratch, "pieces.json")]);
+      assert.equal(run.status, 2, JSON.stringify(change));
+      assert.match(run.stderr, says, JSON.stringify(change));
+      assert.ok(!existsSync(path.join(scratch, "pieces.json")), "nothing is written");
     }
-    if (piece.box) {
-      assert.ok(piece.box.source?.path && piece.box.level && piece.box.label, `${piece.id}: a box with no source`);
-      assert.equal(piece.where, "main", `${piece.id}: a box is given only for a piece on main`);
-    }
-    if (piece.where === "design") assert.equal(piece.status, null, `${piece.id}: a design piece has no level`);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
   }
-  for (const frame of raw.frames) for (const box of frame.boxes || []) assert.ok(box.source?.path && box.level, `${frame.id}: a box with no source`);
+  // The view refuses a list read from another major, or from a tree that was not clean, as well.
+  assert.throws(() => new Library({ ...raw, stamp: { ...raw.stamp, manifest: { ...raw.stamp.manifest, kind: "cells.declarations@3" } } }), /not cells\.declarations@2/);
+  assert.throws(() => new Library({ ...raw, stamp: { ...raw.stamp, manifest: { ...raw.stamp.manifest, dirty: true } } }), /not clean/);
 });
 
-test("every 'declared by' names a listed frame, and says how; every frame's row names listed pieces", () => {
-  for (const piece of raw.pieces) {
+test("a manifest that gains pieces takes no change: a model family with rows of its own, its laws and operators of its own interfaces", async () => {
+  const { describe } = await import("../src/lenses/laws_card.js");
+  const grown = JSON.parse(JSON.stringify(manifest));
+  const law = { ...JSON.parse(JSON.stringify(manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1"))), id: "cells.lineage_split@1", declared_id: "cells.lineage_split@1", name: "lineage_split", interface: "cells.lineage_law@1", host: "cells.assembly_lineages@1", declared_host: "cells.assembly_lineages@1", family: "cells.assembly_lineages@1", models: ["cells.assembly_lineages@1"], reads: null, changes: null, fields: { rate: 1 }, provenance: { tag: "cited", citation: null, source: null }, units: {}, signs: {} };
+  const operator = { ...JSON.parse(JSON.stringify(law)), id: "cells.lineage_census@1", declared_id: "cells.lineage_census@1", name: "lineage_census", piece: "operator", interface: "cells.lineage_operator@1", fields: {} };
+  grown.pieces.push(law, operator);
+  grown.models.find((model) => model.id === "cells.assembly_lineages@1").rows = [
+    { role: "law", id: law.id, declared_id: law.declared_id, piece: "law", slot: null },
+    { role: "operator", id: operator.id, declared_id: operator.declared_id, piece: "operator", slot: null },
+  ];
+  mkdirSync(path.join(ROOT, "out"), { recursive: true });
+  const scratch = mkdtempSync(path.join(ROOT, "out", "laws-grown-"));
+  try {
+    const file = path.join(scratch, "declarations.json");
+    writeFileSync(file, JSON.stringify(grown));
+    const run = tool(["--manifest", file, "--out", path.join(scratch, "pieces.json")]);
+    assert.equal(run.status, 0, run.stderr);
+    const list = JSON.parse(readFileSync(path.join(scratch, "pieces.json"), "utf8"));
+    assert.equal(list.pieces.filter((piece) => piece.where === "declared").length, manifest.pieces.length + 2);
+    const grownLibrary = new Library(list);
+    assert.equal(grownLibrary.piece("cells.lineage_split@1").family, "law", "a family's own law stands among the laws");
+    assert.equal(grownLibrary.piece("cells.lineage_census@1").family, "operator", "a family's own operator among the operators");
+    const frame = grownLibrary.frame("cells.assembly_lineages@1");
+    assert.ok(grownLibrary.racks.includes(frame) && !grownLibrary.cases.includes(frame), "a family with rows is a rack");
+    assert.deepEqual(grownLibrary.piece("cells.lineage_split@1").declared_by, [{ frame: "cells.assembly_lineages@1", how: "direct" }]);
+    // A family's own law: kernels, provenance and test apply; reads and changes do not (they are cells laws' keys).
+    assert.equal(grownLibrary.nullMeaning(grownLibrary.piece("cells.lineage_split@1"), "reads"), "not applicable");
+    assert.equal(grownLibrary.nullMeaning(grownLibrary.piece("cells.lineage_census@1"), "test"), "not stated");
+    const said = describe(grownLibrary, "laws:cells.lineage_census@1");
+    assert.match(said.eyebrow, /operator of its model family's own interface/);
+    // And the view draws it: a bar on the wall and a card in its rack.
+    const lens = new LawsLens(lensFor().stage, { raw: { laws: list } }, { add: () => ({ element: { classList: { toggle() {}, add() {}, remove() {} }, style: {} } }), clear() {}, remove() {} });
+    assert.ok(lens.layout.bars.some((bar) => bar.id === "cells.lineage_split@1"));
+    assert.ok(lens.cardList.some((card) => card.piece === "cells.lineage_census@1" && card.frame === "cells.assembly_lineages@1"));
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("each model's rows are its rows in the manifest: their roles, their slots, the next free code, and a row with no piece", () => {
+  for (const model of manifest.models) {
+    const frame = library.frame(model.declared_id);
+    assert.ok(frame, model.declared_id);
+    const shown = frame.rows.flatMap((row) => [...row.pieces.map((id, index) => ({ id: namespaced(id), role: row.role, slot: row.tags[index] })), ...row.none.map((entry) => ({ id: namespaced(entry.id), role: row.role, slot: null }))]);
+    const rows = model.rows.filter((row) => row.role !== "inner model").map((row) => ({ id: row.id, role: row.role, slot: row.slot ? Object.values(row.slot)[0] : null }));
+    assert.deepEqual(new Set(shown.map((row) => JSON.stringify(row))), new Set(rows.map((row) => JSON.stringify(row))), model.declared_id);
+    const inner = model.rows.find((row) => row.role === "inner model");
+    if (inner) assert.equal(frame.inner, inner.declared_id);
+    if (model.type === "family" && !model.rows.length) assert.ok(library.cases.includes(frame), `${model.declared_id} is a closed case`);
+    else assert.ok(library.racks.includes(frame), `${model.declared_id} is a rack`);
+  }
+  const inner = library.frames.find((frame) => frame.kind === "inner model");
+  const channels = inner.rows.find((row) => row.role === "channel law");
+  assert.equal(channels.next_code, manifest.models.find((model) => model.type === "inner").next_code);
+  assert.deepEqual(channels.tags, manifest.models.find((model) => model.type === "inner").rows.filter((row) => row.role === "channel law").map((row) => row.slot.code));
+  // The fuel kind is a row with no piece of its own: said as such.
+  assert.deepEqual([...library.rowOnly.keys()], manifest.models.flatMap((model) => model.rows.filter((row) => row.piece === null).map((row) => row.id)));
+});
+
+test("what declares a piece follows the manifest: its own row, the kind that hosts it, or the inner model a model holds", () => {
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const d = piece.declared;
+    assert.ok(piece.declared_by.length, `${piece.id}: some model declares it`);
     for (const entry of piece.declared_by) {
-      assert.ok(frameById.has(entry.frame), `${piece.id}: declared by ${entry.frame}`);
-      assert.ok(["direct", "kind", "inner"].includes(entry.how), `${piece.id}: ${entry.how}`);
       const frame = frameById.get(entry.frame);
-      const names = frame.rows.flatMap((row) => row.pieces);
-      if (entry.how === "direct") assert.ok(names.includes(piece.id), `${piece.id}: no row of ${entry.frame} names it`);
-      if (entry.how === "kind") assert.ok(names.includes(entry.via) && byId.get(entry.via).read.fields.pieces.includes(piece.id), `${piece.id}: not a piece of ${entry.via}`);
-      if (entry.how === "inner") assert.equal(entry.via, frame.inner, `${piece.id}: ${entry.frame} does not hold ${entry.via}`);
+      if (entry.how === "direct") assert.ok(frame.declared.rows.some((row) => row.id === d.id), `${piece.id}: a row of ${entry.frame}`);
+      if (entry.how === "kind") assert.equal(namespaced(entry.via), d.host, `${piece.id}: hosted by ${entry.via}`);
+      if (entry.how === "inner") assert.equal(namespaced(frame.inner), d.family, `${piece.id}: of the inner model ${entry.frame} holds`);
     }
-  }
-  for (const frame of raw.frames) for (const row of frame.rows) for (const id of row.pieces) assert.ok(byId.has(id), `${frame.id} names ${id}`);
-});
-
-test("no registry code is used twice, and the next free code follows the codes in use", () => {
-  const codes = new Map();
-  for (const piece of raw.pieces) {
-    const code = piece.read?.fields?.code;
-    if (code === undefined) continue;
-    assert.ok(!codes.has(code), `code ${code} is used by ${codes.get(code)} and ${piece.id}`);
-    codes.set(code, piece.id);
-  }
-  const inner = raw.frames.find((frame) => frame.kind === "inner model");
-  const channels = inner.rows.find((row) => row.label === "Channel laws");
-  // The inner model's own codes are a registry of their own, apart from the older families' catalogue codes.
-  assert.deepEqual(Object.keys(channels.codes), channels.pieces);
-  assert.equal(new Set(Object.values(channels.codes)).size, channels.pieces.length, "the inner model's codes are distinct");
-  assert.equal(channels.next_code, Math.max(...Object.values(channels.codes)) + 1, "the next free code follows the inner model's own");
-});
-
-test("nothing from a reference simulator is listed as a piece or a frame", () => {
-  for (const item of [...raw.pieces, ...raw.frames]) {
-    for (const word of overlay.references) {
-      assert.ok(!item.id.toLowerCase().includes(word), `${item.id} is named after a reference simulator`);
-      assert.ok(!String(item.read?.path || "").toLowerCase().includes(word), `${item.id} is read from a reference simulator's file`);
-    }
+    // Every model the manifest lets declare it does.
+    for (const model of d.models) assert.ok(piece.declared_by.some((entry) => namespaced(entry.frame) === model), `${piece.id}: ${model}`);
   }
 });
 
-test("what stands on main in the list is still found at the revision it states (where the main checkout is there to ask)", (t) => {
+test("a design note's laws are kept only where the note still names them at the manifest's revision, apart from the declared pieces", (t) => {
+  const designed = library.pieces.filter((piece) => piece.where === "design");
+  assert.equal(designed.length, overlay.designed.length);
+  for (const piece of designed) {
+    assert.ok(!manifest.pieces.some((item) => namespaced(item.declared_id) === namespaced(piece.id)), `${piece.id} is not declared`);
+    assert.equal(library.familyById.get(piece.family).shelf, "design", `${piece.id} stands on the shelf apart`);
+  }
   const common = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).stdout.trim();
   const repo = common ? path.dirname(common) : null;
-  const revision = raw.stamp.main.revision;
-  if (!repo || !existsSync(path.join(repo, "src", "cells")) || spawnSync("git", ["-C", repo, "cat-file", "-e", `${revision}^{commit}`]).status !== 0) {
-    t.skip("the main checkout, or the revision the list states, is not here to ask");
-    return;
-  }
+  if (!repo || spawnSync("git", ["-C", repo, "cat-file", "-e", `${manifest.revision}^{commit}`]).status !== 0) return t.skip("the main checkout, or the manifest's revision, is not here to ask");
   const files = new Map();
-  const read = (file) => {
-    if (!files.has(file)) files.set(file, spawnSync("git", ["-C", repo, "show", `${revision}:${file}`], { encoding: "utf8", maxBuffer: 1 << 26 }).stdout);
-    return files.get(file);
-  };
-  // A catalogue law may be named by a comprehension (Kv1's are written f"kv1p{i}_mh…"): its table is read again with the tool's own reader.
-  const tables = {};
-  for (const piece of raw.pieces.filter((item) => item.where === "main")) {
-    if (piece.read.found_by === "LAW_CODES table") (tables[piece.read.path] ??= []).push(piece.id);
-    else assert.ok(read(piece.read.path).includes(piece.id.replace(/^cells\./, "")), `${piece.id} is not found in ${piece.read.path} at ${revision}`);
-  }
-  const check = `
-import json, sys
-sys.path.insert(0, sys.argv[1])
-import extract_laws as tool
-reading = tool.Reading(sys.argv[2], sys.argv[3])
-tables = json.loads(sys.argv[4])
-print(json.dumps({path: sorted(set(ids) - set(reading.value(path, "LAW_CODES") or {})) for path, ids in tables.items()}))
-`;
-  const run = spawnSync("python3", ["-I", "-c", check, path.join(ROOT, "tools"), repo, revision, JSON.stringify(tables)], { encoding: "utf8" });
-  assert.equal(run.status, 0, run.stderr);
-  for (const [file, missing] of Object.entries(JSON.parse(run.stdout))) assert.deepEqual(missing, [], `${file} at ${revision} no longer lists them in LAW_CODES`);
-  for (const frame of raw.frames.filter((item) => item.read.revision === revision)) assert.ok(read(frame.read.path).includes(frame.id), `${frame.id} is not in ${frame.read.path}`);
-  // A design note on main names its pieces at the revision the list states, and the code does not hold them.
-  for (const piece of raw.pieces.filter((item) => item.where === "design")) {
-    for (const note of piece.curated.named_in.filter((item) => item.ref === "main")) assert.ok(read(note.path).includes(piece.id), `${note.path} does not name ${piece.id} at ${revision}`);
+  for (const piece of designed)
+    for (const note of piece.named_in) {
+      if (!files.has(note.path)) files.set(note.path, spawnSync("git", ["-C", repo, "show", `${manifest.revision}:${note.path}`], { encoding: "utf8", maxBuffer: 1 << 26 }).stdout.split("\n"));
+      assert.ok(files.get(note.path)[note.line - 1]?.includes(piece.id), `${note.path}:${note.line} does not name ${piece.id} at ${manifest.revision}`);
+    }
+});
+
+test("the three meanings of null, as the format page defines them, and an empty list as none", async () => {
+  const { describe } = await import("../src/lenses/laws_card.js");
+  const kv = library.piece("kv1p5_mh@1");
+  const kind = library.piece("cells.transporter@1");
+  const operator = library.piece("ideal_osmosis_linear_compliance_water@1");
+  // Not applicable: a law owns nothing and a kind has no kernels; nothing is said.
+  assert.equal(library.nullMeaning(kv, "owns"), "not applicable");
+  assert.equal(library.nullMeaning(kind, "kernels"), "not applicable");
+  // Not extracted: the pair is in not_extracted.
+  assert.equal(library.nullMeaning(kv, "energy"), "not extracted");
+  assert.equal(library.nullMeaning(kind, "provenance"), "not extracted");
+  assert.equal(library.nullMeaning(operator, "test"), "not extracted");
+  // Not stated: the key applies, and the declaration does not state it.
+  assert.equal(library.nullMeaning(kv, "test"), "not stated");
+  const facts = (piece) => new Map(describe(library, `laws:${piece.id}`).facts);
+  assert.equal(facts(kv).get("Test"), "not stated");
+  assert.equal(facts(kv).get("Energy"), "not yet extracted in the engine's declarations");
+  assert.ok(!facts(kv).has("Owns"), "nothing is said of what does not apply");
+  assert.equal(facts(kind).get("Provenance"), "not yet extracted in the engine's declarations");
+  assert.ok(!facts(kind).has("Kernels"));
+  // An empty list: the declaration lists none.
+  assert.equal(facts(kv).get("Reads"), "the declaration lists none");
+  // A nested null keeps its field's own meaning: a leak law with no gate has no RK4 step bound; an operator with no split part, no step method.
+  assert.equal(facts(library.piece("kleak_always_open@1")).get("Reference RK4 step bound"), "none: a law with no gate");
+  assert.equal(facts(library.piece("cell_owned_compartments@1")).get("Step method"), "none");
+  const label = { kernels: "Kernels", provenance: "Provenance", test: "Test", reads: "Reads", changes: "Changes", owns: "Owns", writes: "Writes", provides: "Provides", controls: "Controls", ledgers: "Ledgers", energy: "Energy", units: "Units", signs: "Signs", requires: "Requires", laws: "Laws it hosts" };
+  // Held on every piece: a null key is said by its meaning, and never by a value.
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const said = facts(piece);
+    for (const key of Object.keys(label)) {
+      if (piece.declared[key] !== null) continue;
+      const meaning = library.nullMeaning(piece, key);
+      if (meaning === "not applicable") assert.ok(!said.has(label[key]), `${piece.id}: ${key}`);
+      else assert.equal(said.get(label[key]), meaning === "not extracted" ? "not yet extracted in the engine's declarations" : "not stated", `${piece.id}: ${key}`);
+    }
+    // No level anywhere today: the manifest gives none.
+    assert.match(said.get("Status"), /^not stated/, piece.id);
   }
 });
 
-test("the tool's rules: which constant names name a piece, and the globs of the Engine view's boxes", () => {
-  const code = `
-import json, sys
-sys.path.insert(0, sys.argv[1])
-import extract_laws as tool
-names = [("LAW_ID", "src/cells/processes/x.py"), ("FACE_LAW", "src/cells/core/x.py"), ("SOLVER_ID", "src/cells/numerics/x.py"), ("ARS222_ID", "src/cells/numerics/imex.py"),
-         ("READ_ID", "src/cells/processes/x.py"), ("KIND_ID", "src/cells/processes/x.py"), ("KIND_ID", "src/cells/models/inner_kinds/x.py"), ("STABLE_RNG_ID", "src/cells/processes/x.py"), ("MODEL_ID", "src/cells/core/x.py")]
-print(json.dumps({"kinds": [tool.constant_kind(name, where) for name, where in names],
-                  "globs": [bool(tool.glob_regex(pattern).match(path)) for pattern, path in [("src/cells/processes/*channels*.py", "src/cells/processes/hcn_channels.py"), ("src/cells/coupling/**", "src/cells/coupling/a/b.py"), ("src/cells/processes/*.py", "src/cells/processes/a/b.py")]]}))
-`;
-  const run = spawnSync("python3", ["-I", "-c", code, path.join(ROOT, "tools")], { encoding: "utf8" });
-  assert.equal(run.status, 0, run.stderr);
-  const out = JSON.parse(run.stdout);
-  assert.deepEqual(out.kinds, ["law", "law", "solver", "solver", "read", "route kind", null, null, null]);
-  assert.deepEqual(out.globs, [true, true, false]);
+test("what the manifest has not exercised yet is said as the format page says it: a status with its source, a page, a work's DOI or URL, a calibrated piece, a scoped read, a piece outside the package", async () => {
+  const { describe } = await import("../src/lenses/laws_card.js");
+  const fixture = JSON.parse(JSON.stringify(raw));
+  const kv = fixture.pieces.find((piece) => piece.id === "kv1p5_mh@1").declared;
+  Object.assign(kv, {
+    status: "established",
+    status_source: "docs/SOME_RECORD.md",
+    doc: "docs/library/cells/laws/kv1p5_mh@1.md",
+    test: "tests/unit/test_kv1p5.py::test_planted",
+    provenance: { tag: "calibrated", source: "a fit to recorded currents", citation: { source: "a paper", place: "table 2", licence: "CC BY 4.0", departures: ["one gate fewer"], works: [{ authors: ["A. Author"], year: 2001, title: "A title", doi: "10.1000/xyz", url: null }, { authors: ["B. Author"], year: 2002, title: "Another", doi: null, url: "https://example.org/b" }] } },
+    reads: [{ name: "membrane_area", mode: "reference", stage: "inner", scoped: true }],
+    module_path: null,
+    line: null,
+  });
+  const other = new Library(fixture);
+  const said = describe(other, "laws:kv1p5_mh@1");
+  const facts = new Map(said.facts);
+  assert.equal(facts.get("Status"), "established (from docs/SOME_RECORD.md)");
+  assert.equal(facts.get("Page"), "docs/library/cells/laws/kv1p5_mh@1.md");
+  assert.equal(facts.get("Test"), "tests/unit/test_kv1p5.py::test_planted");
+  assert.equal(facts.get("Provenance"), "calibrated");
+  assert.equal(facts.get("Rests on"), "a fit to recorded currents");
+  assert.equal(facts.get("Departs from it"), "one gate fewer");
+  assert.equal(facts.get("Declared in"), "cells.models.inner_laws, outside the cells package");
+  const works = said.sections.find((section) => section.title === "Works").items;
+  assert.deepEqual(works.map((work) => work.links.map((link) => link.url)), [["https://doi.org/10.1000/xyz"], ["https://example.org/b"]]);
+  assert.equal(said.sections.find((section) => section.title === "Reads").items[0].detail, "reference, at the inner stage, only the slots it names");
+  assert.ok(said.sources.some((source) => source.path === "docs/library/cells/laws/kv1p5_mh@1.md" && source.revision === manifest.revision), "the page links at the manifest's revision");
+  assert.ok(!said.sources.some((source) => !source.path), "no link to a file outside the package");
+  // Today: no page linked anywhere, and no level shown.
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const today = describe(library, `laws:${piece.id}`);
+    assert.ok(!today.sources.some((source) => source.path.startsWith("docs/library/")), piece.id);
+    assert.equal(today.status, null);
+  }
 });
 
 // ------------------------------------------------------------ the view, without a browser
@@ -244,22 +309,17 @@ test("the wall holds every piece of the list, a bar for each in its family's col
     assert.equal(bars.filter((bar) => bar.family === family.id).length, raw.pieces.filter((piece) => piece.family === family.id).length, family.id);
     assert.ok(bars.filter((bar) => bar.family === family.id).every((bar) => byId.get(bar.id).family === family.id), family.id);
   }
-  // Each form is where the piece stands: solid on main, banded on the candidate, an outline for a design.
-  const form = { main: "solid", candidate: "band", design: "design" };
+  // Each form is where the piece stands: solid where declared, an outline for a design note's.
+  const form = { declared: "solid", design: "design" };
   for (const bar of lens.layout.bars) if (bar.id) assert.equal(bar.form, form[byId.get(bar.id).where], bar.id);
-  // And the older families' laws stand above the registered ones of their family, narrower: marked as in an older family.
-  for (const family of raw.families) {
-    const column = lens.layout.bars.filter((bar) => bar.id && bar.family === family.id);
-    const older = column.filter((bar) => bar.older), registered = column.filter((bar) => !bar.older);
-    for (const bar of column) assert.equal(bar.older, ["an older family", "no registry"].includes(byId.get(bar.id).registry), bar.id);
-    if (older.length && registered.length) assert.ok(Math.min(...older.map((bar) => bar.y)) > Math.max(...registered.map((bar) => bar.y)), `${family.id}: the older families' part is apart`);
-    for (const bar of older) assert.ok(bar.w < registered[0]?.w || bar.w < 1.3, bar.id);
-  }
+  // Every bar is one size: nothing on the wall is narrower or set apart within its column.
+  const bars2 = lens.layout.bars.filter((bar) => bar.id);
+  assert.equal(new Set(bars2.map((bar) => `${bar.w}|${bar.h}|${bar.d}`)).size, 1);
 });
 
 test("a chosen piece lights exactly the slots that declare it, and draws a line to each", () => {
   const { lens } = lensFor();
-  for (const piece of raw.pieces) {
+  for (const piece of library.pieces) {
     lens.setSelection(`laws:${piece.id}`);
     const lit = lens.lights();
     assert.deepEqual(new Set([...lit.cards, ...lit.blocks]), expectedSlots(piece), piece.id);
@@ -271,9 +331,9 @@ test("a chosen piece lights exactly the slots that declare it, and draws a line 
 
 test("a chosen frame lights exactly its pieces on the wall", () => {
   const { lens } = lensFor();
-  for (const frame of raw.frames) {
+  for (const frame of library.frames) {
     lens.setSelection(`laws:${frame.id}`);
-    const expected = new Set(raw.pieces.filter((piece) => piece.declared_by.some((entry) => entry.frame === frame.id)).map((piece) => piece.id));
+    const expected = new Set(library.pieces.filter((piece) => piece.declared_by.some((entry) => entry.frame === frame.id)).map((piece) => piece.id));
     assert.deepEqual(lens.lights().bars, expected, frame.id);
     assert.equal(lens.routes.length, frame.rows.reduce((sum, row) => sum + row.pieces.length, 0), `${frame.id}: a route from each of its slots`);
   }
@@ -282,10 +342,11 @@ test("a chosen frame lights exactly its pieces on the wall", () => {
 test("search, family and where narrow the wall; the arrow keys step through what passes", () => {
   const { lens } = lensFor();
   const families = new Map(raw.families.map((family) => [family.id, family.label]));
-  const matches = (piece, words) => [piece.id, piece.curated?.unit, piece.curated?.label, piece.read?.path, families.get(piece.family), piece.kind].some((text) => text && String(text).toLowerCase().includes(words));
-  for (const words of ["calcium", "kir2", "proton", "operators/", "inner_kinds"]) {
+  const matches = (piece, words) => [piece.id, piece.declared?.id, piece.declared?.interface, piece.kind, piece.declared?.module_path, families.get(piece.family)].some((text) => text && String(text).toLowerCase().includes(words));
+  const order = (keep) => raw.families.flatMap((family) => library.pieces.filter((piece) => piece.family === family.id && keep(piece))).map((piece) => `laws:${piece.id}`);
+  for (const words of ["calcium", "kir2", "proton", "operators/", "inner_kinds", "cycle_law"]) {
     lens.setQuery(words);
-    assert.deepEqual(lens.order(), raw.pieces.filter((piece) => matches(piece, words)).map((piece) => `laws:${piece.id}`), words);
+    assert.deepEqual(lens.order(), order((piece) => matches(piece, words)), words);
     const found = lens.layout.bars.filter((bar) => bar.id && matches(byId.get(bar.id), words));
     for (const bar of found) {
       const slot = lens.barSlot.get(bar.id)[0];
@@ -293,24 +354,26 @@ test("search, family and where narrow the wall; the arrow keys step through what
     }
   }
   lens.setQuery("");
-  lens.setMark("operators");
-  assert.equal(lens.order().length, raw.pieces.filter((piece) => piece.family === "operators").length);
+  lens.setMark("split");
+  assert.equal(lens.order().length, raw.pieces.filter((piece) => piece.family === "split").length);
   lens.setMark("all");
-  lens.setMode("candidate");
-  assert.deepEqual(lens.order(), raw.pieces.filter((piece) => piece.where === "candidate").map((piece) => `laws:${piece.id}`));
+  lens.setMode("design");
+  assert.deepEqual(lens.order(), order((piece) => piece.where === "design"));
   lens.setMode("all");
   lens.setSelection(null);
+  const all = order(() => true);
   const first = lens.step(1);
-  assert.equal(first, `laws:${raw.pieces[0].id}`);
+  assert.equal(first, all[0]);
   lens.setSelection(first);
-  assert.equal(lens.step(1), `laws:${raw.pieces[1].id}`);
-  assert.equal(lens.step(-1), `laws:${raw.pieces.at(-1).id}`);
+  assert.equal(lens.step(1), all[1]);
+  assert.equal(lens.step(-1), all.at(-1));
 });
 
 test("every piece and every frame can be chosen by id; the list holds every id the view accepts", () => {
   const { lens } = lensFor();
   const listed = lens.sections().flatMap((section) => section.entities.map((entity) => entity.id));
-  assert.deepEqual(new Set(listed), new Set([...raw.pieces.map((piece) => `laws:${piece.id}`), ...raw.frames.map((frame) => `laws:${frame.id}`)]));
+  const expected = [...raw.pieces.map((piece) => piece.id), ...raw.models.map((model) => model.id), ...[...library.rowOnly.values()].map((row) => row.id), ...raw.legacy.map((item) => item.id)];
+  assert.deepEqual(new Set(listed), new Set(expected.map((id) => `laws:${id}`)));
   assert.equal(listed.length, new Set(listed).size, "no id is listed twice");
   for (const id of listed) {
     assert.ok(lens.has(id), id);
@@ -319,7 +382,15 @@ test("every piece and every frame can be chosen by id; the list holds every id t
     assert.ok(lens.describe(id)?.label, `${id}: the panel has nothing to say`);
   }
   assert.equal(lens.has("kv1p5_mh@1"), false, "a bare engine id is not this view's");
-  assert.equal(lens.has("laws:nothing@1"), false);
+  // Either spelling of a declared ID names one piece (D185), and the view draws it by its declared spelling.
+  lens.setSelection("laws:cells.kv1p5_mh@1");
+  assert.equal(lens.selected, "laws:kv1p5_mh@1");
+  lens.setSelection("laws:atp_driven_transporter_mass_action_positive@1");
+  assert.equal(lens.selected, "laws:cells.atp_driven_transporter_mass_action_positive@1");
+  // Any other ID is answered: the declarations do not list it.
+  assert.equal(lens.has("laws:nothing@1"), true);
+  assert.match(lens.describe("laws:nothing@1").plain, /^The engine's declarations do not list nothing@1/);
+  assert.equal(lens.has("laws:not an id"), false);
   for (const section of lens.sections()) for (const entity of section.entities) assert.ok(typeof entity.keywords === "string", `${entity.id}: the list's search finds it by its words`);
 });
 
@@ -344,30 +415,32 @@ test("a piece is chosen by pointer: a ray at its bar or its slot hits it", () =>
   assert.equal(pickAt(new THREE.Vector3(card.x, card.y, card.z)), "laws:nak_atp_mass_action_positive@1");
 });
 
-test("the panel says a status only where the record states one, and 'no level recorded' everywhere else", () => {
+test("a piece's panel says what the manifest states of it, links its files at the manifest's revision, and shows no level it does not give", () => {
   const { lens } = lensFor();
-  for (const piece of raw.pieces) {
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const d = piece.declared;
     const entity = lens.describe(`laws:${piece.id}`);
-    const chips = entity.chips.map((chip) => chip.label);
-    if (piece.status) {
-      assert.equal(entity.status, piece.status.level, piece.id);
-      assert.ok(entity.sources.some((source) => source.path === piece.status.source.path), `${piece.id}: its status's source is cited`);
-      assert.ok(!chips.includes("No level recorded for this piece"), piece.id);
-    } else {
-      assert.equal(entity.status, null, piece.id);
-      assert.ok(chips.includes("No level recorded for this piece"), piece.id);
-      const said = entity.facts.find(([label]) => label === "Status")[1];
-      if (piece.box) assert.match(said, /a status of the box, not of the piece/, piece.id);
-    }
-    // A file read on a working branch is named in words, never linked at the main address.
-    if (piece.read && piece.read.revision !== raw.stamp.main.revision) assert.ok(!entity.sources.some((source) => source.path === piece.read.path), `${piece.id}: a branch's file is linked`);
-    if (piece.read?.fields?.doc) assert.ok(entity.plain.includes(piece.read.fields.doc), `${piece.id}: what it computes is its module's own words`);
-    if (piece.read?.fields?.provenance) assert.match(entity.facts.find(([label]) => label === "Provenance tag")[1], /a source tag in inner_laws\.py, not a level/, piece.id);
-    if (piece.registry === "an older family") assert.ok(chips.includes("In a model family's table"), piece.id);
-    if (piece.registry === "no registry") assert.ok(chips.includes("A named law in no registry"), piece.id);
-    if (piece.read?.fields?.unversioned) assert.match(entity.facts.find(([label]) => label === "Version")[1], /no version/, piece.id);
+    const facts = new Map(entity.facts);
+    assert.equal(entity.status, null, piece.id);
+    assert.equal(facts.get("Interface"), d.interface, piece.id);
+    assert.equal(facts.get("Family"), d.family, piece.id);
+    assert.equal(facts.get("Models"), d.models.join(", "), piece.id);
+    assert.equal(facts.get("Declared in"), `${d.module_path}, line ${d.line}`, piece.id);
+    assert.match(facts.get("Status"), /^not stated/, piece.id);
+    // Where it is declared, and each kernel, linked at the manifest's revision; nothing else of the engine's.
+    const own = entity.sources.filter((source) => source.revision);
+    assert.ok(own.every((source) => source.revision === manifest.revision), piece.id);
+    assert.ok(own.some((source) => source.path === d.module_path && source.where.startsWith(`line ${d.line}`)), `${piece.id}: where it is declared`);
+    for (const kernel of Object.values(d.kernels || {})) if (kernel.module_path) assert.ok(own.some((source) => source.path === kernel.module_path), `${piece.id}: its kernel ${kernel.function}`);
+    assert.equal(entity.sources.length, own.length, `${piece.id}: no source but the manifest's`);
+    // Its provenance tag in the format page's words; a citation with its place, licence and departures.
+    if (d.provenance) assert.equal(facts.get("Provenance"), { parity: "moved from an older family (moving is not calibrating)", cited: "cited", calibrated: "calibrated" }[d.provenance.tag], piece.id);
+    if (d.provenance?.citation) for (const label of ["Cited", "Where in it", "Licence", "Departs from it"]) assert.ok(facts.get(label), `${piece.id}: ${label}`);
+    // Its interface's own fields, each by its name in the format page's words (or its own key where the page has none).
+    const named = { code: "Code", gates: "Gates", rk4_step_s: "Reference RK4 step bound", moves: "Moves per forward cycle", model_key: "Definition key", parts: "Parts of the step", step_method: "Step method" };
+    for (const key of Object.keys(d.fields)) if (named[key]) assert.ok(facts.has(named[key]), `${piece.id}: ${key}`);
   }
-  for (const frame of raw.frames) assert.equal(lens.describe(`laws:${frame.id}`).status, null, `${frame.id}: a frame takes no status from its parts`);
+  for (const frame of library.frames) assert.equal(lens.describe(`laws:${frame.id}`).status, null, `${frame.id}: a model takes no status from its parts`);
 });
 
 test("it asks the stage for the page's look, and hands it back as it found it", () => {
@@ -450,15 +523,19 @@ test("the legend says what each visual difference stands for, and nothing else d
   const { legend } = lens.chrome();
   const ids = new Set(legend.items.map((item) => item.id));
   for (const item of legend.items) assert.ok(MARKS.some((mark) => mark.id === item.id && mark.label === item.label), item.id);
-  const entry = { solid: "laws-main", band: "laws-candidate", design: "laws-design" };
+  const entry = { solid: "laws-declared", design: "laws-design" };
   for (const form of new Set(lens.layout.bars.filter((bar) => bar.id).map((bar) => bar.form))) assert.ok(ids.has(entry[form]), `the ${form} form is in the legend`);
-  if (lens.layout.bars.some((bar) => bar.id && bar.older)) assert.ok(ids.has("laws-older"));
-  for (const id of ["laws-height", "laws-chosen", "laws-rack", "laws-slot"]) assert.ok(ids.has(id), id);
+  for (const id of ["laws-height", "laws-chosen", "laws-rack", "laws-slot", "laws-case", "laws-none"]) assert.ok(ids.has(id), id);
   assert.equal(ids.has("laws-block"), lens.blocks.mesh.count > 0, "the inner model's block, where a rack holds it");
   assert.equal(ids.has("laws-next"), lens.nextCount > 0, "the next free code's empty socket, where a row has one");
-  assert.ok(!ids.has("laws-older-family") && !MARKS.some((mark) => mark.id === "laws-older-family"), "no mark for the older model families: the map does not show them");
   assert.match(legend.note.text, /stand for nothing/, "the room is said to stand for nothing");
-  if (!raw.pieces.some((piece) => piece.where === "candidate")) assert.ok(!ids.has("laws-candidate"), "a mark with nothing to show is left out");
+  // The legend's counts are the manifest's.
+  const count = new Map(legend.items.map((item) => [item.id, item.count]));
+  assert.equal(count.get("laws-declared"), manifest.pieces.length);
+  assert.equal(count.get("laws-rack"), manifest.models.filter((model) => model.rows.length).length);
+  assert.equal(count.get("laws-case"), manifest.models.filter((model) => !model.rows.length).length);
+  assert.equal(count.get("laws-none"), manifest.models.flatMap((model) => model.rows.filter((row) => row.piece === null)).length);
+  assert.equal(count.get("laws-next"), manifest.models.filter((model) => model.next_code !== null).length);
   // What only a search, a filter or a test of size draws is named while it is drawn.
   assert.ok(!ids.has("laws-found") && !ids.has("laws-empty"));
   lens.setQuery("calcium");
@@ -473,9 +550,9 @@ test("the legend says what each visual difference stands for, and nothing else d
   const design = lens.wall.design;
   assert.ok(lens.layout.bars.filter((bar) => bar.id && bar.form === "solid").every((bar) => { const at = lens.barSlot.get(bar.id)[0]; return lens.wall[at.set].target[at.index] === 0; }), "the rest stays back");
   assert.ok(design.mesh.count > 0);
-  lens.setIsolate("laws-older");
-  const olderBar = lens.layout.bars.find((bar) => bar.id && bar.older && bar.form === "solid"), at = lens.barSlot.get(olderBar.id)[0];
-  assert.ok(lens.wall[at.set].target[at.index] > 0, "an older family's law stands forward");
+  lens.setIsolate("laws-declared");
+  const declaredBar = lens.layout.bars.find((bar) => bar.id && bar.form === "solid"), at = lens.barSlot.get(declaredBar.id)[0];
+  assert.ok(lens.wall[at.set].target[at.index] > 0, "a declared piece stands forward");
   assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-found"), "what the legend's choice fades is named while it is faded");
   lens.setIsolate("laws-rack");
   assert.equal(lens.isolate, null);
@@ -483,33 +560,34 @@ test("the legend says what each visual difference stands for, and nothing else d
   assert.ok(!Object.values(lens.materials).some((material) => material.isLineDashedMaterial), "no dashed mark");
   for (const id of [...MARKS.map((mark) => mark.id), legend.note.swatch]) assert.ok(LAWS_CSS.includes(`.swatch-${id} `), `${id}: the page's legend has a swatch for it`);
   // The list and the panel use the same swatches as the legend, each as the wall draws the piece or the frame.
-  const used = new Set(lens.sections().flatMap((section) => section.entities.map((entity) => entity.swatch)));
+  // (the legacy model IDs the wall lists as not shown have no swatch: nothing is drawn for them)
+  const used = new Set(lens.sections().flatMap((section) => section.entities.map((entity) => entity.swatch)).filter(Boolean));
   for (const piece of raw.pieces.slice(0, 40)) for (const section of lens.describe(`laws:${piece.id}`).sections || []) for (const item of section.items || []) if (item.swatch) used.add(item.swatch);
   for (const swatch of used) assert.ok(MARKS.some((mark) => mark.id === swatch), `${swatch}: a swatch the legend does not explain`);
   for (const piece of raw.pieces) {
     const entity = lens.sections().flatMap((section) => section.entities).find((item) => item.id === `laws:${piece.id}`);
     const bar = lens.layout.bars.find((item) => item.id === piece.id);
-    assert.equal(entity.swatch, bar.form === "design" ? "laws-design" : bar.older ? "laws-older" : bar.form === "band" ? "laws-candidate" : "laws-main", piece.id);
+    assert.equal(entity.swatch, bar.form === "design" ? "laws-design" : "laws-declared", piece.id);
   }
-  // No legend word and no name in the room is a level: the levels are the panel's, with their sources.
-  const levels = new Set();
-  for (const piece of raw.pieces) for (const said of [piece.status, piece.box]) if (said) levels.add(said.level_label);
+  // No legend word and no name in the room is a level: the scene's level words are not written anywhere in the room.
+  const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
+  const levels = new Set((scene.statuses || []).map((status) => status.label));
   const plaques = plaquesOf(lens.library, lens.layout);
-  for (const text of [...legend.items.map((item) => item.label), ...plaques.map((plaque) => plaque.text)]) for (const level of levels) if (level) assert.ok(!text.includes(level), `"${text}" says a level: ${level}`);
+  for (const text of [...legend.items.map((item) => item.label), ...plaques.map((plaque) => plaque.text)]) for (const level of levels) if (level) assert.ok(!new RegExp(`\\b${level}\\b`, "i").test(text), `"${text}" says a level: ${level}`);
   // At rest each form is one colour, one size and one depth: a bar differs from another only as the legend says.
   const colours = (set) => {
     const out = new Set(), colour = new THREE.Color();
     for (let index = 0; index < set.mesh.count; index++) out.add((set.mesh.getColorAt(index, colour), colour.getHexString()));
     return out;
   };
-  for (const name of ["solid", "band", "design"]) {
+  for (const name of ["solid", "design"]) {
     if (!lens.wall[name].mesh.count) continue;
     assert.equal(colours(lens.wall[name]).size, 1, `${name}: one colour at rest`);
     assert.ok([...lens.wall[name].offset].every((value) => value === 0), `${name}: all flush at rest`);
   }
   const bars = lens.layout.bars.filter((bar) => bar.id);
   assert.equal(new Set(bars.map((bar) => `${bar.h}|${bar.d}`)).size, 1, "every bar is as tall and as deep as every other");
-  assert.equal(new Set(bars.map((bar) => `${bar.older}|${bar.w}`)).size, new Set(bars.map((bar) => bar.older)).size, "a bar is narrower only for being an older family's or in no registry");
+  assert.equal(new Set(bars.map((bar) => bar.w)).size, 1, "every bar is as wide as every other");
   // The room: one colour to each of its parts.
   for (const [name, set] of Object.entries({ planks: lens.planks, dividers: lens.dividers, rim: lens.rim, panels: lens.panels, rails: lens.rails, sockets: lens.sockets, blocks: lens.blocks })) assert.equal(colours(set).size, 1, `${name}: the room's ${name} are one colour`);
   // The cards in the racks are coloured by where their piece stands, as the bars are.
@@ -528,19 +606,27 @@ test("the room's names are written from the list: each family once, a shelf only
     lens.update(16);
     const plaques = plaquesOf(lens.library, lens.layout);
     const families = plaques.filter((plaque) => plaque.kind === "family");
-    for (const family of raw.families) assert.equal(families.filter((plaque) => plaque.text === family.short).length, 1, `${family.id} is named once`);
+    for (const family of raw.families) assert.equal(families.filter((plaque) => plaque.family === family.id && plaque.text === family.short).length, 1, `${family.id} is named once`);
     const shelves = plaques.filter((plaque) => plaque.kind === "shelf");
     for (const shelf of raw.shelves) {
       const many = raw.families.filter((family) => family.shelf === shelf.id).length > 1;
       assert.equal(shelves.filter((plaque) => plaque.text === shelf.label).length, many ? 1 : 0, `${shelf.id}: named ${many ? "once" : "only by its family"}${lens.narrow ? " on a tall screen" : ""}`);
     }
-    // On the wall no name is written twice (a rack's rows may share a family's word: they name the rack's rows).
-    const wall = plaques.filter((plaque) => plaque.kind === "family" || plaque.kind === "shelf");
-    for (const text of new Set(wall.map((plaque) => plaque.text))) if (wall.filter((plaque) => plaque.text === text).length > 1) assert.fail(`"${text}" is written twice on the wall`);
+    // On the wall no shelf's name is written twice; a family's short name may recur on another shelf (Channel, under laws and under design notes), never on one.
+    for (const text of new Set(shelves.map((plaque) => plaque.text))) assert.equal(shelves.filter((plaque) => plaque.text === text).length, 1, `"${text}" is written twice on the wall`);
+    for (const shelf of raw.shelves) {
+      const names = families.filter((plaque) => library.familyById.get(plaque.family).shelf === shelf.id).map((plaque) => plaque.text);
+      assert.equal(new Set(names).size, names.length, `${shelf.id}: a name written twice on one shelf`);
+    }
+    // The revision the manifest was written at, and no date: the manifest states none.
     const revision = plaques.find((plaque) => plaque.kind === "revision");
-    assert.ok(revision.text.includes(`main ${raw.stamp.main.revision}`) && revision.text.includes(longDate(raw.stamp.main.date)), revision.text);
+    assert.ok(revision.text.startsWith(`Read from the engine's declarations at main ${manifest.revision.slice(0, 8)}`), revision.text);
+    assert.ok(!/committed|20[0-9]{2}/.test(revision.text), revision.text);
     assert.match(longDate("2026-11-16"), /^16 November 2026$/);
-    assert.ok(!plaques.some((plaque) => /older model famil/i.test(plaque.text)), "nothing is written of the older model families: the map does not show them");
+    // Each slot's code, key or position, where its model has slots; the row with no piece by its ID.
+    const tags = plaques.filter((plaque) => plaque.kind === "tag").map((plaque) => plaque.text);
+    for (const row of manifest.models.flatMap((model) => model.rows)) if (row.slot) assert.ok(tags.includes(String(Object.values(row.slot)[0])), `${row.id}: ${JSON.stringify(row.slot)}`);
+    assert.ok(plaques.some((plaque) => plaque.kind === "none" && plaque.text === "maintained_chemical_reservoirs@1: no piece"));
     // Names of one band never run into each other: each is narrower than the step between columns (letters at most 0.62 of an em wide).
     const heads = lens.layout.heads;
     const step = Math.min(...heads.flatMap((head, n) => (n && heads[n - 1].band === head.band ? [head.x - heads[n - 1].x] : [])));
@@ -611,13 +697,13 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   stage.insets = {};
   lens.setSelection(null);
   // A family chosen on the card: toward its column; let go, back to the whole library.
-  const potassium = lens.layout.heads.find((head) => head.family.id === "potassium");
-  lens.setMark("potassium");
-  assert.ok(Math.abs(flights.at(-1).target.x - potassium.x) < 2.5 && flights.at(-1).distance < home.distance, "toward the family's column");
+  const channel = lens.layout.heads.find((head) => head.family.id === "channel");
+  lens.setMark("channel");
+  assert.ok(Math.abs(flights.at(-1).target.x - channel.x) < 2.5 && flights.at(-1).distance < home.distance, "toward the family's column");
   lens.setMark("all");
   assert.ok(Math.abs(flights.at(-1).distance - home.distance) < 1e-6, "and home again");
-  // An address naming what the map no longer shows (a model family now in legacy code): accepted, nothing lit, no move, no bloom.
-  const gone = raw.left_out.frames[0];
+  // An address naming what the map does not show (a legacy model ID): accepted, nothing lit, no move, no bloom.
+  const gone = raw.legacy[0];
   const moves = flights.length;
   lens.setSelection(`laws:${gone.id}`);
   lens.focus(`laws:${gone.id}`);
@@ -681,45 +767,80 @@ test("a tall screen stacks the wall in bands that break at shelves, and the fram
 test("the Library refuses a list that breaks its contract", () => {
   const broken = JSON.parse(JSON.stringify(raw));
   broken.pieces.push({ ...broken.pieces[0] });
-  broken.pieces[1].declared_by = [{ frame: "no_such_model@1", how: "direct" }];
+  broken.pieces[1].family = "no_such_family";
   broken.pieces[2].status = { level: "qualified" };
+  broken.pieces[3].declared = { ...broken.pieces[3].declared, declared_id: "someone_else@1" };
   const problems = problemsOf(broken);
   assert.ok(problems.some((line) => /listed twice/.test(line)));
-  assert.ok(problems.some((line) => /no_such_model@1/.test(line)));
-  assert.ok(problems.some((line) => /a status with no source/.test(line)));
+  assert.ok(problems.some((line) => /no_such_family/.test(line)));
+  assert.ok(problems.some((line) => /a level that is not the manifest's/.test(line)));
+  assert.ok(problems.some((line) => /its declaration does not match/.test(line)));
   assert.throws(() => new Library(broken), /not valid/);
 });
 
 // ------------------------------------------------------------ on the map's page
 
-test("on the map's page: the Engine view's box opens the library on its pieces, and each piece links back to its box", async () => {
-  const { doorsFor, describe } = await import("../src/lenses/laws_card.js");
-  const scene = { laws: raw };
-  const inBox = (id) => raw.pieces.filter((piece) => piece.box?.id === id);
-  for (const id of new Set(raw.pieces.map((piece) => piece.box?.id).filter(Boolean))) {
-    const [door] = doorsFor({ id }, scene);
-    assert.equal(door.lens, "laws", id);
-    assert.equal(door.value, id);
-    assert.match(door.label, new RegExp(`^Show its ${inBox(id).length} pieces? in the Laws library$`), id);
+test("on the map's page: the doors into the library open a declared piece, or say plainly that the engine's declarations do not list it", async () => {
+  const { doorsFor, describe, drawnIn, unitLaws } = await import("../src/lenses/laws_card.js");
+  const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
+  const withLaws = { ...scene, laws: raw };
+  // An Engine view box that holds the files of declared pieces opens the library on them.
+  const inBox = (id) => library.pieces.filter((piece) => piece.box?.id === id);
+  for (const id of new Set(library.pieces.map((piece) => piece.box?.id).filter(Boolean))) {
+    const [door] = doorsFor({ id }, withLaws);
+    assert.deepEqual([door.lens, door.value], ["laws", id], id);
+    assert.match(door.label, new RegExp(`^Show its ${inBox(id).length} declared pieces? in the Laws library$`), id);
   }
-  assert.deepEqual(doorsFor({ id: "laws.nothing" }, scene), [], "a box that holds no piece of the list has no door");
-  assert.deepEqual(doorsFor({ id: "laws.pumps" }, {}), [], "nor any box where the page carries no list");
-  const library = new Library(raw);
-  for (const piece of raw.pieces) {
-    const entity = describe(library, `laws:${piece.id}`);
-    assert.deepEqual(entity.related, piece.box ? [{ title: "On the Engine view", ids: [piece.box.id] }] : [], piece.id);
+  assert.deepEqual(doorsFor({ id: "laws.nothing" }, withLaws), [], "a box that holds no declared piece has no door");
+  assert.deepEqual(doorsFor({ id: "laws.channels" }, {}), [], "nor any part where the page carries no list");
+  // An Engine view operator the manifest declares opens that operator.
+  for (const piece of library.pieces.filter((item) => item.declared?.piece === "operator")) {
+    const doors = doorsFor({ id: `op.${piece.id}` }, withLaws);
+    assert.deepEqual(doors, [{ label: `Open ${piece.id} on the Laws library's wall`, lens: "laws", value: `laws:${piece.id}` }], piece.id);
   }
-  for (const frame of raw.frames.filter((item) => item.boxes?.length)) assert.deepEqual(describe(library, `laws:${frame.id}`).related[0].ids, frame.boxes.map((box) => box.id), frame.id);
+  // A unit of the Protein atlas: a door onto each of its laws that is declared; words, and no door, for each that is not.
+  const units = scene.entities.filter((entity) => entity.kind === "unit");
+  assert.equal(units.length, 48);
+  const opening = [];
+  for (const unit of units) {
+    const laws = unitLaws(unit);
+    const doors = doorsFor(unit, withLaws);
+    const declared = laws.filter((law) => library.piece(law)?.where === "declared"), undeclared = laws.filter((law) => !declared.includes(law));
+    assert.deepEqual(doors.filter((door) => door.lens).map((door) => door.value), declared.map((law) => `laws:${library.piece(law).id}`), unit.id);
+    const words = doors.filter((door) => !door.lens);
+    assert.ok(words.every((door) => door.says === true), `${unit.id}: words in a door's place say so, so that the panel never takes another view's own door for words`);
+    assert.equal(words.length, undeclared.length ? 1 : 0, `${unit.id}: one line for the laws that are not declared`);
+    if (undeclared.length === 1) assert.equal(words[0].label, `No active model declares this unit's law ${undeclared[0]}. The engine's declarations do not list it, and the Laws library does not show it.`, unit.id);
+    if (undeclared.length > 1) assert.equal(words[0].label, `No active model declares these laws of this unit: ${undeclared.join(", ")}. The engine's declarations do not list them, and the Laws library does not show them.`, unit.id);
+    if (doors.some((door) => door.lens)) opening.push(unit.label);
+  }
+  // As many units open a piece as name a law the manifest declares (10 of the 48 at 7538b0cd): counted from the manifest, not fixed here.
+  const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
+  assert.equal(opening.length, units.filter((unit) => unitLaws(unit).some((law) => declaredIds.has(namespaced(law)))).length, opening.join("; "));
+  // Each declared piece links back to its box where the page draws it, and an operator to its own part.
+  const drawn = drawnIn(scene);
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const ids = describe(library, `laws:${piece.id}`, { drawn }).related[0]?.ids || [];
+    for (const id of ids) assert.ok(drawn(id), `${piece.id}: links ${id}, which the page draws`);
+    if (piece.box && drawn(piece.box.id)) assert.ok(ids.includes(piece.box.id), piece.id);
+    if (piece.declared.piece === "operator" && drawn(`op.${piece.id}`)) assert.ok(ids.includes(`op.${piece.id}`), piece.id);
+  }
+  // Standing alone, with no Engine view, nothing is linked.
+  assert.ok(library.pieces.every((piece) => !describe(library, `laws:${piece.id}`).related?.length));
   // The door's value picks out the box's pieces; the card says so and offers the way back.
   const { lens } = lensFor();
-  lens.setFinding("laws.pumps");
-  assert.deepEqual(lens.order(), inBox("laws.pumps").map((piece) => `laws:${piece.id}`));
-  assert.match(lens.chrome().card.open.label, /The pieces of the Engine view's Pumps/);
-  assert.equal(lens.chrome().card.open.count, inBox("laws.pumps").length);
-  assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-found"), "what the door picks out is named in the legend");
+  const box = library.pieces.find((piece) => piece.box)?.box;
+  lens.setFinding(box.id);
+  assert.deepEqual(lens.order(), raw.families.flatMap((family) => inBox(box.id).filter((piece) => piece.family === family.id)).map((piece) => `laws:${piece.id}`));
+  assert.equal(lens.chrome().card.open.label, `The pieces of the Engine view's ${box.label}`);
+  assert.equal(lens.chrome().card.open.count, inBox(box.id).length);
   assert.equal(lens.back(), true);
-  assert.equal(lens.filter.box, null);
   assert.equal(lens.back(), false, "nothing left to go back from");
+  // A door onto one piece chooses it, as a press would: the page hears the choice.
+  const heard = [];
+  lens.stage.canvas = { dispatchEvent: (event) => heard.push(event.detail) };
+  lens.setFinding("laws:cells.kv1p5_mh@1");
+  assert.deepEqual(heard, [{ id: "laws:kv1p5_mh@1", fly: true }]);
   assert.equal(lens.chrome().card.find.label, "Find a piece", "the card offers a search field");
 });
 
@@ -746,127 +867,71 @@ test("where no 3D can be drawn, the list and the panel come from the scene's lis
   assert.equal(textDescribe({}, "laws:kir2p1_mh2@1"), null);
 });
 
-// ------------------------------------------------------------ no legacy code on the map
+// ------------------------------------------------------------ what the wall does not show, and its links
 
-test("the map shows no legacy code: what moved into src/cells/legacy/, and the model families the legacy registration registers, are left out; the other model families are shown", async () => {
+test("an address naming what the wall does not show is answered: a legacy model ID in the manifest's words, a row with no piece, and any other ID as not declared", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
-  // The list the page carries says what it left out, and by which table; none of it is drawn or listed.
-  assert.ok(raw.left_out && /move1-table\.json at main [0-9a-f]{7,}/.test(raw.left_out.table), "the file says what it left out, and by which table");
-  assert.match(raw.left_out.registration, /^src\/cells\/legacy\/registration\.py at main [0-9a-f]{7,}: parse, the model dispatch$/, "and by which registration");
-  // Every model family left out moved into legacy code, or the legacy registration dispatches its model ID, or both.
-  for (const frame of raw.left_out.frames) assert.ok(frame.now?.startsWith("src/cells/legacy/") || frame.registered?.path === "src/cells/legacy/registration.py", frame.id);
-  // Two stayed in the core, registered by legacy code: resolved_tissue@1 and @2 (main 76846486), their modules read by active code.
-  const registeredOnly = raw.left_out.frames.filter((frame) => !frame.now);
-  assert.deepEqual(registeredOnly.map((frame) => frame.id), ["resolved_tissue@1", "resolved_tissue@2"]);
-  for (const frame of registeredOnly) assert.ok(frame.path.startsWith("src/cells/core/") && Number.isInteger(frame.registered.line) && frame.read_by.length > 0, frame.id);
-  const library = new Library(raw);
-  const listed = new Set(listSections(library).flatMap((section) => section.entities.map((entity) => entity.id)));
-  for (const gone of [...raw.left_out.frames.map((item) => ({ ...item, as: "frame" })), ...raw.left_out.pieces.map((item) => ({ ...item, as: "piece" }))]) {
-    assert.ok(!listed.has(`laws:${gone.id}`), `${gone.id} is not in the list`);
-    assert.ok(!library.piece(gone.id) && !library.frame(gone.id), `${gone.id} is not drawn`);
-    // An address naming it opens the library and says plainly it is not shown; nothing of what it was.
-    const said = describe(library, `laws:${gone.id}`);
-    assert.equal(said.status, null, gone.id);
-    assert.deepEqual([said.facts, said.sources], [[], []], `${gone.id}: no facts and no source`);
-    const plain = gone.as === "piece" ? /^The map no longer shows this piece/
-      : gone.now ? /^The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//
-      : /^The map does not show legacy code, and this model family is legacy code now\. The engine's legacy code registers it\. Its own module stays in src\/cells\/core\/, where active code still reads it\.$/;
-    assert.match(said.plain, plain, gone.id);
+  // A legacy model ID: the manifest's own words for what it is; nothing of what it was.
+  for (const item of manifest.legacy) {
+    const said = describe(library, `laws:${item.id}`);
+    assert.equal(said.plain, `The engine's declarations list ${item.id} among the older model families: legacy code, to be dropped, with no page of its own. The map does not show it.`);
+    assert.deepEqual([said.status, said.facts, said.sources], [null, [], []], item.id);
   }
-  // The other model families are not legacy code: drawn as cases, listed, found, and with their own panel.
-  const families = raw.frames.filter((frame) => frame.kind === "older family");
-  assert.deepEqual(families.map((frame) => frame.id).sort(), ["apical_vertex_mechanics@1", "capsid_graph@1", "finite_bond_assembly@1", "ionic_worlds@1", "resolved_pump_tissue@1", "resolved_pump_tissue@2", "source_decay@1"]);
-  assert.deepEqual(library.cases.map((frame) => frame.id), families.map((frame) => frame.id));
-  for (const frame of families) {
-    assert.ok(listed.has(`laws:${frame.id}`), `${frame.id} is in the list`);
-    const said = describe(library, `laws:${frame.id}`);
-    assert.equal(said.eyebrow, "A model family");
-    assert.match(said.plain, /^A model family: one module for each combination of features\. Its laws are a table inside its own module/);
+  // The wall lists them where it lists what it does not show, by ID as the manifest gives them.
+  const notShown = listSections(library).find((section) => section.label.startsWith("Not shown"));
+  assert.deepEqual(notShown.entities.map((entity) => entity.label), manifest.legacy.map((item) => item.id));
+  // A row with no piece of its own: the fuel kind, and the cycle laws that run on it.
+  const fuel = describe(library, "laws:maintained_chemical_reservoirs@1");
+  assert.equal(fuel.eyebrow, "A row of resolved_pump_tissue@3 · fuel kind");
+  assert.match(fuel.plain, /a row with no entry of its own in the engine's declarations/);
+  assert.deepEqual(fuel.opens[0].items.map((item) => item.label).sort(), manifest.pieces.filter((piece) => (piece.fields?.fuel_kinds || []).includes("maintained_chemical_reservoirs@1")).map((piece) => piece.declared_id).sort());
+  // Any other ID, an old piece of the wall included: not listed, so not shown; never called legacy unless the manifest says so.
+  for (const id of ["cav1p2_m2h@1", "rk4", "capsid_graph@1", "source_decay@1", "neutral_mobile_leak@1"]) {
+    const said = describe(library, `laws:${id}`);
+    if (!said) continue; // not an ID at all (rk4 has no version): the view does not answer it
+    assert.equal(said.plain, `The engine's declarations do not list ${id}: no active registry declares it, so the map does not show it.`, id);
+    assert.ok(!/legacy|older/.test(said.plain), id);
   }
-  // Nothing the map shows calls a thing older or legacy, but the panel of what it does not show.
-  const shownWords = [
-    ...MARKS.map((mark) => `${mark.label} ${mark.description}`),
-    ...listSections(library).map((section) => section.label),
-    ...[...library.pieces, ...library.frames].flatMap((part) => { const said = describe(library, `laws:${part.id}`); return [said.eyebrow, said.plain, ...said.chips.map((chip) => chip.label), ...said.facts.map(([label, value]) => `${label} ${value}`)]; }),
-  ].join("\n").replace(/“[^”]*”/g, "“…”"); // a module's own words, quoted, are its own
-  assert.ok(!/older|legacy/i.test(shownWords), (shownWords.match(/.{0,60}(older|legacy).{0,60}/i) || [""])[0]);
-  // A list read before the move, with a model family and a piece in legacy code, shows neither; a model family that stayed is shown.
-  const before = JSON.parse(JSON.stringify(raw));
-  delete before.left_out;
-  const law = before.pieces.find((piece) => piece.registry === "no registry" && piece.read);
-  before.frames.push({ id: "moved_family@1", kind: "older family", read: { ...law.read, path: "src/cells/legacy/models/moved_family.py", found_by: "MODEL_ID" }, rows: [] });
-  before.frames.push({ id: "kept_family@1", kind: "older family", read: { ...law.read, path: "src/cells/models/kept_family.py", found_by: "MODEL_ID" }, rows: [] });
-  law.read = { ...law.read, path: "src/cells/legacy/processes/old.py" };
-  const kept = before.pieces.find((piece) => piece.kind === "operator");
-  kept.declared_by = [...kept.declared_by, { frame: "moved_family@1", how: "direct" }];
-  const other = new Library(before);
-  assert.ok(!other.frame("moved_family@1") && !other.piece(law.id), "neither is shown");
-  assert.ok(other.frame("kept_family@1") && other.cases.some((frame) => frame.id === "kept_family@1"), "a model family that stayed is shown");
-  assert.ok(other.notShown("moved_family@1") && other.notShown(law.id), "both are known as not shown");
-  assert.ok(other.piece(kept.id).declared_by.every((entry) => entry.frame !== "moved_family@1"), "a piece keeps only what declares it on the map");
-  assert.equal(other.counts().pieces, raw.pieces.length - 1);
-  // What still stands and was read where legacy code now is: active models declare it, or active code names it.
-  for (const id of ["constant_field@1", "logmean_electrodiffusion@1", "maintained_chemical_reservoirs@1", "rk4", "gauged_dense_kirchhoff@1", "ideal_detailed_balance_mass_action@1", "prescribed_patch_injury_resealing@1"]) assert.ok(library.piece(id), `${id} stays`);
+  // A piece still declared keeps the address the wall gave it before, whichever spelling that was (the wall read at fa19d80c).
+  for (const id of ["atp_driven_transporter_mass_action_positive@1", "proton_atp_mass_action_positive@1", "rapid_proton_buffer@1", "cells.passive_routes@1", "kv1p5_mh@1", "site_occupancy@1"]) assert.ok(library.piece(id), `${id} still opens its piece`);
 });
 
-test("the library's own sources link at the revision the list was read at, said beside the link where the map's differs; the scene's own sources stay at the map's", async (t) => {
+test("the library's own sources link at the manifest's revision, said beside the link where the map's differs, and every linked file is there", async (t) => {
   const { describe } = await import("../src/lenses/laws_card.js");
   const { SceneModel } = await import("../src/scene/model.js");
-  const main = raw.stamp.main;
-  assert.match(main.full_revision, /^[0-9a-f]{40}$/, "the list states the full revision it was read at");
-  assert.ok(main.full_revision.startsWith(main.revision));
   const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
   const model = new SceneModel(scene);
-  const library = new Library(raw);
   const at = /\/blob\/[^/]+\/$/;
-  const linked = [];
-  for (const part of [...library.pieces, ...library.frames]) {
-    const read = part.read;
-    const said = describe(library, `laws:${part.id}`, { map: scene.meta });
-    const own = said.sources.filter((source) => source.revision);
-    // Each piece or frame read on main hands out its file once, at the list's revision, and links there.
-    assert.equal(own.length, read?.revision === main.revision ? 1 : 0, part.id);
-    for (const source of own) {
-      assert.deepEqual([source.path, source.revision], [read.path, main.full_revision], part.id);
-      assert.equal(model.sourceUrl(source), scene.meta.source_base_url.replace(at, `/blob/${main.full_revision}/`) + read.path, part.id);
-      assert.equal(source.where, `${read.found_by}, as read at main ${main.revision}`, `${part.id}: the map is at ${scene.meta.revision}, so the link says where it goes`);
-      linked.push(read.path);
+  const linked = new Set();
+  const differs = !scene.meta.source_base_url.includes(`/blob/${manifest.revision}/`);
+  for (const id of [...library.pieces.map((piece) => piece.id), ...library.frames.map((frame) => frame.id)]) {
+    const said = describe(library, `laws:${id}`, { map: scene.meta });
+    for (const source of said.sources) {
+      assert.equal(source.revision, manifest.revision, `${id}: ${source.path}`);
+      assert.equal(model.sourceUrl(source), scene.meta.source_base_url.replace(at, `/blob/${manifest.revision}/`) + source.path, id);
+      if (differs) assert.ok(source.where.endsWith(`, as declared at main ${manifest.revision.slice(0, 8)}`), `${id}: ${source.where}`);
+      linked.add(source.path);
     }
-    // A status's or a box's source is the scene's: at the map's revision, as before.
-    for (const source of said.sources.filter((item) => !item.revision)) assert.ok(model.sourceUrl(source).startsWith(scene.meta.source_base_url), `${part.id}: ${source.path}`);
   }
-  assert.ok(linked.length >= library.frames.length + library.pieces.filter((piece) => piece.where === "main").length);
-  // On a map read at the list's own revision, the link needs no words.
-  const same = { ...scene.meta, revision: main.revision, source_base_url: scene.meta.source_base_url.replace(at, `/blob/${main.full_revision}/`) };
-  const piece = library.piece("maintained_chemical_reservoirs@1");
-  assert.equal(describe(library, "laws:maintained_chemical_reservoirs@1", { map: same }).sources[0].where, piece.read.found_by);
+  // On a map at the manifest's revision, the links need no words.
+  const same = { ...scene.meta, revision: manifest.revision.slice(0, 8), source_base_url: scene.meta.source_base_url.replace(at, `/blob/${manifest.revision}/`) };
+  assert.equal(describe(library, "laws:kv1p5_mh@1", { map: same }).sources[0].where, `line ${manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1").line}`);
   // Where the main checkout is here to ask, every file linked is there at that revision.
   const common = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).stdout.trim();
   const repo = common ? path.dirname(common) : null;
-  if (!repo || spawnSync("git", ["-C", repo, "cat-file", "-e", `${main.full_revision}^{commit}`]).status !== 0) return t.skip("the main checkout, or the list's revision, is not here to ask");
-  for (const file of new Set(linked)) assert.equal(spawnSync("git", ["-C", repo, "cat-file", "-e", `${main.full_revision}:${file}`]).status, 0, `${file} is not at ${main.full_revision}`);
+  if (!repo || spawnSync("git", ["-C", repo, "cat-file", "-e", `${manifest.revision}^{commit}`]).status !== 0) return t.skip("the main checkout, or the manifest's revision, is not here to ask");
+  for (const file of linked) assert.equal(spawnSync("git", ["-C", repo, "cat-file", "-e", `${manifest.revision}:${file}`]).status, 0, `${file} is not at ${manifest.revision}`);
 });
 
-test("a piece whose Engine view box is not drawn says so, and no link leads to a box that is not drawn", async () => {
-  const { describe, doorsFor, drawnIn } = await import("../src/lenses/laws_card.js");
-  const library = new Library(raw);
+test("a box the page does not draw is never linked, and no level of a box is said", async () => {
+  const { describe, drawnIn } = await import("../src/lenses/laws_card.js");
   const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
-  const without = { ...scene, entities: scene.entities.filter((entity) => entity.id !== "laws.pumps") };
-  const drawn = drawnIn(without);
-  const nak = describe(library, "laws:nak_atp_mass_action_positive@1", { drawn });
-  assert.match(nak.facts.find(([label]) => label === "Status")[1], /Its box when the list was read, Pumps, is not on the Engine view now\./);
-  assert.ok(!/established|implemented|qualified/i.test(nak.facts.find(([label]) => label === "Status")[1]), "a gone box's status is not said");
-  assert.deepEqual(nak.related, [], "no link to it");
-  // Every link a panel offers leads to a box the page draws, whichever box is missing.
-  for (const scenePart of [scene, without]) {
-    const isDrawn = drawnIn(scenePart);
-    for (const piece of library.pieces) for (const group of describe(library, `laws:${piece.id}`, { drawn: isDrawn }).related || []) for (const id of group.ids) assert.ok(isDrawn(id), `${piece.id} links ${id}, which is not drawn`);
-    for (const frame of library.frames) for (const group of describe(library, `laws:${frame.id}`, { drawn: isDrawn }).related || []) for (const id of group.ids) assert.ok(isDrawn(id), `${frame.id} links ${id}`);
+  const boxed = library.pieces.find((piece) => piece.box);
+  const without = { ...scene, entities: scene.entities.filter((entity) => entity.id !== boxed.box.id) };
+  const said = describe(library, `laws:${boxed.id}`, { drawn: drawnIn(without) });
+  assert.ok(!(said.related[0]?.ids || []).includes(boxed.box.id), "no link to a box that is not drawn");
+  for (const piece of library.pieces) {
+    const text = JSON.stringify(describe(library, `laws:${piece.id}`, { drawn: drawnIn(scene) }));
+    for (const status of scene.statuses || []) assert.ok(!text.includes(`is ${status.label.toLowerCase()}`), `${piece.id} says a box's level`);
   }
-  // Standing alone, with no Engine view, nothing is said of the boxes beyond what the list read.
-  assert.equal(drawnIn({ entities: [] }), null);
-  assert.match(describe(library, "laws:nak_atp_mass_action_positive@1").facts.find(([label]) => label === "Status")[1], /a status of the box, not of the piece/);
-  // The door counts only the pieces the map shows.
-  const [door] = doorsFor({ id: "laws.pumps" }, { laws: raw });
-  assert.equal(door.label, `Show its ${library.inBox("laws.pumps").length} pieces in the Laws library`);
 });

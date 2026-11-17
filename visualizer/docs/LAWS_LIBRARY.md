@@ -1,8 +1,20 @@
 # The Laws shelf as a 3D library: what the engine declares, five options, and a recommendation
 
-Ideas and options for the user, 16 November 2026. **Nothing here is built.** The page beside this
-note, [`docs/ideas/laws-library.html`](ideas/laws-library.html), draws each option live from the
-list of pieces this note describes.
+Ideas and options for the user, 16 November 2026. The page beside this note,
+[`docs/ideas/laws-library.html`](ideas/laws-library.html), draws each option live from the list
+of pieces this note describes.
+
+**Since 17 November 2026 the racks are built, and read from the engine's declarations.** The
+engine's manifest (`cells.declarations@2`, its format the engine's page
+`docs/library/DECLARATIONS_FORMAT.md`) is the whole truth of what the engine declares, the lead
+ruled that day; what no active registry declares came off the wall. The list is made from that
+file alone (`tools/extract_laws.py`, `data/engine/declarations.json`), and its contract is
+`schema/LAWS_LIBRARY.md`. At main 7538b0cd the wall holds 38 pieces (14 laws, 5 kinds, 19
+operators), five racks and five model families with no rows, with the 13 laws design notes name
+apart; the 154 pieces of the code's reading at fa19d80c, the counts below and the sketches'
+lists are this note's record of 16 November, not the wall's. The wall is shelved by interface,
+the operators by their part of the step, on one band (the stills weighed are kept with the
+hand-over of that round).
 
 The user, 15 November 2026: "one idea for the backlog not now: for the Engine shelfs maybe we need
 to make the Laws shelf clickable into a cool 3D library :)", because "there will be so many". And on

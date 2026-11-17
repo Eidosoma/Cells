@@ -17,14 +17,18 @@ function frameBoxes(library, narrow) {
   const racks = library.racks;
   const inner = racks.find((frame) => frame.kind === "inner model");
   const composite = racks.find((frame) => frame.kind === "composite");
-  const compositions = racks.filter((frame) => frame.kind === "composition");
+  // The smaller racks: the compositions, and any model family with rows of its own.
+  const compositions = racks.filter((frame) => frame.kind !== "inner model" && frame.kind !== "composite");
   const H = WIDE.frames.height;
   // Wide: @3, the composite and a column of the compositions, side by side. Narrow: one above another.
   const spots = narrow
     ? [
         { frame: inner, x: 0, y: H + 0.9 + 2.3 + 0.9, w: 9.4, h: H },
         { frame: composite, x: 0, y: 2.3 + 0.9, w: 9.4, h: H },
-        ...compositions.map((frame, index) => ({ frame, x: (index - (compositions.length - 1) / 2) * 3.15, y: 0, w: 3.0, h: 2.3 })),
+        ...compositions.map((frame, index) => {
+          const w = Math.min(3.0, 9.4 / compositions.length - 0.15);
+          return { frame, x: (index - (compositions.length - 1) / 2) * (w + 0.15), y: 0, w, h: 2.3 };
+        }),
       ]
     : [
         { frame: inner, x: -7.4, y: 0, w: 10, h: H },
@@ -49,18 +53,21 @@ function frameBoxes(library, narrow) {
         const labelW = narrow ? 2.4 : 2.7, slotW = narrow ? 0.92 : 1.02, slotH = Math.min(0.42, rowH * 0.62);
         rows.forEach((row, r) => {
           const cy = cursor - rowH * (r + 0.5);
-          const slots = row.pieces.map((id, index) => ({ id, row: r, index, x: left + labelW + index * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH }));
+          const slots = row.pieces.map((id, index) => ({ id, row: r, index, tag: row.tags?.[index] ?? null, x: left + labelW + index * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH }));
           const next = row.next_code !== undefined ? { x: left + labelW + row.pieces.length * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH, code: row.next_code } : null;
-          box.rows.push({ label: row.label, x: left + 0.3, y: cy, slots, next });
+          // A row with no entry of its own (a fuel kind): an empty socket wide enough for its name.
+          const noneW = Math.min(w - labelW - 0.4, narrow ? 5.6 : 6.2);
+          const none = (row.none || []).map((entry, index) => ({ id: entry.id, role: entry.role, x: left + labelW + index * (noneW + 0.12) + noneW / 2, y: cy, w: noneW, h: slotH }));
+          box.rows.push({ label: row.label, x: left + 0.3, y: cy, slots, next, none });
         });
       } else {
         const columns = frame.kind === "composite" ? 2 : Math.max(1, Math.min(2, rows[0]?.pieces.length || 1));
-        const pieces = rows.flatMap((row, r) => row.pieces.map((id, index) => ({ id, row: r, index })));
+        const pieces = rows.flatMap((row, r) => row.pieces.map((id, index) => ({ id, row: r, index, tag: frame.kind === "composition" ? row.tags?.[index] ?? null : null })));
         const lines = Math.ceil(pieces.length / columns) || 1;
         const pitch = Math.min(0.56, (cursor - y - 0.25) / lines);
         const slotW = (w - 0.6 - (columns - 1) * 0.2) / columns, slotH = Math.min(0.4, pitch * 0.72);
         const slots = pieces.map((slot, n) => ({ ...slot, x: left + 0.3 + (n % columns) * (slotW + 0.2) + slotW / 2, y: cursor - pitch * (Math.floor(n / columns) + 0.5), w: slotW, h: slotH }));
-        box.rows.push({ label: rows[0]?.label || "", x: left + 0.3, y: cursor, slots, next: null });
+        box.rows.push({ label: rows[0]?.label || "", x: left + 0.3, y: cursor, slots, next: null, none: [] });
       }
       return box;
     });
@@ -76,11 +83,21 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
   const frames = frameBoxes(library, narrow);
   const top = Math.max(...frames.map((frame) => frame.y + frame.h));
   const { w, d, col, gap, height, pitchMax } = WIDE.bar;
-  // Bands: wide, one; narrow, the shelves in order, at most six families to a band, and a shelf
-  // never split across two (so a shelf's name is written once, over all its families).
+  // Bands: wide, a band for each of the shelves' bands (schema, "shelves"), a shelf set apart
+  // standing a gap away; narrow, the shelves in order, at most six families to a band, and a
+  // shelf never split across two (so a shelf's name is written once, over all its families).
   const spots = [];
-  if (!narrow) columns.forEach((_, place) => spots.push({ band: 0, place }));
-  else {
+  const shelfOf = (column) => library.shelfById.get(column.family.shelf) || {};
+  if (!narrow) {
+    const used = new Map();
+    for (const column of columns) {
+      const shelf = shelfOf(column), band = shelf.band || 0;
+      const at = used.get(band) || { place: 0, last: null };
+      if (at.last !== null && at.last !== shelf.id && shelf.apart) at.place += 0.6;
+      spots.push({ band, place: at.place });
+      used.set(band, { place: at.place + 1, last: shelf.id });
+    }
+  } else {
     const groups = [];
     for (const column of columns) {
       const last = groups.at(-1);
@@ -97,10 +114,12 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
     }
   }
   const bands = Math.max(0, ...spots.map((spot) => spot.band)) + 1;
-  const inBand = (band) => spots.filter((spot) => spot.band === band).length;
+  // A band's width in places (a shelf set apart adds its gap); each band is centred.
+  const inBand = (band) => Math.max(0, ...spots.filter((spot) => spot.band === band).map((spot) => spot.place + 1));
   const perBand = Math.max(...Array.from({ length: bands }, (_, band) => inBand(band)));
-  const bandHeight = narrow ? 4.4 : height;
   const tallest = Math.max(1, ...columns.map((column) => column.pieces.length + 1));
+  // A band is as tall as its pieces need, at most the wall's height shared among the bands.
+  const bandHeight = narrow ? Math.min(4.4, tallest * pitchMax + 0.4) : Math.min(height / bands + 0.6, tallest * pitchMax);
   const pitch = Math.min(pitchMax, bandHeight / tallest);
   const barH = pitch * 0.78;
   const base = top + (narrow ? 1.6 : 1.4);
@@ -110,17 +129,9 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
     const { band, place } = spots[n];
     const x = (place - (inBand(band) - 1) / 2) * (col + gap);
     const y0 = base + (bands - 1 - band) * (bandHeight + 1.6);
-    // A law of a model family's table, or in no registry, stands on its own part of the shelf, above a gap, and narrower.
-    let lift = 0, before = false, olderFoot = null;
-    column.pieces.forEach((piece, j) => {
-      const older = piece?.registry === "an older family" || piece?.registry === "no registry";
-      if (older && !before && j > 0) lift += pitch * 0.9;
-      if (older && !before) olderFoot = y0 + lift + j * pitch - pitch * 0.12;
-      before = before || older;
-      bars.push({ id: piece?.id ?? null, family: column.family.id, older, x, y: y0 + lift + j * pitch + barH / 2, z, w: older ? w * 0.7 : w, h: barH, d });
-    });
+    column.pieces.forEach((piece, j) => bars.push({ id: piece?.id ?? null, family: column.family.id, x, y: y0 + j * pitch + barH / 2, z, w, h: barH, d }));
     // y: where the column's name is written, on the front of the plank it stands on; foot: the plank's top.
-    heads.push({ family: column.family, shelf: column.family.shelf, x, y: y0 - 0.2, foot: y0 - 0.04, olderFoot, top: y0 + lift + column.pieces.length * pitch, band });
+    heads.push({ family: column.family, shelf: column.family.shelf, x, y: y0 - 0.2, foot: y0 - 0.04, top: y0 + column.pieces.length * pitch, band });
   });
   const wallWidth = perBand * (col + gap) - gap;
   const wall = { x: 0, y: base - 1.35, w: wallWidth + 1.4, h: bands * (bandHeight + 1.6) + 0.65, z: z - 0.32 };

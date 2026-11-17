@@ -1,9 +1,12 @@
 // The Laws library's own marks: the names written on the room itself (family plaques, shelf
-// names, the rows of a frame, the revision the list was read at), and the light that runs
+// names, the rows of a model and its slots' codes, keys and positions, the revision the
+// manifest was written at), and the light that runs
 // along a chosen piece's routes. Kept apart from the view so the tests can read them.
 
 import * as THREE from "../three.js";
 
+/** The step between two columns of a band (laws_layout.js WIDE.bar: col + gap). */
+const WIDE_STEP = 1.5 + 0.32;
 /** The plank each column stands on: its height and depth, in the scene's units. */
 export const PLANK = { h: 0.3, d: 0.5 };
 /** The wall's foot rail, from the wall's foot and its glass: the revision is written on its front. */
@@ -28,7 +31,9 @@ export function plaquesOf(library, layout) {
   const narrow = layout.narrow;
   // A name is written on the front of the plank its column stands on.
   const z = (layout.bars[0]?.z ?? -3) + PLANK.d / 2 + 0.006;
-  for (const head of layout.heads) out.push({ text: head.family.short, x: head.x, y: head.y, z, h: 0.26, align: "center", tone: "strong", kind: "family", family: head.family.id });
+  // A long name is written smaller, so that it fits its column (letters at most 0.62 of an em wide).
+  const fit = (text) => Math.min(0.26, (WIDE_STEP * 0.95) / (text.length * 1.05 * 0.62));
+  for (const head of layout.heads) out.push({ text: head.family.short, x: head.x, y: head.y, z, h: fit(head.family.short), align: "center", tone: "strong", kind: "family", family: head.family.id });
   // A shelf of several families has a name of its own, on the glass under its planks; a shelf of one is named by its family alone.
   const shelves = new Map();
   for (const head of layout.heads) {
@@ -42,21 +47,23 @@ export function plaquesOf(library, layout) {
     out.push({ text: shelf?.label || key, x: (group[0].x + group.at(-1).x) / 2, y: group[0].y - 0.5, z: z - PLANK.d / 2 + 0.02, h: 0.24, align: "center", tone: "soft", kind: "shelf", shelf: shelf?.id });
   }
   for (const frame of layout.frames) {
-    if (frame.kind !== "inner model") continue;
     for (const row of frame.rows) {
-      out.push({ text: row.label, x: row.x, y: row.y, z: frame.z + 0.1, h: 0.2, align: "left", tone: "soft", kind: "row" });
-      // The row's next free registry code, written in its empty socket: a number free, not a piece.
+      if (frame.kind === "inner model") out.push({ text: row.label, x: row.x, y: row.y, z: frame.z + 0.1, h: 0.2, align: "left", tone: "soft", kind: "row" });
+      // A slot's place in its model, where the model has slots: a channel law's code, a kind's key, a composition's position.
+      for (const slot of row.slots) if (slot.tag !== null && slot.tag !== undefined) out.push({ text: String(slot.tag), x: slot.x, y: slot.y - slot.h / 2 - 0.1, z: frame.z + 0.11, h: frame.kind === "inner model" && typeof slot.tag === "string" ? 0.11 : 0.14, align: "center", tone: "soft", kind: "tag" });
+      // The inner model's next free channel code, written in its empty socket: a number free, not a piece.
       if (row.next) out.push({ text: `${row.next.code} free`, x: row.next.x, y: row.next.y, z: frame.z + 0.012, h: 0.19, align: "center", tone: "soft", kind: "next" });
+      // A row with no entry of its own, written in its empty socket: its ID and that it has no piece.
+      for (const none of row.none || []) out.push({ text: `${none.id}: no piece`, x: none.x, y: none.y, z: frame.z + 0.012, h: 0.17, align: "center", tone: "soft", kind: "none" });
     }
   }
-  // The revision the list was read at, on the front of the wall's foot rail.
-  const stamp = library.stamp.main;
-  const read = `Read from the engine's code at main ${stamp.revision} (committed ${longDate(stamp.date)})${narrow ? "" : ". No level is shown that a record does not state."}`;
+  // The revision the manifest was written at, on the front of the wall's foot rail. The manifest states no date.
+  const read = `${library.stamp.read}${narrow ? "" : ". No level is shown that the declarations do not state."}`;
   out.push({ text: read, x: layout.wall.x, y: layout.wall.y + FOOT.y, z: layout.wall.z + FOOT.z + FOOT.d / 2 + 0.006, h: narrow ? 0.22 : 0.24, align: "center", tone: "soft", kind: "revision" });
   // Each model family's name on its case's face, and what the row is on the plinth's face.
   // (in front of the lit copy a chosen case wears, which stands 0.01 proud of the case)
   for (const item of layout.cases || []) out.push({ text: item.id, x: item.x, y: item.y, z: item.z + item.d / 2 + 0.02, h: narrow ? 0.17 : 0.15, align: "center", tone: "strong", kind: "case" });
-  if (layout.cases?.length) out.push({ text: "Model families: the laws of each are a table inside it", x: 0, y: PLINTH.y + PLINTH.h / 2, z: layout.bounds.maxZ + PLINTH.z + PLINTH.bevel + 0.01, h: 0.18, align: "center", tone: "soft", kind: "cases" });
+  if (layout.cases?.length) out.push({ text: "Model families with no rows: the laws of each are tables inside it", x: 0, y: PLINTH.y + PLINTH.h / 2, z: layout.bounds.maxZ + PLINTH.z + PLINTH.bevel + 0.01, h: 0.18, align: "center", tone: "soft", kind: "cases" });
   return out;
 }
 
