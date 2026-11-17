@@ -135,7 +135,8 @@
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
   "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
-  "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json"
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-02/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1117,6 +1118,13 @@
    "root": ".claude/worktrees/fr1-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T23:20:05+00:00"
+  },
+  {
+   "git_revision": "707bf3388d7272fa909a8002515c9575bfa56117",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:30:42+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2210,7 +2218,7 @@
    },
    {
     "file": "tests/unit/test_fr1_references_design.py",
-    "seconds": 10.29,
+    "seconds": 11.84,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -2226,10 +2234,10 @@
    },
    {
     "file": "tests/unit/test_fr1_references_worlds.py",
-    "seconds": 3.12,
+    "seconds": 4.17,
     "exit_code": 0,
     "counts": {
-     "passed": 7
+     "passed": 8
     }
    },
    {
