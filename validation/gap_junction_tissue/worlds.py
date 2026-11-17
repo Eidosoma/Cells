@@ -39,13 +39,16 @@ SPECIFIC_CAPACITANCE_F_M2 = 0.05
 SOLVER = "imex_ars222_face_electromigration@1"
 FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
 GATE_LAW = "junction_voltage_relaxation@1"
-# dt times @3's explicit rate (its stability bound is 1) at most 0.1. The binding constraint is @3's
-# energy check (2e-3 of the booked flows under ARS(2,2,2)), not stability: on Figure 5a's network at
-# g = 100 (rate 40.1/s) the engine refused the run at dt x rate 0.63 and 0.31 and passed at 0.157
-# (energy residual 1.4e-3 of the flows) and 0.078 (3.5e-4), second order in dt (dt study,
-# gap-junction-20261117/runs/smoke-01/dt_fig5net100.json). The compared quantity, the steady state,
-# is the scheme's fixed point and does not depend on dt.
-STEP_BOUND_MARGIN = 0.1
+# dt times @3's explicit rate (its stability bound is 1) at most 0.04. The binding constraint is
+# @3's energy check (2e-3 of the booked flows under ARS(2,2,2)), not stability. Two dt studies
+# (gap-junction-20261117/runs/smoke-01/dt_fig5net100.json, runs/dev-01/dt_fig3g50.json):
+#   Figure 5a's network at g = 100 (rate 40.1/s): refused at dt x rate 0.63 and 0.31; passed at
+#     0.157 (energy residual 1.4e-3 of the flows) and 0.078 (3.5e-4);
+#   Figure 3's two cells at g = 50 (rate 5.1/s): refused at 0.080; passed at 0.040 (6.4e-4) and
+#     0.020 (1.6e-4).
+# The residual is second order in dt with a world-dependent coefficient. The compared quantity,
+# the steady state, is the scheme's fixed point and does not depend on dt.
+STEP_BOUND_MARGIN = 0.04
 BASE_DT_S = 0.0625  # 1/16 s, exact in binary, so every observation time is an exact grid point.
 END_S = 600.0  # 30 slowest-mode time constants (1/K_dec = 20 s): residual e^-30 at most.
 SETTLE_S = 10.0  # The steady-state check compares end - SETTLE_S with end.
