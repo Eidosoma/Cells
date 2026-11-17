@@ -122,12 +122,15 @@ INaK's and IpCa's cycles, and no human cardiac registry exists yet.
 
 ### 1.3 Amendment, committed before the numerical run
 
-Reading Beard's typeset equations showed three things the criterion must say exactly.
+Reading Beard's typeset equations showed what the criterion must say exactly.
+
+**Provenance:**
 - No part of item 1's screen ran between the criterion's commit and this amendment. Items 2 and 3
   ran in between.
 - Before this amendment fixed Beard's modes, his equation images had been read, and so had Text S1's
   pages 13 and 15.
 
+**What the criterion now says:**
 - **Laws written per half reaction.** Beard's complexes III and IV (Eqs. 7, 24 and 9) write their
   exponent over 2RT, so ln(Π⁻/Π⁺) = κ·ΔG/RT with a printed κ = ½. Test (a) then reads
   d_m = ln(Π⁻_m/Π⁺_m)/κ_m − ΔG_stoich,m/RT, with κ_m = 1 for every other law. Where d_m is constant,
@@ -398,11 +401,11 @@ regeneration at ef9fc1a8, read without editing, the difference is flagged.
 ### 2.2 Results
 
 The evidence is in `$W/pins/`: the sets and their rule's output (`sets-ef9fc1a8/`), the planner's
-four runs (`run-set-F/`, `run-set-Fplus/`, `run-set-G/`, `run-planted/`), and the script
+five runs (`run-set-F/`, `run-set-Fplus/`, `run-set-G/`, `run-planted/`, `run-set-Fexcl/`), and the script
 `$W/scripts/pin_sets.py`.
 
-**The inventory at ef9fc1a8:** 40 live pins on 19 files, held by 14 pinning modules, 23 of them
-keyed by path.
+**The inventory at ef9fc1a8:** 40 live pins on 19 files, held by 14 pinning modules. 23 of the
+pins are keyed by path.
 - The moves note counted 43 on 22 at fa19d80c.
 - The 3 files that dropped out are those move 1 rewrote, whose pins went stale as its §16.3
   predicted: `stable_seed_{partition_physiology_bridge,explicit_ecm_partition,control_volume_physical_bridge}.py`.
