@@ -1886,6 +1886,24 @@ active), with check_onsets' refusal kept.
     - **refusal:** a step with any negative raw share is refused, with the reason "negative exact
       share: step-bound breach". That covers a negative row decrease too, since the shares sum to
       it;
+      - **Amended 17 November 2026 (the sign rule's floor; the lead's four conditions):** a share
+        is refused only below its floor, −16 × eps × (|μ̄_in m| + |μ̄_out m|), its own terms at the
+        raw-sum check's factor and scale (in pJ, the share's 1e-3 RT). A share within its floor
+        is booked as computed, with no clamp, so every row's raw sum and the energy ledger close
+        exactly as before.
+      - **What it was refused at:** the gap-junction replication's line of 25 cells, between
+        identical healthy cells. In the step measured, two miR200 routes moved 4.8e-20 fmol each,
+        below the amounts' resolution (about 7e-18 fmol, so no stored amount changed), against a
+        potential difference of 4.44e-16 (2 eps, one ulp at ln c ≈ −2.3). Each share was
+        −2.1e-35 RT fmol, about 40 times inside its floor
+        (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-fail-01/`).
+      - **Where it closes:** the floor's terms scale with |μ̄|, but the potential difference keeps
+        the ulp of ln c + 1 (the kernel's divided difference adds and removes 1). So the floor
+        closes as c → 1 mM (μ̄ → 0), and there a rounding-level negative share is still refused.
+        On the closed pair with a lead of 1–16 ulp, that band is about 0.9–1.1 mM, and up to
+        1.5 mM at 16 ulp (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/probes/
+        band.json`). Steps admitted before are unchanged, and a share orders of magnitude below
+        its floor is still refused (tests/unit/test_passive_share_floor.py);
     - **why a share can be negative at all:**
       - Under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can reverse the applied transfer
         against stage rates of one sign.
@@ -1910,8 +1928,9 @@ active), with check_onsets' refusal kept.
       term for its routes (§7.4 (i), §13.6). L = 1e15·PA·(1/V_a + 1/V_b), summed over the routes
       at each node. A dt-study criterion covers accuracy. Exact booking closes the ledger up to
       h = 2, so it no longer signals an overshoot by itself;
-    - **for the run view:** route heat stays monotone, since a step with a negative share is
-      refused. A route's value is an exact attribution of its rows' decrease (the
+    - **for the run view:** route heat stays monotone to rounding, since a step with a share below
+      its floor is refused (a share within it moves a route's heat by at most 16 eps of its own
+      terms). A route's value is an exact attribution of its rows' decrease (the
       divided-difference split), not a separately measurable quantity.
   - **The probe's numbers.** They are recorded here because they exist only as data and hand-back
     text: FR45's `fr45/booking-probe/` (`HANDOFF.md`, `results.json`, `round2.json`).
