@@ -29,8 +29,8 @@ to the healthy state, and how do the tumor's membrane voltage and connexin expre
   (F8). The lead filed these as FR-15 to FR-17.
 - **One tissue condition runs on today's engine:** the "neither" condition on the 1D line. Its
   reference is BITSEY's log, not a printed number (§7).
-  - Its threshold search stopped: an engine check refused most search points (§7). The check
-    refuses on rounding (measured, §5; filed by the lead as FR-19).
+  - Its threshold search stopped: an engine check refused most search points (§7). At the one
+    refused step measured, the check refused on rounding (§5; filed by the lead as FR-19).
   - Of five tissue picks fixed before they ran, three ran to the end (D = 0, 6.25e-15 and 1e-13)
     and two were refused by the same check (§7).
   - At the two D values both Cells and the log ran to the end (0 and 6.25e-15), Cells' end state
@@ -284,6 +284,7 @@ for this work.
 | `dev-05` | 9079070d, clean | The as-written arms with views, from M (main's reactions view fix merged): bitwise the same concentrations as `dev-04` |
 | `dev-06` | 6729160b, clean | Every part without the dt study; every sweep arm packaged with sidecars; superseding `dev-04`'s and `dev-05`'s packages |
 | `neither-01` | 52caf2dc, clean | The "neither" search (§7): stopped, most points refused by an engine check |
+| `picks-01` | 816dae89, clean | The tissue line's five picks (§7): three ran, two refused |
 
 The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded in their
 `checkout.patch`. No run's code differed from its revision.
@@ -337,8 +338,8 @@ The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded
   - The Norton form's compared steady state is the scheme's fixed point and does not depend on dt.
   - The as-written form's fixed point moves by O(dt²), as measured below.
 
-**The Norton-equivalent network** (`dev-02`).
-- All 24 arms pass E1 (at most 2.7e-14), E2 (at most 9e-16) and E3 (at most 1.3e-12), and the
+**The Norton-equivalent network** (`dev-04`; `dev-02` gave the same tables).
+- All 24 arms pass E1 (at most 2.7e-14), E2 (at most 9e-16) and E3 (at most 5.8e-13), and the
   engine's own material, charge and energy checks on every accepted row.
 - In the Figure 3 table, the engine's and equation 2's values are derived; Figure 3b's 6.67 / 8.33
   is read.
@@ -438,7 +439,7 @@ of the unperturbed reference. E1 catches it (K1).
   Norton form has no split and is exact at its fixed point. A scratch probe first showed this
   (`probes/as-written-01`, from the checkout at eebd608a).
 
-**Records for the viewer** (`dev-04`).
+**Records for the viewer** (written by `dev-04`, then by `dev-06`, the viewer's run: see below).
 - Each arm is written by the engine's own writer, `cells.io.write_run`, under `worlds/<arm>`, with
   its run view (`cells.run_view@1`, `view.json`) and the driver's `run.json`. The run view carries
   a prescribed 2D layout after the preprint's drawings.
@@ -536,6 +537,8 @@ qualification before a replication relies on it.
     RT across the route. The shares are 40 times below 16 eps of their own terms and 20 orders
     below their rows' raw-sum bounds (`probes/neither-fail-01`, `measure.py`, which wraps
     `_raw_sums` at run time and changes no engine code).
+  - One refused step is measured. The search's other four refusals and the picks' two (one at
+    18,902 s) are not; that they share the cause is an inference from the same check and message.
   - The proton leak is never exact, so FR-4's world is not affected. FR-5's neutral cargo routes
     are exact and go through the same test.
 - **F8. A mechanism for neighbor depolarization.**
@@ -549,14 +552,14 @@ qualification before a replication relies on it.
 | --- | --- | --- | --- |
 | Figure 1 | the two-state Cx45 gate with per-species floors | F3, F4 | No: read off the plot; the gate's constants are the code's |
 | Figures 3b, 5, 8 | linear cells and neutral junction transport | Nothing: run as written (Q1) and as the Norton equivalent | Figure 5: yes (7.15 and 1.33x, in the caption). Figure 3b: read (6.67 / 8.33). Figure 8: none; derived only |
-| Table 1, neither | EMT switch, neutral miRNA on junctions, 3D field | F7 (with Q1) | Yes (1.1e-15, 3D) |
-| The neither condition on the 1D line or 2D field | as above, on 26 or 626 nodes | Nothing (with Q1) | No: BITSEY's log (§2, §7) |
+| Table 1, neither | EMT switch, neutral miRNA on junctions, 3D field | F7 and FR-19 (with Q1) | Yes (1.1e-15, 3D) |
+| The neither condition on the 1D line or 2D field | as above, on 26 or 626 nodes | FR-19 (with Q1): its search was refused (§7) | No: BITSEY's log (§2, §7) |
 | Table 1, depol alone | adds state-set voltage, miRNA drift, the gate and its floors | F2, F3, F4, F7 | Yes |
 | Table 1, underexpression alone | adds state-set connexin, minimum docking | F5, F7 | Yes |
 | Table 1, both | all of the above | F2, F3, F4, F5, F7 | Yes |
 | Table 2 (2D, both) | as Table 1, both, on 626 nodes | F2, F3, F4, F5 | Yes |
 | Table 3, depol | overexpression (mean docking), depolarized tumor | F2, F3, F4, F5 | Yes; the log labels its columns and rows differently (§2) |
-| Table 3, hypol | overexpression, every cell at one voltage | F5 (with Q1) | Yes; as above |
+| Table 3, hypol | overexpression, every cell at one voltage | F5 and FR-19 (with Q1) | Yes; as above |
 | Table 3, neighbor-depol | adds the neighbour mechanism | F2, F3, F4, F5, F8 | Yes; as above |
 
 **The minimum set per table:**
@@ -564,10 +567,12 @@ qualification before a replication relies on it.
 - Table 2: F2, F3, F4 and F5.
 - Table 3: F2, F3, F4 and F5, and F8 for its third column. Its hypol column alone needs F5.
 
-The "neither" condition needs no new feature on the 1D line or the 2D field. Its references there
-are the code's logged thresholds (§2), not printed numbers. The preprint's own "neither" number is
-3D (Table 1's 1.1e-15), so comparing that condition with a printed number needs F7 alone (with Q1),
-not F2: F7 may come before F2.
+The "neither" condition needs no new physics on the 1D line or the 2D field, but its search needs
+FR-19's fix: today the passive routes' sign test refuses most of its points (§7). Its references
+there are the code's logged thresholds (§2), not printed numbers. The preprint's own "neither"
+number is 3D (Table 1's 1.1e-15), so comparing that condition with a printed number needs F7 and
+FR-19 (with Q1), not F2: F7 may come before F2. Any world that carries the neutral miRNA on
+passive routes between near-equal cells (the neither condition, Table 3's hypol) meets FR-19.
 
 ## 6. What a judged comparison would need: a D138 question for the user
 
@@ -585,7 +590,11 @@ user to decide:
   - A comparison with BITSEY's log at b2cb370 (7.18e-15 m²/s on the line, 1.89e-15 on the field),
     not with the preprint, which prints only the 3D value.
   - The lead approved the 1D search on 17 November, once the two conditions in §7 were written
-    down. It runs as `neither-01`, as development work.
+    down. It ran as `neither-01` (development work) and stopped with no threshold: an engine
+    check refused most points (FR-19).
+  - Its rerun waits on FR-19's fix, under section 7's unchanged criterion, bracket, tolerance and
+    agreement band. What it has already seen: the end states at D = 0, 6.25e-15 and 1e-13 (§7),
+    and the log's whole bisection, read before any rerun.
 - **(c) After F2-F5: the tables, in the order the engine allows.**
   - Order: Table 3's line, then Table 2's field, then Table 1 with F7.
   - Cells' pump and junction laws differ from BITSEY's by design. The criteria would therefore be
@@ -698,7 +707,8 @@ and `search.json`).
   - Reproduced: the refusal is deterministic, and not monotone in D or in the step (at 1.25e-14
     it is refused at 1/8 and 1/32 s and runs at 1/16 s). `probes/neither-fail-01`.
   - The refusing check is the passive routes' exact heat booking. A step is refused when any
-    exact route's heat share is negative (`passive_routes.book`). Measured, it is rounding (§5).
+    exact route's heat share is negative (`passive_routes.book`). Measured at one refused step
+    (D = 1.25e-14, dt 1/8 s), it is rounding (§5); the other refusals are not measured.
 - **No threshold and no ratio are reported.** The pre-registered comparison has no result.
 - **The two points that ran to the end** (descriptive, not judged; `probes/neither-compare-01`,
   generated by its `compare.py`):
@@ -706,8 +716,10 @@ and `search.json`).
     character for character the log's end-state line (lines 70 and 25 of
     `tumor_isolate_1D_V1M`, saved at b2cb370, written by an earlier revision of its code).
   - Epithelial cells: 20 of 25 in both at 6.25e-15, not normalized; 19 of 25 in both at 0.
-  - The 6.25e-15 profile is partly converted, set by transport over the 20,000 units, so this
-    also tests the time unit (BITSEY's taken as 1 s) through a coupled run.
+  - The 6.25e-15 profile is a steady, partly converted state: in `runs/picks-01` it changes by at
+    most 1.4e-14 µM from 5,000 s to the end. It is set by the balance of junction transport (D in
+    m²/s) and the switch's rates, so the match tests the time-unit mapping (BITSEY's unit taken
+    as 1 s) through that balance, not the horizon.
   - A correction: a message of 17 November gave "19 in BITSEY's log" at 6.25e-15. That was the
     log's count at D = 0, attached to the wrong D while writing by hand. The generated
     comparison gives 20 and 20.
@@ -738,4 +750,49 @@ and `search.json`).
   sweep `neither-1d` (D along it, each cell's final miR200 minus Zeb mRNA as a readout).
 - They are picks chosen before the run. Most other D values in the search were refused by an
   engine check. They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s.
+
+## 8. The next stage, for a next owner
+
+This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-junction-20261117/`.
+
+**What remains.**
+1. **The neither search's rerun, after FR-19's fix lands on main** (its fix is on branch
+   `passive-share-tolerance`). Run `validation/gap_junction_tissue/neither.py OUT --cpus ...`
+   from a clean snapshot of main, under section 7's criteria unchanged. Then the 2D field
+   (1.89e-15 logged), which fits the field solver (626 nodes).
+2. **FR-15's F2: the charged miRNA** (valence -1, drift on junctions, charge in the capacitor
+   closure). It is needed for every column with a depolarized tumor.
+3. **FR-16: junction gating, floors and docking** (F3, a two-state Cx45 gate, homotypic and
+   heterotypic; F4, per-species closed-gate floors, miRNA 0 and ions 0.06; F5, minimum and mean
+   docking, and expression above the base conductance). The `gate` part measures today's law
+   against Figure 1 (F3 0.050, F4 0.112).
+4. **FR-17: the field solve beyond 2048 nodes**, for Table 1's 25x25x25 field. With FR-19, it is
+   all the preprint's printed "neither" number needs (no F2).
+5. **The tables in the order the engine allows** (§6 (c)): Table 3's line, Table 2's field, then
+   Table 1 with F7, judged by the preprint's orderings with factor tolerances.
+6. **Smaller items.**
+   - Figure 5a at 10 G_eq as written: the full-trace record path's 2 GB budget (§4). The windowed
+     writer (`cells.window_io.write_windowed_run`) would run it.
+   - The D138 question (§6), including (d): whether to run BITSEY itself, unmodified, out of
+     process, in `/mnt/workspaces/Cells/venv-bitsey`, to make Cells' own reference outputs at
+     b2cb370.
+   - `criterion.json`'s three-state fields (`lower`, `between`) await the visualizer's
+     confirmation.
+   - The run view has no declared derived records; the E/M state is a driver sidecar until it has.
+
+**Where things are.**
+- Driver: `validation/gap_junction_tissue/` (`paper.py` the preprint's numbers and closed forms;
+  `worlds.py` the worlds; `run.py` the linear model, its records, the viewer's packages, sidecars
+  and sweeps; `neither.py` the search, the picks and their records).
+- Runs: `runs/dev-04` (the dt study), `runs/dev-06` (the viewer's run), `runs/neither-01` (the
+  stopped search), `runs/picks-01` (the tissue line). Superseded and not for the viewer:
+  `runs/fixture-01`, `runs/dev-03`, `runs/dev-06-stopped`, and the packages of `dev-04` and
+  `dev-05`.
+- Probes: `probes/neither-fail-01` (the refusal's reproduction and measurement),
+  `probes/neither-compare-01` (the end-state comparison), `probes/as-written-01`.
+- Tools (not committed; the run wrappers): `tools/run.sh`, `tools/run_neither.sh`,
+  `tools/run_picks.sh`, the gate wrappers `tools/gate_*.sh`, `tools/snapshot.py` (a clean
+  execution snapshot of tracked files), `tools/summarize_aswritten.py`, `tools/check_views.py`,
+  `tools/write_summary.py` and `tools/bitsey_log_points.py`.
+- BITSEY's code and logs, as read at b2cb370 and b007aab: `downloads/` (never committed).
 
