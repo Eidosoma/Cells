@@ -15,7 +15,7 @@ import numpy as np
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.legacy.core import joint_water_profile_barrier_binding as binding
-from cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_interventions_spec import (
+from cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_interventions_spec import (  # noqa: E501
     MODEL_ID,
     owner_spec,
 )

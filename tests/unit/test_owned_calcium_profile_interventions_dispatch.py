@@ -275,7 +275,9 @@ FAMILY_MODELS = {
     "surface_calcium_cav": "cells.legacy.models.surface_calcium_cav",
     "surface_calcium_energy_hcn_extra": "cells.legacy.models.surface_calcium_energy_hcn_extra",
     "surface_calcium_energy_water": "cells.legacy.models.surface_calcium_energy_water",
-    "surface_calcium_energy_mitochondria": "cells.legacy.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_mitochondria": (
+        "cells.legacy.models.surface_calcium_energy_mitochondria"
+    ),
 }
 
 

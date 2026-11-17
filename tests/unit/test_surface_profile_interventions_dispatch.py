@@ -227,7 +227,9 @@ def test_public_cli_validates_the_complete_scheduled_profile_model(tmp_path):
 FAMILY_MODELS = {
     "surface_calcium_energy_hcn_extra": "cells.legacy.models.surface_calcium_energy_hcn_extra",
     "surface_calcium_energy_transport": "cells.legacy.models.surface_calcium_energy_transport",
-    "surface_calcium_energy_mitochondria": "cells.legacy.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_mitochondria": (
+        "cells.legacy.models.surface_calcium_energy_mitochondria"
+    ),
     "surface_calcium_energy_water": "cells.legacy.models.surface_calcium_energy_water",
 }
 

@@ -98,7 +98,7 @@ def parse(data):
             barrier_target_capacity=bc,
         ),
     )
-    from cells.legacy.models.surface_calcium_energy_water_repair_profile_barrier_interventions import (
+    from cells.legacy.models.surface_calcium_energy_water_repair_profile_barrier_interventions import (  # noqa: E501
         check_definition,
     )
 

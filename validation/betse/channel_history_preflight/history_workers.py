@@ -86,7 +86,8 @@ def cells(data, plan, backends=None):
     )
     c.require(runtime_identity() == data["cells_runtime"], "Accepted Cells runtime differs")
     c.require(
-        Path(model.__file__).resolve() == ctx.ROOT / "src/cells/legacy/models/finite_extracellular.py",
+        Path(model.__file__).resolve()
+        == ctx.ROOT / "src/cells/legacy/models/finite_extracellular.py",
         "Wrong Cells source origin",
     )
     array = ctx.prior.pilot.audit.preparation.array_record

@@ -27,7 +27,10 @@ from cells.legacy.assembly_cell.io import (
 from cells.legacy.assembly_cell.spec import tick_at
 
 # The detached worker's module for each command name, named in full (D188 R2).
-WORKERS = {"assembly-cell": "cells.legacy.assembly_cell", "assembly-cluster": "cells.legacy.assembly_cluster"}
+WORKERS = {
+    "assembly-cell": "cells.legacy.assembly_cell",
+    "assembly-cluster": "cells.legacy.assembly_cluster",
+}
 
 
 def execute(output, *, cluster=False):

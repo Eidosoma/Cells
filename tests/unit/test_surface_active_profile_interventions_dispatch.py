@@ -263,7 +263,9 @@ FAMILY_MODELS = {
     "surface_hcn_extra": "cells.legacy.models.surface_hcn_extra",
     "surface_calcium_energy_hcn_extra": "cells.legacy.models.surface_calcium_energy_hcn_extra",
     "surface_calcium_energy_transport": "cells.legacy.models.surface_calcium_energy_transport",
-    "surface_calcium_energy_mitochondria": "cells.legacy.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_mitochondria": (
+        "cells.legacy.models.surface_calcium_energy_mitochondria"
+    ),
     "surface_calcium_energy_water": "cells.legacy.models.surface_calcium_energy_water",
 }
 

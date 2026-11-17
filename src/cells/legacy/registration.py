@@ -968,7 +968,7 @@ def parse(data):
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_calcium_energy_water_repair_membrane_profiles@1"
     ):
-        from cells.legacy.core.surface_calcium_energy_water_repair_profile_interventions_spec import (
+        from cells.legacy.core.surface_calcium_energy_water_repair_profile_interventions_spec import (  # noqa: E501
             parse,
         )
 
@@ -1293,7 +1293,7 @@ def parse(data):
         and data["model"].get("id")
         == "resolved_calcium_energy_water_repair_profile_barrier_epoch@1"
     ):
-        from cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_epoch_spec import (
+        from cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_epoch_spec import (  # noqa: E501
             parse,
         )
 
@@ -1302,7 +1302,7 @@ def parse(data):
         isinstance(data.get("model"), dict)
         and data["model"].get("id") == "resolved_calcium_energy_water_profile_barriers@1"
     ):
-        from cells.legacy.core.surface_calcium_energy_water_profile_barrier_interventions_spec import (
+        from cells.legacy.core.surface_calcium_energy_water_profile_barrier_interventions_spec import (  # noqa: E501
             parse,
         )
 
@@ -1387,7 +1387,7 @@ def parse(data):
         and data["model"].get("id")
         == "resolved_calcium_energy_water_repair_extracellular_barriers@1"
     ):
-        from cells.legacy.core.surface_calcium_energy_water_repair_barrier_interventions_spec import (
+        from cells.legacy.core.surface_calcium_energy_water_repair_barrier_interventions_spec import (  # noqa: E501
             parse,
         )
 
