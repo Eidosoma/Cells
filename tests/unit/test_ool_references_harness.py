@@ -88,6 +88,25 @@ def test_registered_sizes_are_enforced(standin, tmp_path):
     assert status == 1
 
 
+def test_the_registered_pairs_and_ledger_rows_are_enforced(standin, tmp_path):
+    """Amendment 3: one convention pair alone, or a ledger run that saves row 0 only, is refused."""
+    _, roles = standin
+    status, report = H.run_rows(dict(roles, kernel_probe=roles["kernel_probe"][:1]), ["OL1-1"])
+    assert status == 2 and "convention pairs" in report["OL1-1"]["missing_or_malformed"]
+    twice = [roles["closed_world"][0], roles["closed_world"][0]]
+    status, report = H.run_rows(dict(roles, closed_world=twice), ["OL1-2"])
+    assert status == 2
+    run = Path(roles["ledger_run"][0])
+    copy = tmp_path / "ledger-row0"
+    shutil.copytree(run, copy)
+    arrays = dict(np.load(copy / "records.npz"))
+    for key in ("row_event", "counts", "heat_kT", "work_kT"):
+        arrays[key] = arrays[key][:1]
+    np.savez(copy / "records.npz", **arrays)
+    status, report = H.run_rows(dict(roles, ledger_run=[str(copy), roles["ledger_run"][1]]), ["OL1-5"])
+    assert status == 2 and "registered rows" in report["OL1-5"]["missing_or_malformed"]
+
+
 def test_a_literal_zero_at_the_extinct_boundary_fails_row_1(standin, tmp_path):
     _, roles = standin
     probe = Path(roles["boundary_probe"][1])  # the (multinomial_less_one, extinct) pair
@@ -110,14 +129,14 @@ def test_missing_or_malformed_records_exit_2(standin, tmp_path):
     copy = tmp_path / "probe-copy"
     shutil.copytree(probe, copy)
     (copy / "manifest.json").unlink()
-    status, _ = H.run_rows(dict(roles, kernel_probe=[str(copy)]), ["OL1-1"])
+    status, _ = H.run_rows(dict(roles, kernel_probe=[str(copy), roles["kernel_probe"][1]]), ["OL1-1"])
     assert status == 2
     # an undeclared token
     shutil.copyfile(probe / "manifest.json", copy / "manifest.json")
     meta = json.loads((copy / "probe.json").read_text())
     del meta["conventions"]["last_molecule"]
     (copy / "probe.json").write_text(json.dumps(meta))
-    status, report = H.run_rows(dict(roles, kernel_probe=[str(copy)]), ["OL1-1"])
+    status, report = H.run_rows(dict(roles, kernel_probe=[str(copy), roles["kernel_probe"][1]]), ["OL1-1"])
     assert status == 2 and "last_molecule" in report["OL1-1"]["missing_or_malformed"]
     # a changed echo of the registered states
     meta["conventions"]["last_molecule"] = "kept"
@@ -126,7 +145,7 @@ def test_missing_or_malformed_records_exit_2(standin, tmp_path):
     arrays["input_states"] = arrays["input_states"].copy()
     arrays["input_states"][3, 0] += 1
     np.savez(copy / "probe.npz", **arrays)
-    status, report = H.run_rows(dict(roles, kernel_probe=[str(copy)]), ["OL1-1"])
+    status, report = H.run_rows(dict(roles, kernel_probe=[str(copy), roles["kernel_probe"][1]]), ["OL1-1"])
     assert status == 2 and "echoed" in report["OL1-1"]["missing_or_malformed"]
 
 

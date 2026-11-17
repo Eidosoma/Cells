@@ -33,6 +33,7 @@ from .design import (
     CLOSED_WORLD_FILE,
     KERNEL_PROBE_FILE,
     LEDGER_RUN,
+    PROBED_CONVENTIONS,
     RESCALE_RUN,
 )
 from .laws import Law
@@ -103,11 +104,28 @@ def echo_check(meta: dict, arrays: dict, expected_states: np.ndarray, world_id: 
         raise RecordFormatError(f"{where}: the echoed input_states differ from the registered probe states")
 
 
+def pair_of(conventions: dict) -> tuple:
+    c = Conventions.from_declared(conventions)
+    return (c.condensed_measure, c.last_molecule)
+
+
+REGISTERED_PAIRS = sorted((p["condensed_measure"], p["last_molecule"]) for p in PROBED_CONVENTIONS)
+
+
+def require_registered_pairs(metas: list, role: str) -> None:
+    """A per-pair role must hold exactly the registered convention pairs, once each."""
+    pairs = sorted(pair_of(m["conventions"]) for m in metas)
+    if pairs != REGISTERED_PAIRS:
+        raise RecordFormatError(f"role {role!r} holds the convention pairs {pairs}; the registered design "
+                                f"probes exactly {REGISTERED_PAIRS}, once each")
+
+
 def probe_tables(role_paths, world_id: str, states_file: str) -> list:
     expected = registered_states(states_file)
     out = []
-    for path in as_list(role_paths):
-        meta, arrays = load_probe(path)
+    loaded = [load_probe(path) for path in as_list(role_paths)]
+    require_registered_pairs([m for m, _ in loaded], f"probe of {world_id}")
+    for path, (meta, arrays) in zip(as_list(role_paths), loaded, strict=True):
         echo_check(meta, arrays, expected, world_id, str(path))
         a_plus, a_minus = np.asarray(arrays["a_plus"], float), np.asarray(arrays["a_minus"], float)
         if a_plus.shape != (len(expected), len(meta["steps"])) or a_minus.shape != a_plus.shape:
@@ -205,6 +223,7 @@ def row_4(ctx: Context) -> list:
         idx_T = registered_world(f"ol1_wb_m{M}").index("T@pool")
         samples[M] = x[:, :, idx_T]
     out.append(tagged(mass_action.ensemble_test(samples, design), part="b"))
+    run_metas(ctx.path("ledger_run"), "ledger_run")
     for path in as_list(ctx.path("ledger_run")):
         rmeta, rec, law, table = run_records(path)
         names = ("event_time", "event_channel", "event_uniforms")
@@ -258,8 +277,21 @@ def refusal_check(record: dict) -> CheckResult:
                        dict(declarations=len(expected), missing=missing, accepted=accepted))
 
 
+def registered_rows(events: int) -> list:
+    """The ledger run's registered rows: every ``row_every_events`` events, and the last."""
+    every = LEDGER_RUN["row_every_events"]
+    return sorted(set(range(0, events + 1, every)) | {events})
+
+
+def run_metas(paths, role: str) -> list:
+    metas = [load_run(p)[0] for p in as_list(paths)]
+    require_registered_pairs(metas, role)
+    return metas
+
+
 def row_5(ctx: Context) -> list:
     out = []
+    run_metas(ctx.path("ledger_run"), "ledger_run")
     for path in as_list(ctx.path("ledger_run")):
         meta, rec, law, table = run_records(path)
         ec, row_event, counts, heat, work = need_arrays(
@@ -270,6 +302,9 @@ def row_5(ctx: Context) -> list:
             raise RecordFormatError(f"{path}: the ledger run must start {LEDGER_RUN['world']} from its registered state")
         out.append(CheckResult("registered_run_length", len(ec) == LEDGER_RUN["max_events"],
                                dict(events=int(len(ec)), registered=LEDGER_RUN["max_events"])))
+        if [int(e) for e in row_event] != registered_rows(len(ec)):
+            raise RecordFormatError(f"{path}: row_event {[int(e) for e in row_event][:6]}... is not the registered "
+                                    f"rows (every {LEDGER_RUN['row_every_events']} events, and the last)")
         out.append(tagged(ledger.check_ledger(law, table, n0, ec, row_event, counts, heat, work),
                           conventions=meta["conventions"]))
     return out
@@ -282,6 +317,8 @@ def row_6(ctx: Context) -> list:
     other = as_list(ctx.path("other_stream"))
     if not (len(base) == len(rep) == len(other)):
         raise RecordFormatError("ledger_run, replay and other_stream must list one run per probed pair, in order")
+    for role, paths in (("ledger_run", base), ("replay", rep), ("other_stream", other)):
+        run_metas(paths, role)
     for b, r, o in zip(base, rep, other):
         mb, ab, _, _ = run_records(b)
         mr, ar, _, _ = run_records(r)

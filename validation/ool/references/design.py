@@ -85,6 +85,10 @@ def design_document() -> dict:
              "what": "the harness enforces the registered sizes: 2,000 runs per rung (row OL1-4b) and 500 events "
                      "per rescale run (row OL1-3b), as it does the ledger run's 2,000 events",
              "why": "a smaller submission would otherwise be judged at a power the design never registered"},
+            {"date": "2026-11-17", "after_commit": "d17e05c9", "before_engine_output": True,
+             "what": "the harness requires every per-pair role to hold exactly the two probed convention pairs, once "
+                     "each, and the ledger run to save the registered rows (every 100 events, and the last)",
+             "why": "one pair alone, or a ledger run that saves row 0 only, would otherwise pass vacuously"},
         ],
         "worlds": {
             "registered": ["ol1_wa", "ol1_wa_closed", "ol1_wa_closed_uncatalysed", "ol1_wa_closed_x2",
