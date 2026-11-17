@@ -20,7 +20,7 @@ def test_source_inventory_contains_every_model_and_test():
     assert len([n for n in sources if n.startswith("src/cells/")]) == 55
     assert set(job.NEW_TESTS + job.OLD_TESTS) <= sources.keys()
     assert "src/cells/processes/kinetic_pump.py" in sources
-    assert "src/cells/models/kinetic_finite_bounds.py" in sources
+    assert "src/cells/legacy/models/kinetic_finite_bounds.py" in sources
 
 
 def test_protocol_does_not_rerun_historical_source_guard_suites():

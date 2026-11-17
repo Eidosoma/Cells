@@ -7,14 +7,14 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import joint_water_profile_phase_handoff as handoff
 from cells.core.grid import EventGrid
 from cells.core.runner import validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import initialise
+from cells.legacy.core import joint_water_profile_phase_handoff as handoff
+from cells.legacy.tissue_phase import prepare_request
 from cells.numerics.fixed_step import rk4_step
-from cells.tissue_phase import prepare_request
 from tests.joint_water_profile_fixtures import DT, FAMILIES, definition
 from tests.joint_water_profile_fixtures import components as scheduled
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
@@ -22,12 +22,12 @@ from validation.topology.owned_calcium_profile_interventions_fixtures import _sc
 # Each family's definition and model modules, named in full (D188 R2).
 COMPONENTS = {
     "water": (
-        "cells.core.surface_calcium_energy_water_profile_epoch_spec",
-        "cells.models.surface_calcium_energy_water_profile_epoch",
+        "cells.legacy.core.surface_calcium_energy_water_profile_epoch_spec",
+        "cells.legacy.models.surface_calcium_energy_water_profile_epoch",
     ),
     "repair": (
-        "cells.core.surface_calcium_energy_water_repair_profile_epoch_spec",
-        "cells.models.surface_calcium_energy_water_repair_profile_epoch",
+        "cells.legacy.core.surface_calcium_energy_water_repair_profile_epoch_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_profile_epoch",
     ),
 }
 

@@ -9,15 +9,15 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core import calcium_energy_atp_transport_tissue_excision as cut_model
-from cells.core import surface_calcium_energy_atp_transport_excision_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError
 from cells.core.state import Checkpoint
-from cells.models import surface_calcium_energy_atp_transport as parent
-from cells.models import surface_calcium_energy_atp_transport_excision as model
+from cells.legacy.core import calcium_energy_atp_transport_tissue_excision as cut_model
+from cells.legacy.core import surface_calcium_energy_atp_transport_excision_spec as schema
+from cells.legacy.models import surface_calcium_energy_atp_transport as parent
+from cells.legacy.models import surface_calcium_energy_atp_transport_excision as model
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact

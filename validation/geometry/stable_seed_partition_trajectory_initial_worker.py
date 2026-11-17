@@ -180,7 +180,7 @@ def gate(request, authority):
 def source_pins():
     root = Path(__file__).resolve().parents[2]
     require(
-        sha(root / "src/cells/processes/stable_seed_partition_physiology_bridge.py")
+        sha(root / "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py")
         == BRIDGE_CORE_SHA256,
         ("changed_bridge_source_metadata"),
     )
@@ -421,7 +421,7 @@ def authenticate(payload, partial):
 
 def production_pin_metadata(root):
     """Read pinned source declarations as metadata, without importing a model."""
-    path = root / "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+    path = root / "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py"
     tree = ast.parse(path.read_bytes())
     return ast.literal_eval(
         next(

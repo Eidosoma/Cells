@@ -9,8 +9,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.spec import parse_spec
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.spec import parse_spec
 from cells.models.registry import get_model
 from cells.numerics import extracellular_field as field
 from validation.ensemble import parallel_cluster as screen

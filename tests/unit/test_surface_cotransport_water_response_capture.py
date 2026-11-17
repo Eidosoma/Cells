@@ -9,7 +9,7 @@ import pytest
 from cells.core import runner
 from cells.core.errors import NumericalError
 from cells.core.specs import parse_spec
-from cells.models import surface_cotransport_water as model
+from cells.legacy.models import surface_cotransport_water as model
 from tests.unit import test_surface_cotransport_water_response_full as full
 from tests.unit.test_surface_cotransport_water_response_full import (
     run_captured,

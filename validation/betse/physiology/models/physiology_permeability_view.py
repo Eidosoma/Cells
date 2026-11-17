@@ -13,16 +13,16 @@ from types import MappingProxyType
 import jax
 import numpy as np
 
-from cells.core import surface_calcium_energy_spec as fuel_spec
-from cells.core import surface_calcium_spec as calcium_spec
 from cells.core import surface_kinetic_spec as ionic_spec
 from cells.core import surface_tissue_spec as passive_spec
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import SimulationSpec
-from cells.models import surface_calcium_energy_hcn_extra as fuel
-from cells.models import surface_calcium_hcn_extra as calcium
-from cells.models import surface_hcn_extra as ionic
+from cells.legacy.core import surface_calcium_energy_spec as fuel_spec
+from cells.legacy.core import surface_calcium_spec as calcium_spec
+from cells.legacy.models import surface_calcium_energy_hcn_extra as fuel
+from cells.legacy.models import surface_calcium_hcn_extra as calcium
+from cells.legacy.models import surface_hcn_extra as ionic
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_transport
 from cells.numerics.extracellular_field import scatter

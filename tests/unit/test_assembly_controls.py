@@ -6,10 +6,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.controls import ScheduledControl
-from cells.assembly_cluster.kernel import one_tick
-from cells.assembly_cluster.spec import parse_spec
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.controls import ScheduledControl
+from cells.legacy.assembly_cluster.kernel import one_tick
+from cells.legacy.assembly_cluster.spec import parse_spec
 from tests.unit.test_assembly_cluster import raw_for
 
 

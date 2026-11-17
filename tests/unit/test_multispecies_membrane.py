@@ -22,8 +22,8 @@ from cells.core.specs import ConfigError, PumpChange, parse_spec
 from cells.core.state import initialise
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import bioelectric_cell as old_model
-from cells.models import multispecies_membrane as model
+from cells.legacy.models import bioelectric_cell as old_model
+from cells.legacy.models import multispecies_membrane as model
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.processes.electrochemistry import F, R, ghk_leak
 from tests import multispecies_numerical_checks as checks

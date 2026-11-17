@@ -9,12 +9,12 @@ import jax
 import numpy as np
 import pytest
 
-from cells.assembly_cluster.spec import channel_owners
 from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_calcium_spec import ionic_spec
-from cells.models import surface_calcium_hcn as prior
-from cells.models import surface_calcium_kv1 as model
-from cells.models import surface_kv1 as ionic_model
+from cells.legacy.assembly_cluster.spec import channel_owners
+from cells.legacy.core.surface_calcium_spec import ionic_spec
+from cells.legacy.models import surface_calcium_hcn as prior
+from cells.legacy.models import surface_calcium_kv1 as model
+from cells.legacy.models import surface_kv1 as ionic_model
 from cells.models.registry import get_model
 from cells.processes import hcn_channels
 from cells.processes import kv1_channels as channels

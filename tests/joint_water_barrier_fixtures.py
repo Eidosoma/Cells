@@ -3,18 +3,18 @@
 import importlib
 from copy import deepcopy
 
-from cells.core import environment_barrier_composition_preparation as static
+from cells.legacy.core import environment_barrier_composition_preparation as static
 from validation.transport import joint_water_barrier_interventions_fixtures as fixtures
 
 # Each family's definition and model modules, named in full (D188 R2).
 COMPONENTS = {
     "water": (
-        "cells.core.surface_calcium_energy_water_barrier_interventions_spec",
-        "cells.models.surface_calcium_energy_water_barrier_interventions",
+        "cells.legacy.core.surface_calcium_energy_water_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_barrier_interventions",
     ),
     "repair": (
-        "cells.core.surface_calcium_energy_water_repair_barrier_interventions_spec",
-        "cells.models.surface_calcium_energy_water_repair_barrier_interventions",
+        "cells.legacy.core.surface_calcium_energy_water_repair_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_barrier_interventions",
     ),
 }
 

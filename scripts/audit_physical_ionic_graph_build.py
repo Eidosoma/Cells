@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 from cells.core.specs import load_spec  # noqa: E402
 from cells.io import _sha256 as sha  # noqa: E402
 from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.models import physical_ionic_graph as model  # noqa: E402
+from cells.legacy.models import physical_ionic_graph as model  # noqa: E402
 from scripts.audit_physical_ionic_graph_reference import replay  # noqa: E402
 from scripts.verify_batch_windows_build import audit_cohort, suffix  # noqa: E402
 from scripts.verify_windows_build import audit_windows, payloads  # noqa: E402

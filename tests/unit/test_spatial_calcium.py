@@ -12,21 +12,21 @@ import jax
 import numpy as np
 import pytest
 
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine as assembly
-from cells.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import parse_batch, run_batch
 from cells.core.batch_windows import run_batch_windowed
 from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.core.schedule import control_values
-from cells.core.spatial_calcium_spec import ionic_spec, store_spec
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, run_windowed
 from cells.ensemble.plan import jupiter_plan, plan
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import spatial_calcium as model
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine as assembly
+from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
+from cells.legacy.core.spatial_calcium_spec import ionic_spec, store_spec
+from cells.legacy.models import spatial_calcium as model
 from tests.batch_fixtures import definition
 from tests.reference_spatial_calcium import System, physical_energy_derivative, reference
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories
@@ -525,7 +525,7 @@ def test_ensemble_planning_preserves_calcium_and_world_identity():
 
 
 def test_assembly_ensemble_calcium_aggregation(coupled):
-    from cells.ensemble.cluster import aggregate
+    from cells.legacy.ensemble.cluster import aggregate
 
     _, _, report = coupled
     row = report | {"arm": "calcium", "wall_start": 0.0, "wall_end": 1.0}

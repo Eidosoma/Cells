@@ -12,7 +12,7 @@ def side_probes(view, definition, record):
 
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     spec = parse_spec(definition)
     _, layout = model.initial_values(spec)

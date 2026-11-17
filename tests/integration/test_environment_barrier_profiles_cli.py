@@ -8,7 +8,7 @@ import pytest
 
 from cells.__main__ import main
 from cells.core.specs import digest
-from cells.tissue_profiles import prepare_request, read_preparation
+from cells.legacy.tissue_profiles import prepare_request, read_preparation
 from tests.integration.test_cli import cli
 from validation.transport import environment_barrier_preparation_fixtures as fixtures
 
@@ -84,7 +84,7 @@ def test_existing_output_refuses_before_reading_input(command, tmp_path, capsys)
 
 
 def test_modified_definition_refuses_public_validation(tmp_path, capsys):
-    from cells.core.environment_barrier_preparation import write_preparation
+    from cells.legacy.core.environment_barrier_preparation import write_preparation
 
     prepared = prepare_request(fixtures.request())
     output = tmp_path / "prepared"

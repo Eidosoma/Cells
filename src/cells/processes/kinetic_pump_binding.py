@@ -2,7 +2,7 @@
 law's inputs from them.
 
 Shared by the active pump families (resolved_pump_tissue@1-@3, through surface_kinetic and
-surface_pump*). Moved verbatim from cells.models.kinetic_finite_extracellular, which
+surface_pump*). Moved verbatim from cells.legacy.models.kinetic_finite_extracellular, which
 re-imports these names (D188 R3, as step 0's probe P2 did).
 """
 

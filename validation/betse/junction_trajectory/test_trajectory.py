@@ -191,7 +191,7 @@ def test_voltage_boundary_rejects_missing_or_duplicate_native_offset(additions):
 def test_cells_mapping_uses_complete_production_conservation_and_gate_independent_flux(witness):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
-    from cells.models import kinetic_finite_extracellular as ionic
+    from cells.legacy.models import kinetic_finite_extracellular as ionic
 
     c, _, _, protocol = witness
     spec = parse_spec(bridge.definition(c, protocol, protocol["cells_steps_s"][0]))

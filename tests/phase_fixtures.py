@@ -4,7 +4,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-from cells.core import membrane_profile_phase_handoff as handoff
+from cells.legacy.core import membrane_profile_phase_handoff as handoff
 from validation.topology.membrane_profile_phase_handoff_fixtures import public_definitions
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples/tissue_phase/continued.request.json"

@@ -7,24 +7,25 @@ import jax
 import numpy as np
 import pytest
 
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine as assembly
-from cells.assembly_cluster.controls import modulate
-from cells.assembly_cluster.spec import channel_owners
-from cells.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import Checkpoint
-from cells.core.surface_calcium_spec import ionic_spec
 from cells.ensemble import ionic
-from cells.ensemble.cluster import aggregate
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_calcium_catalog as model
-from cells.models import surface_calcium_cav as prior
-from cells.models import surface_catalog, surface_kinetic
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine as assembly
+from cells.legacy.assembly_cluster.controls import modulate
+from cells.legacy.assembly_cluster.spec import channel_owners
+from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
+from cells.legacy.core.surface_calcium_spec import ionic_spec
+from cells.legacy.ensemble.cluster import aggregate
+from cells.legacy.models import surface_calcium_catalog as model
+from cells.legacy.models import surface_calcium_cav as prior
+from cells.legacy.models import surface_catalog
+from cells.models import surface_kinetic
 from cells.models.registry import get_model
 from cells.processes import shared_channel_catalog
 from tests.unit.test_surface_calcium import assert_owned_assembly_readouts

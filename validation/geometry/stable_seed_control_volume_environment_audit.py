@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_control_volume_environment.py"
+CORE = "src/cells/legacy/processes/stable_seed_control_volume_environment.py"
 REFERENCE = "validation/geometry/stable_seed_control_volume_environment_reference.py"
 FIXTURE = "validation/geometry/stable_seed_control_volume_environment_fixtures.py"
 TEST = "tests/unit/test_stable_seed_control_volume_environment.py"
@@ -214,7 +214,7 @@ def audit(project):
     )
     assert "complete_vector_axes" in calls(function(upstream_source, "geometry_fields"))
     assert "complete_permeability_species" in calls(function(upstream_source, "physical_fields"))
-    geometry_rel = "src/cells/processes/finite_ecm_polygon_geometry.py"
+    geometry_rel = "src/cells/legacy/processes/finite_ecm_polygon_geometry.py"
     finite = ast.parse((project / geometry_rel).read_bytes())
     construction = function(finite, "_construct")
     messages = {
@@ -233,8 +233,8 @@ def audit(project):
         "Bath centroid link is not exactly orthogonal to its shared face",
     )
     assert set(required) <= set(messages)
-    passive_rel = "src/cells/core/finite_ecm_polygon_preparation.py"
-    active_rel = "src/cells/core/active_ecm_polygon_preparation.py"
+    passive_rel = "src/cells/legacy/core/finite_ecm_polygon_preparation.py"
+    active_rel = "src/cells/legacy/core/active_ecm_polygon_preparation.py"
     passive, active = (ast.parse((project / rel).read_bytes()) for rel in (passive_rel, active_rel))
     assert "geometry.validate_binding" in calls(function(passive, "prepare"))
     assert "partition.validate_binding" in calls(function(active, "prepare"))

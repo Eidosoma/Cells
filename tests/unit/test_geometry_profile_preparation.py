@@ -13,11 +13,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import geometry_profile_preparation as bridge
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import geometry_profile_preparation as bridge
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.models import surface_tissue as model
-from cells.processes import tissue_target_selectors as native
 from validation.geometry import geometry_profile_preparation_fixtures as fixtures
 from validation.geometry import geometry_profile_preparation_reference as reference
 from validation.tissue import surface_dynamics_reference as equations
@@ -271,7 +271,7 @@ def audit(event,args):
         if args[0].startswith(prefixes):
             raise RuntimeError('External geometry evidence read during portable replay')
 sys.addaudithook(audit)
-from cells.core import geometry_profile_preparation as b
+from cells.legacy.core import geometry_profile_preparation as b
 result=b.replay(b.read_json(sys.argv[1]));b.write_preparation(sys.argv[2],result)
 print(json.dumps(dict(identity=result.provenance['identity'])))
 """

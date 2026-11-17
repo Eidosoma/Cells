@@ -27,7 +27,7 @@ from cells.core.runner import run
 from cells.core.specs import ConfigError
 from cells.core.vector_windows import plan_vector_windows
 from cells.core.windows import WindowPolicy
-from cells.models import source_decay
+from cells.legacy.models import source_decay
 from tests.batch_fixtures import synthetic_pair
 
 POLICY = WindowPolicy(2, "checkpoints")

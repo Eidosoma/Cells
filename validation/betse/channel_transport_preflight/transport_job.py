@@ -196,7 +196,7 @@ def validate_workers(r, native, cells, output):
         and cells["jit_disabled"] is False,
         "Wrong Cells execution regime",
     )
-    module = "src/cells/models/finite_extracellular.py"
+    module = "src/cells/legacy/models/finite_extracellular.py"
     c.require(
         cells["production_module_sha256"] == {module: r["sources_sha256"][module]},
         "Wrong Cells implementation",

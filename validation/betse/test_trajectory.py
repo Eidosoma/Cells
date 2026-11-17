@@ -214,7 +214,7 @@ def test_synthetic_bad_native_record_rejected(corruption):
 def test_real_cells_definitions_and_initial_domains(case_id, backend, dt):
     from cells.core.runner import timeline
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     case = next(row for row in c.read(ctx.PROTOCOL)["cases"] if row["id"] == case_id)
     spec = parse_spec(ctx.definition(case, dt, backend))
@@ -296,7 +296,7 @@ def test_panel_is_frozen_before_native_execution_and_uses_real_runner_backends()
 def static_cells_record():
     """A prepared blocked invariant, read out without running an integration loop."""
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     r = registered()
     case = r["protocol"]["cases"][1]

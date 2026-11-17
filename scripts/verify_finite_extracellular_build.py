@@ -32,7 +32,7 @@ from cells.io import (  # noqa: E402
     write_run,
     write_snapshot,
 )
-from cells.models import finite_extracellular as model  # noqa: E402
+from cells.legacy.models import finite_extracellular as model  # noqa: E402
 from cells.window_io import write_windowed_run  # noqa: E402
 from scripts.audit_finite_extracellular_build import audit, audit_run  # noqa: E402
 from scripts.audit_preserved_finite_extracellular_reference import (  # noqa: E402

@@ -16,7 +16,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax.custom_batching import sequential_vmap
 
-from cells.assembly_cluster import engine, kernel
+from cells.legacy.assembly_cluster import engine, kernel
 from cells.numerics import extracellular_field as field
 
 TILE_WIDTH = 32

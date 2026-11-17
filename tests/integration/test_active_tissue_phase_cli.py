@@ -7,19 +7,19 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import surface_active_profile_epoch_spec as epoch
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.errors import NumericalError
-from cells.core.excision import excise
 from cells.core.runner import branch_checkpoint, run, validate_checkpoint
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
 from cells.ensemble.ionic import parse_spec as parse_ensemble
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_active_profile_epoch as model
-from cells.models import surface_active_profile_interventions as active
+from cells.legacy.core import surface_active_profile_epoch_spec as epoch
+from cells.legacy.core.excision import excise
+from cells.legacy.models import surface_active_profile_epoch as model
+from cells.legacy.models import surface_active_profile_interventions as active
+from cells.legacy.tissue_phase import prepare_request, read_preparation, replay
 from cells.models.registry import get_model
-from cells.tissue_phase import prepare_request, read_preparation, replay
 from tests.active_phase_fixtures import prepared, request, source_checkpoint
 from tests.integration.test_cli import cli
 

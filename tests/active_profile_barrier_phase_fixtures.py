@@ -5,15 +5,15 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import active_profile_barrier_phase_handoff as handoff
-from cells.core import surface_active_profile_barrier_epoch_spec as epoch
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import Checkpoint
-from cells.models import surface_active_profile_barrier_interventions as scheduled
+from cells.legacy.core import active_profile_barrier_phase_handoff as handoff
+from cells.legacy.core import surface_active_profile_barrier_epoch_spec as epoch
+from cells.legacy.models import surface_active_profile_barrier_interventions as scheduled
+from cells.legacy.tissue_phase import prepare_request
 from cells.numerics.fixed_step import rk4_step
-from cells.tissue_phase import prepare_request
 from tests.active_profile_barrier_dispatch_fixtures import DT, definition
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
 

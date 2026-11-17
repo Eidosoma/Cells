@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.assembly_cell.io import flatten
-from cells.assembly_cluster import engine
 from cells.ensemble import cli
+from cells.legacy.assembly_cell.io import flatten
+from cells.legacy.assembly_cluster import engine
 from validation.ensemble import parallel_cluster as screen
 from validation.ensemble import rounding_cluster as rounding
 from validation.ensemble import step_cluster as steps
@@ -195,7 +195,7 @@ def test_energy_variant_cannot_be_launched_without_its_passing_parent(tmp_path):
 
 @pytest.mark.parametrize("width", [32, 64])
 def test_qualification_executes_the_existing_energy_wrapper_and_restores_it(width):
-    from cells.models import multispecies_membrane as membrane
+    from cells.legacy.models import multispecies_membrane as membrane
 
     original_rate, original_advance = membrane.dissipation_rate, engine.advance
     with screen.execution_candidate(screen.ENERGY_SCREEN_VARIANT, width):

@@ -11,9 +11,9 @@ import jax
 import jax.numpy as jnp
 
 from cells.core.schedule import SurfaceCalciumControl
-from cells.core.surface_calcium_energy_spec import Control as FuelControl
-from cells.models import surface_calcium as calcium
-from cells.models import surface_calcium_energy as fuel
+from cells.legacy.core.surface_calcium_energy_spec import Control as FuelControl
+from cells.legacy.models import surface_calcium as calcium
+from cells.legacy.models import surface_calcium_energy as fuel
 from validation.betse.physiology.models import physiology_active_temperature_arrays as arrays
 
 CALCIUM = "resolved_open_calcium@1"

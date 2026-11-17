@@ -6,11 +6,11 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import owned_calcium_profile_barrier_phase_handoff as bridge
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
-from cells.tissue_phase import prepare_request, replay
+from cells.legacy.core import owned_calcium_profile_barrier_phase_handoff as bridge
+from cells.legacy.tissue_phase import prepare_request, replay
 from tests.owned_calcium_profile_barrier_phase_fixtures import (
     DT,
     OWNERS,

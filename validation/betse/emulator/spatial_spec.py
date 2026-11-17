@@ -10,7 +10,6 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.multispecies_spec import identifier
 from cells.core.specs import (
     ConfigError,
     MultispeciesExecutionSpec,
@@ -19,6 +18,7 @@ from cells.core.specs import (
     _integer,
     _number,
 )
+from cells.legacy.core.multispecies_spec import identifier
 from cells.processes import kinetic_pump, voltage_gates
 from validation.betse.emulator import active
 from validation.betse.emulator import spatial as passive

@@ -14,7 +14,7 @@ from cells.core.specs import ConfigError, ContactChange, ExperimentSpec, load_sp
 from cells.core.state import BioelectricPairState, initialise
 from cells.coupling.selective import gate_target, selective_flux
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import bioelectric_pair as model
+from cells.legacy.models import bioelectric_pair as model
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.observers import hermite_bounds, sample_hermite_history, sample_history
 from tests import reference_bioelectric_pair as ref

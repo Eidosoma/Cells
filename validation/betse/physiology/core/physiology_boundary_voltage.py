@@ -15,12 +15,12 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import SimulationSpec, digest
-from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyHCNExtraModel
-from cells.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
 from cells.core.surface_kinetic_spec import SurfaceHCNExtraModel
-from cells.core.surface_open_calcium_energy_spec import SurfaceOpenCalciumEnergyModel
-from cells.core.surface_open_calcium_spec import SurfaceOpenCalciumModel
 from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.legacy.core.surface_calcium_energy_spec import SurfaceCalciumEnergyHCNExtraModel
+from cells.legacy.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
+from cells.legacy.core.surface_open_calcium_energy_spec import SurfaceOpenCalciumEnergyModel
+from cells.legacy.core.surface_open_calcium_spec import SurfaceOpenCalciumModel
 from cells.processes import global_controls as source
 
 KIND = "cells.physiology_boundary_voltage_binding@1"

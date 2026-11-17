@@ -24,10 +24,10 @@ class DenyScience(importlib.abc.MetaPathFinder):
             attempts.append(fullname)
             raise AssertionError("Scientific import attempted: " + fullname)
 sys.meta_path.insert(0, DenyScience())
-from cells.processes import charged_surface_backend as backend
-from cells.processes import charged_surface_backend_gate as gate
-from cells.processes import charged_surface_backend_plan as planning
-from cells.processes import charged_surface_work as scalar
+from cells.legacy.processes import charged_surface_backend as backend
+from cells.legacy.processes import charged_surface_backend_gate as gate
+from cells.legacy.processes import charged_surface_backend_plan as planning
+from cells.legacy.processes import charged_surface_work as scalar
 from validation import charged_surface_backend_declarations as cases
 scalar._pins()
 plan = planning.make_plan(cases.cohort(sys.argv[2]))

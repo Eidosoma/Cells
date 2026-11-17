@@ -15,7 +15,8 @@ import pytest
 from cells.core.runner import run
 from cells.core.specs import parse_spec
 from cells.core.surface_pump_v3_spec import control_values
-from cells.models import surface_catalog, surface_pump_v2, surface_pump_v3
+from cells.legacy.models import surface_catalog
+from cells.models import surface_pump_v2, surface_pump_v3
 from cells.models.registry import get_model
 from cells.numerics import exponential_gates as gates
 from cells.numerics import surface_imex as imex

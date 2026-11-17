@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_explicit_ecm_partition.py"
+CORE = "src/cells/legacy/processes/stable_seed_explicit_ecm_partition.py"
 REFERENCE = "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
 LANE = "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py"
 FIXTURE = "validation/geometry/stable_seed_explicit_ecm_partition_fixtures.py"

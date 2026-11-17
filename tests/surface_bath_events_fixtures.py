@@ -8,13 +8,13 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import surface_active_bath_events_spec as active_schema
-from cells.core import surface_passive_bath_events_spec as passive_schema
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import Checkpoint
-from cells.models import surface_active_bath_events as active
-from cells.models import surface_passive_bath_events as passive
+from cells.legacy.core import surface_active_bath_events_spec as active_schema
+from cells.legacy.core import surface_passive_bath_events_spec as passive_schema
+from cells.legacy.models import surface_active_bath_events as active
+from cells.legacy.models import surface_passive_bath_events as passive
 from cells.numerics.fixed_step import rk4_checked_step
 from validation.transport import surface_bath_events_fixtures as fixtures
 

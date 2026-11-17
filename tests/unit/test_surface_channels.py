@@ -21,7 +21,7 @@ from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_channels
+from cells.legacy.models import surface_channels
 from cells.models import surface_kinetic as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step

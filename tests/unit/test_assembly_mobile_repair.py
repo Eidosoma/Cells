@@ -14,15 +14,15 @@ import pytest
 
 from cells.assembly.io import digest
 from cells.assembly.spec import AssemblyError
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import controls, engine
-from cells.assembly_cluster.mobile_channels import AXES
-from cells.assembly_cluster.spec import channel_owners, parse_spec
 from cells.core.schedule import control_values
-from cells.ensemble.cluster import aggregate
 from cells.ensemble.families import bind_definition
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.models import surface_mobile_repair as model
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import controls, engine
+from cells.legacy.assembly_cluster.mobile_channels import AXES
+from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec
+from cells.legacy.ensemble.cluster import aggregate
+from cells.legacy.models import surface_mobile_repair as model
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories, same
 from tests.unit.test_surface_mobile_channel import error_budget
 from tests.unit.test_surface_repair_full import compare_backend

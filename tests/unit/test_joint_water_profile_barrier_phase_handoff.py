@@ -6,11 +6,11 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import joint_water_profile_barrier_phase_handoff as bridge
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
-from cells.tissue_phase import prepare_request, replay
+from cells.legacy.core import joint_water_profile_barrier_phase_handoff as bridge
+from cells.legacy.tissue_phase import prepare_request, replay
 from tests.joint_water_profile_barrier_phase_fixtures import (
     DT,
     OWNERS,
@@ -45,7 +45,7 @@ def test_combined_epoch_preserves_all_original_arrays_and_both_static_recipes(ca
     np.testing.assert_array_equal(
         artifact.provenance["preservation"]["chemical_store_amount_fmol"], stores
     )
-    from cells.models import surface_calcium_energy as fuel
+    from cells.legacy.models import surface_calcium_energy as fuel
 
     assert np.any(point.state.energy_amount_increment_fmol != 0)
     assert np.any(point.state.volume_increment_pL != 0)

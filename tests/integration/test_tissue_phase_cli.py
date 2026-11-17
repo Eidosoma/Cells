@@ -8,11 +8,11 @@ import numpy as np
 import pytest
 
 from cells.__main__ import main
-from cells.core import membrane_profile_phase_handoff as handoff
 from cells.core.specs import digest, parse_spec
 from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
-from cells.tissue_phase import read_preparation
+from cells.legacy.core import membrane_profile_phase_handoff as handoff
+from cells.legacy.tissue_phase import read_preparation
 from tests.integration.test_cli import cli
 from tests.phase_fixtures import EXAMPLE, prepared, request
 

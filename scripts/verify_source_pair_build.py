@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 from cells.core.runner import branch_checkpoint, run  # noqa: E402
 from cells.core.specs import load_spec  # noqa: E402
 from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
-from cells.models import source_pair as model  # noqa: E402
+from cells.legacy.models import source_pair as model  # noqa: E402
 from scripts.audit_source_pair_numerics import audit_directory, check_state  # noqa: E402
 from tests import reference_source_pair_numerics as ref  # noqa: E402
 from tests.source_pair_fixtures import reference_model, spec_for, values  # noqa: E402

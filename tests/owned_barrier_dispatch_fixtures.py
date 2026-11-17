@@ -3,13 +3,13 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import surface_active_barrier_interventions_spec as active
-from cells.core import surface_calcium_barrier_interventions_spec as calcium
-from cells.core import surface_calcium_energy_barrier_interventions_spec as energy
-from cells.models import surface_active_barrier_interventions as active_model
-from cells.models import surface_calcium_barrier_interventions as calcium_model
-from cells.models import surface_calcium_energy_barrier_interventions as energy_model
-from cells.tissue_profiles import prepare_request
+from cells.legacy.core import surface_active_barrier_interventions_spec as active
+from cells.legacy.core import surface_calcium_barrier_interventions_spec as calcium
+from cells.legacy.core import surface_calcium_energy_barrier_interventions_spec as energy
+from cells.legacy.models import surface_active_barrier_interventions as active_model
+from cells.legacy.models import surface_calcium_barrier_interventions as calcium_model
+from cells.legacy.models import surface_calcium_energy_barrier_interventions as energy_model
+from cells.legacy.tissue_profiles import prepare_request
 from validation.transport import environment_barrier_composition_fixtures as fixtures
 
 OWNERS = {

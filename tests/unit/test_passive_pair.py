@@ -11,7 +11,7 @@ from cells.core.specs import ConfigError, ContactChange, InputChange, load_spec,
 from cells.core.state import initialise
 from cells.coupling.passive import ContactParameters, edge_flux, scatter_exchange
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import passive_pair
+from cells.legacy.models import passive_pair
 from tests.reference_pair import exact_pair
 
 ROOT = Path(__file__).resolve().parents[2]

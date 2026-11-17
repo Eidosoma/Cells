@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from cells.tissue_phase import prepare_request
+from cells.legacy.tissue_phase import prepare_request
 from tests.surface_bath_events_fixtures import PREFIX_DT
 from validation.topology import surface_bath_phase_fixtures as component
 

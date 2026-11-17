@@ -319,7 +319,7 @@ def cells_worker(registration, output):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
     from cells.io import runtime_identity
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     c.require(
         jax.default_backend() == "cpu"

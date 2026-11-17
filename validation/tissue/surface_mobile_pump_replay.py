@@ -14,7 +14,7 @@ from cells.core.runner import branch_checkpoint, run
 from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_mobile_pump as model
+from cells.legacy.models import surface_mobile_pump as model
 from validation.tissue import surface_mobile_pump_fixtures as fixtures
 
 

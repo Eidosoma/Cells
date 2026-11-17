@@ -11,19 +11,19 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import active_profile_barrier_preparation as preparation
-from cells.core import surface_active_profile_barrier_interventions_spec as schema
-from cells.core import tissue_profile_preparation as profiles
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_active_profile_barrier_interventions as model
+from cells.legacy.core import active_profile_barrier_preparation as preparation
+from cells.legacy.core import surface_active_profile_barrier_interventions_spec as schema
+from cells.legacy.core import tissue_profile_preparation as profiles
+from cells.legacy.models import surface_active_profile_barrier_interventions as model
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import tissue_target_selectors as native
 from validation.transport import active_profile_barrier_interventions_fixtures as fixtures
 from validation.transport import active_profile_barrier_interventions_reference as reference
 
@@ -286,7 +286,7 @@ def test_portable_typed_snapshot_fresh_process_and_full_controls(phase, tmp_path
         np.testing.assert_array_equal(a, b)
     code = (
         "from cells.io import load_snapshot; "
-        "from cells.models.surface_active_profile_barrier_interventions import STATE_TYPE; "
+        "from cells.legacy.models.surface_active_profile_barrier_interventions import STATE_TYPE; "
         "import sys; r=load_snapshot(sys.argv[1]); "
         "assert type(r.checkpoint.state) is STATE_TYPE; assert len(r.checkpoint.state)==20"
     )

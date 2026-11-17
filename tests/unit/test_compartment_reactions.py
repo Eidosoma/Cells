@@ -21,7 +21,7 @@ from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import initialise
 from cells.core.windows import WindowPolicy, run_windowed
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import compartment_reactions as model
+from cells.legacy.models import compartment_reactions as model
 from cells.processes.mass_action import reversible_flux
 from tests.batch_fixtures import definition
 from tests.reference_compartment_reactions import binding_equilibrium, reference

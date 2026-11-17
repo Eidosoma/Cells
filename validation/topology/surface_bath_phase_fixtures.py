@@ -5,16 +5,16 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import surface_active_bath_epoch_spec as active_epoch
-from cells.core import surface_active_bath_events_spec as active_schema
-from cells.core import surface_bath_phase_handoff as bridge
-from cells.core import surface_passive_bath_epoch_spec as passive_epoch
-from cells.core import surface_passive_bath_events_spec as passive_schema
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.state import Checkpoint
-from cells.models import surface_active_bath_epoch as active
-from cells.models import surface_passive_bath_epoch as passive
+from cells.legacy.core import surface_active_bath_epoch_spec as active_epoch
+from cells.legacy.core import surface_active_bath_events_spec as active_schema
+from cells.legacy.core import surface_bath_phase_handoff as bridge
+from cells.legacy.core import surface_passive_bath_epoch_spec as passive_epoch
+from cells.legacy.core import surface_passive_bath_events_spec as passive_schema
+from cells.legacy.models import surface_active_bath_epoch as active
+from cells.legacy.models import surface_passive_bath_epoch as passive
 from cells.numerics.fixed_step import rk4_step
 from validation.transport import surface_bath_events_fixtures as ordinary
 

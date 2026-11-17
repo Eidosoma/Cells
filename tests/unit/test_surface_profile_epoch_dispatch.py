@@ -9,11 +9,8 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import membrane_profile_phase_handoff as handoff
-from cells.core import surface_profile_epoch_spec as epoch
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.errors import NumericalError
-from cells.core.excision import excise
 from cells.core.grid import EventGrid
 from cells.core.runner import branch_checkpoint, run, validate_checkpoint
 from cells.core.schedule import control_values, event_index
@@ -22,8 +19,11 @@ from cells.core.state import initialise
 from cells.core.windows import WindowPolicy, iter_windows, plan_windows
 from cells.ensemble.ionic import parse_spec as parse_ensemble
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_profile_epoch as model
-from cells.models import surface_profile_interventions as scheduled
+from cells.legacy.core import membrane_profile_phase_handoff as handoff
+from cells.legacy.core import surface_profile_epoch_spec as epoch
+from cells.legacy.core.excision import excise
+from cells.legacy.models import surface_profile_epoch as model
+from cells.legacy.models import surface_profile_interventions as scheduled
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from tests.phase_fixtures import prepared, request
@@ -116,7 +116,7 @@ def test_evolved_epoch_snapshot_restores_in_a_fresh_process(tmp_path):
     code = """
 import json,sys
 from cells.io import load_snapshot
-from cells.models.surface_profile_epoch import handoff_record
+from cells.legacy.models.surface_profile_epoch import handoff_record
 saved=load_snapshot(sys.argv[1])
 print(json.dumps(dict(model=saved.spec.to_dict()['model']['id'],
     accepted_time=saved.checkpoint.time, phase_clock=float(saved.checkpoint.state.phase_clock_s[0]),

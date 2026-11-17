@@ -12,8 +12,8 @@ from fractions import Fraction
 
 import pytest
 
+from cells.legacy.processes import stable_seed_control_volumes as volumes
 from cells.processes import stable_mesh_physical_reconstruction as topology
-from cells.processes import stable_seed_control_volumes as volumes
 from tests.unit import test_stable_mesh_physical_reconstruction as archives
 from validation.geometry import stable_seed_control_volumes_fixtures as fixtures
 

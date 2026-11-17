@@ -79,7 +79,7 @@ def test_nonuniform_faces_are_not_silently_averaged(setup):
 def compiled():
     import jax
 
-    from cells.models import kinetic_finite_extracellular as model
+    from cells.legacy.models import kinetic_finite_extracellular as model
 
     assert jax.config.x64_enabled and jax.default_backend() == "cpu"
     return jax.jit(model.rhs)

@@ -9,9 +9,9 @@ import pytest
 
 from cells.__main__ import main
 from cells.core.specs import digest, parse_spec
+from cells.legacy.processes import tissue_target_selectors as native
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request, read_preparation
 from cells.models.registry import get_model
-from cells.processes import tissue_target_selectors as native
-from cells.tissue_profiles import REQUEST_KIND, prepare_request, read_preparation
 from tests.integration.test_cli import cli
 from validation.topology import tissue_profile_preparation_fixtures as fixtures
 from validation.topology import tissue_profile_preparation_reference as reference
@@ -146,7 +146,7 @@ def test_nonoverwrite_is_checked_before_loading_recipe(tmp_path, capsys):
 
 
 def test_artifact_tampering_refuses_with_clean_cli_error(tmp_path, capsys):
-    from cells.core.tissue_profile_preparation import write_preparation
+    from cells.legacy.core.tissue_profile_preparation import write_preparation
 
     root = tmp_path / "prepared"
     prepared = prepare_request(request())

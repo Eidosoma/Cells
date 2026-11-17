@@ -323,7 +323,7 @@ def corrupt(name, geometry):
 
 
 def physical(bound):
-    from cells.core import conservative_polygon_tissue_preparation as bridge
+    from cells.legacy.core import conservative_polygon_tissue_preparation as bridge
 
     g = bound.geometry
     species = [dict(id="Na", valence=1), dict(id="Cl", valence=-1)]

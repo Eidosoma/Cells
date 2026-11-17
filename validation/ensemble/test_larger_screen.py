@@ -5,9 +5,9 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.spec import parse_spec
 from cells.ensemble import cli
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.spec import parse_spec
 from validation.ensemble import parallel_cluster as screen
 from validation.ensemble.test_parallel_cluster import physical_spec
 

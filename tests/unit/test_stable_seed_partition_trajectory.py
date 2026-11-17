@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from cells.processes import stable_seed_partition_advance as first
-from cells.processes import stable_seed_partition_trajectory as trajectory
+from cells.legacy.processes import stable_seed_partition_advance as first
+from cells.legacy.processes import stable_seed_partition_trajectory as trajectory
 from validation.geometry import stable_seed_partition_trajectory_authority as authority_gate
 from validation.geometry import stable_seed_partition_trajectory_declarations as declarations
 from validation.geometry import stable_seed_partition_trajectory_records as records

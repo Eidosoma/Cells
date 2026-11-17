@@ -10,9 +10,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import environment_barrier_preparation as bridge
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import environment_barrier_preparation as bridge
 from cells.models import surface_tissue as model
 from validation.tissue import surface_dynamics_reference as physical
 from validation.transport import environment_barrier_preparation_fixtures as fixtures

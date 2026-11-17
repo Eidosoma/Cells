@@ -8,7 +8,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_cotransport_water_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.runner import timeline
 from cells.core.schedule import control_values, event_index
@@ -16,9 +15,10 @@ from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_cotransport as transport
-from cells.models import surface_cotransport_water as model
-from cells.models import surface_energy_water as water
+from cells.legacy.core import surface_cotransport_water_spec as schema
+from cells.legacy.models import surface_cotransport as transport
+from cells.legacy.models import surface_cotransport_water as model
+from cells.legacy.models import surface_energy_water as water
 from cells.models.registry import get_model
 from validation.tissue import surface_cotransport_water_fixtures as fixtures
 from validation.tissue import surface_cotransport_water_reference as reference

@@ -39,7 +39,7 @@ from cells.io import (  # noqa: E402
     write_run,
     write_snapshot,
 )
-from cells.models import multispecies_membrane as model  # noqa: E402
+from cells.legacy.models import multispecies_membrane as model  # noqa: E402
 from scripts.audit_multispecies_build import audit, audit_run  # noqa: E402
 from scripts.audit_preserved_multispecies_reference import (  # noqa: E402
     ARCHIVE_SHA,

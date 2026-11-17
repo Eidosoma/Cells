@@ -426,7 +426,7 @@ def test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state(trajec
 
 
 def test_previous_kinetic_tissue_ensemble_keeps_its_voltage_and_state_contract():
-    from cells.models import tissue as previous
+    from cells.legacy.models import tissue as previous
     from validation.tissue.dynamics_fixtures import definition
 
     raw = definition(end=0.0002, backend=BACKEND)

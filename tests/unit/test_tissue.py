@@ -21,8 +21,8 @@ from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble.ionic import parse_spec as parse_ensemble
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import spatial_junction as previous
-from cells.models import tissue as model
+from cells.legacy.models import spatial_junction as previous
+from cells.legacy.models import tissue as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
 from validation.tissue import dynamics_fixtures as fixtures

@@ -97,10 +97,10 @@ def differences(a, b):
 
 
 def replay(root):
-    from cells.assembly_cell.io import flatten, source_identity
-    from cells.assembly_cluster import engine
-    from cells.assembly_cluster.spec import parse_spec
     from cells.ensemble.families import bind_definition
+    from cells.legacy.assembly_cell.io import flatten, source_identity
+    from cells.legacy.assembly_cluster import engine
+    from cells.legacy.assembly_cluster.spec import parse_spec
 
     started = time.monotonic()
     output = root / "partition-parent-replay"

@@ -16,12 +16,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from cells.processes import charged_surface_backend as backend
-from cells.processes import charged_surface_backend_arrays as arrays
-from cells.processes import charged_surface_backend_gate as gate
-from cells.processes import charged_surface_backend_kernel as kernel
-from cells.processes import charged_surface_backend_plan as planning
-from cells.processes import charged_surface_work as scalar
+from cells.legacy.processes import charged_surface_backend as backend
+from cells.legacy.processes import charged_surface_backend_arrays as arrays
+from cells.legacy.processes import charged_surface_backend_gate as gate
+from cells.legacy.processes import charged_surface_backend_kernel as kernel
+from cells.legacy.processes import charged_surface_backend_plan as planning
+from cells.legacy.processes import charged_surface_work as scalar
 
 RELEASE_PATH = os.environ.get("CELLS_CHARGED_BACKEND_RELEASE")
 if RELEASE_PATH is None:

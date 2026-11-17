@@ -6,10 +6,10 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import joint_water_barrier_phase_handoff as bridge
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
+from cells.legacy.core import joint_water_barrier_phase_handoff as bridge
 from tests.joint_water_barrier_phase_fixtures import (
     DT,
     OWNERS,

@@ -13,21 +13,21 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import active_membrane_profile_phase_handoff as adapter
-from cells.core import surface_active_profile_epoch_spec as definition
-from cells.core import surface_active_profile_interventions_spec as scheduled_spec
-from cells.core import tissue_profile_preparation as static
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.runner import branch_checkpoint, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
-from cells.models import surface_active_profile_epoch as model
-from cells.models import surface_active_profile_interventions as scheduled
+from cells.legacy.core import active_membrane_profile_phase_handoff as adapter
+from cells.legacy.core import surface_active_profile_epoch_spec as definition
+from cells.legacy.core import surface_active_profile_interventions_spec as scheduled_spec
+from cells.legacy.core import tissue_profile_preparation as static
+from cells.legacy.models import surface_active_profile_epoch as model
+from cells.legacy.models import surface_active_profile_interventions as scheduled
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import tissue_target_selectors as native
 from validation.topology import active_membrane_profile_phase_handoff_fixtures as fixtures
 from validation.topology import active_membrane_profile_phase_handoff_reference as reference
 

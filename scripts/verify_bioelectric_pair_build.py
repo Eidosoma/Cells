@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 from cells.core.runner import branch_checkpoint, run  # noqa: E402
 from cells.core.specs import load_spec  # noqa: E402
 from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
-from cells.models import bioelectric_pair as model  # noqa: E402
+from cells.legacy.models import bioelectric_pair as model  # noqa: E402
 from scripts.audit_bioelectric_pair_reference import audit, native_balances  # noqa: E402
 from tests import reference_bioelectric_pair as ref  # noqa: E402
 from tests.bioelectric_pair_fixtures import (  # noqa: E402

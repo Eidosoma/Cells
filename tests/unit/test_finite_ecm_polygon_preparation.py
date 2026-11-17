@@ -12,11 +12,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import finite_ecm_polygon_preparation as physical
 from cells.core import surface_tissue_spec as schema
 from cells.core.schedule import control_values
+from cells.legacy.core import finite_ecm_polygon_preparation as physical
+from cells.legacy.processes import finite_ecm_polygon_geometry as geometry
 from cells.models import surface_tissue as model
-from cells.processes import finite_ecm_polygon_geometry as geometry
 from validation.geometry import conservative_polygon_geometry_reference as polygon_reference
 from validation.geometry import finite_ecm_polygon_fixtures as fixtures
 from validation.geometry import finite_ecm_polygon_reference as reference

@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 from cells.core.specs import load_spec  # noqa: E402
 from cells.io import _sha256 as sha  # noqa: E402
 from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.models import finite_extracellular as model  # noqa: E402
+from cells.legacy.models import finite_extracellular as model  # noqa: E402
 from scripts.audit_finite_extracellular_reference_v2 import replay  # noqa: E402
 from scripts.verify_batch_windows_build import audit_cohort, suffix  # noqa: E402
 from scripts.verify_windows_build import audit_windows, payloads  # noqa: E402

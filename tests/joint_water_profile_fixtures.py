@@ -3,7 +3,7 @@
 import importlib
 from copy import deepcopy
 
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from validation.topology import joint_water_profile_interventions_fixtures as physical
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
 
@@ -15,12 +15,12 @@ FIELDS = {"water": 44, "repair": 49}
 # Each family's definition and model modules, named in full (D188 R2).
 COMPONENTS = {
     "water": (
-        "cells.core.surface_calcium_energy_water_profile_interventions_spec",
-        "cells.models.surface_calcium_energy_water_profile_interventions",
+        "cells.legacy.core.surface_calcium_energy_water_profile_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_profile_interventions",
     ),
     "repair": (
-        "cells.core.surface_calcium_energy_water_repair_profile_interventions_spec",
-        "cells.models.surface_calcium_energy_water_repair_profile_interventions",
+        "cells.legacy.core.surface_calcium_energy_water_repair_profile_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_profile_interventions",
     ),
 }
 

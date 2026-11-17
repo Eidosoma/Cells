@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import cotransport as transport
+from cells.legacy.processes import cotransport as transport
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 from validation.transport import cotransport_reference as reference
 

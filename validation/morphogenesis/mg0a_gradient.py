@@ -37,7 +37,7 @@ are D and k; sqrt(D/k) = 19.92 um. The measured 20.2 um is context, not a
 criterion.
 
 Cut and restore: reaction_transport@1 has no excision or replacement event
-contract (core/excision.py dispatches surface_* families only). A cut is
+contract (legacy/core/excision.py dispatches surface_* families only). A cut is
 therefore modelled as closing every contact across a cut line
 (prescribed_contact_open_fractions), and restore as reopening them. This is
 isolation, not removal; the linear steady state is unique, so the arm checks

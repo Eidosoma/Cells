@@ -344,7 +344,7 @@ def test_real_sim_prefix_keeps_full_source_and_bath_energy_histories(family):
 
 @pytest.mark.parametrize("family", fixtures.FAMILIES)
 def test_carried_ionic_envelope_matches_independent_actual_full_state(family):
-    from cells.models.open_calcium_bath_epoch import validate_carried_envelope
+    from cells.legacy.models.open_calcium_bath_epoch import validate_carried_envelope
 
     _, _, model, _, prepared, spec, state, p = setup(family)
     context, vector = reference.verify_epoch(prepared.definition)

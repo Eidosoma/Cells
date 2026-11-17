@@ -32,7 +32,7 @@ from cells.io import (  # noqa: E402
     write_run,
     write_snapshot,
 )
-from cells.models import physical_ionic_graph as model  # noqa: E402
+from cells.legacy.models import physical_ionic_graph as model  # noqa: E402
 from cells.window_io import write_windowed_run  # noqa: E402
 from scripts.audit_physical_ionic_graph_build import audit, audit_run  # noqa: E402
 from scripts.audit_preserved_physical_ionic_graph_reference import (  # noqa: E402

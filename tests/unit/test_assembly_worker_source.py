@@ -19,8 +19,8 @@ from types import SimpleNamespace
 import pytest
 
 import cells
-from cells.assembly_cell import cli
 from cells.io import source_hashes
+from cells.legacy.assembly_cell import cli
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIGS = {
