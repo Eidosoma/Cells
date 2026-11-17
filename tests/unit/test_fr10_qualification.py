@@ -68,15 +68,16 @@ def after(s, te, *, right=False):
     return s >= te - 1e-12 if right else s > te + 1e-12
 
 
-def rung(world, dt, *, order=2, control=False, right=False, late=0.0):
+def rung(world, dt, *, order=2, control=False, right=False, late=0.0, k_scale=1e-8):
     t = times(3.0 if world == "W1" else 2.0)
     exact = (w1_exact if world == "W1" else w2_exact)(t)
     e = (dt / 1e-3) ** order
-    scale = 1e-7 if world == "W1" else 1e-6
+    scale = dict(amount_S_ecs_0=1e-7, amount_S_ecs_1=1e-7, V_wall_cell_0=1e-6,
+                 amount_K_cell_0=k_scale)  # Each about 1e-2 of its budget at 1 ms.
     if control:  # No step: the start held.
         series = {k: [v[0]] * len(v) for k, v in exact.items()}
     else:
-        series = {k: [x + scale * e * (1 - math.exp(-s)) for x, s in zip(v, t, strict=True)]
+        series = {k: [x + scale[k] * e * (1 - math.exp(-s)) for x, s in zip(v, t, strict=True)]
                   for k, v in exact.items()}
     flows = [0.1 * s for s in t]
     energy = dict(energy_residual_pJ=[1e-5 * e * f for f in flows], energy_flows_pJ=flows)
@@ -196,6 +197,8 @@ def test_a_complete_run_passes_every_criterion():
     ("charge_from_nothing", {"J6_compensation"}),
     ("k_reference", {"J5_K_reference"}),
     ("late_dose", {"J6_records_reference", "J6_free_energy_reference"}),
+    # The cytosol K 1.4 x its budget C B2 / F at 1 ms (and off R-ion by as much).
+    ("k_budget", {"J3_state_error", "J4_reference"}),
 ])
 def test_each_planted_error_fails_its_own_criterion(plant, expected):
     p = parts()
@@ -234,6 +237,9 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
         p["W1_control"]["series"]["bath_compensation_charge_C"][5] = 1e-30
     elif plant == "k_reference":
         p["references"]["K_W3"]["series"]["K_pJ"][40] += 2.0
+    elif plant == "k_budget":
+        for name, dt in generator.W2_RUNGS.items():
+            p[name] = rung("W2", dt, k_scale=1e-6)
     elif plant == "late_dose":  # The dose one record late: the bracket sees nothing move.
         p["W1_rung_1ms"] = rung("W1", 1e-3, late=0.01)
     found = set(failed(p))

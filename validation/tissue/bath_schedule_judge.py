@@ -19,8 +19,8 @@ RECORD_UNIT_S (on_record_grid), which leaves every difference, floor and order u
 The FR-10 derivations, fixed before any run:
 * **Budgets** (declared first, the lead's ruling): W1's node amounts within B1 = 1e-3 of the step's
   amount (V_node |delta c_b|); W2's V_m within B2 = 1e-3 of |E_K(after) - E_K(before)| at the
-  bath's K; W2's cytosol K within 1e-3 of its change in R-ion. Each control differs from its arm's
-  reference by at least 10 x the arm's budget.
+  bath's K; W2's cytosol K within C B2 / F, B2 through the owner's capacitor (its charge moves with
+  its K alone). Each control differs from its arm's reference by at least 10 x the arm's budget.
 * **W3's segments:** each ledger's ratio (|balance| / bound, ratio_LEDGER) before the event
   (t < t_e), at it (the first record at or after t_e) and after it.
 * **Records against R-records:** at each event of W1, W2 and W3, the dose's change and the
@@ -204,10 +204,8 @@ def derive(parts, protocol):
             out["orders"][f"{world}_{x}"] = base.ladder(g, rungs, x, d["band"])
     b1 = d["W1"]["budget_fmol"]
     budgets["W1"] = {x: b1 for x in d["W1"]["observables"]}
-    k_ref = _series(ref.get("W2"), d["W2"]["k_observable"])
     budgets["W2"] = {d["W2"]["v_observable"]: d["W2"]["budget_V"],
-                     d["W2"]["k_observable"]: None if k_ref is None
-                     else d["W2"]["k_budget_fraction"] * abs(k_ref[-1] - k_ref[0])}
+                     d["W2"]["k_observable"]: d["W2"]["k_budget_fmol"]}
     for world in ("W1", "W2"):
         w = d[world]
         declared, half = w["declared_part"], w["half_part"]

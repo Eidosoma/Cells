@@ -68,6 +68,15 @@ def budget_b2():
     return BUDGET_FRACTION * rt_over_f * math.log((k0 + bfx.ION_STEP_mM) / k0)
 
 
+def budget_k():
+    """The cytosol K's budget: B2 carried through the owner's capacitor, C B2 / F (fmol). The cell's
+    charge moves with its K alone (K is W2's only permeant species), so an error dV in V_m is an
+    error C dV / F in its K: 1e-3 of the change to the new equilibrium, C |delta E_K| / F."""
+    wall = next(m for m in bfx.ion_world()["model"]["membranes"] if m["id"] == "wall_cell_0")
+    faraday = 6.02214076e23 * 1.602176634e-19  # N_A e (SI, exact)
+    return wall["capacitance_F"] * budget_b2() / faraday * 1e15
+
+
 def derivation():
     w1, w2 = list(generator.W1_RUNGS), list(generator.W2_RUNGS)
     run_parts = [*w1, "W1_control", *w2, "W2_control", "W3_rk4", "W4_idle", "W5_restart",
@@ -81,7 +90,7 @@ def derivation():
         W2=dict(ladder_parts=w2, declared_part=w2[0], half_part=w2[1], control_part="W2_control",
                 observables=["V_wall_cell_0", "amount_K_cell_0"], v_observable="V_wall_cell_0",
                 k_observable="amount_K_cell_0", budget_V=budget_b2(),
-                k_budget_fraction=BUDGET_FRACTION),
+                k_budget_fmol=budget_k()),
         W3=dict(part="W3_rk4", event_s=20 * bfx.RK4_DT, ledgers=LEDGERS),
         record_ledgers=["bath_dose", "bath_dose_free_energy", "bath_neutrality"],
         charge_ledgers=["charge", "electrode", "global_charge"],
@@ -118,7 +127,7 @@ def criteria():
     out += [
         criterion("J3_state_error", [f"{d}.state_error.max"], "le", 1,
                   "at the declared 1 ms, the Richardson-estimated error of every judged "
-                  "observable within its budget (B1, B2, and the cytosol K's)"),
+                  "observable within its budget (B1; B2 for V_m; C B2 / F for the cytosol K)"),
         criterion("J4_reference", [f"{d}.reference.max"], "le", 1,
                   "W1 against R-faces and W2 against R-ion within their budgets at every record "
                   "at the declared 1 ms"),
