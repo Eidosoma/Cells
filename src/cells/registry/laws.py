@@ -37,14 +37,19 @@ declarations manifest (registry/declarations.py) writes out.
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
   membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
   its own.
-A family may declare an interface of its own in its own namespace, such as GARD's event laws, as a
-type built on `Law`. The `cells` interfaces are only those above.
+These five are the initial set, each held to its type. The set is open to built-in families: the
+`cells` namespace is reserved (docs/MODULE_SYSTEM_DESIGN.md §2.3), so a built-in family declares its
+interfaces as `cells.*` in its row of the static model table (registry/model_table.py), named for
+what they are, and a declaration of one is a type built on `Law` whose own `errors()` checks its own
+fields. An outside package's interfaces are in its own namespace.
 
 **The registry (§8.3)** is build-scoped, as the kinds' is (core/kind_registry.py):
 - one registration call, `registry.register(law)`. It checks the declaration against the
   template and refuses a second law under one namespaced ID, whatever the spelling;
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
-  are loaded by name (BUILTIN_PACKAGES), so the core imports no law module to find a law;
+  are the static model table's `law_homes` (registry/model_table.py), loaded by name, once, when
+  the registry is first used, so the core imports no law module to find a law, and what is
+  registered never depends on what happened to be imported first;
 - the active registry is BUILTIN, unless a caller builds inside `scope(registry)`;
 - a registered law that no definition declares changes nothing: the inner model and the kinds
   read only the laws their declarations name;
@@ -66,6 +71,7 @@ from types import MappingProxyType
 from typing import ClassVar, NamedTuple
 
 from cells.core.kind_registry import NAMESPACE, qualified
+from cells.registry.model_table import MODELS
 
 __all__ = (
     "BINDING_LAW",
@@ -73,6 +79,7 @@ __all__ = (
     "BUILTIN_PACKAGES",
     "CHANNEL_LAW",
     "CYCLE_LAW",
+    "FAMILY_INTERFACES",
     "INTERFACES",
     "JUNCTION_LAW",
     "PROVENANCES",
@@ -152,27 +159,22 @@ class Law:
         interface = type(self).interface
         if not _is_id(interface, namespaced=True):
             out.append("its type declares a namespaced interface ID with its major")
-        elif interface.split(".", 1)[0] == NAMESPACE and not isinstance(
-            self, INTERFACES.get(interface, ())
-        ):
+        elif interface in INTERFACES:
+            if not isinstance(self, INTERFACES[interface]):
+                out.append(
+                    f"{interface} is not a cells interface of its type (cells' law interfaces: "
+                    + ", ".join(INTERFACES)
+                    + ")"
+                )
+        elif interface.split(".", 1)[0] == NAMESPACE and interface not in FAMILY_INTERFACES:
             out.append(
-                f"{interface} is not a cells interface of its type (cells' interfaces: "
+                f"{interface} is not a cells interface of its type: neither one of "
                 + ", ".join(INTERFACES)
-                + ")"
+                + " nor one a family declares in the model table"
             )
         if not _is_id(self.host):
             out.append("its host is the ID of the kind or model that runs it")
-        if self.provenance not in PROVENANCES:
-            out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
-        elif self.provenance == "cited" and not _cited(self.source):
-            out.append(
-                "a cited law gives its source as a Citation (source, place, licence and a tuple "
-                "of departures)"
-            )
-        elif self.provenance == "calibrated" and self.source is None:
-            out.append("a calibrated law gives its data and method as its source")
-        if self.test is not None and not _named(self.test):
-            out.append("its test is a test ID")
+        out += source_errors(self.provenance, self.source, self.test, "law")
         reserved = [
             name
             for name in ("represents", "preserves", "supports", "qualified")
@@ -192,6 +194,25 @@ def _cited(source):
         and isinstance(source.departures, tuple)
         and all(_named(d) for d in source.departures)
     )
+
+
+def source_errors(provenance, source, test, what):
+    """Why a declaration's provenance, source and test break the template (empty: they keep it).
+    Shared with the operator template of a family's own operators (registry/operators.py), so a
+    piece states what it rests on in one form whatever it is."""
+    out = []
+    if provenance not in PROVENANCES:
+        out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
+    elif provenance == "cited" and not _cited(source):
+        out.append(
+            f"a cited {what} gives its source as a Citation (source, place, licence and a tuple "
+            "of departures)"
+        )
+    elif provenance == "calibrated" and source is None:
+        out.append(f"a calibrated {what} gives its data and method as its source")
+    if test is not None and not _named(test):
+        out.append("its test is a test ID")
+    return out
 
 
 def _callables(law, *names):
@@ -382,6 +403,8 @@ INTERFACES = MappingProxyType(
         JUNCTION_LAW: JunctionLaw,
     }
 )
+# The cells interfaces the built-in families declare in the static model table (module docstring).
+FAMILY_INTERFACES = frozenset(i for model in MODELS.values() for i in model.interfaces)
 
 
 class LawRegistry:
@@ -473,11 +496,12 @@ class LawRegistry:
 
 BUILTIN = LawRegistry()
 _ACTIVE = ContextVar("cells_law_registry", default=None)
-# The built-in laws' homes, imported by name, so the core imports no law module. They are @3's own
-# declarations, and the kinds' package, whose modules declare their laws
-# (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)) until each law moves to its own module under laws/
+# The built-in laws' homes, imported by name, so the core imports no law module: every model's
+# `law_homes` in the static model table, in its order (registry/model_table.py). For @3 they are its
+# own declarations and the kinds' package, whose modules declare their laws
+# (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)), until each law moves to its own module under laws/
 # (docs/CORE_SEAMS_DESIGN.md §8.2).
-BUILTIN_PACKAGES = ("cells.models.inner_laws", "cells.models.inner_kinds")
+BUILTIN_PACKAGES = tuple(home for model in MODELS.values() for home in model.law_homes)
 _builtins_loaded = False
 
 

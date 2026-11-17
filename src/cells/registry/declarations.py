@@ -15,7 +15,9 @@ pieces are in (piece, id) order.
 - `revision`, `dirty` and `origin`: the Git revision and dirty state of the checkout or source
   snapshot it was written from (cells.ensemble.cli.source_revision), or null where neither is
   found;
-- `pieces`: every registered piece, in the active registries;
+- `pieces`: every registered piece, in the active registries, which load every home of the static
+  model table (registry/model_table.py) first, so the same tree gives the same pieces whatever was
+  imported before;
 - `legacy`: the older model families (D188's legacy/, D196). They are listed by model ID only
   (`id`, `piece` "model", `legacy` true), read from the legacy registration's model dispatch,
   without importing it.
@@ -26,18 +28,20 @@ pieces are in (piece, id) order.
   - `declared_id`: as the piece spells it, which is how definitions name it;
   - `namespace`, `name` and `version`;
   - `piece`: "law", "kind" or "operator";
-  - `interface`: a law's own (registry/laws.py), `cells.kind@1` or `cells.operator@1`;
+  - `interface`: a law's own (registry/laws.py), `cells.kind@1`, `cells.operator@1` (the
+    composite's operator contract) or a family operator's own (registry/operators.py);
 - where it runs:
   - `host`: what runs it, a kind or a model (registry/laws.py: `host`). Kinds run in the inner
-    model and operators in the composite;
+    model, the composite's operators in the composite, and a family's operators in the model their
+    declaration names;
   - `family`: the model family whose registries hold it;
   - `models`: the models whose definitions can declare it;
-- `module`: its declaring module (for a law, the module that registered it; for a kind, the module
-  of its hooks; for an operator, its class's), and `kernels` (a law's functions, by field, as
-  `module.qualname`);
-- `provenance`: a law's tag ("parity", "cited" or "calibrated"), its citation (source, place,
-  licence and departures) and any other source record. It is null for kinds and operators, which
-  declare none;
+- `module`: its declaring module (for a law or a family's operator, the module that registered it;
+  for a kind, the module of its hooks; for a composite operator, its class's), and `kernels` (a
+  law's or a family operator's functions, by field, as `module.qualname`);
+- `provenance`: a law's or a family operator's tag ("parity", "cited" or "calibrated"), its
+  citation (source, place, licence and departures) and any other source record. It is null for
+  kinds and the composite's operators, which declare none;
 - what it touches, each by the role its declaration states:
   - `reads`;
   - `changes`: the rows a law moves (a channel law's permeant ions, a cycle law's moves);
@@ -51,7 +55,7 @@ pieces are in (piece, id) order.
 - `fields`: the rest of its declaration, as declared;
 - `status` and `status_source`: a level copied from a record that states one per piece. No such
   record exists today, so both are null; a level is never inferred;
-- `test`: the test ID a law names, or null.
+- `test`: the test ID a law or a family's operator names, or null.
 
 Values are written as JSON: tuples as lists, mappings as objects, functions as `module.qualname`.
 """
@@ -74,7 +78,7 @@ from cells.registry import operators as operator_registry
 
 FORMAT = "cells.declarations@1"
 KIND_INTERFACE = "cells.kind@1"
-OPERATOR_INTERFACE = "cells.operator@1"
+OPERATOR_INTERFACE = operator_registry.COMPOSITE_INTERFACE
 INNER = qualified(inner_spec.MODEL_ID)  # Runs @3's own laws and its kinds (core/kind_registry.py).
 COMPOSITE = qualified(composite_spec.MODEL_ID)  # Runs the operators.
 PIECE_KEYS = (
@@ -173,18 +177,11 @@ def law_entry(law, registry):
         changes = [dict(species=s, valence=z, relative_permeability=w) for s, z, w in law.permeant]
     elif isinstance(law, law_registry.CycleLaw):
         changes = [dict(role=role, per_cycle=count) for role, count in law.moves]
-    source = law.source
     return _entry(
         **_identity(law.law_id, "law", type(law).interface, qualified(law.host)),
         module=registry.module(law.law_id),
         kernels=kernels,
-        provenance=dict(
-            tag=law.provenance,
-            citation=_json(source) if isinstance(source, law_registry.Citation) else None,
-            source=None
-            if source is None or isinstance(source, law_registry.Citation)
-            else _json(source),
-        ),
+        provenance=_provenance(law),
         reads=_json(getattr(law, "reads", ())),
         changes=_json(changes),
         units=_json(type(law).UNITS),
@@ -225,6 +222,41 @@ def kind_entry(kind, laws):
             record_kinds=_json(view.record_kinds),
             record_layers=_json(view.record_layers),
         ),
+    )
+
+
+def _provenance(declaration):
+    """A law's or a family operator's provenance: its tag, its Citation or other source record."""
+    source = declaration.source
+    return dict(
+        tag=declaration.provenance,
+        citation=_json(source) if isinstance(source, law_registry.Citation) else None,
+        source=None
+        if source is None or isinstance(source, law_registry.Citation)
+        else _json(source),
+    )
+
+
+def family_operator_entry(declaration, registry):
+    """A family's operator's entry: its template fields, then its interface's own
+    (registry/operators.py, FamilyOperator)."""
+    template = {f.name for f in dataclasses.fields(operator_registry.FamilyOperator)}
+    own = [f.name for f in dataclasses.fields(declaration) if f.name not in template]
+    values = {name: getattr(declaration, name) for name in own}
+    return _entry(
+        **_identity(
+            declaration.operator_id,
+            "operator",
+            type(declaration).interface,
+            qualified(declaration.host),
+        ),
+        module=registry.module(declaration.operator_id),
+        kernels={name: _json(v) for name, v in values.items() if callable(v)},
+        provenance=_provenance(declaration),
+        units=_json(type(declaration).UNITS),
+        signs=_json(type(declaration).SIGNS),
+        fields={n: _json(v) for n, v in values.items() if not callable(v)},
+        test=declaration.test,
     )
 
 
@@ -306,7 +338,9 @@ def manifest():
     kinds = kind_registry.active()
     pieces = [law_entry(law, laws) for law in laws._laws.values()]
     pieces += [kind_entry(kind, laws) for kind in kinds.model_keys().values()]
-    pieces += [operator_entry(op) for op in operator_registry.active().operators()]
+    operators = operator_registry.active()
+    pieces += [operator_entry(op) for op in operators.operators()]
+    pieces += [family_operator_entry(d, operators) for d in operators.family_operators()]
     pieces.sort(key=lambda entry: (entry["piece"], entry["id"]))
     revision = source_revision() or {}
     return dict(
@@ -365,9 +399,9 @@ def coverage_errors(doc):
     registered |= {
         ("kind", qualified(k.kind_id)) for k in kind_registry.active().model_keys().values()
     }
-    registered |= {
-        ("operator", qualified(op.LAW_ID)) for op in operator_registry.active().operators()
-    }
+    operators = operator_registry.active()
+    registered |= {("operator", qualified(op.LAW_ID)) for op in operators.operators()}
+    registered |= {("operator", qualified(d.operator_id)) for d in operators.family_operators()}
     listed = {(e["piece"], e["id"]) for e in doc["pieces"]}
     return [f"registered {p} {i} has no entry" for p, i in sorted(registered - listed)] + [
         f"listed {p} {i} is not registered" for p, i in sorted(listed - registered)
