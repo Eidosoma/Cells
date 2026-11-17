@@ -41,7 +41,7 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
     : false;
 
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
-const STATES = ["generic", "proposed", "modelled"];
+const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
 const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
@@ -106,12 +106,18 @@ test("it is a single cell: molecules and one cell, with a sentence where the oth
 
 test("what Cells models of it is said plainly: the minimal-cell track by the record's decision, and nothing in the engine", () => {
   assert.ok(STATES.includes(species.modelled.state));
-  assert.equal(species.modelled.state, "proposed");
+  // Planned: D173 adopted it as a track; nothing of it is built (schema/ENTRIES.md, the ladder).
+  assert.equal(species.modelled.state, "planned");
+  assert.match(species.modelled.text, /the decision adopted it as a track/);
   assert.match(species.modelled.text, /minimal-cell track \(decision D173, 14 November 2026\)/);
   assert.match(species.modelled.text, /a note that proposes it as the first whole-cell validation organism/);
   assert.match(species.modelled.text, /Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted/);
-  // The note that proposes it is not in the repository, so no file of it is cited.
-  assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");
+  // The note that proposes it is not in the repository, so no file of it is cited. The record behind its word cites
+  // tracked files of main, and nothing else in the file names a path of the repository (the entries reader holds them tracked).
+  assert.ok(!/SOTA_SYN3A/.test(speciesText), "the species file cites the note that proposes it");
+  assert.deepEqual(species.modelled.record.map((item) => item.path), ["docs/DECISIONS.md", "docs/SYN3A_MINIMAL_CELL_TRACK.md"]);
+  assert.match(species.modelled.record[0].where, /^D173\b/);
+  assert.ok(!/docs\//.test(JSON.stringify({ ...species, modelled: { ...species.modelled, record: [] } })), "the species file cites a path of the repository outside its record");
 });
 
 test("every fact has a source, and every number drawn has a fact or is called the picture's choice", () => {

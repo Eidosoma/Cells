@@ -36,7 +36,7 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
     : false;
 
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
-const STATES = ["generic", "proposed", "modelled"];
+const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
 const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
@@ -106,8 +106,11 @@ test("what Cells models of it is said plainly: audited by the record's decision,
   assert.equal(species.modelled.state, "proposed");
   assert.match(species.modelled.text, /audited beside the minimal-cell track on JCVI-syn3A \(decision D173/);
   assert.match(species.modelled.text, /Nothing of it is in the engine, and no model of it has run/);
-  // The user's note is not in the repository, so no file of it is cited.
-  assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");
+  // The user's note is not in the repository, so no file of it is cited. The record behind its word cites tracked files
+  // of main, and nothing else in the file names a path of the repository (the entries reader holds them tracked).
+  assert.ok(!/SOTA_SYN3A/.test(speciesText), "the species file cites the user's note");
+  assert.deepEqual(species.modelled.record.map((item) => item.path), ["docs/DECISIONS.md", "docs/SYN3A_MINIMAL_CELL_TRACK.md"]);
+  assert.ok(!/docs\//.test(JSON.stringify({ ...species, modelled: { ...species.modelled, record: [] } })), "the species file cites a path of the repository outside its record");
 });
 
 test("every fact has a source, and every number drawn has a fact or is called the picture's choice", () => {

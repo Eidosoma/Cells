@@ -696,7 +696,7 @@ def build(datasets_folder, snapshot):
         "order": 50,
         "default": False,
         "made": made,
-        "modelled": {"state": "proposed", "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."},
+        "modelled": {"state": "proposed", "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run.", "record": [{"path": "docs/DECISIONS.md", "where": "D179: The FEP track's decisions: on hold, E. coli as data only"}]},  # the record behind the word (schema/ENTRIES.md)
         "levels": [
             {"id": "molecules"},
             {"id": "cell", "label": "One cell", "shape": {"kind": "capsule", "length_um": 2.5, "across_um": 1}, "note": f"Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its {RIBOSOMES_DRAWN:,} ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.", "sources": ["volkmer2011", "urich2008", "uniprot"]},

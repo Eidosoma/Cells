@@ -6,6 +6,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -34,6 +35,27 @@ test("a capability drawn at a structure the cell does not hold has no place in i
   for (const id of ["human", "planarian", "fruitfly", "thalecress"]) assert.deepEqual([...structureAbsence(CAPS, species(id)).keys()], [], `${id} holds them all`);
   assert.deepEqual(organelles({ nucleus: true }), ["er", "golgi", "mitochondria"], "a cell with a nucleus and no list holds an animal cell's");
   assert.deepEqual(organelles({ nucleus: false }), []);
+});
+
+test("one table of structures, data/parts/structures.json, is the one the page and the species reader both read", () => {
+  const table = json("data/parts/structures.json");
+  // The species reader's view of it, asked of tools/lib/species.py for a cell with each structure and with none.
+  const cells = [{ nucleus: true }, { nucleus: false, organelles: [] }, { nucleus: true, organelles: ["mitochondria"] }, { organelles: ["er", "golgi"] }, {}];
+  const run = spawnSync("python3", ["-c", "import json, sys; sys.path.insert(0, sys.argv[1]); from lib import species as s; cells = json.loads(sys.argv[2]); print(json.dumps({'table': s.STRUCTURES, 'organelles': s.ANIMAL_ORGANELLES, 'holds': [[s.holds_structure(c, p) for p in sorted(s.STRUCTURES['structures'])] for c in cells]}))", path.join(ROOT, "tools"), JSON.stringify(cells)], { encoding: "utf8" });
+  assert.equal(run.status, 0, run.stderr);
+  const python = JSON.parse(run.stdout);
+  assert.deepEqual(python.table, table, "the reader holds the table as the file gives it");
+  assert.deepEqual(python.organelles, table.nucleated_organelles);
+  assert.deepEqual(organelles({ nucleus: true }), table.nucleated_organelles, "the page's organelles of a cell with a nucleus are the table's");
+  // For each cell and structure, the page leaves a capability drawn there out exactly where the reader says the cell does not hold it.
+  const parts = Object.keys(table.structures).sort();
+  cells.forEach((cell, index) => {
+    const absent = structureAbsence(parts.map((part) => ({ id: `cap.${part}`, part })), { cell: { parts: cell, capabilities: {} } });
+    parts.forEach((part, at) => {
+      assert.equal(!absent.has(`cap.${part}`), python.holds[index][at], `${JSON.stringify(cell)} and ${part}`);
+      if (absent.has(`cap.${part}`)) assert.ok([table.structures[part].why, table.structures[part].why_free_chromosome].includes(absent.get(`cap.${part}`)), part);
+    });
+  });
 });
 
 test("a door into the Protein atlas only where the species' own proteins can show the set", () => {

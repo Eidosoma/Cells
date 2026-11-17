@@ -277,10 +277,19 @@ test("the scene carries the species the page can show, each with its shapes", ()
   assert.ok(species.length > 0, "the scene names no species: rebuild it");
   assert.equal(species.filter((item) => item.default).length, 1, "exactly one species is the one the page opens on");
   for (const item of species) {
-    // No species is said to be modelled: the record names no registered model of an organism.
-    assert.ok(["generic", "proposed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    // No species is said to be modelled: the record names no registered model of an organism. A word below it is the ladder's (schema/ENTRIES.md).
+    assert.ok(["generic", "proposed", "planned", "designed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
     assert.ok(item.modelled.text?.trim(), `${item.id} does not say what Cells models of it`);
     for (const level of item.levels) if (level.shape?.ref) assert.ok(scene.shapes?.[level.shape.ref], `${item.id}: no shape ${level.shape.ref}`);
+    // Each with its cell types, its own first, and the one the page opens on (schema/CELL_TYPES.md).
+    assert.ok(item.cell_types?.[0]?.own && item.cell_types.some((type) => type.id === item.default_cell_type), `${item.id}: its cell types, its own first, and its default`);
+  }
+  // The model systems beside them (schema/MODEL_SYSTEMS.md): each a model, not an organism, under a heading of its own, never modelled before the record says so.
+  for (const item of scene.models || []) {
+    assert.equal(item.kind, "model system");
+    assert.ok(item.group && item.is && !("organism" in item) && !("cell" in item), `${item.id}: a model system has a heading and its line, and nothing of an organism`);
+    assert.ok(["proposed", "planned", "designed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    for (const run of item.runs || []) assert.ok(run.path && !run.path.startsWith("data/"), `${item.id}: its run ${run.file} has the path it is published at`);
   }
 });
 

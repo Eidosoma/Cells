@@ -41,6 +41,7 @@ const LIMIT_MS = Math.max(1000, (Number(value("--limit", 40)) || 40) * 60 * 1000
 const flux = (name, env, minutes = 4) => ({ name: `flux-${name}`, tool: "check_cellflux.mjs", args: [pictures], env: { NAME: `flux-${name}`, ...env }, minutes });
 const SUITE = [
   { name: "species", tool: "check_species.mjs", minutes: 14 },
+  { name: "species-model", tool: "check_species.mjs", env: { CASE: "model" }, minutes: 3 },
   // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, and with less
   // motion. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
   { name: "machine-main", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-main" }, minutes: 20 },
@@ -66,7 +67,8 @@ const SUITE = [
   { name: "input-engine", tool: "check_input.mjs", env: { CHECK_ONLY: "engine" }, minutes: 2 },
   { name: "look-switch", tool: "check_look.mjs", args: ["switch"], minutes: 2 },
   { name: "look-views", tool: "check_look.mjs", args: ["views"], minutes: 2 },
-  { name: "look-loss", tool: "check_look.mjs", args: ["loss"], minutes: 4 },
+  // In software the three walks took 4.7 and 6.2 minutes beside other work (17 November 2026); on the card, 71 s.
+  { name: "look-loss", tool: "check_look.mjs", args: ["loss"], minutes: 9 },
   // The Laws library (tools/check_laws.mjs): presses, keys, the card's search and Family, the Engine view's door and the way back, a lost context; the address, and what it leaves behind; a 360 px phone; no 3D.
   { name: "laws-main", tool: "check_laws.mjs", args: [pictures], env: { CASE: "main", NAME: "laws-main" }, minutes: 3 },
   { name: "laws-address", tool: "check_laws.mjs", args: [pictures], env: { CASE: "address", NAME: "laws-address" }, minutes: 1 },

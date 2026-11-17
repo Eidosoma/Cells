@@ -11,7 +11,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES } from "./lib/build_page.mjs";
+import { buildPage, proteinFiles, machineFiles, modelFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES } from "./lib/build_page.mjs";
 
 // Reports script errors and blocked loads back to this server, in previews only.
 const REPORTER = `<script>
@@ -36,7 +36,8 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
     // A machine's file (schema/MACHINES.md), as it is published beside the page.
     const made = machines ? await machineFiles(data, { machinesDir: machines }) : { files: [], problems: [] };
     for (const problem of made.problems) log(`[server] machines: ${problem}`);
-    machined = new Map(made.files.map((file) => [`/${file.path}`, file.source]));
+    // And a model system's run files (schema/MODEL_SYSTEMS.md), beside the page in the same way.
+    machined = new Map([...made.files, ...(await modelFiles(data)).files].map((file) => [`/${file.path}`, file.source]));
     if (!proteins) return;
     const found = await proteinFiles(data, { proteinsDir: proteins, membersDir: members });
     for (const problem of found.problems) log(`[server] proteins: ${problem}`);
@@ -68,7 +69,7 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
         return;
       }
       // A machine's file is served beside the page too, as it is published.
-      if (url.pathname.startsWith("/machines/")) {
+      if (url.pathname.startsWith("/machines/") || url.pathname.startsWith("/models/")) {
         if (!machined.size) await list();
         const source = machined.get(url.pathname);
         const file = source ? await readFile(source).catch(() => null) : null;

@@ -104,7 +104,8 @@ class CellsLegend extends HTMLElement {
       h(
         "button",
         {
-          class: "legend-item" + (isolate === item.id ? " is-on" : "") + (item.count ? "" : " is-empty"),
+          // A key with no count (a model system's view, src/ui/entry_views.js) is neither empty nor counted.
+          class: "legend-item" + (isolate === item.id ? " is-on" : "") + (item.count || item.count === undefined ? "" : " is-empty"),
           type: "button",
           title: item.description,
           "aria-pressed": isolate === item.id ? "true" : "false",
@@ -112,7 +113,7 @@ class CellsLegend extends HTMLElement {
         },
         statusSwatch(item.swatch),
         h("span", { class: "legend-label" }, item.label),
-        h("span", { class: "legend-count" }, String(item.count))
+        item.count === undefined ? null : h("span", { class: "legend-count" }, String(item.count))
       )
     );
     const body = h("div", { class: "legend-body" }, chooser, chooser ? h("p", { class: "legend-title legend-colour-title" }, title) : null, scale ? this.scale(scale) : null, rows);

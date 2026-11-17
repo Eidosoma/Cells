@@ -104,6 +104,8 @@ const atlasFiles = await listed(path.join(DATA, "proteins", "atlases"), isJson);
 const shelfFiles = (await listed(path.join(DATA, "proteins"), (entry) => entry.isDirectory())).map((folder) => path.join(folder, "shelves.json")).filter((file) => existsSync(file));
 const evidenceFiles = await listed(path.join(DATA, "evidence"), isJson);
 const machineFiles = await listed(path.join(DATA, "machines"), isJson);
+// The switch's other entries (schema/ENTRIES.md): cell types of their own files, and model systems.
+const entryFiles = [...(await listed(path.join(DATA, "cells"), isJson)), ...(await listed(path.join(DATA, "models"), isJson))];
 const rel = (file) => path.relative(ROOT, file);
 
 /** A source's class and licence, checked: both there, the class one of three, and the two in agreement. */
@@ -184,6 +186,33 @@ test("a species file: every source has its class; facts, levels and capabilities
       const paper = paperOf(source.text);
       assert.ok(paper, `${where}: the citation of ${key} does not begin with an author and a year`);
       mustName(note, `${key} (${where})`, named(...paper));
+    }
+  }
+});
+
+test("a cell type's or a model system's file: every source has its class; its facts and levels rest on permissive sources, a number alone on an open paper's; any other source is a pointer", async () => {
+  for (const file of entryFiles) {
+    const entry = await json(file);
+    const where = rel(file);
+    const sources = entry.sources || {};
+    for (const [key, source] of Object.entries(sources)) held(source, `${where}: source ${key}`);
+    const basis = new Set();
+    const stands = (key, numbersOnly) => sources[key]?.class === "permissive" || (numbersOnly && sources[key]?.standing === "open paper, numbers only");
+    for (const level of entry.levels || []) for (const key of level.sources || []) {
+      assert.ok(stands(key, false), `${where}: the ${level.id} level rests on ${key}, which is ${sources[key]?.class ?? "not a source"}`);
+      basis.add(key);
+    }
+    for (const fact of entry.facts || []) {
+      assert.ok(Array.isArray(fact.sources) && fact.sources.length, `${where}: the fact "${fact.label}" names no source`);
+      for (const key of fact.sources) {
+        assert.ok(stands(key, /\d/.test(fact.value)), `${where}: the fact "${fact.label}" rests on ${key}, which is ${sources[key]?.class ?? "not a source"}`);
+        basis.add(key);
+      }
+    }
+    for (const [key, source] of Object.entries(sources)) {
+      if (source.class === "permissive" || source.standing === "open paper, numbers only") continue;
+      assert.ok(!basis.has(key), `${where}: ${key} is ${source.class} and something rests on it`);
+      assert.match(source.licence, /nothing is taken from it/, `${where}: ${key} does not say that nothing is taken from it`);
     }
   }
 });

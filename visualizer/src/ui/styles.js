@@ -408,6 +408,13 @@ cells-trace { display: grid; gap: 4px; }
 .species-option-organism { grid-column: 1 / -1; grid-row: 2; font-size: 12px; font-style: italic; line-height: 1.3; color: var(--muted); overflow-wrap: break-word; }
 .species-option-state { grid-column: 2; grid-row: 1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
 .species-option-state[data-state="proposed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+/* The switch's other entries (schema/ENTRIES.md): a model system's line names what it is, not an organism; a cell type stands under its species. */
+.species-option-state[data-state="planned"], .species-option-state[data-state="designed"], .species-state[data-state="planned"], .species-state[data-state="designed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.species-option.is-model .species-option-organism { font-style: normal; }
+.species-option.is-type { padding-left: 22px; }
+.species-option.is-type .species-option-name { font-weight: 500; }
+/* On a narrow window the rail's button stands under the bar, however many rows it takes (the viewer sets --bar-height). */
+@media (max-width: 760px) { .frame .rail-toggle { top: max(68px, calc(var(--bar-height, 0px) + 8px)); } .frame .rail { top: max(118px, calc(var(--bar-height, 0px) + 58px)); } }
 .species-option.is-active { background: color-mix(in srgb, var(--fg) 9%, transparent); }
 /* The species in view carries a tick after its name. */
 .species-option[aria-selected="true"] .species-option-name::after { content: ""; display: inline-block; width: 4px; height: 8px; margin: 0 0 1px 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }

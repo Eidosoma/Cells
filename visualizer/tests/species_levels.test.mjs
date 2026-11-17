@@ -24,6 +24,7 @@ import { css } from "../src/ui/styles.js";
 const SPECIES = path.join(ROOT, "data", "species");
 const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
 const CAPABILITIES = Object.fromEntries(overlay.capabilities.map((item) => [item.id, item.scale]));
+const PARTS = Object.fromEntries(overlay.capabilities.map((item) => [item.id, item.part])); // where each is drawn, for the structures table (data/parts/structures.json)
 const contract = await readFile(path.join(ROOT, "schema", "SPECIES.md"), "utf8");
 const shapesNote = await readFile(path.join(ROOT, "schema", "SPECIES_SHAPES.md"), "utf8");
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
@@ -34,13 +35,13 @@ const READER = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from lib import species as reader
-found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]))
+found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]), json.loads(sys.argv[5]))
 print(json.dumps({"species": found, "shapes": shapes, "warnings": warnings, "remarks": remarks,
                   "words": {"levels": reader.LEVELS, "states": reader.STATES, "kinds": sorted(reader.CELL_KINDS), "parts": sorted(reader.PARTS), "part_kinds": sorted(reader.PART_KINDS), "organelles": reader.ORGANELLES}}))
 `;
 /** `leftOut` names the capabilities the map leaves out of the picture for now, as the build passes them. */
 function readFolder(folder, leftOut = []) {
-  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES), JSON.stringify(leftOut)], { encoding: "utf8" });
+  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES), JSON.stringify(leftOut), JSON.stringify(PARTS)], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr);
   return JSON.parse(run.stdout);
 }
@@ -428,6 +429,14 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
   for (const name of (await readdir(SPECIES)).filter((item) => item.endsWith(".json"))) {
     const data = JSON.parse(await readFile(path.join(SPECIES, name), "utf8"));
     for (const word of [data.id, data.label, ...String(data.organism || "").split(/\s+/).slice(0, 2)]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  }
+  // And the switch's other entries (schema/ENTRIES.md): cell types of their own files, and model systems.
+  for (const folder of ["cells", "models"]) {
+    const dir = path.join(ROOT, "data", folder);
+    for (const name of (await readdir(dir).catch(() => [])).filter((item) => item.endsWith(".json"))) {
+      const data = JSON.parse(await readFile(path.join(dir, name), "utf8"));
+      for (const word of [data.id, data.label]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    }
   }
   const named = new RegExp(`\\b(${[...words].join("|")})\\b`, "i");
   for (const file of files) {

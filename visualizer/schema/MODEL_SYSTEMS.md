@@ -105,7 +105,7 @@ Its section "What the lens needs from an entry" asks for five fields, and this c
 
 It also gives more than the lens reads today:
 - `group` and `is`, for the switch;
-- `plain`, `facts` and `sources`, for the card;
+- `plain`, `facts` and `sources`, for the card, and `notes`, sourced notes of the record shown beside its word (`ENTRIES.md`, "Notes");
 - each level's `shows` and `waits`;
 - `clock`, a label held to the runs' `time.base` (`fission`; `ASSEMBLY_RUN.md`, "time").
 

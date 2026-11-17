@@ -1031,9 +1031,14 @@ def build_species(c):
         "order": 30,
         "default": False,
         "made": MADE,
+        # Planned (schema/ENTRIES.md, the ladder): D173 adopted it as a track; the record behind the word, tracked files of main.
         "modelled": {
-            "state": "proposed",
-            "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted.",
+            "state": "planned",
+            "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells: the decision adopted it as a track, run beside the current work. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted. That milestone, on protein-free vesicles, tests membrane physics and not Syn3A.",
+            "record": [
+                {"path": "docs/DECISIONS.md", "where": "D173: Syn3A becomes the minimal-cell track; no contact with authors"},
+                {"path": "docs/SYN3A_MINIMAL_CELL_TRACK.md", "where": "0. Verdict; 6. The first milestone"},
+            ],
         },
         "levels": [
             {"id": "molecules"},

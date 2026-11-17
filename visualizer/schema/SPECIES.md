@@ -88,18 +88,35 @@ says the engine models an organism unless the project's record says so.
   the level's general name is used.
 - **`default`** is true on exactly one species: the one the page opens on. **`order`**
   places the species in the switch, ascending.
-- **`modelled.state`** is one of:
+- **`modelled.state`** is one word of the ladder every entry of the switch shares
+  (`ENTRIES.md`, "What Cells models of an entry"); each word asks of the record all that the
+  one before asks, and more, and is met by tracked files alone:
   - `generic`: Cells models a generic cell or tissue; this species lends it names or
     outlines. The text says which.
-  - `proposed`: a proposal to model this organism exists; nothing of it is in the engine.
-  - `modelled`: the project's record says a registered model of this organism exists.
-    The text cites the record. No species has this state today.
+  - `proposed`: a tracked record proposes modelling this organism, or asks for it to be
+    looked into; nothing of it is in the engine.
+  - `planned`: a tracked record decides that it will be modelled; it is not started, and no
+    design of it is a tracked file of main.
+  - `designed`: its design note is a tracked file of main (`modelled.design`, its path); its
+    code is not on main.
+  - `modelled`: the project's record says a registered model of this organism exists
+    (`modelled.model`, its id). The text cites the record. No species has this state today.
+
+  A file may state a lower word than its record allows, never a higher one; a file that
+  exists only on a development branch moves no word. **`modelled.record`** lists the
+  citations behind the word, each `{"path", "where"}`: a tracked file of main, or one of the
+  viewer's own prefixed `visualizer/`, with no other key (`ENTRIES.md`, "Citing the project's
+  record"). It is required for every word above `generic`. The page writes the words as
+  "Generic cell", "Proposed, not modelled", "Planned, not modelled", "Designed, not modelled"
+  and "Modelled".
 - **`cell.capabilities`** is keyed by the map's capability ids (`cap.…`). A capability
   that is left out has a place in this cell, unless the cell does not hold the structure
   it is drawn at, as `cell.parts` says: the nucleus (`nucleus`), the Golgi or the vesicles
   of trafficking (`golgi` among the `organelles`), the endoplasmic reticulum (`er`) or
   the mitochondria (`mitochondria`). It then has no place, and the page reads the reason
-  from `cell.parts` ("It has no nucleus: its chromosome lies free in the cytoplasm").
+  from `cell.parts` ("It has no nucleus: its chromosome lies free in the cytoplasm"). What
+  each structure needs and the reason given are one table, `data/parts/structures.json`, which
+  the species reader and the Cell view both read.
   `absent` needs `why`; `present` may carry a
   `note` where the place differs from an animal cell's. A capability has a place when the
   organism has the structure or the process it concerns. That says nothing about whether
@@ -122,12 +139,16 @@ says the engine models an organism unless the project's record says so.
   (`share`), each a number or a range of two with the keys of its sources; `wall_nm` gives
   a wall's thickness. Each is a fact of the card as well. `SPECIES_SHAPES.md` gives the
   list. A part the viewer does not know is a warning.
+- **Other cell types** (optional): `cell_types` names the species' other cell types, each a
+  file `data/cells/<species>.<id>.json` (`CELL_TYPES.md`), and `default_cell_type` the one the
+  page opens on (left out: the species' own). Both stand at the top level of the file. A
+  species with one cell type shows no control for choosing one.
 - **A looping run belongs to a cell type**, not to the `cell` block: `cell.loop` gives way to
   the top-level `cell_type.loop` (`ENTRIES.md`, `CELL_TYPES.md`), and the reader refuses `loop`
   inside `cell`. `cell_type` is `{id, label, loop}`, each a text that is not empty; `loop` is
   the id of the species' own type's looping run among the packaged replays (the page's
-  catalogue of runs). Until the scene is read through the entries reader, the species reader
-  carries the block as it is. The Cell view finds the run there, fetches it with the records it
+  catalogue of runs). The scene is read through the entries reader (`tools/lib/entries.py`),
+  which gives every species its `cell_types`, its own type first, and its `default_cell_type`. The Cell view finds the run there, fetches it with the records it
   reads, and shows flux from it, saying what the catalogue says it is; a type without one may
   show illustration (`schema/QUANTITY_LAYERS.md`, rules 7 and 11). A type that names a run
   never shows illustration in its place: while the run is on its way, or where the page does

@@ -7,6 +7,13 @@ files: `schema/ENTRIES.md` (what the three kinds share), `schema/CELL_TYPES.md` 
 file was changed, and the page does not read any of this yet. The hook-up is section 6, as steps
 to apply when their files are free.
 
+**Hooked up, 17 November 2026** (agent K): section 6's steps 1 to 5 are applied. The scene is read
+through the entries reader and carries `models`; the switch offers GARD under "Origin of life";
+a model system is shown in the Cell view's place, by its card until its own view is registered
+(`src/ui/entry_views.js`); the address takes `entry=` and `cell=`. What waits: GARD's runs in the
+Experiments view, and a Protein atlas with no species' side, both noted in `ENTRIES.md`, "What the
+other views say".
+
 **Why one change.** The user asked for "Origin of life" as a new kind of species, with GARD
 first, and took every recommendation of `docs/ORIGIN_OF_LIFE.md`. Its "Decided" section reads:
 "a GARD assembly is a model system, not a species: a new kind of entry, with four levels of its
@@ -256,8 +263,11 @@ themselves.
   `example`. The reader holds it to the assembly run's format, to `model.id` `gard` and to the
   fission base. **That file was uncommitted when this was written,** so the two are committed
   together, or the example first.
-- **What Cells models of it:** `proposed`, with "Nothing of GARD is in the engine", the user's
-  request, and the record of main's two mentions.
+- **What Cells models of it:** `proposed` when this was written, with "Nothing of GARD is in the
+  engine", the user's request, and the record of main's two mentions. Since its design note came
+  onto main, decided (D192, 16 November 2026, built in step 4 of D194's order), it is `designed`,
+  with `design` `docs/GARD_DESIGN.md`: "Designed, not modelled", and still nothing of GARD in the
+  engine.
 - **Its facts:** three, each from the preprint as the viewer's note reads it (CC BY 4.0):
   - 100 molecule types;
   - in the preprint, growth to 80 molecules and then a split in two;
@@ -269,11 +279,13 @@ themselves.
 - **Its words of main are quoted, not paraphrased:** "the preprint's GARD catalytic matrix and
   reservoir are fixed environmental constraints", and "GARD, Boolean regulation, and continuous
   biochemical equations need explicit contracts if supported".
-- **What it does not hold:**
-  - no name of the engine's proposed note;
-  - nothing of the open finding that note holds. If it is ever mentioned, it is only as "the
-    engine's note has an open finding on the published kernel, under review", and the viewer
-    takes no view on it.
+- **What it does not hold:** no name of the engine's design (no law, operator or record it would
+  write), and no branch.
+- **The law's two forms.** D192 records the reversibility finding as checked, and decides that the
+  engine builds both forms of the kernel: the preprint's single-event form, for the reference
+  comparison, and the pair-consistent form, as the engine's law; the first experiment measures
+  the difference. The entry says this only in D192's scoped words, in a sourced note (`notes`,
+  `ENTRIES.md`, "Notes"), citing D192; the viewer shows no comparison of the two forms.
 
 It is data only. No test asks the page to show it.
 

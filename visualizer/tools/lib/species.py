@@ -17,10 +17,15 @@ FORMAT = "cells.visualizer.species@1"
 SHAPE_FORMAT = "cells.visualizer.outline@1"
 LEVELS = ["molecules", "cell", "tissue", "organ", "organism"]
 FURTHER = ["tissue", "organ", "organism"]
-STATES = ["generic", "proposed", "modelled"]
+# What Cells models of a species, in the ladder every entry of the switch shares (schema/ENTRIES.md): each word asks
+# of the record all that the one before asks, and more; tools/lib/entries.py holds what each asks.
+STATES = ["generic", "proposed", "planned", "designed", "modelled"]
 PLACES = ["absent", "present"]
 ORGANELLES = ["er", "golgi", "mitochondria", "chloroplasts", "vacuole"]
-ANIMAL_ORGANELLES = ["er", "golgi", "mitochondria"]  # what a cell with a nucleus holds where its file does not say
+# What each structure needs a cell to hold, and the reason given where it does not: one table, read here and by
+# src/lenses/cell_structures.js (data/parts/structures.json), keyed by the map's part names.
+STRUCTURES = json.loads((Path(__file__).resolve().parents[2] / "data" / "parts" / "structures.json").read_text(encoding="utf-8"))
+ANIMAL_ORGANELLES = list(STRUCTURES["nucleated_organelles"])  # what a cell with a nucleus holds where its file does not say
 # The size and number of an organelle (schema/SPECIES_SHAPES.md): how many, how large, or what share of the cell it fills.
 ORGANELLE_SIZE_KEYS = {"count", "volume_fl", "across_um", "share", "sources"}
 # What a cell's shape may be, with what each kind must and may take.
@@ -37,8 +42,18 @@ APPENDAGE_WHERE = ("all over", "one pole", "both poles", "one side")
 APPENDAGE_FROM = ("cell membrane", "inner membrane", "outer membrane")
 LEVEL_FIELDS = {"id", "label", "shape", "note", "notes", "sources", "centre_um", "view", "label_um", "sheet_mark", "fade_in_um", "fade_out_um"}
 PART_KINDS = {"loft", "lines", "discs"}
-# The structure a capability is drawn at, where it is not the cell as a whole.
-NEEDS = {"cap.calcium": "er", "cap.trafficking": "golgi", "cap.mitochondria": "mitochondria"}
+
+
+def holds_structure(parts, part):
+    """Whether a cell with these parts holds the structure the map's part `part` is drawn at (None: no such structure)."""
+    need = STRUCTURES["structures"].get(part)
+    if need is None:
+        return None
+    if need["held_when"] == "nucleus":
+        return bool(parts.get("nucleus"))
+    organelles = parts.get("organelles")
+    held = organelles if organelles is not None else (ANIMAL_ORGANELLES if parts.get("nucleus") else [])
+    return need["held_when"].removeprefix("organelle:") in held
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/|[A-Za-z]:\\\\|\blocalhost\b")
 SMALL_UM = 2.0  # a cell narrower than this is drawn in one size mode
 
@@ -58,9 +73,10 @@ def point(value, length=3):
 class Reader:
     """Reads one folder of species files; collects warnings and remarks."""
 
-    def __init__(self, folder, capabilities, left_out=()):
+    def __init__(self, folder, capabilities, left_out=(), parts=None):
         self.folder = Path(folder)
         self.capabilities = dict(capabilities)  # capability id -> the level it belongs to
+        self.parts = dict(parts or {})  # capability id -> the map's part it is drawn at (the overlay's `part`), for the structures table
         # Capabilities the map leaves out of the picture for now: a species may still name a place
         # for one (its file keeps it for the day it returns); the scene does not carry that place.
         self.left_out = set(left_out)
@@ -343,32 +359,32 @@ class Reader:
             appendages = []
         amount = lambda value: positive(value) or (isinstance(value, list) and len(value) == 2 and all(positive(item) for item in value) and value[0] <= value[1])
         for index, item in enumerate(appendages):
-            where = f"cell.parts.appendages[{index}]"
+            at = f"cell.parts.appendages[{index}]"
             if not isinstance(item, dict):
-                problems.append(f"{where} is keyed")
+                problems.append(f"{at} is keyed")
                 continue
             if set(item) - APPENDAGE_KEYS:
-                problems.append(f"{where} has a key the contract does not give: {', '.join(sorted(set(item) - APPENDAGE_KEYS))}")
+                problems.append(f"{at} has a key the contract does not give: {', '.join(sorted(set(item) - APPENDAGE_KEYS))}")
             if item.get("kind") not in APPENDAGE_KINDS:
-                problems.append(f"{where}.kind is one of {', '.join(APPENDAGE_KINDS)}")
+                problems.append(f"{at}.kind is one of {', '.join(APPENDAGE_KINDS)}")
             if not (isinstance(item.get("label"), str) and item["label"].strip()):
-                problems.append(f"{where} has no label")
+                problems.append(f"{at} has no label")
             for key in ("count", "length_um", "width_nm"):
                 if not amount(item.get(key)):
-                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+                    problems.append(f"{at}.{key} is a number above zero, or a range of two")
             if item.get("where") not in APPENDAGE_WHERE:
-                problems.append(f"{where}.where is one of {', '.join(APPENDAGE_WHERE)}")
+                problems.append(f"{at}.where is one of {', '.join(APPENDAGE_WHERE)}")
             if item.get("from") not in APPENDAGE_FROM:
-                problems.append(f"{where}.from is one of {', '.join(APPENDAGE_FROM)}")
+                problems.append(f"{at}.from is one of {', '.join(APPENDAGE_FROM)}")
             if (item.get("from") == "cell membrane") != (parts.get("membranes", 1) == 1):
-                problems.append(f"{where}.from names a membrane the cell does not have")
+                problems.append(f"{at}.from names a membrane the cell does not have")
             cited = item.get("sources")
             if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
-                problems.append(f"{where}.sources names keys of the species' sources")
+                problems.append(f"{at}.sources names keys of the species' sources")
             base = item.get("base")
             if base is not None and not (isinstance(base, dict) and set(base) == {"id", "label", "mark", "value"} and all(isinstance(value, str) and value.strip() for value in base.values())):
-                problems.append(f"{where}.base gives an id, a label, and the mark and value of its proteins")
-        held = set(ANIMAL_ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
+                problems.append(f"{at}.base gives an id, a label, and the mark and value of its proteins")
+        held = set(ANIMAL_ORGANELLES if organelles is None and parts.get("nucleus") else organelles or [])
         # A wall's thickness, and the size and number of the organelles the cell holds: each a number or a range of two.
         if "wall_nm" in parts:
             if not amount(parts["wall_nm"]):
@@ -380,23 +396,23 @@ class Reader:
             problems.append("cell.parts.organelle_sizes is keyed by organelle")
             sizes = {}
         for word, item in sizes.items():
-            where = f"cell.parts.organelle_sizes.{word}"
+            at = f"cell.parts.organelle_sizes.{word}"
             if word not in held:
-                problems.append(f"{where}: the cell does not hold this organelle")
+                problems.append(f"{at}: the cell does not hold this organelle")
             if not isinstance(item, dict) or set(item) - ORGANELLE_SIZE_KEYS:
-                problems.append(f"{where} takes {', '.join(sorted(ORGANELLE_SIZE_KEYS))}")
+                problems.append(f"{at} takes {', '.join(sorted(ORGANELLE_SIZE_KEYS))}")
                 continue
             for key in ("count", "volume_fl", "across_um"):
                 if key in item and not amount(item[key]):
-                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+                    problems.append(f"{at}.{key} is a number above zero, or a range of two")
             share = item.get("share")
             if share is not None and not all(isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 1 for value in (share if isinstance(share, list) and len(share) == 2 else [share])):
-                problems.append(f"{where}.share is a part of the cell's volume, above 0 and at most 1, or a range of two")
+                problems.append(f"{at}.share is a part of the cell's volume, above 0 and at most 1, or a range of two")
             if not set(item) & {"count", "volume_fl", "across_um", "share"}:
-                problems.append(f"{where} gives no number")
+                problems.append(f"{at} gives no number")
             cited = item.get("sources")
             if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
-                problems.append(f"{where}.sources names keys of the species' sources")
+                problems.append(f"{at}.sources names keys of the species' sources")
         capabilities = cell.get("capabilities", {})
         if not isinstance(capabilities, dict):
             problems.append("cell.capabilities is keyed")
@@ -439,9 +455,9 @@ class Reader:
 
         # Within the contracts' letter, but worth a look.
         absent = {key for key, entry in capabilities.items() if entry["place"] == "absent"}
-        for key, structure in NEEDS.items():
-            if key in self.capabilities and key not in absent and structure not in held:
-                self.remark(where, f"{key} is present, but the cell holds no {structure}: it cannot be drawn")
+        for key, part in sorted(self.parts.items()):
+            if key in self.capabilities and key not in absent and holds_structure(parts, part) is False:
+                self.remark(where, f"{key} is present, but the cell holds no {STRUCTURES['structures'][part]['names']}: it cannot be drawn")
         shape = next(entry["shape"] for entry in levels if entry["id"] == "cell")
         across = shape.get("across_um") or 2 * shape.get("radius_um", 0)
         if across < SMALL_UM:
@@ -483,12 +499,14 @@ class Reader:
         return found, shapes
 
 
-def read_species(folder, capabilities, left_out=()):
+def read_species(folder, capabilities, left_out=(), parts=None):
     """(species, shapes, warnings, remarks) for the folder; all empty where it does not exist.
 
     `left_out` names the capabilities the map leaves out of the picture for now: a species' place
     for one is read and checked like any other, and left out of what is returned, with a remark.
+    `parts` maps a capability to the map's part it is drawn at (the overlay's `part`): where it is
+    drawn at a structure the cell does not hold (data/parts/structures.json), the build remarks on it.
     """
-    reader = Reader(folder, capabilities, left_out)
+    reader = Reader(folder, capabilities, left_out, parts)
     species, shapes = reader.run()
     return species, shapes, reader.warnings, reader.remarks

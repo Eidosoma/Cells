@@ -12,7 +12,7 @@
 
 import { mkdir, readFile, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, readReplays, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS } from "./lib/build_page.mjs";
+import { buildPage, proteinFiles, machineFiles, modelFiles, readReplays, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS } from "./lib/build_page.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -58,6 +58,10 @@ const machines = await machineFiles(JSON.parse(await readFile(scenePath, "utf8")
 for (const problem of machines.problems) console.log(`machines: ${problem}: that foot is shown without a closer view`);
 if (inlineRuns && machines.files.length) console.log(`${machines.files.length} machine files are inside the page`);
 else for (const file of machines.files) await beside(file.path, file.source);
+// A model system's run files (schema/MODEL_SYSTEMS.md), each beside the page.
+const modelled = await modelFiles(JSON.parse(await readFile(scenePath, "utf8")));
+for (const problem of modelled.problems) console.log(`models: ${problem}`);
+if (!inlineRuns) for (const file of modelled.files) await beside(file.path, file.source);
 const list = path.join(path.dirname(out), "cells-architecture.files.json");
 if (Object.keys(files).length) {
   await writeFile(list, JSON.stringify(files, null, 1) + "\n");

@@ -104,8 +104,8 @@ fixtures, under `tests/entries-fixtures/cells/`.
   - It is given only where a permissive source gives the set.
   - Getting such a source needs the user's approval first (README, "Next").
   - None is given today.
-- **`facts`, `sources`, `notes` and `plain`** are as in a species file, held to the same licence
-  classes.
+- **`facts`, `sources` and `plain`** are as in a species file, held to the same licence
+  classes; **`notes`** are sourced notes, as `ENTRIES.md` sets out ("Notes").
 
 ## The species' own type
 

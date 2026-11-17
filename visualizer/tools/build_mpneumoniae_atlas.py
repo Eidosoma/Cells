@@ -1278,6 +1278,11 @@ def build_species(c):
         "modelled": {
             "state": "proposed",
             "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run.",
+            # The record behind the word (schema/ENTRIES.md): tracked files of main.
+            "record": [
+                {"path": "docs/DECISIONS.md", "where": "D173: M. pneumoniae is audited soon"},
+                {"path": "docs/SYN3A_MINIMAL_CELL_TRACK.md", "where": "9.3 Should M. pneumoniae lead a stage?"},
+            ],
         },
         "levels": [
             {"id": "molecules"},

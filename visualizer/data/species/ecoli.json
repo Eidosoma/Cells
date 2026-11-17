@@ -11,7 +11,13 @@
  "made": "2026-11-15",
  "modelled": {
   "state": "proposed",
-  "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."
+  "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run.",
+  "record": [
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D179: The FEP track's decisions: on hold, E. coli as data only"
+   }
+  ]
  },
  "levels": [
   {

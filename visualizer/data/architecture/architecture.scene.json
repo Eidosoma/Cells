@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-17T01:04:01Z",
+  "generated_at": "2026-11-17T02:01:31Z",
   "revision": "1d86a192",
   "revision_date": "2026-11-16",
   "dirty": false,
@@ -3524,7 +3524,17 @@
    "made": "2026-11-15",
    "modelled": {
     "state": "generic",
-    "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled yet. Specific cell types are planned: the first is a human ventricular heart cell, whose laws will follow O'Hara and Rudy's model of 2011 (the endocardial cell). That choice is made and nothing of it is built yet (decisions D183 and D184, 16 November 2026). The heart and the body are placeholder outlines."
+    "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes; that generic cell is the one drawn. No human cell type, organ or body is modelled yet. The first human cell type is designed, not modelled: a ventricular heart cell, whose laws follow O'Hara and Rudy's model of 2011 (the endocardial cell). Its design note is on main, and its status there reads proposed, with its choices decided by D184 (decisions D183 and D184, 16 November 2026); nothing of it is built yet. The heart and the body are placeholder outlines.",
+    "record": [
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D183: The human cardiac law set is brought forward; D184: The human cardiac law set's choices"
+     },
+     {
+      "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md",
+      "where": "Status: PROPOSED, 16 November 2026; its choices decided by D184"
+     }
+    ]
    },
    "default": false,
    "levels": [
@@ -3690,7 +3700,101 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Generic cell",
+     "own": true,
+     "modelled": {
+      "state": "generic",
+      "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes; that generic cell is the one drawn. No human cell type, organ or body is modelled yet. The first human cell type is designed, not modelled: a ventricular heart cell, whose laws follow O'Hara and Rudy's model of 2011 (the endocardial cell). Its design note is on main, and its status there reads proposed, with its choices decided by D184 (decisions D183 and D184, 16 November 2026); nothing of it is built yet. The heart and the body are placeholder outlines.",
+      "record": [
+       {
+        "path": "docs/DECISIONS.md",
+        "where": "D183: The human cardiac law set is brought forward; D184: The human cardiac law set's choices"
+       },
+       {
+        "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md",
+        "where": "Status: PROPOSED, 16 November 2026; its choices decided by D184"
+       }
+      ]
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "shape": {
+        "kind": "prism",
+        "sides": 6,
+        "radius_um": 10.6,
+        "height_um": 13,
+        "corner_um": 2.4,
+        "edge_um": 1.3
+       },
+       "note": "The cell drawn is a generic animal cell, as one of a layer; it is not a model of a human cell type. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, about 20 µm across.",
+       "notes": [
+        {
+         "text": "A generic animal cell, as one of a layer"
+        },
+        {
+         "text": "Its flat-sided shape is the picture's choice",
+         "roomy": true
+        }
+       ],
+       "fade_out_um": [
+        120,
+        190
+       ]
+      },
+      {
+       "id": "tissue",
+       "shape": {
+        "kind": "cell sheet",
+        "rings": 6,
+        "beyond": [
+         [
+          8,
+          0.34
+         ],
+         [
+          10,
+          0.2
+         ],
+         [
+          11,
+          0.1
+         ]
+        ]
+       },
+       "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular human tissue.",
+       "notes": [
+        {
+         "text": "The sheet Cells simulates: a single layer of coupled cells",
+         "short": "The simulated sheet"
+        }
+       ],
+       "fade_in_um": [
+        100,
+        190
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": true,
+      "organelles": [
+       "er",
+       "golgi",
+       "mitochondria"
+      ]
+     },
+     "capabilities": {},
+     "facts": [],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "mouse",
@@ -3895,7 +3999,113 @@
      "class": "permissive",
      "accessed": "2026-11-16"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Generic cell",
+     "own": true,
+     "modelled": {
+      "state": "generic",
+      "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on the ear for the scales only. The ear and the mouse are placeholder outlines: nothing at those scales is simulated. In the project's record the mouse is named for a planned comparison: in the work on excitable tissue, a generic cell comes first for qualification, then the mouse for the first comparison, then the human (decision D155, 14 November 2026). That comparison concerns heart muscle cells, and nothing of it is built yet."
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "shape": {
+        "kind": "prism",
+        "sides": 6,
+        "radius_um": 10.6,
+        "height_um": 13,
+        "corner_um": 2.4,
+        "edge_um": 1.3
+       },
+       "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a mouse's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer is scenery: Cells models nothing beneath the sheet.",
+       "notes": [
+        {
+         "text": "One cell of the skin-like layer"
+        },
+        {
+         "text": "Its flat-sided shape is the picture's choice",
+         "roomy": true
+        }
+       ],
+       "fade_out_um": [
+        120,
+        190
+       ]
+      },
+      {
+       "id": "tissue",
+       "shape": {
+        "kind": "cell sheet",
+        "rings": 6,
+        "beyond": [
+         [
+          8,
+          0.34
+         ],
+         [
+          10,
+          0.2
+         ],
+         [
+          11,
+          0.1
+         ]
+        ]
+       },
+       "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn on the ear of the placeholder mouse for the scales only; the simulated sheet is not the mouse's skin.",
+       "notes": [
+        {
+         "text": "The sheet stands for skin-like tissue: a single layer of cells",
+         "short": "Stands for skin-like tissue"
+        }
+       ],
+       "fade_in_um": [
+        100,
+        190
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": true,
+      "organelles": [
+       "er",
+       "golgi",
+       "mitochondria"
+      ]
+     },
+     "capabilities": {},
+     "facts": [
+      {
+       "label": "Proteins",
+       "value": "21,872 genes in UniProt's reference proteome, with 228,903 entries: 17,279 reviewed by a curator and 211,624 annotated automatically. One protein is shown for each gene",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Cells' machines",
+       "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the mouse; the other 6 name no natural protein to look for",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "The outlines' sizes",
+       "value": "head and body 78.5 mm, tail 85.3 mm, ear 13.3 mm: the means of four house mice trapped in Qatar, wild and not laboratory mice",
+       "sources": [
+        "islam2021"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "planarian",
@@ -4134,7 +4344,95 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Generic cell",
+     "own": true,
+     "modelled": {
+      "state": "generic",
+      "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on the worm for the scales only. The brain and the worm are placeholder outlines: nothing at those scales is simulated."
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "shape": {
+        "kind": "prism",
+        "sides": 6,
+        "radius_um": 10.6,
+        "height_um": 13,
+        "corner_um": 2.4,
+        "edge_um": 1.3
+       },
+       "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
+       "notes": [
+        {
+         "text": "One cell of the skin-like layer"
+        },
+        {
+         "text": "Its flat-sided shape is the picture's choice",
+         "roomy": true
+        }
+       ],
+       "fade_out_um": [
+        120,
+        190
+       ]
+      },
+      {
+       "id": "tissue",
+       "shape": {
+        "kind": "cell sheet",
+        "rings": 6,
+        "beyond": [
+         [
+          8,
+          0.34
+         ],
+         [
+          10,
+          0.2
+         ],
+         [
+          11,
+          0.1
+         ]
+        ]
+       },
+       "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn lying over the brain of the placeholder worm for the scales only; the simulated sheet is not that animal's tissue.",
+       "notes": [
+        {
+         "text": "The sheet stands for skin-like tissue: a single layer of cells",
+         "short": "Stands for skin-like tissue"
+        }
+       ],
+       "fade_in_um": [
+        100,
+        190
+       ],
+       "fade_out_um": [
+        1000,
+        1800
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": true,
+      "organelles": [
+       "er",
+       "golgi",
+       "mitochondria"
+      ]
+     },
+     "capabilities": {},
+     "facts": [],
+     "loop": "planarian-loop--planarian-b08af640"
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "fruitfly",
@@ -4297,7 +4595,106 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Generic cell",
+     "own": true,
+     "modelled": {
+      "state": "generic",
+      "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet is drawn on a wing for the scales only. The wings and the fly are placeholder outlines: nothing at those scales is simulated."
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "shape": {
+        "kind": "prism",
+        "sides": 6,
+        "radius_um": 10.6,
+        "height_um": 13,
+        "corner_um": 2.4,
+        "edge_um": 1.3
+       },
+       "note": "The cell drawn is a generic animal cell, as one of a layer; it is not a model of a cell type of the fly. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, about 20 µm across.",
+       "notes": [
+        {
+         "text": "A generic animal cell, as one of a layer"
+        },
+        {
+         "text": "Its flat-sided shape is the picture's choice",
+         "roomy": true
+        }
+       ],
+       "fade_out_um": [
+        120,
+        190
+       ]
+      },
+      {
+       "id": "tissue",
+       "shape": {
+        "kind": "cell sheet",
+        "rings": 6,
+        "beyond": [
+         [
+          8,
+          0.34
+         ],
+         [
+          10,
+          0.2
+         ],
+         [
+          11,
+          0.1
+         ]
+        ]
+       },
+       "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular tissue of the fly.",
+       "notes": [
+        {
+         "text": "The sheet Cells simulates: a single layer of coupled cells",
+         "short": "The simulated sheet"
+        }
+       ],
+       "fade_in_um": [
+        100,
+        190
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": true,
+      "organelles": [
+       "er",
+       "golgi",
+       "mitochondria"
+      ]
+     },
+     "capabilities": {},
+     "facts": [
+      {
+       "label": "Proteins",
+       "value": "13,814 genes in UniProt's reference proteome, with 21,941 entries: 3,885 reviewed by a curator and 18,056 annotated automatically. One protein is shown for each gene",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Cells' machines",
+       "value": "of the 49 units of the law inventory, 38 have proteins of the same family in the fly and 3 are built from another family; 2 were not found",
+       "sources": [
+        "uniprot"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "syn3a",
@@ -4309,8 +4706,18 @@
    "order": 30,
    "made": "2026-11-15",
    "modelled": {
-    "state": "proposed",
-    "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted."
+    "state": "planned",
+    "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells: the decision adopted it as a track, run beside the current work. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted. That milestone, on protein-free vesicles, tests membrane physics and not Syn3A.",
+    "record": [
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D173: Syn3A becomes the minimal-cell track; no contact with authors"
+     },
+     {
+      "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
+      "where": "0. Verdict; 6. The first milestone"
+     }
+    ]
    },
    "default": false,
    "levels": [
@@ -4573,7 +4980,234 @@
      "class": "permissive",
      "accessed": "2026-11-14"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Its cell",
+     "own": true,
+     "modelled": {
+      "state": "planned",
+      "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells: the decision adopted it as a track, run beside the current work. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted. That milestone, on protein-free vesicles, tests membrane physics and not Syn3A.",
+      "record": [
+       {
+        "path": "docs/DECISIONS.md",
+        "where": "D173: Syn3A becomes the minimal-cell track; no contact with authors"
+       },
+       {
+        "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
+        "where": "0. Verdict; 6. The first milestone"
+       }
+      ]
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "label": "One cell",
+       "shape": {
+        "kind": "sphere",
+        "across_um": 0.4
+       },
+       "note": "Drawn as a sphere 0.4 µm across with 500 ribosomes: round numbers for the smaller of the two cells that were measured. The larger one was about 0.5 µm across.",
+       "sources": [
+        "breuer2019",
+        "gilbert2021"
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": false,
+      "chromosome_kbp": 543,
+      "ribosomes": 500
+     },
+     "capabilities": {
+      "cap.membrane": {
+       "place": "present",
+       "note": "Its one membrane holds the cell's ion and proton gradients. In the 2019 reconstruction of its metabolism the ATP synthase pushes protons out, against a passive leak of protons inwards; that is a model's reading, and no source read for this file measured the voltage of this strain."
+      },
+      "cap.channels": {
+       "place": "absent",
+       "why": "No ion channel was found among its 455 proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium, water or membrane stretch, which the same search does find in other mollicutes. Its ions cross the membrane through transporters and pumps."
+      },
+      "cap.pumps": {
+       "place": "present",
+       "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, two P-type ATPases named as magnesium transporters, and a potassium uptake system."
+      },
+      "cap.junctions": {
+       "place": "absent",
+       "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+      },
+      "cap.extracellular": {
+       "place": "present",
+       "note": "Here it is the growth medium around the single cell, which the cell depends on. By the 2019 reconstruction of its metabolism it takes up glucose, amino acids, fatty acids and cholesterol from a rich medium."
+      },
+      "cap.water": {
+       "place": "present",
+       "note": "It has no cell wall: nothing but the membrane bounds its volume."
+      },
+      "cap.calcium": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+      },
+      "cap.energy": {
+       "place": "present",
+       "note": "Its ATP comes from fermenting sugar in the cytoplasm: in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP."
+      },
+      "cap.mitochondria": {
+       "place": "absent",
+       "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."
+      },
+      "cap.circuits": {
+       "place": "present",
+       "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The 2019 paper notes how few regulatory proteins the minimised genome has left."
+      },
+      "cap.grn": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+      },
+      "cap.trafficking": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."
+      },
+      "cap.machines": {
+       "place": "present",
+       "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+      },
+      "cap.secretion": {
+       "place": "present",
+       "note": "By the 2019 reconstruction of its metabolism it releases the end products of sugar breakdown, lactate and acetate, into the medium and takes nutrients up. Signalling between its cells was not looked for."
+      },
+      "cap.repair": {
+       "place": "present",
+       "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."
+      },
+      "cap.division": {
+       "place": "present",
+       "note": "It grows and divides as a single cell. The division genes ftsZ and sepF are among 19 genes that were added to the smaller strain JCVI-syn3.0 to make it, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division."
+      },
+      "cap.replacement": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+      },
+      "cap.mechanics": {
+       "place": "absent",
+       "why": "It forms no sheet: its cells share no edges to pull on."
+      },
+      "cap.sheet": {
+       "place": "absent",
+       "why": "It lives as single cells and forms no sheet of coupled cells."
+      }
+     },
+     "facts": [
+      {
+       "label": "Shape and size",
+       "value": "a sphere about 400 nm across; two cells measured in electron tomograms were 403 nm and 495 nm across",
+       "sources": [
+        "breuer2019",
+        "gilbert2021"
+       ]
+      },
+      {
+       "label": "Envelope",
+       "value": "one membrane; no cell wall and no periplasm",
+       "sources": [
+        "breuer2019",
+        "gilbert2021"
+       ]
+      },
+      {
+       "label": "Inside",
+       "value": "no nucleus: in electron tomograms the ribosomes are spread through the whole cell, with the chromosome among them",
+       "sources": [
+        "gilbert2021"
+       ]
+      },
+      {
+       "label": "Chromosome",
+       "value": "one circle of 543,379 base pairs",
+       "sources": [
+        "genbank"
+       ]
+      },
+      {
+       "label": "Genes",
+       "value": "493, of which 452 code for proteins; the genome record lists 455 protein products, 3 of them added for genetic manipulation",
+       "sources": [
+        "breuer2019",
+        "genbank"
+       ]
+      },
+      {
+       "label": "Ribosomes",
+       "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across",
+       "sources": [
+        "gilbert2021"
+       ]
+      },
+      {
+       "label": "Proteins",
+       "value": "about 77,000 molecules in an average cell, an estimate from proteomics; 427 of the 452 kinds were detected, and the added marker tetM",
+       "sources": [
+        "breuer2019"
+       ]
+      },
+      {
+       "label": "Doubling time",
+       "value": "about 105 minutes in rich medium",
+       "sources": [
+        "breuer2019"
+       ]
+      },
+      {
+       "label": "Energy",
+       "value": "ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP",
+       "sources": [
+        "breuer2019"
+       ],
+       "see": [
+        "thornburg2022"
+       ]
+      },
+      {
+       "label": "Food",
+       "value": "glucose, amino acids, fatty acids and cholesterol, taken up from a rich medium that is not fully defined",
+       "sources": [
+        "breuer2019"
+       ]
+      },
+      {
+       "label": "Ion channels",
+       "value": "none found among its 455 proteins",
+       "sources": [
+        "uniparc"
+       ]
+      },
+      {
+       "label": "Division",
+       "value": "the division genes ftsZ and sepF are among 19 genes added to the smaller strain JCVI-syn3.0 to make this one, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division",
+       "sources": [
+        "breuer2019",
+        "zhang2023"
+       ],
+       "see": [
+        "pelletier2021"
+       ]
+      },
+      {
+       "label": "Origin",
+       "value": "a genome designed and synthesised from that of Mycoplasma mycoides subspecies capri, strain GM12, and cut down to a minimum",
+       "sources": [
+        "genbank",
+        "breuer2019"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "mpneumoniae",
@@ -4586,7 +5220,17 @@
    "made": "2026-11-15",
    "modelled": {
     "state": "proposed",
-    "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run."
+    "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run.",
+    "record": [
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D173: M. pneumoniae is audited soon"
+     },
+     {
+      "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
+      "where": "9.3 Should M. pneumoniae lead a stage?"
+     }
+    ]
    },
    "default": false,
    "levels": [
@@ -4976,7 +5620,291 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Its cell",
+     "own": true,
+     "modelled": {
+      "state": "proposed",
+      "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run.",
+      "record": [
+       {
+        "path": "docs/DECISIONS.md",
+        "where": "D173: M. pneumoniae is audited soon"
+       },
+       {
+        "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
+        "where": "9.3 Should M. pneumoniae lead a stage?"
+       }
+      ]
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "label": "One cell",
+       "shape": {
+        "kind": "capsule",
+        "length_um": 2,
+        "across_um": 0.2
+       },
+       "note": "Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with 300 ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
+       "sources": [
+        "parrott2016",
+        "nakane2015",
+        "nakane2021",
+        "weber2023"
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": false,
+      "nucleus": false,
+      "chromosome_kbp": 816,
+      "ribosomes": 300
+     },
+     "capabilities": {
+      "cap.membrane": {
+       "place": "present",
+       "note": "Its one membrane holds the cell's ion and proton gradients. In a model of its metabolism published in 2020 the ATP synthase runs in reverse and pumps protons out of the cell; that is the model's result, and no source read for this file measured the voltage."
+      },
+      "cap.channels": {
+       "place": "absent",
+       "why": "No ion channel was found among its 688 proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium or membrane stretch, which the same search does find in other mollicutes. One protein, the glycerol facilitator GlpF, carries the signature of the family of water and glycerol channels; it is not an ion channel."
+      },
+      "cap.pumps": {
+       "place": "present",
+       "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, one P-type ATPase whose ion is not known, and a potassium uptake system."
+      },
+      "cap.junctions": {
+       "place": "absent",
+       "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+      },
+      "cap.extracellular": {
+       "place": "present",
+       "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids, vitamins or lipids of its own and takes them up."
+      },
+      "cap.water": {
+       "place": "present",
+       "note": "It has no cell wall: nothing but the membrane bounds its volume. One of its proteins, GlpF, belongs to the family of water and glycerol channels."
+      },
+      "cap.calcium": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+      },
+      "cap.energy": {
+       "place": "present",
+       "note": "Its ATP comes from fermenting sugar in the cytoplasm, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle."
+      },
+      "cap.mitochondria": {
+       "place": "absent",
+       "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."
+      },
+      "cap.circuits": {
+       "place": "present",
+       "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus."
+      },
+      "cap.grn": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+      },
+      "cap.trafficking": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."
+      },
+      "cap.machines": {
+       "place": "present",
+       "note": "About 300 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+      },
+      "cap.secretion": {
+       "place": "present",
+       "note": "It releases lactate and acetate, the end products of its fermentation, and takes its nutrients up. Signalling between its own cells was not looked for."
+      },
+      "cap.repair": {
+       "place": "present",
+       "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."
+      },
+      "cap.division": {
+       "place": "present",
+       "note": "It divides in two as a single cell. Its attachment organelle is duplicated first and takes part in the division; the division gene ftsZ is in its genome."
+      },
+      "cap.replacement": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+      },
+      "cap.mechanics": {
+       "place": "absent",
+       "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, gliding on a surface, is not what this capability models."
+      },
+      "cap.sheet": {
+       "place": "absent",
+       "why": "It lives as single cells and forms no sheet of coupled cells."
+      }
+     },
+     "facts": [
+      {
+       "label": "Shape and size",
+       "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.075 µm³",
+       "sources": [
+        "parrott2016",
+        "nakane2015",
+        "weber2023"
+       ]
+      },
+      {
+       "label": "Attachment organelle",
+       "value": "a membrane protrusion at one pole, 250 to 300 nm long, with an internal core; it carries the adhesins and leads the cell when it glides",
+       "sources": [
+        "nakane2021",
+        "nakane2015"
+       ],
+       "see": [
+        "hasselbring2006"
+       ]
+      },
+      {
+       "label": "Envelope",
+       "value": "a cell membrane stiffened by sterols, and no cell wall; UniProt's curated entries of its proteins name one membrane, the cell membrane, and no outer one",
+       "sources": [
+        "parrott2016",
+        "nakane2015",
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Inside",
+       "value": "a small prokaryote, among the smallest organisms that copy themselves: a bacterium, with no nucleus",
+       "sources": [
+        "li2021",
+        "gaspari2020",
+        "genbank"
+       ]
+      },
+      {
+       "label": "Chromosome",
+       "value": "one circle of 816,394 base pairs",
+       "sources": [
+        "genbank"
+       ],
+       "see": [
+        "himmelreich1996"
+       ]
+      },
+      {
+       "label": "Genes",
+       "value": "688 protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has 686 entries",
+       "sources": [
+        "genbank",
+        "parrott2016",
+        "lluchsenar2015",
+        "uniprot"
+       ],
+       "see": [
+        "himmelreich1996",
+        "dandekar2000",
+        "wodke2013"
+       ]
+      },
+      {
+       "label": "Ribosomes",
+       "value": "about 300 in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry",
+       "sources": [
+        "weber2023"
+       ],
+       "see": [
+        "maier2011",
+        "kuhner2009"
+       ]
+      },
+      {
+       "label": "Proteins",
+       "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds",
+       "sources": [
+        "weber2023"
+       ],
+       "see": [
+        "maier2011"
+       ]
+      },
+      {
+       "label": "Doubling time",
+       "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium",
+       "sources": [
+        "weber2023",
+        "gaspari2020"
+       ]
+      },
+      {
+       "label": "Essential genes",
+       "value": "342 of 694 genes essential, 93 needed for normal growth and 259 dispensable, by transposon mutagenesis",
+       "sources": [
+        "lluchsenar2015"
+       ]
+      },
+      {
+       "label": "Energy",
+       "value": "ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle",
+       "sources": [
+        "gaspari2020",
+        "awadh2021",
+        "li2021"
+       ],
+       "see": [
+        "wodke2013"
+       ]
+      },
+      {
+       "label": "Food",
+       "value": "glucose as its main fuel; it makes almost none of its own building blocks, no amino acids, vitamins or lipids among them, and takes them up",
+       "sources": [
+        "gaspari2020",
+        "awadh2021"
+       ],
+       "see": [
+        "yus2009",
+        "wodke2013"
+       ]
+      },
+      {
+       "label": "Ion channels",
+       "value": "none found among its 688 proteins; one glycerol facilitator of the aquaporin family",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Division",
+       "value": "in two, by binary fission; the attachment organelle is duplicated first and takes part in the division",
+       "sources": [
+        "parrott2016",
+        "nakane2021"
+       ],
+       "see": [
+        "hasselbring2006"
+       ]
+      },
+      {
+       "label": "Movement",
+       "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second",
+       "sources": [
+        "nakane2015"
+       ]
+      },
+      {
+       "label": "Name",
+       "value": "databases now list it as Mycoplasmoides pneumoniae; the papers cited call it Mycoplasma pneumoniae",
+       "sources": [
+        "genbank",
+        "uniprot"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
   },
   {
    "id": "ecoli",
@@ -4989,7 +5917,13 @@
    "made": "2026-11-15",
    "modelled": {
     "state": "proposed",
-    "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."
+    "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run.",
+    "record": [
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D179: The FEP track's decisions: on hold, E. coli as data only"
+     }
+    ]
    },
    "default": false,
    "levels": [
@@ -5343,6 +6277,305 @@
      "accessed": "2026-11-15"
     }
    },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Its cell",
+     "own": true,
+     "modelled": {
+      "state": "proposed",
+      "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run.",
+      "record": [
+       {
+        "path": "docs/DECISIONS.md",
+        "where": "D179: The FEP track's decisions: on hold, E. coli as data only"
+       }
+      ]
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "label": "One cell",
+       "shape": {
+        "kind": "capsule",
+        "length_um": 2.5,
+        "across_um": 1
+       },
+       "note": "Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its 6,800 ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.",
+       "sources": [
+        "volkmer2011",
+        "urich2008",
+        "uniprot"
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 2,
+      "wall": true,
+      "nucleus": false,
+      "chromosome_kbp": 4642,
+      "ribosomes": 6800,
+      "appendages": [
+       {
+        "kind": "flagellum",
+        "label": "Flagella",
+        "count": [
+         1,
+         5
+        ],
+        "length_um": [
+         5,
+         10
+        ],
+        "width_nm": [
+         20,
+         40
+        ],
+        "where": "all over",
+        "from": "inner membrane",
+        "base": {
+         "id": "flagellar-motor",
+         "label": "Flagellar motor",
+         "mark": "complex",
+         "value": "flagellum"
+        },
+        "sources": [
+         "mears2014",
+         "schavemaker2022",
+         "dvoriashyna2021",
+         "zhuang2025",
+         "uniprot"
+        ]
+       },
+       {
+        "kind": "pilus",
+        "label": "Type 1 fimbriae",
+        "count": [
+         200,
+         500
+        ],
+        "length_um": 1,
+        "width_nm": [
+         7,
+         10
+        ],
+        "where": "all over",
+        "from": "outer membrane",
+        "sources": [
+         "jahnke2016"
+        ]
+       }
+      ]
+     },
+     "capabilities": {
+      "cap.membrane": {
+       "place": "present",
+       "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."
+      },
+      "cap.channels": {
+       "place": "present",
+       "note": "Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. 15 of its proteins carry the signature of a bacterial channel family: the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)."
+      },
+      "cap.pumps": {
+       "place": "present",
+       "note": "Not the pumps of animal cells: none of its proteins carries the signature of the sodium-potassium pump. Its P-type ATPases (copA, kdpB, mgtA and zntA) and its ATP synthase are stated to be in the inner membrane."
+      },
+      "cap.junctions": {
+       "place": "absent",
+       "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+      },
+      "cap.extracellular": {
+       "place": "present",
+       "note": "Two spaces lie beyond its inner membrane: the periplasm, between its two membranes, and what surrounds the cell, the lower gut of an animal or wherever it is released."
+      },
+      "cap.water": {
+       "place": "present",
+       "note": "By UniProt's vocabulary a wall lies between its two membranes and plays a part in the cell's shape and stability. One of its proteins, AqpZ, carries the signature of the aquaporin family."
+      },
+      "cap.calcium": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum, the store this capability concerns: no entry of its proteome states a place in one, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+      },
+      "cap.energy": {
+       "place": "present",
+       "note": "It lives by respiration and by fermentation, with or without oxygen; its ATP synthase is stated to be in the inner membrane."
+      },
+      "cap.mitochondria": {
+       "place": "absent",
+       "why": "It is a bacterium and has no mitochondria: no entry of its proteome states a place in one. Its ATP synthase is in the inner membrane."
+      },
+      "cap.circuits": {
+       "place": "present",
+       "note": "At the chromosome, which lies in a region of the cytoplasm that no membrane surrounds: there is no nucleus. 64 of its proteins carry UniProt's keyword for two-component regulatory systems."
+      },
+      "cap.grn": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+      },
+      "cap.trafficking": {
+       "place": "absent",
+       "why": "It has no endoplasmic reticulum and no Golgi: no entry of its proteome states a place in either. By the names of their entries, its proteins cross or enter the inner membrane through the Sec and Tat translocases."
+      },
+      "cap.machines": {
+       "place": "present",
+       "note": "Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\"."
+      },
+      "cap.secretion": {
+       "place": "present",
+       "note": "Some of its proteins are stated to be secreted, and porins and transporters carry molecules across its two membranes. Signalling between its own cells was not looked for."
+      },
+      "cap.repair": {
+       "place": "present",
+       "note": "The place would be its envelope. No source read for this file describes an injury of it or its resealing in this organism."
+      },
+      "cap.division": {
+       "place": "present",
+       "note": "It divides as a single cell: its proteome names the cell division protein FtsZ."
+      },
+      "cap.replacement": {
+       "place": "absent",
+       "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+      },
+      "cap.mechanics": {
+       "place": "absent",
+       "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, swimming with flagella, is not what this capability models."
+      },
+      "cap.sheet": {
+       "place": "absent",
+       "why": "It lives as single cells and forms no sheet of coupled cells."
+      }
+     },
+     "facts": [
+      {
+       "label": "Shape and size",
+       "value": "a straight rod; earlier work put its average length between 1.6 and 3.1 µm and its width at 0.7 to 1.1 µm, and one study measured 1.6 µm (cells at rest) to 3.9 µm (cells growing on a rich medium) in length and 1.26 µm in width",
+       "sources": [
+        "volkmer2011",
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Volume",
+       "value": "1.5 to 4.4 femtolitres, by the conditions it grows in",
+       "sources": [
+        "volkmer2011"
+       ]
+      },
+      {
+       "label": "Envelope",
+       "value": "two membranes: the inner one separates the cytoplasm from the periplasm, the outer one the periplasm from the cell's surroundings; the cell wall lies between them",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Inside",
+       "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Chromosome",
+       "value": "one circle of 4,641,652 base pairs",
+       "sources": [
+        "genbank"
+       ]
+      },
+      {
+       "label": "Proteins",
+       "value": "4,403 in UniProt's reference proteome of strain K-12, every one with a reviewed entry",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Ribosomes",
+       "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates",
+       "sources": [
+        "urich2008"
+       ]
+      },
+      {
+       "label": "Movement",
+       "value": "swims with flagella that grow all over its surface, or does not move",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Flagella",
+       "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another",
+       "sources": [
+        "mears2014",
+        "schavemaker2022",
+        "dvoriashyna2021",
+        "zhuang2025"
+       ]
+      },
+      {
+       "label": "Where the flagella stand",
+       "value": "all over the cell body; the motor at the foot of each sits in the inner membrane, where its ring protein FliF and its stator proteins MotA and MotB are stated to be. 34 proteins are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+       "sources": [
+        "dvoriashyna2021",
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Type 1 fimbriae",
+       "value": "200 to 500 on a cell by one paper's summary, each up to 1 µm long and about 7 to 10 nm wide, standing out from the outer membrane",
+       "sources": [
+        "jahnke2016"
+       ]
+      },
+      {
+       "label": "Chemotaxis",
+       "value": "22 of its proteins carry UniProt's keyword for chemotaxis (aer, cheA, cheB, cheR, cheW, cheY, cheZ, dppA, fliG, fliJ, fliL, fliM, fliN, fliO, mglB, motA, motB, rbsB, tap, tar, trg and tsr), and 34 are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Energy",
+       "value": "respiration and fermentation: it lives with or without oxygen",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Where it lives",
+       "value": "the lower gut of animals; it survives when released to the natural environment",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Ion channels",
+       "value": "none of the animal families Cells has laws for; 15 proteins of bacterial channel families (aqpZ, clcA, clcB, corA, glpF, kch, mscK, mscL, mscM, mscS, ybdG, ybiO, yfeO, ynaI and zntB)",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Signalling",
+       "value": "64 proteins carry UniProt's keyword for two-component regulatory systems",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Strain",
+       "value": "K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly (GCA_000005845.2)",
+       "sources": [
+        "genbank",
+        "uniprot"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell",
    "machines": [
     {
      "id": "flagellar-motor",
@@ -5602,7 +6835,296 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "cell_types": [
+    {
+     "id": "cell",
+     "label": "Generic cell",
+     "own": true,
+     "modelled": {
+      "state": "generic",
+      "text": "Cells models a generic cell and a sheet of such cells, with laws that name the channels and pumps of animal cells. No plant cell is modelled, and the project's record names no model of this plant. The leaf and the rosette are placeholder outlines: nothing at those scales is simulated."
+     },
+     "levels": [
+      {
+       "id": "cell",
+       "shape": {
+        "kind": "prism",
+        "sides": 4,
+        "across_um": 47,
+        "height_um": 45,
+        "corner_um": 4
+       },
+       "note": "The cell drawn is a box with a wall, for a cell of the leaf's upper layer (a palisade cell). It is 47 µm across, the width of the cylinder that one paper uses for such a cell, and 45 µm high: the picture's choice of the height at which a box of that width holds the 100 picolitres the paper gives. Its square outline is the picture's choice too. No plant cell is modelled.",
+       "notes": [
+        {
+         "text": "A leaf cell, as a box with a wall"
+        },
+        {
+         "text": "Its square outline is the picture's choice",
+         "roomy": true
+        }
+       ],
+       "sources": [
+        "tolleter2024"
+       ],
+       "fade_out_um": [
+        280,
+        440
+       ]
+      },
+      {
+       "id": "tissue",
+       "shape": {
+        "kind": "cell sheet",
+        "rings": 6,
+        "beyond": [
+         [
+          8,
+          0.34
+         ],
+         [
+          10,
+          0.2
+         ],
+         [
+          11,
+          0.1
+         ]
+        ]
+       },
+       "note": "The sheet stands for the one Cells simulates: a single layer of coupled cells. It is drawn packed in squares, as box-shaped cells stand side against side; that packing is the picture's choice, and the sheets Cells has run are joined in sixes. It stands for no particular tissue of the plant, and a plant's cells are joined by plasmodesmata, which the sheet does not model.",
+       "notes": [
+        {
+         "text": "The sheet Cells simulates: a single layer of coupled cells",
+         "short": "The simulated sheet"
+        }
+       ],
+       "fade_in_um": [
+        240,
+        440
+       ]
+      }
+     ],
+     "parts": {
+      "membranes": 1,
+      "wall": true,
+      "wall_nm": 150,
+      "nucleus": true,
+      "organelles": [
+       "er",
+       "golgi",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole"
+      ],
+      "organelle_sizes": {
+       "chloroplasts": {
+        "count": 100,
+        "volume_fl": 93,
+        "across_um": 5.6,
+        "sources": [
+         "tolleter2024"
+        ]
+       },
+       "vacuole": {
+        "share": 0.84,
+        "sources": [
+         "tolleter2024"
+        ]
+       }
+      }
+     },
+     "capabilities": {
+      "cap.junctions": {
+       "place": "absent",
+       "why": "A plant's cells are not joined by gap junctions: none of its proteins carries the signature of connexins or innexins. They are joined by plasmodesmata, channels through the wall, which Cells does not model."
+      },
+      "cap.pumps": {
+       "place": "present",
+       "note": "Not the sodium-potassium pump of animal cells: none of its proteins carries the signature of that pump's own chain. Other pumps of the same wide family are found; the units that find them say which."
+      }
+     },
+     "facts": [
+      {
+       "label": "Proteins",
+       "value": "27,368 genes in UniProt's reference proteome, with 39,144 entries: 16,217 reviewed by a curator and 22,927 annotated automatically. One protein is shown for each gene",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "A leaf cell's size",
+       "value": "100 picolitres for a cell of the leaf's upper layer (a palisade cell) and 60 for one of the layer below, by one paper's atlas of the leaf, which takes the palisade cell as a cylinder of radius 23.7 µm",
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      {
+       "label": "Chloroplasts",
+       "value": "100 in a palisade cell, each of 93 femtolitres on average",
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      {
+       "label": "Vacuole",
+       "value": "the largest part of a leaf's cellular volume: 84%",
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      {
+       "label": "Wall",
+       "value": "150 nm thick on average, for the leaf's skin cells and inner cells",
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      {
+       "label": "Leaf and rosette",
+       "value": "the paper's reference leaf has a surface of 121 mm²; its three-week-old rosette has 29 leaves with 10,500 mm² of leaf in all",
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      {
+       "label": "What joins its cells",
+       "value": "plasmodesmata, channels lined by the cell membrane that cross the wall between two cells; 32 of its proteins are stated to be there",
+       "sources": [
+        "uniprot"
+       ]
+      },
+      {
+       "label": "Cells' machines",
+       "value": "of the 49 units of the law inventory, 5 have proteins of the same family in the plant; 38 were not found, the gap junctions and the sodium-potassium pump among them",
+       "sources": [
+        "uniprot"
+       ]
+      }
+     ],
+     "loop": null
+    }
+   ],
+   "default_cell_type": "cell"
+  }
+ ],
+ "models": [
+  {
+   "id": "gard",
+   "label": "GARD assembly",
+   "is": "A model, not an organism",
+   "plain": "A model of how heredity could begin before genes: a small assembly of molecules of many types, in which the molecules inside speed the joining and leaving of others, so that a mix of types can grow, split in two and pass something of itself on. It is a model, not an organism: it has no cell, no shape, no place and no clock of real life. The preprint Plastic Heredity uses it.",
+   "group": "Origin of life",
+   "order": 100,
+   "made": "2026-11-16",
+   "modelled": {
+    "state": "designed",
+    "text": "Designed, not modelled. Its design note is on main, decided on 16 November 2026 (D192), and it is built in step 4 of D194's order: nothing of GARD is in the engine yet. The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”.",
+    "record": [
+     {
+      "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
+      "where": "Its opening: the user's request of 16 November 2026; Decided; and Status"
+     },
+     {
+      "path": "docs/GARD_DESIGN.md",
+      "where": "Status: DECIDED, 16 November 2026 (D192)"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D192, the design choices; D194, the order (GARD in step 4)"
+     },
+     {
+      "path": "docs/SCIENTIFIC_BASIS.md",
+      "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
+     }
+    ],
+    "design": "docs/GARD_DESIGN.md"
+   },
+   "view": {
+    "kind": "assembly"
+   },
+   "levels": [
+    {
+     "label": "Molecules",
+     "id": "molecules",
+     "shows": "The model's molecule types, and the fixed table by which each type speeds the joining and leaving of every other. That table and the supply of molecules are the environment: no assembly writes them."
+    },
+    {
+     "label": "One assembly",
+     "id": "assembly",
+     "shows": "One assembly growing molecule by molecule and splitting in two, drawn as a micelle, which is the picture's choice, with its mix of types beside it. Molecule by molecule only where a run saved each event; otherwise from one fission to the next."
+    },
+    {
+     "label": "Population",
+     "id": "population",
+     "shows": "Many assemblies at once, in a fixed number of places, each fission taking the place of one removed.",
+     "waits": "a run of a population: one lineage comes first"
+    },
+    {
+     "label": "Lineages",
+     "id": "lineage",
+     "shows": "Generations across fissions: the line of daughters that carry on, and at each fission how alike the parent and that daughter are. The line at 0.9 is drawn on that comparison only."
+    }
+   ],
+   "clock": {
+    "base": "fission",
+    "says": "Its runs count fissions, not seconds: GARD has no clock of real life."
+   },
+   "runs": [
+    {
+     "file": "data/origin/example-run.json",
+     "label": "An example of invented numbers",
+     "kind": "example",
+     "path": "models/gard/example-run.json"
+    }
+   ],
+   "facts": [
+    {
+     "label": "Molecule types",
+     "value": "100",
+     "sources": [
+      "preprint"
+     ]
+    },
+    {
+     "label": "In the preprint, an assembly grows to",
+     "value": "80 molecules, then splits in two",
+     "sources": [
+      "preprint"
+     ]
+    },
+    {
+     "label": "In the preprint, a fission is inherited when",
+     "value": "the similarity H between the parent just before the fission and the daughter that carries on is above 0.9; 0.9 itself is a break",
+     "sources": [
+      "preprint"
+     ]
+    }
+   ],
+   "sources": {
+    "preprint": {
+     "text": "Plastic heredity: Predicting and steering how inheritance breaks, returns, and persists. Preprint, version 5.0. Read for the viewer's note docs/ORIGIN_OF_LIFE.md, whose section 1.1 gives these values from its common experimental framework and its appendix F.",
+     "doi": "10.5281/zenodo.22143269",
+     "licence": "CC BY 4.0",
+     "class": "permissive",
+     "accessed": "2026-11-16"
+    }
+   },
+   "notes": [
+    {
+     "id": "law",
+     "label": "The law's two forms, in the engine's design (D192)",
+     "text": "As D192 records the checked finding: in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer shows no comparison of the two.",
+     "record": [
+      {
+       "path": "docs/DECISIONS.md",
+       "where": "D192: the reversibility finding, as checked"
+      }
+     ]
+    }
+   ],
+   "kind": "model system"
   }
  ],
  "shapes": {

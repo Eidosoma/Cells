@@ -58,5 +58,18 @@
    "class": "permissive",
    "accessed": "2026-11-16"
   }
- }
+ },
+ "notes": [
+  {
+   "id": "made-up",
+   "label": "A made-up note",
+   "text": "A made-up note, to show that a note's words rest on the record it cites.",
+   "record": [
+    {
+     "path": "visualizer/docs/TOY.md",
+     "where": "Decided"
+    }
+   ]
+  }
+ ]
 }

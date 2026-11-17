@@ -31,6 +31,7 @@ LADDER = ["generic", "proposed", "planned", "designed", "modelled"]
 WORDS = {"species": LADDER, "cell type": LADDER, "model system": LADDER[1:]}
 PAGE_WORDS = {"generic": "Generic cell", "proposed": "Proposed, not modelled", "planned": "Planned, not modelled", "designed": "Designed, not modelled", "modelled": "Modelled"}
 CITATION_KEYS = {"path", "where"}
+NOTE_KEYS = {"id", "label", "text", "record"}  # a sourced note of an entry (schema/ENTRIES.md, "Notes")
 OWN = "visualizer/"  # the prefix of a path that is one of the viewer's own files (tools/extract_architecture.py, own_file)
 
 # The views a model system may have, each with its fixed list of levels (schema/MODEL_SYSTEMS.md).
@@ -123,6 +124,36 @@ class Entries:
                     problems.append(f"{at} cites {path}, which is not a file of the viewer's folder")
             elif self.tracked is not None and path not in self.tracked:
                 problems.append(f"{at} cites {path}, which is not a tracked file of main")
+        return problems
+
+    def notes(self, notes, where):
+        """An entry's `notes`: a list of sourced notes, each {id, label, text, record}, its record checked as every citation is."""
+        if notes is None:
+            return []
+        if not isinstance(notes, list):
+            return ["notes is a list of {id, label, text, record}"]
+        problems, seen = [], set()
+        for index, note in enumerate(notes):
+            at = f"notes[{index}]"
+            if not isinstance(note, dict):
+                problems.append(f"{at} is {{id, label, text, record}}")
+                continue
+            if set(note) - NOTE_KEYS:
+                problems.append(f"{at} takes id, label, text and record, not {', '.join(sorted(set(note) - NOTE_KEYS))}")
+            if not (isinstance(note.get("id"), str) and ID.fullmatch(note["id"])):
+                problems.append(f"{at}'s id is a plain word")
+            elif note["id"] in seen:
+                problems.append(f"{at}: two notes have the id {note['id']!r}")
+            else:
+                seen.add(note["id"])
+            for key in ("label", "text"):
+                if not text(note.get(key)):
+                    problems.append(f"{at} has no {key}")
+            record = note.get("record")
+            if not (isinstance(record, list) and record):
+                problems.append(f"{at} cites the record its words rest on (record): a note is sourced, as a word of the ladder is")
+            else:
+                problems += self.citations(record, where, f"{at}.record")
         return problems
 
     def modelled(self, block, kind, where, record_required=True):
@@ -226,6 +257,7 @@ class Entries:
         sources = data.get("sources", {})
         problems += self.sources(sources, where)
         problems += self.facts(data.get("facts", []), sources if isinstance(sources, dict) else {})
+        problems += self.notes(data.get("notes"), where)
         levels = data.get("levels", [])
         if not (isinstance(levels, list) and all(isinstance(level, dict) for level in levels)):
             problems.append("levels is a list")
@@ -390,6 +422,7 @@ class Entries:
         sources = data.get("sources", {})
         problems += self.sources(sources, where)
         problems += self.facts(data.get("facts", []), sources if isinstance(sources, dict) else {})
+        problems += self.notes(data.get("notes"), where)
         return problems
 
     # ------------------------------------------------------------ putting them together
@@ -415,8 +448,8 @@ class Entries:
             if not isinstance(given, dict) or set(given) - {"id", "label", "loop"} or ("id" in given and not (isinstance(given["id"], str) and ID.fullmatch(given["id"]))):
                 problems.append("cell_type is {id, label, loop}, its id a plain word")
                 given = {}
-            if "record" in item.get("modelled", {}) or "record" in raw.get("modelled", {}):
-                problems += self.modelled(raw.get("modelled"), "species", where, record_required=False)
+            # What Cells models of the species: the ladder's word, with the record behind every word above generic.
+            problems += self.modelled(raw.get("modelled", item.get("modelled")), "species", where)
             own_id = given.get("id", "cell")
             own = {
                 "id": own_id,
@@ -514,11 +547,12 @@ def _read_folder(folder):
     return found, warnings
 
 
-def read_entries(species_folder, cells_folder, models_folder, capabilities, left_out=(), tracked=None, own=None):
+def read_entries(species_folder, cells_folder, models_folder, capabilities, left_out=(), tracked=None, own=None, parts=None):
     """(species, shapes, models, warnings, remarks) for the folders. The species are read by
     tools/lib/species.py exactly as the scene reads them today; each gains its cell types
-    (`cell_types`, `default_cell_type`). Folders that do not exist give nothing."""
-    species, shapes, warnings, remarks = read_species(species_folder, capabilities, left_out)
+    (`cell_types`, `default_cell_type`). Folders that do not exist give nothing. `parts` maps a
+    capability to the map's part it is drawn at, for the species reader's remarks."""
+    species, shapes, warnings, remarks = read_species(species_folder, capabilities, left_out, parts)
     raw_species = {}
     for path in sorted(Path(species_folder).glob("*.json")) if Path(species_folder).is_dir() else []:
         try:

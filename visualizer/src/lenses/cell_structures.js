@@ -20,6 +20,7 @@
 // draws after it does not move when a structure changes.
 
 import * as THREE from "../three.js";
+import STRUCTURES from "../../data/parts/structures.json" with { type: "json" };
 
 const UP = new THREE.Vector3(0, 1, 0);
 const radial = (angle) => new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
@@ -32,16 +33,20 @@ const turned = (random) => new THREE.Quaternion().setFromEuler(new THREE.Euler(r
 const OPEN = Math.PI / 2 - 0.52 - 0.3, WEDGE = Math.PI / 3;
 
 // The structures a capability is drawn at, with what a cell must hold to have it (cell.parts),
-// and the reason given where it does not. Read only where a species' file says nothing of the capability.
-const NEEDS = {
-  nucleus: { holds: (parts) => Boolean(parts.nucleus), why: (parts) => (parts.chromosome_kbp ? "It has no nucleus: its chromosome lies free in the cytoplasm." : "It has no nucleus.") },
-  golgi: { holds: (parts) => organelles(parts).includes("golgi"), why: () => "It has no Golgi apparatus." },
-  vesicles: { holds: (parts) => organelles(parts).includes("golgi"), why: () => "It has no Golgi apparatus for vesicles to carry proteins through." },
-  er: { holds: (parts) => organelles(parts).includes("er"), why: () => "It has no endoplasmic reticulum." },
-  mitochondria: { holds: (parts) => organelles(parts).includes("mitochondria"), why: () => "It has no mitochondria." },
-};
+// and the reason given where it does not: one table, read here and by the species reader
+// (data/parts/structures.json; tools/lib/species.py). Read only where a species' file says
+// nothing of the capability.
+const NEEDS = Object.fromEntries(
+  Object.entries(STRUCTURES.structures).map(([part, need]) => [
+    part,
+    {
+      holds: (parts) => (need.held_when === "nucleus" ? Boolean(parts.nucleus) : organelles(parts).includes(need.held_when.replace(/^organelle:/, ""))),
+      why: (parts) => (need.why_free_chromosome && parts.chromosome_kbp ? need.why_free_chromosome : need.why),
+    },
+  ])
+);
 /** The organelles a cell holds: its file's list, or, where it gives none, an animal cell's where it has a nucleus. */
-export const organelles = (parts) => parts.organelles || (parts.nucleus ? ["er", "golgi", "mitochondria"] : []);
+export const organelles = (parts) => parts.organelles || (parts.nucleus ? STRUCTURES.nucleated_organelles : []);
 
 /**
  * The capabilities that have no place in a species' cell because it does not hold the

@@ -23,6 +23,7 @@ import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
 import { fitOnRow, clearOf } from "../src/layers/statement.js";
 import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, STILL_WORDS, SLOWS } from "../src/layers/marks/beads.js";
 import { CellLens } from "../src/lenses/cell.js";
+import { cellTypeOf } from "../src/scene/entries.js";
 import { buildCell, buildMolecules } from "../src/lenses/cell_parts.js";
 import { clock } from "../src/replay/format.js";
 
@@ -94,7 +95,7 @@ function lensFor(id, { mode = null, stage = stageOf(), flux = FLUX, replays = nu
   if (mode && lens.modes.includes(mode)) lens.sizeMode = mode;
   lens.draws = (part) => CellLens.prototype.draws.call(lens, part);
   for (const size of lens.modes) {
-    const cell = { shape: lens.levels.cell.shape, parts: species.cell.parts || {}, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: [] };
+    const cell = { shape: lens.levels.cell.shape, parts: cellTypeOf(species).parts || {}, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: [] }; // the default cell type's, as the lens builds it
     const handles = buildCell(context(), context(), size, cell);
     handles.molecule = buildMolecules(context(), size, handles.frame, lens.draws);
     lens.cells[size] = handles;

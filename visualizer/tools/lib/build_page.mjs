@@ -141,6 +141,24 @@ export async function writeNames(species, folder, files) {
   return null;
 }
 
+/**
+ * The run files of the model systems the scene names (schema/MODEL_SYSTEMS.md, `runs`), published beside the
+ * page at the path the scene gives each (models/<id>/<name>), from its file under the viewer's folder.
+ * Returns { files: [{ path, source, model }], problems: [text] }; a run whose file is not there is left out.
+ */
+export async function modelFiles(scene, { root = ROOT } = {}) {
+  const files = [], problems = [];
+  for (const model of scene?.models || []) {
+    for (const run of model.runs || []) {
+      const source = path.join(root, run.file || "");
+      if (!/^models\/[a-z0-9-]+\/[a-z0-9_.-]+\.json$/.test(run.path || "") || !String(run.file || "").startsWith("data/")) problems.push(`${model.id}: the run ${run.label} names no file of the form models/<id>/<name>.json`);
+      else if ((await modified(source)) === null) problems.push(`${model.id}: ${run.file} is not there`);
+      else files.push({ path: run.path, source, model: model.id });
+    }
+  }
+  return { files, problems };
+}
+
 /** Write a large catalogue's members into `folder`, by the step its shelves name. Returns what went wrong, or null. */
 async function writeMembers(shelves, folder) {
   let step = null;
@@ -239,7 +257,7 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.
   if (inlineRuns) {
-    for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files]) {
+    for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files, ...(await modelFiles(data)).files]) {
       const text = (await readFile(file.source, "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-file="${file.path}">${text}</script>`;
     }

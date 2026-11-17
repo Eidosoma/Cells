@@ -200,11 +200,26 @@ must bve configurable as well based on our different species as we add them".
   with outlines for an organ or a body under `data/species/shapes/`
   (`schema/SPECIES_SHAPES.md`). The viewer holds no drawing of any species; a test checks
   that no module names one.
-- **What Cells models of a species is said on the page.** Human, Mouse, Planarian, Fruit fly and
-  Thale cress are `generic`: Cells models a generic cell and sheet, and the species lends
-  names or outlines (no plant cell is modelled, and thale cress's card says so; the mouse's card adds what the record decides of it, D155's planned comparison of heart muscle cells, of which nothing is built). JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
-  is in the engine, and the picture shows where Cells' capabilities would have a place in
-  them.
+- **What Cells models of an entry is said on the page,** in one ladder of words
+  (`schema/ENTRIES.md`): "Generic cell", "Proposed, not modelled", "Planned, not modelled",
+  "Designed, not modelled" and "Modelled", each met only by tracked files of the engine's main
+  or the viewer's own notes. Human, Mouse, Planarian, Fruit fly and Thale cress are `generic`:
+  Cells models a generic cell and sheet, and the species lends names or outlines (no plant cell
+  is modelled, and thale cress's card says so; the mouse's card adds D155's planned comparison
+  of heart muscle cells; the human's, that its first cell type, a ventricular heart cell, is
+  designed and not built, its design note on main proposed with its choices decided by D184).
+  JCVI-syn3A is `planned`: D173 adopted it as the minimal-cell track, and nothing of it is
+  built. Mycoplasma pneumoniae and E. coli are `proposed`. For all three, the picture shows
+  where Cells' capabilities would have a place.
+- **Model systems stand in the same switch,** under headings of their own
+  (`schema/MODEL_SYSTEMS.md`). A model system is a model, not an organism. GARD, under "Origin
+  of life", is the first (`data/models/gard.json`; designed, not modelled, D192). Choosing one
+  shows it in the first tab's place, with its own levels on the rail. The Protein atlas keeps
+  the species last shown, and says why. A model system's view is mounted through
+  `src/ui/entry_views.js` and `src/ui/model_views.js`; until one is registered for its kind,
+  its card says what it is. The address names any entry: `entry=gard` or `entry=syn3a`
+  (`species=` and `atlas=` still work), and `cell=<type>` names a cell type of a species, once a
+  species has more than one.
   This is the viewer's switch; the engine has no organism switch.
 - **Each species' own proteins** stand on shelves in the protein atlas
   (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
@@ -562,7 +577,7 @@ npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when 
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
-npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
+npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view; CASE=model: a model system in the switch, through every tab and back
 npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
                             # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
@@ -636,8 +651,10 @@ it used, and one gate or one before-and-after pair of pictures never mixes the t
   painted texture is now kept as its pixels (`src/core/painted.js`); a test holds that no
   other file makes a texture from a canvas, and `check_look.mjs loss` makes every view,
   loses the process once and holds each picture against the one before, to the last
-  count in software and within one part in a million on the card. Found by losing the
-  process on purpose in every view; the lost-context check alone had not shown it.
+  count in software and within one part in a million on the card (11 of 11 both ways on
+  the mended code; 71 s on the card, about five minutes in software). Found by losing
+  the process on purpose in every view on the card; the lost-context check alone had not
+  shown it.
 - **Compared with software on the whole suite** (16 November 2026, one clean copy of
   9e3e5538): 33 scenarios and 600 checks passed in software and through Vulkan, with the
   same count in every scenario. In software 32 scenarios passed in the full run; the

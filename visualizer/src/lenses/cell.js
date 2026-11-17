@@ -29,6 +29,7 @@ import { middle, words } from "./cell_scenery.js";
 import { structureAbsence, structureDoors } from "./cell_structures.js";
 import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
 import { LEAST_DISTANCE, MachineView, MACHINE_STOP } from "./machine_view.js";
+import { MODELLED, cellTypeOf, cellTypesOf, notInEngine } from "../scene/entries.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -103,7 +104,8 @@ export function describeScenery(item, species, links) {
 }
 
 // What Cells models of a species, in two or three words (schema/SPECIES.md, `modelled.state`).
-export const MODELLED = { generic: "Generic cell", proposed: "Proposed, not modelled", modelled: "Modelled" };
+// What Cells models of an entry, in the ladder's words (src/scene/entries.js; schema/ENTRIES.md).
+export { MODELLED };
 
 /** The species the page opens on: the one whose file says so, else the first; null in a scene without species. */
 export function defaultSpecies(scene) {
@@ -321,12 +323,35 @@ export class CellLens {
     return this.list.length ? this.list.find((item) => item.id === id) || null : GENERIC;
   }
 
-  /** Show another species: its levels, its shapes and the capabilities that have a place in its cell. */
+  /** Show another species: its levels, its shapes and the capabilities that have a place in its cell, in its default cell type. */
   setSpecies(id) {
     const species = this.speciesOf(id);
     if (!species || species === this.species) return;
-    const stop = this.activeStop;
     this.species = species;
+    this.cellType = cellTypeOf(species);
+    this.rebuild();
+  }
+
+  /**
+   * Show another cell type of the species shown (schema/CELL_TYPES.md): its own cell and tissue
+   * levels, its parts and the places of its capabilities; the organ and the body stay the
+   * species'. An id that is not one of its types shows its default.
+   */
+  setCellType(id) {
+    const type = cellTypeOf(this.species, id);
+    if (!type || type.id === this.cellType?.id) return;
+    this.cellType = type;
+    this.rebuild();
+  }
+
+  /** The cell types of the species shown, its own first. */
+  get cellTypes() {
+    return cellTypesOf(this.species);
+  }
+
+  /** Draw the species and cell type shown afresh, staying at the level the visitor was at where the cell has it. */
+  rebuild() {
+    const stop = this.activeStop;
     this.plan();
     this.clear();
     this.build();
@@ -339,18 +364,20 @@ export class CellLens {
     this.onChrome?.();
   }
 
-  /** What follows from the species before anything is drawn: its levels, its cell's size and what has no place in it. */
+  /** What follows from the species and its cell type before anything is drawn: its levels, its cell's size and what has no place in it. */
   plan() {
-    const species = this.species;
-    this.levels = Object.fromEntries(LEVELS.map(({ id }) => [id, species.levels.find((level) => level.id === id) || null]));
+    const species = this.species, type = this.cellType || cellTypeOf(species);
+    // A cell type gives its own cell and tissue levels; the organ and the body are the species'.
+    const own = (id) => (id === "cell" || id === "tissue" ? (type?.levels || []).find((level) => level.id === id) : null);
+    this.levels = Object.fromEntries(LEVELS.map(({ id }) => [id, own(id) || species.levels.find((level) => level.id === id) || null]));
     const across = cellAcross(this.levels.cell.shape);
     this.u = across / REF.pitch; // micrometres per unit of the cell's frame
     // A cell this small is drawn in one size mode: its molecules are large enough to see.
     this.small = across < REF.small;
     this.modes = this.small ? ["schematic"] : SIZE_MODES;
     if (!this.modes.includes(this.sizeMode)) this.sizeMode = this.modes[0];
-    // What has no place in this species, with the reason the species gives.
-    const said = species.cell.capabilities || {};
+    // What has no place in this cell, with the reason the species or its cell type gives.
+    const said = type?.capabilities || species.cell.capabilities || {};
     const further = species.no_further_levels || "This species has no such level.";
     this.absent = new Map();
     for (const entity of this.model.ofKind("capability")) {
@@ -358,7 +385,7 @@ export class CellLens {
       else if (entity.scale !== "cell" && !this.levels[entity.scale]) this.absent.set(entity.id, further);
     }
     // Drawn at a structure the cell does not hold (a nucleus, a Golgi), where its file says nothing of it: cell_structures.js.
-    for (const [id, why] of structureAbsence(this.model.ofKind("capability"), species)) if (!this.absent.has(id)) this.absent.set(id, why);
+    for (const [id, why] of structureAbsence(this.model.ofKind("capability"), { ...species, cell: { parts: type?.parts || species.cell.parts || {}, capabilities: said } })) if (!this.absent.has(id)) this.absent.set(id, why);
     for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
   }
 
@@ -453,7 +480,8 @@ export class CellLens {
     const notesOf = (level) => (level?.notes || []).map((item) => (typeof item === "string" ? { text: item } : item));
     // The cell, in each size mode it is drawn in. It is built in its own frame and scaled to its size.
     const has = (part) => this.draws(part);
-    const cell = { shape: this.levels.cell.shape, parts: species.cell.parts || {}, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
+    const parts = this.cellType?.parts || species.cell.parts || {};
+    const cell = { shape: this.levels.cell.shape, parts, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
     const toWorld = (zones) => {
       for (const zone of zones) for (const part of zone.parts) part.anchor?.multiplyScalar(u);
     };
@@ -642,7 +670,9 @@ export class CellLens {
       note: species.plain,
       sections: [
         { title: "Not in this organism", note: "Capabilities of Cells that have no place in this species, each with the reason.", items: absent.map((item) => ({ label: item.entity.label, lines: [item.why] })) },
-        { title: "Its cell", items: (species.cell.facts || []).map((fact) => ({ label: fact.label, detail: fact.value, links: links(fact.sources) })) },
+        { title: "Its cell", items: (this.cellType?.facts || species.cell.facts || []).map((fact) => ({ label: fact.label, detail: fact.value, links: links(fact.sources) })) },
+        // Its cell types, where it has more than one (schema/CELL_TYPES.md): each with what Cells models of it.
+        ...(this.cellTypes.length > 1 ? [{ title: "Its cell types", items: this.cellTypes.map((type) => ({ label: type.label, detail: MODELLED[type.modelled?.state] || type.modelled?.state || "", lines: [type.plain || type.modelled?.text].filter(Boolean) })) }] : []),
         { title: "Levels drawn", note: species.no_further_levels || null, items: drawn.map((item) => ({ label: item.level.label || item.entity?.label || item.level.id, lines: item.level.note ? [item.level.note] : [], links: links(item.level.sources) })) },
       ],
     };
@@ -666,9 +696,12 @@ export class CellLens {
       if (!level || (!level.label && !level.note)) return entity;
       return { ...entity, label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") };
     }
-    const said = this.species.cell.capabilities?.[entity.id];
+    const said = (this.cellType?.capabilities || this.species.cell.capabilities)?.[entity.id];
+    // In a cell type of its own file, a capability may carry its word in this cell, beside the map's status (schema/CELL_TYPES.md).
+    const inCell = said?.state ? `In this cell: ${MODELLED[said.state] || said.state}${said.says ? `. ${said.says}` : ""}` : null;
+    const note = [entity.note, said?.note ? `${this.species.label}: ${said.note}` : null, inCell].filter(Boolean).join(" ");
     // With what flows through the part, and on what basis it is drawn (layers/cellflux.js).
-    return this.flux.inPanel(this.structural(said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity));
+    return this.flux.inPanel(this.structural(said?.note || inCell ? { ...entity, note } : entity));
   }
 
   /**
@@ -701,9 +734,9 @@ export class CellLens {
     // What has no place in this species' cell, in the map's own names, each with the species' reason.
     const absent = [...this.absent].map(([id, why]) => ({ entity: this.model.get(id), why })).filter((item) => item.entity?.kind === "capability").map((item) => ({ label: item.entity.label, why: item.why }));
     return {
-      // Of a species that is only proposed, nothing is in the engine (the contract's meaning of the
-      // state), so the picture says that in place of the map's caveat about runs.
-      caveat: species.modelled?.state === "proposed" ? `${species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat,
+      // Of a species (or a cell type of its own file) that is proposed, planned or designed, nothing is in the engine
+      // (the ladder's meaning of those words, schema/ENTRIES.md), so the picture says that in place of the map's caveat about runs.
+      caveat: notInEngine(this.cellType && !this.cellType.own ? this.cellType.modelled : species.modelled) ? `${this.cellType && !this.cellType.own ? `${species.label}, ${this.cellType.label}` : species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat,
       // A machine's closer view stands among the levels, below one cell (machine_view.js).
       rail: this.currentStops.flatMap((stop) => [{ id: stop.id, label: stop.label, title: stop.entity?.plain }, ...(stop.id === "molecule" ? (this.machine?.railStops() ?? []) : [])]),
       railActive: this.machine?.open && !this.machine?.leaving ? MACHINE_STOP : this.activeStop,
@@ -726,7 +759,10 @@ export class CellLens {
               organism: species.organism,
               plain: species.plain,
               modelled: species.modelled,
-              facts: species.cell.facts || [],
+              // The cell type shown, and the species' others: the switch offers them only where there is more than one.
+              cellType: this.cellType?.id || null,
+              cellTypes: this.cellTypes.map((type) => ({ id: type.id, label: type.label, modelled: type.modelled || species.modelled, own: Boolean(type.own) })),
+              facts: this.cellType?.facts || species.cell.facts || [],
               absent,
               sources: species.sources || {},
             }

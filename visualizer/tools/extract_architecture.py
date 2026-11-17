@@ -47,7 +47,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from lib.protein_atlas import LENS_GROUPS, RELATION_KINDS, Atlas, left_out_flag  # noqa: E402
-from lib.species import read_species  # noqa: E402
+from lib.entries import read_entries  # noqa: E402
 from lib.static_eval import Evaluator, Package, Unresolved, plain  # noqa: E402
 
 SCENE_FORMAT = "cells.visualizer.scene@1"
@@ -655,6 +655,8 @@ def main():
     parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
     parser.add_argument("--atlases", help="folder with the species atlases (default: atlases/ in the proteins folder; it need not exist)")
     parser.add_argument("--species", default=str(HERE.parent / "data" / "species"), help="folder with the species files and their shapes (schema/SPECIES.md; it need not exist)")
+    parser.add_argument("--cells", default=str(HERE.parent / "data" / "cells"), help="folder with the cell types' files (schema/CELL_TYPES.md; it need not exist)")
+    parser.add_argument("--models", default=str(HERE.parent / "data" / "models"), help="folder with the model systems' files (schema/MODEL_SYSTEMS.md; it need not exist)")
     parser.add_argument("--machines", default=str(HERE.parent / "data" / "machines"), help="folder with the machine files (schema/MACHINES.md; it need not exist)")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
@@ -682,7 +684,16 @@ def main():
     # place for a capability that is left out of the picture stays in its file and is not shown.
     hidden = {item["id"] for item in build.left_out if item["kind"] == "capability"}
     remarks_machines = []
-    species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden)
+    # The entries of the species switch (schema/ENTRIES.md): the species as the species reader reads them, each with its cell
+    # types, and the model systems beside them. A citation of the record is a tracked file of the checkout read or one of the
+    # viewer's own; a model system's run files are published beside the page, at models/<id>/<name>.json.
+    species, shapes, models, breaches, noted = read_entries(
+        arguments.species, arguments.cells, arguments.models, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden,
+        tracked=build.files, own=HERE.parent, parts={item["id"]: item["part"] for item in overlay["capabilities"]},
+    )
+    for model in models:
+        for run in model.get("runs", []):
+            run["path"] = f"models/{model['id']}/{Path(run['file']).name}"  # where the page fetches it (tools/lib/build_page.mjs, modelFiles)
     build.warnings.extend(breaches)
     # A species may be held back from the picture for now (the overlay's `species_held`): its
     # files stay in the repository and are read and checked like any other, and the scene
@@ -693,6 +704,11 @@ def main():
             build.warnings.append(f"held back: {identifier} needs since, says and reason")
             continue
         known = [item for item in species if item["id"] == identifier]
+        held_model = [item for item in models if item["id"] == identifier]
+        if held_model:  # a model system may be held back the same way (schema/MODEL_SYSTEMS.md)
+            models = [item for item in models if item["id"] != identifier]
+            build.left_out.append({"id": f"model.{identifier}", "kind": "model system", "label": held_model[0].get("label") or identifier, "since": hold["since"], "says": hold["says"], "reason": hold["reason"]})
+            continue
         if not known:
             build.warnings.append(f"held back: there is no species file for {identifier}")
             continue
@@ -780,6 +796,7 @@ def main():
         "groups": [{**layer, "lens": "engine"} for layer in overlay["layers"]] + LENS_GROUPS,
         "proteins": build.proteins,
         "species": species,
+        "models": models,
         "shapes": shapes,
         # What the overlays flag as left out of the picture for now, each with how the page
         # names it and why. Nothing else in the scene points at these: no part, link or count.
@@ -820,6 +837,8 @@ def main():
         print(f"species {item['id']}{' (the page opens on it)' if item['default'] else ''}: {levels}; modelled: {item['modelled']['state']}")
         for machine in item.get("machines", []):
             print(f"  machine {machine['id']} ({machine['label']}) at {machine['at']}; beside the page: {machine['file']} ({(machines_folder / Path(machine['file']).name).stat().st_size / 1024:.0f} KB)")
+    for item in models:
+        print(f"model system {item['id']} under {item['group']!r}: {', '.join(level['id'] for level in item['levels'])}; modelled: {item['modelled']['state']}; runs beside the page: {', '.join(run['path'] for run in item.get('runs', [])) or 'none'}")
     for item in build.left_out:
         print(f"left out of the picture since {item['since']}: {item['id']} ({item['says']}): {item['reason']}")
     for remark in remarks:

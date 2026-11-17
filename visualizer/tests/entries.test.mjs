@@ -1,6 +1,6 @@
 // The entries of the species switch, in three kinds (schema/ENTRIES.md, schema/CELL_TYPES.md,
-// schema/MODEL_SYSTEMS.md), as tools/lib/entries.py reads them. The page and the scene do not
-// read them yet, and nothing here asks the page to show them.
+// schema/MODEL_SYSTEMS.md), as tools/lib/entries.py reads them; the scene is built through it.
+// What the page shows of them is tests/entries_page.test.mjs's.
 //
 //   - a made-up species with two cell types, one extending the other, and a made-up model
 //     system are read from files alone (tests/entries-fixtures/);
@@ -77,6 +77,8 @@ test("a made-up species with two cell types, one extending the other, and a made
   // The model system, with the labels of its view's levels where the file gives none.
   assert.deepEqual(sound.models.map((item) => [item.id, item.kind, item.group]), [["toyworld", "model system", "Origin of life"]]);
   assert.deepEqual(sound.models[0].levels.map((level) => [level.id, level.label]), [["molecules", "Molecules"], ["assembly", "One assembly"], ["lineage", "Lineages"]]);
+  // Its sourced notes (schema/ENTRIES.md, "Notes"), carried as the file gives them.
+  assert.deepEqual(sound.models[0].notes, modelFiles["toyworld.json"].notes);
 });
 
 test("every breach is warned of, and the entry is left out", () => {
@@ -118,6 +120,14 @@ test("every breach is warned of, and the entry is left out", () => {
     ["a run of a kind not listed", model((data) => (data.runs = [{ file: "data/origin/run.json", label: "A run", kind: "result" }])), /kind one of example, development, experiment/],
     ["a run file that is not there", model((data) => (data.runs = [{ file: "data/origin/nowhere.json", label: "A run", kind: "example" }])), /is not there/],
     ["modelled with no registered model", model((data) => Object.assign(data.modelled, { state: "modelled", design: "docs/DECISIONS.md" })), /names its registered model/],
+    // A note of an entry: sourced, as a word of the ladder is (schema/ENTRIES.md, "Notes").
+    ["a note with no record", model((data) => delete data.notes[0].record), /notes\[0\] cites the record its words rest on/],
+    ["a note citing a file main does not track", model((data) => (data.notes[0].record = [{ path: "docs/TOY_DESIGN.md", where: "All of it" }])), /notes\[0\]\.record\[0\] cites docs\/TOY_DESIGN\.md, which is not a tracked file of main/],
+    ["a note citing a branch", model((data) => (data.notes[0].record[0].branch = "toy-design")), /notes\[0\]\.record\[0\] takes path and where only/],
+    ["a note with no words", model((data) => (data.notes[0].text = " ")), /notes\[0\] has no text/],
+    ["a note with a key it does not take", model((data) => (data.notes[0].sources = ["made"])), /notes\[0\] takes id, label, text and record/],
+    ["two notes of one id", model((data) => data.notes.push(copy(data.notes[0]))), /two notes have the id 'made-up'/],
+    ["a cell type's note with no record", cell("ciliated", (data) => (data.notes = [{ id: "a", label: "A note", text: "Words." }])), /notes\[0\] cites the record/],
   ];
   const results = ask(cases.map(([, change]) => changed(change)));
   cases.forEach(([what, , pattern], index) => assert.ok(results[index].warnings.some((line) => pattern.test(line)), `${what}: ${JSON.stringify(results[index].warnings)}`));
