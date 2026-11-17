@@ -28,20 +28,23 @@ import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
 
-// The views, in the order of the switch. "short" is the name on a narrow screen.
+// The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
+// stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
+// (the Cell view, the Protein atlas, the Laws library); only its tab is titled here. The titles and their order were
+// decided on 17 November 2026; the second place is kept for a view of molecular machines.
 // "needs" says what the scene must hold for the view to be offered.
 // From this width up the species switch stands in the bar; below it, in the view's card.
 const SPECIES_IN_BAR = 1000;
 
 const LENSES = [
-  { id: "cell", label: "Cell and scales", short: "Cell", make: (stage, model, labels) => new CellLens(stage, model, labels) },
-  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
-  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
+  { id: "cell", label: "Scope", short: "Scope", make: (stage, model, labels) => new CellLens(stage, model, labels) },
+  { id: "proteins", label: "Proteins", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
   // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
   // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
   // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
-  { id: "laws", label: "Laws library", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
+  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {
@@ -122,7 +125,7 @@ class CellsViewer extends HTMLElement {
       "div",
       { class: "frame", style: "position:absolute;inset:0" },
       h("div", { class: "stage" }, this.canvas, this.labelBox),
-      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells"), h("span", {}, "Architecture map")), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton))),
+      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells")), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton))),
       this.hint,
       this.caveat,
       this.timeline,
@@ -882,10 +885,10 @@ class CellsViewer extends HTMLElement {
         statement.hidden = !word;
         return this.bar.scrollWidth <= this.bar.clientWidth + 1 && end.scrollWidth <= end.clientWidth + 1;
       });
-    // Before the switch gives up its place, the bar is drawn tighter: first without the page's
-    // subtitle, then with the short names of the views and no date as well (as on a narrower window).
+    // Before the switch gives up its place, the bar is drawn tighter: with the short names of the
+    // views and no date (as on a narrower window).
     let fits = false;
-    for (const tight of ["", "1", "2"]) {
+    for (const tight of ["", "2"]) {
       this.bar.dataset.tight = tight;
       fits = holds();
       if (fits) break;

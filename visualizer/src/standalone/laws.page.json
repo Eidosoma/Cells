@@ -1,7 +1,7 @@
 {
   "view": "laws",
   "title": "Laws Library Preview",
-  "description": "Every declared piece of the Cells engine on a wall of shelves, with the models that declare them, read from the engine's code: the Laws library of the Cells map, standing alone.",
+  "description": "Every declared piece of the Cells engine on a wall of shelves, with the models that declare them, read from the engine's code: the Laws library of Cells, standing alone.",
   "boot": "Loading the Laws library…",
   "scene": {
     "from": "data/architecture/architecture.scene.json",

@@ -234,5 +234,5 @@ says the engine models an organism unless the project's record says so.
 
 The builder reads every file in `data/species/` and puts them, ordered, into the scene's
 `species` list. A breach of this contract is a warning. The viewer keeps one species for
-the whole page: the levels of the Cell and scales view, the cell drawn, and the species'
+the whole page: the levels of the Cell view, the cell drawn, and the species'
 side of the protein atlas all follow it.

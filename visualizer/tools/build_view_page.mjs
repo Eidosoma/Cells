@@ -31,7 +31,7 @@ import { ROOT, THREE_CDN, bundle, wrap } from "./lib/build_page.mjs";
 
 export const STANDALONE = path.join(ROOT, "src", "standalone");
 /** What the page says on itself, always (src/standalone/shell.js holds the same words). */
-export const NOTICE = "One view of the Cells map, standing alone";
+export const NOTICE = "One view of Cells, standing alone";
 const FONTS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap";
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 

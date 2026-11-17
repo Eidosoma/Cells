@@ -199,7 +199,7 @@ rail, its word, and that its view is not on the page yet.
 
 ## What the other views say
 
-| When the switch shows | Cell and scales | Protein atlas | Experiments | Engine |
+| When the switch shows | Scope (the Cell view) | Proteins (the Protein atlas) | Experiments | Engine |
 | --- | --- | --- | --- | --- |
 | A species | As today | As today | As today | As today: it depends on no entry |
 | A cell type | That cell, and the levels of its type | The species' own proteins. A cell type's own set only where its file names one (`CELL_TYPES.md`, `proteins`); else the panel says that no source gives it | As today. A looping run of the type shows in the Cell view | As today |

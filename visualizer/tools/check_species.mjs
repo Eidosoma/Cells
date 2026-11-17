@@ -274,6 +274,8 @@ if (process.env.CASE === "model") {
         entry: v.dataset.entry ?? null,
         current: v.current?.id ?? null,
         tab: [tab?.querySelector(".long")?.textContent, tab?.querySelector(".short")?.textContent, tab?.getAttribute("aria-pressed")].join("|"),
+        // The Cell view's own titles, wide and on a phone, as the viewer's list of views states them (src/ui/viewer.js).
+        home: [v.views.find((view) => view.id === "cell")?.label, v.views.find((view) => view.id === "cell")?.short].join("|"),
         railTitle: root.querySelector(".rail:not([hidden]) .rail-title")?.textContent ?? null,
         organism: root.querySelector(".view-card .card-organism")?.textContent ?? null,
         caveatShown: !root.querySelector(".caveat").hidden,
@@ -408,7 +410,7 @@ if (process.env.CASE === "model") {
     // Chosen with the pointer: it takes the Cell view's place.
     await pressSpecies(gard.id);
     let s = await state(), m = await more();
-    check("choosing it shows it in the first tab's place: the tab takes its view's name, the pill names it", m.model === gard.id && m.entry === gard.id && s.lens === "cell" && m.tab.endsWith("|true") && !m.tab.startsWith("Cell and scales|") && `${s.inBar}${s.inCard}` === `${gard.id}*` && s.pillText === gard.label, JSON.stringify([m, s.inBar, s.inCard, s.pillText]));
+    check("choosing it shows it in the first tab's place: the tab takes its view's name, the pill names it", m.model === gard.id && m.entry === gard.id && s.lens === "cell" && m.tab.endsWith("|true") && !m.tab.startsWith(`${m.home.split("|")[0]}|`) && `${s.inBar}${s.inCard}` === `${gard.id}*` && s.pillText === gard.label, JSON.stringify([m, s.inBar, s.inCard, s.pillText]));
     check("the statement beside the pill says what Cells models of it, in the ladder's words; modelled only where its entry names its registered model", s.state === WORDS[gard.state] && gard.state !== "generic" && (gard.state !== "modelled" || /@\d+$/.test(gard.model || "")), `${s.state}; model ${gard.model || "none"}`);
     // The switch does not call a model system a species: its label reads "Model", and it is read out as a model system.
     const named = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0; return { label: [...root.querySelectorAll(".species-label, .seg-species .seg-label")].filter(shown).map((el) => el.textContent)[0] ?? null, list: root.querySelector("#species-list")?.getAttribute("aria-label") ?? null }; })()`);
@@ -459,14 +461,14 @@ if (process.env.CASE === "model") {
     await pressSpecies("syn3a");
     s = await state();
     m = await more();
-    check("choosing a species brings the Cell view back, under its own name, with that species", m.model === null && m.entry === null && m.current === "cell" && m.tab === "Cell and scales|Cell|true" && s.species === "syn3a" && s.rail === "molecule cell*" && s.state === WORDS[syn3aState] && new URLSearchParams(m.address).get("entry") === "syn3a", JSON.stringify([m, s.species, s.rail, s.state]));
+    check("choosing a species brings the Cell view back, under its own name, with that species", m.model === null && m.entry === null && m.current === "cell" && m.home.split("|").every(Boolean) && m.tab === `${m.home}|true` && s.species === "syn3a" && s.rail === "molecule cell*" && s.state === WORDS[syn3aState] && new URLSearchParams(m.address).get("entry") === "syn3a", JSON.stringify([m, s.species, s.rail, s.state]));
     await shot("model-then-species-light"); // the Cell view as it comes back after the model system's view
     await pressSpecies(gard.id);
     await press('.switch [data-lens="proteins"]');
     await pressSpecies(first);
     s = await state();
     m = await more();
-    check("a species chosen in the atlas lets the model system go; the first tab is the Cell view again", m.model === null && s.species === first && !/model system/.test(s.caveat || "") && m.tab === "Cell and scales|Cell|false", JSON.stringify([m, s.species, s.caveat]));
+    check("a species chosen in the atlas lets the model system go; the first tab is the Cell view again", m.model === null && s.species === first && !/model system/.test(s.caveat || "") && m.tab === `${m.home}|false`, JSON.stringify([m, s.species, s.caveat]));
 
     // The address.
     await open(`lens=cell&entry=${gard.id}`);

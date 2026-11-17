@@ -18,7 +18,7 @@ import { Stage } from "../core/stage.js";
 import { LabelLayer } from "../core/labels.js";
 
 /** The words the page says on itself, always: the tool writes them in the page's notice. */
-export const NOTICE = "One view of the Cells map, standing alone";
+export const NOTICE = "One view of Cells, standing alone";
 
 const NARROW = 700;
 

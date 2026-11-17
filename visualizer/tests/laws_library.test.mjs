@@ -731,7 +731,9 @@ test("the page carries the list in its scene, and the viewer offers the view wit
   assert.deepEqual(scene.laws, raw, "the list, whole");
   const viewer = readFileSync(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
   const entry = viewer.split("\n").find((line) => line.includes('id: "laws"'));
-  for (const word of ['short: "Laws"', "needs: (scene) => scene.laws?.pieces?.length", 'owns: (id) => id.startsWith("laws:")', "doorsFor: lawsDoors", "styles: LAWS_CSS"]) assert.ok(entry?.includes(word), word);
+  // Its tab's titles are stated in that line and nowhere else: this test holds none of its own.
+  assert.match(entry || "", /\blabel: "[^"]+", short: "[^"]+"/, "the entry states its tab's title, wide and on a phone");
+  for (const word of ["needs: (scene) => scene.laws?.pieces?.length", 'owns: (id) => id.startsWith("laws:")', "doorsFor: lawsDoors", "styles: LAWS_CSS"]) assert.ok(entry?.includes(word), word);
 });
 
 test("where no 3D can be drawn, the list and the panel come from the scene's list", async () => {

@@ -46,7 +46,6 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .bar > * { pointer-events: auto; }
 .brand { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
 .brand b { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
-.brand span { font-family: var(--font-display); font-size: 14px; font-weight: 500; color: var(--muted); }
 .switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); }
 .switch button { padding: 6px 14px; border-radius: 999px; font-weight: 500; color: var(--muted); }
 .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
@@ -431,11 +430,9 @@ cells-trace { display: grid; gap: 4px; }
 .with-species .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .with-species .switch, .with-species .species, .with-species .pill-button { flex: none; }
 .with-species .brand { flex: none; white-space: nowrap; }
-@media (max-width: 1340px) { .with-species .brand span { display: none; } }
 @media (max-width: 1240px) { .with-species .switch .long { display: none; } .with-species .switch .short { display: inline; } }
 @media (max-width: 1180px) { .with-species .stamp { display: none; } }
 /* Where the words are wider than that (more species, or a fallback font), the viewer asks for the same, by measure. */
-.with-species[data-tight="1"] .brand span, .with-species[data-tight="2"] .brand span { display: none; }
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
 .with-species[data-tight="2"] .stamp { display: none; }
@@ -501,7 +498,7 @@ cells-trace { display: grid; gap: 4px; }
   .card-open { font-size: 12px; }
   .card-marks { display: none; }
   .seg.seg-wide button { padding: 4px 3px; font-size: 11.5px; }
-  .brand span, .stamp { display: none; }
+  .stamp { display: none; }
   .bar { gap: 8px 10px; padding-block: 8px; }
   /* A thing to press is at least 44 px in its smaller dimension on a phone. The names on the picture are
      the exception: they stand for their parts, and the List gives every part as a row to press. */

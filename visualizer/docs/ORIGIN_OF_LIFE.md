@@ -98,7 +98,7 @@ awaited.
 ## On the map's page, 17 November 2026
 
 - **The view is on the map's page.** Choosing GARD in the species switch (or `entry=gard` in the
-  address) shows it in the first tab's place, named "Origin of life" ("Life" on a phone, which keeps
+  address) shows it in the first tab's place, named "Origin of life" ("Origin" on a phone, which keeps
   the bar to one row). It plays the marked example as the page opens it, after the founder has
   gathered, and it stands for a visitor who asks for less motion and with `still=1`.
   - Its levels are the page's rail, under "Level". Its clock is the page's one timeline.
