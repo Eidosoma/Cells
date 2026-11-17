@@ -12,7 +12,7 @@ has a plain-language line first and the technical detail after it.
 
 ## What it shows
 
-One data file, the scene, drawn through four lenses, in this order:
+One data file, the scene, drawn through five lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
@@ -20,9 +20,16 @@ One data file, the scene, drawn through four lenses, in this order:
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
+| **Laws library** | Every declared piece of the engine on a wall of shelves, by family, read from the engine's code (`data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model and its pieces seated in it. Choosing a piece lights the slots that declare it. A status is said only where the record states one ("No level recorded for this piece" elsewhere). An Engine view box that holds pieces opens the library on them, and each piece links back to its box |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
 opens the engine part that holds its law, and that part lists the units it holds laws for.
+A part's id of a view's own (`laws:…`) opens that view from any other, so
+`select=laws:kir2p1_mh2@1` works without `lens=`.
+
+Two more views are built and stand on pages of their own until they are on this one
+(`node tools/build_view_page.mjs <view>`): the Laws library's preview, and the
+origin-of-life view below.
 
 Three things are encoded, and kept apart:
 
@@ -217,6 +224,23 @@ must bve configurable as well based on our different species as we add them".
   marker, and the page says Cells has no law for it. The card's switch moves between "Cells' 48 machines"
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
   on the machines.
+- **Colour says the side** (the user, 16 November 2026, choosing the atlas's look: colour by
+  membrane side, a trail, a search, a map). A species' own proteins are coloured by the
+  side of each one's own membrane: beyond it, in it, enclosed by it (a family by the side
+  where most of its members sit); what has no known side is hollow and grey. "Colour" at
+  the head of the legend also shows how each side is known, essentiality where the
+  species states it, and Cells' laws (one hue for what makes a machine Cells has a law
+  for). Each shelf's own words name its sides. A gathering takes its side's own colour
+  and is told by its dashed ring and its name.
+- **Finding your way.** A trail above the picture says where you are (species, shelf,
+  side, family, protein); each step goes back to it, and its arrow and Escape go back one
+  level. A search in the trail finds a protein by gene, name or identifier, also in a
+  family not yet opened, from a names file beside a large catalogue's members
+  (`names.json`, written by the page builder, one more published file each: 0.3 to
+  1.8 MB). A map of the stack at the right edge brings a shelf near.
+- **The human's entries that only go with a machine** (auxiliary subunits, the sodium
+  pump's beta subunits, the uniplex's regulators, the pump's FXYD regulators: 27) are
+  drawn plain and say so, in the inventory's own words (`inventory_roles`).
 - **A cell with several membranes has several shelves, stacked.** The human's 20,414
   reviewed proteins (UniProt's reference proteome), and the mouse's 21,872 and the fruit
   fly's 13,814, one for
@@ -425,6 +449,34 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
 
+## Origin of life (a preview, not on this page yet)
+
+GARD's assembly has a view of its own (`src/lenses/lineage.js`). It stands alone on a
+preview page (`node tools/build_view_page.mjs lineage`) and is not on the map's page yet.
+The user asked for it as "a new 'species' type", and to make it "visually amazing": "lets
+simulate the self assembly of the lipids (visuall for now but maybe law later), and the
+different chemicals seeping in and out, and the split".
+
+- **What is drawn.** One assembly as lipids in water, a lipid for each molecule, whose
+  head's form and colour say its type. At a run's start the first assembly gathers from
+  the water; then a molecule seeps in or out when the run says so, and at a fission the
+  assembly lengthens, necks and parts in two.
+- **What comes from the run, and what is the picture's own.** The run gives which type
+  joins or leaves and when, the composition, each fission and how it divides the
+  molecules. Everything else is the picture's own: how a lipid looks, moves and packs, the
+  water, the free molecules and every size. No law of Cells computes how the lipids move
+  and pack, and the picture says so.
+- **One timeline** counts fissions, molecule by molecule at its slow end. The levels are
+  Molecules (the table of catalysis), One assembly, Population (not drawn yet) and
+  Lineages.
+- **It plays an example of invented numbers,** marked so at every level: "Example:
+  invented numbers · not a run of Cells' engine".
+- **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md` on
+  main, D192): nothing of it is in the engine. The engine will build two forms of
+  catalysis, and the view shows them side by side only for two real runs of the engine of
+  one world (`schema/ASSEMBLY_RUN.md`); the user: "yes we'll wait for the real runs but
+  great to have everything ready".
+
 ## The cell's resting look
 
 The user chose it from a page of options (`docs/FLUX_AND_LOOK.md`, 15 November 2026).
@@ -505,12 +557,13 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
-npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
                             # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
+npm run check:laws          # the Laws library: real presses and keys, the door from the Engine view and back, a lost context (CASE=main|address|phone|text)
 npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
 npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
@@ -679,8 +732,8 @@ stay out of git (61 runs in 327 files, 96 MB).
    at 1d86a192, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
-   `check:flux` and `check:machine` once, four at a time, and writes a log for each and
-   `summary.json`. Each
+   `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
+   for each and `summary.json`. Each
    check says at its end whether the page's own font had arrived: with the stand-in, words
    run longer and cards stand taller, and a miss is read against that.
 5. `npm run export`
@@ -757,8 +810,8 @@ Ideas kept for after the basics (the user, 14 November 2026):
 ## Known limits
 
 - The species' own proteins need the 3D stage: the no-WebGL list has the machines only.
-- A protein of a large catalogue is in the list once its family is open. Before that the
-  list finds families by name, also the gathered ones, but not a member by its identifier.
+- The List lists a family's members once it is open; the search in the trail finds them
+  before.
 - A mark that is a number (Syn3A's estimated copies in a cell) is a fact in the panel; it
   is not drawn.
 - The molecular scale is one membrane patch with one channel and one pump.
@@ -778,24 +831,29 @@ Ideas kept for after the basics (the user, 14 November 2026):
   and beta-4 subunits (`Scn2b`, `Scn4b`) carry only IPR000920 and immunoglobulin-like
   signatures, so a search by signature cannot tell them from those relatives: they are not
   listed, and each sodium channel unit's note names them and says why (`docs/MOUSE.md`).
-- The human's shelves take their units from the law inventory's own entries, not from a
-  species atlas, so its 27 entries that only go with a machine (beta and other auxiliary
-  subunits, regulators) are still drawn in the unit's shape and said to make it.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
   exist, and the scene says that the inventory no longer covers every law. The landing of
   16 November 2026 added laws it has no unit for, a proton pump, an ATP-driven
   transporter and a proton leak among them. Its shapes are schematic, and where an
   auxiliary subunit sits is textbook knowledge, not a field of the inventory.
-- Only one hue marks a named protein in the atlas. Six family colours could not be told
-  apart under colour-vision deficiency (the palette check failed), so families are told by
-  their labelled districts.
+- The atlas's colours (sides, how known, essentiality) pass the palette check as tokens
+  (`tests/palette.test.mjs`) and as drawn on the graphics card (`check_shelves.mjs
+  colours`): every side stands at least 3 : 1 against the page in both themes. Colour is
+  never the only cue: position and form say the side too. The ramps were sampled as drawn
+  on Syn3A only. On a phone the atlas is crowded, and the map's names show only under a
+  pointer or the keyboard, never on touch.
 - "To scale" sizes are generic textbook values, as the table above says. No capability's
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
+- The Laws library's card scrolls beside its legend on a window under about 1000 px tall,
+  and on a phone the open card lies over the top of the wall. The room it keeps clear on
+  the left is worked out when a panel opens or closes, so it goes stale when a window is
+  resized across 760 px. A model's box on the Engine view holds frames, not pieces, and
+  has no door into the library.
 - Frame rates are measured only on that card (an NVIDIA L4; 16 November 2026, a window of
   1400 by 900). A frame's own work, the page's handler with the card's drawing in it, took
   7.6 ms for E. coli's cell, 3.6 ms for its motor turning, and 11 ms for the planarian's
