@@ -18,7 +18,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -31,6 +31,7 @@ import { columnsFor, freeOf, opensFor, shapeFor } from "../src/lenses/shelves_vi
 import {
   BASES,
   MEMBERS_FORMAT,
+  NAMES_FILE,
   NO_SHELF,
   OWN_FAMILY,
   OWN_PART,
@@ -1933,7 +1934,7 @@ test("a large catalogue's members are cut into files by the step it names, and e
   assert.deepEqual(found.problems, []);
   for (const summary of big) {
     const shelves = new Shelves(JSON.parse(await readFile(path.join(PROTEINS, summary.id, "shelves.json"), "utf8")), { units: UNITS });
-    const files = found.files.filter((file) => file.species === summary.id && !file.path.endsWith("shelves.json"));
+    const files = found.files.filter((file) => file.species === summary.id && !file.path.endsWith("shelves.json") && !file.path.endsWith(NAMES_FILE));
     assert.deepEqual(files.map((file) => path.basename(file.path)), summary.members);
     assert.ok(files.length <= 40, "a few files, of a few thousand proteins each");
     let bytes = 0;
@@ -1959,7 +1960,47 @@ test("a large catalogue's members are cut into files by the step it names, and e
     const withUnit = [...seen].length && shelves.markers.flatMap((marker) => shelves.membersOf(marker)).filter((member) => member.units.length);
     for (const member of withUnit) for (const unit of member.units) assert.ok(UNITS.has(unit), `${member.id}: ${unit}`);
     t.diagnostic(`${summary.id}: ${files.length} files of members, ${(bytes / 1024 / 1024).toFixed(2)} MB; the largest that opens is ${largest.label} with ${largest.count}; ${withUnit.length} members would make one of Cells' machines`);
+    // Beside them, the names of every member (one file for each large catalogue), each leading to the line it stands on.
+    const listed = found.files.filter((file) => file.species === summary.id && file.path.endsWith(NAMES_FILE));
+    assert.equal(listed.length, 1, `${summary.id}: one file of names beside the members`);
+    const names = JSON.parse(await readFile(listed[0].source, "utf8"));
+    shelves.addNames(names);
+    assert.equal(shelves.names.length, shelves.total, `${summary.id}: a name for every protein`);
+    for (const name of shelves.names) {
+      const line = shelves.lineOfName(name);
+      assert.ok(line && shelves.membersOf(line).some((member) => member.id === name.id), `${summary.id}: ${name.id} leads to its own line`);
+    }
   }
+});
+
+test("the search finds a protein by its gene inside a family that is not open, a family by its name, and a shelf", async () => {
+  const proteinsDir = path.join(folder, "several"), membersDir = path.join(folder, "several-members");
+  await proteinFiles({ proteins: { shelves: readShelves(proteinsDir).summaries } }, { proteinsDir, membersDir }); // the names file is written beside the members
+  const { data } = madeUpSeveral();
+  const shelves = new Shelves(data, {});
+  const before = shelves.search("tgm");
+  assert.equal(before.namesMissing, true, "before the names are in, the search says it finds families only");
+  shelves.addNames(JSON.parse(await readFile(path.join(membersDir, "testcell", NAMES_FILE), "utf8")));
+  const member = shelves.names[3];
+  const found = shelves.search(member.id);
+  assert.equal(found.proteins[0].id, member.id, "a member is found by its identifier");
+  assert.equal(found.proteins[0].line, shelves.lineOfName(member));
+  assert.ok(!found.namesMissing);
+  const family = shelves.families[0];
+  assert.ok(shelves.search(family.label).families.includes(family), "a family's line is found by its name");
+  assert.ok(shelves.search(shelves.shelves[0].label).shelves.length >= 1, "a shelf is found by its name");
+  assert.equal(shelves.search("a"), null, "one letter finds nothing yet");
+});
+
+test("the human's entries that the inventory names only as going with a machine are drawn plain, with their roles", () => {
+  const data = JSON.parse(readFileSync(path.join(PROTEINS, "human", "shelves.json"), "utf8"));
+  const shelves = new Shelves(data, { units: UNITS });
+  const roles = data.inventory_roles;
+  assert.ok(roles && Object.keys(roles.proteins).length === 27, "the 27 entries whose every role goes with the machine");
+  for (const [id, said] of Object.entries(roles.proteins)) assert.ok(said.length && said.every((role) => /auxiliary/.test(role) || ["beta", "uniplex", "FXYD", "FXYD (gamma)"].includes(role)), `${id}: ${said}`);
+  for (const id of ["Q07699", "P05026", "Q9BPX6", "O00168"]) assert.ok(shelves.goesWithOnly({ type: "p", id, units: ["U01"] }), `${id} goes with the machine`);
+  assert.ok(!shelves.goesWithOnly({ type: "p", id: "Q99250", units: ["U01"] }), "SCN2A, the pore, still makes it");
+  for (const id of roles.families) assert.ok(shelves.goesWithOnly({ type: "f", id, units: ["U01"] }), `${id}: a family of only such entries is drawn plain`);
 });
 
 // The whole build, once, with the repository's own shelves. It reads a checkout: where there

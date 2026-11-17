@@ -63,7 +63,9 @@ class CellsLegend extends HTMLElement {
         if (this.waiting && !this.pressed) this.render(this.waiting);
       }, 0);
     };
-    this.addEventListener("pointerdown", () => {
+    this.addEventListener("pointerdown", (event) => {
+      // A select (Colour) opens a list of its own, whose release the page may never see: it is not held for.
+      if (event.target?.closest?.("select")) return;
       this.pressed = true;
       // A press let go where the page cannot see it (outside the window) must not hold changes back for good.
       clearTimeout(this.holding);
@@ -80,8 +82,24 @@ class CellsLegend extends HTMLElement {
     this.letGo = null;
     this.pressed = false;
   }
-  draw({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false }) {
+  draw({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false, colour = null }) {
+    // Drawn again while its Colour select has the keyboard, the new select takes it back, so that a second key reaches it.
+    const hadColour = this.getRootNode()?.activeElement?.id === "cells-own-colour";
     this.replaceChildren();
+    // What colour carries, where a view offers a choice (the protein atlas's own proteins: docs/ATLAS_LOOK.md):
+    // chosen at the head of the block that names the colours, which then has a title of its own.
+    const chooser = colour?.options?.length
+      ? h(
+          "label",
+          { class: "legend-colour" },
+          h("span", { class: "seg-label" }, "Colour"),
+          (() => {
+            // Escape at the select (closing its list) is the select's own: it does not also step the atlas's trail back.
+            const select = h("select", { id: "cells-own-colour", class: "run-select", onchange: () => emit(this, "cells-own-colour", select.value), onkeydown: (event) => event.key === "Escape" && event.stopPropagation() }, colour.options.map(([value, label]) => h("option", { value, selected: value === colour.active }, label)));
+            return select;
+          })()
+        )
+      : null;
     const rows = items.map((item) =>
       h(
         "button",
@@ -97,7 +115,7 @@ class CellsLegend extends HTMLElement {
         h("span", { class: "legend-count" }, String(item.count))
       )
     );
-    const body = h("div", { class: "legend-body" }, scale ? this.scale(scale) : null, rows);
+    const body = h("div", { class: "legend-body" }, chooser, chooser ? h("p", { class: "legend-title legend-colour-title" }, title) : null, scale ? this.scale(scale) : null, rows);
     if (layers?.rows?.length || layers?.cannot?.length) {
       const block = this.layers(layers);
       if (layersFirst) body.prepend(block);
@@ -166,6 +184,7 @@ class CellsLegend extends HTMLElement {
       body
     );
     this.classList.toggle("is-open", Boolean(open));
+    if (hadColour) this.querySelector("#cells-own-colour")?.focus({ preventScroll: true });
   }
 }
 

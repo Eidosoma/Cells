@@ -589,4 +589,105 @@ cells-trace { display: grid; gap: 4px; }
   .label, .hint, .chevron { transition: none; }
 }
 .is-still .label, .is-still .hint, .is-still .chevron { transition: none; }
+
+/* The protein atlas's own proteins (docs/ATLAS_LOOK.md, decided 16 November 2026): the sides in colour, the two ramps
+   "Colour" offers, the trail with its search, and the map of the stack. Colours are the page's tokens (--own-*). */
+.swatch-own-side-outside, .swatch-own-side-in, .swatch-own-side-inside { border-radius: 0; background: linear-gradient(var(--bio-membrane), var(--bio-membrane)) no-repeat; }
+.swatch-own-side-outside { background-position: 0 8px; background-size: 100% 3px; }
+.swatch-own-side-in { background-position: 0 4px; background-size: 100% 4px; }
+.swatch-own-side-inside { background-position: 0 1px; background-size: 100% 3px; }
+.swatch-own-side-outside::before, .swatch-own-side-in::before, .swatch-own-side-inside::before { content: ""; position: absolute; left: 2px; width: 8px; }
+.swatch-own-side-outside::before { top: 0; height: 7px; border-radius: 50%; background: var(--own-outside); }
+.swatch-own-side-in::before { left: 3px; width: 6px; top: 0; height: 12px; border-radius: 3px; background: var(--own-in); }
+.swatch-own-side-inside::before { top: 5px; height: 7px; border-radius: 50%; background: var(--own-inside); }
+.swatch-own-basis-1, .swatch-own-basis-2, .swatch-own-basis-3, .swatch-own-mark-1, .swatch-own-mark-2, .swatch-own-mark-3 { border-radius: 50%; transform: scale(.85); }
+.swatch-own-basis-1 { background: var(--own-basis-1); } .swatch-own-basis-2 { background: var(--own-basis-2); } .swatch-own-basis-3 { background: var(--own-basis-3); }
+.swatch-own-mark-1 { background: var(--own-mark-1); } .swatch-own-mark-2 { background: var(--own-mark-2); } .swatch-own-mark-3 { background: var(--own-mark-3); }
+/* "Colour" above its select, so that the select has the legend's whole width and its longest choice stands whole beside its arrow. */
+.legend-colour { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 4px 6px 2px; }
+.legend-colour .run-select { min-width: 0; width: 100%; padding-right: 24px; text-overflow: ellipsis; }
+.legend-colour-title { margin-top: 4px; }
+.atlas-trail { position: absolute; top: 64px; left: 324px; right: max(16px, env(safe-area-inset-right, 0px)); max-width: 920px; display: flex; align-items: center; gap: 10px; padding: 5px 6px; z-index: 4; }
+.has-panel .atlas-trail { right: calc(min(360px, 100% - 32px) + 32px); }
+.has-panel .atlas-findbox { flex-basis: 180px; }
+.atlas-findbox { position: relative; flex: 0 0 248px; min-width: 0; }
+.atlas-find { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); }
+.atlas-find:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.atlas-results { position: absolute; top: calc(100% + 6px); left: 0; width: 380px; max-width: calc(100vw - 32px); max-height: min(60vh, 520px); overflow-y: auto; padding: 6px; display: grid; gap: 6px; background: var(--bg-raised); border-radius: 10px; box-shadow: 0 0 0 1px var(--line), 0 12px 30px -16px rgb(0 0 0 / .5); z-index: 6; }
+.atlas-results h4 { margin: 4px 6px 2px; font: 600 10.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.atlas-results > * { min-width: 0; }
+.atlas-hit { display: grid; grid-template-columns: 14px minmax(0, 1fr); column-gap: 8px; width: 100%; min-width: 0; box-sizing: border-box; white-space: normal; text-align: left; padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--fg); font: inherit; font-size: 12.5px; cursor: pointer; }
+.atlas-hit:hover, .atlas-hit:focus-visible { background: color-mix(in srgb, var(--fg) 7%, transparent); outline: none; }
+.atlas-hit .swatch { grid-row: span 2; margin-top: 2px; }
+.atlas-hit-name { overflow-wrap: anywhere; }
+.atlas-hit-where { color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.atlas-note { margin: 4px 8px; font-size: 12px; color: var(--muted); }
+.atlas-where { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1 1 auto; }
+.atlas-back { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 15px; cursor: pointer; }
+.atlas-back:disabled { opacity: .35; cursor: default; }
+.atlas-crumbs { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; min-width: 0; flex: 1 1 auto; overflow: hidden; font-size: 12.5px; white-space: nowrap; }
+.atlas-crumbs li { display: flex; align-items: center; gap: 5px; flex: none; }
+.atlas-crumbs li[hidden] { display: none; }
+.atlas-crumbs li + li::before { content: "\\203A"; color: var(--muted); margin: 0 5px; }
+.atlas-crumbs li.is-here { flex: none; }
+.atlas-crumbs.is-tight li.is-here { flex: 0 1 auto; min-width: 9ch; }
+.atlas-crumb { display: inline-flex; align-items: center; font: inherit; color: var(--accent); background: none; border: 0; padding: 4px 2px; cursor: pointer; max-width: 24ch; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atlas-crumb > span, .is-here .atlas-crumb { display: block; overflow: hidden; text-overflow: ellipsis; line-height: 22px; }
+.is-here .atlas-crumb { max-width: 34ch; }
+.atlas-more .atlas-crumb { color: var(--muted); cursor: default; }
+.is-here .atlas-crumb { color: var(--fg); font-weight: 600; cursor: default; }
+.is-opening .atlas-crumb { color: var(--muted); font-style: italic; cursor: default; }
+.atlas-find-open { display: none; }
+/* The map is a column of bars at the window's right edge; it opens to the shelves' names under the pointer or the keyboard. */
+.atlas-map { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 56px; box-sizing: border-box; padding: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; overflow: hidden; z-index: 3; }
+.atlas-map > * { min-width: 0; }
+.atlas-map:hover, .atlas-map:focus-within { width: 248px; }
+/* Opening it only widens it: every row keeps its height and place, so that a press aimed at a bar lands on its row. */
+.atlas-map:not(:hover):not(:focus-within) .atlas-map-key, .atlas-map:not(:hover):not(:focus-within) .atlas-row-name, .atlas-map:not(:hover):not(:focus-within) .atlas-row-count { visibility: hidden; }
+.atlas-map:not(:hover):not(:focus-within) .atlas-bar { width: 100% !important; }
+.has-panel .atlas-map { right: calc(min(360px, 100% - 32px) + 32px); }
+.atlas-map-title { margin: 0 2px 4px; font: 600 10.5px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+.atlas-map-key { text-transform: none; letter-spacing: 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.atlas-map-title { overflow: hidden; }
+.atlas-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; gap: 3px 8px; height: 34px; box-sizing: border-box; overflow: hidden; padding: 3px 6px; border: 0; border-radius: 7px; background: transparent; color: var(--fg); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.atlas-row-name, .atlas-row-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atlas-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.atlas-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.atlas-row.is-on { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+.atlas-row-count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.atlas-row-open { color: var(--accent); font-weight: 600; }
+.atlas-bar { grid-column: 1 / -1; display: flex; height: 6px; border-radius: 3px; overflow: hidden; }
+.atlas-seg { display: block; height: 100%; }
+.atlas-seg-outside { background: var(--own-outside); } .atlas-seg-in { background: var(--own-in); } .atlas-seg-inside { background: var(--own-inside); }
+.atlas-seg-unknown { background: repeating-linear-gradient(90deg, var(--ghost) 0 2px, transparent 2px 4px); }
+@media (max-width: 760px) {
+  /* On a phone the trail is one row under the bar: the arrow back, the step you are at, and a button that opens the search over it. */
+  .atlas-trail { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: 64px; padding: 0 4px; gap: 4px; }
+  .has-panel .atlas-trail { right: max(16px, env(safe-area-inset-right, 0px)); }
+  .atlas-findbox { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); flex: none; }
+  .atlas-trail.is-finding .atlas-findbox { display: block; }
+  .atlas-find { min-height: 44px; font-size: 16px; }
+  .atlas-results { width: 100%; max-width: none; max-height: 52vh; }
+  .atlas-back { width: 44px; height: 44px; border: 0; background: transparent; }
+  .atlas-crumbs li:not(.is-here):not(:nth-last-child(2)) { display: none; }
+  .atlas-crumbs li:nth-last-child(2) { max-width: 30%; }
+  .atlas-crumbs li:nth-last-child(2)::before, .atlas-crumbs li:nth-last-child(2) .swatch { display: none; }
+  .atlas-crumbs li:only-child::before { display: none; }
+  .atlas-crumb { min-height: 44px; }
+  .is-here .atlas-crumb, .atlas-more .atlas-crumb { line-height: 44px; }
+  .atlas-results { box-sizing: border-box; }
+  .atlas-find-open { display: block; flex: none; min-height: 44px; padding: 0 12px; border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+  .atlas-hit { min-height: 44px; }
+  .has-trail .view, .has-trail cells-index { top: 116px; }
+  /* The legend, open, reaches up to the bar: over the trail, which it hides while it is open. */
+  .has-trail cells-legend.is-open { z-index: 5; }
+  .has-trail .view { max-height: calc(100% - 116px - 160px); }
+  .has-trail.has-panel .view-toggle { top: 116px; }
+  .has-trail.has-panel.view-open .view { top: 166px; max-height: calc(100% - var(--sheet, 56%) - 174px); }
+  .atlas-map { right: 8px; left: auto; bottom: auto; top: 172px; width: 46px; padding: 4px; gap: 4px; }
+  .has-panel .atlas-map { display: none; }
+  .atlas-map-title, .atlas-row-name, .atlas-row-count { display: none; }
+  .atlas-row { height: 44px; padding: 4px; align-content: center; }
+  .atlas-bar { width: 100% !important; height: 10px; }
+}
 `;

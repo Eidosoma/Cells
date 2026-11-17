@@ -23,6 +23,7 @@ import { LawsLens } from "../lenses/laws.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
+import { renderAtlasNav } from "./atlas_nav.js";
 
 // The views, in the order of the switch. "short" is the name on a narrow screen.
 // "needs" says what the scene must hold for the view to be offered.
@@ -138,6 +139,8 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
     root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
     root.addEventListener("cells-door", (event) => this.openDoor(event.detail));
+    // The protein atlas: what colour carries on a species' own proteins (its legend's "Colour").
+    root.addEventListener("cells-own-colour", (event) => this.current?.setOwnColour?.(event.detail));
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
     root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
     root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
@@ -523,6 +526,8 @@ class CellsViewer extends HTMLElement {
     this.caveat.classList.toggle("is-status", Boolean(chrome.status));
     // A view whose data has its own date says so in place of the map's.
     this.stamp.textContent = chrome.stamp || this.mapStamp;
+    // The protein atlas's trail, search and map of the stack (src/ui/atlas_nav.js), while its own proteins are shown.
+    renderAtlasNav(this, this.state.lens === "proteins" ? chrome.nav || null : null);
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     this.viewToggle.hidden = this.viewCard.hidden;
@@ -1182,7 +1187,7 @@ class CellsViewer extends HTMLElement {
     // bar (which moves up over the caveat where the two would meet, and on a phone stands on a panel's top edge), and
     // on a phone the folded rail's and view card's buttons.
     const look = this.lookBox.hidden ? null : this.lookBox.querySelector(".look-switch");
-    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look]
+    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look, this.atlasNav?.trail, this.atlasNav?.map]
       .filter((element) => element && !element.hidden)
       .map((element) => element.getBoundingClientRect())
       .filter((rect) => rect.width && rect.height)
@@ -1262,6 +1267,7 @@ class CellsViewer extends HTMLElement {
     if (had !== Boolean(this.state.selected) && this.clientWidth < 760) this.renderLegend(); // the Flux switch moves to the legend's head, or back
     this.placeSheet();
     this.placeFoot();
+    if (this.state.lens === "proteins" && this.current?.mounted) renderAtlasNav(this, this.current.chrome().nav || null); // the trail names what is chosen
     if (this.stage) {
       const open = Boolean(this.state.selected);
       const narrow = this.clientWidth < 760;
@@ -1355,7 +1361,8 @@ class CellsViewer extends HTMLElement {
         } else if (this.state.viewOpen && this.state.selected) {
           this.toggleViewCard(false);
           this.viewToggle.focus({ preventScroll: true });
-        } else if (this.state.selected) this.select(null);
+        } else if (this.current?.escape?.()) return; // the protein atlas's own proteins: one level of its trail back
+        else if (this.state.selected) this.select(null);
         else if (this.current?.back?.()) return;
         else if (this.state.indexOpen) this.toggleIndex(false);
       }

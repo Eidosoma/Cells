@@ -95,6 +95,22 @@ catalogue table, the same bytes every time.
   holds such a family keeps its small sign of a unit), and its panel says how the atlas
   found it and what that makes it, in the atlas panel's words. The members' files are
   unchanged by it.
+- **`inventory_roles`** (16 November 2026), for a species with no atlas of its own (the
+  human), whose proteins take their `unit` from the inventory's own naming of their human
+  entries: the entries whose every role in the inventory names a part that goes with the
+  machine (an auxiliary subunit, "… auxiliary family …"; the sodium pump's beta subunits,
+  "beta"; the uniplex's regulators, "uniplex"; the pump's FXYD regulators, "FXYD" and
+  "FXYD (gamma)"), each with its roles in the inventory's words, and the families every one
+  of whose proteins with a unit is such an entry:
+
+  ```json
+  "inventory_roles": {"note": "…", "proteins": {"Q07699": ["beta, auxiliary family; pairing not specified in source"]},
+                      "families": ["IPR027098"]}
+  ```
+
+  The page draws them as it draws an atlas's accessory finds (`found_by`): plain, in
+  neither the unit's shape nor its tone, and the panel says "Named by the inventory as"
+  with the roles. `tools/build_human_atlas.py` writes it; the human's file names 27 entries.
 - **`marks`** are what else can be shown or filtered: whether it was seen in proteomics,
   its essentiality, a measured or estimated amount. Each mark is declared once, with its
   values, whether it is measured, and its source (the name of an entry in `sources`). A
@@ -206,6 +222,16 @@ its members, each a protein of the catalogue.
   cell's membranes together, and its `outside` says what "beyond a membrane" then covers.
 - **The members' file** written beside the page has the format
   `cells.visualizer.species_protein_members@1` and holds `columns` and `members`.
+- **The names file** (16 November 2026), `names.json` beside a large catalogue's members'
+  files, is written by the page builder from them, whenever they are newer, and published
+  with them: one more file for each large catalogue. Its format is
+  `cells.visualizer.species_protein_names@1`; it holds `files` (the members' files, in
+  order), `counts` (how many members each holds), `columns` (`id`, `gene`, `label`, `side`)
+  and `names`, one row for each member in the files' order: its identifier, gene, name and
+  side. A row's file and its place there follow from the order and the counts, and a name
+  leads to its line by the same `file` and `at` the shelves give, so the
+  page's search finds a protein whose family is not open. Like the members' files it is
+  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB).
 - **`by_basis`**, for each side how many proteins have it by each basis, is given by
   every catalogue in families: the page's words on how sides are known rest on it.
 

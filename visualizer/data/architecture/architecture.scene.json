@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-17T00:00:12Z",
+  "generated_at": "2026-11-17T00:46:47Z",
   "revision": "1d86a192",
   "revision_date": "2026-11-16",
   "dirty": false,
@@ -2665,7 +2665,7 @@
    {
     "id": "human",
     "file": "proteins/human/shelves.json",
-    "bytes": 759765,
+    "bytes": 762366,
     "made": "2026-11-15",
     "from": "UniProtKB release 2026_04: the 20,414 reviewed entries of the human reference proteome UP000005640, one canonical protein each. Their entries describe 22,131 further isoforms (42,545 sequences in all), given here as a count on each protein. The proteome's 243,472 unreviewed entries are not listed: it holds 263,886 entries in all, for 20,652 genes.",
     "kind": "families",

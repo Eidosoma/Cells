@@ -3,7 +3,7 @@
 
 import { build } from "esbuild";
 import { spawn } from "node:child_process";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -68,6 +68,17 @@ export async function proteinFiles(scene, { proteinsDir = DEFAULT_PROTEINS, memb
         continue;
       }
       for (const name of names) own.push({ path: `proteins/${id}/${name}`, source: path.join(folder, name), species: id });
+      // Every protein's name, beside its members (schema/SPECIES_PROTEINS.md, "The names file"): so that the page's
+      // search finds a protein whose family is not open. Written from the members' files whenever they are newer.
+      // A names file older than the members is left out (and, where the builder may write, made again): the search
+      // then finds the families and not their members, and the page says so.
+      const list = path.join(folder, NAMES_FILE);
+      const newest = Math.max(...(await Promise.all(names.map((name) => modified(path.join(folder, name))))));
+      if (make && !((await modified(list)) >= newest)) {
+        const failure = await writeNames(id, folder, names).catch((error) => error.message);
+        if (failure) problems.push(`${id}: its proteins' names could not be written (${failure})`);
+      }
+      if ((await modified(list)) >= newest) own.push({ path: `proteins/${id}/${NAMES_FILE}`, source: list, species: id });
     }
     files.push(...own);
   }
@@ -102,6 +113,34 @@ export async function machineFiles(scene, { machinesDir = DEFAULT_MACHINES } = {
   return { files, problems };
 }
 
+export const NAMES_FILE = "names.json";
+export const NAMES_FORMAT = "cells.visualizer.species_protein_names@1";
+
+/**
+ * The names file of a large catalogue: one row for each member, in the members' own order, with
+ * its identifier, its gene, its name and its side, in the members' files' order (`files`, with how
+ * many each holds in `counts`), so that the page knows each row's file and its place there and finds
+ * its line by the same `file` and `at` as the shelves give. Returns what went wrong, or null.
+ */
+export async function writeNames(species, folder, files) {
+  const columns = ["id", "gene", "label", "side"];
+  const rows = [], counts = [];
+  for (const name of files) {
+    const file = JSON.parse(await readFile(path.join(folder, name), "utf8"));
+    const at = Object.fromEntries((file.columns || []).map((column, i) => [column, i]));
+    if (!("id" in at) || !("label" in at)) return `${name} has no column of identifiers or names`;
+    for (const member of file.members) rows.push([member[at.id], member[at.gene] || "", member[at.label] || "", member[at.side] || "not known"]);
+    counts.push(file.members.length);
+  }
+  // The rows are the members in their files' order: `counts` says how many each file holds, so where a row is needs no column.
+  const text = JSON.stringify({ format: NAMES_FORMAT, species, files, counts, columns, names: rows });
+  // Moved into place whole, as the members are.
+  const writing = path.join(folder, `.${NAMES_FILE}.${process.pid}`);
+  await writeFile(writing, text);
+  await rename(writing, path.join(folder, NAMES_FILE));
+  return null;
+}
+
 /** Write a large catalogue's members into `folder`, by the step its shelves name. Returns what went wrong, or null. */
 async function writeMembers(shelves, folder) {
   let step = null;
@@ -113,13 +152,21 @@ async function writeMembers(shelves, folder) {
   const tool = MEMBERS_STEP.exec(step || "")?.[1];
   if (!tool) return "its shelves do not say how the files of members are written";
   await mkdir(folder, { recursive: true });
-  return new Promise((resolve) => {
-    const child = spawn("python3", [path.join(ROOT, tool), "members", "--out", folder], { cwd: ROOT, stdio: ["ignore", "ignore", "pipe"] });
+  // Written into a folder of their own beside, then each moved into place whole: a page that fetches a file while it
+  // is being written reads the old one or the new one, never half of one. (Until 16 November 2026 several checkouts
+  // shared one folder of members and rewrote it in place; that is the likeliest cause, not confirmed, of a press on a
+  // family that sometimes did not open it while a second press did.)
+  const writing = await mkdtemp(`${folder}.writing-`);
+  const failure = await new Promise((resolve) => {
+    const child = spawn("python3", [path.join(ROOT, tool), "members", "--out", writing], { cwd: ROOT, stdio: ["ignore", "ignore", "pipe"] });
     let said = "";
     child.stderr.on("data", (chunk) => (said += chunk));
     child.on("error", (error) => resolve(`${tool} could not be started (${error.message})`));
     child.on("close", (code) => resolve(code === 0 ? null : `${tool} members ended with ${code}: ${said.trim().split("\n").at(-1) || "no message"}`));
   });
+  if (!failure) for (const name of await readdir(writing)) await rename(path.join(writing, name), path.join(folder, name));
+  await rm(writing, { recursive: true, force: true });
+  return failure;
 }
 
 /** The catalogue of adapted runs, or null when there is none. */

@@ -19,6 +19,8 @@
 
 export const SHELVES_FORMAT = "cells.visualizer.species_proteins@1";
 export const MEMBERS_FORMAT = "cells.visualizer.species_protein_members@1";
+export const NAMES_FORMAT = "cells.visualizer.species_protein_names@1";
+export const NAMES_FILE = "names.json";
 export const SIDES = ["outside", "in", "inside", "not known"];
 export const BASES = ["stated", "predicted", "by function", "none"];
 
@@ -263,6 +265,14 @@ export class Shelves {
     this.foundDefault = block?.default || null;
     this.foundOf = new Map(Object.entries(block?.proteins || {}).flatMap(([how, ids]) => ids.map((id) => [id, how])));
     this.goesWith = new Set(block?.families?.["accessory signature"] || []);
+    // A species with no atlas of its own (the human) ties a protein to a unit by the inventory's own naming: those
+    // whose every role there goes with the machine are listed, with their roles (inventory_roles), and drawn plain too.
+    const roles = data.inventory_roles || null;
+    this.roleOf = new Map(Object.entries(roles?.proteins || {}));
+    this.rolesFamilies = new Set(roles?.families || []);
+    for (const id of this.rolesFamilies) this.goesWith.add(id);
+    // Every protein's name, once the names file beside the members is in (addNames): for the page's search.
+    this.names = null;
     this.kind = Array.isArray(data.proteins) ? "proteins" : "families";
     this.shelves = data.shelves;
     this.shelf = data.shelves[0];
@@ -664,7 +674,7 @@ export class Shelves {
    */
   goesWithOnly(item) {
     if (!item?.units?.length) return false;
-    if (item.type === "p") return item.found === "accessory signature";
+    if (item.type === "p") return item.found === "accessory signature" || this.roleOf.has(item.id);
     return item.type === "f" && this.goesWith.has(item.id);
   }
 
@@ -685,7 +695,9 @@ export class Shelves {
     const chips = [
       !modelled
         ? { label: "No law in Cells", swatch: "own-plain", title: "Cells has no law for this protein. It is one of the species' own proteins, drawn as a plain marker." }
-        : goes
+        : goes && this.roleOf.has(protein.id)
+          ? { label: "Goes with a machine Cells has a law for", swatch: "own-plain", title: `The law inventory names it among the unit's products as ${this.roleOf.get(protein.id).map((role) => `"${role}"`).join(" and ")}: a part that goes with the machine, not the one that does its work. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein.` }
+          : goes
           ? { label: "Goes with a machine Cells has a law for", swatch: "own-plain", title: "The species' atlas lists it with a unit of the law inventory because its own record carries only the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein." }
           : { label: "Would make a machine Cells has a law for", swatch: "map-assigned", title: "The species' atlas lists it among the gene products that would make a unit of the law inventory. The law is the unit's: the engine does not model this protein." },
       { label: words.short, swatch: words.swatch, title: words.long },
@@ -701,6 +713,8 @@ export class Shelves {
       facts.push(["How the atlas found it", found.label]);
       if (found.line) facts.push(["In the atlas", found.line]);
     }
+    // Where the tie is the inventory's own naming (inventory_roles), its role in the inventory's words.
+    if (modelled && this.roleOf.has(protein.id)) facts.push(["Named by the inventory as", `${this.roleOf.get(protein.id).join("; ")}: it goes with the machine`]);
     // One listed among the only members of their families names its own family in a mark: [accession, name].
     const alone = under?.type === "l";
     const family = alone ? [].concat(protein.marks?.family || []) : [];
@@ -807,6 +821,8 @@ export class Shelves {
       chips: [
         !modelled
           ? { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." }
+          : this.goesWithOnly(item) && this.rolesFamilies.has(item.id)
+            ? { label: "Holds parts that go with a machine Cells has a law for", swatch: "own-family", title: "The law inventory names its members with a unit only in roles that go with the machine: an auxiliary subunit, or a regulator. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
           : this.goesWithOnly(item)
             ? { label: "Holds parts that go with a machine Cells has a law for", swatch: "own-family", title: "Its members are listed with a unit of the law inventory only because they carry the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
             : { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its machine, or parts that go with it. The law is the unit's: the engine does not model these proteins." },
@@ -920,6 +936,75 @@ export class Shelves {
     return { families: once(this.families), lone: held(this.lone).length, parts: once(this.parts), markers: held(this.kind === "families" ? this.markers : []).length };
   }
 
+  // ------------------------------------------------------------ the names of every protein (for the search)
+
+  /**
+   * Take in the names file of a large catalogue (schema/SPECIES_PROTEINS.md, "The names file"):
+   * one row for each member, in the members' files' order, with how many each file holds.
+   */
+  addNames(file) {
+    if (file?.format !== NAMES_FORMAT || !Array.isArray(file.names) || !Array.isArray(file.files) || !Array.isArray(file.counts)) throw new Error("it is not a file of names");
+    if (file.counts.reduce((sum, n) => sum + n, 0) !== file.names.length) throw new Error("its counts do not add up to its names");
+    const at = Object.fromEntries(file.columns.map((name, index) => [name, index]));
+    // Each members' file's lines, by where their members begin in it: a name's row finds its line.
+    const lines = new Map();
+    for (const line of [...this.families, ...this.parts, ...this.lone]) {
+      if (!line.file || !Array.isArray(line.at)) continue;
+      if (!lines.has(line.file)) lines.set(line.file, []);
+      lines.get(line.file).push(line);
+    }
+    for (const list of lines.values()) list.sort((a, b) => a.at[0] - b.at[0]);
+    // Each row's file and its place there, from the files' order and counts.
+    let index = 0, row = 0;
+    this.names = file.names.map((line) => {
+      while (row >= file.counts[index]) (index += 1), (row = 0);
+      return { id: line[at.id], gene: line[at.gene] || "", label: line[at.label] || "", side: line[at.side] || null, file: file.files[index], row: row++ };
+    });
+    this.namesLines = lines;
+    for (const name of this.names) name.text = `${name.gene} ${name.label} ${name.id}`.toLowerCase();
+  }
+
+  /** The line a named member stands on: the family, part or gathering of families of one whose members hold its row. */
+  lineOfName(name) {
+    const list = this.namesLines?.get(name.file) || [];
+    let low = 0, high = list.length - 1;
+    while (low <= high) {
+      const middle = (low + high) >> 1, line = list[middle];
+      if (name.row < line.at[0]) high = middle - 1;
+      else if (name.row >= line.at[1]) low = middle + 1;
+      else return line;
+    }
+    return null;
+  }
+
+  /**
+   * What a search finds, in a few kinds: proteins by gene, name or identifier (each with the line
+   * it stands on, and its shelf), the families' lines and the parts by name or accession, and the
+   * shelves. A gene that is the whole query comes first, then names that begin with it.
+   */
+  search(query, { limit = 6 } = {}) {
+    const q = String(query || "").trim().toLowerCase();
+    if (q.length < 2) return null;
+    const rank = (gene, text) => (gene.toLowerCase() === q ? 0 : gene.toLowerCase().startsWith(q) ? 1 : text.startsWith(q) ? 2 : 3);
+    const proteins = [];
+    if (this.kind === "proteins") {
+      for (const item of this.proteins) {
+        const text = `${item.gene || ""} ${item.label} ${item.id}`.toLowerCase();
+        if (text.includes(q)) proteins.push({ rank: rank(item.gene || "", text), key: item.key, id: item.id, gene: item.gene || "", label: item.label, side: item.side, shelf: item.shelf ?? null, under: shelvesDistrict(this, item) });
+      }
+    } else if (this.names) {
+      for (const name of this.names) {
+        if (!name.text.includes(q)) continue;
+        const line = this.lineOfName(name);
+        proteins.push({ rank: rank(name.gene, name.text), id: name.id, gene: name.gene, label: name.label || line?.label || name.id, line, side: name.side, shelf: line ? line.shelf ?? null : null, under: line ? (line.type === "l" ? "the only member of its family" : line.label) : "" });
+      }
+    }
+    proteins.sort((a, b) => a.rank - b.rank || (a.gene || a.label).localeCompare(b.gene || b.label));
+    const families = this.kind === "families" ? [...this.families, ...this.parts].filter((line) => `${line.label} ${line.id}`.toLowerCase().includes(q)) : [];
+    const shelves = this.several ? this.byShelf.filter((entry) => String(entry.label ?? "No place known").toLowerCase().includes(q)).map((entry) => this.shelfItems.get(entry.id)) : [];
+    return { query: q, proteins: proteins.slice(0, limit), more: Math.max(0, proteins.length - limit), total: proteins.length, families: families.slice(0, limit), familiesMore: Math.max(0, families.length - limit), shelves, namesMissing: this.kind === "families" && !this.names };
+  }
+
   /** A row of the list for a marker or a protein. A member named only after its family is told apart by its identifier. */
   listed(item) {
     const label = item.type === "p" && item.under && item.label === item.under.label ? `${item.label} · ${item.id}` : item.type === "p" ? item.label : `${item.label} · ${item.count.toLocaleString("en-US")}`;
@@ -928,6 +1013,11 @@ export class Shelves {
     // shelf's name among a row's words would make a search for "membrane" find every row).
     return { id: item.key, label, short: item.gene || null, keywords: [item.id, item.gene, item.under?.label].filter(Boolean).join(" "), swatch: item.units?.length ? "map-assigned" : item.type === "p" ? "own-plain" : "own-family" };
   }
+}
+
+/** The district a protein of a small catalogue stands in, by name. */
+function shelvesDistrict(shelves, item) {
+  return shelves.districtLabel(item);
 }
 
 function majority(sides = {}) {
