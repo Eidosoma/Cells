@@ -85,6 +85,27 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **GARD's G2, the independent component references, merged into main (17 November 2026).**
+  `validation/gard/references/`, from gard-g2-references 193eaf0d. Its writer never read the engine's
+  code.
+  - **Ten references,** each derived from the preprint (Appendix F) and the three original papers,
+    each with a planted control it catches. Among them:
+    - the closed form at β = 0;
+    - time rescaling under uniform β;
+    - local detailed balance;
+    - the closed world's stationary law, which independently reproduces the design note's
+      0.5793 and 0.15;
+    - an exact SSA oracle;
+    - the fission partition;
+    - conservation;
+    - the ledger;
+    - streams;
+    - the observers, including F12 over all 4,096 sequences.
+  - **A harness** reads run bundles through one adapter function.
+  - **Tests:** six files, 112 tests, all tier 1, measured on the timed lane.
+  - **Not done yet:** the harness has not read a real engine bundle. Its reader adapts to G1's
+    frozen format once part 2 produces the probe bundles.
+
 - **GARD's G1, part 1, merged into main (17 November 2026, afternoon).** Branch gard-g1-merge
   96643762 ([evidence](/mnt/workspaces/Cells/gard-g1-20261117/), README inside).
   - **What it adds:** `cells.assembly_lineages@1`, a general stochastic assembly family (D197). It
