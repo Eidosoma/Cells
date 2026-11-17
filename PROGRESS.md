@@ -85,6 +85,75 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-10 judged: passed (17 November 2026, 23:45–23:50 UTC).** The registered protocol
+  `fr10-dose-schedule-v1` was judged once from the clean snapshot of its registration commit
+  407ba164, on lane A (CPUs 0-3, under its lock). Its references are the code-blind FR references
+  agent's R-faces, R-ion and R-records (`validation/fr10/references`).
+  - **31 of 31 judged criteria.** Examples:
+    - W1 against R-faces is at most 0.92% of B1, and W2 against R-ion 0.80% of B2; row 0 is exact.
+    - The orders are 2.003 to 2.011, and the energy residual over the flows is 5.8e-5 and 1.7e-5,
+      falling at order 2.
+    - The dose equals R-records' exactly at every event, and dG_b is within 4.5e-16 relative.
+    - The operator's reconciliation term K equals R-records' K to 1.4e-10 of the reservoir-work
+      bound. The compensation charge is 0.
+    - Controls: K1 is 973 x B1 and K2 is 1000 x B2. Without the operator's term, the reservoir-work
+      ledger is 2.1e4 x its bound after the event.
+    - Restart, batch, idleness and all 13 refusal classes hold.
+  - **No harness failure** (the harness-limit rule): all 19 parts are complete. Peak memory was
+    0.92 G of 2 G, and no part used more than 6.9% of its runtime limit.
+  - **Against the rehearsal** (`r2/run-ed2b8ee0`, on a registered dry-run copy): 18 parts are
+    bitwise equal. The references part differs only in the path and sha256 of the W3 records it
+    reads, which was expected and listed before launch.
+  - **Disclosure, the launcher:** before the run, the launcher's dry-run check refused the protocol
+    of record. That check is the run folder's `judge-run.sh`, run tooling outside the repo. It
+    matched the phrase "a registered dry-run copy" in the lead's registration status. It was
+    narrowed to the dry-run copy's own status prefix, "registered for the rehearsal only". Separately
+    checked: the snapshot's protocol is the one of record, with its matching registration record.
+    The judge and the engine were not touched.
+  - **Scope:** `scheduled_bath_composition@1` as built at 407ba164. It covers neutral formula units
+    only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms
+    and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal
+    found that the run-time energy guard holds there (R12's neighbour, disclosed).
+  - **Evidence:** `/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/run-407ba164/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
+
+- **The gap-junction tissue line, dense records, and the sheet (17 November 2026, night).**
+  Development, not judged (D138). Note §7.6, registered before these runs, merged from
+  `gap-junction-replication` at 0471f7c3.
+  - **Dense records** (`runs/dense-01`, D = 0, x2/2, x2 and 2·x2): about 370 log-spaced records per
+    arm, the first one step in. Every end state is bitwise its earlier run (picks-02 and picks-01),
+    so the records changed nothing. Each package carries the tumour cells, a species map, each
+    arm's place against x2, and the cells' miR200, Zeb mRNA and ZEB protein in µM.
+  - **The 9×9 sheet** (`runs/sheet-01`): an extension beyond the replication, not part of it.
+    - Its setup: 4-neighbour junctions, a 3×3 tumour patch in the middle, the same seeds and
+      protocol, and a coupled horizon of 2,000 s (a tenth of the line's).
+    - The tumour holds at D = 0, x2/16 and x2/8, and the sheet normalises at x2/4, x2/2 and x2.
+      No arm is still changing at 2,000 s.
+    - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (0.9–1.8e-15 m²/s), 4 to 8
+      times below the line's. That is observed; why is not measured.
+  - **The coupling ladder** (`runs/ladder-01`, ten line arms to 20,000 s, none refused):
+    - below x2, the tumour holds (0.70 x2) or converts only partly (0.87 and 0.98 x2);
+    - above x2, every arm normalises, sooner as coupling grows: first all-E record at 6,800 s at
+      1.05 x2, down to 311 s at 6.97 x2. The times are as fine as the record spacing.
+  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed. The ladder's commit b40b9169 is
+    docs only.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/`, `runs/sheet-01/` and
+    `runs/ladder-01/`.
+
+- **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
+  Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.
+  - **The search** (`runs/neither-02`, clean snapshot of main 1f4c740a): 37 points, none refused,
+    monotone; the half-step rerun at dt 1/16 s gives the same outcomes on both sides.
+  - **Its threshold:** x2 = 7.1777e-15 m²/s, bracket ratio 1.0002. That is 0.99968 of the value
+    logged by BITSEY's saved run (7.18e-15, written by an earlier revision of its code), inside the
+    0.95–1.05 band fixed before the run, so agreement is called.
+  - **Against that log, point by point:** normalised-or-not agrees at all 16 shared points. The
+    end-state lines are identical at 15 of 16; the 16th differs by one printed digit.
+  - **FR-19's effect:** the first search had 5 of its first 8 points refused; this one had none.
+  - **The tissue line's three arms** (`runs/picks-02`): at x2/2 the tumour holds (6 M, 19 E); at x2
+    and 2·x2 the tissue normalises (25 E). They replace `picks-01` in the viewer.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/neither-02/` and `runs/picks-02/`.
+
 - **D198's retire batch on main (17 November 2026, evening).** The merge of `retire-processes` at
   292aa967.
   - **Retired:**
