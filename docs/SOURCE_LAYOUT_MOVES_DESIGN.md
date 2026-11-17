@@ -23,7 +23,7 @@ Each move has three parts:
 | Move 2 | the continuity probe's names if a checkpoint must cross it; three more pinned files (§5); the visualizer's tools (their owner) | 109 modules into the target folders, 35 left for the lead to place (§9) |
 
 **The probe** ran the cycle on a scratch tree: a family moved, a coupled kernel extracted and
-moved, and a file pinned by path moved. Every check came out identical: test IDs, crossrev's
+moved, a file pinned by path moved, and a pinning law moved after R4. Every check came out identical: test IDs, crossrev's
 nine sets, G1 on six worlds, a continuity resume, and tiers 1+2 with 0 changed (§12).
 
 ## 2. The move map
@@ -89,7 +89,9 @@ rewriter sorts.
 
 ### 3.2 What it leaves alone, and why
 
-Counts are from the draft move 1 (`$E/scan-move1-draft.json`).
+Counts are from the draft move 1 (`$E/scan-move1-draft.json`). It was run on this branch at
+910ebce0, which is main fa19d80c plus this note and the two tools. The tools are outside the
+rewriter's scope, and the note is a doc, so the counts are main's.
 
 | Left alone | Why |
 | --- | --- |
@@ -99,6 +101,17 @@ Counts are from the draft move 1 (`$E/scan-move1-draft.json`).
 | `visualizer/` (5 files) | The visualizer agent's. Its data are extractions at a revision, and its tools read engine paths at a revision (§10) |
 | Model, kind and format IDs (`cells.transporter@1`, `cells.visualizer.scene@1`) | Not module paths: the token rule skips names followed by `@` |
 | `source_hashes()` keys in run manifests and checkpoints | Written at run time. A checkpoint from before a move carries the old keys, and continuity admission handles that, as the probe showed (§12) |
+
+**Audits that read one relative path in two trees** fit neither rule. 20 validation files hold 30
+path strings of moved files, mostly the stable-seed audits, references and workers in
+`validation/geometry/`, and seven BETSE audits and jobs. They read the same relative path under
+a frozen bundle and under the live tree, as in
+`stable_seed_partition_physiology_bridge_audit.py:429`.
+- **Rewritten,** the frozen read breaks.
+- **Kept,** the live read breaks. A file-level `keep` would also skip the file's imports.
+- **Proposed:** these audit frozen evidence of the pinned cluster, so they are retired with its
+  tests (D187), or translated by hand before the move: the live path through the maps, the
+  frozen path as recorded. **For the lead** (§14).
 
 ### 3.3 What it cannot rewrite: computed module paths
 
@@ -157,8 +170,12 @@ content by path, `src/cells/__init__.py` among them. It refuses to run when one 
 pin table enters its binding identity. The inventory is `source_moves_plan.py pins`, output
 `$E/plan-fa19d80c/code-pins.json`.
 
-**The inventory.** In src/cells, 14 modules hold 43 live pins on 22 files. All 14 are legacy or
-geometry laws, and none is on the active path.
+**The inventory.** In src/cells, 14 modules hold 43 live pins on 22 files.
+- All 14 are legacy or geometry laws, and the active path reaches none of them (`reach.json`).
+- The same modules also hold 19 stale path-keyed pins, in 5 modules, on files that have changed
+  since (`core/{runner,schedule,windows,specs}.py`, `numerics/surface_field.py`,
+  `models/surface_tissue.py` and others). Those laws already refuse when they reach them.
+- 29 further hex literals digest manifests, reviews and evidence, not source files.
 
 | Pinning module | Pins | Kind |
 | --- | --- | --- |
@@ -199,18 +216,30 @@ bridge by the environment. 15 modules compute paths from their own `__file__`.
 - **No module pin is touched.**
 
 **The rule proposed:**
-- **R4, before move 1:** make the roots of non-pinned pinning modules independent of depth, for
-  example `Path(cells.__file__).resolve().parents[1]`, as `cells.io.source_hashes` does. Here
-  that is `charged_surface_work` and `charged_surface_backend_gate` (`parents[4]`). Neither file
-  is pinned, so no pin goes stale.
-  - With R4, the charged-surface law runs after move 1 with all its pins live: only the
-    membrane_redistribution key changes, as P4 shows. `test_charged_surface_repository`, which
-    passes today and which the BLAS pin also met, stays green.
+- **R4, before move 1:** `charged_surface_work` takes its root from the package
+  (`Path(cells.__file__).resolve().parents[2]`, as `cells.io.source_hashes` does) instead of
+  `parents[3]`.
+  - It is the only pinning module that needs this. Nothing pins its own bytes (src inventory
+    and data-file pins both).
+  - `charged_surface_backend_gate`'s `parents[4]` names the root of a released frozen snapshot
+    (`<root>/source/src/cells/processes/…`, checked against a hard-coded path). It refuses in any
+    live tree, before and after the move, so it is left alone. Its release layout belongs to
+    that held component's own release.
+  - *The probe's P5 shows it:* R4 by hand (P5a, the same folder at today's layout), then the
+    tool moves the law and its three backend modules into `legacy/processes/` (P5b).
+    - `_pins()` holds from the new depth.
+    - The five tier-1/2 files keep every outcome, 89 passed and 2 skipped,
+      `test_charged_surface_repository` included. That is the test the BLAS pin also met.
+    - **The negative control:** the same move without R4 makes the law fail at
+      `src/src/cells/__init__.py` (`FileNotFoundError`; `$E/p5-without-r4/`).
 - **The stable-seed and conservative-polygon cluster stays as it is,** because its pins form
   chains: R4 would make the outer pins stale.
   - After move 1 these laws refuse at their pin checks.
-  - Their gate tests already fail today: 6 tier-1 files with exit code 1
-    (`$E/pinned-cluster-tests.json`). On D189's list:
+  - Their gate tests already fail today, before any pin check: they lack a frozen-evidence
+    root, or index variables are unset. `test_conservative_polygon_tissue_preparation.py` is
+    the exception: it already refuses at a stale pin (`core/surface_tissue_spec.py`). So the
+    move changes no outcome the gates see.
+  - 6 tier-1 files fail, with exit code 1 (`$E/pinned-cluster-tests.json`). On D189's list:
     - 2 are firm: `test_stable_seed_control_volume_{environment,physical_bridge}.py`;
     - 3 are held: `test_stable_seed_partition_{advance,advance_refinement,trajectory}.py`. The
       held list is reviewed again once D188 has cut the couplings;
@@ -338,8 +367,11 @@ that move 1 must cut is different.
 | R4 | refactor | Depth-independent roots of `charged_surface_work` and `charged_surface_backend_gate` (§5) |
 | M1 | move | 318 modules; the rewriter changes 649 files with 2661 edits: 2598 import statements, 54 strings, 7 programs in strings, 2 comments (`$E/scan-move1-draft.json`) |
 
-The map is regenerated on the head that holds the pin and the retire, and after R1–R4. The probe
-shows that its commits verify.
+The map is regenerated on the head that holds the pin and the retire, and after R1–R4.
+- **The BLAS pin landed on main at df9c5063** (`core/blas_threads.py`, `core/__init__.py` and the
+  run entry points; `cells/__init__.py` unchanged). No module it touches moves in move 1.
+- **Gates after the pin** compare crossrev with `record-cda5dc82`, on any CPU count, which is
+  still recorded.
 
 ## 8. Gates per commit
 
@@ -353,6 +385,11 @@ Every refactor and move commit passes:
   - on two CPUs of one core until the BLAS pin lands, and on any allocation after;
 - **G1 at 113 of 113,** each shard on one CPU (`$T/g1-shard.sh`);
 - **tiers 1 and 2 with 0 changed.**
+
+**Counts can hide a changed failure** in a file that is already red, for example a pin
+assertion that becomes a missing file. Each commit also diffs the normalized failure lines of
+its red files. On the probe, the 8 red files that read pins on moved files kept their failure
+lines (`$E/red-files-failure-lines.txt`).
 
 Tier 3 runs once on the final tree against `tests/tier3_record.json`, together with G3 and G4
 (D194). That record's error lines hold 8 references to modules that move 1 moves, so the tier-3
@@ -434,7 +471,7 @@ Moved modules leave no aliases:
 - **An alias of a legacy module outside `legacy/` breaks move 1's rule.**
 - **There is no outside user yet:** stage 1 of the module system has not started.
 
-## 12. The probe (main fa19d80c → scratch head cea0fa6c, never merged)
+## 12. The probe (main fa19d80c → scratch head d4fa8719, never merged)
 
 **The commits:**
 - **P1:** compartment_reactions@1 (`core/reaction_spec`, `models/compartment_reactions`) into
@@ -446,17 +483,25 @@ Moved modules leave no aliases:
 - **P3:** that kernel into `laws/pumps/`, by the tool.
 - **P4:** `numerics/membrane_redistribution.py`, pinned by path, into `legacy/numerics/`, by the
   tool.
+- **P5a:** R4 by hand on `charged_surface_work`.
+- **P5b:** the pinning law `charged_surface_work` and its three backend modules into
+  `legacy/processes/`, by the tool.
+
+The active-path checks (crossrev, G1, continuity) ran on P3. P4 and P5 change only older-family
+code, which those checks' worlds do not load.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| verify P1, P3, P4 (the final tool; selftest 28 of 28) | holds: 0 problems each; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P3-planted.json`, `$E/selftest-final.json` |
+| verify P1, P3, P4 (the tool as committed at 910ebce0; selftest 28 of 28), P5b | holds: 0 problems each; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P5b.json`, `$E/verify-P3-planted.json`, `$E/selftest-final.json` |
 | P2's extraction | moved text identical; other code identical; only imports changed | `$E/extraction-P2-check.txt` |
-| Collected test IDs (P3 and P4, each against main) | identical: 20792 IDs and the same 13 collection errors | `$E/collect-*.ids`, `.log` |
+| Collected test IDs (P3, P4 and P5b, each against main) | identical: 20792 IDs and the same 13 collection errors | `$E/collect-*.ids`, `.log` |
 | crossrev's nine sets (P3), on CPUs 8,24 against `record-a83d8f15` (made on 6,22) | identical in all nine; file listings identical | `$E/crossrev-db8086ea/` |
 | G1, six worlds (one per model: @3, composite ×2, water@1, water@2, replacement), one CPU each | identical: 6 of 6, all 688 arrays bitwise | `$E/g1-db8086ea/compare-vs-a83d8f15.json` |
 | Continuity resume: checkpoint under main, admitted for P3 by `admit.py`, resumed, compared | proposed (P, B, H, O identical; 31 changed files) and finalised; bitwise at every round; `verify_run` verified | `$E/continuity-db8086ea/` |
-| Pinned law (P4) | `_pins()` holds; pin-table digest changes; 5 tier-1/2 files, 89 passed 2 skipped in both. P4 changes only older-family code, so the active-path checks above stand on P3 | `$E/p4-check/` |
-| Tiers 1+2 (P3), 6 CPUs | 518 files, 0 changed against `tests/test_tiers.json`. One count increase, `test_cell_owned_compartments.py` at 148 passed against 140, the same as at a83d8f15 | `$E/tiers-1+2-db8086ea/summary.json` |
+| Pinned file moved (P4) | `_pins()` holds; pin-table digest changes; 5 tier-1/2 files, 89 passed 2 skipped in both | `$E/p4-check/` |
+| Pinning law moved after R4 (P5b against P4) | `_pins()` holds from `legacy/processes/`; 5 tier-1/2 files keep every outcome. Without R4: `FileNotFoundError` at `src/src/cells/__init__.py` | `$E/p5-check/`, `$E/p5-without-r4/` |
+| Tiers 1+2 (P3), 6 CPUs | 518 files, 0 changed against `tests/test_tiers.json`. One count increase, `test_cell_owned_compartments.py` at 148 passed against 140, the same as at a83d8f15. The 8 red files that read pins on moved files keep their failure lines | `$E/tiers-1+2-db8086ea/summary.json`, `$E/red-files-failure-lines.txt` |
+| Tiers 1+2 (P4), 6 CPUs | PENDING | `$E/tiers-1+2-cea0fa6c/summary.json` |
 
 ## 13. Estimates
 
@@ -485,3 +530,9 @@ Moved modules leave no aliases:
 3. **D189's coupling list:** under the ruling it is the 7 R3 sites, not the 42 (§7.2).
 4. **Whether any checkpoint must cross move 2** (§9).
 5. **Tier 3's error lines** name moved modules: the diff reads the record through the maps.
+6. **`ensemble/{cluster,coupled}`** (the adapters for the two assembly engines) move to
+   `legacy/ensemble/`. `ensemble/families` and `ensemble/cli` stay, as dispatch points (§6).
+7. **Registered protocol JSON and other records stay unedited** (§3.2): the default, to
+   confirm.
+8. **The audits that read one path in two trees** (§3.2): retire with the cluster's tests, or
+   translate by hand.
