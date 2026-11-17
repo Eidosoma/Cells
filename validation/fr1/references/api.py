@@ -269,12 +269,23 @@ def free_energy(amounts_fmol: dict, volumes_pL: dict, temperature_K) -> float:
 
 
 def energy(world: dict, constants=None) -> dict:
-    """A.10 along the reference trajectory of a two-node world (R_closed's or a C11 world): the
-    nodes' free-energy change dG(t) = sum_nodes [G(n(t)) - G(n(0))] (pJ), per node and in
-    total, evaluated per node as a stable increment in decimals, with a float64 second
-    evaluation as its floor; and the trajectory itself with its floor."""
+    """A.10 along the reference trajectory of a two-node world: R_closed's, a C11 world, or C6
+    (A.6, loading with clearance, whose trajectory is ``linear``'s). The nodes' free-energy
+    change dG(t) = sum_nodes [G(n(t)) - G(n(0))] (pJ), per node and in total, is evaluated per
+    node as a stable increment in decimals, with a float64 second evaluation as its floor; the
+    trajectory itself is returned with its floor. In C6 the cleared amount leaves both nodes,
+    and dG is the loading's and the clearance's work together."""
     check_constants(constants)
-    traj = closed(world)
+    if world.get("reactions"):
+        raise ValueError("a reaction's energy needs its standard potentials, which no world "
+                         "declares")
+    if "clearance_per_s" in world:
+        lin = linear(world)
+        traj = {"times_s": lin["times_s"], "form": "A.6",
+                "amount_fmol": {n: lin["amount_fmol"][n][SPECIES] for n in lin["nodes"]},
+                "floor_fmol": {n: lin["floor_fmol"][n][SPECIES] for n in lin["nodes"]}}
+    else:
+        traj = closed(world)
     T = world["temperature_K"]
     per_node, floors = {}, {}
     for node, n in traj["amount_fmol"].items():

@@ -152,6 +152,27 @@ def test_linear_worlds_against_their_ODEs_and_planted_sites():
     assert np.abs(got - y).max() < 1e-15
 
 
+def test_C6_energy_follows_loading_with_clearance_and_a_dropped_minus_one_shows():
+    w = INP["R_energy"]["worlds"]["C6_load_and_degrade"]
+    e = api.energy(w, INP["constants"])
+    lin = api.linear(w)
+    vols = {n: w["nodes"][n]["volume_pL"] for n in ("cell_0", "ecs_0")}
+    start = {n: _S(w, n) for n in vols}
+    for k in (0, 100, 300):
+        now = {n: lin["amount_fmol"][n]["S"][k] for n in vols}
+        dG = api.free_energy(now, vols, 310.0) - api.free_energy(start, vols, 310.0)
+        assert abs(e["dG_pJ"][k] - dG) <= 1e-14 * max(abs(dG), 1e-30) + 1e-18
+    # planted: G without its "-1" moves by RT sum dn, which C6's clearance makes nonzero
+    rt = 1e-3 * 8.31446261815324 * 310.0
+    sum_dn = sum(lin["amount_fmol"][n]["S"][-1] - start[n] for n in vols)
+    assert abs(rt * sum_dn) > 1e10 * e["dG_floor_pJ"].max()
+    bad = copy.deepcopy(w)
+    bad["reactions"] = {"x": {"rate_constant_per_s": 1.0, "sites": {"outside": ["ecs_0"]},
+                              "reactants": {"S": 1}, "products": {"P": 1}}}
+    with pytest.raises(ValueError, match="standard potentials"):
+        api.energy(bad, INP["constants"])
+
+
 def test_capacitor_and_energy():
     net = INP["R_capacitor"]["network"]
     v = api.capacitor(net, [-6e-14, -6e-14], [0.0, 1e-17])

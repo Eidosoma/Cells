@@ -33,7 +33,7 @@ DESIGNS = HERE / "designs"
 DESIGN_FILE = DESIGNS / "fr1_reference_design.json"
 VALUES_FILE = DESIGNS / "fr1_reference_values.json"
 REGISTERED = "2026-11-17"
-SOURCE = ("branch fr1-protocol, commit f78dacb9 (unchanged since cf61c252), "
+SOURCE = ("branch fr1-protocol, commit 2305446b (amended inputs; registered first at f78dacb9), "
           "validation/closed_compartment/reference_inputs.json (copied byte for byte)")
 MIN_MARGIN = 10.0
 NOISE_CEILING = 1e-12
@@ -80,6 +80,10 @@ def thin(o, key=""):
     if isinstance(o, list):
         return [thin(v, key) for v in o]
     return o
+
+
+def _unthin(x) -> np.ndarray:
+    return np.asarray(x["values"] if isinstance(x, dict) else x, dtype=np.float64)
 
 
 def _maxdev(a: dict, b: dict) -> float:
@@ -222,6 +226,11 @@ def _linear_power(inputs: dict, values: dict) -> dict:
         if name == "C8_uptake_path":
             ctrl["uptake_1pct"] = _maxdev(_flat(api.linear(_scaled(w, 1.01, "kappa_per_s"))),
                                           flat)
+            Ve = exact(w["nodes"]["ecs_e"]["volume_pL"])
+            Vc = exact(w["nodes"]["cell_0"]["volume_pL"])
+            # kappa_u = 1e15 k_u A / V on the cytosol's volume instead of the source's
+            ctrl["kappa_on_cytosol_volume"] = _maxdev(
+                _flat(api.linear(_scaled(w, float(Ve / Vc), "kappa_per_s"))), flat)
         split = _split_standins(w, ref)
         honest = max(split.values())
         ceiling = min(ctrl.values()) / MIN_MARGIN
@@ -276,22 +285,25 @@ def _energy_power(inputs: dict, values: dict) -> dict:
                    for k in ("C3_flux", "C3_first_order", "C4_two_way", "C5_saturable")})
     for name, w in worlds.items():
         ref = values["R_energy"][name]
-        dG = np.asarray(ref["dG_pJ"])
+        dG = ref["dG_pJ"]
         T = w["temperature_K"]
         rt = float(GAS_CONSTANT * exact(T)) * 1e-3
         Vc = float(w["nodes"]["cell_0"]["volume_pL"])
         Vo = float(w["nodes"]["ecs_0"]["volume_pL"])
-        dno = np.asarray(ref["amount_fmol"]["ecs_0"]) - \
-            float(w["nodes"]["ecs_0"]["initial_fmol"]["S"])
+        dn = {k: _unthin(ref["amount_fmol"][k]) - float(w["nodes"][k]["initial_fmol"]["S"])
+              for k in ("cell_0", "ecs_0")}
+        sum_dn = dn["cell_0"] + dn["ecs_0"]
+        dGv = _unthin(dG)
         ctrl = {
-            "sign": float(np.max(np.abs(2 * dG))),
-            "volume_dropped": float(np.max(np.abs(rt * dno * np.log(Vo / Vc)))),
-            "rounded_RT": float(np.max(np.abs(dG)) * abs(2577.0 / (rt * 1e3) - 1)),
-            "dropped_minus_one": 0.0,
-            "one_molar_standard_state": 0.0,
+            "sign": float(np.max(np.abs(2 * dGv))),
+            "volume_dropped": float(np.max(np.abs(rt * (dn["ecs_0"] * np.log(Vo) +
+                                                         dn["cell_0"] * np.log(Vc))))),
+            "rounded_RT": float(np.max(np.abs(dGv)) * abs(2577.0 / (rt * 1e3) - 1)),
+            "dropped_minus_one": float(np.max(np.abs(rt * sum_dn))),
+            "one_molar_standard_state": float(np.max(np.abs(rt * np.log(1000.0) * sum_dn))),
         }
         floor = float(np.max(ref["dG_floor_pJ"]))
-        out[name] = {"max_abs_dG_pJ": float(np.max(np.abs(dG))), "floor_pJ": floor,
+        out[name] = {"max_abs_dG_pJ": float(np.max(np.abs(dGv))), "floor_pJ": floor,
                      "controls": ctrl,
                      "margins_over_floor": {k: (v / floor if v else 0.0)
                                             for k, v in ctrl.items()}}
@@ -375,10 +387,10 @@ SETTLED = [
                 "the doubles of 1e15 k_u A/V) and checked against 1e15 k_u A/V of the import's "
                 "source to 1e-14; a mismatch is refused"},
     {"reading": "7. The splitting term",
-     "settled": "the inputs' returns line reads 'x* - x_eq beside -a(a + 2b) dt^2/96'; the "
-                "design's wording since 4adb6fed names the relative displacement, x*/x_eq - 1 = "
-                "-a(a + 2b) dt^2/96 (§2.3). Both are returned: the relative displacement meets "
-                "the leading term (ratio 1 - O(dt)), the absolute one is x_eq times it"},
+     "settled": "the fixed point's relative displacement x*/x_eq - 1 = -a(a + 2b) dt^2/96 "
+                "(§2.3, the design's wording since 4adb6fed; the inputs' returns line names it "
+                "since 2305446b). It meets the leading term at ratio 1 - O(dt); the absolute "
+                "displacement x* - x_eq = x_eq times it is returned beside it"},
     {"reading": "8. C7's moiety",
      "settled": "S + P over the cytosol's S and the compartment's S and P; P's cytosolic row is "
                 "untouched and is reported as its own constant"},
@@ -440,15 +452,16 @@ NOTES = [
     "absolute 2e-8 pJ its margin is 1 to 60 (power.C10_C11_energy).",
     "The registered values keep every k-th record of long arrays and the last, and each floor's "
     "largest value; the API returns every record and every floor.",
+    "Amendment 2305446b gave power to two of the registration's zero-power cases: kappa on the "
+    "wrong volume in C8 (ecs_e is now 2 pL against the cytosol's 1 pL) and a dropped -1 or a "
+    "1 M standard state in dG (C6 with its clearance joins R_energy).",
 ]
 
 ZERO_POWER = [
-    {"control": "kappa on the wrong volume in C8", "why": "ecs_e and cell_0 are both 1 pL",
-     "remedy": "an extracellular node of another volume"},
-    {"control": "a dropped -1, or a 1 M standard state, in A.10's dG",
-     "why": "every world moves S between two nodes, so sum dn = 0 and both shifts vanish",
-     "remedy": "a law that changes the total, such as C6's clearance or C7's reaction, in "
-               "R_energy"},
+    {"control": "a dropped -1, or a 1 M standard state, in A.10's dG, in every world but C6",
+     "why": "those worlds move S between two nodes, so sum dn = 0 and both shifts vanish",
+     "remedy": "given power in C6 (amendment 2305446b): its clearance removes S from both "
+               "nodes (power.C10_C11_energy.C6_load_and_degrade)"},
     {"control": "V_b's orientation", "why": "a silent compartment has q_j = 0, so V_b = 0 either "
      "way", "remedy": "a charged compartment (q_j != 0), which version 1 refuses"},
     {"control": "the swapped palindrome against the closed form (C4)",
