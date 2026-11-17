@@ -6763,6 +6763,8 @@ advisor.
   - **L4:** D175's four fields are designed once, against fuel (D174), machines and mitochondria.
     D174's fuel case stays their first consumer.
   - **L5:** the zero-rate run belongs to the mitochondria lane, which owns the synthesis law.
+- **Amended by D214 (user, 17 November):** the static level-of-detail contract (D175's four fields,
+  with finite fuel as the first executable consumer) comes before M1a.
 
 ## D210: Mitochondria: the level of detail is chosen per research question; individuals sooner
 
@@ -6879,9 +6881,14 @@ adviser in on this". The lead reviewed it with the advisor.
   They land before move 2's map is regenerated, as an exception to D195's "code follows move 2".
 - **Items 2–7 are the core backlog,** mapped to their seams and records in CURRENT_PLAN's
   17 November section. They are not new decisions.
-- **Two order questions are flagged for the user, not decided:**
+- **Two order questions were flagged for the user, not decided:**
   - item 4 pulls D175's fields ahead of M1a in D209's order;
   - item 3's first outside module brings back D195's question of a public stability promise.
+
+  **The user answered the same evening:** "1. sure, 2. but low priority".
+  - Item 4 comes before M1a: the static level-of-detail contract, with finite fuel as its first
+    consumer, precedes machines' M1a. This amends D209's order.
+  - Item 3 (the installed external module and the stability-promise question) is low priority.
 - **Item 7 was applied the same day:**
   - CURRENT_PLAN was refreshed;
   - the README's status was brought to 17 November;

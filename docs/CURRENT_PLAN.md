@@ -71,8 +71,7 @@ b661cd1a, was forwarded by the user. Their instruction: "two fixes then backlog"
    - The built model freezes the component resolution it used, as the AGENTS.md provenance rules
      allow: no per-call or bytecode attestation, and no hash literals.
    - Unused-module invariance extends to a world that uses a real kind.
-   - **For the user:** a first outside module brings back D195's question of a public stability
-     promise.
+   - **Low priority** (the user, D214), and with it D195's question of a public stability promise.
 4. **The minimal static level-of-detail contract.** D175's four fields are designed together for
    fuel, machines and mitochondrial hosts. Requirements are in ARCHITECTURE.md, "Levels of detail".
    - Finite fuel is the first executable consumer: a reduced regeneration closure against a small
@@ -80,7 +79,7 @@ b661cd1a, was forwarded by the user. Their instruction: "two fixes then backlog"
      refusal.
    - Selection is fixed before a run.
    - The executable comparison is new and unestimated.
-   - **For the user:** this pulls the fields ahead of M1a in D209's order.
+   - **The user agreed** that it comes before machines' M1a (D214).
 5. **General composition through D191's declared-read rule:** current volume, area, activity masks
    and population capacity, proved with an independent additional operator. Explicit refusals stay.
 6. **The packed GPU qualification on the merged core** (§ "Status on 14 November", item 4;
@@ -94,8 +93,12 @@ b661cd1a, was forwarded by the user. Their instruction: "two fixes then backlog"
    restructure's G3 negative controls and G4 measurements (compile time, memory, end-to-end time),
    as recorded above and in PROGRESS.
 
-**The order:** the two fixes, then the retire (D198), move 2, and the pass, with about four owners
-(D213). Items 3, 4 and 6 are new to the lane; the user places them.
+**The order:**
+1. The two fixes.
+2. The retire (D198) and move 2.
+3. The pass, with about four owners (D213). Item 4 runs ahead of machines' M1a.
+4. Item 6, as the L4 allows.
+5. Item 3 last, at low priority.
 
 ## Status on 14 November 2026, and the working order (D156)
 
