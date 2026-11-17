@@ -8,7 +8,7 @@ when the model is built (no value enters a program):
 - layout(spec): the world's values as host arrays, one lane's;
 - founder(spec): the founder's counts, padded to the type capacity;
 - components(spec): the registered IDs the definition uses (model, laws, operators);
-- run(spec) (runner.py) and write_run / write_pair (records.py).
+- run(spec) (runner.py) and write_run / write_pair (records.py); RUNNER names the entry.
 """
 
 import numpy as np
@@ -17,6 +17,9 @@ from cells.models.assembly_lineages import MODEL_ID, factors, ledger, streams
 from cells.models.assembly_lineages.kernel import Layout, Structure
 
 OBSERVER_ID = None  # No fixed-step observer: records come from the lineage itself (records.py).
+# Its own runner, declared as data: the command line's fixed-step paths (`cells validate`, `cells
+# run`) refuse a model that declares one, naming it, before they build a time grid.
+RUNNER = "cells.models.assembly_lineages.runner:run"
 
 
 def structure(spec):
