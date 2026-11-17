@@ -849,7 +849,15 @@ each runs. All are development runs of the engine, not judged (D138).
     why it is lower is not measured here.
 - **Packaging, stated rather than inferred** (no run changed):
   - Every tissue package's `criterion.json`, and each sweep in `viewer/summary.json`, lists the
-    tumor's cells (`tumor_cells`, as seeded).
+    tumor's cells (`tumor_cells`, as seeded) and the species map (`species`: u miR200, m Zeb
+    mRNA, z ZEB protein).
+  - Each arm's place against x2 is data (`place`: D, its ratio to x2, a label such as "x2/2" and
+    its side, below, at or above), in `criterion.json` and in the summary's arms. The source is
+    section 7.5's x2 for the line, and for the sheet the same x2, the sheet's own threshold being
+    section 7.6's.
+  - The junctions' miR200 transfers are in every view with D > 0, the sheet's included
+    (`observed_passive_transferred`, over species and passive route, each route's junction in the
+    `passive_route` set's `at`). The D = 0 arms record none: they declare no routes.
   - The cells' places are prescribed in each view: `view.json`'s `space` (2 dimensions, µm,
     "prescribed") and the `cell` set's `geometry` (spheres: a centre and a radius per cell, in
     the set's `ids` order). The `junction` set's `geometry` gives each junction's two cells

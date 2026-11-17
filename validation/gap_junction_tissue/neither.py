@@ -392,6 +392,36 @@ SHEET_NOTE = (
     "2,000 s, a tenth of the line's, so each outcome is the state at 2,000 s "
     "(docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7.6)."
 )
+# The 1D search's threshold (section 7.5), against which every arm's place is stated as data.
+X2_M2_S = 7.177734375e-15
+X2_SOURCE = dict(
+    line="the 1D search's threshold x2 (docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7.5)",
+    sheet="the line's threshold x2 (section 7.5); the sheet's own lies between x2/8 and x2/4 at "
+    "2,000 s (section 7.6)",
+)
+SPECIES_MAP = {"u": "miR200", "m": "Zeb mRNA", "z": "ZEB protein"}
+X2_FRACTIONS = {
+    0.0: "0",
+    1 / 16: "x2/16",
+    1 / 8: "x2/8",
+    1 / 4: "x2/4",
+    1 / 2: "x2/2",
+    1.0: "x2",
+    2.0: "2 x2",
+}
+
+
+def threshold_place(d, shape="line"):
+    """An arm's place against x2, as data: its ratio, a label where it is a registered fraction,
+    and its side (below, at or above)."""
+    ratio = d / X2_M2_S
+    label = next((v for k, v in X2_FRACTIONS.items() if abs(ratio - k) <= 1e-12), f"{ratio:.4g} x2")
+    side = "at" if abs(ratio - 1.0) <= 1e-12 else ("below" if ratio < 1.0 else "above")
+    return dict(
+        D=d, x2=X2_M2_S, ratio_to_x2=ratio, relative_to_x2=label, side=side, source=X2_SOURCE[shape]
+    )
+
+
 TUMOR_CELLS_OF = {
     shape: [c for c, kind in tissue(shape)[0] if kind == "tumor"] for shape in ("line", "sheet")
 }
@@ -483,7 +513,8 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0, shape="lin
     out["seconds"] = time.perf_counter() - started
     ids = list(spec.model.species_ids)
     out["final_units"] = final_units(directory, ids, n_cells)
-    out["sidecar"] = criterion_sidecar(directory, ids, n_cells, out["tumor"])
+    out["place"] = threshold_place(d, shape)
+    out["sidecar"] = criterion_sidecar(directory, ids, n_cells, out["tumor"], out["place"])
     out["species_sidecars"] = species_sidecars(directory, ids, n_cells)
     entry = dict(
         format="gap_junction_tissue.neither_run@1",
@@ -553,7 +584,7 @@ def cell_state(value):
     return "X"
 
 
-def criterion_sidecar(directory, species_ids, n_cells=N_CELLS, tumor_cells=None):
+def criterion_sidecar(directory, species_ids, n_cells=N_CELLS, tumor_cells=None, arm_place=None):
     """criterion.json beside a tissue arm's package (a viewer sidecar written by the driver, not an
     engine field): each cell's miR200 minus Zeb mRNA (uM) per observed row, from the record's own
     observed amounts (its chunks) and volumes, and its state under BITSEY's criterion. The cells
@@ -582,6 +613,8 @@ def criterion_sidecar(directory, species_ids, n_cells=N_CELLS, tumor_cells=None)
         states=[[cell_state(x) for x in row] for row in values],
         # The tumor's cells, as seeded (the view's cell ids): stated, not inferred.
         tumor_cells=list(tumor_cells if tumor_cells is not None else TUMOR_CELLS_OF["line"]),
+        species=SPECIES_MAP,
+        place=arm_place,
     )
     (directory / "criterion.json").write_text(json.dumps(sidecar, allow_nan=False))
     return "criterion.json"
@@ -671,6 +704,7 @@ def records_summary(results):
         dict(
             arm=r["arm"],
             parameter=r["d"],
+            place=r.get("place") or threshold_place(r["d"], r.get("shape", "line")),
             readouts={
                 f"cell_{k + 1:02d}": u - m
                 for k, (u, m) in enumerate(
@@ -721,6 +755,7 @@ def records_summary(results):
         arms=arms,
     )
     sweep["tumor_cells"] = sorted(tumor, key=cell_ids.index)
+    sweep["species"] = SPECIES_MAP
     note = (
         "Development runs of the engine, not judged (D138). One scaled unit of the switch is 1 uM "
         "here. Species: u is miR200, m Zeb mRNA, z ZEB protein; each concentration is the amount "
@@ -751,7 +786,8 @@ def rewrite_packaging(run_dir):
         r.setdefault("tumor", TUMOR_CELLS_OF[shape])
         directory = run_dir / "viewer" / r["arm"]
         ids = json.loads((directory / "summary.json").read_text())["species_ids"]
-        written[r["arm"]] = criterion_sidecar(directory, ids, len(cells), r["tumor"])
+        r.setdefault("place", threshold_place(r["d"], shape))
+        written[r["arm"]] = criterion_sidecar(directory, ids, len(cells), r["tumor"], r["place"])
     summary = records_summary([r for r in results if r.get("status") == "done"])
     summary["note"] += (
         " criterion.json and this summary were rewritten after the run by neither.py --sidecars, "
