@@ -34,9 +34,9 @@
   "C5_saturable": "saturable_release: the compartment at 1e-2 mM (1e-3 fmol) released into the cytosol by a saturable import, a = A V_max = 2e-4 fmol/s, K_M = 5e-3 mM (b = 5e-4 fmol), 5 s, ARS at 1 ms",
   "C6_degradation": "load_and_degrade: first-order loading (k_e = 1/s) with turnover's first-order clearance at ecs_0 (k = 2/s), 3 s, ARS on the ladder",
   "C7_reaction": "load_and_react: first-order loading (k_e = 1/s) with D152's mass-action S -> P at ecs_0 (k_r = 2/s; S and P one moiety; P at the trace elsewhere), 3 s, ARS on the ladder",
-  "C8_uptake": "uptake_path: ecs_e (1 pL, face-free, S at 1e-3 mM) -> the cytosol by a first-order import on contact_e (kappa_u = 2/s) -> the compartment by a first-order export (k_e = 1/s), a closed three-node chain, 5 s, ARS on the ladder",
+  "C8_uptake": "uptake_path: ecs_e (2 pL, face-free, S at 1e-3 mM; unequal to the cytosol's 1 pL so that a kappa on the wrong volume shows, the references' power finding) -> the cytosol by a first-order import on contact_e (kappa_u = 2/s) -> the compartment by a first-order export (k_e = 1/s), a closed three-node chain, 5 s, ARS on the ladder",
   "C9_silence": "W+ (compartment_fixtures.live_compartment: the owner at K 140, Na 10, Cl 20 mM with a K leak and -0.06 V through its anchor; the compartment loaded by exchange), in the scalar, windowed, vector-window and batch programs, under RK4 at 0.1 ms, and across a restart through a snapshot; S4 against live_without_compartment",
-  "C10_energy": "every C3, C4 and C5 world's route work against R-energy; the RK4 face-free world (C3's first-order loading at 0.1 ms, every row); the IMEX species-only worlds of C3 to C8",
+  "C10_energy": "every C3, C4 and C5 world's route work against its free-energy change; C6's loading with clearance, whose S leaves the two nodes (sum dn != 0, so a dropped -1 or another standard state in G shows), against R-energy; the RK4 face-free world (C3's first-order loading at 0.1 ms, every row); the IMEX species-only worlds of C3 to C8. The exact SI constants throughout, as FR-10's: with Appendix A's rounded RT, dG moves by 2.5e-8 to 1.2e-6 pJ, a margin of only 1 to 60 against RK4's 2e-8 pJ (the references' finding)",
   "C11_from_trace": "from_trace: each of the four laws (flux and first-order export into a 1e-15 mM compartment; saturable and first-order import into a 1e-15 mM cytosol) under ARS at 1 ms (1 s) and RK4 at 0.1 ms (0.2 s), recorded at every step",
   "C12_restart_batch": "two_way with a change of both rates at 0.5 s: restarts through the engine's checkpoint at 0.25, 0.5 and 0.75 s (before, at and after the change), in process and through a snapshot; a vector batch of four worlds with different compartment volumes and rates against each world's scalar run and against the reversed batch",
   "C13_controls": "each plant in its own process (validation/tissue/compartment_acceptance_plants), its identity and size in its bundle (the lead's ruling 2). A misbooked move: C3's first-order loading under ARS at 1 ms, recorded at every step to 0.1 s, where the compartment's S is raised by 1e-6 of the route's booked move, its accumulator unchanged. A misbooked work: C10's RK4 world to 0.3 s, where the route's booked work is scaled by 1 + 2e-3. The rows before a plant are the unplanted run's; the planted row is the edited checkpoint, which the engine checks on resuming (runner.validate_checkpoint runs the row checks): a state edit, so no engine code is patched and no compiled step is shared with a judged world",
@@ -68,7 +68,7 @@
   "C5_saturable": "the node amounts within rounding and the Newton tolerance of R-closed's implicit solution at every record",
   "C6_C7_C8_linear": "each node's S (C7's P too) at the declared 1 ms within B_split of R-linear at every record; orders on the ladder by the classes rule; C6's cleared amount and C7's moiety within B_split",
   "C9_silence": "S1 bitwise, S2 and S3 within @3's charge tolerance at every row in every program and across the restart; the owner live (its K row moving, |phi| >= 0.05 V); S4 reported",
-  "C10_energy": "each route's cumulative work equal to its touched nodes' free-energy change at rounding on the engine's trajectory, and against R-energy within the energy budget; the RK4 world within the absolute 2e-8 pJ at every row; the IMEX worlds' energy residual over the integrated flows <= 2e-3 at every record",
+  "C10_energy": "each world's summed route work (and C6's clearance work) equal to its nodes' free-energy change at rounding on the engine's own trajectory; C6's summed work against R-energy's change of both nodes' G within RT B_split sum_i max_t |ln c_i| (B_split carried through dG/dn_i = RT ln c_i); the RK4 world within the absolute 2e-8 pJ at every row; the IMEX worlds' energy residual over the integrated flows <= 2e-3 at every record",
   "C11_from_trace": "every row of the eight runs: the energy ledger within its bound (RK4's absolute 2e-8 pJ; ARS's 2e-3 relative), and the onset step's residual at rounding of its own flows; the trajectory at rounding of R-energy's",
   "C12_restart_batch": "every restart bitwise the straight run from its time; each batched world within 1e-12 relative of its scalar run and bitwise its place in the reversed batch",
   "C13_controls": "the misbooked move fails the compartment's outside ledger while the cytosol's passes; the misbooked work fails the RK4 world's energy ledger. Exactly the planted rows are flagged: every unplanted row before a plant within every bound, and the planted row refused by the engine naming the plant's ledger; each detection margin, the planted row's ratio to its bound, at least 10 x (the move's about 9e6 x, the work's about 21 x; stated in the bundle)"
@@ -76,6 +76,8 @@
  "controls": {
   "K1": "C4 at the declared rung against R-closed without its import (a one-way world's solution): at least 10 x B_split",
   "K2": "C6 without its clearance against R-linear's C6: at least 10 x B_split",
+  "split_order": "the controls' margins over B_split in C6 to C8 hold because the split is second order: at 1 ms a first-order (Lie) split would err by about 2.5e-7 fmol, close to a tenth of a 1% rate error's 2e-6 fmol, where the Strang split errs by about 6e-11 (the references' power finding). The dt study's observed order separates the two: a split error falls with dt, a rate error does not",
+  "swapped_palindrome": "a swapped palindrome (the stages in another order) is invisible against C4's closed form; only the comparison with R-step-map's iterated map catches it, with a margin of 4.6e3 at 0.125 ms (the references' power finding): C4_step_map is the check that catches it",
   "K3": "C9's planted controls (a) a K route of 1e-13 m/s and (b) a 1e-17 C anchor on the compartment, through milestone 1's test-only bypass of refusals 4 and 5, each in its own process (the lead's ruling 2): the anchor breaks S2 at every row, the route breaks S1 and S2 at every row after its first, each S2 ratio at least 10 x its bound, and no other row flagged",
   "K4": "C12: a restart with the rate change moved one step is not bitwise the straight run",
   "K5": "C13's two plants (the criteria's own controls)"
@@ -115,7 +117,7 @@
   "the splitting term's ratio to its leading form at each rung",
   "C12: whether each batched world is also bitwise its scalar run (observed so in development; the criterion stays 1e-12 relative, the lead's ruling 4)"
  ],
- "what_it_does_not_show": "no biological comparison (a measured trafficking or uptake dataset, registered on its own, D151); no charged content (FR-4 and FR-5); no vesicles, stochastic loading or volume change; integration grants no acceptance (D143)",
+ "what_it_does_not_show": "no biological comparison (a measured trafficking or uptake dataset, registered on its own, D151); no charged content (FR-4 and FR-5); no vesicles, stochastic loading or volume change; integration grants no acceptance (D143). V_b's orientation: C9 claims silence (V_b = 0), and a sign error in V_b cannot show in a silent compartment (the references' power finding; the lead's ruling: not shown). The references' other zero-power cases are given power before registration: a kappa on the wrong volume by C8's unequal volumes (2 pL against 1 pL), a dropped -1 or another standard state in G by C6's energy check (sum dn != 0)",
  "judged_parts": [
   "C1_refusals",
   "C2_identity",
@@ -178,7 +180,9 @@
  "disclosures": [
   "Drafted on 17 November 2026 after milestone 1, whose gates and silence results are known (§12). No budget, threshold or ladder here has been run against: no generator exists, and the worlds were only admitted and run once to their horizons to check they are well posed",
   "The reference input file was written before this draft, at the lead's request, from the same builders, and is pinned to them",
-  "17 November 2026 (FR owner), before any run of the protocol: quick development runs of every part but the stand-ins (0.4 of each horizon) tested the tools. One tool change followed: C10's closure was first bounded by N eps times the engine's recorded energy magnitudes, which the from-trace RK4 worlds exceeded at rounding (ratios 1.3 and 1.6: their changes are differences of G's much larger terms); it is now bounded by 10 x 2N eps times the largest size of G's terms, a rounding scale from A.10's form, not from the runs (the largest ratio is then 7.6e-4; in C3's flux world, by estimate, a misbooked work above about 1e-10 relative still fails). No other criterion or threshold changed. B_split became 1e-3 of the world's initial content (declared) instead of 1e-3 of each node's largest change (which needed the reference)"
+  "17 November 2026 (FR owner), before any run of the protocol: quick development runs of every part but the stand-ins (0.4 of each horizon) tested the tools. One tool change followed: C10's closure was first bounded by N eps times the engine's recorded energy magnitudes, which the from-trace RK4 worlds exceeded at rounding (ratios 1.3 and 1.6: their changes are differences of G's much larger terms); it is now bounded by 10 x 2N eps times the largest size of G's terms, a rounding scale from A.10's form, not from the runs (the largest ratio is then 7.6e-4; in C3's flux world, by estimate, a misbooked work above about 1e-10 relative still fails). No other criterion or threshold changed. B_split became 1e-3 of the world's initial content (declared) instead of 1e-3 of each node's largest change (which needed the reference)",
+  "17 November 2026 (FR owner), before any run of the protocol: C13's work plant is 2e-3 of the booked work, not the 1e-4 the lead first accepted. 1e-4 rested on the FR owner's estimate of the booked work at the planted row (about 2.6e-3 pJ); the first development run measured 2.1e-4 pJ there, a margin of only 1.06 over RK4's absolute 2e-8 pJ; 2e-3 gives 21, above the ruling's 10 (the lead accepted it, 17 November)",
+  "17 November 2026 (FR owner), after the references registered and before any engine output of the protocol, at the lead's ruling on their power findings: C8's extracellular node is 2 pL (it was 1 pL, equal to the cytosol, so a kappa on the wrong volume could not show); C6 joins R-energy (sum dn != 0, so a dropped -1 or another standard state shows); the inputs file was regenerated, and the references register a dated amendment before any engine output"
  ],
  "judge": {
   "written": "17 November 2026, by the FR owner, after the protocol's worlds were fixed and before any run of the protocol (development runs of the generator's parts on quick horizons, to test the tools, had run)",
@@ -337,6 +341,7 @@
      "C6_rung_0p125ms"
     ],
     "rk4_part": "C10_rk4",
+    "c6_part": "C6_rung_1ms",
     "imex_parts": [
      "C3_flux",
      "C3_first_order",
@@ -681,6 +686,16 @@
     "judged": true
    },
    {
+    "id": "C10_C6_reference",
+    "metrics": [
+     "derived.C10.C6_reference"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "C6 (sum dn != 0): its summed route and clearance work against R-energy's change of both nodes' G within RT B_split sum_i max_t |ln c_i| at every record",
+    "judged": true
+   },
+   {
     "id": "C10_rk4",
     "metrics": [
      "derived.C10.rk4_energy"
@@ -708,6 +723,16 @@
     "comparison": "le",
     "threshold": 1,
     "basis": "every row of the eight from-trace runs within its energy bound",
+    "judged": true
+   },
+   {
+    "id": "C11_trajectory",
+    "metrics": [
+     "derived.C11_trajectory.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "each from-trace run's amounts at rounding of R-energy's trajectory at every row",
     "judged": true
    },
    {

@@ -169,8 +169,16 @@ def parts():
         declared = D[item]["ladder_parts"][0]
         worlds[item] = reference_of(engine(item, 0.0, routes=out[declared]["routes"]))
     step_map = {name: step_map_of(out[name], dt) for name, dt in generator.C4_RUNGS.items()}
+    energy = {name: dict(record_s=list(out[name]["record_s"]),
+                         series={k: list(v) for k, v in out[name]["series"].items()
+                                 if k.startswith("amount_")})
+              for name in generator.C11_PARTS}
+    c6 = out[D["C10"]["c6_part"]]
+    energy[D["C10"]["c6_part"]] = dict(record_s=list(c6["record_s"]), dG_pJ=[
+        sum(c6["series"][f"work_{r}_pJ"][j] for r in c6["routes"])
+        + c6["series"]["cleared_work_ecs_0_pJ"][j] for j in range(len(c6["record_s"]))])
     out["references"] = dict(kind="reference", admitted=True, completed=True, worlds=worlds,
-                             step_map=step_map)
+                             step_map=step_map, energy=energy)
     return out
 
 
@@ -227,6 +235,10 @@ def _rungs(p, prefix, **kwargs):
     ("route_row0", {"K3_route"}),
     ("route_margin", {"K3_route_margin"}),
     ("anchor_row", {"K3_anchor", "K3_anchor_margin"}),
+    # A dropped -1 in C6's clearance work: RT times the cleared amount (about 1e-3 fmol in the
+    # world), against R-energy.
+    ("c6_minus_one", {"C10_C6_reference"}),
+    ("c11_trajectory", {"C11_trajectory"}),
 ])
 def test_each_planted_error_fails_its_own_criterion(plant, expected):
     p = parts()
@@ -300,6 +312,13 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
         p["K3_planted"]["plants"]["route"]["s2_rows"][7] = 5.0
     elif plant == "anchor_row":
         p["K3_planted"]["plants"]["anchor"]["s2_rows"][3] = 0.5
+    elif plant == "c6_minus_one":
+        ref = p["references"]["energy"][D["C10"]["c6_part"]]
+        ref["dG_pJ"] = [g + judge.RT_PJ_PER_FMOL * 1e-3 * (1 - math.exp(-t))
+                        for g, t in zip(ref["dG_pJ"], ref["record_s"], strict=True)]
+    elif plant == "c11_trajectory":
+        p["references"]["energy"]["C11_first_order_import_rk4"]["series"][
+            "amount_S_ecs_0"][50] *= 1 + 1e-9
     found = set(failed(p))
     assert expected <= found and found <= expected | {"C0_admission"}, found
 

@@ -16,7 +16,7 @@ bounding patch contact_0 (1e-11 m^2); no face names ecs_0. S is the neutral spec
   compartment's node;
 * load_and_react: C7 (A.7), a first-order export with D152's first-order S -> P at the node;
 * uptake_path: C8 (A.8), a first-order import on the plasma patch contact_e from the finite node
-  ecs_e (1 pL, face-free) into the cytosol, and a first-order export on the bounding patch;
+  ecs_e (2 pL, face-free) into the cytosol, and a first-order export on the bounding patch;
 * from_trace: C11 (A.2, A.5, A.10), each loading and release law from a 1e-15 mM trace on the
   receiving side, under ARS at 1 ms or RK4 at 0.1 ms.
 
@@ -34,7 +34,9 @@ DECLARED_DT, RK4_DT, RECORD_EVERY_S = 1e-3, 1e-4, 0.01
 LADDER_S = (1e-3, 5e-4, 2.5e-4, 1.25e-4)
 OWNER, NODE, PATCH = cf.OWNER, cf.NODE, cf.PATCH
 UPTAKE_NODE, UPTAKE_PATCH = "ecs_e", "contact_e"
-V_O, V_C, V_E = 0.1, 1.0, 1.0  # pL: the compartment, the cytosol, C8's extracellular node.
+V_O, V_C, V_E = 0.1, 1.0, 2.0  # pL: the compartment, the cytosol, C8's extracellular node
+# (2 pL, unequal to the cytosol's 1 pL, so a kappa on the wrong volume shows: the references'
+# power finding, ruled 17 November 2026).
 AREA_M2 = fx.CONTACT_AREA_M2  # Every contact patch's area, the bounding patch's included.
 PL_PER_M3 = 1e15
 POOL_mM, LUMEN_mM, TRACE_mM = 1e-3, 1e-6, 1e-15

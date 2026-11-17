@@ -71,6 +71,7 @@ def derivation():
         C10=dict(closure_parts=[*exact, *generator.C4_RUNGS, *generator.C6_RUNGS,
                                 *generator.C8_RUNGS],
                  clearance=list(generator.C6_RUNGS), rk4_part="C10_rk4",
+                 c6_part=list(generator.C6_RUNGS)[0],
                  imex_parts=["C3_flux", "C3_first_order", "C5_saturable",
                              list(generator.C4_RUNGS)[0],
                              list(generator.C6_RUNGS)[0], list(generator.C7_RUNGS)[0],
@@ -138,6 +139,10 @@ def criteria():
         criterion("C10_closure", [f"{d}.C10.closure_max"], "le", 1,
                   "each exact world's route work (and C6's clearance work) equal to its nodes' "
                   "free-energy change on its own trajectory at rounding"),
+        criterion("C10_C6_reference", [f"{d}.C10.C6_reference"], "le", 1,
+                  "C6 (sum dn != 0): its summed route and clearance work against R-energy's "
+                  "change of both nodes' G within RT B_split sum_i max_t |ln c_i| at every "
+                  "record"),
         criterion("C10_rk4", [f"{d}.C10.rk4_energy"], "le", 1,
                   "the RK4 face-free world within the absolute energy bound at every row"),
         criterion("C10_imex", [f"{d}.C10.imex_over_flows"], "le", ENERGY_RELATIVE,
@@ -145,6 +150,9 @@ def criteria():
                   "record"),
         criterion("C11_from_trace", [f"{d}.C11.max"], "le", 1,
                   "every row of the eight from-trace runs within its energy bound"),
+        criterion("C11_trajectory", [f"{d}.C11_trajectory.max"], "le", 1,
+                  "each from-trace run's amounts at rounding of R-energy's trajectory at every "
+                  "row"),
         criterion("C11_ledgers", [f"{d}.ledgers"], "le", 1,
                   "every material and charge ledger within its bound at every record of every "
                   "run part"),

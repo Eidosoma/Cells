@@ -159,8 +159,10 @@ def inputs():
             worlds=_ladder(af.two_way),
             returns="at each rung: the step map's fixed point x* = alpha(1 - beta)/(1 - alpha^2 "
                     "beta), x = n_c / N iterated from x(0) and the cytosol's and compartment's S "
-                    "(fmol) at every record time, and the splitting term x* - x_eq beside "
-                    "-a(a + 2b) dt^2 / 96; with a floor (the map iterated a second way)",
+                    "(fmol) at every record time, and the splitting term, the fixed point's "
+                    "relative displacement x*/x_eq - 1, beside -a(a + 2b) dt^2 / 96 "
+                    "(docs/CLOSED_COMPARTMENT_DESIGN.md §2.3); with a floor (the map iterated a "
+                    "second way)",
         ),
         R_linear=dict(
             world="C6, C7 and C8 (A.6, A.7, A.8): the declared linear systems by their matrix "
@@ -188,12 +190,18 @@ def inputs():
         ),
         R_energy=dict(
             world="A.10: G = RT sum_nodes n (ln(n/V) - 1) (pJ, c in mM)",
-            worlds=c11,
-            returns="for C3, C4, C5 (R_closed's worlds) and each C11 world here: the free-energy "
+            worlds={**c11, "C6_load_and_degrade": _world(
+                lw, "A.6 and A.10", note="the loading with clearance: its S leaves the two "
+                "nodes (sum dn != 0), so a dropped -1 or another standard state in G shows here "
+                "(the references' power finding, ruled 17 November 2026)", extra=dict(
+                    clearance_per_s=_clearance(lw), clearance_node=af.NODE))},
+            returns="for C3, C4, C5 (R_closed's worlds) and each world here: the free-energy "
                     "change of the nodes each law touches, along the reference trajectory at "
                     "every record time (pJ), and G as a function of amounts and volumes; for each "
                     "C11 world also each node's S (fmol) at every record time (its law's closed "
-                    "form from the trace), with a floor",
+                    "form from the trace); for C6 the change of both nodes' G along A.6's "
+                    "trajectory, which the loading's and the clearance's work together book; each "
+                    "with a floor",
         ),
     )
 

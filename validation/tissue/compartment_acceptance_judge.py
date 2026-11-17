@@ -27,12 +27,14 @@ The FR-1 derivations, fixed before any run:
   the splitting term identified: (x/x_eq - 1) over -a(a + 2b) dt^2 / 96, within 1e-3 of 1.
 * **Reconciliation (C3):** each loading route's cumulative moved amount against the
   compartment's gain, in the rounding budget.
-* **Energy (C10):** each world's summed route work (and C6's clearance work) against the
-  free-energy change of its nodes on the engine's own trajectory, G = RT sum n (ln(n/V) - 1)
-  (Appendix A.10, exact SI constants), in ROUNDING_FACTOR x 2N eps times the largest size of G's
-  terms, RT sum |n (ln(n/V) - 1)| (each booked change is a difference of such terms); C10's RK4
-  world and C11's rows through their energy ratio (|residual| / bound); the IMEX worlds' energy
-  residual over the integrated flows.
+* **Energy (C10):** C6's summed work against R-energy's change of both nodes' G, over RT B_split
+  sum_i max_t |ln c_i| (energy_against_reference); each world's summed route work (and C6's
+  clearance work) against the free-energy change of its nodes on the engine's own trajectory,
+  G = RT sum n (ln(n/V) - 1) (Appendix A.10, exact SI constants), in ROUNDING_FACTOR x 2N eps
+  times the largest size of G's terms, RT sum |n (ln(n/V) - 1)| (each booked change is a
+  difference of such terms); C10's RK4 world and C11's rows through their energy ratio
+  (|residual| / bound); the IMEX worlds' energy residual over the integrated flows; C11's
+  trajectories against R-energy's at rounding (against_by_step).
 * **Silence (C9):** S1 bitwise, S2 and S3 at most 1, the owner live, in every program.
 * **Comparisons** (C2, C12): the generator's identity and bit-for-bit results, read as 1 or 0; the
   batch within 1e-12 relative of its scalar runs (its bitwise equality to them reported).
@@ -44,8 +46,8 @@ The FR-1 derivations, fixed before any run:
 
 The references part (parts["references"], the FR references agent's, through its adapter) holds
 worlds: {name: {record_s, series: {amount_S_cell_0, ...}}} for C3_flux, C3_first_order, C4, C5,
-C6, C7 and C8 (each with NAME_floor), and step_map: {C4 rung part: {record_s, series, x_star,
-x_eq}}.
+C6, C7 and C8 (each with NAME_floor); step_map: {C4 rung part: {record_s, series, x_star, x_eq}};
+and energy: {part: {record_s, dG_pJ, series}} for each C11 part and C6's declared rung.
 
 Usage:
   python -m validation.tissue.compartment_acceptance_judge dev PROTOCOL OUT_DIR RESULTS [...]
@@ -174,6 +176,33 @@ def energy_closure(part, *, with_clearance=False):
     return worst
 
 
+def energy_against_reference(part, reference, budget_fraction):
+    """C10 for C6: the summed route and clearance work against R-energy's change of both nodes' G
+    (dG_pJ), over RT x B_split x sum_i max_t |ln c_i| (B_split carried through dG/dn_i =
+    RT ln c_i), the largest over the shared records; None without either side."""
+    if not completed(part) or not reference or "dG_pJ" not in reference:
+        return None
+    s, routes = part["series"], part.get("routes", [])
+    keys = {round(t / RECORD_UNIT_S): j for j, t in enumerate(part["record_s"])}
+    content = total_content(part)
+    logs = 0.0
+    for k, v in s.items():
+        if k.startswith("amount_S_"):
+            volume = part["volumes_pL"][k.split("_", 2)[2]]
+            logs += max(abs(math.log(n / volume)) for n in v)
+    budget = RT_PJ_PER_FMOL * budget_fraction * content * logs
+    worst = None
+    for t, g in zip(reference["record_s"], reference["dG_pJ"], strict=True):
+        j = keys.get(round(t / RECORD_UNIT_S))
+        if j is None:
+            continue
+        work = sum(s[f"work_{r}_pJ"][j] for r in routes)
+        work += sum(v[j] for k, v in s.items() if k.startswith("cleared_work_"))
+        ratio = abs(work - g) / budget
+        worst = ratio if worst is None else max(worst, ratio)
+    return worst
+
+
 def reconciliation(part, route, node):
     """|moved_ROUTE(t) - (n_node(t) - n_node(0))| over the rounding budget of the node's S."""
     if not completed(part):
@@ -210,6 +239,22 @@ def step_map(part, reference, a, b, dt):
     out["x_star"] = abs(x - x_star) * total / budget if budget else None
     out["splitting_ratio"] = (x / x_eq - 1.0) / (-a * (a + 2 * b) * dt * dt / 96.0)
     return out
+
+
+def against_by_step(part, reference, observables):
+    """An every-step part against its reference record by record (both recorded at every step,
+    so keyed by index), each observable over its rounding budget; None when either is missing or
+    their record times differ."""
+    if not completed(part) or not reference or reference.get("record_s") != part["record_s"]:
+        return None
+    out = []
+    for x in observables:
+        a, b = base.series(part, x), (reference.get("series") or {}).get(x)
+        budget = rounding(part, x)
+        if a is None or b is None or not budget:
+            return None
+        out.append(max(abs(u - v) for u, v in zip(a, b, strict=True)) / budget)
+    return max_or_none(out)
 
 
 def plant_verdict(bundle, ledger, passing):
@@ -321,8 +366,16 @@ def derive(parts, protocol):
     out["C10"]["rk4_energy"] = ratio_max(parts.get(d["C10"]["rk4_part"]), "energy")
     out["C10"]["imex_over_flows"] = max_or_none(
         base.energy_over_flows(parts.get(name) or {}) for name in d["C10"]["imex_parts"])
+    energy_refs = (parts.get("references") or {}).get("energy", {})
+    out["C10"]["C6_reference"] = energy_against_reference(
+        parts.get(d["C10"]["c6_part"]), energy_refs.get(d["C10"]["c6_part"]), d["split_fraction"])
     out["C11"] = {name: ratio_max(parts.get(name), "energy") for name in d["C11"]["parts"]}
     out["C11"]["max"] = max_or_none(v for v in out["C11"].values())
+    out["C11_trajectory"] = {name: against_by_step(parts.get(name), energy_refs.get(name),
+                                                   d["observables"])
+                             for name in d["C11"]["parts"]}
+    out["C11_trajectory"]["max"] = max_or_none(
+        v for k, v in out["C11_trajectory"].items() if k != "max")
     out["ledgers"] = max_or_none(
         ratio_max(parts.get(name), ledger) for name in d["ledger_parts"]
         for ledger in d["material_ledgers"])
