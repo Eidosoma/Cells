@@ -157,7 +157,7 @@ test("the repository's species are read exactly as the species reader reads them
   }
 });
 
-test("the GARD entry is a model, not an organism, under Origin of life, and claims nothing of the engine", (t) => {
+test("the GARD entry is a model, not an organism, under Origin of life, and claims of the engine only what the record says", (t) => {
   // The paths it cites are held against main's tracked files where the main checkout can be asked.
   const common = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).stdout.trim();
   const main = common ? path.dirname(common) : null;
@@ -173,15 +173,18 @@ test("the GARD entry is a model, not an organism, under Origin of life, and clai
   assert.equal(gard.clock.base, "fission");
   // Its runs are files of the assembly view's own contract (schema/ASSEMBLY_RUN.md); the reader holds each to its format, its model and its clock.
   for (const run of gard.runs) assert.ok(existsSync(path.join(ROOT, run.file)), `${run.file} is there`);
-  // What Cells models of it: designed, since its design note is on main, decided (D192); nothing in the engine.
+  // What Cells models of it: designed. The first part of GARD's build is on main (PROGRESS, 17 November 2026; D192, D197) but
+  // it is not yet listed in the engine's declarations; the word moves to "modelled" when it is (the lead's word, 17 November 2026). Its runs are not judged.
   assert.equal(gard.modelled.state, "designed");
+  assert.equal(gard.modelled.model, undefined, "no model is named before the engine's registries list one");
   assert.equal(gard.modelled.design, "docs/GARD_DESIGN.md");
   assert.match(gard.modelled.text, /^Designed, not modelled\./);
-  assert.match(gard.modelled.text, /nothing of GARD is in the engine/);
-  for (const cited of ["visualizer/docs/ORIGIN_OF_LIFE.md", "docs/GARD_DESIGN.md", "docs/DECISIONS.md"]) assert.ok(gard.modelled.record.some((item) => item.path === cited), cited);
+  assert.match(gard.modelled.text, /not yet listed in the engine's declarations/);
+  assert.match(gard.modelled.text, /not judged/);
+  for (const cited of ["visualizer/docs/ORIGIN_OF_LIFE.md", "docs/GARD_DESIGN.md", "docs/DECISIONS.md", "PROGRESS.md"]) assert.ok(gard.modelled.record.some((item) => item.path === cited), cited);
   assert.match(gard.modelled.record.find((item) => item.path === "docs/DECISIONS.md").where, /D192/);
   for (const item of gard.modelled.record) assert.deepEqual(Object.keys(item).sort(), ["path", "where"], "a citation names a tracked file and where in it, and no branch");
   // It binds to no name of the engine's design (no law, operator or record it would write), and names no branch.
-  const words = readFileSync(path.join(ROOT, "data", "models", "gard.json"), "utf8").replace('"cells.visualizer.model_system@1"', ""); // its own format aside
+  const words = readFileSync(path.join(ROOT, "data", "models", "gard.json"), "utf8").replace('"cells.visualizer.model_system@1"', "").replace('"model": "cells.assembly_lineages@1"', ""); // its own format and its registered model aside
   assert.ok(!/@\d|assembly_count|boundary_similarity|\bt0\d\d\b|gard-design/.test(words), "no law, operator or record of the engine's design, and no branch");
 });

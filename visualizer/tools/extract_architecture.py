@@ -488,7 +488,10 @@ class Build:
                 facts.append(["Lines of Python", f"{lines:,}"])
             members, models = [], []
             for path in python:
-                if not path.startswith("src/cells/models/") or path.count("/") != 3:
+                # A model module: src/cells/models/<file>.py, or a model family's package, src/cells/models/<family>/__init__.py
+                # (the assembly-lineage family, 17 November 2026, declares its MODEL_ID there).
+                parts = path.split("/")
+                if parts[:3] != ["src", "cells", "models"] or not (len(parts) == 4 or (len(parts) == 5 and parts[4] == "__init__.py")):
                     continue
                 module = self.package.module(self.package.dotted_of(self.repo / path))
                 try:

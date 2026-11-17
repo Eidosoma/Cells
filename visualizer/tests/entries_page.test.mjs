@@ -79,7 +79,9 @@ test("the switch's rows: every species and model system once, with its line and 
     assert.equal(row.kind, "model system");
     assert.equal(row.organism, item.is, "a model system's line is what it is, not an organism");
     assert.equal(row.group, item.group);
-    assert.notEqual(row.word, "Modelled");
+    assert.equal(row.word, MODELLED[item.modelled.state]);
+    // "Modelled" only where the entry names its registered model and cites the record that says so (schema/ENTRIES.md).
+    assert.ok(row.word !== "Modelled" || (/@\d+$/.test(item.modelled.model || "") && item.modelled.record?.length > 0), `${item.id}: "Modelled" with no registered model or no line of the record`);
     assert.ok(!scene.species.some((one) => one.group === item.group), "a model system stands under a heading of its own");
   }
 });
@@ -112,7 +114,7 @@ test("a species with two cell types: the Cell view plans the type shown, and its
   assert.ok(!cellLens(scene.species.find((item) => item.id === "planarian")).describe("species:planarian").sections.some((section) => section.title === "Its cell types"));
 });
 
-test("a model system's card: its levels on the rail, its word in the caveat and the panel, nothing modelled, nothing of a cell", () => {
+test("a model system's card: its levels on the rail, its word in the caveat and the panel, in the entry's own words, nothing of a cell", () => {
   const entry = modelSystems(scene)[0];
   assert.ok(entry, "the scene carries a model system");
   assert.equal(modelSystemOf(scene, entry.id), entry);
@@ -130,8 +132,9 @@ test("a model system's card: its levels on the rail, its word in the caveat and 
   assert.ok(!chrome.view, "no cell's colour or size switches");
   const panel = card.describe(entryId(entry));
   assert.equal(panel.eyebrow, "Model system");
-  assert.ok(panel.chips.some((chip) => chip.label === word) && word !== "Modelled");
-  assert.match(panel.plain, /nothing of \S+ is in the engine/i);
+  assert.ok(panel.chips.some((chip) => chip.label === word));
+  // What Cells models of it, in the entry's own words.
+  assert.equal(panel.plain, entry.modelled.text);
   assert.deepEqual(panel.sections.find((section) => section.title === "What the word rests on").items.map((item) => item.label), entry.modelled.record.map((item) => item.path));
   // Its sourced notes, word for word, each with what it cites (schema/ENTRIES.md, "Notes").
   const noted = new EntryCardLens(stage, null, null, { ...entry, notes: [{ id: "a", label: "A note", text: "Its words, as the record says them.", record: [{ path: "docs/DECISIONS.md", where: "D1" }] }] }).describe(entryId(entry));

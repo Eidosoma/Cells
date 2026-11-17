@@ -7,11 +7,13 @@ recommendation on all of those", "be ambitous"); its section "Decided" is the br
 A model system under the heading "Origin of life" (the first is a GARD assembly) is shown by a view
 of its own: an assembly growing molecule by molecule and splitting, its composition, the similarity
 across each fission, the lineage, and the table of catalysis it grows by. This file is what that view
-reads: `cells.visualizer.assembly_run@1`. It is the viewer's own contract. **No GARD run of Cells'
-engine exists, and nothing of GARD is in the engine.** The engine's GARD design note is on main,
-decided on 16 November 2026 (`docs/GARD_DESIGN.md`, D192); its build started on 17 November 2026
-(`docs/CURRENT_PLAN.md`), with nothing of it on main yet; the table below says which of the records the note designs each field would be read from, and
-an adapter is written when the engine's first run exists. No code of the viewer binds to those names.
+reads: `cells.visualizer.assembly_run@1`. It is the viewer's own contract. **The page plays no GARD run of
+Cells' engine yet.** The engine's GARD design note is on main, decided on 16 November 2026
+(`docs/GARD_DESIGN.md`, D192), and the first part of its build has been on main since 17 November
+2026: the stochastic assembly family `cells.assembly_lineages@1`, with GARD's two forms as one law
+set on it and development runs that are not judged (`PROGRESS.md`). The table below says which of
+the records the note designs each field would be read from; the adapter is being written against
+the engine's run format, and the page shows a real run only from the engine's final set.
 
 ## The file
 

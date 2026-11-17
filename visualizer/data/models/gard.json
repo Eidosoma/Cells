@@ -9,7 +9,7 @@
  "made": "2026-11-16",
  "modelled": {
   "state": "designed",
-  "text": "Designed, not modelled. Its design was decided on 16 November 2026 (D192); its build started on 17 November, and nothing of GARD is in the engine on main yet. By D197 it is one law set, kept only for comparison with Cells' own origin-of-life engine, whose first choices D199 settled.",
+  "text": "Designed, not modelled. Its design was decided on 16 November 2026 (D192). The first part of its build is on main since 17 November, not yet listed in the engine's declarations; its runs are development runs, not judged. By D197 it is kept only for comparison with Cells' own engine.",
   "record": [
    {
     "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
@@ -24,8 +24,8 @@
     "where": "D192, the design choices; D194, the order; D197, GARD is one law set, for comparison only"
    },
    {
-    "path": "docs/CURRENT_PLAN.md",
-    "where": "Also started on 17 November, at the user's request: GARD (D192), its G1 and G2 in parallel"
+    "path": "PROGRESS.md",
+    "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
    },
    {
     "path": "docs/DECISIONS.md",

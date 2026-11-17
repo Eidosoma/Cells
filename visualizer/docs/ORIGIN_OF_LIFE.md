@@ -1,7 +1,8 @@
 # Origin of life in the viewer: GARD, the options, and a recommendation
 
 Ideas and options for the user, 16 November 2026; the view the user chose is now built standing alone,
-with a preview page (see "Status", below). **Nothing of GARD is in Cells' engine yet.** The engine's
+with a preview page (see "Status", below). **When this was written nothing of GARD was in Cells'
+engine; since 17 November 2026 its first part is on main (see "The record", under the protocell).** The engine's
 GARD design note is **on main, decided on 16 November 2026** (`docs/GARD_DESIGN.md`, D192; first read
 on its branch `gard-design` at `e75b4b1f`), and GARD is built in step 4 of D194's order; this note and
 the page beside it follow its names and its run records, and mark what they take from it. The page,
@@ -165,8 +166,12 @@ So:
 What follows is the note as it was handed over, unchanged but for these sections and the lines
 that state the engine's note's status.
 
-**The record, the same day.** GARD's build in the engine started on 17 November 2026
-(`docs/CURRENT_PLAN.md`); nothing of it is on main yet. By D197 GARD is one law set, kept only for
+**The record, the same day.** GARD's build in the engine started on 17 November 2026, and its first
+part merged into main that afternoon: the stochastic assembly family `cells.assembly_lineages@1`,
+with GARD's two forms as one law set on it, its own tests, and development runs that are not judged
+(`PROGRESS.md`). The entry's word stays "Designed, not modelled" until the engine's declarations list
+the model (the lead's word, 17 November 2026); it moves to "Modelled" then. The page still plays its marked example: it shows a real run only from the engine's final
+set of runs. By D197 GARD is one law set, kept only for
 comparison, and the origin-of-life engine is to be Cells' own, with laws from physical chemistry; its
 design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed; its first choices were decided on
 17 November (D199). The entry's words and

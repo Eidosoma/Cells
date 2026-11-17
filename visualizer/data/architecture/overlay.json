@@ -400,7 +400,7 @@
       "match": [
         "src/cells/registry/declarations.py"
       ],
-      "plain": "One command writes a versioned list of every registered law, kind and operator: what each reads, writes and provides, what runs it, and its units and signs, with the older families' model identifiers flagged, so that documents and this viewer can list the engine's pieces without hand edits (D185, feature request FR-12). It merged on 17 November 2026 and lists 14 laws, 5 kinds and 19 operators. Its format is still being settled, how identifiers are spelled and what an empty value means, and some of its fields are not filled yet; this map does not read it yet. Implemented and guarded.",
+      "plain": "One command writes a versioned list of every registered law, kind and operator: what each reads, writes and provides, what runs it, and its units and signs, with the older families' model identifiers flagged, so that documents and this viewer can list the engine's pieces without hand edits (D185, feature request FR-12). It merged on 17 November 2026 and lists 14 laws, 5 kinds and 19 operators. Its format is still being settled, how identifiers are spelled and what an empty value means, and some of its fields are not filled yet; this map does not read it yet. Its next version, with a format page and a section for models, is the first landing of a library of plain pages for every law, kind, operator and model, approved on 17 November 2026 (D203). Implemented and guarded.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -420,6 +420,10 @@
         },
         {
           "path": "tests/unit/test_declarations.py"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D203: A library of human-readable pages for laws, kinds, operators and models (approved tooling)"
         }
       ]
     },
@@ -1912,6 +1916,34 @@
       ]
     },
     {
+      "id": "laws.gard_catalysis",
+      "label": "GARD catalysis (comparison)",
+      "layer": "laws",
+      "status": "landed",
+      "as_of": "2026-11-17",
+      "match": [
+        "src/cells/models/assembly_lineages/gard.py"
+      ],
+      "plain": "GARD's catalysis, kept only for comparison (D192, D197): the members of an assembly speed one another's joining and leaving through a fixed matrix. It is one declared law set on the assembly-lineage family, in two forms: the pair-consistent form, the engine's passive law and the default, and the preprint's single-event form, kept for comparison and declared driven. On main since 17 November 2026, with its tests; its runs so far are development runs, and nothing is judged.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D192: GARD: the design choices, and the comparison approved"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+        },
+        {
+          "path": "tests/unit/test_assembly_lineages_balance.py"
+        }
+      ]
+    },
+    {
       "id": "laws.transporters",
       "label": "Transporters and proton buffer",
       "layer": "laws",
@@ -2419,7 +2451,7 @@
       "layer": "models",
       "status": "designed",
       "as_of": "2026-11-17",
-      "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass follows the second source move.",
+      "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass follows the second source move. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -2436,6 +2468,10 @@
         {
           "path": "PROGRESS.md",
           "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "17. Step 0 complete: P1, and a gap for seam C (17 November 2026)"
         }
       ]
     },
@@ -2512,7 +2548,7 @@
       "layer": "models",
       "status": "designed",
       "as_of": "2026-11-17",
-      "plain": "A model family for the origin of life after the GARD model, kept only for comparison (D197): assemblies that hold counts of many kinds of molecule, exchange them with a held reservoir, catalyse one another's joining and leaving through a fixed matrix, grow, split at random, and leave lineages. The design was decided on 16 November 2026 (D192). Events are simulated exactly, one molecule at a time. Assemblies are abstract at first. The catalysis matrix is per-world data with about 100 kinds of molecule. Catalysis comes in two forms: the single-event form of a preprint's reconstruction of GARD, for the comparison, and a pair-consistent form, in which every transfer and its reverse see the same catalysts, as the engine's law. An independent check found that in a closed world of two kinds of molecule the preprint's single-event form generically fails a test of reversibility (a catalysis matrix of rank one is the exception), and that the pair-consistent form is exactly reversible. The original authors' own event rates are not established either way, and the preprint's driven runs are not affected (D192). The first experiment measures the difference between the two forms. The first comparison is with that preprint's reconstruction, three ways, approved by the user: an independent reference, that work's own test code run unchanged outside the engine, and a comparison of distributions on 40 fresh matrices at tolerances set in advance. It is a stochastic family, registered as modules, CPU only. Its build started on 17 November 2026, at the user's request; nothing of it is on main yet. Designed.",
+      "plain": "A model family for the origin of life after the GARD model, kept only for comparison (D197): assemblies that hold counts of many kinds of molecule, exchange them with a held reservoir, catalyse one another's joining and leaving through a fixed matrix, grow, split at random, and leave lineages. The design was decided on 16 November 2026 (D192). Events are simulated exactly, one molecule at a time. Assemblies are abstract at first. The catalysis matrix is per-world data with about 100 kinds of molecule. Catalysis comes in two forms: the single-event form of a preprint's reconstruction of GARD, for the comparison, and a pair-consistent form, in which every transfer and its reverse see the same catalysts, as the engine's law. An independent check found that in a closed world of two kinds of molecule the preprint's single-event form generically fails a test of reversibility (a catalysis matrix of rank one is the exception), and that the pair-consistent form is exactly reversible. The original authors' own event rates are not established either way, and the preprint's driven runs are not affected (D192). The first experiment measures the difference between the two forms. The first comparison is with that preprint's reconstruction, three ways, approved by the user: an independent reference, that work's own test code run unchanged outside the engine, and a comparison of distributions on 40 fresh matrices at tolerances set in advance. It is a stochastic family, registered as modules, CPU only. Its first part, the general family with this law set, and its independent references merged on 17 November 2026, each a part of its own on this map; the second part and the comparison are still to come. Designed.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -2533,6 +2569,43 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Also started on 17 November, at the user's request"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "GARD's G2, the independent component references, merged into main (17 November 2026)"
+        }
+      ]
+    },
+    {
+      "id": "models.assembly_lineages",
+      "label": "Assembly lineages",
+      "layer": "models",
+      "status": "landed",
+      "as_of": "2026-11-17",
+      "match": [
+        "src/cells/models/assembly_lineages/**",
+        "validation/assembly_lineages/**"
+      ],
+      "plain": "A general family for chemistry in assemblies, simulated exactly, one event at a time: an assembly holds counts of declared kinds of molecule, exchanges single molecules with a held phase, splits at random once it reaches a declared size, and one daughter continues its lineage. A ledger books the heat of each event and refuses a passive run whose books do not close, and every run writes a record that describes itself. It is the machinery Cells' own origin-of-life engine is to run on (D197), and GARD's law set runs on it for comparison. It merged on 17 November 2026 as the first part of GARD's G1, with its own tests. Its one run so far is a development run of 100 fissions, not judged. The second part, with lineage keys, checkpoints and every descendant, follows. Implemented and guarded.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D192: GARD: the design choices, and the comparison approved"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+        },
+        {
+          "path": "tests/unit/test_assembly_lineages_kernel.py"
         }
       ]
     },
@@ -2875,7 +2948,7 @@
       "layer": "operators",
       "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering (feature request FR-4), one of the two priority users of the modular rework (D176). Protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its pump, its buffer and a proton leak landed on main with the rework on 16 November 2026, as pieces of the tissue model, together with the drivers that build its first world and the tools for its qualification. In a development run of that world, which is not a verdict, the compartment's pH stays within 1.4e-12 of the independent reference at a step of 1 ms, the energy accounts converge at second order as the step shrinks, and the planted errors are caught. Its independent references, written by a separate agent that read no engine code, show the compartment acidifying from pH 7.2 to about 5.1 against its gradient while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. A kernel for treating the compartment's membrane implicitly in the step is on main too, with its tests; no model uses it yet, and chloride and pores wait for it. Implemented and guarded; nothing is judged. Its protocol is proposed, and its registration and judged run are the plan's next item.",
+      "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering (feature request FR-4), one of the two priority users of the modular rework (D176). Protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its pump, its buffer and a proton leak landed on main with the rework on 16 November 2026, as pieces of the tissue model, together with the drivers that build its first world and the tools for its qualification. In a development run of that world, which is not a verdict, the compartment's pH stays within 1.4e-12 of the independent reference at a step of 1 ms, the energy accounts converge at second order as the step shrinks, and the planted errors are caught. Its independent references, written by a separate agent that read no engine code, show the compartment acidifying from pH 7.2 to about 5.1 against its gradient while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. A kernel for treating the compartment's membrane implicitly in the step is on main too, with its tests; no model uses it yet, and chloride and pores wait for it. Implemented and guarded; nothing is judged. Its protocol, fr4-acidification-v1, was registered on 17 November 2026, after its rehearsal passed 21 of 21 criteria; its judged run comes next.",
       "sources": [
         {
           "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -2930,6 +3003,14 @@
         {
           "path": "PROGRESS.md",
           "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026"
         }
       ],
       "match": [
@@ -2941,7 +3022,8 @@
         "validation/compartment_ph_engine/parameters.py",
         "validation/compartment_ph_engine/path_agreement.py",
         "validation/compartment_ph_engine/planted.py",
-        "validation/compartment_ph_engine/refusal_paths.py"
+        "validation/compartment_ph_engine/refusal_paths.py",
+        "validation/compartment_ph_engine/worlds_check.py"
       ]
     },
     {
@@ -2950,7 +3032,7 @@
       "layer": "operators",
       "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Its study of the time step passed its development reading late on 16 November 2026: every criterion holds on both arms, so the declared step of 0.5 ms stands. That is development evidence: its protocol, fr5-transfer-v1, stays proposed and is not judged. Implemented and guarded.",
+      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Its study of the time step passed its development reading late on 16 November 2026: every criterion holds on both arms, so the declared step of 0.5 ms stands. Its protocol, fr5-transfer-v1, was registered on 17 November 2026, after its rehearsal passed 51 of 51 criteria; its judged run comes next, and nothing is judged yet. Implemented and guarded.",
       "sources": [
         {
           "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -3009,11 +3091,20 @@
         {
           "path": "PROGRESS.md",
           "where": "FR-5's dt study: the development reading passes (16 November 2026, late evening)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026"
         }
       ],
       "match": [
         "validation/compartment_ph_engine/fr5_quick_check.py",
-        "validation/compartment_ph_engine/world_agreement.py"
+        "validation/compartment_ph_engine/world_agreement.py",
+        "validation/compartment_ph_engine/summarize_reading_fr5.py"
       ]
     },
     {
@@ -3658,7 +3749,7 @@
       "match": [
         "validation/compartment_ph/**"
       ],
-      "plain": "Reference solutions for compartment pH (FR-4), for transfer across a compartment's membrane with leak and reseal (FR-5), and for a pump that runs on a finite amount of fuel, written by a separate agent that read no engine code. In each, the energy accounts close. They found one of the pH design's checks too loose, and that FR-5's first test world could not show its claims; both were revised. Their own tests are in the routine gate. They landed on 15 November 2026; nothing has been judged against them yet. The folder also holds FR-4's and FR-5's qualification protocols, both still proposed.",
+      "plain": "Reference solutions for compartment pH (FR-4), for transfer across a compartment's membrane with leak and reseal (FR-5), and for a pump that runs on a finite amount of fuel, written by a separate agent that read no engine code. In each, the energy accounts close. They found one of the pH design's checks too loose, and that FR-5's first test world could not show its claims; both were revised. Their own tests are in the routine gate. They landed on 15 November 2026; nothing has been judged against them yet. The folder also holds FR-4's and FR-5's qualification protocols, both registered on 17 November 2026, before any judged run.",
       "sources": [
         {
           "path": "validation/compartment_ph/REFERENCES_USAGE.md"
@@ -3676,6 +3767,30 @@
         },
         {
           "path": "validation/compartment_ph/protocols/fr5_transfer_v1.json"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged"
+        }
+      ]
+    },
+    {
+      "id": "val.gard",
+      "label": "GARD references",
+      "layer": "references",
+      "status": "landed",
+      "as_of": "2026-11-17",
+      "match": [
+        "validation/gard/**"
+      ],
+      "plain": "Independent references for GARD's components, written by an agent who never read the engine's code, from the preprint's appendix and the three original papers: ten of them, each with a planted control it must catch, among them the closed world's stationary law, an exact simulation oracle, the fission partition, conservation and the ledger. A harness reads run records through one adapter. Their own tests are in the routine gate. They merged on 17 November 2026, as GARD's G2; the harness has not yet read a real run of the engine.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "GARD's G2, the independent component references, merged into main (17 November 2026)"
+        },
+        {
+          "path": "validation/gard/references/README.md"
         }
       ]
     },
@@ -6235,6 +6350,30 @@
       "to": "models.gard",
       "kind": "extends",
       "label": "GARD's runs write the first tables (D202)"
+    },
+    {
+      "from": "models.gard",
+      "to": "models.assembly_lineages",
+      "kind": "delivers",
+      "label": "its first part (G1), the general family"
+    },
+    {
+      "from": "models.gard",
+      "to": "laws.gard_catalysis",
+      "kind": "delivers",
+      "label": "its law set, in both forms, for comparison"
+    },
+    {
+      "from": "models.gard",
+      "to": "val.gard",
+      "kind": "delivers",
+      "label": "its independent references (G2)"
+    },
+    {
+      "from": "models.origin_engine",
+      "to": "models.assembly_lineages",
+      "kind": "extends",
+      "label": "runs on this family's machinery (D197)"
     }
   ],
   "relation_kinds": [

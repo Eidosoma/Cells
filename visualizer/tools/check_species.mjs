@@ -393,7 +393,7 @@ if (process.env.CASE === "model") {
       await sleep(6000);
       await open("lens=cell");
     }
-    const models = await evaluate(`(${V}.model.raw.models || []).map((item) => ({ id: item.id, label: item.label, is: item.is, group: item.group || "", state: item.modelled.state, levels: item.levels.map((level) => level.id), labels: item.levels.map((level) => level.label), view: item.view?.kind, notes: (item.notes || []).length }))`);
+    const models = await evaluate(`(${V}.model.raw.models || []).map((item) => ({ id: item.id, label: item.label, is: item.is, group: item.group || "", state: item.modelled.state, text: item.modelled.text || "", model: item.modelled.model || "", levels: item.levels.map((level) => level.id), labels: item.levels.map((level) => level.label), view: item.view?.kind, notes: (item.notes || []).length }))`);
     const species = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, group: item.group || "", state: item.modelled.state }))`);
     const syn3aState = species.find((item) => item.id === "syn3a")?.state;
     check("the scene carries a model system beside its species", models.length >= 1 && species.length >= 1, JSON.stringify(models.map((item) => item.id)));
@@ -409,7 +409,7 @@ if (process.env.CASE === "model") {
     await pressSpecies(gard.id);
     let s = await state(), m = await more();
     check("choosing it shows it in the first tab's place: the tab takes its view's name, the pill names it", m.model === gard.id && m.entry === gard.id && s.lens === "cell" && m.tab.endsWith("|true") && !m.tab.startsWith("Cell and scales|") && `${s.inBar}${s.inCard}` === `${gard.id}*` && s.pillText === gard.label, JSON.stringify([m, s.inBar, s.inCard, s.pillText]));
-    check("the statement beside the pill says what Cells models of it, in the ladder's words, and not modelled", s.state === WORDS[gard.state] && gard.state !== "modelled" && gard.state !== "generic", String(s.state));
+    check("the statement beside the pill says what Cells models of it, in the ladder's words; modelled only where its entry names its registered model", s.state === WORDS[gard.state] && gard.state !== "generic" && (gard.state !== "modelled" || /@\d+$/.test(gard.model || "")), `${s.state}; model ${gard.model || "none"}`);
     // The switch does not call a model system a species: its label reads "Model", and it is read out as a model system.
     const named = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0; return { label: [...root.querySelectorAll(".species-label, .seg-species .seg-label")].filter(shown).map((el) => el.textContent)[0] ?? null, list: root.querySelector("#species-list")?.getAttribute("aria-label") ?? null }; })()`);
     check("the switch calls it a model, not a species, in its label and to a screen reader", named.label === "Model" && s.pillLabel === `Model system: ${gard.label}` && named.list === "Species and model systems", JSON.stringify([named, s.pillLabel]));
@@ -440,7 +440,7 @@ if (process.env.CASE === "model") {
     // What it is, in the panel.
     await press(".species-state");
     s = await state();
-    check("pressing the statement opens all that is said of it: a model system, its word, nothing of it in the engine, and its notes where it has any", s.selected === `model:${gard.id}` && s.panel?.title === gard.label && s.panel.eyebrow === "Model system" && s.panel.chips.includes(WORDS[gard.state]) && /nothing of \S+ is in the engine/i.test(s.panel.plain || "") && /Notes/.test(s.panel.heads || "") === gard.notes > 0, JSON.stringify(s.panel));
+    check("pressing the statement opens all that is said of it: a model system, its word, the entry's own words on what Cells models of it, and its notes where it has any", s.selected === `model:${gard.id}` && s.panel?.title === gard.label && s.panel.eyebrow === "Model system" && s.panel.chips.includes(WORDS[gard.state]) && (s.panel.plain || "") === gard.text && gard.text.length > 0 && /Notes/.test(s.panel.heads || "") === gard.notes > 0, JSON.stringify(s.panel));
     await shot("model-panel-light");
     if (gard.notes) {
       await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-list h4")].find((h) => h.textContent.startsWith("Notes"))?.scrollIntoView({ block: "start" })`);
@@ -758,7 +758,7 @@ try {
 
   // Every species the scene carries, whichever they are: its own levels, its statement, and the
   // switch staying where it stands (the bar or the card) for each of them, in both views.
-  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id), left: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.left_out).map(([id]) => id) }))`);
+  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, text: item.modelled.text || "", model: item.modelled.model || "", levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id), left: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.left_out).map(([id]) => id) }))`);
   const places = [];
   for (const item of all) {
     await pressSpecies(item.id);

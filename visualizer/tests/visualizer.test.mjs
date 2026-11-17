@@ -297,7 +297,7 @@ test("the scene carries the species the page can show, each with its shapes", ()
   for (const item of scene.models || []) {
     assert.equal(item.kind, "model system");
     assert.ok(item.group && item.is && !("organism" in item) && !("cell" in item), `${item.id}: a model system has a heading and its line, and nothing of an organism`);
-    assert.ok(["proposed", "planned", "designed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    assert.ok(["proposed", "planned", "designed"].includes(item.modelled.state) || (item.modelled.state === "modelled" && /@\d+$/.test(item.modelled.model || "") && item.modelled.record?.length > 0), `${item.id} is said to be modelled with no registered model or no line of the record`);
     for (const run of item.runs || []) assert.ok(run.path && !run.path.startsWith("data/"), `${item.id}: its run ${run.file} has the path it is published at`);
   }
 });
