@@ -7,7 +7,10 @@ Operators register the way kinds do (core/kind_registry.py):
 - namespaced IDs: an operator's LAW_ID, a bare ID being in `cells`;
 - the built-in operators register on BUILTIN from their own package, loaded by name
   (BUILTIN_PACKAGE), through the call an outside package uses;
-- the active section is BUILTIN, unless a caller builds inside `scope(section)`.
+- the active section is BUILTIN, unless a caller builds inside `scope(section)`;
+- one object per `cells` operator ID in every section: another section holds a cells operator
+  only as BUILTIN's own instance, because the composite caches its compositions on operator law
+  IDs (models/pump_composite.implementation). An outside operator takes its own namespace.
 
 OPERATORS is the active section as a mapping: each operator's instance under its LAW_ID as
 declared, in registration order. Lookup is by that exact key, as today's dictionary's was, because
@@ -21,7 +24,7 @@ from collections.abc import MutableMapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 
-from cells.core.kind_registry import qualified
+from cells.core.kind_registry import NAMESPACE, qualified
 
 __all__ = ("BUILTIN", "BUILTIN_PACKAGE", "OPERATORS", "OperatorRegistry", "active", "scope")
 
@@ -47,6 +50,15 @@ class OperatorRegistry:
         if known is not None:
             raise ValueError(f"Operator {key} is already registered")
         instance = cls() if operator is cls else operator
+        if self is not BUILTIN and key.split(".", 1)[0] == NAMESPACE:
+            _load_builtins()
+            builtin = BUILTIN._operators.get(key)
+            if builtin is None or type(builtin) is not cls:
+                raise ValueError(
+                    f"Operator {key} is in the cells namespace: another section holds a cells "
+                    "operator only as BUILTIN's own (one object per cells ID)"
+                )
+            instance = builtin
         self._operators[key] = instance
         return instance
 
@@ -72,7 +84,10 @@ class OperatorRegistry:
         return tuple(self._operators.values())
 
     def extended(self, *operators):
-        """A new section holding this one's operators, then `operators`; this one is unchanged."""
+        """A new section holding this one's operators (BUILTIN's with its built-ins registered),
+        then `operators`; this one is unchanged."""
+        if self is BUILTIN:
+            _load_builtins()
         out = OperatorRegistry()
         for operator in (*self._operators.values(), *operators):
             out.register(operator)

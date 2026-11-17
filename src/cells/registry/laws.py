@@ -439,7 +439,10 @@ class LawRegistry:
         )
 
     def extended(self, *laws):
-        """A new registry holding this one's laws, then `laws`; this one is unchanged."""
+        """A new registry holding this one's laws (BUILTIN's with its built-ins loaded), then
+        `laws`; this one is unchanged."""
+        if self is BUILTIN:
+            _load_builtins()
         out = LawRegistry()
         for law in (*self._laws.values(), *laws):
             out.register(law)

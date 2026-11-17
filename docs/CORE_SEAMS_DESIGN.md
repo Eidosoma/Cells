@@ -717,7 +717,8 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
   `src/cells/modules/`.
 - **What it exports:**
   - the declaration types of each interface: `ChannelLaw`, `CycleLaw`, `RouteLaw`, `BindingLaw`,
-    `Kind`, `KindFields`, `KindView`, `KindRates` and `Schedule`;
+    `Citation` (the source a cited law gives), `Kind`, `KindFields`, `KindView`, `KindRates` and
+    `Schedule`;
   - the parsing helpers: `ConfigError`, `require_fields`, `finite_number`, `bounded_integer`,
     `parse_series`, `series_to_dict`, `qualified` and `declared_schedule`;
   - the constants: R, F, `CHARGE_PER_FMOL` and `EXPLICIT_STEP_BOUND`;

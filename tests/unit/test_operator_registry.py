@@ -3,8 +3,9 @@
 Operators register the way kinds do, each claim with a planted error it must catch (D187):
 - the one registration call runs the contract's check_declarations (planted: an operator whose
   owned heat field is undeclared, which today's plain dictionary took without a check);
-- a duplicate ID is refused whatever its spelling (planted: a second class under a built-in's
-  namespaced ID);
+- a duplicate ID is refused whatever its spelling, and a built-in's ID is never rebound in
+  another section, whose compositions the composite caches by law ID (planted: a second class
+  under a built-in's namespaced ID, in BUILTIN's copy and in a fresh section);
 - OPERATORS is the active section: today's keys, order and exact-key lookup, scoped to the build
   (planted: an operator registered only in a scoped section).
 """
@@ -61,16 +62,21 @@ def test_a_duplicate_operator_id_is_refused_whatever_its_spelling():
     with pytest.raises(ValueError, match="already registered"):
         section.register(OsmoticWater())  # A second instance of the built-in's class.
     assert section.lookup(Twin.LAW_ID) is OPERATORS[OsmoticWater.LAW_ID]
+    with pytest.raises(ValueError, match="only as BUILTIN's own"):
+        operators.OperatorRegistry().register(Twin)
+    fresh = operators.OperatorRegistry()
+    assert fresh.register(OsmoticWater) is OPERATORS[OsmoticWater.LAW_ID]  # One object per ID.
 
 
 def test_operators_is_the_active_section_with_todays_keys():
-    assert tuple(OPERATORS)[: len(TODAY)] == TODAY and len(OPERATORS) == 19
+    count = len(operators.BUILTIN.operators())
+    assert tuple(OPERATORS)[: len(TODAY)] == TODAY and len(OPERATORS) == count
     assert all(type(op).LAW_ID == law for law, op in OPERATORS.items())
     assert tuple(OPERATORS.values()) == operators.BUILTIN.operators()
     assert "cells." + TODAY[0] not in OPERATORS  # Exact keys, as definitions compare them.
     assert dict(OPERATORS) == OPERATORS and OPERATORS == dict(OPERATORS)
     with operators.scope(operators.BUILTIN.extended(Planted)):
-        assert Planted.LAW_ID in OPERATORS and len(OPERATORS) == 20
+        assert Planted.LAW_ID in OPERATORS and len(OPERATORS) == count + 1
         assert isinstance(OPERATORS[Planted.LAW_ID], Planted)
     assert Planted.LAW_ID not in OPERATORS  # A module-level dictionary would still hold it.
     OPERATORS[Planted.LAW_ID] = Planted()  # Assignment registers on the active section ...
@@ -80,4 +86,4 @@ def test_operators_is_the_active_section_with_todays_keys():
             OPERATORS[Planted.LAW_ID] = Planted()
     finally:
         del OPERATORS[Planted.LAW_ID]  # ... and deletion unregisters it.
-    assert Planted.LAW_ID not in operators.BUILTIN and len(OPERATORS) == 19
+    assert Planted.LAW_ID not in operators.BUILTIN and len(OPERATORS) == count
