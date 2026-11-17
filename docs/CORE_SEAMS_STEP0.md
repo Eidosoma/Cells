@@ -566,6 +566,123 @@ table, at its post-move-2 path (§2's draft, with differences flagged).
 - the critical path named;
 - labelled as this note's (**S**).
 
+### 4.2 Results: the owner table (a proposal for the lead)
+
+The evidence is `$W/owners/owners.json`, from `$W/scripts/owner_check.py`.
+- **The check:** 78 rows, files or named groups. No file has two owners, and no row repeats. There
+  are 7 agents, and every file the design note names is in the table. A planted duplicate fails it.
+- **Paths:** the moves note's draft (fa19d80c) and the move-2 owner's regeneration (ef9fc1a8) agree
+  on every path in the table.
+  - The drafts differ only elsewhere. The older one still moves five specs that move 1 has since
+    put in `legacy/`; the newer adds `blas_threads`, `kinetic_pump_spec`, `rate_junction_spec` and
+    `kinetic_pump_binding`.
+  - **Not decided by the regeneration as read:** the newer one counts `legacy/` among its unplaced
+    modules (367).
+
+**The seven agents and their files** (post-move-2 paths under `src/cells/`; tests go with the
+module they test):
+
+| Agent | Files for the whole pass | Its work in the pass |
+| --- | --- | --- |
+| **F owner** (`core-seams-f`, given) | `registry/laws.py` (new), `registry/kind_registry.py`, `modules/__init__.py` (new), `models/inner_laws.py`, `operators/__init__.py`. In `laws/`: `channels/{voltage_gates,potassium_channels,sodium_channels}`, the 12 catalogues (the guard's import rewrite only), `junctions/{junction_gate,selective}`, `pumps/{kinetic_pump,kinetic_pump_binding,calcium_atpase}`, `reactions/{er_calcium,plasma_calcium,ph_condition}`, `routes/{passive_permeation,k_anion_symport}`, `transport/{proton_leak,patch_damage}`, and the new per-law and route-law modules. The guard test; `docs/MODULE_SYSTEM_DESIGN.md` | F whole: the template, the law registry, the surface, `KindRates`, the operators' section, the per-law extractions and the guard (item 2 clears them under its exclusion rule). The kind contract's hooks that B, D and E add, on their owners' requests |
+| **@3 owner** (core owner 2 in §13's terms) | `models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py`, `definitions/surface_kinetic_spec.py`, `records/run_view.py`, `docs/RUN_VIEW_DESIGN.md`, `docs/INNER_MODEL_V4_DESIGN.md` | The host table (A's prerequisite); D; B1's @3 part (the door into @3, gating by host activity, which composition's M5 needs as its Q1, and @3's field roles); E's moiety `ledger_lists`; `KindRates`' re-import line; G and D's run-view part; branch X |
+| **Kinds owner** | `kinds/{transporter,passive_routes,ph_condition,patch_damage,__init__}.py`, `laws/pumps/{proton_pump,atp_transporter}.py` and any new cycle-law module | A (A3's two layouts and its first two laws); B1's kind-side roles; B2; G's kind-side fix; E's moved-row terms; the guard's imports in its files |
+| **Binding owner** (new; C was core owner 2's in §13) | `kinds/proton_buffer.py`, `laws/reactions/rapid_proton_buffer.py`, the new multi-ligand closure module, `registry/species_registry.py` | C; E's reaction-level potentials check; E's moieties in the registry |
+| **Operators owner** | `operators/{contract,partition,compartments,species_reactions,osmotic_water,species_turnover,membrane_insertion_v2,membrane_state}.py`, `models/pump_composite{,_adapter}.py`, `tests/unit/test_cell_owned_compartments.py`, `docs/OPERATOR_COMPOSITION_DESIGN.md`, `docs/CLOSED_COMPARTMENT_DESIGN.md` | Composition's M1–M5 first, then B1's operator part (lifecycle by roles, refusal 4 per move, the composite's refusal lifted for kinds with roles), D's declared energy roles and E's hook in `contract.py` |
+| **References agent** | `validation/core_seams/` (new), composition's references | A's and C's independent references, then composition's |
+| **FR owner** | `validation/compartment_ph_engine/` and the FR protocols: no file of the pass | FR-4 and FR-5. A3 keeps their programs |
+
+**How the four known overlaps resolve:**
+1. **`models/surface_pump_v3.py`:** the @3 owner alone, for D, B1's @3 part, E's moiety ledgers and
+   the host table. `KindRates`' move is a hand-off:
+   - the F owner puts the class in the kind contract;
+   - the @3 owner replaces its definition with the import, in the same merge window.
+2. **`registry/`, by file:**
+   - `laws.py` and `kind_registry.py` go to the F owner. The B (roles API), D (mover classes'
+     bookings) and E (`standard_free_energies`) hooks in `kind_registry.py` are F's work, on their
+     owners' requests.
+   - `species_registry.py` goes to the binding owner, for C's forms, E's check and the moieties.
+3. **`laws/`, by file:** the F owner extracts and declares @3's laws and the passive laws. The kinds
+   owner holds the transporter's two laws, and the binding owner the closure's. Each owner rewrites
+   the guard's imports in its own files.
+4. **`operators/contract.py`:** the operators owner, for composition's C1–C6, B's `CLOSES`, D's
+   declared energy roles and E's operator hook.
+
+**Further hand-offs:**
+- **New operator modules.** Composition's new operator versions (such as turnover@2) join through
+  the F owner's `operators/__init__.py`, or F's section is built so that a new operator module needs
+  no edit there.
+- **The lead lands core-fixes across move 2** before the owners branch: one integration merge, not
+  authoring, so no owner's file is touched twice. It brings D3 and D4 (ff5ca5ff, 0a00ba6e) and G's
+  item 1 (9b0d8baa).
+- **The lead also owns** `validation/tissue/composite_crossrev.py` (one world per landed seam),
+  `tests/test_tiers.json` and the design note's amendments.
+
+**The estimate (S), re-derived from the table.** In agent-days, from §13's figures and composition's
+§14. My splits are marked.
+- **F owner:**
+  - F's registry, template, surface and operators' section: 1.5–2.5;
+  - the kind contract's hooks for B, D and E: 0.5–1 (my split from those seams);
+  - the extractions and the guard: 1.5–2;
+  - done by day 3.5–5.5.
+- **@3 owner:**
+  - the host table: 0.5–1 (my split from A);
+  - D: 1–2;
+  - B1's @3 part: 1–2 (my split of B1's 2–4);
+  - G with D's run-view part: 0.75–1.25;
+  - moiety ledgers: 0.25, after A;
+  - done by day 3.5–6.5, or 5.5–9.5 with branch X.
+- **Kinds owner:**
+  - waits for F's registry and the host table: day 1.5–2.5;
+  - A: 4–5.5;
+  - B1's kind-side roles: 0.5–1;
+  - A is done by day 5.5–8.
+- **Binding owner:**
+  - registry forms: 0.5–1;
+  - the closure: 2.5–4;
+  - E's check: 0.5–0.75;
+  - moieties: 0.25–0.5;
+  - done by day 3.75–6.25.
+- **Operators owner:**
+  - composition's M1–M5 in series: 2.5–3.5, 2–2.5, 2–2.5, 3–4 and 2.5–3, so 12–15.5. M5 needs the
+    @3 owner's gating by host activity, ready by day 2.5–5;
+  - then B1's operator part and the hooks: 1.25–2.5;
+  - done by day 13.25–18.
+- **Kinds owner's B2**, after B1's operator part: 1–1.5, done by day 14.25–19.5.
+- **The final gates:** 1.
+- **The references agent:** 2–3 for A's and C's references from about day 3, then composition's 4–5
+  in parallel with M2–M5. It fits inside the window.
+
+**The totals:**
+- **Elapsed: about 15–21 working days after move 2,** plus 0.25–0.5 for the carry-over, against the
+  design's 9–13.
+- **The critical path** is the operators owner's composition M1–M5, then B1's operator part, then
+  B2, then the gates. It follows from D195's ordering: one operators owner, M1–M5 first.
+- **Everything except B2 and B1's operator part** lands by day 6–9.5.
+- **Effort:** about 20.5–33 agent-days for the pass, plus 2–3 on branch X. That is §13's 20–31.5,
+  plus 0.5–1 for the hand-offs to the kind contract. Composition's own 12–15.5 and its references
+  are composition's, as before.
+
+**When each consumer is unblocked** (day after move 2):
+
+| Consumer | Needs | Day |
+| --- | --- | --- |
+| GARD's G1 | F's registry and surface | about 2–2.5 |
+| Cardiac H1 | D, and F's template and registry | about 3–5.5 |
+| Finite fuel | A, E | about 6–8 |
+| Cardiac H2 | A, the door (B1's @3 part), C, F | about 6–8 |
+| Mitochondria's M1 | A, C, D, B's refusal 4, F | about 14–18; about 6–8 under option (a) |
+| Composition's M6 | B2 | about 14–19.5 |
+
+**Options for the lead** (S):
+- **(a) Refusal 4 per move first.** `operators/compartments.py` and its test are not among composition's
+  M1–M5 files. The operators owner can land refusal 4 per move, about half a day, before composition's
+  M1. That unblocks mitochondria's M1 about eight days earlier, and moves composition by half a day.
+- **(b) Accept B last.** Only composition's M6 needs B2.
+- **(c) A second operators owner** does not fit within seven. One could take composition's M2 only
+  if its files are disjoint from the operators owner's other files, which this note did not check
+  file by file.
+
 ## 5. The probes (criteria follow, before they run)
 
 The cardiac booking probe and mitochondria's P1 (CORE_SEAMS_DESIGN §6.4), in scratch only, after
