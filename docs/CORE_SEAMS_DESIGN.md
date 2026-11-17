@@ -995,6 +995,32 @@ following before work builds on it.
 - **F's claim is tested on GARD's family in G1's part 2.** A new piece joins with no edit to other
   pieces: GARD's laws register under their own interface, importing only `cells.modules`. Any edit
   to F's files is a finding. Until then GARD is absent from the manifest.
+  - **What the test showed (17 November).** GARD's three laws register on F's template and
+    registry, with no edit to F's files, and are listed with their sources and tests. Four gaps
+    remain on F's side:
+    1. **The surface** exports no `Law`.
+    2. **Loading:** a fresh-process manifest lists only the built-in homes, so its bytes depend on
+       import order. This is a defect.
+    3. **No model section.**
+    4. **Operator entries are wired to the composite's contract.**
+  - **The fixes, reviewed with the advisor,** are their own landing under seam F, ahead of @2:
+    - **The surface:** export `Law` only. A registration entry stays module stage 1, fenced (§8.5,
+      D195).
+    - **Loading and models:** a static table keyed by model, read when the registry loads:
+      `{type, law_homes, operator_homes, interfaces, runner}`. It is the minimal form of §8.4's
+      model table. It feeds the manifest's `models` rows and is guarded by a static scan.
+      Replacing the dispatch chains stays deferred.
+    - **Operators:** a family's operators carry their own interface and host, with their own
+      declaration check. The composite's `OPERATORS` section is unchanged.
+    - **Interfaces:** the set is open to built-in families in the `cells` namespace (MODULE_SYSTEM
+      §2.3: one namespace per distribution, `cells` reserved), with F's five as the initial set.
+      A family's interfaces take general names, because D197's first-principles laws implement
+      them too: for example `cells.exchange_law@1`, `cells.rate_factor_law@1` and
+      `cells.lineage_operator@1`.
+  - **A follow-up for F's next step.** `cells ensemble` dispatches through a hard-coded MODELS table
+    (`ensemble/families.py`). It should dispatch through the static model table's `runner` entry
+    instead, so a family joins the ensemble queue with no edit to `ensemble/*`. Until then, GARD's
+    family runs its own ensemble arm.
 - **The manifest `cells.declarations@1` is partly delivered (FR-12):**
   - **IDs:** each piece carries `id` (namespaced) and `declared_id` (the spelling definitions use;
     bare in the `cells` namespace). `host` is namespaced only (`cells.resolved_pump_tissue@3`),
