@@ -802,6 +802,32 @@ Written before the rerun's search reaches any point.
   - `viewer/summary.json` lists them as the sweep `neither-1d`. They replace `picks-01` for the
     tissue line.
 
+**6. The tissue line for the demo: dense records, a sheet and a ladder.** Fixed here before
+each runs. All are development runs of the engine, not judged (D138).
+- **Dense records** (`runs/dense-01`): the arms D = 0, x2/2, x2 and 2 x2 again, with 200
+  log-spaced records from the first step to the end, plus the every-100 s records.
+  - Each record sits on the step grid, so no record splits a step and the run is unchanged. The
+    earliest record is one step in: 0.125 s, or 0.0625 s at 2 x2. Each end state is checked
+    against `picks-02`'s, and D = 0's against `picks-01`'s, bitwise.
+  - Each package adds the switch's three concentrations (miR200, Zeb mRNA and ZEB protein, in
+    µM) as sidecars.
+- **The sheet** (`runs/sheet-01`): **an extension beyond the replication, not part of it.**
+  - 9x9 cells with 4-neighbour junctions and a 3x3 tumor patch in the middle, with the line's
+    switch, seeds and uncoupled 500 s. Its step follows section 7's rule with four neighbours
+    (1/8 s up to D = 3.6e-15, 1/16 s at x2).
+  - **Its coupled horizon is 2,000 s, a tenth of the line's**, so each outcome is the state at
+    2,000 s, not after 20,000.
+  - Arms: D = 0, x2/16, x2/8, x2/4, x2/2 and x2, with x2 the line's threshold. Dense records,
+    as above.
+  - For each arm, whether its last records are still changing is reported, so that an arm near
+    the sheet's own threshold is not read as settled.
+  - A short test before registration (two arms of 100 s) already showed the 3x3 patch fully E
+    within 100 s at x2. So the sheet's threshold is observed to be lower than the line's. Any
+    explanation, such as more healthy neighbours per tumor cell, is an interpretation.
+- **The ladder** (`runs/ladder-01`): the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and
+  7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step
+  rule, with dense records. 1e-13 is left out for its step (1/64 s).
+
 ## 8. The next stage, for a next owner
 
 This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-junction-20261117/`.
