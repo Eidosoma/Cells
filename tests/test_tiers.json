@@ -121,7 +121,10 @@
   "/mnt/workspaces/Cells/gard-g2-land-20261117/measured.json/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/tiers-6bc1fe8b/measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/tiers-7830bff4/measure/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/tiers-59b73429/measure/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/tiers-59b73429/measure/measured.json",
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-9a4654ee/measured.json",
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-776dcf01/measured.json",
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-8212de00/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1004,6 +1007,27 @@
    "root": ".claude/worktrees/fr45-rehearse",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T15:12:59+00:00"
+  },
+  {
+   "git_revision": "9a4654ee1933124b1872200765376d308864385d",
+   "dirty": false,
+   "root": ".claude/worktrees/relations-writer",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T14:36:22+00:00"
+  },
+  {
+   "git_revision": "776dcf01cccbcc4ed885a7265a814e75b8507fd8",
+   "dirty": false,
+   "root": ".claude/worktrees/relations-writer",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:08:27+00:00"
+  },
+  {
+   "git_revision": "8212de00af96839b61763fbe2af864aeb7e4d28d",
+   "dirty": false,
+   "root": ".claude/worktrees/relations-writer",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:16:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3805,6 +3829,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_relations.py",
+    "seconds": 2.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_relations_lineage_summaries.py",
+    "seconds": 5.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    }
   ],
