@@ -4,7 +4,8 @@
 read at main df2b910b and is cited `file`:line there, by today's path under `src/cells/`. Where
 D188's move-2 draft moves a file, its new folder follows in brackets
 (`/mnt/workspaces/Cells/d188-step0-20261116/evidence/plan-fa19d80c/move2-draft.json`). The
-core-fixes branch is cited at 79905c57. Tags: **(code)** read in the code; **(cf)** built on
+core-fixes branch is cited at 79905c57. The note was checked against the lead's rulings on the
+moves note, added on main at cbc52577 (its §17). Tags: **(code)** read in the code; **(cf)** built on
 core-fixes, not yet landed; **S** this note's own reading, derivation or proposal. The pass is
 built after D188's move 2, so the design is written for the new folders.*
 
@@ -666,6 +667,10 @@ with its citation in our own words. Its fields (**S**):
     `processes/__init__.py`, `electrochemistry.py`, the field and transport numerics, and the
     geometry cluster;
   - so the frozen families' bits and tests are unaffected.
+- **Six files keep their bytes.** The lead's ruling for move 2 (SOURCE_LAYOUT_MOVES_DESIGN §17
+  item 2, main cbc52577) keeps `processes/electrochemistry.py`, `numerics/fixed_step.py`,
+  `numerics/extracellular_field.py` and the three package `__init__` files byte for byte. The pass
+  edits none of them, and the surface (§8.5) re-exports R, F and `scatter` from them by import.
 - **The declarations leave `inner_laws.py`'s central tables** and join their laws' modules.
   `InnerStructure` then validates against the registry (:274–278), not against module tables.
 
