@@ -941,3 +941,36 @@ step 3 as planned.
   status line. Legacy importers of active kernels were counted by an AST scan of the draft's moved
   modules at main df2b910b (**S**).
 - No web search was made and no external file was fetched for this note.
+
+## 14. The lead's review, with the advisor (17 November 2026)
+
+**The lead's answers** to §12's questions for the lead:
+1. **The cycle kind: A3.** The transporter is generalised in place, and version 1's layout is kept,
+   so FR-4's and FR-5's programs are unchanged. D148 already admits a later collapse to one layout
+   with bitwise records, so A1 can come then. FR-4's and FR-5's judged runs do not wait for the pass.
+2. **Finite fuel goes on the generalised transporter.** The FR lane's partial patch is superseded,
+   and step 3 builds only R-fuel's world.
+3. **No renames now.**
+4. **P1 joins step 0, with two conditions:**
+   - P1 runs in scratch, not in `validation/`.
+   - Step 0 gains a third item, written criterion first: screen the cardiac and mitochondrial
+     cycle laws (ORd's exchanger and Na⁺/K⁺ cycle, Beard's complexes) against A's factored form.
+     A's contract rests on that, and §12 lists it as not verified.
+5. **Composition's questions (Q5) wait on file ownership.**
+   - Composition's C1–C6 and B1 edit the same files: `pump_composite.structure_errors`, the
+     adapter, the partition and `contract.py`. One operators owner does composition's M1–M5
+     first, then B1. That answers Q9.
+   - §4.5's answers go to the composition note once that ownership is in place.
+6. **Laws as modules (Q6, Q7) are answered after one check, made first in step 0.** The planner's
+   pin inventory must show that F's extraction list and the files the `cells.modules` guard would
+   rewrite touch none of the live pinned files. Six of those must keep their bytes (§8.2; D188's
+   note §17).
+7. **Moieties in the species registry (Q8): agreed.**
+
+**With D188:** files should move once.
+- Move 2's 36 unplaced modules are placed against §8.2's layout before its map freezes.
+- §8.3–8.4's registration tables are checked against R1's legacy entry point as built.
+
+**For the user** (17 November): the pass at this scope, staffing within seven, `cells.modules` as
+provisional, and checkpoints across move 2. §12's items 10 and 12 are not decisions today.
+
