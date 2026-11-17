@@ -107,6 +107,28 @@ def test_the_registered_pairs_and_ledger_rows_are_enforced(standin, tmp_path):
     assert status == 2 and "registered rows" in report["OL1-5"]["missing_or_malformed"]
 
 
+def test_a_registered_run_ending_stalled_fails_its_row(standin, tmp_path):
+    """Amendment 4 (§0.2b rule 8): a run that reached a singular rate stops stalled; a registered
+    run that ends so fails its row (here the ledger run, rows OL1-5 and OL1-6)."""
+    _, roles = standin
+    run = Path(roles["ledger_run"][0])
+    copy = tmp_path / "ledger-stalled"
+    shutil.copytree(run, copy)
+    meta = json.loads((copy / "run.json").read_text())
+    meta["end_reason"] = "stalled"
+    (copy / "run.json").write_text(json.dumps(meta))
+    bad = dict(roles, ledger_run=[str(copy), roles["ledger_run"][1]])
+    status, report = H.run_rows(bad, ["OL1-5"])
+    assert status == 1 and not report["OL1-5"]["passed"]
+    ends = [c for c in report["OL1-5"]["checks"] if c["name"] == "registered_end"]
+    assert [c["passed"] for c in ends] == [False, True]
+    # and a run record without an end reason is refused
+    del meta["end_reason"]
+    (copy / "run.json").write_text(json.dumps(meta))
+    status, _ = H.run_rows(bad, ["OL1-5"])
+    assert status == 2
+
+
 def test_a_literal_zero_at_the_extinct_boundary_fails_row_1(standin, tmp_path):
     _, roles = standin
     probe = Path(roles["boundary_probe"][1])  # the (multinomial_less_one, extinct) pair

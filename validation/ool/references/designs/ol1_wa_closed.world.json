@@ -353,5 +353,7 @@
   "lumen_volume",
   "empty_catalyst_phase",
   "last_molecule"
- ]
+ ],
+ "world_role": "probe",
+ "world_role_reason": "Amendment 4 (\u00a70.2b rule 8): r4 has E@membrane on both sides. The conserved moieties keep the membrane at N >= 5 > r = 3 in every one of the 387 states, so the singular rate never arises here; the role is declared because the step is."
 }

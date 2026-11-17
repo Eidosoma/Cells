@@ -48,7 +48,7 @@ def test_committed_design_files_equal_the_generator(tmp_path):
 def test_registered_counts_and_menu():
     kp = json.loads((R.DESIGN_DIR / D.KERNEL_PROBE_FILE).read_text())
     cw = json.loads((R.DESIGN_DIR / D.CLOSED_WORLD_FILE).read_text())
-    assert (kp["count"], cw["count"]) == (589, 387)
+    assert (kp["count"], cw["count"]) == (592, 387)
     menu = json.loads((R.DESIGN_DIR / D.CONVENTIONS_FILE).read_text())
     assert menu["menu"] == {k: list(v) for k, v in CONVENTION_MENU.items()}
     assert menu["refused"] == {"free_energy_form": ["continuum"]}
@@ -68,8 +68,29 @@ def test_every_registered_world_parses_and_is_balanced():
 
 @pytest.mark.parametrize("path", sorted((R.DESIGN_DIR / "refusals").glob("*.world.json")), ids=lambda p: p.stem)
 def test_every_registered_refusal_is_refused(path: Path):
+    from validation.ool.references.laws import Law
+
+    under = json.loads(path.read_text()).get("refused_under")
+    if under is None:
+        with pytest.raises(RecordFormatError):
+            load_world(path)
+        return
+    w = load_world(path)  # rule 8's refusal is refused only under its measure
+    assert under == {"condensed_measure": "multinomial_less_one"}
+    Law(w, Conventions(condensed_measure="multinomial", last_molecule="kept"))
     with pytest.raises(RecordFormatError):
-        load_world(path)
+        Law(w, Conventions(condensed_measure="multinomial_less_one", last_molecule="extinct"))
+
+
+def test_world_role_is_declared_exactly_where_rule_8_needs_it():
+    from validation.ool.references.world import singular_steps
+
+    docs = {**R.world_documents(), **R.variant_documents(), "ol1_boundary": R.boundary_document()}
+    for wid, doc in docs.items():
+        w = parse_world(doc)
+        assert (w.world_role == "probe") == bool(singular_steps(w)), wid
+        assert ("world_role_reason" in doc) == (w.world_role == "probe"), wid
+    assert len(list((R.DESIGN_DIR / "refusals").glob("*.world.json"))) == 10
 
 
 def test_the_menu_refuses_missing_unknown_and_refused_tokens():

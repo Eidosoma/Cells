@@ -12,8 +12,9 @@ Canonical layout:
   [S, D], ``a_plus`` and ``a_minus`` [S, R].
 - **run** (``ledger_run``, ``replay``, ``other_stream``, and the two runs of ``rescale_pair``):
   ``run.json`` with ``world``, ``conventions``, ``ssa`` (``tau``, ``select``), ``channels``
-  (rows of step, direction, code, in fold order), ``stream`` (an identity) and
-  ``initial_state``; ``records.npz`` with ``event_time``, ``event_channel``, and as the role
+  (rows of step, direction, code, in fold order), ``stream`` (an identity), ``initial_state`` and
+  ``end_reason`` (amendment 4: ``max_events`` for the registered runs; ``stalled`` if a
+  singular rate was reached, §0.2b rule 8); ``records.npz`` with ``event_time``, ``event_channel``, and as the role
   needs ``event_uniforms`` [E, 2], ``row_event``, ``counts`` [rows, D], ``heat_kT``, ``work_kT``.
 - **ensemble** (``wb_ensemble``): ``ensemble.json`` with ``rungs`` {M: {streams: [...]}} and
   ``ensemble.npz`` with ``observation_counts_m{M}`` [runs, times, D].
@@ -78,7 +79,7 @@ def load_probe(path) -> tuple[dict, dict]:
 def load_run(path) -> tuple[dict, dict]:
     p = _dir(path)
     meta = _json(p, "run.json")
-    for key in ("world", "conventions", "ssa", "channels", "stream", "initial_state"):
+    for key in ("world", "conventions", "ssa", "channels", "stream", "initial_state", "end_reason"):
         if key not in meta:
             raise MissingRecord(f"{p}/run.json lacks {key!r}")
     return meta, _npz(p, "records.npz")

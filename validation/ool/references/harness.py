@@ -134,6 +134,13 @@ def probe_tables(role_paths, world_id: str, states_file: str) -> list:
     return out
 
 
+def end_check(meta: dict, path) -> CheckResult:
+    """A registered run must end at its registered event count; ``stalled`` (a singular rate
+    reached, §0.2b rule 8) or any other end fails the run's row (amendment 4)."""
+    return CheckResult("registered_end", meta.get("end_reason") == "max_events",
+                       dict(run=str(path), end_reason=meta.get("end_reason"), registered="max_events"))
+
+
 def run_records(path) -> tuple[dict, dict, Law, ChannelTable]:
     meta, arrays = load_run(path)
     check_convention(meta["ssa"])
@@ -184,6 +191,7 @@ def row_3(ctx: Context) -> list:
         raise RecordFormatError("rescale_pair must map to {'base': DIR, 'scaled': DIR}")
     mb, ab, _, _ = run_records(pair["base"])
     ms, as_, _, _ = run_records(pair["scaled"])
+    out.extend([end_check(mb, pair["base"]), end_check(ms, pair["scaled"])])
     if (mb["world"], ms["world"]) != ("ol1_wa_closed", "ol1_wa_closed_x2"):
         raise RecordFormatError("rescale_pair: the worlds must be ol1_wa_closed and ol1_wa_closed_x2")
     sizes = (len(np.asarray(ab.get("event_channel", []))), len(np.asarray(as_.get("event_channel", []))))
@@ -229,6 +237,7 @@ def row_4(ctx: Context) -> list:
         names = ("event_time", "event_channel", "event_uniforms")
         et, ec, eu = need_arrays(rec, names, path)
         n0 = law.world.state_from(rmeta["initial_state"])
+        out.append(tagged(end_check(rmeta, path), part="c", conventions=rmeta["conventions"]))
         out.append(tagged(replay(FloatRates(law), table, n0, et, ec, eu), part="c", conventions=rmeta["conventions"]))
         out.append(tagged(moiety_check(law, table, n0, rec, path), part="d", conventions=rmeta["conventions"]))
     out.append(tagged(refusal_check(load_refusals(ctx.path("refusals"))), part="d"))
@@ -270,11 +279,22 @@ def moiety_check(law: Law, table: ChannelTable, n0, rec: dict, where) -> CheckRe
 
 
 def refusal_check(record: dict) -> CheckResult:
-    expected = sorted(p.stem.replace(".world", "") for p in (DESIGN_DIR / "refusals").glob("*.world.json"))
+    """Every registered declaration refused; one refused only under a measure (``refused_under``,
+    the rule-8 refusal) must say it was parsed under that measure."""
+    files = sorted((DESIGN_DIR / "refusals").glob("*.world.json"))
+    expected = [p.name[: -len(".world.json")] for p in files]
     missing = [r for r in expected if r not in record]
     accepted = [r for r in expected if r in record and not record[r].get("refused")]
-    return CheckResult("registered_refusals", not missing and not accepted,
-                       dict(declarations=len(expected), missing=missing, accepted=accepted))
+    wrong_measure = []
+    for f, rid in zip(files, expected, strict=True):
+        under = json.loads(f.read_text()).get("refused_under")
+        if under and rid in record:
+            parsed = record[rid].get("parsed_under", {})
+            if any(parsed.get(k) != v for k, v in under.items()):
+                wrong_measure.append(rid)
+    return CheckResult("registered_refusals", not missing and not accepted and not wrong_measure,
+                       dict(declarations=len(expected), missing=missing, accepted=accepted,
+                            not_parsed_under_its_measure=wrong_measure))
 
 
 def registered_rows(events: int) -> list:
@@ -300,6 +320,7 @@ def row_5(ctx: Context) -> list:
         if meta["world"] != LEDGER_RUN["world"] or law.world.state_from(meta["initial_state"]) != \
                 registered_world(LEDGER_RUN["world"]).state_from(registered_world(LEDGER_RUN["world"]).initial_state):
             raise RecordFormatError(f"{path}: the ledger run must start {LEDGER_RUN['world']} from its registered state")
+        out.append(end_check(meta, path))
         out.append(CheckResult("registered_run_length", len(ec) == LEDGER_RUN["max_events"],
                                dict(events=int(len(ec)), registered=LEDGER_RUN["max_events"])))
         if [int(e) for e in row_event] != registered_rows(len(ec)):
@@ -323,6 +344,7 @@ def row_6(ctx: Context) -> list:
         mb, ab, _, _ = run_records(b)
         mr, ar, _, _ = run_records(r)
         mo, ao, _, _ = run_records(o)
+        out.extend([end_check(mb, b), end_check(mr, r), end_check(mo, o)])
         if mr["stream"] != mb["stream"] or mr["conventions"] != mb["conventions"]:
             out.append(CheckResult("bitwise_replay", False, dict(problem="the replay declares another identity")))
         else:

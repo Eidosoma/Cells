@@ -54,7 +54,7 @@
    "uncatalysed": "g = 1 where the membrane (the only catalysing phase) is empty at m"
   },
   "last_molecule": {
-   "kept": "E(m) = 0 where the membrane is empty at m: it never empties",
+   "kept": "rate zero only for a pair one of whose end states has an empty membrane (amendment 4, \u00a70.2a as amended): the membrane never empties and nothing else is frozen",
    "reversible": "c = 0 only: the empty membrane is an ordinary state",
    "extinct": "c = 1 only: a channel whose result empties the membrane fires at the pair rule's cancelled form, 1/ff(N - 1, r - 1) for E(m)/ff(N - 1, r), in either direction (k- for the last molecule's leave); it is one-way, and a literal zero is an error"
   }
@@ -73,5 +73,14 @@
    "last_molecule": "extinct"
   }
  ],
- "covered_pairs": "all four admissible (condensed_measure, last_molecule) pairs"
+ "covered_pairs": "all four admissible (condensed_measure, last_molecule) pairs",
+ "empty_common_state": "\u00a70.2a as amended (amendment 4): wherever the membrane factor E(m)/ff(N - c, r) is 0/0 - the common state's membrane is empty while neither end state's is (a lone molecule changing form, two joining), or under extinct a channel whose result empties the membrane - it takes its continuous extension 1/ff(N - 1, r - 1), under every last_molecule token; detailed balance holds there",
+ "singular_rate": "\u00a70.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, which fails its row",
+ "world_role": {
+  "key": "optional",
+  "values": [
+   "probe"
+  ]
+ },
+ "end_reason": "every run declares one; the registered runs end at their registered event count ('max_events'); any other end, 'stalled' included, fails the run's row"
 }

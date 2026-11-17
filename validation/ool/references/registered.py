@@ -76,8 +76,8 @@ def _volume_for_X(X) -> Fraction:
     return Fraction(X) / (AVOGADRO * C0_MM / 1000)
 
 
-def _world(wid, description, species, places, chi, steps, pool_X, initial_state):
-    return {
+def _world(wid, description, species, places, chi, steps, pool_X, initial_state, world_role=None):
+    doc = {
         "format": WORLD_FORMAT,
         "id": wid,
         "registered": REGISTERED_ON,
@@ -96,6 +96,22 @@ def _world(wid, description, species, places, chi, steps, pool_X, initial_state)
         "conventions_required": ["free_energy_form", "condensed_measure", "membrane_kinetics", "lumen_volume",
                                  "empty_catalyst_phase", "last_molecule"],
     }
+    if world_role is not None:
+        doc["world_role"] = world_role
+        doc["world_role_reason"] = WORLD_ROLE_REASONS[wid]
+    return doc
+
+
+WORLD_ROLE_REASONS = {
+    "ol1_wa": "Amendment 4 (§0.2b rule 8): r4 (A + B + E -> C + E) has E@membrane on both sides, singular under "
+              "multinomial_less_one at N = 3 with (A, B, E) = (1, 1, 1), and at its reverse's (C, E) = (1, 1). "
+              "This is the kernel-probe world: its registered probe states include both, where the probe "
+              "reports +inf. Its registered runs start at N = 12 and grow (the pool is supersaturated in A); "
+              "a run that reaches the singular state stops stalled and fails its row.",
+    "ol1_wa_closed": "Amendment 4 (§0.2b rule 8): r4 has E@membrane on both sides. The conserved moieties keep the "
+                     "membrane at N >= 5 > r = 3 in every one of the 387 states, so the singular rate never "
+                     "arises here; the role is declared because the step is.",
+}
 
 
 WA_SPECIES = [
@@ -137,14 +153,14 @@ def world_documents() -> dict:
         [_step("x1", "membrane", {"A@pool": 1}, {"A@membrane": 1}, 1, catalysts=[("C@membrane", 1)])]
         + WA_INTERNAL_STEPS, WA_POOL_X,
         {"A@membrane": 6, "B@membrane": 3, "C@membrane": 1, "D@membrane": 0, "E@membrane": 1, "S@membrane": 1,
-         "S@pool": 6, "T@pool": 0})
+         "S@pool": 6, "T@pool": 0}, world_role="probe")
     docs["ol1_wa_closed"] = _world(
         "ol1_wa_closed",
         "OL1 closed world: the ol1_wa membrane and pool without the held species and x1. Moieties "
         "a = A + C + 2D + E, b = B + C and s = S + 2T are conserved; the membrane is never empty.",
         WA_SPECIES, WA_MEMBRANE_PLACES + WA_POOL_PLACES, WA_CHI, WA_INTERNAL_STEPS, WA_POOL_X,
         {"A@membrane": 6, "B@membrane": 3, "C@membrane": 0, "D@membrane": 0, "E@membrane": 0, "S@membrane": 0,
-         "S@pool": 4, "T@pool": 0})
+         "S@pool": 4, "T@pool": 0}, world_role="probe")
     for M in WB_RUNGS:
         docs[f"ol1_wb_m{M}"] = _world(
             f"ol1_wb_m{M}",
@@ -194,12 +210,14 @@ def variant_documents() -> dict:
     unc = copy.deepcopy(base)
     unc["id"] = "ol1_wa_closed_uncatalysed"
     unc["description"] = "ol1_wa_closed with every catalyst removed (row OL1-3a)."
+    unc["world_role_reason"] = "As ol1_wa_closed: r4 keeps E@membrane on both sides; N >= 5 > r = 3 throughout."
     for st in unc["steps"]:
         st["transition_state_factor"] = []
     out[unc["id"]] = unc
     x2 = copy.deepcopy(base)
     x2["id"] = "ol1_wa_closed_x2"
     x2["description"] = "ol1_wa_closed with every forward rate constant doubled (row OL1-3b)."
+    x2["world_role_reason"] = "As ol1_wa_closed: r4 keeps E@membrane on both sides; N >= 5 > r = 3 throughout."
     for st in x2["steps"]:
         st["forward_rate_per_s"] = _q(2 * Fraction(st["forward_rate_per_s"]["exact"]))
     out[x2["id"]] = x2
@@ -248,6 +266,11 @@ def refusal_documents() -> dict:
          lambda d: step(d, "x2").update({"locus": "pool"})),
         ("own_delta_G", "r1 carrying a standard free energy of its own",
          lambda d: step(d, "r1").update({"standard_delta_G_RT": -1.0})),
+        ("singular_step_without_probe_role",
+         "amendment 4, §0.2b rule 8: r4 (E@membrane on both sides) in a world without world_role = probe; refused "
+         "when parsed under condensed_measure = multinomial_less_one (under multinomial it is an ordinary world)",
+         lambda d: [d.pop("world_role", None), d.pop("world_role_reason", None),
+                    d.update({"refused_under": {"condensed_measure": "multinomial_less_one"}})]),
     ]
     for rid, why, edit in cases:
         out[f"refuse_{rid}"] = variant(rid, why, edit)

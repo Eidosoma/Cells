@@ -28,7 +28,7 @@
   "max_count": 9
  },
  "report": "a_plus[state, step] (rate of state -> state + nu) and a_minus[state, step] (rate of state -> state - nu), zero where impossible, with these states echoed",
- "count": 589,
+ "count": 592,
  "states": [
   [
    0,
@@ -176,6 +176,16 @@
    1,
    0,
    0,
+   0,
+   0,
+   0
+  ],
+  [
+   0,
+   0,
+   1,
+   0,
+   1,
    0,
    0,
    0
@@ -689,6 +699,26 @@
    6,
    6,
    1
+  ],
+  [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  [
+   1,
+   1,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0
   ],
   [
    1,

@@ -383,5 +383,7 @@
   "lumen_volume",
   "empty_catalyst_phase",
   "last_molecule"
- ]
+ ],
+ "world_role": "probe",
+ "world_role_reason": "Amendment 4 (\u00a70.2b rule 8): r4 (A + B + E -> C + E) has E@membrane on both sides, singular under multinomial_less_one at N = 3 with (A, B, E) = (1, 1, 1), and at its reverse's (C, E) = (1, 1). This is the kernel-probe world: its registered probe states include both, where the probe reports +inf. Its registered runs start at N = 12 and grow (the pool is supersaturated in A); a run that reaches the singular state stops stalled and fails its row."
 }

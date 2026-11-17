@@ -337,5 +337,7 @@
   "lumen_volume",
   "empty_catalyst_phase",
   "last_molecule"
- ]
+ ],
+ "world_role": "probe",
+ "world_role_reason": "As ol1_wa_closed: r4 keeps E@membrane on both sides; N >= 5 > r = 3 throughout."
 }

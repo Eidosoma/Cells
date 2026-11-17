@@ -14,7 +14,7 @@ engine's saved records.
 - The registered worlds and the refusal declarations: `designs/*.world.json` and
   `designs/refusals/`.
 - The probe states:
-  - `designs/ol1_kernel_probe_states.json` (589 states of `ol1_wa`);
+  - `designs/ol1_kernel_probe_states.json` (589 states of `ol1_wa`; 592 since amendment 4);
   - `designs/ol1_closed_world_states.json` (387 states of `ol1_wa_closed`).
 - The design file, `designs/ol1_design.json`, and the reference modules.
 
@@ -75,7 +75,7 @@ There are no defaults.
 | `membrane_kinetics` | `count_on_m` | Membrane activities Π ff(n_i, α_i)/ff(N − c, r) at the firing state; extent N(m) − c + 1 on m |
 | `lumen_volume` | `declared` | Accepted; OL1's worlds have no lumen |
 | `empty_catalyst_phase` | `uncatalysed` | g = 1 where the membrane is empty at m. Only the membrane catalyses (§0.2a); a dilute catalyst is refused |
-| `last_molecule` | `kept`, `reversible` (with c = 0), `extinct` (with c = 1) | `extinct`: a channel whose result empties the membrane fires at the pair rule's cancelled form, E(m)/ff(N − 1, r) → 1/ff(N − 1, r − 1), in either direction. It is one-way, and its heat is booked against F_mem(empty) = 0 |
+| `last_molecule` | `kept`, `reversible` (with c = 0), `extinct` (with c = 1) | `kept` (amendment 4): rate zero only for a pair one of whose end states has an empty membrane. `extinct`: a channel whose result empties the membrane fires at the pair rule's cancelled form, E(m)/ff(N − 1, r) → 1/ff(N − 1, r − 1), in either direction. It is one-way, and its heat is booked against F_mem(empty) = 0. Under every token, a 0/0 membrane factor takes the same cancelled form (amendment 4) |
 
 - **Dilute phases** use mass action scaled by X = N_A V c0: activity ff(n, α)/X^α and extent X.
 - **Coverage.** The references cover all four admissible (measure, last-molecule) pairs.
@@ -114,7 +114,7 @@ controls' margins.
 
 | # | Claim (§7.1) | Reference and derivation | Planted controls, and what the reference shows on the registered inputs |
 | --- | --- | --- | --- |
-| OL1-1 | Every channel keeps local detailed balance | `detailed_balance.py`, `laws.py`. On the engine's kernel table at 589 registered states of `ol1_wa` (seed 2026111701; 24 base states with counts at most 9, every square's corners, and boundary states), three checks run. (1) Kolmogorov's criterion on 360 squares and 133 parallel two-cycles. It needs no convention and cannot be met by comparing the engine with itself. (2) The identity ln a⁻(n′) − ln a⁺(n) = F(n′) − F(n) − w under the declared tokens. (3) The reverse rates, the extinct boundary's cancelled form included. The tolerance is 64u(8 + Σ\|ln a\|) per cycle, below 3·10⁻¹² here. In the reference itself every square and two-cycle closes exactly (RatExp), under all four token pairs | Under (multinomial, kept): the factor at each direction's own state fails Kolmogorov (max 0.0074, 124 cycles) and the identity (0.125). Catalysis on the forward channel only fails Kolmogorov (0.057). A one-sided off rate (r3's reverse × e^{x_D}) fails Kolmogorov (0.061). A wrong sign of ΔF fails the identity (10.6). A dropped c0 fails the identity (6.91). The other measure fails the identity (0.693). A wrong last-molecule token fails the boundary rates. The honest table's largest residual is 2.7·10⁻¹⁵ |
+| OL1-1 | Every channel keeps local detailed balance | `detailed_balance.py`, `laws.py`. On the engine's kernel table at 589 registered states of `ol1_wa` (592 since amendment 4) (seed 2026111701; 24 base states with counts at most 9, every square's corners, and boundary states), three checks run. (1) Kolmogorov's criterion on 360 squares and 133 parallel two-cycles. It needs no convention and cannot be met by comparing the engine with itself. (2) The identity ln a⁻(n′) − ln a⁺(n) = F(n′) − F(n) − w under the declared tokens. (3) The reverse rates, the extinct boundary's cancelled form included. The tolerance is 64u(8 + Σ\|ln a\|) per cycle, below 3·10⁻¹² here. In the reference itself every square and two-cycle closes exactly (RatExp), under all four token pairs | Under (multinomial, kept): the factor at each direction's own state fails Kolmogorov (max 0.0074, 124 cycles) and the identity (0.125). Catalysis on the forward channel only fails Kolmogorov (0.057). A one-sided off rate (r3's reverse × e^{x_D}) fails Kolmogorov (0.061). A wrong sign of ΔF fails the identity (10.6). A dropped c0 fails the identity (6.91). The other measure fails the identity (0.693). A wrong last-molecule token fails the boundary rates. The honest table's largest residual is 2.7·10⁻¹⁵ |
 | OL1-2 | A closed world relaxes to exp(−F/k_BT) | `closed_world.py`. In the reference, a⁺(n)w(n) = a⁻(n′)w(n′)e^{w} holds exactly on every edge of `ol1_wa_closed` (1,312 edges, all four token pairs). The world is connected, so π = w/Z is its unique stationary law. On the engine's table, the generator's stationary law (sparse LU) must lie within total variation 10⁻¹⁰ of exp(−F)/Z, and Kolmogorov must hold on all 1,821 squares and 243 two-cycles | The planted stationary laws depart: own-state factor TV 0.083; forward-only catalysis 0.30; one-sided off rate 0.0079; dropped c0 0.997; wrong sign 0.997; the other measure 0.035. Honest: 5·10⁻¹⁶. **The design's probes reproduce exactly.** E1 gives TV 0.0829822 with cycle ratio 143/128. The kinetic split (forward constants 1, reverse 1/K) is identified by reproduction: reverse constants 1 with forward K give 0.0842. E2 gives TV 0.5407884 with ratio 2/3; its per-contact ω is not §2.2's form, so it tests the enumerator only |
 | OL1-3 | Catalysis is kinetic only | `catalysis.py`. (3a) The closed world with its catalysts and without them must both relax to exp(−F)/Z. (3b) The closed world and its rate-doubled variant, under one stream identity, must fire the identical channel sequence (500 events) at exactly half the times. Doubling is exact in floating point, so the comparison is bitwise | (3a) Forward-only catalysis departs (TV 0.30). (3b) A factor on forward channels only changes the sequence |
 | OL1-4 | Mass action with registry potentials | `laws.py`, `mass_action.py`, `ssa_oracle.py`, `world.py`, in four parts. (a) The forward form, on the kernel probe, under the declared tokens. (b) The large-system ladder on `ol1_wb_m{5,20,80,320}`: 2,000 runs per rung to 2 s, means at 0.25, 0.5, 1 and 2 s. Each mean is z-tested against the **exact master-equation mean** of its rung, Bonferroni over 16 tests (z = 4.003). The ODE is not the null, because the exact mean differs from it by O(1/X). The ODE's closed form (Riccati) and SciPy's Radau agree to 2.5·10⁻¹⁴. The gap falls fourfold per rung: −0.0188, −0.0046, −0.00114, −0.000285 at t = 0.25 s. (c) The host oracle replays a diagnostic run under common variates. (d) Every registered refusal is refused at parse, and every moiety is conserved at every row | (a) n^α for the falling factorial (0.693), N^r for the draw's normaliser (0.186), the extent without its offset (0.693; an error under c = 0 only, since under c = 1 it is the rule) and a dropped c0 (6.91) each fail the forward form. (b) Family power at 2,000 runs: n² for n(n−1) 0.998; dropped c0, wrong sign, S → T run for 2 S → T, and selection biased against reverse channels (0.9) 1.0 each. (c) The biased selection is caught at the 4th event of the reference's own host run of `ol1_wa`. An engine's run has its own stream. (d) The reference's parser refuses all nine registered defects |
@@ -141,7 +141,7 @@ marked.
 | `closed_world`, `closed_world_uncatalysed` | The same arrays over every state of `ol1_wa_closed` and of its uncatalysed variant | 2, 3a |
 | `refusals` | For each `designs/refusals/*.world.json`: refused (true/false) and the message. Needed once | 4d |
 | `wb_ensemble` | Per rung: `observation_counts` [runs, 4, D] at the registered times, and each run's stream identity (all distinct). Needed once; the pool takes no token | 4b |
-| `ledger_run` | `ol1_wa` from its initial state to 2,000 events, diagnostic. It holds `event_time`, `event_channel` and `event_uniforms` [E, 2]; `row_event`, `counts` [rows, D], `heat_kT` and `work_kT`, rows every 100 events and the last; and in run.json the tokens, the SSA convention (`tau`, `select`), the channel table (step, direction, code, in fold order) and the stream identity | 4c, 4d, 5 |
+| `ledger_run` | `ol1_wa` from its initial state to 2,000 events, diagnostic. It holds `event_time`, `event_channel` and `event_uniforms` [E, 2]; `row_event`, `counts` [rows, D], `heat_kT` and `work_kT`, rows every 100 events and the last; and in run.json the tokens, the SSA convention (`tau`, `select`), the channel table (step, direction, code, in fold order), the stream identity, and (amendment 4) the `end_reason`, which must be `max_events` | 4c, 4d, 5 |
 | `replay`, `other_stream` | `ledger_run` repeated under its identity, and under another identity | 6 |
 | `rescale_pair` | `ol1_wa_closed` and `ol1_wa_closed_x2` under one stream identity, 500 events each: `event_time` and `event_channel` | 3b |
 
@@ -158,8 +158,8 @@ row passes.
 
 ## Amendments
 
-**17 November 2026, after the registering commit 08870ef6 and before any engine output.** All
-three follow from a review of the registered design.
+**17 November 2026, after the registering commit 08870ef6 and before any engine output.**
+Amendments 1–3 follow from a review of the registered design; amendment 4 follows the lead's rulings.
 
 1. **The extinct rule is now probed in the forward direction.**
    - `ol1_wa` reaches the extinct boundary only through the reverse of a join, while §0.2a rules both
@@ -185,6 +185,58 @@ three follow from a review of the registered design.
    - The ledger run must save the registered rows: every 100 events, and the last.
    - Otherwise the record is refused (status 2). One pair alone, or a run that saves row 0 only,
      would pass vacuously.
+
+4. **Amendment 4: the lead's rulings of the same evening** (after 2d69c118, the merge of main
+   d3d58d8e; before any engine output).
+   - **(a) The empty common state** (§0.2a, as amended).
+     - Wherever the membrane factor E(m)/ff(N − c, r) is 0/0, the cancelled form 1/ff(N − 1, r − 1)
+       applies, under every `last_molecule` token. That happens when a step's common state has an
+       empty membrane while neither end state does: a lone molecule changing form, or two joining.
+     - `kept` gives rate zero only to a pair one of whose end states has an empty membrane.
+     - The values, derived from the reference's own F and rules, with k each step's forward
+       constant:
+       - r3 at a lone A fires at k under every token pair.
+       - r1 at one A and one B fires at k/2 under `multinomial` and at k under
+         `multinomial_less_one`.
+       - r2 at two A fires at k under `multinomial` and at 2k under `multinomial_less_one`.
+       - Each reverse is positive and equals a⁺·e^{ΔF−w} exactly. Detailed balance holds there
+         as for every other pair.
+     - The kernel probe gains each membrane step's reactant-only and product-only states. Two of
+       them are r1's (one A and one B) and r4's (one each of A, B and E); the third is
+       (C, E) = (1, 1). The probe now has 592 states.
+     - In the reference, every square and two-cycle on it still closes exactly, under all four
+       pairs. Wherever the forward rate is finite and positive, the reverse equals the F path
+       exactly (the design-time evidence: `evidence/amendment4.*`).
+     - **Planted:** the superseded reading, rate 0 wherever the common state's membrane is empty
+       (`empty_m_zero`). The forward-form check (row OL1-4a, on the kernel probe) catches it by its
+       zero pattern: at 3 entries under each probed pair, where the reference gives rates of at
+       least 0.5 s⁻¹. The mismatch is categorical (zero against a positive rate), so it needs no
+       tolerance. The identity check fails as well, and under `extinct` the reverse rates differ at
+       5 entries.
+   - **(b) The singular rate** (§0.2b rule 8).
+     - r4 (A + B + E → C + E) has E@membrane on both sides. Under `multinomial_less_one` it is
+       +∞ at N = r: forward at (A, B, E) = (1, 1, 1), and reverse at (C, E) = (1, 1). Both are now
+       registered probe states, where the expectation is +∞; `compare_rates` checks the singular
+       pattern.
+     - Every world holding r4 declares `world_role: probe` (an optional key; `probe` is its only
+       value), with its reason in the world file:
+       - `ol1_wa` is the kernel-probe world, and its probe holds both singular states. Its
+         registered runs start at N = 12 and grow (supersaturated in A). A run that reached N = 3
+         with only A, B and E would stop `stalled`.
+       - In `ol1_wa_closed`, `ol1_wa_closed_uncatalysed` and `ol1_wa_closed_x2`, the conserved
+         moieties keep N ≥ 5 > r = 3 in all 387 states, so the singular rate never arises. The
+         role is declared because the step is.
+     - A tenth refusal, `refuse_singular_step_without_probe_role`, is `ol1_wa` without the role.
+       It is refused when parsed under `multinomial_less_one` (its file says so in
+       `refused_under`) and is an ordinary world under `multinomial`.
+   - **(c) Run ends.** Every run declares an `end_reason`; one that declares none is refused
+     (status 2). A registered run must end at `max_events`. A run that ends `stalled`, or ends
+     any other way, fails its row (OL1-3, OL1-4c, OL1-5 and OL1-6). There is a planted test, and
+     the host SSA stops `stalled` at r4's singular state.
+   - **A clarification of the probe, unchanged since 08870ef6.** Its one- and two-molecule states
+     include each dilute place alone, with the membrane empty. There a pool step's rate is the
+     pool's mass action under every token (the last-molecule rules concern membrane-locus steps),
+     and a join's rate is set by `last_molecule`.
 
 **The same day, on the stand-in only (not the design).** Honest stand-in probes are now
 evaluated by the float path (`FloatRates`), as a float64 engine would report them. A test holds

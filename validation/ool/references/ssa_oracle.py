@@ -137,33 +137,34 @@ class FloatRates:
             out *= v - j
         return out if v >= a else 0.0
 
-    def _draw(self, counts, coeff, continued: bool):
-        out, r_mem = 1.0, 0
+    def _extent(self, r, m) -> float:
+        if self.locus_X[r] is not None:
+            return self.locus_X[r]
+        return float(self.N(m) - self.c + 1)
+
+    def _draw(self, r, counts, coeff, m) -> float:
+        """E(m) times one side's draw (the law's ``draw``): cancelled where 0/0, +inf where singular."""
+        num, r_mem, dil = 1.0, 0, 1.0
         for i, a in enumerate(coeff):
             if not a:
                 continue
             if counts[i] < a:
-                return None
+                return 0.0
             if self.mem[i]:
-                out *= self.ff(int(counts[i]), int(a))
+                num *= self.ff(int(counts[i]), int(a))
                 r_mem += int(a)
             else:
-                out *= self.ff(int(counts[i]), int(a)) / self.X[i] ** a
-        if r_mem:
-            N = self.N(counts)
-            den = self.ff(N - 1, r_mem - 1) if continued else (self.ff(N - self.c, r_mem) if N - self.c >= 0 else 0.0)
-            if den == 0:
-                return None
-            out /= den
-        return out
-
-    def _extent(self, r, m) -> float:
-        if self.locus_X[r] is not None:
-            return self.locus_X[r]
-        N = self.N(m)
-        if self.last == "kept" and N == 0:
-            return 0.0
-        return float(N - self.c + 1)
+                dil *= self.ff(int(counts[i]), int(a)) / self.X[i] ** a
+        E = self._extent(r, m)
+        if self.locus_X[r] is not None or r_mem == 0:
+            return dil * num * E
+        N = self.N(counts)
+        den = self.ff(N - self.c, r_mem) if N - self.c >= 0 else 0.0
+        if den:
+            return dil * num * E / den
+        if E == 0:
+            return dil * num / self.ff(N - 1, r_mem - 1)
+        return math.inf
 
     def _g(self, r, m) -> float:
         if not self.cats[r]:
@@ -173,41 +174,30 @@ class FloatRates:
             return 1.0
         return 1.0 + sum(b * m[j] for j, b in self.cats[r]) / N
 
+    def _kept_zero(self, r, n, p) -> bool:
+        return self.last == "kept" and self.locus_X[r] is None and (self.N(n) == 0 or self.N(p) == 0)
+
     def forward(self, r, n) -> float:
         n = np.asarray(n)
         p = n + self.nu[r]
-        if self.last == "extinct" and self.N(n) > 0 and self.N(p) == 0:
-            act = self._draw(n, self.alpha[r], True)
-            return 0.0 if act is None else self.k[r] * act * self.held_r[r]
-        act = self._draw(n, self.alpha[r], False)
-        if act is None:
+        if np.any(p < 0) or np.any(n < self.alpha[r]) or self._kept_zero(r, n, p):
             return 0.0
         m = np.minimum(n, p)
-        E = self._extent(r, m)
-        if E <= 0:
-            return 0.0
-        return self.k[r] * self._g(r, m) * E * act * self.held_r[r]
+        d = self._draw(r, n, self.alpha[r], m)
+        if d == 0.0 or math.isinf(d):
+            return d
+        return self.k[r] * self._g(r, m) * d * self.held_r[r]
 
     def reverse(self, r, p) -> float:
         p = np.asarray(p)
         n = p - self.nu[r]
-        if np.any(n < 0):
-            return 0.0
-        if self.last == "extinct" and self.N(p) > 0 and self.N(n) == 0:
-            act = self._draw(p, self.beta[r], True)
-            return 0.0 if act is None else self.k_minus[r] * act * self.held_p[r] * math.exp(self.R(p) - self.R(n))
-        if self.last == "extinct" and self.N(n) > 0 and self.N(p) == 0:
-            return 0.0
-        if self._draw(n, self.alpha[r], False) is None:
+        if np.any(n < 0) or np.any(n < self.alpha[r]) or self._kept_zero(r, n, p):
             return 0.0
         m = np.minimum(n, p)
-        E = self._extent(r, m)
-        if E <= 0:
-            return 0.0
-        act = self._draw(p, self.beta[r], False)
-        if act is None:
-            return 0.0
-        return self.k_minus[r] * act * self.held_p[r] * E * self._g(r, m) * math.exp(self.R(p) - self.R(n))
+        d = self._draw(r, p, self.beta[r], m)
+        if d == 0.0 or math.isinf(d):
+            return d
+        return self.k_minus[r] * self._g(r, m) * d * self.held_p[r] * math.exp(self.R(p) - self.R(n))
 
     def channel_rates(self, n, table: ChannelTable) -> np.ndarray:
         out = np.empty(len(table.step))
@@ -242,17 +232,23 @@ def run_host_ssa(rates: FloatRates, table: ChannelTable, n0, t_end: float, rng: 
     t = 0.0
     times, codes, uniforms = [], [], []
     bias = rates.planted_bias
+    end_reason = "max_events"
     for _ in range(max_events):
         rates.planted_bias = None
         a = rates.channel_rates(n, table)
+        if np.any(np.isinf(a)):
+            end_reason = "stalled"      # §0.2b rule 8: a singular rate is never fired
+            break
         a0 = float(left_fold(a)[-1]) if a.size else 0.0
         if a0 <= 0:
+            end_reason = "no_channel"
             break
         u1, u2 = rng.random(), rng.random()
         while u1 == 0.0:
             u1 = rng.random()
         tau = -math.log(u1) / a0
         if t + tau > t_end:
+            end_reason = "t_end"
             break
         t += tau
         weights = a if bias is None else a * np.where(np.asarray(table.sign) < 0, bias, 1.0)
@@ -265,7 +261,7 @@ def run_host_ssa(rates: FloatRates, table: ChannelTable, n0, t_end: float, rng: 
         uniforms.append((u1, u2))
     rates.planted_bias = bias
     return dict(event_time=np.array(times), event_channel=np.array(codes, dtype=np.int64),
-                event_uniforms=np.array(uniforms).reshape(-1, 2), final_state=n)
+                event_uniforms=np.array(uniforms).reshape(-1, 2), final_state=n, end_reason=end_reason)
 
 
 def replay(rates: FloatRates, table: ChannelTable, n0, event_time, event_channel, event_uniforms) -> CheckResult:
@@ -279,6 +275,10 @@ def replay(rates: FloatRates, table: ChannelTable, n0, event_time, event_channel
     mismatch, ties, worst_time = [], 0, 0.0
     for e in range(E):
         a = rates.channel_rates(n, table)
+        if np.any(np.isinf(a)):
+            mismatch.append(dict(event=e, problem="a singular rate at this state: the run should have stopped "
+                                                  "stalled (§0.2b rule 8)", state=n.tolist()))
+            break
         prefix = left_fold(a)
         a0 = float(prefix[-1])
         u1, u2 = float(event_uniforms[e, 0]), float(event_uniforms[e, 1])

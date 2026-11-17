@@ -171,6 +171,7 @@ class World:
     steps: tuple
     initial_state: dict | None = None
     raw: dict = field(compare=False, repr=False, default=None)
+    world_role: str | None = None
 
     # -- the state ---------------------------------------------------------------------
     @property
@@ -357,10 +358,45 @@ def parse_world(doc: dict) -> World:
         steps.append(st)
     world = World(name, _exact(doc["standard_concentration_mM"], f"{name}.c0"),
                   _exact(doc["avogadro_per_mol"], f"{name}.avogadro"), volumes, places, moieties, chi,
-                  tuple(steps), doc.get("initial_state"), doc)
+                  tuple(steps), doc.get("initial_state"), doc, parse_world_role(doc, name))
     for st in world.steps:
         check_step(world, st)
     return world
+
+
+WORLD_ROLES = ("probe",)
+
+
+def parse_world_role(doc: dict, name: str) -> str | None:
+    """§0.2b rule 8: ``world_role`` is optional, and ``probe`` is its only value."""
+    if "world_role" not in doc:
+        return None
+    role = doc["world_role"]
+    if role not in WORLD_ROLES:
+        raise RecordFormatError(f"{name}: world_role {role!r}; the only value is 'probe'")
+    return role
+
+
+def singular_steps(world: World) -> list:
+    """Steps with a membrane place on both sides (§0.2b rule 8).
+
+    Under ``condensed_measure: multinomial_less_one`` such a step's rate is +inf at N = r: the
+    draw's normaliser ff(N - 1, r) vanishes while its extent N(m) - c + 1 keeps the shared
+    molecules, so nothing cancels."""
+    out = []
+    for st in world.steps:
+        shared = [p for p in st.reactants if p in st.products and world.places[p].membrane]
+        if shared:
+            out.append(st.name)
+    return out
+
+
+def check_world_role(world: World, condensed_measure: str) -> None:
+    """Rule 8: under ``multinomial_less_one`` a world holding a singular step must be a probe."""
+    if condensed_measure == "multinomial_less_one" and singular_steps(world) and world.world_role != "probe":
+        raise RecordFormatError(f"{world.name}: steps {singular_steps(world)} have a membrane place on both sides; "
+                                "under condensed_measure = multinomial_less_one they are admitted only in a world "
+                                "declaring world_role = probe (§0.2b rule 8)")
 
 
 def check_step(world: World, st: Step) -> None:

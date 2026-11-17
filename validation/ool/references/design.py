@@ -89,6 +89,15 @@ def design_document() -> dict:
              "what": "the harness requires every per-pair role to hold exactly the two probed convention pairs, once "
                      "each, and the ledger run to save the registered rows (every 100 events, and the last)",
              "why": "one pair alone, or a ledger run that saves row 0 only, would otherwise pass vacuously"},
+            {"date": "2026-11-17", "after_commit": "2d69c118 (main d3d58d8e merged)", "before_engine_output": True,
+             "what": "amendment 4: (a) §0.2a as amended: the cancelled form wherever the membrane factor is 0/0, "
+                     "under every last_molecule token, and kept zeroing only pairs with an empty end state; the "
+                     "kernel probe gains each membrane step's reactant-only and product-only states (592 states); "
+                     "the superseded reading is planted (empty_m_zero). (b) §0.2b rule 8: world_role = probe on the "
+                     "worlds holding r4 (ol1_wa, ol1_wa_closed and its two variants); a tenth refusal; the probe's "
+                     "expectation is +inf at r4's singular pair under multinomial_less_one. (c) runs declare an "
+                     "end_reason, and a registered run that ends stalled fails its row",
+             "why": "the lead's rulings of 17 November (§0.2a amended; §0.2b rule 8)"},
         ],
         "worlds": {
             "registered": ["ol1_wa", "ol1_wa_closed", "ol1_wa_closed_uncatalysed", "ol1_wa_closed_x2",
@@ -190,12 +199,22 @@ TOKEN_MEANINGS = {
                                         "state; extent N(m) - c + 1 on the common state m"},
     "lumen_volume": {"declared": "the lumen's volume_L is a constant (no lumen in OL1's registered worlds)"},
     "empty_catalyst_phase": {"uncatalysed": "g = 1 where the membrane (the only catalysing phase) is empty at m"},
-    "last_molecule": {"kept": "E(m) = 0 where the membrane is empty at m: it never empties",
+    "last_molecule": {"kept": "rate zero only for a pair one of whose end states has an empty membrane (amendment "
+                              "4, §0.2a as amended): the membrane never empties and nothing else is frozen",
                       "reversible": "c = 0 only: the empty membrane is an ordinary state",
                       "extinct": "c = 1 only: a channel whose result empties the membrane fires at the pair rule's "
                                  "cancelled form, 1/ff(N - 1, r - 1) for E(m)/ff(N - 1, r), in either direction "
                                  "(k- for the last molecule's leave); it is one-way, and a literal zero is an error"},
 }
+
+EMPTY_COMMON_STATE = ("§0.2a as amended (amendment 4): wherever the membrane factor E(m)/ff(N - c, r) is 0/0 - the "
+                      "common state's membrane is empty while neither end state's is (a lone molecule changing form, two "
+                      "joining), or under extinct a channel whose result empties the membrane - it takes its continuous "
+                      "extension 1/ff(N - 1, r - 1), under every last_molecule token; detailed balance holds there")
+SINGULAR_RATE = ("§0.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides "
+                 "is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only "
+                 "value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, "
+                 "which fails its row")
 
 
 def conventions_document() -> dict:
@@ -216,6 +235,11 @@ def conventions_document() -> dict:
                    "pool, lumen": "dilute: mass action scaled by X = N_A V c0 (activity ff(n, a)/X^a, extent X)"},
         "probed_pairs": list(PROBED_CONVENTIONS),
         "covered_pairs": "all four admissible (condensed_measure, last_molecule) pairs",
+        "empty_common_state": EMPTY_COMMON_STATE,
+        "singular_rate": SINGULAR_RATE,
+        "world_role": {"key": "optional", "values": ["probe"]},
+        "end_reason": "every run declares one; the registered runs end at their registered event count "
+                      "('max_events'); any other end, 'stalled' included, fails the run's row",
     }
 
 

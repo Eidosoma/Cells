@@ -92,8 +92,8 @@ def write_run(out: Path, world_id: str, conv: Conventions, seed: int, *, max_eve
     channels = [dict(step=w.steps[r].name, direction=int(s), code=int(c))
                 for r, s, c in zip(table.step, table.sign, table.code)]
     (out / "run.json").write_text(json.dumps(dict(world=world_id, conventions=conv.as_dict(), ssa=SSA_DECLARED,
-                                                  channels=channels, stream=stream, initial_state=w.initial_state),
-                                             indent=1))
+                                                  channels=channels, stream=stream, initial_state=w.initial_state,
+                                                  end_reason=run["end_reason"]), indent=1))
     np.savez(out / "records.npz", event_time=run["event_time"], event_channel=run["event_channel"],
              event_uniforms=run["event_uniforms"], row_event=np.asarray(rows, dtype=np.int64),
              counts=book["states"][rows], heat_kT=q[rows], work_kT=wk[rows])
@@ -146,11 +146,15 @@ def write_refusals(out: Path, accept: tuple = ()) -> Path:
     rec = {}
     for f in sorted((DESIGN_DIR / "refusals").glob("*.world.json")):
         rid = f.name[: -len(".world.json")]
+        under = json.loads(f.read_text()).get("refused_under", {})
+        measure = under.get("condensed_measure", "multinomial")
+        conv = Conventions(condensed_measure=measure,
+                           last_molecule="extinct" if measure == "multinomial_less_one" else "kept")
         try:
-            load_world(f)
-            rec[rid] = dict(refused=False, message="parsed")
+            Law(load_world(f), conv)
+            rec[rid] = dict(refused=False, message="parsed", parsed_under=conv.as_dict())
         except (RecordFormatError, ValueError, KeyError) as exc:
-            rec[rid] = dict(refused=True, message=str(exc))
+            rec[rid] = dict(refused=True, message=str(exc), parsed_under=conv.as_dict())
         if rid in accept:
             rec[rid] = dict(refused=False, message="planted: accepted")
     (out / "refusals.json").write_text(json.dumps(rec, indent=1))

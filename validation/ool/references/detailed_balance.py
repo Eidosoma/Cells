@@ -65,13 +65,13 @@ def reference_table(law: Law, states) -> dict:
             b = law.reverse(st, p)
             if not f.is_zero():
                 ln_plus[k, r] = f.log()
-                a_plus[k, r] = math.exp(ln_plus[k, r])
+                a_plus[k, r] = math.exp(ln_plus[k, r]) if math.isfinite(ln_plus[k, r]) else math.inf
                 one_way_plus[k, r] = law.one_way_forward(st, p)
-                if not one_way_plus[k, r]:
+                if not one_way_plus[k, r] and math.isfinite(ln_plus[k, r]):
                     delta[k, r] = law.delta_F_minus_w(st, p)
             if not b.is_zero():
                 ln_minus[k, r] = b.log()
-                a_minus[k, r] = math.exp(ln_minus[k, r])
+                a_minus[k, r] = math.exp(ln_minus[k, r]) if math.isfinite(ln_minus[k, r]) else math.inf
                 one_way_minus[k, r] = law.one_way_reverse(st, p)
     return dict(a_plus=a_plus, a_minus=a_minus, ln_plus=ln_plus, ln_minus=ln_minus, one_way_plus=one_way_plus,
                 one_way_minus=one_way_minus, delta_F_minus_w=delta)
@@ -84,6 +84,11 @@ def _index(states) -> dict:
 def _logs(a: np.ndarray) -> np.ndarray:
     with np.errstate(divide="ignore"):
         return np.where(a > 0, np.log(np.where(a > 0, a, 1.0)), -np.inf)
+
+
+def rate_class(ln: np.ndarray) -> np.ndarray:
+    """0 for a zero rate, 1 for a finite positive one, 2 for the singular +inf (§0.2b rule 8)."""
+    return np.where(np.isneginf(ln), 0, np.where(np.isposinf(ln), 2, 1))
 
 
 def kolmogorov(world: World, states, a_plus, a_minus) -> CheckResult:
@@ -161,6 +166,8 @@ def identity(law: Law, states, a_plus, a_minus, ref: dict | None = None) -> Chec
             p = add(n, nu)
             if p not in idx or not np.isfinite(ref["ln_plus"][k, st_i]) or ref["one_way_plus"][k, st_i]:
                 continue
+            if not np.isfinite(ref["ln_minus"][idx[p], st_i]):
+                continue  # a singular pair (+inf) is checked by its pattern in compare_rates
             if not (np.isfinite(lp[k, st_i]) and np.isfinite(lm[idx[p], st_i])):
                 n_checked += 1
                 n_fail += 1
@@ -187,7 +194,9 @@ def compare_rates(law: Law, states, a_plus, a_minus, which: str = "forward", ref
     eng = np.asarray(a_plus if which == "forward" else a_minus, float)
     lref = ref["ln_plus"] if which == "forward" else ref["ln_minus"]
     leng = _logs(eng)
-    zero_mismatch = int(np.sum(np.isfinite(lref) != np.isfinite(leng)))
+    cref, ceng = rate_class(lref), rate_class(leng)
+    zero_mismatch = int(np.sum((cref == 0) != (ceng == 0)))
+    inf_mismatch = int(np.sum((cref == 2) != (ceng == 2)))
     both = np.isfinite(lref) & np.isfinite(leng)
     res = np.zeros_like(lref)
     res[both] = leng[both] - lref[both]
@@ -197,8 +206,10 @@ def compare_rates(law: Law, states, a_plus, a_minus, which: str = "forward", ref
     examples = [dict(state=tuple(int(v) for v in states[k]), step=law.world.steps[r].name, residual=float(res[k, r]))
                 for k, r in bad[:5]]
     return CheckResult(f"{which}_rates_match_reference",
-                       zero_mismatch == 0 and len(bad) == 0,
-                       dict(entries=int(both.sum()), zero_pattern_mismatches=zero_mismatch, failing=int(len(bad)),
+                       zero_mismatch == 0 and inf_mismatch == 0 and len(bad) == 0,
+                       dict(entries=int(both.sum()), zero_pattern_mismatches=zero_mismatch,
+                            singular_pattern_mismatches=inf_mismatch, singular_entries=int(np.sum(cref == 2)),
+                            failing=int(len(bad)),
                             max_abs_log_residual=float(np.max(np.abs(res))) if res.size else 0.0,
                             conventions=law.conv.as_dict(), examples=examples))
 

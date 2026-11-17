@@ -103,3 +103,19 @@ def test_streams_replay_bitwise_and_a_reused_key_is_caught():
     assert not streams.check_replay(a, c, names).passed
     assert streams.check_distinct_streams(a, c).passed
     assert not streams.check_distinct_streams(a, b).passed  # a reused key under two declared identities
+
+
+def test_a_run_reaching_a_singular_rate_stops_stalled():
+    """§0.2b rule 8: under multinomial_less_one, r4 is +inf at (A, B, E) = (1, 1, 1); the host SSA
+    never fires it and stops with end_reason stalled (amendment 4)."""
+    w = R.registered_world("ol1_wa")
+    law = Law(w, PAIRS[1])
+    rates = SO.FloatRates(law)
+    table = SO.ChannelTable.default(law)
+    n0 = [0] * w.dim
+    for name in ("A@membrane", "B@membrane", "E@membrane"):
+        n0[w.index(name)] = 1
+    run = SO.run_host_ssa(rates, table, n0, t_end=1e9, rng=np.random.default_rng(1), max_events=10)
+    assert run["end_reason"] == "stalled" and len(run["event_channel"]) == 0
+    _, _, _, ok = _run("ol1_wa", PAIRS[1], 11, events=50)
+    assert ok["end_reason"] == "max_events"

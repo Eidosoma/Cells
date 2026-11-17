@@ -34,25 +34,29 @@ so ln a+(n) - ln a-(n') = -(F(n') - F(n)) + w on every pair, by construction.
 - **The transition-state factor** (§2.4, form (b)): g(m) = 1 + Sum_j beta_j x_j(m), with x_j the
   catalyst's fraction of the membrane at m and beta_j = exp(ddG_j/k_BT) - 1 > -1. Where the
   membrane is empty at m, g = 1 (``empty_catalyst_phase = uncatalysed``).
-- **Zero factors.** Where a reactant is missing, ff(N - c, r_mem) = 0 or E(m) = 0, both rates of
-  the pair are zero.
-- **The last molecule.** ``kept``: E(m) = 0 where the membrane is empty at m, so it never
-  empties. ``reversible`` (c = 0): the empty membrane is an ordinary state (E = 1 there).
-  ``extinct`` (c = 1): a channel whose target state has an empty membrane fires at the continued
-  value of its rate, its membrane factor E(m)/ff(N - 1, r) continued to 1/ff(N - 1, r - 1). It
-  has no reverse (the empty state is absorbing), so it is excluded from every detailed-balance
-  check, and its rate is checked against this form directly. For the last molecule's leave it is
-  k-, as in the lineage family.
+- **Zero, cancelled and singular factors** (§0.2a as amended, §0.2b rule 8). Where a reactant is
+  missing, both rates of the pair are zero. Where the membrane factor E(m)/ff(N - c, r) is 0/0 (the
+  common state's membrane is empty while neither end state's is: a lone molecule changing form, two
+  joining, or under ``extinct`` a channel whose result empties the membrane) it takes its
+  continuous extension, 1/ff(N - 1, r - 1), under every token; detailed balance holds there as for
+  every other pair. Where only the normaliser vanishes (``multinomial_less_one``, a membrane place
+  on both sides, N = r) the rate is +inf: such a step is admitted only in a world declaring
+  ``world_role: probe``, whose probes report +inf, and a run that reaches it stops ``stalled``.
+- **The last molecule.** ``kept``: rate zero only for a pair one of whose end states has an empty
+  membrane, so the membrane never empties and nothing else is frozen. ``reversible`` (c = 0): the
+  empty membrane is an ordinary state (E = 1 there). ``extinct`` (c = 1): a channel whose result
+  empties the membrane fires at the pair rule's cancelled form, in either direction (k- for the last
+  molecule's leave); the empty state is absorbing, so that channel is one-way and is excluded from
+  every detailed-balance check, its rate checked against the cancelled form directly. Written
+  through F with F_mem(empty) = 0 the same rate is a literal zero (``reverse_F``), which is an error.
 
-**The products' rule** (an independent path, §2.1). The reverse rate is the same rule applied to
-the products with k- = k+ exp(Sum_places nu mu0) (held places at their standard potential), times
-the activity coefficient exp(R(n') - R(n)) of regular mixing:
-
-    a-(n') = k- [products' activities at n'] E(m) g(m) exp(R(n') - R(n)).
-
-It is derived here for every order up to three on each side and under both measures: the
-membrane's ff(N - c, r) normalisations and the N!-ratio of the measure cancel exactly against
-E(m) = N(m) - c + 1 (the tests hold the two paths equal, exactly, on every probe state).
+**The reverse rate** is the pair rule on the reverse channel's own side, the products' rule (§2.1):
+k- = k+ exp(Sum_places nu mu0) (held places at their standard potential), times the products'
+activities at n', E(m) g(m), and the activity coefficient exp(R(n') - R(n)) of regular mixing,
+cancelled where it is 0/0. Wherever the forward rate is finite and positive it equals the F path,
+a+(n) exp(F(n') - F(n) - w), exactly: the membrane's ff(N - c, r) normalisations and the measure's
+N!-ratio cancel against E(m) = N(m) - c + 1 for every order up to three on each side and under both
+measures (the tests hold the two paths equal on every probe state).
 
 **Planted forms** (each must be caught by the check README.md names):
 - ``at_state_factor``: g at each direction's own state (E1's form);
@@ -63,7 +67,9 @@ E(m) = N(m) - c + 1 (the tests hold the two paths equal, exactly, on every probe
 - ``normaliser_power``: N^r in place of ff(N - c, r) for the membrane draw;
 - ``extent_offset``: E = N(m) whatever the measure;
 - ``dropped_c0``: X = N_A V without c0, everywhere (a consistent engine with a wrong X);
-- ``wrong_sign``: the reverse from exp(-(F(n') - F(n) - w)).
+- ``wrong_sign``: the reverse from exp(-(F(n') - F(n) - w));
+- ``empty_m_zero``: the superseded reading of §0.2a, rate 0 wherever the common state's membrane
+  is empty (amendment 4 plants it).
 """
 
 from __future__ import annotations
@@ -73,10 +79,10 @@ from fractions import Fraction
 
 from .common import RecordFormatError
 from .exact import ONE, ZERO, RatExp, falling_factorial
-from .world import Conventions, Step, World
+from .world import Conventions, Step, World, check_world_role
 
 PLANTED_FORMS = ("at_state_factor", "forward_only_catalysis", "one_sided", "power_propensity",
-                 "normaliser_power", "extent_offset", "dropped_c0", "wrong_sign")
+                 "normaliser_power", "extent_offset", "dropped_c0", "wrong_sign", "empty_m_zero")
 
 
 def factorial_ratio(a: int, b: int) -> Fraction:
@@ -101,6 +107,7 @@ class Law:
             raise ValueError(f"unknown planted form {planted!r}")
         if not isinstance(conventions, Conventions):
             raise RecordFormatError("conventions must be a Conventions instance")
+        check_world_role(world, conventions.condensed_measure)
         self.world = world
         self.conv = conventions
         self.c = conventions.c
@@ -221,90 +228,119 @@ class Law:
     def _ff(self, v: int, a: int) -> int:
         return v ** a if self.planted == "power_propensity" else falling_factorial(v, a)
 
-    def activity(self, st: Step, n, *, continued: bool = False) -> Fraction | None:
-        """The reactants' activities at the firing state n; None for a zero factor.
+    def extent(self, st: Step, m) -> Fraction:
+        """E(m): X for a dilute locus; N(m) - c + 1 for the membrane."""
+        if st.locus != "membrane":
+            return self.X(st.locus)
+        if self.planted == "extent_offset":
+            return Fraction(self.N(m))
+        return Fraction(self.N(m) - self.c + 1)
 
-        With ``continued``, the membrane draw is divided by ff(N - 1, r_mem - 1) instead of
-        ff(N - c, r_mem): the extinct boundary's continued value (the extent then drops out)."""
-        alpha = self.alpha[st.name]
-        if any(a > v for a, v in zip(alpha, n)):
-            return None
-        out = Fraction(1)
-        r_mem = 0
-        for i, (a, v) in enumerate(zip(alpha, n)):
+    def draw(self, st: Step, counts, coeff, m):
+        """E(m) times one side's draw at ``counts`` (the firing state for the forward channel, the
+        target state for the products' rule): 0, a Fraction, or INF.
+
+        The membrane's part is E(m) prod ff(n_i, a_i)/ff(N - c, r). Where both E(m) and
+        ff(N - c, r) vanish (0/0) the factor takes its continuous extension, E(m)/ff(N - 1, r) ->
+        1/ff(N - 1, r - 1), under every token (§0.2a, the empty common state). Where only the
+        normaliser vanishes the rate is +inf (§0.2b rule 8, a membrane place on both sides)."""
+        num, r_mem, dil = 1, 0, Fraction(1)
+        for i, a in enumerate(coeff):
             if not a:
                 continue
+            if counts[i] < a:
+                return 0
             if self.mem[i]:
-                out *= self._ff(v, a)
+                num *= self._ff(counts[i], a)
                 r_mem += a
             else:
-                out *= Fraction(self._ff(v, a)) / self.Xp[i] ** a
-        if r_mem:
-            N = self.N(n)
-            if continued:
-                den = falling_factorial(N - 1, r_mem - 1)
-            elif self.planted == "normaliser_power":
-                den = N ** r_mem
-            else:
-                den = falling_factorial(N - self.c, r_mem) if N - self.c >= 0 else 0
-            if den == 0:
-                return None
-            out /= den
-        for p, a in st.reactants.items():
-            pl = self.world.places[p]
+                dil *= Fraction(self._ff(counts[i], a)) / self.Xp[i] ** a
+        E = self.extent(st, m)
+        if st.locus != "membrane" or r_mem == 0:
+            return dil * num * E
+        N = self.N(counts)
+        if self.planted == "normaliser_power":
+            den = N ** r_mem
+        else:
+            den = falling_factorial(N - self.c, r_mem) if N - self.c >= 0 else 0
+        if den:
+            return dil * num * E / den
+        if E == 0:
+            if self.planted == "empty_m_zero":
+                return 0
+            return dil * num / falling_factorial(N - 1, r_mem - 1)
+        return INF
+
+    def held_activity(self, side: dict) -> Fraction:
+        out = Fraction(1)
+        for pname, a in side.items():
+            pl = self.world.places[pname]
             if pl.held:
                 out *= (pl.held_mM.exact / self.world.c0_mM.exact) ** a
         return out
 
-    def extent(self, st: Step, m) -> Fraction:
-        if st.locus != "membrane":
-            return self.X(st.locus)
-        N = self.N(m)
-        if self.conv.last_molecule == "kept" and N == 0:
-            return Fraction(0)
-        if self.planted == "extent_offset":
-            return Fraction(N)
-        return Fraction(N - self.c + 1)
+    def end_empty(self, st: Step, n, p) -> bool:
+        return st.locus == "membrane" and (self.N(n) == 0 or self.N(p) == 0)
 
-    def empties_membrane(self, st: Step, n, sign: int) -> bool:
-        """True if the channel (sign +1 forward, -1 reverse) from n leaves the membrane empty."""
-        nu = self.nu[st.name]
-        q = tuple(a + sign * d for a, d in zip(n, nu))
-        return self.N(n) > 0 and self.N(q) == 0
+    def _kept_zero(self, st: Step, n, p) -> bool:
+        """``kept`` gives rate zero only to a pair one of whose end states has an empty membrane."""
+        return self.conv.last_molecule == "kept" and self.end_empty(st, n, p)
 
     def forward(self, st: Step, n) -> RatExp:
-        """a+(n): the rate of n -> n + nu (zero when the pair has a zero factor)."""
+        """a+(n): the rate of n -> n + nu (zero when impossible; INF when singular)."""
         n = tuple(n)
-        if self.conv.last_molecule == "extinct" and self.empties_membrane(st, n, +1):
-            act = self.activity(st, n, continued=True)
-            return ZERO if act is None else RatExp(st.rate.exact * act)
-        act = self.activity(st, n)
-        if act is None:
+        nu = self.nu[st.name]
+        p = tuple(a + d for a, d in zip(n, nu))
+        if any(v < 0 for v in p) or any(a > v for a, v in zip(self.alpha[st.name], n)):
             return ZERO
-        m = self.common_state(st, n)
-        E = self.extent(st, m)
-        if E <= 0:
+        if self._kept_zero(st, n, p):
+            return ZERO
+        m = tuple(min(a, b) for a, b in zip(n, p))
+        if self.planted == "empty_m_zero" and st.locus == "membrane" and self.N(m) == 0:
+            return ZERO
+        d = self.draw(st, n, self.alpha[st.name], m)
+        if d is INF:
+            return INF
+        if d == 0:
             return ZERO
         g = self.factor(st, n if self.planted == "at_state_factor" else m)
-        return RatExp(st.rate.exact * g * E * act)
+        return RatExp(st.rate.exact * g * d * self.held_activity(st.reactants))
 
-    def reverse(self, st: Step, p) -> RatExp:
-        """a-(p): the rate of p -> p - nu, the reverse channel at p."""
+    def reverse_F(self, st: Step, p) -> RatExp:
+        """a-(p) written through F: a+(n) exp(F(p) - F(n) - w). Equal to ``reverse`` on every pair
+        whose forward rate is finite and positive; a literal zero at the extinct boundary."""
         p = tuple(p)
-        nu = self.nu[st.name]
-        n = tuple(a - d for a, d in zip(p, nu))
+        n = tuple(a - d for a, d in zip(p, self.nu[st.name]))
         if any(v < 0 for v in n):
             return ZERO
-        if self.conv.last_molecule == "extinct" and self.empties_membrane(st, p, -1):
-            return self.continued_reverse(st, p)
-        if self.conv.last_molecule == "extinct" and self.empties_membrane(st, n, +1):
-            return ZERO  # the forward from n is a one-way extinction: it has no reverse
-        act = self.activity(st, n)
-        if act is None:
+        f = self.forward(st, n)
+        if f is INF:
+            return INF
+        if f.is_zero():
             return ZERO
-        m = self.common_state(st, n)
-        E = self.extent(st, m)
-        if E <= 0:
+        e = self.exp_delta(st, n)
+        return f * (ONE / e if self.planted == "wrong_sign" else e)
+
+    def reverse(self, st: Step, p) -> RatExp:
+        """a-(p): the rate of p -> p - nu, by the pair rule on the reverse channel's own side (the
+        products' rule), cancelled where it is 0/0. Planted forms that model an engine computing
+        its reverse from its own (wrong) forward use the F path."""
+        p = tuple(p)
+        if self.planted in ("power_propensity", "normaliser_power", "extent_offset", "dropped_c0", "wrong_sign"):
+            return self.reverse_F(st, p)
+        nu = self.nu[st.name]
+        n = tuple(a - d for a, d in zip(p, nu))
+        if any(v < 0 for v in n) or any(a > v for a, v in zip(self.alpha[st.name], n)):
+            return ZERO
+        if self._kept_zero(st, n, p):
+            return ZERO
+        m = tuple(min(a, b) for a, b in zip(n, p))
+        if self.planted == "empty_m_zero" and st.locus == "membrane" and self.N(m) == 0:
+            return ZERO
+        d = self.draw(st, p, self.beta[st.name], m)
+        if d is INF:
+            return INF
+        if d == 0:
             return ZERO
         if self.planted == "at_state_factor":
             g = self.factor(st, p)
@@ -312,10 +348,7 @@ class Law:
             g = Fraction(1)
         else:
             g = self.factor(st, m)
-        edf = self.exp_delta(st, n)
-        if self.planted == "wrong_sign":
-            edf = ONE / edf
-        out = RatExp(st.rate.exact * g * E * act) * edf
+        out = RatExp(self.k_minus(st) * g * d * self.held_activity(st.products), self.regular(p) - self.regular(n))
         if self.planted == "one_sided" and st.name == self.pp.get("step"):
             j = self.world.index(self.pp["place"])
             P = self.N(p)
@@ -331,70 +364,46 @@ class Law:
                 out *= self.world.places[pname].exp_minus_mu0 ** (-sign * cnt)
         return out
 
-    def product_activity(self, st: Step, p, *, continued: bool = False) -> Fraction | None:
-        """The forward products' activities at p (the reverse channel's own draw)."""
-        beta = self.beta[st.name]
-        if any(b > v for b, v in zip(beta, p)):
-            return None
-        out = Fraction(1)
-        r_b = 0
-        for i, (b, v) in enumerate(zip(beta, p)):
-            if not b:
-                continue
-            if self.mem[i]:
-                out *= falling_factorial(v, b)
-                r_b += b
-            else:
-                out *= Fraction(falling_factorial(v, b)) / self.Xp[i] ** b
-        if r_b:
-            P = self.N(p)
-            den = falling_factorial(P - 1, r_b - 1) if continued else (
-                falling_factorial(P - self.c, r_b) if P - self.c >= 0 else 0)
-            if den == 0:
-                return None
-            out /= den
-        for pname, b in st.products.items():
-            pl = self.world.places[pname]
-            if pl.held:
-                out *= (pl.held_mM.exact / self.world.c0_mM.exact) ** b
-        return out
-
-    def continued_reverse(self, st: Step, p) -> RatExp:
-        """The extinct boundary's reverse channel that empties the membrane: k- times the
-        products' draw continued to 1/ff(N - 1, r_b - 1), with g = 1, and the regular-mixing
-        activity coefficient exp(R(p) - R(n))."""
-        nu = self.nu[st.name]
-        n = tuple(a - d for a, d in zip(p, nu))
-        act = self.product_activity(st, p, continued=True)
-        if act is None:
-            return ZERO
-        return RatExp(self.k_minus(st) * act, self.regular(p) - self.regular(n))
-
     def products_rule(self, st: Step, p) -> RatExp:
-        """a-(p) by the products' rule (§2.1), without F; equal to ``reverse`` (a theorem here)."""
-        p = tuple(p)
-        nu = self.nu[st.name]
-        n = tuple(a - d for a, d in zip(p, nu))
-        if any(v < 0 for v in n):
-            return ZERO
-        if self.conv.last_molecule == "extinct" and self.empties_membrane(st, p, -1):
-            return self.continued_reverse(st, p)
-        if self.conv.last_molecule == "extinct" and self.empties_membrane(st, n, +1):
-            return ZERO
-        if self.activity(st, n) is None:
-            return ZERO
-        m = self.common_state(st, n)
-        E = self.extent(st, m)
-        if E <= 0:
-            return ZERO
-        act = self.product_activity(st, p)
-        if act is None:
-            return ZERO
-        return RatExp(self.k_minus(st) * act * E * self.factor(st, m), self.regular(p) - self.regular(n))
+        """The products' rule (the honest ``reverse``), kept under its old name for the tests."""
+        return Law(self.world, self.conv).reverse(st, p) if self.planted else self.reverse(st, p)
 
     # ---------------------------------------------------------------- boundary bookkeeping
     def one_way_forward(self, st: Step, n) -> bool:
-        return self.conv.last_molecule == "extinct" and self.empties_membrane(st, tuple(n), +1)
+        """Under ``extinct``: a forward channel whose result empties the membrane (no reverse)."""
+        n = tuple(n)
+        p = tuple(a + d for a, d in zip(n, self.nu[st.name]))
+        return (self.conv.last_molecule == "extinct" and st.locus == "membrane" and self.N(n) > 0
+                and self.N(p) == 0)
 
     def one_way_reverse(self, st: Step, p) -> bool:
-        return self.conv.last_molecule == "extinct" and self.empties_membrane(st, tuple(p), -1)
+        """Under ``extinct``: a reverse channel whose result empties the membrane (no reverse)."""
+        p = tuple(p)
+        n = tuple(a - d for a, d in zip(p, self.nu[st.name]))
+        return (self.conv.last_molecule == "extinct" and st.locus == "membrane" and self.N(p) > 0
+                and self.N(n) == 0)
+
+    def singular(self, st: Step, n) -> bool:
+        return self.forward(st, n) is INF
+
+
+class _Infinite:
+    """+inf, the singular rate of §0.2b rule 8 (reported by a probe, never fired)."""
+
+    def is_zero(self) -> bool:
+        return False
+
+    def is_one(self) -> bool:
+        return False
+
+    def log(self) -> float:
+        return math.inf
+
+    def __float__(self) -> float:
+        return math.inf
+
+    def __repr__(self) -> str:
+        return "INF"
+
+
+INF = _Infinite()

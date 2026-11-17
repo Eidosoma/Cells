@@ -80,6 +80,8 @@ class RatExp:
     # -- comparison and conversion ----------------------------------------------------
     def __eq__(self, other) -> bool:
         if not isinstance(other, RatExp):
+            if not isinstance(other, (int, Fraction, str)) or isinstance(other, bool):
+                return NotImplemented
             other = RatExp(as_fraction(other))
         return self.r == other.r and self.q == other.q
 

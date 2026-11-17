@@ -68,10 +68,16 @@ def base_states(world: World, seed: int = KERNEL_PROBE_SEED, n_base: int = KERNE
 
 
 def boundary_states(world: World) -> list[tuple[int, ...]]:
-    """The empty state, and one and two molecules of each finite place alone.
+    """The empty state, one and two molecules of each finite place alone, and (amendment 4) for
+    each membrane step the state holding exactly its membrane reactants and the state holding
+    exactly its membrane products.
 
-    The dilute places are empty in all of them, so a pool step never fires at an empty
-    membrane and no convention beyond the declared menu is exercised."""
+    The last two are where a step's common state has an empty membrane (a lone molecule changing
+    form, two joining: the cancelled 0/0 of §0.2a) or, for a membrane place on both sides, where
+    the rate is singular under multinomial_less_one (§0.2b rule 8). The one- and two-molecule
+    states include each dilute place alone, with the membrane empty: there a pool step's rate is
+    the pool's mass action under every token (the last-molecule rules concern membrane-locus
+    steps only), and a join's is set by ``last_molecule``."""
     G = world.dim
     out = [tuple([0] * G)]
     for i in range(G):
@@ -79,6 +85,14 @@ def boundary_states(world: World) -> list[tuple[int, ...]]:
             e = [0] * G
             e[i] = k
             out.append(tuple(e))
+    mem = world.membrane_mask()
+    for st in world.steps:
+        if st.locus != "membrane":
+            continue
+        for coeff in (world.alpha(st), world.beta_finite(st)):
+            s = tuple(a if m else 0 for a, m in zip(coeff, mem))
+            if any(s) and all(v == a for v, a, m in zip(s, coeff, mem) if not m) and s not in out:
+                out.append(s)
     return out
 
 
