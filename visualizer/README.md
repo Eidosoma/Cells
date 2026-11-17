@@ -493,9 +493,15 @@ on the membrane. The other three views are unchanged.
 - **The glow of flux** is drawn against the depth the contact shade has already worked
   out, so the cell's parts are drawn once, not twice, while beads shine; the picture is
   the same to the pixel. In the plain look the glow still draws the parts in front of the
-  beads itself. With the planarian's run and its glow, a frame's own work on the project's
-  graphics card was 12.6 ms at 1400 by 900 in the one quiet measurement taken (20.1 ms
-  before the mend); a clean pair of measurements is still owed.
+  beads itself. With the planarian's run and its glow in the rich look, a frame's own
+  work on the project's graphics card (through Vulkan) was measured both ways by turns in
+  one page, three times each, on a quiet machine (17 November 2026): 12.2 ms against
+  14.1 ms with the parts drawn twice at 1400 by 900 (245 draw calls against 324), and
+  8.7 ms against 9.9 ms in a window of a phone's size (400 by 800), where 60 frames a
+  second hold either way. The card's own time hardly changes (4.8 ms against 4.9): what
+  is saved is the page's work in sending the calls. An earlier single pair (12.6 ms
+  against 20.1) was taken while other work ran and overstated the saving. A real phone
+  was not measured.
 
 ## Sizes in the cell view
 
