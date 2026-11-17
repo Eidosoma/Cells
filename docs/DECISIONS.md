@@ -6864,3 +6864,27 @@ The user: "yes on both as y9u suggest".
 - **The Kv1 port pilot (D211) folds into the pass,** as seam F's step-2 per-law extractions, which own
   the same files.
 
+## D214: An external adviser's architecture follow-up: two fixes now, the rest to the core backlog
+
+2026-11-17, evening. The user forwarded an external adviser's architecture follow-up, reviewing main
+b661cd1a. It found the modular direction sound and listed seven items for a bounded core-completion
+lane. The user's instructions: "two fixes then backlog", "external adviser", and "also get your
+adviser in on this". The lead reviewed it with the advisor.
+
+- **Now, item 1's two extension-boundary fixes,** on branch `core-boundary-checks`:
+  - kinds write only their own resolved, declared fields (initial values, derivatives and control
+    outputs);
+  - more than 31 model checks are refused at admission.
+
+  They land before move 2's map is regenerated, as an exception to D195's "code follows move 2".
+- **Items 2–7 are the core backlog,** mapped to their seams and records in CURRENT_PLAN's
+  17 November section. They are not new decisions.
+- **Two order questions are flagged for the user, not decided:**
+  - item 4 pulls D175's fields ahead of M1a in D209's order;
+  - item 3's first outside module brings back D195's question of a public stability promise.
+- **Item 7 was applied the same day:**
+  - CURRENT_PLAN was refreshed;
+  - the README's status was brought to 17 November;
+  - the README's levels-of-detail paragraph was reworded as an aim;
+  - the gate wording was made precise: "0 changed against the baseline".
+
