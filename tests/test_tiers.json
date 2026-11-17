@@ -134,7 +134,8 @@
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
-  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json"
+  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1109,6 +1110,13 @@
    "root": "/mnt/workspaces/Cells/d198-retire-20261117/snapshot-staged-e04fa95f",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T13:11:06+00:00"
+  },
+  {
+   "git_revision": "d83f5365751dd7ad40ca582877cbc59a95dc18ac",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:20:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2201,6 +2209,30 @@
     }
    },
    {
+    "file": "tests/unit/test_fr1_references_design.py",
+    "seconds": 10.29,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_forms.py",
+    "seconds": 1.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_worlds.py",
+    "seconds": 3.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_fr45_damage_and_worlds.py",
     "seconds": 2.27,
     "exit_code": 0,
@@ -2254,6 +2286,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_engine_layout.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_ensemble_design.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -3809,22 +3857,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_gard_references_engine_layout.py",
-    "seconds": 1.57,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_gard_references_ensemble_design.py",
-    "seconds": 1.87,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
     }
    }
   ],
