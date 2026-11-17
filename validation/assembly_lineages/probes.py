@@ -592,12 +592,59 @@ def rescale(out):
     return roles
 
 
+FORMAT_STATEMENT = """# The engine's output format for G2's roles (cells.assembly_lineages@1)
+
+Frozen with the relationship keys (D202). Every file is described by the files themselves; this
+page says where to look. Nothing here needs the engine's code.
+
+## A run bundle (lineage roles)
+A directory with world.json, run.json, records.npz, resolved_config.json, summary.json and
+manifest.json (every file's SHA-256, written last).
+- world.json (cells.assembly_lineages.world@1): {format, id, world, derived}. `world` is the world
+  as its definitions state it: types {prefix, count, transfer_constant}, supply (rho), exchange
+  {law, leave_rate}, law_data {catalysis_matrix} (absent without catalysis), founder (a count per
+  type), fission {operator, size, partition {rule, fraction | probability}}, continuation
+  {operator, daughter, empty, sink}, units {time, temperature_K}. `derived` holds the type ids,
+  standard_transfer_mu_RT, join_rate (k_join = K k_leave), leave_rate and founder_size. `id` is the
+  SHA-256 of the world's canonical JSON; run.json's `world` names it.
+- run.json (cells.assembly_lineages.run@1): format, world (the world record's id), founder, model,
+  engine_models, definition_sha256, run {qualifier, start}, keys (the key rule), lives (the lives'
+  vocabulary), law (id, form, energy_role, formulas, provenance, interface, check, world_report,
+  exchange {id, energy_role, formulas, provenance, interface}), mode, stream (generator, seed,
+  environment, lineage, branch, fold_order, domains, reserved_domains, uniform), ssa (the direct
+  method's convention), ledger (conventions and closure), operators {fission, continuation},
+  lifecycle, source (the engine's revision), end, time {unit, temperature_K, rates, bases},
+  channels (the declared channel table: rows in the kernel's order and event_channel's meaning),
+  layers, records (every array: file, array, base, axes, unit, kind, layer, owner, and what it
+  says), diagnostics; and bound in every-descendant mode.
+- records.npz: the arrays run.json's `records` declares, by name; loads with allow_pickle=False.
+  Bases: row, fission, event, growth, life (run.json time.bases says what each row is).
+
+## A probe (kernel_probe, closed_world/<world>, partition_probe/<rule>, observer_probe)
+probe.json (cells.assembly_lineages.probe@1): format, role, source, inputs {file, sha256, arrays},
+arrays_sha256, the engine definitions used, and `says`: what each array of probe.npz is.
+probe.npz holds the outputs and the registered inputs unmodified, prefixed input_.
+Arrays of both forms are named <form>.<array>, form pair_consistent or single_event.
+
+## Groups
+batched/batched.json, restart/restart.json, branches/branches.json, beta0_ensemble/
+beta0_ensemble.json, closed_world/closed_world.json and partition_probe/partition_probe.json list
+their members' paths. A checkpoint directory holds checkpoint.json
+(cells.assembly_lineages.checkpoint@1) and lane.npz.
+
+## f12_table
+f12_table.npz (sequences [4096, 12] int8, f12 [4096] bool, certified_at [4096] int64) and
+f12_table.json (cells.assembly_lineages.f12_table@1): the encoding and the declared parameters.
+"""
+
+
 def run(inputs, out):
     import cells
     from validation.assembly_lineages import inheritance
 
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
+    (out / "FORMAT.md").write_text(FORMAT_STATEMENT)
     roles = {}
     roles |= lineages(out)
     roles["beta0_ensemble"] = beta0_ensemble(out / "beta0_ensemble")
