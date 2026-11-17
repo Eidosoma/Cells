@@ -31,20 +31,102 @@
   "W2_ion": "B2's world: probe I's passive cell (1 pL) on a held bath at Na 145, K 5, Cl 150 mM, its cytosol at Na 10, K 140, Cl 20 mM, a K permeability of 5e-10 m/s on its wall, at rest at E_K through its charge anchor. At 0.5 s, KCl replaces NaCl by 45 mM: K 5 to 50 mM (the measured point K up (10, 50)), Na 145 to 100 mM (Na down (1.45, 145)). Horizon 2 s (about 20 relaxation times); records every 10 ms",
   "W3_ledgers": "B3's world (milestone 1's tests/unit/test_bath_schedule_runs.py world): the species-only dose leg under RK4 at 0.1 ms, S stepped from 1e-3 to 1.5e-3 mM at step 20 of 60 (neutral up (1.5, 1.5e-3)); every row recorded",
   "W4_idle": "B5's pair: W1 with the operator declared and no event, and W1 without the operator",
-  "W5_restart_batch": "B6's: W1 run straight, and restarted from checkpoints written at 0.5 s (before the first event), at 1 s (an event time) and at 1.5 s (after it); and a vector batch of three W1 worlds with different schedules on the same bath (up tenfold; up threefold; none), against each run alone",
+  "W5_restart_batch": "B6's: W1 run straight, and restarted through the engine's checkpoint (cells.io.write_snapshot and load_snapshot, written and resumed within the run's own snapshot, so no checkpoint crosses a source change, D195 item 4) from checkpoints at 0.5 s (before the first event), at 1 s (an event time: the event is applied once, by the resumed run) and at 1.5 s (after it); and a vector batch (cells.core.batch) of three W1 worlds with different schedules on the same bath (up tenfold; up threefold; none), against each run alone",
   "W6_water": "B8's: milestone 1's isosmotic salt step beside water@1 (KCl for NaCl, K 5 to 15 mM, Na 145 to 135 mM, the measured points K up (3, 15) and Na down (1.0741, 145)), and the same world with an anisosmotic step (KCl added alone)",
   "W7_staircase": "B10's admitted dose from the trace: the staircase probe's world (the dose leg, face at kappa/V = 10/s, S at 1e-15 mM everywhere), the bath raised to 1e-3 mM by six stairs of 100 held 0.3 s each, under ARS at 1 ms and RK4 at 0.1 ms",
-  "refusals": "definitions refused at the definition, each beside its admitted neighbour: the dose from nothing in one step (1e-15 to 1e-3 mM); a neutral step up of 100 to 0.1 mM (a measured failure; neighbour: up 10 to 1e-2 mM); K down and Na up (unmeasured; neighbours: probe I's K up and Na down); a face at 11/s (neighbour: 10/s); ARS at 2 ms and RK4 at 0.2 ms with an event (neighbours: 1 ms and 0.1 ms); a charged formula unit {K: 1} (neighbour: a neutral unit with a large count, {Na: 1000, Cl: 1000}); an anisosmotic step beside water@1 (neighbour: W6's isosmotic step); and B7's schedule beyond @3's explicit-rate bound at its worst composition (a K permeability chosen from the bound's own host computation, refused at 1 ms, admitted at 0.5 ms)"
+  "refusals": "one representative per refusal class, each beside its admitted neighbour, which is admitted and run over a short horizon: the classes, representatives, neighbours and the check each refusal must name are refusal_classes"
+ },
+ "refusal_classes": {
+  "R1_past_a_neutral_corner": {
+   "source": "design §8.3: 1% past each neutral corner",
+   "refused": "the bath's S up from 1e-3 to 1.01e-2 mM (ratio 10.1, level 1.01e-2 mM)",
+   "admitted": "up from 1e-3 to 1e-2 mM, the corner (10, 1e-2)",
+   "check": "the step rule (region)"
+  },
+  "R2_a_measured_failure": {
+   "source": "design §8.3: the staircase's measured failures",
+   "refused": "up from 1e-6 to 1e-3 mM, the failure (1e3, 1e-3)",
+   "admitted": "up from 1e-5 to 1e-3 mM, the corner (100, 1e-3)",
+   "check": "the step rule (region)"
+  },
+  "R3_a_dose_from_nothing": {
+   "source": "design §8.3: the dose from nothing in one step",
+   "refused": "up from 1e-15 to 1e-3 mM in one step",
+   "admitted": "W7's six stairs of 100 from 1e-15 mM",
+   "check": "the step rule (region)"
+  },
+  "R4_past_the_down_corner": {
+   "source": "design §8.3: a step down past (100, 1e-2)",
+   "refused": "down from 1.01e-2 to 1.01e-4 mM (ratio 100, level 1.01e-2 mM)",
+   "admitted": "down from 1e-2 to 1e-4 mM, the corner (100, 1e-2)",
+   "check": "the step rule (region)"
+  },
+  "R5_past_the_K_corner": {
+   "source": "design §8.3: K up past (10, 50)",
+   "refused": "KCl for NaCl by 45.5 mM (K 5 to 50.5 mM)",
+   "admitted": "KCl for NaCl by 45 mM (K 5 to 50 mM), W2's step",
+   "check": "the step rule (region)"
+  },
+  "R6_an_unmeasured_ion_direction": {
+   "source": "design §8.3: Na up and K down, never measured",
+   "refused": "NaCl for KCl by 2.5 mM (Na up to 147.5 mM, K down to 2.5 mM)",
+   "admitted": "KCl for NaCl by 2.5 mM (K up to 7.5 mM, Na down to 142.5 mM: probe I's points)",
+   "check": "the step rule (no step of that kind measured)"
+  },
+  "R7_a_faster_face": {
+   "source": "design §8.3: a face of 11/s",
+   "refused": "W1's tenfold step beside a face at kappa/V = 11/s",
+   "admitted": "the same step beside 10/s",
+   "check": "the step rule (face)"
+  },
+  "R8_outside_the_measured_steps": {
+   "source": "design §8.3: ARS at 2 ms and RK4 at 0.2 ms",
+   "refused": "a tenfold step under ARS at 2 ms, and under RK4 at 0.2 ms",
+   "admitted": "the same under ARS at 1 ms, and under RK4 at 0.1 ms",
+   "check": "the step rule (solver and dt)"
+  },
+  "R9_the_species_cap": {
+   "source": "design §8.2 and §8.3: the species cap (16, D165)",
+   "refused": "a scheduled world with 17 species",
+   "admitted": "the same with 16 species",
+   "check": "the species cap"
+  },
+  "R10_a_charged_unit": {
+   "source": "design §2.5 and §1.1: net-charged steps refused",
+   "refused": "a formula unit {K: 1}",
+   "admitted": "a neutral unit with a large count, {Na: 1000, Cl: 1000}",
+   "check": "the neutrality rule (integer charge)"
+  },
+  "R11_an_anisosmotic_step": {
+   "source": "design §3.1: beside water@1 only isosmotic steps",
+   "refused": "W6's world with KCl added alone",
+   "admitted": "W6's isosmotic substitution",
+   "check": "the isosmotic rule"
+  },
+  "R12_beyond_the_explicit_bound": {
+   "source": "design §2.4: the step checks see the worst composition (B7)",
+   "refused": "a K step whose worst composition puts @3's explicit-rate bound past its limit at 1 ms (the K permeability set from the bound's own host computation, so that the declared composition alone would pass)",
+   "admitted": "the same at 0.5 ms",
+   "check": "@3's explicit-rate bound"
+  },
+  "R13_not_a_held_bath": {
+   "source": "design §1.1: held baths only",
+   "refused": "a schedule naming the finite node ecs_0",
+   "admitted": "the same naming the held bath",
+   "check": "the held-bath rule"
+  },
+  "mapping_rule": "every refusal class of design §8.3 (R1 to R9) has a representative, each beside its admitted neighbour; R10 to R13 are the scope's other refusals (§1.1, §2.4, §2.5, §3.1). Each refusal is judged by the check its message names (J9), and each neighbour must be admitted and run"
  },
  "references": {
-  "author": "a code-blind agent, from the design's Appendix A only (never reading src/cells, the operator or its tests), as FR-4's and FR-5's references were written: requested of the lead (questions_for_the_lead 1)",
+  "author": "a fresh code-blind agent, the FR references agent, from the design's Appendix A and the registered input file only (never reading src/cells, the operator or its tests); it starts when one of the seven slots frees (the lead's ruling of 17 November 2026)",
   "R_faces": "A.2: the linear face chain with the stepped bath boundary, each epoch the matrix exponential with its constant boundary from the previous epoch's end; returns each finite node's amount (fmol) at the record times, with a floor run at a tighter tolerance",
   "R_ion": "A.3: the passive cell's constant-field K flux and capacitor, with the cytosol's amounts moving by the flux; returns V_m (cell less bath, V) and the cytosol's Na, K and Cl (fmol) at the record times, and the zero-current potential at the new composition, with a floor run",
   "R_records": "A.4 and A.5: at each event, the dose V_b sum_f delta_a_f nu_f and the free-energy change delta_G_b (§2.2's expression, in NumPy), and the reservoir-work reconciliation K from the supply series",
-  "event_convention": "an event at t_e sets the boundary for t >= t_e (right-continuous): the engine applies it at the start of the step that starts at t_e. Node amounts and V_m are continuous at an event, so the references compare only those; the bath's held content is judged through the records (J6), not against a reference"
+  "event_convention": "an event at t_e sets the boundary for t >= t_e (right-continuous): the engine applies it at the start of the step that starts at t_e. Node amounts and V_m are continuous at an event, so the references compare only those; the bath's held content is judged through the records (J6), not against a reference",
+  "inputs": "validation/bath_schedule/reference_inputs.json, a registered file: each reference world's physical parameters, initial state, schedule and record times, the physical constants, and Appendix A's forms, written from the world builders' declarations, with no value taken from the operator's code"
  },
  "budgets": {
-  "status": "proposed, for the lead's ruling before any protocol run (questions_for_the_lead 2)",
+  "status": "declared before any protocol run (the lead's ruling of 17 November 2026: declared first, as FR-4 and FR-5 did; the dt study reports against them as development)",
   "B1": "every finite node's S amount within 1e-3 of the step's size (V_node x |delta c_b| = 9e-3 fmol, so 9e-6 fmol) of R-faces at every record",
   "B2": "V_m within 1e-3 of the voltage step (|E_K(50) - E_K(5)| about 61.5 mV, so about 61.5 uV) of R-ion at every record; the cytosol's K within 1e-3 of its change",
   "records": "the dose within the operator's own dose-ledger tolerance of the held content less the declared one, and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records",
@@ -59,7 +141,7 @@
   "J6_records": "at every event of W1, W2 and W3: the dose record within its ledger's tolerance of the held content less the declared content and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records; the compensation-charge record at rounding of zero; the electrode and global-charge ledgers within their bounds at every row",
   "J7_idle": "W4: every state field, observation and diagnostic of the world with the operator and no event bitwise equal to the world without it, at every record",
   "J8_restart_batch": "W5: each restarted run bitwise equal to the straight run at every record after its restart, the event at the restart time applied once; each batched world bitwise equal to its run alone",
-  "J9_refusals": "each refusal part refused at the definition with the reason of its own check (the step rule, the neutrality rule, the isosmotic rule, @3's explicit-rate bound), recorded from the refusal; each admitted neighbour admitted and run",
+  "J9_refusals": "each refusal class's representative refused at the definition with the reason of its own check (refusal_classes), recorded from the refusal; each admitted neighbour admitted and run",
   "J10_staircase": "W7: the six-stair dose from the trace admitted and run with every host check under both solvers, while the same dose in one step is refused (J9)",
   "J11_water": "W6: the isosmotic step beside water@1 run with water's ledgers within their bounds at every row; the anisosmotic step refused (J9)",
   "J12_controls": "every control caught with its margin (controls)"
@@ -149,16 +231,21 @@
   ],
   "note": "development evidence only: no run of this protocol exists"
  },
- "questions_for_the_lead": [
-  "1. The references: a fresh code-blind agent for R-faces (A.2), R-ion (A.3) and R-records (A.4, A.5), working from the design's Appendix A alone, as FR-4's and FR-5's references were written. The FR owner has read the operator, so cannot write them",
-  "2. The budgets: declared first, as FR-4 and FR-5 did (the values in budgets), or pinned from the dt study, as the design's §4 says? Either way the rule that produces each number is fixed before any protocol run",
-  "3. The machinery: a new generator, judge and drafter for FR-10 that import the FR-4/FR-5 judge's arithmetic read-only (classes, Richardson, compare, the merge guards), or a separate judge? The FR-4/FR-5 judge serves two registered protocols, so it is not edited",
-  "4. The refusal set: the representative set in worlds.refusals, or the whole of design §8.3's list?",
-  "5. B6's restart: the engine's checkpoint (write_snapshot) within one run's snapshot, so no checkpoint crosses a source change (D195 item 4)"
+ "questions_for_the_lead": [],
+ "questions_answered": [
+  "1. References: RULED (the lead, 17 November 2026): a fresh code-blind agent writes R-faces, R-ion and R-records from Appendix A, and later FR-3's references, as one FR references agent, starting when a slot frees; the FR owner prepares its inputs as registered files",
+  "2. Budgets: RULED: declared first, rules and numbers, before any protocol run, as FR-4 and FR-5 did; B1 and B2 as proposed; the dt study reports against them as development",
+  "3. Machinery: RULED: a new FR-10 generator, judge and drafter, importing the FR-4/FR-5 judge's arithmetic read-only; that judge is never edited",
+  "4. Refusal set: RULED: the representative set, with every refusal class of design §8.3 represented beside its admitted neighbour, and the class-to-representative mapping stated (refusal_classes)",
+  "5. Restart: RULED: the engine's checkpoint, written and resumed within one run's snapshot"
  ],
  "disclosures": [
   "Drafted on 17 November 2026 after milestones 1 and 2 and their probes, whose results are known: B3's ledger record, the staircase probe and probes I and D (development_runs). Design §4's table predates milestone 2, so its items are restated against the operator as built: B10's dose from nothing is now refused at the definition in every world by the step rule, so a mixed world can no longer run it, and B10 judges that refusal and the admitted six-stair protocol instead; B1's 'step ratio pinned at registration' becomes the measured corner (10, 1e-2), up and down; B2's tenfold K step is probe I's measured point K up (10, 50) with Na down (1.45, 145); B9's parse refusals and B7's bound are judged as refusal parts that write records, not as test files, so no guard test of record can change under a later pass; B5's crossrev half is a landing gate, reported",
   "Door S (verified 17 November 2026 on main): the bath schedule and local_species_reactions@1 compose in either order (pump_composite.structure_errors is empty; tests/unit/test_door_s.py), so design §3.1's 'D152 refused' is superseded; site_occupancy@1 beside the schedule is refused (it reads the field as declared). The operator's module docstring still says D152 is refused: stale, reported to the lead, not edited here",
-  "No budget, threshold or ladder here has been run against: no generator or reference exists yet"
+  "No budget, threshold or ladder here has been run against: no generator or reference exists yet (17 November 2026)",
+  "pre-run correction, 17 November 2026, the lead's ruling on the budgets: declared first, rules and numbers, before any protocol run, as FR-4 and FR-5 did. This supersedes design §4's 'tolerances are pinned from a dt study at registration': the dt study reports against the declared budgets as development",
+  "pre-run correction, 17 November 2026, the lead's ruling on the references: the FR references agent, code-blind, writes them from Appendix A and the registered input file (references.inputs)",
+  "pre-run correction, 17 November 2026, the lead's ruling on the refusal set: one representative per refusal class of design §8.3, each beside its admitted neighbour, with the mapping in refusal_classes",
+  "pre-run correction, 17 November 2026, the lead's ruling on the restart: through the engine's checkpoint, written and resumed within one run's snapshot"
  ]
 }
