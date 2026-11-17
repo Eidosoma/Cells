@@ -1014,3 +1014,15 @@ following before work builds on it.
   rehearsals run from a snapshot older than F, so their bitwise checks are repeated from main at or
   after 75e925ea before registration.
 
+## 16. Seam A's contract, amended after the independent check (17 November 2026)
+
+The check is recorded in `docs/CORE_SEAMS_STEP0.md` §7. It lifts seam A's hold, with these changes:
+- **Modes.** A law that declares per-mode signs declares the full set of its diagram's Hill cycles,
+  dependent ones included. A basis is admitted only when its cycles share no edge.
+- **The admission check.** At parse time, each declared Hill cycle must satisfy Wegscheider's
+  condition, ln(Π⁺/Π⁻) + ΔG/RT = 0, at the engine's potentials. A law that fails is refused, never
+  repaired.
+- **The ledger's guard.** The population's total Σ J·ΔG ≤ 0 is checked at run time. It is
+  basis-independent. Per-mode bookings are readouts, not guards.
+- **Printed laws that fail the check** (O'Hara–Rudy's INaCa; Beard's Eqs. 11, 16 and 24) enter only
+  with declared departures. The user rules on those with the cardiac and mitochondria lanes.

@@ -6299,6 +6299,8 @@ found:
   - the display equations' MathML sits in XML comments;
   - Table 1's 35 parameters are text. The correction changes 9 of them;
   - the comment text was not checked against the typeset images.
+  - *Corrected the next day:* the PDF is the version of record. The web XML's Eq. 22 is stale, and
+    the independent check of the cycle laws (`docs/CORE_SEAMS_STEP0.md` §7) found it.
 - **Probe P1 comes first,** because the membrane-potential mode is stiff.
 - **Not put separately:** the note's questions 3 and 4 (the respiration drive and the
   intermembrane space). Its recommendations stand as working defaults. Host P or C remains the

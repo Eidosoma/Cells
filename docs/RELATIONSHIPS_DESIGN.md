@@ -885,3 +885,41 @@ RT6a builds on GARD's G1 branching rather than repeating it.
   single-file pores (Hodgkin and Keynes); pulse–chase labelling, as the laboratory's measure of
   turnover. No text, figure or data is used.
 - No web search was made and no external file was fetched.
+
+## The lead's review, with the advisor (17 November 2026)
+
+**Checked in code, both confirmed:**
+- **The `lineage` collision.** The composite merges operator summaries by dict union
+  (`pump_composite.py`), and both the partition and replacement write `lineage`. Only the
+  partition's refusal of replacement keeps them apart. The operators owner adds a fail-closed check
+  for duplicate summary keys before composition's M1 lifts any such refusal.
+- **No view declarations for the partition, membrane state or replacement** outside
+  `tests/run_view_fixtures.py`, so the run view refuses those worlds outside tests. RT1's composed
+  check therefore uses a division world and a replacement world separately.
+
+**Constraints:**
+- **An absent `tracking` block is absent from `to_dict`.** A written default would move every
+  definition's fingerprint, FR-4's and FR-5's included.
+- **Labels starting at a branch** go through D153's "new run from imported state", if that already
+  carries them, so `validate_checkpoint` needs no exception.
+- **Before `summary.json`'s `lineage` changes shape,** check whether the results gate or a
+  registered protocol reads it.
+
+**RT0's criteria, written first:**
+- **One-way forms.** Count which of the manifest's laws can state forward and backward flux. A law
+  entering seam A by the fallback has none, and tissue worlds may then fall to `mode: net`, where
+  renewal cannot be measured.
+- **"Results unchanged" means state bitwise with labels on and off.** Crossrev cannot show it,
+  because the program changes.
+- **A fission's labelled subset is hypergeometric,** given the type split. State what the note
+  means, and plant it as a row in RT7.
+
+**Population mode P-a.** Descendants double each generation, so the note states its bound. An
+unfollowed daughter's end reason differs from an extinct one, or the survivorship problem the SOTA
+note names remains.
+
+**FR-12 has landed** with seam F (75e925ea), so the manifest is available to RT2b.
+
+**Sequencing:**
+- No relationships code before the user's ruling, and none in files move 2 moves until it lands.
+- A GARD-only slice of the tables can go with GARD's G1 part 2, since its files are new.
