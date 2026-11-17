@@ -22,34 +22,33 @@ computes from the assembly's state. It declares:
 Without a rate-factor law the kernel's rates are the exchange law's, and its programs hold no
 factor code at all.
 
-**Registration (seam F; CORE_SEAMS_DESIGN §8.1, §8.3).** A rate-factor law is a declaration on the
-law template (registry/laws.py's `Law`), under this family's own interface
-(`assembly_lineages.rate_factor@1`) and hosted by the family's model. It registers on the law
-registry with the public call, `BUILTIN.register(law)`, from its own home, as an outside package
-would. The family finds its laws in the active registry by interface and host (registered()),
-never in a module tuple, so a new rate-factor law is one module and one registration, with no edit
-here. The family's built-in homes (LAW_HOMES) are imported by name once (load_homes). Its
+**Registration (seam F; CORE_SEAMS_DESIGN §8.1, §8.3, §8.4).** A rate-factor law is a declaration
+on the law template (cells.modules.Law), of the interface `cells.rate_factor_law@1`, which the
+family declares in its row of the static model table, and hosted by the family's model. It
+registers on the law registry with the public call, `BUILTIN.register(law)`, from a home the
+table lists (gard.py for GARD's two forms), which the registry imports by name when it loads. The
+family finds its laws in the active registry by interface and host (registered()), never in a
+module tuple, so a new rate-factor law is one module and one registration, with no edit here. Its
 provenance is the template's: a tag (`cited`) with its Citation.
 """
 
-import importlib
 from dataclasses import dataclass
 from typing import Callable, ClassVar
 
 from cells.core.specs import ConfigError
-from cells.models.assembly_lineages import LAW_HOMES, MODEL_ID, RATE_FACTOR_INTERFACE
+from cells.models.assembly_lineages import MODEL_ID, RATE_FACTOR_INTERFACE
+from cells.modules import Law
 
-# The law template and its registry: seam F's registry API (cells.modules does not export them
-# yet; that is module stage 1's, CORE_SEAMS_DESIGN §8.5).
+# The active registry and the registration call are the registry's own (the surface exports them
+# in module stage 1).
 from cells.registry import laws as law_registry
 
 ROLES = ("passive", "driven")
-_homes_loaded = False
 
 
 @dataclass(frozen=True)
-class RateFactorLaw(law_registry.Law):
-    """The family's rate-factor interface on the law template, in the family's own namespace."""
+class RateFactorLaw(Law):
+    """The rate-factor interface (cells.rate_factor_law@1) on the law template."""
 
     form: str
     energy_role: str
@@ -82,19 +81,9 @@ class RateFactorLaw(law_registry.Law):
         return out
 
 
-def load_homes():
-    """Import the family's built-in law homes once, by name: each registers its laws."""
-    global _homes_loaded
-    if not _homes_loaded:
-        for name in LAW_HOMES:
-            importlib.import_module(name)
-        _homes_loaded = True
-
-
 def registered():
     """{law ID: declaration} of the rate-factor laws in the active law registry: this family's
     interface, hosted by its model, in canonical (sorted namespaced ID) order."""
-    load_homes()
     found = law_registry.active().laws(RATE_FACTOR_INTERFACE, MODEL_ID)
     return {law.law_id: law for law in found}
 

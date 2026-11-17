@@ -57,7 +57,7 @@ from cells.models.assembly_lineages import (
 from cells.models.assembly_lineages.factors import RateFactorLaw
 from cells.modules import Citation
 
-# The law registry: seam F's registry API (cells.modules does not export it yet).
+# The registration call is the registry's own (the surface exports it in module stage 1).
 from cells.registry import laws as law_registry
 
 LAW_SET = "gard"
@@ -246,5 +246,5 @@ PAIR_CONSISTENT = RateFactorLaw(
     ),
 )
 
-# Registered from this home through the public call (factors.py), as an outside package would.
+# Registered from this home, which the static model table lists, through the public call.
 LAWS = tuple(law_registry.BUILTIN.register(law) for law in (SINGLE_EVENT, PAIR_CONSISTENT))

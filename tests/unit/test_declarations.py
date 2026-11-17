@@ -105,7 +105,9 @@ def test_every_registered_piece_has_its_entry_and_every_entry_is_registered():
         planted = declarations.manifest()
         assert declarations.coverage_errors(planted) == []
         listed, registered = counts(planted)
-        assert listed == registered and registered["operator"] == len(OPERATORS) + 1
+        assert listed == registered and registered["operator"] == len(OPERATORS) + len(
+            operator_registry.active().family_operators()
+        )
         entry = next(e for e in planted["pieces"] if e["id"] == "tests.planted_route@1")
         assert entry["module"] == __name__ and entry["family"] == declarations.INNER
         family = next(

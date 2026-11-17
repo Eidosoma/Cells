@@ -21,7 +21,6 @@ from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
     GARD_SINGLE_EVENT,
     balance,
-    factors,
     gard,
 )
 from cells.models.assembly_lineages.kernel import Layout, rates
@@ -83,7 +82,7 @@ def test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as
     assert single["local_detailed_balance"] == "fails" and single["admitted_as"] == "driven"
     assert single["probe"]["max_abs_deviation_ln"] > 1e-3
     # Planted: the single-event form declared passive, registered in a scope under its own ID.
-    factors.load_homes()
+    law_registry.active()
     planted = dataclasses.replace(
         gard.SINGLE_EVENT, law_id="tests.single_event_as_passive@1", energy_role="passive"
     )

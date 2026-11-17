@@ -19,7 +19,6 @@ from cells.core.specs import parse_spec
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
     GARD_SINGLE_EVENT,
-    factors,
     gard,
     reference,
     runner,
@@ -96,7 +95,7 @@ def test_a_row_for_column_update_is_caught():
     def planted(x, data, i, sign, xp):
         return x + sign * data.matrix[i, :]
 
-    factors.load_homes()
+    law_registry.active()
     law = dataclasses.replace(gard.SINGLE_EVENT, law_id="tests.row_update@1", update=planted)
     with law_registry.scope(law_registry.BUILTIN.extended(law)):
         options, _ = CASES["single-event"]

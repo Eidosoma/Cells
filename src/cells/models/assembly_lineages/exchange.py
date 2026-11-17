@@ -38,19 +38,18 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from cells.models.assembly_lineages import EXCHANGE_INTERFACE, EXCHANGE_LAW, MODEL_ID
-from cells.modules import Citation
+from cells.modules import Citation, Law
 
-# The law template and its registry: seam F's registry API (cells.modules does not export them
-# yet; that is module stage 1's, CORE_SEAMS_DESIGN §8.5).
+# The registration call is the registry's own (the surface exports it in module stage 1).
 from cells.registry import laws as law_registry
 
 TEST = "tests/unit/test_assembly_lineages_kernel.py::test_kernel_matches_the_oracle"
 
 
 @dataclass(frozen=True)
-class ExchangeLaw(law_registry.Law):
-    """The family's exchange-law interface on the law template (registry/laws.py), in the
-    family's own namespace; hosted by the family's model."""
+class ExchangeLaw(Law):
+    """The exchange-law interface (cells.exchange_law@1) on the law template: single molecules
+    exchanged between a held phase and an assembly; hosted by the family's model."""
 
     energy_role: str  # "passive": its affinity is a state-function difference (above).
     data: tuple[str, ...]

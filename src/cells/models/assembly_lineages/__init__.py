@@ -38,14 +38,14 @@ CONTINUATION = "cells.daughter_continuation@1"
 GARD_SINGLE_EVENT = "cells.gard_catalysis_single_event@1"
 GARD_PAIR_CONSISTENT = "cells.gard_catalysis_pair_consistent@1"
 
-# The family's own interfaces, in its own namespace (CORE_SEAMS_DESIGN §8.1: "a family's own";
-# the law template admits a `cells` interface only if it is one of the cells interfaces).
-EXCHANGE_INTERFACE = "assembly_lineages.exchange_law@1"
-RATE_FACTOR_INTERFACE = "assembly_lineages.rate_factor@1"
-OPERATOR_INTERFACE = "assembly_lineages.operator@1"
-# The family's built-in law homes. Each registers its laws on the law registry's BUILTIN through
-# the public call, as an outside package would; factors.load_homes imports them by name, once.
-LAW_HOMES = ("cells.models.assembly_lineages.exchange", "cells.models.assembly_lineages.gard")
+# The family's interfaces, declared in its row of the static model table
+# (registry/model_table.py). The `cells` namespace is Cells' own (MODULE_SYSTEM_DESIGN §2.3), and
+# the names are general: Cells' own origin-of-life laws implement the same interfaces (D197). The
+# table also lists the homes that register the family's laws (exchange.py, gard.py) and operators
+# (fission.py, continuation.py), which the registries import by name.
+EXCHANGE_INTERFACE = "cells.exchange_law@1"
+RATE_FACTOR_INTERFACE = "cells.rate_factor_law@1"
+OPERATOR_INTERFACE = "cells.lineage_operator@1"
 
 MODE = "single_lineage"  # One continuing assembly per world: one daughter is followed.
 EVERY_DESCENDANT = "every_descendant"  # Every daughter lives (RELATIONSHIPS_DESIGN §1.4, P-a).
