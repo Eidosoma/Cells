@@ -134,7 +134,8 @@
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
-  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json"
+  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
+  "/mnt/workspaces/Cells/fr10-references-20261117/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1109,6 +1110,13 @@
    "root": "/mnt/workspaces/Cells/d198-retire-20261117/snapshot-staged-e04fa95f",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T13:11:06+00:00"
+  },
+  {
+   "git_revision": "7e27b9e12de06531fcf15c25c2b1377a2ffcfef3",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:48:18+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2201,6 +2209,46 @@
     }
    },
    {
+    "file": "tests/unit/test_fr10_references_design.py",
+    "seconds": 6.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_faces.py",
+    "seconds": 1.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_harness.py",
+    "seconds": 9.34,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_ion.py",
+    "seconds": 4.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_records.py",
+    "seconds": 3.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_fr45_damage_and_worlds.py",
     "seconds": 2.27,
     "exit_code": 0,
@@ -2254,6 +2302,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_engine_layout.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_ensemble_design.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -3809,22 +3873,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_gard_references_engine_layout.py",
-    "seconds": 1.57,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_gard_references_ensemble_design.py",
-    "seconds": 1.87,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
     }
    }
   ],
