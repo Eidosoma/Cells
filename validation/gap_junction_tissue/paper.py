@@ -10,9 +10,9 @@ Cx45 gate constants (CX45), which the preprint does not print: from BITSEY's cod
 
 Independent references, written from the preprint's equations alone:
 * `eq2`: the steady state of two linear cells joined by one junction (the preprint's equation 2);
-* `chain_paper`: the appendix's printed chain recursion, taken as a conductance (without its
-  outer reciprocal, with which it is a resistance; see RECURSION_NOTE);
-* `chain_physical`: the Norton conductance of a physical straight chain, by recursion;
+* `chain_literal` and `chain_paper`: the appendix's printed chain recursion, taken literally and
+  read as Figure 7's resistance form with both indices n (RECURSION_NOTE);
+* `chain_physical`: the Norton conductance of a straight chain by direct circuit analysis;
 * `linear_steady_state`: the steady state of any network of linear cells by a dense solve, the
   check on both recursions and the reference for the engine runs;
 * `chen_izu`: the two-state junction gate of Figure 1 (the preprint's gating equation).
@@ -92,25 +92,21 @@ REPORTED = {
         "tolerance": 0.01,
     },
     "figure8": {
-        "where": "Figure 8: chains of 1-5 cells, [mR]_UL0 = 1 mol/m^3 (read at Iexit = -0.5 "
-        "mol/s, and the Iexit-axis intercepts). G_eq,1 = G_GJ = 0.1 is not printed: it is "
-        "inferred from the 1- and 2-cell lines (slope and intercept)",
+        "where": "Figure 8 and its caption: chains of 1-5 cells, [mR]_UL0 = 1 mol/m^3 (printed in "
+        "the caption). The preprint gives no conductance values for Figure 8; the ratio "
+        "G_GJ / (V_cell K_dec) compared here is a choice",
         "unloaded": 1.0,
-        "g_eq1": 0.1,
-        "g_gj": 0.1,
-        "at_minus_half": (6.0, 4.33, 3.4, 2.8, 2.45),
-        "intercepts": (0.10, 0.15, 0.21, 0.28, 0.35),
-        "tolerance": 0.05,
-        "intercept_tolerance": 0.01,
     },
 }
 
 RECURSION_NOTE = (
-    "The appendix prints G_eq,n+1 = 1 / [ (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n ]. With its outer "
-    "reciprocal the right side is a resistance; taken as a conductance it gives "
-    "(G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n, whose second term is the whole chain's G_eq,n. A straight "
-    "chain whose added cell brings its own decay conductance G_eq,1 has "
-    "G_eq,n+1 = (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,1."
+    "The appendix (p. 15 and p. 20, identical) prints "
+    "G_eq,n+1 = 1 / [ (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n ]. An independent derivation "
+    "(gap-junction-derivation-20261117/derivation.md) finds two departures from direct circuit "
+    "analysis: the outer reciprocal makes the right side a resistance from n = 2, against the "
+    "appendix's own two-cell line; and the second term uses G_eq,n where the added cell's own "
+    "G_eq,1 belongs, from n = 3, tracing to a p. 19 substitution. Figure 7's resistance form read "
+    "with the single-cell R_thev1 reproduces the direct result."
 )
 
 # --- Independent references --------------------------------------------------------------------
@@ -127,9 +123,18 @@ def eq2(unloaded_a, unloaded_b, x, y):
     return a, b
 
 
+def chain_literal(g1, gj, n):
+    """[G_eq,1 .. G_eq,n] by the printed recursion taken literally (the derivation's P_lit): a
+    resistance from n = 2, so its values hold only in the units of g1."""
+    values = [g1]
+    while len(values) < n:
+        values.append(1.0 / (1.0 / (1.0 / values[-1] + 1.0 / gj) + values[-1]))
+    return values
+
+
 def chain_paper(g1, gj, n):
-    """[G_eq,1 .. G_eq,n] by the appendix's printed recursion taken as a conductance
-    (RECURSION_NOTE)."""
+    """[G_eq,1 .. G_eq,n] by the printed recursion read as Figure 7's resistance form with both
+    indices n (the derivation's P_res; RECURSION_NOTE)."""
     values = [g1]
     while len(values) < n:
         values.append(1.0 / (1.0 / values[-1] + 1.0 / gj) + values[-1])
@@ -137,7 +142,8 @@ def chain_paper(g1, gj, n):
 
 
 def chain_physical(g1, gj, n):
-    """[G_eq,1 .. G_eq,n] of a straight chain: each added cell brings its own G_eq,1."""
+    """[G_eq,1 .. G_eq,n] of a straight chain by direct circuit analysis (the derivation's D):
+    each added cell brings its own G_eq,1."""
     values = [g1]
     while len(values) < n:
         values.append(1.0 / (1.0 / values[-1] + 1.0 / gj) + g1)

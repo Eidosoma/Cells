@@ -304,7 +304,17 @@ def junction_route_reaction(junction_permeability_m_s):
     )
 
 
-def emt_switch_probe():
+def junction_route_passive():
+    """junction_route_reaction's world with no @3 junction route for S, carried instead by a
+    cells.passive_routes@1 route (passive_neutral_permeation@1) on the junction."""
+    raw = junction_route_reaction(0.0)
+    raw["model"]["passive_routes"] = [
+        dict(id="s_route", junction="j_0", law=PASSIVE_LAW, species="S", permeability_m_per_s=1e-9)
+    ]
+    return raw
+
+
+def emt_switch_probe(cells=(("cell_0", 1.0),), junctions=()):
     """One cell with the preprint's EMT switch written as local_species_reactions@1 reactions:
     the structure of its Figure 2 and Methods with synthetic values (the preprint prints none).
 
@@ -320,23 +330,36 @@ def emt_switch_probe():
     raw = rfx.species_world(
         extra=names,
         faces=False,
-        cells=(("cell_0", 1.0),),
+        cells=cells,
         nodes=(),
         contacts=(),
-        profile={name: {"cell_0": 1e-3} for name in names},
+        junctions=junctions,
+        profile={name: {cell_id: 1e-3 for cell_id, _ in cells} for name in names},
     )
     sites = {"cells": "all"}
     k_half, x0 = 1e-3, 1e-3  # mM, synthetic.
     reactions = []
     for name, n in (("u", 3), ("m", 2)):
         reactions.append(
-            rfx.mass_action(f"{name}_low", sites, {}, {name: 1}, 1e-5,
-                            [rfx.hill("hill_inhibition", "z", k_half, n)])
-        )  # fmt: skip
+            rfx.mass_action(
+                f"{name}_low",
+                sites,
+                {},
+                {name: 1},
+                1e-5,
+                [rfx.hill("hill_inhibition", "z", k_half, n)],
+            )
+        )
         reactions.append(
-            rfx.mass_action(f"{name}_high", sites, {}, {name: 1}, 2e-5,
-                            [rfx.hill("hill_activation", "z", k_half, n)])
-        )  # fmt: skip
+            rfx.mass_action(
+                f"{name}_high",
+                sites,
+                {},
+                {name: 1},
+                2e-5,
+                [rfx.hill("hill_activation", "z", k_half, n)],
+            )
+        )
     for i in range(7):
         factors = [rfx.hill("hill_activation", "u", x0, 1.0)] * i
         factors += [rfx.hill("hill_inhibition", "u", x0, 1.0)] * (6 - i)
@@ -347,6 +370,108 @@ def emt_switch_probe():
         reactions.append(rfx.mass_action(f"{name}_decay", sites, {name: 1}, {}, k))
     controls = [(r["id"], None, [(0.0, 1.0)]) for r in reactions]
     return rfx.with_reactions(raw, [rfx.species(n) for n in names], reactions, controls)
+
+
+# --- The linear model as written (part aswritten) ------------------------------------------------
+
+AS_WRITTEN_SCALE_mM = 1e-3  # One unit of the preprint's [mR] is 1 uM here: a trace beside the ions.
+AS_WRITTEN_SPECIES = "S"  # The inventory species the fixtures declare (neutral, trace background).
+PASSIVE_LAW = "passive_neutral_permeation@1"
+
+
+def as_written(network, *, dt=None, end=END_S, junction_scale=1.0):
+    """The preprint's linear cells as it writes them, in resolved_pump_composite@1 over @3.
+
+    Each cell: generation K_dec u and first-order decay K_dec (local_species_reactions@1: one
+    zeroth-order source per unloaded value at its cells, one decay at every cell). Each junction:
+    a cells.passive_routes@1 route of passive_neutral_permeation@1 for the species, P A = g G_eq1,
+    its junction's gate pinned open. Each probe: the same law on a patch from the port cell to its
+    own held bath. The ions sit at the bath's composition with zero permeability (the species-only
+    world of the secreted-species fixtures), so nothing but the species moves. Volumes, G_eq and
+    dt are those of linear_network; amounts are in uM (AS_WRITTEN_SCALE_mM)."""
+    from validation.tissue import secreted_species_fixtures as sfx
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    cells, edges, probes = network.cells, network.edges, network.probes
+    dt = step(cells, edges, probes) if dt is None else dt
+    scale, species = AS_WRITTEN_SCALE_mM, AS_WRITTEN_SPECIES
+    observe = sorted(
+        {
+            *(k * OBSERVE_EVERY_S for k in range(int(end // OBSERVE_EVERY_S) + 1)),
+            end - SETTLE_S,
+            end,
+        }
+    )
+    baths = ("bath", *(f"{probe_id}_held" for probe_id, *_ in probes))
+    profile = {cell_id: u * scale for cell_id, u, _ in cells}
+    profile.update({f"{probe_id}_held": held * scale for probe_id, _, held, _ in probes})
+    raw = sfx.world(
+        cells=tuple((cell_id, size * V_CELL_PL) for cell_id, _, size in cells),
+        nodes=(),
+        baths=baths,
+        contacts=tuple(
+            (f"{probe_id}_patch", cells[i][0], f"{probe_id}_held") for probe_id, i, _, _ in probes
+        ),
+        faces=(),
+        junctions=tuple((edge_id, cells[i][0], cells[j][0]) for edge_id, i, j, _ in edges),
+        dt=dt,
+        end=end,
+        observation_times=observe,
+        concentrations_mM=profile,
+    )
+    m = raw["model"]
+    for junction in m["junctions"]:
+        junction["gate"].update(
+            threshold_voltage_V=0.0, minimum_open_fraction=1.0, initial_gate=1.0
+        )
+    routes = []
+    for (edge_id, _, _, g), junction in zip(edges, m["junctions"], strict=True):
+        p = junction_scale * g * G_EQ1_M3_S / junction["area_m2"]
+        routes.append(
+            dict(
+                id=f"{edge_id}_route",
+                junction=edge_id,
+                law=PASSIVE_LAW,
+                species=species,
+                permeability_m_per_s=p,
+            )
+        )
+    patches = {p["id"]: p for p in m["membranes"]}
+    for probe_id, _, _, g in probes:
+        patch = patches[f"{probe_id}_patch"]
+        p = g * G_EQ1_M3_S / patch["area_m2"]
+        routes.append(
+            dict(
+                id=f"{probe_id}_route",
+                patch=patch["id"],
+                law=PASSIVE_LAW,
+                species=species,
+                permeability_m_per_s=p,
+            )
+        )
+    m["passive_routes"] = routes
+    sites_by_value = {}
+    for cell_id, u, _ in cells:
+        sites_by_value.setdefault(u, []).append(cell_id)
+    reactions = [
+        rfx.mass_action(f"make_{k}", {"cells": ids}, {}, {species: 1}, K_DEC_PER_S * u * scale)
+        for k, (u, ids) in enumerate(sorted(sites_by_value.items()))
+    ]
+    reactions.append(rfx.mass_action("decay", {"cells": "all"}, {species: 1}, {}, K_DEC_PER_S))
+    controls = [(r["id"], None, [(0.0, 1.0)]) for r in reactions]
+    return rfx.with_reactions(raw, [rfx.species(species)], reactions, controls)
+
+
+def emt_switch_two_cells_passive():
+    """emt_switch_probe's switch in two cells joined by a junction whose passive route carries
+    miR200 (u): the preprint's neither-condition model, definition only, synthetic values."""
+    raw = emt_switch_probe(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)), junctions=(("j_0", "cell_0", "cell_1"),)
+    )
+    raw["model"]["passive_routes"] = [
+        dict(id="u_route", junction="j_0", law=PASSIVE_LAW, species="u", permeability_m_per_s=1e-9)
+    ]
+    return raw
 
 
 def lattice_nodes(shape):

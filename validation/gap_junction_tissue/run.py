@@ -2,58 +2,62 @@
 
 The preprint (paper.CITATION) runs a bioelectric/GRN tissue model in BITSEY (Tables 1-3) and a
 linear "intuitive model" analysed by hand (equations 1-2, appendix, Figures 3, 5 and 8). This
-driver runs in Cells what the engine can run today and records, from the engine itself, why the
-rest cannot run yet. It changes no engine source.
+driver runs in Cells what the engine can run today, and records from the engine itself what it
+refuses or admits. It changes no engine source.
 
-Parts:
+Parts (the default runs all but fixture):
 * refusals: definition-time evidence (no integration).
-  - A neutral species made in each cell by local_species_reactions@1 that also crosses a junction
-    (the preprint's miRNA), against the same world without the junction route.
-  - The EMT switch written as local_species_reactions@1 reactions in one cell (synthetic values):
-    whether the declaration is admitted.
+  - A neutral species made in each cell by local_species_reactions@1 with an @3 constant-field
+    junction route (refused), the same world without the route (admitted), and the same species
+    carried instead by a cells.passive_routes@1 junction route (passive_neutral_permeation@1).
+  - The EMT switch written as local_species_reactions@1 reactions in one cell, and in two cells
+    with miR200 on a passive junction route (synthetic values): whether each is admitted.
   - The junction, channel and pump laws @3 hosts.
   - The field solver's node bound against the preprint's lattices: a two-step shared-bath world
     at the bound must be admitted, and one node over it refused for the bound.
 * gate: F3 and F4 measured. The engine's one junction law (its own kinetics, at steady state)
   fitted to Figure 1's Cx45 small-ion curve, and the same law against the miRNA curve.
-* figure3: two equal linear cells (unloaded 5 and 10) joined by G_GJ = g G_eq, g = 0.5 ... 50.
-* figure5: Figure 5b's lumped model (cell B 4/3 cell A) and Figure 5a's seven-cell network.
-* figure8: straight chains of 1-5 and 10 cells, each loaded at its port by two held
-  concentrations; the Norton conductance G_eq,n from the two steady states.
-* control: figure3 at g = 1 with every junction permeability x1.01, judged against g = 1's
-  reference: the comparison must catch it.
-
-The linear cells are the preprint's linear cell through its Norton equivalent (worlds.py): the
-model as the preprint writes it, a source and a decay in the cell plus a junction, is itself
-refused today (gap F1, the first refusal above).
+* figure3, figure5, figure8, control: the linear model's Norton-equivalent network on @3's own
+  routes (worlds.linear_network): two equal cells against G_GJ; Figure 5b's lumped model and
+  Figure 5a's seven-cell network; straight chains of 1-5 and 10 cells loaded at the port by two
+  held concentrations (the Norton conductance from the two steady states); and the planted
+  control, every junction permeability x1.01, judged against the unperturbed reference.
+* aswritten: the same networks as the preprint writes them (worlds.as_written): a source and a
+  decay in each cell (local_species_reactions@1) and a passive junction route
+  (passive_neutral_permeation@1), each run at the step rule's dt and at half of it (the dt study).
+* fixture: two 60 s format fixtures (Norton and as written) for the viewer's tests; no verdict.
 
 Criteria, fixed before any run (CRITERIA):
-  E1 engine against the dense solve of the same network: relative error <= 1e-9 in every cell;
+  E1 Norton network against the dense solve of the same network: relative error <= 1e-9;
   E2 steady state: relative change over the last SETTLE_S seconds <= 1e-12 in every cell;
-  E3 the probe flux from the engine's own membrane ledger against G_probe (c - held): relative
-     error <= 1e-9;
-  E4 Figure 8: the engine's G_eq,n against the physical chain's recursion: relative <= 1e-8;
+  E3 the probe flux from the engine's own ledger against G_probe (c - held): relative <= 1e-9;
+  E4 chains: the Norton network's G_eq,n against direct circuit analysis: relative <= 1e-8;
+  W1 as written: E2 at both steps;
+  W2 as written: relative error against the dense solve at the half step <= 1e-4;
+  W3 as written: the observed order log2(e(dt)/e(dt/2)) within [1.6, 2.4] where e(dt) > 1e-9;
   P1 the closed forms against the preprint's printed or read values, within the reading
      tolerances paper.REPORTED states (a check of the reading, not of the engine; the
      tolerances were set after the closed forms were evaluated);
-  P2 Figure 8: the engine's G_eq,n against the appendix's printed recursion taken as a
-     conductance, and against Figure 8's read values (reported, not a pass/fail of the engine);
   K1 the planted control fails E1 (by more than 1e-6);
   A1 the engine's own run checks pass (material balance and every step check: a run that fails
      one raises, and that arm is recorded as failed while the others go on).
+Figure 8's printed recursion is reported, not judged: taken literally and read as Figure 7's
+resistance form, against direct analysis (paper.RECURSION_NOTE). The preprint gives no
+conductance values for Figure 8.
 
-Engine models run: resolved_pump_tissue@3 with constant_field@1 membranes and junctions for one
-neutral species, held reservoirs, junction_voltage_relaxation@1 pinned open, closed by
-resolved_capacitor_components_current_continuity@1, integrated by
-imex_ars222_face_electromigration@1 (worlds.py). Definition probes: local_species_reactions@1 in
-resolved_pump_composite@1, and the law registry.
+Engine models run: resolved_pump_tissue@3 (Norton: constant_field@1 membranes and junctions for
+one neutral species, held reservoirs) and resolved_pump_composite@1 over it (as written:
+local_species_reactions@1, cells.passive_routes@1 with passive_neutral_permeation@1), both with
+junction_voltage_relaxation@1 pinned open, resolved_capacitor_components_current_continuity@1 and
+imex_ars222_face_electromigration@1.
 
-Records. Every arm's run is written by the engine's own writer, cells.io.write_run, under
-OUTDIR/worlds/<arm id>/: trajectory.npz (every accepted step, the layout, the observations),
-resolved_config.json, checkpoint_final, summary.json and manifest.json, and with them view.json,
-the run view (cells.run_view@1) with the prescribed geometry of worlds.geometry, so that a viewer
-package can be made from the records without re-running. A refused view is recorded and the run
-is written without one.
+Records. Every arm's run of record is written by the engine's own writer, cells.io.write_run,
+under OUTDIR/worlds/<arm id>/ (trajectory.npz with every accepted step, resolved_config.json,
+checkpoint_final, summary.json, manifest.json) with view.json, its run view (cells.run_view@1)
+with worlds.geometry's prescribed layout, and run.json (revision, models, what the run represents
+and, at the end, every arm's parameters and readouts). Selected arms are written again as viewer
+packages (OUTDIR/viewer/<arm id>/) with a recording subset; viewer/index.json lists those under
+1 MB per layer. A refused view is recorded and the run written without one.
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
     python -B validation/gap_junction_tissue/run.py OUTDIR [part ...]
@@ -85,19 +89,93 @@ CRITERIA = {
     "E1_engine_vs_dense_rtol": 1e-9,
     "E2_steady_rtol": 1e-12,
     "E3_ledger_flux_rtol": 1e-9,
-    "E4_norton_vs_physical_rtol": 1e-8,
+    "E4_norton_vs_direct_rtol": 1e-8,
+    "W2_as_written_half_step_rtol": 1e-4,
+    "W3_as_written_order": (1.6, 2.4),
+    "W3_as_written_order_floor": 1e-9,
     "K1_planted_min_rel_error": 1e-6,
 }
 FIGURE3_G = (0.5, 1.0, 2.0, 5.0, 10.0, 50.0)
 FIGURE5_G = (1.0, 10.0, 50.0)  # Figure 5b runs to 100; 50 keeps the run short.
+# The as-written part stops at 10 G_eq: at 50 its step (the energy check's dt x rate <= 0.04)
+# makes each run about 10^5 steps, twice over for the dt study.
+AS_WRITTEN_FIGURE3_G = (0.5, 1.0, 2.0, 5.0, 10.0)
+AS_WRITTEN_FIGURE5_G = (1.0, 10.0)
 FIGURE8_N = (1, 2, 3, 4, 5, 10)
-FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
+FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port; the unloaded value is 1.
 PLANTED_SCALE = 1.01
 FIXTURE_END_S = 60.0
 TIME_MATCH_RTOL = 1e-12
 EXPERIMENT = "gap-junction-cancer-linear-network"
 RECORDS = None  # OUTDIR/worlds, set by main(); None writes no records (tools that only check).
-PARTS = ("fixture", "refusals", "gate", "figure3", "figure5", "figure8", "control")
+PARTS = ("fixture", "refusals", "gate", "figure3", "figure5", "figure8", "control", "aswritten")
+DEFAULT_PARTS = tuple(p for p in PARTS if p != "fixture")
+NORTON, AS_WRITTEN = "norton", "as_written"
+REPRESENTS = {
+    NORTON: (
+        "The Norton-equivalent network of the preprint's linear ('intuitive') model (its equations "
+        "1-2, appendix, Figures 3, 5 and 8): each cell's generation and decay carried by a "
+        "membrane to a reservoir held at its unloaded value, cells joined by junctions, on @3's "
+        "own constant-field routes for one neutral species. Exact at the fixed point; the check on "
+        "the as-written arms. Not the preprint's tissue simulations (Tables 1-3)."
+    ),
+    AS_WRITTEN: (
+        "The preprint's linear ('intuitive') model as it writes it (its equations 1-2, appendix, "
+        "Figures 3, 5 and 8): a source and a decay in each cell (local_species_reactions@1) and a "
+        "passive junction route for the neutral species (cells.passive_routes@1, "
+        "passive_neutral_permeation@1, not numerically qualified). Not the preprint's tissue "
+        "simulations (Tables 1-3)."
+    ),
+}
+MODELS = {
+    NORTON: ["resolved_pump_tissue@3"],
+    AS_WRITTEN: ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+}
+LAWS = {
+    NORTON: dict(membrane_and_junction_route="constant_field@1"),
+    AS_WRITTEN: dict(
+        cell_generation_and_decay="local_species_reactions@1 (mass_action source and decay)",
+        junction_and_probe_route="passive_neutral_permeation@1 (cells.passive_routes@1)",
+    ),
+}
+# The viewer packages (the visualizer's request, 17 November): a recording subset of the fields
+# it names, for these arms in this order, kept where every layer's records stay under 1 MB.
+VIEWER_FIELDS = {
+    NORTON: (
+        "amount_increment",
+        "junction_transferred",
+        "junction_gate",
+        "membrane_voltage_V",
+        "junction_voltage_V",
+    ),
+    AS_WRITTEN: (
+        "amount_increment",
+        "passive_transferred",
+        "junction_gate",
+        "membrane_voltage_V",
+        "junction_voltage_V",
+    ),
+}
+VIEWER_ARMS = (
+    "figure3-g1",
+    "aw-figure3-g1",
+    "figure3-g5",
+    "aw-figure3-g5",
+    "figure5-network-g1",
+    "aw-figure5-network-g1",
+    "figure8-chain3-held0.5",
+    "aw-figure8-chain3-held0.5",
+    "figure8-chain10-held0.5",
+    "aw-figure8-chain10-held0.5",
+    "figure5-lumped-g1",
+    "aw-figure5-lumped-g1",
+    "figure8-chain5-held0.5",
+    "aw-figure8-chain5-held0.5",
+    "fixture-figure3-g1",
+    "fixture-aw-figure3-g1",
+)
+VIEWER_LAYER_BYTES = 2**20
+VIEWER_MAX = 10
 
 
 class Recorder:
@@ -131,42 +209,9 @@ def _row(times, t):
     return k
 
 
-REPRESENTS = (
-    "The Norton-equivalent network of the preprint's linear ('intuitive') model: linear cells "
-    "exchanging one neutral species through gap junctions, each cell's generation and decay "
-    "carried by a membrane to a reservoir held at its unloaded value (its equations 1-2, appendix, "
-    "Figures 3, 5 and 8). The engine refuses the model as written (a source and a decay in the "
-    "cell plus a junction route; gap F1). This is not the preprint's tissue simulation (Tables "
-    "1-3), which the engine cannot run yet."
-)
-# The viewer packages (the visualizer's request, 17 November): a recording subset of the fields
-# it names, for these arms in this order, kept where every layer's records stay under 1 MB.
-VIEWER_FIELDS = (
-    "amount_increment",
-    "junction_transferred",
-    "junction_gate",
-    "membrane_voltage_V",
-    "junction_voltage_V",
-)
-VIEWER_ARMS = (
-    "fixture-figure3-g1",
-    "figure3-g0.5",
-    "figure3-g1",
-    "figure3-g5",
-    "figure5-lumped-g1",
-    "figure5-network-g1",
-    "figure8-chain1-held0.5",
-    "figure8-chain2-held0.5",
-    "figure8-chain3-held0.5",
-    "figure8-chain5-held0.5",
-    "figure8-chain10-held0.5",
-)
-VIEWER_LAYER_BYTES = 2**20
-
-
 def source_identity():
     """The execution snapshot this run comes from (SNAPSHOT.json at the working directory, as
-    tools/run.sh runs it), or the checkout's revision when run from a checkout."""
+    tools/run.sh runs it), or nothing when run from a checkout."""
     path = Path("SNAPSHOT.json")
     if path.is_file():
         snapshot = json.loads(path.read_text())
@@ -189,7 +234,7 @@ def layer_bytes(directory):
     return out
 
 
-def write_record(result, arm_id, label):
+def write_record(result, arm_id, label, kind):
     """The engine's own run record with its run view (module docstring), and for VIEWER_ARMS a
     viewer package of the same run with the recording subset. A view's refusal is recorded and
     the run written without one."""
@@ -201,6 +246,7 @@ def write_record(result, arm_id, label):
         driver="validation/gap_junction_tissue/run.py",
         experiment=EXPERIMENT,
         arm=arm_id,
+        kind=kind,
         citation=paper.CITATION,
         **source_identity(),
     )
@@ -212,40 +258,41 @@ def write_record(result, arm_id, label):
     out = {}
     targets = [("record", RECORDS / arm_id, None)]
     if arm_id in VIEWER_ARMS:
-        recording = run_view.Recording(fields=VIEWER_FIELDS)
+        recording = run_view.Recording(fields=VIEWER_FIELDS[kind])
         targets.append(("viewer", RECORDS.parent / "viewer" / arm_id, recording))
-    for kind, directory, recording in targets:
+    for target, directory, recording in targets:
         request = run_view.Request(labels, geometry=geometry, recording=recording)
         try:
             io.write_run(directory, result.run, provenance=provenance, view=request)
-            out[kind] = dict(directory=str(directory), view="written")
-            if kind == "viewer":
+            out[target] = dict(directory=str(directory), view="written")
+            if target == "viewer":
                 sizes = layer_bytes(directory)
-                out[kind].update(
+                out[target].update(
                     layer_bytes=sizes,
                     within_limit=all(v < VIEWER_LAYER_BYTES for v in sizes.values()),
                 )
         except run_view.ViewRefused as error:
             io.write_run(directory, result.run, provenance=provenance)
-            out[kind] = dict(directory=str(directory), view="refused", refusal=str(error))
-        write_run_json(directory, arm_id, result.run.spec, provenance, experiment=None)
+            out[target] = dict(directory=str(directory), view="refused", refusal=str(error))
+        write_run_json(directory, arm_id, kind, result.run.spec, provenance, experiment=None)
     return out
 
 
-def write_run_json(directory, arm_id, spec, provenance, experiment):
+def write_run_json(directory, arm_id, kind, spec, provenance, experiment):
     """run.json beside the engine's files: the revision, the models, the definition's hash, what
     the run represents, and (once the experiment ends) every arm's parameters and readouts."""
     entry = dict(
         format="gap_junction_tissue.run@1",
         status="development run of the engine, not judged (D138)",
-        represents=REPRESENTS,
+        kind=kind,
+        represents=REPRESENTS[kind],
         citation=dict(text=paper.CITATION, doi=paper.DOI_URL),
         revision=provenance.get("revision"),
         snapshot=provenance.get("snapshot"),
         snapshot_clean=provenance.get("clean"),
-        models=["resolved_pump_tissue@3"],
+        models=MODELS[kind],
         laws=dict(
-            membrane_and_junction_route="constant_field@1",
+            **LAWS[kind],
             junction_gate="junction_voltage_relaxation@1 (pinned open)",
             closure="resolved_capacitor_components_current_continuity@1",
             solver=worlds.SOLVER,
@@ -258,7 +305,7 @@ def write_run_json(directory, arm_id, spec, provenance, experiment):
 
 
 def experiment_summary(data):
-    """Each arm's parameters and readouts under the preprint's names (mol/m^3 = mM, mol/s)."""
+    """Each arm's parameters and readouts under the preprint's names (mol/m^3 for [mR], mol/s)."""
     parts, arms = data["parts"], []
 
     def add(arm_id, figure, parameters, result, extra=None):
@@ -271,34 +318,71 @@ def experiment_summary(data):
                 **(extra or {}),
             }
         arms.append(
-            dict(id=arm_id, figure=figure, parameters=parameters, status=result.get("status"),
-                 readouts=readouts, record=result.get("record"))
-        )  # fmt: skip
+            dict(
+                id=arm_id,
+                figure=figure,
+                kind=result.get("kind", NORTON),
+                parameters=parameters,
+                status=result.get("status"),
+                readouts=readouts,
+                record=result.get("record"),
+            )
+        )
 
-    for name in ("fixture", "figure3"):
-        for result in parts.get(name, {}).get("result", {}).get("arms", []):
-            g, tag = result.get("g"), ("fixture-" if name == "fixture" else "")
-            add(f"{tag}figure3-g{g:g}", "3b",
-                {"G_GJ / G_eq": g, "mR_UL0, mR_UL1 (mol/m^3)": [5.0, 10.0]}, result,
-                {"equation 2": result.get("eq2")})  # fmt: skip
-    figure5 = parts.get("figure5", {}).get("result", {})
-    for result in figure5.get("lumped", []):
-        add(f"figure5-lumped-g{result['g']:g}", "5b",
-            {"G_GJ / G_eq,A": result["g"], "G_eq,B / G_eq,A": 4.0 / 3.0,
-             "mR_UL,A, mR_UL,B (mol/m^3)": [10.0, 5.0]}, result,
-            {"equation 2": result.get("eq2")})  # fmt: skip
-    for result in figure5.get("network", []):
-        add(f"figure5-network-g{result['g']:g}", "5a",
-            {"G_GJ / G_eq": result["g"], "cells": "A with two backups at 10, B with three at 5"},
-            result)  # fmt: skip
-    for chain in parts.get("figure8", {}).get("result", {}).get("chains", []):
-        for held, result in zip(FIGURE8_LOADS, chain["loads"], strict=False):
-            add(f"figure8-chain{chain['n']}-held{held:g}", "8",
-                {"cells n": chain["n"], "G_GJ / G_eq,1": 1.0, "mR_UL0 (mol/m^3)": 1.0,
-                 "probe held [mR] (mol/m^3)": held, "G_probe / G_eq,1": 1.0}, result,
-                {"port [mR] (mol/m^3)": result.get("port_mM"),
-                 "i_exit (mol/s)": result.get("exit_flux_mol_s"),
-                 "G_eq,n / G_eq,1 (from both loads)": chain.get("g_eq_ratio")})  # fmt: skip
+    for name in ("fixture", "figure3", "figure5", "aswritten"):
+        result_of = parts.get(name, {}).get("result", {})
+        for result in result_of.get("figure3", []):
+            add(
+                result["arm_id"],
+                "3b",
+                {"G_GJ / G_eq": result.get("g"), "mR_UL0, mR_UL1 (mol/m^3)": [5, 10]},
+                result,
+                {"equation 2": result.get("eq2"), "half step": result.get("half_step")},
+            )
+        for result in result_of.get("figure5_lumped", []):
+            add(
+                result["arm_id"],
+                "5b",
+                {
+                    "G_GJ / G_eq,A": result["g"],
+                    "G_eq,B / G_eq,A": 4.0 / 3.0,
+                    "mR_UL,A, mR_UL,B (mol/m^3)": [10, 5],
+                },
+                result,
+                {"equation 2": result.get("eq2"), "half step": result.get("half_step")},
+            )
+        for result in result_of.get("figure5_network", []):
+            add(
+                result["arm_id"],
+                "5a",
+                {
+                    "G_GJ / G_eq": result["g"],
+                    "cells": "A with two backups at 10, B with three at 5",
+                },
+                result,
+                {"half step": result.get("half_step")},
+            )
+    for name in ("figure8", "aswritten"):
+        for chain in parts.get(name, {}).get("result", {}).get("chains", []):
+            for held, result in zip(FIGURE8_LOADS, chain["loads"], strict=False):
+                add(
+                    result["arm_id"],
+                    "8",
+                    {
+                        "cells n": chain["n"],
+                        "G_GJ / G_eq,1": 1.0,
+                        "mR_UL0 (mol/m^3)": 1.0,
+                        "probe held [mR] (mol/m^3)": held,
+                        "G_probe / G_eq,1": 1.0,
+                    },
+                    result,
+                    {
+                        "port [mR] (mol/m^3)": result.get("port_mM"),
+                        "i_exit (mol/s)": result.get("exit_flux_mol_s"),
+                        "G_eq,n / G_eq,1 (from both loads)": chain.get("g_eq_ratio"),
+                        "G_eq,n / G_eq,1, direct analysis": chain.get("direct_ratio"),
+                    },
+                )
     control = parts.get("control", {}).get("result", {})
     if control:
         planted = {"relative error against the unperturbed solve": control.get("planted_rel_error")}
@@ -309,26 +393,34 @@ def experiment_summary(data):
 
 def finish_records(data):
     """Rewrite every record's run.json with the whole experiment's summary; write the viewer
-    index (viewer/index.json) of the packages within the size limit, in VIEWER_ARMS order."""
+    index (viewer/index.json): the packages within the size limit, in VIEWER_ARMS order, at most
+    VIEWER_MAX, fixtures only when nothing else was written."""
     if RECORDS is None:
         return
     summary = experiment_summary(data)
     viewer = []
     for arm in summary["arms"]:
-        for kind, record in (arm.get("record") or {}).items():
+        for target, record in (arm.get("record") or {}).items():
             directory = Path(record["directory"])
             if not (directory / "run.json").is_file():
                 continue
             entry = json.loads((directory / "run.json").read_text())
             entry["experiment"] = summary
             (directory / "run.json").write_text(json.dumps(entry, indent=1, default=str))
-            if kind == "viewer":
+            if target == "viewer":
                 viewer.append(dict(arm=arm["id"], **record))
     order = {arm_id: k for k, arm_id in enumerate(VIEWER_ARMS)}
     viewer.sort(key=lambda v: order.get(v["arm"], len(order)))
-    selected = [v["arm"] for v in viewer if v.get("within_limit")][:10]
-    index = dict(experiment=EXPERIMENT, represents=REPRESENTS, layer_limit_bytes=VIEWER_LAYER_BYTES,
-                 packages=viewer, selected=selected)  # fmt: skip
+    real = [v for v in viewer if not v["arm"].startswith("fixture-")]
+    candidates = real or viewer
+    selected = [v["arm"] for v in candidates if v.get("within_limit")][:VIEWER_MAX]
+    index = dict(
+        experiment=EXPERIMENT,
+        represents=REPRESENTS,
+        layer_limit_bytes=VIEWER_LAYER_BYTES,
+        packages=viewer,
+        selected=selected,
+    )
     path = RECORDS.parent / "viewer" / "index.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(index, indent=1, default=str))
@@ -339,13 +431,28 @@ class Outcome(NamedTuple):
     network: object
 
 
-def run_network(network, *, junction_scale=1.0, end=worlds.END_S, arm_id=None, label=""):
-    """Run one linear network to steady state; return the engine's readouts and the reference."""
+def run_network(
+    network, *, kind=NORTON, junction_scale=1.0, end=worlds.END_S, dt=None, arm_id=None, label=""
+):
+    """Run one network to steady state; return the engine's readouts and the dense reference.
+
+    kind NORTON builds worlds.linear_network, AS_WRITTEN worlds.as_written (amounts in uM,
+    reported in the preprint's units). The probe's exit flux is read from the engine's own
+    ledger: the probe membrane's (NORTON, cell to held) or the probe route's (AS_WRITTEN,
+    inward)."""
     cells_, probes = network.cells, network.probes
-    raw = worlds.linear_network(
-        cells_, network.edges, probes, junction_scale=junction_scale, end=end
-    )
+    if kind == NORTON:
+        raw = worlds.linear_network(
+            cells_, network.edges, probes, junction_scale=junction_scale, end=end, dt=dt
+        )
+        scale = 1.0
+    else:
+        raw = worlds.as_written(network, junction_scale=junction_scale, end=end, dt=dt)
+        scale = worlds.AS_WRITTEN_SCALE_mM
     spec = parse_spec(raw)
+    row_species = list(spec.model.species_ids).index(
+        worlds.SPECIES if kind == NORTON else worlds.AS_WRITTEN_SPECIES
+    )
     started = time.perf_counter()
     result = runner.run(spec)
     seconds = time.perf_counter() - started
@@ -354,15 +461,16 @@ def run_network(network, *, junction_scale=1.0, end=worlds.END_S, arm_id=None, l
     rows = {t: _row(times, t) for t in (before, end)}
     layout, history = result.final.layout, result.history
     volume = np.asarray(layout.volume)[: len(cells_)]
-    reference_amount = np.asarray(layout.amount_reference)[0, : len(cells_)]
+    reference_amount = np.asarray(layout.amount_reference)[row_species, : len(cells_)]
 
     def concentration(t):
-        increment = np.asarray(history.amount_increment[rows[t]])[0, : len(cells_)]
-        return (reference_amount + increment) / volume  # fmol / pL = mM
+        increment = np.asarray(history.amount_increment[rows[t]])[row_species, : len(cells_)]
+        return (reference_amount + increment) / volume / scale  # the preprint's units
 
     c_end, c_before = concentration(end), concentration(before)
     c_ref, flux_ref = reference(network)
     out = dict(
+        kind=kind,
         dt_s=spec.execution.dt,
         steps=int(round(end / spec.execution.dt)),
         accepted_rows=int(times.size),
@@ -374,11 +482,22 @@ def run_network(network, *, junction_scale=1.0, end=worlds.END_S, arm_id=None, l
         diagnostics={k: float(v) for k, v in result.diagnostics.items() if _number(v)},
     )
     if probes:
-        # The probe membrane is the last membrane; its ledger counts cell -> held reservoir.
-        slot = len(cells_) + len(probes) - 1
-        moved = [np.asarray(history.membrane_transferred[rows[t]])[0, slot] for t in (before, end)]
-        ledger = (moved[1] - moved[0]) / worlds.SETTLE_S * 1e-15  # mol/s out of the port cell
         _, i, held, g = probes[-1]
+        if kind == NORTON:
+            slot = len(cells_) + len(probes) - 1  # the last membrane; cell -> held reservoir
+            moved = [
+                np.asarray(history.membrane_transferred[rows[t]])[row_species, slot]
+                for t in (before, end)
+            ]
+            out_of_cell = moved[1] - moved[0]
+        else:
+            slot = len(network.edges) + len(probes) - 1  # the last route; inward positive
+            moved = [
+                np.asarray(history.passive_transferred[rows[t]])[row_species, slot]
+                for t in (before, end)
+            ]
+            out_of_cell = -(moved[1] - moved[0])
+        ledger = out_of_cell / worlds.SETTLE_S * 1e-15 / scale  # mol/s in the preprint's units
         formula = g * worlds.G_EQ1_M3_S * (c_end[i] - held)  # m^3/s * mol/m^3
         out.update(
             port_mM=float(c_end[i]),
@@ -388,7 +507,7 @@ def run_network(network, *, junction_scale=1.0, end=worlds.END_S, arm_id=None, l
             ledger_rel_error=float(abs(ledger - formula) / abs(formula)),
         )
     if arm_id is not None:
-        out["record"] = write_record(Outcome(result, network), arm_id, label)
+        out["record"] = write_record(Outcome(result, network), arm_id, label, kind)
     return out
 
 
@@ -397,8 +516,14 @@ def arm(network, *, arm_id=None, label="", **kwargs):
     try:
         out = run_network(network, arm_id=arm_id, label=label, **kwargs)
     except Exception as error:
-        return dict(status="failed", error=repr(error), traceback=traceback.format_exc())
-    out["status"] = "done"
+        return dict(
+            status="failed",
+            error=repr(error),
+            traceback=traceback.format_exc(),
+            arm_id=arm_id,
+            kind=kwargs.get("kind", NORTON),
+        )
+    out.update(status="done", arm_id=arm_id)
     out["E1"] = out["engine_rel_error"] <= CRITERIA["E1_engine_vs_dense_rtol"]
     out["E2"] = out["steady_rel_change"] <= CRITERIA["E2_steady_rtol"]
     if "ledger_rel_error" in out:
@@ -427,7 +552,9 @@ def part_refusals(out, save):
 
     out["with_junction_route"] = _parse(worlds.junction_route_reaction(1e-9))
     out["without_junction_route"] = _parse(worlds.junction_route_reaction(0.0))
+    out["passive_junction_route"] = _parse(worlds.junction_route_passive())
     out["emt_switch_reactions"] = _parse(worlds.emt_switch_probe())
+    out["emt_switch_two_cells_passive_route"] = _parse(worlds.emt_switch_two_cells_passive())
     save()
     registry = law_registry.active()
     out["hosted_laws"] = {
@@ -447,10 +574,14 @@ def part_refusals(out, save):
     route = out["with_junction_route"]
     over = out["shared_bath_over_bound"]
     out["verdict"] = dict(
-        junction_route_reaction_refused=not route["accepted"]
+        constant_field_junction_route_refused=not route["accepted"]
         and "route through junction j_0" in route.get("refusal", "")
         and out["without_junction_route"]["accepted"],
-        emt_switch_expressible=out["emt_switch_reactions"]["accepted"],
+        passive_junction_route_admitted=out["passive_junction_route"]["accepted"],
+        emt_switch_admitted=out["emt_switch_reactions"]["accepted"],
+        emt_switch_with_passive_route_admitted=out["emt_switch_two_cells_passive_route"][
+            "accepted"
+        ],
         only_relaxation_junction_law=out["hosted_laws"]["junction"]
         == ["junction_voltage_relaxation@1"],
         three_d_lattice_over_bound=not out["preprint_lattices"]["3D_25x25x25"]["within"]
@@ -495,31 +626,36 @@ def part_gate(out, save):
     save()
 
 
+def _arm_id(kind, base):
+    return base if kind == NORTON else f"aw-{base}"
+
+
+def _figure3(out, save, kind, *, gs=FIGURE3_G, end=worlds.END_S, prefix=""):
+    rep = paper.REPORTED["figure3b"]
+    out.setdefault("figure3", [])
+    for g in gs:
+        arm_id = prefix + _arm_id(kind, f"figure3-g{g:g}")
+        label = f"Figure 3: two equal linear cells (unloaded 5 and 10), G_GJ = {g:g} G_eq ({kind})"
+        result = arm(
+            worlds.figure3(g, rep["unloaded"]), kind=kind, end=end, arm_id=arm_id, label=label
+        )
+        result.update(g=g, eq2=list(paper.eq2(*rep["unloaded"], g, g)))
+        out["figure3"].append(result)
+        save()
+
+
 def part_fixture(out, save):
-    """A tiny run of the real runs' shape for the viewer's tests (FIXTURE_END_S, not steady)."""
-    result = arm(
-        worlds.figure3(1.0),
-        end=FIXTURE_END_S,
-        arm_id="fixture-figure3-g1",
-        label="Format fixture: Figure 3 at G_GJ = G_eq, 60 s (not at steady state; no verdict)",
-    )
-    result.update(g=1.0, eq2=list(paper.eq2(5.0, 10.0, 1.0, 1.0)), purpose="format fixture")
-    out["arms"] = [result]
+    """Two 60 s runs of the real runs' shape for the viewer's tests (not steady; no verdict)."""
+    for kind in (NORTON, AS_WRITTEN):
+        _figure3(out, save, kind, gs=(1.0,), end=FIXTURE_END_S, prefix="fixture-")
+    for result in out["figure3"]:
+        result["purpose"] = "format fixture"
     save()
 
 
 def part_figure3(out, save):
     rep = paper.REPORTED["figure3b"]
-    out["arms"] = []
-    for g in FIGURE3_G:
-        result = arm(
-            worlds.figure3(g, rep["unloaded"]),
-            arm_id=f"figure3-g{g:g}",
-            label=f"Figure 3: two equal linear cells (unloaded 5 and 10 mM), G_GJ = {g:g} G_eq",
-        )
-        result.update(g=g, eq2=list(paper.eq2(*rep["unloaded"], g, g)))
-        out["arms"].append(result)
-        save()
+    _figure3(out, save, NORTON)
     a1, b1 = paper.eq2(*rep["unloaded"], 1.0, 1.0)
     limit = 0.5 * sum(rep["unloaded"])
     out["reading"] = dict(
@@ -534,27 +670,36 @@ def part_figure3(out, save):
     save()
 
 
-def part_figure5(out, save):
+def _figure5(out, save, kind, gs=FIGURE5_G):
     rep = paper.REPORTED["figure5"]
     ua, ub = rep["unloaded"]["A"], rep["unloaded"]["B"]
-    out["lumped"], out["network"] = [], []
-    for g in FIGURE5_G:
+    out.setdefault("figure5_lumped", [])
+    out.setdefault("figure5_network", [])
+    for g in gs:
         result = arm(
             worlds.figure5_lumped(g, rep["size_ratio"], (ua, ub)),
-            arm_id=f"figure5-lumped-g{g:g}",
-            label=f"Figure 5b: cell B 4/3 of cell A (unloaded 10 and 5 mM), G_GJ = {g:g} G_eq",
+            kind=kind,
+            arm_id=_arm_id(kind, f"figure5-lumped-g{g:g}"),
+            label=f"Figure 5b: cell B 4/3 of cell A, G_GJ = {g:g} G_eq ({kind})",
         )
         result.update(g=g, eq2=list(paper.eq2(ua, ub, g, g / rep["size_ratio"])))
-        out["lumped"].append(result)
+        out["figure5_lumped"].append(result)
         save()
         result = arm(
             worlds.figure5_network(g, (ua, ub)),
-            arm_id=f"figure5-network-g{g:g}",
-            label=f"Figure 5a: A with two backup cells, B with three, G_GJ = {g:g} G_eq",
+            kind=kind,
+            arm_id=_arm_id(kind, f"figure5-network-g{g:g}"),
+            label=f"Figure 5a: A with two backups, B with three, G_GJ = {g:g} G_eq ({kind})",
         )
         result.update(g=g)
-        out["network"].append(result)
+        out["figure5_network"].append(result)
         save()
+
+
+def part_figure5(out, save):
+    rep = paper.REPORTED["figure5"]
+    ua, ub = rep["unloaded"]["A"], rep["unloaded"]["B"]
+    _figure5(out, save, NORTON)
     limit = (ua + rep["size_ratio"] * ub) / (1.0 + rep["size_ratio"])
     out["reading"] = dict(
         limit_closed_form=limit,
@@ -565,24 +710,29 @@ def part_figure5(out, save):
     save()
 
 
-def part_figure8(out, save):
-    rep = paper.REPORTED["figure8"]
-    physical = paper.chain_physical(1.0, 1.0, max(FIGURE8_N))
-    printed = paper.chain_paper(1.0, 1.0, max(FIGURE8_N))
-    out.update(
-        physical_limit_ratio=paper.chain_limit(1.0, 1.0), recursion_note=paper.RECURSION_NOTE
-    )
+def _chains(out, save, kind):
+    direct = paper.chain_physical(1.0, 1.0, max(FIGURE8_N))
+    resistance_form = paper.chain_paper(1.0, 1.0, max(FIGURE8_N))
+    literal = paper.chain_literal(1.0, 1.0, max(FIGURE8_N))
+    out.update(direct_limit_ratio=paper.chain_limit(1.0, 1.0), recursion_note=paper.RECURSION_NOTE)
     out["chains"] = []
     for n in FIGURE8_N:
-        entry = dict(n=n, physical_ratio=physical[n - 1], printed_ratio=printed[n - 1], loads=[])
+        entry = dict(
+            n=n,
+            direct_ratio=direct[n - 1],
+            printed_resistance_form=resistance_form[n - 1],
+            printed_literal_in_units_of_g=literal[n - 1],
+            loads=[],
+        )
         out["chains"].append(entry)
         for held in FIGURE8_LOADS:
             entry["loads"].append(
                 arm(
                     worlds.chain(n, held),
-                    arm_id=f"figure8-chain{n}-held{held:g}",
-                    label=f"Figure 8: a straight chain of {n} linear cells, its port loaded by "
-                    f"a reservoir held at {held:g} mM",
+                    kind=kind,
+                    arm_id=_arm_id(kind, f"figure8-chain{n}-held{held:g}"),
+                    label=f"Figure 8: a straight chain of {n} linear cells, its port loaded by a "
+                    f"reservoir held at {held:g} ({kind})",
                 )
             )
             save()
@@ -594,30 +744,14 @@ def part_figure8(out, save):
         entry.update(
             g_eq_ratio=ratio,
             unloaded_mM=unloaded,
-            E4=bool(
-                abs(ratio - physical[n - 1]) / physical[n - 1]
-                <= CRITERIA["E4_norton_vs_physical_rtol"]
-            ),
-            vs_printed_rel=float(abs(ratio - printed[n - 1]) / printed[n - 1]),
+            vs_direct_rel=float(abs(ratio - direct[n - 1]) / direct[n - 1]),
         )
-        if n <= len(rep["at_minus_half"]):
-            # In Figure 8's units: G_eq,1 = 0.1 m^3/s, [mR]_UL0 = 1 mol/m^3, Iexit = -0.5 mol/s.
-            g_fig = ratio * rep["g_eq1"]
-            entry.update(
-                engine_at_minus_half=rep["unloaded"] + 0.5 / g_fig,
-                printed_at_minus_half=rep["unloaded"] + 0.5 / (printed[n - 1] * rep["g_eq1"]),
-                read_at_minus_half=rep["at_minus_half"][n - 1],
-                engine_intercept=g_fig * rep["unloaded"],
-                read_intercept=rep["intercepts"][n - 1],
-            )
-            entry["P2_engine_matches_read"] = bool(
-                abs(entry["engine_at_minus_half"] - entry["read_at_minus_half"]) <= rep["tolerance"]
-            )
-            entry["P1_printed_matches_read"] = bool(
-                abs(entry["printed_at_minus_half"] - entry["read_at_minus_half"])
-                <= rep["tolerance"]
-            )
+        entry["E4"] = bool(entry["vs_direct_rel"] <= CRITERIA["E4_norton_vs_direct_rtol"])
         save()
+
+
+def part_figure8(out, save):
+    _chains(out, save, NORTON)
 
 
 def part_control(out, save):
@@ -644,6 +778,72 @@ def part_control(out, save):
     save()
 
 
+def _half_step(network, result):
+    """The dt study's second run: the same as-written world at half the arm's step."""
+    if result.get("status") != "done":
+        return None
+    half = arm(network, kind=AS_WRITTEN, dt=result["dt_s"] / 2.0)
+    e0, e1 = result["engine_rel_error"], half.get("engine_rel_error")
+    study = dict(
+        dt_s=half.get("dt_s"),
+        status=half.get("status"),
+        error=half.get("error"),
+        engine_rel_error=e1,
+        steady_rel_change=half.get("steady_rel_change"),
+    )
+    if half.get("status") == "done":
+        low, high = CRITERIA["W3_as_written_order"]
+        floor = CRITERIA["W3_as_written_order_floor"]
+        order = math.log2(e0 / e1) if e0 > floor and e1 > 0 else None
+        study.update(
+            order=order,
+            W1=result["E2"] and half["E2"],
+            W2=e1 <= CRITERIA["W2_as_written_half_step_rtol"],
+            W3=True if order is None else low <= order <= high,
+        )
+        if "exit_flux_mol_s" in half:
+            study.update(port_mM=half["port_mM"], exit_flux_mol_s=half["exit_flux_mol_s"])
+    return study
+
+
+def part_aswritten(out, save):
+    """The linear model as written, each arm at the step rule's dt (its run of record) and at
+    half of it (the dt study)."""
+    _figure3(out, save, AS_WRITTEN, gs=AS_WRITTEN_FIGURE3_G)
+    for result in out["figure3"]:
+        result["half_step"] = _half_step(worlds.figure3(result["g"]), result)
+        save()
+    _figure5(out, save, AS_WRITTEN, gs=AS_WRITTEN_FIGURE5_G)
+    rep = paper.REPORTED["figure5"]
+    for result in out["figure5_lumped"]:
+        network = worlds.figure5_lumped(
+            result["g"], rep["size_ratio"], (rep["unloaded"]["A"], rep["unloaded"]["B"])
+        )
+        result["half_step"] = _half_step(network, result)
+        save()
+    for result in out["figure5_network"]:
+        network = worlds.figure5_network(result["g"], (rep["unloaded"]["A"], rep["unloaded"]["B"]))
+        result["half_step"] = _half_step(network, result)
+        save()
+    _chains(out, save, AS_WRITTEN)
+    for entry in out["chains"]:
+        halves = [
+            _half_step(worlds.chain(entry["n"], held), load)
+            for held, load in zip(FIGURE8_LOADS, entry["loads"], strict=True)
+        ]
+        entry["half_step_loads"] = halves
+        if all(h and h.get("status") == "done" and "exit_flux_mol_s" in h for h in halves):
+            points = [(h["exit_flux_mol_s"], h["port_mM"]) for h in halves]
+            ratio = paper.norton_from_two_loads(points)[0] / worlds.G_EQ1_M3_S
+            entry.update(
+                half_step_g_eq_ratio=ratio,
+                half_step_vs_direct_rel=float(
+                    abs(ratio - entry["direct_ratio"]) / entry["direct_ratio"]
+                ),
+            )
+        save()
+
+
 FUNCTIONS = dict(
     fixture=part_fixture,
     refusals=part_refusals,
@@ -652,12 +852,13 @@ FUNCTIONS = dict(
     figure5=part_figure5,
     figure8=part_figure8,
     control=part_control,
+    aswritten=part_aswritten,
 )
 
 
 def main(argv):
     out_dir = Path(argv[1])
-    parts = argv[2:] or list(PARTS)
+    parts = argv[2:] or list(DEFAULT_PARTS)
     unknown = set(parts) - set(PARTS)
     if unknown:
         raise SystemExit(f"Unknown parts: {sorted(unknown)}")
@@ -669,11 +870,15 @@ def main(argv):
         parts=parts,
         figure3_g=FIGURE3_G,
         figure5_g=FIGURE5_G,
+        as_written_figure3_g=AS_WRITTEN_FIGURE3_G,
+        as_written_figure5_g=AS_WRITTEN_FIGURE5_G,
         figure8_n=FIGURE8_N,
-        figure8_loads_mM=FIGURE8_LOADS,
+        figure8_loads=FIGURE8_LOADS,
         planted_scale=PLANTED_SCALE,
         world=dict(
             species=worlds.SPECIES,
+            as_written_species=worlds.AS_WRITTEN_SPECIES,
+            as_written_scale_mM=worlds.AS_WRITTEN_SCALE_mM,
             radius_m=worlds.R_CELL_M,
             k_dec_per_s=worlds.K_DEC_PER_S,
             g_eq1_m3_s=worlds.G_EQ1_M3_S,
@@ -695,6 +900,7 @@ def main(argv):
             jax=jax.__version__,
             blas=blas_threads.libraries(),
             started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            **source_identity(),
         ),
     )
     for part in parts:
