@@ -14,9 +14,9 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
 **What it exports:**
 - the declaration types of each interface: the law template's base, Law, on which a family's own
   law interfaces are built, and its ChannelLaw, CycleLaw, RouteLaw and BindingLaw, with Citation,
-  the source a cited law gives (registry/laws.py); the operator template of a family's own
-  operators, FamilyOperator (registry/operators.py); and the kind contract's Kind, KindFields,
-  KindView, KindRates and Schedule (core/kind_registry.py);
+  the source a cited law gives, and CitedWork, a work it names (registry/laws.py); the operator
+  template of a family's own operators, FamilyOperator (registry/operators.py); and the kind
+  contract's Kind, KindFields, KindView, KindRates and Schedule (core/kind_registry.py);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (core/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (core/kind_registry.py);
@@ -52,7 +52,15 @@ from cells.models.surface_tissue import physical_amounts
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
-from cells.registry.laws import BindingLaw, ChannelLaw, Citation, CycleLaw, Law, RouteLaw
+from cells.registry.laws import (
+    BindingLaw,
+    ChannelLaw,
+    Citation,
+    CitedWork,
+    CycleLaw,
+    Law,
+    RouteLaw,
+)
 from cells.registry.operators import FamilyOperator
 
 __all__ = (
@@ -63,6 +71,7 @@ __all__ = (
     "RouteLaw",
     "BindingLaw",
     "Citation",
+    "CitedWork",
     "FamilyOperator",
     "Kind",
     "KindFields",
