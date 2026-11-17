@@ -21,8 +21,8 @@ import { fitView, plaqueMesh } from "./laws_marks.js";
 import { buildMachine, describeMachinePart } from "./machine_parts.js";
 import { loadBeside } from "./protein_shelves.js";
 import { IONS, PREFIX, kindOf } from "./machines_data.js";
-import { catalogueOf, describe as describeItem, sections as listSections, SWATCH, groupSwatch } from "./machines_card.js";
-import { layoutOf, CARD, TRAY, BENCH, UNIT_NM } from "./machines_layout.js";
+import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, SWATCH, groupSwatch } from "./machines_card.js";
+import { layoutOf, bodiesAt, CARD, TRAY, BENCH, UNIT_NM } from "./machines_layout.js";
 
 /** The look this view asks of the stage (core/look.js), as the Laws library's: natural colours under filmic light. */
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
@@ -38,7 +38,7 @@ const columnsFor = (stage) => (stage.width && stage.height && stage.width < stag
 
 /** What each visual difference stands for: the legend's words. `when` says when a mark is drawn at all. */
 export const MARKS = [
-  { id: SWATCH.sized, label: "A shape: drawn to scale from a published size", description: "A simple shape at the size a paper gives, every one at the same scale: the scale bar on the bench is 100 nm. Shapes, not structures.", when: (lens) => lens.counts.sized > 0 },
+  { id: SWATCH.sized, label: "A shape: drawn to scale from a size in hand", description: "A simple shape at a size in hand, every one at the same scale (the scale bar on the bench is 100 nm): a size a paper or a species' file gives, or the viewer's own measure from a structure of the Protein Data Bank. Shapes, not structures.", when: (lens) => lens.counts.sized > 0 },
   { id: SWATCH.card, label: "A card: no size in hand, not to scale", description: "A machine whose size no source in hand gives: a card with its name, the same size for all. It is a label, not a shape.", when: (lens) => lens.counts.cards > 0 },
   { id: "mach-found", label: "Forward: found; faint: not found", description: "While a search is set, the machines it finds stand as they are and the rest fade.", when: (lens) => Boolean(lens.query) },
   { id: SWATCH.chosen, label: "Blue light: your choice", description: "The machine you chose rises from its tray and is lit.", when: () => true },
@@ -193,6 +193,8 @@ export class MachinesLens {
         holder.add(mesh);
       } else if (shape.kind === "machine") {
         this.buildMachineAt(entry, holder);
+      } else if (shape.kind === "measured") {
+        this.buildMeasuredAt(entry, holder);
       }
       this.root.add(holder);
       this.shapeMeshes.set(entry.id, { entry, holder });
@@ -252,6 +254,54 @@ export class MachinesLens {
       this.measured[entry.id] = { w: Math.max(size.x, 1), d: Math.max(size.z, 1), h: Math.max(size.y, 1) };
       this.relayout = true; // laid out again with its true size, at the next frame
     }
+  }
+
+  /**
+   * A machine measured from a structure: each body an ellipsoid at its measured size, centre and axes. Among the others
+   * the bodies are one outline in the group's colour; chosen (level 2), each is a part of its own, in its own shade.
+   */
+  buildMeasuredAt(entry, holder) {
+    const shape = entry.shape, level = this.selected === entry.id ? this.level : 1;
+    const group = new THREE.Group(), ids = new Set();
+    const ball = (this.ballGeometry ??= new THREE.SphereGeometry(0.5, 24, 16)); // smooth enough at these sizes; light on a frame
+    // What each level draws (machines_layout.js bodiesAt): the outline's bodies in the group's colour; the named parts,
+    // each in its own hue or shade; each chain, shaded by its entity. Every body an ellipsoid at its measured size and place.
+    // A chain wears the hue of the named part that holds its entity, where the overlay gives that part one.
+    const hueOf = (body) => body.hue || (body.entity && shape.parts.find((part) => part.entities?.includes(body.entity))?.hue) || null;
+    const bodies = bodiesAt(shape, level).map((body) => ({ ...body, hue: hueOf(body) }));
+    const entities = [...new Set(bodies.map((body) => body.entity).filter(Boolean))];
+    bodies.forEach((body, index) => {
+      const material = level >= 2 ? new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.05, envMapIntensity: 1 }) : this.groupMaterial(entry.group);
+      if (level >= 2) material.userData = { own: true, shadeOf: entry.group, hue: body.hue || null, shade: body.entity ? entities.indexOf(body.entity) / Math.max(1, entities.length - 1) : body.hue ? 0 : index % 2 ? 1 : 0 };
+      const mesh = new THREE.Mesh(ball, material);
+      const [a, b, c] = body.axes.map((axis) => new THREE.Vector3(...axis));
+      mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(a, b, c));
+      mesh.scale.set(...body.across_nm.map((n) => n / UNIT_NM));
+      mesh.position.set(...body.centre_nm.map((n) => n / UNIT_NM));
+      if (level >= 2 && body.id) {
+        const id = `${entry.id}:${body.id}`;
+        mesh.userData.pick = id;
+        ids.add(id);
+      }
+      group.add(mesh);
+    });
+    // Standing on the tray: its lowest point on the floor, centred on its place.
+    group.position.set(-(shape.lo[0] + shape.hi[0]) / 2, -shape.lo[1], -(shape.lo[2] + shape.hi[2]) / 2);
+    holder.add(group);
+    this.built.set(entry.id, { level, ids, group, measured: true });
+    this.shadeParts(entry.id);
+  }
+
+  /** The bodies of a chosen measured machine: a part in its own hue where the overlay gives one, else a shade of the group's colour. */
+  shadeParts(id) {
+    const built = this.built?.get(id), palette = this.stage.palette || {};
+    if (!built?.measured || built.level < 2) return;
+    const ground = new THREE.Color(palette.bg || "#ffffff");
+    built.group.children.forEach((mesh) => {
+      const look = mesh.material.userData;
+      const base = new THREE.Color(palette[look.hue] || palette[GROUP_HUE[look.shadeOf]] || palette.ghost || "#888888");
+      mesh.material.color.copy(base.clone().lerp(ground, (look.hue ? 0.3 : 0.45) * look.shade));
+    });
   }
 
   /** Reads a machine's file from beside the page (as its closer view does), then builds it where it stands. */
@@ -341,6 +391,7 @@ export class MachinesLens {
 
   describe(id) {
     const owner = this.partOf(id);
+    if (owner && this.built.get(owner)?.measured) return describePart(this.catalogue, this.species, owner, id.split(":").at(-1), { scene: this.model.raw });
     if (owner) {
       const data = this.machines.get(owner);
       const panel = describeMachinePart(data, id.split(":").at(-1), { species: (this.model.raw.species || []).find((item) => item.id === this.species) || null });
@@ -370,7 +421,7 @@ export class MachinesLens {
     const counts = this.counts;
     const label = (this.model.raw.species || []).find((item) => item.id === this.species)?.label || this.species;
     const chosen = this.item(this.selected) || (this.partOf(this.selected) ? this.item(this.partOf(this.selected)) : null);
-    const levels = chosen?.entry?.closer?.levels;
+    const levels = chosen ? levelsOf(chosen.entry) : null;
     const shown = MARKS.filter((mark) => mark.when(this));
     const found = this.query ? (this.catalogue?.of(this.species) || []).filter((item) => this.catalogue.passes(item, this.query)).length : 0;
     const count = { [SWATCH.sized]: counts.sized, [SWATCH.card]: counts.cards, "mach-found": found, [SWATCH.chosen]: this.layout?.items.some((item) => item.id === this.selected) ? 1 : 0 };
@@ -384,10 +435,10 @@ export class MachinesLens {
         modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level) } : null,
         notice: counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
         stats: [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
-        text: `Illustration: simple shapes from published sizes, not structures, and cards where no size is in hand. No machine here is in the engine. The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares.`,
+        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine. The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares.`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
-          { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length), and from the flagellar motor's own file", licence: "each source's own, named in each panel" },
+          { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length); from the flagellar motor's own file; and the viewer's own measures from entries of the Protein Data Bank (the ribosome), each naming its entry, its definition and its tool", licence: "each source's own, named in each panel; the Protein Data Bank's entries CC0 1.0" },
           { name: "The law inventory", holds: "its units that are protein assemblies, as the Protein atlas lists them; its leaks and permeabilities are not machines and are left out", licence: "the project's own, MIT" },
         ],
       },
@@ -486,8 +537,11 @@ export class MachinesLens {
     this.selected = owner ? owner : next;
     this.selectedPart = owner ? id : null;
     // A machine with a file is drawn with its parts while it is chosen, as an outline again when it is let go.
-    const rebuild = [before, this.selected].filter((value, index, all) => value && all.indexOf(value) === index && this.shapeMeshes?.get(value)?.entry.shape.kind === "machine");
-    if (before !== this.selected && !owner) this.level = 2;
+    const rebuild = [before, this.selected].filter((value, index, all) => value && all.indexOf(value) === index && ["machine", "measured"].includes(this.shapeMeshes?.get(value)?.entry.shape.kind));
+    if (before !== this.selected && !owner) {
+      const levels = this.selected ? levelsOf(this.item(this.selected)?.entry) : null;
+      this.level = levels?.find((value) => value.id > 1)?.id ?? 2;
+    }
     for (const value of rebuild) this.rebuildMachine(value);
     this.refresh();
     if (before !== this.selected) this.onChrome?.(); // the card's Detail is offered while a machine with levels is chosen
@@ -501,7 +555,8 @@ export class MachinesLens {
       disposeTree(child);
     }
     this.built.delete(id);
-    this.buildMachineAt(shown.entry, shown.holder);
+    if (shown.entry.shape.kind === "measured") this.buildMeasuredAt(shown.entry, shown.holder);
+    else this.buildMachineAt(shown.entry, shown.holder);
   }
 
   setHover() {}
@@ -578,13 +633,15 @@ export class MachinesLens {
       if (this.cardTab.instanceColor) this.cardTab.instanceColor.needsUpdate = true;
     }
     for (const { entry, holder } of this.shapeMeshes?.values() || []) {
-      const chosen = entry.id === this.selected && entry.shape.kind !== "machine", found = passes(entry.item);
+      // A machine drawn from its file, or a measured one shown with its parts, keeps its own materials (its parts' shades).
+      const own = entry.shape.kind === "machine" || (entry.shape.kind === "measured" && (this.built?.get(entry.id)?.level ?? 1) >= 2);
+      const chosen = entry.id === this.selected && !own, found = passes(entry.item);
       holder.traverse((object) => {
         if (!object.isMesh) return;
-        if (entry.shape.kind !== "machine") object.material = chosen ? this.materials.lit : this.groupMaterial(entry.group);
+        if (!own) object.material = chosen ? this.materials.lit : this.groupMaterial(entry.group);
         object.material.transparent = !found || object.material.userData?.base < 1 || object.material.opacity < 1;
         if (!found) object.material.opacity = 0.25;
-        else if (entry.shape.kind !== "machine") object.material.opacity = 1;
+        else if (!own) object.material.opacity = 1;
       });
     }
     if (palette.accent) this.materials.lit.emissive.set(palette.accent);
@@ -656,7 +713,10 @@ export class MachinesLens {
     this.palette = palette;
     if (!this.layout) return;
     this.applyColours((item) => !this.query || this.catalogue.passes(item, this.query));
-    for (const { group } of this.built?.values() || []) this.paint(group);
+    for (const [id, { group }] of this.built || []) {
+      this.paint(group);
+      this.shadeParts(id);
+    }
     if (this.active) this.writeNames();
   }
 

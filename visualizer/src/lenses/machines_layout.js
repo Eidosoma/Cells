@@ -21,6 +21,21 @@ export const PENDING = { w: 8, d: 8, h: 10 };
 /** A shape's box in the scene's units, from what the catalogue says of its size (null for a card). */
 export function shapeOf(item, measured = null) {
   const size = item.entry?.size;
+  if (size?.shape === "measured" && (size.parts?.length || size.whole?.axes)) {
+    // Bodies measured by the viewer from a structure (tools/measure_particle.py): each an ellipsoid at its centre and
+    // along its own axes, in the machine's frame (y up). The box round every body it may draw gives the room it takes.
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    for (const body of [...bodiesAt(size, 1), ...bodiesAt(size, 2), ...bodiesAt(size, 3)]) {
+      const half = body.across_nm.map((n) => n / UNIT_NM / 2);
+      for (let i = 0; i < 3; i++) {
+        const reach = Math.sqrt(body.axes.reduce((sum, axis, k) => sum + (axis[i] * half[k]) ** 2, 0));
+        const middle = body.centre_nm[i] / UNIT_NM;
+        lo[i] = Math.min(lo[i], middle - reach);
+        hi[i] = Math.max(hi[i], middle + reach);
+      }
+    }
+    return { kind: "measured", parts: size.parts || [], chains: size.chains || [], outline: size.outline, whole: size.whole, lo, hi, w: hi[0] - lo[0], h: hi[1] - lo[1], d: hi[2] - lo[2] };
+  }
   if (size?.shape === "ellipsoid") {
     // Its three widths as its species' file states them, the longest along the tray and the shortest upright.
     const [w, d, h] = [...size.across_nm].sort((a, b) => b - a).map((n) => n / UNIT_NM);
@@ -37,6 +52,18 @@ export function shapeOf(item, measured = null) {
     return { kind: "machine", file: item.entry.closer.file, w: box.w, d: box.d, h: box.h, pending: !measured };
   }
   return null;
+}
+
+/**
+ * The bodies a measured machine draws at a level: 1, its outline (its named parts, or the whole where the overlay says
+ * the whole is its outline); 2, its named parts; 3, each chain. A level it has nothing for falls back to the one before.
+ */
+export function bodiesAt(size, level) {
+  const whole = size.whole?.axes ? [{ id: null, across_nm: size.whole.across_nm, centre_nm: [0, 0, 0], axes: size.whole.axes }] : [];
+  const outline = size.outline === "whole" && whole.length ? whole : size.parts?.length ? size.parts : whole;
+  if (level >= 3 && size.chains?.length) return size.chains;
+  if (level >= 2 && size.parts?.length) return size.parts;
+  return outline;
 }
 
 /**

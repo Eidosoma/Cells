@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-17",
-  "generated_at": "2026-11-17T20:24:09Z",
+  "generated_at": "2026-11-17T21:08:07Z",
   "revision": "a16b2571",
   "revision_date": "2026-11-17",
   "dirty": false,
@@ -4874,6 +4874,15 @@
       ]
      },
      {
+      "label": "Ribosome's size",
+      "value": "drawn as E. coli's ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it. No structure of its own ribosome is among this file's sources. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz",
+       "gilbert2021"
+      ]
+     },
+     {
       "label": "Ribosomes",
       "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across",
       "sources": [
@@ -4944,6 +4953,100 @@
      "nucleus": false,
      "chromosome_kbp": 543,
      "ribosomes": 500,
+     "ribosome": {
+      "large": {
+       "across_nm": [
+        20.6,
+        18.0,
+        14.3
+       ],
+       "centre_nm": [
+        0.0,
+        -3.87,
+        0.0
+       ],
+       "axes": [
+        [
+         0.9964,
+         0.0801,
+         0.0272
+        ],
+        [
+         -0.0384,
+         0.1419,
+         0.9891
+        ],
+        [
+         0.0754,
+         -0.9866,
+         0.1445
+        ]
+       ]
+      },
+      "small": {
+       "across_nm": [
+        23.5,
+        15.2,
+        10.0
+       ],
+       "centre_nm": [
+        0.0,
+        6.48,
+        0.0
+       ],
+       "axes": [
+        [
+         0.7858,
+         0.1358,
+         -0.6034
+        ],
+        [
+         0.5466,
+         0.3042,
+         0.7802
+        ],
+        [
+         0.2896,
+         -0.9429,
+         0.1648
+        ]
+       ]
+      },
+      "across_nm": [
+       26.1,
+       21.1,
+       17.3
+      ],
+      "farthest_nm": [
+       26.8,
+       24.3,
+       20.6
+      ],
+      "between_nm": 10.4,
+      "of": "Escherichia coli",
+      "entry": "7K00",
+      "beside": {
+       "entry": "5MDZ",
+       "across_nm": [
+        25.6,
+        21.2,
+        18.5
+       ],
+       "farthest_nm": [
+        26.6,
+        25.1,
+        23.1
+       ],
+       "between_nm": 10.0
+      },
+      "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz",
+       "gilbert2021"
+      ],
+      "note": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template."
+     },
      "proteins": {
       "count": 77028,
       "membrane": 7685,
@@ -5087,6 +5190,22 @@
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-14"
+    },
+    "pdb7k00": {
+     "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+     "doi": "10.2210/pdb7K00/pdb",
+     "url": "https://www.rcsb.org/structure/7K00",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
+    },
+    "pdb5mdz": {
+     "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+     "doi": "10.2210/pdb5MDZ/pdb",
+     "url": "https://www.rcsb.org/structure/5MDZ",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
     }
    },
    "cell_types": [
@@ -5129,6 +5248,100 @@
       "nucleus": false,
       "chromosome_kbp": 543,
       "ribosomes": 500,
+      "ribosome": {
+       "large": {
+        "across_nm": [
+         20.6,
+         18.0,
+         14.3
+        ],
+        "centre_nm": [
+         0.0,
+         -3.87,
+         0.0
+        ],
+        "axes": [
+         [
+          0.9964,
+          0.0801,
+          0.0272
+         ],
+         [
+          -0.0384,
+          0.1419,
+          0.9891
+         ],
+         [
+          0.0754,
+          -0.9866,
+          0.1445
+         ]
+        ]
+       },
+       "small": {
+        "across_nm": [
+         23.5,
+         15.2,
+         10.0
+        ],
+        "centre_nm": [
+         0.0,
+         6.48,
+         0.0
+        ],
+        "axes": [
+         [
+          0.7858,
+          0.1358,
+          -0.6034
+         ],
+         [
+          0.5466,
+          0.3042,
+          0.7802
+         ],
+         [
+          0.2896,
+          -0.9429,
+          0.1648
+         ]
+        ]
+       },
+       "across_nm": [
+        26.1,
+        21.1,
+        17.3
+       ],
+       "farthest_nm": [
+        26.8,
+        24.3,
+        20.6
+       ],
+       "between_nm": 10.4,
+       "of": "Escherichia coli",
+       "entry": "7K00",
+       "beside": {
+        "entry": "5MDZ",
+        "across_nm": [
+         25.6,
+         21.2,
+         18.5
+        ],
+        "farthest_nm": [
+         26.6,
+         25.1,
+         23.1
+        ],
+        "between_nm": 10.0
+       },
+       "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz",
+        "gilbert2021"
+       ],
+       "note": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template."
+      },
       "proteins": {
        "count": 77028,
        "membrane": 7685,
@@ -5259,6 +5472,15 @@
        "sources": [
         "breuer2019",
         "genbank"
+       ]
+      },
+      {
+       "label": "Ribosome's size",
+       "value": "drawn as E. coli's ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it. No structure of its own ribosome is among this file's sources. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz",
+        "gilbert2021"
        ]
       },
       {
@@ -5443,6 +5665,14 @@
       ]
      },
      {
+      "label": "Ribosome's size",
+      "value": "drawn as E. coli's ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it. No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz"
+      ]
+     },
+     {
       "label": "Ribosomes",
       "value": "about 300 in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry",
       "sources": [
@@ -5547,6 +5777,99 @@
       "sources": [
        "weber2023"
       ]
+     },
+     "ribosome": {
+      "large": {
+       "across_nm": [
+        20.6,
+        18.0,
+        14.3
+       ],
+       "centre_nm": [
+        0.0,
+        -3.87,
+        0.0
+       ],
+       "axes": [
+        [
+         0.9964,
+         0.0801,
+         0.0272
+        ],
+        [
+         -0.0384,
+         0.1419,
+         0.9891
+        ],
+        [
+         0.0754,
+         -0.9866,
+         0.1445
+        ]
+       ]
+      },
+      "small": {
+       "across_nm": [
+        23.5,
+        15.2,
+        10.0
+       ],
+       "centre_nm": [
+        0.0,
+        6.48,
+        0.0
+       ],
+       "axes": [
+        [
+         0.7858,
+         0.1358,
+         -0.6034
+        ],
+        [
+         0.5466,
+         0.3042,
+         0.7802
+        ],
+        [
+         0.2896,
+         -0.9429,
+         0.1648
+        ]
+       ]
+      },
+      "across_nm": [
+       26.1,
+       21.1,
+       17.3
+      ],
+      "farthest_nm": [
+       26.8,
+       24.3,
+       20.6
+      ],
+      "between_nm": 10.4,
+      "of": "Escherichia coli",
+      "entry": "7K00",
+      "beside": {
+       "entry": "5MDZ",
+       "across_nm": [
+        25.6,
+        21.2,
+        18.5
+       ],
+       "farthest_nm": [
+        26.6,
+        25.1,
+        23.1
+       ],
+       "between_nm": 10.0
+      },
+      "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz"
+      ],
+      "note": "No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure."
      }
     },
     "capabilities": {
@@ -5753,6 +6076,22 @@
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-15"
+    },
+    "pdb7k00": {
+     "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+     "doi": "10.2210/pdb7K00/pdb",
+     "url": "https://www.rcsb.org/structure/7K00",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
+    },
+    "pdb5mdz": {
+     "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+     "doi": "10.2210/pdb5MDZ/pdb",
+     "url": "https://www.rcsb.org/structure/5MDZ",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
     }
    },
    "cell_types": [
@@ -5803,6 +6142,99 @@
        "sources": [
         "weber2023"
        ]
+      },
+      "ribosome": {
+       "large": {
+        "across_nm": [
+         20.6,
+         18.0,
+         14.3
+        ],
+        "centre_nm": [
+         0.0,
+         -3.87,
+         0.0
+        ],
+        "axes": [
+         [
+          0.9964,
+          0.0801,
+          0.0272
+         ],
+         [
+          -0.0384,
+          0.1419,
+          0.9891
+         ],
+         [
+          0.0754,
+          -0.9866,
+          0.1445
+         ]
+        ]
+       },
+       "small": {
+        "across_nm": [
+         23.5,
+         15.2,
+         10.0
+        ],
+        "centre_nm": [
+         0.0,
+         6.48,
+         0.0
+        ],
+        "axes": [
+         [
+          0.7858,
+          0.1358,
+          -0.6034
+         ],
+         [
+          0.5466,
+          0.3042,
+          0.7802
+         ],
+         [
+          0.2896,
+          -0.9429,
+          0.1648
+         ]
+        ]
+       },
+       "across_nm": [
+        26.1,
+        21.1,
+        17.3
+       ],
+       "farthest_nm": [
+        26.8,
+        24.3,
+        20.6
+       ],
+       "between_nm": 10.4,
+       "of": "Escherichia coli",
+       "entry": "7K00",
+       "beside": {
+        "entry": "5MDZ",
+        "across_nm": [
+         25.6,
+         21.2,
+         18.5
+        ],
+        "farthest_nm": [
+         26.6,
+         25.1,
+         23.1
+        ],
+        "between_nm": 10.0
+       },
+       "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz"
+       ],
+       "note": "No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure."
       }
      },
      "capabilities": {
@@ -5951,6 +6383,14 @@
         "himmelreich1996",
         "dandekar2000",
         "wodke2013"
+       ]
+      },
+      {
+       "label": "Ribosome's size",
+       "value": "drawn as E. coli's ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it. No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz"
        ]
       },
       {
@@ -6147,6 +6587,14 @@
       ]
      },
      {
+      "label": "Ribosome's size",
+      "value": "its ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz"
+      ]
+     },
+     {
       "label": "Ribosomes",
       "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates",
       "sources": [
@@ -6299,6 +6747,98 @@
        "source": "matias2003",
        "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"
       }
+     },
+     "ribosome": {
+      "large": {
+       "across_nm": [
+        20.6,
+        18.0,
+        14.3
+       ],
+       "centre_nm": [
+        0.0,
+        -3.87,
+        0.0
+       ],
+       "axes": [
+        [
+         0.9964,
+         0.0801,
+         0.0272
+        ],
+        [
+         -0.0384,
+         0.1419,
+         0.9891
+        ],
+        [
+         0.0754,
+         -0.9866,
+         0.1445
+        ]
+       ]
+      },
+      "small": {
+       "across_nm": [
+        23.5,
+        15.2,
+        10.0
+       ],
+       "centre_nm": [
+        0.0,
+        6.48,
+        0.0
+       ],
+       "axes": [
+        [
+         0.7858,
+         0.1358,
+         -0.6034
+        ],
+        [
+         0.5466,
+         0.3042,
+         0.7802
+        ],
+        [
+         0.2896,
+         -0.9429,
+         0.1648
+        ]
+       ]
+      },
+      "across_nm": [
+       26.1,
+       21.1,
+       17.3
+      ],
+      "farthest_nm": [
+       26.8,
+       24.3,
+       20.6
+      ],
+      "between_nm": 10.4,
+      "of": "Escherichia coli",
+      "entry": "7K00",
+      "beside": {
+       "entry": "5MDZ",
+       "across_nm": [
+        25.6,
+        21.2,
+        18.5
+       ],
+       "farthest_nm": [
+        26.6,
+        25.1,
+        23.1
+       ],
+       "between_nm": 10.0
+      },
+      "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+      "sources": [
+       "pdb7k00",
+       "pdb5mdz"
+      ]
      }
     },
     "capabilities": {
@@ -6469,6 +7009,22 @@
      "standing": "open paper, numbers only",
      "where": "the legend of Figure 7: the distance between the inner and outer membranes at the mid-length of 31 cells of K-12, 25.5 ± 3.1 nm",
      "accessed": "2026-11-17"
+    },
+    "pdb7k00": {
+     "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+     "doi": "10.2210/pdb7K00/pdb",
+     "url": "https://www.rcsb.org/structure/7K00",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
+    },
+    "pdb5mdz": {
+     "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+     "doi": "10.2210/pdb5MDZ/pdb",
+     "url": "https://www.rcsb.org/structure/5MDZ",
+     "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+     "class": "permissive",
+     "accessed": "2026-11-17"
     }
    },
    "cell_types": [
@@ -6573,6 +7129,98 @@
         "source": "matias2003",
         "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"
        }
+      },
+      "ribosome": {
+       "large": {
+        "across_nm": [
+         20.6,
+         18.0,
+         14.3
+        ],
+        "centre_nm": [
+         0.0,
+         -3.87,
+         0.0
+        ],
+        "axes": [
+         [
+          0.9964,
+          0.0801,
+          0.0272
+         ],
+         [
+          -0.0384,
+          0.1419,
+          0.9891
+         ],
+         [
+          0.0754,
+          -0.9866,
+          0.1445
+         ]
+        ]
+       },
+       "small": {
+        "across_nm": [
+         23.5,
+         15.2,
+         10.0
+        ],
+        "centre_nm": [
+         0.0,
+         6.48,
+         0.0
+        ],
+        "axes": [
+         [
+          0.7858,
+          0.1358,
+          -0.6034
+         ],
+         [
+          0.5466,
+          0.3042,
+          0.7802
+         ],
+         [
+          0.2896,
+          -0.9429,
+          0.1648
+         ]
+        ]
+       },
+       "across_nm": [
+        26.1,
+        21.1,
+        17.3
+       ],
+       "farthest_nm": [
+        26.8,
+        24.3,
+        20.6
+       ],
+       "between_nm": 10.4,
+       "of": "Escherichia coli",
+       "entry": "7K00",
+       "beside": {
+        "entry": "5MDZ",
+        "across_nm": [
+         25.6,
+         21.2,
+         18.5
+        ],
+        "farthest_nm": [
+         26.6,
+         25.1,
+         23.1
+        ],
+        "between_nm": 10.0
+       },
+       "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz"
+       ]
       }
      },
      "capabilities": {
@@ -6709,6 +7357,14 @@
        "value": "4,403 in UniProt's reference proteome of strain K-12, every one with a reviewed entry",
        "sources": [
         "uniprot"
+       ]
+      },
+      {
+       "label": "Ribosome's size",
+       "value": "its ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it",
+       "sources": [
+        "pdb7k00",
+        "pdb5mdz"
        ]
       },
       {

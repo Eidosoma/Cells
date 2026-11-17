@@ -110,6 +110,8 @@ export function keywords(item) {
 /** "Gilbert and others (2021)": the citation's head, for a line that names its source. */
 export function citeShort(source) {
   const text = String(source?.text || "");
+  const entry = /^Protein Data Bank entry (\S+?):/.exec(text);
+  if (entry) return `PDB ${entry[1]}`;
   const head = /^(.+?\(\d{4}\))/.exec(text);
   return head ? head[1] : text.split(". ")[0];
 }

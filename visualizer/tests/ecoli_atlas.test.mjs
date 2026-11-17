@@ -59,8 +59,10 @@ test("the species file says what it is: a data-only organism, proposed and never
   assert.deepEqual(species.levels.map((level) => level.id), ["molecules", "cell"]);
   assert.deepEqual(species.levels[1].shape, { kind: "capsule", length_um: 2.5, across_um: 1 });
   assert.match(species.levels[1].note, /the picture's choice/);
-  const { appendages, envelope, ...parts } = species.cell.parts;
+  const { appendages, envelope, ribosome, ...parts } = species.cell.parts;
   assert.deepEqual(parts, { membranes: 2, wall: true, nucleus: false, chromosome_kbp: 4642, ribosomes: 6800 });
+  // Its ribosome's shape: its own, the viewer's measure of the PDB entry 7K00 (tools/lib/ribosome.py), with 5MDZ beside it.
+  assert.ok(ribosome.of === "Escherichia coli" && ribosome.entry === "7K00" && ribosome.beside.entry === "5MDZ" && !ribosome.note && /viewer's own measure/.test(ribosome.measured), JSON.stringify(ribosome).slice(0, 200));
   // Its envelope's widths, for the cell drawn to scale: one open paper's numbers alone, with where they stand, each in the fact.
   const widths = species.cell.facts.find((fact) => fact.label === "Envelope's widths");
   assert.deepEqual(envelope.sources, ["matias2003"]);

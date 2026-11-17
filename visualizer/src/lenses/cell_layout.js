@@ -67,6 +67,7 @@ export const STYLE = {
     er: { layers: 4, first: 3.95, gap: 0.72, thickness: 0.22, height: 1.35, span: 3.0, shrink: 0.42 },
     golgi: { inner: 1.5, gap: 0.36, count: 5, half: 0.14, tube: 0.035, span: 1.7 },
     drop: 0.19, bead: 0.2, wound: 0.5, dash: 0.12, charge: 0.8, neighbourGap: 0.9, floor: 0.45,
+    pump: 0.92, // a pump's outer lobe, this wide (parts/surface.js); against the pump drawn to scale it says how much the proteins are enlarged
   },
   real: {
     id: "real",
@@ -112,6 +113,22 @@ export const PUMP = pumpOf([[0, 4.2], [5.5, 3.6], [-3.2, 2.6]]); // 8.4 nm acros
 export const closeUpAngle = (has) => (has("channels") || !has("pumps") ? SPOT.channels[1] : SPOT.pumps[0]);
 // How far either way along the outline the close-up drawn to scale reaches, in nanometres: its heads (60 nm) and the wall's strip (72).
 export const CLOSE_UP_REACH = 75;
+/**
+ * How much the picture enlarges a cell's molecules in a size mode: 1 to scale; in the schematic picture the membrane proteins'
+ * own factor, the schematic pump's width (STYLE.schematic.pump) against the pump drawn to scale (PUMP.across). `u` is the
+ * cell's micrometres a unit: about 6 in E. coli, 2.4 in Syn3A, 1.2 in M. pneumoniae, and about 2,000 in a cell 20 µm across.
+ */
+export const enlargementOf = (mode, u) => (mode === "real" ? 1 : (STYLE.schematic.pump * u * 1000) / PUMP.across);
+/**
+ * How large the schematic picture draws a ribosome whose shape the species' file measures (its `ribosome`): to scale it is
+ * always at its own size. "with the proteins": enlarged as the membrane's proteins are, so that a ribosome is as much
+ * larger than a pump as it is, and fewer drawn, as many as fill the same share of the cell. "at their own size": as to
+ * scale, all of them. The first is the visualizer coordinator's choice of 17 November 2026, made after the user asked for
+ * the ribosomes' size to be made right, and is the user's to overrule: the lens passes the rule in (cell.js,
+ * `ribosomeRule`), so the other is one value away.
+ */
+export const RIBOSOME_RULES = { "with the proteins": (enlarge) => enlarge, "at their own size": () => 1 };
+export const RIBOSOME_RULE = "with the proteins";
 // The picture's choices for a cell drawn to scale, in nanometres, where the species' file gives
 // nothing: a membrane's thickness (the textbook bilayer, as the close-up draws it), the depth of the
 // slab under the cut in which the crowd of proteins and the chromosome are drawn (as an electron
@@ -184,12 +201,17 @@ export function makeLayout(mode, cell) {
   const fine = seen(TO_SCALE.ribosome);
   const envelope = fine ? envelopeOf(cell.parts) : null;
   const membraneNm = envelope?.membrane ?? TO_SCALE.membrane;
+  // How much this mode enlarges the cell's molecules, and its ribosomes where the species' file measures them (RIBOSOME_RULES).
+  const enlarge = enlargementOf(mode, frame.u);
+  const ribosome = cell.parts.ribosome || null;
+  const ribosomeRule = cell.ribosomeRule || RIBOSOME_RULE;
+  const ribosomeFactor = ribosome ? (real ? 1 : RIBOSOME_RULES[ribosomeRule](enlarge)) : 1;
   // The marks that move or point (drops, signals, a wound, a dashed line) are the picture's choice: a few pixels at the stop.
   const mark = (pixels) => pixels * pixel * nm;
   const style = fine ? { ...STYLE.real, fine: true, band: membraneNm * nm, drop: mark(2.5), bead: mark(2.5), wound: mark(12), dash: mark(0.7) } : STYLE[mode];
   const body = bodyOf(frame);
   // The close-up of the membrane is built from the frame alone (cell_parts.js, buildMolecules): it reads the scale there.
-  frame.scale = { fine, nm, pixel, envelope, membraneNm };
+  frame.scale = { fine, nm, pixel, envelope, membraneNm, enlarge, ribosome: ribosome ? { factor: ribosomeFactor, rule: real ? null : ribosomeRule } : null };
   const outline = frame.outline; // the cell's outline where the cut passes through it
   const { top: TOP, base: BASE, bevel: BEVEL } = frame;
   const { has, parts } = cell;
@@ -276,7 +298,7 @@ export function makeLayout(mode, cell) {
 
   return {
     mode, real, style, cell, has, parts, organelle,
-    nm, pixel, seen, fine, envelope, membraneNm, body, slab: TO_SCALE.slab * nm,
+    nm, pixel, seen, fine, envelope, membraneNm, body, slab: TO_SCALE.slab * nm, enlarge, ribosome, ribosomeFactor,
     frame, outline, TOP, BASE, BEVEL, prism,
     random, inCut, inside, vacuole, inCytoplasm, scatter, seat, skinAt, onSkin,
     NUCLEUS, ER_FACING, GOLGI, CENTROSOME,

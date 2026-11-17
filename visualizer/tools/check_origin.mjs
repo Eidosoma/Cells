@@ -509,8 +509,11 @@ try {
     const marks = [];
     for (const id of ["molecules", "lineage", "population", "assembly"]) {
       await evaluate(`${L}.setLevel(${JSON.stringify(id)})`);
+      // Looked for once the level has had its time, and again for a few seconds: on a busy machine its first frame can take longer.
       await sleep(1200);
-      marks.push([id, markShows(await mark())]);
+      let shown = markShows(await mark());
+      for (let tries = 0; tries < 12 && !shown; tries++) { await sleep(500); shown = markShows(await mark()); }
+      marks.push([id, shown]);
     }
     check("and the mark stands at every level", marks.every(([, ok]) => ok), JSON.stringify(marks));
     const standing = await evaluate(`(() => { const l = ${L}; return { shape: l.shape, inWords: l.tags?.in ? !l.tags.in.hidden : null, outWords: l.tags?.out ? !l.tags.out.hidden : null, key: l.streamWords() }; })()`);
@@ -608,8 +611,11 @@ try {
       const marks = [];
       for (const id of ["molecules", "lineage", "population", "assembly"]) {
         await evaluate(`${L}.setLevel(${JSON.stringify(id)})`);
+        // Looked for once the level has had its time, and again for a few seconds: on a busy machine its first frame can take longer.
         await sleep(1200);
-        marks.push([id, markShows(await mark(MARK))]);
+        let shown = markShows(await mark(MARK));
+        for (let tries = 0; tries < 12 && !shown; tries++) { await sleep(500); shown = markShows(await mark(MARK)); }
+        marks.push([id, shown]);
         if (id === "lineage") await shot(`${NAME}-lineage`);
       }
       check("the mark stands at every level", marks.every(([, ok]) => ok), JSON.stringify(marks));

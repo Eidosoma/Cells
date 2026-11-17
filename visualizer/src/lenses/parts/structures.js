@@ -15,13 +15,14 @@ export default {
   draws: ["nucleus", "chromatin", "er", "golgi", "vesicles", "ribosomes"],
   build(env) {
     const { ctx, handles } = env;
-    const { mode, real, style, has, parts, organelle, frame, outline, inside, inCytoplasm, NUCLEUS, ER_FACING, GOLGI, CENTROSOME, vacuole, coreAt, coreRadius, coreReach, fine, nm, slab } = env.layout;
+    const { mode, real, style, has, parts, organelle, frame, outline, inside, inCytoplasm, NUCLEUS, ER_FACING, GOLGI, CENTROSOME, vacuole, coreAt, coreRadius, coreReach, fine, nm, slab, ribosome, ribosomeFactor } = env.layout;
     // The middle of what regulation acts on (the nucleus, or the free chromosome) is the layout's `core`.
     const structures = buildStructures({
       ctx, mode, real, style, frame, parts, has, organelle, cut: CUT, outline, inside, inCytoplasm, instanced, dots,
       nucleusAt: parts.nucleus ? NUCLEUS : null, erFacing: ER_FACING, golgiAt: GOLGI, centrosomeAt: CENTROSOME, vacuole, core: { at: coreAt, radius: coreRadius, reach: coreReach },
       random: seeded(real ? 3103 : 3101),
       fine, nm, slab, // a cell drawn to scale whose molecules are shapes (cell_layout.js): its free chromosome is drawn in the slab under the cut
+      ribosome, ribosomeFactor, // a ribosome's measured shape (the species' `ribosome`) and how much this mode enlarges it
     });
     handles.structures = structures.drawn; // what the panel says was drawn of each, by part
     return { structures };

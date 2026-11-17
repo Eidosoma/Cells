@@ -4,8 +4,14 @@
  "made": {
   "generator": "visualizer/tools/build_catalogue.py",
   "from": [
+   "data/catalogue/measures/ecoli.atp-synthase.json",
+   "data/catalogue/measures/ecoli.hslv.json",
+   "data/catalogue/measures/ecoli.lon.json",
+   "data/catalogue/measures/ecoli.rna-polymerase.json",
+   "data/catalogue/measures/ecoli.translocon.json",
    "data/catalogue/overlay.json",
    "data/machines/ecoli.flagellar-motor.json",
+   "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
    "data/proteins/mpneumoniae/shelves.json",
    "data/proteins/syn3a/shelves.json",
@@ -168,9 +174,9 @@
   },
   {
    "id": "hslv",
-   "label": "HslV protease",
+   "label": "HslUV protease",
    "group": "breaking",
-   "plain": "A protease whose subunits carry the signature of the proteasome's: they form a barrel that cuts proteins.",
+   "plain": "A barrel of HslV that cuts proteins, capped by a ring of HslU that unfolds them and feeds them in, using ATP. HslV's subunits carry the signature of the proteasome's.",
    "records": [
     "fr13"
    ]
@@ -229,6 +235,104 @@
     "sources": [
      "syn3a:gilbert2021"
     ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "7K00",
+    "of": "Escherichia coli",
+    "from": "cell.parts.ribosome of the species' file",
+    "whole": {
+     "across_nm": [
+      26.1,
+      21.1,
+      17.3
+     ],
+     "farthest_nm": [
+      26.8,
+      24.3,
+      20.6
+     ]
+    },
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit",
+      "across_nm": [
+       20.6,
+       18.0,
+       14.3
+      ],
+      "centre_nm": [
+       0.0,
+       -3.87,
+       0.0
+      ],
+      "axes": [
+       [
+        0.9964,
+        0.0801,
+        0.0272
+       ],
+       [
+        -0.0384,
+        0.1419,
+        0.9891
+       ],
+       [
+        0.0754,
+        -0.9866,
+        0.1445
+       ]
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit",
+      "across_nm": [
+       23.5,
+       15.2,
+       10.0
+      ],
+      "centre_nm": [
+       0.0,
+       6.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7858,
+        0.1358,
+        -0.6034
+       ],
+       [
+        0.5466,
+        0.3042,
+        0.7802
+       ],
+       [
+        0.2896,
+        -0.9429,
+        0.1648
+       ]
+      ]
+     }
+    ],
+    "between_nm": 10.4,
+    "beside": {
+     "entry": "5MDZ",
+     "across_nm": [
+      25.6,
+      21.2,
+      18.5
+     ]
+    },
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "syn3a:pdb7k00",
+     "syn3a:pdb5mdz",
+     "syn3a:gilbert2021"
+    ],
+    "whose": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template."
    },
    "proteins": {
     "mark": "complex",
@@ -685,6 +789,103 @@
     "sources": [
      "mpneumoniae:weber2023"
     ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "7K00",
+    "of": "Escherichia coli",
+    "from": "cell.parts.ribosome of the species' file",
+    "whole": {
+     "across_nm": [
+      26.1,
+      21.1,
+      17.3
+     ],
+     "farthest_nm": [
+      26.8,
+      24.3,
+      20.6
+     ]
+    },
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit",
+      "across_nm": [
+       20.6,
+       18.0,
+       14.3
+      ],
+      "centre_nm": [
+       0.0,
+       -3.87,
+       0.0
+      ],
+      "axes": [
+       [
+        0.9964,
+        0.0801,
+        0.0272
+       ],
+       [
+        -0.0384,
+        0.1419,
+        0.9891
+       ],
+       [
+        0.0754,
+        -0.9866,
+        0.1445
+       ]
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit",
+      "across_nm": [
+       23.5,
+       15.2,
+       10.0
+      ],
+      "centre_nm": [
+       0.0,
+       6.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7858,
+        0.1358,
+        -0.6034
+       ],
+       [
+        0.5466,
+        0.3042,
+        0.7802
+       ],
+       [
+        0.2896,
+        -0.9429,
+        0.1648
+       ]
+      ]
+     }
+    ],
+    "between_nm": 10.4,
+    "beside": {
+     "entry": "5MDZ",
+     "across_nm": [
+      25.6,
+      21.2,
+      18.5
+     ]
+    },
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "mpneumoniae:pdb7k00",
+     "mpneumoniae:pdb5mdz"
+    ],
+    "whose": "No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure."
    }
   },
   {
@@ -907,6 +1108,102 @@
     "text": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates",
     "sources": [
      "ecoli:urich2008"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "7K00",
+    "of": "Escherichia coli",
+    "from": "cell.parts.ribosome of the species' file",
+    "whole": {
+     "across_nm": [
+      26.1,
+      21.1,
+      17.3
+     ],
+     "farthest_nm": [
+      26.8,
+      24.3,
+      20.6
+     ]
+    },
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit",
+      "across_nm": [
+       20.6,
+       18.0,
+       14.3
+      ],
+      "centre_nm": [
+       0.0,
+       -3.87,
+       0.0
+      ],
+      "axes": [
+       [
+        0.9964,
+        0.0801,
+        0.0272
+       ],
+       [
+        -0.0384,
+        0.1419,
+        0.9891
+       ],
+       [
+        0.0754,
+        -0.9866,
+        0.1445
+       ]
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit",
+      "across_nm": [
+       23.5,
+       15.2,
+       10.0
+      ],
+      "centre_nm": [
+       0.0,
+       6.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7858,
+        0.1358,
+        -0.6034
+       ],
+       [
+        0.5466,
+        0.3042,
+        0.7802
+       ],
+       [
+        0.2896,
+        -0.9429,
+        0.1648
+       ]
+      ]
+     }
+    ],
+    "between_nm": 10.4,
+    "beside": {
+     "entry": "5MDZ",
+     "across_nm": [
+      25.6,
+      21.2,
+      18.5
+     ]
+    },
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "ecoli:pdb7k00",
+     "ecoli:pdb5mdz"
     ]
    },
    "proteins": {
@@ -1228,6 +1525,445 @@
      "ecoli:uniprot"
     ]
    },
+   "size": {
+    "shape": "measured",
+    "entry": "6P1K",
+    "of": "Escherichia coli",
+    "from": "data/catalogue/measures/ecoli.rna-polymerase.json",
+    "whole": {
+     "across_nm": [
+      16.3,
+      13.0,
+      11.6
+     ],
+     "farthest_nm": [
+      18.3,
+      15.3,
+      13.9
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "beta",
+      "label": "β",
+      "across_nm": [
+       13.8,
+       9.5,
+       8.7
+      ],
+      "centre_nm": [
+       0.0,
+       -0.67,
+       -2.25
+      ],
+      "axes": [
+       [
+        0.5932,
+        0.7374,
+        -0.323
+       ],
+       [
+        0.7301,
+        -0.3237,
+        0.6019
+       ],
+       [
+        0.3393,
+        -0.5929,
+        -0.7304
+       ]
+      ],
+      "farthest_nm": [
+       13.2,
+       9.9,
+       10.5
+      ],
+      "entities": [
+       "2"
+      ]
+     },
+     {
+      "id": "beta-prime",
+      "label": "β′",
+      "across_nm": [
+       13.4,
+       11.4,
+       6.7
+      ],
+      "centre_nm": [
+       -0.04,
+       1.96,
+       1.22
+      ],
+      "axes": [
+       [
+        0.7832,
+        -0.5781,
+        0.2289
+       ],
+       [
+        0.6147,
+        0.7753,
+        -0.145
+       ],
+       [
+        -0.0936,
+        0.2542,
+        0.9626
+       ]
+      ],
+      "farthest_nm": [
+       12.3,
+       11.5,
+       8.3
+      ],
+      "entities": [
+       "3"
+      ]
+     },
+     {
+      "id": "alpha",
+      "label": "α2",
+      "across_nm": [
+       13.2,
+       4.8,
+       3.3
+      ],
+      "centre_nm": [
+       -5.34,
+       -1.45,
+       0.84
+      ],
+      "axes": [
+       [
+        -0.4934,
+        0.7152,
+        0.495
+       ],
+       [
+        0.6864,
+        -0.0294,
+        0.7267
+       ],
+       [
+        0.5342,
+        0.6983,
+        -0.4764
+       ]
+      ],
+      "farthest_nm": [
+       12.3,
+       5.7,
+       4.1
+      ],
+      "entities": [
+       "1"
+      ]
+     },
+     {
+      "id": "omega",
+      "label": "ω",
+      "across_nm": [
+       5.2,
+       3.1,
+       2.1
+      ],
+      "centre_nm": [
+       -1.63,
+       -0.21,
+       4.55
+      ],
+      "axes": [
+       [
+        0.5053,
+        -0.33,
+        0.7973
+       ],
+       [
+        0.4206,
+        0.901,
+        0.1063
+       ],
+       [
+        -0.7535,
+        0.2816,
+        0.5941
+       ]
+      ],
+      "farthest_nm": [
+       5.2,
+       3.5,
+       2.4
+      ],
+      "entities": [
+       "4"
+      ]
+     },
+     {
+      "id": "sigma",
+      "label": "σ70",
+      "across_nm": [
+       13.7,
+       9.9,
+       7.2
+      ],
+      "centre_nm": [
+       4.82,
+       -1.94,
+       1.34
+      ],
+      "axes": [
+       [
+        0.9417,
+        0.3234,
+        -0.0926
+       ],
+       [
+        0.2399,
+        -0.4528,
+        0.8587
+       ],
+       [
+        0.2358,
+        -0.8309,
+        -0.504
+       ]
+      ],
+      "farthest_nm": [
+       11.7,
+       9.5,
+       7.7
+      ],
+      "entities": [
+       "5"
+      ]
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain-G",
+      "label": "DNA-directed RNA polymerase subunit alpha, chain G",
+      "entity": "1",
+      "across_nm": [
+       9.0,
+       4.2,
+       2.8
+      ],
+      "centre_nm": [
+       -4.52,
+       -3.0,
+       -0.5
+      ],
+      "axes": [
+       [
+        0.7504,
+        -0.5712,
+        -0.3326
+       ],
+       [
+        0.3844,
+        -0.0322,
+        0.9226
+       ],
+       [
+        -0.5377,
+        -0.8202,
+        0.1954
+       ]
+      ]
+     },
+     {
+      "id": "chain-H",
+      "label": "DNA-directed RNA polymerase subunit alpha, chain H",
+      "entity": "1",
+      "across_nm": [
+       9.0,
+       3.8,
+       3.1
+      ],
+      "centre_nm": [
+       -6.19,
+       0.18,
+       2.25
+      ],
+      "axes": [
+       [
+        -0.5547,
+        0.8044,
+        0.2128
+       ],
+       [
+        0.7598,
+        0.3854,
+        0.5236
+       ],
+       [
+        0.3392,
+        0.4521,
+        -0.8249
+       ]
+      ]
+     },
+     {
+      "id": "chain-I",
+      "label": "DNA-directed RNA polymerase subunit beta, chain I",
+      "entity": "2",
+      "across_nm": [
+       13.8,
+       9.5,
+       8.7
+      ],
+      "centre_nm": [
+       0.0,
+       -0.67,
+       -2.25
+      ],
+      "axes": [
+       [
+        0.5932,
+        0.7374,
+        -0.323
+       ],
+       [
+        0.7301,
+        -0.3237,
+        0.6019
+       ],
+       [
+        0.3393,
+        -0.5929,
+        -0.7304
+       ]
+      ]
+     },
+     {
+      "id": "chain-J",
+      "label": "DNA-directed RNA polymerase subunit beta', chain J",
+      "entity": "3",
+      "across_nm": [
+       13.4,
+       11.4,
+       6.7
+      ],
+      "centre_nm": [
+       -0.04,
+       1.96,
+       1.22
+      ],
+      "axes": [
+       [
+        0.7832,
+        -0.5781,
+        0.2289
+       ],
+       [
+        0.6147,
+        0.7753,
+        -0.145
+       ],
+       [
+        -0.0936,
+        0.2542,
+        0.9626
+       ]
+      ]
+     },
+     {
+      "id": "chain-K",
+      "label": "DNA-directed RNA polymerase subunit omega, chain K",
+      "entity": "4",
+      "across_nm": [
+       5.2,
+       3.1,
+       2.1
+      ],
+      "centre_nm": [
+       -1.63,
+       -0.21,
+       4.55
+      ],
+      "axes": [
+       [
+        0.5053,
+        -0.33,
+        0.7973
+       ],
+       [
+        0.4206,
+        0.901,
+        0.1063
+       ],
+       [
+        -0.7535,
+        0.2816,
+        0.5941
+       ]
+      ]
+     },
+     {
+      "id": "chain-L",
+      "label": "RNA polymerase sigma factor RpoD, chain L",
+      "entity": "5",
+      "across_nm": [
+       13.7,
+       9.9,
+       7.2
+      ],
+      "centre_nm": [
+       4.82,
+       -1.94,
+       1.34
+      ],
+      "axes": [
+       [
+        0.9417,
+        0.3234,
+        -0.0926
+       ],
+       [
+        0.2399,
+        -0.4528,
+        0.8587
+       ],
+       [
+        0.2358,
+        -0.8309,
+        -0.504
+       ]
+      ]
+     }
+    ],
+    "between_nm": null,
+    "kinds": 5,
+    "modelled": [
+     0.676,
+     0.999
+    ],
+    "beside": null,
+    "note": "the σ70 holoenzyme, with no DNA",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb6p1k"
+    ]
+   },
    "proteins": {
     "mark": "complex",
     "value": "RNA polymerase",
@@ -1285,6 +2021,972 @@
     "file": "data/species/ecoli.json",
     "sources": [
      "ecoli:uniprot"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "6OQR",
+    "of": "Escherichia coli",
+    "from": "data/catalogue/measures/ecoli.atp-synthase.json",
+    "whole": {
+     "across_nm": [
+      25.4,
+      11.4,
+      9.4
+     ],
+     "farthest_nm": [
+      22.3,
+      12.4,
+      11.3
+     ],
+     "axes": [
+      [
+       0.052,
+       0.9982,
+       -0.0298
+      ],
+      [
+       0.9986,
+       -0.0521,
+       0.0
+      ],
+      [
+       -0.0016,
+       -0.0297,
+       -0.9996
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "head",
+      "label": "Head (α3β3)",
+      "across_nm": [
+       11.6,
+       11.1,
+       9.8
+      ],
+      "centre_nm": [
+       0.58,
+       3.06,
+       -0.03
+      ],
+      "axes": [
+       [
+        0.9843,
+        -0.1463,
+        -0.0984
+       ],
+       [
+        0.1184,
+        0.1343,
+        0.9838
+       ],
+       [
+        -0.1307,
+        -0.9801,
+        0.1495
+       ]
+      ],
+      "farthest_nm": [
+       12.4,
+       11.4,
+       11.6
+      ],
+      "entities": [
+       "2",
+       "6"
+      ],
+      "hue": "bioFuel"
+     },
+     {
+      "id": "central-stalk",
+      "label": "Central stalk (γε)",
+      "across_nm": [
+       11.1,
+       5.3,
+       3.6
+      ],
+      "centre_nm": [
+       0.38,
+       -2.62,
+       0.04
+      ],
+      "axes": [
+       [
+        0.0289,
+        0.9961,
+        0.0837
+       ],
+       [
+        -0.144,
+        -0.0787,
+        0.9864
+       ],
+       [
+        0.9892,
+        -0.0405,
+        0.1412
+       ]
+      ],
+      "farthest_nm": [
+       11.8,
+       6.4,
+       4.7
+      ],
+      "entities": [
+       "5",
+       "4"
+      ],
+      "hue": "bioMito"
+     },
+     {
+      "id": "peripheral-stalk",
+      "label": "Peripheral stalk (b2δ)",
+      "across_nm": [
+       29.4,
+       9.6,
+       3.6
+      ],
+      "centre_nm": [
+       -2.98,
+       2.62,
+       -0.18
+      ],
+      "axes": [
+       [
+        0.1441,
+        0.982,
+        -0.1217
+       ],
+       [
+        0.9295,
+        -0.0922,
+        0.357
+       ],
+       [
+        0.3394,
+        -0.1646,
+        -0.9261
+       ]
+      ],
+      "farthest_nm": [
+       21.6,
+       8.5,
+       4.8
+      ],
+      "entities": [
+       "3",
+       "1"
+      ],
+      "hue": "edge"
+     },
+     {
+      "id": "ring",
+      "label": "Ring in the membrane (c10)",
+      "across_nm": [
+       7.7,
+       6.0,
+       6.0
+      ],
+      "centre_nm": [
+       0.58,
+       -8.93,
+       -0.03
+      ],
+      "axes": [
+       [
+        -0.0379,
+        0.9988,
+        -0.0305
+       ],
+       [
+        -0.2781,
+        0.0187,
+        0.9604
+       ],
+       [
+        0.9598,
+        0.0449,
+        0.277
+       ]
+      ],
+      "farthest_nm": [
+       6.7,
+       5.5,
+       5.5
+      ],
+      "entities": [
+       "7"
+      ],
+      "hue": "bioMembrane"
+     },
+     {
+      "id": "stator-foot",
+      "label": "Stator's foot in the membrane (a)",
+      "across_nm": [
+       7.7,
+       5.3,
+       3.9
+      ],
+      "centre_nm": [
+       -2.87,
+       -9.25,
+       0.65
+      ],
+      "axes": [
+       [
+        -0.008,
+        -0.5161,
+        0.8565
+       ],
+       [
+        -0.3904,
+        0.7902,
+        0.4725
+       ],
+       [
+        -0.9206,
+        -0.3305,
+        -0.2078
+       ]
+      ],
+      "farthest_nm": [
+       7.5,
+       6.0,
+       4.6
+      ],
+      "entities": [
+       "8"
+      ],
+      "hue": "bioIon"
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain-W",
+      "label": "ATP synthase subunit delta, chain W",
+      "entity": "1",
+      "across_nm": [
+       8.2,
+       3.9,
+       2.8
+      ],
+      "centre_nm": [
+       -0.53,
+       8.27,
+       -0.27
+      ],
+      "axes": [
+       [
+        0.9977,
+        -0.0008,
+        0.0673
+       ],
+       [
+        -0.046,
+        0.721,
+        0.6914
+       ],
+       [
+        -0.0491,
+        -0.6929,
+        0.7194
+       ]
+      ]
+     },
+     {
+      "id": "chain-C",
+      "label": "ATP synthase subunit alpha, chain C",
+      "entity": "2",
+      "across_nm": [
+       10.6,
+       5.1,
+       3.8
+      ],
+      "centre_nm": [
+       2.67,
+       3.11,
+       2.37
+      ],
+      "axes": [
+       [
+        -0.1752,
+        0.976,
+        -0.1294
+       ],
+       [
+        0.7464,
+        0.2173,
+        0.629
+       ],
+       [
+        0.642,
+        0.0136,
+        -0.7666
+       ]
+      ]
+     },
+     {
+      "id": "chain-B",
+      "label": "ATP synthase subunit alpha, chain B",
+      "entity": "2",
+      "across_nm": [
+       9.7,
+       5.5,
+       4.0
+      ],
+      "centre_nm": [
+       -2.8,
+       3.34,
+       0.7
+      ],
+      "axes": [
+       [
+        0.1505,
+        0.9542,
+        -0.2584
+       ],
+       [
+        0.9714,
+        -0.1914,
+        -0.1408
+       ],
+       [
+        -0.1838,
+        -0.2298,
+        -0.9557
+       ]
+      ]
+     },
+     {
+      "id": "chain-A",
+      "label": "ATP synthase subunit alpha, chain A",
+      "entity": "2",
+      "across_nm": [
+       10.9,
+       4.9,
+       3.8
+      ],
+      "centre_nm": [
+       1.77,
+       2.95,
+       -3.12
+      ],
+      "axes": [
+       [
+        -0.0077,
+        0.9747,
+        0.2236
+       ],
+       [
+        -0.065,
+        -0.2236,
+        0.9725
+       ],
+       [
+        0.9979,
+        -0.0071,
+        0.0651
+       ]
+      ]
+     },
+     {
+      "id": "chain-X",
+      "label": "ATP synthase subunit b, chain X",
+      "entity": "3",
+      "across_nm": [
+       27.3,
+       2.8,
+       1.8
+      ],
+      "centre_nm": [
+       -4.56,
+       -0.35,
+       -0.74
+      ],
+      "axes": [
+       [
+        -0.069,
+        0.9858,
+        -0.1532
+       ],
+       [
+        0.4292,
+        0.1679,
+        0.8875
+       ],
+       [
+        0.9006,
+        -0.0045,
+        -0.4347
+       ]
+      ]
+     },
+     {
+      "id": "chain-H",
+      "label": "ATP synthase epsilon chain, chain H",
+      "entity": "4",
+      "across_nm": [
+       10.6,
+       4.6,
+       2.6
+      ],
+      "centre_nm": [
+       0.98,
+       -3.47,
+       -0.68
+      ],
+      "axes": [
+       [
+        0.0358,
+        0.9153,
+        0.4011
+       ],
+       [
+        0.4842,
+        -0.367,
+        0.7943
+       ],
+       [
+        0.8743,
+        0.1658,
+        -0.4563
+       ]
+      ]
+     },
+     {
+      "id": "chain-G",
+      "label": "ATP synthase gamma chain, chain G",
+      "entity": "5",
+      "across_nm": [
+       11.3,
+       4.2,
+       2.8
+      ],
+      "centre_nm": [
+       0.1,
+       -2.22,
+       0.38
+      ],
+      "axes": [
+       [
+        0.0964,
+        0.9883,
+        -0.1178
+       ],
+       [
+        0.1421,
+        0.1034,
+        0.9844
+       ],
+       [
+        0.9851,
+        -0.1117,
+        -0.1305
+       ]
+      ]
+     },
+     {
+      "id": "chain-F",
+      "label": "ATP synthase subunit beta, chain F",
+      "entity": "6",
+      "across_nm": [
+       9.4,
+       4.8,
+       4.0
+      ],
+      "centre_nm": [
+       -0.55,
+       3.26,
+       2.8
+      ],
+      "axes": [
+       [
+        -0.0635,
+        0.9973,
+        -0.0364
+       ],
+       [
+        -0.3834,
+        0.0093,
+        0.9235
+       ],
+       [
+        0.9214,
+        0.0726,
+        0.3818
+       ]
+      ]
+     },
+     {
+      "id": "chain-E",
+      "label": "ATP synthase subunit beta, chain E",
+      "entity": "6",
+      "across_nm": [
+       9.7,
+       4.5,
+       4.0
+      ],
+      "centre_nm": [
+       -1.53,
+       2.92,
+       -2.56
+      ],
+      "axes": [
+       [
+        0.2827,
+        0.9592,
+        0.0011
+       ],
+       [
+        0.5199,
+        -0.1542,
+        0.8402
+       ],
+       [
+        0.8061,
+        -0.237,
+        -0.5423
+       ]
+      ]
+     },
+     {
+      "id": "chain-D",
+      "label": "ATP synthase subunit beta, chain D",
+      "entity": "6",
+      "across_nm": [
+       9.6,
+       4.5,
+       4.0
+      ],
+      "centre_nm": [
+       3.89,
+       2.79,
+       -0.39
+      ],
+      "axes": [
+       [
+        -0.0651,
+        0.9955,
+        0.0695
+       ],
+       [
+        0.9972,
+        0.0674,
+        -0.0318
+       ],
+       [
+        -0.0363,
+        0.0673,
+        -0.9971
+       ]
+      ]
+     },
+     {
+      "id": "chain-J",
+      "label": "ATP synthase subunit c, chain J",
+      "entity": "7",
+      "across_nm": [
+       7.8,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       -1.15,
+       -9.03,
+       -0.49
+      ],
+      "axes": [
+       [
+        -0.052,
+        0.9986,
+        -0.0131
+       ],
+       [
+        0.7744,
+        0.0486,
+        0.6308
+       ],
+       [
+        0.6305,
+        0.0227,
+        -0.7758
+       ]
+      ]
+     },
+     {
+      "id": "chain-L",
+      "label": "ATP synthase subunit c, chain L",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       -1.09,
+       -8.99,
+       0.64
+      ],
+      "axes": [
+       [
+        -0.0513,
+        0.9987,
+        -0.0012
+       ],
+       [
+        0.9983,
+        0.0513,
+        0.0291
+       ],
+       [
+        0.0291,
+        0.0003,
+        -0.9996
+       ]
+      ]
+     },
+     {
+      "id": "chain-M",
+      "label": "ATP synthase subunit c, chain M",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.4
+      ],
+      "centre_nm": [
+       -0.54,
+       -9.03,
+       -1.42
+      ],
+      "axes": [
+       [
+        -0.0681,
+        0.9973,
+        -0.028
+       ],
+       [
+        0.2614,
+        0.0449,
+        0.9642
+       ],
+       [
+        0.9628,
+        0.0583,
+        -0.2637
+       ]
+      ]
+     },
+     {
+      "id": "chain-N",
+      "label": "ATP synthase subunit c, chain N",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       2.24,
+       -8.88,
+       -0.69
+      ],
+      "axes": [
+       [
+        -0.0329,
+        0.9975,
+        -0.0626
+       ],
+       [
+        0.9986,
+        0.0353,
+        0.0391
+       ],
+       [
+        0.0412,
+        -0.0612,
+        -0.9973
+       ]
+      ]
+     },
+     {
+      "id": "chain-O",
+      "label": "ATP synthase subunit c, chain O",
+      "entity": "7",
+      "across_nm": [
+       7.8,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       2.3,
+       -8.84,
+       0.41
+      ],
+      "axes": [
+       [
+        -0.0209,
+        0.9989,
+        -0.0425
+       ],
+       [
+        0.8245,
+        0.0413,
+        0.5644
+       ],
+       [
+        0.5655,
+        -0.0232,
+        -0.8244
+       ]
+      ]
+     },
+     {
+      "id": "chain-P",
+      "label": "ATP synthase subunit c, chain P",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.4
+      ],
+      "centre_nm": [
+       1.69,
+       -8.84,
+       1.37
+      ],
+      "axes": [
+       [
+        -0.0182,
+        0.9991,
+        -0.0395
+       ],
+       [
+        0.3032,
+        0.0432,
+        0.9519
+       ],
+       [
+        0.9527,
+        0.0054,
+        -0.3037
+       ]
+      ]
+     },
+     {
+      "id": "chain-Q",
+      "label": "ATP synthase subunit c, chain Q",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       -0.4,
+       -8.93,
+       1.48
+      ],
+      "axes": [
+       [
+        -0.0461,
+        0.9989,
+        0.0047
+       ],
+       [
+        0.8212,
+        0.0406,
+        -0.5692
+       ],
+       [
+        -0.5688,
+        -0.0224,
+        -0.8222
+       ]
+      ]
+     },
+     {
+      "id": "chain-R",
+      "label": "ATP synthase subunit c, chain R",
+      "entity": "7",
+      "across_nm": [
+       7.7,
+       2.3,
+       1.5
+      ],
+      "centre_nm": [
+       0.48,
+       -8.99,
+       -1.83
+      ],
+      "axes": [
+       [
+        -0.0529,
+        0.997,
+        -0.0558
+       ],
+       [
+        -0.3016,
+        0.0373,
+        0.9527
+       ],
+       [
+        0.9519,
+        0.0673,
+        0.2988
+       ]
+      ]
+     },
+     {
+      "id": "chain-Y",
+      "label": "ATP synthase subunit b, chain Y",
+      "entity": "3",
+      "across_nm": [
+       28.5,
+       4.3,
+       1.8
+      ],
+      "centre_nm": [
+       -4.06,
+       -0.59,
+       0.5
+      ],
+      "axes": [
+       [
+        -0.0854,
+        0.9648,
+        -0.2488
+       ],
+       [
+        0.8566,
+        0.1986,
+        0.4762
+       ],
+       [
+        0.5088,
+        -0.1724,
+        -0.8434
+       ]
+      ]
+     },
+     {
+      "id": "chain-a",
+      "label": "ATP synthase subunit a, chain a",
+      "entity": "8",
+      "across_nm": [
+       7.7,
+       5.3,
+       3.9
+      ],
+      "centre_nm": [
+       -2.87,
+       -9.25,
+       0.65
+      ],
+      "axes": [
+       [
+        -0.008,
+        -0.5161,
+        0.8565
+       ],
+       [
+        -0.3904,
+        0.7902,
+        0.4725
+       ],
+       [
+        -0.9206,
+        -0.3305,
+        -0.2078
+       ]
+      ]
+     },
+     {
+      "id": "chain-I",
+      "label": "ATP synthase subunit c, chain I",
+      "entity": "7",
+      "across_nm": [
+       7.8,
+       2.2,
+       1.4
+      ],
+      "centre_nm": [
+       0.67,
+       -8.87,
+       1.77
+      ],
+      "axes": [
+       [
+        -0.0262,
+        0.9995,
+        -0.0172
+       ],
+       [
+        -0.3075,
+        0.0083,
+        0.9515
+       ],
+       [
+        0.9512,
+        0.0303,
+        0.3072
+       ]
+      ]
+     },
+     {
+      "id": "chain-S",
+      "label": "ATP synthase subunit c, chain S",
+      "entity": "7",
+      "across_nm": [
+       7.8,
+       2.2,
+       1.5
+      ],
+      "centre_nm": [
+       1.55,
+       -8.95,
+       -1.55
+      ],
+      "axes": [
+       [
+        -0.0506,
+        0.9971,
+        -0.0571
+       ],
+       [
+        0.7997,
+        0.0062,
+        -0.6004
+       ],
+       [
+        -0.5983,
+        -0.0761,
+        -0.7977
+       ]
+      ]
+     }
+    ],
+    "between_nm": 12.0,
+    "kinds": 8,
+    "modelled": [
+     0.973,
+     1.0
+    ],
+    "beside": {
+     "entry": "6OQS",
+     "across_nm": [
+      25.4,
+      11.5,
+      9.3
+     ]
+    },
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part ring's centre to the part head's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb6oqr",
+     "catalogue:pdb6oqs"
     ]
    },
    "proteins": {
@@ -1350,17 +3052,1170 @@
     "sources": [
      "ecoli:uniprot"
     ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "9RBF",
+    "of": "Escherichia coli",
+    "from": "data/catalogue/measures/ecoli.translocon.json",
+    "whole": {
+     "across_nm": [
+      8.4,
+      6.6,
+      5.1
+     ],
+     "farthest_nm": [
+      9.6,
+      6.8,
+      6.2
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "secy",
+      "label": "SecY",
+      "across_nm": [
+       8.5,
+       5.3,
+       4.4
+      ],
+      "centre_nm": [
+       -0.17,
+       -0.09,
+       0.0
+      ],
+      "axes": [
+       [
+        0.9231,
+        0.3837,
+        0.0247
+       ],
+       [
+        -0.2362,
+        0.5152,
+        0.8239
+       ],
+       [
+        0.3034,
+        -0.7664,
+        0.5663
+       ]
+      ],
+      "farthest_nm": [
+       9.2,
+       6.3,
+       5.4
+      ],
+      "entities": [
+       "7"
+      ]
+     },
+     {
+      "id": "sece",
+      "label": "SecE",
+      "across_nm": [
+       10.0,
+       6.4,
+       3.1
+      ],
+      "centre_nm": [
+       -0.45,
+       1.17,
+       0.3
+      ],
+      "axes": [
+       [
+        -0.5895,
+        0.6601,
+        -0.4655
+       ],
+       [
+        0.8003,
+        0.3993,
+        -0.4473
+       ],
+       [
+        -0.1093,
+        -0.6363,
+        -0.7637
+       ]
+      ],
+      "farthest_nm": [
+       8.5,
+       5.3,
+       3.6
+      ],
+      "entities": [
+       "8"
+      ]
+     },
+     {
+      "id": "secg",
+      "label": "SecG",
+      "across_nm": [
+       5.8,
+       2.4,
+       1.7
+      ],
+      "centre_nm": [
+       2.2,
+       -1.71,
+       -0.6
+      ],
+      "axes": [
+       [
+        0.8791,
+        0.367,
+        0.3041
+       ],
+       [
+        -0.231,
+        -0.2299,
+        0.9454
+       ],
+       [
+        0.4168,
+        -0.9014,
+        -0.1173
+       ]
+      ],
+      "farthest_nm": [
+       5.1,
+       2.4,
+       1.8
+      ],
+      "entities": [
+       "9"
+      ]
+     }
+    ],
+    "chains": [],
+    "between_nm": null,
+    "kinds": 3,
+    "modelled": [
+     0.509,
+     0.95
+    ],
+    "beside": null,
+    "note": "SecYEG alone, measured from an entry where it holds YidC and sits on a ribosome, both left out; only about half of SecG's sequence stands in its coordinates",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb9rbf"
+    ]
    }
   },
   {
    "id": "hslv",
    "species": "ecoli",
-   "label": "HslV protease",
+   "label": "HslUV protease",
    "named": {
     "text": "One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\".",
     "word": "HslV",
     "capability": "cap.machines",
     "file": "data/species/ecoli.json",
+    "sources": [
+     "ecoli:uniprot"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "1G4A-assembly1",
+    "of": "Escherichia coli",
+    "from": "data/catalogue/measures/ecoli.hslv.json",
+    "whole": {
+     "across_nm": [
+      16.0,
+      11.3,
+      11.3
+     ],
+     "farthest_nm": [
+      15.0,
+      12.5,
+      11.8
+     ],
+     "axes": [
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       -1.0
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "hslv",
+      "label": "HslV, the barrel",
+      "across_nm": [
+       10.6,
+       10.6,
+       8.9
+      ],
+      "centre_nm": [
+       0.0,
+       -3.19,
+       0.0
+      ],
+      "axes": [
+       [
+        0.815,
+        0.0,
+        -0.5795
+       ],
+       [
+        0.5795,
+        0.0,
+        0.815
+       ],
+       [
+        0.0,
+        -1.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       10.5,
+       10.4,
+       8.3
+      ],
+      "entities": [
+       "2"
+      ]
+     },
+     {
+      "id": "hslu",
+      "label": "HslU, the cap",
+      "across_nm": [
+       11.9,
+       11.9,
+       6.9
+      ],
+      "centre_nm": [
+       0.0,
+       3.01,
+       0.0
+      ],
+      "axes": [
+       [
+        0.9962,
+        0.0,
+        0.0875
+       ],
+       [
+        -0.0875,
+        0.0,
+        0.9962
+       ],
+       [
+        0.0,
+        -1.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       12.6,
+       11.4,
+       7.7
+      ],
+      "entities": [
+       "1"
+      ]
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain-E",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain E",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.6,
+       4.0
+      ],
+      "centre_nm": [
+       -2.48,
+       3.01,
+       -2.11
+      ],
+      "axes": [
+       [
+        -0.113,
+        0.4959,
+        0.861
+       ],
+       [
+        0.1218,
+        0.8669,
+        -0.4834
+       ],
+       [
+        -0.9861,
+        0.0502,
+        -0.1584
+       ]
+      ]
+     },
+     {
+      "id": "chain-F",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain F",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.7,
+       4.0
+      ],
+      "centre_nm": [
+       0.59,
+       3.02,
+       -3.2
+      ],
+      "axes": [
+       [
+        0.7978,
+        -0.5047,
+        -0.3299
+       ],
+       [
+        0.4818,
+        0.8626,
+        -0.1545
+       ],
+       [
+        0.3626,
+        -0.0357,
+        0.9313
+       ]
+      ]
+     },
+     {
+      "id": "chain-B",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain B",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.2,
+       2.8
+      ],
+      "centre_nm": [
+       -2.13,
+       -4.92,
+       -2.22
+      ],
+      "axes": [
+       [
+        -0.3159,
+        0.7891,
+        -0.5268
+       ],
+       [
+        0.8866,
+        0.4433,
+        0.1323
+       ],
+       [
+        0.3379,
+        -0.4252,
+        -0.8396
+       ]
+      ]
+     },
+     {
+      "id": "chain-A",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain A",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       0.85,
+       -4.92,
+       -2.96
+      ],
+      "axes": [
+       [
+        0.3087,
+        0.7731,
+        -0.5541
+       ],
+       [
+        0.3756,
+        0.4362,
+        0.8177
+       ],
+       [
+        0.8739,
+        -0.4605,
+        -0.1557
+       ]
+      ]
+     },
+     {
+      "id": "chain-D",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain D",
+      "entity": "2",
+      "across_nm": [
+       5.0,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       0.15,
+       -1.46,
+       -3.16
+      ],
+      "axes": [
+       [
+        0.1647,
+        0.8741,
+        0.4571
+       ],
+       [
+        -0.5781,
+        -0.2899,
+        0.7627
+       ],
+       [
+        0.7992,
+        -0.3898,
+        0.4576
+       ]
+      ]
+     },
+     {
+      "id": "chain-C",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain C",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       -2.66,
+       -1.48,
+       -1.71
+      ],
+      "axes": [
+       [
+        0.4873,
+        0.8693,
+        0.0829
+       ],
+       [
+        0.3726,
+        -0.2928,
+        0.8806
+       ],
+       [
+        0.7898,
+        -0.3982,
+        -0.4665
+       ]
+      ]
+     },
+     {
+      "id": "chain-E-2",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain E-2",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.6,
+       4.0
+      ],
+      "centre_nm": [
+       3.07,
+       3.01,
+       -1.09
+      ],
+      "axes": [
+       [
+        0.6891,
+        -0.4959,
+        0.5284
+       ],
+       [
+        0.3577,
+        0.8669,
+        0.3471
+       ],
+       [
+        -0.6302,
+        -0.0502,
+        0.7748
+       ]
+      ]
+     },
+     {
+      "id": "chain-F-2",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain F-2",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.7,
+       4.0
+      ],
+      "centre_nm": [
+       2.48,
+       3.02,
+       2.11
+      ],
+      "axes": [
+       [
+        -0.1131,
+        -0.5047,
+        0.8559
+       ],
+       [
+        -0.1071,
+        0.8626,
+        0.4945
+       ],
+       [
+        -0.9878,
+        -0.0357,
+        -0.1516
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-2",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain B-2",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.2,
+       2.8
+      ],
+      "centre_nm": [
+       2.99,
+       -4.92,
+       -0.74
+      ],
+      "axes": [
+       [
+        0.6142,
+        0.7891,
+        -0.0102
+       ],
+       [
+        -0.5579,
+        0.4433,
+        0.7016
+       ],
+       [
+        0.5582,
+        -0.4252,
+        0.7125
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-2",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain A-2",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       2.14,
+       -4.92,
+       2.21
+      ],
+      "axes": [
+       [
+        0.3255,
+        0.7731,
+        0.5444
+       ],
+       [
+        0.896,
+        -0.4362,
+        0.0836
+       ],
+       [
+        0.3021,
+        0.4605,
+        -0.8347
+       ]
+      ]
+     },
+     {
+      "id": "chain-D-2",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain D-2",
+      "entity": "2",
+      "across_nm": [
+       5.0,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       2.67,
+       -1.46,
+       1.71
+      ],
+      "axes": [
+       [
+        -0.4782,
+        0.8741,
+        -0.0859
+       ],
+       [
+        0.3714,
+        0.2899,
+        0.882
+       ],
+       [
+        0.7959,
+        0.3898,
+        -0.4633
+       ]
+      ]
+     },
+     {
+      "id": "chain-C-2",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain C-2",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       2.81,
+       -1.48,
+       -1.45
+      ],
+      "axes": [
+       [
+        -0.3154,
+        0.8693,
+        0.3806
+       ],
+       [
+        0.9489,
+        0.2928,
+        0.1177
+       ],
+       [
+        -0.0091,
+        0.3982,
+        -0.9172
+       ]
+      ]
+     },
+     {
+      "id": "chain-E-3",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain E-3",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.6,
+       4.0
+      ],
+      "centre_nm": [
+       -0.59,
+       3.01,
+       3.2
+      ],
+      "axes": [
+       [
+        0.8021,
+        0.4959,
+        -0.3326
+       ],
+       [
+        -0.4795,
+        0.8669,
+        0.1362
+       ],
+       [
+        0.3559,
+        0.0502,
+        0.9332
+       ]
+      ]
+     },
+     {
+      "id": "chain-F-3",
+      "label": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU, chain F-3",
+      "entity": "1",
+      "across_nm": [
+       7.6,
+       6.7,
+       4.0
+      ],
+      "centre_nm": [
+       -3.07,
+       3.02,
+       1.09
+      ],
+      "axes": [
+       [
+        0.6846,
+        0.5047,
+        0.5259
+       ],
+       [
+        -0.3747,
+        0.8626,
+        -0.34
+       ],
+       [
+        -0.6252,
+        0.0357,
+        0.7796
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-3",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain B-3",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.2,
+       2.8
+      ],
+      "centre_nm": [
+       -0.85,
+       -4.92,
+       2.96
+      ],
+      "axes": [
+       [
+        -0.2982,
+        0.7891,
+        0.537
+       ],
+       [
+        0.3287,
+        -0.4433,
+        0.8339
+       ],
+       [
+        0.8961,
+        0.4252,
+        -0.1272
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-3",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain A-3",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       -2.99,
+       -4.92,
+       0.74
+      ],
+      "axes": [
+       [
+        -0.6342,
+        0.7731,
+        0.0097
+       ],
+       [
+        -0.5204,
+        -0.4362,
+        0.7341
+       ],
+       [
+        0.5718,
+        0.4605,
+        0.6789
+       ]
+      ]
+     },
+     {
+      "id": "chain-D-3",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain D-3",
+      "entity": "2",
+      "across_nm": [
+       5.0,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       -2.81,
+       -1.46,
+       1.45
+      ],
+      "axes": [
+       [
+        0.3135,
+        0.8741,
+        -0.3711
+       ],
+       [
+        0.9496,
+        -0.2899,
+        0.1193
+       ],
+       [
+        -0.0033,
+        -0.3898,
+        -0.9209
+       ]
+      ]
+     },
+     {
+      "id": "chain-C-3",
+      "label": "ATP-DEPENDENT PROTEASE HSLV, chain C-3",
+      "entity": "2",
+      "across_nm": [
+       4.9,
+       4.1,
+       2.8
+      ],
+      "centre_nm": [
+       -0.15,
+       -1.48,
+       3.16
+      ],
+      "axes": [
+       [
+        -0.1719,
+        0.8693,
+        -0.4634
+       ],
+       [
+        -0.5764,
+        0.2928,
+        0.763
+       ],
+       [
+        0.7989,
+        0.3982,
+        0.4507
+       ]
+      ]
+     }
+    ],
+    "between_nm": 6.2,
+    "kinds": 2,
+    "modelled": [
+     0.804,
+     0.989
+    ],
+    "beside": {
+     "entry": "1G4B",
+     "across_nm": [
+      26.9,
+      11.7,
+      11.7
+     ]
+    },
+    "note": "HslV's barrel of twelve capped by one HslU ring of six, the crystal's biological assembly; capped at both ends beside it",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part hslv's centre to the part hslu's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb1g4a",
+     "catalogue:pdb1g4b"
+    ]
+   }
+  },
+  {
+   "id": "lon",
+   "species": "ecoli",
+   "label": "Lon protease",
+   "named": {
+    "text": "Its own proteins hold lon (P0A9M0), named in its entry “Lon protease”.",
+    "word": "lon",
+    "protein": "P0A9M0",
+    "file": "data/proteins/ecoli/proteins.tsv",
+    "sources": [
+     "ecoli:uniprot"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "6U5Z",
+    "of": "Escherichia coli",
+    "from": "data/catalogue/measures/ecoli.lon.json",
+    "whole": {
+     "across_nm": [
+      15.8,
+      11.9,
+      10.1
+     ],
+     "farthest_nm": [
+      14.6,
+      13.9,
+      10.7
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "outline": "whole",
+    "parts": [],
+    "chains": [
+     {
+      "id": "chain-A",
+      "label": "Lon protease, chain A",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       -3.6,
+       -2.94,
+       0.08
+      ],
+      "axes": [
+       [
+        0.7783,
+        -0.1919,
+        0.5978
+       ],
+       [
+        -0.6023,
+        0.0411,
+        0.7972
+       ],
+       [
+        -0.1776,
+        -0.9805,
+        -0.0836
+       ]
+      ]
+     },
+     {
+      "id": "chain-B",
+      "label": "Lon protease, chain B",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       -3.63,
+       0.19,
+       1.31
+      ],
+      "axes": [
+       [
+        0.5984,
+        -0.3052,
+        0.7408
+       ],
+       [
+        -0.2692,
+        0.7943,
+        0.5447
+       ],
+       [
+        -0.7546,
+        -0.5253,
+        0.3932
+       ]
+      ]
+     },
+     {
+      "id": "chain-C",
+      "label": "Lon protease, chain C",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       -1.47,
+       2.75,
+       0.72
+      ],
+      "axes": [
+       [
+        0.4482,
+        -0.1907,
+        0.8734
+       ],
+       [
+        0.3666,
+        0.9303,
+        0.015
+       ],
+       [
+        -0.8153,
+        0.3134,
+        0.4868
+       ]
+      ]
+     },
+     {
+      "id": "chain-D",
+      "label": "Lon protease, chain D",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       1.59,
+       2.75,
+       -0.68
+      ],
+      "axes": [
+       [
+        0.4138,
+        0.0537,
+        0.9088
+       ],
+       [
+        0.844,
+        0.3517,
+        -0.405
+       ],
+       [
+        -0.3413,
+        0.9346,
+        0.1002
+       ]
+      ]
+     },
+     {
+      "id": "chain-E",
+      "label": "Lon protease, chain E",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       3.63,
+       0.18,
+       -1.34
+      ],
+      "axes": [
+       [
+        0.5325,
+        0.2467,
+        0.8097
+       ],
+       [
+        0.7766,
+        -0.5229,
+        -0.3514
+       ],
+       [
+        0.3367,
+        0.8159,
+        -0.4701
+       ]
+      ]
+     },
+     {
+      "id": "chain-F",
+      "label": "Lon protease, chain F",
+      "entity": "1",
+      "across_nm": [
+       11.2,
+       6.3,
+       4.4
+      ],
+      "centre_nm": [
+       3.48,
+       -2.93,
+       -0.09
+      ],
+      "axes": [
+       [
+        0.7253,
+        0.2496,
+        0.6416
+       ],
+       [
+        -0.1934,
+        0.9683,
+        -0.1581
+       ],
+       [
+        -0.6608,
+        -0.0094,
+        0.7505
+       ]
+      ]
+     }
+    ],
+    "between_nm": null,
+    "kinds": 1,
+    "modelled": [
+     0.675,
+     0.675
+    ],
+    "beside": null,
+    "note": "the S679A mutant, a hexamer",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb6u5z"
+    ]
+   }
+  },
+  {
+   "id": "ftsh",
+   "species": "ecoli",
+   "label": "FtsH protease",
+   "named": {
+    "text": "Its own proteins hold ftsH (P0AAI3), named in its entry “ATP-dependent zinc metalloprotease FtsH”.",
+    "word": "ftsH",
+    "protein": "P0AAI3",
+    "file": "data/proteins/ecoli/proteins.tsv",
     "sources": [
      "ecoli:uniprot"
     ]
@@ -1693,6 +4548,62 @@
   }
  ],
  "sources": {
+  "catalogue:pdb1g4a": {
+   "text": "Protein Data Bank entry 1G4A: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 3.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/1G4A",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-hslv/1G4A-assembly1.cif.gz"
+  },
+  "catalogue:pdb1g4b": {
+   "text": "Protein Data Bank entry 1G4B: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 7.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/1G4B",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-hslv/1G4B-assembly1.cif.gz"
+  },
+  "catalogue:pdb6oqr": {
+   "text": "Protein Data Bank entry 6OQR: E. coli ATP Synthase ADP State 1a. Electron microscopy, 3.1 Å; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6OQR",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-atp-synthase/6OQR.cif.gz"
+  },
+  "catalogue:pdb6oqs": {
+   "text": "Protein Data Bank entry 6OQS: E. coli ATP synthase State 1b. Electron microscopy, 3.3 Å; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6OQS",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-atp-synthase/6OQS.cif.gz"
+  },
+  "catalogue:pdb6p1k": {
+   "text": "Protein Data Bank entry 6P1K: Cryo-EM structure of Escherichia coli sigma70 bound RNAP polymerase holoenzyme. Electron microscopy, 4.05 Å; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6P1K",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-rna-polymerase/6P1K.cif.gz"
+  },
+  "catalogue:pdb6u5z": {
+   "text": "Protein Data Bank entry 6U5Z: Cryo-EM structure of E. coli LonA S679A. Electron microscopy, 3.5 Å; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6U5Z",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-lon/6U5Z.cif.gz"
+  },
+  "catalogue:pdb9rbf": {
+   "text": "Protein Data Bank entry 9RBF: Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC. Electron microscopy, 2.44 Å; Escherichia coli, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/9RBF",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "ecoli/wwpdb-translocon/9RBF.cif.gz"
+  },
   "ecoli:dvoriashyna2021": {
    "text": "Dvoriashyna M, Lauga E (2021) Hydrodynamics and direction change of tumbling bacteria. PloS one 16:e0254551.",
    "doi": "10.1371/journal.pone.0254551",
@@ -1706,6 +4617,22 @@
    "licence": "CC BY",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "ecoli:pdb5mdz": {
+   "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+   "doi": "10.2210/pdb5MDZ/pdb",
+   "url": "https://www.rcsb.org/structure/5MDZ",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
+  },
+  "ecoli:pdb7k00": {
+   "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+   "doi": "10.2210/pdb7K00/pdb",
+   "url": "https://www.rcsb.org/structure/7K00",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
   },
   "ecoli:schavemaker2022": {
    "text": "Schavemaker PE, Lynch M (2022) Flagellar energy costs across the tree of life. eLife 11:e77266.",
@@ -1756,6 +4683,22 @@
    "class": "permissive",
    "accessed": "2026-11-15"
   },
+  "mpneumoniae:pdb5mdz": {
+   "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+   "doi": "10.2210/pdb5MDZ/pdb",
+   "url": "https://www.rcsb.org/structure/5MDZ",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
+  },
+  "mpneumoniae:pdb7k00": {
+   "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+   "doi": "10.2210/pdb7K00/pdb",
+   "url": "https://www.rcsb.org/structure/7K00",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
+  },
   "mpneumoniae:uniprot": {
    "text": "UniProt Consortium, UniProt release 2026_04: the curated entries of taxon 272634, and the archived sequences of the taxon with the family signatures on them.",
    "url": "https://www.uniprot.org/uniprotkb?query=taxonomy_id:272634",
@@ -1783,6 +4726,22 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-14"
+  },
+  "syn3a:pdb5mdz": {
+   "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+   "doi": "10.2210/pdb5MDZ/pdb",
+   "url": "https://www.rcsb.org/structure/5MDZ",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
+  },
+  "syn3a:pdb7k00": {
+   "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+   "doi": "10.2210/pdb7K00/pdb",
+   "url": "https://www.rcsb.org/structure/7K00",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
   },
   "syn3a:uniparc": {
    "text": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189 and the family signatures on them.",

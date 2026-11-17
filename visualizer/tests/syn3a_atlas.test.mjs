@@ -43,7 +43,7 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
 const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
-const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins"];
+const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins", "ribosome"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
 // The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
 const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];

@@ -74,6 +74,70 @@ def fact(species_file: dict, label: str, where: str):
     raise Breach(f"{where}: the species file has no fact {label!r}")
 
 
+FRAME_WORDS = "origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y; z = x × y"
+
+
+def part_of(name, label, body):
+    """One body of a measured machine, as the catalogue gives it: its widths, its centre and its own axes in the machine's frame."""
+    return {"id": name, "label": label, "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"], **({"farthest_nm": body["farthest_nm"]} if "farthest_nm" in body else {}), **({"entities": body["ids"]} if body.get("by") == "entities" else {})}
+
+
+def measured_from_part(part, size, species, species_file, where, cite):
+    """A machine's measure as its species' file states it for a part of its cell (the ribosome: two subunits and the whole)."""
+    if not (isinstance(part.get("across_nm"), list) and len(part["across_nm"]) == 3):
+        raise Breach(f"{where}: cell.parts.{size['part']} gives no size this tool reads (across_nm, three numbers): change the tool to read it")
+    labels = {"large": "Large subunit", "small": "Small subunit"}
+    parts = [part_of(name, labels.get(name, name), part[name]) for name in ("large", "small") if isinstance(part.get(name), dict)]
+    return {
+        "shape": "measured", "entry": part.get("entry"), "of": part.get("of"), "from": f"cell.parts.{size['part']} of the species' file",
+        "whole": {"across_nm": part["across_nm"], **({"farthest_nm": part["farthest_nm"]} if "farthest_nm" in part else {})},
+        "parts": parts, "between_nm": part.get("between_nm"),
+        "beside": {key: part["beside"][key] for key in ("entry", "across_nm") if key in part["beside"]} if isinstance(part.get("beside"), dict) else None,
+        "says": part.get("measured") or part.get("definition"), "sources": cite(species, part.get("sources") or [], species_file, where),
+        # Whose part it is, where the species' file says the measure is another organism's (a bacterium drawn at E. coli's ribosome).
+        **({"whose": part["note"]} if isinstance(part.get("note"), str) and part["note"].strip() else {}),
+    }
+
+
+def measured_from_file(overlay, size, where, inputs, own_source):
+    """A machine's measure from the tool's own output that the overlay names (tools/measure_particle.py, run by the viewer):
+    the whole, its named parts and, in the machine mode, each chain, all in the measure's own frame."""
+    spec = overlay["measures"][size["measure"]]
+    path = ROOT / spec["file"]
+    record = read(path)
+    inputs.add(rel(path))
+    if record.get("tool") != "tools/measure_particle.py" or spec["entry"] not in record.get("measured", {}):
+        raise Breach(f"{where}: {spec['file']} is not the tool's measure of {spec['entry']}")
+    first = record["measured"][spec["entry"]]
+    beside = record["measured"].get(spec.get("beside")) if spec.get("beside") else None
+    labels = spec.get("parts") or {}
+    # The ribosome's mode gives its two subunits at the top of the measure; the machine mode gives them under `parts`.
+    named = first.get("parts") if isinstance(first.get("parts"), dict) else {name: first[name] for name in labels if isinstance(first.get(name), dict)}
+    missing = [name for name in labels if name not in named]
+    if missing:
+        raise Breach(f"{where}: {spec['file']} has no part {missing[0]} of {spec['entry']}")
+    def label_of(name):
+        value = labels[name]
+        return value if isinstance(value, str) else value["label"]
+    parts = [{**part_of(name, label_of(name), named[name]), **({"hue": labels[name]["hue"]} if isinstance(labels[name], dict) and labels[name].get("hue") else {})} for name in labels]
+    chains = [{"id": f"chain-{body['chain']}", "label": f"{body['description']}, chain {body['chain']}", "entity": body["entity"], "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"]} for body in first.get("chains") or []] if spec.get("chains") else []
+    entities = first.get("entities") or []
+    shares = [entity["modelled_share"] for entity in entities if entity.get("modelled_share") is not None]
+    frame = first.get("frame") or {}
+    return {
+        "shape": "measured", "entry": spec["entry"], "of": spec["of"], "from": spec["file"],
+        "whole": {"across_nm": first["whole"]["across_nm"], "farthest_nm": first["whole"]["farthest_nm"], **({"axes": first["whole"]["axes"]} if "axes" in first["whole"] else {})},
+        "outline": spec.get("outline", "parts" if parts else "whole"),
+        "parts": parts, "chains": chains,
+        "between_nm": frame.get("between_centres_nm", first.get("between_centres_nm")),
+        "kinds": len(entities) or None, "modelled": [min(shares), max(shares)] if shares else None,
+        "beside": {"entry": beside["entry"], "across_nm": beside["whole"]["across_nm"]} if beside else None,
+        **({"note": spec["note"]} if spec.get("note") else {}),
+        "says": f"The viewer's own measure from the entry's coordinates, by {record['tool']}: {record['definition']}. The frame: {record.get('frame') or FRAME_WORDS}. The Protein Data Bank states no size.",
+        "sources": [own_source(key) for key in spec["sources"]],
+    }
+
+
 def build():
     overlay_path = ROOT / "data" / "catalogue" / "overlay.json"
     overlay = read(overlay_path)
@@ -94,6 +158,13 @@ def build():
     sources = {}
     entries = []
     inputs = {rel(overlay_path)}
+
+    def own_source(key):
+        source = (overlay.get("sources") or {}).get(key)
+        if not source:
+            raise Breach(f"{key} is not a source of the overlay")
+        sources[f"catalogue:{key}"] = {name: source[name] for name in ("text", "doi", "url", "licence", "class", "accessed", "saved") if name in source}
+        return f"catalogue:{key}"
 
     def cite(species: str, keys, species_file: dict, where: str):
         out = []
@@ -129,6 +200,16 @@ def build():
                 # The sentence that names it, not the whole note: the note may go on to other things.
                 sentence = next(part for part in re.split(r"(?<=[.!?])\s+(?=[A-Z])", words) if named["word"] in part)
                 entry["named"] = {"text": sentence, "word": named["word"], "capability": named["capability"], "file": rel(species_path), "sources": cite(species, (species_file.get("capability_sources") or {}).get(named["capability"], []), species_file, where)}
+            elif "protein" in named:
+                # A protein of the species' own catalogue (data/proteins/<species>/proteins.tsv) whose entry names the machine.
+                table = ROOT / "data" / "proteins" / species / "proteins.tsv"
+                rows = table.read_text(encoding="utf-8").splitlines()
+                columns = rows[0].split("\t")
+                found = next((dict(zip(columns, row.split("\t"))) for row in rows[1:] if row.split("\t", 1)[0] == named["protein"]), None)
+                if not found:
+                    raise Breach(f"{where}: {rel(table)} holds no protein {named['protein']}")
+                inputs.add(rel(table))
+                entry["named"] = {"text": f"Its own proteins hold {found.get('gene') or found['id']} ({found['id']}), named in its entry “{found['name']}”.", "word": found.get("gene") or found["id"], "protein": found["id"], "file": rel(table), "sources": cite(species, ["uniprot"], species_file, where)}
             else:
                 record = overlay["records"][named["record"]]
                 said = (ROOT.parent / record["path"]).read_text(encoding="utf-8") if record["path"].startswith("visualizer/") else ""
@@ -144,15 +225,15 @@ def build():
             # How big: the overlay's sentence from a paper, checked against the saved text, or a fact of the species file.
             size = item.get("size")
             if isinstance(size, dict) and "part" in size:
-                # A size the species file states for one of its cell's parts (the ribosome's, measured by the viewer from a
-                # structure: schema/SPECIES_SHAPES.md): read from there with its sources, never held here a second time.
+                # A size measured by the viewer from a structure. The species' file's own statement of the part comes first
+                # (cell.parts.ribosome: schema/SPECIES_SHAPES.md); where it states none, the measure the overlay names. Never both.
                 part = (species_file["cell"].get("parts") or {}).get(size["part"])
                 if part is not None:
-                    whole = part.get("whole") if isinstance(part.get("whole"), dict) else part
-                    across = whole.get("across_nm")
-                    if not (isinstance(across, list) and len(across) == 3 and all(isinstance(n, (int, float)) for n in across)):
-                        raise Breach(f"{where}: cell.parts.{size['part']} gives no size this tool reads (across_nm, three numbers, on the part or its 'whole'): change the tool to read it")
-                    entry["size"] = {"shape": "ellipsoid", "across_nm": across, "part": f"cell.parts.{size['part']}", "says": whole.get("definition") or part.get("definition"), "sources": cite(species, part.get("sources") or [], species_file, where)}
+                    entry["size"] = measured_from_part(part, size, species, species_file, where, cite)
+                elif size.get("measure"):
+                    entry["size"] = measured_from_file(overlay, size, where, inputs, own_source)
+            elif isinstance(size, dict) and "measure" in size:
+                entry["size"] = measured_from_file(overlay, size, where, inputs, own_source)
             elif isinstance(size, dict) and "fact" in size:
                 found = fact(species_file, size["fact"], where)
                 numbers = [str(n) for n in size["long_nm"]]

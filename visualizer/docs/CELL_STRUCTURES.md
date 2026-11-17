@@ -57,7 +57,11 @@ viewer reads nothing else for it:
   where it has a nucleus;
 - every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,
   or a stated part of it; where it gives none, the number drawn is the picture's choice, and
-  the panel says so.
+  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17
+  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as
+  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In
+  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn
+  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.
 
 A part a cell does not hold is listed under the species' "Not in this organism", with the
 reason read from `cell.parts`.

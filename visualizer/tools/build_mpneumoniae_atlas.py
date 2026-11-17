@@ -49,6 +49,9 @@ from collections import Counter
 from pathlib import Path
 from xml.etree import ElementTree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import ribosome as RIBOSOME  # noqa: E402  the ribosome's size: E. coli's, the viewer's own measure of two PDB entries (schema/SPECIES_SHAPES.md)
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
@@ -1246,6 +1249,7 @@ def build_species(c):
         {"label": "Inside", "value": "a small prokaryote, among the smallest organisms that copy themselves: a bacterium, with no nucleus", "sources": ["li2021", "gaspari2020", "genbank"]},
         {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"], "see": ["himmelreich1996"]},
         {"label": "Genes", "value": f"{count} protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has {len(c.entries)} entries", "sources": ["genbank", "parrott2016", "lluchsenar2015", "uniprot"], "see": ["himmelreich1996", "dandekar2000", "wodke2013"]},
+        {"label": "Ribosome's size", "value": f"{RIBOSOME.fact(own=False)}. No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on", "sources": list(RIBOSOME.sources())},
         {"label": "Ribosomes", "value": f"about {RIBOSOMES} in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry", "sources": ["weber2023"], "see": ["maier2011", "kuhner2009"]},
         {"label": "Proteins", "value": "about 120,000 protein molecules in a cell (120,700 on average over all samples), the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
         {"label": "Doubling time", "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium", "sources": ["weber2023", "gaspari2020"]},
@@ -1257,7 +1261,7 @@ def build_species(c):
         {"label": "Movement", "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second", "sources": ["nakane2015"]},
         {"label": "Name", "value": f"databases now list it as {c.uniprot_name.split(' (')[0]}; the papers cited call it Mycoplasma pneumoniae", "sources": ["genbank", "uniprot"]},
     ]
-    sources = sources_of_species(c)
+    sources = sources_of_species(c) | RIBOSOME.sources()
     for where, keys in [*capability_sources.items(), *((fact["label"], fact["sources"]) for fact in facts)]:
         if not keys or any(sources[key]["class"] != PERMISSIVE for key in keys):
             raise SystemExit(f"{where} would rest on a source whose terms do not allow it")
@@ -1298,7 +1302,7 @@ def build_species(c):
         "cell": {
             "facts": facts,
             # The protein molecules of the cell, for its crowd drawn to scale: the paper's average over all samples, 1.207 × 10^5.
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES, "proteins": {"count": 120700, "sources": ["weber2023"]}},
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES, "proteins": {"count": 120700, "sources": ["weber2023"]}, "ribosome": RIBOSOME.part("No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure.")},
             "capabilities": capabilities,
         },
         "capability_sources": capability_sources,

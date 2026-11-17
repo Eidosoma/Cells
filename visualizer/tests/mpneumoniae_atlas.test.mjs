@@ -38,7 +38,7 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
 const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
-const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins"];
+const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins", "ribosome"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
 // The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
 const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
@@ -125,7 +125,10 @@ test("every fact has a source, and every number drawn has a fact or is called th
   }
   const value = (label) => facts.find((fact) => fact.label === label).value;
   for (const part of Object.keys(species.cell.parts)) assert.ok(PARTS.includes(part), `${part} is not a part the viewer can draw`);
-  assert.deepEqual(species.cell.parts, { membranes: 1, wall: false, nucleus: false, chromosome_kbp: 816, ribosomes: 300, proteins: { count: 120700, sources: ["weber2023"] } });
+  const { ribosome, ...counted } = species.cell.parts;
+  assert.deepEqual(counted, { membranes: 1, wall: false, nucleus: false, chromosome_kbp: 816, ribosomes: 300, proteins: { count: 120700, sources: ["weber2023"] } });
+  // Its ribosome's shape: E. coli's, the viewer's measure of the PDB entry 7K00 (tools/lib/ribosome.py), since no paper its file rests on names an entry of its own.
+  assert.ok(ribosome.of === "Escherichia coli" && ribosome.entry === "7K00" && /drawn at E\. coli's measure/.test(ribosome.note), JSON.stringify(ribosome).slice(0, 200));
   // The drawn numbers against the facts: the length and width are the upper ends of the
   // ranges, and the ribosome count is the one an open paper measured. The counts of 2009
   // and 2011, which the picture once drew, are under terms that do not allow a copy.

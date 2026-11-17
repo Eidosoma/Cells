@@ -162,6 +162,30 @@ function subunits(radius, light = false) {
   return { large, small };
 }
 
+/**
+ * A ribosome as its species' file measures it (`ribosome`, schema/SPECIES_SHAPES.md): each subunit the ellipsoid of the same
+ * spread as its atoms, its centre and its own axes as in the structure, in the particle's own frame (tools/measure_particle.py:
+ * y from the large subunit's centre to the small one's), `scale` units to a nanometre. With `light` each has fewer faces, for a
+ * cell that holds thousands of them (128 triangles a ribosome, 80 and 48); without it, round at the size of an enlarged one, of which
+ * few are drawn (704). Also how far the particle reaches from its middle, in units.
+ */
+function measuredSubunits(shape, scale, light = false) {
+  const make = (part, [around, down]) => {
+    const geometry = new THREE.SphereGeometry(0.5, around, down).scale(...part.across_nm.map((value) => value * scale));
+    const [a, b, c] = part.axes.map((axis) => new THREE.Vector3(...axis));
+    geometry.applyMatrix4(new THREE.Matrix4().makeBasis(a, b, c));
+    return geometry.translate(...part.centre_nm.map((value) => value * scale));
+  };
+  // Each sphere's rings fall on its equator and its meridians on its axes, so each ellipsoid reaches its measured size along its own axes.
+  const large = make(shape.large, light ? [8, 6] : [16, 12]), small = make(shape.small, light ? [8, 4] : [16, 12]);
+  let reach = 0;
+  for (const geometry of [large, small]) {
+    const position = geometry.attributes.position, point = new THREE.Vector3();
+    for (let index = 0; index < position.count; index++) reach = Math.max(reach, point.fromBufferAttribute(position, index).length());
+  }
+  return { large, small, reach };
+}
+
 /** A random walk inside a ball, smoothed: a strand of chromatin, or a free chromosome's thread. */
 function walk(random, start, steps, step, inBall) {
   const knots = [start.clone()];
@@ -828,9 +852,9 @@ function ribosomes(env, random, built, bound) {
   const own = bound ? ctx.part("ribosomes", null) : null;
   if (own) own.priority = 52;
   const tone = (shade) => (own ? own.material({ hue: "bioRibosome", shade, roughness: 0.42, drift: 0.06 }) : ctx.neutral({ opacity: 0.6, glass: 0.35, depthWrite: false, drift: 0.06 }));
-  const drawShapes = (placements, radius, shade = 0, light = false) => {
+  const drawShapes = (placements, radius, shade = 0, light = false, made = null) => {
     if (!placements.length) return;
-    const { large, small } = subunits(radius, light);
+    const { large, small } = made || subunits(radius, light);
     const add = (object) => (own ? own.add(object) : ctx.illustrate(object));
     add(env.instanced(large, tone(shade), placements));
     add(env.instanced(small, tone(shade + 0.38), placements));
@@ -860,20 +884,31 @@ function ribosomes(env, random, built, bound) {
     strings.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ends), ends.length * 6, radius * 0.16, 5, false));
     return placements;
   };
-  let free = [], onStrings = [], radius, polysomes = 0, anchor = null;
+  let free = [], onStrings = [], radius, polysomes = 0, anchor = null, kept = 0, spacing = 0;
+  // A small cell whose file counts them, each a shape of its own at this size. Where the file measures the ribosome (`ribosome`),
+  // it is drawn as measured, at the layout's factor for this mode (cell_layout.js, RIBOSOME_RULES); else about 20 nm across, the
+  // picture's choice (no cap in the cell's units: in a cell as thin as 0.2 µm a cap drew them at half that size).
+  const shape = given && !parts.nucleus ? env.ribosome : null, factor = shape ? env.ribosomeFactor ?? 1 : 1;
   if (given && !parts.nucleus) {
-    // A small cell whose file counts them: each about 20 nm across, a shape of its own at this size.
-    // No cap in the cell's units: in a cell as thin as 0.2 µm a cap drew them at half that size.
+    // Where the file's whole count is drawn, few faces each (the ceiling of 130 triangles); enlarged and few, round.
+    const made = shape ? measuredSubunits(shape, env.nm * factor, factor <= 1.05) : null;
     radius = Math.max(0.085, 0.01 / frame.u);
-    const total = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
+    // How far a ribosome reaches from its middle, in units, and the step along a string's helix (polysome's `radius`): its
+    // neighbours' middles 2.05 times that reach apart, so that no two in a string meet, whichever way they turn.
+    const reach = made ? made.reach : 1.3 * radius, step = made ? (2.05 * reach) / 2.3 : radius;
+    kept = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
+    // Enlarged, as many as fill the share of the cell that the kept ones fill at their own size.
+    const total = Math.max(1, Math.round(kept / factor ** 3));
     const strung = Math.round((total * 0.15) / 5) * 5;
-    // Each wholly below the cut: a ribosome reaches about 1.3 times its radius up from its middle, a string of five about four times.
-    const below = (point, clear, rise) => env.inside(point) > clear && point.y < env.cut - rise * radius;
-    const centres = scatterIn(strung / 5, (point) => below(point, radius * 5 + 0.3, 4), { wide, low: frame.base, high: env.cut });
-    for (const centre of centres) onStrings.push(...polysome(centre, 5, radius));
+    // Each wholly below the cut, and a string of five, its helix and the reach of its ends.
+    const below = (point, clear, rise) => env.inside(point) > clear && point.y < env.cut - rise;
+    const string = Math.hypot(3.1 * step, 1.7 * step) + reach;
+    const centres = scatterIn(strung / 5, (point) => below(point, string + 0.3, string), { wide, low: frame.base, high: env.cut });
+    for (const centre of centres) onStrings.push(...polysome(centre, 5, step));
     polysomes = centres.length;
-    free = scatterIn(total - onStrings.length, (point) => below(point, radius + 0.25, 1.3), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), scale: 0.85 + random() * 0.3 }));
-    drawShapes([...free, ...onStrings], radius * 0.95, 0, true);
+    spacing = (2.3 * step) / env.nm / factor; // nanometres of the ribosome's own size between a string's neighbours
+    free = scatterIn(total - onStrings.length, (point) => below(point, reach + 0.25, reach), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), ...(made ? {} : { scale: 0.85 + random() * 0.3 }) }));
+    drawShapes([...free, ...onStrings], radius * 0.95, 0, true, made);
     anchor = (centres[0] || free[0]?.position || env.core.at).clone();
   } else if (!real) {
     // A large cell, parts enlarged: a few hundred, the number the picture's choice.
@@ -906,6 +941,17 @@ function ribosomes(env, random, built, bound) {
   own.anchor = (anchor || env.nucleusAt || env.core.at).clone().add(new THREE.Vector3(0, real ? 0.5 : 0.9, 0));
   const studs = built.studs.length;
   const count = free.length + onStrings.length;
+  if (given && !parts.nucleus && shape) {
+    const size = (values) => values.map((value) => Number(value.toPrecision(3))).join(" by ");
+    const whose = `${shape.note ? `the ribosome of ${shape.of}` : "its ribosome"}, as the viewer measured it from the Protein Data Bank's entry ${shape.entry}`;
+    const measured = `Each as its two subunits, each the ellipsoid of the same spread as its atoms: ${whose}, the large subunit ${size(shape.large.across_nm)} nm across and the small one ${size(shape.small.across_nm)} nm, the whole ${size(shape.across_nm)} nm.${shape.note ? ` ${shape.note}` : ""}`;
+    const strung = onStrings.length ? ` ${onStrings.length} of them in ${polysomes} strings on a messenger, their middles ${Math.round(spacing)} nm apart${factor > 1.05 ? " at the ribosome's own size" : ""}, so that no two meet.` : "";
+    if (factor > 1.05) {
+      return [["Drawn", `${count.toLocaleString("en-US")}, standing for the ${kept.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives that are in the part of the cell kept below the cut: each enlarged ${Number(factor.toPrecision(2))} times, as the membrane's proteins are here, so fewer are drawn, as many as fill the same share of the cell.${strung} ${measured}`]];
+    }
+    const own = env.real ? "" : " At their own size, while the membrane's proteins are enlarged here.";
+    return [["Drawn", `${count.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives: those in the part of the cell kept below the cut.${strung}${own} ${measured}`]];
+  }
   if (given && !parts.nucleus) {
     return [["Drawn", `${count.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives: those in the part of the cell kept below the cut, ${onStrings.length} of them in ${polysomes} strings on a messenger. Each is drawn about 20 nm across, as two subunits: a textbook size and the picture's choice, since the species' file gives none.`]];
   }

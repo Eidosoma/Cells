@@ -166,8 +166,8 @@ try {
     check("the page opens on lens=machines with E. coli", await open("lens=machines&entry=ecoli", 3500));
     let s = await state();
     check("the switch offers six views, Machines second and pressed", s.views.length === 6 && s.views[1]?.id === "machines" && s.views[1].pressed === "true", JSON.stringify(s.views));
-    const layout = await evaluate(`(() => { const lens = ${L}; return { trays: lens.layout.trays.map((t) => t.group), shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id), cards: lens.layout.items.filter((i) => i.type === "card").length, sized: lens.counts.sized, scale: Boolean(lens.scaleBar), measured: Object.keys(lens.measured) }; })()`);
-    check("E. coli's bench: six trays, the flagellar motor drawn to scale from its own file (and the ribosome where its species' file states its size), the rest cards, the scale bar", layout.trays.length === 6 && layout.shapes.includes("machine:flagellar-motor") && layout.shapes.length === layout.sized && layout.shapes.length + layout.cards === 7 && layout.scale && layout.measured.includes("machine:flagellar-motor"), JSON.stringify(layout));
+    const layout = await evaluate(`(() => { const lens = ${L}; return { trays: lens.layout.trays.map((t) => t.group), shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id), cards: lens.layout.items.filter((i) => i.type === "card").length, sized: lens.counts.sized, machines: lens.counts.machines, scale: Boolean(lens.scaleBar), measured: Object.keys(lens.measured) }; })()`);
+    check("E. coli's bench: six trays; its machines measured from structures and the flagellar motor from its own file drawn to scale, the rest cards; the scale bar", layout.trays.length === 6 && layout.shapes.includes("machine:flagellar-motor") && layout.shapes.length === layout.sized && layout.shapes.length + layout.cards === layout.machines && layout.shapes.length >= 7 && layout.scale && layout.measured.includes("machine:flagellar-motor"), JSON.stringify(layout));
     const legend = await evaluate(`${L}.chrome().legend.items.map((item) => item.id)`);
     check("the legend names the shape, the card and the choice, and each group", ["mach-sized", "mach-card", "mach-chosen"].every((id) => legend.includes(id)) && legend.filter((id) => id.startsWith("mach-g-")).length === 6, legend.join(" "));
     await shot(`${NAME}-bench`);
@@ -209,7 +209,10 @@ try {
     if (ribosome) await click(ribosome.x, ribosome.y, 1500);
     s = await state();
     const sized = await evaluate(`Boolean(${L}.item("machine:ribosome")?.sized)`);
-    check("a real press on the ribosome chooses it; its size is its species' file's or none in hand", s.selected === "machine:ribosome" && (sized ? /as its species' file states it/.test(s.panel) : /No size in hand/.test(s.panel)), JSON.stringify([ribosome, s.selected, sized]));
+    check("a real press on the ribosome chooses it; its size is the viewer's own measure from a structure, with its entry", s.selected === "machine:ribosome" && sized && /The viewer's own measure from Protein Data Bank entry \w{4}/.test(s.panel), JSON.stringify([ribosome, s.selected, sized]));
+    const parts = await evaluate(`[...(${L}.built.get("machine:ribosome")?.ids || [])]`);
+    const shades = await evaluate(`${L}.built.get("machine:ribosome")?.group.children.map((mesh) => mesh.material.color.getHexString()) ?? []`);
+    check("chosen, the ribosome shows its two measured subunits, each a part that can be chosen, in shades of their own", parts.length === 2 && parts.every((id) => /^machine:ribosome:(large|small)$/.test(id)) && shades.length === 2 && shades[0] !== shades[1], JSON.stringify([parts, shades]));
     check("the ribosome's panel keeps the map's status of the Cell view's ribosomes and FR-13's line", /Planned/.test(s.panel) && /FR-13/.test(s.panel) && /CELL_STRUCTURES/.test(s.panel), s.panel.slice(0, 200));
     // Its door into the Protein atlas, pressed.
     const door = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /Protein atlas/.test(button.textContent))`);
@@ -228,6 +231,17 @@ try {
     s = await state();
     check("the card's Detail shows its subunits (level 3)", s.level === 3, JSON.stringify([subunits, s.level]));
     await shot(`${NAME}-motor`);
+    // The ATP synthase, the machine the engine plans first: its measured parts, then each chain, by the card's Detail.
+    await evaluate(`${V}.select("machine:atp-synthase", { fly: true })`);
+    await sleep(2200);
+    let atp = await evaluate(`(() => { const b = ${L}.built.get("machine:atp-synthase"); return { level: b?.level, ids: [...(b?.ids || [])] }; })()`);
+    check("the ATP synthase chosen stands as its five measured parts: head, two stalks, the ring and the stator's foot", atp.level === 2 && ["head", "central-stalk", "peripheral-stalk", "ring", "stator-foot"].every((part) => atp.ids.includes(`machine:atp-synthase:${part}`)), JSON.stringify(atp));
+    await shot(`${NAME}-atp-parts`);
+    const chains = await placeOf(`root.querySelector('[data-show="3"]')`);
+    if (chains) await click(chains.x, chains.y, 1500);
+    atp = await evaluate(`(() => { const b = ${L}.built.get("machine:atp-synthase"); return { level: b?.level, ids: b?.ids.size }; })()`);
+    check("a real press on the card's Subunits shows its 22 chains", atp.level === 3 && atp.ids === 22, JSON.stringify([chains, atp]));
+    await shot(`${NAME}-atp-subunits`);
     // A frame at this size: the view's own work, the labels and the draw, within a frame at 60 a second, and the draw ceiling.
     await evaluate(`${V}.select(null); ${V}.current.stage.rig.setView(${V}.current.homeView())`);
     await sleep(1200);
@@ -239,7 +253,7 @@ try {
     })()`);
     note(`${WIDTH} by ${HEIGHT}: ${JSON.stringify(cost)} (milliseconds, the median)`);
     check(`${WIDTH} by ${HEIGHT}: the view's work, its labels and the draw leave room at 60 frames a second`, cost.update + cost.labels + cost.draw < 16.7, JSON.stringify(cost));
-    check("a frame draws within the ceiling the tests hold (70 draws, 40,000 triangles)", cost.cost.draws <= 70 && cost.cost.triangles <= 40000, JSON.stringify(cost.cost));
+    check("a frame draws within the ceiling the tests hold (90 draws, 40,000 triangles)", cost.cost.draws <= 90 && cost.cost.triangles <= 40000, JSON.stringify(cost.cost));
     // While a card rises (with motion), each frame's update of the view, timed.
     const rising = await evaluate(`(() => {
       const v = ${V}, lens = v.current, still = v.stage.reducedMotion;

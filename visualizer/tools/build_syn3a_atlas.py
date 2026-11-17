@@ -49,6 +49,9 @@ from collections import Counter
 from pathlib import Path
 from xml.etree import ElementTree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import ribosome as RIBOSOME  # noqa: E402  the ribosome's size: E. coli's, the viewer's own measure of two PDB entries (schema/SPECIES_SHAPES.md)
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
@@ -998,6 +1001,7 @@ def build_species(c, membrane):
         {"label": "Inside", "value": "no nucleus: in electron tomograms the ribosomes are spread through the whole cell, with the chromosome among them", "sources": ["gilbert2021"]},
         {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"]},
         {"label": "Genes", "value": f"493, of which 452 code for proteins; the genome record lists {count} protein products, 3 of them added for genetic manipulation", "sources": ["breuer2019", "genbank"]},
+        {"label": "Ribosome's size", "value": f"{RIBOSOME.fact(own=False)}. No structure of its own ribosome is among this file's sources. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template", "sources": [*RIBOSOME.sources(), "gilbert2021"]},
         {"label": "Ribosomes", "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across", "sources": ["gilbert2021"]},
         {"label": "Proteins", "value": f"about 77,000 molecules in an average cell, an estimate from proteomics ({membrane['all_estimated_copies']:,} by the paper's table); {seen_kept} of the 452 kinds were detected, and the added marker tetM. An estimated {membrane['estimated_copies']:,} of the molecules are of the {membrane['in_or_on']} kinds that this file's shelves place in or on the membrane", "sources": ["breuer2019"]},
         {"label": "Doubling time", "value": "about 105 minutes in rich medium", "sources": ["breuer2019"]},
@@ -1016,7 +1020,7 @@ def build_species(c, membrane):
         "cap.trafficking": ["genbank"], "cap.assembly": ["genbank"], "cap.machines": ["gilbert2021", "genbank", "uniparc"],
         "cap.secretion": ["breuer2019"], "cap.division": ["breuer2019", "zhang2023"],
     }
-    sources = sources_of_species(c)
+    sources = sources_of_species(c) | RIBOSOME.sources()
     for where, keys in [*capability_sources.items(), *((fact["label"], fact["sources"]) for fact in facts)]:
         if not keys or any(sources[key]["class"] != PERMISSIVE for key in keys):
             raise SystemExit(f"{where} would rest on a source whose terms do not allow it")
@@ -1055,7 +1059,7 @@ def build_species(c, membrane):
             "facts": facts,
             # The protein molecules of the cell, for its crowd drawn to scale: the paper's estimate, and the share in the
             # membrane by the side the shelves read for each protein (the shelves' checks.membrane).
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 500,
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 500, "ribosome": RIBOSOME.part("No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template.") | {"sources": [*RIBOSOME.part()["sources"], "gilbert2021"]},
                       "proteins": {"count": membrane["all_estimated_copies"], "membrane": membrane["estimated_copies"], "membrane_from": "the proteins that the species' own shelves place in or on the membrane", "sources": ["breuer2019"]}},
             "capabilities": capabilities,
         },

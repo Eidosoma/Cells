@@ -30,9 +30,56 @@ export function sizeWords(catalogue, entry) {
   const size = entry?.size;
   if (!size) return null;
   const source = size.sources?.map((key) => citeShort(catalogue.source(key))).join(", ");
+  if (size.shape === "measured") {
+    const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
+    return [
+      `${by(size.whole.across_nm)} nm, the ellipsoid of the same spread as its atoms${size.whole.farthest_nm ? ` (its farthest atoms ${by(size.whole.farthest_nm)} nm)` : ""}.`,
+      `The viewer's own measure from Protein Data Bank entry ${size.entry}, a structure of ${size.of}, with tools/measure_particle.py; the database states no size.`,
+      size.whose || "", // the species' file's own words where the structure is another organism's
+      size.beside ? `Entry ${size.beside.entry} beside it: ${by(size.beside.across_nm)} nm.` : "",
+      size.note ? `Of the entry: ${size.note}.` : "",
+      size.modelled ? `Of each of its ${size.kinds} kinds of chain, ${Math.round(size.modelled[0] * 100)} to ${Math.round(size.modelled[1] * 100)}% of the sequence stands in the entry's coordinates.` : "",
+      size.between_nm && size.parts?.length === 2 && !size.chains?.length ? `Its two subunits' centres are ${Number(size.between_nm).toFixed(1)} nm apart.` : "",
+      size.outline === "whole" ? `Drawn as the whole's ellipsoid among the others; chosen, as each chain's. (${source})` : `Drawn as its parts' ellipsoids, each at its measured size, centre and axes: the parts, not the whole, are its outline. (${source})`,
+    ].filter(Boolean).join(" ");
+  }
   if (size.shape === "ellipsoid") return `${size.across_nm.join(" by ")} nm, as its species' file states it (${size.part}${size.says ? `: ${size.says}` : ""}; ${source}). Drawn as an ellipsoid of those widths.`;
   if (size.shape === "rod") return `${size.long_nm[0]} to ${size.long_nm[1]} nm long (${source}: “${size.text}”). Drawn ${size.long_nm[1]} nm long, the top of the range; its width is ${size.width}.`;
   return null;
+}
+
+/** The drawing levels a machine has: its closer view's file's, or, measured from a structure, an outline and its parts. */
+export function levelsOf(entry) {
+  if (entry?.closer?.levels) return entry.closer.levels;
+  const size = entry?.size;
+  if (size?.shape !== "measured") return null;
+  const levels = [{ id: 1, label: "Outline", says: size.outline === "whole" ? "The whole's ellipsoid, as one outline among the other machines." : "Its measured parts as one outline among the other machines." }];
+  if (size.parts?.length > 1) levels.push({ id: 2, label: "Parts", says: "Each named part a body of its own, at its measured size, centre and axes." });
+  if (size.chains?.length > 1) levels.push({ id: 3, label: "Subunits", says: "Each chain of the entry a body of its own, at its measured size, centre and axes, shaded by its kind." });
+  return levels.length > 1 ? levels : null;
+}
+
+/** The panel of one measured part of a machine (`machine:<kind>:<part>`), with the way back to the machine. */
+export function describePart(catalogue, species, owner, partId, { scene = catalogue?.scene } = {}) {
+  const item = catalogue?.item(species, owner), size = item?.entry?.size;
+  const part = size?.parts?.find((value) => value.id === partId) || size?.chains?.find((value) => value.id === partId);
+  if (!part) return null;
+  const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
+  return {
+    id: `${owner}:${part.id}`,
+    label: part.label,
+    kind: "machine part",
+    eyebrow: `${item.label} · a part`,
+    chips: [{ label: "Illustration", title: "An ellipsoid at its measured size, centre and axes: not a structure" }],
+    plain: size.parts.includes(part) ? `One of the ${item.label}'s ${size.parts.length} measured parts.` : `One of the ${size.chains.length} chains of the entry the ${item.label} is measured from.`,
+    facts: [
+      ["How big", `${by(part.across_nm)} nm, the ellipsoid of the same spread as its atoms${part.farthest_nm ? ` (its farthest atoms ${by(part.farthest_nm)} nm)` : ""}`],
+      ["Where", `Its centre at ${part.centre_nm.map((n) => Number(n).toFixed(1)).join(", ")} nm from the machine's, in the measure's frame`],
+      ["Measured from", `Protein Data Bank entry ${size.entry}, a structure of ${size.of}, by the viewer with tools/measure_particle.py`],
+    ],
+    sections: [],
+    doors: [{ label: "Back to the machine", lens: "machines", value: owner }],
+  };
 }
 
 /** The lines of the record on what Cells models of a machine: each names its record and says only what it says. */
@@ -107,6 +154,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   if (size) facts.push(["How big", size]);
   else if (entry.closer) facts.push(["How big", "As its closer view draws it: each part's size is in its own panel, with its paper"]);
   else facts.push(["How big", "No size in hand: it stands as a card, not a shape"]);
+  const levels = levelsOf(entry);
   if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
   else facts.push(["Its proteins", `${where}'s own data marks no set of proteins for it`]);
   const records = recordLines(catalogue, item, scene);
@@ -114,7 +162,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   const sections = [
     { title: "What Cells models of it", note: "Only what a record says.", items: [...records.map(({ label, detail, lines }) => ({ label, detail, lines })), ...(entry.closer ? [{ label: "Its closer view", lines: [entry.closer.modelled] }] : [])] },
     entry.proteins ? { title: `Its proteins in ${where}'s data`, note: entry.proteins.items.length > SHOWN ? `The first ${SHOWN} of ${number(entry.proteins.items.length)}; the Protein atlas shows them all.` : null, items: proteinItems(entry.proteins) } : null,
-    entry.closer ? { title: "How it is drawn closer", items: entry.closer.levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
+    levels ? { title: "How it is drawn", items: levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
     { title: "Sources and licences", items: sources.map((key) => catalogue.source(key)).filter(Boolean).map((source) => ({ label: citeShort(source), detail: `${source.licence}${source.class ? `, ${source.class}` : ""}`, links: source.doi ? [{ text: `doi:${source.doi}`, url: `https://doi.org/${source.doi}` }] : source.url ? [{ text: source.url, url: source.url }] : [] })) },
   ].filter((section) => section?.items?.length);
   const status = records.find((line) => line.source && !line.source.revision && line.detail);

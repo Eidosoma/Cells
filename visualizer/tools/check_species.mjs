@@ -655,7 +655,7 @@ try {
   check("a click on Syn3A shows it everywhere the page keeps a species", s.species === "syn3a" && s.attribute === "syn3a" && s.atlasAttribute === "syn3a" && /syn3a\*/.test(s.inBar + s.inCard), JSON.stringify([s.species, s.attribute, s.inBar, s.inCard]));
   check("Syn3A: two levels on the rail, and its own sentence where the others would be", s.rail === "molecule cell*" && /single-celled/.test(s.railNote || ""), JSON.stringify([s.rail, s.railNote]));
   // Every cell has both size modes (the plan for bacteria drawn to scale, 17 November 2026); the card says what the schematic picture enlarges in this cell.
-  check("Syn3A: both size modes, and the card says what the schematic picture enlarges in it", s.modes === "schematic real" && /Sizes/.test(s.sizes) && /about twice as thick as it is/.test(s.viewNote || ""), JSON.stringify([s.modes, s.sizes, s.viewNote]));
+  check("Syn3A: both size modes, and the card says what the schematic picture enlarges in it", s.modes === "schematic real" && /Sizes/.test(s.sizes) && /the membrane, its proteins and ribosomes about twice their size/.test(s.viewNote || ""), JSON.stringify([s.modes, s.sizes, s.viewNote]));
   check("Syn3A: what has no place in it is not drawn", s.absent.includes("cap.junctions") && s.absent.includes("cap.mitochondria") && !s.drawn.includes("cap.junctions") && !s.drawn.includes("cap.mitochondria") && !s.drawn.includes("cap.sheet"), `absent: ${s.absent}; drawn: ${s.drawn}`);
   check("Syn3A: the bar says what Cells models of it, in the ladder's words", s.state === syn3aWord && /, not modelled$/.test(s.state), String(s.state));
   check("Syn3A: its cell is drawn at its own size", s.u < 0.05 && s.distance < 3, JSON.stringify([s.u, s.distance]));

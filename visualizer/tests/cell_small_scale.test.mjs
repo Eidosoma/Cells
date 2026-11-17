@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import * as THREE from "three";
 import { buildCell, buildMolecules, CUT } from "../src/lenses/cell_parts.js";
-import { stopOf, TO_SCALE, CHANNEL, PUMP } from "../src/lenses/cell_layout.js";
+import { stopOf, TO_SCALE, CHANNEL, PUMP, RIBOSOME_RULE, RIBOSOME_RULES, enlargementOf } from "../src/lenses/cell_layout.js";
 import { cellFrame } from "../src/lenses/shapes.js";
 import { CellLens } from "../src/lenses/cell.js";
 
@@ -46,10 +46,10 @@ function stand(zone, kept) {
 }
 
 /** One species' cell and close-up in one size mode, built as the lens builds them. */
-function built(id, mode, species = scene.species.find((item) => item.id === id)) {
+function built(id, mode, species = scene.species.find((item) => item.id === id), ribosomeRule = undefined) {
   const lens = planned(species);
   const kept = [];
-  const cell = { shape: lens.levels.cell.shape, parts: species.cell.parts, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: [] };
+  const cell = { shape: lens.levels.cell.shape, parts: species.cell.parts, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: [], ribosomeRule };
   const handles = buildCell(stand("cell", kept), stand("studs", kept), mode, cell);
   handles.molecule = buildMolecules(stand("molecules", kept), mode, handles.frame, lens.draws);
   return { species, handles, kept, lens, nm: 0.001 / handles.frame.u };
@@ -117,11 +117,22 @@ test("each bacterium to scale: shapes at their sizes, the counts its file gives,
     const { species, handles, kept, nm } = built(id, "real");
     const parts = species.cell.parts;
     assert.ok(handles.scale.fine, id);
-    // Ribosomes: about 20 nm across, as many as before (those kept below the cut), with fewer faces, wholly below the cut.
+    // Ribosomes: as the species' file measures them (each subunit's own size along its own axes), as many as before (those
+    // kept below the cut), with fewer faces, wholly below the cut.
     const ribosomes = of(kept, "ribosomes").filter((item) => item.isInstancedMesh);
     const large = ribosomes[0];
-    const across = large.geometry.parameters.radius * 2 / nm;
-    assert.ok(across > 18 && across < 22, `${id}: a ribosome ${across.toFixed(1)} nm across`);
+    for (const [index, name] of [[0, "large"], [1, "small"]]) {
+      const subunit = parts.ribosome[name], position = ribosomes[index].geometry.attributes.position, point = new THREE.Vector3();
+      subunit.axes.forEach((axis, k) => {
+        let low = Infinity, high = -Infinity;
+        for (let vertex = 0; vertex < position.count; vertex++) {
+          const along = point.fromBufferAttribute(position, vertex).dot(new THREE.Vector3(...axis));
+          low = Math.min(low, along);
+          high = Math.max(high, along);
+        }
+        assert.ok(Math.abs((high - low) / nm - subunit.across_nm[k]) < 0.01, `${id}: the ${name} subunit ${((high - low) / nm).toFixed(2)} nm along its axis ${k}, the file ${subunit.across_nm[k]}`);
+      });
+    }
     assert.equal(large.count, Math.round(parts.ribosomes * 0.6), id);
     assert.ok(triangles(ribosomes[0]) / large.count + triangles(ribosomes[1]) / ribosomes[1].count <= 130, `${id}: a ribosome of few faces`);
     const copy = new THREE.Matrix4(), at = new THREE.Vector3();
@@ -155,6 +166,57 @@ test("each bacterium to scale: shapes at their sizes, the counts its file gives,
   }
 });
 
+test("a bacterium's ribosomes: as measured, each the same, at one stated factor in each mode; in the schematic picture enlarged with the proteins and fewer, or at their own size by the other rule", () => {
+  assert.equal(RIBOSOME_RULE, "with the proteins");
+  const copy = new THREE.Matrix4(), at = new THREE.Vector3(), turn = new THREE.Quaternion(), scale = new THREE.Vector3();
+  for (const id of BACTERIA) {
+    const species = scene.species.find((item) => item.id === id);
+    const parts = species.cell.parts, kept = Math.round(parts.ribosomes * 0.6);
+    for (const [mode, rule] of [["real", undefined], ["schematic", undefined], ["schematic", "at their own size"]]) {
+      const { kept: drawnParts, handles, nm } = built(id, mode, species, rule);
+      const factor = mode === "real" ? 1 : RIBOSOME_RULES[rule || RIBOSOME_RULE](enlargementOf("schematic", handles.frame.u));
+      assert.equal(handles.scale.ribosome.factor, factor, `${id} ${mode}: the layout states the factor once`);
+      const [large, small] = of(drawnParts, "ribosomes").filter((item) => item.isInstancedMesh);
+      // As many as fill the share of the cell that the kept ones fill at their own size.
+      assert.equal(large.count, Math.max(1, Math.round(kept / factor ** 3)), `${id} ${mode} ${rule || ""}`);
+      // The large subunit's own size along its first axis, times the factor; every copy the same size, only turned.
+      const position = large.geometry.attributes.position, point = new THREE.Vector3(), axis = new THREE.Vector3(...parts.ribosome.large.axes[0]);
+      let low = Infinity, high = -Infinity;
+      for (let vertex = 0; vertex < position.count; vertex++) {
+        const along = point.fromBufferAttribute(position, vertex).dot(axis);
+        low = Math.min(low, along);
+        high = Math.max(high, along);
+      }
+      assert.ok(Math.abs((high - low) / nm - parts.ribosome.large.across_nm[0] * factor) < 0.01 * factor, `${id} ${mode}: ${(high - low) / nm} nm`);
+      for (let index = 0; index < large.count; index++) {
+        large.getMatrixAt(index, copy);
+        copy.decompose(at, turn, scale);
+        assert.ok(Math.abs(scale.x - 1) < 1e-5 && Math.abs(scale.y - 1) < 1e-5 && Math.abs(scale.z - 1) < 1e-5, `${id} ${mode}: no copy scaled at random`);
+      }
+      // Few faces where the file's whole count is drawn; enlarged and few, as many as look round at that size.
+      const faces = (triangles(large) + triangles(small)) / large.count;
+      assert.ok(factor <= 1.05 ? faces <= 130 : faces >= 600, `${id} ${mode}: ${faces} triangles a ribosome`);
+      // On a string, neighbours never meet: no two copies of the particle closer than twice the farthest it reaches from its middle.
+      let reach = 0;
+      for (const item of [large, small]) {
+        const vertices = item.geometry.attributes.position;
+        for (let vertex = 0; vertex < vertices.count; vertex++) reach = Math.max(reach, point.fromBufferAttribute(vertices, vertex).length());
+      }
+      const said = handles.structures.ribosomes[0][1];
+      const strung = Number((said.match(/ (\d+) of them in \d+ strings/) || [0, 0])[1]);
+      const middles = [];
+      for (let index = large.count - strung; index < large.count; index++) {
+        large.getMatrixAt(index, copy);
+        middles.push(new THREE.Vector3().setFromMatrixPosition(copy));
+      }
+      for (let i = 0; i < middles.length; i++) for (let j = i + 1; j < middles.length && Math.floor(j / 5) === Math.floor(i / 5); j++) assert.ok(middles[i].distanceTo(middles[j]) >= 2 * reach * 0.999, `${id} ${mode}: two on a string meet`);
+      assert.match(said, new RegExp(`entry ${parts.ribosome.entry}`), `${id} ${mode}: the panel names the entry`);
+      if (factor > 1.05) assert.match(said, /enlarged [\d.]+ times, as the membrane's proteins are here, so fewer are drawn/);
+      if (mode === "schematic" && factor <= 1.05) assert.match(said, /At their own size/);
+    }
+  }
+});
+
 test("the crowd of proteins: in the slab under the cut, at the density the file's numbers give, as scenery that cannot be chosen", () => {
   for (const id of ["syn3a", "mpneumoniae"]) {
     const { species, handles, kept, nm } = built(id, "real");
@@ -180,14 +242,15 @@ test("the crowd of proteins: in the slab under the cut, at the density the file'
   assert.ok(Math.abs(built("syn3a", "real").handles.crowd.held - 189) < 5);
 });
 
-test("the schematic picture of a bacterium stays as it was, but for its ribosomes' fewer faces", () => {
+test("the schematic picture of a bacterium stays as it was, but for its ribosomes: enlarged with the proteins, few, and round", () => {
   for (const id of BACTERIA) {
     const { handles, kept } = built(id, "schematic");
     assert.ok(!handles.scale.fine, `${id}: the schematic picture is not drawn to scale`);
     assert.equal(handles.crowd, null);
     assert.ok(of(kept, "chromatin").some((item) => item.geometry.type === "TubeGeometry"), `${id}: the chromosome a thread, as before`);
     const ribosomes = of(kept, "ribosomes").filter((item) => item.isInstancedMesh);
-    assert.ok(triangles(ribosomes[0]) / ribosomes[0].count <= 80, `${id}: the large subunit of few faces`);
+    const factor = handles.scale.ribosome.factor;
+    assert.ok(factor > 1.05 ? triangles(ribosomes[0]) / ribosomes[0].count >= 300 : triangles(ribosomes[0]) / ribosomes[0].count <= 80, `${id}: the large subunit's faces at ${factor.toFixed(2)} times`);
   }
 });
 
@@ -218,10 +281,10 @@ test("the card says in a short line what each mode draws of a bacterium, its pan
   // The card: one short line, at most about a hundred letters with its link, so that it shows whole (tools/check_species.mjs holds what shows).
   for (const id of BACTERIA) for (const mode of ["schematic", "real"]) {
     const { text, more, open } = note(id, mode);
-    assert.ok(text.length <= 70 && open === "scale.cell" && more === "What each mode draws", `${id} ${mode}: ${text}`);
+    assert.ok(text.length <= 90 && open === "scale.cell" && more === "What each mode draws", `${id} ${mode}: ${text}`);
   }
-  assert.equal(note("ecoli", "schematic").text, "Enlarged to be seen: the membrane about 5 times as thick as it is.");
-  assert.equal(note("syn3a", "schematic").text, "Enlarged to be seen: the membrane about twice as thick as it is.");
+  assert.equal(note("ecoli", "schematic").text, "Enlarged to be seen: membrane about 5 times, proteins and ribosomes about 6.");
+  assert.equal(note("syn3a", "schematic").text, "Enlarged to be seen: the membrane, its proteins and ribosomes about twice their size.");
   assert.equal(note("mpneumoniae", "schematic").text, "Enlarged to be seen: in a cell this thin, only the small molecules.");
   assert.equal(note("ecoli", "real").text, "To scale, a cell about 1 µm across; small molecules are dots.");
   assert.equal(note("syn3a", "real").text, "To scale, a cell about 400 nm across; small molecules are dots.");
@@ -229,7 +292,9 @@ test("the card says in a short line what each mode draws of a bacterium, its pan
   assert.match(said("ecoli").Schematic, /membrane is drawn about 5 times as thick as it is and its proteins about 6 times their size/);
   assert.match(said("syn3a").Schematic, /membrane is drawn about twice as thick as it is and its proteins about twice their size/);
   assert.match(said("mpneumoniae").Schematic, /near their own size.*The two pictures differ mainly in the crowd of proteins and the small molecules\./);
-  assert.match(said("ecoli")["To scale"], /two membranes and its wall at the widths one paper measured, its channels 7\.4 nm and its pumps 8\.4 nm across, its ribosomes a textbook 20 nm across, its flagella and type 1 fimbriae as its file gives them\./);
+  assert.match(said("ecoli")["To scale"], /two membranes and its wall at the widths one paper measured, its channels 7\.4 nm and its pumps 8\.4 nm across, its ribosomes as the viewer measured it from the Protein Data Bank's entry 7K00, about 26 by 21 by 17 nm, its flagella and type 1 fimbriae as its file gives them\./);
+  assert.match(said("syn3a")["To scale"], /its ribosomes as the ribosome of Escherichia coli, as the viewer measured it from the Protein Data Bank's entry 7K00/);
+  assert.match(said("ecoli").Schematic, /its ribosomes enlarged as its proteins are, and so fewer/);
   assert.match(said("ecoli")["In a slab under the cut, to scale"], /No crowd of proteins is drawn, since the sources read for its file give no one count\./);
   assert.match(said("syn3a")["To scale"], /its membrane a textbook 4\.5 nm thick, its pumps 8\.4 nm across/);
   assert.match(said("syn3a")["In a slab under the cut, to scale"], /: of its 77,028 protein molecules, 2,709 stand there\./);

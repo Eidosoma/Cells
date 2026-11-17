@@ -12,7 +12,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { Catalogue, CATALOGUE_FORMAT, pageId, kindOf } from "../src/lenses/machines_data.js";
-import { describe, sections, doorsFor, textSections, textDescribe, present, recordLines } from "../src/lenses/machines_card.js";
+import { describe, sections, doorsFor, textSections, textDescribe, present, recordLines, levelsOf } from "../src/lenses/machines_card.js";
 import { layoutOf, shapeOf, UNIT_NM, CARD } from "../src/lenses/machines_layout.js";
 import { MachinesLens, MARKS } from "../src/lenses/machines.js";
 
@@ -55,14 +55,30 @@ test("every number stands on a permissive source the entry names, and a size is 
     }
     if (entry.count) assert.ok(entry.count.sources.length && /\d/.test(entry.count.text), `${entry.species} ${entry.id}: a count with its sources`);
     if (entry.size?.shape === "rod") assert.ok(entry.size.long_nm.every((n) => entry.size.text.includes(String(n))), `${entry.species} ${entry.id}`);
-    // A part's size is the species file's own (the ribosome's, measured from a structure): the same numbers, the same sources.
-    if (entry.size?.shape === "ellipsoid") {
-      const part = read(`data/species/${entry.species}.json`).cell.parts[entry.size.part.replace("cell.parts.", "")];
-      assert.deepEqual(entry.size.across_nm, (part.whole || part).across_nm, `${entry.species} ${entry.id}`);
+    // A measured size is the species file's own statement of the part where it has one, else the viewer's measure that the
+    // overlay names: the same numbers, from the tool's own output, never a second number beside the species file's.
+    if (entry.size?.shape === "measured") {
+      // The part of its cell that the overlay names for this machine (the ribosome's `cell.parts.ribosome`), where it names one.
+      const named = overlay.species[entry.species]?.find((item) => item.kind === entry.id)?.size?.part;
+      const part = named ? read(`data/species/${entry.species}.json`).cell.parts?.[named] : null;
+      if (entry.size.from.startsWith("cell.parts.")) assert.deepEqual(entry.size.whole.across_nm, part.across_nm, `${entry.species} ${entry.id}`);
+      else {
+        assert.ok(!part, `${entry.species} ${entry.id}: the species' file states the part, so the overlay's measure is not to be read`);
+        const record = read(entry.size.from);
+        assert.equal(record.tool, "tools/measure_particle.py");
+        assert.deepEqual(entry.size.whole.across_nm, record.measured[entry.size.entry].whole.across_nm);
+        const measured = record.measured[entry.size.entry], named = measured.parts || measured;
+        for (const body of entry.size.parts) assert.deepEqual([body.across_nm, body.centre_nm, body.axes], [named[body.id].across_nm, named[body.id].centre_nm, named[body.id].axes], body.id);
+        for (const body of entry.size.chains || []) assert.ok(measured.chains.some((chain) => `chain-${chain.chain}` === body.id && chain.across_nm.join() === body.across_nm.join()), body.id);
+      }
+      // Its sources hold the structure it is measured from (an entry of the Protein Data Bank, CC0); a paper beside it (one a
+      // species' file cites for what it says of the part) is permissive, as every source above.
+      assert.ok(entry.size.sources.some((key) => /^CC0\b/.test(raw.sources[key].licence)), `${entry.species} ${entry.id}: a structure of the Protein Data Bank (CC0) among its sources`);
+      assert.match(entry.size.says, /viewer's own measure|viewer's own/, "the size says it is the viewer's measure");
     }
   }
   // The overlay holds no size of its own: a size is read from a species' fact or from a part of its cell.
-  for (const list of Object.values(overlay.species)) for (const item of list) if (item.size) assert.ok(item.size.part || item.size.fact, JSON.stringify(item.size));
+  for (const list of Object.values(overlay.species)) for (const item of list) if (item.size) assert.ok(item.size.part || item.size.fact || overlay.measures[item.size.measure], JSON.stringify(item.size));
   assert.ok(!JSON.stringify(overlay).includes("across_nm"), "no width is written in the overlay");
 });
 
@@ -98,8 +114,8 @@ test("a species' machines: its own entries, and the membrane machines with laws 
   const leftOut = raw.units_left_out.units;
   const withProducts = scene.entities.filter((entity) => entity.kind === "unit" && entity.group === "proteins" && !leftOut[entity.id] && entity.sections.some((section) => section.key === "products" && section.items?.length));
   assert.deepEqual(catalogue.of("human").filter((item) => item.unit).map((item) => item.id).sort(), withProducts.map((entity) => entity.id).sort());
-  const ribosomeSized = Boolean(read("data/species/ecoli.json").cell.parts.ribosome);
-  assert.deepEqual(catalogue.of("ecoli").filter((item) => item.sized).map((item) => item.id), [...(ribosomeSized ? ["machine:ribosome"] : []), "machine:flagellar-motor"]);
+  assert.deepEqual(catalogue.of("ecoli").filter((item) => item.sized).map((item) => item.id).sort(), ["machine:atp-synthase", "machine:flagellar-motor", "machine:hslv", "machine:lon", "machine:protein-translocon", "machine:ribosome", "machine:rna-polymerase"], "every E. coli machine but FtsH and the chemoreceptor array has a size: measured from a structure, or the motor's from its own file");
+  assert.ok(!catalogue.item("ecoli", "machine:ftsh").sized, "no entry holds FtsH whole: a card");
   assert.equal(catalogue.counts("planarian").sized, 0);
   // The list and the text page: every machine once, by group.
   for (const species of SPECIES) {
@@ -150,9 +166,12 @@ test("its doors: the Protein atlas where the species' own proteins hold the set,
 test("the layout: one scale for every shape, a card's size the same for all, nothing outside its tray", () => {
   const ecoli = layoutOf(catalogue.of("ecoli"), raw.groups, { columns: 3, measured: { "machine:flagellar-motor": { w: 14, d: 6, h: 23 } } });
   assert.ok(ecoli.scale && ecoli.scale.length * UNIT_NM === ecoli.scale.nm);
-  // A part's ellipsoid is drawn at its three widths, the longest along the tray.
-  const ellipsoid = shapeOf({ entry: { size: { shape: "ellipsoid", across_nm: [21, 26, 18] } } });
-  assert.deepEqual([ellipsoid.w, ellipsoid.d, ellipsoid.h].map((n) => n * UNIT_NM), [26, 21, 18]);
+  // A measured machine's bodies: each at its size, centre and axes; the room it takes is the box round them.
+  const ribosome = ecoli.items.find((item) => item.id === "machine:ribosome");
+  assert.equal(ribosome.shape.kind, "measured");
+  const one = shapeOf({ entry: { size: { shape: "measured", parts: [{ across_nm: [20, 10, 6], centre_nm: [0, 0, 0], axes: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] }] } } });
+  assert.deepEqual([one.w, one.h, one.d].map((n) => Math.round(n * UNIT_NM * 1000) / 1000), [20, 10, 6]);
+  assert.ok(ribosome.shape.w * UNIT_NM >= 20 && ribosome.shape.w * UNIT_NM <= 30, `the ribosome's room: ${ribosome.shape.w * UNIT_NM} nm`);
   for (const item of ecoli.items) {
     const tray = ecoli.trays.find((value) => value.group === item.group);
     assert.ok(item.x - item.w / 2 >= tray.x - tray.w / 2 - 1e-6 && item.x + item.w / 2 <= tray.x + tray.w / 2 + 1e-6 && item.z - item.d / 2 >= tray.z - tray.d / 2 - 1e-6 && item.z + item.d / 2 <= tray.z + tray.d / 2 + 1e-6, `${item.id} in its tray`);
@@ -185,7 +204,8 @@ function lensFor(species, { width = 1400, height = 900 } = {}) {
 test("the view draws within a ceiling, with the flagellar motor at each of its levels", () => {
   const { lens } = lensFor("ecoli");
   const outline = lens.cost();
-  assert.ok(outline.draws <= 70 && outline.triangles <= 40000, JSON.stringify(outline));
+  // Each measured body is a mesh of its own: E. coli's bench holds about seventy (a frame at 1400 by 900 draws in about 1 ms on the card).
+  assert.ok(outline.draws <= 90 && outline.triangles <= 40000, JSON.stringify(outline));
   lens.setSelection("machine:flagellar-motor");
   assert.equal(lens.built.get("machine:flagellar-motor").level, 2, "chosen, it shows its parts");
   assert.ok(lens.has("machine:flagellar-motor:c-ring") || [...lens.built.get("machine:flagellar-motor").ids].length > 3, "its parts can be chosen under their closer view's ids");
@@ -195,6 +215,41 @@ test("the view draws within a ceiling, with the flagellar motor at each of its l
   const { lens: many } = lensFor("planarian");
   const cards = many.cost();
   assert.ok(cards.draws <= 30 && cards.triangles <= 10000, `the cards are instances: ${JSON.stringify(cards)}`);
+});
+
+test("a measured machine chosen shows its parts, each in its own shade, and each can be chosen", () => {
+  const { lens } = lensFor("ecoli");
+  lens.setSelection("machine:ribosome");
+  const built = lens.built.get("machine:ribosome");
+  assert.equal(built.level, 2);
+  assert.deepEqual([...built.ids].sort(), ["machine:ribosome:large", "machine:ribosome:small"]);
+  const [large, small] = built.group.children;
+  assert.notEqual(large.material.color.getHexString(), small.material.color.getHexString(), "the two subunits are told apart");
+  assert.ok(lens.has("machine:ribosome:small") && /Small subunit/.test(lens.describe("machine:ribosome:small").label));
+  lens.setSelection(null);
+  assert.equal(lens.built.get("machine:ribosome").level, 1, "let go, it is an outline again");
+});
+
+test("the ATP synthase stands as its measured parts, ring below head, and shows its parts and then each chain", () => {
+  const { lens } = lensFor("ecoli");
+  const atp = catalogue.item("ecoli", "machine:atp-synthase").entry.size;
+  assert.deepEqual(atp.parts.map((part) => part.id), ["head", "central-stalk", "peripheral-stalk", "ring", "stator-foot"]);
+  const at = (id) => atp.parts.find((part) => part.id === id).centre_nm[1];
+  assert.ok(at("ring") < at("central-stalk") && at("central-stalk") < at("head"), "the frame runs from the ring to the head: the ring stands lowest");
+  assert.equal(atp.chains.length, 22, "α3 β3 γ δ ε a b2 c10");
+  assert.deepEqual(levelsOf(catalogue.item("ecoli", "machine:atp-synthase").entry).map((level) => level.label), ["Outline", "Parts", "Subunits"]);
+  assert.deepEqual(levelsOf(catalogue.item("ecoli", "machine:lon").entry).map((level) => level.label), ["Outline", "Subunits"], "Lon has no named parts: its whole, then its six chains");
+  lens.setSelection("machine:atp-synthase");
+  assert.equal(lens.built.get("machine:atp-synthase").level, 2);
+  assert.equal(lens.built.get("machine:atp-synthase").ids.size, 5);
+  lens.setMode("3");
+  assert.equal(lens.built.get("machine:atp-synthase").ids.size, 22);
+  assert.match(lens.describe("machine:atp-synthase:chain-A").label, /ATP synthase subunit alpha, chain A/);
+  lens.setSelection("machine:lon");
+  assert.equal(lens.built.get("machine:lon").level, 3, "chosen, Lon goes to its first deeper level, its chains");
+  const words = describe(catalogue, "ecoli", "machine:atp-synthase", { scene }).facts.find(([label]) => label === "How big")[1];
+  assert.match(words, /Protein Data Bank entry 6OQR, a structure of Escherichia coli/);
+  assert.match(words, /the parts, not the whole, are its outline/);
 });
 
 test("the legend names every mark that is drawn, and the card says what is and is not in hand", () => {

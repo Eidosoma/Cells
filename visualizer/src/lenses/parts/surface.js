@@ -6,7 +6,7 @@
 // It takes from the layout's one stream of chance, in the builder's fixed order.
 
 import * as THREE from "../../three.js";
-import { CUT, SPOT, TO_SCALE, CHANNEL, PUMP } from "../cell_layout.js";
+import { CUT, SPOT, TO_SCALE, CHANNEL, PUMP, STYLE } from "../cell_layout.js";
 import { turnY, instanced, dots } from "./geometry.js";
 
 export default {
@@ -30,7 +30,7 @@ export default {
       if (pumps) {
         const lobes = pumps.material({ hue: "bioPump", roughness: 0.35, thin: 0.35 });
         for (const angle of SPOT.pumps) {
-          const outer = new THREE.Mesh(new THREE.SphereGeometry(0.46, 18, 14), lobes);
+          const outer = new THREE.Mesh(new THREE.SphereGeometry(STYLE.schematic.pump / 2, 18, 14), lobes);
           outer.position.copy(outline.point(angle, -0.05, CUT + 0.08));
           outer.scale.set(1, 0.85, 1);
           const inner = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 12), lobes);

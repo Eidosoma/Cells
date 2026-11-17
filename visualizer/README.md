@@ -345,9 +345,12 @@ A replay draws what a run saved, and nothing else.
   experiment's summary recorded and the values in the run's outcome file, under the
   experiment's own names. A readout the run marks as supplementary says so. The viewer
   computes no verdict.
-- **Positions are derived.** The runs save which cells are joined but no coordinates, so
-  the adapter lays the sheet out as the hexagonal lattice its junctions define. The replay
-  is marked as derived and lists each derived piece. Rotation and handedness are arbitrary.
+- **Positions are the run's own where it gives them, and derived where it does not.** A
+  run view that prescribes where its cells stand (`space.representation: "prescribed"`) is
+  drawn there, every junction a line between its two cells, and no outside node is given a
+  tile of the viewer's. A run that saves which cells are joined but no coordinates is laid
+  out as the hexagonal lattice its junctions define: the replay is marked as derived and
+  lists each derived piece, and rotation and handedness are arbitrary.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
   one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
   Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed
@@ -356,21 +359,33 @@ A replay draws what a run saved, and nothing else.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-Two experiments are replayed today, 59 runs in all. A run's records for the quantity
-layers are in files of their own beside it, fetched when a layer is switched on: 295
-files and 96 MB in all, each under 1 MB (the largest is 0.89 MB), and a run is loaded
-only when it is shown:
+**The page's list is two worked examples** (since Version 27, 17 November 2026; the user
+chose them for the page):
 
-| Experiment | Runs | What the record says it found |
+| Example | Runs | What the record says |
 | --- | --- | --- |
-| E07-v1: renewal | all 38 of its judged execution | Judged. The disc did not renew; 8 of 15 scored predictions held |
-| The turnover pre-screen | the 21 arms that have an outcome | A development pre-screen, not judged |
+| Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026) | 30 runs of the engine: 16 in the Norton form, 14 as the preprint writes the model | Development work, not judged (D138) |
+| The GARD assembly | the engine's two development runs of the model system, played in the tab's place | Development runs of the engine, not judged |
 
-- **An experiment selector** heads the card. Beside each experiment stand two separate
-  facts from the record: whether it was judged, and what the answer was. A judged
-  experiment whose answer is no is shown as exactly that. Each run says how it ended.
-- **The first run shown** is of E07-v1's inheritance route, which its judged result is
-  about; the control at two couplings follows.
+- **An entry says whether the page lists it** (`listed` in `data/replays/overlay.json`), and
+  the overlay's `doors` name the page's other examples (a model system's entry, shown in
+  the Experiments tab's place with its own levels, clock and panels). Experiments that are
+  not listed are still packaged, for the checks, and are not published: E07-v1 (its 38
+  judged runs), the turnover pre-screen (21 arms), the secreted-species run and the example
+  sheet. A run the scene itself names is published unlisted: the planarian's loop, which
+  the Cell view's flux reads. 92 runs are packaged in all; a run's records for the quantity
+  layers are in files of their own beside it, each under 1 MB, fetched when a layer is
+  switched on, and a run is loaded only when it is shown.
+- **The list of examples** heads the card. Beside each stand two separate facts from the
+  record: whether it was judged, and what the answer was. A judged experiment whose answer
+  is no is shown as exactly that. Each run says how it ended.
+- **The run shown first** is the one the entry names (`opens.run`, an arm's name: Figure
+  5a's seven-cell network), or the experiment's first run where it names none or that arm
+  is not packaged. The runs stand at the card's head, under the list of examples: a few are
+  rows to press, many are a list to choose from, grouped by the sweep that holds them.
+- **A quantity the experiment states** (a file beside the run, `schema/RUN_VIEW.md`)
+  colours the cells where the entry opens its runs on it (`opens.record`), in its own unit,
+  never converted, and is said to be the experiment's own and not a field of the engine.
 - **Where an arm's files name no disc,** it is taken as the cells above the experiment's D
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
@@ -404,12 +419,16 @@ only when it is shown:
   run, and an arm with no packaged run says so. "The numbers as a table" gives the same
   numbers. Nothing is computed from them and no word judges them. `schema/RUN_VIEW.md` ("A
   sweep's chart") states the least a summary must hold; the adapter refuses one that holds
-  less, with the reason. No experiment on the page states a sweep yet: checks hold the
-  chart on a made-up summary (`tests/engine-views/sweep-made-up/`).
+  less, with the reason. The gap-junction example states seven (Figures 3b, 5b, 5a and 8
+  in the Norton form; 3b, 5b and 8 as written); the sweeps' card lists them, and choosing
+  one shows a run of it: the run shown where that is one of its arms, else its first arm
+  with a run. Checks also hold the chart on a made-up summary
+  (`tests/engine-views/sweep-made-up/`).
 - **A development run and an example stand apart** from the experiments, each under a
-  heading of its own: the engine's first run made for the viewer (one cell that secretes
-  a species; no verdict), and an example sheet with invented numbers for the layers that
-  no saved run feeds yet. See "Quantity layers".
+  heading of its own in the list when one of its runs is shown (neither is listed, so each opens by its address and neither is published): the
+  engine's first run made for the viewer (one cell that secretes a species; no verdict),
+  and an example sheet with invented numbers for the layers that no saved run feeds yet.
+  See "Quantity layers".
 
 To make them all (the second call adds the example, from the fixture the run-fixture tool
 writes):
@@ -667,7 +686,7 @@ themselves (E. coli's stop holds about 2.4 nm a pixel, Syn3A's 0.75).
 | Membrane | a band of its thickness at the cut: E. coli's 5.84 nm (Matias and others 2003), elsewhere a textbook 4.5 nm | the schematic band: about 5 times in E. coli, twice in Syn3A, near its size in M. pneumoniae |
 | Wall and outer membrane (E. coli) | at the widths one paper measured: the wall's middle 15.4 nm and the outer membrane's 27.3 nm out, each a clear shell with a band of its thickness at the cut | clear shells 17.5 and 37.5 nm out, the picture's choice |
 | Channels and pumps | the close-up's shapes: a channel 7.4 nm across and 10 nm long, a pump 8.4 nm across, one size each for the shapes, their spacing and the words; on the skin, rings and low domes as wide; how many is the picture's choice | a few, enlarged as the membrane is |
-| Ribosomes | 20 nm across (textbook), 60% of the file's count, those below the cut | the same, in both modes |
+| Ribosomes | as measured: each subunit the ellipsoid of the same spread as its atoms, from the viewer's own measure of E. coli's ribosome (PDB 7K00; the whole 26 by 21 by 17 nm; 5MDZ within 1.2 nm), Syn3A and M. pneumoniae at E. coli's; 60% of the file's count, those below the cut | enlarged as the membrane's proteins are (about 6 times in E. coli, 2.4 in Syn3A, 1.2 in M. pneumoniae), so fewer, as many as fill the same share of the cell (19, 22 and 106); one stated value draws them at their own size instead |
 | Crowd of proteins | Syn3A and M. pneumoniae: marks about 5 nm across, only in a slab 10 nm deep under the cut, at the density the file's count gives (Syn3A 2,709, M. pneumoniae 7,649); E. coli: none, since its sources disagree a hundredfold | none |
 | Chromosome | a fine line in the same slab, the share of its length (0.34 nm a base pair) that the slab holds | a thread whose width and length are the picture's choice; its panel says what share it shows |
 | Ions, fuel, small molecules | dots, each standing for many | enlarged beads |

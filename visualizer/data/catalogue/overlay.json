@@ -81,8 +81,8 @@
       "records": ["fr13"]
     },
     {
-      "id": "hslv", "label": "HslV protease", "group": "breaking",
-      "plain": "A protease whose subunits carry the signature of the proteasome's: they form a barrel that cuts proteins.",
+      "id": "hslv", "label": "HslUV protease", "group": "breaking",
+      "plain": "A barrel of HslV that cuts proteins, capped by a ring of HslU that unfolds them and feeds them in, using ATP. HslV's subunits carry the signature of the proteasome's.",
       "records": ["fr13"]
     },
     {
@@ -120,11 +120,13 @@
       { "kind": "attachment-organelle", "named": { "capability": "cap.machines", "word": "attachment organelle" }, "count": { "fact": "Attachment organelle", "says": "one, at one pole" }, "size": { "fact": "Attachment organelle", "shape": "rod", "long_nm": [250, 300] }, "proteins": { "mark": "where", "value": "attachment organelle" } }
     ],
     "ecoli": [
-      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
-      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
-      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
-      { "kind": "protein-translocon", "label": "Protein translocases (Sec and Tat)", "named": { "capability": "cap.trafficking", "word": "Sec and Tat translocases" } },
-      { "kind": "hslv", "named": { "capability": "cap.machines", "word": "HslV" } },
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome", "measure": "ecoli-ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "size": { "measure": "ecoli-rna-polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "size": { "measure": "ecoli-atp-synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
+      { "kind": "protein-translocon", "label": "Protein translocases (Sec and Tat)", "named": { "capability": "cap.trafficking", "word": "Sec and Tat translocases" }, "size": { "measure": "ecoli-translocon" } },
+      { "kind": "hslv", "named": { "capability": "cap.machines", "word": "HslV" }, "size": { "measure": "ecoli-hslv" } },
+      { "kind": "lon", "named": { "protein": "P0A9M0" }, "size": { "measure": "ecoli-lon" } },
+      { "kind": "ftsh", "named": { "protein": "P0AAI3" } },
       { "kind": "flagellar-motor", "named": { "capability": "cap.machines", "word": "the motor of its flagella" }, "count": { "fact": "Flagella", "says": "one at the foot of each flagellum" }, "proteins": { "mark": "complex", "value": "flagellum" } },
       { "kind": "chemoreceptor-array", "named": { "capability": "cap.assembly", "word": "chemoreceptor arrays" }, "proteins": { "mark": "complex", "value": "chemoreceptor array" } }
     ],
@@ -133,5 +135,25 @@
     "planarian": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
     "fruitfly": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
     "thalecress": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }]
+  },
+  "measures": {
+    "note": "Sizes measured by the viewer from a Protein Data Bank entry's coordinates with tools/measure_particle.py: the tool's own output, kept here as written. A species' file that states a part's size of its own (cell.parts.ribosome) is read first, and the measure here is then not used. The Protein Data Bank states no size: each number is the viewer's own.",
+    "ecoli-ribosome": { "file": "data/catalogue/measures/ecoli.ribosome.json", "entry": "7K00", "beside": "5MDZ", "of": "Escherichia coli", "parts": { "large": "Large subunit", "small": "Small subunit" }, "sources": ["pdb7k00", "pdb5mdz"] },
+    "ecoli-atp-synthase": { "file": "data/catalogue/measures/ecoli.atp-synthase.json", "entry": "6OQR", "beside": "6OQS", "of": "Escherichia coli", "outline": "parts", "chains": true, "parts": { "head": { "label": "Head (α3β3)", "hue": "bioFuel" }, "central-stalk": { "label": "Central stalk (γε)", "hue": "bioMito" }, "peripheral-stalk": { "label": "Peripheral stalk (b2δ)", "hue": "edge" }, "ring": { "label": "Ring in the membrane (c10)", "hue": "bioMembrane" }, "stator-foot": { "label": "Stator's foot in the membrane (a)", "hue": "bioIon" } }, "sources": ["pdb6oqr", "pdb6oqs"] },
+    "ecoli-rna-polymerase": { "file": "data/catalogue/measures/ecoli.rna-polymerase.json", "entry": "6P1K", "of": "Escherichia coli", "outline": "parts", "chains": true, "note": "the σ70 holoenzyme, with no DNA", "parts": { "beta": "β", "beta-prime": "β′", "alpha": "α2", "omega": "ω", "sigma": "σ70" }, "sources": ["pdb6p1k"] },
+    "ecoli-translocon": { "file": "data/catalogue/measures/ecoli.translocon.json", "entry": "9RBF", "of": "Escherichia coli", "outline": "parts", "chains": false, "note": "SecYEG alone, measured from an entry where it holds YidC and sits on a ribosome, both left out; only about half of SecG's sequence stands in its coordinates", "parts": { "secy": "SecY", "sece": "SecE", "secg": "SecG" }, "sources": ["pdb9rbf"] },
+    "ecoli-hslv": { "file": "data/catalogue/measures/ecoli.hslv.json", "entry": "1G4A-assembly1", "beside": "1G4B-assembly1", "of": "Escherichia coli", "outline": "parts", "chains": true, "note": "HslV's barrel of twelve capped by one HslU ring of six, the crystal's biological assembly; capped at both ends beside it", "parts": { "hslv": "HslV, the barrel", "hslu": "HslU, the cap" }, "sources": ["pdb1g4a", "pdb1g4b"] },
+    "ecoli-lon": { "file": "data/catalogue/measures/ecoli.lon.json", "entry": "6U5Z", "of": "Escherichia coli", "outline": "whole", "chains": true, "note": "the S679A mutant, a hexamer", "parts": {}, "sources": ["pdb6u5z"] }
+  },
+  "sources": {
+    "pdb6oqr": { "text": "Protein Data Bank entry 6OQR: E. coli ATP Synthase ADP State 1a. Electron microscopy, 3.1 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6OQR", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-atp-synthase/6OQR.cif.gz" },
+    "pdb6oqs": { "text": "Protein Data Bank entry 6OQS: E. coli ATP synthase State 1b. Electron microscopy, 3.3 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6OQS", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-atp-synthase/6OQS.cif.gz" },
+    "pdb6p1k": { "text": "Protein Data Bank entry 6P1K: Cryo-EM structure of Escherichia coli sigma70 bound RNAP polymerase holoenzyme. Electron microscopy, 4.05 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6P1K", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-rna-polymerase/6P1K.cif.gz" },
+    "pdb9rbf": { "text": "Protein Data Bank entry 9RBF: Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC. Electron microscopy, 2.44 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/9RBF", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-translocon/9RBF.cif.gz" },
+    "pdb1g4a": { "text": "Protein Data Bank entry 1G4A: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 3.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/1G4A", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-hslv/1G4A-assembly1.cif.gz" },
+    "pdb1g4b": { "text": "Protein Data Bank entry 1G4B: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 7.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/1G4B", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-hslv/1G4B-assembly1.cif.gz" },
+    "pdb6u5z": { "text": "Protein Data Bank entry 6U5Z: Cryo-EM structure of E. coli LonA S679A. Electron microscopy, 3.5 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6U5Z", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-lon/6U5Z.cif.gz" },
+    "pdb7k00": { "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution. Electron microscopy, 1.98 Å; Escherichia coli, strain MRE600, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7K00", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-ribosome/7K00.cif.gz" },
+    "pdb5mdz": { "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site). Electron microscopy, 3.10 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/5MDZ", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-ribosome/5MDZ.cif.gz" }
   }
 }

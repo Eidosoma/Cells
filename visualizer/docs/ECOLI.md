@@ -160,6 +160,13 @@ Two marks pick out the machines of the proposed track. Both come from permissive
   between the membranes).
 - **6,800 ribosomes,** the low end of the range another open paper gives (6,800 to
   72,000 by phase of growth; Urich and others 2008), and a chromosome of 4,642 kbp.
+- **Its ribosome's size,** the viewer's own measure from the coordinates of the PDB entry
+  7K00 (`tools/measure_particle.py`; `data/measures/ecoli.ribosome.json`): each subunit the
+  ellipsoid of the same spread as its atoms, the large 20.6 by 18 by 14.3 nm and the small
+  23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm
+  (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5
+  nm, within 1.2 nm. The PDB states no size; its entries are CC0. In the schematic picture
+  the ribosomes are enlarged as the membrane's proteins are, about 6 times, and 19 are drawn.
 - **Levels:** molecules and one cell. It lives as single cells.
 - **Capabilities:** each of Cells' capabilities has a place in it or a reason it has
   none, in the same twenty entries as the other single cells. The channels and pumps of

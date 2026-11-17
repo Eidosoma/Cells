@@ -34,9 +34,11 @@ CELL_KINDS = {
     "capsule": ({"length_um", "across_um"}, {"tip_um"}),
     "prism": ({"sides", "height_um"}, {"across_um", "radius_um", "corner_um", "edge_um"}),
 }
-PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes", "envelope", "proteins"}
+PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes", "envelope", "proteins", "ribosome"}
 ENVELOPE_KEYS = {"membrane_nm", "wall_nm", "outer_nm", "between_nm", "wall_to_outer_nm", "sources", "read"}  # the envelope's widths (schema/SPECIES_SHAPES.md)
 PROTEIN_KEYS = {"count", "membrane", "sources", "membrane_from"}  # how many protein molecules the cell holds
+# A ribosome's measured size and shape, the viewer's own measure of a PDB entry (tools/measure_particle.py; schema/SPECIES_SHAPES.md)
+RIBOSOME_KEYS = {"large", "small", "across_nm", "farthest_nm", "between_nm", "of", "entry", "beside", "measured", "sources", "note"}
 # An appendage: a thread or a hair that stands out from the cell (schema/SPECIES.md, "Appendages are a general part").
 APPENDAGE_KEYS = {"kind", "label", "count", "length_um", "width_nm", "where", "from", "base", "sources"}
 APPENDAGE_KINDS = ("flagellum", "pilus")
@@ -68,6 +70,45 @@ def positive(value):
 
 
 DAY = re.compile(r"\d{4}-\d{2}-\d{2}$")
+
+
+def ribosome_problems(block, sources):
+    """What is wrong with a species' `cell.parts.ribosome` (schema/SPECIES_SHAPES.md): each subunit's size, centre and own axes
+    (unit, square to each other, right-handed), the whole's sizes, whose ribosome and which entry, whose measure, its sources."""
+    at = "cell.parts.ribosome"
+    if not isinstance(block, dict) or set(block) - RIBOSOME_KEYS:
+        return [f"{at} takes {', '.join(sorted(RIBOSOME_KEYS))}"]
+    problems = []
+    three = lambda value: isinstance(value, list) and len(value) == 3 and all(number(item) for item in value)  # noqa: E731
+    for name in ("large", "small"):
+        part = block.get(name)
+        if not (isinstance(part, dict) and set(part) == {"across_nm", "centre_nm", "axes"} and three(part["across_nm"]) and all(item > 0 for item in part["across_nm"]) and three(part["centre_nm"])):
+            problems.append(f"{at}.{name} is {{across_nm, centre_nm, axes}}: three sizes above zero, a centre and three axes")
+            continue
+        axes = part["axes"]
+        if not (isinstance(axes, list) and len(axes) == 3 and all(three(axis) for axis in axes)):
+            problems.append(f"{at}.{name}.axes is three axes of three numbers")
+            continue
+        dot = lambda a, b: sum(x * y for x, y in zip(a, b))  # noqa: E731
+        square = all(abs(dot(axes[i], axes[j]) - (1 if i == j else 0)) < 2e-3 for i in range(3) for j in range(3))
+        a, b, c = axes
+        handed = a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])
+        if not square or abs(handed - 1) > 5e-3:
+            problems.append(f"{at}.{name}.axes are unit axes square to each other, in a right-handed frame")
+    for key in ("across_nm", "farthest_nm"):
+        if not (three(block.get(key)) and all(item > 0 for item in block[key])):
+            problems.append(f"{at}.{key} is three sizes above zero")
+    if not (number(block.get("between_nm")) and block["between_nm"] > 0):
+        problems.append(f"{at}.between_nm is a distance above zero")
+    for key in ("of", "entry", "measured"):
+        if not (isinstance(block.get(key), str) and block[key].strip()):
+            problems.append(f"{at}.{key} is a text: whose ribosome, which entry, and whose measure by which definition and tool")
+    if isinstance(block.get("measured"), str) and not re.search(r"viewer's own measure", block["measured"]):
+        problems.append(f"{at}.measured says that the measure is the viewer's own, never a value of the database")
+    cited = block.get("sources")
+    if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
+        problems.append(f"{at}.sources names keys of the species' sources")
+    return problems
 
 
 def left_out_sound(flag):
@@ -434,6 +475,9 @@ class Reader:
             cited = proteins.get("sources")
             if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
                 problems.append("cell.parts.proteins.sources names keys of the species' sources")
+        ribosome = parts.get("ribosome")
+        if ribosome is not None:
+            problems.extend(ribosome_problems(ribosome, sources))
         sizes = parts.get("organelle_sizes", {})
         if not isinstance(sizes, dict):
             problems.append("cell.parts.organelle_sizes is keyed by organelle")

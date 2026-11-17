@@ -20,7 +20,8 @@ same in both views (`machine:<id>`).
 
 | File | Made by | Holds |
 | --- | --- | --- |
-| `data/catalogue/overlay.json` | Hand | The groups; the units of the law inventory left out, with why; the kinds of machine (id, label, group, a plain line, the record lines of what Cells models of it); for each species, the kinds its records name and where each is named, counted and sized |
+| `data/catalogue/measures/*.json` | `tools/measure_particle.py`, run by the viewer | The tool's own output for an entry, as written |
+| `data/catalogue/overlay.json` | Hand | The groups; the units of the law inventory left out, with why; the measures it reads and the entries they rest on; the kinds of machine (id, label, group, a plain line, the record lines of what Cells models of it); for each species, the kinds its records name and where each is named, counted and sized |
 | `data/catalogue/catalogue.json` | `tools/build_catalogue.py` (generated: do not edit) | The groups, the kinds and one entry for each machine of each species, with what its records give and their sources |
 
 ```bash
@@ -66,6 +67,29 @@ catalogue never says their count.
   and its entries). The catalogue holds no second number of a size. Where neither is there, the
   machine has no size in hand and is drawn as a card. A width that no source gives and that a shape
   needs (the attachment organelle's) is the picture's choice, and the panel says so.
+- **A measured size** (`shape: measured`) is the viewer's own measure from a Protein Data Bank
+  entry's coordinates, made with `tools/measure_particle.py` by its definition:
+  each body the ellipsoid of the same spread as its polymer atoms, the farthest atoms beside it.
+  It gives the whole's widths and each part's widths, centre and axes in the measure's frame. It
+  names its entry, its organism, the definition and the tool, and it never reads as the database's
+  value. Where the structure is another organism's (a bacterium's ribosome drawn at E. coli's
+  measure), the species' file's own words say so (`whose`, its part's `note`), and the panel gives
+  them as written. It is read from the species' file where that file states the part (`cell.parts.ribosome`),
+  and only otherwise from the tool's own output that the overlay's `measures` names (kept under
+  `data/catalogue/measures/` as the tool wrote it; transitional where a species' file will state
+  it). The overlay's own `sources` hold the entries, each CC0 1.0.
+- **Its parts and chains.** The tool's machine mode (`--machine`) gives the whole, the named parts
+  the overlay asks for (`--part NAME=ENTITY,ENTITY`, by the entry's entity ids) in a frame from
+  one part's centre to another's, and each chain. A measure's spec in the overlay names its entry
+  (and one beside it), its parts with their labels (and a hue of the page's palette for a part a
+  visitor should tell apart), whether its chains are drawn, and its outline: its parts, or the
+  whole where it has none. A measured machine's levels are Outline (its outline's bodies in its
+  group's colour), Parts (each named part, `machine:<kind>:<part>`) and Subunits (each chain,
+  `machine:<kind>:chain-<id>`, in its part's hue), each where it has them; chosen, it goes to its
+  first level past the outline. Each part and chain has its own panel with "Back to the machine".
+- **A machine named by its own protein.** Where the species' file does not name a machine, a
+  protein of the species' own catalogue (`data/proteins/<species>/proteins.tsv`) whose entry names
+  it may (`named.protein`), with the catalogue's UniProt source.
 - **Its proteins** are those of the species' own data that carry a mark with the machine's name
   (`complex` for E. coli, by the Gene Ontology; `complex` for Syn3A, by the genome record's product
   names; `where` for M. pneumoniae's attachment organelle, by UniProt), with the mark's own words on

@@ -484,8 +484,12 @@ export class ReplayLens {
     // height repeats that colour, as the replay always was.
     // The experiment may name what its runs open on: its record takes the colour, and the layers it names come on with it.
     const opens = this.opensOf(), named = opens?.record ? this.offers.find((item) => item.ok && item.layer.mark === "tint" && (item.source?.id ?? item.layer.quantity.record) === opens.record) || null : null;
-    const opening = !this.switch.holder("colour") && !this.off.has("colour") ? named || this.offers.find((item) => item.ok && item.layer.opens === true && item.layer.channels.includes("colour")) || null : null;
-    if (opening && !opening.parts.length) this.switch.switchOn(opening.layer);
+    // The same holds for the next run of a visit: where the colour is still the opening layer's, kept on from the run before,
+    // the run opens as the first did, flat (else every run but the first stood raised, the first alone flat).
+    const opener = named || this.offers.find((item) => item.ok && item.layer.opens === true && item.layer.channels.includes("colour")) || null;
+    const held = this.switch.holder("colour");
+    const opening = !this.off.has("colour") && (!held || held === opener?.layer.id) ? opener : null;
+    if (opening && !opening.parts.length && !this.switch.isOn(opening.layer.id)) this.switch.switchOn(opening.layer);
     if (!opening && !this.switch.holder("colour") && !this.off.has("colour")) {
       const tint = this.record ? this.offerOf("tint", this.record.id) : null;
       if (tint) this.switch.switchOn(tint.layer);

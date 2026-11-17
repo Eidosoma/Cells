@@ -23,7 +23,7 @@ import { disposeTree } from "../core/stage.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { LookTrial } from "../core/look_trial.js";
 import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
-import { stopOf, CHANNEL, PUMP, TO_SCALE } from "./cell_layout.js";
+import { stopOf, CHANNEL, PUMP, TO_SCALE, RIBOSOME_RULE, enlargementOf } from "./cell_layout.js";
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
 import { middle, words } from "./cell_scenery.js";
@@ -293,6 +293,8 @@ export class CellLens {
     this.sizeMode = "schematic";
     this.activeStop = "cell";
     this.dustFade = 1;
+    // How the schematic picture sizes a ribosome the species' file measures (cell_layout.js, RIBOSOME_RULES): set and rebuild to compare.
+    this.ribosomeRule = RIBOSOME_RULE;
     this.clock = 0;
     this.active = false;
     this.capabilityByPart = new Map(model.ofKind("capability").map((entity) => [entity.part, entity]));
@@ -497,7 +499,7 @@ export class CellLens {
     // The cell, in each size mode it is drawn in. It is built in its own frame and scaled to its size.
     const has = (part) => this.draws(part);
     const parts = this.cellType?.parts || species.cell.parts || {};
-    const cell = { shape: this.levels.cell.shape, parts, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
+    const cell = { shape: this.levels.cell.shape, parts, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell), ribosomeRule: this.ribosomeRule };
     const toWorld = (zones) => {
       for (const zone of zones) for (const part of zone.parts) part.anchor?.multiplyScalar(u);
     };
@@ -815,8 +817,10 @@ export class CellLens {
    * What each size mode draws of a bacterium, worked out from what each drew of it: short, for the card, and in full,
    * for the "As drawn" section of the cell's own panel ("One cell"), which a phone can open too. The schematic's
    * factors are its sizes against the picture's own to scale: the membrane's band (0.5 units) against the membrane's
-   * thickness (the file's, or a textbook 4.5 nm), and a pump's outer lobe (0.92 units) against the pump drawn to
-   * scale (cell_layout.js, PUMP). Null for a cell whose molecules are not shapes to scale.
+   * thickness (the file's, or a textbook 4.5 nm), and the membrane proteins' own factor (cell_layout.js, enlargementOf:
+   * the schematic pump against the pump drawn to scale), which the ribosomes take too where the rule says so (the
+   * layout's `ribosome`). The ribosome's size is the species' file's measure (`ribosome`), or else a textbook 20 nm.
+   * Null for a cell whose molecules are not shapes to scale.
    */
   sizeWords() {
     const real = this.cells?.real, schematic = this.cells?.schematic;
@@ -829,20 +833,45 @@ export class CellLens {
     const crowd = real.crowd, depth = crowd?.depth ?? TO_SCALE.slab;
     const envelope = real.scale.envelope?.outer ? "its two membranes and its wall at the widths one paper measured" : `its membrane a textbook ${Number(membrane.toPrecision(2))} nm thick`;
     const shapes = real.molecule?.pored ? `its channels ${CHANNEL.across} nm and its pumps ${PUMP.across} nm across` : `its pumps ${PUMP.across} nm across`;
-    const scale = `A cell about ${width} across: ${envelope}, ${shapes}, its ribosomes a textbook 20 nm across${theirs}. Ions and small molecules are dots, each standing for many. Other counts are the picture's choice.`;
+    // The ribosome as the species' file measures it, or the picture's choice.
+    const measured = (this.cellType?.parts || this.species.cell.parts || {}).ribosome;
+    const size = (values) => values.map((value) => Number(value.toPrecision(2))).join(" by ");
+    const ribosomes = measured
+      ? `its ribosomes ${measured.note ? `as the ribosome of ${measured.of}, ` : ""}as the viewer measured it from the Protein Data Bank's entry ${measured.entry}, about ${size(measured.across_nm)} nm`
+      : "its ribosomes a textbook 20 nm across";
+    const scale = `A cell about ${width} across: ${envelope}, ${shapes}, ${ribosomes}${theirs}. Ions and small molecules are dots, each standing for many. Other counts are the picture's choice.`;
     const slab = crowd
       ? `The crowd of proteins and the chromosome are drawn only in a slab ${depth} nm deep under the cut, as an electron tomogram shows a cell: of its ${crowd.count.toLocaleString("en-US")} protein molecules, ${(crowd.loose + crowd.held).toLocaleString("en-US")} stand there.`
       : `The chromosome is drawn only in a slab ${depth} nm deep under the cut, as an electron tomogram shows a cell. No crowd of proteins is drawn, since the sources read for its file give no one count.`;
     // The schematic picture.
-    const band = (0.5 * u * 1000) / membrane, protein = (0.92 * u * 1000) / PUMP.across;
+    const band = (0.5 * u * 1000) / membrane, protein = enlargementOf("schematic", u);
     const times = (factor) => (Math.round(factor) === 2 ? "about twice" : `about ${Math.round(factor)} times`);
     const thin = band < 1.6 && protein < 1.6;
+    // The ribosomes in the schematic picture: enlarged with the proteins (and fewer), or at their own size (cell_layout.js, RIBOSOME_RULES).
+    const ribosomeFactor = schematic.scale?.ribosome?.factor ?? 1, withProteins = measured && ribosomeFactor > 1.05;
+    const drawnRibosomes = !measured
+      ? "its ribosomes are drawn at a textbook 20 nm"
+      : withProteins
+        ? `its ribosomes enlarged as its proteins are, and so fewer, standing for the many: as many as fill the same share of the cell`
+        : "its ribosomes at their own measured size, all of those below the cut";
     const enlarged = thin
-      ? `Parts are enlarged and few, so each can be seen. In a cell this thin its membrane and its membrane proteins are drawn near their own size and its ribosomes at a textbook 20 nm${theirs}; only ions and small molecules are enlarged. The two pictures differ mainly in the crowd of proteins and the small molecules.`
-      : `Parts are enlarged and few, so each can be seen: here the membrane is drawn ${times(band)} as thick as it is and its proteins ${times(protein)} their size, and ions and small molecules more; its ribosomes are drawn at a textbook 20 nm${theirs}.`;
+      ? `Parts are enlarged and few, so each can be seen. In a cell this thin its membrane, its membrane proteins and its ribosomes are drawn near their own size${theirs}; only ions and small molecules are enlarged. The two pictures differ mainly in the crowd of proteins and the small molecules.`
+      : `Parts are enlarged and few, so each can be seen: here the membrane is drawn ${times(band)} as thick as it is and its proteins ${times(protein)} their size, and ions and small molecules more; ${drawnRibosomes}${theirs}.`;
+    // The card's line: what is enlarged, and the ribosomes with the proteins or not.
+    const cardLine = thin
+      ? "Enlarged to be seen: in a cell this thin, only the small molecules."
+      : !measured
+        ? `Enlarged to be seen: the membrane ${times(band)} as thick as it is.`
+        : times(band) === times(protein) && withProteins
+          ? `Enlarged to be seen: the membrane, its proteins and ribosomes ${times(band)} their size.`
+          : withProteins
+            ? `Enlarged to be seen: membrane ${times(band)}, proteins and ribosomes ${times(protein).replace(/ times$/, "")}.`
+            : times(band) === times(protein)
+              ? `Enlarged to be seen: membrane and proteins ${times(band)}, not ribosomes.`
+              : `Enlarged to be seen: membrane ${times(band)}, proteins ${times(protein).replace(/ times$/, "")}, not ribosomes.`;
     return {
       card: {
-        schematic: thin ? "Enlarged to be seen: in a cell this thin, only the small molecules." : `Enlarged to be seen: the membrane ${times(band)} as thick as it is.`,
+        schematic: cardLine,
         real: `To scale, a cell about ${width} across; small molecules are dots.`,
       },
       drawn: [["Schematic", enlarged], ["To scale", scale], ["In a slab under the cut, to scale", slab]],

@@ -13,7 +13,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { buildCell } from "../src/lenses/cell_parts.js";
 import { structureAbsence, structureDoors, organelles } from "../src/lenses/cell_structures.js";
-import { makeLayout } from "../src/lenses/cell_layout.js";
+import { makeLayout, enlargementOf } from "../src/lenses/cell_layout.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const json = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
@@ -161,13 +161,22 @@ test("a cell without a nucleus: its chromosome carries the circuits, and its rib
   assert.ok(old.has("nucleus") && !old.has("chromatin") && !old.has("ribosomes"), "a scene made before: the chromosome under the nucleus's part, the ribosomes scenery");
 });
 
-test("a small cell's ribosomes are drawn about 20 nm across, as its panel says, however thin the cell", () => {
+test("a small cell's ribosomes are drawn as its file measures them, enlarged in the schematic picture as its proteins are, as its panel says, however thin the cell", () => {
   for (const id of ["ecoli", "syn3a", "mpneumoniae"]) {
     const { handles, parts } = built(id, "schematic");
+    const measured = species(id).cell.parts.ribosome, factor = enlargementOf("schematic", handles.frame.u);
     const meshes = parts.get("ribosomes")[0].objects.filter((object) => object.isInstancedMesh);
-    const large = meshes[0].geometry.parameters.radius * 2 * handles.frame.u * 1000; // the large subunit, in nanometres
-    assert.ok(large > 18 && large < 22, `${id}: the large subunit is ${large.toFixed(1)} nm across`);
-    assert.match(handles.structures.ribosomes[0][1], /Each is drawn about 20 nm across/);
+    // The large subunit along its own first axis, in nanometres of the picture.
+    const position = meshes[0].geometry.attributes.position, axis = new THREE.Vector3(...measured.large.axes[0]), point = new THREE.Vector3();
+    let low = Infinity, high = -Infinity;
+    for (let vertex = 0; vertex < position.count; vertex++) {
+      const along = point.fromBufferAttribute(position, vertex).dot(axis);
+      low = Math.min(low, along);
+      high = Math.max(high, along);
+    }
+    const large = (high - low) * handles.frame.u * 1000;
+    assert.ok(Math.abs(large - measured.large.across_nm[0] * factor) < 0.05 * factor, `${id}: the large subunit is ${large.toFixed(1)} nm across, ${factor.toFixed(2)} times the file's ${measured.large.across_nm[0]}`);
+    assert.match(handles.structures.ribosomes[0][1], new RegExp(`the Protein Data Bank's entry ${measured.entry}`));
   }
 });
 

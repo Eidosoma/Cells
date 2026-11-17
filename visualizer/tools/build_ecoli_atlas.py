@@ -56,6 +56,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import build_mpneumoniae_atlas as M  # noqa: E402  the families asked of every species, read and never changed
 from lib import proteome_shelves as P  # noqa: E402  the shelves' machinery: vocabulary, placement, families, districts, lines
+from lib import ribosome as RIBOSOME  # noqa: E402  the ribosome's size, the viewer's own measure of two PDB entries (schema/SPECIES_SHAPES.md)
 
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 SPECIES_FILE = ROOT / "data" / "species" / "ecoli.json"
@@ -680,6 +681,7 @@ def build(datasets_folder, snapshot):
         "genbank": {"text": f"GenBank {GENOME}: {record['title']}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{GENOME}", "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".", "class": "permissive", "accessed": d.day(NCBI, f"genbank_{GENOME}_summary.json")},
         **{key_: {"text": paper_cite(d, key_), "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, f"{key_}_fulltext.xml")} for key_, paper in PAPERS.items() if paper.get("use") != "note"},
         **{key_: {"text": paper["text"], "doi": paper["doi"], "url": paper["url"], "licence": paper["licence"], "class": "no stated terms", "standing": "open paper, numbers only", "where": paper["where"], "accessed": NUMBERS_READ} for key_, paper in NUMBERS_ONLY.items()},
+        **RIBOSOME.sources(),
     }
     # The envelope's widths (schema/SPECIES_SHAPES.md, `envelope`): numbers alone, each with where it stands in the paper.
     envelope = {**ENVELOPE, "sources": ["matias2003"], "read": {"source": "matias2003", "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"}}
@@ -743,6 +745,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Inside", "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds", "sources": ["uniprot"]},
                 {"label": "Chromosome", "value": f"one circle of {genome_length:,} base pairs", "sources": ["genbank"]},
                 {"label": "Proteins", "value": f"{len(entries):,} in UniProt's reference proteome of strain K-12, every one with a reviewed entry", "sources": ["uniprot"]},
+                {"label": "Ribosome's size", "value": RIBOSOME.fact(own=True), "sources": list(RIBOSOME.sources())},
                 {"label": "Ribosomes", "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates", "sources": ["urich2008"]},
                 {"label": "Movement", "value": "swims with flagella that grow all over its surface, or does not move", "sources": ["uniprot"]},
                 {"label": "Flagella", "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another", "sources": ["mears2014", "schavemaker2022", "dvoriashyna2021", "zhuang2025"]},
@@ -755,7 +758,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Signalling", "value": f"{two_component} proteins carry UniProt's keyword for two-component regulatory systems", "sources": ["uniprot"]},
                 {"label": "Strain", "value": f"K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly ({proteome['genomeAssembly']['assemblyId']})", "sources": ["genbank", "uniprot"]},
             ],
-            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages, "envelope": envelope},
+            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages, "envelope": envelope, "ribosome": RIBOSOME.part()},
             "capabilities": capabilities,
         },
         "capability_sources": {key_: ["uniprot"] for key_ in capabilities if key_ not in ("cap.grn", "cap.replacement", "cap.mechanics", "cap.sheet", "cap.repair", "cap.junctions")} | {"cap.junctions": ["uniprot"]},
