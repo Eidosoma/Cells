@@ -148,6 +148,18 @@ A probe is a directory with `probe.json`, `probe.npz` and `manifest.json`. Its i
 from `make-probes`, which regenerates them deterministically from registered seeds through
 NumPy's `Generator` (`inputs.json` records the NumPy version).
 
+`make-probes` also writes the registered β = 0 ensemble design as
+`beta0_ensemble_design.json` (named in `inputs.json`). It is a transcription, with no value
+changed, of row 1's design:
+- the constants, the founder, the observation times (to t = 2) and 500 runs;
+- independent streams, one per run;
+- every run still running at t = 2, with no fission by then;
+- the cut: at each time, the state after the last event at or before it.
+
+A run that stops before t = 2 for any reason other than extinction is a harness failure
+(status 2), not a verdict. So are two runs that share a stream identity or repeat an event
+trace.
+
 **Run `make-probes` and `run` in the same environment** (`venv-cpu`). The harness regenerates
 the inputs in-process and requires each probe's echo of them to match bitwise. A different
 NumPy fails loudly; it never matches silently.

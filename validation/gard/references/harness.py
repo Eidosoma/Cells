@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import functools
+import hashlib
 import json
 import math
 import sys
@@ -29,7 +30,7 @@ import numpy as np
 
 from . import closed_world, conservation, detailed_balance, engine_layout, exchange_law, fission_partition, ledger
 from . import observers, ssa_oracle, streams, time_rescaling
-from .common import CheckResult, jsonable
+from .common import ALPHA as ALPHA_REGISTERED, MIN_POWER as MIN_POWER_REGISTERED, CheckResult, jsonable
 from .kernels import (BOUNDARY_RULES, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
                       canonical_form, gard_beta)
 from .records import ENGINE_BOUNDARY_BY_FORM, Bundle, MissingRecord, RecordFormatError, load_bundle
@@ -82,6 +83,50 @@ def probe_input_arrays() -> dict:
     return out
 
 
+def ensemble_design_record() -> dict:
+    """The registered beta = 0 ensemble design (rows 1 and 5), machine-readable."""
+    d = exchange_law.REGISTERED_DESIGN
+    G = len(d["rho"])
+    return {
+        "format": "gard_g2.beta0_ensemble_design@1",
+        "note": ("Transcribed 17 November 2026 from the registered beta = 0 ensemble design in "
+                 "validation/gard/references/README.md (row 1) and exchange_law.REGISTERED_DESIGN, "
+                 "with no value changed."),
+        "law": "the exchange law alone: no rate factor (beta = 0)",
+        "types": G,
+        "k_join": [float(d["k_join"])] * G,
+        "k_leave": [float(d["k_leave"])] * G,
+        "transfer_constant": [float(d["k_join"]) / float(d["k_leave"])] * G,
+        "rho": [float(v) for v in d["rho"]],
+        "founder": [int(v) for v in d["founder"]],
+        "observation_times": [float(v) for v in d["times"]],
+        "observation_time": float(d["times"][-1]),
+        "runs": int(d["runs"]),
+        "streams": (f"{int(d['runs'])} independent streams, one per run, each declared in its run.json. No two "
+                    "runs may share a stream identity or repeat an event trace. The design does not fix the "
+                    f"seed values or lineage words (lineage words 0..{int(d['runs']) - 1} are one valid choice)."),
+        "requirements": {
+            "running_at_observation_time": (
+                f"Every run must still be running at t = {float(d['times'][-1])}. A run that stops earlier for "
+                "any reason but extinction is a harness failure, not a verdict."),
+            "extinction": "A run that empties earlier is a valid sample; its state afterwards is empty.",
+            "no_fission": (f"No fission at or before t = {float(d['times'][-1])}. Set a fission size and an "
+                           "event guard large enough (for example 2048 and 4096) and record them in run.json."),
+            "cut": ("At each observation time t the harness takes the state after the last event with time "
+                    "<= t (the founder if there is none)."),
+            "time_unit": "the world's declared time unit; the rates are per that unit",
+        },
+        "statistics": {
+            "alpha": ALPHA_REGISTERED,
+            "min_power": MIN_POWER_REGISTERED,
+            "planted_controls": {
+                "row 1": f"k_leave too large by the factor {exchange_law.PLANTED_KB_FACTOR}",
+                "row 5": f"leave channels selected at weight {ssa_oracle.PLANTED_LEAVE_WEIGHT}",
+            },
+        },
+    }
+
+
 def make_probe_inputs(out_dir: str | Path) -> Path:
     """Write the registered probe inputs the engine side evaluates."""
     out = Path(out_dir)
@@ -93,8 +138,10 @@ def make_probe_inputs(out_dir: str | Path) -> Path:
         rules=[dict(partition="exact_fraction", fraction=0.5), dict(partition="binomial", p=0.5)]), indent=1))
     (out / "README.txt").write_text(
         "Registered probe inputs for the GARD component references (see README.md in the package).\n")
+    (out / "beta0_ensemble_design.json").write_text(json.dumps(ensemble_design_record(), indent=1))
     (out / "inputs.json").write_text(json.dumps(dict(
         numpy=np.__version__, kernel_probe_seed=KERNEL_PROBE_SEED, observer_probe_seed=OBSERVER_PROBE_SEED,
+        beta0_ensemble="beta0_ensemble_design.json",
         note="regenerated in-process by the harness and compared bitwise with the probe's echo"), indent=1))
     return out
 
@@ -318,6 +365,8 @@ def ensemble_counts(runs: list[Bundle], times=None):
     if np.any(w0.beta != 0):
         raise RecordFormatError("the beta0_ensemble world must have beta = 0")
     out = np.zeros((len(runs), times.size, w0.n_types), dtype=np.int64)
+    identities, traces = {}, {}
+    t_obs = float(times[-1])
     for r, b in enumerate(runs):
         w = b.world
         if w.world_id != w0.world_id:
@@ -325,14 +374,27 @@ def ensemble_counts(runs: list[Bundle], times=None):
         (et,) = b.require("event_time")
         ch = canonical_events(b)
         ft = b.optional("fission_time")
-        if ft is not None and ft.size and ft[0] <= times[-1]:
+        if ft is not None and ft.size and ft[0] <= t_obs:
             raise RecordFormatError(f"{b.path}: a fission at t = {ft[0]} precedes the last registered time")
-        t_end = b.run.t_end
-        reached = (et.size and et[-1] >= times[-1]) or (t_end is not None and float(t_end) >= times[-1])
-        if not reached:
-            raise RecordFormatError(f"{b.path}: cannot tell that the run reached t = {times[-1]} "
-                                    "(no later event and no declared t_end)")
         out[r] = counts_at_times(w.founder, et, ch, times)
+        status, t_end = str(b.run.end_status), b.run.t_end
+        ran_past = bool(et.size and et[-1] > t_obs)
+        reached = ran_past or (t_end is not None and float(t_end) >= t_obs and status != "stalled")
+        if not reached:
+            if status == "extinct" and int(out[r, -1].sum()) == 0:
+                pass  # an absorbed run is a valid sample: its state at t is empty
+            else:
+                raise RecordFormatError(
+                    f"{b.path}: the run stopped before t = {t_obs} (status {status!r} at t = {t_end}); "
+                    "a harness failure, not a verdict")
+        key = json.dumps(b.run.stream, sort_keys=True, default=str)
+        if key in identities:
+            raise RecordFormatError(f"{b.path}: shares its stream identity with {identities[key]}")
+        identities[key] = b.path
+        trace = hashlib.sha256(et.tobytes() + b"|" + ch.tobytes()).hexdigest()
+        if et.size and trace in traces:
+            raise RecordFormatError(f"{b.path}: repeats the event trace of {traces[trace]} (a reused stream)")
+        traces[trace] = b.path
     return times, out, w0
 
 

@@ -1,0 +1,60 @@
+{
+ "format": "gard_g2.beta0_ensemble_design@1",
+ "note": "Transcribed 17 November 2026 from the registered beta = 0 ensemble design in validation/gard/references/README.md (row 1) and exchange_law.REGISTERED_DESIGN, with no value changed.",
+ "law": "the exchange law alone: no rate factor (beta = 0)",
+ "types": 4,
+ "k_join": [
+  1.0,
+  1.0,
+  1.0,
+  1.0
+ ],
+ "k_leave": [
+  0.5,
+  0.5,
+  0.5,
+  0.5
+ ],
+ "transfer_constant": [
+  2.0,
+  2.0,
+  2.0,
+  2.0
+ ],
+ "rho": [
+  0.1,
+  0.2,
+  0.3,
+  0.4
+ ],
+ "founder": [
+  5,
+  5,
+  5,
+  5
+ ],
+ "observation_times": [
+  0.5,
+  1.0,
+  1.5,
+  2.0
+ ],
+ "observation_time": 2.0,
+ "runs": 500,
+ "streams": "500 independent streams, one per run, each declared in its run.json. No two runs may share a stream identity or repeat an event trace. The design does not fix the seed values or lineage words (lineage words 0..499 are one valid choice).",
+ "requirements": {
+  "running_at_observation_time": "Every run must still be running at t = 2.0. A run that stops earlier for any reason but extinction is a harness failure, not a verdict.",
+  "extinction": "A run that empties earlier is a valid sample; its state afterwards is empty.",
+  "no_fission": "No fission at or before t = 2.0. Set a fission size and an event guard large enough (for example 2048 and 4096) and record them in run.json.",
+  "cut": "At each observation time t the harness takes the state after the last event with time <= t (the founder if there is none).",
+  "time_unit": "the world's declared time unit; the rates are per that unit"
+ },
+ "statistics": {
+  "alpha": 0.001,
+  "min_power": 0.99,
+  "planted_controls": {
+   "row 1": "k_leave too large by the factor 1.1",
+   "row 5": "leave channels selected at weight 0.9"
+  }
+ }
+}
