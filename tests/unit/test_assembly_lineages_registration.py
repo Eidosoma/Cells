@@ -104,6 +104,10 @@ def test_a_fresh_process_manifest_lists_the_family(tmp_path):
     )
     pieces = {p["id"]: p for p in json.loads(out.read_text())["pieces"]}
     assert set(LAWS) | set(OPERATORS) <= set(pieces)
+    for piece_id in LAWS | OPERATORS:
+        assert pieces[piece_id]["host"] == MODEL_ID and pieces[piece_id]["line"] > 0
+    missing = {k: v for k, v in pieces.items() if k != FISSION}  # Planted: a piece missing.
+    assert not set(LAWS) | set(OPERATORS) <= set(missing)
 
 
 def test_a_new_rate_factor_law_joins_by_registration_alone():

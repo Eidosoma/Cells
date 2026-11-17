@@ -557,7 +557,9 @@ def relation_tables(directory, run):
       reservoir to the slot and `removes_to` edges from the slot back to it, one per type that
       moved, each weighed by the bundle's own cumulative record (joined_total, left_total; one
       way). An unfollowed daughter's material goes from its carrier to the declared sink
-      (`sink:discard`, or the reservoir) at its fission's event, weighed by discarded_total.
+      (`sink:discard`, or the reservoir) at its fission's event, its own counts on the edge as
+      numbers (exact from the fission table; the record's event rows cannot tell two events at
+      one time apart).
     - Every descendant: no slots, so material sits in each carrier, and its rows are per life
       (their times are not one series), so each life's edges carry their weights as numbers over
       its window (birth to end): the molecules of each type it took up and gave back."""
@@ -603,17 +605,22 @@ def relation_tables(directory, run):
         sink = RESERVOIR if world.continuation.sink == "reservoir" else "sink:discard"
         if sink != RESERVOIR:
             nodes.append(rel.Node(sink, "sink", CONTINUATION))
-        discarded = rows["discarded_total"][:, :, 0]
-        times = rows["row_time"]
+        # An unfollowed daughter's discard carries its own counts as numbers, exact from the
+        # fission table: the record's event rows cannot tell two events at one time apart (a run
+        # continued from a pending fission starts at its time; a daughter born at the fission
+        # size splits at its parent's).
+        parents = rows["assembly_count"][rows["row_kind"] == 1, :, 0]
+        first = arrays["fission_split"]
         for life in lives:
             if life.end_reason != "not_followed":
                 continue
-            row = int(np.searchsorted(times, life.end_time, side="left"))  # The event's rows.
-            for i in np.flatnonzero(discarded[row + 1] != discarded[row]):
+            k = int(life.end_event.rsplit("/", 1)[1])
+            followed = int(arrays["fission_followed"][k])
+            counts = parents[k] - first[k] if followed == 0 else first[k]  # The unfollowed one.
+            for i in np.flatnonzero(counts > 0):
                 edges.append(
                     rel.Edge("removes_to", life.id, sink, CONTINUATION, event=life.end_event,
-                             species=types[i], weight_record="discarded_total",
-                             weight_index=f"{i},0", mode="event")
+                             species=types[i], weight=float(counts[i]), mode="event")
                 )  # fmt: skip
     else:
         for k, life in enumerate(lives):

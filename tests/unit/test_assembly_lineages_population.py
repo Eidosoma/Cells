@@ -99,16 +99,17 @@ def test_the_followed_path_is_the_single_lineage_bitwise(single, runs):
     assert differences(planted, single) == ["trace.event_time"]
 
 
-def derived_keys(run, order):
-    """Every life's key, re-derived from the tree alone by the rule (keys.py), with new
-    sub-lineages numbered in `order`: the rule's (generation, parent key, daughter index), or a
-    planted one."""
+def derived_keys(run, order, empty_opens=False):
+    """{each life's key in the run: its key re-derived from the tree alone by the rule (keys.py)},
+    new sub-lineages numbered in `order`: the rule's (generation, parent key, daughter index), or
+    a planted one (and, planted with empty_opens, empty daughters opening one too). The tree's
+    lives are named by the run's keys; the derived keys and counters are the rule's own."""
     table, lives = run.fissions, run.lives
     by_parent = {int(k): i for i, k in enumerate(table["fission_parent"])}
-    generation = {keys.FOUNDER: 0}
-    counter = {keys.FOUNDER: keys.key(0, 1)}
-    expect = {keys.FOUNDER: keys.FOUNDER}
     sizes = dict(zip(lives["life_key"].tolist(), lives["life_size_at_birth"].tolist(), strict=True))
+    derived = {keys.FOUNDER: keys.FOUNDER}  # Run key -> derived key.
+    counter = {keys.FOUNDER: keys.key(0, 1)}  # Run key -> the derived counter its daughters draw.
+    generation = {keys.FOUNDER: 0}
     frontier, next_sub = [keys.FOUNDER], 1
     while frontier:
         starters, born = [], []
@@ -118,20 +119,22 @@ def derived_keys(run, order):
             i = by_parent[parent]
             first = counter[parent]
             followed = int(table["fission_followed"][i])
-            daughters = [first, first + 1]
-            for d, child in enumerate(daughters):
-                expect[int(table["fission_daughters"][i, d])] = child
+            for d in (0, 1):
+                child = int(table["fission_daughters"][i, d])
+                derived[child] = first + d
                 generation[child] = generation[parent] + 1
-                born.append(int(table["fission_daughters"][i, d]))
+                born.append(child)
                 if d == followed:
                     counter[child] = first + 2
-                elif sizes[int(table["fission_daughters"][i, d])] > 0:
-                    starters.append((generation[child], parent, d, table["fission_time"][i], child))
-        for n, (_, _, _, _, child) in enumerate(sorted(starters, key=order)):
+                elif empty_opens or sizes[child] > 0:
+                    starters.append(
+                        (generation[child], derived[parent], d, table["fission_time"][i], child)
+                    )
+        for n, (*_, child) in enumerate(sorted(starters, key=order)):
             counter[child] = keys.key(next_sub + n, 1)
         next_sub += len(starters)
         frontier = born
-    return expect
+    return derived
 
 
 def test_keys_follow_the_rule_from_the_tree_alone(runs):
@@ -167,6 +170,12 @@ def test_a_longer_horizon_keeps_the_keys_and_lives(runs):
     )
     leaves = short.lives["life_generation"] == 4
     assert set(short.lives["life_censored_by"][leaves].tolist()) <= {"horizon", ""}
+    # Planted: a numbering that skips the daughters censored at the horizon (they would take no
+    # sub-lineage) makes the two horizons disagree.
+    skipped = short.lives["life_sublineage"].copy()
+    skipped[leaves & (short.lives["life_slot"] == -1) & (skipped > 0)] = -1
+    opened = leaves & (short.lives["life_sublineage"] > 0)
+    assert opened.any() and not np.array_equal(skipped, longer.lives["life_sublineage"][upto])
 
 
 def census(run):
@@ -223,12 +232,15 @@ def test_empty_and_born_at_size_daughters_keep_every_rule():
     the rule from the tree (an empty daughter takes no sub-lineage), and a longer horizon keeps
     the keys and lives."""
     empty = at_size = 0
+    planted_differs = False  # Planted: empty daughters that open a sub-lineage.
     for seed in (2, 3, 4, 7):
         pop = runner.run_population(small(seed, 5))
         lives = pop.lives
         assert differences(path_view(pop), runner.run(small(seed, 5, mode="single_lineage"))) == []
         rule = derived_keys(pop, order=lambda s: (s[0], s[1], s[2]))
         assert all(rule[k] == k for k in lives["life_key"].tolist())
+        opening = derived_keys(pop, order=lambda s: (s[0], s[1], s[2]), empty_opens=True)
+        planted_differs = planted_differs or any(opening[k] != k for k in lives["life_key"])
         none = lives["life_size_at_birth"] == 0
         assert np.all(lives["life_end_reason"][none] == "extinct")
         assert np.all(lives["life_sublineage"][none] == -1)  # Unfollowed: "other" moves the pick.
@@ -240,3 +252,4 @@ def test_empty_and_born_at_size_daughters_keep_every_rule():
         for name in ("life_key", "life_parent", "life_sublineage", "life_size_at_birth"):
             assert np.array_equal(lives[name], longer.lives[name][upto]), (seed, name)
     assert empty > 0 and at_size > 0  # Both cases occurred.
+    assert planted_differs

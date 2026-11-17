@@ -72,8 +72,7 @@ def test_single_lineage_tables_account_for_every_molecule(tmp_path):
     for i, name in enumerate(types):
         assert totals.get(("supplies", records.RESERVOIR, records.SLOT, name), 0) == joined[i]
         assert totals.get(("removes_to", records.SLOT, records.RESERVOIR, name), 0) == left[i]
-    discards = sum(v for (r, f, t, _), v in totals.items() if t == "sink:discard")
-    assert discards == run.rows["discarded_total"][-1, :, 0].sum()
+    assert not np.any(discard_gap(directory, tables, run))  # Per type.
     paid = {e.id: e.source for e in tables["events"]}
     assert set(paid.values()) == {records.AGENT}
     agent = next(s for s in tables["sources"] if s.id == records.AGENT)
@@ -113,3 +112,54 @@ def test_stopped_continued_extinct_and_every_descendant_runs_write_their_tables(
     assert len(edges) < len(tables["edges"])
     fewer = edge_totals(directory, dict(tables, edges=edges))
     assert sum(v for (r, *_), v in fewer.items() if r == "supplies") != np.sum(channels > 0)
+
+
+def discard_gap(directory, tables, run):
+    """Per type, the discard edges' material less discarded_total's change over the run (all
+    zero: they agree)."""
+    totals = edge_totals(directory, tables)
+    types = list(run.spec.model.world.types.ids)
+    edges = np.zeros(len(types))
+    for (relation, source, _, species), value in totals.items():
+        if relation == "removes_to" and source != records.SLOT:
+            edges[types.index(species)] += value
+    booked = run.rows["discarded_total"][-1, :, 0] - run.rows["discarded_total"][0, :, 0]
+    return edges - booked
+
+
+def test_discards_are_exact_where_two_events_share_a_time(tmp_path):
+    """Two cases put another row at a fission's time: a run continued from a pending-fission
+    checkpoint (its start row), and a daughter born at the fission size (its own fission at its
+    parent's time). The discard edges carry each unfollowed daughter's own counts, so they are
+    discarded_total's change in both (planted: the edges weighed through the record's event rows,
+    which read the wrong rows there)."""
+    spec = parse_spec(definition(THE_WORLD, fissions=5))
+    whole = runner.run(spec)
+    due = int(whole.rows["row_event"][whole.rows["row_kind"] == 1][2])
+    stopped = runner.run(spec, stop=due)
+    continued = runner.run(spec, start=stopped.checkpoint())
+    small = world(
+        count=3,
+        size=4,
+        founder_size=2,
+        daughter="uniform",
+        empty="other",
+        partition={"rule": "binomial", "probability": 0.25},
+    )
+    binomial = runner.run(parse_spec(definition(small, fissions=10, seed=3, limit=400)))
+    at_size = binomial.rows["assembly_count"][binomial.rows["row_kind"] == 2, :, 0].sum(1) == 4
+    assert at_size.any()  # A daughter was born at the fission size.
+    for name, run in (("continued", continued), ("binomial", binomial)):
+        directory, tables = written(tmp_path, run, name)
+        assert not np.any(discard_gap(directory, tables, run)), name
+        # Planted: the same edges weighed through discarded_total at the record's event rows.
+        events = {e.id: e for e in tables["events"]}
+        times = run.rows["row_time"]
+        steps = run.rows["discarded_total"][:, :, 0]
+        planted = []
+        for edge in tables["edges"]:
+            if edge.event and edge.relation == "removes_to":
+                row = int(np.searchsorted(times, events[edge.event].time, "left"))
+                i = list(run.spec.model.world.types.ids).index(edge.species)
+                planted.append(float(steps[row + 1, i] - steps[row, i]))
+        assert sum(planted) != float(steps[-1].sum() - steps[0].sum()), name

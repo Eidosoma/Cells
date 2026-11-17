@@ -214,6 +214,8 @@ def test_the_start_bound_and_checkpoint_records_are_frozen(tmp_path):
     assert set(json.loads((tmp_path / "cp" / "checkpoint.json").read_text())) == CHECKPOINT
     continued = runner.run(spec, start=state)
     assert set(continued.start) == START and continued.start["kind"] == "restart"
+    planted = {k: v for k, v in continued.start.items() if k != "time"}  # Planted: a key dropped.
+    assert set(planted) != START
     data = definition(world(), fissions=2)
     data["execution"] |= {"mode": "every_descendant", "lanes": 2}
     data["experiment"]["life_budget"] = 50

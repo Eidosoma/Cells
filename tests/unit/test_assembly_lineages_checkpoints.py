@@ -102,6 +102,22 @@ def test_a_restart_across_a_due_fission_is_the_uninterrupted_run(whole):
     second = runner.run(spec(), start=state)
     assert joined(first, second, whole) == []
     assert second.rows["row_kind"][:3].tolist() == [0, 1, 2]  # It splits first.
+    original = checkpoints.admit
+
+    def running(the_spec, checkpoint):  # Planted: the pending fission lost at the restore.
+        start, lane = original(the_spec, checkpoint)
+        return start, dict(lane, status=np.int32(kernel.RUNNING))
+
+    try:
+        checkpoints.admit = running
+        try:
+            planted = runner.run(spec(), start=state)
+            lost = joined(first, planted, whole) != []
+        except IndexError:  # It grew past its molecule capacity: its ledger cannot be read.
+            lost = True
+    finally:
+        checkpoints.admit = original
+    assert lost
 
 
 def test_branches_are_independent_futures_that_keep_their_keys(whole, tmp_path):

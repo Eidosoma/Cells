@@ -17,8 +17,6 @@ Each claim with a planted error it must catch (D187):
 
 import hashlib
 import json
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -206,14 +204,14 @@ def test_descent_rows_are_the_writers_lives_and_events(lineage):
     assert errors(lives, moved) != []
 
 
-def test_the_writer_takes_the_rows_unchanged(lineage):
+def test_the_writer_takes_the_rows_unchanged(lineage, tmp_path):
     """When cells.relations@1's writer is installed, it writes the family's rows as they are."""
     from cells.models.assembly_lineages import records
 
     relations = pytest.importorskip("cells.records.relations")
     arrays = {**lineage.lives, **lineage.fissions}
     relations.write(
-        Path(tempfile.mkdtemp()),
+        tmp_path,
         world=lineage.qualifier,
         lives=[relations.Life(**r) for r in records.descent(arrays)],
         events=[relations.Event(**e) for e in records.relation_events(arrays)],

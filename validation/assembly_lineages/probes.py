@@ -705,8 +705,13 @@ Frozen with the relationship keys (D202). Every file is described by the files t
 page says where to look. Nothing here needs the engine's code.
 
 ## A run bundle (lineage roles)
-A directory with world.json, run.json, records.npz, resolved_config.json, summary.json and
-manifest.json (every file's SHA-256, written last).
+A directory with world.json, run.json, records.npz, relations.npz, relations.json,
+resolved_config.json, summary.json and manifest.json (every file's SHA-256, written last).
+- relations.npz and relations.json (cells.relations@1): the run's relationship tables, read with
+  that format's reader: the lives, the fission and extinction events, the slot, the reservoir and
+  the unmodelled agent as sources, and the material edges (supplies and leaves weighed by the
+  bundle's own cumulative records; each unfollowed daughter's discards with its own counts on
+  the edge).
 - world.json (cells.assembly_lineages.world@1): {format, id, world, derived}. `world` is the world
   as its definitions state it: types {prefix, count, transfer_constant}, supply (rho), exchange
   {law, leave_rate}, law_data {catalysis_matrix} (absent without catalysis), founder (a count per
