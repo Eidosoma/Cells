@@ -1,0 +1,635 @@
+{
+ "kind": "fr10-references design@1",
+ "registered": "2026-11-17",
+ "status": "registered before any engine output; the references are code-blind",
+ "inputs": {
+  "path": "validation/fr10/references/reference_inputs.json",
+  "source": "branch fr10-protocol, commit cbe4f27d, validation/bath_schedule/reference_inputs.json (copied byte for byte)",
+  "git_blob": "9236a0a722c96056d941feb54885824452b5f59a"
+ },
+ "constants": {
+  "faraday_C_per_mol": "96485.3321233100184",
+  "gas_constant_J_per_mol_K": "8.31446261815324",
+  "RT_J_per_mol_at_310K": "2577.4834116275044",
+  "thermal_voltage_V_at_310K": "0.026713733112650050044357343935649981523822422690506"
+ },
+ "min_margin": 10.0,
+ "readings": [
+  "Inputs are the exact values of the file's doubles; constants are the exact SI values the file states (F = N_A e, R = N_A k_B), never Appendix A's rounded RT and F.",
+  "Events are right-continuous: the bath's composition at t_e is the new one; amounts and V_m are continuous, so a record at t_e has one value.",
+  "dG_b's ln(a_s/V_b) is the log of the mM number (standard state 1 mM). A different standard state or a dropped -1 shifts dG_b by a multiple of sum_s dn_s, so W2 (sum_s dn_s = 0) has no power against either; W1 and W3 do.",
+  "K(t) needs S_s at every event time: every event time must be a record time (to 1e-12 s), else the call is refused; nothing is interpolated.",
+  "K from the engine's own supply checks the reconciliation's arithmetic only; it has no power against a wrong supply. K from the reference supply (R-faces, R-ion) does.",
+  "R-ion's zero-current potential after the step has two readings: (a) at the cytosol's composition at t_e with the new bath (the Nernst potential), and (b) the epoch's own limit, where the charge that depolarises the wall has also moved K into the cytosol. They differ by about 1.2e-7 V; both are returned, labelled.",
+  "W1's supply is the finite nodes' gain, S(t) = sum_i (n_i(t) - n_i(0)); W2's is the cell's gain, S_s(t) = -(n_s(t) - n_s(0)), positive out of the bath."
+ ],
+ "claims": {
+  "R-faces (B1, A.2)": {
+   "quantity": "S amount (fmol) at each finite node at each record time; the supply S(t)",
+   "reference": "exact per epoch: symmetrised eigendecomposition of the deviation from the epoch's steady state c_b",
+   "second_method": "scipy expm of the augmented generator, chained independently; a 50-digit Sylvester form for two nodes (tests)",
+   "floor_max_fmol": 4.7921736023859296e-17,
+   "decimal_vs_primary_max_fmol": 3.469446951953614e-18,
+   "tolerance_basis": "pinned by the protocol from its dt study, with power at a dt only when tau(dt) <= ceiling(dt) (the smallest control deviation / min_margin) and tau(dt) >= min_margin x floor; an honest second-order engine is expected near the stand-ins' bracket (power.W1)",
+   "order": "an honest second-order engine's error falls about 4x per halving of dt; the late, early and half-step controls and implicit Euler fall 2x"
+  },
+  "R-ion (B2, A.3)": {
+   "quantity": "V_m (V) and the cytosol's Na, K and Cl (fmol) at each record time; the zero-current potential after the step, readings (a) and (b)",
+   "reference": "the scalar equation on the charge invariant, DOP853 at rtol 3e-14, epoch by epoch",
+   "second_method": "Radau on the full state (rtol 1e-12) and QUADPACK's time residual |f(V) (T(V) - t)|; the floor is the larger",
+   "floor_max_V": 1.904709345263805e-14,
+   "floor_max_fmol": 1.4210854715202004e-14,
+   "impermeant_species": "Na, Cl and S are constant: P = 0, so any change fails",
+   "tolerance_basis": "as R-faces, per dt (power.W2). Appendix A's rounded constants would move V_m by power.W2.rounded_constants; a V_m tolerance has power against them only below rounded_constants_needs_tolerance_V",
+   "relaxation_left_at_end_V": -2.827068787403242e-11
+  },
+  "R-records (B4, A.4, A.5, \u00a72.2, \u00a72.3)": {
+   "quantity": "per event: dose per species (fmol), dG_b (pJ), the step's charge (C); K(t) (pJ) from a supply series",
+   "reference": "exact rationals for the dose and charge; dG_b and K in 50-digit decimals",
+   "second_method": "float64 evaluations of the same forms (K in the operator's B form)",
+   "tolerance_basis": "dG_b within 1e-12 relative (the protocol's criterion; the floor is below 1e-15 relative); dose and K at rounding (a few ulps of their magnitudes); a neutral step's charge is exactly 0 in rationals",
+   "floor_max_relative_dG_b": 5.246959599582987e-16
+  }
+ },
+ "power": {
+  "W1": {
+   "per_dt": [
+    {
+     "dt_s": 0.001,
+     "stand_in": {
+      "ars_implicit": {
+       "amount_fmol": 1.976494225144204e-08
+      },
+      "ars_explicit": {
+       "amount_fmol": 8.237144257221968e-08
+      },
+      "implicit_euler": {
+       "amount_fmol": 1.4997636029496532e-05
+      },
+      "rk4": {
+       "amount_fmol": 1.1884547165830206e-12
+      }
+     },
+     "controls": {
+      "late": {
+       "amount_fmol": 7.813859709100961e-05,
+       "supply_fmol": 8.202877335151883e-05
+      },
+      "early": {
+       "amount_fmol": 8.93287341167206e-05,
+       "supply_fmol": 8.95522406567846e-05
+      },
+      "half": {
+       "amount_fmol": 3.892522088320234e-05,
+       "supply_fmol": 4.09167139279762e-05
+      }
+     },
+     "ceiling": {
+      "amount_fmol": 3.892522088320234e-06
+     },
+     "honest_margin": {
+      "amount_fmol": 47.255723182308486
+     }
+    },
+    {
+     "dt_s": 0.0005,
+     "stand_in": {
+      "ars_implicit": {
+       "amount_fmol": 4.93737573221964e-09
+      },
+      "ars_explicit": {
+       "amount_fmol": 2.0462250552820416e-08
+      },
+      "implicit_euler": {
+       "amount_fmol": 7.523704608203112e-06
+      },
+      "rk4": {
+       "amount_fmol": 7.376130956027183e-14
+      }
+     },
+     "controls": {
+      "late": {
+       "amount_fmol": 3.892522088320234e-05,
+       "supply_fmol": 4.09167139279762e-05
+      },
+      "early": {
+       "amount_fmol": 4.483171775560317e-05,
+       "supply_fmol": 4.488778066505718e-05
+      },
+      "half": {
+       "amount_fmol": 1.9426740441316672e-05,
+       "supply_fmol": 2.0434028731965213e-05
+      }
+     },
+     "ceiling": {
+      "amount_fmol": 1.9426740441316674e-06
+     },
+     "honest_margin": {
+      "amount_fmol": 94.9394124129664
+     }
+    },
+    {
+     "dt_s": 0.00025,
+     "stand_in": {
+      "ars_implicit": {
+       "amount_fmol": 1.2338655548671529e-09
+      },
+      "ars_explicit": {
+       "amount_fmol": 5.099343245405785e-09
+      },
+      "implicit_euler": {
+       "amount_fmol": 3.7681125233893914e-06
+      },
+      "rk4": {
+       "amount_fmol": 4.584006785268713e-15
+      }
+     },
+     "controls": {
+      "late": {
+       "amount_fmol": 1.9426740441316672e-05,
+       "supply_fmol": 2.0434028731965213e-05
+      },
+      "early": {
+       "amount_fmol": 2.245787103154727e-05,
+       "supply_fmol": 2.2471910119660014e-05
+      },
+      "half": {
+       "amount_fmol": 9.70442132815978e-06,
+       "supply_fmol": 1.0210943511529944e-05
+      }
+     },
+     "ceiling": {
+      "amount_fmol": 9.70442132815978e-07
+     },
+     "honest_margin": {
+      "amount_fmol": 190.30727803826315
+     }
+    },
+    {
+     "dt_s": 0.000125,
+     "stand_in": {
+      "ars_implicit": {
+       "amount_fmol": 3.0840690157935e-10
+      },
+      "ars_explicit": {
+       "amount_fmol": 1.2728150868349108e-09
+      },
+      "implicit_euler": {
+       "amount_fmol": 1.8856261775760177e-06
+      },
+      "rk4": {
+       "amount_fmol": 3.7903707950093235e-16
+      }
+     },
+     "controls": {
+      "late": {
+       "amount_fmol": 9.70442132815978e-06,
+       "supply_fmol": 1.0210943511529944e-05
+      },
+      "early": {
+       "amount_fmol": 1.1239460445329344e-05,
+       "supply_fmol": 1.1242973142243405e-05
+      },
+      "half": {
+       "amount_fmol": 4.849975762581974e-06,
+       "supply_fmol": 5.103955440053363e-06
+      }
+     },
+     "ceiling": {
+      "amount_fmol": 4.849975762581975e-07
+     },
+     "honest_margin": {
+      "amount_fmol": 381.0432334395354
+     }
+    }
+   ],
+   "observed_order": {
+    "ars_implicit": [
+     2.0011273970887804,
+     2.000559234417634,
+     2.0002782477367553
+    ],
+    "ars_explicit": [
+     2.0091794253958555,
+     2.004581472896412,
+     2.0022886101486206
+    ],
+    "implicit_euler": [
+     0.9952200041620545,
+     0.9976011602685599,
+     0.998798355021133
+    ],
+    "rk4": [
+     4.010078853783531,
+     4.008183184948028,
+     3.596198286769447
+    ]
+   },
+   "dt_free_controls": {
+    "null": {
+     "amount_fmol": 0.008759456436831663,
+     "supply_fmol": 0.01717873339506923
+    },
+    "accumulate": {
+     "amount_fmol": 0.008759456436831663,
+     "supply_fmol": 0.01717873339506923
+    }
+   }
+  },
+  "W2": {
+   "per_dt": [
+    {
+     "dt_s": 0.001,
+     "stand_in": {
+      "ars_implicit": {
+       "V_m_V": 1.253703417261609e-07,
+       "amount_fmol": 1.29935529002978e-09
+      },
+      "ars_explicit": {
+       "V_m_V": 4.895007780850169e-07,
+       "amount_fmol": 5.073303555036546e-09
+      },
+      "implicit_euler": {
+       "V_m_V": 0.0001371328842750888,
+       "amount_fmol": 1.4212822065928776e-06
+      },
+      "rk4": {
+       "V_m_V": 4.945342746420778e-12,
+       "amount_fmol": 5.684341886080802e-14
+      }
+     },
+     "controls": {
+      "late": {
+       "V_m_V": 0.0006780599803869747,
+       "amount_fmol": 7.027596495845501e-06
+      },
+      "early": {
+       "V_m_V": 0.0007462562661301325,
+       "amount_fmol": 7.734401179959605e-06
+      },
+      "half": {
+       "V_m_V": 0.00033811663579783047,
+       "amount_fmol": 3.5043319996930222e-06
+      }
+     },
+     "ceiling": {
+      "V_m_V": 3.381166357978305e-05,
+      "amount_fmol": 3.504331999693022e-07
+     },
+     "honest_margin": {
+      "V_m_V": 69.07376881413376,
+      "amount_fmol": 69.07396653240038
+     }
+    },
+    {
+     "dt_s": 0.0005,
+     "stand_in": {
+      "ars_implicit": {
+       "V_m_V": 3.132559142637881e-08,
+       "amount_fmol": 3.24661186823505e-10
+      },
+      "ars_explicit": {
+       "V_m_V": 1.2187836063992652e-07,
+       "amount_fmol": 1.2631744539248757e-09
+      },
+      "implicit_euler": {
+       "V_m_V": 6.87243855840361e-05,
+       "amount_fmol": 7.122780800727924e-07
+      },
+      "rk4": {
+       "V_m_V": 3.06213387979426e-13,
+       "amount_fmol": 2.842170943040401e-14
+      }
+     },
+     "controls": {
+      "late": {
+       "V_m_V": 0.00033811663579783047,
+       "amount_fmol": 3.5043319996930222e-06
+      },
+      "early": {
+       "V_m_V": 0.0003741096103741237,
+       "amount_fmol": 3.877372876104346e-06
+      },
+      "half": {
+       "V_m_V": 0.00016883044226871646,
+       "amount_fmol": 1.7498042268471181e-06
+      }
+     },
+     "ceiling": {
+      "V_m_V": 1.6883044226871647e-05,
+      "amount_fmol": 1.749804226847118e-07
+     },
+     "honest_margin": {
+      "V_m_V": 138.52372265451098,
+      "amount_fmol": 138.52435199351993
+     }
+    },
+    {
+     "dt_s": 0.00025,
+     "stand_in": {
+      "ars_implicit": {
+       "V_m_V": 7.829284762173039e-09,
+       "amount_fmol": 8.114398042380344e-11
+      },
+      "ars_explicit": {
+       "V_m_V": 3.040773877138747e-08,
+       "amount_fmol": 3.1513991416431963e-10
+      },
+      "implicit_euler": {
+       "V_m_V": 3.440184378913913e-05,
+       "amount_fmol": 3.565500037439051e-07
+      },
+      "rk4": {
+       "V_m_V": 3.372302437298913e-14,
+       "amount_fmol": 0.0
+      }
+     },
+     "controls": {
+      "late": {
+       "V_m_V": 0.00016883044226871646,
+       "amount_fmol": 1.7498042268471181e-06
+      },
+      "early": {
+       "V_m_V": 0.00018730065829496156,
+       "amount_fmol": 1.941234529567737e-06
+      },
+      "half": {
+       "V_m_V": 8.4358310040486e-05,
+       "amount_fmol": 8.743122918986046e-07
+      }
+     },
+     "ceiling": {
+      "V_m_V": 8.4358310040486e-06,
+      "amount_fmol": 8.743122918986046e-08
+     },
+     "honest_margin": {
+      "V_m_V": 277.4238185703699,
+      "amount_fmol": 277.43622835497837
+     }
+    },
+    {
+     "dt_s": 0.000125,
+     "stand_in": {
+      "ars_implicit": {
+       "V_m_V": 1.957057960133568e-09,
+       "amount_fmol": 2.0264678823878057e-11
+      },
+      "ars_explicit": {
+       "V_m_V": 7.594218150164256e-09,
+       "amount_fmol": 7.86997134127887e-11
+      },
+      "implicit_euler": {
+       "V_m_V": 1.7210855400261182e-05,
+       "amount_fmol": 1.7837794530350948e-07
+      },
+      "rk4": {
+       "V_m_V": 1.9734214262712158e-14,
+       "amount_fmol": 0.0
+      }
+     },
+     "controls": {
+      "late": {
+       "V_m_V": 8.4358310040486e-05,
+       "amount_fmol": 8.743122918986046e-07
+      },
+      "early": {
+       "V_m_V": 9.371185296522255e-05,
+       "amount_fmol": 9.712549058349396e-07
+      },
+      "half": {
+       "V_m_V": 4.216493446990155e-05,
+       "amount_fmol": 4.3700876517505094e-07
+      }
+     },
+     "ceiling": {
+      "V_m_V": 4.216493446990155e-06,
+      "amount_fmol": 4.370087651750509e-08
+     },
+     "honest_margin": {
+      "V_m_V": 555.224167072282,
+      "amount_fmol": 555.2863488624051
+     }
+    }
+   ],
+   "observed_order": {
+    "ars_implicit": [
+     2.0007824439388995,
+     2.0003893254126623,
+     2.0001940339413364
+    ],
+    "ars_explicit": [
+     2.0058691531824895,
+     2.0029315583934766,
+     2.00146518910844
+    ],
+    "implicit_euler": [
+     0.9966805600738035,
+     0.9983362145069704,
+     0.9991670863335413
+    ],
+    "rk4": [
+     4.013461247672033,
+     3.1827315283702053,
+     0.773034848873728
+    ]
+   },
+   "dt_free_controls": {
+    "null": {
+     "V_m_V": 0.06151052197030342,
+     "amount_fmol": 0.000637511636398358
+    },
+    "accumulate": {
+     "V_m_V": 0.0,
+     "amount_fmol": 0.0
+    }
+   },
+   "rounded_constants": {
+    "V_m_V": 1.3601196416565542e-05,
+    "amount_fmol": 1.4096966083343432e-07
+   },
+   "rounded_constants_needs_tolerance_V": 1.3601196416565542e-06
+  },
+  "records": {
+   "W1": [
+    {
+     "bath": "bath",
+     "time_s": 1.0,
+     "dG_b_pJ": -0.12409022368254732,
+     "sum_dose_fmol": 0.009000000000000001,
+     "deviation": {
+      "dG_sign": 2.0,
+      "dG_after_state": 0.20548042790090626,
+      "dG_linearised": 0.2913315572576107,
+      "dG_no_minus_one": 0.18693938987483777,
+      "dG_one_molar": 1.2913315572576107,
+      "dG_log10": 0.459952873694913,
+      "dG_rounded_RT": 0.00018755178998376844,
+      "dose_accumulate": 0.0,
+      "dose_in_mM": 0.0,
+      "charge_dropped_counterion_C": 0.0
+     }
+    },
+    {
+     "bath": "bath",
+     "time_s": 2.0,
+     "dG_b_pJ": 0.12409022368254732,
+     "sum_dose_fmol": -0.009000000000000001,
+     "deviation": {
+      "dG_sign": 2.0,
+      "dG_after_state": null,
+      "dG_linearised": 0.1391122951615929,
+      "dG_no_minus_one": 0.18693938987483777,
+      "dG_one_molar": 1.2913315572576107,
+      "dG_log10": 0.459952873694913,
+      "dG_rounded_RT": 0.00018755178998376844,
+      "dose_accumulate": 0.009000000000000001,
+      "dose_in_mM": 0.0,
+      "charge_dropped_counterion_C": 0.0
+     }
+    }
+   ],
+   "W2": [
+    {
+     "bath": "bath",
+     "time_s": 0.5,
+     "dG_b_pJ": -189.58785772682543,
+     "sum_dose_fmol": 0.0,
+     "deviation": {
+      "dG_sign": 2.0,
+      "dG_after_state": 0.9579019566385663,
+      "dG_linearised": 1.0600565677324247,
+      "dG_no_minus_one": 0.0,
+      "dG_one_molar": 0.0,
+      "dG_log10": 0.5657055180967482,
+      "dG_rounded_RT": 0.00018755178998389562,
+      "dose_accumulate": 0.0,
+      "dose_in_mM": 0.0,
+      "charge_dropped_counterion_C": 4.341839945548951e-09
+     }
+    }
+   ],
+   "W3": [
+    {
+     "bath": "bath",
+     "time_s": 0.002,
+     "dG_b_pJ": -0.008623434642179323,
+     "sum_dose_fmol": 0.0005,
+     "deviation": {
+      "dG_sign": 2.0,
+      "dG_after_state": 0.050781616277311745,
+      "dG_linearised": 0.03233951331132134,
+      "dG_no_minus_one": 0.14944645136059842,
+      "dG_one_molar": 1.0323395133113213,
+      "dG_log10": 0.4811628359020803,
+      "dG_rounded_RT": 0.0001875517899838247,
+      "dose_accumulate": 0.0,
+      "dose_in_mM": 0.0,
+      "charge_dropped_counterion_C": 0.0
+     }
+    }
+   ]
+  },
+  "K": {
+   "W1": {
+    "K_max_abs_pJ": 0.10195363331470145,
+    "K_dropped": 0.10195363331470145,
+    "K_sign": 0.2039072666294029,
+    "K_without_B": 0.10195363331470145,
+    "K_previous_epoch": 0.19929369339379988
+   },
+   "W2": {
+    "K_max_abs_pJ": 0.0037835517972395617,
+    "K_dropped": 0.0037835517972395617,
+    "K_sign": 0.007567103594479123,
+    "K_without_B": 8.673617379884035e-19,
+    "K_previous_epoch": 0.0037835517972395617
+   },
+   "W3": "the supply is the engine's, at run time: K_dropped's deviation is max|K| and K_without_B's is |1e-3 sum_s dmu_s S_s(t_e)|"
+  }
+ },
+ "zero_power": [
+  {
+   "control": "dose_in_mM (a dose or held content booked in mM, missing V_b)",
+   "worlds": [
+    "W1",
+    "W2",
+    "W3"
+   ],
+   "why": "every bath volume is 1 pL",
+   "remedy": "a bath of another volume, such as 25 pL"
+  },
+  {
+   "control": "n against c in the faces' view or volumes",
+   "worlds": [
+    "W1"
+   ],
+   "why": "both finite nodes are 1 pL",
+   "remedy": "unequal node volumes"
+  },
+  {
+   "control": "accumulate (offsets added to the previous epoch)",
+   "worlds": [
+    "W2",
+    "W3"
+   ],
+   "why": "a single event",
+   "remedy": "W1 has power (its return to the declared composition); for ions, a two-stair schedule such as K 5 -> 15 -> 50 mM"
+  },
+  {
+   "control": "dG_no_minus_one, dG_one_molar",
+   "worlds": [
+    "W2"
+   ],
+   "why": "sum_s dn_s = 0 for a substitution",
+   "remedy": "W1 and W3 have power"
+  },
+  {
+   "control": "the view of Na and Cl at the membrane",
+   "worlds": [
+    "W2"
+   ],
+   "why": "K is the only permeant species",
+   "remedy": "an arm with Na and Cl leaks (then the zero-current potential is the GHK voltage equation's, which ion.zero_current evaluates)"
+  },
+  {
+   "control": "K booked with z F phi_b uncancelled",
+   "worlds": [
+    "W1",
+    "W2",
+    "W3"
+   ],
+   "why": "phi_b = 0 (and z = 0 in W1 and W3)",
+   "remedy": "none planned"
+  },
+  {
+   "control": "K_without_B",
+   "worlds": [
+    "W2"
+   ],
+   "why": "the supply before the event is zero (the cell is at rest)",
+   "remedy": "W1 has power (its second event)"
+  },
+  {
+   "control": "charge_dropped_counterion",
+   "worlds": [
+    "W1",
+    "W3"
+   ],
+   "why": "a neutral species alone",
+   "remedy": "W2 has power"
+  }
+ ],
+ "notes": {
+  "W1_kappa_pL_per_s": {
+   "face_0": 10.0,
+   "face_1": 5.0
+  },
+  "W1_rates_per_s": [
+   -17.071067811865476,
+   -2.928932188134525
+  ],
+  "W2_V0_V": -0.08901562196158917,
+  "W2_rest_V_at_declared": -0.08901562196158919,
+  "W2_permeant": "K"
+ }
+}
