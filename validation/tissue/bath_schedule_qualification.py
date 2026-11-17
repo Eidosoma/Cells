@@ -126,8 +126,10 @@ def blocking_stand_ins(requested):
     return sorted(name for name in STAND_INS if STAND_IN_PARTS[name] & set(requested))
 
 
-def judged_run_refusal(protocol, root=ROOT):
-    """Why a judged run may not start (None: it may)."""
+def judged_run_refusal(protocol, root=None):
+    """Why a judged run may not start (None: it may). root: the source tree, ROOT (read when
+    called) by default."""
+    root = ROOT if root is None else root
     status = protocol.get("status")
     if not (isinstance(status, str) and status.lower().startswith("registered")):
         return "the protocol is not registered (its status does not begin 'registered')"
