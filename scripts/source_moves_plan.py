@@ -95,15 +95,14 @@ def classes(args):
         m for g in li.ENTRIES.values() for e in g for m in index if m == e or m.startswith(e + ".")
     }
     starts = sorted((entry | act_mods) - legacy)
-    active, cut = li.closure(starts, edges, stop=legacy | {li.REGISTRY}, leaves=li.DISPATCH)
+    transit = set(li.TRANSIT)  # The registry and, after R1, the legacy registration.
+    active, cut = li.closure(starts, edges, stop=legacy | transit, leaves=li.DISPATCH)
     couplings = [
         dict(src=u, dst=v, names=n, kind=k, via=via)
         for u, v, n, k, via in cut
-        if v != li.REGISTRY and u not in li.DISPATCH
+        if v not in transit and u not in li.DISPATCH
     ]
-    reach_legacy, _ = li.closure(
-        sorted(legacy), edges, stop=active | {li.REGISTRY}, leaves=li.DISPATCH
-    )
+    reach_legacy, _ = li.closure(sorted(legacy), edges, stop=active | transit, leaves=li.DISPATCH)
     cells = {m for m in index if m.startswith("cells")}
     private = sorted((reach_legacy - active) - legacy)
     rest = cells - active - reach_legacy - set(li.DISPATCH)
@@ -118,6 +117,7 @@ def classes(args):
         private=private,
         side=side,
         independent=sorted(rest - set(side)),
+        dispatched=sorted(li.registration_imports(index)),
     )
     _dump(args.out, "classes.json", out)
     print(
@@ -296,8 +296,10 @@ def move_set(c, reached, index, edges):
     """Move 1's modules and how each rule placed them. The rules:
       - older families' modules the active path does not reach (by name), and the modules
         reached only from them or importing them (classes), move;
-      - kept: a module that is not an older family's own (definition or model) module and that
-        a module the active path reaches imports, anywhere in it, stays: what the core imports
+      - kept: a module that is not an older family's own (definition or model) module, nor one
+        the legacy registration's dispatch functions import (an older family's parser or
+        schedule), and that a module the active path reaches imports, anywhere in it, stays:
+        what the core imports
         is the core's (surface_kinetic_spec's parse, which the older families still run from
         the core, needs its junction parser; cav_channels' CaV kinetics need calcium_gates).
         An older family's module imported so is a coupling, for a refactor before the move;
@@ -306,11 +308,16 @@ def move_set(c, reached, index, edges):
         moves, unless it is kept or reached (assembly_cluster/controls);
       - a package's __init__ moves with its last module, unless it is kept or reached
         (assembly_cell, assembly_cluster).
-    The dispatch points never move (R1 refactors them) and their imports keep nothing."""
+    The dispatch points never move and their imports keep nothing; after D188 R1 what they
+    still import that moves is a coupling like any other (move1 reports it). The legacy package
+    itself (R1's registration) is already in place: it never moves, and as the transit node
+    that imports every older family it keeps nothing either."""
     family = set(c["legacy"])
-    kept, _ = li.closure(sorted(reached - CHAINS), edges, stop=family, leaves=CHAINS)
+    stop = family | set(c.get("dispatched", ())) | set(li.TRANSIT)
+    kept, _ = li.closure(sorted(reached - CHAINS), edges, stop=stop, leaves=CHAINS)
     kept = {m for m in kept if m.startswith("cells")} | (reached - CHAINS)
-    fixed = kept | reached | CHAINS
+    placed = {m for m in index if m == "cells.legacy" or m.startswith("cells.legacy.")}
+    fixed = kept | reached | CHAINS | placed
     moved = (family | set(c["private"]) | set(c["side"])) - fixed
     importers = defaultdict(set)
     for u, targets in edges.items():
@@ -356,11 +363,7 @@ def move1(args):
     edges = li.graph(index)
     legacy, notes = move_set(c, reached, index, edges)
     pulled = notes["pulled_in_by_importers"]
-    couplings = [
-        [m, sorted(t for t in edges.get(m, {}) if t in legacy)]
-        for m in sorted(x for x in index if x.startswith("cells"))
-        if m not in legacy and m not in CHAINS and set(edges.get(m, {})) & legacy
-    ]
+    couplings = couplings_of(legacy, edges, [x for x in index if x.startswith("cells")])
     chains = {ch: sorted(t for t in edges.get(ch, {}) if t in legacy) for ch in sorted(CHAINS)}
     pairs = [[m, "cells.legacy." + m.removeprefix("cells.")] for m in sorted(legacy)]
     packages = _packages(pairs)
@@ -626,11 +629,14 @@ def _graph(spec):
 
 
 def couplings_of(moved, edges, cells):
-    """[(module, [moved modules it imports])] of the modules that stay, dispatch points apart."""
+    """[[module, [moved modules it imports]]] of the modules that stay outside the legacy
+    package, the dispatch points included (after D188 R1 they hold only the core's halves)."""
     return [
-        (m, sorted(t for t in edges.get(m, {}) if t in moved))
+        [m, sorted(t for t in edges.get(m, {}) if t in moved)]
         for m in sorted(cells)
-        if m not in moved and m not in CHAINS and set(edges.get(m, {})) & moved
+        if m not in moved
+        and not (m == "cells.legacy" or m.startswith("cells.legacy."))
+        and set(edges.get(m, {})) & moved
     ]
 
 
@@ -667,14 +673,32 @@ def selftest(args):
             "cells.pkg/": [],
             "cells.pkg.a": ["cells.models.old_model"],  # Moves.
             "cells.pkg.b": [],  # Stays, so the package's __init__ stays.
+            # D188 R1: the registration imports every older family; the entry names it.
+            "cells.legacy/": [],
+            "cells.legacy.registration": [
+                "cells.models.old_model",
+                "cells.processes.via_registration",
+            ],
+            "cells.core.legacy_entry": ["cells.legacy.registration"],
+            "cells.processes.via_registration": [],  # Imported by the registration only.
+            "cells.ensemble/": [],
+            "cells.ensemble.families": ["cells.models.old_model"],  # A dispatch point.
+            "cells.core.old_parse": [],  # An older family's parser, whose class lives in specs.
+            "cells.core.active_spec": ["cells.core.old_parse"],  # Reached: imports that parser.
         }
     )
     for target in ("cells.processes.both", "cells.processes.reached_law"):
         edges["cells.models.old_model"][target] = ([], "import")
     c = dict(
         legacy=["cells.core.old_spec", "cells.models.old_model", "cells.core.shared_spec"],
-        private=["cells.processes.law", "cells.processes.only_old"],
+        private=[
+            "cells.processes.law",
+            "cells.processes.only_old",
+            "cells.processes.via_registration",
+            "cells.core.old_parse",
+        ],
         side=[],
+        dispatched=["cells.core.old_parse", "cells.models.old_model"],
     )
     reached = {
         "cells.core.shared_spec",
@@ -685,6 +709,8 @@ def selftest(args):
         "cells.models.active",
         "cells.models",
         "cells.processes",
+        "cells.core.legacy_entry",
+        "cells.core.active_spec",
     }
     moved, notes = move_set(c, reached, index, edges)
     cells = [m for m in index if m.startswith("cells")]
@@ -696,10 +722,28 @@ def selftest(args):
         "a module only older families reach moves": "cells.processes.only_old" in moved,
         "pulled: an importer of a moved module moves": "cells.core.helper" in moved
         and "cells.core.helper" in notes["pulled_in_by_importers"],
-        "a family module the core imports is a coupling, not kept": couplings_of(
-            moved, edges, cells
+        "a family module the core imports is a coupling, not kept": [
+            "cells.core.shared_spec",
+            ["cells.core.old_spec"],
+        ]
+        in couplings_of(moved, edges, cells),
+        "R1: a dispatch point's import of a moved module is a coupling": [
+            "cells.ensemble.families",
+            ["cells.models.old_model"],
+        ]
+        in couplings_of(moved, edges, cells),
+        "R1: the legacy package neither moves nor counts as a coupling": not (
+            {"cells.legacy", "cells.legacy.registration"} & moved
         )
-        == [("cells.core.shared_spec", ["cells.core.old_spec"])],
+        and not [m for m, _ in couplings_of(moved, edges, cells) if m.startswith("cells.legacy")],
+        "R1: the registration is a transit node: what only it imports still moves": (
+            "cells.processes.via_registration" in moved
+        ),
+        "R1: a parser the registration dispatches to is a coupling, not kept": (
+            "cells.core.old_parse" in moved
+            and ["cells.core.active_spec", ["cells.core.old_parse"]]
+            in couplings_of(moved, edges, cells)
+        ),
         "a dispatch point neither moves nor keeps": "cells.core.specs" not in moved,
         "moved with its importers: a module only moved modules import moves": (
             "cells.assembly.controls" in moved
@@ -721,9 +765,73 @@ def selftest(args):
     checks["planted: without the keep rule the core would import a moved law"] = any(
         "cells.processes.law" in t for _, t in couplings_of(moved_plain, edges, cells)
     )
+    checks.update(_reader_checks())
     failed = [k for k, v in checks.items() if not v]
     print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
     return 1 if failed else 0
+
+
+def _reader_checks():
+    """legacy_inventory.registry_dispatch on planted dispatch modules: get_model's chain, then
+    the registration's model_for (D188 R1), each read by its function body only."""
+    import tempfile
+
+    files = {
+        li.REGISTRY: (
+            "from cells.core.active_spec import ActiveModel\n\n\n"
+            "def get_model(spec):\n"
+            "    if isinstance(spec, ActiveModel):\n"
+            "        from cells.models import active\n\n"
+            "        return active\n"
+            "    from cells.core.legacy_entry import legacy\n\n"
+            "    return legacy().model_for(spec)\n"
+        ),
+        li.REGISTRATION: (
+            "from cells.core.old_spec import OldModel\n"
+            "from cells.models import old_model\n\n\n"
+            "def model_for(spec):\n"
+            "    if isinstance(spec, OldModel):\n"
+            "        return old_model\n"
+            "    return None\n\n\n"
+            "def control_values(spec, times):\n"
+            "    from cells.core import schedule_part as part\n\n"
+            "    if isinstance(spec, OldModel):\n"
+            "        return part.control_values(spec, times)\n\n\n"
+            "def parse(data):\n"
+            "    from cells.core.old_spec import parse\n\n"
+            "    return parse(data)\n"
+        ),
+    }
+    others = [
+        "cells.core.active_spec",
+        "cells.models.active",
+        "cells.core.old_spec",
+        "cells.models.old_model",
+        "cells.core.schedule_part",
+        "cells.core.legacy_entry",
+    ]
+    with tempfile.TemporaryDirectory() as folder:
+        index = {}
+        for name in [*files, *others]:
+            path = Path(folder) / (name.replace(".", "_") + ".py")
+            path.write_text(files.get(name, ""))
+            index[name] = path
+        found = li.registry_dispatch(index)
+        dispatched = li.registration_imports(index)
+        del index[li.REGISTRATION]
+        before_r1 = li.registry_dispatch(index)
+    return {
+        "reader: get_model's chain, then the registration's model_for": found
+        == [
+            ("cells.core.active_spec", "ActiveModel", "cells.models.active"),
+            ("cells.core.old_spec", "OldModel", "cells.models.old_model"),
+        ],
+        "reader: a tree without the registration reads get_model alone": before_r1
+        == [("cells.core.active_spec", "ActiveModel", "cells.models.active")],
+        "reader: the registration's dispatch functions' imports, not its module-level ones": (
+            dispatched == {"cells.core.old_spec", "cells.core.schedule_part"}
+        ),
+    }
 
 
 def main(argv=None):

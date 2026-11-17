@@ -1187,6 +1187,25 @@ def cmd_selftest(args):
         checks["unlisted module in a moved package refused"] = False
     except Refused:
         checks["unlisted module in a moved package refused"] = True
+    # D188 R1 created src/cells/legacy/__init__.py with the map's exact text: an existing package
+    # file with the map's text is used as it is; one with other text is refused.
+    existing = dict(files)
+    existing["src/cells/legacy/__init__.py"] = ("100644", b'"""Older families."""\n')
+    try:
+        got, rep = transform(existing, mp)
+        checks["an existing identical package file is used, not created"] = (
+            "src/cells/legacy/__init__.py" not in rep["created"]
+            and got["src/cells/legacy/__init__.py"] == existing["src/cells/legacy/__init__.py"]
+            and "src/cells/legacy/core/old_spec.py" in got
+        )
+    except Refused:
+        checks["an existing identical package file is used, not created"] = False
+    existing["src/cells/legacy/__init__.py"] = ("100644", b'"""Other text."""\n')
+    try:
+        transform(existing, mp)
+        checks["an existing package file with other text is refused"] = False
+    except Refused:
+        checks["an existing package file with other text is refused"] = True
     absent = MoveMap(
         dict(SELFTEST_MAP, modules=[["cells.core.nowhere", "cells.legacy.core.nowhere"]])
     )
