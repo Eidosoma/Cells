@@ -57,11 +57,12 @@ checkpoint_final, summary.json, manifest.json) with view.json, its run view (cel
 with worlds.geometry's prescribed layout, and run.json (revision, models, what the run represents
 and, at the end, every arm's parameters and readouts). Selected arms are written again as viewer
 packages (OUTDIR/viewer/<arm id>/) with a recording subset; viewer/index.json lists those under
-1 MB per layer. A refused view is recorded and the run written without one.
+2 MB per layer. A refused view is recorded and the run written without one.
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
-    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...]
-results.json is rewritten after every arm.
+    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study]
+results.json is rewritten after every arm. --no-dt-study runs the as-written arms at the step
+rule's dt only, for a rerun that writes their records (with views) and nothing more.
 """
 
 import json
@@ -139,7 +140,7 @@ LAWS = {
     ),
 }
 # The viewer packages (the visualizer's request, 17 November): a recording subset of the fields
-# it names, for these arms in this order, kept where every layer's records stay under 1 MB.
+# it names, for these arms in this order, kept where every layer's records stay under 2 MB.
 VIEWER_FIELDS = {
     NORTON: (
         "amount_increment",
@@ -174,13 +175,17 @@ VIEWER_ARMS = (
     "fixture-figure3-g1",
     "fixture-aw-figure3-g1",
 )
-VIEWER_LAYER_BYTES = 2**20
+VIEWER_LAYER_BYTES = 2**21  # 2 MB: Figure 5a's 1.06 MB layer is fine (the lead, 17 November).
 VIEWER_MAX = 10
 # The sweeps' summary for the viewer's charts (cells.experiment_summary@1, the visualizer's
-# schema/RUN_VIEW.md, "A sweep's chart"): numbers only, copied as stated. The as-written sweeps join
-# once local_species_reactions@1 declares its run view (the lead, 17 November).
+# schema/RUN_VIEW.md, "A sweep's chart"): numbers only, copied as stated. A run lists the Norton
+# sweeps, and the as-written ones once its as-written records carry run views (they do once
+# local_species_reactions@1 declares its run view; the lead, 17 November).
 SUMMARY_FORMAT = "cells.experiment_summary@1"
 SUMMARY_KINDS = (NORTON,)
+# The as-written dt study (each arm again at half its step). `--no-dt-study` leaves it out, for a
+# rerun that only writes the as-written records (the dt study is dev-04's).
+DT_STUDY = True
 EQUATION_2 = dict(
     label="Equation 2",
     source=(
@@ -436,8 +441,25 @@ def finish_records(data):
     path = RECORDS.parent / "viewer" / "index.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(index, indent=1, default=str))
-    summary = sweep_summary(data)
+    summary = sweep_summary(data, kinds=summary_kinds(data))
     (path.parent / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False))
+
+
+def summary_kinds(data):
+    """SUMMARY_KINDS, and the as-written form when one of the run's as-written records carries
+    its run view."""
+    for part in data["parts"].values():
+        for value in part.get("result", {}).values():
+            results = value if isinstance(value, list) else []
+            for result in results:
+                loads = result.get("loads", [result]) if isinstance(result, dict) else []
+                for r in loads:
+                    if r.get("kind") != AS_WRITTEN:
+                        continue
+                    records = (r.get("record") or {}).values()
+                    if any(record.get("view") == "written" for record in records):
+                        return (*SUMMARY_KINDS, AS_WRITTEN)
+    return SUMMARY_KINDS
 
 
 def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
@@ -911,8 +933,9 @@ def part_control(out, save):
 
 
 def _half_step(network, result):
-    """The dt study's second run: the same as-written world at half the arm's step."""
-    if result.get("status") != "done":
+    """The dt study's second run: the same as-written world at half the arm's step (none when
+    the run leaves the dt study out)."""
+    if result.get("status") != "done" or not DT_STUDY:
         return None
     half = arm(network, kind=AS_WRITTEN, dt=result["dt_s"] / 2.0)
     e0, e1 = result["engine_rel_error"], half.get("engine_rel_error")
@@ -989,6 +1012,10 @@ FUNCTIONS = dict(
 
 
 def main(argv):
+    global DT_STUDY
+    if "--no-dt-study" in argv:
+        argv = [a for a in argv if a != "--no-dt-study"]
+        DT_STUDY = False
     out_dir = Path(argv[1])
     parts = argv[2:] or list(DEFAULT_PARTS)
     unknown = set(parts) - set(PARTS)
@@ -1007,6 +1034,7 @@ def main(argv):
         figure8_n=FIGURE8_N,
         figure8_loads=FIGURE8_LOADS,
         planted_scale=PLANTED_SCALE,
+        as_written_dt_study=DT_STUDY,
         world=dict(
             species=worlds.SPECIES,
             as_written_species=worlds.AS_WRITTEN_SPECIES,

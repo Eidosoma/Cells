@@ -1,10 +1,11 @@
 # Gap-junction cancer replication
 
+**The preprint.** J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and connexin expression
+work together to enhance tumor growth and metastasis in cancer", bioRxiv,
+doi:[10.64898/2026.09.02.748840](https://doi.org/10.64898/2026.09.02.748840), version 1,
+3 September 2026, CC-BY 4.0 ("the preprint"). Its bioRxiv page lists no supplementary material.
+
 **Status: development work, not judged (D138).** First task of a new track, 17 November 2026.
-The experiment is that of J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and connexin
-expression work together to enhance tumor growth and metastasis in cancer", bioRxiv
-[10.64898/2026.09.02.748840](https://doi.org/10.64898/2026.09.02.748840), version 1, 3 September
-2026, CC-BY 4.0 ("the preprint"). Its bioRxiv page lists no supplementary material.
 
 **Sources of numbers.**
 - The preprint's numbers are used with a citation (D186, D201).
@@ -19,7 +20,8 @@ Each comparison below says whether its number is:
 - **fitted**;
 - **from the code**.
 
-**In short.**
+**In short.** How strongly must gap junctions couple cells for healthy tissue to turn a tumor back
+to the healthy state, and how do the tumor's membrane voltage and connexin expression change that?
 - **The preprint's tissue simulations (Tables 1-3) are not replicated.** They need four engine
   features (§5): a charged microRNA on junctions (F2), a two-state connexin gate (F3),
   species-selective closed gates (F4) and junction docking rules (F5). The 3D table also needs a
@@ -435,9 +437,10 @@ of the unperturbed reference. E1 catches it (K1).
 - `run.json` holds the revision, the models, the definition's hash, what the run represents (for
   its form) and every arm's parameters and readouts.
 - Selected arms are written again as viewer packages, with a recording subset. Each layer's
-  records stay under 1 MB (`viewer/index.json`).
-  - Six Norton packages are selected. Figure 5a's (G_eq) is left out: its membrane layer is
-    1.06 MB.
+  records stay under 2 MB (`viewer/index.json`).
+  - Seven Norton packages are selected, Figure 5a's network among them (its membrane layer is
+    1.06 MB). `dev-04` ran under a 1 MB limit; its index was rewritten after the run with the
+    2 MB one, at the lead's request.
   - All 32 written views pass the engine's reader check (`run_view.validate`, with each run's
     files).
 - `viewer/summary.json` lists the sweeps for the viewer's charts (`cells.experiment_summary@1`):

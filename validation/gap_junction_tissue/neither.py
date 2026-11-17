@@ -38,9 +38,15 @@ run is windowed (cells.core.windows, recording observations, device row checks; 
 check still runs). Every point's result is appended to OUTDIR/points.jsonl (the half-step reruns
 to OUTDIR/half_step.jsonl) and the search state written to OUTDIR/search.json as points finish.
 
+Records for the viewer (--record): stage 1, then the coupled stage at each given D written by the
+engine's windowed writer (cells.window_io.write_windowed_run, observed rows every RECORD_EVERY_S)
+under OUTDIR/viewer/neither-d<D>/ with its run view (cells.run_view@1: the line of cells as touching
+spheres) and run.json; a refused view is recorded and the run written without one.
+
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
     python -B validation/gap_junction_tissue/neither.py OUTDIR --cpus 0,1,2,3,16,17,18,19
     python -B validation/gap_junction_tissue/neither.py OUTDIR --points 1e-14 --end 600  (a probe)
+    python -B validation/gap_junction_tissue/neither.py OUTDIR --record 6e-15,7.2e-15,9e-15
 """
 
 import argparse
@@ -306,6 +312,169 @@ def evaluate(d, start, *, end=COUPLED_S, dt=None):
     return out
 
 
+RECORD_EVERY_S = 100.0
+RECORD_FIELDS = (
+    "amount_increment",
+    "passive_transferred",
+    "junction_gate",
+    "membrane_voltage_V",
+    "junction_voltage_V",
+)
+EXPERIMENT = "gap-junction-cancer-neither-1d"
+REPRESENTS = (
+    "BITSEY's 1D no-tricks condition (a comparison with BITSEY's log saved at b2cb370, written by "
+    "an earlier revision of its code): the EMT switch in a line of 25 cells, the first 6 tumor, "
+    "coupled by miR200 alone on passive junction routes at junction diffusion constant D, after "
+    "an uncoupled 500 s computed once. Development run of the engine, not judged (D138)."
+)
+
+
+def record(out_dir, d, start, *, end=COUPLED_S, label=""):
+    """The coupled stage at d written as a run record with its run view (module docstring)."""
+    from cells import run_view
+    from cells.core.specs import parse_spec
+    from cells.core.windows import WindowPolicy
+    from cells.window_io import write_windowed_run
+
+    arm_id = f"neither-d{d:.6g}"
+    directory = Path(out_dir) / "viewer" / arm_id
+    raw = coupled_world(d, start, end=end)
+    observe = sorted(
+        {0.0, *(k * RECORD_EVERY_S for k in range(int(end // RECORD_EVERY_S) + 1)), end}
+    )
+    raw["experiment"]["observation_times"] = [t for t in observe if t <= end]
+    spec = parse_spec(raw)
+    spacing = 2.0 * R_CELL_M * 1e6
+    geometry = run_view.Geometry(
+        unit="um",
+        dimensions=2,
+        sets={
+            "cell": {
+                "kind": "spheres",
+                "centres": [[k * spacing, 0.0] for k in range(N_CELLS)],
+                "radius": [R_CELL_M * 1e6] * N_CELLS,
+            }
+        },
+        source="validation/gap_junction_tissue/neither.py: a line of 25 touching cells, the "
+        "tumor the first 6 (BITSEY's 1x1x25 field)",
+    )
+    labels = dict(
+        id=arm_id,
+        experiment=EXPERIMENT,
+        arm=arm_id,
+        label=f"Neither condition, 1D: D = {d:.4g} m^2/s",
+    )
+    provenance = dict(
+        operation="fresh",
+        driver="validation/gap_junction_tissue/neither.py",
+        experiment=EXPERIMENT,
+        arm=arm_id,
+        d_m2_s=d,
+        **_snapshot_identity(),
+    )
+    policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
+    request = run_view.Request(
+        labels, geometry=geometry, recording=run_view.Recording(fields=RECORD_FIELDS)
+    )
+    started = time.perf_counter()
+    out = dict(arm=arm_id, d=d, directory=str(directory), dt_s=spec.execution.dt)
+    try:
+        write_windowed_run(directory, spec, policy, provenance=provenance, view=request)
+        out["view"] = "written"
+    except run_view.ViewRefused as error:
+        write_windowed_run(directory, spec, policy, provenance=provenance)
+        out.update(view="refused", refusal=str(error))
+    out["seconds"] = time.perf_counter() - started
+    out["final_units"] = final_units(directory, list(spec.model.species_ids))
+    entry = dict(
+        format="gap_junction_tissue.neither_run@1",
+        status="development run of the engine, not judged (D138)",
+        represents=REPRESENTS,
+        models=["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+        laws=dict(
+            switch="local_species_reactions@1 (GRN_miRNA.py's constants at b2cb370)",
+            junction_route="passive_neutral_permeation@1 (cells.passive_routes@1), miR200 only",
+            junction_gate="junction_voltage_relaxation@1 (pinned open)",
+        ),
+        definition_sha256=spec.fingerprint,
+        arm=arm_id,
+        d_m2_s=d,
+        g_gj_m3_s=conductance(d),
+        start_units=start,
+        **_snapshot_identity(),
+    )
+    (directory / "run.json").write_text(json.dumps(entry, indent=1))
+    return out
+
+
+def final_units(directory, species_ids):
+    """Each cell's u, m and z (units) from a written record's final checkpoint."""
+    import numpy as np
+
+    with np.load(Path(directory) / "checkpoint_final" / "state.npz") as state:
+        amount = state["amount_reference"] + state["amount_increment"]
+        volume = state["volume"][:N_CELLS]
+    return {
+        name: (amount[species_ids.index(name), :N_CELLS] / volume / UNIT_mM).tolist()
+        for name in NAMES
+    }
+
+
+def records_summary(results):
+    """The records' sweep for the viewer's chart (cells.experiment_summary@1): D along it, each
+    cell's final miR200 minus Zeb mRNA as a readout. Numbers only, copied as computed."""
+    arms = [
+        dict(
+            arm=r["arm"],
+            parameter=r["d"],
+            readouts={
+                f"cell_{k + 1:02d}": u - m
+                for k, (u, m) in enumerate(
+                    zip(r["final_units"]["u"], r["final_units"]["m"], strict=True)
+                )
+            },
+        )
+        for r in results
+        if r.get("final_units")
+    ]
+    sweep = dict(
+        id="neither-1d",
+        label="The neither condition on BITSEY's 1D line",
+        plain="Each cell's final miR200 minus Zeb mRNA in a line of 25 cells, the first 6 a "
+        "tumor, against the junction diffusion constant D of miR200; above 2 a cell counts as "
+        "epithelial (BITSEY's criterion).",
+        parameter=dict(id="d", label="Junction diffusion constant D of miR200", unit="m^2/s"),
+        readouts=[
+            dict(
+                id=f"cell_{k + 1:02d}",
+                label=f"Cell {k + 1}{' (tumor)' if k < TUMOR else ''}: miR200 minus Zeb mRNA",
+                unit="uM",
+            )
+            for k in range(N_CELLS)
+        ],
+        arms=arms,
+    )
+    return dict(
+        format="cells.experiment_summary@1",
+        experiment=EXPERIMENT,
+        note="Development runs of the engine, not judged (D138). One scaled unit of the switch is "
+        "1 uM here.",
+        sweeps=[sweep] if len(arms) >= 2 else [],
+    )
+
+
+def _snapshot_identity():
+    path = Path("SNAPSHOT.json")
+    if not path.is_file():
+        return dict(revision=None, snapshot=None, clean=None)
+    snapshot = json.loads(path.read_text())
+    return dict(
+        revision=snapshot["git_revision"],
+        snapshot=Path.cwd().name,
+        clean=not snapshot["selected_status_porcelain_v1_z"],
+    )
+
+
 def _rss():
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
@@ -489,6 +658,7 @@ def main():
     parser.add_argument("--cpus", default="")
     parser.add_argument("--points", default="")
     parser.add_argument("--end", type=float, default=COUPLED_S)
+    parser.add_argument("--record", default="")
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -526,6 +696,22 @@ def main():
         cpus=args.cpus or None,
     )
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
+    if args.record:  # Records for the viewer: stage 1, then each D written with its view.
+        _start_engine()
+        stage1 = uncoupled()
+        (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
+        if stage1["status"] != "done":
+            return 1
+        results = []
+        for d in (float(x) for x in args.record.split(",")):
+            results.append(record(out_dir, d, stage1["start_units"], end=args.end))
+            (out_dir / "records.json").write_text(json.dumps(results, indent=1))
+            summary = records_summary(results)
+            (out_dir / "viewer" / "summary.json").write_text(
+                json.dumps(summary, indent=1, allow_nan=False)
+            )
+            print(json.dumps({k: results[-1].get(k) for k in ("arm", "view", "seconds")}))
+        return 0
     if args.points:  # A probe: stage 1, then the given points in this process; no search.
         _start_engine()
         stage1 = uncoupled()
