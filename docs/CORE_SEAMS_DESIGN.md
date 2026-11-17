@@ -654,6 +654,18 @@ with its citation in our own words. Its fields (**S**):
   instances of this template, with their fields kept.
 - **H1's channel-law fields** (cardiac §4.5) are optional fields of `cells.channel_law@1`, so their
   addition keeps its major: reads, gate counts, the driving force and coefficients as data.
+- **The interface set is open to built-in families (the lead's ruling, 17 November 2026; §15).**
+  MODULE_SYSTEM_DESIGN §2.3 gives one namespace per distribution and reserves `cells`, so a built-in
+  family's interfaces are `cells.*`, named for what they are, since other families implement them
+  too (D197).
+  - The five above are the initial set, each held to its type.
+  - A family declares its own in its row of the static model table (`registry/model_table.py`,
+    its `interfaces`). A declaration of one is a type built on the template (`Law`, or
+    `FamilyOperator` for a family's operators), whose own `errors()` checks its own fields at
+    registration.
+  - The assembly lineages declare `cells.exchange_law@1`, `cells.rate_factor_law@1` and
+    `cells.lineage_operator@1`.
+  - An outside package's interfaces stay in its own namespace.
 
 ### 8.2 One module per law
 
@@ -701,6 +713,11 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
   - built in the pass.
 - **Models: a table designed here, built with module stage 1 or with GARD's family.** Each entry
   gives the model's parse, `to_dict`, build, `control_values` and CLI.
+  - *Built in its minimal form (17 November 2026, §15):* `registry/model_table.py`, a static literal
+    keyed by model as definitions write the ID, with each model's type, parsing module, law and
+    operator homes, declared interfaces, runner and, for a composition, its inner model and
+    operators. The registries load every home from it, and a static scan holds it to every module
+    that registers a piece. The dispatch chains are not replaced yet.
   - It replaces the active branches of `get_model`'s chain (`models/registry.py`, "no dynamic
     plugins", :1 [`registry/models.py`]) and of `parse_spec`.
   - The older families stay behind `legacy/registration.py`'s delegation (D188's R1).
@@ -1040,6 +1057,15 @@ following before work builds on it.
 - **FR-4 and FR-5.** F changed how the transporter and the passive routes find their laws. The FR
   rehearsals run from a snapshot older than F, so their bitwise checks are repeated from main at or
   after 75e925ea before registration.
+
+- **Amended at landing (17 November 2026, the lead).** Two additions beyond this section's first
+  ruling are accepted:
+  - `cells.modules` exports `Law`, `FamilyOperator` and `CitedWork`, the declaration types a family
+    needs, not `Law` alone;
+  - the static model table (`src/cells/registry/model_table.py`) carries `module` and `composition`
+    beyond the agreed columns. They feed `cells.declarations@2`'s model rows.
+
+  `cells.modules` stays provisional (D195).
 
 ## 16. Seam A's contract, amended after the independent check (17 November 2026)
 

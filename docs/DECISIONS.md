@@ -6622,3 +6622,169 @@ answers.
 
 These are normal design tasks. They do not require a new language-selection
 discussion or prevent the next independent implementation work.
+
+## D204: Molecular machines go on the engine's backlog (FR-13)
+
+2026-11-17. The visualizer session relayed the user's request:
+- a "Machines" tab in the viewer, cataloguing molecular machines per species as the proteins were;
+- modelling the machines put on the engine's backlog.
+
+The user confirmed it to the lead, "yes new feature request from me", and added:
+> "only thing with the machines, if there is something missing in our core archtecture or if they can
+> be naturally modeled there"
+
+> "and we'd to be able to model them both individuall and in aggregate in a cell or whatever, LODs
+> based on what is being looked at"
+
+- **[FR-13](FEATURE_REQUESTS.md#fr-13--molecular-machines-individually-and-in-aggregate) records the
+  request.** Its scope stands on D140: assembly, not folding.
+- **The first step is a read-only design note.** It answers the user's question: can the core
+  architecture model machines naturally, individually and in aggregate, with the level of detail set
+  by what is looked at, or what is missing?
+  - It presents options.
+  - Nothing is built before the user has discussed them.
+- **The tab and its catalogue are the viewer's own data,** under D173, D178, D186 and D201. Its
+  fields follow what a declared model carries, once one exists.
+
+## D205: Declared extension goes on the backlog (FR-14)
+
+2026-11-17. The user asked: "one question is it possible to extend a model or an operator, like object
+oriently?" The lead answered from the code: subclasses register under new IDs, but the engine does not
+record or check an extension. The user then said: "cool get also adviser in on this so put the oo
+extension on the backlog".
+
+- **[FR-14](FEATURE_REQUESTS.md#fr-14--declared-extension-of-laws-operators-and-models) records it.** It
+  holds what was verified at seam F's registry head and the three missing pieces: a declared extends
+  link, inherited checks, and version rules.
+- **FR-13's design note covers it,** since machines are its likely first use. No separate note is
+  written.
+
+## D206: The laws in D198's retire batch are transformed into the new engine, even unused
+
+2026-11-17. The lead listed the eight capabilities that D198's batch drops, none of them transformed.
+The user answered within the window the lead gave: "so those old models, we should transform those laws
+even if we don't use them yet", then "if that makes sense". This amends D198, whose rule was "transform
+them into the new engine if necessary".
+
+- **The retire batch is held out of landing.** Branch `retire-processes`, at 81a96128, stays as gated
+  until the split below is agreed.
+- **Scope: the eight capabilities of D198's batch.** Whether the same applies to `legacy/`'s laws is the
+  user's call; D196 stands until then.
+- **The lead's proposal, made with the advisor, is put to the user.** Nothing is built before the user
+  agrees.
+  - **Physical laws** in the batch go onto seam F's law template now. Each one gets:
+    - one reference check, against saved outputs of the old code run from a frozen snapshot, not
+      against the old test files;
+    - its old status carried over: charged-surface work, for example, was "held, never released";
+    - a visible "not qualified" status in the manifest and the library.
+  - **Numerical methods and geometry machinery** (meshes, polygons, control volumes, partitions) wait
+    for the engine's own geometry design, instead of being ported as they are.
+  - **Kernels that carry BETSE's conventions** enter `src/cells` only under neutral names, with a
+    citation.
+- **A classification table of the batch's 33 source modules is being made, read-only.** For each
+  module it gives the class (law, method or machinery) and what the modular engine already covers.
+- **The user agreed the split** the same day: "yes, the levin work has highest priority as we want to
+  use that as an example in the viz, machinery can wait for sure".
+  - The batch's laws go onto seam F's template, after the classification table, at a lower priority
+    than the gap-junction replication (D207).
+  - The machinery waits for the engine's geometry design.
+  - `legacy/` stays under D196 unless the user extends this.
+
+## D207: The gap-junction replication has the highest priority
+
+2026-11-17. The user: "the levin work has highest priority as we want to use that as an example in the
+viz". The work replicates, with the Cells engine, the experiment of the public bioRxiv preprint
+10.64898/2026.09.02.748840, which was made with BITSEY. It is on branch `gap-junction-replication`.
+
+- **Its jobs have first claim on CPUs 6, 7, 22 and 23,** at nice 0 while other light work stays at
+  nice 10. It takes lane A when it needs dedicated cores.
+- **Its runs are designed to be shown in the viewer as an example.** The format is agreed with the
+  visualizer session. Anything shown is published from a stated run with its revision, and a
+  development run is labelled not judged.
+- **Lead's note, not part of the user's decision:** FR-4's and FR-5's judged run, already queued on lane
+  B, is not interrupted.
+- **Amended the same day.** The user: "so GARD and Levin highest priority". GARD's work (D192, D197)
+  shares the highest priority with the replication.
+  - On lane A, GARD's short gate runs first and the replication's tissue search follows.
+  - On the light CPUs, both run at nice 0.
+
+## D208: Numbers from BITSEY's code and logs may be used, cited
+
+2026-11-17. The gap-junction replication found that BITSEY's repository carries no licence. It asked
+whether numbers from BITSEY's code and logs may be used: the Cx45 gate constants and Table 3's
+provenance. The user: "its fine on BITSEY code we are MIT here".
+
+- **Numbers from BITSEY's code and logs may be used,** each cited to the repository and the commit
+  read.
+- **AGENTS.md stands.** BITSEY's code is never copied or imported into Cells. It may be run out of
+  process, in its own environment, as a reference; that is proposed to the lead first.
+- **Lead's note:** downloaded copies of BITSEY stay under /mnt/workspaces and are never committed.
+
+## D209: Molecular machines: M0 now, then M1 (FR-13)
+
+2026-11-17. On the machines design (`docs/MOLECULAR_MACHINES_DESIGN.md`), the user said: "lets go with M0
+then m1 - but get adviser in on the final decision then go". The lead reviewed the choice with the
+advisor.
+
+- **M0, now.** The viewer's Machines tab is a catalogue with drawing levels, labelled illustration.
+  - No machine is in the engine; the drawing levels are the viewer's, not simulation detail.
+  - ATP synthase reads "planned, first".
+- **M1, next: ATP synthase as the first machine, built as general pieces.** "Go" means its build plan
+  (§10), not code.
+  - **One law, one owner.** M1's law is D193's `proton_coupled_atp_synthesis_cycle@1`, built by the
+    mitochondria lane after the core-seams pass; FR-13 writes no synthesis law. Beard's printed F1F0
+    law (Eq. 11) fails the step-0 screen, so the user rules on a departure.
+  - **The order:** the core-seams pass, D193's synthesis law, M1a, a minimal form of D175's
+    representation fields, then M1b.
+  - **Seam A.** The note's per-edge detailed-balance check implies §16's Wegscheider condition when
+    every state declares one free energy (§10.2). Seven requirements go to seam A's design.
+  - **Cost:** 17–26.5 agent-days. The second consumer, named before any code, is the proteasome core
+    (M2).
+  - **Sources:** the numbers were read through a page-reading tool. A direct read is owed before any
+    number is registered.
+- **The note's questions:**
+  - **U1, U3 and U5 are answered by this choice:** a level fixed per run first, ATP synthase first,
+    and tagged one-way individuals first.
+  - **U2:** the user's words of the same day, "different researdh would need different levels of
+    detail so you could choose the setup" (D210). The lead reads them as follows: the level is declared
+    per run, undeclared worlds are unchanged, and the finer representation is the reference.
+  - **Open:** U4 (the ribosome and D145) and U6 (a declared extends link, FR-14).
+  - **Put to the user:** U7, which judges ATP synthase's intercept and reports its coupling ratio as a
+    finding. The approved check stands until the user rules.
+- **The lead's rulings:**
+  - **L1 and L3:** the relations vocabulary and the manifest's machine piece wait for later
+    versions. `cells.relations@2` collects its requirements from three sources: machines,
+    mitochondrial fusion (D210), and GARD's need for an order between same-time events.
+  - **L4:** D175's four fields are designed once, against fuel (D174), machines and mitochondria.
+    D174's fuel case stays their first consumer.
+  - **L5:** the zero-rate run belongs to the mitochondria lane, which owns the synthesis law.
+
+## D210: Mitochondria: the level of detail is chosen per research question; individuals sooner
+
+2026-11-17. The lead explained that mitochondria use one set of laws, and that the host sets the level.
+The first level is one lumped mitochondrion of N identical members per cell (D193), which is exact for
+identical members; then classes; then individuals. The user: "sounds great. So yes, the idea is that
+different researdh would need different levels of detail so you could choose the setup. get adviser also
+in on this". On individual mitochondria with fission and fusion, the user added: "yes sooner rather than
+later".
+
+- **This confirms D175.** Levels of detail are declared representations, chosen per mechanism and per
+  question. Two independent laws for one mechanism are not written: a simpler level is declared as a
+  representation of the detailed one.
+- **Individual mitochondria move up in D193.** D193's first step is unchanged: the lumped node stays the
+  reference that N identical individuals must reduce to.
+  - **"Sooner" means the design now, and its dependencies pulled forward.** No mitochondrion runs in
+    the modular engine yet, and the synthesis law still needs the user's ruling on a departure (D209).
+  - **Static individuals** (N mitochondria per cell, with no events) may need no new door. An addendum
+    to `docs/MITOCHONDRIA_DESIGN.md` checks the code.
+  - **Dynamic individuals need more:**
+    - splitting and merging a compartment's patch at fission and fusion;
+    - retiring one compartment in a living cell;
+    - stochastic partition at division;
+    - two-parent relations (`cells.relations@2`).
+- **Choosing between levels that are not exact** needs D175's four fields, designed once for fuel,
+  machines and mitochondria (D209, L4).
+- **The addendum is read-only and gives options.** It names the first research question that needs
+  individuals, and the free-to-read data for it. Inheritance may belong to another target, since
+  cardiac cells rarely divide.
+

@@ -18,6 +18,12 @@ and a general feature, never one built for one study (D144).
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Its registration, rehearsal and judged run on the landed core |
 | [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Partly built, on main with the run-view writer since 16 November: its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November), the writer's loop block with its closure measure, and the planarian loop's builder (`validation/replay/`), with one development run of that loop, not judged. The human loop waits for the human cardiac laws |
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
+| [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | M0 now: the viewer's catalogue, as illustration. M1, ATP synthase, after the core-seams pass; no model yet (D209) | M1's build plan: [the design note](MOLECULAR_MACHINES_DESIGN.md) §10 |
+| [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped | Covered by FR-13's design note: options for a declared extends link, inherited checks and version rules |
+| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Requested; awaits the user's go | First find why `check_impermeant` refuses, and whether D191's composition rule is the intended lift |
+| [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | Needed only for the preprint's 3D table |
+| [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -646,3 +652,120 @@ explored.
 - **Status:** accepted, since D185 already decided the manifest. It is being built in seam F of the
   core-seams pass (D195).
 
+## FR-13 — Molecular machines, individually and in aggregate
+
+- **The request (D204).** It came from the user on 17 November 2026, first through the visualizer
+  session, then to the lead directly.
+  - **The viewer** gains a "Machines" tab: a catalogue of molecular machines gathered per species,
+    as the proteins were.
+  - **The engine** models them "both individuall and in aggregate in a cell or whatever, LODs based
+    on what is being looked at".
+  - **The first question is the user's:** "if there is something missing in our core archtecture
+    or if they can be naturally modeled there".
+- **Standing scope: D140.** Cells models the assembly of folded subunits into complexes and
+  machines, from protein cages toward the proteasome and larger, and how the machines are used.
+  Protein folding itself is not simulated.
+  - On 16 November the user also asked for the nucleus, the Golgi apparatus and ribosomes "modeled
+    to some extend, not protein folding level (yet)". That is recorded in
+    `visualizer/docs/CELL_STRUCTURES.md`.
+- **What exists today:**
+  - membrane machines with laws: channels, pumps, exchangers and junctions;
+  - `capsid_graph@1`, the first assembly case: one prescribed 20-site cage in a fixed bath
+    (`docs/CAPSID_ASSEMBLY.md`);
+  - `cells.assembly_lineages@1`, the stochastic assembly family built for GARD (D192, D197);
+  - seam A's cycle contract: Hill cycles, the Wegscheider check and the J·ΔG guard
+    (`docs/CORE_SEAMS_DESIGN.md` §16);
+  - the relationship tables (`cells.relations@1`, D202) and the declarations manifest (FR-12).
+  - **What is absent:** there is no model of a ribosome, RNA polymerase, ATP synthase, proteasome,
+    translocon, flagellar motor, chemoreceptor array or attachment organelle.
+- **The levels to scope.** This is the lead's framing, made with the advisor. A machine is one entity
+  with three layers, not one model per machine:
+  - **aggregate:** copy numbers and rates, with what the machine consumes and produces booked on the
+    ledgers of the compartment it sits in;
+  - **cycle:** the states of the machine's working cycle;
+  - **assembly:** its subunits, their stoichiometry and the order they join.
+
+  The level of detail follows what is looked at. So the layers must agree where they meet, and a
+  switch between them must keep conserved accounting.
+- **The first machines are chosen by constraint,** not by the catalogue's order:
+  - the engine already carries what they consume and produce;
+  - free-to-read data supports a judged check (D186, D201);
+  - more than one organism target needs them.
+- **Status (D209):** no model yet.
+  - **M0 now:** the viewer's catalogue, labelled illustration.
+  - **M1 next:** ATP synthase as general pieces, after the core-seams pass and D193's synthesis law.
+    Its build plan is [`MOLECULAR_MACHINES_DESIGN.md`](MOLECULAR_MACHINES_DESIGN.md) §10.
+  - The viewer's catalogue fields will follow what a declared model carries in the manifest once
+    one exists.
+
+## FR-14 — Declared extension of laws, operators and models
+
+- **The request (D205).** The user asked on 17 November 2026, "is it possible to extend a model or an
+  operator, like object oriently?", and then: "put the oo extension on the backlog".
+- **What works today.** This was checked by planting subclasses in a scratch registry at seam F's
+  registry head 6a0a9dc6, on 17 November.
+  - A subclass of a law interface (`ChannelLaw`, built from `kv1p5_mh@1`'s fields) passes the law
+    template's checks and registers under its own ID.
+  - A subclass of a built-in operator (`OsmoticWater`) registers under a new ID. The operator
+    contract checks it again at registration.
+  - A subclass under a built-in `cells` ID is refused. Each built-in ID is one object, so a run
+    cannot silently change meaning.
+  - Models extend by composition. One composite model runs @3's step plus declared operators,
+    and new combinations are definitions, not models (D143, under D142's design rule). D191 rules
+    only how a composition reads fields.
+  - A registry's `extended(...)` is a scoped copy with extra pieces planted in it. It is not
+    extension.
+- **What is missing:**
+  - **A declared "extends" link:** the parent's ID and what changed, like a citation's departures.
+    It would live in the registries and the declarations manifest, so the library and the viewer
+    can show a family tree.
+  - **Inherited checks:** the parent's contract and reference tests also run on the child.
+  - **Rules for a child** when its parent moves to a new major version.
+- **Why it is general.** It follows D142's object-oriented design. Molecular machines (FR-13) are a
+  likely first use: one general machine cycle, specialised per machine.
+- **Status:** requested; not scoped. FR-13's design note covers it, as part of the user's question
+  about the core architecture.
+
+## FR-15 — Junction-crossing and charged species in the species operators
+
+- **Where it came from.** The gap-junction replication (D207) found it on 17 November 2026. In the
+  public preprint 10.64898/2026.09.02.748840, a microRNA is made in cells and crosses gap junctions.
+- **What refuses:**
+  - **F1:** `local_species_reactions@1`, turnover, exchange and site occupancy refuse any species
+    with a junction route (`species_common.check_impermeant`). Even the preprint's linear model as
+    written is refused, so the replication ran its exact Norton equivalent instead.
+  - **F2:** the same operators refuse charged species.
+- **Why it is general.** Any signalling species that cells make or use and that also crosses
+  junctions needs it: second messengers, small RNAs, metabolites.
+- **First step:** find why `check_impermeant` refuses (its design reason and the decisions it
+  cites), and whether D191's composition rule is the intended way to lift it.
+- **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
+  features.
+
+## FR-16 — Junction gating and availability
+
+- **F3:** @3 hosts one junction law, `junction_voltage_relaxation@1`. The preprint's Cx45 gate needs a
+  two-state voltage gate in the manner of Chen-Izu. The existing law's best fit is off by 0.05.
+- **F4:** a junction has one minimum open fraction for every species. The preprint's microRNA curve
+  needs a per-species floor (0); one floor for all is off by 0.11.
+- **F5:** regulated junction availability combines the two sides only by product. The preprint
+  needs min and mean as well.
+- **Why it is general:** connexin-specific gating and permselectivity are general junction
+  physiology.
+- **Status:** requested; awaits the user's go.
+
+## FR-17 — Field solves beyond 2048 nodes
+
+- **F7:** the field solve is capped at 2048 nodes. The preprint's 3D table needs a 25³ field, 15,626
+  nodes.
+- **Status:** requested; awaits the user's go. Only the 3D table needs it.
+
+## FR-18 — The composite's energy check at moderate step sizes
+
+- **The finding.** @3's energy check (2e-3 under ARS(2,2,2)) refused neutral-species junction worlds
+  at dt × rate from 0.08 to 0.31, well inside the stability bound of 1. Two dt studies show the error
+  is second order, with a coefficient that depends on the world. The replication passed by using
+  dt × rate ≤ 0.04.
+- **What is asked of the core:** review whether the check's tolerance, or the step-size advice that
+  goes with it, should change. It is not loosened for one experiment.
+- **Status:** reported to the core.

@@ -85,6 +85,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Combined landing (17 November 2026, evening).** main is at 3891b802, a fast-forward of the gated
+  landing branch. It brings the relations writer, seam F's registry fixes, the documentation library
+  with `cells.declarations@2`, and the removal of `agent-work/`.
+  - **What landed:**
+    - **`cells.relations@1`** (D200, D202): the general relationship tables, with a second consumer
+      over four real worlds and an engine-free drawing script.
+    - **Seam F's registry fixes:** the static model table and family operators.
+    - **The library (D203):** the format page, the page tool, the drift test, the template, the
+      glossary and three pilot pages.
+    - **`agent-work/` is out of the repository.** It is in history at tag
+      native-betse-frozen-2026-11-08.
+  - **The gate** ran on snapshot-3891b802, which is clean:
+    - crossrev's nine sets are identical;
+    - G1 is 113 of 113;
+    - tiers 1+2: 504 files, 0 changed;
+    - test IDs: 39 new, all in the five expected files, with none missing and the same 5 collection
+      errors as before.
+  - **FR's bitwise landing checks** show no unexpected difference.
+  - **Evidence:** `/mnt/workspaces/Cells/landing-20261117/` (`gate-3891b802/`, `fr-landing-3891b802/`).
+  - **Also on main:** the molecular machines design with M1's build plan (D209). D198's retire batch is
+    held (D206).
+
 - **FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged
   run.** Registration commit 32a1d439. The protocols are `fr4-acidification-v1` and
   `fr5-transfer-v1`.
