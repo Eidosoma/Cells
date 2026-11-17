@@ -828,6 +828,25 @@ each runs. All are development runs of the engine, not judged (D138).
   - A short test before registration (two arms of 100 s) already showed the 3x3 patch fully E
     within 100 s at x2. So the sheet's threshold is observed to be lower than the line's. Any
     explanation, such as more healthy neighbours per tumor cell, is an interpretation.
+  - **Result** (`runs/sheet-01`, from 3ed9ef24, lane A, one arm per core): all six arms ran to
+    2,000 s with views (`run_view.validate`), `criterion.json` and the concentration sidecars;
+    none was refused. Layers at most 1.21 MB.
+
+    | D (m²/s) | Arm | State at 2,000 s (81 cells) |
+    | --- | --- | --- |
+    | 0 | D = 0 | the 3x3 patch M, 72 E |
+    | 4.486e-16 | x2/16 | the 3x3 patch M, 72 E |
+    | 8.972e-16 | x2/8 | the 3x3 patch M, 72 E |
+    | 1.794e-15 | x2/4 | 81 E: normalized |
+    | 3.589e-15 | x2/2 | 81 E: normalized |
+    | 7.178e-15 | x2 | 81 E: normalized |
+
+  - **None is still changing at the end.** Over the last 200 s, no cell changes state and no
+    miR200 minus Zeb mRNA value moves by more than 1.4e-14 µM; over the last 1,000 s, by at most
+    9e-10 µM.
+  - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (9.0e-16 to 1.8e-15 m²/s),
+    four to eight times below the line's x2. That is observed, at the sheet's shorter horizon;
+    why it is lower is not measured here.
 - **The ladder** (`runs/ladder-01`): the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and
   7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step
   rule, with dense records. 1e-13 is left out for its step (1/64 s).
