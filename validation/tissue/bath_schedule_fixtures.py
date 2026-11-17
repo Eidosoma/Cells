@@ -99,6 +99,10 @@ BATCH_LEVELS_mM = ((1e-3, 1e-2), (1e-3, 3e-3), (1e-3,))  # up tenfold, up threef
 WATER_UNITS = {"NaM": {"Na": 1, "M": 1}, "KM": {"K": 1, "M": 1}}
 BOUND_OWNER_mM = dict(Na=140.0, K=10.0, Cl=20.0)  # R12: the bath's K step raises max(c) 10 to 50
 BOUND_RATIO_AT_1MS = 1.2  # R12: dt x the explicit rate at the worst composition, at 1 ms
+# R12's admitted neighbour: the same world at 0.1 ms. At 0.25 ms (dt x the rate about 0.3 after the
+# K step) the run-time IMEX energy ledger refuses it ("Resolved pump accounting failed: energy"; the
+# rehearsal of 17 November 2026); at 0.1 ms its largest energy ratio is 0.18 of the bound.
+R12_NEIGHBOUR_DT = 1e-4
 
 
 def on_grid(t, dt):
@@ -276,7 +280,7 @@ def bound_world(*, dt=DECLARED_DT, events=True, end=1.0):
 def refusal_pairs():
     """Every refusal class of the protocol (refusal_classes), as {class: (refused, admitted)}:
     raw definitions, the refused one refused at the definition by the check the class names, its
-    neighbour admitted. R12's neighbour runs at 0.25 ms, and R12 adds the declared composition
+    neighbour admitted. R12's neighbour runs at 0.1 ms, and R12 adds the declared composition
     alone at 1 ms (admitted: the worst composition decides). R3's neighbour is W7's staircase."""
     short = dict(end=0.6, event_s=0.5)
     salt_units = {"bad": {"K": 1}}
@@ -314,6 +318,6 @@ def refusal_pairs():
         "R11_an_anisosmotic_step": (water_world({"KM": 10.0}),
                                     water_world({"NaM": -10.0, "KM": 10.0})),
         "R12_beyond_the_explicit_bound": (
-            bound_world(dt=DECLARED_DT), bound_world(dt=2.5e-4)),
+            bound_world(dt=DECLARED_DT), bound_world(dt=R12_NEIGHBOUR_DT)),
         "R13_not_a_held_bath": (finite, held_bath),
     }
