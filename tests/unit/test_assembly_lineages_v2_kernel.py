@@ -342,3 +342,49 @@ def test_the_kernel_replays_on_a_host_oracle_from_its_uniforms():
     assert np.allclose(times, run.trace["event_time"], rtol=1e-12, atol=0)
     planted, _ = reference.replay(spec, run.diagnostics["event_uniforms"], reverse_weight=0.9)
     assert not np.array_equal(planted, run.trace["event_channel"])
+
+
+# ------------------------------------------------------------------ the singular state
+
+
+def singular_world(measure, last):
+    """A membrane of A, B, C and E with A + B + E -> C + E (E on both sides): under @1's measure
+    its rate is singular where the membrane holds exactly its reactants, A = B = E = 1, C = 0."""
+    sp = [
+        {"id": n, "moieties": m, "standard_mu_RT": {"bilayer": mu}, "catalogue": None,
+         "evidence": None}
+        for n, m, mu in (("A", {"a": 1}, 0.0), ("B", {"b": 1}, 0.0), ("C", {"a": 1, "b": 1}, -0.7),
+                         ("E", {"e": 1}, -0.4))
+    ]  # fmt: skip
+    return {
+        "units": {"time": "s", "temperature_K": 298.15, "standard_concentration_mM": 1.0},
+        "conventions": {"free_energy_form": "discrete", "condensed_measure": measure,
+                        "membrane_kinetics": "count_on_m", "lumen_volume": "declared",
+                        "empty_catalyst_phase": "uncatalysed", "last_molecule": last},
+        "species": sp,
+        "phases": {"membrane": {"species": ["A", "B", "C", "E"]}},
+        "steps": [step("r4", {"A": 1, "B": 1, "E": 1}, {"C": 1, "E": 1}, 2.0, phase="membrane")],
+        "free_energy": [{"law": "cells.ideal_mixing@1"}],
+        "founder": {"A@membrane": 1, "B@membrane": 1, "C@membrane": 0, "E@membrane": 1},
+    }  # fmt: skip
+
+
+def test_a_singular_state_of_g1_s_measure_is_reported_inf_and_a_run_that_reaches_it_stalls():
+    """The declared convention (FORMAT.md; the lead rules on it in §0.2b): +inf in a probe's table,
+    and a run whose state is singular stops stalled (refused, nothing repaired)."""
+    from validation.assembly_lineages_v2 import probes
+
+    names = ["A@membrane", "B@membrane", "C@membrane", "E@membrane"]
+    singular = np.asarray([[1, 1, 0, 1]], dtype=np.int64)
+    regular = np.asarray([[2, 1, 0, 1]], dtype=np.int64)
+    for last in ("kept", "extinct"):
+        spec = spec_of(singular_world("multinomial_less_one", last))
+        plus, minus, free = probes.rate_table(spec, names, singular)
+        assert plus[0, 0] == np.inf and np.isfinite(free[0])  # The probe reports +inf.
+        assert np.isfinite(probes.rate_table(spec, names, regular)[0][0, 0])
+        run = runner.run(spec_of(singular_world("multinomial_less_one", last), horizon=10.0))
+        assert run.status == "stalled" and run.rows["row_event"][-1] == 0  # Nothing committed.
+    # Control: the multinomial measure has no singular state there; the run goes on.
+    spec = spec_of(singular_world("multinomial", "kept"))
+    assert np.isfinite(probes.rate_table(spec, names, singular)[0][0, 0])
+    assert runner.run(spec_of(singular_world("multinomial", "kept"), horizon=10.0)).status != "stalled"

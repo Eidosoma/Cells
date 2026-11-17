@@ -83,7 +83,15 @@ def membrane_factor(view, offset, xp):
         -(head - gather(lf, M - r + 1, xp)),
         safe_log((M + 1).astype(np.float64), xp),
     )
-    general = safe_log((M - r_star + 1).astype(np.float64), xp) - (head - gather(lf, M - r, xp))
+    # Where N − c < r, ff(N − c, r) = 0: the factor is +inf where E(m) > 0 (the singular state of
+    # @1's measure, declared) and never a value read from a clipped table index.
+    defined = (M - r) >= 0
+    numerator = M - r_star + 1
+    general = xp.where(
+        defined,
+        safe_log(numerator.astype(np.float64), xp) - xp.where(defined, head - gather(lf, M - r, xp), 0.0),
+        xp.where(numerator > 0, xp.inf, -xp.inf),
+    )
     return xp.where(r_star == r, cancelled, general)
 
 
