@@ -175,6 +175,8 @@ The lead names each key and value here, so that neither side's draft leads. Thes
    place on both sides, which is +inf at N = r) is admitted only in a world whose declared role is a
    probe (`world_role: probe`). There the probe reports +inf. Any other world declaring such a step is
    refused at parse.
+   - `world_role` is optional, and `probe` is its only value. A world without it is an ordinary world.
+   - A probe world may still be run. A run that reaches N = r stops `stalled`.
 
 ### 0.3 Estimate, order and questions
 
