@@ -811,6 +811,10 @@ each runs. All are development runs of the engine, not judged (D138).
     against `picks-02`'s, and D = 0's against `picks-01`'s, bitwise.
   - Each package adds the switch's three concentrations (miR200, Zeb mRNA and ZEB protein, in
     µM) as sidecars.
+  - **Result** (from 4c3ab947, lane B): all four arms ran with views (`run_view.validate`), 369
+    records each (371 at 2 x2), the first at one step. Each end state is bitwise that of
+    `picks-02` (x2/2, x2 and 2 x2) and of `picks-01` (D = 0). The packages supersede `picks-02`'s
+    for the viewer.
 - **The sheet** (`runs/sheet-01`): **an extension beyond the replication, not part of it.**
   - 9x9 cells with 4-neighbour junctions and a 3x3 tumor patch in the middle, with the line's
     switch, seeds and uncoupled 500 s. Its step follows section 7's rule with four neighbours
