@@ -624,6 +624,58 @@ and is carried into the run's view and into its line of the catalogue (`"example
 The adapter refuses a run that is an example under an entry that does not say so, and a
 run that is none under an entry that does: an example never stands among experiments.
 
+**A sweep's chart.** An experiment whose summary lists arms with a parameter and readouts
+carries `sweeps` in its catalogue entry, which the Experiments view draws as a small chart,
+in a card of its own at the right of a wide window and first in the experiment's card on a
+phone (`src/replay/sweep.js`, `src/ui/viewer.js`): the parameter along it (on a log scale
+where every value is above nought and the largest is ten times the smallest or more), each
+readout a line of points, each arm a point, the arm shown marked; a press on an arm shows
+its run, and the same numbers stand in a table under the chart. Where the summary states
+the experiment's own reference for a readout it is drawn as rings, in the summary's words.
+The viewer computes nothing from the numbers and says nothing of how they compare.
+
+The adapter writes `sweeps` from the experiment's summary and from nothing else. The
+overlay's entry names the summary by a file's name in the evidence folder (`"summary":
+"summary.json"`, never a path); the summary is `cells.experiment_summary@1`, and the least
+it must state is:
+
+```json
+{
+  "format": "cells.experiment_summary@1",
+  "experiment": "an-experiment",
+  "sweeps": [
+    {
+      "id": "figure-3",
+      "label": "Junction conductance sweep",
+      "plain": "optional: one sentence on what the sweep asks",
+      "parameter": { "id": "g", "label": "Junction conductance", "unit": "G_eq" },
+      "readouts": [
+        { "id": "c_A", "label": "Concentration in cell A", "unit": "mM" },
+        { "id": "c_B", "label": "Concentration in cell B", "unit": "mM" }
+      ],
+      "reference": { "label": "the experiment's own reference, in its words", "source": "optional: where it is stated" },
+      "arms": [
+        { "arm": "figure3-g0.5", "parameter": 0.5, "readouts": { "c_A": 6.25, "c_B": 8.75 }, "reference": { "c_A": 6.25, "c_B": 8.75 } }
+      ]
+    }
+  ]
+}
+```
+
+Each arm is named as its run's arm is (the run folder's name), so that the adapter can
+join it to the run it packages in the same call (`run`, or `null` where none is packaged:
+the chart draws the arm and says that no run of it is packaged). Every value is a finite
+number in the unit named; a `reference` value is given only where the sweep names its
+reference; a sweep has two arms or more. The adapter refuses a summary that does not
+state these, with the reason. The catalogue's entry then holds:
+
+```json
+"sweeps": [{ "id": "figure-3", "label": "...", "parameter": {...}, "readouts": [...], "reference": {...},
+             "arms": [{ "arm": "figure3-g0.5", "run": "an-experiment--figure3-g0.5", "parameter": 0.5, "readouts": {...}, "reference": {...} }] }]
+```
+
+A made-up summary of this shape is tracked for the tests (`tests/engine-views/sweep-made-up/`).
+
 ### A run written by the engine's shared output path
 
 The adapter `standard-history` reads a run folder that the engine's own writers made

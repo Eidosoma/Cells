@@ -66,6 +66,11 @@ const SUITE = [
   { name: "look-look", tool: "check_look.mjs", args: ["look"], minutes: 5 },
   flux("thalecress", { SPECIES: "thalecress" }, 5),
   flux("ecoli", { SPECIES: "ecoli" }, 5),
+  // The junction network and a sweep's chart in the Experiments view, on check-only scenes (tools/check_junctions.mjs).
+  { name: "junctions-network", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "network", NAME: "junctions-network" }, minutes: 2 },
+  { name: "junctions-sweep", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "sweep", NAME: "junctions-sweep" }, minutes: 2 },
+  { name: "junctions-phone", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "sweep", NAME: "junctions-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 2 },
+  { name: "junctions-reduced", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "network", NAME: "junctions-reduced", REDUCED: "1", THEME: "dark" }, minutes: 2 },
   // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
   flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
   flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),

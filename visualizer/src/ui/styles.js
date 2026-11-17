@@ -209,6 +209,37 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .run-row { display: grid; gap: 1px; text-align: left; padding: 5px 8px; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); }
 .run-row + .run-row { margin-top: 3px; }
 .run-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+/* A sweep's chart in the experiment's card (replay/sweep.js): each arm a column of points, a button over it. */
+.sweep { display: grid; gap: 4px; margin-top: 8px; }
+.sweep-card { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 104px; width: 280px; padding: 4px 12px 10px; max-height: calc(100% - 104px - 150px); overflow-y: auto; }
+.has-panel .sweep-card { display: none; }
+.sweep-chart { position: relative; }
+.sweep-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sweep-axis { stroke: var(--line); stroke-width: 1; }
+.sweep-tick { font-size: 8.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.sweep-axis-label { font-size: 9px; fill: var(--muted); }
+.sweep-shown { fill: color-mix(in srgb, var(--accent) 16%, transparent); }
+.sweep-line polyline { stroke-width: 1.4; opacity: 0.7; }
+.sweep-line-0 { color: var(--accent); stroke: var(--accent); fill: var(--accent); }
+.sweep-line-1 { color: #d9822b; stroke: #d9822b; fill: #d9822b; }
+.sweep-line-2 { color: #3b9c6e; stroke: #3b9c6e; fill: #3b9c6e; }
+.sweep-line-3 { color: #8a63c9; stroke: #8a63c9; fill: #8a63c9; }
+.sweep-line polyline { fill: none; }
+.sweep-point.is-shown { stroke: var(--fg); stroke-width: 1.4; }
+.sweep-ref { fill: none; stroke-width: 1.2; stroke-dasharray: 2 1.6; }
+.sweep-arm { position: absolute; width: 22px; border-radius: 6px; background: transparent; cursor: pointer; padding: 0; }
+.sweep-arm:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.sweep-arm:disabled { cursor: default; }
+.sweep-arm[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--accent); }
+.sweep-key { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; color: var(--muted); margin: 0; }
+.sweep-key-item { display: inline-flex; align-items: center; gap: 4px; }
+.sweep-swatch { display: inline-block; width: 12px; height: 3px; border-radius: 2px; background: currentColor; }
+.sweep-ring { width: 9px; height: 9px; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1.2px var(--muted); }
+.sweep-note { font-size: 11.5px; color: var(--muted); }
+.sweep-table { border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; width: 100%; }
+.sweep-table th, .sweep-table td { text-align: right; padding: 2px 4px; border-bottom: 1px solid var(--line); }
+.sweep-table th[scope="row"], .sweep-table thead th:first-child { text-align: left; }
+.sweep-table tr.is-shown { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .run-row[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 10%, transparent); box-shadow: inset 0 0 0 1.5px var(--fg); }
 .run-name { font-family: var(--font-mono); font-size: 11.5px; overflow-wrap: anywhere; }
 .run-sub { font-size: 11.5px; color: var(--muted); }

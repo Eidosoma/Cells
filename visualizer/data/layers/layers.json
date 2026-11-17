@@ -88,6 +88,31 @@
       "says": "A wedge on a junction points down the voltage drop across it, and is as wide as the drop is large. It is a difference of voltages, not a current: it never moves."
     },
     {
+      "id": "junction-coupling",
+      "label": "Coupling",
+      "idea": 2,
+      "quantity": {
+        "first_of": [
+          {
+            "record": [
+              "junction_conductance_S",
+              "junction_conductance"
+            ]
+          },
+          {
+            "record": [
+              "junction_gate"
+            ]
+          }
+        ]
+      },
+      "mark": "network",
+      "channels": [
+        "links"
+      ],
+      "says": "Each junction is a line between the middles of its two cells, as wide as the junction's own number at the record shown: its conductance, or its gate where that is what the run saved. What crosses a junction (Transfers) runs along the same line."
+    },
+    {
       "id": "ion-push-pull",
       "label": "Push and pull on ions",
       "idea": 3,

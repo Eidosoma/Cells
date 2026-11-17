@@ -150,7 +150,7 @@ test("the potential terms are the two terms of the engine's own law, each divide
 test("the declared layers follow the contract, and each names a mark the viewer has", () => {
   assert.equal(declarations.format, LAYERS_FORMAT);
   assert.deepEqual(PROBLEMS, []);
-  assert.deepEqual(LAYERS.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops", "ion-push-pull", "membrane-charge", "transfers", "ion-traffic", "energy-glow", "signal-fog"]);
+  assert.deepEqual(LAYERS.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops", "junction-coupling", "ion-push-pull", "membrane-charge", "transfers", "ion-traffic", "energy-glow", "signal-fog"]);
   // The layers of a chosen cell's membrane are drawn on its close-up, not on the sheet.
   assert.deepEqual(LAYERS.filter((item) => MARKS[item.mark].surface === "membrane").map((item) => [item.id, item.mark, item.channels[0], item.quantity.derivation]), [["ion-push-pull", "arrows", "arrows", "potential terms"], ["membrane-charge", "stipple", "surface", "charge"], ["ion-traffic", "beads", "motion", "rate"]]);
   // What flows and what glows on the sheet itself, and the species that colours it.
@@ -274,7 +274,7 @@ test("a layer whose records the run did not save says why, where the run's view 
 test("a run is offered the layers it can feed: the declared ones, and a colouring and a relief of every other record over its cells", () => {
   const { run } = made();
   const offers = layersFor(run, LAYERS, MARKS);
-  assert.deepEqual(offers.map((item) => [item.layer.id, item.ok]), [["voltage-tint", true], ["voltage-relief", true], ["junction-drops", true], ["ion-push-pull", false], ["membrane-charge", false], ["transfers", false], ["ion-traffic", false], ["energy-glow", false], ["signal-fog", false], ["generation-tint", true], ["generation-relief", true]]);
+  assert.deepEqual(offers.map((item) => [item.layer.id, item.ok]), [["voltage-tint", true], ["voltage-relief", true], ["junction-drops", true], ["junction-coupling", true], ["ion-push-pull", false], ["membrane-charge", false], ["transfers", false], ["ion-traffic", false], ["energy-glow", false], ["signal-fog", false], ["generation-tint", true], ["generation-relief", true]]);
   for (const id of ["transfers", "ion-traffic", "energy-glow"]) assert.equal(offer(run, id).why, NOT_SAVED);
   assert.equal(offer(run, "signal-fog").why, "This run's files name no secreted species.");
   // This run's view lists no membranes: its one voltage per cell is no membrane's own, and it is said.
@@ -704,7 +704,7 @@ test("the replay opens as it always did: coloured by voltage, with the height re
   assert.equal(legend.note.text, "Height repeats the colour. Every step is a saved record.");
   assert.deepEqual(legend.keys.map((item) => item.key), ["seam", "frame", "ring"], "the sheet's standing marks are listed as before");
   assert.equal(legend.folded, undefined, "and nothing asks for them to fold away");
-  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops"]);
+  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops | Coupling"]);
   // This made-up run lists no membranes, so the two layers of a membrane are named as ones it cannot feed.
   assert.deepEqual(legend.layers.cannot.map((item) => item.id), ["ion-push-pull", "membrane-charge", "transfers", "ion-traffic", "energy-glow", "signal-fog"]);
   assert.deepEqual(legend.layers.keys, []);
@@ -760,7 +760,7 @@ test("the drops are fetched when switched on, drawn beside the other layers, exp
   assert.deepEqual(legend.layers.keys.map((item) => item.key), ["wedge", "wedge-hollow", "break"]);
   assert.equal(legend.folded, true, "the sheet's standing marks fold away to leave the layers' signs room");
   assert.equal(legend.layers.details, "layers:shown");
-  assert.deepEqual(rowsOf(lens)[1], "Junctions: Off | Voltage drops*");
+  assert.deepEqual(rowsOf(lens)[1], "Junctions: Off | Voltage drops* | Coupling");
   // The panel: what each layer shows, and what stands behind its numbers.
   const panel = lens.describe("layers:shown");
   assert.deepEqual(panel.sections.map((section) => section.title), ["Colour: membrane voltage", "Height: membrane voltage", "Junctions: voltage drops", "Not shown for this run"]);
@@ -800,7 +800,7 @@ test("a layer a run cannot feed is listed with the reason and cannot be switched
   const layers = lens.chrome().legend.layers;
   assert.deepEqual(layers.cannot.map((item) => [item.id, item.label]), [["junction-drops", "Junctions: voltage drops"], ["ion-push-pull", "Arrows: push and pull on ions"], ["membrane-charge", "Membrane: membrane charge"], ["transfers", "Motion: transfers"], ["ion-traffic", "Motion: ion traffic"], ["energy-glow", "Glow: energy dissipated"], ["signal-fog", "Colour: secreted species"]]);
   assert.match(layers.cannot[0].why, /did not save each junction's voltage/);
-  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)"], "it has no row of its own to press");
+  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Coupling"], "the drops have no button of their own to press; the junctions' gate it saved draws the network");
   await lens.setLayer("junction-drops", true);
   assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"]);
   assert.match(lens.describe("layers:shown").sections.at(-1).items[0].detail, /did not save each junction's voltage/);
@@ -839,7 +839,7 @@ test("a rule with several inputs is fed part by part: a saved record, one for ea
   for (const part of push.parts) await loadPart(run, part, { root: null, fetcher: fetcherOf(parts) });
   assert.deepEqual(offer(run, "ion-push-pull").parts, []);
   // A record that comes in a file of its own is no plain colouring: the offers do not grow once it is fetched.
-  assert.deepEqual(layersFor(run, LAYERS, MARKS).map((item) => item.layer.id), ["voltage-tint", "voltage-relief", "junction-drops", "ion-push-pull", "membrane-charge", "transfers", "ion-traffic", "energy-glow", "signal-fog", "generation-tint", "generation-relief"]);
+  assert.deepEqual(layersFor(run, LAYERS, MARKS).map((item) => item.layer.id), ["voltage-tint", "voltage-relief", "junction-drops", "junction-coupling", "ion-push-pull", "membrane-charge", "transfers", "ion-traffic", "energy-glow", "signal-fog", "generation-tint", "generation-relief"]);
   // A constant is read as the view states it, with its account of why nothing changes it.
   assert.deepEqual({ ...constantOf(run, "membrane_capacitance"), says: null }, { id: "membrane_capacitance", label: "Membrane capacitance", unit: "F", lives_on: "membrane", set: "membrane", axes: ["membrane"], says: null, from: "definition.json", constant: true });
   assert.equal(constantOf(run, "membrane_thickness"), null);
@@ -1007,7 +1007,7 @@ test("with a cell chosen, a layer on its membrane is drawn on a close-up: built 
   await lens.ready;
   lens.activate();
   lens.seek(1170);
-  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops", "Membrane: Off* | Membrane charge", "Arrows: Off* | Push and pull on ions"]);
+  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops | Coupling", "Membrane: Off* | Membrane charge", "Arrows: Off* | Push and pull on ions"]);
   // Switched on with no cell chosen: the records are fetched, nothing is drawn yet, and the switch says how to see it.
   await lens.setLayer("ion-push-pull", true);
   assert.deepEqual(asked.filter((name) => name.includes("concentration")).sort(), ["k", "m", "na"].map((ion) => `${first.entry.id}.concentration-${ion}.json`));
@@ -1377,7 +1377,7 @@ test("a run with a secreted species opens coloured by it: the cell and each spac
   assert.deepEqual(legend.layers.keys.map((item) => item.key), ["tile", "tile-held", "amount"]);
   assert.match(legend.layers.keys[0].text, /^A flat tile is a space outside the cells, coloured on the same scale by the amount in it\. Where it stands is the viewer's choice/);
   assert.deepEqual(rowsOf(lens), ["Colour: Off | Amount of S* | Cell potential", "Height: Off* | Cell potential", "Motion: Off* | Transfers", "Glow: Off* | Energy dissipated"]);
-  assert.deepEqual(legend.layers.cannot.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops", "ion-push-pull", "membrane-charge", "ion-traffic"]);
+  assert.deepEqual(legend.layers.cannot.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops", "junction-coupling", "ion-push-pull", "membrane-charge", "ion-traffic"]);
   assert.equal(legend.layers.example, null, "a development run is no example");
   // The colours: the cell near the top of the ramp, the space beside it about half-way, the held bath at nought.
   lens.seek(4);

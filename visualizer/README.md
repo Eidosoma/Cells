@@ -393,6 +393,18 @@ only when it is shown:
   at 15 times where 60 is not offered. What flows keeps the replay's clock and is drawn by its speed as in the Cell view: at
   true speed and faster a stream as wide as its rate, slowed packets and then single
   beads, chevrons for the way; paused, everything stands.
+- **A sweep's chart.** Where an experiment's summary (`cells.experiment_summary@1`, a file
+  beside its runs that the overlay names) states a sweep (a parameter, its arms and each
+  arm's readouts), the replay shows it as a chart: in a card of its own at the right of a
+  wide window, and first in the experiment's card on a phone. The parameter runs along it
+  (on a log scale where the values ask for one, said on the axis), each readout is a line
+  of points, the arm shown is marked, and the experiment's own reference is drawn as dashed
+  rings in the summary's words. Each arm is a button: a press, or Enter, shows that arm's
+  run, and an arm with no packaged run says so. "The numbers as a table" gives the same
+  numbers. Nothing is computed from them and no word judges them. `schema/RUN_VIEW.md` ("A
+  sweep's chart") states the least a summary must hold; the adapter refuses one that holds
+  less, with the reason. No experiment on the page states a sweep yet: checks hold the
+  chart on a made-up summary (`tests/engine-views/sweep-made-up/`).
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own: the engine's first run made for the viewer (one cell that secretes
   a species; no verdict), and an example sheet with invented numbers for the layers that
@@ -431,6 +443,7 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
 | --- | --- | --- |
 | Membrane voltage | each cell's voltage as colour, and as height | the sheet |
 | Voltage drops | the voltage across each junction, and how far its gate is open | the sheet's junctions |
+| Coupling | each junction's own number as the run saves it (its conductance where it saves one, else its gate), as the width of a line joining its two cells: full width fully open, a faint hairline shut. A chosen cell's panel lists each of its junctions with its number | the sheet's junctions, or the cells of a small world |
 | Push and pull on ions | for each ion, the push of its concentration difference, the pull of the voltage, and their sum | a close-up of a chosen cell's membrane |
 | Membrane charge | the charge a stated piece of membrane holds | the same close-up |
 | Transfers | what crosses each border, as beads: one bead is a stated number of molecules; the beads keep the replay's clock, which the timeline slows or makes faster, and what one bead stands for follows the speed | the sheet, or the tiles of a small world |

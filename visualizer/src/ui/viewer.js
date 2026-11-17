@@ -23,6 +23,7 @@ import { LawsLens } from "../lenses/laws.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
+import { chartOf, tableOf, armWords } from "../replay/sweep.js";
 import { renderAtlasNav } from "./atlas_nav.js";
 import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
@@ -110,6 +111,8 @@ class CellsViewer extends HTMLElement {
     // On a phone the rail folds behind this button, which names the level shown (styles.js); a wide window does not show it.
     this.railToggle = h("button", { class: "rail-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-rail", onclick: () => this.toggleRail() });
     this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
+    // A sweep's chart, where the experiment shown has one: a card of its own at the right of a wide window (on a phone it stands in the experiment's card).
+    this.sweepCard = h("section", { class: "sweep-card card", hidden: true, "aria-label": "Sweep" });
     // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
     // its room above the panel; a press opens the card over the picture (styles.js). Elsewhere it is not shown.
     this.viewToggle = h("button", { class: "view-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-view", onclick: () => this.toggleViewCard() });
@@ -133,6 +136,7 @@ class CellsViewer extends HTMLElement {
       this.rail,
       this.viewToggle,
       this.viewCard,
+      this.sweepCard,
       this.scaleBar,
       this.legend,
       this.index,
@@ -684,6 +688,11 @@ class CellsViewer extends HTMLElement {
     const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
     if (chrome.card) this.viewCard.replaceChildren(...marked, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
+    // A sweep's chart beside the picture on a wide window, out of the experiment's card, which the legend leaves little room.
+    const sweeps = chrome.run?.sweeps || [], wide = this.clientWidth >= 760;
+    this.sweepCard.hidden = !(sweeps.length && wide);
+    this.frame.classList.toggle("has-sweep", !this.sweepCard.hidden);
+    if (!this.sweepCard.hidden) this.sweepCard.replaceChildren(...sweeps.map((sweep) => this.sweepChart(sweep, (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : this.current.show(id)))));
     // A replay brings its playhead.
     this.timeline.hidden = !chrome.timeline;
     this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
@@ -1249,7 +1258,58 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
-  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details }) {
+  /**
+   * A sweep's chart (replay/sweep.js): the parameter along it, each readout a line of points, the
+   * arm shown marked, the experiment's own reference drawn as rings in the summary's words. Each
+   * arm is a button over its points: a press, or Enter on it, shows that arm's run. The same
+   * numbers stand in a table under it. Nothing is computed from them and nothing is said of how
+   * they compare.
+   */
+  sweepChart(sweep, pick) {
+    const write = (value) => (Math.abs(value) >= 1e4 || (Math.abs(value) < 1e-3 && value !== 0) ? value.toExponential(2) : String(Number(value.toPrecision(4))));
+    const chart = chartOf(sweep, { width: 240, height: 140 });
+    const { inner } = chart;
+    const unit = (item) => (item.unit && item.unit !== "1" ? ` (${item.unit})` : "");
+    const lines = sweep.readouts.map((readout, line) => {
+      const points = chart.points.filter((point) => point.line === line).sort((p, q) => p.x - q.x);
+      return svg("g", { class: `sweep-line sweep-line-${line % 4}` }, points.length > 1 ? svg("polyline", { points: points.map((point) => `${point.x},${point.y}`).join(" "), fill: "none" }) : null, points.map((point) => svg("circle", { cx: point.x, cy: point.y, r: sweep.arms[point.arm].active ? 4.6 : 3.2, class: sweep.arms[point.arm].active ? "sweep-point is-shown" : "sweep-point" })));
+    });
+    const rings = chart.references.map((point) => svg("circle", { cx: point.x, cy: point.y, r: 6, class: `sweep-ref sweep-line-${point.line % 4}` }));
+    const shownArm = sweep.arms.find((arm) => arm.active);
+    const band = shownArm ? svg("rect", { x: chart.x(shownArm.parameter) - 7, y: inner.top, width: 14, height: inner.bottom - inner.top, class: "sweep-shown" }) : null;
+    const axes = [
+      svg("line", { x1: inner.left, y1: inner.bottom, x2: inner.right, y2: inner.bottom, class: "sweep-axis" }),
+      svg("line", { x1: inner.left, y1: inner.top, x2: inner.left, y2: inner.bottom, class: "sweep-axis" }),
+      ...chart.yTicks.map((tick) => svg("text", { x: inner.left - 4, y: tick.at + 3, "text-anchor": "end", class: "sweep-tick" }, write(tick.value))),
+      ...chart.xTicks.map((tick) => svg("text", { x: tick.at, y: inner.bottom + 12, "text-anchor": "middle", class: "sweep-tick" }, write(tick.value))),
+      svg("text", { x: (inner.left + inner.right) / 2, y: inner.bottom + 25, "text-anchor": "middle", class: "sweep-axis-label" }, `${sweep.parameter.label}${unit(sweep.parameter)}${sweep.log ? ", log scale" : ""}`),
+    ];
+    const picture = svg("svg", { viewBox: `0 0 ${chart.width} ${chart.height}`, class: "sweep-svg", role: "img", "aria-label": `${sweep.label}: ${sweep.readouts.map((readout) => readout.label).join(", ")} against ${sweep.parameter.label}` }, band, ...axes, ...rings, ...lines);
+    // A button over each arm's column: the press shows its run; an arm with no packaged run is said so and cannot be pressed.
+    const buttons = sweep.arms.map((arm) => {
+      const at = chart.x(arm.parameter) / chart.width;
+      return h("button", { type: "button", class: "sweep-arm", style: `left: calc(${(at * 100).toFixed(3)}% - 11px); top: ${((inner.top / chart.height) * 100).toFixed(3)}%; height: ${(((inner.bottom - inner.top) / chart.height) * 100).toFixed(3)}%`, "aria-pressed": String(arm.active), "aria-label": armWords(sweep, arm, write), title: armWords(sweep, arm, write), disabled: !arm.run, dataset: { arm: arm.arm }, onclick: () => arm.run && !arm.active && pick(arm.run) });
+    });
+    const key = h("p", { class: "sweep-key" }, sweep.readouts.map((readout, line) => h("span", { class: "sweep-key-item" }, h("i", { class: `sweep-swatch sweep-line-${line % 4}`, "aria-hidden": "true" }), `${readout.label}${unit(readout)}`)), sweep.reference && chart.references.length ? h("span", { class: "sweep-key-item" }, h("i", { class: "sweep-swatch sweep-ring", "aria-hidden": "true" }), sweep.reference.label) : null);
+    const table = tableOf(sweep, write);
+    return h(
+      "div",
+      { class: "sweep", role: "group", "aria-label": sweep.label, dataset: { sweep: sweep.id } },
+      h("span", { class: "seg-label" }, sweep.label),
+      sweep.plain ? h("p", { class: "card-text" }, sweep.plain) : null,
+      h("div", { class: "sweep-chart" }, picture, ...buttons),
+      key,
+      h("p", { class: "card-text sweep-note" }, `Each point is an arm, as the experiment's summary gives it; the arm shown is marked. Press a point to show that arm.${sweep.reference ? ` Rings: ${sweep.reference.label}, as the summary states it.` : ""}`),
+      h(
+        "details",
+        { class: "run-plain sweep-numbers" },
+        h("summary", {}, "The numbers as a table"),
+        h("table", { class: "sweep-table" }, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Arm"), table.head.map((cell) => h("th", { scope: "col" }, cell)))), h("tbody", {}, table.rows.map((row) => h("tr", { class: row.active ? "is-shown" : "" }, h("th", { scope: "row" }, row.arm), row.cells.map((cell) => h("td", {}, cell))))))
+      )
+    );
+  }
+
+  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details, sweeps = [] }) {
     const lens = this.current;
     // With a run's details open, the details follow the run picked.
     const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
@@ -1287,6 +1347,8 @@ class CellsViewer extends HTMLElement {
         if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
         return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : [])];
       })(),
+      // An experiment whose summary lists arms with a parameter and readouts: its chart first, where the card opens.
+      ...(this.clientWidth < 760 ? sweeps.map((sweep) => this.sweepChart(sweep, pick)) : []),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {
         const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");

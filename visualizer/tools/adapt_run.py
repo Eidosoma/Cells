@@ -2746,6 +2746,75 @@ def check_clean(name, text):
         raise Refused(f"{name} would carry a machine path ({found.group(0)}...)")
 
 
+SUMMARY_FORMAT = "cells.experiment_summary@1"
+
+
+def sweeps_of(path, rows):
+    """An experiment's sweeps for the catalogue, read from its summary and from nothing else.
+
+    The summary (cells.experiment_summary@1, schema/RUN_VIEW.md, "A sweep's chart") lists, for
+    each sweep, its parameter and its readouts with their names and units, and for each arm the
+    arm's name, its parameter's value, its readouts' values and, where the experiment states
+    one, its own reference value for a readout, with the reference's words. Each arm is joined
+    to the run of this call whose arm it names (null where none is packaged). Nothing is
+    computed from the numbers: they are copied as the summary states them, and a summary that
+    does not state what the chart reads is refused.
+    """
+    summary = read_json(path)
+    if not isinstance(summary, dict) or summary.get("format") != SUMMARY_FORMAT:
+        raise Refused(f"{path.name} is not an experiment summary ({SUMMARY_FORMAT})")
+    def named(item, where):
+        if not (isinstance(item, dict) and all(isinstance(item.get(key), str) and (item[key] or key == "unit") for key in ("id", "label", "unit"))):
+            raise Refused(f"{path.name}: {where} needs an id, a label and a unit")
+
+    def finite(value):
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+    by_arm = {}
+    for row in rows:
+        by_arm.setdefault(row["arm"], row["id"])
+    sweeps = []
+    for sweep in summary.get("sweeps") or []:
+        if not (isinstance(sweep, dict) and isinstance(sweep.get("id"), str) and isinstance(sweep.get("label"), str)):
+            raise Refused(f"{path.name}: a sweep needs an id and a label")
+        named(sweep.get("parameter"), f"sweep {sweep['id']}'s parameter")
+        readouts = sweep.get("readouts")
+        if not (isinstance(readouts, list) and readouts):
+            raise Refused(f"{path.name}: sweep {sweep['id']} lists no readout")
+        for readout in readouts:
+            named(readout, f"a readout of sweep {sweep['id']}")
+        ids = [readout["id"] for readout in readouts]
+        reference = sweep.get("reference")
+        if reference is not None and not (isinstance(reference, dict) and isinstance(reference.get("label"), str) and reference["label"]):
+            raise Refused(f"{path.name}: sweep {sweep['id']}'s reference needs the summary's words for it (label)")
+        arms, seen = [], set()
+        for arm in sweep.get("arms") or []:
+            if not (isinstance(arm, dict) and isinstance(arm.get("arm"), str) and finite(arm.get("parameter"))):
+                raise Refused(f"{path.name}: an arm of sweep {sweep['id']} needs its name and its parameter's value")
+            if arm["arm"] in seen:
+                raise Refused(f"{path.name}: sweep {sweep['id']} lists arm {arm['arm']} twice")
+            seen.add(arm["arm"])
+            values = arm.get("readouts") or {}
+            if not (isinstance(values, dict) and set(values) <= set(ids) and all(finite(value) for value in values.values())):
+                raise Refused(f"{path.name}: arm {arm['arm']} gives a readout the sweep does not list, or one that is not a number")
+            refs = arm.get("reference") or {}
+            if refs and (reference is None or not (isinstance(refs, dict) and set(refs) <= set(ids) and all(finite(value) for value in refs.values()))):
+                raise Refused(f"{path.name}: arm {arm['arm']} gives a reference value the sweep does not name")
+            item = {"arm": arm["arm"], "run": by_arm.get(arm["arm"]), "parameter": arm["parameter"], "readouts": {key: values[key] for key in ids if key in values}}
+            if refs:
+                item["reference"] = {key: refs[key] for key in ids if key in refs}
+            arms.append(item)
+        if len(arms) < 2:
+            raise Refused(f"{path.name}: sweep {sweep['id']} needs two arms or more for a chart")
+        out = {"id": sweep["id"], "label": sweep["label"], "parameter": {key: sweep["parameter"][key] for key in ("id", "label", "unit")}, "readouts": [{key: readout[key] for key in ("id", "label", "unit")} for readout in readouts], "arms": arms}
+        if reference is not None:
+            out["reference"] = {key: reference[key] for key in ("label", "source") if isinstance(reference.get(key), str)}
+        if isinstance(sweep.get("plain"), str):
+            out["plain"] = sweep["plain"]
+        sweeps.append(out)
+    return sweeps
+
+
 def row_of(run, records, size, parts=()):
     """A run's line in the catalogue. A class and a refusal are there only when the run has one.
 
@@ -2925,7 +2994,15 @@ def main(argv=None):
                 disc = "" if "first_equals_disc" not in notes else f" ({'exactly the disc' if notes['first_equals_disc'] else 'NOT the disc'})"
                 checked = f"; D counts equal the run's own at {notes['counts_checked']} records" if notes.get("counts_checked") else ""
                 print(f"  cells above the D mark: {notes['above_mark_first']} at the first record{disc}, {notes['above_mark_last']} at the last{checked}")
-        adapted[experiment] = ({key: value for key, value in entry.items() if key != "adapter"}, listed)
+        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary")}
+        # An experiment whose summary lists arms with a parameter and readouts: its sweeps, for the chart (a file's name in its evidence folder, never a path).
+        if isinstance(entry.get("summary"), str):
+            if "/" in entry["summary"] or entry["summary"].startswith("."):
+                raise Refused(f"{experiment}: its summary is named by a file's name in its evidence folder, not a path")
+            written_entry["sweeps"] = sweeps_of(Path(root) / entry["summary"], listed)
+            for sweep in written_entry["sweeps"]:
+                print(f"{experiment}: sweep {sweep['id']}: {len(sweep['arms'])} arms, {sum(1 for arm in sweep['arms'] if arm['run'])} with a run in this call")
+        adapted[experiment] = (written_entry, listed)
 
     index, kept = merged_catalogue(out, existing, list(curated), adapted)
     check_clean("index.json", json.dumps(index, ensure_ascii=False))

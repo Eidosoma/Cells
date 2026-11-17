@@ -35,6 +35,7 @@ import { MARKS } from "../layers/marks/index.js";
 import { paint } from "../layers/marks/tint.js";
 import { paintOutside } from "../layers/marks/fog.js";
 import { statementOf, modeAt } from "../layers/marks/beads.js";
+import { sweepsOf } from "../replay/sweep.js";
 import { worldOf } from "../layers/world.js";
 import { raise } from "../layers/marks/relief.js";
 import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
@@ -724,6 +725,30 @@ export class ReplayLens {
   }
 
   /**
+   * The junctions' own numbers at the record shown, where the junctions are drawn as a network
+   * (marks/network.js): a chosen cell's (`number_`), each with the cell it joins, or every
+   * junction of the sheet (`null`), up to two dozen, and beyond that how many and their range.
+   */
+  junctionNumbers(number_) {
+    const held = this.markOn("links");
+    if (!held || held.layer.mark !== "network" || !this.run) return null;
+    const { mark } = held, name = lower(this.recordLabel(mark.record));
+    const readings = mark.readings().filter((reading) => number_ === null || reading.a === number_ || reading.b === number_);
+    if (!readings.length) return null;
+    const at = clock(this.player.time, { precise: true });
+    const said = (reading) => (reading.value === null ? "no value at this record" : `${mark.write(reading.value, number)}${reading.shut ? ", shut" : ""}`);
+    const title = number_ === null ? `Junctions: ${name} at ${at}` : `On its junctions at ${at}`;
+    const note = "As the run saved it; on the sheet a line's width stands for it.";
+    if (readings.length > 24) {
+      const values = readings.map((reading) => reading.value).filter((value) => value !== null);
+      const low = Math.min(...values), high = Math.max(...values);
+      return { title, items: [{ label: `${readings.length} junctions`, detail: values.length ? `from ${mark.write(low, number)} to ${mark.write(high, number)}` : "no value at this record" }], note: `${note} Choose a cell for its own junctions.` };
+    }
+    const items = readings.map((reading) => ({ label: number_ === null ? `${reading.name} · ${reading.between.join(" and ")}` : `${reading.name} · to ${reading.a === number_ ? reading.between[1] : reading.between[0]}`, detail: `${name}: ${said(reading)}` }));
+    return { title, items, note };
+  }
+
+  /**
    * One stream of beads, or one glowing element, as the panel gives it: the two saved totals,
    * the time between, the mean rate, and what that is on the picture. Enough to check by hand.
    */
@@ -1133,7 +1158,7 @@ export class ReplayLens {
         extra: generation && generation !== this.record ? (step) => `generation ${generation.at(step, number_)}` : null,
       },
       // With a layer on its membrane drawn, the numbers of the close-up at the record shown come first; then what the run's ledgers say of the cell.
-      sections: [this.closeup?.cell === number_ ? this.membraneNumbers() : null, this.ledgerOf("cell", number_), ...sections].filter(Boolean),
+      sections: [this.closeup?.cell === number_ ? this.membraneNumbers() : null, this.junctionNumbers(number_), this.ledgerOf("cell", number_), ...sections].filter(Boolean),
       sources: [],
     };
   }
@@ -1178,6 +1203,8 @@ export class ReplayLens {
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
+        // Where the experiment's summary lists arms with a parameter and readouts: its sweeps, for a small chart (replay/sweep.js).
+        sweeps: sweepsOf(experiment, this.catalogue.runs.map((item) => item.id), this.runId),
         ended: this.catalogue.endOf(entry),
         klass: klass ? { label: klass.label, description: klass.description, note: experiment.class_note || "" } : null,
         colour: records.length > 1 ? { options: records.map((record) => [record.id, this.recordLabel(record)]), active: this.markOn("colour")?.mark.record.id ?? null } : null,
@@ -1267,6 +1294,9 @@ export class ReplayLens {
     if (numbers) sections.push({ ...numbers, title: `${this.cells.ids[this.closeup.cell]}: ${lower(numbers.title)}` });
     // The numbers behind the beads that cross the sheet's borders and behind what glows, at the record shown.
     sections.push(...this.flowNumbers());
+    // Each junction's own number, where the junctions are drawn as a network.
+    const joined = this.junctionNumbers(null);
+    if (joined) sections.push(joined);
     const cannot = this.offers.filter((item) => !item.ok && !item.layer.plain);
     if (cannot.length) sections.push({ title: "Not shown for this run", items: cannot.map((item) => ({ label: `${CHANNEL_WORDS[item.layer.channels[0]]}: ${lower(item.layer.label)}`, detail: item.why })) });
     return {

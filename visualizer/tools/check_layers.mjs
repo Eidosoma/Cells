@@ -285,7 +285,7 @@ try {
     check("every cell has the colour and the height the replay gave it before layers", same.cells > 0 && same.heights === same.cells && same.colours === same.cells, JSON.stringify(same));
     check("the legend reads as before: the scale of the voltage, and that height repeats the colour", /Membrane voltage/.test(s.scale || "") && /Height repeats the colour\. Every step is a saved record\./.test(s.note || ""), JSON.stringify([s.scale, s.note]));
     const row = (channel) => s.rows.find((item) => item.startsWith(`${channel}:`)) || "";
-    check("the switch offers a row for the height and one for the junctions, and no record of its own has been fetched", /^height: Off \| Voltage\*/.test(row("height")) && /^links: Off\* \| Voltage drops$/.test(row("links")) && /^strength: Quiet\* \| Bold$/.test(row("strength")) && s.fetched === 0 && s.ions === 0, JSON.stringify([s.rows, s.fetched, s.ions]));
+    check("the switch offers a row for the height and one for the junctions, and no record of its own has been fetched", /^height: Off \| Voltage\*/.test(row("height")) && /^links: Off\* \| Voltage drops \| Coupling$/.test(row("links")) && /^strength: Quiet\* \| Bold$/.test(row("strength")) && s.fetched === 0 && s.ions === 0, JSON.stringify([s.rows, s.fetched, s.ions]));
     // The layers of a chosen cell's membrane: offered and off where the run can feed them, named with the reason where it cannot.
     const offered = /^surface: Off\* \| Charge$/.test(row("surface")) && /^arrows: Off\* \| Push and pull on ions$/.test(row("arrows"));
     const named = s.cannot.some((text) => /^Arrows: push and pull on ions /.test(text)) && s.cannot.some((text) => /^Membrane: membrane charge |^Membrane: charge /i.test(text));
