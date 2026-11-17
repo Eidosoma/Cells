@@ -85,6 +85,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC).** core-pin
+  52dd5816 ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/); probes in `/mnt/workspaces/Cells/core-pin-20261116/`).
+  - **What it does:**
+    - Every BLAS runs at 1 thread, from the first import of `cells.core` and again at each of the
+      eight run entry points.
+    - The counts are read back, and the run is refused otherwise (4.4 ms per call).
+    - Run manifests record each library's version, kernel architecture and thread count.
+  - **The environment:** threadpoolctl 3.8.0 was installed into venv-cpu and venv-gpu at 22:57 UTC on
+    16 November. `pyproject.toml` declares it, with scipy 1.18.1.
+  - **The effect:** the 825-node world gives the same bits on 1, 2 and 4 CPUs.
+  - **crossrev was renewed once** (`record-cda5dc82`). Only the two S825 `field_capacitor_factor`
+    bindings changed, and they equal the unpinned 1-CPU record exactly.
+  - **The gate:**
+    - G1: 113 of 113 identical;
+    - tiers 1+2: 519 files, none changed;
+    - the qualification and kinds sets: identical on the merged head.
+  - **Found on the way:** a held legacy law pins `src/cells/__init__.py`'s content. So the import pin
+    lives in `cells/core/__init__.py`, and D190's wording was amended.
+
 - **FR-5's dt study: the development reading passes (16 November 2026, late evening).** Run
   dt5-a6639e79, from snapshot-a6639e79 on CPUs 8–11, 21:44–23:23 UTC
   ([verdict](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/reading/verdict.json),
