@@ -48,7 +48,7 @@ reads the tables back into a run.
 
 | | Today (findings) | Proposal (**S**) | Recommended |
 | --- | --- | --- | --- |
-| Descent (§1) | Three host-side lifecycle builders, no two in one shape, with no end reasons; two write `summary.json`. The run view cannot carry division or replacement worlds outside tests. GARD's G1 follows one daughter, and its keys are unique per lineage | One row shape for every birth and end; keys from one counter rule, unique across a world; a population mode in which every daughter lives | D-b; P-a now, P-b with OL2 |
+| Descent (§1) | Three host-side lifecycle builders, no two in one shape, with no end reasons; two write `summary.json`. The run view cannot carry division or replacement worlds outside tests. GARD's G1 follows one daughter, and its keys are unique per lineage | One row shape for every birth and end, with its parent and end reason; keys unique across a world from one rule, a counter per sub-lineage, which keeps GARD's G1 keys; a population mode in which every daughter lives | D-b; P-a now, P-b with OL2 |
 | Material (§2) | Nothing labels material by origin. The ledgers already book every change, by accumulator | Labels: state beside the tracked species rows, moved by one core stage from each step's booked moves, which no law sees. One mechanism with seam E's moieties | M-1; one-way where declared (O); the implicit stage (T-I); species-origin chemistry, moiety-mapped labels where declared |
 | Dependence (§3) | FR-12's manifest is accepted, not built. Supplies are per-operator arrays. "Payer" exists only in the origin-of-life note | The static graph as the manifest joined with the run's composition; direct flows as edges weighted by existing records; one sources table naming every external input and the payer of every work field | All three |
 | History (§4) | `cells branch` changes future inputs only. Continuity records chain admissions. GARD's G1 has a branch word. The donor copy is a same-world, tissue-only copy | A branch table with keys; tracking may start at a branch; transplants at branch points, by seam B's field roles; a state's history is its labels, its history-role fields, its descent path and its branch path | X-2 now, X-3 on a consumer's request |
@@ -63,11 +63,13 @@ reads the tables back into a run.
 - each claim is proved once, with a planted error (D187).
 
 **Estimate (§7, S):** 23.5–35 agent-days.
-- The host-side tables (descent, sources, the static dependency graph) come first, in about 6–8.
-  They change no program.
+- The host-side tables come first and change no program: descent and sources in about 5–6.5,
+  and the static dependency graph in 1–1.5 more once FR-12's manifest exists. Its home is not
+  settled (§3.1).
 - Labels and the population mode need the core-seams pass's seams A, B, E and F, and GARD's G1 on
   main, so they follow the pass.
-- Elapsed: about 14–20 working days after the pass, with two builders and a references agent.
+- Elapsed: about 14–21 working days after the pass, with two builders and a references agent, if
+  GARD's G1 and FR-12 have landed by then.
 
 **Questions:** seven for the user (§8.1, marked), six for the lead (§8.2).
 
@@ -118,13 +120,17 @@ Every birth and end in a world is one row of a `lives` table:
 | `id` | The entity's stable id: `carrier:<declared carrier ID>` in the tissue family (a founder's is its cell ID), `carrier:a<key>` for an assembly |
 | `key` | int64, unique across the world (§1.3), for device arrays and keyed streams |
 | `slot` | The storage it occupies at birth, or none (an unfollowed daughter) |
+| `parent` | The entity whose material it was made from by a split, or none: founders, template newcomers and donor copies have none |
+| `predecessor` | The previous occupant of its slot, for a replacement newcomer; otherwise none |
 | `birth_time`, `birth_event`, `birth_kind` | The event that made it, and how: `founder`, `division`, `template`, `copy`, `transplant`, or `continued` (alive at a branch's start, §4.1) |
 | `end_time`, `end_event`, `end_reason` | `divided`, `replaced`, `extinct`, `not_followed`, `removed` (a declared bottleneck), `transplanted_out`, or `censored` (alive at the horizon or at a declared budget) |
 | `generation`, `root` | Divisions since its founder, and that founder's id |
 
-Its relations are edges (§5.1): `parent_of` (division and fission, weighted by the daughter's
-fraction or size), `precedes_in_slot` (replacement's predecessor), `copied_from` (a donor copy:
-descent without material, §4.3) and `occupies` (a carrier in a slot over its life).
+Its relations are also edges (§5.1), generated from the same rows: `parent_of` (division and
+fission, weighted by the daughter's fraction or size), `precedes_in_slot` (replacement's
+predecessor), `copied_from` (a donor copy: descent without material, §4.3) and `occupies` (a
+carrier in a slot over its life). Each row carries its parent and its end reason, as D199 asks; the
+edges carry the weights and let a graph library read the tree directly.
 
 - **One source per mechanism.** A contract method `descent(spec, declaration, schedule, saved)`
   returns a mechanism's rows:
@@ -138,25 +144,51 @@ descent without material, §4.3) and `occupies` (a carrier in a slot over its li
 
 ### 1.3 Keys unique across a world (S)
 
-**One counter rule.** Founders take keys 0 … F−1 in declared order. Each birth then takes the
-world's next key, in the world's own event order: by time, then by the declared order of
-simultaneous events. A k-way split takes k keys in daughter order. A daughter that is not followed
-still takes its key.
-- **GARD's G1 keys are the one-lineage case, bitwise:** the founder holds 0, and each fission's
-  daughters take the next two (`kernel.py`:390–400).
-- **Tissue keys are assigned at build** for prescribed events, by the same rule. In §5.4's world,
-  the founders `cell_0` and `cell_1` take 0 and 1, the daughters `c1` and `c2` take 2 and 3, and
-  the newcomer `n1` takes 4.
+**One rule: a counter per sub-lineage.** A key is s·2³² + c, written `s:c`: a sub-lineage s and a
+count c within it.
+- **Founders:** founder i, in declared order, holds `i:0` and starts sub-lineage i's counter at 1.
+- **At a split,** every daughter takes its key from the parent's counter, in daughter order, as
+  GARD's G1 does today (`kernel.py`:390–400). A daughter that is not followed still takes its key.
+- **Which daughter continues the counter:** the followed one (GARD's continuation rule), or the
+  first where every daughter lives (tissue division). Each other daughter that lives on starts a
+  new sub-lineage s′ for its own descendants, with its counter at s′·2³² + 1. Its own key stays the
+  one its parent's counter gave it.
+- **A newcomer with no parent** (a template, a transplant) holds `s′:0` in a new sub-lineage.
+- **New sub-lineages are numbered in the mode's own deterministic order:** by (generation, parent
+  key, daughter index) in P-a (§1.4), and by the world's event order (time, then declared order)
+  in P-b and in the tissue family, where tissue keys are assigned at build.
+
+**What follows:**
+- **GARD's G1 keys are kept, bitwise.** Single-lineage mode only ever uses sub-lineage 0, whose
+  counter is G1's `next_carrier` (`kernel.py`:279, :400). A sub-lineage needs no new lane field: it
+  is the high word of that counter.
+- **In P-a, the followed path keeps GARD's G1 keys at every depth,** because no other life draws
+  on sub-lineage 0's counter. GARD's G1 streams fold both words of the key (`streams.py`'s
+  docstring), so other sub-lineages draw from distinct streams.
+- **Keys are unique:** the counters' ranges are disjoint, and each new sub-lineage's first entity
+  holds a key from its parent's range.
+- **In §5.4's tissue world:** `cell_0` holds `0:0` and `cell_1` `1:0`; division `first` gives `c1`
+  `0:1` and `c2` `0:2`, and `c2` starts sub-lineage 2; the newcomer `n1` holds `3:0`.
 - **A world-level check:** every declared carrier ID is unique across all operators, checked at
   build and naming both declarers. It closes finding 5.
-- **Across worlds,** an id is qualified by its world (`<world>/carrier:c1`). A branch's entities
-  keep their keys (§4.1).
+
+**Qualifiers across runs (S).** An id is unique within its run. Across runs it is qualified by the
+run's identity: the digest of {definition fingerprint, start}, where start is `fresh` or the parent
+checkpoint's digest and time. Both are already in the run's manifest and provenance
+(`io.py`:285, :319; `__main__.py`:236–251).
+- **It is not GARD's G1 `world.json` id,** which names the environment that many lineages share
+  (`records.py`'s `world_record`), and not the run view's `run.id`, which is a caller's label.
+- **A stochastic run's fingerprint includes its stream words** (GARD's G1 `execution.stream`), so
+  lineages, seeds and branch words get distinct qualifiers.
+- **A branch has its own qualifier,** even with no declared difference, since its start differs.
+  Its entities keep their keys, and the branch table joins them to the parent's (§4.1).
+- Two runs with one qualifier are the same declared computation: replicas, not different entities.
 
 ### 1.4 Every descendant: a population mode
 
 | Option | What it is | For | Against |
 | --- | --- | --- | --- |
-| **P-a Branching lives under a held phase** | Each life is a job: a lane runs it from its birth state to its fission, extinction or the horizon. Generations run in turn. Generation g+1's keys are taken in (parent key, daughter index) order once generation g ends | Exact: under a held phase, assemblies are independent between fissions (OL §5.2), and GARD's G1 streams depend on the key alone (`streams.py`'s docstring). So the followed path reproduces single-lineage mode bitwise, which is the check | Growth is 2^g. A declared generation limit or entity budget applies, past which lives are `censored`, never dropped |
+| **P-a Branching lives under a held phase** | Each life is a job: a lane runs it from its birth state to its fission, extinction or the horizon. Generations run in turn, and generation g+1's new sub-lineages are numbered once generation g ends (§1.3) | Exact: under a held phase, assemblies are independent between fissions (OL §5.2), and GARD's G1 streams depend on the key alone (`streams.py`'s docstring). The followed path keeps GARD's G1 keys (§1.3), so it reproduces single-lineage mode bitwise, which is the check | Growth is 2^g. A declared generation limit or entity budget applies, past which lives are `censored`, never dropped |
 | **P-b A world of K slots** | One world-level SSA over K assemblies; every daughter is placed in a free slot; when full, a declared bottleneck (serial transfer) or a capacity stop | Needed for a finite shared pool (OL2's R5), where assemblies compete | It is OL2's kernel work, not this note's |
 | P-c One followed lineage (today) | Unfollowed daughters end at birth, `not_followed` | Cheap; GARD's contracts | Hides failures in the rest of the population |
 
@@ -170,7 +202,7 @@ fresh slots), so the tissue family needs no population mode.
 | --- | --- | --- | --- |
 | Descent records | D-a per-mechanism dicts, with a converter in `validation/`; D-b one contract method and one row shape; D-c a device table for every family, prescribed events included | D-b | D-a is the reconstruction D200 asks to avoid. D-c adds device state where the host already knows the schedule |
 | Every descendant | P-a, P-b, P-c (§1.4) | P-a now, P-b with OL2 | Exact, and checked against single-lineage mode |
-| Keys | One counter in world event order; slot and occupant number; keys derived from the parent's | The counter | It reproduces GARD's G1 keys. Slot-based keys need fixed slots; derived keys change GARD's G1 streams |
+| Keys | A counter per sub-lineage (§1.3); one world counter in event order; slot and occupant number; keys derived from the parent's | A counter per sub-lineage | It keeps GARD's G1 keys, and in P-a keeps them on the followed path at every depth. One world counter shifts the followed path's keys from the third generation on, in P-a's order and in time order alike; slot-based keys need fixed slots; derived keys change GARD's G1 streams |
 
 ## 2. Material provenance: labels
 
@@ -255,6 +287,13 @@ bound that species.
 - The booked net is exact. The label stage evaluates the one-way parts from the states and node
   potentials around the step, then scales them to the net: forward ≥ max(0, net), and
   reverse = forward − net ≥ 0. The step itself is not touched (§2.4).
+- **Potentials.** A neutral tracked species' one-way rates need none. For a charged one, the stage
+  needs the node potentials at the step's end (the start's are the previous step's end, carried).
+  Either the barrier-wrapped step returns potentials it already computes, as one more output with
+  no new arithmetic, which §2.4's proof then covers (whether they are the end state's depends on the
+  tableau, which RT3's probe checks); or the stage makes one capacitor solve at the end state, by
+  triangular solves on the bound factor (`numerics/surface_field.py`:295–299), or with a
+  refactorisation where a field input refreshes it.
 - The alternative is an extra accumulator per tracked route, integrated by the step's own tableau.
   It is more accurate in stiff exchange, and it changes the step's program.
 - RT3's probe compares the two on a fast cleft, and fixes the stage's quadrature, before either is
@@ -365,7 +404,7 @@ Per world, with L labels, S_t tracked species and P nodes (cells and non-held ou
 | | Deterministic | Stochastic |
 | --- | --- | --- |
 | Memory | L·S_t·P floats in state and checkpoints; for a moiety, L·(carrying species)·P. At L = 4, S_t = 2, P = 64: 512 floats, 4 kB | L times the counts: L·C·K integers for C types and K slots |
-| Per step or event | One evaluation of the tracked routes' one-way rates; one P×P LU per tracked quantity, about (2/3)P³ flops; L solves, 2LP² | One uniform per leave, and O(L) to pick the label. Nothing at joins or fissions |
+| Per step or event | One evaluation of the tracked routes' one-way rates, with the end's potentials for a charged species (§2.3: an output of the step, or one capacitor solve); one P×P LU per tracked quantity, about (2/3)P³ flops; L solves, 2LP² | One uniform per leave, and O(L) to pick the label. Nothing at joins or fissions |
 | For scale | @3's IMEX step already factors its node-space operator every step: 21 ms of a 91 ms one-core step on the 825-node world (ARCHITECTURE.md, D190's section). A dense LU on the same nodes takes about twice a Cholesky's flops, so one labelled species there would cost about 40 ms a step. At P = 64 it is about 2·10⁵ flops | The kernel's own work per event is O(C), for the propensities |
 
 **It pays nothing:**
@@ -489,15 +528,20 @@ a sparse solve; that is decided on the probe's numbers.
 
 - **Label content is checkpointed state.** A checkpoint written without tracking cannot resume with
   it: the definition differs, which D153's case 3 refuses.
-- **Proposed:** a branch may add a `tracking` block and nothing else of the model, with its initial
-  labels declared at the branch: per node (`at_branch/<node>`), or one label. The dynamic fields
-  continue bitwise, checked against the same branch without tracking.
+- **Proposed:** a branch may add a `tracking` block, beyond the future inputs it may change today,
+  with its initial labels declared at the branch: per node (`at_branch/<node>`), or one label. The
+  dynamic fields continue bitwise, checked against the same branch without tracking.
 - **What it gives:** pulse–chase on a prepared state, without re-preparing it (ARCHITECTURE.md, "no
   silent equilibration on resume or branch").
-- **It needs one exception** to `branch_checkpoint`'s rule (`runner.py`:117–122), for the lead
-  (§8.2). A branch never crosses a source change: that stays D153's admission.
 - **Where the block lives:** a top-level `tracking` block, beside `model`, `experiment` and
-  `execution`. It is in the fingerprint, changes no physics, and is the one part a branch may add.
+  `execution`. The parser's top-level fields (`core/specs.py`:967) gain it as optional. It is in
+  the fingerprint and changes no physics. **A definition without it is today's, byte for byte, and
+  so is its fingerprint.**
+- **What must change for a branch to add it.** `branch_checkpoint`'s check of model and execution
+  (`runner.py`:117–122) already passes a new top-level block. The checkpoint does not: its state
+  gains the label fields, built from the initial labels declared at the branch time, and
+  `validate_checkpoint` must accept that one extension. That is the lead's question (§8.2).
+- A branch never crosses a source change: that stays D153's admission.
 
 ### 4.3 Transplants
 
@@ -612,13 +656,15 @@ t₁ and t₂, the first daughter followed each time. Labels `founder` and `rese
 
 `lives`:
 
-| id | key | slot | birth_time | birth_kind | end_time | end_reason | generation | root |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| carrier:a0 | 0 | 0 | 0 | founder | t₁ | divided | 0 | carrier:a0 |
-| carrier:a1 | 1 | 0 | t₁ | division | t₂ | divided | 1 | carrier:a0 |
-| carrier:a2 | 2 | — | t₁ | division | t₁ | not_followed | 1 | carrier:a0 |
-| carrier:a3 | 3 | 0 | t₂ | division | t_end | censored | 2 | carrier:a0 |
-| carrier:a4 | 4 | — | t₂ | division | t₂ | not_followed | 2 | carrier:a0 |
+| id | key | slot | parent | birth_time | birth_kind | end_time | end_reason | generation | root |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carrier:a0 | 0:0 | 0 | — | 0 | founder | t₁ | divided | 0 | carrier:a0 |
+| carrier:a1 | 0:1 | 0 | carrier:a0 | t₁ | division | t₂ | divided | 1 | carrier:a0 |
+| carrier:a2 | 0:2 | — | carrier:a0 | t₁ | division | t₁ | not_followed | 1 | carrier:a0 |
+| carrier:a3 | 0:3 | 0 | carrier:a1 | t₂ | division | t_end | censored | 2 | carrier:a0 |
+| carrier:a4 | 0:4 | — | carrier:a1 | t₂ | division | t₂ | not_followed | 2 | carrier:a0 |
+
+The keys are GARD's G1's own, 0 to 4: single-lineage mode uses sub-lineage 0 only (§1.3).
 
 `events`: `f1` at t₁ (`fission`, at `carrier:a0`, by `cells.size_threshold_fission@1`, source
 `source:unmodelled_agent`, the payer of `fission_work_kT`), and `f2` at t₂ likewise.
@@ -637,8 +683,8 @@ t₁ and t₂, the first daughter followed each time. Labels `founder` and `rese
 | contains | label:founder | slot:0 | | t017 | | label_counts[:, founder, 17, 0] | |
 
 - **In population mode (P-a),** `a2` and `a4` get slots and lives of their own, ending `divided`,
-  `extinct` or `censored`. Their daughters take keys 5, 6, … in (parent key, daughter index) order
-  once their generation ends.
+  `extinct` or `censored`. `a2` starts sub-lineage 1 and `a4` sub-lineage 2, so `a2`'s daughters
+  hold `1:1` and `1:2`, while the followed path keeps `0:5`, `0:6`, … as in single-lineage mode.
 - **The lineage tree** is `edges[relation == "parent_of"]`. **The founder's share in the living
   assembly** is the `contains` edges at the last row. **What the reservoir supplied** is the
   `supplies` edges.
@@ -659,15 +705,18 @@ write in its own world today.
 
 `lives`:
 
-| id | key | slot | birth_time | birth_kind | end_time | end_reason | generation | root |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| carrier:cell_0 | 0 | cell_0 | 0 | founder | 0.002 | divided | 0 | carrier:cell_0 |
-| carrier:cell_1 | 1 | cell_1 | 0 | founder | 0.003 | replaced | 0 | carrier:cell_1 |
-| carrier:c1 | 2 | d1 | 0.002 | division | 0.004 | censored | 1 | carrier:cell_0 |
-| carrier:c2 | 3 | d2 | 0.002 | division | 0.004 | censored | 1 | carrier:cell_0 |
-| carrier:n1 | 4 | cell_1 | 0.003 | template | 0.004 | censored | 0 | carrier:n1 |
+| id | key | slot | parent | predecessor | birth_time | birth_kind | end_time | end_reason | generation | root |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carrier:cell_0 | 0:0 | cell_0 | — | — | 0 | founder | 0.002 | divided | 0 | carrier:cell_0 |
+| carrier:cell_1 | 1:0 | cell_1 | — | — | 0 | founder | 0.003 | replaced | 0 | carrier:cell_1 |
+| carrier:c1 | 0:1 | d1 | carrier:cell_0 | — | 0.002 | division | 0.004 | censored | 1 | carrier:cell_0 |
+| carrier:c2 | 0:2 | d2 | carrier:cell_0 | — | 0.002 | division | 0.004 | censored | 1 | carrier:cell_0 |
+| carrier:n1 | 3:0 | cell_1 | — | carrier:cell_1 | 0.003 | template | 0.004 | censored | 0 | carrier:n1 |
 
-`events`:
+`c2` starts sub-lineage 2 for its own daughters, and `n1`, which has no parent, starts sub-lineage
+3 (§1.3).
+
+`events` (the fixture's dt is 1 ms):
 - `first`: 0.002 s, step 2, `division`, at `carrier:cell_0`, by `isopotential_partition@1`, source
   `source:schedule/partition_events` (the payer of `partition_work_pJ`);
 - `r1`: 0.003 s, step 3, `replacement`, at `slot:cell_1`, by `scheduled_cell_replacement@1`, source
@@ -742,11 +791,13 @@ the pass.
 | --- | --- | --- | --- | --- | --- |
 | **RT0 Desk** | The user's ruling. Interface reservations handed to the pass's owners: the law template's moves and one-way kernels (F owner); tracked quantities beside moieties (binding owner); `descent` and `SOURCES` in the contract (operators owner) | None (design) | This note | Reservations only | 0.5–1 |
 | **RT1 Descent and the tables** | `records/relations.py` (new): the schema, the writer and its checks. `descent` in the contract, the partition and replacement, with the occupants from it; the summaries' lineage lists rebuilt byte for byte. The partition's, membrane state's and replacement's view declarations into source. `relations=` on the four shared paths | The composite with the partition and the membrane state; with replacement @1 and @2 | RT0 | The new module and `cell_replacement*.py` (no owner); `contract.py`, `partition.py`, `membrane_state.py` (operators owner); `run_view.py` (@3 owner) | 3.5–4.5 |
-| **RT2 Sources and dependence** | `SOURCES` and payers on every supplying operator and @3's held baths. The mechanisms and their edges, from FR-12's manifest and the run's composition. Flow and supply edges | The composite with the source operators and both kinds | RT1; FR-12 | The operators' files (several owners); `surface_pump_v3.py` (@3 owner) | 2.5–3.5 |
-| **RT3 Labels, deterministic** | The cost probe first. Tracked quantities and labels in the registry. The move table for @3's routes, the kinds and the operators. One-way kernels for the laws of the first worlds. The stage, its barrier and its fallback; per-label ledgers; records and checkpoints; tracking at a branch | As RT2 | The pass's seams A, B, E and F; RT1 | `species_registry.py`, `surface_pump_v3.py`, `pump_composite*.py`, `kind_registry.py`, the laws | 6.5–10 |
+| **RT2a Sources** | `SOURCES` and payers on every supplying operator and @3's held baths; flow and supply edges | The composite with the source operators and both kinds | RT1 | The operators' files (several owners); `surface_pump_v3.py` (@3 owner) | 1.5–2 |
+| **RT2b Dependence** | The mechanisms and their edges, from FR-12's manifest joined with the run's composition | As RT2a | RT2a; FR-12's manifest, whose home is not settled (§3.1) | The new module only | 1–1.5 |
+| **RT3 Labels, deterministic** | The cost probe first. Tracked quantities and labels in the registry. The move table for @3's routes, the kinds and the operators. One-way kernels for the laws of the first worlds. The stage, its barrier and its fallback; per-label ledgers; records and checkpoints | As RT2a | The pass's seams A, B, E and F; RT2a | `species_registry.py`, `surface_pump_v3.py`, `pump_composite*.py`, `kind_registry.py`, the laws | 6.5–10 |
 | **RT4 Labels, stochastic** | Label counts; the `label` domain; joins, leaves and the split; continuation and sinks; GARD's G1 writer | GARD's G1 family | GARD's G1 on main | GARD's G1 family files | 2–3 |
 | **RT5 Every descendant** | P-a's generation sweep; the key rule; lives with their reasons; budgets | GARD's G1 family | RT4 | GARD's G1 family files | 3–4.5 |
-| **RT6 History** | Branch records, ids and keys on the shared paths and in GARD's G1; X-2 with its bookings and labels; the history-read check | Both families | RT1, RT3, RT5 | `runner.py`, `__main__.py`, the shared paths, a new transplant tool | 3–4.5 |
+| **RT6a Branches and transplants** | Branch records, qualifiers and keys on the shared paths and in GARD's G1; X-2 with its bookings and descent; the history-read check | Both families | RT1, RT5 | `runner.py`, `__main__.py`, the shared paths, a new transplant tool | 2.5–3.5 |
+| **RT6b Labels across branches** | Tracking added at a branch (§4.2); a transplant's labels | Both families | RT3, RT6a | The same files, and the checkpoint's validation | 0.5–1 |
 | **RT7 References** | Tracer closed forms and a small-graph tracer solve (numpy, scipy); exact enumeration for stochastic labels; M-3's reconstruction on small worlds | Compared with RT3's and RT4's runs of the models above | RT0's ruling | `validation/relationships/` (new) | 1.5–2.5 |
 | **Gates** | At each merge, with §6's composed-world checks | All | Each | The lead's | 1–1.5 |
 | **Total** | | | | | **23.5–35** |
@@ -756,14 +807,18 @@ the pass.
   pass work freezes. After the pass, each is a second edit of the same file.
 - **During the pass:** RT1's new module and replacement's files, which no pass owner holds; RT7,
   once the user rules.
-- **After the pass:** RT1's parts in the operators owner's and the @3 owner's files, then RT2 and
-  RT3. The operators owner is the pass's critical path (step 0 §4.2: done by day 13.25–18), so RT1
-  adds nothing to its load during the pass.
-- **After GARD's G1 lands:** RT4, then RT5, on its files, in parallel with RT3.
-- **Last:** RT6, after RT1's edits to the shared paths.
-- **Elapsed (S):** about 14–20 working days after the pass, with two builders on disjoint files
-  (the deterministic lane, RT1–RT3; the stochastic lane, RT4–RT6) and the references agent: three
-  agents within seven.
+- **After the pass:** RT1's parts in the operators owner's and the @3 owner's files, then RT2a and
+  RT3, and RT2b once FR-12's manifest exists. The operators owner is the pass's critical path
+  (step 0 §4.2: done by day 13.25–18), so RT1 adds nothing to its load during the pass.
+- **After GARD's G1 lands:** RT4, RT5 and RT6a, on its files and the shared paths, in parallel with
+  RT3. RT6a needs only RT1's edits to the shared paths, which come first.
+- **Last:** RT6b, after RT3 and RT6a.
+- **Elapsed (S):** about 14–21 working days after the pass, with two builders on disjoint files and
+  the references agent: three agents within seven.
+  - The deterministic lane is the critical path: RT1, RT2a, RT2b, RT3, RT6b and the final gates,
+    14–20.5.
+  - The stochastic lane, RT4, RT5 and RT6a, takes 7.5–11 beside it.
+  - It assumes GARD's G1 and FR-12's manifest have landed when the pass ends.
 
 **Partners:**
 - **Seam B** gives the field roles that labels (extensive), transplants (what moves, what stays)
@@ -777,14 +832,15 @@ the pass.
 
 **What it replaces elsewhere (S):** the two `lineage()` builders and the occupants table (RT1); the
 run-view declarations planted in tests (RT1); OL's R8, apart from its geometry and pool records.
-RT6 builds on GARD's G1 branching rather than repeating it.
+RT6a builds on GARD's G1 branching rather than repeating it.
 
 ## 8. Questions
 
 ### 8.1 For the user (marked)
 
 1. **U1, scope.** The whole design (RT0–RT7, about 23.5–35 agent-days)? Or the host-side tables
-   first (RT1–RT2, about 6–8), with labels decided after?
+   first (RT1 and RT2a, about 5–6.5, with RT2b's dependency graph 1–1.5 more once FR-12's manifest
+   exists), with labels decided after?
 2. **U2, which flux a label rides** (§2.3). One-way for every tracked species, fail-closed, with
    `mode: net` recorded where a law has no one-way form (recommended)? Net semantics would make
    founder material look retained at steady state.
@@ -803,8 +859,9 @@ RT6 builds on GARD's G1 branching rather than repeating it.
 
 1. **RT0's reservations:** hand them to the F, binding and operators owners now, or wait for the
    pass to end?
-2. **`branch_checkpoint`'s one exception** (§4.2): may a branch add a `tracking` block? And does a
-   top-level `tracking` block suit the definition's structure?
+2. **Tracking added at a branch** (§4.2): may a branch's checkpoint gain the label fields, built
+   from initial labels declared at the branch, with `validate_checkpoint` accepting that one
+   extension? And does a top-level `tracking` block suit the definition's structure?
 3. **D153's exempt tools:** the transplant tool joins the list (§4.3).
 4. **GARD's G1:** the `label` stream domain, P-a and the key rule, agreed with GARD's G1 owner
    before its channel layout freezes.
