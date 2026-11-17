@@ -30,18 +30,22 @@ RESCALE_RUN = {"worlds": ["ol1_wa_closed", "ol1_wa_closed_x2"], "events": 500, "
 # under both probed conventions; evidence in the staging folder's evidence/ directory).
 REGISTERED_MAGNITUDES = {
     "OL1-1": {
-        "check": "the largest |residual| of the named check over the registered probe, under (multinomial, kept)",
+        "check": "the largest |residual| of the named check over the registered probe, under (multinomial, kept); "
+                 "re-derived at amendment 4 on the amended law and the 592-state probe",
         "honest": {"kolmogorov": 2.7e-15, "identity": 1.4e-15},
-        "at_state_factor": {"kolmogorov": 0.0074, "identity": 0.125},
+        "at_state_factor": {"kolmogorov": 0.0074, "identity": 1.39},
         "forward_only_catalysis": {"kolmogorov": 0.057, "identity": 0.92},
         "one_sided": {"kolmogorov": 0.061, "identity": 0.40},
         "wrong_sign": {"identity": 10.6},
         "dropped_c0": {"identity": 6.91, "forward_form": 6.91},
         "power_propensity": {"forward_form": 0.693},
-        "normaliser_power": {"forward_form": 0.186},
+        "normaliser_power": {"forward_form": 1.5},
         "extent_offset": {"forward_form": 0.693, "note": "an error under c = 0 only; under c = 1 it is the rule"},
         "other_measure": {"identity": 0.693},
         "wrong_last_molecule_token": {"reverse_rates": "zero pattern differs at the boundary states"},
+        "empty_m_zero": {"forward_form": "zero-pattern mismatch at 3 entries (reference rates >= 0.5 per s)"},
+        "singular_as_zero": {"forward_form": "one singular-pattern mismatch, and one in the reverse rates, under "
+                                             "multinomial_less_one"},
     },
     "OL1-2": {
         "check": "total variation of the planted table's stationary law from exp(-F)/Z on ol1_wa_closed",
@@ -121,7 +125,9 @@ def design_document() -> dict:
                              "+ |DeltaF|) per edge",
                 "planted": ["at_state_factor", "forward_only_catalysis", "one_sided (r3's reverse times "
                             "exp(x_D), lam = 1)", "wrong_sign", "dropped_c0", "the other measure",
-                            "a literal zero for the last molecule's rate under extinct"],
+                            "a literal zero for the last molecule's rate under extinct",
+                            "empty_m_zero (amendment 4)", "zero for +inf at the singular pair (amendment 4)"],
+                "registered_magnitudes": REGISTERED_MAGNITUDES["OL1-1"],
             },
             "OL1-2": {
                 "claim": "a closed world relaxes to exp(-F/k_BT) (§7.1)",
@@ -133,6 +139,7 @@ def design_document() -> dict:
                            "Kolmogorov on every square of the closed world"],
                 "tolerance": {"total_variation": closed_world.TV_ATOL},
                 "planted": ["at_state_factor", "one_sided", "forward_only_catalysis", "dropped_c0", "wrong_sign"],
+                "registered_magnitudes": {k: v for k, v in REGISTERED_MAGNITUDES["OL1-2"].items()},
                 "reproduced_design_probes": {"E1": REGISTERED_MAGNITUDES["design_e1"],
                                              "E2": REGISTERED_MAGNITUDES["design_e2"]},
             },

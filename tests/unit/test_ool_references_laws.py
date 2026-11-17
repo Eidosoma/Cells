@@ -307,3 +307,11 @@ def test_amendment_4_superseded_reading_is_caught_by_the_forward_form(wa, conv):
     assert float(ref["a_plus"][zeroed].min()) >= 0.5
     if conv.c == 1:
         assert res["reverse_rates"].detail["singular_entries"] == 1
+        # planted: an engine that reports zero instead of +inf at the singular pair
+        ap, am = ref["a_plus"].copy(), ref["a_minus"].copy()
+        ap[np.isinf(ap)] = 0.0
+        am[np.isinf(am)] = 0.0
+        res = DB.check_kernel_table(honest, states, ap, am, ref)
+        assert res["kolmogorov"].passed and res["identity"].passed  # singular pairs are skipped there
+        assert not res["forward_form"].passed and res["forward_form"].detail["singular_pattern_mismatches"] == 1
+        assert not res["reverse_rates"].passed and res["reverse_rates"].detail["singular_pattern_mismatches"] == 1

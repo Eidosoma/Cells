@@ -122,8 +122,58 @@
     "wrong_sign",
     "dropped_c0",
     "the other measure",
-    "a literal zero for the last molecule's rate under extinct"
-   ]
+    "a literal zero for the last molecule's rate under extinct",
+    "empty_m_zero (amendment 4)",
+    "zero for +inf at the singular pair (amendment 4)"
+   ],
+   "registered_magnitudes": {
+    "check": "the largest |residual| of the named check over the registered probe, under (multinomial, kept); re-derived at amendment 4 on the amended law and the 592-state probe",
+    "honest": {
+     "kolmogorov": 2.7e-15,
+     "identity": 1.4e-15
+    },
+    "at_state_factor": {
+     "kolmogorov": 0.0074,
+     "identity": 1.39
+    },
+    "forward_only_catalysis": {
+     "kolmogorov": 0.057,
+     "identity": 0.92
+    },
+    "one_sided": {
+     "kolmogorov": 0.061,
+     "identity": 0.4
+    },
+    "wrong_sign": {
+     "identity": 10.6
+    },
+    "dropped_c0": {
+     "identity": 6.91,
+     "forward_form": 6.91
+    },
+    "power_propensity": {
+     "forward_form": 0.693
+    },
+    "normaliser_power": {
+     "forward_form": 1.5
+    },
+    "extent_offset": {
+     "forward_form": 0.693,
+     "note": "an error under c = 0 only; under c = 1 it is the rule"
+    },
+    "other_measure": {
+     "identity": 0.693
+    },
+    "wrong_last_molecule_token": {
+     "reverse_rates": "zero pattern differs at the boundary states"
+    },
+    "empty_m_zero": {
+     "forward_form": "zero-pattern mismatch at 3 entries (reference rates >= 0.5 per s)"
+    },
+    "singular_as_zero": {
+     "forward_form": "one singular-pattern mismatch, and one in the reverse rates, under multinomial_less_one"
+    }
+   }
   },
   "OL1-2": {
    "claim": "a closed world relaxes to exp(-F/k_BT) (\u00a77.1)",
@@ -147,6 +197,15 @@
     "dropped_c0",
     "wrong_sign"
    ],
+   "registered_magnitudes": {
+    "check": "total variation of the planted table's stationary law from exp(-F)/Z on ol1_wa_closed",
+    "at_state_factor": 0.083,
+    "forward_only_catalysis": 0.3,
+    "one_sided": 0.0079,
+    "dropped_c0": 0.997,
+    "wrong_sign": 0.997,
+    "other_measure": 0.035
+   },
    "reproduced_design_probes": {
     "E1": {
      "tv": 0.08298222756944511,
