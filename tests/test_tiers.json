@@ -117,7 +117,8 @@
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-1f26058a/measured.json",
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-0154604f/measured.json",
   "/mnt/workspaces/Cells/gard-g1-20261117/measure-518d22e7/measured.json",
-  "/mnt/workspaces/Cells/gard-g1-20261117/measure-99509d45/measured.json"
+  "/mnt/workspaces/Cells/gard-g1-20261117/measure-99509d45/measured.json",
+  "/mnt/workspaces/Cells/gard-g2-land-20261117/measured.json/measured.json"
  ],
  "measured_provenance": [
   {
@@ -972,6 +973,13 @@
    "root": ".claude/worktrees/gard-g1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T12:42:26+00:00"
+  },
+  {
+   "git_revision": "da7b33081696be511c8f3838e14f60dbe39e3c6c",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/gard-g2-land-20261117/tree",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T13:59:47+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2151,6 +2159,54 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_harness.py",
+    "seconds": 12.45,
+    "exit_code": 0,
+    "counts": {
+     "passed": 48
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_row01_02.py",
+    "seconds": 7.59,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_row03_04.py",
+    "seconds": 4.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_row05_06.py",
+    "seconds": 10.29,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_row07_08.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_row09_10.py",
+    "seconds": 2.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
     }
    },
    {
