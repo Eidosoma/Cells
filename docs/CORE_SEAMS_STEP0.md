@@ -888,4 +888,43 @@ showed two more things. Their outcomes were seen before this amendment.
     cell's capacitance (both its patches), the per-stage rule's quantity at a free node.
   - It records refusals only, as committed.
 
-## 6. Results of the probes (to follow)
+## 6. Results of the probes
+
+### 6.1 The booking probe: confirmed
+
+The evidence is `$W/probes/out/booking.json` and `booking.log`, from `$W/probes/booking_probe.py` and
+`booking_world.py`. It ran on CPUs 0–3 under the gate lock.
+
+**The world:**
+- E_K = −88.28 mV and the rest is −68.28 mV, with P_K = 1e-9 m/s and P_Na = 3.85e-11 m/s.
+- G/C = 2.12/s, so τ = 0.47 s.
+- The crossing arm starts at −103.28 mV, and the control at −78.28 mV.
+
+| dt·G/C | Crossing arm | The step that crosses E_K | Control |
+| --- | --- | --- | --- |
+| 0.003 | Refused by the dissipation check | Step 223, −88.302 → −88.249 mV (0.053 mV); K⁺ increment −8.1e-12 pJ | Admitted |
+| 0.01 | **Admitted** | Step 67, −88.284 → −88.111 mV; increment +2.8e-10 pJ | Admitted |
+| 0.03 | Refused by the dissipation check | Step 22, −88.460 → −87.939 mV; −6.4e-9 pJ | Admitted |
+| 0.1 | Refused by the dissipation check | Step 6, −89.545 → −87.775 mV; −2.1e-7 pJ | Admitted |
+| 0.3 and 0.6 | Refused by the step's validity flag, on step 0 | — | The same |
+
+**Reading the table:**
+- **At 0.3 and 0.6** the recomputed dt·`membrane_rate` is 1.45 and 2.90: the per-stage rule. Those
+  rungs confirm nothing. The rule uses the max-side constant-field slope, about 4.8 times G/C at rest.
+- **Wherever the dissipation check refused,** the refused step was the one that crosses E_K. Both
+  powers at its ends were positive, so the negative increment came from the internal stage.
+- **No other check refused** on the rungs that confirm.
+
+**Verdict: confirmed,** on three rungs. D's trapezoid is needed for channels, as H1 assumes.
+
+**Two findings beyond the criterion:**
+- **The refusal depends on where the crossing falls within the step.** At 0.01 the crossing step
+  started 0.009 mV below E_K, so its start power was already small. The fall from q(0) to q(γ·dt)
+  stayed under the 59% that ARS(2,2,2)'s weights allow, and the increment was positive. So an
+  excitable run under the tableau would be refused at some crossings and not at others, depending
+  on the step's phase: a reason more for the trapezoid.
+- **The cardiac note's claim holds where the phase allows it.** It says the 1e-12 pJ tolerance
+  refuses "even a crossing a fraction of a millivolt wide". At 0.003 a 0.053 mV crossing was refused,
+  by 8 times the tolerance. At 0.01 a 0.17 mV crossing was not.
+
+### 6.2 P1 (to follow)
