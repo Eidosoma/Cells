@@ -117,7 +117,8 @@
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-1f26058a/measured.json",
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-0154604f/measured.json",
   "/mnt/workspaces/Cells/relations-writer-20261117/measure-9a4654ee/measured.json",
-  "/mnt/workspaces/Cells/relations-writer-20261117/measure-776dcf01/measured.json"
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-776dcf01/measured.json",
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-8212de00/measured.json"
  ],
  "measured_provenance": [
   {
@@ -972,6 +973,13 @@
    "root": ".claude/worktrees/relations-writer",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T15:08:27+00:00"
+  },
+  {
+   "git_revision": "8212de00af96839b61763fbe2af864aeb7e4d28d",
+   "dirty": false,
+   "root": ".claude/worktrees/relations-writer",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:16:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2923,10 +2931,10 @@
    },
    {
     "file": "tests/unit/test_relations_lineage_summaries.py",
-    "seconds": 4.63,
+    "seconds": 5.48,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 7
     }
    },
    {
