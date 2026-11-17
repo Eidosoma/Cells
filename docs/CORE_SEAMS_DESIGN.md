@@ -1017,6 +1017,10 @@ following before work builds on it.
       A family's interfaces take general names, because D197's first-principles laws implement
       them too: for example `cells.exchange_law@1`, `cells.rate_factor_law@1` and
       `cells.lineage_operator@1`.
+  - **A follow-up for F's next step.** `cells ensemble` dispatches through a hard-coded MODELS table
+    (`ensemble/families.py`). It should dispatch through the static model table's `runner` entry
+    instead, so a family joins the ensemble queue with no edit to `ensemble/*`. Until then, GARD's
+    family runs its own ensemble arm.
 - **The manifest `cells.declarations@1` is partly delivered (FR-12):**
   - **IDs:** each piece carries `id` (namespaced) and `declared_id` (the spelling definitions use;
     bare in the `cells` namespace). `host` is namespaced only (`cells.resolved_pump_tissue@3`),
