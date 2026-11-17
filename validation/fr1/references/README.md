@@ -110,8 +110,21 @@ the tolerance, with at least 10 required.
 
 ## Tests
 
-`tests/unit/test_fr1_references_forms.py` holds the forms on their own (10 tests, each with a
-planted error). The world tests and the tier rows follow this registration.
+Three test files, 21 tests, all tier 1 on the timed lane (CPUs 4 and 5, under its lock) at
+d83f5365; the record is `/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json`.
+
+| Test file | What it holds | Time |
+| --- | --- | --- |
+| `test_fr1_references_forms.py` | The forms on their own, each with a planted error | 1.37 s |
+| `test_fr1_references_worlds.py` | The registered worlds against independent integrations, with planted errors (see below) | 3.12 s |
+| `test_fr1_references_design.py` | The committed files equal their generator; the registered margins; the inputs' identity; no engine import | 10.29 s |
+
+The world tests' planted errors are:
+- a declared rate that disagrees with its parameters;
+- a rate 1% off;
+- a Lie map and the swapped palindrome against the map to rounding;
+- clearance and the reaction in the cytosol;
+- a dropped volume in G.
 
 ## Sources
 
