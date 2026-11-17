@@ -17,7 +17,15 @@ from cells.core import kind_registry
 from cells.models import surface_pump_v3
 
 HOMES = {  # Each name's own module: where it is defined.
-    "cells.registry.laws": ("Law", "ChannelLaw", "CycleLaw", "RouteLaw", "BindingLaw", "Citation"),
+    "cells.registry.laws": (
+        "Law",
+        "ChannelLaw",
+        "CycleLaw",
+        "RouteLaw",
+        "BindingLaw",
+        "Citation",
+        "CitedWork",
+    ),
     "cells.registry.operators": ("FamilyOperator",),
     "cells.core.kind_registry": (
         "Kind",

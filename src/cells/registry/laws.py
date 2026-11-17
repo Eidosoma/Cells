@@ -16,7 +16,10 @@ built on `Law`, which holds what every law declares:
   A route law's `hosts` are something else: the entities its routes sit on;
 - `provenance`: "parity" (moved from an older family; moving is not calibrating), "cited" or
   "calibrated", with `source`, what it rests on. A cited law gives a `Citation` and a calibrated
-  law its data and method; both are required. A parity law may give §8.6's `moved_from` record;
+  law its data and method; both are required. A parity law may give §8.6's `moved_from` record.
+  A Citation names its works as data (`works`, each a `CitedWork`: authors, year, title, and a DOI
+  or a URL), so a reader can link them; whether a work was read is said on the piece's page
+  (docs/library/), since that changes as people read it;
 - `test`: the ID of the test that checks its kernel against its reference with a planted error
   (D187), so a manifest can link the evidence;
 - B8's four optional fields (D175), reserved: a declaration that sets one is refused until their
@@ -87,6 +90,7 @@ __all__ = (
     "BindingLaw",
     "ChannelLaw",
     "Citation",
+    "CitedWork",
     "CycleLaw",
     "JunctionLaw",
     "Law",
@@ -121,14 +125,27 @@ def _number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+class CitedWork(NamedTuple):
+    """One work a Citation rests on, as data: its authors (a tuple of names, as the work gives
+    them), its year, its title, and its DOI (without "https://doi.org/") or a URL; one at least."""
+
+    authors: tuple
+    year: int
+    title: str
+    doi: str | None = None
+    url: str | None = None
+
+
 class Citation(NamedTuple):
     """A cited law's source (§8.1): the work, the place in it, the licence of any numbers taken
-    from it (D186) and the law's departures from it, each in a few words."""
+    from it (D186) and the law's departures from it, each in a few words; and `works`, the works it
+    names, each a CitedWork. A citation of Cells' own documents names no work."""
 
     source: str
     place: str
     licence: str
     departures: tuple = ()
+    works: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -187,12 +204,28 @@ class Law:
         return out
 
 
+def _work(work):
+    return (
+        isinstance(work, CitedWork)
+        and isinstance(work.authors, tuple)
+        and bool(work.authors)
+        and all(map(_named, work.authors))
+        and isinstance(work.year, int)
+        and not isinstance(work.year, bool)
+        and _named(work.title)
+        and (_named(work.doi) or _named(work.url))
+        and all(v is None or _named(v) for v in (work.doi, work.url))
+    )
+
+
 def _cited(source):
     return (
         isinstance(source, Citation)
         and all(_named(v) for v in (source.source, source.place, source.licence))
         and isinstance(source.departures, tuple)
         and all(_named(d) for d in source.departures)
+        and isinstance(source.works, tuple)
+        and all(map(_work, source.works))
     )
 
 
@@ -205,8 +238,9 @@ def source_errors(provenance, source, test, what):
         out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
     elif provenance == "cited" and not _cited(source):
         out.append(
-            f"a cited {what} gives its source as a Citation (source, place, licence and a tuple "
-            "of departures)"
+            f"a cited {what} gives its source as a Citation (source, place, licence, a tuple of "
+            "departures and a tuple of works, each a CitedWork with its authors, year, title and "
+            "a DOI or URL)"
         )
     elif provenance == "calibrated" and source is None:
         out.append(f"a calibrated {what} gives its data and method as its source")

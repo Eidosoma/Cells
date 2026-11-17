@@ -126,7 +126,9 @@
   "/mnt/workspaces/Cells/relations-writer-20261117/measure-776dcf01/measured.json",
   "/mnt/workspaces/Cells/relations-writer-20261117/measure-8212de00/measured.json",
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-bd696fec/measured.json",
-  "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-f7b3940b/measured.json"
+  "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-f7b3940b/measured.json",
+  "/mnt/workspaces/Cells/law-library-20261117/measure-96256ba2/measured.json",
+  "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1044,6 +1046,20 @@
    "root": ".claude/worktrees/seam-f-registry",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T15:04:57+00:00"
+  },
+  {
+   "git_revision": "96256ba2ed2f6fbfd1ac93b6c1fdf832b37d267e",
+   "dirty": false,
+   "root": ".claude/worktrees/law-library",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T14:57:54+00:00"
+  },
+  {
+   "git_revision": "08ce2f71f0ed4da586e6e0bc98c7277ca6718daa",
+   "dirty": false,
+   "root": ".claude/worktrees/law-library",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:08:44+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1942,10 +1958,10 @@
    },
    {
     "file": "tests/unit/test_declarations.py",
-    "seconds": 1.98,
+    "seconds": 2.27,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 4
     }
    },
    {
@@ -2552,6 +2568,14 @@
     }
    },
    {
+    "file": "tests/unit/test_library_pages.py",
+    "seconds": 2.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_matched_arm_export.py",
     "seconds": 8.38,
     "exit_code": 0,
@@ -2601,7 +2625,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 1.37,
+    "seconds": 1.32,
     "exit_code": 0,
     "counts": {
      "passed": 3
