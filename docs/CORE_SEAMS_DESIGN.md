@@ -761,7 +761,8 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
   own, so the claim holds by construction. A law re-hosted on a new host adds one test at matched
   inputs, against outputs saved from the frozen reference, with a planted perturbation that must
   fail.
-- **A changed law takes a new ID** (D147). The old ID's kernel stays, frozen, for its family.
+- **A changed law takes a new ID** (D148's reading: "D147 makes an ID promise its semantics"; the
+  inner-model design's §6). The old ID's kernel stays, frozen, for its family.
 
 ### 8.7 Left to module stage 1
 
