@@ -6824,3 +6824,22 @@ finished as soon as possibl even if we have to slow down other work" (D207).
   states.
 - **Priority:** below GARD and the gap-junction replication.
 
+## D212: The origin-of-life programme starts now, aimed at lipids with chemicals in and out, and fission
+
+2026-11-17, evening. With GARD and the gap-junction replication's first stages on main, the user said
+"Lets go on 4" (the origin-of-life engine, D199's whole programme). They added: "where we test break and
+renew in a real lipid simulation", and then "so the first principle physics simulation of lipids and
+chemcials going in and out fission".
+
+- **OL1 and OL5 start now, under D199.** No new design round is needed, since D199 settled the design.
+  - **OL1 (the laws)** first delivers a design check: how its laws fit G1's kernel, frozen the same day,
+    without changing any `cells.assembly_lineages@1` world.
+  - **OL5 (independent references)** writes its designs in files before any engine output exists.
+- **The programme's first target is the user's:** a first-principles physical simulation of lipid
+  assemblies, with lipids and chemicals going in and out, and fission ("break and renew").
+  - OL2 delivers the in-and-out: phase exchange, geometry and tension from the counts, the lumen, and
+    the finite pool.
+  - OL3 delivers the fission: physical division, partition and serial transfer.
+  - OL1's laws are the foundation.
+- **Priority** follows D207 and D211: this programme, beside the port pilot and the core-seams pass.
+
