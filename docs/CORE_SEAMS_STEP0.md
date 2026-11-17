@@ -120,6 +120,30 @@ INaK's and IpCa's cycles, and no human cardiac registry exists yet.
 
 **Numerics:** float64, and mpmath at 50 digits near each equilibrium and for d_m's constancy.
 
+### 1.3 Amendment, committed before the numerical run
+
+Reading Beard's typeset equations showed three things the criterion must say exactly. Nothing was
+run between the criterion's commit and this amendment.
+
+- **Laws written per half reaction.** Beard's complexes III and IV (Eqs. 7, 24 and 9) write their
+  exponent over 2RT, so ln(Π⁻/Π⁺) = κ·ΔG/RT with a printed κ = ½. Test (a) then reads
+  d_m = ln(Π⁻_m/Π⁺_m)/κ_m − ΔG_stoich,m/RT, with κ_m = 1 for every other law. Where d_m is constant,
+  A's form holds with S = X·A·(1 − e^{κΔG/RT})/(1 − e^{ΔG/RT}). That S is positive for any κ > 0,
+  with the limit κ·X·A at ΔG = 0. The question the test answers is unchanged: does J factor as
+  S·(1 − e^{ΔG/RT}) with S ≥ 0?
+- **Laws that are not a difference of two products** (Beard's nucleotide exchange, Eq. 14).
+  Π⁺ and Π⁻ are the two terms of the flux's numerator over its common denominator.
+- **Beard's modes and their ΔG_stoich** come from the printed reactions (Eqs. 2, 6, 8 and 10), with
+  ΔH⁺ as the text defines it (a proton moved from the matrix to the cytosol side) and ΔG_H as Eq. 4.
+  - The scalar protons sit where the reactions and the text put them: complex III's two in the
+    matrix, by the text.
+  - The phosphate carrier's mode is the electroneutral H⁺/H₂PO₄⁻ co-transport into the matrix,
+    as the text, Table 1 and the matrix proton balance (Eq. 22, +2·J_PiHt) describe it.
+- **Complex III's two printed fluxes** are screened separately: Eq. 7, without phosphate control,
+  and Eq. 24, with it, which the paper's final fits use.
+- **Beard's temperature** is not printed in the text read. T = 310.15 K is used. The verdicts are
+  identities in FΔΨ/RT and ln c, so they do not depend on T.
+
 ## 2. The pin check for F
 
 ### 2.1 Criterion
