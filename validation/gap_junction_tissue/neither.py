@@ -101,17 +101,52 @@ def conductance(d):
     return d * A_CELL_M2 / L_GJ_M
 
 
-def junction_rate(d):
+def junction_rate(d, neighbours=2):
     """@3's explicit rate for the coupled world (1/s): 2 x the largest sum of G_GJ / V over a
-    cell's junction routes (an interior cell has two)."""
-    return 2.0 * 2.0 * conductance(d) / (V_CELL_PL * 1e-15)
+    cell's junction routes (an interior cell has two on the line, four on the sheet)."""
+    return 2.0 * neighbours * conductance(d) / (V_CELL_PL * 1e-15)
 
 
-def step(d):
+def step(d, neighbours=2):
     dt = BASE_DT_S
-    while dt * junction_rate(d) > STEP_BOUND_MARGIN:
+    while dt * junction_rate(d, neighbours) > STEP_BOUND_MARGIN:
         dt /= 2.0
     return dt
+
+
+# The sheet: an extension beyond the replication (note section 7.6), the same switch, seeds and
+# protocol on a square sheet with 4-neighbour junctions and a square tumor patch in the middle.
+SHEET_N = 9
+SHEET_TUMOR = 3
+
+
+def tissue(shape):
+    """(cells ((id, kind)), junctions ((id, a, b)), centres in um, neighbours) of a shape: 'line',
+    BITSEY's 1x1x25 field (the replication), or 'sheet', SHEET_N x SHEET_N cells with a
+    SHEET_TUMOR x SHEET_TUMOR tumor in the middle (an extension beyond it)."""
+    spacing = 2.0 * R_CELL_M * 1e6
+    if shape == "line":
+        cells = tuple((f"c{k}", "tumor" if k < TUMOR else "healthy") for k in range(N_CELLS))
+        junctions = tuple((f"j{k}", f"c{k}", f"c{k + 1}") for k in range(N_CELLS - 1))
+        return cells, junctions, [[k * spacing, 0.0] for k in range(N_CELLS)], 2
+    if shape == "sheet":
+        n, lo = SHEET_N, (SHEET_N - SHEET_TUMOR) // 2
+        inside = range(lo, lo + SHEET_TUMOR)
+        cells = tuple(
+            (f"c{r}_{c}", "tumor" if r in inside and c in inside else "healthy")
+            for r in range(n)
+            for c in range(n)
+        )
+        junctions = []
+        for r in range(n):
+            for c in range(n):
+                if c + 1 < n:
+                    junctions.append((f"jh{r}_{c}", f"c{r}_{c}", f"c{r}_{c + 1}"))
+                if r + 1 < n:
+                    junctions.append((f"jv{r}_{c}", f"c{r}_{c}", f"c{r + 1}_{c}"))
+        centres = [[c * spacing, r * spacing] for r in range(n) for c in range(n)]
+        return cells, tuple(junctions), centres, 4
+    raise ValueError(f"Unknown shape {shape!r}")
 
 
 def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
@@ -212,11 +247,11 @@ def uncoupled_world(*, end=UNCOUPLED_S, dt=None):
     return switch_world(cells, SEEDS, end=end, dt=dt, observe=observe)
 
 
-def coupled_world(d, start, *, end=COUPLED_S, dt=None):
-    """Stage 2: the line of 25 cells, the first TUMOR of them tumor, from stage 1's end state."""
-    dt = step(d) if dt is None else dt
-    cells = tuple((f"c{k}", "tumor" if k < TUMOR else "healthy") for k in range(N_CELLS))
-    junctions = tuple((f"j{k}", f"c{k}", f"c{k + 1}") for k in range(N_CELLS - 1))
+def coupled_world(d, start, *, end=COUPLED_S, dt=None, shape="line"):
+    """Stage 2: the line of 25 cells, the first TUMOR of them tumor (or the sheet: tissue), from
+    stage 1's end state."""
+    cells, junctions, _, neighbours = tissue(shape)
+    dt = step(d, neighbours) if dt is None else dt
     observe = sorted(
         {0.0, *(k * OBSERVE_EVERY_S for k in range(int(end // OBSERVE_EVERY_S) + 1)), end}
     )
@@ -343,47 +378,72 @@ def record_times(dt, end, log_rows=0):
     return sorted(t for t in times if t <= end)
 
 
-def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0):
+SHEET_EXPERIMENT = "gap-junction-cancer-neither-sheet-extension"
+SHEET_REPRESENTS = (
+    "An extension beyond the replication: the neither condition's switch, seeds and protocol "
+    f"on a {SHEET_N}x{SHEET_N} sheet with 4-neighbour junctions and a {SHEET_TUMOR}x{SHEET_TUMOR} "
+    "tumor patch in the middle, at D values chosen around the 1D search's threshold (x2). The "
+    "sheet's own threshold may differ. Development run of the engine, not judged (D138)."
+)
+ARM_PREFIX = dict(line="neither-d", sheet=f"sheet{SHEET_N}-d")
+# A window's working storage scales with the world: the sheet's 81 cells and 144 junctions fit
+# 256 steps a window. Windows cut the execution, not the step grid.
+WINDOW_STEPS_OF = dict(line=WINDOW_STEPS, sheet=256)
+EXPERIMENT_OF = dict(line=EXPERIMENT, sheet=SHEET_EXPERIMENT)
+REPRESENTS_OF = dict(line=REPRESENTS, sheet=SHEET_REPRESENTS)
+LABEL_OF = dict(
+    line="Neither condition, 1D",
+    sheet=f"Neither condition on a {SHEET_N}x{SHEET_N} sheet (extension)",
+)
+GEOMETRY_SOURCE = dict(
+    line="validation/gap_junction_tissue/neither.py: a line of 25 touching cells, the tumor the "
+    "first 6 (BITSEY's 1x1x25 field)",
+    sheet=f"validation/gap_junction_tissue/neither.py: a {SHEET_N}x{SHEET_N} sheet of touching "
+    f"cells, the tumor the middle {SHEET_TUMOR}x{SHEET_TUMOR} (an extension beyond the "
+    "replication)",
+)
+
+
+def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0, shape="line"):
     """The coupled stage at d written as a run record with its run view (module docstring)."""
     from cells import run_view
     from cells.core.specs import parse_spec
     from cells.core.windows import WindowPolicy
     from cells.window_io import write_windowed_run
 
-    arm_id = f"neither-d{d:.6g}"
+    arm_id = f"{ARM_PREFIX[shape]}{d:.6g}"
     directory = Path(out_dir) / "viewer" / arm_id
-    raw = coupled_world(d, start, end=end)
-    raw["experiment"]["observation_times"] = record_times(step(d), end, log_rows)
+    cells, _, centres, neighbours = tissue(shape)
+    raw = coupled_world(d, start, end=end, shape=shape)
+    raw["experiment"]["observation_times"] = record_times(step(d, neighbours), end, log_rows)
     spec = parse_spec(raw)
-    spacing = 2.0 * R_CELL_M * 1e6
     geometry = run_view.Geometry(
         unit="um",
         dimensions=2,
         sets={
             "cell": {
                 "kind": "spheres",
-                "centres": [[k * spacing, 0.0] for k in range(N_CELLS)],
-                "radius": [R_CELL_M * 1e6] * N_CELLS,
+                "centres": centres,
+                "radius": [R_CELL_M * 1e6] * len(cells),
             }
         },
-        source="validation/gap_junction_tissue/neither.py: a line of 25 touching cells, the "
-        "tumor the first 6 (BITSEY's 1x1x25 field)",
+        source=GEOMETRY_SOURCE[shape],
     )
     labels = dict(
         id=arm_id,
-        experiment=EXPERIMENT,
+        experiment=EXPERIMENT_OF[shape],
         arm=arm_id,
-        label=f"Neither condition, 1D: D = {d:.4g} m^2/s",
+        label=f"{LABEL_OF[shape]}: D = {d:.4g} m^2/s",
     )
     provenance = dict(
         operation="fresh",
         driver="validation/gap_junction_tissue/neither.py",
-        experiment=EXPERIMENT,
+        experiment=EXPERIMENT_OF[shape],
         arm=arm_id,
         d_m2_s=d,
         **_snapshot_identity(),
     )
-    policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
+    policy = WindowPolicy(WINDOW_STEPS_OF[shape], "observations", "device")
     request = run_view.Request(
         labels,
         geometry=geometry,
@@ -394,7 +454,17 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0):
         ),
     )
     started = time.perf_counter()
-    out = dict(arm=arm_id, d=d, directory=str(directory), dt_s=spec.execution.dt, status="done")
+    out = dict(
+        arm=arm_id,
+        d=d,
+        directory=str(directory),
+        dt_s=spec.execution.dt,
+        status="done",
+        shape=shape,
+        cells=[c for c, _ in cells],
+        tumor=[c for c, kind in cells if kind == "tumor"],
+    )
+    n_cells = len(cells)
     try:
         write_windowed_run(directory, spec, policy, provenance=provenance, view=request)
         out["view"] = "written"
@@ -402,13 +472,14 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0):
         write_windowed_run(directory, spec, policy, provenance=provenance)
         out.update(view="refused", refusal=str(error))
     out["seconds"] = time.perf_counter() - started
-    out["final_units"] = final_units(directory, list(spec.model.species_ids))
-    out["sidecar"] = criterion_sidecar(directory, list(spec.model.species_ids))
-    out["species_sidecars"] = species_sidecars(directory, list(spec.model.species_ids))
+    ids = list(spec.model.species_ids)
+    out["final_units"] = final_units(directory, ids, n_cells)
+    out["sidecar"] = criterion_sidecar(directory, ids, n_cells)
+    out["species_sidecars"] = species_sidecars(directory, ids, n_cells)
     entry = dict(
         format="gap_junction_tissue.neither_run@1",
         status="development run of the engine, not judged (D138)",
-        represents=REPRESENTS,
+        represents=REPRESENTS_OF[shape],
         models=["resolved_pump_composite@1", "resolved_pump_tissue@3"],
         laws=dict(
             switch="local_species_reactions@1 (GRN_miRNA.py's constants at b2cb370)",
@@ -432,7 +503,7 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0):
     return out
 
 
-def final_units(directory, species_ids):
+def final_units(directory, species_ids, n_cells=N_CELLS):
     """Each cell's u, m and z (units) from a written record's final checkpoint, read through the
     engine's loader (io.load_snapshot): a read, nothing continues from it."""
     import numpy as np
@@ -443,9 +514,9 @@ def final_units(directory, species_ids):
     amount = np.asarray(checkpoint.layout.amount_reference) + np.asarray(
         checkpoint.state.amount_increment
     )
-    volume = np.asarray(checkpoint.layout.volume)[:N_CELLS]
+    volume = np.asarray(checkpoint.layout.volume)[:n_cells]
     return {
-        name: (amount[species_ids.index(name), :N_CELLS] / volume / UNIT_mM).tolist()
+        name: (amount[species_ids.index(name), :n_cells] / volume / UNIT_mM).tolist()
         for name in NAMES
     }
 
@@ -473,14 +544,14 @@ def cell_state(value):
     return "X"
 
 
-def criterion_sidecar(directory, species_ids):
+def criterion_sidecar(directory, species_ids, n_cells=N_CELLS):
     """criterion.json beside a tissue arm's package (a viewer sidecar written by the driver, not an
     engine field): each cell's miR200 minus Zeb mRNA (uM) per observed row, from the record's own
     observed amounts (its chunks) and volumes, and its state under BITSEY's criterion. The cells
     are the view's cell set (the layout's order, the arrays' columns); without a view, the
     layout's ids."""
     directory = Path(directory)
-    times, cells, values = observed_units(directory, species_ids)
+    times, cells, values = observed_units(directory, species_ids, n_cells)
     values = [
         [u - m for u, m in zip(row_u, row_m, strict=True)]
         for row_u, row_m in zip(values["u"], values["m"], strict=True)
@@ -513,7 +584,7 @@ SPECIES_SIDECARS = {
 SPECIES_SIDECARS_FILES = [filename for filename, _, _ in SPECIES_SIDECARS.values()]
 
 
-def observed_units(directory, species_ids):
+def observed_units(directory, species_ids, n_cells=N_CELLS):
     """(times, cells, {species: rows of each cell's concentration in units}) from a written
     record's own observed amounts (its chunks) and the layout's volumes, read through the loader."""
     import numpy as np
@@ -523,8 +594,8 @@ def observed_units(directory, species_ids):
     directory = Path(directory)
     layout = io.load_snapshot(directory / "checkpoint_initial").checkpoint.layout  # A read.
     reference = np.asarray(layout.amount_reference)
-    volume = np.asarray(layout.volume)[:N_CELLS]
-    layout_ids = [str(i) for i in np.asarray(layout.ids)[:N_CELLS]]
+    volume = np.asarray(layout.volume)[:n_cells]
+    layout_ids = [str(i) for i in np.asarray(layout.ids)[:n_cells]]
     view = directory / "view.json"
     sets = {s["id"]: s for s in json.loads(view.read_text())["sets"]} if view.is_file() else {}
     cells = sets["cell"]["ids"] if "cell" in sets else layout_ids
@@ -542,13 +613,13 @@ def observed_units(directory, species_ids):
             if "observation_times" not in chunk.files:
                 continue
             when_rows = np.asarray(chunk["observation_times"], dtype=float)
-            increment = chunk["observed_amount_increment"][:, :, :N_CELLS]
+            increment = chunk["observed_amount_increment"][:, :, :n_cells]
         for k, when in enumerate(when_rows):
             if times and when <= times[-1]:
                 continue
             times.append(float(when))
             for name, (full, kept) in rows.items():
-                amount = reference[full, :N_CELLS] + increment[k, kept]
+                amount = reference[full, :n_cells] + increment[k, kept]
                 values[name].append((amount / volume / UNIT_mM).tolist())
     flat = [x for rows_ in values.values() for row in rows_ for x in row]
     if not all(math.isfinite(x) for x in [*flat, *times]):
@@ -556,10 +627,10 @@ def observed_units(directory, species_ids):
     return times, list(cells), values
 
 
-def species_sidecars(directory, species_ids):
+def species_sidecars(directory, species_ids, n_cells=N_CELLS):
     """Each cell's miR200, Zeb mRNA and ZEB protein (uM) per observed row, beside a tissue arm's
     package (cells.experiment_quantity@1; viewer sidecars written by the driver)."""
-    times, cells, values = observed_units(directory, species_ids)
+    times, cells, values = observed_units(directory, species_ids, n_cells)
     written = []
     for name, (filename, quantity_id, label) in SPECIES_SIDECARS.items():
         sidecar = dict(
@@ -599,27 +670,48 @@ def records_summary(results):
         for r in results
         if r.get("final_units")
     ]
+    first = next((r for r in results if r.get("final_units")), {})
+    shape = first.get("shape", "line")
+    cell_ids = first.get("cells") or [f"c{k}" for k in range(N_CELLS)]
+    tumor = set(first.get("tumor") or [f"c{k}" for k in range(TUMOR)])
+    if shape == "line":
+        sweep_id, sweep_label = "neither-1d", "The neither condition on BITSEY's 1D line"
+        plain = (
+            "Each cell's final miR200 minus Zeb mRNA in a line of 25 cells, the first 6 a tumor, "
+            "against the junction diffusion constant D of miR200; above 2 a cell counts as "
+            "epithelial (BITSEY's criterion)."
+        )
+    else:
+        sweep_id = f"neither-sheet-{SHEET_N}x{SHEET_N}"
+        sweep_label = (
+            f"The neither condition on a {SHEET_N}x{SHEET_N} sheet (an extension beyond the "
+            "replication)"
+        )
+        plain = (
+            f"Each cell's final miR200 minus Zeb mRNA on a {SHEET_N}x{SHEET_N} sheet, a "
+            f"{SHEET_TUMOR}x{SHEET_TUMOR} tumor in the middle, against the junction diffusion "
+            "constant D of miR200; above 2 a cell counts as epithelial (BITSEY's criterion). Its "
+            "D values sit around the 1D threshold; the sheet's own threshold may differ."
+        )
     sweep = dict(
-        id="neither-1d",
-        label="The neither condition on BITSEY's 1D line",
-        plain="Each cell's final miR200 minus Zeb mRNA in a line of 25 cells, the first 6 a "
-        "tumor, against the junction diffusion constant D of miR200; above 2 a cell counts as "
-        "epithelial (BITSEY's criterion).",
+        id=sweep_id,
+        label=sweep_label,
+        plain=plain,
         parameter=dict(id="d", label="Junction diffusion constant D of miR200", unit="m^2/s"),
         readouts=[
             dict(
                 id=f"cell_{k + 1:02d}",
-                label=f"Cell {k + 1}{' (tumor)' if k < TUMOR else ''}: miR200 minus Zeb mRNA, in "
-                "µM; the switch's scaled unit is 1 µM in this world",
+                label=f"Cell {cell_id}{' (tumor)' if cell_id in tumor else ''}: miR200 minus Zeb "
+                "mRNA, in µM; the switch's scaled unit is 1 µM in this world",
                 unit="uM",
             )
-            for k in range(N_CELLS)
+            for k, cell_id in enumerate(cell_ids)
         ],
         arms=arms,
     )
     return dict(
         format="cells.experiment_summary@1",
-        experiment=EXPERIMENT,
+        experiment=EXPERIMENT_OF[shape],
         note="Development runs of the engine, not judged (D138). One scaled unit of the switch is "
         "1 uM here. Species: u is miR200, m Zeb mRNA, z ZEB protein; each concentration is the "
         f"amount over the cell's volume in the layout ({V_CELL_PL:.6g} pL).",
@@ -640,13 +732,13 @@ def _snapshot_identity():
 
 
 def _record_work(args):
-    d, start, end, out_dir, log_rows = args
+    d, start, end, out_dir, log_rows, shape = args
     _start_engine()
     try:
-        return record(out_dir, d, start, end=end, log_rows=log_rows)
+        return record(out_dir, d, start, end=end, log_rows=log_rows, shape=shape)
     except Exception as error:  # A refused pick is reported, never swapped (section 7).
         return dict(
-            arm=f"neither-d{d:.6g}",
+            arm=f"{ARM_PREFIX[shape]}{d:.6g}",
             d=d,
             status="refused",
             error=repr(error),
@@ -654,7 +746,7 @@ def _record_work(args):
         )
 
 
-def record_all(out_dir, ds, end, cpus, log_rows=0):
+def record_all(out_dir, ds, end, cpus, log_rows=0, shape="line"):
     """Stage 1, then each D's record, one process per CPU of `cpus` (in this process when none);
     records.json and viewer/summary.json once every pick has ended."""
     from concurrent.futures import ProcessPoolExecutor
@@ -673,7 +765,9 @@ def record_all(out_dir, ds, end, cpus, log_rows=0):
             if stage1["status"] != "done":
                 return 1
             futures = [
-                pool.submit(_record_work, (d, stage1["start_units"], end, str(out_dir), log_rows))
+                pool.submit(
+                    _record_work, (d, stage1["start_units"], end, str(out_dir), log_rows, shape)
+                )
                 for d in ds
             ]
             results = [future.result() for future in futures]
@@ -684,7 +778,7 @@ def record_all(out_dir, ds, end, cpus, log_rows=0):
         if stage1["status"] != "done":
             return 1
         results = [
-            _record_work((d, stage1["start_units"], end, str(out_dir), log_rows)) for d in ds
+            _record_work((d, stage1["start_units"], end, str(out_dir), log_rows, shape)) for d in ds
         ]
     (out_dir / "records.json").write_text(json.dumps(results, indent=1))
     (out_dir / "viewer").mkdir(parents=True, exist_ok=True)
@@ -880,6 +974,7 @@ def main():
     parser.add_argument("--end", type=float, default=COUPLED_S)
     parser.add_argument("--record", default="")
     parser.add_argument("--record-log", type=int, default=0)
+    parser.add_argument("--shape", default="line", choices=("line", "sheet"))
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -920,7 +1015,7 @@ def main():
     if args.record:  # Records for the viewer: stage 1, then each D written with its view.
         cpus = [int(c) for c in args.cpus.split(",") if c]
         ds = [float(x) for x in args.record.split(",")]
-        return record_all(out_dir, ds, args.end, cpus, log_rows=args.record_log)
+        return record_all(out_dir, ds, args.end, cpus, log_rows=args.record_log, shape=args.shape)
     if args.points:  # A probe: stage 1, then the given points in this process; no search.
         _start_engine()
         stage1 = uncoupled()
