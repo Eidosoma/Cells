@@ -47,6 +47,7 @@ const length = (a) => Math.hypot(a[0], a[1], a[2]);
 
 test("heads to the water and tails in: every lipid of the micelle faces out from its centre, on its surface", () => {
   const { lens } = lensFor({ moving: false });
+  lens.setShape("micelle");
   lens.player.seek(40.5);
   lens.update(16, 0, 16);
   const layout = lens.sides[0].layout, R = layout.radius(layout.counts[0]);
@@ -61,6 +62,7 @@ test("heads to the water and tails in: every lipid of the micelle faces out from
 
 test("at a fission the molecules are divided as the run records, and while the daughters overlap the heads lie on the neck", () => {
   const { lens } = lensFor({ moving: false });
+  lens.setShape("micelle");
   const run = lens.mainRun, k = 37;
   for (const part of [0.15, 0.3, 0.5, 0.9]) {
     lens.player.seek(k - 0.15 + part * 0.3);
@@ -156,9 +158,10 @@ test("the picture says what is its own: on the picture, in the legend, and while
   const chrome = lens.chrome();
   assert.match(chrome.legend.note.text, /No law of Cells computes how the lipids move and pack/);
   assert.match(chrome.legend.note.text, /^Example: invented numbers · not a run of Cells' engine/);
-  assert.match(chrome.legend.note.text, /does not record which molecule helped a join, so no light is drawn/, "no catalysis light where the run records none");
-  for (const [slot, form] of FORMS.slice(0, 3).entries()) assert.ok(chrome.legend.items[slot].label.includes(form), `the legend says the form of a leading type's head: ${form}`);
-  assert.match(chrome.legend.items[3].label, /round grey head/);
+  assert.match(lens.describe("assembly:assembly").note, /No light shows what helped a join: the run does not record it/, "no catalysis light where the run records none, and the assembly's panel says so");
+  for (const [slot, form] of FORMS.slice(0, 3).entries()) assert.ok(chrome.legend.items[slot].label.includes(form.replace("soft ", "")), `the legend says the form of a leading type's head: ${form}`);
+  assert.match(chrome.legend.items[3].label, /round, grey/);
+  assert.ok(chrome.legend.items.some((item) => /halo/.test(item.label)), "the halo is keyed as the picture's");
   assert.ok(chrome.timeline && chrome.timeline.player === lens.player, "the page's one clock");
   // The entry's word, and the law's two forms in D192's words, on the card.
   assert.match(chrome.card.text, /Designed, not modelled\./);

@@ -13,7 +13,7 @@
 //   - 100 molecule types; a catalysis table beta_ij = exp(-4 + 4 Z_ij), Z standard normal, the
 //     diagonal kept, drawn once for the environment;
 //   - a boost b_i = 1 + (beta x)_i / N; a join of type i at rate kf rho_i N b_i and a leave at
-//     kb x_i b_i, both with b_i taken at the assembly as it stands (the published form);
+//     kb x_i b_i, both with b_i taken at the assembly as it stands (the preprint's single-event form);
 //     kf = 1e-2, kb = 1e-4, rho_i = 0.01 held constant;
 //   - a start at 40 molecules of 40 types; growth to 80 by one molecule at a time, each chosen in
 //     proportion to every rate; then an exact half drawn without replacement goes to the first
@@ -120,7 +120,7 @@ const runs = LINEAGES.map((spec) => {
     label: spec.label,
     environment: "environment-1",
     mode: "single lineage",
-    law: { name: "the published form", form: "single-event", engine_name: null, says: "The catalytic boost is taken at the assembly as it stands, for a join and a leave alike, as the preprint states it. (The engine's design note, on main and decided (D192), names this form cells.member_catalysis_at_state@1; it is not built yet, so it is no law of the engine.)" },
+    law: { name: "the preprint's single-event form", form: "single-event", engine_name: null, says: "The catalytic boost is taken at the assembly as it stands, for a join and a leave alike, as the preprint states it (its appendix F)." },
     engine_models: [],
     revision: null,
     rules: { start: "40 molecules of 40 types, drawn uniformly without replacement", events: "one molecule joins or leaves at a time, chosen in proportion to every rate", fission_size: SIZE, split: "an exact half, drawn without replacement, to the first daughter", continues: "the first daughter" },

@@ -1,0 +1,506 @@
+#!/usr/bin/env node
+// Checks the origin-of-life view on the map's page (src/lenses/lineage.js, mounted by
+// src/lenses/lineage_entry.js through src/ui/entry_views.js) with real pointer and key input,
+// through the DevTools protocol, in the manner of tools/check_laws.mjs:
+//
+//   main     entry=gard shows the view in the first tab's place ("Origin of life"), playing the
+//            marked example as the page opens it, after the founder has gathered. The example's
+//            mark stands on the picture, uncovered, at every level chosen on the rail, and in the
+//            legend's note; the page's one timeline plays and pauses by its button and by the
+//            space bar, and a drag on it moves the clock; the card's Similarity select and its
+//            packing answer; no select offers the two forms of the law (an example is never one of
+//            a pair); a real press on a lipid's head chooses its type, and ] steps a fission. The
+//            Laws library and back: the view plays again as it was, and nothing of it stays on the
+//            library. The Cell view opened after it is as the Cell view opened alone.
+//   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
+//            example's mark stands clear of the card, a molecule seeping in starts inside the
+//            frame, and at the Lineages level the names that say what the parts are stand.
+//   address  entry=gard&scale=<level> opens the view at that level; still=1 holds it still;
+//            select=assembly:fission:<run>:<k> opens on that fission with its panel; play=1;
+//            lens=laws&entry=gard and back.
+//   pair     on a check-only scene whose GARD lists a test's own two made-up runs of one world, one
+//            of each form of the law (tests/fixtures/assembly-forms/forms.json, served to the page
+//            by the check itself), the card offers the two forms under one clock, and choosing
+//            them shows two lineages, each named by its run and its form. The published page never
+//            carries such a scene.
+//   frames   no checks: the stage's own frame on the card while the view plays, by turns with the
+//            map's chrome shown and hidden, at the window's size; written to the log.
+//
+//   node tools/check_origin.mjs [OUT_DIR]
+//
+// Set by the environment: CASE (main, phone, address, pair or frames; main unless set), THEME
+// (dark), WIDTH and HEIGHT, NAME (what the pictures are called in OUT_DIR). One browser at a time:
+// it takes the lock in tools/lib/browser_lock.mjs.
+
+import { spawn } from "node:child_process";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
+import { createServer } from "./serve.mjs";
+import { acquireBrowser } from "./lib/browser_lock.mjs";
+import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
+
+const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
+if (outDir) await mkdir(outDir, { recursive: true });
+const CASE = process.env.CASE || "main";
+const PHONE = CASE === "phone";
+const WIDTH = Number(process.env.WIDTH || (PHONE ? 400 : 1400)), HEIGHT = Number(process.env.HEIGHT || (PHONE ? 800 : 900));
+const NAME = process.env.NAME || `origin-${CASE}`;
+const EXAMPLE = "Example: invented numbers · not a run of Cells' engine";
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const results = [];
+const check = (name, ok, detail = "") => {
+  results.push(Boolean(ok));
+  console.log(`${ok ? "pass" : "FAIL"}  ${name}${detail ? `  (${detail})` : ""}`);
+};
+const note = (text) => console.log(`note  ${text}`);
+const pageLog = [];
+
+// The pair's scene: the page's own, with GARD's runs being the test's two made-up runs (served below, never published).
+const FORMS = path.join(ROOT, "tests", "fixtures", "assembly-forms", "forms.json"), FORMS_PATH = "models/gard/forms.json";
+let scene = process.env.CHECK_SCENE || DEFAULT_SCENE;
+if (CASE === "pair") {
+  const raw = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
+  const gard = raw.models.find((model) => model.id === "gard");
+  // The scene's own run stays listed (the page's server serves what it lists); the view is handed the test's file first.
+  gard.runs = [{ file: "data/origin/example-run.json", label: "A test's two made-up runs", kind: "development", path: FORMS_PATH }];
+  scene = path.join(outDir || path.join(ROOT, "out", "check-origin"), "pair-scene.json");
+  await mkdir(path.dirname(scene), { recursive: true });
+  await writeFile(scene, JSON.stringify(raw));
+}
+
+const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 30) * 60 * 1000 });
+const server = createServer({ offline: true, scene, runs: DEFAULT_RUNS, log: (line) => pageLog.push(line) });
+await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+const base = `http://127.0.0.1:${server.address().port}/`;
+const chrome = spawn(
+  process.env.CHROME || "google-chrome",
+  ["--headless=new", `--user-data-dir=${release.profile}`, "--disable-breakpad", "--no-first-run", "--no-sandbox", "--mute-audio", "--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", `--window-size=${WIDTH},${HEIGHT}`, "--remote-debugging-port=0", "about:blank"],
+  { stdio: ["ignore", "ignore", "pipe"] }
+);
+let failed = null, socket = null;
+try {
+  const endpoint = await new Promise((resolve, reject) => {
+    let text = "";
+    chrome.stderr.on("data", (chunk) => {
+      text += chunk;
+      const match = text.match(/DevTools listening on (ws:\/\/\S+)/);
+      if (match) resolve(match[1]);
+    });
+    setTimeout(() => reject(new Error("Chrome did not report a DevTools address")), 30000);
+  });
+  socket = new WebSocket(endpoint);
+  await new Promise((resolve, reject) => ((socket.onopen = resolve), (socket.onerror = reject)));
+  let nextId = 1;
+  const waiting = new Map(), events = new Set();
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.method) for (const listener of events) listener(message);
+    const entry = waiting.get(message.id);
+    if (!entry) return;
+    waiting.delete(message.id);
+    if (message.error) entry.reject(new Error(message.error.message));
+    else entry.resolve(message.result);
+  };
+  const send = (method, params = {}, sessionId) =>
+    new Promise((resolve, reject) => {
+      const id = nextId++;
+      waiting.set(id, { resolve, reject });
+      socket.send(JSON.stringify({ id, method, params, sessionId }));
+    });
+  const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+  const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
+  const page = (method, params) => send(method, params, sessionId);
+  await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: PHONE });
+  if (process.env.THEME === "dark") await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
+  await page("Page.enable");
+  await page("Page.addScriptToEvaluateOnNewDocument", {
+    source: `window.__pageErrors = []; addEventListener("error", (event) => __pageErrors.push(String(event.error?.stack || event.message))); addEventListener("unhandledrejection", (event) => __pageErrors.push("rejection: " + String(event.reason?.stack || event.reason)));`,
+  });
+  if (CASE === "pair") {
+    // The test's own runs, handed to the page where it asks for GARD's run file.
+    const body = Buffer.from(await readFile(FORMS)).toString("base64");
+    await page("Fetch.enable", { patterns: [{ urlPattern: `*${FORMS_PATH}` }] });
+    events.add((message) => {
+      if (message.method !== "Fetch.requestPaused" || message.sessionId !== sessionId) return;
+      page("Fetch.fulfillRequest", { requestId: message.params.requestId, responseCode: 200, responseHeaders: [{ name: "Content-Type", value: "application/json" }], body }).catch(() => {});
+    });
+  }
+  const evaluate = async (expression) => {
+    const reply = await page("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+    if (reply.exceptionDetails) throw new Error(reply.exceptionDetails.exception?.description || reply.exceptionDetails.text);
+    return reply.result.value;
+  };
+  const V = "document.querySelector('cells-viewer')", L = `${V}.current`;
+  const mouse = (type, x, y, extra = {}) => page("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons: 1, clickCount: 1, ...extra });
+  const click = async (x, y, wait = 700) => {
+    await mouse("mouseMoved", x, y, { button: "none", buttons: 0 });
+    await mouse("mousePressed", x, y);
+    await mouse("mouseReleased", x, y, { buttons: 0 });
+    await sleep(wait);
+  };
+  const KEYS = { " ": [32, "Space"], "]": [221, "BracketRight"], Escape: [27, "Escape"] };
+  const key = async (name, wait = 600) => {
+    const [code, keyCode] = KEYS[name];
+    await page("Input.dispatchKeyEvent", { type: "keyDown", key: name, code: keyCode, windowsVirtualKeyCode: code, text: name === " " ? " " : undefined });
+    await page("Input.dispatchKeyEvent", { type: "keyUp", key: name, code: keyCode, windowsVirtualKeyCode: code });
+    await sleep(wait);
+  };
+  /** The middle of what an expression finds in the viewer's shadow root, if it is on the screen and nothing lies over it. */
+  const placeOf = (expression) =>
+    evaluate(`(() => { const root = ${V}.shadowRoot, el = ${expression}; if (!el) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); if (!r.width || !r.height) return null; const x = r.left + r.width / 2, y = r.top + r.height / 2; const top = root.elementFromPoint(x, y); return top && (top === el || el.contains(top) || top.getRootNode()?.host === el) ? { x, y, words: el.textContent } : null; })()`);
+  const until = async (test, tries = 120) => {
+    for (let k = 0; k < tries; k++) {
+      if (await evaluate(test).catch(() => false)) return true;
+      await sleep(250);
+    }
+    return false;
+  };
+  const shot = async (name) => {
+    if (!outDir) return;
+    await evaluate(`new Promise((done) => { ${V}.stage.invalidate(); requestAnimationFrame(() => requestAnimationFrame(done)); })`);
+    await sleep(300);
+    const { data } = await page("Page.captureScreenshot", { format: "png" });
+    await writeFile(path.join(outDir, `${name}.png`), Buffer.from(data, "base64"));
+    note(`wrote ${path.join(outDir, `${name}.png`)}`);
+  };
+  /** Open the page; with a model system named, wait for its own view (not the card that stands in while its run files are read). */
+  const open = async (query, view = /entry=gard/.test(query) && !/lens=(?!cell)/.test(query)) => {
+    await page("Page.navigate", { url: `${base}?${query}` });
+    const up = await until(view ? `${L}?.id === "origin"` : `Boolean(${V}?.current)`, 240);
+    await sleep(1200);
+    return up;
+  };
+  const state = () =>
+    evaluate(`(() => {
+      const v = ${V}, root = v.shadowRoot, lens = v.current, panel = root.querySelector("cells-panel"), first = root.querySelector('.switch [data-lens="cell"]');
+      return { lens: v.state.lens, model: v.state.model, view: lens?.id || null, level: lens?.level || null, selected: v.state.selected, playing: Boolean(lens?.player?.playing), time: lens?.player ? +lens.player.time.toFixed(3) : null,
+        gathering: Boolean(lens?.sides?.[0]?.layout?.gathering), tab: first ? { words: first.textContent, pressed: first.getAttribute("aria-pressed") } : null,
+        panel: panel && !panel.hidden ? panel.textContent : "", rail: [...root.querySelectorAll(".rail button, .rail [data-scale]")].map((b) => b.textContent.trim()).filter(Boolean),
+        railTitle: root.querySelector(".rail-title")?.textContent || null, timeline: (() => { const t = root.querySelector("cells-timeline"); return t ? { shown: !t.hidden, bound: t.player === lens?.player } : null; })(),
+        legend: root.querySelector("cells-legend")?.textContent || "", insets: v.stage?.insets || {} };
+    })()`);
+  /** The example's mark on the picture: shown, inside the window, under the bar, and no card of the page over it. */
+  const mark = () =>
+    evaluate(`(() => { const v = ${V}, root = v.shadowRoot, labels = [...root.querySelectorAll(".labels .label")].filter((el) => el.textContent === ${JSON.stringify(EXAMPLE)}); const el = labels[0]; if (!el) return { count: 0 }; const r = el.getBoundingClientRect(), o = v.getBoundingClientRect(); const box = { left: r.left - o.left + 4, top: r.top - o.top + 2, right: r.right - o.left - 4, bottom: r.bottom - o.top - 2 }; const bar = root.querySelector(".bar").getBoundingClientRect(); const cards = v.blockedRects(); const over = cards.filter((c) => box.left < c.right && box.right > c.left && box.top < c.bottom && box.bottom > c.top); return { count: labels.length, off: el.classList.contains("is-off"), inside: r.left >= o.left && r.right <= o.right && r.top >= o.top && r.bottom <= o.bottom, uncovered: over.length === 0 && r.top >= bar.bottom - 2, box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], over: over.map((c) => [Math.round(c.left), Math.round(c.top), Math.round(c.right), Math.round(c.bottom)]), bar: Math.round(bar.bottom) }; })()`);
+  const markShows = (m) => m.count === 1 && !m.off && m.inside && m.uncovered;
+  /** The legend's note: there, and in the legend's visible box (not below its fold, nor under the timeline). */
+  const noteShows = () =>
+    evaluate(`(() => { const root = ${V}.shadowRoot, legend = root.querySelector("cells-legend"), note = legend?.querySelector(".legend-note, .legend-key-note"); if (!legend || legend.hidden || !note) return { there: false }; const box = legend.getBoundingClientRect(), n = note.getBoundingClientRect(), t = root.querySelector("cells-timeline"); const tl = t && !t.hidden ? t.getBoundingClientRect() : null; let clip = box; for (let el = note.parentElement; el && el !== legend.parentElement; el = el.parentElement) { const s = getComputedStyle(el); if (/(auto|scroll|hidden)/.test(s.overflowY)) { const r = el.getBoundingClientRect(); clip = { top: Math.max(clip.top, r.top), bottom: Math.min(clip.bottom, r.bottom) }; } } const top = root.elementFromPoint(n.left + n.width / 2, n.top + Math.min(n.height - 2, 8)), bottom = root.elementFromPoint(n.left + n.width / 2, n.bottom - 4); const inView = n.top >= clip.top - 1 && n.bottom <= clip.bottom + 1 && n.height > 0 && [top, bottom].every((el) => el && (el === note || note.contains(el))); return { there: true, inView, words: note.textContent.slice(0, 60), note: [Math.round(n.top), Math.round(n.bottom)], clip: [Math.round(clip.top), Math.round(clip.bottom)] }; })()`);
+  /** Choose a level by a real press on its rail button (on a phone the rail opens first). */
+  const level = async (id) => {
+    if (PHONE) {
+      const toggle = await placeOf(`root.querySelector(".rail-toggle")`);
+      if (toggle) await click(toggle.x, toggle.y, 500);
+    }
+    const label = await evaluate(`${L}.levels().find((item) => item.id === ${JSON.stringify(id)})?.label`);
+    const at = await placeOf(`[...root.querySelectorAll(".rail button")].find((b) => b.textContent.trim() === ${JSON.stringify(label)})`);
+    if (at) await click(at.x, at.y, 2200);
+    return Boolean(at);
+  };
+  const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3), fog: Boolean(st.scene.fog), children: st.scene.children.length }; })()`);
+
+  if (CASE === "main" || CASE === "phone") {
+    // ---------------------------------------------------------- the view in the first tab's place, playing the marked example
+    check("entry=gard opens the origin-of-life view in the first tab's place", await open("entry=gard"));
+    let s = await state();
+    check(`the first tab names it (${PHONE ? "its short name" : "Origin of life"}), pressed`, s.tab?.pressed === "true" && (PHONE ? /Origin$/.test(s.tab.words) : /Origin of life/.test(s.tab.words)), JSON.stringify(s.tab));
+    check("its levels are on the rail, under Level", s.railTitle === "Level" && (PHONE || ["Molecules", "One assembly", "Population", "Lineages"].every((name) => s.rail.includes(name))), JSON.stringify([s.railTitle, s.rail]));
+    check("the page's one timeline is the view's", s.timeline?.shown && s.timeline.bound, JSON.stringify(s.timeline));
+    check("at the run's start the founder gathers, and the clock stands", s.gathering && s.time === 0, JSON.stringify([s.gathering, s.time]));
+    await shot(`${NAME}-gathering`);
+    check("once gathered, the page plays the marked example by itself", await until(`${L}.player.playing && ${L}.player.time > 0.05`, 80), JSON.stringify(await state()));
+    s = await state();
+    check("the legend's note gives the example's mark and the picture's own words", s.legend.includes(EXAMPLE) && /No law of Cells computes how the lipids move and pack/.test(s.legend), s.legend.slice(0, 200));
+    check("no choice offers the two forms of the law: the example is never one of a pair", !(await evaluate(`Boolean(${V}.shadowRoot.querySelector('[data-choice="pair"]'))`)));
+    if (PHONE) {
+      const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, bar = root.querySelector(".bar") || root.querySelector("header"); const buttons = [...root.querySelectorAll(".switch button")]; const tops = buttons.map((b) => Math.round(b.getBoundingClientRect().top)); const list = root.querySelector(".index-button, [aria-controls='cells-index']"); return { tops, list: list ? Math.round(list.getBoundingClientRect().top) : null, height: Math.round((bar || root.querySelector(".switch")).getBoundingClientRect().height), words: buttons.map((b) => b.textContent) }; })()`);
+      check("the first tab's short name keeps the bar to one row", new Set([...bar.tops, ...(bar.list === null ? [] : [bar.list])]).size <= 1 || Math.max(...bar.tops, bar.list ?? 0) - Math.min(...bar.tops, bar.list ?? 0) < 20, JSON.stringify(bar));
+    }
+
+    // ---------------------------------------------------------- the example's mark, at every level, playing and still
+    for (const id of ["molecules", "population", "lineage", "assembly"]) {
+      const pressed = await level(id);
+      await sleep(600);
+      const m = await mark();
+      s = await state();
+      check(`the example's mark stands on the picture, uncovered, at ${id} (chosen on the rail)`, pressed && s.level === id && markShows(m), JSON.stringify([pressed, s.level, m]));
+      // On a phone the legend stands folded under its title: it is opened as a visitor opens it, and closed again.
+      const folded = PHONE && (await evaluate(`${V}.shadowRoot.querySelector("cells-legend .legend-toggle")?.getAttribute("aria-expanded") === "false"`));
+      const fold = folded ? await placeOf(`root.querySelector("cells-legend .legend-toggle")`) : null;
+      if (fold) await click(fold.x, fold.y, 700);
+      const n = await noteShows();
+      check(`and the legend's note, with the mark, is in the legend's view at ${id}${PHONE ? " (the legend opened)" : ""}`, n.there && n.inView && n.words.startsWith(EXAMPLE), JSON.stringify(n));
+      if (fold) {
+        const again = await placeOf(`root.querySelector("cells-legend .legend-toggle")`);
+        if (again) await click(again.x, again.y, 600);
+      }
+      if (id !== "assembly") await shot(`${NAME}-${id}`);
+    }
+    await evaluate(`${L}.player.pause()`);
+    await sleep(500);
+    check("and still", markShows(await mark()), JSON.stringify(await mark()));
+
+    // ---------------------------------------------------------- the timeline: its button, the space bar, a drag
+    const play = await placeOf(`root.querySelector("cells-timeline .tl-play")`);
+    if (play) await click(play.x, play.y, 900);
+    const t0 = (await state()).time;
+    await sleep(1500);
+    s = await state();
+    check("the timeline's button plays", play && s.playing && s.time > t0, JSON.stringify([Boolean(play), s.playing, t0, s.time]));
+    if (play) await click(play.x, play.y, 600);
+    check("and pauses", !(await state()).playing);
+    await evaluate(`${V}.canvas.focus()`);
+    await key(" ", 900);
+    check("the space bar plays", (await state()).playing);
+    await key(" ", 600);
+    check("and pauses", !(await state()).playing);
+    const range = await evaluate(`(() => { const r = ${V}.shadowRoot.querySelector("cells-timeline .tl-range").getBoundingClientRect(); return { left: r.left + 8, right: r.right - 8, y: r.top + r.height / 2 }; })()`);
+    await mouse("mouseMoved", range.left + (range.right - range.left) * 0.2, range.y, { button: "none", buttons: 0 });
+    await mouse("mousePressed", range.left + (range.right - range.left) * 0.2, range.y);
+    for (let step = 1; step <= 6; step++) await mouse("mouseMoved", range.left + (range.right - range.left) * (0.2 + 0.05 * step), range.y);
+    await mouse("mouseReleased", range.left + (range.right - range.left) * 0.5, range.y, { buttons: 0 });
+    await sleep(1200);
+    s = await state();
+    check("a drag on the timeline moves the clock (to about the middle of 120 fissions)", s.time > 45 && s.time < 75, String(s.time));
+    await shot(`${NAME}-dragged`);
+
+    // ---------------------------------------------------------- the card's choices (on a phone the page shows a card's packing, and keeps its other choices to a wide window)
+    const similarity = PHONE ? null : await placeOf(`root.querySelector('[data-choice="compare"]')`);
+    if (!PHONE) check("the card offers Similarity as a select", Boolean(similarity), JSON.stringify(similarity));
+    else check("on a phone the page keeps the card's other choices to a wide window (its marks are not shown there)", await evaluate(`(() => { const el = ${V}.shadowRoot.querySelector('[data-choice="compare"]'); return Boolean(el) && el.closest(".card-marks").getClientRects().length === 0; })()`));
+    // A select is chosen with its own keys, as a visitor does without the list open: focused, then the arrow down.
+    const pick = async (selector) => {
+      await evaluate(`${V}.shadowRoot.querySelector(${JSON.stringify(selector)}).focus()`);
+      await page("Input.dispatchKeyEvent", { type: "keyDown", key: "ArrowDown", code: "ArrowDown", windowsVirtualKeyCode: 40 });
+      await page("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowDown", code: "ArrowDown", windowsVirtualKeyCode: 40 });
+      await sleep(700);
+    };
+    if (similarity) {
+      await pick('[data-choice="compare"]');
+      check("the arrow key on Similarity chooses 'the parent against the other daughter', and the view compares that", (await evaluate(`${L}.compare`)) === "other", await evaluate(`${L}.compare`));
+      const composition = await placeOf(`root.querySelector("#cells-mark")`);
+      if (composition) await pick("#cells-mark");
+      check("the arrow key on Composition chooses the strip, and the view draws it", (await evaluate(`${L}.composition`)) === "strip", await evaluate(`${L}.composition`));
+      await evaluate(`(() => { const root = ${V}.shadowRoot; for (const [selector, value] of [['[data-choice="compare"]', "carried"], ["#cells-mark", "wheel"]]) { const select = root.querySelector(selector); select.value = value; select.dispatchEvent(new Event("change", { bubbles: true })); } })()`);
+      await sleep(400);
+    }
+    const cluster = await placeOf(`[...root.querySelectorAll("#cells-view button")].find((b) => b.textContent.trim() === "Cluster")`);
+    if (cluster) await click(cluster.x, cluster.y, 900);
+    check("a real press on Cluster packs the lipids loosely", (await evaluate(`${L}.shape`)) === "cluster");
+    const micelle = await placeOf(`[...root.querySelectorAll("#cells-view button")].find((b) => b.textContent.trim() === "Micelle")`);
+    if (micelle) await click(micelle.x, micelle.y, 900);
+    check("and Micelle back", (await evaluate(`${L}.shape`)) === "micelle");
+
+    // ---------------------------------------------------------- a press on a head, and a key
+    await evaluate(`(() => { const l = ${L}; l.player.pause(); l.player.seek(30.55); })()`);
+    await sleep(1500);
+    const head = await evaluate(`(() => { const v = ${V}, l = v.current, side = l.sides[0]; const r = v.canvas.getBoundingClientRect(); const seen = side.layout.beads.filter((b) => b.pos && b.axis).map((b) => { const p = new v.stage.camera.position.constructor(...b.pos).add(side.group.position); const q = v.stage.project(p, p.clone()); return { x: r.left + q.x, y: r.top + q.y, z: q.z, type: b.type }; }).filter((b) => b.x > r.left + 20 && b.x < r.right - 20 && b.y > r.top + 80 && b.y < r.bottom - 80).sort((a, b) => a.z - b.z); return seen[0] || null; })()`);
+    if (head) await click(head.x, head.y, 1200);
+    s = await state();
+    check("a real press on a lipid's head chooses its type, and the panel says what it is", /^assembly:type:\d+$/.test(s.selected || "") && /A molecule type/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 80)]));
+    await shot(`${NAME}-type`);
+    await key("Escape");
+    await evaluate(`${V}.canvas.focus()`);
+    await key("]", 1200);
+    s = await state();
+    check("] steps to the next fission and opens it", /^assembly:fission:lineage-a:3[12]$/.test(s.selected || "") && !s.playing, JSON.stringify([s.selected, s.time]));
+    await key("Escape");
+
+    // ---------------------------------------------------------- another tab and back
+    await evaluate(`${L}.player.play()`);
+    await sleep(500);
+    const laws = await placeOf(`root.querySelector('.switch [data-lens="laws"]')`);
+    if (laws) await click(laws.x, laws.y, 2500);
+    s = await state();
+    const left = await evaluate(`(() => { const v = ${V}, root = v.shadowRoot; return { timeline: !root.querySelector("cells-timeline").hidden, level: [...root.querySelectorAll(".rail")].some((r) => !r.hidden && /Level/.test(r.textContent)), water: v.stage.scene.children.some((c) => c === v.lenses.get("model:gard")?.water?.group), labels: [...root.querySelectorAll(".labels .label")].some((el) => el.textContent === ${JSON.stringify(EXAMPLE)}) }; })()`);
+    check("on the Laws library nothing of the view stays: no timeline, no Level rail, no water, no mark", s.lens === "laws" && !left.timeline && !left.level && !left.water && !left.labels, JSON.stringify([s.lens, left]));
+    const first = await placeOf(`root.querySelector('.switch [data-lens="cell"]')`);
+    if (first) await click(first.x, first.y, 2500);
+    s = await state();
+    check("back on the first tab: the view again, playing as it was", s.view === "origin" && s.playing, JSON.stringify([s.view, s.playing, s.time]));
+
+    // ---------------------------------------------------------- the Cell view after it is the Cell view opened alone
+    if (!PHONE) {
+      await evaluate(`${V}.setEntry("human", { user: true })`);
+      await sleep(2500);
+      const after = await look();
+      await shot(`${NAME}-cell-after`);
+      await open("lens=cell&entry=human", false);
+      await sleep(1500);
+      const alone = await look();
+      check("the Cell view opened after the view is as it is opened alone: light, shade, bloom, limits, insets, fog and what stands in the scene", JSON.stringify(after) === JSON.stringify(alone), JSON.stringify([alone, after]));
+    } else {
+      // A molecule seeping in starts inside the frame on a phone.
+      await open("entry=gard");
+      const inside = await evaluate(`(async () => { const v = ${V}, l = v.current; l.hold(true); l.player.setSpeed(0.001); l.player.seek(30.2); l.sync(0); const events = l.mainRun.growthEvents(30); let j = 8; while (events[j] < 0) j++; l.player.seek(l.mainRun.timeOf(30, j)); l.sync(0); l.player.seek(l.mainRun.timeOf(30, j + 1)); l.sync(0); l.advance(0.05, 2); const side = l.sides[0], b = side.layout.beads.find((x) => x.flight < 1 && !x.leaving); if (!b) return null; const p = new v.stage.camera.position.constructor(...b.from).add(side.group.position); const q = v.stage.project(p, p.clone()); return { x: +q.x.toFixed(0), y: +q.y.toFixed(0), z: +q.z.toFixed(3), width: v.stage.width, height: v.stage.height }; })()`);
+      check("on a phone a molecule seeping in starts inside the frame", inside && inside.x >= 0 && inside.x <= inside.width && inside.y >= 0 && inside.y <= inside.height && inside.z < 1, JSON.stringify(inside));
+      await evaluate(`${L}.hold(false)`);
+      await level("lineage");
+      await sleep(800);
+      const names = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent)`);
+      check("at the Lineages level on a phone, the mark and the names of the tape, the fence and the threshold stand", names.includes(EXAMPLE) && names.some((t) => /^The tape/.test(t)) && names.some((t) => /^Similarity/.test(t)) && names.some((t) => /threshold of inheritance/.test(t)), JSON.stringify(names));
+      await shot(`${NAME}-lineage-names`);
+    }
+  } else if (CASE === "address") {
+    check("entry=gard&scale=lineage opens the view at the Lineages level", (await open("entry=gard&scale=lineage")) && (await state()).level === "lineage", JSON.stringify(await state()));
+    check("and its mark stands there", markShows(await mark()), JSON.stringify(await mark()));
+    check("entry=gard&scale=molecules at the Molecules level", (await open("entry=gard&scale=molecules")) && (await state()).level === "molecules");
+    check("entry=gard&still=1 holds it still: it does not play by itself", (await open("entry=gard&still=1")) && (await sleep(5000), !(await state()).playing), JSON.stringify(await state()));
+    check("entry=gard&select=assembly:fission:lineage-a:37 opens on that fission, held, with its panel", (await open("entry=gard&select=assembly:fission:lineage-a:37")) && (await until(`${V}.state.selected === "assembly:fission:lineage-a:37"`, 40)) && (await sleep(5000), true) && (await state()).time === 37 && !(await state()).playing && /Fission 37/.test((await state()).panel), JSON.stringify(await state()));
+    await shot(`${NAME}-select`);
+    check("entry=gard&still=1&play=1 plays when the address asks", (await open("entry=gard&still=1&play=1")) && (await until(`${L}.player.playing`, 40)));
+    // A visitor who asks for less motion: the assembly stands gathered, the page does not play it, and the mark stands at every level.
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+    await open("entry=gard");
+    await sleep(5000);
+    let s = await state();
+    check("with less motion asked for, the founder stands gathered and the page does not play by itself", !s.gathering && !s.playing && s.time === 0, JSON.stringify([s.gathering, s.playing, s.time]));
+    const marks = [];
+    for (const id of ["molecules", "lineage", "population", "assembly"]) {
+      await evaluate(`${L}.setLevel(${JSON.stringify(id)})`);
+      await sleep(1200);
+      marks.push([id, markShows(await mark())]);
+    }
+    check("and the mark stands at every level", marks.every(([, ok]) => ok), JSON.stringify(marks));
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+    check("lens=laws&entry=gard opens the library, with the view's name on the first tab", (await open("lens=laws&entry=gard", false)) && (await state()).lens === "laws" && /Origin of life/.test((await state()).tab?.words || ""), JSON.stringify(await state()));
+    const first = await placeOf(`root.querySelector('.switch [data-lens="cell"]')`);
+    if (first) await click(first.x, first.y, 400);
+    check("and pressing the first tab shows the view", await until(`${L}?.id === "origin"`, 80));
+    const before = await evaluate(`${V}.stage.renderer.getContext().isContextLost()`);
+    await evaluate(`(async () => { const ext = ${V}.stage.renderer.getContext().getExtension("WEBGL_lose_context"); ext.loseContext(); await new Promise((r) => setTimeout(r, 600)); ext.restoreContext(); await new Promise((r) => setTimeout(r, 1500)); ${V}.stage.invalidate(); })()`);
+    await sleep(1200);
+    check("a lost WebGL context comes back, the view drawing again", !before && !(await evaluate(`${V}.stage.renderer.getContext().isContextLost()`)) && (await evaluate(`${V}.stage.renderer.info.render.calls`)) > 3);
+  } else if (CASE === "pair") {
+    check("on the check-only scene, entry=gard opens the view on the test's two runs", (await open("entry=gard")) && (await evaluate(`${L}.runs.length`)) === 2);
+    const pair = await placeOf(`root.querySelector('[data-choice="pair"]')`);
+    check("the card offers the two forms of the law under one clock", Boolean(pair) && /two forms of the law/.test(await evaluate(`${V}.shadowRoot.querySelector('[data-choice="pair"]').closest("label").textContent`)), JSON.stringify(pair));
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = "pair"; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    await sleep(800);
+    await evaluate(`${L}.player.pause(); ${L}.player.seek(5.5)`);
+    await sleep(1500);
+    const labels = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent)`);
+    check("choosing them shows two lineages, each named by its run and its form", (await evaluate(`${L}.sides.length`)) === 2 && labels.some((t) => /Run S: the preprint's single-event form/.test(t)) && labels.some((t) => /Run P: the pair-consistent form/.test(t)), JSON.stringify(labels));
+    await evaluate(`${L}.player.pause(); ${L}.player.seek(6)`);
+    await sleep(1200);
+    check("under one clock: both at the same fission", JSON.stringify(await evaluate(`${L}.sides.map((side) => side.phase.k)`)) === "[6,6]");
+    check("no example's mark: these are no example", (await mark()).count === 0);
+    await shot(`${NAME}-pair`);
+  } else if (CASE === "pictures") {
+    // Pictures for a hand-over (no checks): a first page left six seconds, then each level wide in both themes, held by
+    // the view's own clock and a fixed step; the card's selects shown open as lists; the model system's panel at its
+    // notes; the Cell view after; and a phone at each level.
+    const hold = (js) => evaluate(`(async () => { const v = ${V}, l = v.current; l.hold(true); v.stage.decoration.pause("picture"); ${js}; l.sync(0); v.stage.invalidate(); await new Promise((r) => setTimeout(r, 1800)); })()`);
+    await open("entry=gard");
+    await sleep(6000);
+    for (const theme of ["light", "dark"]) {
+      await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: theme }] });
+      await open("entry=gard");
+      await sleep(4500);
+      await shot(`wide-${theme}-gathering-then-playing`);
+      await hold(`l.setLevel("assembly"); l.player.seek(30.55)`);
+      await shot(`wide-${theme}-assembly-mid-run`);
+      await hold(`l.player.seek(37 - 0.15 + 0.36 * 0.3)`);
+      await shot(`wide-${theme}-assembly-at-a-fission`);
+      for (const level of ["molecules", "population", "lineage"]) {
+        await hold(`l.setLevel(${JSON.stringify(level)}); l.player.seek(${level === "lineage" ? 96.5 : 30.55})`);
+        await sleep(600);
+        await shot(`wide-${theme}-${level}`);
+      }
+      await hold(`l.setLevel("lineage"); l.player.seek(37 - 0.15 + 0.36 * 0.3)`);
+      await shot(`wide-${theme}-lineage-at-a-fission`);
+      await hold(`l.setLevel("assembly"); l.player.seek(30.55)`);
+      await evaluate(`(() => { const selects = [...${V}.shadowRoot.querySelectorAll("#cells-view select")]; for (const select of selects) select.size = select.options.length; selects[0]?.closest("label, .card-marks")?.scrollIntoView({ block: "start" }); })()`);
+      await shot(`wide-${theme}-card-selects-open`);
+      await evaluate(`(() => { for (const select of ${V}.shadowRoot.querySelectorAll("#cells-view select")) select.size = 0; })()`);
+      if (theme === "light") {
+        await evaluate(`${V}.select("model:gard")`);
+        await sleep(1200);
+        await evaluate(`(() => { const panel = ${V}.shadowRoot.querySelector("cells-panel"); const notes = [...panel.querySelectorAll("h3, h4, summary, .panel-section-title")].find((el) => /Notes/.test(el.textContent)); notes?.scrollIntoView({ block: "start" }); })()`);
+        await shot(`wide-${theme}-panel-notes`);
+        await evaluate(`${V}.select("assembly:assembly")`);
+        await sleep(1200);
+        await shot(`wide-${theme}-panel-assembly`);
+        await evaluate(`${V}.select(null)`);
+        await evaluate(`${V}.setEntry("human", { user: true })`);
+        await sleep(3000);
+        await shot(`wide-${theme}-cell-view-after`);
+      }
+    }
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
+    await page("Emulation.setDeviceMetricsOverride", { width: 400, height: 800, deviceScaleFactor: 1, mobile: true });
+    for (const theme of ["light", "dark"]) {
+      await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: theme }] });
+      await open("entry=gard");
+      await sleep(4500);
+      await shot(`phone-${theme}-playing`);
+      for (const [level, time] of [["assembly", 30.55], ["molecules", 30.55], ["population", 30.55], ["lineage", 96.5]]) {
+        await hold(`l.setLevel(${JSON.stringify(level)}); l.player.seek(${time})`);
+        await sleep(600);
+        await shot(`phone-${theme}-${level}`);
+      }
+      await hold(`l.setLevel("assembly"); l.player.setSpeed(0.001); l.player.seek(50.5); l.sync(0); const ev = l.mainRun.growthEvents(30); let j = 8; while (ev[j] < 0) j++; l.player.seek(l.mainRun.timeOf(30, j)); l.sync(0); l.player.seek(l.mainRun.timeOf(30, j + 1)); l.sync(0); l.advance(0.35, 6)`);
+      await shot(`phone-${theme}-a-join-seeping-in`);
+    }
+  } else if (CASE === "eval") {
+    // For looking into the page while the view is built: QUERY opens, EXPR is evaluated (with v the viewer, l its lens), and said.
+    await open(process.env.QUERY || "entry=gard");
+    await sleep(Number(process.env.WAIT || 1000));
+    note(JSON.stringify(await evaluate(`(async () => { const v = ${V}, l = v.current; ${process.env.EXPR || "return null;"} })()`)));
+    if (process.env.SHOT) await shot(process.env.SHOT);
+  } else if (CASE === "frames") {
+    // The stage's own frame, waited for on the card, and the gaps between frames, while the view plays: by turns, with
+    // the map's chrome shown and hidden, in one page (a single pair taken under load misled once).
+    await open("entry=gard");
+    await sleep(5000);
+    const CHROME_PARTS = ".bar, #cells-view, cells-legend, .rail, .rail-toggle, .view-toggle, cells-timeline, .scalebar, .look-box, .caveat, .labels";
+    const hide = (on) => evaluate(`(() => { const root = ${V}.shadowRoot; let style = root.querySelector("style[data-check-frames]"); if (!style) { style = document.createElement("style"); style.dataset.checkFrames = "1"; root.append(style); } style.textContent = ${JSON.stringify(`${CHROME_PARTS} { visibility: hidden !important; }`)} ; if (!${on}) style.textContent = ""; ${V}.stage.invalidate(); })()`);
+    const measure = (setup) => evaluate(`(async () => { const v = ${V}, l = v.current; ${setup}
+      await new Promise((r) => setTimeout(r, 800));
+      const gl = v.stage.renderer.getContext(), work = [], gaps = [], own = v.stage.frame; let last = 0, going = true;
+      v.stage.frame = function (time) { const t0 = performance.now(); if (last) gaps.push(t0 - last); last = t0; own.call(this, time); gl.finish(); work.push(performance.now() - t0); };
+      const ask = () => { if (!going) return; v.stage.invalidate(); requestAnimationFrame(ask); }; ask();
+      await new Promise((r) => setTimeout(r, 2500)); going = false; v.stage.frame = own;
+      const q = (list, f) => { const a = list.slice().sort((x, y) => x - y); return +a[Math.min(a.length - 1, Math.floor(a.length * f))].toFixed(2); };
+      return { frames: work.length, frameMs: q(work, 0.5), slowTenthMs: q(work, 0.9), gapMs: q(gaps, 0.5), calls: v.stage.renderer.info.render.calls, triangles: v.stage.renderer.info.render.triangles }; })()`);
+    const ways = process.env.WAYS === "contact"
+      ? [["Lineages with contact shade", `l.setLevel("lineage"); v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Lineages without contact shade", `v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: false, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
+      : [["playing ½ a second", `l.setLevel("assembly"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["molecule by molecule", `l.player.seek(30.2); l.player.setSpeed(0.001); l.player.play();`], ["Lineages, playing ½ a second", `l.setLevel("lineage"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Molecules, playing ½ a second", `l.setLevel("molecules"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]];
+    if (process.env.WAYS === "molecules") {
+      const base = `l.setLevel("molecules"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play(); l.water.setTheme(l.palette.dark); l.plate.visible = true; l.table.group.visible = true; v.stage.dress(l.lookFor("molecules"));`;
+      const turns = [["as drawn", base], ["no caustics", `${base} l.water.uniforms.causticStrength.value = 0;`], ["no contact shade", `${base} v.stage.dress(l.lookFor("lineage"));`], ["no plate", `${base} l.plate.visible = false;`], ["no table", `${base} l.table.group.visible = false;`]];
+      for (let turn = 0; turn < 2; turn++) for (const [what, setup] of turns) note(`frames ${WIDTH}x${HEIGHT}, Molecules ${what}: ${JSON.stringify(await measure(setup))}`);
+      await measure(base);
+    } else if (process.env.WAYS === "contact") {
+      for (let turn = 0; turn < 3; turn++) for (const [what, setup] of ways) note(`frames ${WIDTH}x${HEIGHT}, ${what}: ${JSON.stringify(await measure(setup))}`);
+    } else for (const [what, setup] of ways) {
+      for (const turn of [false, true, false, true]) {
+        await hide(turn);
+        note(`frames ${WIDTH}x${HEIGHT}, ${what}, the map's chrome ${turn ? "hidden" : "shown"}: ${JSON.stringify(await measure(setup))}`);
+      }
+      await hide(false);
+    }
+  }
+  const errors = pageLog.filter((line) => /error|exception|rejection|blocked/i.test(line));
+  check("the page logged no error", errors.length === 0, errors.slice(0, 3).join(" / "));
+  const thrown = await evaluate(`(window.__pageErrors || []).slice(0, 3)`);
+  check("the page threw no error", thrown.length === 0, thrown.join(" / "));
+} catch (error) {
+  failed = error;
+} finally {
+  socket?.close();
+  const closed = new Promise((resolve) => chrome.once("close", resolve));
+  chrome.kill();
+  await Promise.race([closed, sleep(4000)]);
+  if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill("SIGKILL");
+  await Promise.race([closed, sleep(2000)]);
+  server.close();
+  release();
+}
+if (failed) {
+  console.error(`check_origin: ${failed.stack || failed}`);
+  process.exit(2);
+}
+const passed = results.filter(Boolean).length;
+console.log(`${passed} of ${results.length} checks passed`);
+process.exit(passed === results.length ? 0 : 1);

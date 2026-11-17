@@ -93,7 +93,7 @@ export function fitView(view, entry, registration = {}) {
   if (typeof view.goToScale !== "function") view.goToScale = (id) => view.setLevel?.(id);
   for (const name of ["setHover", "setIsolate", "setSelection", "setSpecies", "setAtlas", "focus", "applyPalette"]) if (typeof view[name] !== "function") view[name] = nothing;
   // The entry's own panels stay its card's, beside what the view describes of its own.
-  const card = entry?.levels?.length ? new EntryCardLens(null, null, null, entry) : null;
+  const card = entry?.levels?.length ? new EntryCardLens(null, null, null, entry, { shown: registration.label || null }) : null;
   const has = typeof view.has === "function" ? view.has.bind(view) : () => false;
   const describe = typeof view.describe === "function" ? view.describe.bind(view) : () => null;
   const sections = typeof view.sections === "function" ? view.sections.bind(view) : () => [];
@@ -163,5 +163,7 @@ export function makeEntryLens(stage, model, labels, entry, { loader = loadBeside
       card.onChrome?.();
       return null;
     });
+  // The card answers for the view while it waits: what waits on the lens shown (the address's select=, a check) waits for the view.
+  card.ready = ready;
   return { lens: card, ready };
 }

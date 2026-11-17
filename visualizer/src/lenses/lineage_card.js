@@ -52,7 +52,7 @@ export function describe(lens, id) {
         eyebrow: `${lens.set.model.label} · ${run.label}`,
         kind: "assembly",
         plain: `A lipid for each molecule: ${sizeOf(x)} molecules of ${typesHeld(x)} types at the clock's time. It grows one molecule at a time to ${run.raw.rules?.fission_size ?? "its size"}, then splits in two; one daughter carries the lineage on and the other drifts off.`,
-        note: `Drawn as lipids in water, ${lens.shape === "micelle" ? "in a micelle, heads to the water and tails in" : "in a loose cluster"}: the shape is the picture's choice. The model gives an assembly no shape, no place and no membrane; no law of Cells computes how the lipids move and pack, and the water, the free molecules' number and every size are the picture's own.`,
+        note: `Drawn as lipids in water, ${lens.shape === "micelle" ? "in a micelle, heads to the water and tails in" : "in a loose cluster"}: the shape is the picture's choice. The model gives an assembly no shape, no place and no membrane; no law of Cells computes how the lipids move and pack, and the water, the free molecules' number and every size are the picture's own. A soft halo marks a molecule moving in or out, or just come. ${lens.helpWords() || ""}`.trim(),
         facts: [...exampleFacts(lens), ...runFacts(run, lens), ["Molecules", String(sizeOf(x))], ["Types held", String(typesHeld(x))], ["Split", run.raw.rules?.split || "as the run states"], ["Carries on", run.raw.rules?.continues || "as the run states"]],
       };
     }

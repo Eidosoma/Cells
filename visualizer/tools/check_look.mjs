@@ -634,12 +634,14 @@ try {
     note(`drawn by: ${drawnBy}; two pictures of the still page are compared ${exact ? "to the last count" : "within one part in a million"}`);
     const atlas = (mode) => `(async () => { const v = ${V}; v.setLens("proteins"); await Promise.resolve(v.current.ready); await Promise.resolve(v.current.setMode?.(${JSON.stringify(mode)}, { user: true })); return v.current.mode ?? null; })()`;
     const walk = [
-      ["the Cell view", `${V}.setLens("cell")`],
+      ["the Cell view", `(() => { const v = ${V}; if (v.state.model) v.setEntry(v.state.species); v.setLens("cell"); })()`],
       ["the Protein atlas with Cells' machines", atlas("units")],
       ["the Protein atlas with the species' own proteins", atlas("own")],
       ["the Engine view", `${V}.setLens("engine")`],
       ["the Experiments view", `${V}.setLens("experiments")`],
       ["the Laws library", `${V}.setLens("laws")`],
+      // A model system's own view in the first tab's place (src/lenses/lineage_entry.js), once its run file is read.
+      ["the origin-of-life view", `(async () => { const v = ${V}; v.setEntry("gard"); v.setLens("cell"); await Promise.resolve(v.current.ready); for (let tries = 0; tries < 200 && v.current?.id !== "origin"; tries++) await new Promise((done) => setTimeout(done, 50)); })()`],
     ];
     const round = async (label) => {
       const seen = [];

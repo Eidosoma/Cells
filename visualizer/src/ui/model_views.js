@@ -5,3 +5,5 @@
 // (src/lenses/entry_card.js).
 //
 //   import "../lenses/<view>_entry.js";
+
+import "../lenses/lineage_entry.js";

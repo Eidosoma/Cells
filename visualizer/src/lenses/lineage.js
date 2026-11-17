@@ -37,8 +37,17 @@ import { describe as describePart, sections as listSections } from "./lineage_ca
 export const ORIGIN_LOOK = { rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 };
 /** Round one assembly the water's own shade (the depth inside the assembly) stands in for contact shade, which would cost a frame more. */
 export const ASSEMBLY_LOOK = { ...ORIGIN_LOOK, contact: false };
+/**
+ * Where the assembly is packed as a loose cluster rather than a micelle by itself: on a phone and with
+ * less motion, as the user first decided (docs/ORIGIN_OF_LIFE.md, "Decided", answer 2), or nowhere
+ * (the micelle everywhere, as the brief of 16 November asked: the same content on a phone, and a
+ * picture that stands). The user has been asked; turning the earlier answer back is this one line.
+ */
+export const CLUSTER_WHERE_SMALL_OR_STILL = false;
 /** The words the picture says of itself, on the picture and in the legend. */
-export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: how they look, move and pack, the water and every size are the picture's own";
+export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: their look, their motion, the water and every size are the picture's own";
+/** The same, in fewer words, for the legend's note, which must stay in view on a short window. */
+export const NOTE_WORDS = "No law of Cells computes how the lipids move and pack: that, the water and the halo are the picture's own.";
 export const GATHER_WORDS = "The first assembly gathers from the water: the picture's own, since the run starts with it made";
 
 /** The levels an entry may give this view, in order; an entry names which it has (schema, "What the lens needs from an entry"). */
@@ -53,6 +62,7 @@ export const COMPOSITION = [["wheel", "Wheel"], ["strip", "Strip"]];
 const ASSEMBLY = new THREE.Vector3(0, 1.85, 0);
 const TAPE_Y = 6.1; // the tape's middle, above the fence's tallest post
 const SPAN = 22; // the lineage's length along the scene, whatever its number of fissions
+const SPAN_NARROW = 9; // on a tall screen, so that the whole lineage is seen from the front at a phone's width
 const TOKENS = {
   lead: ["--origin-type-1", "--origin-type-2", "--origin-type-3"],
   other: "--origin-type-other", otherAlt: "--origin-type-other-2", tail: "--origin-tail", glow: "--origin-glow", lipidTail: "--origin-lipid-tail",
@@ -94,7 +104,7 @@ export class LineageLens {
     this.composition = "wheel";
     this.narrow = false;
     this.autoplay = Boolean(autoplay);
-    this.shape = "micelle";
+    this.shape = CLUSTER_WHERE_SMALL_OR_STILL && stage.reducedMotion ? "cluster" : "micelle";
     this.selected = null;
     this.hovered = null;
     this.active = false;
@@ -169,9 +179,10 @@ export class LineageLens {
     return {
       table: narrow ? [-9, 0, 9] : [-21, 0, -2],
       population: narrow ? [9, 0, 9] : [21, 0, -2],
-      lineage: { z: -6, x0: -SPAN / 2, x1: SPAN / 2 },
-      carpet: narrow ? [-3.2, 0.03, 4.4] : [-8, 0.03, -2.4],
-      map: narrow ? [3.4, 2.3, 4.4] : [8, 2.4, -2.4],
+      // On a tall screen the tape stands lower and less tall, and the carpet and the map close in, so that the whole stack fits under the page's card.
+      lineage: narrow ? { z: -6, x0: -SPAN_NARROW / 2, x1: SPAN_NARROW / 2, tapeY: 5.25, tapeHeight: 2.3 } : { z: -6, x0: -SPAN / 2, x1: SPAN / 2, tapeY: TAPE_Y, tapeHeight: 3.4 },
+      carpet: narrow ? [-2.3, 0.03, -0.9] : [-8, 0.03, -2.4],
+      map: narrow ? [2.5, 1.25, -0.9] : [8, 2.4, -2.4],
     };
   }
 
@@ -215,9 +226,9 @@ export class LineageLens {
     // The lineage's wall, carpet and map: of the first run.
     const main = this.sides[0];
     // The tape stands above the fence's posts, so that neither hides the other.
-    this.tape = new CompositionTape(this.lineageGroup, this.mainRun, { width: SPAN, height: 3.4, at: [0, TAPE_Y, places.lineage.z - 2.6] });
-    this.carpet = new SimilarityCarpet(this.lineageGroup, this.mainRun, { size: this.narrow ? 5.5 : 4.6, at: places.carpet, materials: this.materials });
-    this.map = new CompositionMap(this.lineageGroup, this.mainRun, { centre: places.map, size: this.narrow ? 1.5 : 1.6, materials: this.materials, leading: this.leading });
+    this.tape = new CompositionTape(this.lineageGroup, this.mainRun, { width: places.lineage.x1 - places.lineage.x0, height: places.lineage.tapeHeight, at: [0, places.lineage.tapeY, places.lineage.z - 2.6] });
+    this.carpet = new SimilarityCarpet(this.lineageGroup, this.mainRun, { size: this.narrow ? 3.1 : 4.6, at: places.carpet, materials: this.materials });
+    this.map = new CompositionMap(this.lineageGroup, this.mainRun, { centre: places.map, size: this.narrow ? 0.9 : 1.6, materials: this.materials, leading: this.leading });
     this.table = new CatalysisTable(this.root, this.mainEnvironment, { size: this.narrow ? 7 : 9, centre: places.table, materials: this.materials, leading: this.leading });
     // The population's place: empty glass slots, waiting for a run of one.
     this.population = new THREE.Group();
@@ -247,7 +258,8 @@ export class LineageLens {
   /** Each level shows its own place; the assembly stays in front of its lineage. */
   showLevel() {
     const level = this.level;
-    for (const side of this.sides) side.group.visible = level === "assembly" || level === "lineage";
+    // The assembly stands in front of its lineage, but on a phone, where the lineage needs the whole picture.
+    for (const side of this.sides) side.group.visible = level === "assembly" || (level === "lineage" && !this.narrow);
     this.lineageGroup.visible = level === "lineage";
     this.table.group.visible = level === "molecules";
     this.population.visible = level === "population";
@@ -279,6 +291,11 @@ export class LineageLens {
     return [this.root];
   }
 
+  /** On the map's page, the picture keeps clear of the cards on the left (its card and its legend), as the Laws library's does. */
+  get wantsLeftRoom() {
+    return true;
+  }
+
   /** The panel's sources: files of the repository, as every view gives them (the papers are named in words, in the facts). */
   sourcesOf() {
     return [{ path: "schema/ASSEMBLY_RUN.md", where: "what the view reads of a run" }, ...(this.set.example ? [{ path: "data/origin/example-run.json", where: "the example, written by tools/make_assembly_example.mjs" }] : [])];
@@ -300,7 +317,7 @@ export class LineageLens {
     this.level = id;
     this.showLevel();
     if (this.active) {
-      this.stage.dress?.(id === "assembly" ? ASSEMBLY_LOOK : ORIGIN_LOOK);
+      this.stage.dress?.(this.lookFor(id));
       this.limit();
       this.stage.rig?.flyTo?.(this.homeView());
     }
@@ -321,24 +338,26 @@ export class LineageLens {
         marks: { label: "Composition", options: COMPOSITION, active: this.composition },
         compare: { label: "Similarity", options: COMPARE.map((item) => [item.id, item.label]), active: this.compare },
         pair: this.pairRuns ? { label: "The two forms of the law, under one clock", options: [["one", this.mainRun.label], ["pair", `${this.pairRuns[0].label} and ${this.pairRuns[1].label}`]], active: this.pair ? "pair" : "one" } : null,
-        text: [example, this.set.model.plain, this.entry?.modelled?.text || "Nothing of this model is in Cells' engine."].filter(Boolean).join(" "),
+        text: [example ? `${example}.` : null, this.set.model.plain, this.entry?.modelled?.text || "Nothing of this model is in Cells' engine."].filter(Boolean).join(" "),
         sources: this.sourcesOf(),
       },
       legend: {
         title: lipids ? "Molecules, as lipids" : "Molecule types",
         example,
+        // Each level keys what it draws, in few words, so that the note below stays in view.
         items: [
-          ...this.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: `${types[type]}: ${["a blue", "an orange", "a green"][slot]} head, a ${FORMS[slot]}`, swatch: `origin-type-${slot + 1}` })),
-          { label: `the other ${others} types: a round grey head`, swatch: "origin-type-other" },
-          ...(lipids ? [
-            { label: "tails, the same for every type: inward, away from the water", swatch: "origin-tail" },
-            { label: "free molecules: the supply, which the run holds fixed; how many are drawn is the picture's", swatch: "origin-free" },
-            { label: "a soft halo: a molecule moving in or out, or just come; the picture's mark of motion, not of what helped it", swatch: "origin-halo" },
+          // Each key on one line of the legend: a head's colour and form (its panel says more).
+          ...this.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: `${types[type]}: ${["blue", "orange", "green"][slot]} ${FORMS[slot].replace("soft ", "")}`, swatch: `origin-type-${slot + 1}` })),
+          { label: `${others} others: round, grey`, swatch: "origin-type-other" },
+          ...(this.level === "assembly" ? [
+            { label: "tails: alike, turned in", swatch: "origin-tail" },
+            { label: "free: the run's supply", swatch: "origin-free" },
+            { label: "halo: a molecule in motion", swatch: "origin-halo" },
           ] : []),
-          ...(this.mainRun.threshold ? [{ label: `${this.mainRun.threshold.value}: the analysis's threshold, on the parent with the daughter that carries on`, swatch: "origin-threshold" }] : []),
-          { label: "bead: inherited · ring: a break (the analysis's marks)", swatch: "origin-fission" },
+          ...(this.level === "lineage" && this.mainRun.threshold ? [{ label: `${this.mainRun.threshold.value}: the analysis's threshold`, swatch: "origin-threshold" }] : []),
+          ...(this.level === "lineage" ? [{ label: "bead: inherited · ring: a break", swatch: "origin-fission" }] : []),
         ],
-        note: { text: [example ? `${example}.` : null, `${OWN_WORDS}.`, this.helpWords()].filter(Boolean).join(" ") },
+        note: { text: [example ? `${example}.` : null, NOTE_WORDS].filter(Boolean).join(" ") },
       },
       timeline: { player: this.player, eventWord: "fission" },
       stamp: [example, this.shownRuns.map((run) => `${run.label}: ${formWords(run)}`).join(" · ")].filter(Boolean).join(" · "),
@@ -347,7 +366,7 @@ export class LineageLens {
 
   /** What helped a join: shown as a brief light only where the run records it. */
   helpWords() {
-    return this.mainRun.raw.trace?.helpers ? null : "The run does not record which molecule helped a join, so no light is drawn between them.";
+    return this.mainRun.raw.trace?.helpers ? null : "No light shows what helped a join: the run does not record it.";
   }
 
   activate() {
@@ -360,7 +379,7 @@ export class LineageLens {
       stage.sun.position.set(-8, 30, 18);
       stage.sun.target?.position.set(0, 0, -3);
     }
-    stage.dress?.(this.level === "assembly" ? ASSEMBLY_LOOK : ORIGIN_LOOK);
+    stage.dress?.(this.lookFor(this.level));
     this.light();
     this.stopLook ??= stage.look?.onChange?.(() => this.active && this.light());
     this.limit();
@@ -374,6 +393,19 @@ export class LineageLens {
     }
     this.buildLabels();
     this.sync(0);
+    // Back from another view: it plays again if it was playing when the visitor left it.
+    if (this.wasPlaying) this.player.play();
+    this.wasPlaying = false;
+  }
+
+  /**
+   * The look a level asks of the stage. Contact shade only where the catalysis table's columns stand on
+   * the plate (the Molecules level): at the Lineages level it cost a frame about 1.5 ms on the card and
+   * kept the page just under 60 frames a second at 1400 by 900 (17 November 2026), and round one
+   * assembly the water's own shade stands in for it.
+   */
+  lookFor(level) {
+    return level === "molecules" ? ORIGIN_LOOK : ASSEMBLY_LOOK;
   }
 
   /** How the camera may move: all round one assembly in open water; above the plate elsewhere. */
@@ -402,6 +434,7 @@ export class LineageLens {
   deactivate() {
     const { stage } = this;
     this.active = false;
+    this.wasPlaying = this.player.playing;
     this.player.pause();
     stage.dress?.({ rich: false });
     stage.scene.remove(this.root);
@@ -419,9 +452,9 @@ export class LineageLens {
       case "molecules": return { target: new THREE.Vector3(...places.table), distance: (this.narrow ? 11 : 15) * (this.narrow ? 1.2 : 1), azimuth: 0, polar: 0.72 };
       case "population": return { target: new THREE.Vector3(places.population[0], 0.6, places.population[2]), distance: 11 * far, azimuth: 0.2, polar: 1.05 };
       case "lineage": return this.narrow
-        ? { target: new THREE.Vector3(0, 2.6, -2.5), distance: 31, azimuth: 1.05, polar: 1.18 }
+        ? { target: new THREE.Vector3(0, 5.15, -3.4), distance: 28.5, azimuth: 0.12, polar: 1.2 }
         : { target: new THREE.Vector3(0, 3.1, -4.8), distance: 30, azimuth: 0.1, polar: 1.2 };
-      default: return { target: ASSEMBLY.clone().add(new THREE.Vector3(this.narrow ? 0 : 0.35, this.narrow ? -0.2 : -0.45, 0)), distance: (this.pair ? 10.5 : 6.6) * (this.narrow ? 1.3 : 1), azimuth: 0.3, polar: 1.36 };
+      default: return { target: ASSEMBLY.clone().add(new THREE.Vector3(this.narrow || this.pair ? 0 : 0.35, this.narrow ? 0.3 : -0.45, 0)), distance: (this.pair ? 12 : 6.6) * (this.narrow ? 1.3 : 1), azimuth: this.pair ? 0.12 : 0.3, polar: 1.36 };
     }
   }
 
@@ -429,6 +462,7 @@ export class LineageLens {
     const narrow = this.stage.width < this.stage.height * 0.9;
     if (narrow === this.narrow) return false;
     this.narrow = narrow;
+    if (CLUSTER_WHERE_SMALL_OR_STILL && narrow && !this.chosenShape) this.setShape("cluster", { chosen: false });
     this.rebuild();
     return true;
   }
@@ -498,6 +532,8 @@ export class LineageLens {
     // Choosing a fission takes the clock there: the picture then shows that fission.
     const fission = next && next.match(/^assembly:fission:([^:]+):(\d+)$/);
     if (fission) {
+      // A fission chosen (by a press, a key or the address) holds the clock there: the page does not then start it by itself.
+      this.autoplayed = true;
       this.player.pause();
       this.player.seek(Number(fission[2]));
     }
@@ -513,6 +549,7 @@ export class LineageLens {
 
   /** The arrow keys: a fission on or back, by the clock. */
   step(direction = 1) {
+    this.autoplayed = true;
     this.player.pause();
     this.player.step(direction > 0 ? 1 : -1);
     this.stage.invalidate?.();
@@ -539,26 +576,29 @@ export class LineageLens {
       // An example keeps its mark on the picture at the place shown.
       const anchor = {
         assembly: ASSEMBLY.clone().add(new THREE.Vector3(0, this.narrow ? 1.75 : this.pair ? 2.3 : 1.08, 0)),
-        lineage: new THREE.Vector3(0, TAPE_Y + 2.2, z - 2.6),
+        lineage: new THREE.Vector3(0, places.lineage.tapeY + 2.2, z - 2.6),
         molecules: new THREE.Vector3(places.table[0], 3.2, places.table[2]),
         population: new THREE.Vector3(places.population[0], 2.2, places.population[2]),
       }[level];
-      this.tags.example = labels.add({ text: example, anchor, priority: 980, kind: "note label-region label-example", lift: 10 });
+      // On a phone it wraps to two short lines, so that it finds room beside the page's card.
+      this.tags.example = labels.add({ text: example, anchor, priority: 980, kind: `note label-region label-example${this.narrow ? " label-wrap" : ""}`, lift: 10 });
       this.tags.example.boost = 1000;
+      this.tags.example.home = anchor.clone();
+      this.exampleSpot = null;
     }
-    if (level === "assembly" || level === "lineage") {
-      const under = level === "assembly" ? (this.pair ? -2.05 : this.narrow ? -1.55 : -1.3) : this.pair || this.narrow ? -2.9 : -2.35;
+    if (level === "assembly" || (level === "lineage" && !this.narrow)) {
+      const under = level === "assembly" ? (this.pair ? -2.05 : this.narrow ? -1.15 : -1.3) : this.pair || this.narrow ? -2.9 : -2.35;
       this.tags.shape = add({ id: `${PREFIX}assembly`, text: level === "lineage" ? "The assembly now: the shape is the picture's choice" : this.shapeWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 520 });
       if (level === "assembly") {
         // The line on the picture that says what is the picture's own; while the founder gathers, the words for that in the shape's place.
-        this.tags.own = labels.add({ text: OWN_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.5 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
+        this.tags.own = labels.add({ text: OWN_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.45 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
         this.tags.own.boost = 900;
         this.tags.gather = labels.add({ text: GATHER_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 940, kind: "part label-own", lift: 0 });
         this.tags.gather.hidden = true;
         this.tags.free = add({ text: "free molecules: the run's supply, held fixed", anchor: ASSEMBLY.clone().add(this.narrow ? new THREE.Vector3(1.6, 3.4, -2.5) : new THREE.Vector3(4.6, 1.3, -2.4)), priority: 330, lift: 0 });
       }
       // Each run of a pair is labelled with its own law, beneath its assembly.
-      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(side.offset, -2.05, 0)), priority: 760 });
+      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(side.offset, 1.5, 0)), priority: 760, kind: "part label-wrap" });
       // At the lineages, each lineage of the pair is named too, beside its own fence.
       if (this.pair && level === "lineage") this.sides.forEach((side, index) => add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: new THREE.Vector3(this.placeAt.lineage.x1 + 0.6, 0.6, this.placeAt.lineage.z + index * 1.6), priority: 750 }));
     }
@@ -568,13 +608,15 @@ export class LineageLens {
       this.tags.carries.hidden = this.tags.other.hidden = true;
     }
     if (level === "lineage") {
-      add({ id: `${PREFIX}part:tape`, text: "The tape: each fission's parent, types down from t000", anchor: new THREE.Vector3(places.lineage.x0 + 3.2, TAPE_Y + 1.95, z - 2.6), priority: 420 });
-      add({ id: `${PREFIX}part:fence`, text: "Similarity at each fission: the run's own H", anchor: new THREE.Vector3(places.lineage.x0 + 3, 4.3, z - 0.45), priority: 430 });
+      // On a phone the same names, in fewer words, so that each fits beside the others.
+      const short = this.narrow;
+      add({ id: `${PREFIX}part:tape`, text: short ? "The tape: each fission's parent" : "The tape: each fission's parent, types down from t000", anchor: new THREE.Vector3(short ? 1.5 : places.lineage.x0 + 3.2, short ? places.lineage.tapeY - places.lineage.tapeHeight / 2 + 0.45 : places.lineage.tapeY + places.lineage.tapeHeight / 2 + 0.25, z - 2.6), priority: 420 });
+      add({ id: `${PREFIX}part:fence`, text: short ? "Similarity at each fission (the run's H)" : "Similarity at each fission: the run's own H", anchor: new THREE.Vector3(short ? 0 : places.lineage.x0 + 3, 4.3, z - 0.45), priority: 430 });
       const threshold = this.mainRun.threshold;
-      if (threshold) this.tags.sheet = add({ id: `${PREFIX}threshold`, text: `${threshold.value}: the analysis's threshold of inheritance`, anchor: new THREE.Vector3(places.lineage.x1 - 1.5, 0.95 + ((threshold.value - 0.6) / 0.4) * 3.2, z - 0.45), priority: 440 });
-      add({ id: `${PREFIX}part:spine`, text: "The lineage: the daughters that carry on", anchor: new THREE.Vector3(places.lineage.x0 + 2.5, 0.1, z + 0.9), priority: 360 });
-      add({ id: `${PREFIX}part:carpet`, text: "The carpet: H of every two grown assemblies, worked out by the view", anchor: new THREE.Vector3(places.carpet[0], 0.2, places.carpet[2] + (this.narrow ? 2.9 : 2.5)), priority: 410 });
-      add({ id: `${PREFIX}part:map`, text: "The map: axes worked out by the view, the picture's choice", anchor: new THREE.Vector3(places.map[0], places.map[1] + 2.1, places.map[2]), priority: 400 });
+      if (threshold) this.tags.sheet = add({ id: `${PREFIX}threshold`, text: short ? `${threshold.value}: the analysis's threshold of inheritance` : `${threshold.value}: the analysis's threshold of inheritance`, anchor: new THREE.Vector3(short ? places.lineage.x1 - 2.4 : places.lineage.x1 - 1.5, 0.95 + ((threshold.value - 0.6) / 0.4) * 3.2, z - 0.45), priority: 440 });
+      add({ id: `${PREFIX}part:spine`, text: short ? "The daughters that carry on" : "The lineage: the daughters that carry on", anchor: new THREE.Vector3(short ? 0 : places.lineage.x0 + 2.5, 0.1, z + 0.9), priority: 360 });
+      add({ id: `${PREFIX}part:carpet`, text: short ? "The carpet: H of every two" : "The carpet: H of every two grown assemblies, worked out by the view", anchor: new THREE.Vector3(places.carpet[0], 0.2, places.carpet[2] + (short ? 2.1 : 2.5)), priority: 410 });
+      add({ id: `${PREFIX}part:map`, text: short ? "The map: the picture's choice" : "The map: axes worked out by the view, the picture's choice", anchor: new THREE.Vector3(places.map[0], places.map[1] + (short ? 1.4 : 2.1), places.map[2]), priority: 400 });
       for (const { tip, type } of this.map.arrows) add({ id: `${PREFIX}type:${type}`, text: this.mainEnvironment.types[type], anchor: tip.clone().add(this.map.group.position), priority: 350, lift: 4 });
       for (const { name, centre } of this.map.composomes) add({ id: `${PREFIX}composome:${this.mainRun.id}:${name.id}`, text: `${name.label || name.id}: named by the run's analysis`, anchor: centre.clone().add(this.map.group.position), priority: 600 });
     }
@@ -661,8 +703,48 @@ export class LineageLens {
       if (this.tags.own) this.tags.own.hidden = this.narrow && main.layout.gathering;
     }
     this.placeSplitLabels(main);
+    this.placeExample();
     this.stage.invalidate?.();
     return moving;
+  }
+
+  /**
+   * The example's mark stands where the picture is free, whatever the level, the camera, the window
+   * or the page's cards: the first place, from the top down, under the page's bar and clear of every
+   * card that lies over the picture, as near the middle as it can. A point in the scene is found
+   * there for it, at the depth of what the camera looks at. A page that names no cards (the page of its
+   * own) has none in the way, and the mark still keeps under its bar's band.
+   */
+  placeExample() {
+    const tag = this.tags?.example, stage = this.stage, labels = this.labels;
+    if (!tag || !stage.camera || !stage.width || !stage.height || !tag.width || !labels?.keepClear) return;
+    // The cards are measured again every half second, and at once when the window or the camera changed.
+    const key = `${stage.width}x${stage.height}:${this.level}:${stage.camera.position.toArray().map((v) => v.toFixed(1)).join(",")}`;
+    this.exampleFrames = (this.exampleFrames || 0) + 1;
+    if (!this.exampleSpot || key !== this.exampleKey || this.exampleFrames > 30) {
+      this.exampleFrames = 0;
+      this.exampleKey = key;
+      this.exampleSpot = this.freeSpot(tag.width, tag.height || 22, (typeof labels.blocked === "function" && labels.blocked()) || [], (labels.keepClear?.top ?? 56) + 8);
+    }
+    const spot = this.exampleSpot;
+    if (!spot) { tag.anchor.copy(tag.home); return; }
+    const centre = this.level === "assembly" ? ASSEMBLY : this.homeView().target;
+    const depth = (this.scratch ??= new THREE.Vector3()).copy(centre).project(stage.camera).z;
+    const y = spot.y + (tag.height || 22) + (tag.lift ?? 10);
+    tag.anchor.set((spot.x / stage.width) * 2 - 1, 1 - (y / stage.height) * 2, Math.min(0.999, depth)).unproject(stage.camera);
+  }
+
+  /** The first free place, from the top down, for a box of this size: clear of the cards and inside the window. */
+  freeSpot(width, height, cards, top) {
+    const W = this.stage.width, H = this.stage.height, pad = 6;
+    const meets = (box) => cards.some((card) => box.left < card.right && box.right > card.left && box.top < card.bottom && box.bottom > card.top);
+    for (let y = top; y + height + pad < H; y += 10) {
+      for (const share of [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.86, 0.14]) {
+        const x = Math.min(W - width / 2 - pad, Math.max(width / 2 + pad, W * share));
+        if (!meets({ left: x - width / 2 - pad, top: y - pad, right: x + width / 2 + pad, bottom: y + height + pad })) return { x, y };
+      }
+    }
+    return null;
   }
 
   /** The lipids one side draws now: its assembly's, the daughter it let go, and (on the main side, round one assembly) the free molecules. */

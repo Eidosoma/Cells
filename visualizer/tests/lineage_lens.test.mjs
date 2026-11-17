@@ -9,7 +9,9 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
-import { LineageLens, LEVELS, ORIGIN_LOOK, ASSEMBLY_LOOK } from "../src/lenses/lineage.js";
+import { LineageLens, LEVELS, ORIGIN_LOOK, ASSEMBLY_LOOK, CLUSTER_WHERE_SMALL_OR_STILL } from "../src/lenses/lineage.js";
+// The packing a phone and less motion get by themselves: the micelle, or the cluster where the one line says so.
+const SMALL_OR_STILL = CLUSTER_WHERE_SMALL_OR_STILL ? "cluster" : "micelle";
 import { FINE, OPENING, LADDER } from "../src/lenses/lineage_clock.js";
 import { GLOW_CAP } from "../src/lenses/assembly_beads.js";
 import { PARTS } from "../src/lenses/lineage_card.js";
@@ -237,9 +239,9 @@ test("motion at speed: molecules fly only molecule by molecule; at fission steps
   for (const speed of [2, 8]) assert.deepEqual(watch(speed, 3), bound, `${speed}: nothing flies or glows`);
 });
 
-test("less motion: the micelle stands; nothing gathers, flies or glows, nothing eases", () => {
+test("less motion: the assembly stands; nothing gathers, flies or glows, nothing eases", () => {
   const { lens } = lensFor({ moving: false });
-  assert.equal(lens.shape, "micelle");
+  assert.equal(lens.shape, SMALL_OR_STILL);
   assert.equal(lens.sides[0].layout.gathering, false, "the founder stands gathered");
   lens.player.setSpeed(FINE);
   lens.player.play();
@@ -328,11 +330,11 @@ test("a run of another model than its entry's is refused; the threshold is a par
   assert.equal(lensFor().lens.describe("assembly:threshold").label, "The analysis's threshold, 0.9");
 });
 
-test("a tall screen: the narrow layout, the same micelle with fewer free molecules and specks, and the lineage seen at a slant", () => {
+test("a tall screen: the narrow layout, the same micelle with fewer free molecules and specks, and the lineage shorter, seen from the front", () => {
   const { lens, views } = lensFor({ width: 400, height: 860 });
   lens.update(16, 0, 16);
   assert.equal(lens.narrow, true);
-  assert.equal(lens.shape, "micelle", "on a phone the same content");
+  assert.equal(lens.shape, SMALL_OR_STILL, "on a phone the same content (or the cluster, where the one line says so)");
   const wide = lensFor().lens;
   assert.ok(lens.crowd.count < wide.crowd.count && lens.water.moteCount < wide.water.moteCount, "fewer free molecules and specks on a phone");
   assert.equal(lens.sides[0].layout.axis, 1, "on a tall screen the daughters part up and down");
@@ -341,7 +343,8 @@ test("a tall screen: the narrow layout, the same micelle with fewer free molecul
   const [carried, other] = lens.sides[0].layout.centres;
   assert.ok(carried[0] === 0 && other[0] === 0 && other[1] > carried[1], "and not across");
   lens.setLevel("lineage");
-  assert.ok(views.at(-1).azimuth > 0.6, "the lineage recedes into the screen");
+  assert.ok(views.at(-1).azimuth < 0.3 && lens.placeAt.lineage.x1 - lens.placeAt.lineage.x0 < 10, "the lineage, shorter, seen from the front, so that all of it fits a phone");
+  assert.equal(lens.sides[0].group.visible, false, "and the assembly leaves it the picture");
   const chosen = lensFor({ width: 1600, height: 1000 }).lens;
   chosen.setShape("cluster");
   chosen.stage.width = 400; chosen.stage.height = 860;
@@ -353,7 +356,9 @@ test("it asks the stage for the page's look, keeps the types' colours out of fil
   const { lens, dressed, stage } = lensFor();
   assert.deepEqual(dressed[0], ASSEMBLY_LOOK, "round one assembly the water's own shade stands in for contact shade");
   lens.setLevel("lineage");
-  assert.deepEqual(dressed.at(-1), ORIGIN_LOOK);
+  assert.deepEqual(dressed.at(-1), ASSEMBLY_LOOK, "nor at the Lineages level, where it cost a frame 1.5 ms");
+  lens.setLevel("molecules");
+  assert.deepEqual(dressed.at(-1), ORIGIN_LOOK, "contact shade where the table's columns stand on the plate");
   assert.equal(lens.lipid.heads.toneMapped, false, "a head's colour is its type's, as the legend shows it");
   assert.equal(lens.materials.lead.toneMapped, false);
   assert.equal(lens.materials.ring.toneMapped, false);

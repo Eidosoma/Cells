@@ -28,8 +28,8 @@ A part's id of a view's own (`laws:…`) opens that view from any other, so
 `select=laws:kir2p1_mh2@1` works without `lens=`.
 
 A view can also stand on a page of its own (`node tools/build_view_page.mjs <view>`):
-the origin-of-life view below does, until it is on this page, and the Laws library has
-such a page beside its place here.
+the Laws library and the origin-of-life view each have such a page beside their place
+here.
 
 Three things are encoded, and kept apart:
 
@@ -220,6 +220,9 @@ must bve configurable as well based on our different species as we add them".
   its card says what it is. The address names any entry: `entry=gard` or `entry=syn3a`
   (`species=` and `atlas=` still work), and `cell=<type>` names a cell type of a species, once a
   species has more than one.
+- **GARD has a view of its own here** (`src/lenses/lineage.js`, registered by
+  `src/lenses/lineage_entry.js`): lipids in water, playing a marked example. See "Origin of
+  life" below.
   This is the viewer's switch; the engine has no organism switch.
 - **Each species' own proteins** stand on shelves in the protein atlas
   (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
@@ -464,13 +467,16 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
 
-## Origin of life (a preview, not on this page yet)
+## Origin of life
 
-GARD's assembly has a view of its own (`src/lenses/lineage.js`). It stands alone on a
-preview page (`node tools/build_view_page.mjs lineage`) and is not on the map's page yet.
-The user asked for it as "a new 'species' type", and to make it "visually amazing": "lets
-simulate the self assembly of the lipids (visuall for now but maybe law later), and the
-different chemicals seeping in and out, and the split".
+GARD's assembly has a view of its own (`src/lenses/lineage.js`), on this page since 17
+November 2026: choosing "GARD assembly" under "Origin of life" in the switch, or
+`entry=gard` in the address, shows it in the first tab's place (`src/lenses/
+lineage_entry.js` registers it through `src/ui/entry_views.js`). It also stands alone on
+a page of its own (`node tools/build_view_page.mjs lineage`). The user asked for it as "a
+new 'species' type", and to make it "visually amazing": "lets simulate the self assembly
+of the lipids (visuall for now but maybe law later), and the different chemicals seeping
+in and out, and the split"; and of the example: "yes lets play the marked example".
 
 - **What is drawn.** One assembly as lipids in water, a lipid for each molecule, whose
   head's form and colour say its type. At a run's start the first assembly gathers from
@@ -484,8 +490,22 @@ different chemicals seeping in and out, and the split".
 - **One timeline** counts fissions, molecule by molecule at its slow end. The levels are
   Molecules (the table of catalysis), One assembly, Population (not drawn yet) and
   Lineages.
-- **It plays an example of invented numbers,** marked so at every level: "Example:
-  invented numbers · not a run of Cells' engine".
+- **It plays an example of invented numbers** once the first assembly has gathered,
+  marked so at every level, on the picture, in the legend and in the bar: "Example:
+  invented numbers · not a run of Cells' engine". It stands still for a visitor who asks
+  for less motion.
+- **On the page** its levels are on the rail, its clock is the page's timeline (counting
+  fissions; the space bar plays and pauses), and its card has Micelle or Cluster and the
+  Composition and Similarity selects (on a wide window). `entry=gard&scale=lineage`,
+  `select=assembly:fission:<run>:<k>` and `play=1` work from the address; `time=` is not
+  carried to it yet. The Cell view opened after it is the Cell view opened alone, and it
+  comes back whole from a lost graphics process. Its checks are `tools/check_origin.mjs`
+  (wide, dark, a short window, a phone, the address, and the pair of forms on a
+  check-only scene that no page carries).
+- **Frames** (the project's graphics card through Vulkan, 17 November 2026): every level
+  holds 16.7 ms between frames at 1400 by 900 and at 400 by 800; a frame's own work is 2
+  to 4 ms wide. Contact shade is used only at the Molecules level: at Lineages it cost
+  about 1.5 ms and dropped the page just under 60 frames a second.
 - **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md` on
   main, D192): nothing of it is in the engine. The engine will build two forms of
   catalysis, and the view shows them side by side only for two real runs of the engine of
@@ -584,6 +604,7 @@ npm run check:layers        # real clicks on a replay's quantity layers (zero, s
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged; `loss`: every view after a lost graphics process
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
+npm run check:origin        # the origin-of-life view on the page: playing, the levels, the timeline, the card, the legend's note (CASE=main|phone|address|pair)
 npm run check:laws          # the Laws library: real presses and keys, the door from the Engine view and back, a lost context (CASE=main|address|phone|text)
 npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
 npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)

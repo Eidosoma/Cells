@@ -26,6 +26,7 @@
     "check:flux": "node tools/check_cellflux.mjs",
     "check:machine": "node tools/check_machine.mjs",
     "check:laws": "node tools/check_laws.mjs",
+    "check:origin": "node tools/check_origin.mjs",
     "check:all": "node tools/check_all.mjs"
   },
   "dependencies": {

@@ -30,7 +30,7 @@ an adapter is written when the engine's first run exists. No code of the viewer 
   }],
   "runs": [{
     "id": "lineage-a", "label": "Lineage A", "environment": "environment-1", "mode": "single lineage",
-    "law": {"name": "the published form", "says": "…"},
+    "law": {"name": "the preprint's single-event form", "form": "single-event", "engine_name": null, "says": "…"},
     "engine_models": [], "revision": null,
     "rules": {"start": "…", "events": "…", "fission_size": 80, "split": "…", "continues": "…"},
     "founder": [[12, 1], [40, 1], "…"],

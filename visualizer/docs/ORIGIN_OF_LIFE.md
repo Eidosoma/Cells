@@ -94,7 +94,28 @@ awaited.
   start, the one exception to the rule of motion, said so on the picture. The preview page is built by
   `node tools/build_view_page.mjs lineage` (`src/standalone/lineage.*`).
 
-What follows is the note as it was handed over, unchanged but for these two sections and the lines
+## On the map's page, 17 November 2026
+
+- **The view is on the map's page.** Choosing GARD in the species switch (or `entry=gard` in the
+  address) shows it in the first tab's place, named "Origin of life" ("Life" on a phone, which keeps
+  the bar to one row). It plays the marked example as the page opens it, after the founder has
+  gathered, and it stands for a visitor who asks for less motion and with `still=1`.
+  - Its levels are the page's rail, under "Level". Its clock is the page's one timeline.
+  - Its legend and note are the page's legend. Its similarity is a select on the page's card.
+  - It is mounted by `src/lenses/lineage_entry.js` and one line in `src/ui/model_views.js`.
+- **The example's mark stands at the first place free of the page's cards**, under the bar, at every
+  level and window size. On a phone it wraps to stand beside the card.
+- **The pair of forms stays unseen.** No page carries two real runs, so the page offers no pair. A
+  check-only scene with a test's own two made-up runs holds it (`tools/check_origin.mjs`, `CASE=pair`).
+- **On a phone at the Lineages level**, the lineage is shorter and seen from the front, under the
+  page's card, and the assembly leaves it the picture.
+- **The micelle on a phone and with less motion** stands as built until the user answers. Turning
+  it back to the cluster of answer 2 is one line, `CLUSTER_WHERE_SMALL_OR_STILL` in
+  `src/lenses/lineage.js`.
+- **Contact shade is left to the Molecules level.** At the Lineages level it cost a frame about
+  1.5 ms on the card, and kept the page just under 60 frames a second at 1400 by 900.
+
+What follows is the note as it was handed over, unchanged but for these sections and the lines
 that state the engine's note's status.
 
 ## In short
@@ -149,9 +170,9 @@ open papers. On reading it (`e75b4b1f`):
   record holds H for the parent against each daughter.
 - **Inheritance and F12 are the analysis's,** in `validation/gard/`, so the threshold is the analysis's
   constant, not a `mark` the run writes.
-- **The toy's kernel is said to be the published form,** `cells.member_catalysis_at_state@1` in the
-  note's names (the preprint's single-event form, which the engine builds for the reference
-  comparison; D192's words are in "Status").
+- **The toy's kernel is said to be the preprint's single-event form,** `cells.member_catalysis_at_state@1`
+  in the note's names (which the engine builds for the reference comparison; D192's words are in
+  "Status").
 - **The entry's card moves to `proposed`,** since the design note is now a tracked file on a
   development branch (and later to `designed`, when the note reached main: "Status").
 - **New questions for the lead** (section 7), and one for the user (question 9: the two kernel forms
@@ -467,10 +488,10 @@ by every sketch under one clock.
   to every propensity, an exact half drawn without replacement, the first daughter carrying on (the
   preprint's version T2-02); H and the strict 0.9 (the preprint); a population kept at one size by
   removing a random other assembly at each fission (Gross and others 2014).
-- **Its kernel is the published form:** the factor b<sub>i</sub> at the current state for a join and a
-  leave alike (`cells.member_catalysis_at_state@1` in the note's names). The engine's note has an open
-  finding on this form and proposes a pair-consistent form beside it; the toy offers only the published
-  one, and the page says so without judging it.
+- **Its kernel is the preprint's single-event form:** the factor b<sub>i</sub> at the current state for
+  a join and a leave alike (`cells.member_catalysis_at_state@1` in the note's names). The engine builds
+  it for the reference comparison, beside the pair-consistent form, its own law (D192); the toy offers
+  only the preprint's form, and the page says so without judging it.
 - **The page's own:** the seed (16, picked from 30 tried because its picture shows long inherited
   stretches, breaks and a return; seeds differ widely); the one
   matrix it draws; 120 fissions; waiting times, used only to order the population's events; a population

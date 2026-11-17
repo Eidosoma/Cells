@@ -42,6 +42,13 @@ const flux = (name, env, minutes = 4) => ({ name: `flux-${name}`, tool: "check_c
 const SUITE = [
   { name: "species", tool: "check_species.mjs", minutes: 14 },
   { name: "species-model", tool: "check_species.mjs", env: { CASE: "model" }, minutes: 3 },
+  // The origin-of-life view on the map's page (tools/check_origin.mjs): wide in both themes, a phone, by address, and the pair of forms on a check-only scene.
+  { name: "origin-main", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-main" }, minutes: 2 },
+  { name: "origin-dark", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-dark", THEME: "dark" }, minutes: 2 },
+  { name: "origin-short", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-short", WIDTH: "1040", HEIGHT: "640" }, minutes: 2 },
+  { name: "origin-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "phone", NAME: "origin-phone" }, minutes: 2 },
+  { name: "origin-address", tool: "check_origin.mjs", args: [pictures], env: { CASE: "address", NAME: "origin-address" }, minutes: 2 },
+  { name: "origin-pair", tool: "check_origin.mjs", args: [pictures], env: { CASE: "pair", NAME: "origin-pair" }, minutes: 1 },
   // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, and with less
   // motion. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
   { name: "machine-main", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-main" }, minutes: 20 },

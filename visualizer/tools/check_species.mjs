@@ -284,7 +284,7 @@ if (process.env.CASE === "model") {
   const lower = (word) => word.charAt(0).toLowerCase() + word.slice(1);
   const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   // Where the stage keeps room clear, and what the Laws library has picked out.
-  const stageNow = () => evaluate(`(() => { const v = ${V}; return { left: v.stage?.insets?.left || 0, filter: v.state.lens === "laws" && v.current?.filter ? { ...v.current.filter } : null, legend: !v.shadowRoot.querySelector("cells-legend")?.hidden }; })()`);
+  const stageNow = () => evaluate(`(() => { const v = ${V}; return { left: v.stage?.insets?.left || 0, wants: Boolean(v.current?.wantsLeftRoom), filter: v.state.lens === "laws" && v.current?.filter ? { ...v.current.filter } : null, legend: !v.shadowRoot.querySelector("cells-legend")?.hidden }; })()`);
   const until = async (test, tries = 240) => {
     for (let i = 0; i < tries; i++) {
       if (await evaluate(test).catch(() => false)) return true;
@@ -384,7 +384,7 @@ if (process.env.CASE === "model") {
     s = await state();
     m = await more();
     at = await stageNow();
-    check(`${from}: back on the first tab it is the model system, with its tab's name, its rail under Level, ${card ? "its card and no legend" : "its view"}, and none of the library's room kept on the left`, m.model === gard.id && m.current === shown && m.tab === `${tab}|true` && s.rail.replace("*", "") === gard.levels.join(" ") && m.railTitle === "Level" && (!card || (s.heading === gard.label && !at.legend)) && !at.left, JSON.stringify([m, s.rail, s.heading, at]));
+    check(`${from}: back on the first tab it is the model system, with its tab's name, its rail under Level, ${card ? "its card and no legend" : "its view"}, and none of the library's room kept on the left (only what the view asks for itself)`, m.model === gard.id && m.current === shown && m.tab === `${tab}|true` && s.rail.replace("*", "") === gard.levels.join(" ") && m.railTitle === "Level" && (!card || (s.heading === gard.label && !at.legend)) && (!at.left || at.wants), JSON.stringify([m, s.rail, s.heading, at]));
   };
   try {
     await open("lens=cell");

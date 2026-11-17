@@ -17,7 +17,7 @@ export const levelId = (entry, level) => `model:${entry.id}:level:${level}`;
 
 export class EntryCardLens {
   /** `waiting`: what the page is waiting for, where the entry's own view is on its way (its run files). */
-  constructor(stage, model, labels, entry, { waiting = null, failed = null } = {}) {
+  constructor(stage, model, labels, entry, { waiting = null, failed = null, shown = null } = {}) {
     this.id = "model";
     this.stage = stage;
     this.model = model;
@@ -25,6 +25,7 @@ export class EntryCardLens {
     this.entry = entry;
     this.waiting = waiting;
     this.failed = failed;
+    this.shown = shown; // the name of the entry's own view, where that view is shown and this card answers only for its panels
     this.root = new THREE.Group();
     this.level = entry.levels.some((level) => level.id === "assembly") ? "assembly" : entry.levels[0]?.id;
     this.selected = null;
@@ -93,7 +94,7 @@ export class EntryCardLens {
         id, kind: "level", group: "biology", label: level.label, eyebrow: `${entry.label} · level`, chips,
         plain: level.shows || "",
         note: level.waits ? `It waits for ${level.waits}.` : null,
-        sections: [{ title: "Its view", items: [{ label: "Not on this page yet", lines: [this.waitingWords()] }] }],
+        sections: [{ title: "Its view", items: [this.shown ? { label: this.shown, lines: ["Shown in the first tab's place; its levels are on the rail."] } : { label: "Not on this page yet", lines: [this.waitingWords()] }] }],
       };
     }
     if (id !== entryId(entry)) return null;

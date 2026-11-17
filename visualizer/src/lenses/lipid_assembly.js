@@ -239,7 +239,10 @@ export class LipidLayout extends BeadLayout {
         const c = balls[bead.side].c, reach = bead.reach || 3.4;
         const w = norm([0, 1, 2].map((a) => bead.dir[a] * 0.6 + bead.wander[a]));
         w[2] = Math.min(w[2], 0.25);
-        bead.from = [0, 1, 2].map((a) => c[a] + w[a] * (balls[bead.side].r + reach));
+        // On a tall screen (the daughters part up and down) the frame is narrow and the page's card stands above: a molecule comes from below, inside the frame.
+        const spread = this.axis === 1 ? [0.38, 1.1, 0.7] : [1, 1, 1];
+        if (this.axis === 1) w[1] = -0.35 - 0.65 * Math.abs(w[1]);
+        bead.from = [0, 1, 2].map((a) => c[a] + w[a] * (balls[bead.side].r + reach) * spread[a]);
       }
       let pos = target, axis = normal, flex = 0.35;
       if (bead.flight < 1) {
@@ -247,7 +250,9 @@ export class LipidLayout extends BeadLayout {
           // Out into the water: it lets go, turns and drifts off.
           const f = smooth(0, 1, bead.flight);
           const c = balls[bead.side].c, out = norm([0, 1, 2].map((a) => bead.dir[a] + bead.wander[a] * 0.7));
-          const far = [0, 1, 2].map((a) => c[a] + out[a] * (balls[bead.side].r + 4.2));
+          const spread = this.axis === 1 ? [0.45, 1.1, 0.8] : [1, 1, 1];
+          if (this.axis === 1) out[1] = -0.35 - 0.65 * Math.abs(out[1]);
+          const far = [0, 1, 2].map((a) => c[a] + out[a] * (balls[bead.side].r + 4.2) * spread[a]);
           const start = bead.start || (bead.start = bead.pos ? bead.pos.slice() : target);
           pos = [0, 1, 2].map((a) => start[a] + (far[a] - start[a]) * f);
           axis = norm([0, 1, 2].map((a) => normal[a] * (1 - f) + bead.loose[a] * f));
