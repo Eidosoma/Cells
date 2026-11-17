@@ -560,7 +560,7 @@ export class TissueLineLens {
       quiet: true,
       status,
       // The record's first line of the part (its standing: development work, not judged) heads the stamp, so that it is in sight beside the pictures' captions.
-      stamp: [line?.says?.[0]?.replace(/\.$/, ""), line?.entry.label, revision ? `engine ${revision.slice(0, 8)}` : null].filter(Boolean).join(" · "),
+      stamp: [line?.says?.[0]?.replace(/\.$/, ""), line?.entry.short || line?.entry.label, revision ? `engine ${revision.slice(0, 8)}` : null].filter(Boolean).join(" · "),
       timeline: this.runs.length ? { player: this.player, eventWord: "event" } : null,
       card: line
         ? {

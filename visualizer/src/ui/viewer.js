@@ -727,6 +727,8 @@ class CellsViewer extends HTMLElement {
     const modelCard = (this.state.lens === "cell" && Boolean(chrome.card?.species?.model)) || example;
     // Its stamp (a long line of the runs it plays) is shortened clear of the card, the whole line in its title (styles.js).
     this.bar.classList.toggle("tab-example", example);
+    // A part of an example draws its pictures up to the bar, so its stamp never drops to a second row over them (styles.js).
+    this.bar.classList.toggle("tab-part", example && Boolean(this.state.part));
     this.stamp.title = example ? this.stamp.textContent : "";
     this.frame.classList.toggle("model-card", modelCard);
     // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).

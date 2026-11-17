@@ -282,6 +282,16 @@ try {
     await sleep(1500);
     s = await state();
     check("and wide again: side by side", s.columns === true, "");
+    // The bar's stamp never drops onto the pictures' heads: at a laptop's widths it stays in the bar's one row, shortened where
+    // the row is short, its first words (the part's standing) kept, the List whole.
+    for (const [width, height] of [[1280, 720], [1024, 768], [800, 760]]) {
+      await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+      await sleep(1800);
+      const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom] : null; }; const stamp = root.querySelector(".stamp"), list = root.querySelector(".bar-end .pill-button"), s = box(stamp), b = box(root.querySelector(".bar")), heads = [...root.querySelectorAll(".label-tissue-head")].map(box).filter(Boolean); return { stamp: s, words: s ? stamp.textContent : "", inRow: !s || (s[1] >= b[1] && s[3] <= b[3]), over: s ? heads.filter((h) => !(h[2] <= s[0] || h[0] >= s[2] || h[3] <= s[1] || h[1] >= s[3])).length : 0, heads: heads.length, list: Boolean(list) && list.getBoundingClientRect().right <= innerWidth && list.scrollWidth <= list.clientWidth + 1, sideways: document.documentElement.scrollWidth > innerWidth + 1 }; })()`);
+      check(`${width} by ${height}: the stamp stands in the bar's row, over none of the pictures' heads, beginning with the part's standing, the List whole`, bar.inRow && bar.over === 0 && bar.heads > 0 && bar.list && !bar.sideways && (!bar.stamp || /^Development work, not judged/.test(bar.words)), JSON.stringify(bar));
+    }
+    await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
+    await sleep(1200);
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "phone") {
     // The way in by real presses: the example's folded card opened, its door pressed.

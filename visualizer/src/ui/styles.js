@@ -478,6 +478,14 @@ cells-trace { display: grid; gap: 4px; }
    stamp is shown, and the bar's end holds only the List, which stays whole. */
 @media (min-width: 760px) { .tab-example .bar-end { max-width: calc(100% - 300px); overflow: hidden; } }
 .tab-example .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* A part of an example shown there (the tissue line): its pictures and their heads reach up to the bar, so the bar stays on
+   one line and the stamp is shortened where the line is short, its first words (the part's standing) kept. A phone shows
+   no stamp and its row of tabs scrolls, as everywhere. */
+@media (min-width: 760px) {
+  .tab-part { flex-wrap: nowrap; }
+  .tab-part .bar-end { flex: 0 1 auto; min-width: 0; max-width: none; overflow: hidden; }
+  .tab-part .switch, .tab-part .brand, .tab-part .pill-button { flex: none; }
+}
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
 .view-card:not(.run-card) > * { min-width: 0; }
