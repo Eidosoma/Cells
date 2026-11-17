@@ -467,11 +467,11 @@ user to decide:
   - It qualifies the passive-routes neutral law beside reactions, and @3's neutral permeant species,
     against analytic references.
   - It runs in under an hour on four CPUs.
-- **(b) Next, with no new feature: the "neither" condition** on the 1D line and the 2D field.
+- **(b) Next, with no new feature: the "neither" condition** on the 1D line, then the 2D field.
   - The EMT switch with a neutral miRNA on passive junction routes.
-  - Against the code's logged thresholds, 7.18e-15 and 1.89e-15 m²/s. These are from the code, not
-    printed.
-  - It needs a declared physical scale and clock for the regulatory coordinates (F6's question).
+  - A comparison with BITSEY's log at b2cb370 (7.18e-15 m²/s on the line, 1.89e-15 on the field),
+    not with the preprint, which prints only the 3D value.
+  - The lead approved it on 17 November, once the two conditions in §7 are written down.
 - **(c) After F2-F5: the tables, in the order the engine allows.**
   - Order: Table 3's line, then Table 2's field, then Table 1 with F7.
   - Cells' pump and junction laws differ from BITSEY's by design. The criteria would therefore be
@@ -486,3 +486,57 @@ user to decide:
   - whether to run BITSEY unmodified, out of process, in its own environment
     (`/mnt/workspaces/Cells/venv-bitsey`), to produce Cells' own reference outputs at the
     revision the preprint used (b2cb370), as is done for BETSE.
+
+## 7. The "neither" comparison (b): written before the search
+
+BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
+
+**1. A neutral miRNA is BITSEY's "no tricks" model** for the junction transport.
+- **What the run builds.** It calls `setup_basic_network(..., do_gate=False, do_drive_Vmem=False)`
+  (`cancer_GJ_sims/zombie.py`, lines 990-991). There is no junction voltage gate and no state-set K
+  channel.
+- **The baseline adds neither.** Part 1 of `zombie_tumor_isol` searches at once
+  (`find_min_Kd_tumorFix(1e-13, ...)`, line 1004).
+- **Every cell is the same.**
+  - Each has the same membrane coefficients (`sim.py`'s `init_big_arrays`) and the same ion seeds:
+    `disconnected_sim` resets Na 10, K 125 and Cl 55 in every cell (lines 1476-1478).
+  - The switch's species carry no charge in the voltage sum (`GRN_miRNA.py`, line 384 and
+    following).
+  - So every cell has the same voltage, and every junction's dV is exactly 0.
+- **The drift vanishes.** The junction flux is `GJ_Ith + deltaV_GJ*GJ_Gth` (`sim.py`, line 375),
+  with drift `GJ_Gth` proportional to the valence (line 623). At dV = 0 the miRNA's valence -1
+  (`GRN_miRNA.py`, line 304) contributes nothing, and the flux is Fick's, `-D dc/L` (line 624).
+- **What remains different.**
+  - BITSEY also integrates the ions, which neither drive the switch nor move the miRNA in this
+    condition.
+  - It steps with explicit adaptive Euler.
+  - Cells needs positive amounts, so seeds at 0 start at a trace.
+
+**2. The criterion, the bracket and the tolerance** (BITSEY's own, `zombie.py`):
+- **World.** A line of 25 cells (the log's "Field=1x1x25"). The first 6 cells form the tumor at the
+  corner (`tumor_size = 6`, `set_corner_tumor`).
+- **Seeds and protocol.** Tumor cells start at miR200 0, Zeb mRNA 100, ZEB 100; healthy cells at
+  100, 0, 0 (scaled coordinates). Then 500 time units uncoupled (line 1060), then coupled for
+  20,000 (line 1056).
+- **Coupling.** Junction conductance G_GJ = D x 4 pi (5 um)² / 100 nm (`RThev_GJ`). Only miR200
+  crosses.
+- **Criterion: normalized.** At the end, every cell has miR200 > Zeb mRNA + 2
+  (`healthy_snapped_rows`, line 519). Its row-spread condition is empty on a line of one-cell rows.
+- **Bracket: D in [0, 1e-13] m²/s**, BITSEY's. The upper end is run first; if it does not
+  normalize, the search stops and is reported, not widened.
+- **Tolerance.** Narrow until x2 <= 1.001 x0 (`binSearch`, line 97) and report x2, the smallest
+  normalizing D found.
+  - The bracket may be narrowed by evaluating several points per round in parallel.
+  - The criterion and the stopping rule are unchanged.
+- **The switch's constants** are `GRN_miRNA.py`'s at b2cb370, as in [EMT_REFERENCE.md](EMT_REFERENCE.md):
+  - Snail 72;
+  - du/dt = 4.2 H(z; 100/9, 3, 0.1) - 0.05 u;
+  - dm/dt = (55/24) H(z; 25/9, 2, 15) - 0.5 m;
+  - dz/dt = (1/6) m sum_i C(6,i) l_i (u/40)^i/(1 + u/40)^6 - 0.1 z, with l = 1, 0.5, 0.2 and 0.02
+    four times.
+  - Rates are per BITSEY time unit, taken as 1 s. One scaled unit is 1 uM.
+- **Step.** Each run keeps the driver's dt x rate <= 0.04 (§4).
+- **Reported.** Cells' threshold and its ratio to BITSEY's logged 7.18e-15 m²/s. Agreement is called
+  if the ratio lies within 0.95-1.05. Two engines integrating the same equations with different
+  schemes can differ near the switch's separatrix, so the band is set before the run.
+
