@@ -6,7 +6,8 @@ claim is tested once, with a planted error it must catch (D187):
    (§5.3) and the tissue world with a division and a replacement (§5.4). Planted: one world counter
    in event order, the rule §1.5 rejects.
 2. One descent shape (§6's row): a malformed descent is refused, with nothing written. Planted: a
-   key held twice, a missing end reason, a daughter born before its parent ends, and four more.
+   key held twice, a missing end reason, a daughter born before its parent ends, and five more
+   (an event id held twice among them: ids are unique within a world, event ids included).
 3. The files: every array loads with allow_pickle=False, text is fixed-width '<U', the rows come
    back as written, and equal tables give equal bytes in any row order. Planted: unsorted rows.
 4. Derived rows: the descent edges are the lives' own; a caller's descent edge is refused, and the
@@ -299,6 +300,10 @@ PLANTED_DESCENT = {
     "a replaced life without its successor": (
         lambda w: _with_life(w, "n1", predecessor="", birth_kind="template"),
         "replaced by exactly one newcomer",
+    ),
+    "an event id held twice": (
+        lambda w: dict(w, events=[*w["events"], w["events"][0]]),
+        "events event:division/first: its id is unique",
     ),
 }
 
