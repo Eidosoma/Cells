@@ -155,6 +155,11 @@ test("words that must stand: the example's mark on the picture and in the legend
   const chrome = lens.chrome();
   assert.equal(chrome.legend.example, says);
   assert.ok(chrome.stamp.includes(says) && chrome.card.text.includes(says));
+  // Of an example the form of the law is named and no more: "built for the reference comparison" is the engine's
+  // decision about a form, said only of a real run of the engine (beside an example it would read as if built).
+  assert.match(chrome.stamp, /Lineage A: the preprint's single-event form$/);
+  assert.doesNotMatch(chrome.stamp, /built|engine's own law/);
+  assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.every(([, value]) => !/built for the reference comparison/.test(String(value))));
   assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.some(([label, value]) => label === "Example" && value.startsWith(says)));
   assert.ok(shown.some((label) => /the shape is the picture's choice/.test(label.text)), "the shape is said to be the picture's");
   assert.ok(shown.some((label) => /the picture's choice/.test(label.text) && /map/i.test(label.text)), "the map's axes are said to be the picture's");

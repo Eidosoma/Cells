@@ -344,6 +344,9 @@ try {
   } else if (CASE === "address") {
     check("entry=gard&scale=lineage opens the view at the Lineages level", (await open("entry=gard&scale=lineage")) && (await state()).level === "lineage", JSON.stringify(await state()));
     check("and its mark stands there", markShows(await mark()), JSON.stringify(await mark()));
+    // A level named in the address is shown without its panel: the picture comes first (a panel would cover half a phone).
+    const named = await state();
+    check("a level named in the address opens no panel", named.selected === null && named.panel === "", JSON.stringify([named.selected, named.panel.slice(0, 80)]));
     check("entry=gard&scale=molecules at the Molecules level", (await open("entry=gard&scale=molecules")) && (await state()).level === "molecules");
     check("entry=gard&still=1 holds it still: it does not play by itself", (await open("entry=gard&still=1")) && (await sleep(5000), !(await state()).playing), JSON.stringify(await state()));
     check("entry=gard&select=assembly:fission:lineage-a:37 opens on that fission, held, with its panel", (await open("entry=gard&select=assembly:fission:lineage-a:37")) && (await until(`${V}.state.selected === "assembly:fission:lineage-a:37"`, 40)) && (await sleep(5000), true) && (await state()).time === 37 && !(await state()).playing && /Fission 37/.test((await state()).panel), JSON.stringify(await state()));

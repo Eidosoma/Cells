@@ -493,12 +493,16 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
 - **It plays an example of invented numbers** once the first assembly has gathered,
   marked so at every level, on the picture, in the legend and in the bar: "Example:
   invented numbers · not a run of Cells' engine". It stands still for a visitor who asks
-  for less motion.
+  for less motion. On a phone and with less motion the assembly is packed as a loose
+  cluster, as the user decided ("a micelle, with the cluster on a phone and where less
+  motion is asked for"); either packing can be chosen on the card. Of the example the
+  form of its law is named and no more ("the preprint's single-event form"): what the
+  engine's decision says a form is for is said only of a real run of the engine.
 - **On the page** its levels are on the rail, its clock is the page's timeline (counting
   fissions; the space bar plays and pauses), and its card has Micelle or Cluster and the
-  Composition and Similarity selects (on a wide window). `entry=gard&scale=lineage`,
-  `select=assembly:fission:<run>:<k>` and `play=1` work from the address; `time=` is not
-  carried to it yet. The Cell view opened after it is the Cell view opened alone, and it
+  Composition and Similarity selects (on a wide window). `entry=gard&scale=lineage`
+  (the level, with no panel opened), `select=assembly:fission:<run>:<k>` and `play=1`
+  work from the address; `time=` is not carried to it yet. The Cell view opened after it is the Cell view opened alone, and it
   comes back whole from a lost graphics process. Its checks are `tools/check_origin.mjs`
   (wide, dark, a short window, a phone, the address, and the pair of forms on a
   check-only scene that no page carries).

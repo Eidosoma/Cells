@@ -22,6 +22,11 @@ export const LAW_FORMS = {
   "single-event": "the preprint's single-event form, built for the reference comparison",
   "pair-consistent": "the pair-consistent form, the engine's own law",
 };
+/** The forms' names alone: what is said of a run that is not the engine's (an example), of which nothing was built. */
+export const LAW_FORM_NAMES = {
+  "single-event": "the preprint's single-event form",
+  "pair-consistent": "the pair-consistent form",
+};
 
 const isCounts = (list) => Array.isArray(list) && list.every((pair) => Array.isArray(pair) && pair.length === 2 && Number.isInteger(pair[0]) && pair[0] >= 0 && Number.isInteger(pair[1]) && pair[1] > 0);
 
@@ -322,8 +327,14 @@ export class AssemblySet {
   }
 }
 
-/** A run's form of the law, in words: the engine's name for it where the run gives one. */
+/**
+ * A run's form of the law, in words: the engine's name for it where the run gives one. What the engine's
+ * decision says a form is for ("built for the reference comparison", "the engine's own law") is said only
+ * of a real run of the engine, which names its revision and its models: beside an example of invented
+ * numbers it would read as if the engine had built it.
+ */
 export function formWords(run) {
   if (!run.form) return run.law?.name || "its law";
-  return `${LAW_FORMS[run.form]}${run.law.engine_name ? ` (${run.law.engine_name})` : ""}`;
+  const real = Boolean(run.raw?.revision && run.raw?.engine_models?.length);
+  return `${(real ? LAW_FORMS : LAW_FORM_NAMES)[run.form]}${run.law.engine_name ? ` (${run.law.engine_name})` : ""}`;
 }

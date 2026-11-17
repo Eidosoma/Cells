@@ -68,13 +68,17 @@ export class EntryCardLens {
     this.selected = this.has(id) ? id : null;
   }
 
-  /** A level of the rail: it becomes the one shown, and its panel opens. */
-  goToScale(id) {
+  /**
+   * A level of the rail: it becomes the one shown, and its panel opens. A level named in the address
+   * (`scale=`, which the viewer marks as it does an instant move) is shown without its panel: the
+   * picture comes first, and on a phone the panel would cover half of it.
+   */
+  goToScale(id, fromAddress = false) {
     if (!this.entry.levels.some((level) => level.id === id)) return;
     this.level = id;
     this.levelChosen = true; // a level the visitor or the address chose: the entry's own view opens on it
     this.onChrome?.();
-    this.onShown?.(levelId(this.entry, id));
+    if (!fromAddress) this.onShown?.(levelId(this.entry, id));
   }
 
   has(id) {
