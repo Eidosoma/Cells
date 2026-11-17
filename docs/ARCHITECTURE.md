@@ -332,6 +332,22 @@ require:
     measured cost.
   - A later two-region case tests exchange between detailed and reduced regions.
 
+#### Requirements collected for the four fields (17 November 2026)
+
+Collected for one design against three consumers (D209, L4). Nothing here designs the fields: the
+law template reserves them, and registration refuses them (`registry/laws.py`).
+- **Fuel (D174), the first consumer:** the reduced closure, one regeneration reaction and one pump,
+  declared against a small detailed network that shares its fuel amounts and pump interface (above).
+- **Machines (FR-13; MOLECULAR_MACHINES_DESIGN §10.1, §10.5):** a minimal form before M1b:
+  `represents` with its admission, so that a diagram law and D193's synthesis law cannot both be one
+  population's aggregate; `supports`, refusing an observation the representation cannot answer; the
+  envelope of `qualified`; and their manifest keys.
+- **Mitochondria (D210; MITOCHONDRIA_DESIGN, addendum C):** the fields must also sit on host
+  declarations, since the compartments declaration and the event doors set a mitochondrion's level,
+  not a law. `represents` names a population and its owner with each declaration's share, so a pool
+  beside k individuals stays admissible when the shares are disjoint and cover the whole.
+  `preserves`, `supports` and `qualified` are listed per level there.
+
 ### Reuse cases and the results gate
 
 Which cases must land with D172 and which come with their consumers is listed in the implementation
