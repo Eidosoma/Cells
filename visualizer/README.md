@@ -567,7 +567,7 @@ npm run check:shelves       # real clicks on a species' own proteins: a marker, 
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
                             # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
-npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
+npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged; `loss`: every view after a lost graphics process
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
 npm run check:laws          # the Laws library: real presses and keys, the door from the Engine view and back, a lost context (CASE=main|address|phone|text)
 npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
@@ -626,6 +626,18 @@ it used, and one gate or one before-and-after pair of pictures never mixes the t
   so they passed). The page now makes its surroundings again when a context comes back,
   as it must on a phone that puts the page away, and the look check loses a context on
   purpose to hold it, in software as on the card.
+- **A lost graphics process** is more than a lost context, and it is what really happens
+  to that first page (and to any visitor whose driver restarts): every 2D canvas comes
+  back blank, also one that was asked to stay off the card, and three.js sends a texture
+  again from the picture it holds. Until 17 November 2026 four textures were painted
+  through a canvas and kept as the canvas: the Protein atlas's membranes then lost their
+  beads and showed what lies under them, the Engine view lost its shade and its signs,
+  the Cell view its dots, until the page was loaded again (Version 11 and earlier). A
+  painted texture is now kept as its pixels (`src/core/painted.js`); a test holds that no
+  other file makes a texture from a canvas, and `check_look.mjs loss` makes every view,
+  loses the process once and holds each picture against the one before, to the last
+  count in software and within one part in a million on the card. Found by losing the
+  process on purpose in every view; the lost-context check alone had not shown it.
 - **Compared with software on the whole suite** (16 November 2026, one clean copy of
   9e3e5538): 33 scenarios and 600 checks passed in software and through Vulkan, with the
   same count in every scenario. In software 32 scenarios passed in the full run; the

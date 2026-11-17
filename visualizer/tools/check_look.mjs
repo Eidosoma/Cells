@@ -17,6 +17,7 @@
 //   views     to scale, close to the membrane, the other views, a small species, a phone
 //   motion    decoration: its clock, held from outside, and reduced motion
 //   trial     the readout behind "fps=1"
+//   loss      a lost GPU process: every view pictured, the process lost once, every view pictured again
 //   pictures  for looking, not a check: one load, then one picture for each step that the
 //             file named by STEPS lists as JSON, [{ name, run, size: [width, height, pixel ratio], clip: [x, y, width, height] }];
 //             QUERY is the address's words, WIDTH and HEIGHT the window, MOTION=1 lets it move,
@@ -36,9 +37,9 @@ import { DEFAULT_SCENE } from "./lib/build_page.mjs";
 
 const scenarios = (process.argv[2] || "look").split(",");
 const outDir = process.argv[3] ? path.resolve(process.argv[3]) : null;
-const unknown = scenarios.find((name) => !["look", "switch", "views", "motion", "trial", "pictures"].includes(name));
+const unknown = scenarios.find((name) => !["look", "switch", "views", "motion", "trial", "loss", "pictures"].includes(name));
 if (unknown !== undefined) {
-  console.error(`unknown scenario "${unknown}": look, switch, views, motion, trial or pictures`);
+  console.error(`unknown scenario "${unknown}": look, switch, views, motion, trial, loss or pictures`);
   process.exit(2);
 }
 const looking = scenarios.includes("pictures");
@@ -617,6 +618,64 @@ try {
     await frame(); // the scale bar, and the look's switch over it, come back with the first frame drawn
     s = await state();
     check("back in the Cell view the look is back, and its switch with the scale bar", s.rich && s.tone !== 0 && s.box?.length === 1 && s.box[0].startsWith("Look: Rich"), JSON.stringify([s.rich, s.tone, s.box]));
+  }
+
+  if (scenario === "loss") {
+    // A lost GPU process. One of the graphics card's back ends does it once to a fresh browser's first page,
+    // and a driver's restart does it to any visitor: the WebGL context is lost and comes back, and every 2D
+    // canvas comes back blank (17 November 2026: the Protein atlas's membranes had lost their beads, the
+    // Engine view its shade and its signs; src/core/painted.js). Every view is made, then pictured on two
+    // walks, so that the walk itself is known to give the same pictures; then the process is lost once (a
+    // browser forgives few such losses), with every view still held, and every view is pictured again.
+    await lessMotion(true);
+    await open("lens=cell&look=full");
+    const drawnBy = await evaluate(`(() => { const gl = ${V}.stage.renderer.getContext(), info = gl.getExtension("WEBGL_debug_renderer_info"); return String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); })()`);
+    exact = /swiftshader/i.test(drawnBy);
+    note(`drawn by: ${drawnBy}; two pictures of the still page are compared ${exact ? "to the last count" : "within one part in a million"}`);
+    const atlas = (mode) => `(async () => { const v = ${V}; v.setLens("proteins"); await Promise.resolve(v.current.ready); await Promise.resolve(v.current.setMode?.(${JSON.stringify(mode)}, { user: true })); return v.current.mode ?? null; })()`;
+    const walk = [
+      ["the Cell view", `${V}.setLens("cell")`],
+      ["the Protein atlas with Cells' machines", atlas("units")],
+      ["the Protein atlas with the species' own proteins", atlas("own")],
+      ["the Engine view", `${V}.setLens("engine")`],
+      ["the Experiments view", `${V}.setLens("experiments")`],
+      ["the Laws library", `${V}.setLens("laws")`],
+    ];
+    const round = async (label) => {
+      const seen = [];
+      for (const [name, go] of walk) {
+        await evaluate(go);
+        await evaluate(`Promise.resolve(${V}.current.ready)`);
+        await rest();
+        await sleep(400);
+        seen.push(await atRest());
+        if (label) await shot(`loss-${label}-${name.replace(/[^a-z]+/gi, "-").toLowerCase()}`);
+      }
+      return seen;
+    };
+    const alike = (a, b) => same(a.light, b.light) && same(a.cover, b.cover) && sameCount(a.lit, b.lit);
+    // The first walk makes each view, and a view just made is not to the last count what it is when come back to
+    // (the Cell view differed by six parts in a million): it is walked once for nothing.
+    await round(null);
+    const first = await round(null);
+    const second = await round("before");
+    check("every view draws", second.every((seen) => seen.lit > 0), JSON.stringify(second.map((seen) => seen.lit)));
+    const steady = walk.map((_, index) => alike(first[index], second[index]));
+    check("walking the views twice gives the same pictures, so a third walk can be compared", steady.every(Boolean), JSON.stringify(walk.map(([name], index) => [name, first[index].light, second[index].light])));
+    await send("Browser.crashGpuProcess", {});
+    await sleep(6000);
+    let back = false;
+    for (let tries = 0; tries < 60 && !back; tries++) {
+      back = await evaluate(`!${S}.renderer.getContext().isContextLost()`).catch(() => false);
+      if (!back) await sleep(500);
+    }
+    check("the GPU process is lost, and the page's context comes back", back);
+    await evaluate(`${S}.invalidate()`);
+    await sleep(1500);
+    const third = await round("after");
+    for (const [index, [name]] of walk.entries()) {
+      check(`${name} comes back from a lost GPU process as it was`, steady[index] && alike(second[index], third[index]), JSON.stringify([second[index], third[index]]));
+    }
   }
 
   if (scenario === "pictures") {

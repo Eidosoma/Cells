@@ -18,6 +18,7 @@
 import * as THREE from "../three.js";
 import { statusToken } from "../core/theme.js";
 import { glyphSprite, soften, enrich, jostle } from "../core/materials.js";
+import { paintedTexture } from "../core/painted.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { LookTrial } from "../core/look_trial.js";
@@ -114,14 +115,12 @@ let roundDot = null;
 /** A soft round dot for point clouds, drawn once. */
 function dotTexture() {
   if (!roundDot) {
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = 32;
-    const context = canvas.getContext("2d");
-    context.fillStyle = "#ffffff";
-    context.beginPath();
-    context.arc(16, 16, 13, 0, Math.PI * 2);
-    context.fill();
-    roundDot = new THREE.CanvasTexture(canvas);
+    roundDot = paintedTexture(32, 32, (context) => {
+      context.fillStyle = "#ffffff";
+      context.beginPath();
+      context.arc(16, 16, 13, 0, Math.PI * 2);
+      context.fill();
+    });
   }
   return roundDot;
 }
