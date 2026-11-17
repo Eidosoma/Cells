@@ -974,3 +974,6 @@ step 3 as planned.
 **For the user** (17 November): the pass at this scope, staffing within seven, `cells.modules` as
 provisional, and checkpoints across move 2. §12's items 10 and 12 are not decisions today.
 
+**Decided, 17 November (D195):** all four as proposed. A and C wait for step 0's cycle-law screen,
+and §13's owner table is redone with one owner per file before the code starts.
+

@@ -6333,6 +6333,79 @@ found:
 - **G3 and G4,** owed since D172's landing, run once with tier 3 on D188's final tree.
 - **No dates** until the core-seams pass is scoped.
 
+## D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2
+
+2026-11-17. On the four items of the core-seams design (`docs/CORE_SEAMS_DESIGN.md`, §14), the
+user: "Get adviser on those options but sounds good from my perspective, we want to focus on the
+core but in parallel". With the advisor, every default stands, with the conditions below.
+
+**1. The pass, at its scope.**
+- **The estimate is the design lane's own, not yet re-derived:** 20–31.5 agent-days plus 2–3 on
+  branch X, and about 9–13 working days elapsed.
+- **The code starts after D188's move 2.**
+- **The cycle kind (A) and the binding closure (C) wait for step 0's cycle-law screen.** The
+  screen asks whether O'Hara–Rudy's and Beard's cycles factor in A's form. A's contract rests on
+  that, and the note lists it as unverified.
+
+**2. Staffing within seven.**
+- **Each file has one owner for the whole pass.** §13's table is redone so that no file has two
+  owners, and the elapsed estimate is re-derived from it.
+- **One operators owner** does composition's M1–M5 first, then B1.
+- **An FR owner** runs FR-4 and FR-5 in parallel.
+
+**3. `cells.modules` is built as provisional.** The word "provisional" stands where contributors
+read it: the module's docstring and its docs. There is no public stability promise until a first
+outside module arrives; then the promise comes back to the user.
+
+**4. No checkpoint crosses move 2.** A checkpoint written before move 2 is refused cleanly, and the
+refusal names the tag of the tree before the move, where it restores.
+
+**In parallel now ("focus on the core but in parallel"):**
+- D188's move 2, starting with a full dry run;
+- an FR owner, for FR-4's and FR-5's tools, rehearsals and registration;
+- step 0's desk work: the cycle-law screen, the pins against F's extractions, the search for
+  worlds that refusal 4 per move would newly refuse, and one owner per file;
+- P1 and the booking probe, in scratch, once their criteria are committed.
+
+## D196: Older code is a reference until the modular engine has learned from it, then it is dropped
+
+2026-11-17. The user said to the visualizer session: "no legacy code, it will be removed - we're
+still building Cells so not really any legacy data". The user said to the lead: "when we have
+learned use the old code then we can drop it".
+
+- **`src/cells/legacy/` (D188's move 1) is a reference, not a supported surface.** No new work goes
+  into it, and it is kept only as far as the gates need.
+- **A capability's legacy code and its tests are dropped once the modular engine covers that
+  capability,** having learned from the old code. The capabilities that live only in `legacy/`
+  today:
+  - calcium handling, to be rebuilt with the human cardiac laws (D183, D184);
+  - energy and mitochondria, to be rebuilt with D193;
+  - the older families' injury law. FR-5's `patch_damage` kind already covers it.
+- **Dropping comes as one batch the user approves,** as D187 and D189 did. The tree is tagged first,
+  and a coverage check lists what each removal would lose.
+- **The viewer's map already leaves out `legacy/`.**
+
+## D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only
+
+2026-11-17. The user, on starting GARD: "and we will also do our own first principle engine, GARD is
+only for comparison".
+
+- **The origin-of-life track's engine is Cells' own,** with laws derived from physical chemistry
+  rather than an abstract catalysis matrix:
+  - thermodynamically consistent catalysis;
+  - physical assemblies;
+  - explicit sources of free energy.
+- **It runs on the general machinery built in GARD's G1 (D192),** under neutral names, not GARD's:
+  - the exact SSA kernel with keyed streams;
+  - assemblies exchanging with a held phase;
+  - fission, continuation and lineage;
+  - the stochastic thermodynamic ledger;
+  - the run records.
+- **GARD is one declared law set on that machinery, used only for comparison.** It has the preprint's
+  single-event form and the pair-consistent form, and D192's comparison (D138) stands as approved.
+- **The first-principles engine starts with a design note that gives the user options (D142)**,
+  before any of its laws are built.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
