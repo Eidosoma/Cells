@@ -58,9 +58,11 @@ PROBE_FORMAT = "cells.assembly_lineages.probe@1"
 MATRIX_SEED, FOUNDER_SEED, STREAM_SEED = 20261117, 1117, 1
 FISSIONS = 100
 BRANCH_LANDMARK, BRANCH_WORDS, BRANCH_FISSIONS = 20, tuple(range(1, 9)), 12
-# G2's registered design of the beta = 0 ensemble (relayed by the lead, 17 November 2026): four
-# types, k_join = 1, k_leave = 0.5, held activities (0.1, 0.2, 0.3, 0.4), the founder (5, 5, 5, 5),
-# no catalysis, 500 lineages observed to t = 2. The engine has no time horizon, so each lineage
+# G2's registered design of the beta = 0 ensemble: four types, k_join = 1, k_leave = 0.5, held
+# activities (0.1, 0.2, 0.3, 0.4), the founder (5, 5, 5, 5), no catalysis, 500 lineages observed
+# to t = 2. The values are read from the registered design file that make-probes writes beside
+# inputs.json (inputs.json names it), and each must equal these constants, or the role refuses.
+# The engine has no time horizon, so each lineage
 # runs to its first fission at a size it cannot reach by t = 2 (2,048; its expected size there is
 # about 54), under an event guard it cannot reach first (4,096), as the lead ruled: every event to
 # t = 2 is in its trace, and the ensemble's record says, for each lineage, that it did not stop
@@ -605,14 +607,40 @@ def ensemble_world():
     }
 
 
-def beta0_ensemble(out):
+def registered_design(inputs):
+    """The registered beta = 0 ensemble design, read from the inputs' design file and checked
+    value by value against ENSEMBLE_DESIGN: (path, the file's values)."""
+    names = json.loads((Path(inputs) / "inputs.json").read_text())
+    path = Path(inputs) / names["beta0_ensemble"]
+    design = json.loads(path.read_text())
+    d = ENSEMBLE_DESIGN
+    types = d["types"]
+    expected = {
+        "types": types,
+        "k_join": [d["k_join"]] * types,
+        "k_leave": [d["k_leave"]] * types,
+        "transfer_constant": [d["k_join"] / d["k_leave"]] * types,
+        "rho": list(d["rho"]),
+        "founder": list(d["founder"]),
+        "observation_time": d["t_end"],
+        "runs": d["runs"],
+    }
+    differs = {k: (design.get(k), v) for k, v in expected.items() if design.get(k) != v}
+    if differs:
+        raise ValueError(f"The registered design differs from the driver's constants: {differs}")
+    return path, design
+
+
+def beta0_ensemble(inputs, out):
     from cells.core.specs import parse_spec
     from cells.models.assembly_lineages import runner
     from validation.assembly_lineages import worlds
 
     out = Path(out)
     out.mkdir()
-    runs, t_end = ENSEMBLE_DESIGN["runs"], ENSEMBLE_DESIGN["t_end"]
+    design_path, design = registered_design(inputs)
+    shutil.copyfile(design_path, out / design_path.name)
+    runs, t_end = design["runs"], design["observation_time"]
     specs = []
     for w in range(runs):
         data = worlds.definition(ensemble_world(), None, fissions=1, seed=STREAM_SEED, lineage=w)
@@ -634,7 +662,12 @@ def beta0_ensemble(out):
             "members": members,
             "lineage_words": [0, runs - 1],
             "design": {
-                k: list(v) if isinstance(v, tuple) else v for k, v in ENSEMBLE_DESIGN.items()
+                "file": design_path.name,
+                "sha256": _sha256(design_path),
+                "equals_the_driver_constants": True,
+                "observation_times": design["observation_times"],
+                "runs": runs,
+                "observation_time": t_end,
             },
             "law": "the exchange law alone (no rate factor: beta = 0); transfer constant "
             "K = k_join / k_leave, leave constant k_leave",
@@ -712,9 +745,14 @@ exact integers (H = 0.9 is a break); its `similarity` is the kernel's floating-p
 - A form's factor formulas, the last molecule's leave included, are run.json's `law.formulas`.
 
 ## The beta0_ensemble role
-Every run ends at the event guard by design (status event_limit, its life censored by
-event_limit, near t = 8), before it could reach the fission size: not a failure. The design reads
-only t <= 2, and beta0_ensemble.json's stopped_before_t_end shows that no run stopped earlier.
+Its values are read from the registered design file named in the inputs' inputs.json
+(beta0_ensemble_design.json, copied into the role's folder; beta0_ensemble.json gives its SHA-256)
+and checked against the driver's own: 500 runs, one stream each (lineage words 0..499). Every run
+ends at the event guard by design (status event_limit, its life censored by event_limit, near
+t = 8), before it could reach the fission size: not a failure. The design reads only t <= 2, and
+beta0_ensemble.json's stopped_before_t_end shows that no run stopped earlier. Each run's fission
+size is world.json's world.fission.size (2048) and its event guard resolved_config.json's
+experiment.growth_event_limit (4096).
 
 ## Groups
 batched/batched.json, restart/restart.json, branches/branches.json, beta0_ensemble/
@@ -737,7 +775,7 @@ def run(inputs, out):
     (out / "FORMAT.md").write_text(FORMAT_STATEMENT)
     roles = {}
     roles |= lineages(out)
-    roles["beta0_ensemble"] = beta0_ensemble(out / "beta0_ensemble")
+    roles["beta0_ensemble"] = beta0_ensemble(inputs, out / "beta0_ensemble")
     roles |= rescale(out)
     roles["kernel_probe"] = str(kernel_probe(inputs, out / "kernel_probe"))
     roles["closed_world"] = str(closed_world(inputs, out / "closed_world"))
