@@ -12,9 +12,11 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
 - Internals never import the surface, so it adds no import cycle.
 
 **What it exports:**
-- the declaration types of each interface: the law template's ChannelLaw, CycleLaw, RouteLaw and
-  BindingLaw, with Citation, the source a cited law gives (registry/laws.py); and the kind
-  contract's Kind, KindFields, KindView, KindRates and Schedule (core/kind_registry.py);
+- the declaration types of each interface: the law template's base, Law, on which a family's own
+  law interfaces are built, and its ChannelLaw, CycleLaw, RouteLaw and BindingLaw, with Citation,
+  the source a cited law gives (registry/laws.py); the operator template of a family's own
+  operators, FamilyOperator (registry/operators.py); and the kind contract's Kind, KindFields,
+  KindView, KindRates and Schedule (core/kind_registry.py);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (core/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (core/kind_registry.py);
@@ -25,7 +27,9 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
 
 **Not here yet**, with the work that brings them:
 - the host table's end readers, with the host table (§2);
-- Module, Registry and BUILTIN, in module stage 1 (MODULE_SYSTEM_DESIGN §2.3).
+- Module, Registry and BUILTIN, and with them a registration entry, in module stage 1
+  (MODULE_SYSTEM_DESIGN §2.3). Until then a built-in family's homes register through the
+  registries' own call and are named in the static model table (registry/model_table.py).
 
 Built-ins do not yet import only this surface. The AST guard that makes them do so is a later
 step.
@@ -48,15 +52,18 @@ from cells.models.surface_tissue import physical_amounts
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
-from cells.registry.laws import BindingLaw, ChannelLaw, Citation, CycleLaw, RouteLaw
+from cells.registry.laws import BindingLaw, ChannelLaw, Citation, CycleLaw, Law, RouteLaw
+from cells.registry.operators import FamilyOperator
 
 __all__ = (
     # The declaration types of each interface.
+    "Law",
     "ChannelLaw",
     "CycleLaw",
     "RouteLaw",
     "BindingLaw",
     "Citation",
+    "FamilyOperator",
     "Kind",
     "KindFields",
     "KindView",
