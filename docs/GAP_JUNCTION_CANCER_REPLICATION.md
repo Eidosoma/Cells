@@ -847,6 +847,19 @@ each runs. All are development runs of the engine, not judged (D138).
   - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (9.0e-16 to 1.8e-15 m²/s),
     four to eight times below the line's x2. That is observed, at the sheet's shorter horizon;
     why it is lower is not measured here.
+- **Packaging, stated rather than inferred** (no run changed):
+  - Every tissue package's `criterion.json`, and each sweep in `viewer/summary.json`, lists the
+    tumor's cells (`tumor_cells`, as seeded).
+  - The cells' places are prescribed in each view: `view.json`'s `space` (2 dimensions, µm,
+    "prescribed") and the `cell` set's `geometry` (spheres: a centre and a radius per cell, in
+    the set's `ids` order). The `junction` set's `geometry` gives each junction's two cells
+    (`ends`, indices into the cell set).
+  - The sheet's summary carries this note's sentence: "The sheet is an extension beyond the
+    replication, not part of it. Its coupled horizon is 2,000 s, a tenth of the line's, so each
+    outcome is the state at 2,000 s."
+  - `dense-01`'s and `sheet-01`'s `criterion.json` and summaries were rewritten after their runs
+    by `neither.py --sidecars`, from the records' own data. Their values and states are
+    unchanged.
 - **The ladder** (`runs/ladder-01`): the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and
   7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step
   rule, with dense records. 1e-13 is left out for its step (1/64 s).

@@ -386,6 +386,15 @@ SHEET_REPRESENTS = (
     "sheet's own threshold may differ. Development run of the engine, not judged (D138)."
 )
 ARM_PREFIX = dict(line="neither-d", sheet=f"sheet{SHEET_N}-d")
+# The note's own words for the sheet (section 7.6), carried by its summary.
+SHEET_NOTE = (
+    "The sheet is an extension beyond the replication, not part of it. Its coupled horizon is "
+    "2,000 s, a tenth of the line's, so each outcome is the state at 2,000 s "
+    "(docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7.6)."
+)
+TUMOR_CELLS_OF = {
+    shape: [c for c, kind in tissue(shape)[0] if kind == "tumor"] for shape in ("line", "sheet")
+}
 # A window's working storage scales with the world: the sheet's 81 cells and 144 junctions fit
 # 256 steps a window. Windows cut the execution, not the step grid.
 WINDOW_STEPS_OF = dict(line=WINDOW_STEPS, sheet=256)
@@ -474,7 +483,7 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0, shape="lin
     out["seconds"] = time.perf_counter() - started
     ids = list(spec.model.species_ids)
     out["final_units"] = final_units(directory, ids, n_cells)
-    out["sidecar"] = criterion_sidecar(directory, ids, n_cells)
+    out["sidecar"] = criterion_sidecar(directory, ids, n_cells, out["tumor"])
     out["species_sidecars"] = species_sidecars(directory, ids, n_cells)
     entry = dict(
         format="gap_junction_tissue.neither_run@1",
@@ -544,7 +553,7 @@ def cell_state(value):
     return "X"
 
 
-def criterion_sidecar(directory, species_ids, n_cells=N_CELLS):
+def criterion_sidecar(directory, species_ids, n_cells=N_CELLS, tumor_cells=None):
     """criterion.json beside a tissue arm's package (a viewer sidecar written by the driver, not an
     engine field): each cell's miR200 minus Zeb mRNA (uM) per observed row, from the record's own
     observed amounts (its chunks) and volumes, and its state under BITSEY's criterion. The cells
@@ -571,6 +580,8 @@ def criterion_sidecar(directory, species_ids, n_cells=N_CELLS):
         cells=list(cells),
         values=values,
         states=[[cell_state(x) for x in row] for row in values],
+        # The tumor's cells, as seeded (the view's cell ids): stated, not inferred.
+        tumor_cells=list(tumor_cells if tumor_cells is not None else TUMOR_CELLS_OF["line"]),
     )
     (directory / "criterion.json").write_text(json.dumps(sidecar, allow_nan=False))
     return "criterion.json"
@@ -709,14 +720,45 @@ def records_summary(results):
         ],
         arms=arms,
     )
+    sweep["tumor_cells"] = sorted(tumor, key=cell_ids.index)
+    note = (
+        "Development runs of the engine, not judged (D138). One scaled unit of the switch is 1 uM "
+        "here. Species: u is miR200, m Zeb mRNA, z ZEB protein; each concentration is the amount "
+        f"over the cell's volume in the layout ({V_CELL_PL:.6g} pL)."
+    )
+    if shape == "sheet":
+        note = f"{SHEET_NOTE} {note}"
     return dict(
         format="cells.experiment_summary@1",
         experiment=EXPERIMENT_OF[shape],
-        note="Development runs of the engine, not judged (D138). One scaled unit of the switch is "
-        "1 uM here. Species: u is miR200, m Zeb mRNA, z ZEB protein; each concentration is the "
-        f"amount over the cell's volume in the layout ({V_CELL_PL:.6g} pL).",
+        note=note,
         sweeps=[sweep] if len(arms) >= 2 else [],
     )
+
+
+def rewrite_packaging(run_dir):
+    """criterion.json (now stating the tumor's cells) and viewer/summary.json of a finished
+    tissue run, rewritten from its records' own data by this driver; the runs are unchanged."""
+    results = json.loads((run_dir / "records.json").read_text())
+    written = {}
+    for r in results:
+        if r.get("status") != "done":
+            continue
+        shape = "sheet" if r["arm"].startswith(ARM_PREFIX["sheet"]) else "line"
+        cells, *_ = tissue(shape)
+        r.setdefault("shape", shape)
+        r.setdefault("cells", [c for c, _ in cells])
+        r.setdefault("tumor", TUMOR_CELLS_OF[shape])
+        directory = run_dir / "viewer" / r["arm"]
+        ids = json.loads((directory / "summary.json").read_text())["species_ids"]
+        written[r["arm"]] = criterion_sidecar(directory, ids, len(cells), r["tumor"])
+    summary = records_summary([r for r in results if r.get("status") == "done"])
+    summary["note"] += (
+        " criterion.json and this summary were rewritten after the run by neither.py --sidecars, "
+        "from the records' own data."
+    )
+    (run_dir / "viewer" / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False))
+    return written
 
 
 def _snapshot_identity():
@@ -975,6 +1017,7 @@ def main():
     parser.add_argument("--record", default="")
     parser.add_argument("--record-log", type=int, default=0)
     parser.add_argument("--shape", default="line", choices=("line", "sheet"))
+    parser.add_argument("--sidecars", default="")
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1012,6 +1055,9 @@ def main():
         cpus=args.cpus or None,
     )
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
+    if args.sidecars:  # Packaging for a finished run's tissue arms; no run is changed.
+        print(json.dumps(rewrite_packaging(Path(args.sidecars)), indent=1))
+        return 0
     if args.record:  # Records for the viewer: stage 1, then each D written with its view.
         cpus = [int(c) for c in args.cpus.split(",") if c]
         ds = [float(x) for x in args.record.split(",")]
