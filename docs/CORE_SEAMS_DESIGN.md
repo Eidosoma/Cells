@@ -36,8 +36,8 @@ compile key.
 
 | | Seam | Proposal (**S**) | First consumers | Agent-days |
 | --- | --- | --- | --- | --- |
-| A | Cycles (§3) | One membrane-cycle kind. Populations sit on their own axis, any number per host. Each law declares stoichiometric modes on N/P ends. The kind computes each mode's ΔG from the registry and books rows, heat, work and stored energy | The cardiac exchanger, Na⁺/K⁺ cycle and SR uptake (H2); mitochondria (M1); finite fuel | 4–6 |
-| B | Populations (§4) | One population concept for @3's populations and the kinds'. Declared field roles drive close, split and retire. One availability rule, with the routing door able to scale @3's channel availability. Admission by declared capability, not by lists of IDs | Composition's gap 4 (c); CaMKII (H2); host C (M6) | 3–5.5 |
+| A | Cycles (§3) | One membrane-cycle kind. Populations sit on their own axis, any number per host. Each law declares stoichiometric modes on N/P ends. The kind computes each mode's ΔG from the registry and books rows, heat, work and stored energy. Built in place in `cells.transporter@1`, with version 1's layout kept for FR-4 and FR-5 (A3) | The cardiac exchanger, Na⁺/K⁺ cycle and SR uptake (H2); mitochondria (M1); finite fuel | 4.5–6.5 |
+| B | Populations (§4) | One population concept for @3's populations and the kinds'. Declared field roles drive close, split and retire, with closure through the host's activity. One availability rule, with the routing door able to scale @3's channel availability. Refusal 4 checked per move, not by lists of IDs | Composition's gap 4 (c); CaMKII (H2); host C (M6) | 3–5.5 |
 | C | Binding (§5) | One rapid-binding closure for a declared set of ligands and their binders, with multi-form rows in the registry. Laws declare the forms they move | The cardiac Ca²⁺ buffers (H2); mitochondria's H⁺ and Mg²⁺ (M1) | 3–5 |
 | D | Heat booking (§6) | One declared booking per mover class (tableau, trapezoid or exact), with monotonicity declared. The trapezoid is written once, in the core, for every class | Cardiac H1; mitochondria M3; GARD's declared non-monotone heat | 1–2, plus 2–3 on branch X |
 | E | Fuel (§7) | Adopt core-fixes ff5ca5ff and 0a00ba6e as built. Extend the potentials check to kinds and to reaction free energies. Moiety ledgers through §7.4 (p)'s deferred hook | Finite fuel; the cardiac screen's C3 | 1–1.5 |
@@ -48,18 +48,22 @@ compile key.
 - **Step 0:** two probes, each with its criterion written first: the cardiac booking probe and
   mitochondria's P1. Their results decide D's branches.
 - **Then in parallel:** F's registry, D, E and G.
-- **Then A and C,** with their independent references in parallel; then B; then the gates, at
-  each merge.
+- **Then A and C,** with B's part for today's kinds beside them and their independent references
+  in parallel; then B's part for the cycle kind; then the gates, at each merge.
 
-**The estimate** (§13): 19.5–31 agent-days, plus 2–3 on branch X; about 9–13 working days elapsed
-with four owners and a references agent.
+**The estimate** (§13): 20–31.5 agent-days, plus 2–3 on branch X; about 9–13 working days elapsed
+with five owners and a references agent.
 - About 15.5–26 of it replaces work the consumer notes already counted: mitochondria's P1 and M1,
   the cardiac booking and part of H2, composition's level (c), and finite fuel's kind path.
-- The rest, about 4–5, is mostly D188's refactors (F) and the run-view items (G).
+- The rest, about 4.5–5.5, is mostly D188's refactors (F) and the run-view items (G).
 
-**For the lead** (§12): whether A and C are built in place or as new kinds (this turns on FR-4's
-and FR-5's timing), finite fuel's home, the booking's branch, field roles, the registration
-tables' scope and the moved-law reading. Two questions are marked for the user.
+**For the lead** (§12):
+- how A is built: A3 keeps §0's rule, while A1 is cheaper but needs the rule waived for FR-4's
+  and FR-5's worlds;
+- finite fuel's home, the booking's branch and field roles;
+- the registration tables' scope and the moved-law reading.
+
+Three questions are marked for the user.
 
 ## 1. Where the needs repeat
 
@@ -271,21 +275,26 @@ tables' scope and the moved-law reading. Two questions are marked for the user.
   parity check (§8.6), and it waits for a consumer, such as a dividing cell with the kind's pumps.
 - This answers composition's Q3 (§4.5).
 
-| Option | FR-4 and FR-5 | Duplication | Finite fuel (ruling D1, §17.5) |
-| --- | --- | --- | --- |
-| **A1. Generalise `cells.transporter@1` in place,** one layout (the population axis) | Their programs change, declared as the raw-sum fix's were (INNER_MODEL_V4_DESIGN §7.5, "What changes"). Their records must stay bitwise (**S**: one population per patch, the same arithmetic per element and the same scatter order; signed zeros reported apart, as G1 does). The check is the FR lane's own quick compares: FR-4's rung_1ms --quick against `dt-3c10b833-dry/quick`, and FR-5's arm-R part against `dt5-7c8bfa47-dry`. If a record moves, their development evidence re-runs while still proposed | None: one kind at once | Stays on `cells.transporter@1`, as D1 rules. The pass builds the moved-row path natively, so step 3 builds only R-fuel's world. The FR lane's `finite-fuel-step2-partial.patch` is superseded |
-| **A2. A new kind** (`cells.membrane_cycles@1`, mitochondria's name) beside a frozen transporter | Programs identical | Until a retire: after FR-4's and FR-5's judged runs, their worlds are re-expressed on the new kind, with an agreement test at rounding against their judged records. The transporter then retires on a D187 retire list, which goes to the user in its batch | Either on the frozen transporter, as the FR lane planned, with D1 kept and the new kind re-hosting it later; or on the new kind, which departs from D1's "same kind path" and makes step 3's finite fuel wait for the pass |
+| Option | FR-4 and FR-5 | §0's invariance rule | Duplication | Finite fuel (ruling D1, §17.5) |
+| --- | --- | --- | --- | --- |
+| **A1. Generalise `cells.transporter@1` in place,** with one layout (the population axis) | Their programs change. Their records must stay bitwise (**S**: one population per patch, the same arithmetic per element and the same scatter order; signed zeros reported apart, as G1 does). The check is the FR lane's own quick compares: FR-4's rung_1ms --quick against `dt-3c10b833-dry/quick`, and FR-5's arm-R part against `dt5-7c8bfa47-dry`. If a record moves, their development evidence re-runs while it is still proposed | **Waived** for the kinds set's FR-4 and FR-5 worlds, which use none of the new features: records bitwise in place of programs, as for the raw-sum fix (INNER_MODEL_V4_DESIGN §7.5, "What changes") | None: one kind and one layout at once | Stays on `cells.transporter@1`, as D1 rules. The pass builds the moved-row path, so step 3 builds only R-fuel's world, and the FR lane's `finite-fuel-step2-partial.patch` is superseded |
+| **A2. A new kind** (`cells.membrane_cycles@1`, mitochondria's name) beside a frozen transporter | Programs identical | Kept | Two kinds until a retire. After FR-4's and FR-5's judged runs, their worlds are re-expressed on the new kind, with an agreement test at rounding against their judged records. The transporter then retires on a D187 retire list, which goes to the user in its batch | Either on the frozen transporter, as the FR lane planned (D1 kept, the new kind re-hosting it later), or on the new kind, which departs from D1's "same kind path" and makes step 3's finite fuel wait for the pass |
+| **A3. Generalise in place with two layouts:** an entry in version 1's form (at most one population per patch, today's two laws, held fuel) keeps today's fields and hook code, chosen statically on the structure entry (`declared_fields`, the passive routes' `Factored` precedent, §7.4 (n) 6); any other entry takes the population axis | Programs identical | Kept | Two layouts in one kind until FR-4 and FR-5 move to the general layout, with their records compared bitwise; then version 1's layout is deleted. Cost: about 0.5 day more than A1 for the static dispatch | As A1: on `cells.transporter@1`, through the general layout, so R-fuel's world selects it |
 
-- **The discriminator:** whether FR-4's or FR-5's judged runs start before the pass builds.
+- **The discriminator for A1:** whether FR-4's or FR-5's judged runs start before the pass
+  builds.
   - Nothing registered pins the transporter today: both protocols are PROPOSED, with
     development evidence only (the FR lane's handoff, 16 November).
-  - So bitwise preservation is a choice, not a constraint.
-- **Recommended: A1 if the pass builds before those judged runs, A2 otherwise.** Either way, the
-  general kind is the one interface for every new cycle.
-- **The name.** A1 keeps the ID: optional fields keep an interface's major (MODULE_SYSTEM_DESIGN
-  §2.3). A rename to the mechanism's name could ride on the same commit. A rename moves the kind
-  in the canonical sorted order, ahead of the passive routes, so its fields move in the state
-  types. Under A1 the programs change anyway (**S**).
+  - So bitwise programs for them are a rule the lead can waive, not a constraint of evidence.
+- **Recommended: A3,** which keeps §0's rule, one kind ID and D1's kind path.
+  - A1 is cheaper if the lead waives the rule for those two worlds before their judged runs.
+  - A2 if the lead wants no edit to the transporter's module at all before those runs.
+- **The name.** A1 and A3 keep the ID, since optional fields keep an interface's major
+  (MODULE_SYSTEM_DESIGN §2.3).
+  - A rename to the mechanism's name moves the kind ahead of the passive routes in the canonical
+    sorted order, so its fields move in the state types.
+  - Under A3 that would change FR-4's and FR-5's programs, so the rename waits for version 1's
+    layout to go (**S**).
 
 ## 4. Seam B: populations
 
@@ -314,12 +323,18 @@ Each per-entity field of a kind declares its partition role (**S**):
 | history | Each daughter starts from 0 | Moved into the closer's record; `adjust_inner` adds it back | Cycles, transfers, heat, work, supply records |
 | structural | As declared: law, host and orientation | Padded with its declared fill | Law index, host index |
 
-A kind also names the control field that is its entities' availability.
-
 - **One implementation.** The adapter implements close, split, retire and open once, for every
   role.
-  - Close sets the declared availability to 0 on a closed host, and pads per-node fields with
-    their declared fills, as @3's padded fields are.
+- **Close acts through the host's activity, not through availability (**S**).**
+  - The adapter already closes a host's activity mask at the view (`membrane_active` for a patch),
+    and observation sees the view, under door S's merged records.
+  - The core gates every population's rates by its host's activity, through the host table, as
+    @3 gates its channels by `channel_active`. That is static, present only where a closer is
+    declared (composition's C5).
+  - Writing 0 into a kind's availability control at the view would not work. The composite
+    refuses a factor on a kind's control (`pump_composite.py`:610–615), because observation holds
+    only today's schedules, so the observed rows would show a closed population running.
+  - Per-node fields at a closed node take their declared fills, as @3's padded fields do.
 - **Fail-closed.** A kind that declares no roles stays refused beside closers. The refusal in
   `pump_composite.py`:594–598 is lifted only for kinds whose every per-entity field declares a
   role.
@@ -355,23 +370,33 @@ A kind also names the control field that is its entities' availability.
   population's Ca²⁺ flux, into a reader's control slot by replacement, with the reader's
   `control_domain` as its rule. That is ORd's release. It is not built in the pass.
 
-### 4.4 Admission by capability: refusal 4, version 1.3
+### 4.4 Admission per move: refusal 4, version 1.3
 
-Refusal 4 reads each kind's declared hooks, not a list of IDs (**S**). A kind is admitted beside a
-compartment when:
-- every charged move it declares has a `stage_term`;
-- every row it moves at the compartment's node has a `material_term` or a `bound_rate`;
-- a stage read declares its rows.
+Refusal 4 checks each move, not each kind (**S**).
+- **Why per move:** a hook's presence is per kind, but coverage is needed per law. Today's
+  transporter has a `stage_term`, yet its neutral law has no term of any kind (§17.3 item 4).
+- **The check** reads `moved_rows`, which already gives (species, node, law ID) triples
+  (`transporter.moved_rows`), and each law's declared step terms from the law registry (§8.1).
+  For every row a kind moves at the compartment's node or across its bounding patch:
+  - a charged row's law declares a charge slope (`stage_term`);
+  - a neutral row's law declares a material slope (`material_term`) or a definition-time bound
+    (`bound_rate`).
+- **A stage read** declares its rows. A source kind, with no moves and no charge, is admitted.
+- **Fail-closed:** a move whose law declares no term is refused, naming the law.
 
-A source kind, with no moves and no charge, is admitted. A kind that moves rows without a term is
-refused, fail-closed. `ROUTE_KINDS`, `READ_KINDS` and `FACTOR_KINDS` (`compartments.py`:73–81)
-then go, and the transporter's neutral law is held by D4's term (§7.2), which closes
+`ROUTE_KINDS`, `READ_KINDS` and `FACTOR_KINDS` (`compartments.py`:73–81) then go. The
+transporter's neutral law is admitted once it declares D4's term (§7.2), which closes
 CLOSED_COMPARTMENT_DESIGN §3.4.1's open item.
+
+Version 1.2 admits that law beside a compartment today with no term. So before the change, main
+is searched for any world the per-move check would newly refuse, as was done for D3's check
+(§17.5), and the lead hears of any it finds.
 
 ### 4.5 Answers to composition's questions for the core (its §13.4)
 
-1. **Idle pumps at closed patches.** By availability: closure propagates to every mover on a
-   closed host as availability 0 at the view, @3's `pump` and `calcium_pump` controls included.
+1. **Idle pumps at closed patches.** By the host's activity, the first of the two options there:
+   @3's pump and calcium-pump rates are gated by the view's `membrane_active`, as every
+   population's are (§4.2).
    - It is static, present only in worlds that declare both a closer and a pump law (C5's
      condition), so pump-free division worlds keep their programs.
    - Padding `pump_capacity` instead would refuse replacement@1's provider beside a closer.
@@ -534,8 +559,12 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
     against an independent two-capacitor reference.
 
   Its result decides branch X, and mitochondria's branch E or I.
-- Both run on today's code, in CPU minutes. P1 is mitochondria's own probe, run early: the
-  lead's call.
+- **Both run on today's code, in CPU minutes,** with one exception:
+  - P1's host-P arm puts the transporter on a cell's plasma patch facing a faced finite node.
+    Probe P0 parsed that topology with no kinds declared, and whether the existing kinds parse
+    there was not checked (mitochondria §2.3).
+  - So that arm first checks the parse. If the parse is refused, the arm waits for A.
+- P1 is mitochondria's own probe, run early: the lead's call.
 
 ## 7. Seam E: finite fuel's core part
 
@@ -583,11 +612,22 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
   `ledger_lists(structure)` (`surface_pump_v3.py`:1758–1767) then appends them, and the shared
   checks take them with no edit.
 - **The registry declares the moieties (**S**),** for example adenine = ATP + ADP (+ AMP), each a
-  linear form over rows. A moiety ledger is its global total against its start, at rounding
-  bounds.
+  linear form w_M over species.
+- **The ledger is defined on producers, not on global totals (**S**).**
+  - A global total against its start would fail in open worlds: a held or scheduled bath (such
+    as mitochondria §7's ADP step), turnover and replacement all change totals legitimately.
+  - So each producer of chemistry declares itself as one: a kind's `produced` record, or an
+    operator's booked net production per species (D152's reactions).
+  - For each declared moiety M and each such producer, Σ_s w_M,s × its cumulative net production
+    of s is held to zero at rounding bounds.
+  - Baths, schedules, turnover and replacement are not chemistry. The `total` ledger already
+    closes every species with their terms, so open worlds are unaffected.
 - **What it catches.** Every transport keeps a species' identity, so only chemistry can break a
-  moiety: a cycle mode's chemistry, or a D152 reaction. §17.4's planted error, a fuel
-  stoichiometry off by one, fails it.
+  moiety: a cycle mode's chemistry, or a D152 reaction.
+  - §17.4's planted error, a fuel stoichiometry off by one, fails it. With Pi +2 per cycle, the
+    phosphate moiety (3 ATP + 2 ADP + Pi) changes by one per cycle.
+  - The parse-time check on each mode's declared stoichiometry (§3.2) catches the same error
+    earlier, where the declaration itself is wrong.
 - **Its first consumer is finite fuel.** Mitochondria's NAD, Q and cytochrome c moieties follow.
 
 ## 8. Seam F: laws as modules
@@ -758,9 +798,10 @@ this note's author has read the engine.
 
 | Seam | Claim | Cheapest proof | Planted error | Composed-world check | Ledgers kept |
 | --- | --- | --- | --- | --- | --- |
-| A | Each mode's flux has the sign of −ΔG and is zero at equilibrium; the kind conserves material, charge and moieties; heat is non-negative | The kernel on random states with registry potentials: J·ΔG ≤ 0 and J = 0 at ΔG = 0; parse-time charge and moiety checks; slopes against finite differences | A law whose S < 0 somewhere; a mode with unbalanced charge; a wrong analytic slope | Two populations on one patch, one a fuel-free exchanger and one a pump on finite rows, over a run with every ledger closing; FR-4's world bitwise in records (A1) or programs (A2) | Material (local, outside, `total` with `produced`), charge, energy (heat, work, stored), moieties |
-| B | Close, split and retire by declared roles keep every ledger and leave a closed host idle | Host-side: an extensive field split sums exactly (anchor rule); an intensive field copied; history retired and added back | A field declared extensive but split by the wrong fraction; a closed patch's mover left at availability 1 (composition §13.1's 1.41e-5 fmol/s, as the planted case) | A dividing cell with a kind population, every ledger closing through the division and the retired patch idle; one population with an operator factor and a routed kind factor, giving the product in its fixed order, bitwise | Material, charge, energy, with each retired history added back |
-| C | The free forms satisfy each binding's equilibrium and every conservation law to the closure's tolerance; its term is the speciation minimum | The kernel against an independent solve with two ligands on random totals; B4's one-ligand case bitwise | A wrong K; a dropped form; the term booked without its stored rows' own part | A node holding H⁺ and Mg²⁺ under the closure, with a cycle reading free forms: charge exact from totals, and the energy ledger closing with the closure's term | Charge (totals), material, energy (stored) |
+| A | Each mode's flux has the sign of −ΔG and is zero at equilibrium; the kind conserves material, charge and moieties; heat is non-negative | The kernel on random states with registry potentials: J·ΔG ≤ 0 and J = 0 at ΔG = 0; parse-time charge and moiety checks; slopes against finite differences | A law whose S < 0 somewhere; a mode with unbalanced charge; a wrong analytic slope | Two populations on one patch, one a fuel-free exchanger and one a pump on finite rows, over a run with every ledger closing; FR-4's and FR-5's worlds identical in programs (A2, A3) or bitwise in records (A1) | Material (local, outside, `total` with `produced`), charge, energy (heat, work, stored), moieties |
+| B: refusal 4 | Every move at a compartment's node or across its bounding patch is held by its law's declared step term | Host-side, at binding, on planted kinds | A planted kind that moves a charged row with no `stage_term`, and one that moves a neutral row with neither term, must both be refused, naming the law | FR-4's and FR-5's declared worlds admitted exactly as today | — |
+| B | Close, split and retire by declared roles keep every ledger and leave a closed host idle | Host-side: an extensive field split sums exactly (anchor rule); an intensive field copied; history retired and added back | A field declared extensive but split by the wrong fraction; a closed patch's mover whose rates are not gated by its host's activity (composition §13.1's 1.41e-5 fmol/s, as the planted case) | A dividing cell with a kind population, every ledger closing through the division and the retired patch idle; one population with an operator factor and a routed kind factor, giving the product in its fixed order, bitwise | Material, charge, energy, with each retired history added back |
+| C | The free forms satisfy each binding's equilibrium and every conservation law to the closure's tolerance; its term is the speciation minimum; only movers that declare their forms move a multi-form row | The kernel against an independent solve with two ligands on random totals; B4's one-ligand case bitwise; the forms check at parse | A wrong K; a dropped form; the term booked without its stored rows' own part; a planted mover of a multi-form row that declares no forms, which must be refused | A node holding H⁺ and Mg²⁺ under the closure, with a cycle reading free forms: charge exact from totals, and the energy ledger closing with the closure's term | Charge (totals), material, energy (stored) |
 | D | The trapezoid books every element non-negative, within the energy ledger's tolerance | The booking probe (§6.4), refused under the tableau and admitted under the trapezoid | The tableau's weights in a class declared trapezoid must fail the dissipation check | A cycle that crosses its equilibrium (synthesis reversing) beside channels at E_K, admitted with every heat element monotone; branch X: the energy ledger at rounding up to dt ΣG/C = 1, with a planted sign flip | Energy |
 | E | One authority for every standard free energy; material slopes bound the step; moieties hold | As built (5 and 3 tests with logs of their teeth, cf); a reaction-level ΔG° compared with the registry | A planted ΔG° off by twice the bound; a fuel stoichiometry off by one | R-fuel's world (step 3's) | Moieties; material |
 | F | The refactor changes no program; a registered but undeclared law changes nothing; built-ins import only the surface | crossrev's sets and G1 identical; the I1-style invariance test; the AST guard | A law registered without its citation is refused at registration; a planted internal import is caught | — | — |
@@ -770,13 +811,13 @@ this note's author has read the engine.
 
 | Decision | Options | Recommended | Why |
 | --- | --- | --- | --- |
-| The cycle kind (§3.5) | A1 in place; A2 a new kind and a frozen transporter | A1 before FR-4's and FR-5's judged runs, A2 after | Nothing registered pins the transporter; one kind at once |
-| Finite fuel's home (§3.5) | On the generalised transporter; on the frozen one as the FR lane planned; on a new kind | With A1: the generalised transporter | D1's "same kind path" kept; the partial patch superseded; step 3 builds only R-fuel's world |
+| The cycle kind (§3.5) | A1 in place with one layout; A2 a new kind beside a frozen transporter; A3 in place with version 1's layout kept | A3; A1 only if the lead waives §0's rule for FR-4's and FR-5's worlds | A3 keeps the rule, one kind ID and D1's kind path; nothing registered pins the transporter |
+| Finite fuel's home (§3.5) | On the generalised transporter; on the frozen one, as the FR lane planned; on a new kind | The generalised transporter (A3 or A1) | D1's "same kind path" kept; the partial patch superseded; step 3 builds only R-fuel's world |
 | The binding closure (§5.4) | C1 in place; C2 new | C1 | FR-4's and FR-5's programs stay identical either way |
 | Heat booking (§6) | The trapezoid now; the exact charged booking now; both by P1 | The trapezoid now; branch X only if P1 shows the energy ledger binding | The two solve different problems; P1 is cheap and decides |
 | Populations (§4.2) | Declared field roles; per-kind hooks | Roles, with a hook only where no role fits | Written once; a new kind joins by declaring |
 | The door into @3's availability (§4.3) | In the pass; in H2 | In the pass | Small; one availability rule for every population |
-| Refusal 4 (§4.4) | By capability; extend the lists | By capability | No edit to the compartments operator for a new kind |
+| Refusal 4 (§4.4) | Per move, from each law's declared terms; extend the lists | Per move | No edit to the compartments operator for a new kind, and a law with no term is refused |
 | Laws (§8.2) | One module per law by extraction; declarations beside shared kernels | Extraction | D188's target layout, with the frozen families unaffected |
 | Registration (§8.4) | Operators and laws now, models designed; all now; none | Operators and laws now | A new operator or law joins with no edit; models wait for stage 1 or GARD |
 | Moved laws (§8.6) | D167 reading, one copy; D188 reading | D167, one copy, `moved_from` | D184's "parity references"; no pins on those kernels |
@@ -784,13 +825,20 @@ this note's author has read the engine.
 ## 12. Questions
 
 **For the lead:**
-1. **FR-4's and FR-5's timing.** Do their judged runs start before the pass builds? The answer
-   picks A1 or A2.
+1. **The cycle kind** (§3.5): A3 (recommended), A1 or A2?
+   - A1 asks you to waive §0's invariance rule for the kinds set's FR-4 and FR-5 worlds, which
+     use none of the new features: their records bitwise in place of their programs. It is only
+     open if their judged runs have not started when the pass builds.
+   - When do FR-4's and FR-5's judged runs start? That also sets when A3's version-1 layout can
+     go.
 2. **Finite fuel.** On the generalised transporter, built by the pass, with the FR lane's partial
-   patch dropped (A1)? Or as planned, with the lane building on the frozen transporter in step 3
-   (A2)?
-3. **The kinds' names.** Keep `cells.transporter@1` and `cells.rapid_proton_buffer@1` for the
-   general kinds, or rename them to their mechanisms now (§3.5, §5.4)?
+   patch dropped (A3 or A1)? Or as planned, with the lane building on the frozen transporter in
+   step 3 (A2)?
+3. **The kinds' names.** Should the general kinds keep `cells.transporter@1` and
+   `cells.rapid_proton_buffer@1`, or take their mechanisms' names?
+   - The binding kind's rename keeps the canonical order, so it can come now (§5.4).
+   - The cycle kind's rename would move FR-4's and FR-5's fields, so it waits for A3's version-1
+     layout to go (§3.5).
 4. **P1 moved into step 0** (§6.4), and branch X decided by its result?
 5. **Composition's Q1–Q7** answered as in §4.5, to route to that note's owner?
 6. **The registration tables' scope** (§8.4): operators and laws in the pass, models designed
@@ -808,8 +856,9 @@ this note's author has read the engine.
 11. **`cells.modules`** (§8.5) is a stability promise to outside contributors in a public
     repository. If the lead treats it as a public commitment, its name and its rule go to the user
     with D185's direction.
-12. **Under A2 or C2,** the frozen kinds and their tests retire later, on a D187 retire list that
-    goes to the user in one batch before any removal.
+12. **Under A3, A2 or C2,** a frozen layout or kind and its tests retire later: A3's version-1
+    layout once FR-4 and FR-5 move, or A2's and C2's frozen kinds. That goes on a D187 retire list,
+    which goes to the user in one batch before any removal.
 
 ## 13. Order of building, and the estimate
 
@@ -818,29 +867,33 @@ script (SOURCE_LAYOUT_MOVES_DESIGN §10).
 
 | Step | Work | Needs | Owner (disjoint files) | Agent-days (**S**) |
 | --- | --- | --- | --- | --- |
-| 0 | The booking probe and P1, criteria first; core-fixes carried across and its three commits' tests re-run | Move 2 | Core; a lane agent for P1 (scratch, `validation/`) | 1–1.5 |
-| 1 | F: the law registry, the template, the surface and `KindRates`'s move | 0 | Core: `registry/`, `modules/` | 1.5–2.5 |
-| 1 | D: the booking table and the trapezoid, written once | 0's probe | Core: `models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py` | 1–2 |
-| 1 | E: D3 and D4 adopted; reaction-level potentials | 0 | Core: `registry/species_registry.py`, `registry/kind_registry.py`, `operators/contract.py` | 0.5–0.75 |
-| 1 | G: the three run-view items | 0 | Run-view owner: `records/run_view.py`, `docs/RUN_VIEW_DESIGN.md` | 0.5–1 |
-| 2 | A: the cycle kind and its first two laws | 1 | Kinds owner 1: `kinds/transporter.py` (A1) or a new module (A2), `laws/pumps/` | 4–6 |
-| 2 | C: the binding closure and multi-form registry entries | 1 | Kinds owner 2: `kinds/proton_buffer.py`, `laws/reactions/`; the registry's part with the core | 3–5 |
-| 2 | F: per-law extractions, operators' registration | 1 | Core: `laws/*`, `models/inner_laws.py`, `operators/__init__.py` | 1.5–2 |
-| 2 | Independent references for A and C | 1 | A fresh references agent: `validation/core_seams/` (new) | 2–3 |
-| 3 | B: field roles and the lifecycle; the door into @3; refusal 4 by capability | 2 (A's axis) | Core: `models/surface_pump_v3.py`; operators owner: `models/pump_composite*.py`, `operators/partition.py`, `operators/compartments.py` | 3–5.5 |
-| 3 | E: moiety ledgers with A's moved rows | 2 | Core: `models/surface_pump_v3.py`, `registry/` | 0.5–0.75 |
-| 4 | Gates at each merge, and §10's composed-world checks | each | The lead's gate lane | 1 |
-| X | The exact charged booking, only if P1 asks | 0, 2 | Core | 2–3 |
+| 0 | The booking probe; core-fixes carried across and its three commits' tests re-run | Move 2 | Core owner 1 | 0.5–0.75 |
+| 0 | P1, criterion first (scratch and `validation/`) | Move 2 | Kinds owner | 0.5–0.75 |
+| 1 | F: the law registry, the template, the surface and `KindRates`'s move | 0 | Core owner 1: `registry/`, `modules/` | 1.5–2.5 |
+| 1 | D: the booking table and the trapezoid, written once | The booking probe | Core owner 2: `models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py` | 1–2 |
+| 1 | E: D3 and D4 adopted; reaction-level potentials | 0 | Core owner 2: `registry/species_registry.py`, `registry/kind_registry.py`, `operators/contract.py` | 0.5–0.75 |
+| 1 | G: the three run-view items | 0 | Run-view owner: `records/run_view.py`, `docs/RUN_VIEW_DESIGN.md`, `kinds/ph_condition.py` | 0.5–1 |
+| 2 | A: the cycle kind and its first two laws (A3's two layouts included) | F's registry | Kinds owner: `kinds/transporter.py` (A1, A3) or a new module (A2), `laws/pumps/` | 4.5–6.5 |
+| 2 | C: the binding closure and multi-form registry entries | F's registry, E | Core owner 2: `kinds/proton_buffer.py`, `laws/reactions/`, `registry/species_registry.py` | 3–5 |
+| 2 | F: per-law extractions, operators' registration | F's registry | Core owner 1: `laws/*`, `models/inner_laws.py`, `operators/__init__.py` | 1.5–2 |
+| 2 | B1, beside A: field roles and the lifecycle for today's kinds and @3's fields; the door into @3; refusal 4 per move | F's registry | Core owner 1: `models/surface_pump_v3.py`; operators owner: `models/pump_composite*.py`, `operators/partition.py`, `operators/compartments.py` | 2–4 |
+| 2 | Independent references for A and C | F's registry | A fresh references agent: `validation/core_seams/` (new) | 2–3 |
+| 3 | B2, after A: the cycle kind's roles, and the dividing world with a kind population | A, B1 | Kinds owner, with the operators owner | 1–1.5 |
+| 3 | E: moiety ledgers with A's moved rows | A | Core owner 1: `models/surface_pump_v3.py`, `registry/` | 0.5–0.75 |
+| 4 | Gates at each merge, and §10's composed-world checks | Each | The lead's gate lane | 1 |
+| X | The exact charged booking, only if P1 asks | P1, A | Core owner 2 | 2–3 |
 
 **Built now, or with a first consumer.** Every row above is built in the pass, except branch X,
 which waits for P1. Built later, with their consumers: the model table (module stage 1 or GARD),
 the door's value mode (H2) and B8's "represents" key.
 
 **Totals (**S**):**
-- **19.5–31 agent-days,** plus 2–3 on branch X.
-- **Elapsed, about 9–13 working days,** with four owners (core, two kinds owners, operators) and a
-  references agent. The critical path is step 0, F's registry, A, then B's kind side and the
-  gates.
+- **20–31.5 agent-days,** plus 2–3 on branch X. Under A1 instead of A3, 0.5 less.
+- **Elapsed, about 9–13 working days,** with five owners (two core owners, a kinds owner, an
+  operators owner and the run view's) and a references agent, six agents within D171's seven.
+  - The critical path: step 0 (1–1.5 with the carry-over), F's registry (1.5–2.5), A (4.5–6.5),
+    B2 (1–1.5) and the gates (1).
+  - The other paths are shorter: C ends 5.5–9 days in, B1 4.5–8.
 
 **What it replaces in the consumer notes (**S**):**
 
@@ -850,15 +903,17 @@ the door's value mode (H2) and B8's "represents" key.
 | Cardiac H1's booking probe and booking | about 1–1.5 | All |
 | Cardiac H2's exchanger and pumps on the kind, and the buffer read | Part of its 9–15 non-pool days | About 3–5 |
 | Composition's gap 4 level (c) | 2–4 | All |
-| Finite fuel's kind path (the FR lane's 0.5–1) | 0.5–1 | All, under A1 |
+| Finite fuel's kind path (the FR lane's 0.5–1) | 0.5–1 | All, under A3 or A1 |
 | **Sum** | | **about 15.5–26** |
 
+The rest, about 4.5–5.5, is mostly F and G.
+
 **Which step-3 and step-4 lanes each seam blocks:**
-- **cardiac H1:** D;
-- **cardiac H2:** A, B (the door) and C;
+- **cardiac H1:** D, and F's template and registry, on which its eight channel laws are written;
+- **cardiac H2:** A, B (the door), C and F;
 - **composition's M6:** B;
 - **finite fuel:** A and E;
-- **mitochondria's M1:** A, C, D and B's refusal 4;
+- **mitochondria's M1:** A, C, D, B's refusal 4 and F; **M3:** F, for its laws;
 - **GARD's G1:** F's registry and surface only.
 
 Composition's M1–M5 (gaps 1–3, 5, 6 and level (a)) need none of the pass, so they can start in
@@ -866,11 +921,13 @@ step 3 as planned.
 
 ## Sources
 
-- **Cycle kinetics.** T. L. Hill, *Free Energy Transduction and Biochemical Cycle Kinetics*
-  (Springer, 1989). Its diagram method gives each cycle's net flux as a product of a non-negative
-  factor and (1 − e^{−X/kT}), X the cycle force. Cited as standard theory; no text or figure is
-  used. E. L. King and C. Altman, *J. Phys. Chem.* 60 (1956) 1375, for steady-state kinetic
-  diagrams.
+- **Cycle kinetics** [not read for this note; cited as standard theory, from memory]:
+  - T. L. Hill, *Free Energy Transduction and Biochemical Cycle Kinetics* (Springer, 1989). Its
+    diagram method gives each cycle's net flux as a non-negative factor times (1 − e^{−X/kT}),
+    with X the cycle's force;
+  - E. L. King and C. Altman (1956), *J. Phys. Chem.*, for steady-state kinetic diagrams.
+
+  No text or figure is used. §3.2's form is a screen item, not a claim resting on these.
 - **The source models,** as the consumer notes read them: O'Hara et al. 2011 (cardiac note);
   Beard 2005 and its 2006 correction (mitochondria note). This note reads neither paper; it cites
   facts only through those notes.
