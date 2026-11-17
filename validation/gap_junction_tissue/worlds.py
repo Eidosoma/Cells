@@ -56,7 +56,7 @@ GATE_LAW = "junction_voltage_relaxation@1"
 # The residual is second order in dt with a world-dependent coefficient. The compared quantity,
 # the steady state, is the scheme's fixed point and does not depend on dt.
 STEP_BOUND_MARGIN = 0.04
-BASE_DT_S = 0.0625  # 1/16 s, exact in binary, so every observation time is an exact grid point.
+BASE_DT_S = 0.25  # 1/4 s, exact in binary, so every observation time is an exact grid point.
 END_S = 600.0  # 30 slowest-mode time constants (1/K_dec = 20 s): residual e^-30 at most.
 SETTLE_S = 10.0  # The steady-state check compares end - SETTLE_S with end.
 OBSERVE_EVERY_S = 2.0  # Observation rows for the record and the viewer (a multiple of every dt).

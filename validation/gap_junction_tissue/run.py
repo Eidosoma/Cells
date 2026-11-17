@@ -93,10 +93,11 @@ FIGURE5_G = (1.0, 10.0, 50.0)  # Figure 5b runs to 100; 50 keeps the run short.
 FIGURE8_N = (1, 2, 3, 4, 5, 10)
 FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
 PLANTED_SCALE = 1.01
+FIXTURE_END_S = 60.0
 TIME_MATCH_RTOL = 1e-12
 EXPERIMENT = "gap-junction-cancer-linear-network"
 RECORDS = None  # OUTDIR/worlds, set by main(); None writes no records (tools that only check).
-PARTS = ("refusals", "gate", "figure3", "figure5", "figure8", "control")
+PARTS = ("fixture", "refusals", "gate", "figure3", "figure5", "figure8", "control")
 
 
 class Recorder:
@@ -130,12 +131,70 @@ def _row(times, t):
     return k
 
 
+REPRESENTS = (
+    "The Norton-equivalent network of the preprint's linear ('intuitive') model: linear cells "
+    "exchanging one neutral species through gap junctions, each cell's generation and decay "
+    "carried by a membrane to a reservoir held at its unloaded value (its equations 1-2, appendix, "
+    "Figures 3, 5 and 8). The engine refuses the model as written (a source and a decay in the "
+    "cell plus a junction route; gap F1). This is not the preprint's tissue simulation (Tables "
+    "1-3), which the engine cannot run yet."
+)
+# The viewer packages (the visualizer's request, 17 November): a recording subset of the fields
+# it names, for these arms in this order, kept where every layer's records stay under 1 MB.
+VIEWER_FIELDS = (
+    "amount_increment",
+    "junction_transferred",
+    "junction_gate",
+    "membrane_voltage_V",
+    "junction_voltage_V",
+)
+VIEWER_ARMS = (
+    "fixture-figure3-g1",
+    "figure3-g0.5",
+    "figure3-g1",
+    "figure3-g5",
+    "figure5-lumped-g1",
+    "figure5-network-g1",
+    "figure8-chain1-held0.5",
+    "figure8-chain2-held0.5",
+    "figure8-chain3-held0.5",
+    "figure8-chain5-held0.5",
+    "figure8-chain10-held0.5",
+)
+VIEWER_LAYER_BYTES = 2**20
+
+
+def source_identity():
+    """The execution snapshot this run comes from (SNAPSHOT.json at the working directory, as
+    tools/run.sh runs it), or the checkout's revision when run from a checkout."""
+    path = Path("SNAPSHOT.json")
+    if path.is_file():
+        snapshot = json.loads(path.read_text())
+        return dict(
+            revision=snapshot["git_revision"],
+            snapshot=Path.cwd().name,
+            clean=not snapshot["selected_status_porcelain_v1_z"],
+        )
+    return dict(revision=None, snapshot=None, clean=None)
+
+
+def layer_bytes(directory):
+    """Bytes of the saved arrays of each layer of a written run, from its own view.json."""
+    view = json.loads((directory / "view.json").read_text())
+    with np.load(directory / "trajectory.npz") as arrays:
+        sizes = {name: arrays[name].nbytes for name in arrays.files}
+    out = {}
+    for record in view["records"]:
+        out[record["layer"]] = out.get(record["layer"], 0) + sizes.get(record["id"], 0)
+    return out
+
+
 def write_record(result, arm_id, label):
-    """The engine's own run record with its run view (module docstring); the view's refusal is
-    recorded and the run written without one."""
+    """The engine's own run record with its run view (module docstring), and for VIEWER_ARMS a
+    viewer package of the same run with the recording subset. A view's refusal is recorded and
+    the run written without one."""
     if RECORDS is None:
         return None
-    directory = RECORDS / arm_id
     labels = dict(id=arm_id, experiment=EXPERIMENT, arm=arm_id, label=label)
     provenance = dict(
         operation="fresh",
@@ -143,17 +202,136 @@ def write_record(result, arm_id, label):
         experiment=EXPERIMENT,
         arm=arm_id,
         citation=paper.CITATION,
+        **source_identity(),
     )
     source = (
-        "validation/gap_junction_tissue/worlds.py: touching spheres after the preprint's drawing"
+        "validation/gap_junction_tissue/worlds.py: touching spheres after the preprint's "
+        "drawings (Figures 3a, 5a, 7)"
     )
-    request = run_view.Request(labels, geometry=worlds.geometry(result.network, source))
-    try:
-        io.write_run(directory, result.run, provenance=provenance, view=request)
-        return dict(directory=str(directory), view="written")
-    except run_view.ViewRefused as error:
-        io.write_run(directory, result.run, provenance=provenance)
-        return dict(directory=str(directory), view="refused", refusal=str(error))
+    geometry = worlds.geometry(result.network, source)
+    out = {}
+    targets = [("record", RECORDS / arm_id, None)]
+    if arm_id in VIEWER_ARMS:
+        recording = run_view.Recording(fields=VIEWER_FIELDS)
+        targets.append(("viewer", RECORDS.parent / "viewer" / arm_id, recording))
+    for kind, directory, recording in targets:
+        request = run_view.Request(labels, geometry=geometry, recording=recording)
+        try:
+            io.write_run(directory, result.run, provenance=provenance, view=request)
+            out[kind] = dict(directory=str(directory), view="written")
+            if kind == "viewer":
+                sizes = layer_bytes(directory)
+                out[kind].update(
+                    layer_bytes=sizes,
+                    within_limit=all(v < VIEWER_LAYER_BYTES for v in sizes.values()),
+                )
+        except run_view.ViewRefused as error:
+            io.write_run(directory, result.run, provenance=provenance)
+            out[kind] = dict(directory=str(directory), view="refused", refusal=str(error))
+        write_run_json(directory, arm_id, result.run.spec, provenance, experiment=None)
+    return out
+
+
+def write_run_json(directory, arm_id, spec, provenance, experiment):
+    """run.json beside the engine's files: the revision, the models, the definition's hash, what
+    the run represents, and (once the experiment ends) every arm's parameters and readouts."""
+    entry = dict(
+        format="gap_junction_tissue.run@1",
+        status="development run of the engine, not judged (D138)",
+        represents=REPRESENTS,
+        citation=dict(text=paper.CITATION, doi=paper.DOI_URL),
+        revision=provenance.get("revision"),
+        snapshot=provenance.get("snapshot"),
+        snapshot_clean=provenance.get("clean"),
+        models=["resolved_pump_tissue@3"],
+        laws=dict(
+            membrane_and_junction_route="constant_field@1",
+            junction_gate="junction_voltage_relaxation@1 (pinned open)",
+            closure="resolved_capacitor_components_current_continuity@1",
+            solver=worlds.SOLVER,
+        ),
+        definition_sha256=spec.fingerprint,
+        arm=arm_id,
+        experiment=experiment,
+    )
+    (Path(directory) / "run.json").write_text(json.dumps(entry, indent=1, default=str))
+
+
+def experiment_summary(data):
+    """Each arm's parameters and readouts under the preprint's names (mol/m^3 = mM, mol/s)."""
+    parts, arms = data["parts"], []
+
+    def add(arm_id, figure, parameters, result, extra=None):
+        readouts = None
+        if result.get("status") == "done":
+            readouts = {
+                "[mR] steady, per cell (mol/m^3)": result["concentration_mM"],
+                "reference (dense solve of the same network)": result["reference_mM"],
+                "relative error": result["engine_rel_error"],
+                **(extra or {}),
+            }
+        arms.append(
+            dict(id=arm_id, figure=figure, parameters=parameters, status=result.get("status"),
+                 readouts=readouts, record=result.get("record"))
+        )  # fmt: skip
+
+    for name in ("fixture", "figure3"):
+        for result in parts.get(name, {}).get("result", {}).get("arms", []):
+            g, tag = result.get("g"), ("fixture-" if name == "fixture" else "")
+            add(f"{tag}figure3-g{g:g}", "3b",
+                {"G_GJ / G_eq": g, "mR_UL0, mR_UL1 (mol/m^3)": [5.0, 10.0]}, result,
+                {"equation 2": result.get("eq2")})  # fmt: skip
+    figure5 = parts.get("figure5", {}).get("result", {})
+    for result in figure5.get("lumped", []):
+        add(f"figure5-lumped-g{result['g']:g}", "5b",
+            {"G_GJ / G_eq,A": result["g"], "G_eq,B / G_eq,A": 4.0 / 3.0,
+             "mR_UL,A, mR_UL,B (mol/m^3)": [10.0, 5.0]}, result,
+            {"equation 2": result.get("eq2")})  # fmt: skip
+    for result in figure5.get("network", []):
+        add(f"figure5-network-g{result['g']:g}", "5a",
+            {"G_GJ / G_eq": result["g"], "cells": "A with two backups at 10, B with three at 5"},
+            result)  # fmt: skip
+    for chain in parts.get("figure8", {}).get("result", {}).get("chains", []):
+        for held, result in zip(FIGURE8_LOADS, chain["loads"], strict=False):
+            add(f"figure8-chain{chain['n']}-held{held:g}", "8",
+                {"cells n": chain["n"], "G_GJ / G_eq,1": 1.0, "mR_UL0 (mol/m^3)": 1.0,
+                 "probe held [mR] (mol/m^3)": held, "G_probe / G_eq,1": 1.0}, result,
+                {"port [mR] (mol/m^3)": result.get("port_mM"),
+                 "i_exit (mol/s)": result.get("exit_flux_mol_s"),
+                 "G_eq,n / G_eq,1 (from both loads)": chain.get("g_eq_ratio")})  # fmt: skip
+    control = parts.get("control", {}).get("result", {})
+    if control:
+        planted = {"relative error against the unperturbed solve": control.get("planted_rel_error")}
+        parameters = {"G_GJ / G_eq": 1.0, "junction permeability scale": PLANTED_SCALE}
+        add("control-planted", "3b (planted control)", parameters, control, planted)
+    return dict(id=EXPERIMENT, represents=REPRESENTS, arms=arms)
+
+
+def finish_records(data):
+    """Rewrite every record's run.json with the whole experiment's summary; write the viewer
+    index (viewer/index.json) of the packages within the size limit, in VIEWER_ARMS order."""
+    if RECORDS is None:
+        return
+    summary = experiment_summary(data)
+    viewer = []
+    for arm in summary["arms"]:
+        for kind, record in (arm.get("record") or {}).items():
+            directory = Path(record["directory"])
+            if not (directory / "run.json").is_file():
+                continue
+            entry = json.loads((directory / "run.json").read_text())
+            entry["experiment"] = summary
+            (directory / "run.json").write_text(json.dumps(entry, indent=1, default=str))
+            if kind == "viewer":
+                viewer.append(dict(arm=arm["id"], **record))
+    order = {arm_id: k for k, arm_id in enumerate(VIEWER_ARMS)}
+    viewer.sort(key=lambda v: order.get(v["arm"], len(order)))
+    selected = [v["arm"] for v in viewer if v.get("within_limit")][:10]
+    index = dict(experiment=EXPERIMENT, represents=REPRESENTS, layer_limit_bytes=VIEWER_LAYER_BYTES,
+                 packages=viewer, selected=selected)  # fmt: skip
+    path = RECORDS.parent / "viewer" / "index.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(index, indent=1, default=str))
 
 
 class Outcome(NamedTuple):
@@ -161,10 +339,12 @@ class Outcome(NamedTuple):
     network: object
 
 
-def run_network(network, *, junction_scale=1.0, arm_id=None, label=""):
+def run_network(network, *, junction_scale=1.0, end=worlds.END_S, arm_id=None, label=""):
     """Run one linear network to steady state; return the engine's readouts and the reference."""
     cells_, probes = network.cells, network.probes
-    raw = worlds.linear_network(cells_, network.edges, probes, junction_scale=junction_scale)
+    raw = worlds.linear_network(
+        cells_, network.edges, probes, junction_scale=junction_scale, end=end
+    )
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = runner.run(spec)
@@ -315,6 +495,19 @@ def part_gate(out, save):
     save()
 
 
+def part_fixture(out, save):
+    """A tiny run of the real runs' shape for the viewer's tests (FIXTURE_END_S, not steady)."""
+    result = arm(
+        worlds.figure3(1.0),
+        end=FIXTURE_END_S,
+        arm_id="fixture-figure3-g1",
+        label="Format fixture: Figure 3 at G_GJ = G_eq, 60 s (not at steady state; no verdict)",
+    )
+    result.update(g=1.0, eq2=list(paper.eq2(5.0, 10.0, 1.0, 1.0)), purpose="format fixture")
+    out["arms"] = [result]
+    save()
+
+
 def part_figure3(out, save):
     rep = paper.REPORTED["figure3b"]
     out["arms"] = []
@@ -452,6 +645,7 @@ def part_control(out, save):
 
 
 FUNCTIONS = dict(
+    fixture=part_fixture,
     refusals=part_refusals,
     gate=part_gate,
     figure3=part_figure3,
@@ -516,6 +710,10 @@ def main(argv):
         recorder.save()
         print(part, entry["status"], f"{entry['seconds']:.1f} s", flush=True)
     recorder.data["record"]["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    try:
+        finish_records(recorder.data)
+    except Exception as error:  # The results stand; the summary's failure is recorded.
+        recorder.data["record"]["finish_records_error"] = repr(error)
     recorder.save()
     failed = [p for p, r in recorder.data["parts"].items() if r["status"] != "done"]
     return 1 if failed else 0
