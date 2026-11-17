@@ -120,7 +120,7 @@ const runs = LINEAGES.map((spec) => {
     label: spec.label,
     environment: "environment-1",
     mode: "single lineage",
-    law: { name: "the published form", says: "The catalytic boost is taken at the assembly as it stands, for a join and a leave alike, as the preprint states it. (The engine's proposed note names this form cells.member_catalysis_at_state@1; it is no law of the engine on main.)" },
+    law: { name: "the published form", form: "single-event", engine_name: null, says: "The catalytic boost is taken at the assembly as it stands, for a join and a leave alike, as the preprint states it. (The engine's design note, on main and decided (D192), names this form cells.member_catalysis_at_state@1; it is not built yet, so it is no law of the engine.)" },
     engine_models: [],
     revision: null,
     rules: { start: "40 molecules of 40 types, drawn uniformly without replacement", events: "one molecule joins or leaves at a time, chosen in proportion to every rate", fission_size: SIZE, split: "an exact half, drawn without replacement, to the first daughter", continues: "the first daughter" },

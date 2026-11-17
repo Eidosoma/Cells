@@ -12,6 +12,7 @@
 import { css } from "../ui/styles.js";
 import { h, statusSwatch } from "../ui/dom.js";
 import "../ui/panel.js";
+import "../ui/timeline.js";
 import { SceneModel } from "../scene/model.js";
 import { Stage } from "../core/stage.js";
 import { LabelLayer } from "../core/labels.js";
@@ -36,8 +37,15 @@ cells-panel { position: absolute; right: 12px; top: 12px; bottom: 12px; width: m
 .legend-card li { display: flex; gap: 8px; align-items: center; }
 .legend-card li b { margin-left: auto; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
 .legend-card p { margin: 6px 0 0; color: var(--muted); }
+/* A view that keeps a clock (its chrome gives a timeline) has the page's timeline at the foot. */
+.frame cells-timeline { left: 344px; right: 12px; bottom: 12px; max-width: none; margin: 0; z-index: 5; }
+.frame.has-panel cells-timeline { right: calc(min(400px, 46vw) + 24px); }
+@media (max-width: 1000px) { .frame.has-timeline .legend-card { bottom: 84px; } .frame cells-timeline { left: 12px; } }
 @media (max-width: ${NARROW}px) {
   .bar-card { left: 8px; right: 8px; top: 8px; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 6px 8px; }
+  .frame cells-timeline, .frame.has-panel cells-timeline { left: 8px; right: 8px; bottom: 8px; }
+  .frame.has-timeline .legend-card { bottom: 76px; }
+  .frame.has-timeline cells-panel { bottom: 76px; max-height: 40%; }
   .bar-card b { flex: none; font-size: 13px; }
   .bar-card input { flex: 1 1 0; width: auto; }
   .bar-card select { flex: 1 1 0; max-width: none; }
@@ -69,12 +77,14 @@ export function mountView({ make, styles = "" }) {
       this.panel = h("cells-panel", { class: "card", hidden: true });
       this.bar = h("div", { class: "card bar-card" });
       this.legendBox = h("details", { class: "card legend-card" });
-      root.append(h("style", {}, css + styles + STYLE), h("div", { class: "frame" }, this.canvas, this.labelBox, this.bar, this.legendBox, this.panel));
+      this.timeline = h("cells-timeline", { class: "card", hidden: true });
+      this.frame = h("div", { class: "frame" }, this.canvas, this.labelBox, this.bar, this.legendBox, this.timeline, this.panel);
+      root.append(h("style", {}, css + styles + STYLE), this.frame);
       this.stage = new Stage({ canvas: this.canvas, host: this });
       this.labels = new LabelLayer(this.labelBox, this.stage, (id) => this.select(id));
       this.stage.afterRender.add(() => this.labels.layout());
       this.lens = make(this.stage, this.model, this.labels);
-      this.stage.onTick((dt) => this.lens.update?.(dt));
+      this.stage.onTick((dt, time, real) => this.lens.update?.(dt, time, real));
       this.stage.onPalette((palette) => this.lens.applyPalette?.(palette));
       this.lens.onChrome = () => this.renderChrome();
       this.lens.activate();
@@ -100,17 +110,26 @@ export function mountView({ make, styles = "" }) {
         select.value = spec.active || spec.options[0][0];
         return select;
       };
+      // A view with levels of its own (the viewer gives them in its level switch) chooses them here first.
+      const levels = typeof this.lens.levels === "function" ? this.lens.levels() : null;
+      this.levelSelect = levels?.length > 1 ? choose({ label: "Level", options: levels.map((level) => [level.id, level.label]), active: levels.find((level) => level.active)?.id }, this.lens.setLevel) : null;
       this.markSelect = choose(card.marks, this.lens.setMark);
       this.modeSelect = choose(card.modes, this.lens.setMode);
       // On a phone the bar keeps to one row: the title, the search and the first choice.
-      if (this.markSelect && this.modeSelect) this.modeSelect.classList.add("wide-only");
-      for (const select of [this.markSelect, this.modeSelect]) if (select) parts.push(select);
+      const chosen = [this.levelSelect, this.markSelect, this.modeSelect].filter(Boolean);
+      for (const select of chosen.slice(1)) select.classList.add("wide-only");
+      parts.push(...chosen);
       this.bar.replaceChildren(...parts);
     }
 
     /** The legend card, from the view's chrome: what each mark drawn now stands for. */
     renderChrome() {
-      const legend = this.lens.chrome?.().legend;
+      const chrome = this.lens.chrome?.() || {};
+      this.timeline.hidden = !chrome.timeline;
+      this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
+      if (chrome.timeline) this.timeline.bind(chrome.timeline.player, chrome.timeline);
+      if (this.levelSelect) this.levelSelect.value = this.lens.levels().find((level) => level.active)?.id || this.levelSelect.value;
+      const legend = chrome.legend;
       this.legendBox.hidden = !legend || (this.lens.selected && this.narrow());
       if (!legend) return;
       const open = this.legendBox.open;
@@ -127,6 +146,7 @@ export function mountView({ make, styles = "" }) {
     }
 
     wire() {
+      const chrome = () => this.lens.chrome?.() || {};
       let down = null;
       this.canvas.addEventListener("pointerdown", (event) => (down = { x: event.clientX, y: event.clientY }));
       this.canvas.addEventListener("pointerup", (event) => {
@@ -138,6 +158,7 @@ export function mountView({ make, styles = "" }) {
       this.canvas.addEventListener("keydown", (event) => {
         if ((event.key === "ArrowRight" || event.key === "ArrowLeft") && this.lens.step) this.select(this.lens.step(event.key === "ArrowRight" ? 1 : -1));
         if (event.key === "Escape") this.select(null);
+        if (event.key === " " && chrome().timeline) { chrome().timeline.player.toggle(); event.preventDefault(); }
       });
       // The panel's own links and close button choose through the page's event.
       this.shadowRoot.addEventListener("cells-select", (event) => {
@@ -156,6 +177,7 @@ export function mountView({ make, styles = "" }) {
       const narrow = this.narrow();
       if (chosen) this.legendBox.open = false;
       this.renderChrome();
+      this.frame.classList.toggle("has-panel", Boolean(chosen));
       this.stage.setInsets(chosen ? (narrow ? { bottom: this.panel.offsetHeight + 8 } : { right: this.panel.offsetWidth + 16 }) : {});
       this.stage.invalidate();
     }

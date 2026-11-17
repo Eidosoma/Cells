@@ -1,10 +1,16 @@
 // An assembly's lineage: the view of a model system under "Origin of life" (schema/ASSEMBLY_RUN.md;
 // docs/ORIGIN_OF_LIFE.md, "Decided"). Its levels are the entry's: the molecules (the table of
-// catalysis the assembly grows by), one assembly (a bead for each molecule, growing and splitting,
-// with its composition round it), a population (its place is left; no run of one exists) and the
-// lineage (the tape of compositions, the similarity at each fission with the analysis's threshold,
-// the carpet, the spine of daughters, the map of compositions). Everything follows one clock: the
-// page's timeline, counting fissions.
+// catalysis the assembly grows by), one assembly (a lipid for each molecule, in water, growing and
+// splitting, with its composition round it), a population (its place is left; no run of one exists)
+// and the lineage (the tape of compositions, the similarity at each fission with the analysis's
+// threshold, the carpet, the spine of daughters, the map of compositions). Everything follows one
+// clock: the page's timeline, counting fissions.
+//
+// A scene at the scale of molecules, in water (the user's request of 16 November 2026: "visuall for
+// now but maybe law later"). The run gives which type joins or leaves and when, the composition, each
+// fission and how it divides the molecules. The picture gives everything else, and says so: how a
+// lipid looks, how the lipids move and pack, the water, the free molecules' number and drift, and
+// every size. No law of Cells computes how the lipids move and pack.
 //
 // The view names no model: the run file does. It reads the run's H and the analysis's marks and
 // decides none; it names a composome only where the analysis names one; every choice of the
@@ -15,8 +21,11 @@ import { roundedSlab } from "../core/materials.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { disposeTree } from "../core/stage.js";
 import { Player } from "../replay/player.js";
-import { AssemblySet, PREFIX } from "./assembly_run.js";
-import { BeadLayout, BeadMeshes, arrivalMode, SHAPES } from "./assembly_beads.js";
+import { AssemblySet, PREFIX, formWords } from "./assembly_run.js";
+import { arrivalMode, SHAPES, GLOW_S } from "./assembly_beads.js";
+import { LipidLayout, FreeCrowd } from "./lipid_assembly.js";
+import { LipidMeshes, lipidMaterials, FORMS } from "./lipid_marks.js";
+import { Water, wetten, WATER_THEMES } from "./lipid_water.js";
 import { CompositionRing, CompositionStrip, CompositionTape } from "./composition_marks.js";
 import { SimilarityFence, SimilarityCarpet, COMPARE } from "./similarity_marks.js";
 import { LineageSpine, CompositionMap } from "./lineage_marks.js";
@@ -24,8 +33,13 @@ import { CatalysisTable } from "./catalysis_table.js";
 import { clockOf, fissionsPerSecond, FINE } from "./lineage_clock.js";
 import { describe as describePart, sections as listSections } from "./lineage_card.js";
 
-/** The look this view asks of the stage: studio light on the beads, contact shade where parts meet the plate. */
+/** The look this view asks of the stage: studio light on the lipids, and contact shade where the lineage's parts meet the plate. */
 export const ORIGIN_LOOK = { rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 };
+/** Round one assembly the water's own shade (the depth inside the assembly) stands in for contact shade, which would cost a frame more. */
+export const ASSEMBLY_LOOK = { ...ORIGIN_LOOK, contact: false };
+/** The words the picture says of itself, on the picture and in the legend. */
+export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: how they look, move and pack, the water and every size are the picture's own";
+export const GATHER_WORDS = "The first assembly gathers from the water: the picture's own, since the run starts with it made";
 
 /** The levels an entry may give this view, in order; an entry names which it has (schema, "What the lens needs from an entry"). */
 export const LEVELS = [
@@ -41,7 +55,7 @@ const TAPE_Y = 6.1; // the tape's middle, above the fence's tallest post
 const SPAN = 22; // the lineage's length along the scene, whatever its number of fissions
 const TOKENS = {
   lead: ["--origin-type-1", "--origin-type-2", "--origin-type-3"],
-  other: "--origin-type-other", otherAlt: "--origin-type-other-2", tail: "--origin-tail", glow: "--origin-glow",
+  other: "--origin-type-other", otherAlt: "--origin-type-other-2", tail: "--origin-tail", glow: "--origin-glow", lipidTail: "--origin-lipid-tail",
   ramp: ["--origin-ramp-0", "--origin-ramp-1", "--origin-ramp-2", "--origin-ramp-3", "--origin-ramp-4", "--origin-ramp-5"],
 };
 
@@ -53,14 +67,14 @@ export function readTokens(host, palette = {}) {
   return {
     lead: TOKENS.lead.map((name, slot) => read(name, [palette.accent, palette.edge, palette.ghost][slot])),
     other: read(TOKENS.other, palette.ghost), otherAlt: read(TOKENS.otherAlt, palette.plateEdge),
-    tail: read(TOKENS.tail, palette.edge), glow: read(TOKENS.glow, palette.accent),
+    tail: read(TOKENS.tail, palette.edge), glow: read(TOKENS.glow, palette.accent), lipidTail: read(TOKENS.lipidTail, palette.dark ? "#b9aa86" : "#e6d9bb"),
     ramp: TOKENS.ramp.map((name, index) => read(name, seq[index])),
     fromTokens: Boolean(style && style.getPropertyValue(TOKENS.lead[0]).trim()),
   };
 }
 
 export class LineageLens {
-  constructor(stage, model, labels, file = model?.raw?.assembly_run, { entry = null } = {}) {
+  constructor(stage, model, labels, file = model?.raw?.assembly_run, { entry = null, autoplay = false } = {}) {
     this.id = "origin";
     this.stage = stage;
     this.model = model;
@@ -69,7 +83,9 @@ export class LineageLens {
     if (entry?.id && entry.id !== this.set.model.id) throw new Error(`the run is of the model ${this.set.model.id}, not of the entry ${entry.id}`);
     this.entry = entry;
     this.runs = this.set.runs;
-    this.mainRun = this.runs[0];
+    // Where two runs are the two forms of the law, the first of them leads (its tape, carpet and map are drawn).
+    this.pairRuns = this.set.formsPair();
+    this.mainRun = this.pairRuns ? this.pairRuns[0] : this.runs[0];
     this.mainEnvironment = this.mainRun.environment;
     this.leading = this.mainRun.leading(3);
     this.pair = false;
@@ -77,19 +93,25 @@ export class LineageLens {
     this.compare = "carried";
     this.composition = "wheel";
     this.narrow = false;
-    this.shape = stage.reducedMotion ? "cluster" : "micelle";
+    this.autoplay = Boolean(autoplay);
+    this.shape = "micelle";
     this.selected = null;
     this.hovered = null;
     this.active = false;
     this.player = new Player();
     this.root = new THREE.Group();
+    // The water and the free molecules in it: the picture's own (src/lenses/lipid_water.js, lipid_assembly.js).
+    this.water = new Water({ narrow: false });
+    this.lipid = lipidMaterials(this.water);
+    this.crowd = new FreeCrowd(this.mainEnvironment, { narrow: false });
+    this.waterTime = 0;
     this.materials = this.makeMaterials();
     this.build();
     this.applyPalette(stage.palette || {});
   }
 
   get shownRuns() {
-    return this.pair && this.runs.length > 1 ? this.runs.slice(0, 2) : [this.mainRun];
+    return this.pair && this.pairRuns ? this.pairRuns : [this.mainRun];
   }
 
   runById(id) {
@@ -133,6 +155,9 @@ export class LineageLens {
       leading: [0, 1, 2].map(() => standard({ roughness: 0.4, toneMapped: false })),
     };
     for (const name of ["glow", "ring", "cursor", "spine", "spineThin", "stem", "trail", "trailDashed", "frame", "now", "composome", "stub", "tail"]) materials[name].userData.noContact = true;
+    // The plate the lineage and the table stand on lies in the water too, with its caustics.
+    wetten(materials.plate, this.water, { caustics: 1, rim: 0.06, rimPower: 3 });
+    materials.plate.userData.noContact = false;
     return materials;
   }
 
@@ -162,6 +187,7 @@ export class LineageLens {
     plate.receiveShadow = true;
     plate.userData.unpickable = true;
     this.root.add(plate);
+    this.plate = plate;
     // A group for each place, shown by level: the lineage's parts stand in theirs.
     this.lineageGroup = new THREE.Group();
     this.root.add(this.lineageGroup);
@@ -173,11 +199,11 @@ export class LineageLens {
       const offset = runs.length > 1 ? (index === 0 ? -2.7 : 2.7) : 0;
       group.position.set(ASSEMBLY.x + offset, ASSEMBLY.y, ASSEMBLY.z);
       this.root.add(group);
-      const layout = new BeadLayout({ seed: 2026 + index });
+      const layout = new LipidLayout({ seed: 2026 + index });
       layout.shape = this.shape;
       layout.axis = this.narrow ? 1 : 0;
-      const meshes = new BeadMeshes(group, this.materials);
-      for (const mesh of meshes.meshes) mesh.userData.pick = (hit) => { const bead = meshes.beadOf(hit); return bead ? `${PREFIX}type:${bead.type}` : `${PREFIX}assembly`; };
+      const meshes = new LipidMeshes(group, this.lipid, { narrow: this.narrow, capacity: index === 0 ? 420 : 240 });
+      for (const mesh of meshes.heads) mesh.userData.pick = (hit) => { const lipid = meshes.lipidOf(hit); return lipid ? `${PREFIX}type:${lipid.type}` : `${PREFIX}assembly`; };
       const ring = new CompositionRing(group, this.materials.ring);
       const strip = new CompositionStrip(group, this.materials.strip);
       const z = places.lineage.z + index * 1.6;
@@ -209,6 +235,12 @@ export class LineageLens {
     this.root.add(this.population);
     this.main = main;
     this.keys = {};
+    // The marks of the run keep their colours as their legend shows them: the haze is only on what is wet.
+    this.root.traverse((object) => {
+      for (const material of Array.isArray(object.material) ? object.material : object.material ? [object.material] : []) if (!material.userData.wet) material.fog = false;
+    });
+    this.water.setNarrow(this.narrow);
+    this.crowd.setNarrow(this.narrow);
     this.showLevel();
   }
 
@@ -219,6 +251,10 @@ export class LineageLens {
     this.lineageGroup.visible = level === "lineage";
     this.table.group.visible = level === "molecules";
     this.population.visible = level === "population";
+    // Round one assembly it floats in open water; the other levels stand on the plate.
+    this.plate.visible = level !== "assembly";
+    this.water.setLevel(level);
+    this.water.setCentre(level === "assembly" ? ASSEMBLY : this.homeView().target);
   }
 
   // ------------------------------------------------------------ the lens interface
@@ -263,7 +299,11 @@ export class LineageLens {
     if (!LEVELS.some((level) => level.id === id) || !this.levels().some((level) => level.id === id)) return false;
     this.level = id;
     this.showLevel();
-    if (this.active) this.stage.rig?.flyTo?.(this.homeView());
+    if (this.active) {
+      this.stage.dress?.(id === "assembly" ? ASSEMBLY_LOOK : ORIGIN_LOOK);
+      this.limit();
+      this.stage.rig?.flyTo?.(this.homeView());
+    }
     this.refreshLabels();
     this.stage.invalidate?.();
     this.onChrome?.();
@@ -272,49 +312,74 @@ export class LineageLens {
 
   chrome() {
     const example = this.set.example?.says || null;
+    const types = this.mainEnvironment.types, others = this.mainEnvironment.count - this.leading.length;
+    const lipids = this.level === "assembly" || this.level === "lineage";
     return {
       card: {
         heading: this.set.model.label,
-        modes: { label: "Shape (the picture's choice)", options: SHAPES.map((shape) => [shape, shape === "micelle" ? "Micelle" : "Cluster"]), active: this.shape },
+        modes: { label: "Packing (the picture's choice)", options: SHAPES.map((shape) => [shape, shape === "micelle" ? "Micelle" : "Cluster"]), active: this.shape },
         marks: { label: "Composition", options: COMPOSITION, active: this.composition },
         compare: { label: "Similarity", options: COMPARE.map((item) => [item.id, item.label]), active: this.compare },
-        pair: this.runs.length > 1 ? { label: "Runs under one clock", options: [["one", this.mainRun.label], ["pair", `${this.runs[0].label} and ${this.runs[1].label}`]], active: this.pair ? "pair" : "one" } : null,
+        pair: this.pairRuns ? { label: "The two forms of the law, under one clock", options: [["one", this.mainRun.label], ["pair", `${this.pairRuns[0].label} and ${this.pairRuns[1].label}`]], active: this.pair ? "pair" : "one" } : null,
         text: [example, this.set.model.plain, this.entry?.modelled?.text || "Nothing of this model is in Cells' engine."].filter(Boolean).join(" "),
         sources: this.sourcesOf(),
       },
       legend: {
-        title: "Molecule types",
+        title: lipids ? "Molecules, as lipids" : "Molecule types",
         example,
         items: [
-          ...this.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: `${this.mainEnvironment.types[type]}, ${["diamond", "cube", "tetrahedron"][slot]}`, swatch: `origin-type-${slot + 1}` })),
-          { label: `the other ${this.mainEnvironment.count - this.leading.length} types, spheres`, swatch: "origin-type-other" },
+          ...this.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: `${types[type]}: ${["a blue", "an orange", "a green"][slot]} head, a ${FORMS[slot]}`, swatch: `origin-type-${slot + 1}` })),
+          { label: `the other ${others} types: a round grey head`, swatch: "origin-type-other" },
+          ...(lipids ? [
+            { label: "tails, the same for every type: inward, away from the water", swatch: "origin-tail" },
+            { label: "free molecules: the supply, which the run holds fixed; how many are drawn is the picture's", swatch: "origin-free" },
+            { label: "a soft halo: a molecule moving in or out, or just come; the picture's mark of motion, not of what helped it", swatch: "origin-halo" },
+          ] : []),
           ...(this.mainRun.threshold ? [{ label: `${this.mainRun.threshold.value}: the analysis's threshold, on the parent with the daughter that carries on`, swatch: "origin-threshold" }] : []),
           { label: "bead: inherited · ring: a break (the analysis's marks)", swatch: "origin-fission" },
         ],
+        note: { text: [example ? `${example}.` : null, `${OWN_WORDS}.`, this.helpWords()].filter(Boolean).join(" ") },
       },
-      stamp: [example, this.shownRuns.map((run) => `${run.label}: ${run.law.name}`).join(" · ")].filter(Boolean).join(" · "),
+      timeline: { player: this.player, eventWord: "fission" },
+      stamp: [example, this.shownRuns.map((run) => `${run.label}: ${formWords(run)}`).join(" · ")].filter(Boolean).join(" · "),
     };
+  }
+
+  /** What helped a join: shown as a brief light only where the run records it. */
+  helpWords() {
+    return this.mainRun.raw.trace?.helpers ? null : "The run does not record which molecule helped a join, so no light is drawn between them.";
   }
 
   activate() {
     const { stage } = this;
     this.active = true;
     stage.scene.add(this.root);
+    this.water.attach(stage.scene);
     if (stage.sun) {
       stage.sun.castShadow = false;
       stage.sun.position.set(-8, 30, 18);
       stage.sun.target?.position.set(0, 0, -3);
     }
-    stage.dress?.(ORIGIN_LOOK);
+    stage.dress?.(this.level === "assembly" ? ASSEMBLY_LOOK : ORIGIN_LOOK);
     this.light();
     this.stopLook ??= stage.look?.onChange?.(() => this.active && this.light());
-    if (stage.rig) {
-      stage.rig.limits = { minDistance: 2.5, maxDistance: 120, minPolar: 0.2, maxPolar: Math.PI / 2 - 0.02 };
-      stage.rig.setView(this.homeView());
-    }
+    this.limit();
+    stage.rig?.setView(this.homeView());
     if (this.player.run === null || !this.clock) this.loadClock();
+    // The page is drawn again whenever the clock moves, playing or not (a scrub of the timeline, a key).
+    if (!this.listening) {
+      this.listening = () => this.stage.invalidate?.();
+      this.player.addEventListener("time", this.listening);
+      this.player.addEventListener("state", this.listening);
+    }
     this.buildLabels();
     this.sync(0);
+  }
+
+  /** How the camera may move: all round one assembly in open water; above the plate elsewhere. */
+  limit() {
+    if (!this.stage.rig) return;
+    this.stage.rig.limits = { minDistance: 2.5, maxDistance: 120, minPolar: 0.2, maxPolar: this.level === "assembly" ? Math.PI - 0.35 : Math.PI / 2 - 0.02 };
   }
 
   /** Point the page's one clock at the runs shown. */
@@ -340,6 +405,7 @@ export class LineageLens {
     this.player.pause();
     stage.dress?.({ rich: false });
     stage.scene.remove(this.root);
+    this.water.detach(stage.scene);
     if (stage.scene) stage.scene.environment = null;
     stage.applyPalette?.();
     this.labels.clear();
@@ -355,7 +421,7 @@ export class LineageLens {
       case "lineage": return this.narrow
         ? { target: new THREE.Vector3(0, 2.6, -2.5), distance: 31, azimuth: 1.05, polar: 1.18 }
         : { target: new THREE.Vector3(0, 3.1, -4.8), distance: 30, azimuth: 0.1, polar: 1.2 };
-      default: return { target: ASSEMBLY.clone(), distance: (this.pair ? 11 : 7.5) * (this.narrow ? 1.3 : 1), azimuth: 0.32, polar: 1.3 };
+      default: return { target: ASSEMBLY.clone().add(new THREE.Vector3(this.narrow ? 0 : 0.35, this.narrow ? -0.2 : -0.45, 0)), distance: (this.pair ? 10.5 : 6.6) * (this.narrow ? 1.3 : 1), azimuth: 0.3, polar: 1.36 };
     }
   }
 
@@ -363,7 +429,6 @@ export class LineageLens {
     const narrow = this.stage.width < this.stage.height * 0.9;
     if (narrow === this.narrow) return false;
     this.narrow = narrow;
-    if (narrow && !this.chosenShape) this.setShape("cluster", { chosen: false });
     this.rebuild();
     return true;
   }
@@ -413,9 +478,12 @@ export class LineageLens {
     this.onChrome?.();
   }
 
-  /** Show two runs under one clock, each labelled with its law (the user's answer 9), or one. */
+  /**
+   * Show the two forms of the law side by side, under one clock, each lineage named by its run and
+   * its form (the user's answer 9; "we'll wait for the real runs", 16 November 2026), or one.
+   */
   setPair(on) {
-    const next = Boolean(on) && this.runs.length > 1;
+    const next = Boolean(on) && Boolean(this.pairRuns);
     if (next === this.pair) return;
     this.pair = next;
     this.rebuild();
@@ -470,7 +538,7 @@ export class LineageLens {
     if (example) {
       // An example keeps its mark on the picture at the place shown.
       const anchor = {
-        assembly: ASSEMBLY.clone().add(new THREE.Vector3(0, this.narrow ? -1.95 : this.pair ? 2.3 : 1.6, 0)),
+        assembly: ASSEMBLY.clone().add(new THREE.Vector3(0, this.narrow ? 1.75 : this.pair ? 2.3 : 1.08, 0)),
         lineage: new THREE.Vector3(0, TAPE_Y + 2.2, z - 2.6),
         molecules: new THREE.Vector3(places.table[0], 3.2, places.table[2]),
         population: new THREE.Vector3(places.population[0], 2.2, places.population[2]),
@@ -479,9 +547,20 @@ export class LineageLens {
       this.tags.example.boost = 1000;
     }
     if (level === "assembly" || level === "lineage") {
-      this.tags.shape = add({ id: `${PREFIX}assembly`, text: this.shapeWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, this.pair || this.narrow ? -2.9 : -2.35, 0)), priority: 520 });
+      const under = level === "assembly" ? (this.pair ? -2.05 : this.narrow ? -1.55 : -1.3) : this.pair || this.narrow ? -2.9 : -2.35;
+      this.tags.shape = add({ id: `${PREFIX}assembly`, text: level === "lineage" ? "The assembly now: the shape is the picture's choice" : this.shapeWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 520 });
+      if (level === "assembly") {
+        // The line on the picture that says what is the picture's own; while the founder gathers, the words for that in the shape's place.
+        this.tags.own = labels.add({ text: OWN_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.5 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
+        this.tags.own.boost = 900;
+        this.tags.gather = labels.add({ text: GATHER_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 940, kind: "part label-own", lift: 0 });
+        this.tags.gather.hidden = true;
+        this.tags.free = add({ text: "free molecules: the run's supply, held fixed", anchor: ASSEMBLY.clone().add(this.narrow ? new THREE.Vector3(1.6, 3.4, -2.5) : new THREE.Vector3(4.6, 1.3, -2.4)), priority: 330, lift: 0 });
+      }
       // Each run of a pair is labelled with its own law, beneath its assembly.
-      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${side.run.law.name}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(side.offset, -2.05, 0)), priority: 760 });
+      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(side.offset, -2.05, 0)), priority: 760 });
+      // At the lineages, each lineage of the pair is named too, beside its own fence.
+      if (this.pair && level === "lineage") this.sides.forEach((side, index) => add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: new THREE.Vector3(this.placeAt.lineage.x1 + 0.6, 0.6, this.placeAt.lineage.z + index * 1.6), priority: 750 }));
     }
     if (level === "assembly") {
       this.tags.carries = add({ text: "carries on", anchor: new THREE.Vector3(), priority: 900, lift: 6 });
@@ -510,7 +589,7 @@ export class LineageLens {
   }
 
   shapeWords() {
-    return this.shape === "micelle" ? "A micelle, heads out: the shape is the picture's choice" : "A loose cluster: the shape is the picture's choice";
+    return this.shape === "micelle" ? "Lipids in a micelle, heads to the water and tails in: the shape is the picture's choice" : "Lipids in a loose cluster: the shape is the picture's choice";
   }
 
   compareWords() {
@@ -540,21 +619,27 @@ export class LineageLens {
     let moving = false;
     const chosenType = this.selected?.match(/^assembly:type:(\d+)$/);
     const chosenK = this.selected?.match(/^assembly:fission:[^:]+:(\d+)$/);
-    for (const side of this.sides) {
+    const chosen = chosenType ? Number(chosenType[1]) : null;
+    this.sides.forEach((side, index) => {
       const { run, layout } = side;
       const phase = run.phaseAt(time);
       layout.mode = mode;
-      layout.follow(run, phase);
-      moving = layout.step(seconds, { still }) || moving;
-      const chosen = chosenType ? layout.beads.find((bead) => bead.type === Number(chosenType[1])) || null : null;
-      side.meshes.draw(layout, { slotOf: style.slotOf, colours: this.colours, chosen });
+      // Where the assembly is not shown (the molecules, the population) its lipids are left where they are: back in view, they follow the run again.
+      if (side.group.visible) {
+        const rebuilt = layout.follow(run, phase);
+        // At a run's start the founder's molecules gather from the water (the picture's own; with less motion it stands gathered).
+        if (rebuilt && !still && this.level === "assembly" && phase.phase === "grow" && phase.g === 0 && phase.e === 0) layout.gather();
+        moving = layout.step(seconds, { still }) || moving;
+        side.meshes.draw(this.lipidsOf(side, index, phase), { tailColour: this.colours.lipidTail, chosen: chosen === null ? null : (lipid) => lipid.type === chosen && !lipid.free });
+      }
       // The composition round the assembly: two groups during a split.
       const groups = phase.phase === "split"
         ? [{ x: run.carried(phase.k), centre: layout.centres[0], radius: layout.radius(layout.counts[0] || 40), fade: 0 }, { x: run.other(phase.k), centre: layout.centres[1], radius: layout.radius(layout.counts[1] || 40), fade: 0.75 * layout.fade }]
         : [{ x: run.compositionAt(time), centre: [0, 0, 0], radius: layout.radius(layout.counts[0] || 1), fade: 0 }];
       const key = `${phase.phase}:${phase.k}:${phase.e ?? ""}:${phase.phase === "split" ? phase.part.toFixed(3) : ""}:${this.shape}:${this.colours.version}`;
-      side.ring.mesh.visible = this.composition === "wheel";
-      side.strip.mesh.visible = this.composition === "strip";
+      // While the founder gathers its composition waits for it: the ring and the strip stand once it has gathered.
+      side.ring.mesh.visible = this.composition === "wheel" && !layout.gathering;
+      side.strip.mesh.visible = this.composition === "strip" && !layout.gathering;
       if (this.composition === "wheel") side.ring.draw(groups, style, key);
       else side.strip.draw(groups, style, key);
       const done = Math.min(run.fissionCount, Math.max(0, Math.floor(time + 1e-9)));
@@ -562,36 +647,148 @@ export class LineageLens {
       side.spine.draw(done, phase.phase === "grow" ? phase.progress : 0, { chosen: chosenK ? Number(chosenK[1]) : null });
       side.done = done;
       side.phase = phase;
-    }
+    });
+    this.shade();
     const main = this.sides[0];
     this.tape.draw(main.done, this.colours.ramp);
     this.carpet.draw(main.done, this.colours.ramp);
     this.map.draw(main.done, this.mainRun.compositionAt(time), this.stage.camera);
     this.table.draw(this.colours.ramp, this.colours);
+    if (this.tags?.gather) {
+      this.tags.gather.hidden = !main.layout.gathering;
+      if (this.tags.shape) this.tags.shape.hidden = main.layout.gathering;
+      // On a phone there is room for one line under the assembly: while the founder gathers, that line says so (it says the picture's own too).
+      if (this.tags.own) this.tags.own.hidden = this.narrow && main.layout.gathering;
+    }
     this.placeSplitLabels(main);
     this.stage.invalidate?.();
     return moving;
+  }
+
+  /** The lipids one side draws now: its assembly's, the daughter it let go, and (on the main side, round one assembly) the free molecules. */
+  lipidsOf(side, index, phase) {
+    const { layout, group } = side;
+    const pool = side.pool || (side.pool = []);
+    const haze = this.colours.haze, tail = this.colours.lipidTail;
+    let used = 0;
+    const take = () => pool[used++] || (pool[used - 1] = { pos: [0, 0, 0], axis: [0, 1, 0], colour: new THREE.Color(), tint: new THREE.Color() });
+    const headOf = (type) => {
+      const slot = this.leading.indexOf(type);
+      return slot >= 0 ? this.colours.lead[slot] : type % 2 ? this.colours.otherAlt : this.colours.other;
+    };
+    const put = (bead, fade, free = false) => {
+      const lipid = take();
+      const slot = this.leading.indexOf(bead.type);
+      lipid.type = bead.type;
+      lipid.free = free;
+      lipid.slot = slot >= 0 ? slot : 3;
+      for (let a = 0; a < 3; a++) { lipid.pos[a] = bead.pos[a]; lipid.axis[a] = (bead.axis || bead.dir)[a]; }
+      lipid.spin = bead.spin || 0;
+      lipid.phase = bead.phase || 0;
+      lipid.scale = bead.scale ?? 1;
+      lipid.tail = bead.tailLength ?? 0.6;
+      lipid.flex = bead.flex ?? 1;
+      // A molecule that has just come glows where it is; one seeping in or out has a faint halo while it moves.
+      lipid.glow = bead.glow > 0 ? bead.glow / GLOW_S : bead.flight < 1 && !layout.gathering ? 0.25 + 0.5 * Math.sin(Math.PI * bead.flight) : 0;
+      lipid.colour.copy(headOf(bead.type)).lerp(haze, fade);
+      lipid.tint.copy(tail).lerp(haze, fade);
+      return lipid;
+    };
+    const out = this.drawn?.[index] || [];
+    out.length = 0;
+    for (const bead of layout.beads) if (bead.pos) out.push(put(bead, bead.side === 1 ? 0.7 * layout.fade : 0));
+    for (const bead of layout.adrift) out.push(put(bead, bead.fade ?? 0.8));
+    if (index === 0 && this.level === "assembly" && !this.pair) {
+      const eye = this.stage.camera ? [this.stage.camera.position.x, this.stage.camera.position.y, this.stage.camera.position.z] : null;
+      const centre = [group.position.x, group.position.y, group.position.z];
+      for (const free of this.crowd.at(this.waterTime, centre, eye)) {
+        free.pos = [free.pos[0] - centre[0], free.pos[1] - centre[1], free.pos[2] - centre[2]];
+        free.tailLength = 0.55;
+        free.flex = 1.5;
+        out.push(put(free, 0.18, true));
+      }
+    }
+    (this.drawn ??= [])[index] = out;
+    return out;
+  }
+
+  /** The shade deep inside each assembly shown (the water's own stand-in for contact shade). */
+  shade() {
+    const cores = this.lipid.heads.userData.wetUniforms.uCores.value;
+    const tails = this.lipid.tails.userData.wetUniforms.uCores.value;
+    let at = 0;
+    for (const side of this.sides) {
+      if (!side.group.visible) continue;
+      for (let s = 0; s < 2 && at < cores.length; s++) {
+        const count = side.layout.counts[s];
+        if (!count) continue;
+        const c = side.layout.centres[s], r = side.layout.radius(count) * 1.05;
+        cores[at].set(side.group.position.x + c[0], side.group.position.y + c[1], side.group.position.z + c[2], this.shape === "micelle" ? r : 0);
+        tails[at].copy(cores[at]);
+        at++;
+      }
+    }
+    for (; at < cores.length; at++) { cores[at].w = 0; tails[at].w = 0; }
   }
 
   placeSplitLabels(side) {
     if (!this.tags?.carries) return;
     const splitting = side.phase?.phase === "split" && side.phase.part > 0.2;
     this.tags.carries.hidden = this.tags.other.hidden = !splitting;
+    // While the daughters part, their words stand where the shape's do.
+    if (this.tags.shape && splitting) this.tags.shape.hidden = true;
+    else if (this.tags.shape && !side.layout.gathering) this.tags.shape.hidden = false;
     if (!splitting) return;
     const { layout, group } = side;
     // Beneath each daughter, or beside it where the daughters part up and down.
     const below = (centre, count) => (layout.axis === 1
       ? new THREE.Vector3(centre[0] + layout.radius(count || 40) * 1.7 + 0.3, centre[1], centre[2])
-      : new THREE.Vector3(centre[0], centre[1] - layout.radius(count || 40) - 0.55, centre[2])).add(group.position);
+      : new THREE.Vector3(centre[0], centre[1] - layout.radius(count || 40) - 0.42, centre[2])).add(group.position);
     this.tags.carries.anchor.copy(below(layout.centres[0], layout.counts[0]));
     this.tags.other.anchor.copy(below(layout.centres[1], layout.counts[1]));
   }
 
+  /**
+   * Hold the picture where it is (for pictures and checks): the clock is not ticked and nothing
+   * eases on by itself; `advance(seconds)` then moves what moves by a fixed step.
+   */
+  hold(on = true) {
+    this.held = Boolean(on);
+    this.stage.invalidate?.();
+  }
+
+  advance(seconds, steps = 8) {
+    for (let i = 0; i < steps; i++) this.sync(seconds / steps);
+    this.stage.invalidate?.();
+  }
+
   update(dt = 16, time, real = dt) {
     if (this.stage.width && this.stage.height && this.fitScreen()) return true;
-    const playing = this.active ? this.player.tick(real) : false;
+    if (this.held) {
+      this.sync(0);
+      return false;
+    }
+    // The water moves by the stage's clock of decoration, which stands for less motion and while the page holds it.
+    const decoration = this.stage.decoration;
+    const flowing = Boolean(this.active && decoration?.moving);
+    if (decoration) this.waterTime = decoration.time;
+    this.water.setTime(this.waterTime);
+    if (this.stage.camera) {
+      this.water.face(this.stage.camera);
+      // Nothing nearer than what the camera looks at is hazed.
+      const subject = this.level === "assembly" ? ASSEMBLY : this.homeView().target;
+      this.water.setHazeNear(this.stage.camera.position.distanceTo(subject) + (this.level === "assembly" ? 1.4 : 4));
+    }
+    if (this.stage.height) this.water.setViewport(this.stage.height, this.stage.renderer?.getPixelRatio?.() || 1);
+    // While the founder gathers the clock stands at the run's start; then, where the page asks, it plays.
+    const gathering = this.sides.some((side) => side.layout.gathering);
+    const playing = this.active && !gathering ? this.player.tick(real) : false;
+    if (this.active && this.autoplay && !gathering && !this.autoplayed && !this.stage.reducedMotion) {
+      this.autoplayed = true;
+      this.player.play();
+    }
     const moving = this.sync(dt / 1000);
-    return playing || moving;
+    return playing || moving || flowing || gathering;
   }
 
   // ------------------------------------------------------------ theme and cost
@@ -602,9 +799,12 @@ export class LineageLens {
     this.tokens = tokens;
     const tone = (value) => new THREE.Color(value || "#888888");
     const ramp = tokens.ramp.map(tone);
+    const water = WATER_THEMES[palette.dark ? "dark" : "light"];
+    this.water.setTheme(Boolean(palette.dark));
     this.colours = {
       lead: tokens.lead.map(tone), other: tone(tokens.other), otherAlt: tone(tokens.otherAlt), tail: tone(tokens.tail),
-      stage: tone(palette.bg), chosen: tone(palette.accent), ramp, version: (this.colours?.version || 0) + 1,
+      lipidTail: tone(tokens.lipidTail), haze: tone(water.mid),
+      stage: tone(water.mid), chosen: tone(palette.accent), ramp, version: (this.colours?.version || 0) + 1,
     };
     const set = (name, value) => value && this.materials[name].color.set(value);
     for (const name of ["lead", "other", "strip", "column", "cap", "node", "point"]) this.materials[name].color.set(0xffffff);
@@ -626,6 +826,11 @@ export class LineageLens {
     set("composome", palette.accent);
     set("slot", palette.plateEdge);
     set("glow", tokens.glow);
+    // The halo of a molecule that comes or goes: light added in dark water, a soft tint laid over in pale water.
+    this.lipid.glow.uniforms.color.value.set(tokens.glow);
+    this.lipid.glow.blending = palette.dark ? THREE.AdditiveBlending : THREE.NormalBlending;
+    this.lipid.glow.uniforms.opacity.value = palette.dark ? 0.42 : 0.3;
+    this.lipid.glow.needsUpdate = true;
     this.leading.forEach((_, slot) => {
       this.materials.arrows[slot].color.copy(this.colours.lead[slot]);
       this.materials.arrowHeads[slot].color.copy(this.colours.lead[slot]);
@@ -640,10 +845,10 @@ export class LineageLens {
     if (this.active) this.sync(0);
   }
 
-  /** What one frame costs to draw, counted from the scene: draws and triangles of every visible thing. */
+  /** What one frame costs to draw, counted from the scene: draws and triangles of every visible thing, the water's too. */
   cost() {
     let draws = 0, triangles = 0;
-    this.root.traverseVisible((object) => {
+    const count = (object) => {
       if (!(object.isMesh || object.isLine || object.isPoints)) return;
       const geometry = object.geometry;
       const instances = object.isInstancedMesh ? object.count : 1;
@@ -652,12 +857,18 @@ export class LineageLens {
       if (range === 0) return;
       draws += 1;
       if (object.isMesh) triangles += (range / 3) * instances;
-    });
+    };
+    this.root.traverseVisible(count);
+    if (this.water.attached) this.water.group.traverseVisible(count);
     return { draws, triangles: Math.round(triangles) };
   }
 
   dispose() {
     this.stopLook?.();
+    if (this.listening) for (const name of ["time", "state"]) this.player.removeEventListener(name, this.listening);
+    this.water.detach();
+    this.water.dispose();
+    for (const material of Object.values(this.lipid)) material.dispose();
     disposeTree(this.root);
     this.environment?.dispose?.();
     this.studio?.dispose?.();

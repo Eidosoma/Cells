@@ -135,7 +135,8 @@ test("the reader refuses a file that breaks the contract", () => {
 test("words that must not stand: no engine record name outside the contract's table, and no model named in the code", () => {
   const mine = [
     "schema/ASSEMBLY_RUN.md", "tools/make_assembly_example.mjs", "data/origin/README.md", "data/origin/example-run.json",
-    ...readdirSync(path.join(ROOT, "src", "lenses")).filter((name) => /^(assembly|lineage|composition|similarity|catalysis)/.test(name)).map((name) => `src/lenses/${name}`),
+    ...readdirSync(path.join(ROOT, "src", "lenses")).filter((name) => /^(assembly|lineage|lipid|composition|similarity|catalysis)/.test(name)).map((name) => `src/lenses/${name}`),
+    "src/standalone/lineage.js",
     ...readdirSync(path.join(ROOT, "src", "ui")).filter((name) => name.startsWith("origin")).map((name) => `src/ui/${name}`),
   ].filter((file) => statSync(path.join(ROOT, file), { throwIfNoEntry: false }));
   const records = ["assembly_count", "joined_total", "left_total", "discarded_total", "boundary_similarity", "fission_similarity", "fission_split", "fission_followed", "fission_time", "exchange_heat_kT", "fission_work_kT"];
@@ -145,6 +146,7 @@ test("words that must not stand: no engine record name outside the contract's ta
     if (file.startsWith("src/")) assert.ok(!/\bGARD\b/.test(body), `${file}: the view's code names no model; GARD is in the data`);
   }
   const contract = readFileSync(path.join(ROOT, "schema", "ASSEMBLY_RUN.md"), "utf8");
-  const table = contract.slice(contract.indexOf("## The engine's proposed records"));
-  for (const name of records.filter((item) => contract.includes(item))) assert.ok(table.includes(name) && contract.indexOf(name) >= contract.indexOf("## The engine's proposed records"), `${name} stands only in the contract's table`);
+  const heading = "## The records the engine's design names";
+  const table = contract.slice(contract.indexOf(heading));
+  for (const name of records.filter((item) => contract.includes(item))) assert.ok(table.includes(name) && contract.indexOf(name) >= contract.indexOf(heading), `${name} stands only in the contract's table`);
 });

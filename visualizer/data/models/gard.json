@@ -8,22 +8,27 @@
  "order": 100,
  "made": "2026-11-16",
  "modelled": {
-  "state": "proposed",
-  "text": "Nothing of GARD is in the engine. The user asked for GARD as one theory an origin-of-life simulation needs, and asked the engine's lead to look into it (16 November 2026). The engine's lead has proposed a design for it, on a development branch, not on main. The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”, and that “GARD, Boolean regulation, and continuous biochemical equations need explicit contracts if supported”.",
+  "state": "designed",
+  "text": "Designed, not modelled. Its design note is on main, decided on 16 November 2026 (D192), and it is built in step 4 of D194's order: nothing of GARD is in the engine yet. The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”.",
   "record": [
    {
     "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
-    "where": "Its opening: the user's request of 16 November 2026; and Decided"
+    "where": "Its opening: the user's request of 16 November 2026; Decided; and Status"
+   },
+   {
+    "path": "docs/GARD_DESIGN.md",
+    "where": "Status: DECIDED, 16 November 2026 (D192)"
+   },
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D192, the design choices; D194, the order (GARD in step 4)"
    },
    {
     "path": "docs/SCIENTIFIC_BASIS.md",
     "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
-   },
-   {
-    "path": "docs/ARCHITECTURE.md",
-    "where": "GARD, Boolean regulation, and continuous biochemical equations need explicit contracts if supported"
    }
-  ]
+  ],
+  "design": "docs/GARD_DESIGN.md"
  },
  "view": {
   "kind": "assembly"
@@ -93,5 +98,18 @@
    "class": "permissive",
    "accessed": "2026-11-16"
   }
- }
+ },
+ "notes": [
+  {
+   "id": "law",
+   "label": "The law's two forms, in the engine's design (D192)",
+   "text": "As D192 records the checked finding: in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer shows no comparison of the two.",
+   "record": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D192: the reversibility finding, as checked"
+    }
+   ]
+  }
+ ]
 }

@@ -6,7 +6,7 @@
 // shape, the layout and the map's axes; the run's own H as the run's, and the analysis's marks as
 // the analysis's. No statistic of an example is stated.
 
-import { PREFIX, sizeOf, typesHeld, similarity } from "./assembly_run.js";
+import { PREFIX, sizeOf, typesHeld, similarity, formWords } from "./assembly_run.js";
 import { COMPARE, valueAt } from "./similarity_marks.js";
 
 const fixed = (h) => (h === null || h === undefined ? "not saved" : h.toFixed(3));
@@ -25,7 +25,15 @@ function exampleFacts(lens) {
 }
 
 function runFacts(run, lens) {
-  return [["Run", `${run.label}: ${run.law.name}`], ["Law of catalysis", run.law.says], ...(lens.papers() ? [["Its rules rest on", lens.papers()]] : [])];
+  // What the entry records of the law's forms in the engine's design (its note "law", with the record it cites).
+  const law = lens.entry?.notes?.find((note) => note.id === "law");
+  return [
+    ["Run", `${run.label}: ${run.law.name}`],
+    ...(run.form ? [["Form of the law", formWords(run)]] : []),
+    ["Law of catalysis", run.law.says],
+    ...(law ? [[law.label, `${law.text}${law.record?.length ? ` (${law.record.map((item) => `${item.path}, ${item.where}`).join("; ")})` : ""}`]] : []),
+    ...(lens.papers() ? [["Its rules rest on", lens.papers()]] : []),
+  ];
 }
 
 /** The panel's entity for an id of this view, or null. */
@@ -43,8 +51,8 @@ export function describe(lens, id) {
         label: "One assembly",
         eyebrow: `${lens.set.model.label} · ${run.label}`,
         kind: "assembly",
-        plain: `A bead for each molecule: ${sizeOf(x)} molecules of ${typesHeld(x)} types at the clock's time. It grows one molecule at a time to ${run.raw.rules?.fission_size ?? "its size"}, then splits in two; one daughter carries the lineage on.`,
-        note: `Drawn as ${lens.shape === "micelle" ? "a micelle, heads out and tails in" : "a loose cluster"}: the shape is the picture's choice. The model gives an assembly no shape, no place and no membrane.`,
+        plain: `A lipid for each molecule: ${sizeOf(x)} molecules of ${typesHeld(x)} types at the clock's time. It grows one molecule at a time to ${run.raw.rules?.fission_size ?? "its size"}, then splits in two; one daughter carries the lineage on and the other drifts off.`,
+        note: `Drawn as lipids in water, ${lens.shape === "micelle" ? "in a micelle, heads to the water and tails in" : "in a loose cluster"}: the shape is the picture's choice. The model gives an assembly no shape, no place and no membrane; no law of Cells computes how the lipids move and pack, and the water, the free molecules' number and every size are the picture's own.`,
         facts: [...exampleFacts(lens), ...runFacts(run, lens), ["Molecules", String(sizeOf(x))], ["Types held", String(typesHeld(x))], ["Split", run.raw.rules?.split || "as the run states"], ["Carries on", run.raw.rules?.continues || "as the run states"]],
       };
     }
@@ -58,7 +66,7 @@ export function describe(lens, id) {
         kind: "composition",
         plain: "The list of counts drawn as shares: the wheel round the assembly, the strip beneath it. The types keep their places, t000 onward, so a change of mix is a change of widths.",
         note: "Shares are counts over the size: the view's own division.",
-        facts: [...exampleFacts(lens), ["Molecules", String(sizeOf(x))], ["The three leading types", lead], ["The other types", "grey, in two tones that alternate between neighbours"]],
+        facts: [...exampleFacts(lens), ["Molecules", String(sizeOf(x))], ["The three leading types", lead], ["The other types", "grey, in two tones that alternate between neighbours; round grey heads in the assembly"]],
       };
     }
     case "type": {
@@ -71,8 +79,8 @@ export function describe(lens, id) {
         eyebrow: "A molecule type",
         kind: "type",
         plain: `A molecule type of the environment. It has no chemistry of its own in the model: what it does comes from the table of catalysis.`,
-        note: slot >= 0 ? `One of the three types that lead over the run: it wears a colour and a shape (${["a diamond", "a cube", "a tetrahedron"][slot]}).` : "Drawn grey, as every type but the three that lead over the run.",
-        facts: [["In the assembly now", `${x[type]} of ${sizeOf(x)}`], ["Speeds itself by", `a factor of ${formatFactor(lens.mainEnvironment.catalysis(type, type))} (the table's diagonal)`]],
+        note: slot >= 0 ? `One of the three types that lead over the run: it wears a colour and a shape (${["a diamond", "a cube", "a tetrahedron"][slot]}), and in the assembly its lipids have a ${["soft diamond", "soft cube", "soft tetrahedron"][slot]} of a head.` : "Drawn grey, as every type but the three that lead over the run: in the assembly, a round grey head.",
+        facts: [["In the assembly now", `${x[type]} of ${sizeOf(x)}`], ["Speeds itself by", `a factor of ${formatFactor(lens.mainEnvironment.catalysis(type, type))} (the table's diagonal)`], ["In the water", `held at ${lens.mainEnvironment.raw.reservoir?.each ?? "the run's"} by the run, as every type is: the free molecules drawn are the picture's number`]],
       };
     }
     case "fission": {
@@ -191,7 +199,7 @@ export function sections(lens) {
       }),
     });
   }
-  out.push({ label: "The view's parts", entities: [{ id: `${PREFIX}assembly`, label: "One assembly", swatch: "origin-part", keywords: "assembly micelle cluster beads" }, { id: `${PREFIX}composition`, label: "Its composition", swatch: "origin-part", keywords: "wheel strip shares" }, ...PARTS.map((part) => ({ id: `${PREFIX}part:${part.id}`, label: part.label, swatch: "origin-part", keywords: part.plain }))] });
+  out.push({ label: "The view's parts", entities: [{ id: `${PREFIX}assembly`, label: "One assembly", swatch: "origin-part", keywords: "assembly micelle cluster lipids heads tails" }, { id: `${PREFIX}composition`, label: "Its composition", swatch: "origin-part", keywords: "wheel strip shares" }, ...PARTS.map((part) => ({ id: `${PREFIX}part:${part.id}`, label: part.label, swatch: "origin-part", keywords: part.plain }))] });
   out.push({ label: "The leading types", entities: lens.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: typeName(lens, type), swatch: `origin-type-${slot + 1}`, keywords: "molecule type leading" })) });
   return out;
 }

@@ -1,0 +1,15 @@
+{
+  "view": "lineage",
+  "title": "GARD Assembly Preview",
+  "description": "A GARD assembly drawn as lipids in water, gathering, taking molecules in and letting them go, and splitting in two, as an example run of invented numbers plays (not a run of Cells' engine), on a preview of a view that is not on the map's page yet.",
+  "boot": "Loading the GARD assembly…",
+  "scene": {
+    "from": "data/architecture/architecture.scene.json",
+    "keep": ["format", "kind", "title", "meta", "statuses", "relation_kinds", "groups"]
+  },
+  "data": [
+    { "into": "assembly_run", "from": "data/origin/example-run.json" },
+    { "into": "entry", "from": "data/models/gard.json" }
+  ],
+  "stamp": "{assembly_run.example.says}. The lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine: {entry.modelled.state}, not built (D192)."
+}

@@ -40,12 +40,12 @@ export class CompositionRing {
     this.key = key;
     const positions = this.mesh.geometry.attributes.position.array, tint = this.mesh.geometry.attributes.color.array;
     let at = 0;
-    const colour = new THREE.Color();
+    const colour = this.colour || (this.colour = new THREE.Color());
     const budget = Math.floor(RING_QUADS / Math.max(1, groups.length));
     for (const group of groups) {
       const { x, centre, radius, fade } = group;
       const total = x.reduce((a, b) => a + b, 0) || 1;
-      const inner = radius * 1.38, outer = radius * 1.38 + 0.26 * Math.max(0.6, radius);
+      const inner = radius * 1.5, outer = radius * 1.5 + 0.15 * Math.max(0.6, radius);
       let angle = -Math.PI / 2;
       for (let type = 0; type < x.length; type++) {
         if (!x[type]) continue;
@@ -53,23 +53,31 @@ export class CompositionRing {
         const quads = Math.max(1, Math.round((span / (Math.PI * 2)) * budget));
         colour.copy(typeColour(type, x, style)).lerp(style.colours.stage, fade);
         const from = angle + GAP / 2, to = angle + Math.max(GAP / 2 + 0.002, span - GAP / 2);
+        const r = colour.r, g = colour.g, b = colour.b, cx = centre[0], cy = centre[1], cz = centre[2];
         for (let q = 0; q < quads && at < RING_QUADS * 2 * 18; q++) {
+          // Two triangles of the arc's quad, written straight into the buffers (this runs whenever the mix changes).
           const a0 = from + ((to - from) * q) / quads, a1 = from + ((to - from) * (q + 1)) / quads;
-          const p = (r, a) => [centre[0] + Math.cos(a) * r, centre[1], centre[2] + Math.sin(a) * r];
-          const quad = [p(inner, a0), p(outer, a0), p(outer, a1), p(inner, a0), p(outer, a1), p(inner, a1)];
-          for (const point of quad) {
-            positions.set(point, at);
-            tint.set([colour.r, colour.g, colour.b], at);
+          const c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+          const corners = [inner * c0, inner * s0, outer * c0, outer * s0, outer * c1, outer * s1, inner * c0, inner * s0, outer * c1, outer * s1, inner * c1, inner * s1];
+          for (let k = 0; k < 12; k += 2) {
+            positions[at] = cx + corners[k]; positions[at + 1] = cy; positions[at + 2] = cz + corners[k + 1];
+            tint[at] = r; tint[at + 1] = g; tint[at + 2] = b;
             at += 3;
           }
         }
         angle += span;
       }
     }
-    this.mesh.geometry.setDrawRange(0, at / 3);
-    this.mesh.geometry.attributes.position.needsUpdate = true;
-    this.mesh.geometry.attributes.color.needsUpdate = true;
-    this.mesh.geometry.computeBoundingSphere();
+    const geometry = this.mesh.geometry;
+    geometry.setDrawRange(0, at / 3);
+    // Only what was written goes to the card; the bounds are worked out again only when a ray asks.
+    for (const name of ["position", "color"]) {
+      const attribute = geometry.attributes[name];
+      attribute.clearUpdateRanges?.();
+      attribute.addUpdateRange?.(0, Math.max(3, at));
+      attribute.needsUpdate = true;
+    }
+    geometry.boundingSphere = null;
   }
 
   dispose() { this.mesh.geometry.dispose(); }

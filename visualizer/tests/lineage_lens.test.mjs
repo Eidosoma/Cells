@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
-import { LineageLens, LEVELS, ORIGIN_LOOK } from "../src/lenses/lineage.js";
+import { LineageLens, LEVELS, ORIGIN_LOOK, ASSEMBLY_LOOK } from "../src/lenses/lineage.js";
 import { FINE, OPENING, LADDER } from "../src/lenses/lineage_clock.js";
 import { GLOW_CAP } from "../src/lenses/assembly_beads.js";
 import { PARTS } from "../src/lenses/lineage_card.js";
@@ -32,6 +32,8 @@ function lensFor({ moving = true, width = 1600, height = 1000, file = example(),
     palette, scene: new THREE.Scene(), camera, width, height, reducedMotion: !moving, invalidate() {},
     rig: { setView(view) { views.push(view); camera.position.copy(view.target).add(new THREE.Vector3(Math.sin(view.azimuth) * Math.sin(view.polar), Math.cos(view.polar), Math.cos(view.azimuth) * Math.sin(view.polar)).multiplyScalar(view.distance)); camera.lookAt(view.target); camera.updateMatrixWorld(); }, flyTo(view) { this.setView(view); } },
     dress: (fit) => dressed.push(fit),
+    // The clock of decoration (core/look.js): it stands when less motion is asked for.
+    decoration: { moving: false, time: 0 },
   };
   const lens = new LineageLens(stage, null, labels, file, { entry });
   lens.activate();
@@ -101,7 +103,8 @@ test("a part is chosen by pointer: a ray at a post of the fence, the tape, the c
   assert.match(pickAt(lens, carpet.clone(), carpet.clone().add(new THREE.Vector3(0, 10, 0))) || "", /^assembly:pair:lineage-a:\d+:\d+$/);
   const side = lens.sides[0], bead = side.layout.beads[0];
   const at = new THREE.Vector3(...bead.pos).add(side.group.position);
-  assert.equal(pickAt(lens, at, at.clone().add(new THREE.Vector3(...bead.dir).multiplyScalar(6))), `assembly:type:${bead.type}`);
+  // A ray from the water to a lipid's head picks its type.
+  assert.equal(pickAt(lens, at, at.clone().add(new THREE.Vector3(...bead.axis).multiplyScalar(6))), `assembly:type:${bead.type}`);
 });
 
 test("the keys step a fission at a time, by the page's one clock", () => {
@@ -234,9 +237,10 @@ test("motion at speed: molecules fly only molecule by molecule; at fission steps
   for (const speed of [2, 8]) assert.deepEqual(watch(speed, 3), bound, `${speed}: nothing flies or glows`);
 });
 
-test("less motion: the cluster, nothing flies or glows, nothing eases", () => {
+test("less motion: the micelle stands; nothing gathers, flies or glows, nothing eases", () => {
   const { lens } = lensFor({ moving: false });
-  assert.equal(lens.shape, "cluster");
+  assert.equal(lens.shape, "micelle");
+  assert.equal(lens.sides[0].layout.gathering, false, "the founder stands gathered");
   lens.player.setSpeed(FINE);
   lens.player.play();
   for (let frame = 0; frame < 120; frame++) lens.update(16, 0, 16);
@@ -246,32 +250,72 @@ test("less motion: the cluster, nothing flies or glows, nothing eases", () => {
   assert.equal(lens.update(16, 0, 16), false, "paused, nothing is left to move");
 });
 
-test("a pair under one clock, each labelled with its own law", () => {
-  const { lens, shown } = lensFor();
+// A test's own made-up runs of one world, one of each form of the law (tests/fixtures/assembly-forms/make.mjs).
+const forms = () => JSON.parse(readFileSync(path.join(ROOT, "tests", "fixtures", "assembly-forms", "forms.json"), "utf8"));
+
+test("the two forms of the law side by side: two real runs of one world, each named by its run and its form, under one clock, with the same marks", () => {
+  const { lens, shown } = lensFor({ file: forms() });
+  assert.ok(lens.chrome().card.pair, "the pair is offered");
   lens.setPair(true);
   lens.update(16, 0, 16);
   assert.equal(lens.sides.length, 2);
-  for (const run of example().runs) assert.ok(shown.some((label) => label.text === `${run.label}: ${run.law.name}`), run.id);
-  lens.player.seek(44);
+  assert.deepEqual(lens.sides.map((side) => side.run.form), ["single-event", "pair-consistent"]);
+  assert.ok(shown.some((label) => label.text === "Run S: the preprint's single-event form, built for the reference comparison"));
+  assert.ok(shown.some((label) => label.text === "Run P: the pair-consistent form, the engine's own law"));
+  lens.player.seek(6);
   lens.update(16, 0, 16);
-  assert.deepEqual(lens.sides.map((side) => side.phase.k), [44, 44], "both runs at the same fission");
+  assert.deepEqual(lens.sides.map((side) => side.phase.k), [6, 6], "both at the same fission, by one clock");
+  lens.setLevel("lineage");
+  lens.update(16, 0, 16);
+  assert.ok(lens.sides.every((side) => side.fence.sheet?.visible), "the same marks on both: each its own analysis's threshold");
+  assert.equal(new Set(lens.sides.map((side) => side.run.environment)).size, 1, "one world");
+  assert.match(lens.chrome().stamp, /Run S: the preprint's single-event form.* · Run P: the pair-consistent form/);
+  assert.ok(lens.describe("assembly:assembly").facts.some(([label, value]) => label === "Form of the law" && /single-event/.test(value)));
+});
+
+test("an example is never one of a pair of forms, nor two runs of different worlds, of one form, or not of the engine", () => {
+  const offered = (file) => Boolean(lensFor({ file }).lens.chrome().card.pair);
+  assert.equal(offered(example()), false, "the example's two lineages are no pair");
+  const marked = forms();
+  marked.example = { says: "Example: invented numbers · not a run of Cells' engine", made_by: "a test" };
+  for (const run of marked.runs) { run.engine_models = []; run.revision = null; }
+  assert.equal(offered(marked), false, "an example stating two forms is still no pair");
+  const worlds = forms();
+  worlds.runs[1].world = "another world";
+  assert.equal(offered(worlds), false, "two worlds");
+  const same = forms();
+  same.runs[1].law.form = "single-event";
+  assert.equal(offered(same), false, "one form");
+  const unrun = forms();
+  unrun.runs[1].revision = null;
+  assert.equal(offered(unrun), false, "a run without the engine's revision");
+  const ruled = forms();
+  ruled.runs[1].rules = { ...ruled.runs[1].rules, fission_size: 18 };
+  assert.equal(offered(ruled), false, "different rules");
+  const { lens } = lensFor();
+  lens.setPair(true);
+  assert.equal(lens.pair, false, "asked for anyway, the example stays one lineage");
 });
 
 test("what the scene costs to draw: one assembly, the lineage, and the pair (ceilings about a fifth above what it costs)", () => {
   const { lens } = lensFor();
   lens.player.seek(120);
   lens.update(16, 0, 16);
+  // One assembly in water: four heads' meshes, the tails, the halos, the ring, and the water's dome, shafts and specks.
   const assembly = lens.cost();
-  assert.ok(assembly.draws <= 9 && assembly.triangles <= 9000, `one assembly: ${JSON.stringify(assembly)}`);
+  assert.ok(assembly.draws <= 10 && assembly.triangles <= 126000, `one assembly: ${JSON.stringify(assembly)}`);
   lens.setLevel("lineage");
   lens.update(16, 0, 16);
   const one = lens.cost();
-  assert.ok(one.draws <= 37 && one.triangles <= 55000, `the lineage, one run: ${JSON.stringify(one)}`);
-  lens.setPair(true);
-  lens.player.seek(120);
-  lens.update(16, 0, 16);
-  const pair = lens.cost();
-  assert.ok(pair.draws <= 54 && pair.triangles <= 100000, `the lineage, the pair: ${JSON.stringify(pair)}`);
+  assert.ok(one.draws <= 40 && one.triangles <= 104000, `the lineage, one run: ${JSON.stringify(one)}`);
+  // The pair of forms, on the test's own two runs of a small world.
+  const paired = lensFor({ file: JSON.parse(readFileSync(path.join(ROOT, "tests", "fixtures", "assembly-forms", "forms.json"), "utf8")) }).lens;
+  paired.setPair(true);
+  paired.setLevel("lineage");
+  paired.player.seek(10);
+  paired.update(16, 0, 16);
+  const pair = paired.cost();
+  assert.ok(pair.draws <= 57 && pair.triangles <= 194000, `the lineage, the pair: ${JSON.stringify(pair)}`);
 });
 
 test("a run of another model than its entry's is refused; the threshold is a part only where the analysis states one", () => {
@@ -284,11 +328,13 @@ test("a run of another model than its entry's is refused; the threshold is a par
   assert.equal(lensFor().lens.describe("assembly:threshold").label, "The analysis's threshold, 0.9");
 });
 
-test("a tall screen: the narrow layout, the cluster, and the lineage seen at a slant", () => {
+test("a tall screen: the narrow layout, the same micelle with fewer free molecules and specks, and the lineage seen at a slant", () => {
   const { lens, views } = lensFor({ width: 400, height: 860 });
   lens.update(16, 0, 16);
   assert.equal(lens.narrow, true);
-  assert.equal(lens.shape, "cluster", "on a phone the cluster, unless the visitor chose the micelle");
+  assert.equal(lens.shape, "micelle", "on a phone the same content");
+  const wide = lensFor().lens;
+  assert.ok(lens.crowd.count < wide.crowd.count && lens.water.moteCount < wide.water.moteCount, "fewer free molecules and specks on a phone");
   assert.equal(lens.sides[0].layout.axis, 1, "on a tall screen the daughters part up and down");
   lens.player.seek(30);
   lens.update(16, 0, 16);
@@ -297,15 +343,18 @@ test("a tall screen: the narrow layout, the cluster, and the lineage seen at a s
   lens.setLevel("lineage");
   assert.ok(views.at(-1).azimuth > 0.6, "the lineage recedes into the screen");
   const chosen = lensFor({ width: 1600, height: 1000 }).lens;
-  chosen.setShape("micelle");
+  chosen.setShape("cluster");
   chosen.stage.width = 400; chosen.stage.height = 860;
   chosen.update(16, 0, 16);
-  assert.equal(chosen.shape, "micelle", "a shape the visitor chose is kept");
+  assert.equal(chosen.shape, "cluster", "a shape the visitor chose is kept");
 });
 
 test("it asks the stage for the page's look, keeps the types' colours out of filmic light, and hands the look back", () => {
   const { lens, dressed, stage } = lensFor();
-  assert.deepEqual(dressed[0], ORIGIN_LOOK);
+  assert.deepEqual(dressed[0], ASSEMBLY_LOOK, "round one assembly the water's own shade stands in for contact shade");
+  lens.setLevel("lineage");
+  assert.deepEqual(dressed.at(-1), ORIGIN_LOOK);
+  assert.equal(lens.lipid.heads.toneMapped, false, "a head's colour is its type's, as the legend shows it");
   assert.equal(lens.materials.lead.toneMapped, false);
   assert.equal(lens.materials.ring.toneMapped, false);
   assert.equal(lens.tokens.fromTokens, false, "a stand-in stage has no page to read the view's tokens from: the page's neutral ones stand in");

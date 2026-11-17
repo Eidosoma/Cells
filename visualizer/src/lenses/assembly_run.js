@@ -13,6 +13,16 @@ export const PREFIX = "assembly:";
 /** The share of each fission's interval on the clock spent on the split itself, on either side of the fission's time. */
 export const PART = 0.15;
 
+/**
+ * The two forms of the law of catalysis a run may state (`law.form`), in the words of the engine's
+ * decision (docs/DECISIONS.md, D192). A run names the engine's own name for its form in
+ * `law.engine_name` once the engine has one; the view shows that name as words and binds to none.
+ */
+export const LAW_FORMS = {
+  "single-event": "the preprint's single-event form, built for the reference comparison",
+  "pair-consistent": "the pair-consistent form, the engine's own law",
+};
+
 const isCounts = (list) => Array.isArray(list) && list.every((pair) => Array.isArray(pair) && pair.length === 2 && Number.isInteger(pair[0]) && pair[0] >= 0 && Number.isInteger(pair[1]) && pair[1] > 0);
 
 /** What is wrong with a file, as plain lines; an empty list where it holds to the contract. */
@@ -45,6 +55,9 @@ export function problemsOf(file) {
     if (!["single lineage", "population"].includes(run.mode)) problems.push(`${where}: its mode must be "single lineage" or "population"`);
     if (run.mode === "population") problems.push(`${where}: a population is reserved and not read yet`);
     if (!run.law?.name) problems.push(`${where}: it must name the law of catalysis it ran`);
+    if (run.law?.form !== undefined && !(run.law.form in LAW_FORMS)) problems.push(`${where}: its law's form is one of ${Object.keys(LAW_FORMS).join(", ")}`);
+    if (run.law?.engine_name !== undefined && run.law.engine_name !== null && !(typeof run.law.engine_name === "string" && run.law.engine_name)) problems.push(`${where}: the engine's name for its law is words, or null until the engine has one`);
+    if (run.world !== undefined && run.world !== null && !(typeof run.world === "string" && run.world)) problems.push(`${where}: the world it is of is named in words`);
     if (file.example && (run.engine_models?.length || run.revision)) problems.push(`${where}: an example names no engine model and no revision`);
     const inRange = (list) => isCounts(list) && list.every(([type]) => type < n);
     if (!inRange(run.founder)) problems.push(`${where}: its founder must be sparse counts of the environment's types`);
@@ -147,6 +160,8 @@ export class AssemblyRun {
     this.environment = environment;
     this.n = environment.count;
     this.law = raw.law;
+    this.form = raw.law?.form || null;
+    this.world = raw.world || null;
     this.example = file.example || null;
     this.fissionCount = raw.fissions.length;
     this.founder = dense(raw.founder, this.n);
@@ -286,4 +301,29 @@ export class AssemblySet {
   run(id) {
     return this.runs.find((run) => run.id === id) || null;
   }
+
+  /**
+   * Two runs to show side by side as the two forms of the law, or null. Only real runs of the
+   * engine (a revision and the engine's models named), never an example; of the same world (the
+   * world they say they are of, and the same environment), by the same rules, one of each form.
+   */
+  formsPair() {
+    if (this.example) return null;
+    const real = this.runs.filter((run) => run.raw.revision && run.raw.engine_models?.length && run.world && run.form && run.raw.mode === "single lineage");
+    for (let a = 0; a < real.length; a++) {
+      for (let b = a + 1; b < real.length; b++) {
+        const one = real[a], two = real[b];
+        if (one.world !== two.world || one.environment !== two.environment || one.form === two.form) continue;
+        if (JSON.stringify(one.raw.rules || null) !== JSON.stringify(two.raw.rules || null)) continue;
+        return [one, two];
+      }
+    }
+    return null;
+  }
+}
+
+/** A run's form of the law, in words: the engine's name for it where the run gives one. */
+export function formWords(run) {
+  if (!run.form) return run.law?.name || "its law";
+  return `${LAW_FORMS[run.form]}${run.law.engine_name ? ` (${run.law.engine_name})` : ""}`;
 }
