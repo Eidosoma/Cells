@@ -307,8 +307,11 @@ def run_lanes(specs, *, starts=None, stop=None, calls=None):
         status = _STOPPED if held[i] else kernel.STATUS[int(final["status"])]
         events = sum(len(c) for c, _, _ in holder.steps)
         start = holder.start
+        clock = {"events": int(final["events"]), "fissions": int(final["fissions"])}
         qualifier = keys.qualifier(
-            spec.fingerprint, "fresh" if start == "fresh" else {"checkpoint": start["checkpoint"]}
+            spec.fingerprint,
+            "fresh" if start == "fresh" else {k: start[k] for k in ("checkpoint", "time")},
+            clock if held[i] else None,
         )
         results.append(
             _assemble(

@@ -369,6 +369,16 @@ def run_record(run, world_id):
         "events": int(rows["row_event"][-1]),
         "time": float(rows["row_time"][-1]),
     }
+    if run.bound is not None:  # Every descendant: the population's end, over every life.
+        end = {
+            "status": run.status,
+            "fissions": end["fissions"],
+            "events": int(run.timings["events"]),
+            "time": float(np.max(run.lives["life_end_time"])),
+            "lives": int(len(run.lives["life_key"])),
+            "says": "every descendant: fissions and events over every life; time, the latest "
+            "life's end",
+        }
     arrays = sorted(_arrays(run))
     world = spec.model.world
     clock = world.units.time
@@ -413,41 +423,118 @@ def run_record(run, world_id):
     return record
 
 
-def descent(lives, qualifier=None):
-    """The lives table as RELATIONSHIPS_DESIGN §1.2's rows, for the relations writer: one dict
-    per life with string ids (keys.py), in the table's order. `lives` is a run's lives arrays
-    (run.lives, or a bundle's life_* arrays); `qualifier`, when given, qualifies every id."""
+def _fission_event(row):
+    return f"event:fission/{int(row)}"
 
-    def ident(value):
-        if value < 0:
-            return None
-        return keys.carrier_id(value) if qualifier is None else keys.qualified_id(qualifier, value)
 
-    def event(fission):
-        return None if fission < 0 else f"fission:{int(fission)}"
+def descent(arrays):
+    """The lives as cells.relations@1's Life rows (RELATIONSHIPS_DESIGN §1.2), for its writer
+    unchanged: one dict per life, in the lives table's order, with exactly the writer's Life
+    fields. `arrays` holds a run's lives (life_*), as run.lives or a bundle's records.npz.
 
+    - id and root: `carrier:a<key>` (keys.py); the founder is its own root, and a continued life
+      carries its lineage's founder as its root;
+    - lineage: life_sublineage; share: its molecules at birth over its parent's (division only);
+    - events: a division's birth, and the end of a life that divided or was not followed, are its
+      fission's event; an extinction at birth is its fission's event, and one by a last leave
+      `event:extinction/<key>/<count>`; a censored life's end has none (where observation
+      stopped, not something that happened to it);
+    - declared_by: the model for a founder or a continued life, the fission operator for a
+      daughter;
+    - no value is "", and NaN for a share that does not apply."""
+    from cells.models.assembly_lineages import FISSION
+
+    keys_, parents = arrays["life_key"].tolist(), arrays["life_parent"].tolist()
+    sizes = arrays["life_size_at_birth"].tolist()
+    brood = {}  # A parent's daughters' molecules at their birth, summed.
+    for parent, size in zip(parents, sizes, strict=True):
+        if parent >= 0:
+            brood[parent] = brood.get(parent, 0) + size
     rows = []
-    for i in range(len(lives["life_key"])):
-        slot = int(lives["life_slot"][i])
+    for i, key in enumerate(keys_):
+        kind = str(arrays["life_birth_kind"][i])
+        reason = str(arrays["life_end_reason"][i])
+        parent = parents[i]
+        birth_fission = int(arrays["life_birth_fission"][i])
+        end_fission = int(arrays["life_end_fission"][i])
+        slot = int(arrays["life_slot"][i])
+        if reason == "censored":
+            end_event = ""
+        elif end_fission >= 0:
+            end_event = _fission_event(end_fission)
+        elif reason == "extinct":
+            end_event = f"event:extinction/{key}/{int(arrays['life_end_event'][i])}"
+        else:
+            raise ValueError(f"{keys.carrier_id(key)} ended {reason} at no event")
+        share = float("nan")
+        if kind == "division":
+            share = sizes[i] / brood[parent] if brood[parent] > 0 else 0.0
         rows.append(
             {
-                "id": ident(int(lives["life_key"][i])),
-                "key": keys.spelled(int(lives["life_key"][i])),
-                "slot": None if slot < 0 else f"slot:{slot}",
-                "parent": ident(int(lives["life_parent"][i])),
-                "predecessor": None,
-                "birth_time": float(lives["life_birth_time"][i]),
-                "birth_event": event(lives["life_birth_fission"][i]),
-                "birth_kind": str(lives["life_birth_kind"][i]),
-                "end_time": float(lives["life_end_time"][i]),
-                "end_event": event(lives["life_end_fission"][i]),
-                "end_reason": str(lives["life_end_reason"][i]),
-                "censored_by": str(lives["life_censored_by"][i]) or None,
-                "generation": int(lives["life_generation"][i]),
-                "root": ident(int(lives["life_root"][i])),
+                "id": keys.carrier_id(key),
+                "key": int(key),
+                "lineage": int(arrays["life_sublineage"][i]),
+                "birth_time": float(arrays["life_birth_time"][i]),
+                "birth_kind": kind,
+                "end_time": float(arrays["life_end_time"][i]),
+                "end_reason": reason,
+                "generation": int(arrays["life_generation"][i]),
+                "root": keys.carrier_id(int(arrays["life_root"][i])),
+                "declared_by": FISSION if kind == "division" else MODEL_ID,
+                "slot": "" if slot < 0 else f"slot:{slot}",
+                "parent": "" if parent < 0 else keys.carrier_id(parent),
+                "share": share,
+                "donor": "",
+                "predecessor": "",
+                "birth_event": _fission_event(birth_fission) if birth_fission >= 0 else "",
+                "end_event": end_event,
             }
         )
     return rows
+
+
+def relation_events(arrays):
+    """cells.relations@1's Event rows: one per fission (kind fission, at its parent, made by the
+    fission operator; its payer, source:unmodelled_agent, is declared with the supply tables,
+    RT4) and one per extinction by a last leave (kind extinction, made by the exchange law)."""
+    from cells.models.assembly_lineages import FISSION
+
+    rows = [
+        {
+            "id": _fission_event(k),
+            "time": float(t),
+            "kind": "fission",
+            "by": FISSION,
+            "scheduled": False,
+            "step": -1,
+            "at": keys.carrier_id(int(parent)),
+            "source": "",
+        }
+        for k, (t, parent) in enumerate(
+            zip(arrays["fission_time"].tolist(), arrays["fission_parent"].tolist(), strict=True)
+        )
+    ]
+    for life in descent(arrays):
+        if life["end_event"].startswith("event:extinction/"):
+            rows.append(
+                {
+                    "id": life["end_event"],
+                    "time": life["end_time"],
+                    "kind": "extinction",
+                    "by": EXCHANGE_LAW,
+                    "scheduled": False,
+                    "step": -1,
+                    "at": life["id"],
+                    "source": "",
+                }
+            )
+    return rows
+
+
+def relation_nodes(arrays):
+    """The vertices cells.relations@1 does not derive: the slots lives occupy (slot:<n>)."""
+    slots = sorted({int(s) for s in arrays["life_slot"].tolist() if s >= 0})
+    return [{"id": f"slot:{s}", "kind": "slot", "declared_by": MODEL_ID} for s in slots]
 
 
 def _arrays(run):

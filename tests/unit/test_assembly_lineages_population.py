@@ -197,3 +197,46 @@ def test_a_binding_budget_censors_a_whole_generation(runs):
         data = definition(THE_WORLD, fissions=3)
         data["execution"]["mode"] = "every_descendant"
         parse_spec(data)
+
+
+SMALL = world(
+    count=3,
+    size=4,
+    founder_size=2,
+    daughter="uniform",
+    empty="other",
+    partition={"rule": "binomial", "probability": 0.25},
+)
+
+
+def small(seed, fissions, *, mode="every_descendant"):
+    data = definition(SMALL, fissions=fissions, seed=seed, uniforms=True, limit=400)
+    if mode == "every_descendant":
+        data["execution"] |= {"mode": mode, "lanes": 3}
+        data["experiment"]["life_budget"] = 5000
+    return parse_spec(data)
+
+
+def test_empty_and_born_at_size_daughters_keep_every_rule():
+    """Binomial splits at size 4 (p = 0.25) make daughters with no molecule and daughters born at
+    the fission size. Every rule holds there: the followed path is the single lineage, keys follow
+    the rule from the tree (an empty daughter takes no sub-lineage), and a longer horizon keeps
+    the keys and lives."""
+    empty = at_size = 0
+    for seed in (2, 3, 4, 7):
+        pop = runner.run_population(small(seed, 5))
+        lives = pop.lives
+        assert differences(path_view(pop), runner.run(small(seed, 5, mode="single_lineage"))) == []
+        rule = derived_keys(pop, order=lambda s: (s[0], s[1], s[2]))
+        assert all(rule[k] == k for k in lives["life_key"].tolist())
+        none = lives["life_size_at_birth"] == 0
+        assert np.all(lives["life_end_reason"][none] == "extinct")
+        assert np.all(lives["life_sublineage"][none] == -1)  # Unfollowed: "other" moves the pick.
+        empty += int(none.sum())
+        at_size += int(np.sum(lives["life_size_at_birth"] == 4))
+        assert pop.closure["holds"]
+        longer = runner.run_population(small(seed, 6))
+        upto = longer.lives["life_generation"] <= 5
+        for name in ("life_key", "life_parent", "life_sublineage", "life_size_at_birth"):
+            assert np.array_equal(lives[name], longer.lives[name][upto]), (seed, name)
+    assert empty > 0 and at_size > 0  # Both cases occurred.

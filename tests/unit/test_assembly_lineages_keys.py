@@ -15,6 +15,11 @@ Each claim with a planted error it must catch (D187):
 - the label domain is numbered and undrawable.
 """
 
+import hashlib
+import json
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -52,7 +57,8 @@ def test_single_lineage_keys_are_the_counters_and_lives_hold_every_daughter(line
     assert lives["life_key"].tolist() == list(range(13))
     assert np.array_equal(table["fission_daughters"], np.arange(1, 13).reshape(6, 2))
     assert [keys.spelled(k) for k in lives["life_key"][:3]] == ["0:0", "0:1", "0:2"]
-    assert keys.carrier_id(keys.key(1, 2)) == "carrier:a1:2" and keys.words(2**32 + 5) == (1, 5)
+    assert keys.carrier_id(keys.key(1, 2)) == "carrier:a4294967298"  # The key in decimal.
+    assert keys.spelled(keys.key(1, 2)) == "1:2" and keys.words(2**32 + 5) == (1, 5)
     followed = lives["life_slot"] == 0
     assert lives["life_end_reason"][~followed].tolist() == ["not_followed"] * 6
     assert lives["life_end_reason"][followed].tolist() == ["divided"] * 6 + ["censored"]
@@ -126,8 +132,14 @@ def test_the_qualifier_is_in_ids_only():
     other = definition(world(), fissions=2, seed=4)
     a, again, b = (runner.run(parse_spec(d)) for d in (base, base, other))
     assert a.qualifier == again.qualifier != b.qualifier
-    assert a.qualifier == keys.qualifier(parse_spec(base).fingerprint, "fresh")
-    assert keys.qualified_id(a.qualifier, 5) == f"{a.qualifier}/carrier:a0:5"
+    fingerprint = parse_spec(base).fingerprint
+    body = json.dumps({"definition": fingerprint, "start": "fresh"}, sort_keys=True)
+    assert a.qualifier == hashlib.sha256(body.encode()).hexdigest()  # cells.relations@1's form.
+    stopped = runner.run(parse_spec(base), stop=5)  # A stopped run is not the whole run.
+    assert stopped.qualifier not in {a.qualifier, again.qualifier}
+    assert stopped.qualifier == keys.qualifier(
+        fingerprint, "fresh", {"events": 5, "fissions": int(stopped.rows["generation"][-1, 0])}
+    )
     assert a.lives["life_key"].tolist() == b.lives["life_key"].tolist()  # Keys: no seed in them.
     assert a.qualifier not in str(streams.identity(3, 0, 0, 0))
     # Planted: a qualifier folded into a stream word (here the lineage word) moves every event.
@@ -152,18 +164,58 @@ def test_the_label_domain_is_numbered_and_never_drawn():
     assert streams.identity(1, 0, 0, 0)["reserved_domains"] == ["label"]
 
 
-def test_descent_rows_are_the_lives_with_string_ids(lineage):
-    """records.descent: RELATIONSHIPS_DESIGN §1.2's rows from the lives table, every parent an id
-    of a row and every end an event. Planted: a parent key that is no life's."""
+def test_descent_rows_are_the_writers_lives_and_events(lineage):
+    """records.descent and relation_events: cells.relations@1's Life and Event rows, with every
+    parent a life ending at its daughters' birth event, and every end event an event row at the
+    life's end time; through the writer itself when it is installed. Planted: a parent that is no
+    life's, and an end event at another time."""
     from cells.models.assembly_lineages import records
 
-    rows = records.descent(lineage.lives)
-    ids = {r["id"] for r in rows}
-    assert rows[0]["id"] == "carrier:a0:0" and rows[0]["parent"] is None
-    assert rows[1] == rows[1] | {"parent": "carrier:a0:0", "birth_event": "fission:0"}
-    assert all(r["parent"] in ids for r in rows[1:]) and all(r["end_reason"] for r in rows)
-    qualified = records.descent(lineage.lives, lineage.qualifier)
-    assert qualified[2]["id"] == f"{lineage.qualifier}/carrier:a0:2"
-    planted = dict(lineage.lives, life_parent=lineage.lives["life_parent"].copy())
-    planted["life_parent"][4] = 99
-    assert not all(r["parent"] in ids for r in records.descent(planted)[1:])
+    arrays = {**lineage.lives, **lineage.fissions}
+    lives = records.descent(arrays)
+    events = {e["id"]: e for e in records.relation_events(arrays)}
+    by_id = {r["id"]: r for r in lives}
+    assert (
+        lives[0] | {"id": "carrier:a0", "parent": "", "birth_event": "", "root": "carrier:a0"}
+        == (lives[0])
+    )
+    assert lives[1]["parent"] == "carrier:a0" and lives[1]["birth_event"] == "event:fission/0"
+    assert lives[2]["end_reason"] == "not_followed" and lives[2]["slot"] == ""
+    assert lives[2]["end_event"] == lives[2]["birth_event"] and lives[-2]["end_event"] == ""
+
+    def errors(rows, table):
+        out = []
+        for r in rows:
+            if r["parent"] and (
+                r["parent"] not in by_id or by_id[r["parent"]]["end_event"] != r["birth_event"]
+            ):
+                out.append(r["id"])
+            if r["end_event"] and table[r["end_event"]]["time"] != r["end_time"]:
+                out.append(r["id"])
+        return out
+
+    assert errors(lives, events) == []
+    assert all(
+        abs(sum(r["share"] for r in lives if r["parent"] == p) - 1.0) < 1e-12
+        for p in {r["parent"] for r in lives if r["parent"]}
+    )
+    planted = [dict(r) for r in lives]
+    planted[4]["parent"] = "carrier:a99"
+    assert errors(planted, events) == ["carrier:a4"]
+    moved = dict(events, **{"event:fission/1": dict(events["event:fission/1"], time=-1.0)})
+    assert errors(lives, moved) != []
+
+
+def test_the_writer_takes_the_rows_unchanged(lineage):
+    """When cells.relations@1's writer is installed, it writes the family's rows as they are."""
+    from cells.models.assembly_lineages import records
+
+    relations = pytest.importorskip("cells.records.relations")
+    arrays = {**lineage.lives, **lineage.fissions}
+    relations.write(
+        Path(tempfile.mkdtemp()),
+        world=lineage.qualifier,
+        lives=[relations.Life(**r) for r in records.descent(arrays)],
+        events=[relations.Event(**e) for e in records.relation_events(arrays)],
+        nodes=[relations.Node(**n) for n in records.relation_nodes(arrays)],
+    )

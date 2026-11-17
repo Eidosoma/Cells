@@ -174,3 +174,46 @@ def test_the_files_round_trip_and_refuse_what_may_not_change(whole, tmp_path):
     ended = runner.run(spec()).checkpoint()  # Its horizon reached: extend it, or nothing runs.
     with pytest.raises(ConfigError, match="extends experiment.fissions"):
         runner.run(spec(), start=ended)
+
+
+def test_a_landmark_at_every_horizon_continues_the_whole_run():
+    """The binomial world of size 4 (p = 0.25), where a daughter can be born at the fission size:
+    a landmark at every horizon k, continued to the full horizon, is the whole run. Such a
+    daughter at the horizon is censored, and splits at once when the horizon is extended, as it
+    would have in the longer run (planted: restored as running, it grows past the size)."""
+    the_world = world(
+        count=3,
+        size=4,
+        founder_size=2,
+        daughter="uniform",
+        empty="other",
+        partition={"rule": "binomial", "probability": 0.25},
+    )
+    at_size = None
+    for seed in (3, 5, 8, 11):
+        full = parse_spec(definition(the_world, fissions=10, seed=seed, uniforms=True, limit=400))
+        whole = runner.run(full)
+        for k in range(1, len(whole.fissions["fission_time"])):
+            part = parse_spec(
+                definition(the_world, fissions=k, seed=seed, uniforms=True, limit=400)
+            )
+            first = runner.run(part)
+            state = first.checkpoint()
+            if int(state.lane["size"]) >= 4:
+                at_size = (full, first, state, whole)
+                assert int(checkpoints.admit(full, state)[1]["status"]) == kernel.FISSION_DUE
+            assert joined(first, runner.run(full, start=state), whole) == [], (seed, k)
+    assert at_size is not None  # The case occurred.
+    full, first, state, whole = at_size
+    original = checkpoints.admit
+
+    def running(the_spec, checkpoint):  # Planted: restored as running.
+        start, lane = original(the_spec, checkpoint)
+        return start, dict(lane, status=np.int32(kernel.RUNNING))
+
+    try:
+        checkpoints.admit = running
+        planted = runner.run(full, start=state)
+    finally:
+        checkpoints.admit = original
+    assert joined(first, planted, whole) != []

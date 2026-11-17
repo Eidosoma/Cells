@@ -26,16 +26,33 @@ sub-lineage s and a count c within it.
 - An assembly's random streams fold both 32-bit words of its key (streams.py), so lives of other
   sub-lineages draw from distinct streams.
 
-**Ids.** An entity's id is `carrier:a<s>:<c>`, unique within its run. Across runs it is qualified
-by the run qualifier, `<qualifier>/carrier:a<s>:<c>`.
+**Ids** (cells.relations@1's form, so the family's rows go to its writer unchanged). A carrier's id
+is `carrier:a<key>`, the int64 key in decimal (`carrier:a4294967297` is the key 1:1): an id's name
+holds no ':'. Ids are unique within a run; across runs a carrier is the pair (world, id), the
+world being the run qualifier (the relations tables' world column). A fission's event is
+`event:fission/<its fission-table row>`, and a last leave's extinction
+`event:extinction/<key>/<the lineage path's event count>` (the key keeps it unique among lives
+of one every-descendant run, whose path counts can coincide).
 
-**The run qualifier** is the digest of {definition fingerprint, start}: `fresh`, or for a run that
-starts from a checkpoint, the checkpoint's own digest (of its definition, clock and lane state,
-never of a manifest that holds times of day). It appears only in ids, never in a stream fold: an
-assembly's streams depend on (seed, environment, lineage, branch, carrier key, domain, counter)
-alone, so a restart continues bitwise under a new qualifier. The definition's fingerprint holds the
-stream words, so two runs that differ only by seed have different qualifiers. Two runs with one
-qualifier are the same declared computation: replicas, not different entities.
+**The run qualifier** is the SHA-256 of the JSON (keys sorted) of {definition fingerprint,
+start}, as cells.relations@1 computes it, and of the run's stop when it stopped before its end:
+- start is `fresh`, or for a run from a checkpoint {"checkpoint": its digest, "time": its time},
+  the digest being the checkpoint's own (definition, clock and lane state, never a manifest that
+  holds times of day);
+- stop is {"events": e, "fissions": k}, the lane's clock where it stopped (an exact stop, or a
+  batch's pause between device calls). A stopped run's records end its living life at the stop
+  where the whole run's go on, so one (world, id) never names two rows. The clock is the world's
+  own, so the qualifier does not depend on the batch that paused it.
+It qualifies ids only and enters no stream fold: an assembly's streams depend on (seed,
+environment, lineage, branch, carrier key, domain, counter) alone, so a restart continues
+bitwise under a new qualifier. The definition's fingerprint holds the stream words, so two runs
+that differ only by seed have different qualifiers. Two runs with one qualifier are the same
+declared computation: replicas, not different entities.
+
+**life_sublineage** is the sub-lineage whose counter the life's own daughters draw from: the
+founder's own s; for the followed daughter, its parent's; for a daughter that opens a new one,
+that new s'; -1 for an unfollowed daughter, or one born with no molecule. It is not the high word
+of the life's key.
 
 **Lives: one row per birth and end** (docs/RELATIONSHIPS_DESIGN.md §1.2), with the end reasons
 below. An unfollowed daughter's life ends `not_followed`, which is not `extinct`: the run stopped
@@ -43,13 +60,17 @@ following it, and it held molecules. A daughter with no molecule ends `extinct` 
 followed or not.
 """
 
-from cells.core.specs import digest
+import hashlib
+import json
 
 WORD = 2**32
 FOUNDER = 0  # `0:0`
 SPELLING = "s:c, with key = s * 2**32 + c"
-ID_FORM = "carrier:a<s>:<c>"
-QUALIFIED_ID_FORM = "<qualifier>/carrier:a<s>:<c>"
+ID_FORM = "carrier:a<key>, the int64 key in decimal"
+EVENT_FORMS = {
+    "fission": "event:fission/<fission-table row>",
+    "extinction": "event:extinction/<key>/<lineage path event count>",
+}
 
 BIRTH_KINDS = ("founder", "division", "continued")
 END_REASONS = ("divided", "extinct", "not_followed", "censored")
@@ -74,9 +95,15 @@ RULE = {
     "single_lineage": "only sub-lineage 0: the keys are the lineage counter's",
     "streams": "an assembly's streams fold both 32-bit words of its key",
     "id": ID_FORM,
-    "qualified_id": QUALIFIED_ID_FORM,
-    "qualifier": "digest of {definition fingerprint, start}; start is 'fresh' or the checkpoint's "
-    "digest (definition, clock and lane state); only in ids, never in a stream fold",
+    "across_runs": "the pair (world, id), the world being the run qualifier",
+    "events": EVENT_FORMS,
+    "qualifier": "SHA-256 of the sorted-key JSON of {definition fingerprint, start}, as "
+    "cells.relations@1 computes it, with the run's stop ({events, fissions}: the lane's clock) "
+    "when it stopped before its end; start is 'fresh' or {checkpoint: its digest (definition, "
+    "clock and lane state), time: its time}; it qualifies ids and enters no stream fold",
+    "life_sublineage": "the sub-lineage whose counter the life's own daughters draw from: the "
+    "founder's own s; the followed daughter's parent's; a new s' for a daughter that opens one; "
+    "-1 for an unfollowed daughter or one born with no molecule (not the key's high word)",
 }
 LIVES = {
     "birth_kinds": {
@@ -125,17 +152,22 @@ def spelled(value):
 
 
 def carrier_id(value):
-    """`carrier:a<s>:<c>`."""
-    return f"carrier:a{spelled(value)}"
+    """`carrier:a<key>`, the key in decimal."""
+    words(value)  # A non-negative key.
+    return f"carrier:a{int(value)}"
 
 
-def qualified_id(qualifier, value):
-    return f"{qualifier}/{carrier_id(value)}"
-
-
-def qualifier(fingerprint, start="fresh"):
-    """The run qualifier: the digest of {definition fingerprint, start}."""
-    return digest({"definition": fingerprint, "start": start})
+def qualifier(fingerprint, start="fresh", stop=None):
+    """The run qualifier (module docstring): cells.relations@1's for {fingerprint, start}, and
+    the run's stop {events, fissions} when it stopped before its end."""
+    if start != "fresh" and not (isinstance(start, dict) and set(start) == {"checkpoint", "time"}):
+        raise ValueError('A start is "fresh" or {"checkpoint": digest, "time": t}')
+    body = {"definition": fingerprint, "start": start}
+    if stop is not None:
+        if not (isinstance(stop, dict) and set(stop) == {"events", "fissions"}):
+            raise ValueError('A stop is {"events": e, "fissions": k}')
+        body["stop"] = stop
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
 
 
 def number_sublineages(births, first):

@@ -151,7 +151,10 @@ def admit(spec, checkpoint):
                 "The checkpoint's lineage completed its horizon; a run from it extends "
                 "experiment.fissions beyond its fissions"
             )
-        lane["status"] = np.int32(kernel.RUNNING)
+        # A daughter born at the fission size and censored at the horizon splits at once when
+        # the horizon is extended (fission.py), as it would have in the longer run.
+        at_size = int(lane["size"]) >= parent.model.world.fission.size
+        lane["status"] = np.int32(kernel.FISSION_DUE if at_size else kernel.RUNNING)
     x = spec.execution
     base = streams.base_key_data(x.seed, x.environment, x.lineage, x.branch)
     derived = np.asarray(
