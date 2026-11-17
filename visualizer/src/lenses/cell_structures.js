@@ -122,9 +122,9 @@ function merged(list) {
  * upward, so that it is `thickness` wide and `height` tall with rounded edges. The path's
  * points lie at y = 0; the wall is centred there.
  */
-function wallAlong(points, thickness, height, closed = false) {
+function wallAlong(points, thickness, height, closed = false, { segments = null, around = 10 } = {}) {
   const curve = new THREE.CatmullRomCurve3(points, closed, "centripetal");
-  const geometry = new THREE.TubeGeometry(curve, Math.max(24, Math.round(curve.getLength() / (thickness * 0.9))), thickness / 2, 10, closed);
+  const geometry = new THREE.TubeGeometry(curve, segments ?? Math.max(24, Math.round(curve.getLength() / (thickness * 0.9))), thickness / 2, around, closed);
   const stretch = height / thickness;
   const position = geometry.attributes.position, normal = geometry.attributes.normal, n = new THREE.Vector3();
   for (let at = 0; at < position.count; at++) {
@@ -195,10 +195,18 @@ export function buildStructures(env) {
     out.chromosome = chromosome(env, random, chromatinPart);
     out.drawn[chromatinPart] = out.chromosome.said;
   }
-  if (env.organelle("er")) out.studs = reticulum(env, random);
+  // An animal cell's Golgi stands beside the nucleus, round its centrosome (cell_layout.js): its ER leaves it a window.
+  if (env.organelle("golgi") && env.nucleusAt && env.centrosomeAt) env.golgiWindow = golgiWindow(env);
+  if (env.organelle("er")) {
+    const er = reticulum(env, random);
+    out.studs = er.studs;
+    out.drawn.er = er.said;
+  }
   if (env.organelle("golgi")) {
-    const golgi = stack(env, random);
+    const golgi = golgiOf(env, random);
     out.drawn.golgi = golgi.said;
+    // An animal cell's centrosome, drawn as scenery that can be chosen: the scenery part lists it (parts/scenery.js).
+    if (golgi.centrosome) out.scenery = [golgi.centrosome];
     if (known("vesicles") && env.has("vesicles")) out.drawn.vesicles = carriers(env, random, golgi);
   }
   const made = ribosomes(env, random, out, known("ribosomes") && env.has("ribosomes"));
@@ -440,41 +448,52 @@ function chromosome(env, random, partName) {
 /**
  * The rough endoplasmic reticulum: one sheet folded to and fro round the nucleus, that runs
  * on from the nucleus's outer membrane, with its lumen joined to the space in the envelope.
- * Returns where the ribosomes on it sit. To scale, tubules reach on through the cell.
+ * Where an animal cell's Golgi stands beside the nucleus (env.golgiWindow, the half-angle it
+ * takes, seen from the nucleus's middle), the sheet is two arms, one each side of it, each
+ * running on from the envelope. Returns where the ribosomes on it sit, where its sheets lie (for
+ * the carriers that leave it) and what the panel says was drawn. To scale, tubules reach on
+ * through the cell.
  */
 function reticulum(env, random) {
-  const { ctx, real, style } = env;
+  const { ctx, real, style, frame } = env;
   const c = env.nucleusAt, shape = style.er, facing = env.erFacing;
-  const er = ctx.part("er", c.clone().addScaledVector(radial(facing), shape.first + shape.gap * 1.5).setY(env.cut + shape.height * 0.45));
+  const spans = Array.from({ length: shape.layers }, (_, layer) => Math.max(0.9, shape.span - layer * shape.shrink));
+  const open = env.golgiWindow || 0;
+  // Each arm turns back at the end where its sheet before stopped; `way` is the way its first sheet runs from the nucleus.
+  // Without a window, one arm, whose first sheet begins at the nucleus on its far side, away from where the nucleus is opened.
+  const arms = open ? [{ start: facing + open, way: 1 }, { start: facing - open, way: -1 }] : [{ start: facing + spans[0] * 0.75, way: -1 }];
+  const spanOf = (layer) => (open ? Math.max(0.35, (spans[layer] - 2 * open) / 2) : spans[layer]);
+  const er = ctx.part("er", c.clone().addScaledVector(radial(open ? facing + open + spanOf(0) / 2 : facing), shape.first + shape.gap * 1.5).setY(env.cut + shape.height * 0.45));
   const sheet = er.material({ hue: "bioEr", roughness: 0.4, side: THREE.DoubleSide, thin: 0.8, texture: "grain" });
   const y = env.cut + shape.height * 0.38; // the middle of the sheet's height: it stands on the cut face, a little below it
-  // Each sheet turns back at the end where the one before it stopped. The first begins at the nucleus, on its far side.
-  const spans = Array.from({ length: shape.layers }, (_, layer) => Math.max(0.9, shape.span - layer * shape.shrink));
-  const sheets = [];
-  let end = facing + spans[0] * 0.75; // the far end, away from where the nucleus is opened
-  for (let layer = 0; layer < shape.layers; layer++) {
-    const from = end, to = layer % 2 ? from + spans[layer] : from - spans[layer];
-    sheets.push({ radius: shape.first + layer * shape.gap, from, to });
-    end = to;
-  }
   const flat = (angle, radius) => c.clone().addScaledVector(radial(angle), radius).setY(0);
-  const path = [];
-  // From inside the outer nuclear membrane, out to the first sheet.
   const nuclear = env.nucleusAt ? style.nucleusRadius : 0;
-  path.push(flat(sheets[0].from + 0.16, nuclear * 0.86), flat(sheets[0].from + 0.08, (nuclear + sheets[0].radius) / 2));
-  sheets.forEach((one, index) => {
-    const steps = Math.max(8, Math.round(Math.abs(one.to - one.from) * one.radius * 3));
-    for (let step = 0; step <= steps; step++) path.push(flat(one.from + ((one.to - one.from) * step) / steps, one.radius));
-    const next = sheets[index + 1];
-    if (next) {
-      // The turn: out past the sheet's end and round to the next one.
-      const beyond = Math.sign(one.to - one.from) * (shape.gap * 0.55) / one.radius;
-      path.push(flat(one.to + beyond, one.radius + shape.gap * 0.5));
+  const sheets = [];
+  for (const arm of arms) {
+    const own = [];
+    let end = arm.start;
+    for (let layer = 0; layer < shape.layers; layer++) {
+      const from = end, to = layer % 2 ? from - arm.way * spanOf(layer) : from + arm.way * spanOf(layer);
+      own.push({ radius: shape.first + layer * shape.gap, from, to });
+      end = to;
     }
-  });
-  const wall = new THREE.Mesh(wallAlong(path, shape.thickness, shape.height), sheet);
-  wall.position.y = y;
-  er.add(wall);
+    const path = [];
+    // From inside the outer nuclear membrane, out to the first sheet.
+    path.push(flat(own[0].from - arm.way * 0.16, nuclear * 0.86), flat(own[0].from - arm.way * 0.08, (nuclear + own[0].radius) / 2));
+    own.forEach((one, index) => {
+      const steps = Math.max(8, Math.round(Math.abs(one.to - one.from) * one.radius * 3));
+      for (let step = 0; step <= steps; step++) path.push(flat(one.from + ((one.to - one.from) * step) / steps, one.radius));
+      if (own[index + 1]) {
+        // The turn: out past the sheet's end and round to the next one.
+        const beyond = Math.sign(one.to - one.from) * (shape.gap * 0.55) / one.radius;
+        path.push(flat(one.to + beyond, one.radius + shape.gap * 0.5));
+      }
+    });
+    const wall = new THREE.Mesh(wallAlong(path, shape.thickness, shape.height), sheet);
+    wall.position.y = y;
+    er.add(wall);
+    sheets.push(...own);
+  }
   // Ribosomes on both faces of each sheet: they make it rough.
   const studs = [];
   for (const one of sheets) {
@@ -506,72 +525,218 @@ function reticulum(env, random) {
     web.setAttribute("position", new THREE.Float32BufferAttribute(tubes, 3));
     er.add(new THREE.LineSegments(web, er.lineMaterial({ hue: "bioEr", opacity: 0.55 })));
   }
-  // Where the reticulum's outer sheet comes nearest the Golgi: where carriers would leave it.
-  const last = sheets.at(-1);
-  env.erExit = c.clone().addScaledVector(radial((last.from + last.to) / 2), last.radius + shape.gap * 0.6).setY(y);
-  return studs;
+  // Where its sheets lie, for the carriers that leave it for the Golgi.
+  env.erSheets = { centre: c, y, sheets };
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
+  const where = open ? `in two arms, one each side of the Golgi, which stands beside the nucleus` : `on one side of the nucleus`;
+  const said = [["Drawn", `Rough endoplasmic reticulum: ${shape.layers} sheets folded to and fro ${where}, running on from the outer membrane of the nuclear envelope; ${um(shape.thickness)} µm thick and ${um(shape.gap)} µm apart${real ? ", with tubules reaching on through the cell" : ", enlarged"}. Their number, size and place are the picture's choice.`]];
+  return { studs, said };
+}
+
+// ------------------------------------------------------------------ the Golgi apparatus
+
+// A stack's cisternae, from the cis face, as widths in the cell's frame; and to scale, an animal cell's ribbon of stacks
+// side by side, each about a micrometre across. The picture's choice (docs/CELL_STRUCTURES.md).
+const CISTERNAE = { real: [1.0, 1.15, 1.2, 1.15, 1.0, 0.85], schematic: [2.2, 2.55, 2.7, 2.5, 2.1] };
+const RIBBON = { count: 4, width: 1.2, gap: 0.3 };
+
+/** The half-angle, seen from the nucleus's middle, that an animal cell's Golgi takes beside it, with room on each side: where its ER leaves a window. */
+function golgiWindow(env) {
+  const c = env.nucleusAt, at = env.golgiAt;
+  const reach = Math.hypot(at.x - c.x, at.z - c.z);
+  const half = env.real ? (RIBBON.count * RIBBON.width + (RIBBON.count - 1) * RIBBON.gap) / 2 : Math.max(...CISTERNAE.schematic) / 2;
+  return half / reach + 0.2;
 }
 
 /**
- * The Golgi apparatus: a stack of curved cisternae, the one nearest the nucleus (the cis
- * face) bowed toward it, each with swollen rims, and vesicles budding from the rims of the
- * far (trans) side. Returns its faces, for the vesicles that would come and go.
+ * The Golgi apparatus, as the cell holds it (the user, 17 November 2026; docs/CELL_STRUCTURES.md):
+ *   an animal cell   beside the nucleus, toward the cell's middle, round its centrosome (drawn as
+ *                    scenery): one stack where parts are enlarged, a ribbon of four stacks to scale;
+ *   a plant cell     many small stacks spread through the thin cytoplasm by the membrane, with no
+ *                    ribbon and no centrosome: 14 where parts are enlarged and few, 40 to scale.
+ * However many stacks there are, they are one shared geometry: each level of cisterna one mesh,
+ * the rims and the buds one instanced mesh each, so a frame draws as many of them as for one
+ * stack. Their number, size and place are the picture's choice, and the panel says so.
+ * Returns the stack the carriers leave from (its cis and trans faces), what the panel says was
+ * drawn, and the centrosome as an item of scenery that can be chosen, where there is one.
  */
-function stack(env, random) {
-  const { ctx, real, style } = env;
-  const g = style.golgi, at = env.golgiAt, c = env.nucleusAt;
+function golgiOf(env, random) {
+  const { real, frame } = env;
+  const g = env.style.golgi;
+  const depth = (g.count - 1) * g.gap + g.half * (real ? 1.6 : 1.9);
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
+  if (env.vacuole) return dispersed(env, random, depth, um);
+  const c = env.nucleusAt, at = env.golgiAt;
+  if (!c) {
+    // A cell that names a Golgi and no nucleus: one stack where the layout puts it, facing the cell's middle.
+    const made = drawStacks(env, [stackPieces(env, random, { at, facing: Math.atan2(at.z, at.x) + Math.PI })], at);
+    return { ...made, said: [["Drawn", `A stack of ${g.count} cisternae: the picture's choice, since the species' file gives no size or number.`]] };
+  }
   const facing = Math.atan2(at.z - c.z, at.x - c.x); // from the nucleus to the Golgi
-  const golgi = ctx.part("golgi", at.clone().add(new THREE.Vector3(0, real ? 0.5 : 0.95, 0)));
-  golgi.priority = 53;
-  const height = real ? 0.42 : 0.95, thickness = g.half * (real ? 1.6 : 1.9);
-  const y = env.cut + height * 0.36;
+  const reach = Math.hypot(at.x - c.x, at.z - c.z);
+  // To scale, a ribbon of four stacks side by side along the nucleus, each about a micrometre across.
+  const ribbon = real ? RIBBON : null;
+  const angles = ribbon ? Array.from({ length: ribbon.count }, (_, index) => facing + ((index - (ribbon.count - 1) / 2) * (ribbon.width + ribbon.gap)) / reach) : [facing];
+  const pieces = angles.map((angle) => stackPieces(env, random, { at: c.clone().addScaledVector(radial(angle), reach).setY(at.y), facing: angle }));
+  const made = drawStacks(env, pieces, at);
+  const centrosome = env.centrosomeAt ? drawCentrosome(env, facing) : null;
+  // The cis face's own surface: the cis point lies half a cisterna's thickness inside it.
+  const cisGap = um(pieces[0].cis.distanceTo(c.clone().setY(pieces[0].cis.y)) + pieces[0].thickness / 2 - env.style.nucleusRadius);
+  const widest = um(Math.max(...pieces[0].widths));
+  const buds = pieces.reduce((sum, piece) => sum + piece.buds.length, 0);
+  const said = ribbon
+    ? `A ribbon of ${ribbon.count} stacks of ${g.count} cisternae, each about ${widest} µm wide, along the nucleus beside its centrosome; the cis face of each, bowed toward the nucleus, about ${cisGap} µm from the envelope, with ${buds} vesicles budding from the rims.`
+    : `A stack of ${g.count} cisternae about ${widest} µm wide beside the nucleus and its centrosome, the cis face bowed toward the nucleus about ${cisGap} µm from the envelope, with ${buds} vesicles budding from the rims, enlarged.`;
+  return { ...made, centrosome, said: [["Drawn", `${said} In an animal cell the Golgi lies beside the nucleus, by the centrosome. Its size, number and place here are the picture's choice, since the species' file gives none.`]] };
+}
+
+/** A plant cell's Golgi: many small stacks in the thin cytoplasm by the membrane. The first stands by the nucleus, where carriers from the ER reach it. */
+function dispersed(env, random, depth, um) {
+  const { real, frame, style } = env;
+  const count = real ? 40 : 14, scale = real ? 0.38 : 0.4, apart = real ? 1.2 : 2.4;
+  const c = env.nucleusAt, places = [];
+  if (c) {
+    // Beside the nucleus, along the wall on the side the ER does not wrap (the ER lies on its inner side).
+    const inward = Math.atan2(-c.z, -c.x), along = inward - Math.PI / 2;
+    for (let step = 0; step < 12 && !places.length; step++) {
+      const at = c.clone().addScaledVector(radial(along), style.nucleusRadius + (0.6 + step * 0.25) * scale * 2 + (depth * scale) / 2);
+      if (env.inCytoplasm(at, 0.1, 0.1)) places.push({ at, facing: along });
+    }
+  }
+  const wide = frame.equator.widest;
+  for (let guard = 0; places.length < count && guard < count * 600; guard++) {
+    const at = new THREE.Vector3((random() * 2 - 1) * wide, frame.base + random() * (env.cut - frame.base), (random() * 2 - 1) * wide);
+    if (!env.inCytoplasm(at, 0.3, 0.25) || places.some((other) => other.at.distanceTo(at) < apart)) continue;
+    places.push({ at, facing: Math.atan2(at.z, at.x) + (random() - 0.5) * 1.2 }); // lying along the wall, more or less
+  }
+  const pieces = places.map(({ at, facing }) => stackPieces(env, random, { at, facing, scale, y: at.y, lean: true }));
+  const made = drawStacks(env, pieces, places[0].at);
+  const across = um(Math.max(...pieces[0].widths));
+  return { ...made, said: [["Drawn", `${pieces.length} small stacks, each about ${across} µm across${real ? "" : ", enlarged"}, spread through the thin cytoplasm by the membrane: a plant cell's Golgi is many separate stacks, with no ribbon and no centrosome. Their number and size are the picture's choice, since the species' file gives none.`]] };
+}
+
+/**
+ * One stack's pieces, to be drawn with the others (drawStacks): its curved cisternae as walls
+ * (the one nearest the nucleus, the cis face, bowed toward it), their swollen rims, and the
+ * vesicles budding from the rims of the far (trans) side. `scale` makes a smaller stack;
+ * `lean` draws it with fewer facets, for a stack that is a few pixels across.
+ */
+function stackPieces(env, random, { at, facing, scale = 1, y = null, lean = false }) {
+  const { real } = env;
+  const base = env.style.golgi;
+  const g = scale === 1 ? base : { ...base, inner: base.inner * scale, gap: base.gap * scale, half: base.half * scale };
+  const height = (real ? 0.42 : 0.95) * scale, thickness = g.half * (real ? 1.6 : 1.9);
+  y ??= env.cut + height * 0.36;
   // The middle of each cisterna's curve lies on the far side, toward the membrane: the cis face bows toward the nucleus.
   const hub = at.clone().addScaledVector(radial(facing), g.inner + g.gap * 2);
-  const widths = (real ? [1.0, 1.15, 1.2, 1.15, 1.0, 0.85] : [2.2, 2.55, 2.7, 2.5, 2.1]).slice(0, g.count);
+  const widths = CISTERNAE[real ? "real" : "schematic"].slice(0, g.count).map((width) => width * scale);
   const sacs = [], rims = [], buds = [];
   widths.forEach((width, index) => {
     const radius = g.inner + (g.count - 1 - index) * g.gap; // the first (cis) is the farthest from the hub
     const half = width / 2 / radius, middle = facing + Math.PI;
-    const points = Array.from({ length: 17 }, (_, step) => hub.clone().addScaledVector(radial(middle - half + (2 * half * step) / 16), radius).setY(0));
-    sacs.push({ geometry: wallAlong(points, thickness, height), shade: 0.22 - index * 0.1 });
+    const points = Array.from({ length: lean ? 7 : 17 }, (_, step, all) => hub.clone().addScaledVector(radial(middle - half + (2 * half * step) / (lean ? 6 : 16)), radius).setY(0));
+    const sac = wallAlong(points, thickness, height, false, lean ? { segments: 10, around: 6 } : {});
+    sac.translate(0, y, 0);
+    sacs.push({ geometry: sac, level: index });
     for (const end of [-1, 1]) {
       const angle = middle + end * half;
       const tip = hub.clone().addScaledVector(radial(angle), radius).setY(y);
-      rims.push({ position: tip, scale: 1 });
+      rims.push({ position: tip, scale });
       // Vesicles bud from the rims, more of them toward the trans face.
       if (index >= g.count - 3 && random() < 0.85) {
         const out = radial(angle + end * Math.PI / 2);
-        buds.push({ position: tip.clone().addScaledVector(out, thickness * 0.95).setY(y + (random() - 0.4) * height * 0.5), scale: 0.8 + random() * 0.4 });
+        buds.push({ position: tip.clone().addScaledVector(out, thickness * 0.95).setY(y + (random() - 0.4) * height * 0.5), scale: scale * (0.8 + random() * 0.4) });
       }
     }
     // And from the top edge of the trans cisternae.
     if (index >= g.count - 2) {
       for (let bud = 0; bud < 2; bud++) {
         const angle = middle + (random() * 2 - 1) * half * 0.7;
-        buds.push({ position: hub.clone().addScaledVector(radial(angle), radius).setY(y + height * 0.5 + thickness * 0.35), scale: 0.75 + random() * 0.3 });
+        buds.push({ position: hub.clone().addScaledVector(radial(angle), radius).setY(y + height * 0.5 + thickness * 0.35), scale: scale * (0.75 + random() * 0.3) });
       }
     }
   });
-  sacs.forEach(({ geometry, shade }) => {
-    const sac = new THREE.Mesh(geometry, golgi.material({ hue: "bioGolgi", shade, roughness: 0.38, side: THREE.DoubleSide, thin: 0.7, texture: "grain" }));
-    sac.position.y = y;
-    golgi.add(sac);
-  });
-  const rimMaterial = golgi.material({ hue: "bioGolgi", shade: 0.05, roughness: 0.35, thin: 0.6 });
-  golgi.add(env.instanced(new THREE.CapsuleGeometry(thickness * 0.64, height * 0.62, 6, 12), rimMaterial, rims));
-  golgi.add(env.instanced(new THREE.SphereGeometry(thickness * 0.62, 14, 10), golgi.material({ hue: "bioGolgi", shade: 0.12, roughness: 0.3, thin: 0.6 }), buds));
   // What a click on the stack reaches.
   const far = g.inner + g.count * g.gap;
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(far * 0.7, far * 0.7, height, 16), golgi.proxyMaterial());
-  body.position.copy(at).setY(y);
-  golgi.add(body);
+  const body = new THREE.CylinderGeometry(far * 0.7, far * 0.7, height, lean ? 8 : 16).translate(at.x, y, at.z);
   const cis = hub.clone().addScaledVector(radial(facing + Math.PI), g.inner + (g.count - 1) * g.gap + thickness).setY(y);
   const trans = hub.clone().addScaledVector(radial(facing + Math.PI), g.inner - thickness).setY(y);
-  const across = (Math.max(...widths) * env.frame.u).toPrecision(2);
+  return { sacs, rims, buds, body, cis, trans, facing, thickness, widths, scale, lean };
+}
+
+/** Stacks drawn as one: each level of cisterna one mesh for every stack, the rims and the buds one instanced mesh each, one body to click. */
+function drawStacks(env, pieces, anchorAt) {
+  const { ctx, real } = env;
+  const first = pieces[0], scale = first.scale, lean = first.lean;
+  const golgi = ctx.part("golgi", anchorAt.clone().setY(first.cis.y).add(new THREE.Vector3(0, (real ? 0.5 : 0.95) * Math.max(scale, 0.5), 0)));
+  golgi.priority = 53;
+  const levels = Math.max(...pieces.flatMap((piece) => piece.sacs.map((sac) => sac.level))) + 1;
+  for (let level = 0; level < levels; level++) {
+    const geometry = merged(pieces.flatMap((piece) => piece.sacs.filter((sac) => sac.level === level).map((sac) => sac.geometry)));
+    golgi.add(new THREE.Mesh(geometry, golgi.material({ hue: "bioGolgi", shade: 0.22 - level * 0.1, roughness: 0.38, side: THREE.DoubleSide, thin: 0.7, texture: "grain" })));
+  }
+  const height = (real ? 0.42 : 0.95), thickness = env.style.golgi.half * (real ? 1.6 : 1.9);
+  const rimMaterial = golgi.material({ hue: "bioGolgi", shade: 0.05, roughness: 0.35, thin: 0.6 });
+  golgi.add(env.instanced(new THREE.CapsuleGeometry(thickness * 0.64, height * 0.62, lean ? 1 : 6, lean ? 5 : 12), rimMaterial, pieces.flatMap((piece) => piece.rims)));
+  golgi.add(env.instanced(new THREE.SphereGeometry(thickness * 0.62, lean ? 6 : 14, lean ? 4 : 10), golgi.material({ hue: "bioGolgi", shade: 0.12, roughness: 0.3, thin: 0.6 }), pieces.flatMap((piece) => piece.buds)));
+  golgi.add(new THREE.Mesh(merged(pieces.map((piece) => piece.body)), golgi.proxyMaterial()));
+  return { cis: first.cis, trans: first.trans, facing: first.facing, thickness: first.thickness, stacks: pieces.length };
+}
+
+/**
+ * An animal cell's centrosome, where its Golgi gathers beside the nucleus: two centrioles, short
+ * barrels of nine rods at right angles, in a faint cloud. Scenery: Cells models no centrosome, so
+ * it is neutral glass with no status, and its panel says so. Its size is the picture's choice.
+ */
+function drawCentrosome(env, facing) {
+  const { ctx, real, frame } = env;
+  const at = env.centrosomeAt;
+  const length = real ? 0.5 : 0.9, radius = real ? 0.1 : 0.19, rod = real ? 0.018 : 0.034;
+  // The first barrel stands upright; the second lies across it, along the nucleus.
+  const across = radial(facing + Math.PI / 2);
+  const barrels = [
+    { centre: at.clone(), axis: new THREE.Vector3(0, 1, 0) },
+    { centre: at.clone().addScaledVector(across, radius * 2.4).setY(at.y - length * 0.25), axis: across.clone() },
+  ];
+  const rods = [];
+  for (const { centre, axis } of barrels) {
+    const side = new THREE.Vector3().crossVectors(axis, Math.abs(axis.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : UP).normalize(), other = new THREE.Vector3().crossVectors(axis, side);
+    for (let index = 0; index < 9; index++) {
+      const angle = (index / 9) * Math.PI * 2;
+      rods.push({ position: centre.clone().addScaledVector(side, Math.cos(angle) * radius).addScaledVector(other, Math.sin(angle) * radius), direction: axis });
+    }
+  }
+  const group = new THREE.Group();
+  group.add(env.instanced(new THREE.CylinderGeometry(rod, rod, length, 6), ctx.neutral({ opacity: 0.9, glass: 0.2, depthWrite: true }), rods));
+  // A faint cloud round both, which is also what a click on it reaches.
+  const cloud = new THREE.Mesh(new THREE.SphereGeometry(length * 0.95, 20, 14), ctx.neutral({ opacity: 0.12, glass: 0.45 }));
+  cloud.position.copy(at).addScaledVector(across, radius * 1.2);
+  group.add(cloud);
+  ctx.scenery(group, "scenery:centrosome");
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
   return {
-    cis, trans, facing, thickness,
-    said: [["Drawn", `A stack of ${widths.length} cisternae about ${across} µm wide, the one nearest the nucleus bowed toward it, with ${buds.length} vesicles budding from the rims: the picture's choice, since the species' file gives no size or number.`]],
+    id: "scenery:centrosome", kind: "centrosome", label: "Centrosome", facts: {}, sources: [], drawn: 1, of: 1,
+    sizes: [
+      ["What it is", "The cell's centre for organising its microtubules: two centrioles, short barrels at right angles, in a cloud of protein. In an animal cell the Golgi gathers round it, beside the nucleus. A plant cell has none."],
+      ["Drawn", `Two barrels of nine rods, each ${um(length)} µm long and ${um(radius * 2)} µm across${real ? "" : ", enlarged"}, between the nucleus and the Golgi: the picture's choice. Nothing in the engine stands behind it.`],
+    ],
   };
+}
+
+/** The point of the ER's sheets nearest a place (the Golgi's cis face): where carriers for the Golgi leave the ER. Null without an ER. */
+function erNearest(env, place) {
+  const er = env.erSheets;
+  if (!er) return null;
+  const c = er.centre, toward = Math.atan2(place.z - c.z, place.x - c.x);
+  let best = null;
+  for (const one of er.sheets) {
+    const low = Math.min(one.from, one.to), high = Math.max(one.from, one.to);
+    // The angle of the sheet nearest the place's own, the long way round included.
+    const near = [toward - Math.PI * 2, toward, toward + Math.PI * 2].map((angle) => Math.min(high, Math.max(low, angle))).sort((a, b) => Math.abs(a - toward) - Math.abs(b - toward))[0];
+    const point = c.clone().addScaledVector(radial(near), one.radius).setY(er.y);
+    if (!best || point.distanceTo(place) < best.distanceTo(place)) best = point;
+  }
+  return best;
 }
 
 /** The vesicles that would carry proteins from the ER to the Golgi and on to the membrane: membrane trafficking. */
@@ -584,7 +749,7 @@ function carriers(env, random, golgi) {
   part.priority = 45; // where names clash, the Golgi's own is kept and this one gives way
   const size = golgi.thickness * (real ? 0.55 : 0.62);
   const out = [0.18, 0.4, 0.62, 0.84].map((t) => ({ position: path.getPoint(t), scale: 0.9 + random() * 0.3 }));
-  const from = env.erExit ? env.erExit.clone() : golgi.cis.clone().addScaledVector(radial(golgi.facing + Math.PI), 1);
+  const from = erNearest(env, golgi.cis) || golgi.cis.clone().addScaledVector(radial(golgi.facing + Math.PI), 1);
   const into = [0.25, 0.5, 0.75].map((t) => ({ position: from.clone().lerp(golgi.cis, t).add(new THREE.Vector3(0, Math.sin(Math.PI * t) * 0.15, 0)), scale: 0.65 + random() * 0.2 }));
   const glass = part.material({ hue: "bioGolgi", shade: 0.4, roughness: 0.25, opacity: 0.9, thin: 0.6 });
   part.add(env.instanced(new THREE.SphereGeometry(size, 16, 12), glass, [...out, ...into]));

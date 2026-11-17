@@ -62,6 +62,12 @@ Rules the map keeps, so it can be shown outside the team:
   "Regulatory circuits" is drawn at the cell's DNA, as the separate small model it is,
   and no longer names the nucleus. Choosing a structure offers a door into the Protein
   atlas where the species' own proteins can show its set.
+- Where the Golgi stands follows the cell (the user, 17 November 2026, choosing option B
+  of the review of "the position and scale of the golgi v. er and nucleaus";
+  `docs/CELL_STRUCTURES.md`): in an animal cell beside the nucleus, round a centrosome,
+  with the ER in two arms either side of it; in a plant cell, many small stacks in the
+  thin cytoplasm by the membrane, with no ribbon and no centrosome. Their distances and
+  counts are the picture's choice. The centrosome is scenery, and its panel says so.
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
@@ -558,10 +564,11 @@ indicative.
 | Cell | six-sided, 18 µm between opposite sides and 20 µm between corners, 13 µm tall like the sheet's cells; the shape is the picture's choice | the same, 17.5 µm between sides so that the gap to each neighbour shows |
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
-| Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
+| Endoplasmic reticulum | thin sheets close together, running on from the nuclear envelope, in two arms either side of the Golgi (in a plant cell, on the nucleus's inner side), and tubules through the cell | four thick ribbons, in the same arms |
 | Ribosomes | free, in strings on a messenger, and on the rough endoplasmic reticulum: dots | two-subunit beads |
-| Golgi apparatus | a small stack of five or six curved cisternae, with buds at the rims | the same, enlarged |
-| Trafficking vesicles | eight: three on their way from the endoplasmic reticulum to the Golgi, four from the Golgi to the membrane, and one that meets it; their number and size are the picture's choice | the same |
+| Golgi apparatus | an animal cell: a ribbon of four stacks of six curved cisternae, each about 1.2 µm across, beside the nucleus round the centrosome, about 0.4 µm from the envelope; a plant cell: 40 small stacks in the thin cytoplasm by the membrane | an animal cell: one stack of five, its cis face about 1 µm from the envelope; a plant cell: 14 small stacks, enlarged |
+| Centrosome | an animal cell only: two barrels of nine rods at right angles, 0.5 µm long, between the nucleus and the Golgi: scenery | the same, 0.9 µm long |
+| Trafficking vesicles | eight: three from the point of the ER nearest the Golgi to its cis face, four from its trans face to the membrane, and one that meets it; their number and size are the picture's choice | the same |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | ATP, ions, small molecules | dots and haze | a few beads and clusters |
@@ -941,6 +948,11 @@ Ideas kept for after the basics (the user, 14 November 2026):
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
+- In the plant cell a few of the Golgi's small stacks fall on the floor and the far
+  walls and show only through the glass; the label points at the first, beside the
+  nucleus. A cell's proportions (the review's option C: a larger animal nucleus, tighter
+  cisternae, a smaller plant nucleus, a plant's ER as a network by the membrane) are not
+  built: they need cited numbers first.
 - With the engine's older code left out of the map, seven parts are no longer drawn in the
   Engine view (cell removal, membrane redistribution, fuel and mitochondria, injury and
   resealing, the charged-surface backend, the finite and spatial exterior, calcium and

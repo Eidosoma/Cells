@@ -50,7 +50,11 @@ export const GAP_CORNER = (3 * Math.PI) / 2; // the corner at which the space be
 // middle. In a cell with a large vacuole each is pressed out to the side (makeLayout).
 export const NUCLEUS_HOME = new THREE.Vector3(2.6, CUT, -2.2); // its middle at the cut, so that the wedge cut away from it starts at the cut face (cell_structures.js)
 export const ER_HOME = 2.42; // the side of the nucleus the ER wraps, as an angle
-export const GOLGI_HOME = new THREE.Vector3(-4.9, CUT + 0.15, 4.3);
+export const GOLGI_HOME = new THREE.Vector3(-4.9, CUT + 0.15, 4.3); // where the Golgi stood before 17 November 2026; now only a cell with a vacuole starts from it
+// An animal cell's Golgi stands beside the nucleus, toward the cell's middle, where the ER faces: in the cell's frame, how far
+// its cis face stands from the nuclear envelope, and the centrosome's middle, in each size mode (the picture's choice: a
+// micrometre, and half of one to scale, in the generic animal cell). The user chose this on 17 November 2026 (docs/CELL_STRUCTURES.md).
+export const BESIDE = { schematic: { golgi: 1.0, centrosome: 0.45 }, real: { golgi: 0.5, centrosome: 0.25 } };
 export const MACHINE = new THREE.Vector3(-7.2, CUT + 0.9, -1.0);
 export const MITO_AT_SURFACE = [[-4.7, -4.5, 0.5, 2.5], [6.9, 0.9, 1.45, 2.1], [1.9, 6.1, -0.35, 2.7]]; // x, z, turn, and how far it keeps from the cell's sides
 export const CAGES_AT_SURFACE = [new THREE.Vector3(4.9, CUT + 0.55, 3.9), new THREE.Vector3(-1.4, CUT + 0.5, -7.0)];
@@ -125,7 +129,13 @@ export function makeLayout(mode, cell) {
   };
   const NUCLEUS = vacuole ? seat(NUCLEUS_HOME, style.nucleusRadius + 0.35) : NUCLEUS_HOME;
   const ER_FACING = vacuole ? Math.atan2(-NUCLEUS.z, -NUCLEUS.x) + 0.5 : ER_HOME; // beside a vacuole the ER lies on the nucleus's inner side
-  const GOLGI = vacuole ? seat(GOLGI_HOME, style.golgi.inner + style.golgi.gap * 4 + 0.6) : GOLGI_HOME;
+  // Beside a vacuole a plant cell's Golgi is many small stacks in the thin cytoplasm (cell_structures.js), which places
+  // them itself. A cell with a nucleus and room in its middle has its Golgi beside the nucleus, round its centrosome:
+  // the stack's middle stands half its depth beyond the gap, so that the cis face is about that far from the envelope.
+  const beside = !vacuole && parts.nucleus;
+  const golgiDepth = (style.golgi.count - 1) * style.golgi.gap + style.golgi.half * (real ? 1.6 : 1.9);
+  const GOLGI = vacuole ? seat(GOLGI_HOME, style.golgi.inner + style.golgi.gap * 4 + 0.6) : beside ? NUCLEUS.clone().addScaledVector(radial(ER_FACING), style.nucleusRadius + BESIDE[mode].golgi + golgiDepth / 2).setY(CUT + 0.15) : GOLGI_HOME;
+  const CENTROSOME = beside ? NUCLEUS.clone().addScaledVector(radial(ER_FACING), style.nucleusRadius + BESIDE[mode].centrosome).setY(CUT + 0.1) : null;
   const prism = frame.solid();
   const skinAt = surfaceSampler(prism);
   const junction = cell.neighbours && has("junctions"); // a junction needs a neighbour to lead to
@@ -169,7 +179,7 @@ export function makeLayout(mode, cell) {
     mode, real, style, cell, has, parts, organelle,
     frame, outline, TOP, BASE, BEVEL, prism,
     random, inCut, inside, vacuole, inCytoplasm, scatter, seat, skinAt, onSkin,
-    NUCLEUS, ER_FACING, GOLGI,
+    NUCLEUS, ER_FACING, GOLGI, CENTROSOME,
     junction, junctionAt, edgeLine, edgeBand,
     taken, pack, neighbours, cells, cagesAt, machineAt,
     coreAt, coreRadius, coreReach, uncutSide,
