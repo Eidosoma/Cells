@@ -531,6 +531,23 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   Of the example the
   form of its law is named and no more ("the preprint's single-event form"): what the
   engine's decision says a form is for is said only of a real run of the engine.
+- **When GARD's entry names runs of the engine** (`kind: development`), the view plays them
+  instead of the example: two runs of one world, one of each form of the law, side by
+  side under one clock on a wide screen, the engine's passive law (the pair-consistent
+  form) first and the comparison model (the preprint's single-event form, D192) beside
+  it, and one at a time with a switch on a phone. The mark says "Development run of the
+  engine, not judged", the revision and the engine's model, and each run's panel gives
+  every line the run states of its law's check and its ledger as the run writes it, with
+  no gloss. `tools/adapt_assembly_run.py` writes those run files from the engine's run
+  folders (`cells.assembly_lineages.run@1`) with the viewer's own reader (no numpy, no
+  engine import, no interface ID held as a literal); going to new runs is a run of it,
+  the entry's `runs` and the scene. Today the entry names none: the page shows a real
+  run only from the engine's final set, which its lead sends. Held by checks on a
+  check-only scene made from the engine's provisional set where that folder is at hand
+  (the scenarios are skipped, and say so, where it is not). Not right yet there: the
+  wide pair runs at about 55 frames a second with the page's cards shown (16.7 ms
+  between frames with them hidden; the drawing's own frame is 6 to 7 ms); with a panel
+  open the left run goes partly under the left card; the page of its own has no switch.
 - **On the page** its levels are on the rail, its clock is the page's timeline (counting
   fissions; the space bar plays and pauses), and its card has the packing (Protocell,
   Micelle or Cluster) and the Composition and Similarity selects (on a phone, in the card its folded line opens).

@@ -75,5 +75,6 @@ test("the tool knows no view: every view with a mount and a page file builds, an
   await assert.rejects(buildViewPage("../tools"), /not a view's name/);
   assert.equal(fill("at {laws.stamp.main.revision}, {laws.stamp.main.date|date}", { laws: { stamp: { main: { revision: "abc1234", date: "2026-11-16" } } } }), "at abc1234, 16 November 2026");
   assert.throws(() => fill("{laws.nothing}", { laws: {} }), /does not hold/, "a stamp that names nothing is an error, not a blank");
+  assert.equal(fill("{a.example||a.development}", { a: { development: "a run of the engine" } }), "a run of the engine", "the first of two the data holds");
   assert.equal(fill("<{a}>", { a: "<b>" }), "<&lt;b&gt;>", "the carried words are escaped");
 });

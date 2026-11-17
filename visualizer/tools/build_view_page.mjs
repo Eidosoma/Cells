@@ -11,9 +11,12 @@
 //   boot         what the page says while it starts
 //   scene        { from, keep }: the scene the view's panel reads (its statuses, its source
 //                address), keeping only the keys named ("all" keeps the whole scene)
-//   data         [{ into, from }]: files carried whole, each put into the scene under `into`
+//   data         [{ into, from }]: files carried whole, each put into the scene under `into`;
+//                or [{ into, runs_of }]: the run files a carried entry names (its `runs`), each
+//                carried whole as the map's page reads them ({...run, data}), as a list under `into`
 //   stamp        the words under the notice, with {key.path} read from the carried data
-//                (and {key.path|date} written as "16 November 2026")
+//                (and {key.path|date} written as "16 November 2026"; {a.b||c.d} the first of
+//                the two the data holds)
 // Nothing in this tool knows a view: a new view needs only its two files.
 //
 // Default: the page as an artifact wants it, content only (the service adds the document
@@ -43,9 +46,10 @@ export function longDate(iso) {
 
 /** The words of `template`, with each {key.path} read from `data` (a missing one is an error, not a blank). */
 export function fill(template, data) {
-  return String(template || "").replace(/\{([a-z0-9_.]+)(\|date)?\}/gi, (_, key, date) => {
-    const value = key.split(".").reduce((at, part) => (at == null ? undefined : at[part]), data);
-    if (value === undefined || value === null || value === "") throw new Error(`the page's stamp names ${key}, which the carried data does not hold`);
+  return String(template || "").replace(/\{([a-z0-9_.|]+?)(\|date)?\}/gi, (_, keys, date) => {
+    const read = (key) => key.split(".").reduce((at, part) => (at == null ? undefined : at[part]), data);
+    const value = keys.split("||").map(read).find((one) => one !== undefined && one !== null && one !== "");
+    if (value === undefined) throw new Error(`the page's stamp names ${keys}, which the carried data does not hold`);
     return escapeHtml(date ? longDate(value) : value);
   });
 }
@@ -74,6 +78,14 @@ export async function buildViewPage(view, { three = THREE_CDN } = {}) {
   const blocks = [];
   for (const item of page.data || []) {
     if (!/^[a-z][a-z0-9_]*$/.test(item.into || "")) throw new Error(`not a key to carry data under: ${item.into}`);
+    if (item.runs_of) {
+      // The run files a carried entry names, as the map's page reads them: the page follows the entry's `runs`.
+      const runs = data[item.runs_of]?.runs;
+      if (!Array.isArray(runs)) throw new Error(`${item.runs_of} is not carried before ${item.into}, or names no runs`);
+      data[item.into] = await Promise.all(runs.map(async (run) => ({ ...run, data: JSON.parse(await readFile(path.join(ROOT, run.file), "utf8")) })));
+      blocks.push(`<script type="application/json" data-standalone-into="${item.into}" data-source="${escapeHtml(runs.map((run) => run.file).join(" "))}">${json(data[item.into])}</script>`);
+      continue;
+    }
     const text = await readFile(path.join(ROOT, item.from), "utf8");
     data[item.into] = JSON.parse(text);
     blocks.push(`<script type="application/json" data-standalone-into="${item.into}" data-source="${escapeHtml(item.from)}">${json(data[item.into])}</script>`);

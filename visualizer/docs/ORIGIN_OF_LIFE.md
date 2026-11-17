@@ -179,6 +179,50 @@ notes say so (`data/models/gard.json`). That note proposes vesicles, a bilayer r
 engine's first assemblies, dividing at shear events into two or more: when such runs exist, this view
 will need a vesicle's picture for them.
 
+## The engine's own runs, 17 November 2026
+
+The user had said on 16 November, of the two forms side by side: "yes we'll wait for the real runs
+but great to have everything ready". On 17 November the first part of GARD's build reached main: the
+stochastic assembly family `cells.assembly_lineages@1`, with development runs, not judged. The
+engine's lead decided the same day how the view meets them:
+
+- **Not part 1's pair:** its format predates part 2's freeze. The adapter is built on part 2's
+  provisional set (`gard-g1-part2-20261117/probes-6af93a51/probes/`, its roles `lineage` and
+  `lineage_single_event`: one world, one founder, one set of streams). That set is final but for
+  three interface ID strings, which change at the freeze, so the adapter reads such IDs from the run
+  and holds none.
+- **Nothing of the provisional set goes on the page.** The page keeps its marked example until the
+  final set comes; the real runs are a state the view shows on a check-only scene. Going to the final
+  set is data alone.
+- **The words:** "Development run of the engine, not judged", the revision, `cells.assembly_lineages@1`
+  and the two laws by name; each ledger line exactly as the run states it; D192's scoped words only;
+  the single-event form never called wrong (it is the preprint's form, kept for comparison and
+  declared driven).
+- **Side by side:** the engine's default first, the pair-consistent form, labelled as the engine's
+  passive law; the preprint's single-event form beside it, labelled as the comparison model (D192).
+
+What the view does with them (`schema/ASSEMBLY_RUN.md`, "The adapter, from the engine's run
+format"):
+
+- **`tools/adapt_assembly_run.py`** writes one small file of the view's contract for each run folder
+  (135 KB each for the provisional pair), with the viewer's own reader and nothing of the engine. It
+  takes every array through the run's own records table and every convention from the run's own
+  tables, copies the run's interface IDs, and stops in plain words where the run lacks what the
+  contract needs or states what it does not know. The run states no standing of its own; the adapter
+  is given it (`--standing development`) with where it is recorded.
+- **The view opens on the engine's runs wherever the entry names any** (`runToPlay`, the same rule on
+  the map's page and on the page of its own), and on the example where it names none. On a wide
+  screen the two stand side by side under one clock; on a phone one at a time, with a switch on the
+  card. The mark on the picture, in the legend, in the bar and on an opened card is the run's
+  standing, its revision and the engine's model. Each run's panel gives every line the run states of
+  its law's check and of its ledger, as `run.json` writes it; a fission's panel gives the run's
+  carrier keys. The clock spaces each growth's events by the run's own times. A run of the engine
+  carries no analysis, so no threshold is drawn and no fission is marked.
+- **The example leaves the page when the final set comes,** and stays in the repository as the
+  fixture the click checks hold the example's view on (on a check-only scene once the page names the
+  engine's runs). An example beside the engine's runs would ask a visitor to tell invented numbers from
+  a run, and the view would play the runs anyway.
+
 ## In short
 
 - **Recommendation.** Add a heading "Origin of life" to the species switch, with "GARD assembly" as a

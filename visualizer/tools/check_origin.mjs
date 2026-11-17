@@ -25,20 +25,35 @@
 //            lens=laws&entry=gard and back.
 //   pair     on a check-only scene whose GARD lists a test's own two made-up runs of one world, one
 //            of each form of the law (tests/fixtures/assembly-forms/forms.json, served to the page
-//            by the check itself), the card offers the two forms under one clock, and choosing
-//            them shows two lineages, each named by its run and its form. The published page never
-//            carries such a scene.
+//            by the check itself), the view opens on the two lineages side by side, each named by
+//            its run and its form, under one clock; the card's switch shows one alone and both
+//            again. The published page never carries such a scene.
+//   engine   the engine's own runs: the page's, where GARD's entry names any; else a check-only
+//            scene of the two runs ENGINE_RUNS names ("<evidence root>::<run>,<run>", the engine's
+//            provisional set of 17 November 2026 unless set), adapted here by
+//            tools/adapt_assembly_run.py and served by the check itself (it says "skip" and
+//            passes nothing where they are not at hand). Wide: the pair side by side, the engine's
+//            passive law first, each named; the run's standing, revision and model as the mark, on
+//            the picture at every level, in the legend and in the bar, and no word of an example;
+//            each run's panel with every line it states, as it states it; a fission of each with
+//            its keys; one clock; the switch; less motion. With PHONE=1: one run at a time, the
+//            switch in the opened card, the mark clear of it.
+//
+// The marked example is the cases main, phone, address, frames and pictures: the page's own where
+// GARD's entry names it, else a check-only scene that names it (it stays in the repository as a
+// fixture for them), so that the page going over to the engine's runs is a change of data alone.
 //   frames   no checks: the stage's own frame on the card while the view plays, by turns with the
 //            map's chrome shown and hidden, at the window's size; written to the log.
 //
 //   node tools/check_origin.mjs [OUT_DIR]
 //
-// Set by the environment: CASE (main, phone, address, pair or frames; main unless set), THEME
+// Set by the environment: CASE (main, phone, address, pair, engine or frames; main unless set), PHONE, ENGINE_RUNS, THEME
 // (dark), WIDTH and HEIGHT, NAME (what the pictures are called in OUT_DIR). One browser at a time:
 // it takes the lock in tools/lib/browser_lock.mjs.
 
-import { spawn } from "node:child_process";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { spawn, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
@@ -47,7 +62,7 @@ import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
 const CASE = process.env.CASE || "main";
-const PHONE = CASE === "phone";
+const PHONE = CASE === "phone" || process.env.PHONE === "1";
 const WIDTH = Number(process.env.WIDTH || (PHONE ? 400 : 1400)), HEIGHT = Number(process.env.HEIGHT || (PHONE ? 800 : 900));
 const NAME = process.env.NAME || `origin-${CASE}`;
 const EXAMPLE = "Example: invented numbers · not a run of Cells' engine";
@@ -60,17 +75,61 @@ const check = (name, ok, detail = "") => {
 const note = (text) => console.log(`note  ${text}`);
 const pageLog = [];
 
-// The pair's scene: the page's own, with GARD's runs being the test's two made-up runs (served below, never published).
+// The scene: the page's own, or a check-only one written beside the pictures, never published.
 const FORMS = path.join(ROOT, "tests", "fixtures", "assembly-forms", "forms.json"), FORMS_PATH = "models/gard/forms.json";
 let scene = process.env.CHECK_SCENE || DEFAULT_SCENE;
+const own = JSON.parse(await readFile(scene, "utf8"));
+const ownRuns = own.models?.find((model) => model.id === "gard")?.runs || [];
+const pageEngine = ownRuns.some((run) => run.kind !== "example");
+const sceneDir = outDir || path.join(ROOT, "out", "check-origin");
+/** A check-only scene: the page's own, with GARD's runs these. */
+async function sceneWith(runs, name) {
+  const raw = JSON.parse(JSON.stringify(own));
+  raw.models.find((model) => model.id === "gard").runs = runs;
+  const file = path.join(sceneDir, `${NAME}-${name}-scene.json`);
+  await mkdir(sceneDir, { recursive: true });
+  await writeFile(file, JSON.stringify(raw));
+  return file;
+}
+// Files the check serves itself, by the path the page asks for: { "models/gard/<name>.json": text }.
+const served = {};
+// The engine's runs the engine case shows: the page's, or two adapted here from their folder.
+let engineFiles = [], engineRoot = null;
 if (CASE === "pair") {
-  const raw = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
-  const gard = raw.models.find((model) => model.id === "gard");
-  // The scene's own run stays listed (the page's server serves what it lists); the view is handed the test's file first.
-  gard.runs = [{ file: "data/origin/example-run.json", label: "A test's two made-up runs", kind: "development", path: FORMS_PATH }];
-  scene = path.join(outDir || path.join(ROOT, "out", "check-origin"), "pair-scene.json");
-  await mkdir(path.dirname(scene), { recursive: true });
-  await writeFile(scene, JSON.stringify(raw));
+  // The scene's own run stays listed (the page's server serves what it lists); the view is handed the test's file.
+  served[FORMS_PATH] = await readFile(FORMS, "utf8");
+  scene = await sceneWith([{ file: "data/origin/example-run.json", label: "A test's two made-up runs", kind: "development", path: FORMS_PATH }], "pair");
+} else if (CASE === "engine" || (CASE === "frames" && process.env.WAYS === "pair")) {
+  if (pageEngine) {
+    for (const run of ownRuns.filter((one) => one.kind !== "example")) engineFiles.push(JSON.parse(await readFile(path.join(ROOT, run.file), "utf8")));
+    // Where the runs' folders are, to hold each line to run.json's own text (the adapter names each folder relative to it).
+    engineRoot = process.env.ENGINE_ROOT || "/mnt/workspaces/Cells";
+  } else {
+    const [root, list] = (process.env.ENGINE_RUNS || "/mnt/workspaces/Cells::gard-g1-part2-20261117/probes-6af93a51/probes/lineage,gard-g1-part2-20261117/probes-6af93a51/probes/lineage_single_event").split("::");
+    const runs = (list || "").split(",").filter(Boolean);
+    if (!runs.length || !runs.every((run) => existsSync(path.join(root, run, "run.json")))) {
+      console.log(`skip  the engine's runs: GARD's entry names none, and the run folders are not at hand (${root}::${runs.join(",")})`);
+      console.log("0 of 0 checks passed");
+      process.exit(0);
+    }
+    const into = path.join(sceneDir, `${NAME}-runs`);
+    await mkdir(into, { recursive: true });
+    const adapted = spawnSync("python3", ["-I", path.join(ROOT, "tools", "adapt_assembly_run.py"), "--evidence", root, "--out", into, "--standing", "development", "--standing-from", "the check's own scene (tools/check_origin.mjs): the run folders' README", ...runs], { encoding: "utf8" });
+    if (adapted.status !== 0) throw new Error(`the adapter refused the runs: ${adapted.stderr}`);
+    const names = (await readdir(into)).filter((name) => name.endsWith(".json")).sort();
+    const listed = [];
+    for (const name of names) {
+      const text = await readFile(path.join(into, name), "utf8");
+      engineFiles.push(JSON.parse(text));
+      served[`models/gard/${name}`] = text;
+      listed.push({ file: `data/origin/${name}`, label: `A development run of the engine (${name})`, kind: "development", path: `models/gard/${name}` });
+    }
+    engineRoot = root;
+    scene = await sceneWith(listed, "engine");
+  }
+} else if (pageEngine && ["main", "phone", "address", "frames", "pictures"].includes(CASE)) {
+  // The page plays the engine's runs: the marked example is checked on a scene that names it.
+  scene = await sceneWith([{ file: "data/origin/example-run.json", label: "An example of invented numbers", kind: "example", path: "models/gard/example-run.json" }], "example");
 }
 
 const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 30) * 60 * 1000 });
@@ -121,13 +180,14 @@ try {
   await page("Page.addScriptToEvaluateOnNewDocument", {
     source: `window.__pageErrors = []; addEventListener("error", (event) => __pageErrors.push(String(event.error?.stack || event.message))); addEventListener("unhandledrejection", (event) => __pageErrors.push("rejection: " + String(event.reason?.stack || event.reason)));`,
   });
-  if (CASE === "pair") {
-    // The test's own runs, handed to the page where it asks for GARD's run file.
-    const body = Buffer.from(await readFile(FORMS)).toString("base64");
-    await page("Fetch.enable", { patterns: [{ urlPattern: `*${FORMS_PATH}` }] });
+  if (Object.keys(served).length) {
+    // The check's own run files, handed to the page where it asks for them.
+    await page("Fetch.enable", { patterns: Object.keys(served).map((name) => ({ urlPattern: `*${name}` })) });
     events.add((message) => {
       if (message.method !== "Fetch.requestPaused" || message.sessionId !== sessionId) return;
-      page("Fetch.fulfillRequest", { requestId: message.params.requestId, responseCode: 200, responseHeaders: [{ name: "Content-Type", value: "application/json" }], body }).catch(() => {});
+      const name = Object.keys(served).find((one) => message.params.request.url.endsWith(one));
+      const body = Buffer.from(served[name] ?? "{}").toString("base64");
+      page("Fetch.fulfillRequest", { requestId: message.params.requestId, responseCode: name ? 200 : 404, responseHeaders: [{ name: "Content-Type", value: "application/json" }], body }).catch(() => {});
     });
   }
   const evaluate = async (expression) => {
@@ -185,8 +245,8 @@ try {
         legend: root.querySelector("cells-legend")?.textContent || "", insets: v.stage?.insets || {} };
     })()`);
   /** The example's mark on the picture: shown, inside the window, under the bar, and no card of the page over it. */
-  const mark = () =>
-    evaluate(`(() => { const v = ${V}, root = v.shadowRoot, labels = [...root.querySelectorAll(".labels .label")].filter((el) => el.textContent === ${JSON.stringify(EXAMPLE)}); const el = labels[0]; if (!el) return { count: 0 }; const r = el.getBoundingClientRect(), o = v.getBoundingClientRect(); const box = { left: r.left - o.left + 4, top: r.top - o.top + 2, right: r.right - o.left - 4, bottom: r.bottom - o.top - 2 }; const bar = root.querySelector(".bar").getBoundingClientRect(); const cards = v.blockedRects(); const over = cards.filter((c) => box.left < c.right && box.right > c.left && box.top < c.bottom && box.bottom > c.top); return { count: labels.length, off: el.classList.contains("is-off"), inside: r.left >= o.left && r.right <= o.right && r.top >= o.top && r.bottom <= o.bottom, uncovered: over.length === 0 && r.top >= bar.bottom - 2, box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], over: over.map((c) => [Math.round(c.left), Math.round(c.top), Math.round(c.right), Math.round(c.bottom)]), bar: Math.round(bar.bottom) }; })()`);
+  const mark = (text = EXAMPLE) =>
+    evaluate(`(() => { const v = ${V}, root = v.shadowRoot, labels = [...root.querySelectorAll(".labels .label")].filter((el) => el.textContent === ${JSON.stringify(text)}); const el = labels[0]; if (!el) return { count: 0 }; const r = el.getBoundingClientRect(), o = v.getBoundingClientRect(); const box = { left: r.left - o.left + 4, top: r.top - o.top + 2, right: r.right - o.left - 4, bottom: r.bottom - o.top - 2 }; const bar = root.querySelector(".bar").getBoundingClientRect(); const cards = v.blockedRects(); const over = cards.filter((c) => box.left < c.right && box.right > c.left && box.top < c.bottom && box.bottom > c.top); return { count: labels.length, off: el.classList.contains("is-off"), inside: r.left >= o.left && r.right <= o.right && r.top >= o.top && r.bottom <= o.bottom, uncovered: over.length === 0 && r.top >= bar.bottom - 2, box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], over: over.map((c) => [Math.round(c.left), Math.round(c.top), Math.round(c.right), Math.round(c.bottom)]), bar: Math.round(bar.bottom) }; })()`);
   const markShows = (m) => m.count === 1 && !m.off && m.inside && m.uncovered;
   /** On a phone, the band under the bar: the card folded to its line (whole), the rail's button apart from it, both under the bar, and the bar on one row. */
   const band = () =>
@@ -464,16 +524,123 @@ try {
     await evaluate(`(async () => { const ext = ${V}.stage.renderer.getContext().getExtension("WEBGL_lose_context"); ext.loseContext(); await new Promise((r) => setTimeout(r, 600)); ext.restoreContext(); await new Promise((r) => setTimeout(r, 1500)); ${V}.stage.invalidate(); })()`);
     await sleep(1200);
     check("a lost WebGL context comes back, the view drawing again", !before && !(await evaluate(`${V}.stage.renderer.getContext().isContextLost()`)) && (await evaluate(`${V}.stage.renderer.info.render.calls`)) > 3);
+  } else if (CASE === "engine") {
+    // ---------------------------------------------------------- the engine's own runs: the pair, one clock, the run's own lines
+    const ids = engineFiles.map((file) => file.runs[0].id);
+    const lead = engineFiles.find((file) => file.runs[0].law.form === "pair-consistent") || engineFiles[0];
+    const MARK = `${lead.development.says} · ${lead.runs[0].revision.slice(0, 8)} · ${lead.runs[0].provenance.model}`;
+    // A first page, left six seconds, so that no picture is of a fresh browser's first page (its first context is lost and restored on the card).
+    await open("entry=gard");
+    await sleep(6000);
+    check("entry=gard opens the view on the engine's runs", (await open("entry=gard")) && JSON.stringify((await evaluate(`${L}.runs.map((run) => run.id)`)).sort()) === JSON.stringify([...ids].sort()));
+    check("the founder gathers, then the page plays by itself", await until(`${L}.player.playing && ${L}.player.time > 0.05`, 120), JSON.stringify(await state()));
+    const forms = await evaluate(`${L}.sides.map((side) => side.run.form)`);
+    check(PHONE ? "on a phone, one run at a time: the engine's passive law" : "wide, the two side by side: the engine's passive law first, the comparison model beside it", JSON.stringify(forms) === (PHONE ? '["pair-consistent"]' : '["pair-consistent","single-event"]'), JSON.stringify(forms));
+    const said = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off") && !el.hidden).map((el) => el.textContent)`);
+    const named = await evaluate(`${L}.shownRuns.map((run) => (${PHONE} ? "" : run.label + ": ") + (run.form === "pair-consistent" ? "the pair-consistent form, the engine's passive law" : "the preprint's single-event form, the comparison model (D192)") + " (" + run.law.engine_name + ")")`);
+    check(PHONE ? "the run shown is named on the picture by its form and the engine's name for its law" : "each run shown is named on the picture by its run, its form and the engine's name for its law", named.every((words) => said.includes(words)), JSON.stringify({ named, said }));
+    check("the mark on the picture is the run's standing, its revision and the engine's model, uncovered", markShows(await mark(MARK)), JSON.stringify([MARK, await mark(MARK)]));
+    let s = await state();
+    const stamp = await evaluate(`${V}.shadowRoot.querySelector(".stamp")?.textContent || ""`);
+    check("and it stands in the legend and in the bar", s.legend.includes(MARK) && stamp.startsWith(lead.development.says), JSON.stringify([s.legend.slice(0, 120), stamp.slice(0, 120)]));
+    const words = await evaluate(`(() => { const root = ${V}.shadowRoot; return [document.body.innerText, root.textContent, ...[...root.querySelectorAll(".labels .label")].map((el) => el.textContent)].join("\\n"); })()`);
+    check("no word of an example anywhere on the page", !/invented numbers|Example: /.test(words), (words.match(/.{0,60}(invented numbers|Example: ).{0,60}/) || [""])[0]);
+    // Playing, under one clock; something comes or goes on each side shown.
+    const playing = await evaluate(`(async () => { const l = ${L}; let seen = 0; for (let i = 0; i < 20; i++) { await new Promise((r) => setTimeout(r, 100)); if (l.sides.every((side) => side.layout.inMotion().flying > 0 || side.layout.gathering)) seen++; } return { seen, k: l.sides.map((side) => side.phase?.k ?? null), key: l.streamWords() }; })()`);
+    check("playing under one clock, the run's joins and leaves seen coming and going on each side", playing.seen >= 12 && new Set(playing.k).size === 1, JSON.stringify(playing));
+    await shot(`${NAME}-playing`);
+    // Each run's panel: every line it states of its law's check and its ledger, as it states it.
+    for (const file of engineFiles) {
+      const run = file.runs[0];
+      await open(`entry=gard&select=assembly:run:${run.id}`);
+      await until(`${V}.state.selected === "assembly:run:${run.id}"`, 40);
+      await sleep(1500);
+      const facts = await evaluate(`(() => { const d = ${L}.describe("assembly:run:${run.id}"); return d ? d.facts.map(([label, value]) => label + " = " + value) : []; })()`);
+      const panel = (await state()).panel;
+      const lines = run.states.lines.map((line) => `${line.path} = ${line.text}${line.unit ? ` ${line.unit}` : ""}`);
+      let raw = null;
+      if (engineRoot && existsSync(path.join(engineRoot, run.provenance.folder, "run.json"))) raw = await readFile(path.join(engineRoot, run.provenance.folder, "run.json"), "utf8");
+      const own = raw ? run.states.lines.filter((line) => !line.text.startsWith("[")).every((line) => raw.includes(`"${line.path.split(".").at(-1)}": ${/^(true|false|null|[-\d.e+]+)$/.test(line.text) ? line.text : JSON.stringify(line.text)}`)) : true;
+      check(`${run.label}'s panel gives every line the run states of its law's check and its ledger, as run.json writes it${raw ? "" : " (its run.json not at hand: held to its file)"}`, lines.every((line) => facts.includes(line)) && lines.every((line) => panel.includes(line.split(" = ")[1])) && own, JSON.stringify(lines.filter((line) => !facts.includes(line)).slice(0, 3)));
+      await shot(`${NAME}-panel-${run.law.form}`);
+      await open(`entry=gard&select=assembly:fission:${run.id}:37`);
+      await until(`${V}.state.selected === "assembly:fission:${run.id}:37"`, 40);
+      await sleep(4500);
+      const fission = await state();
+      check(`a fission of ${run.label} opens held, with its panel and the run's carrier keys`, fission.time === 37 && /Fission 37/.test(fission.panel) && /Carrier keys/.test(fission.panel), JSON.stringify([fission.time, fission.panel.slice(0, 120)]));
+      await shot(`${NAME}-fission-${run.law.form}`);
+    }
+    // The switch: one run alone (on a phone the other), and back.
+    await open("entry=gard");
+    await until(`${L}.player.playing`, 120);
+    if (PHONE) {
+      const toggle = await placeOf(`root.querySelector(".view-toggle")`);
+      if (toggle) await click(toggle.x, toggle.y, 900);
+      const offered = await evaluate(`[...(${V}.shadowRoot.querySelector('[data-choice="pair"]')?.options || [])].map((o) => o.value)`);
+      check("the opened card offers the switch between the two runs, and no side by side", JSON.stringify([...offered].sort()) === JSON.stringify([...ids].sort()), JSON.stringify(offered));
+      check("the mark stands clear of the opened card", markShows(await mark(MARK)), JSON.stringify(await mark(MARK)));
+      await shot(`${NAME}-card-open`);
+    }
+    const other = engineFiles.find((file) => file !== lead).runs[0].id;
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = ${JSON.stringify(other)}; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    await sleep(2500);
+    if (PHONE) {
+      // The card folds again, so that the picture is seen.
+      const toggle = await placeOf(`root.querySelector(".view-toggle")`);
+      if (toggle) await click(toggle.x, toggle.y, 1200);
+    }
+    const alone = await evaluate(`${L}.sides.map((side) => side.run.id)`);
+    const aloneSaid = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off") && !el.hidden).map((el) => el.textContent)`);
+    const aloneName = await evaluate(`(() => { const run = ${L}.mainRun; return (${PHONE} ? "" : run.label + ": ") + "the preprint's single-event form, the comparison model (D192) (" + run.law.engine_name + ")"; })()`);
+    check("the switch shows the comparison model alone, named on the picture, the mark still standing", JSON.stringify(alone) === JSON.stringify([other]) && aloneSaid.includes(aloneName) && markShows(await mark(MARK)), JSON.stringify([alone, aloneName, aloneSaid, await mark(MARK)]));
+    await evaluate(`${L}.player.pause(); ${L}.player.seek(36.97)`);
+    await sleep(1800);
+    await shot(`${NAME}-alone-${engineFiles.find((file) => file !== lead).runs[0].law.form}`);
+    if (!PHONE) {
+      // The engine's passive law alone, for its picture, then both again.
+      await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = ${JSON.stringify(lead.runs[0].id)}; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+      await evaluate(`${L}.player.pause(); ${L}.player.seek(36.97)`);
+      await sleep(2200);
+      await shot(`${NAME}-alone-pair-consistent`);
+      await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = "pair"; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+      await sleep(1500);
+      check("and both again", (await evaluate(`${L}.sides.length`)) === 2);
+      const marks = [];
+      for (const id of ["molecules", "lineage", "population", "assembly"]) {
+        await evaluate(`${L}.setLevel(${JSON.stringify(id)})`);
+        await sleep(1200);
+        marks.push([id, markShows(await mark(MARK))]);
+        if (id === "lineage") await shot(`${NAME}-lineage`);
+      }
+      check("the mark stands at every level", marks.every(([, ok]) => ok), JSON.stringify(marks));
+      const lineage = await evaluate(`(() => { const l = ${L}; l.setLevel("lineage"); return { items: l.chrome().legend.items.map((item) => item.label), sheets: l.sides.map((side) => Boolean(side.fence.sheet?.visible)) }; })()`);
+      check("at the Lineages no threshold is drawn and no mark of inheritance keyed: the runs carry no analysis", lineage.sheets.every((on) => !on) && !lineage.items.some((label) => /threshold|bead: inherited/.test(label)), JSON.stringify(lineage));
+      await evaluate(`${L}.setLevel("assembly")`);
+    }
+    // Less motion: the pair (or the one) stands; nothing comes or goes on a path.
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: process.env.THEME === "dark" ? "dark" : "light" }, { name: "prefers-reduced-motion", value: "reduce" }] });
+    await open("entry=gard");
+    await sleep(5000);
+    s = await state();
+    const still = await evaluate(`(() => { const l = ${L}; return { sides: l.sides.length, key: l.streamWords(), flying: l.sides.map((side) => side.layout.inMotion().flying) }; })()`);
+    check("with less motion the runs stand, nothing in flight, the key saying in place", !s.playing && !s.gathering && still.sides === (PHONE ? 1 : 2) && still.flying.every((n) => n === 0) && /in place/.test(still.key), JSON.stringify([s.playing, still]));
+    await shot(`${NAME}-less-motion`);
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: process.env.THEME === "dark" ? "dark" : "light" }, { name: "prefers-reduced-motion", value: "no-preference" }] });
   } else if (CASE === "pair") {
     check("on the check-only scene, entry=gard opens the view on the test's two runs", (await open("entry=gard")) && (await evaluate(`${L}.runs.length`)) === 2);
     const pair = await placeOf(`root.querySelector('[data-choice="pair"]')`);
     check("the card offers the two forms of the law under one clock", Boolean(pair) && /two forms of the law/.test(await evaluate(`${V}.shadowRoot.querySelector('[data-choice="pair"]').closest("label").textContent`)), JSON.stringify(pair));
-    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = "pair"; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
-    await sleep(800);
     await evaluate(`${L}.player.pause(); ${L}.player.seek(5.5)`);
     await sleep(1500);
     const labels = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent)`);
-    check("choosing them shows two lineages, each named by its run and its form", (await evaluate(`${L}.sides.length`)) === 2 && labels.some((t) => /Run S: the preprint's single-event form/.test(t)) && labels.some((t) => /Run P: the pair-consistent form/.test(t)), JSON.stringify(labels));
+    check("it opens on the two lineages side by side, the pair-consistent form first, each named by its run and its form", JSON.stringify(await evaluate(`${L}.sides.map((side) => side.run.form)`)) === '["pair-consistent","single-event"]' && labels.some((t) => /Run S: the preprint's single-event form/.test(t)) && labels.some((t) => /Run P: the pair-consistent form/.test(t)), JSON.stringify(labels));
+    const choose = (value) => evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('[data-choice="pair"]'); select.value = ${JSON.stringify(value)}; select.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    await choose(await evaluate(`${L}.pairRuns[1].id`));
+    await sleep(1200);
+    const alone = await evaluate(`${L}.sides.map((side) => side.run.form)`);
+    await choose("pair");
+    await sleep(1200);
+    check("the card's switch shows one alone, and both again", JSON.stringify(alone) === '["single-event"]' && (await evaluate(`${L}.sides.length`)) === 2, JSON.stringify(alone));
     await evaluate(`${L}.player.pause(); ${L}.player.seek(6)`);
     await sleep(1200);
     check("under one clock: both at the same fission", JSON.stringify(await evaluate(`${L}.sides.map((side) => side.phase.k)`)) === "[6,6]");
@@ -579,13 +746,26 @@ try {
       await new Promise((r) => setTimeout(r, 2500)); going = false; v.stage.frame = own;
       const q = (list, f) => { const a = list.slice().sort((x, y) => x - y); return +a[Math.min(a.length - 1, Math.floor(a.length * f))].toFixed(2); };
       return { frames: work.length, frameMs: q(work, 0.5), slowTenthMs: q(work, 0.9), gapMs: q(gaps, 0.5), calls: v.stage.renderer.info.render.calls, triangles: v.stage.renderer.info.render.triangles }; })()`);
-    const ways = process.env.WAYS === "packing"
+    const ways = process.env.WAYS === "pair"
+      ? (PHONE
+        ? [["the engine's passive law alone, ½ a second", `l.setLevel("assembly"); l.setPair(l.pairRuns[0].id); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["the comparison model alone, ½ a second", `l.setLevel("assembly"); l.setPair(l.pairRuns[1].id); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
+        : [["the engine's pair side by side, ½ a second", `l.setLevel("assembly"); l.setPair("pair"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["the engine's passive law alone, ½ a second", `l.setLevel("assembly"); l.setPair(l.pairRuns[0].id); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]])
+      : process.env.WAYS === "packing"
       ? [["the protocell, ½ a second", `l.setLevel("assembly"); l.setShape("protocell"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["the micelle, ½ a second", `l.setLevel("assembly"); l.setShape("micelle"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
       : process.env.WAYS === "contact"
       ? [["Lineages with contact shade", `l.setLevel("lineage"); v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Lineages without contact shade", `v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: false, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
       : [["playing ½ a second", `l.setLevel("assembly"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["molecule by molecule", `l.player.seek(30.2); l.player.setSpeed(0.001); l.player.play();`], ["Lineages, playing ½ a second", `l.setLevel("lineage"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Molecules, playing ½ a second", `l.setLevel("molecules"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]];
-    if (process.env.WAYS === "packing") {
-      // The protocell against the micelle, by turns in one page, three turns each; with COLD unset, after one turn of each that is not counted.
+    if (process.env.WAYS === "pair" && process.env.CHROME_TURNS) {
+      // The pair, by turns with the map's chrome (its cards and the words on the picture) shown and hidden: what the page's words cost against the drawing.
+      await measure(ways[0][1]);
+      for (const turn of [false, true, false, true, false, true]) {
+        await hide(turn);
+        note(`frames ${WIDTH}x${HEIGHT}, ${ways[0][0]}, the map's chrome ${turn ? "hidden" : "shown"}: ${JSON.stringify(await measure(ways[0][1]))}`);
+      }
+      await hide(false);
+      note(`load average: ${(await import("node:os")).loadavg().map((x) => x.toFixed(1)).join(", ")}`);
+    } else if (process.env.WAYS === "packing" || process.env.WAYS === "pair") {
+      // The protocell against the micelle (or the engine's pair against one of it), by turns in one page, three turns each; with COLD unset, after one turn of each that is not counted.
       if (!process.env.COLD) for (const [, setup] of ways) await measure(setup);
       for (let turn = 0; turn < 3; turn++) for (const [what, setup] of ways) note(`frames ${WIDTH}x${HEIGHT}, ${what}: ${JSON.stringify(await measure(setup))}`);
       note(`load average: ${(await import("node:os")).loadavg().map((x) => x.toFixed(1)).join(", ")}`);

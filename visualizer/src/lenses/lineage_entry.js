@@ -2,9 +2,12 @@
 // entry's `view.kind` is "assembly" (schema/MODEL_SYSTEMS.md), registered with the seam in
 // src/ui/entry_views.js. Its line in src/ui/model_views.js puts it on the page.
 //
-// It is made from the entry and its run files as the page has read them: an example run where the
-// entry lists one (the page plays the marked example, the user's word of 16 November 2026: "yes lets
-// play the marked example"), else the first. The page's controls reach it through the seam: its
+// It is made from the entry and its run files as the page has read them: the engine's runs wherever
+// the entry names any (read together, so that two runs of one world, one of each form, stand side by
+// side), and the marked example where it names none (the user's word of 16 November 2026: "yes lets
+// play the marked example"; the lead's of 17 November: the view opens on a real run wherever the
+// entry names one). Going from the example to the engine's runs is data alone: the entry's `runs`.
+// The page's controls reach it through the seam: its
 // levels on the rail, its timeline, its legend and note, and these choices on its card beyond its
 // modes (the packing) and marks (the composition's form): the similarity compared at each fission,
 // and the two forms of the law side by side, which the view offers only for two real runs of the
@@ -12,12 +15,12 @@
 
 import { registerEntryView } from "../ui/entry_views.js";
 import { LineageLens } from "./lineage.js";
+import { mergeRunFiles, runToPlay } from "./assembly_run.js";
 import { originTokens, originCss } from "../ui/origin_styles.js";
 
-/** The run file the view plays: the entry's example where it lists one, else its first. */
-export function runToPlay(runs = []) {
-  return (runs.find((run) => run.kind === "example") || runs[0])?.data || null;
-}
+// What the view plays, chosen and read together in src/lenses/assembly_run.js, so that the page of its own
+// (src/standalone/lineage.js) chooses by the same rule.
+export { mergeRunFiles, runToPlay };
 
 registerEntryView("assembly", {
   // The first tab's name while the view is shown; on a narrow window the short one. The bar keeps to one row with it
@@ -27,7 +30,8 @@ registerEntryView("assembly", {
   make: (stage, model, labels, { entry, runs, autoplay }) => new LineageLens(stage, model, labels, runToPlay(runs), { entry, autoplay }),
   choices: {
     compare: (lens, value) => lens.setCompare(value),
-    pair: (lens, value) => lens.setPair(value === "pair"),
+    // The two forms side by side ("pair"), or one run by its id (on a phone, one at a time).
+    pair: (lens, value) => lens.setPair(value),
   },
   styles: { page: originTokens, shadow: originCss },
 });

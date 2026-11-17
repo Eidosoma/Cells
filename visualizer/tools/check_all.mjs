@@ -49,6 +49,9 @@ const SUITE = [
   { name: "origin-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "phone", NAME: "origin-phone" }, minutes: 2 },
   { name: "origin-address", tool: "check_origin.mjs", args: [pictures], env: { CASE: "address", NAME: "origin-address" }, minutes: 2 },
   { name: "origin-pair", tool: "check_origin.mjs", args: [pictures], env: { CASE: "pair", NAME: "origin-pair" }, minutes: 1 },
+  // The engine's own runs: the page's where GARD's entry names them, else two adapted from their folder on a check-only scene ("skip" where neither is at hand).
+  { name: "origin-engine", tool: "check_origin.mjs", args: [pictures], env: { CASE: "engine", NAME: "origin-engine" }, minutes: 3 },
+  { name: "origin-engine-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "engine", PHONE: "1", WIDTH: "400", HEIGHT: "800", NAME: "origin-engine-phone" }, minutes: 3 },
   // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, with less
   // motion, and with the cell drawn to scale. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
   { name: "machine-main", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-main" }, minutes: 20 },
@@ -203,6 +206,8 @@ function run(item, attempt = 1) {
         passed: counted ? Number(counted[1]) : null,
         checks: counted ? Number(counted[2]) : null,
         failed: [...text.matchAll(/^FAIL\s+(.*)$/gm)].map((match) => match[1].slice(0, 300)),
+        // A scenario that had nothing at hand to check says so ("skip  why"): it is counted apart, never as a pass.
+        skipped: text.match(/^skip\s+(.*)$/m)?.[1]?.slice(0, 300) || null,
         font: /own font: arrived/.test(text) ? "arrived" : /own font: not arrived/.test(text) ? "not arrived" : "not said",
         seconds: Math.round((Date.now() - started) / 1000),
         log: path.relative(out, log),
@@ -216,7 +221,7 @@ async function worker() {
     const result = await run(item);
     results.set(item.name, result);
     const ok = result.exit === 0 && result.checks !== null && result.passed === result.checks;
-    console.log(`${ok ? "pass" : "FAIL"}  ${item.name}: ${result.checks === null ? `no count (exit ${result.exit})` : `${result.passed} of ${result.checks}`}, ${result.seconds} s, font ${result.font}`);
+    console.log(`${ok ? (result.skipped ? "skip" : "pass") : "FAIL"}  ${item.name}: ${result.skipped && ok ? result.skipped : result.checks === null ? `no count (exit ${result.exit})` : `${result.passed} of ${result.checks}`}, ${result.seconds} s, font ${result.font}`);
     for (const line of result.failed.slice(0, 5)) console.log(`      ${line}`);
   }
 }
@@ -235,12 +240,14 @@ const summary = {
   jobs,
   places: places(),
   scenarios: list,
-  passed: list.length - bad.length,
+  passed: list.length - bad.length - list.filter((result) => good(result) && result.skipped).length,
+  skipped: list.filter((result) => good(result) && result.skipped).map((result) => result.name),
   failed: bad.map((result) => result.name),
   checks: { passed: list.reduce((sum, result) => sum + (result.passed || 0), 0), of: list.reduce((sum, result) => sum + (result.checks || 0), 0) },
 };
 await writeFile(path.join(out, "summary.json"), JSON.stringify(summary, null, 1) + "\n");
 const minutes = (summary.seconds / 60).toFixed(1);
 if (bad.length) console.log(`${bad.length} of ${list.length} scenarios did not pass (${bad.map((result) => result.name).join(", ")}); ${summary.checks.passed} of ${summary.checks.of} checks passed; ${minutes} minutes`);
+else if (summary.skipped.length) console.log(`${summary.passed} scenarios passed and ${summary.skipped.length} skipped (${summary.skipped.join(", ")}): ${summary.checks.passed} of ${summary.checks.of} checks; ${minutes} minutes`);
 else console.log(`all ${list.length} scenarios passed: ${summary.checks.passed} of ${summary.checks.of} checks; ${minutes} minutes`);
 process.exit(bad.length ? 1 : 0);

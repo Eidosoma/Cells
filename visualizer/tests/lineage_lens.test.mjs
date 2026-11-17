@@ -156,11 +156,11 @@ test("words that must stand: the example's mark on the picture and in the legend
   const chrome = lens.chrome();
   assert.equal(chrome.legend.example, says);
   assert.ok(chrome.stamp.includes(says) && chrome.card.text.includes(says));
-  // Of an example the form of the law is named and no more: "built for the reference comparison" is the engine's
+  // Of an example the form of the law is named and no more: "the comparison model (D192)" is the engine's
   // decision about a form, said only of a real run of the engine (beside an example it would read as if built).
   assert.match(chrome.stamp, /Lineage A: the preprint's single-event form$/);
-  assert.doesNotMatch(chrome.stamp, /built|engine's own law/);
-  assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.every(([, value]) => !/built for the reference comparison/.test(String(value))));
+  assert.doesNotMatch(chrome.stamp, /comparison model|passive law/);
+  assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.every(([, value]) => !/the comparison model|the engine's passive law/.test(String(value))));
   assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.some(([label, value]) => label === "Example" && value.startsWith(says)));
   assert.ok(shown.some((label) => /the shape is the picture's choice/.test(label.text)), "the shape is said to be the picture's");
   assert.ok(shown.some((label) => /the picture's choice/.test(label.text) && /map/i.test(label.text)), "the map's axes are said to be the picture's");
@@ -292,12 +292,21 @@ const forms = () => JSON.parse(readFileSync(path.join(ROOT, "tests", "fixtures",
 test("the two forms of the law side by side: two real runs of one world, each named by its run and its form, under one clock, with the same marks", () => {
   const { lens, shown } = lensFor({ file: forms() });
   assert.ok(lens.chrome().card.pair, "the pair is offered");
-  lens.setPair(true);
+  // They open side by side on a wide screen, the engine's default first.
   lens.update(16, 0, 16);
   assert.equal(lens.sides.length, 2);
-  assert.deepEqual(lens.sides.map((side) => side.run.form), ["single-event", "pair-consistent"]);
-  assert.ok(shown.some((label) => label.text === "Run S: the preprint's single-event form, built for the reference comparison"));
-  assert.ok(shown.some((label) => label.text === "Run P: the pair-consistent form, the engine's own law"));
+  assert.deepEqual(lens.sides.map((side) => side.run.form), ["pair-consistent", "single-event"]);
+  // A test's made-up runs name a revision, but their file does not say they are the engine's: the forms are named, and no more.
+  assert.ok(shown.some((label) => label.text === "Run S: the preprint's single-event form"));
+  assert.ok(shown.some((label) => label.text === "Run P: the pair-consistent form"));
+  // One at a time by the switch, and both again.
+  lens.setPair(lens.pairRuns[1].id);
+  lens.update(16, 0, 16);
+  assert.deepEqual(lens.sides.map((side) => side.run.form), ["single-event"]);
+  assert.equal(lens.chrome().card.pair.active, lens.pairRuns[1].id);
+  lens.setPair("pair");
+  lens.update(16, 0, 16);
+  assert.equal(lens.sides.length, 2);
   lens.player.seek(6);
   lens.update(16, 0, 16);
   assert.deepEqual(lens.sides.map((side) => side.phase.k), [6, 6], "both at the same fission, by one clock");
@@ -305,8 +314,8 @@ test("the two forms of the law side by side: two real runs of one world, each na
   lens.update(16, 0, 16);
   assert.ok(lens.sides.every((side) => side.fence.sheet?.visible), "the same marks on both: each its own analysis's threshold");
   assert.equal(new Set(lens.sides.map((side) => side.run.environment)).size, 1, "one world");
-  assert.match(lens.chrome().stamp, /Run S: the preprint's single-event form.* · Run P: the pair-consistent form/);
-  assert.ok(lens.describe("assembly:assembly").facts.some(([label, value]) => label === "Form of the law" && /single-event/.test(value)));
+  assert.match(lens.chrome().stamp, /Run P: the pair-consistent form.* · Run S: the preprint's single-event form/);
+  assert.ok(lens.describe("assembly:assembly").facts.some(([label, value]) => label === "Form of the law" && /pair-consistent/.test(value)));
 });
 
 test("an example is never one of a pair of forms, nor two runs of different worlds, of one form, or not of the engine", () => {

@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-17",
-  "generated_at": "2026-11-17T15:53:33Z",
+  "generated_at": "2026-11-17T16:29:45Z",
   "revision": "95de49de",
   "revision_date": "2026-11-17",
   "dirty": false,
@@ -7268,7 +7268,7 @@
     {
      "label": "One assembly",
      "id": "assembly",
-     "shows": "One assembly growing molecule by molecule and splitting in two, drawn as a micelle, which is the picture's choice, with its mix of types beside it. Molecule by molecule only where a run saved each event; otherwise from one fission to the next."
+     "shows": "One assembly growing molecule by molecule and splitting in two, drawn as lipids in a protocell (or a micelle or a cluster, as the card chooses), which is the picture's choice, with its mix of types beside it. Molecule by molecule only where a run saved each event; otherwise from one fission to the next."
     },
     {
      "label": "Population",
@@ -7279,7 +7279,7 @@
     {
      "label": "Lineages",
      "id": "lineage",
-     "shows": "Generations across fissions: the line of daughters that carry on, and at each fission how alike the parent and that daughter are. The line at 0.9 is drawn on that comparison only."
+     "shows": "Generations across fissions: the line of daughters that carry on, and at each fission how alike the parent and that daughter are. Where a run's analysis states a threshold (0.9 in the preprint), its line is drawn on that comparison only."
     }
    ],
    "clock": {
@@ -7330,7 +7330,7 @@
     {
      "id": "law",
      "label": "The law's two forms, in the engine's design (D192)",
-     "text": "As D192 records the checked finding: in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer shows no comparison of the two.",
+     "text": "As D192 records the checked finding: in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer shows the two side by side only for two runs of the engine of one world, and judges neither.",
      "record": [
       {
        "path": "docs/DECISIONS.md",

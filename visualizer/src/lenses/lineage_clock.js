@@ -27,12 +27,12 @@ export function advanceByMolecules(run, time, seconds, end) {
       t = boundary;
       left -= needed;
     } else {
-      const from = at.g === 0 ? 0 : at.g + PART, to = at.g + 1 - PART;
-      const perEvent = (to - from) / (run.growthLength(at.g) + 1);
-      const rate = perEvent * MOLECULES_A_SECOND, boundary = Math.min(end, to + 1e-6);
-      const needed = (boundary - t) / rate;
-      if (needed >= left) return t + left * rate;
-      t = boundary;
+      // A growth is walked event by event, at the molecules' pace, whether its events are spaced evenly or by the run's own times.
+      const from = at.g === 0 ? 0 : at.g + PART, to = at.g + 1 - PART, length = run.growthLength(at.g);
+      const now = run.moleculesAt(at.g, Math.min(1, Math.max(0, (t - from) / (to - from))));
+      const needed = (length + 1 - now) / MOLECULES_A_SECOND;
+      if (needed >= left) return Math.min(end, from + run.progressAt(at.g, now + left * MOLECULES_A_SECOND) * (to - from));
+      t = Math.min(end, to + 1e-6);
       left -= needed;
     }
   }

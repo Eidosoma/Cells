@@ -21,7 +21,7 @@ import { roundedSlab } from "../core/materials.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { disposeTree } from "../core/stage.js";
 import { Player } from "../replay/player.js";
-import { AssemblySet, PREFIX, formWords } from "./assembly_run.js";
+import { AssemblySet, PREFIX, formWords, LAW_FORM_NAMES } from "./assembly_run.js";
 import { arrivalMode, SHAPES, GLOW_S } from "./assembly_beads.js";
 import { LipidLayout, FreeCrowd, PROTOCELL, STREAM_CAP, STREAM_FLIGHT_S, LIPID_FLIGHT_S, streamStride } from "./lipid_assembly.js";
 import { CatalyticNetwork, ShellGlow, NETWORK } from "./protocell_marks.js";
@@ -106,12 +106,16 @@ export class LineageLens {
     if (entry?.id && entry.id !== this.set.model.id) throw new Error(`the run is of the model ${this.set.model.id}, not of the entry ${entry.id}`);
     this.entry = entry;
     this.runs = this.set.runs;
-    // Where two runs are the two forms of the law, the first of them leads (its tape, carpet and map are drawn).
+    // Where two runs are the two forms of the law, the first of them leads (its tape, carpet and map are drawn):
+    // the engine's default, the pair-consistent form (the lead, 17 November 2026).
     this.pairRuns = this.set.formsPair();
     this.mainRun = this.pairRuns ? this.pairRuns[0] : this.runs[0];
     this.mainEnvironment = this.mainRun.environment;
+    // The three types that wear colour are the first run's, and stay so when the other is chosen: one key for both.
     this.leading = this.mainRun.leading(3);
-    this.pair = false;
+    // The two forms stand side by side as the view opens on a wide screen; on a phone one at a time, by the card's switch (fitScreen).
+    this.pair = Boolean(this.pairRuns);
+    this.pairWanted = true;
     this.level = "assembly";
     this.compare = "carried";
     this.composition = "wheel";
@@ -135,6 +139,18 @@ export class LineageLens {
 
   get shownRuns() {
     return this.pair && this.pairRuns ? this.pairRuns : [this.mainRun];
+  }
+
+  /**
+   * The mark the view carries on the picture, in the legend, in the bar and on an opened card: an example's
+   * own words, or what a run of the engine says of its standing, with its revision and the engine's model.
+   */
+  get mark() {
+    if (this.set.example) return this.set.example.says;
+    const standing = this.mainRun.file.development;
+    if (!standing) return null;
+    const run = this.mainRun.raw, model = run.provenance?.model || run.engine_models?.[0];
+    return [standing.says, run.revision ? run.revision.slice(0, 8) : null, model].filter(Boolean).join(" · ");
   }
 
   runById(id) {
@@ -334,7 +350,8 @@ export class LineageLens {
 
   /** The panel's sources: files of the repository, as every view gives them (the papers are named in words, in the facts). */
   sourcesOf() {
-    return [{ path: "schema/ASSEMBLY_RUN.md", where: "what the view reads of a run" }, ...(this.set.example ? [{ path: "data/origin/example-run.json", where: "the example, written by tools/make_assembly_example.mjs" }] : [])];
+    const engine = this.set.example ? [] : (this.entry?.runs || []).filter((run) => run.kind !== "example").map((run) => ({ path: run.file, where: "a run of the engine, adapted by tools/adapt_assembly_run.py" }));
+    return [{ path: "schema/ASSEMBLY_RUN.md", where: "what the view reads of a run" }, ...(this.set.example ? [{ path: "data/origin/example-run.json", where: "the example, written by tools/make_assembly_example.mjs" }] : engine)];
   }
 
   /** The papers a run's rules rest on, in words: each with its DOI and licence. */
@@ -364,7 +381,7 @@ export class LineageLens {
   }
 
   chrome() {
-    const example = this.set.example?.says || null;
+    const example = this.mark;
     const types = this.mainEnvironment.types, others = this.mainEnvironment.count - this.leading.length;
     const lipids = this.level === "assembly" || this.level === "lineage";
     return {
@@ -373,7 +390,8 @@ export class LineageLens {
         modes: { label: "Packing (the picture's choice)", options: SHAPES.map((shape) => [shape, { protocell: "Protocell", micelle: "Micelle", cluster: "Cluster" }[shape]]), active: this.shape },
         marks: { label: "Composition", options: COMPOSITION, active: this.composition },
         compare: { label: "Similarity", options: COMPARE.map((item) => [item.id, item.label]), active: this.compare },
-        pair: this.pairRuns ? { label: "The two forms of the law, under one clock", options: [["one", this.mainRun.label], ["pair", `${this.pairRuns[0].label} and ${this.pairRuns[1].label}`]], active: this.pair ? "pair" : "one" } : null,
+        // Both forms side by side where there is room; each alone by its run (on a phone, one at a time).
+        pair: this.pairRuns ? { label: "The two forms of the law, under one clock", options: [...(this.narrow ? [] : [["pair", "Both, side by side"]]), ...this.pairRuns.map((run) => [run.id, `${LAW_FORM_NAMES[run.form].replace(/^t/, "T")} · ${run.label}`])], active: this.pair ? "pair" : this.mainRun.id } : null,
         text: [example ? `${example}.` : null, this.set.model.plain, this.entry?.modelled?.text || "Nothing of this model is in Cells' engine."].filter(Boolean).join(" "),
         sources: this.sourcesOf(),
       },
@@ -396,13 +414,19 @@ export class LineageLens {
             { label: this.streamWords(), swatch: "origin-halo" },
           ] : []),
           ...(this.level === "lineage" && this.mainRun.threshold ? [{ label: `${this.mainRun.threshold.value}: the analysis's threshold`, swatch: "origin-threshold" }] : []),
-          ...(this.level === "lineage" ? [{ label: "bead: inherited · ring: a break", swatch: "origin-fission" }] : []),
+          ...(this.level === "lineage" && this.mainRun.raw.analysis?.inheritance ? [{ label: "bead: inherited · ring: a break", swatch: "origin-fission" }] : []),
         ],
         note: { text: [example ? `${example}.` : null, this.shape === "protocell" ? NOTE_WORDS : NOTE_WORDS_BARE].filter(Boolean).join(" ") },
       },
       timeline: { player: this.player, eventWord: "fission" },
       stamp: [example, this.shownRuns.map((run) => `${run.label}: ${formWords(run)}`).join(" · ")].filter(Boolean).join(" · "),
     };
+  }
+
+  /** The line on the picture that says what is the picture's own; where the run gives its events' own times, when each comes is the run's too. */
+  ownWords() {
+    const words = this.narrow ? OWN_WORDS_SHORT : this.shape === "protocell" ? OWN_WORDS : OWN_WORDS_BARE;
+    return this.shownRuns.every((run) => run.times) ? words.replace("and in what order", "in what order and when") : words;
   }
 
   /** Where a side of a pair stands across: the protocell's two lineages stand further apart, by its size. */
@@ -427,14 +451,14 @@ export class LineageLens {
     return this.narrow ? STREAM_CAP.narrow : STREAM_CAP.wide;
   }
 
-  /** One in how many joins and leaves is drawn in flight, across the main run's growths at this speed: [least, most]. */
+  /** One in how many joins and leaves is drawn in flight, across the growths of every run shown at this speed: [least, most]. */
   strideRange(speed = this.player.speed) {
-    const key = `${speed}:${this.flightCap}:${this.mainRun.id}`;
+    const key = `${speed}:${this.flightCap}:${this.shownRuns.map((run) => run.id).join("+")}`;
     if (this.strides?.key === key) return this.strides.range;
     const flight = speed === FINE ? LIPID_FLIGHT_S : STREAM_FLIGHT_S;
     let least = Infinity, most = 1;
-    for (let g = 0; g < this.mainRun.fissionCount; g++) {
-      const n = streamStride({ eventsPerSecond: this.eventRate(this.mainRun, g, speed), cap: this.flightCap, flight });
+    for (const run of this.shownRuns) for (let g = 0; g < run.fissionCount; g++) {
+      const n = streamStride({ eventsPerSecond: this.eventRate(run, g, speed), cap: this.flightCap, flight });
       least = Math.min(least, n);
       most = Math.max(most, n);
     }
@@ -541,7 +565,7 @@ export class LineageLens {
         const size = this.shape === "protocell" ? 1.62 : 1;
         // A pair's let-go daughters part to the right, so the pair of protocells is framed a little to the right of its middle.
         const across = this.narrow ? 0 : this.pair ? (this.shape === "protocell" ? 1 : 0) : 0.35 * size;
-        return { target: ASSEMBLY.clone().add(new THREE.Vector3(across, this.narrow ? 0.3 * size : -0.45 * size, 0)), distance: (this.pair ? (this.shape === "protocell" ? 13.2 : 12) : 6.6) * size * (this.narrow ? 1.3 : 1), azimuth: this.pair ? 0.12 : 0.3, polar: 1.36 };
+        return { target: ASSEMBLY.clone().add(new THREE.Vector3(across, this.narrow ? 0.3 * size : -0.45 * size, 0)), distance: (this.pair ? (this.shape === "protocell" ? 15 : 12) : 6.6) * size * (this.narrow ? 1.3 : 1), azimuth: this.pair ? 0.12 : 0.3, polar: 1.36 };
       }
     }
   }
@@ -551,7 +575,14 @@ export class LineageLens {
     if (narrow === this.narrow) return false;
     this.narrow = narrow;
     if (CLUSTER_WHERE_SMALL_OR_STILL && narrow && !this.chosenShape) this.setShape("cluster", { chosen: false });
+    // Side by side where there is room for two; on a phone one at a time, the one chosen or the engine's default.
+    const pair = Boolean(this.pairRuns) && !narrow && this.pairWanted;
+    if (pair !== this.pair) {
+      this.pair = pair;
+      if (this.clock) this.loadClock();
+    }
     this.rebuild();
+    this.onChrome?.();
     return true;
   }
 
@@ -603,12 +634,20 @@ export class LineageLens {
 
   /**
    * Show the two forms of the law side by side, under one clock, each lineage named by its run and
-   * its form (the user's answer 9; "we'll wait for the real runs", 16 November 2026), or one.
+   * its form (the user's answer 9; "we'll wait for the real runs", 16 November 2026), or one of them:
+   * `"pair"` (or true) for both, a run's id for that one alone, "one" (or false) for the one that leads.
    */
-  setPair(on) {
-    const next = Boolean(on) && Boolean(this.pairRuns);
-    if (next === this.pair) return;
+  setPair(value) {
+    if (!this.pairRuns) return;
+    const chosen = typeof value === "string" ? this.pairRuns.find((run) => run.id === value) || null : null;
+    const both = value === true || value === "pair";
+    const run = both ? this.pairRuns[0] : chosen || (this.pair ? this.pairRuns[0] : this.mainRun);
+    const next = both && !this.narrow;
+    this.pairWanted = both;
+    if (next === this.pair && run === this.mainRun) return;
     this.pair = next;
+    this.mainRun = run;
+    this.strides = null;
     this.rebuild();
     this.loadClock();
     if (this.active) this.buildLabels();
@@ -660,9 +699,9 @@ export class LineageLens {
     if (!this.active) return;
     const places = this.placeAt, level = this.level, z = places.lineage.z;
     const add = (spec) => labels.add({ kind: "part", lift: 0, priority: 300, ...spec });
-    const example = this.set.example?.says;
+    const example = this.mark;
     if (example) {
-      // An example keeps its mark on the picture at the place shown.
+      // An example keeps its mark on the picture at the place shown; a run of the engine its standing, revision and model.
       const anchor = {
         assembly: ASSEMBLY.clone().add(new THREE.Vector3(0, this.narrow ? 1.75 : this.pair ? 2.3 : 1.08, 0)),
         lineage: new THREE.Vector3(0, places.lineage.tapeY + 2.2, z - 2.6),
@@ -682,7 +721,7 @@ export class LineageLens {
       this.tags.shape = add({ id: `${PREFIX}assembly`, text: level === "lineage" ? "The assembly now: the shape is the picture's choice" : this.shapeWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 520 });
       if (level === "assembly") {
         // The line on the picture that says what is the picture's own; while the founder gathers, the words for that in the shape's place.
-        this.tags.own = labels.add({ text: this.narrow ? OWN_WORDS_SHORT : this.shape === "protocell" ? OWN_WORDS : OWN_WORDS_BARE, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.45 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
+        this.tags.own = labels.add({ text: this.ownWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.45 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
         this.tags.own.boost = 900;
         this.tags.gather = labels.add({ text: GATHER_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 940, kind: "part label-own", lift: 0 });
         this.tags.gather.hidden = true;
@@ -695,8 +734,9 @@ export class LineageLens {
           if (this.shape === "protocell") this.tags.network = add({ text: "lit inside: which type speeds which (the run's table)", anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, r - PROTOCELL.thickness - 0.05, 0.3)), priority: 450, lift: 0 });
         }
       }
-      // Each run of a pair is labelled with its own law, beneath its assembly.
-      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(this.sideX(side), 1.5 + big, 0)), priority: 760, kind: "part label-wrap" });
+      // Each run of a pair is labelled with its own law, above its assembly (a press opens what the run states); a run of the engine shown alone too.
+      if (this.pair) for (const side of this.sides) add({ id: `${PREFIX}run:${side.run.id}`, text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(this.sideX(side), 1.5 + big, 0)), priority: 760, kind: "part label-wrap" });
+      else if (level === "assembly" && this.mainRun.file.development) this.tags.run = add({ id: `${PREFIX}run:${this.mainRun.id}`, text: this.narrow ? formWords(this.mainRun) : `${this.mainRun.label}: ${formWords(this.mainRun)}`, anchor: ASSEMBLY.clone().add(this.narrow ? new THREE.Vector3(0, 1.45 + big, 0) : new THREE.Vector3(1.4 + big * 1.4, 0.95 + big * 0.5, 0.6)), priority: 760, kind: "part label-wrap" });
       // At the lineages, each lineage of the pair is named too, beside its own fence.
       if (this.pair && level === "lineage") this.sides.forEach((side, index) => add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: new THREE.Vector3(this.placeAt.lineage.x1 + 0.6, 0.6, this.placeAt.lineage.z + index * 1.6), priority: 750 }));
     }

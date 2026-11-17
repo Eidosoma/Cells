@@ -21,7 +21,31 @@ function markWords(run, k) {
 }
 
 function exampleFacts(lens) {
-  return lens.set.example ? [["Example", `${lens.set.example.says}. Nothing it shows is a finding.`]] : [];
+  if (lens.set.example) return [["Example", `${lens.set.example.says}. Nothing it shows is a finding.`]];
+  // A run of the engine: its standing as its file states it, and where that standing is recorded.
+  const standing = lens.mainRun.file.development;
+  return standing ? [["Standing", `${standing.says}${standing.from ? ` (${standing.from}; ${standing.run_states || "as given to the adapter"})` : ""}`]] : [];
+}
+
+/** What a run of the engine names of where it came from, as its record names it. */
+function provenanceFacts(run) {
+  const from = run.provenance;
+  if (!from) return [];
+  return [
+    ["Revision", `${from.revision}${from.dirty === false ? ", clean" : from.dirty ? ", with changes not committed" : ""}`],
+    ["Engine model", from.model],
+    ["Laws", from.laws.join(", ")],
+    ["Operators", from.operators.join(", ")],
+    ["Definition", `sha256 ${from.definition_sha256}`],
+    ["Run qualifier", from.qualifier],
+    ["World", from.world],
+    ["Run folder", `${from.folder} (${from.format})`],
+  ];
+}
+
+/** What the run states of its law's check and of its ledger: each line its place in the run's record and the run's own text, with no gloss. */
+function statedFacts(run) {
+  return run.states.map((line) => [line.path, `${line.text}${line.unit ? ` ${line.unit}` : ""}`]);
 }
 
 function runFacts(run, lens) {
@@ -32,6 +56,7 @@ function runFacts(run, lens) {
     ...(run.form ? [["Form of the law", formWords(run)]] : []),
     ["Law of catalysis", run.law.says],
     ...(law ? [[law.label, `${law.text}${law.record?.length ? ` (${law.record.map((item) => `${item.path}, ${item.where}`).join("; ")})` : ""}`]] : []),
+    ...provenanceFacts(run),
     ...(lens.papers() ? [["Its rules rest on", lens.papers()]] : []),
   ];
 }
@@ -41,7 +66,7 @@ export function describe(lens, id) {
   if (!id || !id.startsWith(PREFIX)) return null;
   const [kind, ...rest] = id.slice(PREFIX.length).split(":");
   const run = lens.mainRun;
-  const example = lens.set.example ? [{ label: lens.set.example.says }] : [];
+  const example = lens.mark ? [{ label: lens.mark }] : [];
   const base = { id, sources: lens.sourcesOf(), chips: example };
   switch (kind) {
     case "assembly": {
@@ -83,6 +108,19 @@ export function describe(lens, id) {
         facts: [["In the assembly now", `${x[type]} of ${sizeOf(x)}`], ["Speeds itself by", `a factor of ${formatFactor(lens.mainEnvironment.catalysis(type, type))} (the table's diagonal)`], ["In the water", `held at ${lens.mainEnvironment.raw.reservoir?.each ?? "the run's"} by the run, as every type is: the free molecules drawn are the picture's number`]],
       };
     }
+    case "run": {
+      const which = lens.runById(rest[0]);
+      if (!which) return null;
+      return {
+        ...base,
+        label: which.label,
+        eyebrow: `${lens.set.model.label} · a run`,
+        kind: "run",
+        plain: `${formWords(which)}. ${which.fissionCount} fissions, ${which.events ? which.events.length.toLocaleString("en-US") : "no saved"} events.`,
+        note: which.states.length ? "What the run states of its law's check and of its ledger, line by line as its record writes them (the place in run.json, then its text). The view adds nothing to them and judges neither form." : null,
+        facts: [...exampleFacts(lens), ...runFacts(which, lens), ...statedFacts(which)],
+      };
+    }
     case "fission": {
       const which = lens.runById(rest[0]) || run;
       const k = Number(rest[1]);
@@ -100,6 +138,7 @@ export function describe(lens, id) {
       ];
       if (fission.totals) facts.push(["Since the lineage began", `${fission.totals.joined} joined, ${fission.totals.left} left, ${fission.totals.discarded} let go with daughters not followed (the run's cumulative totals)`]);
       if (fission.nominal !== undefined) facts.push(["Nominal time", `${fission.nominal}: the model's own units, which carry no calibration`]);
+      if (fission.keys) facts.push(["Carrier keys", `the parent ${fission.keys.parent}; the first daughter ${fission.keys.first}, the second ${fission.keys.second} (the run's own keys${which.raw.keys?.spelling ? `, ${which.raw.keys.spelling}` : ""})`]);
       const named = which.composomeAt(k);
       if (named) facts.push(["Composome", `${named.label || named.id}, named by the run's analysis (${which.composomes.method})`]);
       return { ...base, label: `Fission ${k}`, eyebrow: `${which.label} · a fission`, kind: "fission", plain: "The parent at its full size splits in two; one daughter carries the lineage on and the other is let go.", facts };
@@ -177,6 +216,8 @@ function partOf(lens, which, base) {
   if (!part) return null;
   const facts = [...exampleFacts(lens)];
   if (which === "fence") facts.push(["Comparing", COMPARE.find((item) => item.id === lens.compare).says]);
+  // A run with no analysis (a run of the engine) marks no fission: every post and node wears the same plain cap.
+  if ((which === "fence" || which === "spine") && !lens.mainRun.raw.analysis?.inheritance) facts.push(["Marks", "none: no analysis marks this run's fissions, so every cap is the same, and none says inherited or a break"]);
   if (which === "map" && lens.mainRun.composomes === null) facts.push(["Composomes", "none named: the run's analysis names none"]);
   return { ...base, label: part.label, eyebrow: "A part of the view", kind: "part", plain: part.plain, note: part.note, facts };
 }
@@ -186,9 +227,9 @@ export function sections(lens) {
   const out = [];
   for (const run of lens.shownRuns) {
     out.push({
-      label: `${run.label} · ${run.law.name}${lens.set.example ? " · example" : ""}`,
+      label: `${run.label} · ${run.form && run.file.development ? formWords(run) : run.law.name}${lens.set.example ? " · example" : ""}`,
       limit: 12,
-      entities: Array.from({ length: run.fissionCount }, (_, index) => {
+      entities: [...(run.states.length ? [{ id: `${PREFIX}run:${run.id}`, label: "What the run states: its law's check, its ledger", swatch: "origin-part", keywords: `run ledger check closure residual ${run.label}` }] : []), ...Array.from({ length: run.fissionCount }, (_, index) => {
         const k = index + 1, own = run.similarityAt(k), mark = run.inherited(k);
         return {
           id: `${PREFIX}fission:${run.id}:${k}`,
@@ -196,7 +237,7 @@ export function sections(lens) {
           swatch: mark === false ? "origin-break" : "origin-fission",
           keywords: `fission ${k} ${mark === false ? "break" : mark ? "inherited" : ""} ${run.label}`,
         };
-      }),
+      })],
     });
   }
   out.push({ label: "The view's parts", entities: [{ id: `${PREFIX}assembly`, label: "One assembly", swatch: "origin-part", keywords: "assembly micelle cluster lipids heads tails" }, { id: `${PREFIX}composition`, label: "Its composition", swatch: "origin-part", keywords: "wheel strip shares" }, ...PARTS.map((part) => ({ id: `${PREFIX}part:${part.id}`, label: part.label, swatch: "origin-part", keywords: part.plain }))] });

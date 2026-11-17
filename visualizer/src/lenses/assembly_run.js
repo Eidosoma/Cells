@@ -15,13 +15,17 @@ export const PART = 0.15;
 
 /**
  * The two forms of the law of catalysis a run may state (`law.form`), in the words of the engine's
- * decision (docs/DECISIONS.md, D192). A run names the engine's own name for its form in
- * `law.engine_name` once the engine has one; the view shows that name as words and binds to none.
+ * decision (docs/DECISIONS.md, D192) and the lead's labels of 17 November 2026: the pair-consistent
+ * form is the engine's passive law, the preprint's single-event form the comparison model. A run
+ * names the engine's own name for its law in `law.engine_name`; the view shows that name as words
+ * and binds to none. No word here says which form is right.
  */
 export const LAW_FORMS = {
-  "single-event": "the preprint's single-event form, built for the reference comparison",
-  "pair-consistent": "the pair-consistent form, the engine's own law",
+  "single-event": "the preprint's single-event form, the comparison model (D192)",
+  "pair-consistent": "the pair-consistent form, the engine's passive law",
 };
+/** The engine's default first, where two forms stand side by side. */
+export const FORM_ORDER = ["pair-consistent", "single-event"];
 /** The forms' names alone: what is said of a run that is not the engine's (an example), of which nothing was built. */
 export const LAW_FORM_NAMES = {
   "single-event": "the preprint's single-event form",
@@ -35,6 +39,8 @@ export function problemsOf(file) {
   const problems = [];
   if (!file || file.format !== ASSEMBLY_FORMAT) return [`the file is not ${ASSEMBLY_FORMAT}`];
   if (file.example !== undefined && !(file.example && typeof file.example.says === "string" && file.example.says)) problems.push("example must say in words that the file is an example");
+  if (file.development !== undefined && !(file.development && typeof file.development.says === "string" && file.development.says)) problems.push("development must say in words what the run's standing is");
+  if (file.example && file.development) problems.push("a file is an example or a run of the engine, not both");
   if (!file.model?.id || !file.model?.label) problems.push("model must give an id and a label");
   if (file.time?.base !== "fission" || !file.time.unit || !file.time.plural) problems.push("time must count fissions and give its words (base, unit, plural)");
   const environments = new Map();
@@ -64,6 +70,8 @@ export function problemsOf(file) {
     if (run.law?.engine_name !== undefined && run.law.engine_name !== null && !(typeof run.law.engine_name === "string" && run.law.engine_name)) problems.push(`${where}: the engine's name for its law is words, or null until the engine has one`);
     if (run.world !== undefined && run.world !== null && !(typeof run.world === "string" && run.world)) problems.push(`${where}: the world it is of is named in words`);
     if (file.example && (run.engine_models?.length || run.revision)) problems.push(`${where}: an example names no engine model and no revision`);
+    if (file.development && !(run.revision && run.engine_models?.length)) problems.push(`${where}: a run of the engine names its revision and the engine's models`);
+    if (run.states !== undefined && !(Array.isArray(run.states?.lines) && run.states.lines.every((line) => typeof line?.path === "string" && typeof line?.text === "string"))) problems.push(`${where}: what it states is lines, each its place in the run's record and the run's own text`);
     const inRange = (list) => isCounts(list) && list.every(([type]) => type < n);
     if (!inRange(run.founder)) problems.push(`${where}: its founder must be sparse counts of the environment's types`);
     const fissions = run.fissions || [];
@@ -88,6 +96,17 @@ export function problemsOf(file) {
       if (growths.length !== fissions.length) problems.push(`${where}: the trace must give one growth for each fission`);
       const events = decodeEvents(run.trace.events);
       if (events.length !== growths.reduce((a, b) => a + b, 0)) problems.push(`${where}: the trace's events must number what its growths say`);
+      if (run.trace.times !== undefined) {
+        const times = decodeTimes(run.trace.times);
+        if (!times || times.length !== events.length) problems.push(`${where}: the trace's times must give one for each event`);
+        else {
+          let at = 0;
+          for (const length of growths) {
+            for (let e = at + 1; e < at + length; e++) if (times[e] < times[e - 1]) { problems.push(`${where}: the trace's times must keep each growth's order`); break; }
+            at += length;
+          }
+        }
+      }
       else if (!problems.length) {
         // The trace must take the founder, and each carried-on daughter, to the next parent exactly.
         let x = dense(run.founder, n), at = 0;
@@ -120,6 +139,16 @@ export function decodeEvents(text) {
   if (!text) return new Int8Array(0);
   const bytes = typeof atob === "function" ? Uint8Array.from(atob(text), (c) => c.charCodeAt(0)) : new Uint8Array(Buffer.from(text, "base64"));
   return new Int8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
+/** The trace's times: each event's place in its growth's span, 0 to 65535, decoded from base64 of unsigned 16-bit numbers (little-endian). */
+export function decodeTimes(times) {
+  if (!times?.values) return null;
+  const bytes = typeof atob === "function" ? Uint8Array.from(atob(times.values), (c) => c.charCodeAt(0)) : new Uint8Array(Buffer.from(times.values, "base64"));
+  if (bytes.byteLength % 2) return null;
+  const out = new Uint16Array(bytes.byteLength / 2);
+  for (let i = 0; i < out.length; i++) out[i] = bytes[2 * i] | (bytes[2 * i + 1] << 8);
+  return out;
 }
 
 function dense(list, n) {
@@ -174,6 +203,8 @@ export class AssemblyRun {
     this.firsts = raw.fissions.map((fission) => dense(fission.first, this.n));
     this.seconds = this.parents.map((parent, index) => parent.map((count, type) => count - this.firsts[index][type]));
     this.events = raw.trace ? decodeEvents(raw.trace.events) : null;
+    // The events' own times within their growths, where the run gives them: the clock then spaces a growth's events by them.
+    this.times = raw.trace?.times ? decodeTimes(raw.trace.times) : null;
     this.starts = [];
     if (raw.trace) {
       let at = 0;
@@ -273,8 +304,39 @@ export class AssemblyRun {
     const from = g === 0 ? 0 : g + PART, to = g + 1 - PART;
     const progress = Math.min(1, Math.max(0, (t - from) / (to - from)));
     const length = this.growthLength(g);
-    const e = this.events ? Math.min(length, Math.floor(progress * (length + 1))) : 0;
+    const e = this.events ? this.eventsBy(g, progress) : 0;
     return { phase: "grow", g, e, progress, k: g };
+  }
+
+  /** Where in growth g's share of the clock (0 to 1) its event i (from 0) happens: by the run's own time where it gives one, else evenly. */
+  eventPlace(g, i) {
+    const length = this.growthLength(g);
+    if (i < 0) return 0;
+    if (i >= length) return 1;
+    return this.times ? this.times[this.starts[g] + i] / 65535 : (i + 1) / (length + 1);
+  }
+
+  /** How many of growth g's events have happened at a share of its time. */
+  eventsBy(g, progress) {
+    const length = this.growthLength(g);
+    if (!this.times) return Math.min(length, Math.floor(progress * (length + 1)));
+    let lo = 0, hi = length; // the first event not yet happened
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (this.eventPlace(g, mid) <= progress) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+
+  /** Molecule by molecule, a growth is walked event by event: the count of events (with the share towards the next) at a share of its time, and back. */
+  moleculesAt(g, progress) {
+    const e = this.eventsBy(g, progress), before = this.eventPlace(g, e - 1), after = this.eventPlace(g, e);
+    return e + (after > before ? (progress - before) / (after - before) : 0);
+  }
+
+  progressAt(g, molecules) {
+    const length = this.growthLength(g);
+    const x = Math.min(length + 1, Math.max(0, molecules)), e = Math.floor(x);
+    if (e >= length + 1) return 1;
+    const before = this.eventPlace(g, e - 1), after = this.eventPlace(g, e);
+    return before + (x - e) * (after - before);
   }
 
   /** The composition the clock shows at a time: during a split, the parent. */
@@ -285,8 +347,18 @@ export class AssemblyRun {
 
   /** The time on the clock at which growth g has had e events. */
   timeOf(g, e) {
-    const from = g === 0 ? 0 : g + PART, to = g + 1 - PART, length = this.growthLength(g);
-    return from + ((e + 0.5) / (length + 1)) * (to - from);
+    const from = g === 0 ? 0 : g + PART, to = g + 1 - PART;
+    return from + ((this.eventPlace(g, e - 1) + this.eventPlace(g, e)) / 2) * (to - from);
+  }
+
+  /** What the run states of its law's check and of its ledger, as lines in its own words (a run of the engine), or none. */
+  get states() {
+    return this.raw.states?.lines || [];
+  }
+
+  /** Where the run came from, as it names it (a run of the engine), or null. */
+  get provenance() {
+    return this.raw.provenance || null;
   }
 }
 
@@ -297,6 +369,8 @@ export class AssemblySet {
     if (problems.length) throw new Error(`the assembly run file is not valid: ${problems.slice(0, 6).join("; ")}`);
     this.file = file;
     this.example = file.example || null;
+    // A run of the engine says its standing ("Development run of the engine, not judged"): the view's mark, in an example's place.
+    this.development = file.development || null;
     this.model = file.model;
     this.time = file.time;
     this.environments = new Map(file.environments.map((raw) => [raw.id, new Environment(raw)]));
@@ -320,7 +394,8 @@ export class AssemblySet {
         const one = real[a], two = real[b];
         if (one.world !== two.world || one.environment !== two.environment || one.form === two.form) continue;
         if (JSON.stringify(one.raw.rules || null) !== JSON.stringify(two.raw.rules || null)) continue;
-        return [one, two];
+        // The engine's default first: the pair-consistent form, then the comparison model.
+        return [one, two].sort((x, y) => FORM_ORDER.indexOf(x.form) - FORM_ORDER.indexOf(y.form));
       }
     }
     return null;
@@ -328,13 +403,49 @@ export class AssemblySet {
 }
 
 /**
- * A run's form of the law, in words: the engine's name for it where the run gives one. What the engine's
- * decision says a form is for ("built for the reference comparison", "the engine's own law") is said only
- * of a real run of the engine, which names its revision and its models: beside an example of invented
- * numbers it would read as if the engine had built it.
+ * A run's form of the law, in words: the engine's name for it where the run gives one. What each form is
+ * to the engine ("the engine's passive law", "the comparison model (D192)") is said only of a run of the
+ * engine, whose file says so: beside an example of invented numbers, or a test's made-up runs, it would
+ * read as if the engine had run them.
  */
 export function formWords(run) {
   if (!run.form) return run.law?.name || "its law";
-  const real = Boolean(run.raw?.revision && run.raw?.engine_models?.length);
+  // Only a file that says it is the engine's (its `development` block) is labelled with what the form is for: a test's made-up runs name a revision too.
+  const real = Boolean(run.raw?.revision && run.raw?.engine_models?.length && run.file?.development);
   return `${(real ? LAW_FORMS : LAW_FORM_NAMES)[run.form]}${run.law.engine_name ? ` (${run.law.engine_name})` : ""}`;
+}
+
+/**
+ * The engine's run files read as one (schema/ASSEMBLY_RUN.md): their runs side by side, their world's
+ * environment once. Files of different models, clocks or standings, an example among them, or one
+ * environment's id with two different contents, are refused: they are not one set of runs.
+ */
+export function mergeRunFiles(files) {
+  const list = files.filter(Boolean);
+  if (list.length <= 1) return list[0] || null;
+  if (list.some((file) => file.example)) throw new Error("an example is never read together with other runs");
+  const [first] = list;
+  const environments = new Map(), sources = {};
+  for (const file of list) {
+    if (file.format !== first.format || file.model?.id !== first.model?.id) throw new Error("the run files are not of one model");
+    if (JSON.stringify(file.time) !== JSON.stringify(first.time)) throw new Error("the run files do not keep one clock");
+    if (JSON.stringify(file.development || null) !== JSON.stringify(first.development || null)) throw new Error("the run files do not state one standing");
+    for (const environment of file.environments || []) {
+      const held = environments.get(environment.id);
+      if (held && JSON.stringify(held) !== JSON.stringify(environment)) throw new Error(`two run files give the environment ${environment.id} differently`);
+      environments.set(environment.id, environment);
+    }
+    for (const [key, source] of Object.entries(file.sources || {})) {
+      const name = sources[key] && JSON.stringify(sources[key]) !== JSON.stringify(source) ? `${key}-${file.runs?.[0]?.id}` : key;
+      sources[name] = source;
+    }
+  }
+  return { ...first, environments: [...environments.values()], runs: list.flatMap((file) => file.runs || []), sources };
+}
+
+/** What the view plays: the entry's runs of the engine, read together, wherever it names any; else its example; else its first. */
+export function runToPlay(runs = []) {
+  const engine = runs.filter((run) => run.kind !== "example" && run.data);
+  if (engine.length) return mergeRunFiles(engine.map((run) => run.data));
+  return (runs.find((run) => run.kind === "example") || runs[0])?.data || null;
 }

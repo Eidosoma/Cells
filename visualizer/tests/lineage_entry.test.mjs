@@ -9,7 +9,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { entryView, fitView } from "../src/ui/entry_views.js";
-import { runToPlay } from "../src/lenses/lineage_entry.js";
+import { runToPlay, mergeRunFiles } from "../src/lenses/lineage_entry.js";
 import { CLUSTER_WHERE_SMALL_OR_STILL } from "../src/lenses/lineage.js";
 
 const example = JSON.parse(readFileSync(path.join(ROOT, "data", "origin", "example-run.json"), "utf8"));
@@ -39,10 +39,20 @@ test("the view is registered for model systems of kind assembly, with a short na
   assert.ok(registration.styles.page.includes("--origin-type-1") && registration.styles.shadow.includes(".swatch-origin-type-1"));
 });
 
-test("it plays the entry's example where the entry lists one, else its first run", () => {
-  assert.equal(runToPlay([{ kind: "development", data: forms }, { kind: "example", data: example }]), example);
+test("it plays the engine's runs wherever the entry names any (read together), and the example where it names none", () => {
+  assert.equal(runToPlay([{ kind: "development", data: forms }, { kind: "example", data: example }]), forms);
   assert.equal(runToPlay([{ kind: "development", data: forms }]), forms);
+  assert.equal(runToPlay([{ kind: "example", data: example }]), example);
   assert.equal(runToPlay([]), null);
+  // Two files of one world are read as one: the environment once, the runs side by side.
+  const [a, b] = forms.runs.map((run) => ({ ...forms, runs: [run] }));
+  const merged = runToPlay([{ kind: "development", data: a }, { kind: "development", data: b }]);
+  assert.equal(merged.environments.length, 1);
+  assert.deepEqual(merged.runs.map((run) => run.id), forms.runs.map((run) => run.id));
+  // An example is never read with them, and two worlds under one id are refused.
+  assert.throws(() => mergeRunFiles([a, example]), /example/);
+  const other = { ...b, environments: b.environments.map((environment) => ({ ...environment, reservoir: { each: 0.5 } })) };
+  assert.throws(() => mergeRunFiles([a, other]), /differently/);
 });
 
 test("its choices reach the page's card: the similarity always, the two forms of the law only for two real runs of one world", () => {

@@ -146,7 +146,7 @@ test("words that must not stand: no engine record name outside the contract's ta
     if (file.startsWith("src/")) assert.ok(!/\bGARD\b/.test(body), `${file}: the view's code names no model; GARD is in the data`);
   }
   const contract = readFileSync(path.join(ROOT, "schema", "ASSEMBLY_RUN.md"), "utf8");
-  const heading = "## The records the engine's design names";
+  const heading = "## The adapter, from the engine's run format";
   const table = contract.slice(contract.indexOf(heading));
   for (const name of records.filter((item) => contract.includes(item))) assert.ok(table.includes(name) && contract.indexOf(name) >= contract.indexOf(heading), `${name} stands only in the contract's table`);
 });

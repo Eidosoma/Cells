@@ -52,6 +52,13 @@ the engine's run format, and the page shows a real run only from the engine's fi
   in the legend for as long as the run is shown, in the words the replays' example uses where they fit
   (`schema/QUANTITY_LAYERS.md`, rule 6). An example names no engine model (`engine_models` empty,
   `revision` null) and nothing in it is a finding; the view states no statistic of it.
+- **`development`** is present only for a run of the engine, in an example's place (a file is one or
+  the other): `{"says", "standing", "from", "run_states"}`. Its `says` ("Development run of the
+  engine, not judged"), with the run's revision (its first eight characters) and the engine's model,
+  is the view's mark, on the picture at every level, in the legend, in the bar and at the head of an
+  opened card. The engine's run record states no standing of its own, so the adapter is given it and
+  writes where it is recorded (`from`) and that the run states none (`run_states`). Such a file's
+  runs name their `revision` and their `engine_models`.
 - **`model`** names the model system. Its `id` is the id of the entry the run belongs to (below). The
   view's code names no model: "GARD" is in the data.
 - **`time`**: the run's own clock. **The clock counts fissions** (`base: "fission"`); `unit` and
@@ -63,8 +70,10 @@ the engine's run format, and the page shows a real run only from the engine's fi
   - `catalysis.rows`: the table, a row for each type i and a column for each type j, the factor by
     which a molecule of type j in the assembly speeds the joining and the leaving of type i; in the
     `encoding` stated (`log10, two decimals` in the example).
-  - `reservoir`: the held concentration of each type (`each` where all are the same); `rates`: the
-    basal join and leave constants. Shown on the card; the view computes no rate from them.
+  - `reservoir`: the held concentration of each type (`each` where all are the same, else `of`, one
+    for each type); `rates`: the basal join and leave constants (one number, or one for each type).
+    Shown on the card; the view computes no rate from them.
+  - `world` (optional): the engine's id of the world the environment is (a run of the engine).
 - **`runs`**: one or more runs. Two runs of one world, one of each form of the law, are shown as a
   pair under one clock (below, "The two forms of the law, side by side"). The view says nothing of
   which is right.
@@ -89,11 +98,25 @@ the engine's run format, and the page shows a real run only from the engine's fi
     - `totals`: the lineage's cumulative joins, leaves and discarded molecules at the parent's row,
       since the lineage began;
     - `nominal` (optional): the fission's time in the model's own units.
+    - `keys` (optional): the run's own carrier keys, `{parent, first, second}`, in the run's spelling
+      (`run.keys.spelling`); shown on the fission's panel.
   - `trace` (optional): every molecule that joined or left, in order: for each growth (from the
     founder or a daughter to the next parent) the number of events in `growths`, and the events as
     signed type numbers (`+(i + 1)` a join of type i, `-(i + 1)` a leave), as base64 of signed bytes.
     Without it the view steps from a daughter to the grown parent and says that the growth between
-    was not saved.
+    was not saved. `trace.times` (optional): `{encoding, values}`, each event's place in its growth's
+    span (from the growth's start, its birth, to its fission) as 0 to 65535, unsigned 16-bit
+    little-endian in base64. Where it is given, the clock spaces a growth's events by the run's own
+    times; where not, evenly.
+  - `states` (optional, a run of the engine): `{says, lines: [{path, text, unit?}]}`, what the run
+    states of its law's check and of its ledger, each line its place in the run's record and the
+    run's own text (numbers as the record writes them, `1e-09` staying `1e-09`). The run's panel shows
+    every line as it is, with no gloss: the view says nothing of which form is right.
+  - `provenance` (optional, a run of the engine): where it came from, as its record names it: the run
+    folder (relative to the evidence, no machine path), the record's format, the engine's model, laws
+    and operators, the interface IDs the record gives (copied, never held by the viewer), the source
+    revision and whether it was clean, the run's qualifier, its definition's hash, its world, the
+    SHA-256 of its files as its manifest gives them, and how it ended.
   - `analysis` (optional): what an analysis of the run adds, by `by`.
     - `inheritance`: what it `compares`, its `threshold`, whether the comparison is `strict` (above
       the threshold, so that equality is a break), its words, and a mark for each fission, in order.
@@ -128,12 +151,15 @@ the engine's run format, and the page shows a real run only from the engine's fi
    flew in only molecule by molecule; the user then asked for the molecules to be seen moving in and
    out all the time the run plays.) A joining molecule comes in from the water to its place and is a
    member from its event; a leaving one is no member from its event, and goes out into the water. The
-   run gives which type joins or leaves and in what order within a growth; the clock spaces a
-   growth's events evenly, and their paths are the picture's own. No more than a cap are in flight at
+   run gives which type joins or leaves and in what order within a growth, and a run of the engine
+   when each happens (`trace.times`): the clock spaces a growth's events by those times where the run
+   gives them, else evenly; molecule by molecule it walks them event by event at the same pace either
+   way. Their paths are the picture's own. No more than a cap are in flight at
    once (26 wide, 14 on a phone; molecule by molecule about four): where a growth's pace would put
    more in flight, one in N of its joins and leaves is drawn in flight, N worked out from that
    growth's pace (`streamStride`), the others taking or leaving their places at once, and the legend
-   says N ("1 in 2 to 8" across the run's growths at the speed shown). The clock opens at half a
+   says N ("1 in 2 to 8" across the run's growths at the speed shown). Where the run's own times space
+   a growth's events unevenly, N is worked out from the growth's mean pace, and the cap holds a burst. The clock opens at half a
    fission a second. **One exception, said so on the picture:** at a run's start the founder's
    molecules gather from the water all at once (about four seconds), while the clock stands at the
    start. The run starts with the founder made, so the gathering is the picture's alone. With less
@@ -161,6 +187,13 @@ everything ready". So:
 - **The view offers the pair only for two real runs of the engine**: each names its `revision` and
   its `engine_models`, so **an example is never one of a pair** (an example names neither, and a file
   with `example` offers no pair whatever its runs state).
+- **Where the entry names such a pair, the view opens on it** (the lead, 17 November 2026): on a wide
+  screen side by side, the engine's default first, the pair-consistent form, labelled as the
+  engine's passive law, and the preprint's single-event form beside it, labelled as the comparison
+  model (D192); on a phone one at a time, the engine's default first, with a switch on the card. The
+  words "the engine's passive law" and "the comparison model (D192)" are said only of a file whose
+  `development` block says it is the engine's: a test's made-up runs, which name a revision too, are
+  named by their forms and no more.
 - **Of one world, by one set of rules, one of each form**: the same `world`, the same `environment`,
   the same `rules`, and the two `law.form`s differ. Anything else is no pair, and is not offered.
 - **What is the same is drawn the same, so that what differs is seen**: one clock (both at the same
@@ -183,24 +216,40 @@ contract) gives the lens:
 | `runs`: the run files it names, with their labels | What the view loads; the first is shown first |
 | `modelled`: `{state, text}` | The card's "What Cells models of it", word for word |
 
-## The records the engine's design names, for the adapter
+## The adapter, from the engine's run format
 
-From the engine's GARD design note (`docs/GARD_DESIGN.md` on main, decided, D192), section 5. These
-names are the design's; nothing in the viewer reads them until a run exists.
+`tools/adapt_assembly_run.py` (17 November 2026) writes one file of this contract for each run folder
+of the engine's stochastic assembly family (`cells.assembly_lineages.run@1`: `run.json`, `world.json`,
+`records.npz`, `manifest.json`; the run folder's `FORMAT.md` says what each holds). It reads the
+arrays with the viewer's own reader (`tools/lib/npy_reader.py`: no numpy, nothing of the engine), finds
+each through `run.json`'s own `records` table (its file, array, axes, base and unit held to what it
+reads), and reads every convention from the run's own tables. It holds no interface ID of the engine:
+the run's own are copied into `provenance`. It stops with a plain error where the run lacks what this
+contract needs (an empty daughter's similarity, a growth after the last fission that holds events, a
+record of another shape) or states something it does not know (a key of `run.json` it has not met).
+Same input, same bytes.
 
-| Field here | Would be read from |
+| Field here | Read from the run |
 | --- | --- |
-| `environments[].types` | the declared type family `t000` … |
-| `environments[].catalysis`, `reservoir` | β and ρ, arrays beside the run's definition |
-| `fissions[].parent` | `assembly_count` at the row a fission's time holds (`time.event_rows`) |
-| `fissions[].first`, `continues` | `fission_split`, `fission_followed` |
-| `fissions[].similarity` | `fission_similarity` (`boundary_similarity`, a `level` on the fission table) |
-| `fissions[].totals` | `joined_total`, `left_total`, `discarded_total` (`cumulative` since the lineage began) |
-| `fissions[].nominal` | `fission_time` |
-| `trace` | the event trace, saved on request only |
-| `analysis.inheritance`, `analysis.composomes` | the analysis in `validation/gard/`, not the run |
-| `law.name` | the law the run's definition names (`cells.member_catalysis_at_state@1` or `cells.member_catalysis@1`) |
-| `time` | the `fission` time base; nominal time |
+| `environments[].types`, `catalysis`, `reservoir`, `rates` | `world.json`: `derived.types`; `world.law_data.catalysis_matrix` (log10, two decimals); `world.supply`; `derived.join_rate`, `leave_rate` |
+| `founder` | `assembly_count` at the start row (`row_kind`'s legend), held to `world.founder` |
+| `fissions[].parent`, `first`, `continues` | `assembly_count` at the fission's parent row; `fission_split`; the daughter row itself, held to `fission_followed` |
+| `fissions[].similarity`, `nominal`, `keys` | `fission_similarity`; `fission_time`; `fission_parent`, `fission_daughters` (carrier keys, spelt s:c) |
+| `fissions[].totals` | `joined_total`, `left_total`, `discarded_total` summed over the types at the parent row |
+| `trace.growths`, `events`, `times` | `events_per_growth` (one for each fission; the run's last, after its last fission, must be empty), `event_channel` through `channels.rows`, `event_time` within each growth's span; replayed to every parent |
+| `law` | `law.id` (as `name` and `engine_name`), `law.form`; `says` the run's own `g_join_i`, `g_leave_i` |
+| `states` | `law.check`, `law.world_report` (where not null) and `ledger.closure`, line by line as `run.json` writes them |
+| `revision`, `engine_models`, `provenance` | `source`, `engine_models`, `run.qualifier`, `definition_sha256`, `world`, the interfaces, `manifest.json` |
+| `development` | given to the adapter (`--standing development --standing-from WHERE`): the run states no standing |
+
+A run of the engine carries no analysis: no threshold is drawn and no fission is marked (rule 2).
+
+**What the run has that the view does not use yet:** the thermodynamic ledger row by row
+(`exchange_heat_kT`, `fission_work_kT`, `discarded_free_energy_kT`, `log_weight`,
+`ledger_residual_kT`); the lives table (birth and end of every life, the daughters not followed with
+their end reasons and censoring); the channel table's rate formulas; the streams' keys and counters.
+**What the view would want that the run does not record:** what helped any one join (which member's
+catalysis tipped it: rule 5), and the run's own standing.
 
 **The two forms of the law, in D192's words** (`docs/DECISIONS.md` on main, D192, "The
 reversibility finding, as checked"): in a closed two-type world, the preprint's single-event kernel
@@ -208,7 +257,7 @@ generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is t
 original authors' kernel is not established either way; the preprint's vector-Poisson contracts were
 not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly
 reversible. The engine builds both forms, and its first experiment measures the difference. A run
-names its form in `law.name`; the viewer shows no comparison of the two forms on invented numbers.
+names its form in `law.form` and the engine's law in `law.engine_name`; the viewer shows no comparison of the two forms on invented numbers, and judges neither.
 
 ## What the engine's runs will be, and what this contract carries of them
 
@@ -216,15 +265,14 @@ D192 decides how the engine's GARD runs are made. Each, and what this contract d
 
 | D192 | This contract |
 | --- | --- |
-| The exact stochastic simulation (direct method), one molecule per event | Carried as it is: `trace.events` is one signed type per event, in order. The run's own times of the events are not carried; the view counts events, and a fission's `nominal` time is the run's |
+| The exact stochastic simulation (direct method), one molecule per event | Carried as it is: `trace.events` is one signed type per event, in order, and `trace.times` each event's place in its growth's span; a fission's `nominal` time is the run's |
 | Abstract assemblies first, over a generic ideal-mixing phase | Carried as it is: an assembly is counts only. Its shape, size and look in the view are the picture's (rule 3) |
 | A dense lognormal matrix, β = exp(−4 + 4Z), about 100 types, as each world's data | Carried as it is: `environments[].catalysis.rows`, log10 to two decimals, 100 × 100 (about 50 kB a world). A run of several worlds gives one environment for each |
 | Both forms of the law | Carried: `law.form` says which, `law.engine_name` the engine's name for it, and `world` which world; two runs of one world, one of each form, are shown side by side (above) |
 | τ-leaping later, only as a qualified fast mode | Would need one field: a run made so gives no event trace, and says its mode; the view then steps from fission to fission (as it does for any run without a trace) |
 | A population of slots (`cells.population_replacement@1`, later) | `mode: "population"` is reserved; its fields are written when a run of one exists |
 
-Nothing else must change for the engine's runs. The adapter from its records (the table above) is
-written when the engine writes its first run.
+Nothing else had to change for the engine's runs: the adapter (above) writes them into this contract.
 
 ## The example
 
