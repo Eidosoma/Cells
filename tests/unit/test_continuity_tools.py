@@ -7,6 +7,7 @@ test_continuity_acceptance.py.
 """
 
 import json
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,7 +16,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells import batch_io, continuity, io
+import cells
+from cells import batch_io, continuity, io, source_layout
 from cells.core.specs import ConfigError
 from validation.continuity import (
     admit,
@@ -214,6 +216,23 @@ def test_the_probes_read_keeps_the_loader_checks(tmp_path):
         handle.write(b"corrupted")
     with pytest.raises(ConfigError, match="^Checkpoint state checksum mismatch$"):
         probe.read_cohort(path)
+
+
+def test_the_probes_read_keeps_the_layout_check(tmp_path, monkeypatch):
+    """D195 item 4 under the resuming tree: a cohort written before a declared move is refused,
+    so no record is proposed for it (a planted move that dissolved the definitions' folder)."""
+    path = cohort_snapshot(tmp_path)
+    folder = Path(sys.modules[ConfigError.__module__].__file__).parent
+    move = source_layout.Move(
+        "the planted move", (folder.relative_to(Path(cells.__file__).parent).as_posix(),), "tag"
+    )
+    monkeypatch.setattr(source_layout, "MOVES", (move,))
+    with pytest.raises(ConfigError, match="^Batch checkpoint was written .* tagged tag$"):
+        probe.read_cohort(path)
+    with pytest.raises(ConfigError, match="^Checkpoint was written .* tagged tag$"):
+        probe.read_scalar(path / "world-10")
+    monkeypatch.setattr(source_layout, "MOVES", ())  # The control: no move made.
+    assert sorted(probe.read_cohort(path)[1]) == [10, 11]
 
 
 def test_the_probe_cannot_decide_outside_the_first_landing(tmp_path):

@@ -8,6 +8,9 @@
    refused with a valid record (section 10.2).
 3. A record binds one manifest and one pair of identities, and the first landing's scope
    (section 10.3).
+4. No checkpoint crosses a source move (D195 item 4, cells.source_layout): a checkpoint written
+   before a made move is refused on both routes, a valid record included, naming the tag where it
+   restores; one written after the move is not refused for it.
 Then the admitted loads, scalar and cohort, and the module's host-only imports. Snapshots are
 step-0 checkpoints and the records are hand-built (validation/continuity/admit.py writes the
 real ones), so nothing here compiles a model program.
@@ -15,6 +18,7 @@ real ones), so nothing here compiles a model program.
 
 import ast
 import copy
+import functools
 import json
 import subprocess
 import sys
@@ -23,7 +27,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells import batch_io, continuity, io
+import cells
+from cells import batch_io, continuity, io, source_layout
 from cells.core.batch import parse_batch
 from cells.core.specs import ConfigError, digest, parse_spec, read_json
 from cells.core.state import initialise
@@ -876,3 +881,88 @@ def test_a_sealed_record_round_trips_through_json(scalar, monkeypatch, tmp_path)
     path = write_record(tmp_path, record)
     assert continuity.parse_record(read_json(path)) == record
     assert continuity.seal(record) == record
+
+
+# ---------------------------------------------------------------- 4. no checkpoint crosses a move
+
+# A planted made move that dissolved the definitions' folder (core/ before D188 move 2). The folder
+# is the module's own, so the plant holds in any layout.
+FOLDER = (
+    Path(sys.modules[ConfigError.__module__].__file__)
+    .parent.relative_to(Path(cells.__file__).parent)
+    .as_posix()
+)
+MOVE = source_layout.Move("the planted move", (FOLDER,), "planted-tag")
+BEFORE_THE_MOVE = (
+    "{} was written in the source layout before the planted move; no checkpoint crosses a source "
+    "move (D195): it restores in the tree tagged planted-tag"
+)
+
+
+def make_the_move(monkeypatch):
+    """This installation as after MOVE: the folder's files under another folder, and MOVE made."""
+    moved = {
+        (f"after_the_move/{path[len(FOLDER) + 1 :]}" if path.startswith(FOLDER + "/") else path): h
+        for path, h in io.source_hashes().items()
+    }
+    monkeypatch.setattr(io, "source_hashes", lambda: moved)
+    monkeypatch.setattr(batch_io, "source_hashes", lambda: moved)
+    monkeypatch.setattr(source_layout, "MOVES", (MOVE,))
+    return moved
+
+
+def test_a_checkpoint_from_before_a_move_is_refused_naming_the_tag(scalar, cohort, monkeypatch):
+    make_the_move(monkeypatch)
+    refused(lambda: io.load_snapshot(scalar), BEFORE_THE_MOVE.format("Checkpoint"))
+    refused(
+        lambda: batch_io.load_batch_snapshot(cohort), BEFORE_THE_MOVE.format("Batch checkpoint")
+    )
+
+
+def test_no_record_admits_a_checkpoint_from_before_a_move(scalar, cohort, monkeypatch, tmp_path):
+    """The continuity route: a valid record, which admits the same checkpoint with no move made."""
+    make_the_move(monkeypatch)
+    loads = {
+        "Checkpoint": (scalar, io.load_snapshot),
+        "Batch checkpoint": (cohort, batch_io.load_batch_snapshot),
+    }
+    for what, (snapshot, load) in loads.items():
+        record = build_record(snapshot)
+        folder = tmp_path / what.replace(" ", "-")
+        folder.mkdir()
+        resume = functools.partial(load, snapshot, continuity=request(folder, record))
+        refused(resume, BEFORE_THE_MOVE.format(what))
+        monkeypatch.setattr(source_layout, "MOVES", ())  # The control: no move made.
+        assert resume().admission.record_sha256 == record["record_sha256"]
+        monkeypatch.setattr(source_layout, "MOVES", (MOVE,))
+
+
+def test_a_checkpoint_written_after_the_move_is_not_refused_for_it(scalar, monkeypatch):
+    moved = make_the_move(monkeypatch)
+    rewrite(scalar, lambda m: m.update(source_hashes=moved))  # As the moved tree writes it.
+    saved = io.load_snapshot(scalar)
+    assert saved.admission is None
+    for a, b in zip(saved.checkpoint.state, initialise(saved.spec).state, strict=True):
+        np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+
+
+def test_the_refusal_names_the_first_move_a_checkpoint_predates(monkeypatch):
+    first = source_layout.Move("the first move", ("a",), "tag-before-the-first")
+    second = source_layout.Move("the second move", ("b/c",), "tag-before-the-second")
+    monkeypatch.setattr(source_layout, "MOVES", (first, second))
+    assert source_layout.predates({"a/x.py": "0", "b/c/y.py": "0"}) == [first, second]
+    assert source_layout.predates({"b/c/d/y.py": "0", "a.py": "0", "ab/x.py": "0"}) == [second]
+    assert source_layout.predates({"b/x.py": "0", "x.py": "0"}) == []
+    assert source_layout.predates(["a/x.py"]) == []  # Not a source map: the comparison refuses it.
+    with pytest.raises(ConfigError, match="before the first move; .* tag-before-the-first$"):
+        source_layout.require({"a/x.py": "0", "b/c/y.py": "0"}, "Checkpoint")
+
+
+def test_every_declared_move_left_no_engine_file_in_its_folders():
+    """A made move's folders stay empty, so no checkpoint written after it is refused for it."""
+
+    def left(move):
+        return [p for p in io.source_hashes() for d in move.dissolved if p.startswith(d + "/")]
+
+    assert [move.name for move in source_layout.MOVES if left(move)] == []
+    assert left(MOVE)  # The planted control: a move over a folder this tree still has is caught.

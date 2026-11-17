@@ -18,7 +18,7 @@ import numpy as np
 
 import cells
 from cells import continuity as _continuity
-from cells import run_view
+from cells import run_view, source_layout
 from cells.core import blas_threads
 from cells.core.devices import execution_device
 from cells.core.runner import RunResult, validate_checkpoint
@@ -131,6 +131,7 @@ def load_snapshot(directory: str | Path, *, continuity=None) -> Snapshot:
     only the two identity comparisons, of source and of runtime, by its record's binding;
     every other check runs as without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 3.0).
     batch_io.load_batch_snapshot passes each child of an admitted cohort here as its binding.
+    A checkpoint written before a source move is refused either way (cells.source_layout).
     """
     path = Path(directory)
     manifest = read_json(path / "manifest.json")
@@ -157,6 +158,8 @@ def load_snapshot(directory: str | Path, *, continuity=None) -> Snapshot:
         raise ConfigError("Not a complete Cells numerical checkpoint")
     if manifest["random_state"] is not None:
         raise ConfigError("These deterministic models have no random state")
+    # D195 item 4: no checkpoint crosses a source move, with a continuity record or without.
+    source_layout.require(manifest["source_hashes"], "Checkpoint")
     if continuity is None:
         if manifest["source_hashes"] != source_hashes():
             raise ConfigError("Checkpoint model/engine source differs from this installation")
