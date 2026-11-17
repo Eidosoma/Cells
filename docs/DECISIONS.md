@@ -6704,3 +6704,15 @@ viz". The work replicates, with the Cells engine, the experiment of the public b
 - **Lead's note, not part of the user's decision:** FR-4's and FR-5's judged run, already queued on lane
   B, is not interrupted.
 
+## D208: Numbers from BITSEY's code and logs may be used, cited
+
+2026-11-17. The gap-junction replication found that BITSEY's repository carries no licence. It asked
+whether numbers from BITSEY's code and logs may be used: the Cx45 gate constants and Table 3's
+provenance. The user: "its fine on BITSEY code we are MIT here".
+
+- **Numbers from BITSEY's code and logs may be used,** each cited to the repository and the commit
+  read.
+- **AGENTS.md stands.** BITSEY's code is never copied or imported into Cells. It may be run out of
+  process, in its own environment, as a reference; that is proposed to the lead first.
+- **Lead's note:** downloaded copies of BITSEY stay under /mnt/workspaces and are never committed.
+
