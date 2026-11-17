@@ -131,8 +131,14 @@ machine-readable inputs, results, checks and failures.
       No arm is still changing at 2,000 s.
     - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (0.9–1.8e-15 m²/s), 4 to 8
       times below the line's. That is observed; why is not measured.
-  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed.
-  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/` and `runs/sheet-01/`.
+  - **The coupling ladder** (`runs/ladder-01`, ten line arms to 20,000 s, none refused):
+    - below x2, the tumour holds (0.70 x2) or converts only partly (0.87 and 0.98 x2);
+    - above x2, every arm normalises, sooner as coupling grows: first all-E record at 6,800 s at
+      1.05 x2, down to 311 s at 6.97 x2. The times are as fine as the record spacing.
+  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed. The ladder's commit b40b9169 is
+    docs only.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/`, `runs/sheet-01/` and
+    `runs/ladder-01/`.
 
 - **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
   Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.
