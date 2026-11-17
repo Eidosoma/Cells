@@ -411,12 +411,17 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
 
 
 def final_units(directory, species_ids):
-    """Each cell's u, m and z (units) from a written record's final checkpoint."""
+    """Each cell's u, m and z (units) from a written record's final checkpoint, read through the
+    engine's loader (io.load_snapshot): a read, nothing continues from it."""
     import numpy as np
 
-    with np.load(Path(directory) / "checkpoint_final" / "state.npz") as state:
-        amount = state["amount_reference"] + state["amount_increment"]
-        volume = state["volume"][:N_CELLS]
+    from cells import io
+
+    checkpoint = io.load_snapshot(Path(directory) / "checkpoint_final").checkpoint
+    amount = np.asarray(checkpoint.layout.amount_reference) + np.asarray(
+        checkpoint.state.amount_increment
+    )
+    volume = np.asarray(checkpoint.layout.volume)[:N_CELLS]
     return {
         name: (amount[species_ids.index(name), :N_CELLS] / volume / UNIT_mM).tolist()
         for name in NAMES
@@ -444,11 +449,13 @@ def criterion_sidecar(directory, species_ids):
     layout's ids."""
     import numpy as np
 
+    from cells import io
+
     directory = Path(directory)
-    with np.load(directory / "checkpoint_initial" / "state.npz") as state:
-        reference = state["amount_reference"]
-        volume = state["volume"][:N_CELLS]
-        layout_ids = [str(i) for i in state["ids"][:N_CELLS]]
+    layout = io.load_snapshot(directory / "checkpoint_initial").checkpoint.layout  # A read.
+    reference = np.asarray(layout.amount_reference)
+    volume = np.asarray(layout.volume)[:N_CELLS]
+    layout_ids = [str(i) for i in np.asarray(layout.ids)[:N_CELLS]]
     view = directory / "view.json"
     sets = {s["id"]: s for s in json.loads(view.read_text())["sets"]} if view.is_file() else {}
     cells = sets["cell"]["ids"] if "cell" in sets else layout_ids
