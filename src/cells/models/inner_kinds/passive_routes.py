@@ -22,6 +22,11 @@ definitions.py), each route on one host (`patch`, or `junction` for the neutral 
 which must be B4's proton_row when B4 is declared). `factors` is a list of factor-source IDs
 (§7.4 (n): FR-5's damage d and pH condition f), in declared order; omitted or empty, none.
 
+The kind finds its laws in the active law registry: the route laws it hosts, named as declared
+(registry/laws.py; docs/CORE_SEAMS_DESIGN.md §8.3), never a module tuple. Its two laws are declared
+here, on the law template, until each moves to its own module (§8.2). Version 1 runs each of the
+two by name (VERSION_1_LAWS), so it refuses any other route law it hosts.
+
 - **The routing door's sink (§7.4 (n) 6):** where any route declares factors, the kind's entry
   records it and its fields gain the control `passive_multiplier` [route], held at 1; each
   factored route's slot is routed (`routed_controls`), so at every stage it is the left fold of
@@ -64,12 +69,47 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import passive_permeation as passive
 from cells.processes import proton_leak as leak
 from cells.processes.electrochemistry import R
+from cells.registry import laws as law_registry
 
 KIND_ID = "cells.passive_routes@1"
 MODEL_KEY = "passive_routes"
 LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
-LAWS = (LAW_ID, LEAK_LAW_ID)
+VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID)  # Version 1 runs each by name (Route.law's dispatch).
+# The kind's two laws on the law template (registry/laws.py), registered for the kind to find by
+# interface and host. Each moves to its own module with step 2's extraction (CORE_SEAMS §8.2).
+NEUTRAL = law_registry.BUILTIN.register(
+    law_registry.RouteLaw(
+        LAW_ID,
+        ("membrane", "junction"),
+        "Fick's law: the constant-field flux at valence 0 (processes/passive_permeation.py), with "
+        "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
+        host=KIND_ID,
+        provenance="cited",
+        source=law_registry.Citation(
+            "Fick's law of diffusion (A. Fick, 1855; standard theory)",
+            "docs/INNER_MODEL_V4_DESIGN.md §11",
+            "no numbers taken: the law is a form, its permeability a definition's value",
+        ),
+    )
+)
+LEAK = law_registry.BUILTIN.register(
+    law_registry.RouteLaw(
+        LEAK_LAW_ID,
+        ("membrane",),
+        "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each "
+        "node's closure (processes/proton_leak.py)",
+        host=KIND_ID,
+        provenance="cited",
+        source=law_registry.Citation(
+            "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "
+            "B. Katz, 1949; standard theory)",
+            "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1",
+            "no numbers taken: the law is a form, its permeability a definition's value",
+            ("it reads free h at both nodes through their closures and moves proton equivalents",),
+        ),
+    )
+)
 DEFAULT_PROTON = "H"
 RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps (own + inputs), per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
@@ -90,6 +130,13 @@ LAYOUT_FIELDS = (
     "passive_leak",
     "passive_exact",
 )
+
+
+def hosted_laws():
+    """{law ID as declared: declaration} of the route laws this kind hosts, in canonical order:
+    found in the active law registry by interface and host (CORE_SEAMS §8.3)."""
+    laws = law_registry.active().laws(law_registry.ROUTE_LAW, KIND_ID)
+    return {law.law_id: law for law in laws}
 
 
 class Route(NamedTuple):
@@ -122,9 +169,13 @@ def parse(entries, base):
                 f"{MODEL_KEY}: a route declares id, law, permeability_m_per_s, one host (patch or "
                 "junction), and species for the neutral law"
             )
-        law = raw["law"]
-        if law not in LAWS:
-            raise ConfigError(f"{MODEL_KEY} {rid}: law must be one of {', '.join(LAWS)}")
+        law, hosted = raw["law"], hosted_laws()
+        if not isinstance(law, str) or law not in hosted:
+            raise ConfigError(f"{MODEL_KEY} {rid}: law must be one of {', '.join(hosted)}")
+        if law not in VERSION_1_LAWS:
+            raise ConfigError(
+                f"{MODEL_KEY} {rid}: version 1 runs {', '.join(VERSION_1_LAWS)}, not {law}"
+            )
         factors = raw.get("factors", [])
         if (
             not isinstance(factors, list)

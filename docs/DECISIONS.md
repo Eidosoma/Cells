@@ -6299,6 +6299,8 @@ found:
   - the display equations' MathML sits in XML comments;
   - Table 1's 35 parameters are text. The correction changes 9 of them;
   - the comment text was not checked against the typeset images.
+  - *Corrected the next day:* the PDF is the version of record. The web XML's Eq. 22 is stale, and
+    the independent check of the cycle laws (`docs/CORE_SEAMS_STEP0.md` §7) found it.
 - **Probe P1 comes first,** because the membrane-potential mode is stiff.
 - **Not put separately:** the note's questions 3 and 4 (the respiration drive and the
   intermembrane space). Its recommendations stand as working defaults. Host P or C remains the
@@ -6342,7 +6344,10 @@ core but in parallel". With the advisor, every default stands, with the conditio
 **1. The pass, at its scope.**
 - **The estimate is the design lane's own, not yet re-derived:** 20–31.5 agent-days plus 2–3 on
   branch X, and about 9–13 working days elapsed.
-- **The code starts after D188's move 2.**
+- **The code starts after D188's move 2.** *Amended the same day:* seam F's foundation started
+  earlier, on the user's "can we add one more agent on building core?". It landed before move 2
+  and before the owner table (75e925ea), gated identical on a tree that differed from main only in
+  docs. The rest of the pass still follows move 2.
 - **The cycle kind (A) and the binding closure (C) wait for step 0's cycle-law screen.** The
   screen asks whether O'Hara–Rudy's and Beard's cycles factor in A's form. A's contract rests on
   that, and the note lists it as unverified.
@@ -6350,8 +6355,13 @@ core but in parallel". With the advisor, every default stands, with the conditio
 **2. Staffing within seven.**
 - **Each file has one owner for the whole pass.** §13's table is redone so that no file has two
   owners, and the elapsed estimate is re-derived from it.
-- **One operators owner** does composition's M1–M5 first, then B1.
+- **One operators owner** does composition's M1–M5 first, then B1. *Amended the same day:* B1's
+  operator part comes first, and composition after. This follows D194's order (the core first), and
+  it keeps composition's 12–15 days off the pass's critical path.
 - **An FR owner** runs FR-4 and FR-5 in parallel.
+- **The cap stays at seven** (the user, 17 November: "lets keep the 7 agent cap"). The pass's
+  owners count together with every other agent, GARD's included. The pass starts with the owners
+  that fit, and the rest join as other lanes finish.
 
 **3. `cells.modules` is built as provisional.** The word "provisional" stands where contributors
 read it: the module's docstring and its docs. There is no public stability promise until a first
@@ -6405,6 +6415,169 @@ only for comparison".
   single-event form and the pair-consistent form, and D192's comparison (D138) stands as approved.
 - **The first-principles engine starts with a design note that gives the user options (D142)**,
   before any of its laws are built.
+
+## D198: `processes/` is dissolved: its pinning legacy laws retire, and what the engine uses moves
+
+2026-11-17. Move 2 found that keeping the bytes of the files that legacy laws pin would need a
+leftover `src/cells/processes/` folder: option (L). Option (R) was to retire the tests and laws
+behind those pins. The user: "So let's retire any old files but transform them into the new engine
+if neccasary so (R)".
+
+- **D196's first removal batch, scoped to the `processes/` cluster and its own leftovers.** That is
+  the pinning legacy laws, `charged_surface_work` and the stable-seed and conservative-polygon
+  geometry cluster, together with the tests that run only them.
+  - The 91 held tier-3 files and the rest of `legacy/` wait for a later batch.
+- **One fact per file decides "transform if necessary":** does an active entry point reach it?
+  - A reached file moves like any other, and its law kernels become law modules in seam F's
+    extraction step.
+  - An unreached file retires.
+- **The batch, in the manner of D187 and D189:**
+  - the tree is tagged first;
+  - the exact list is taken from the dissolved tree, with one line on each capability that goes;
+  - collection falls by exactly the retired IDs, and the tier records follow.
+  - If a registered protocol's guard tests or a kept family's tests are on the list, the batch
+    stops and asks the user.
+- **Superseded:** the moves note's byte-keeping rulings (§17 item 2, §18 and §19 on the six files),
+  and step 0's extraction exclusion rule, once the batch lands.
+- **The BLAS pin.** If `src/cells/__init__.py` is no longer pinned, the pin may return to one
+  home, as D190 first said. Move 2's owner measures it as R6 was measured: on 2 CPUs, with a
+  planted control, and with continuity still importing no numpy.
+
+## D199: The origin-of-life engine's first decisions, and relationship tracking
+
+2026-11-17. On the design note (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`), the user said: "Then I go
+with your recommendations on the origin of life", adding "but look at docs/SOTA_ORIGIN_OF_LIFE.md
+also", "first with your adviser also" and "also to see if we are missing some engine features for
+tracking relationships in the most effective way".
+
+**Decided, as recommended:**
+- **U1:** amphiphile assemblies, with their geometry derived from the counts, first; oligomers
+  after.
+- **U4,** which follows U1: selection by a finite shared pool and serial transfer. Moran
+  replacement is used only for comparisons.
+- **U5:** templating after oligomers.
+- **U6(b), the experimental anchors:**
+  - A1 (tension competition) and A4 (shape and shear division) are judged anchors (D138);
+  - A2 is reported until its question is settled;
+  - A3 comes later;
+  - A5–A8 are reported only.
+
+**The lead's calls:**
+- **U2: one free-energy function for every law.** Driven laws without a declared source are
+  refused. D192's single-event GARD law is admitted as the labelled exception.
+- **U3:** ideal and regular mixing in OL1.
+- **U7:** the deterministic limit of the same laws, declared as a representation for
+  vesicle-scale anchors and qualified against exact events where both run.
+- **U6(a): the GARD limit is a consistency check by construction, not a D138 comparison.** G1's
+  pair-consistent rule is the note's "kinetic factor on the common state", so it carries a planted
+  control.
+
+**U8, the scope: the whole programme.** The user, the same day: "whole program". OL0–OL9 is built
+as one programme, in order with its gates, starting once G1 and seam F land. The estimate, about
+33–51 agent-days, is the design lane's own.
+
+**Relationship tracking: four checks.** Descent, whose material is whose, who depends on whom,
+and what history a state carries.
+- **Descent:** G1's fission table records both daughters, but its single-lineage mode follows one.
+  Check that carrier keys are unique across a world, that each row carries its parent and end
+  reason, and that tissue division and replacement write the same shape.
+- **Material provenance, the likely real gap.** Nothing in the active engine labels material by
+  origin; a search finds no tracer or label machinery.
+  - The general form is a declared label on a species' amount, which every law moves without
+    seeing.
+  - Without labels, programs are identical. With them, events are unchanged, and any label draw is
+    on its own stream.
+  - It is one mechanism with step 0's moiety ledgers, in the core, with the species rows.
+  - A design section comes first. It is put to the user as a finding to confirm.
+- **Dependence:** FR-12's manifest (reads, writes and provides) answers the static question. "Who
+  fed whom" is provenance again, and supplied material names its source, as work names a payer.
+- **History:** a carrier swap needs branching plus a transplant. Check whether E07's donor-copy
+  machinery is general or tissue-only.
+
+**The state-of-the-art note (`docs/SOTA_ORIGIN_OF_LIFE.md`).** It asks for resemblance, function
+and renewal kept apart, every descendant tracked, founder material traced, and external help
+visible.
+- SpudCell and Otto-type replicators are candidate benchmarks. Each is a D138 question, raised only
+  after its primary sources have been read.
+- **Two cheap fit tests:**
+  - Does the note's assembly admit a fibre that grows and breaks under shear?
+  - Is SpudCell's plasmid-set inheritance reachable on G1's partition machinery in population mode?
+
+## D200: Relationships are tracked in general, so that graphs come easily from the raw data
+
+2026-11-17. Asked whether the lead had read "tracking relationships" right (descent, whose material
+is whose, who depends on whom, and what history a state carries), the user answered: "yes, let's
+have a good way to track things in general so we can create graphs from the raw data easily, for
+example so plug the gaps".
+
+- **A general engine feature, not one per experiment (D144).** A design note with options comes
+  first (D142); building follows the user's ruling on it.
+- **The gaps D199 found:**
+  - **Material provenance:** declared labels on species amounts, which every law moves without
+    seeing.
+  - **Every descendant:** a population of lineages with one record shape across tissue division,
+    replacement and assembly fission.
+  - **Supplied material names its source,** as work names a payer.
+  - **History:** branching, and transplants between lineages.
+- **Graphs from the raw data.** The records give relationships as plain node and edge tables with
+  stable identifiers, so a lineage tree, a material-flow graph, a dependency graph or a history of
+  branches is a join, not a reconstruction.
+- **The standing rules hold:**
+  - a world that declares no tracking gets identical programs;
+  - with tracking, events and results are unchanged, and any label draw is on its own stream;
+  - totals are conserved per label;
+  - each claim is tested with a planted error (D187).
+
+## D201: Numbers from free-to-read papers may be used with a citation (extends D186)
+
+2026-11-17. The visualizer session put a question to the user in a dialog, and relayed the ruling to
+the lead.
+- **The case:** E. coli drawn to scale uses five envelope widths measured in two papers, Matias et
+  al. 2003 (J Bacteriol 185:6112) and Berry et al. 2010 (Protein Sci 19:1967). Both are free to read
+  at PubMed Central but not open access: publisher copyright, no licence stated, and no limit on use
+  in their text.
+- **The user:** "Yes, use them".
+- **The rule:** for free-to-read papers in general, numbers may be used, each with its citation.
+  Never their text, figures or data files.
+- **Still asked case by case:** a paper whose own text limits use to academic or non-commercial
+  purposes. Non-commercial material otherwise stays analysis-only.
+- **No full-text copy is saved.** The records are under `/mnt/datasets/Cells/ecoli/`.
+
+## D202: Relationship tracking: GARD first, then everywhere, as one general engine feature
+
+2026-11-17. On the relationships design (`docs/RELATIONSHIPS_DESIGN.md`), the user said: "sounds good
+and agree on 1. as you suggest then we make it work everywhere but we want it to be a general
+feature of the engine - also get adviser in on those choces then lets go".
+
+**The order:**
+- **First, GARD's runs.** GARD's G1 part 2 writes the relationship tables for GARD's lineages. The
+  first graphs show descent and supply. Who fed whom, founder material against rebuilt material,
+  needs the material labels, which belong in the core.
+- **Then everywhere,** after the core-seams pass: descent across tissue division and replacement,
+  named sources, material labels, and branches and transplants.
+
+**One general feature from the start.**
+- The tables' writer and its row interface live in their own engine module, outside the GARD
+  family, with their own owner. GARD only calls it.
+- **Before anyone binds to it,** a second consumer must use the same function with no edit to the
+  writer: an existing division world's and an existing replacement world's lineage. No operator
+  file is touched.
+- `cells.relations@1` is provisional until that passes.
+
+**The lead's choices, reviewed with the advisor:**
+- **Labels follow one-way flows.**
+  - Net-flow mode is declared per law.
+  - Any founder-fraction or renewal readout refuses a label that used it.
+  - A factored cycle law exposes both one-way fluxes (CORE_SEAMS_DESIGN §16).
+- **The format is NPZ plus a JSON descriptor, settled by a test.**
+  - The arrays load with `allow_pickle=False`, so string ids are fixed-width columns.
+  - A lineage tree and a supply graph are drawn from a GARD bundle by a short script that imports
+    no engine code.
+- **Written by default for GARD.** For existing worlds this is decided at RT1, from the results
+  gate's file comparison.
+- **Frozen before any bundle is shared:** the `s:c` key rule, end reasons (an unfollowed daughter
+  differs from an extinct one), the final row, and a reserved `label` stream domain. The run
+  qualifier appears only in ids, never in a stream fold.
 
 ## Implementation choices and remaining work
 
