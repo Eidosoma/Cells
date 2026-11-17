@@ -40,7 +40,7 @@
   "C11_from_trace": "from_trace: each of the four laws (flux and first-order export into a 1e-15 mM compartment; saturable and first-order import into a 1e-15 mM cytosol) under ARS at 1 ms (1 s) and RK4 at 0.1 ms (0.2 s), recorded at every step",
   "C12_restart_batch": "two_way with a change of both rates at 0.5 s: restarts through the engine's checkpoint at 0.25, 0.5 and 0.75 s (before, at and after the change), in process and through a snapshot; a vector batch of four worlds with different compartment volumes and rates against each world's scalar run and against the reversed batch",
   "C13_controls": "a misbooked move (the exchange stage's booked move into the compartment off by 1e-6 relative, its route accumulator unchanged) and a misbooked work (the stage's booked work off by 1e-6 relative), each planted in the generator's control part only (questions_for_the_lead 2)",
-  "C1_refusals": "a representative of each of §1.4's refusals 1 to 7 beside its admitted neighbour (FR-10's ruling 4), with the reason each must name",
+  "C1_refusals": "a representative of each of §1.4's refusals 1 to 7 beside its admitted neighbour (FR-10's ruling 4), with the reason each must name: R1 a face naming the node, R1 a held bath declared as the node, R2 a second patch facing the node, R3 two compartments on one node, R4 a K permeability on the bounding patch, R5 a 1e-17 C anchor, R6 an owner whose capacitor component holds no held bath (a gauge instead), R7 replacement@1 scheduling an event on the owner; each neighbour is W (or replacement on the other cell)",
   "C2_identity": "S5's four traced pairs (W under ARS and RK4, W with clearance beside exchange, the declaration alone against no operators): program text, constants and bindings identical"
  },
  "references": {
@@ -54,7 +54,7 @@
  },
  "budgets": {
   "status": "declared before any protocol run (FR-10's rule, the lead's ruling of 17 November 2026: declared first; the dt study reports against them as development)",
-  "B_split": "C4's closed form, C6, C7 and C8 (the items with a splitting error): each node's S within 1e-3 of that node's largest change over the run (max_t |n(t) - n(0)|) of the reference at every record at the declared 1 ms",
+  "B_split": "C4's closed form, C6, C7 and C8 (the items with a splitting error): each node's S (and C7's P) within 1e-3 of the world's initial S (and P) content, a declared number (about 1e-6 fmol in each of these worlds), of the reference at every record at the declared 1 ms, and each observable's Richardson error within it",
   "rounding": "C3, C5, C11's trajectories and C4's step map: within the classes rule's floor, N eps max|q| over the run's N steps (FR-4's), times 10; C5 also within its Newton tolerance, NEWTON_RTOL = 1e-12 of the solve's absolute terms per step",
   "energy": "each law's cumulative work within 1e-12 relative (and N eps of its magnitude) of the free-energy change of its touched nodes along the engine's own trajectory; against R-energy's trajectory within B_split's budget carried through dG/dn where the item has a splitting error",
   "silence": "S1 to S3 as §3.3 fixed them before milestone 1, unchanged",
@@ -115,7 +115,46 @@
   "the splitting term's ratio to its leading form at each rung"
  ],
  "what_it_does_not_show": "no biological comparison (a measured trafficking or uptake dataset, registered on its own, D151); no charged content (FR-4 and FR-5); no vesicles, stochastic loading or volume change; integration grants no acceptance (D143)",
- "judged_parts": "written by the drafter when the generator exists",
+ "judged_parts": [
+  "C1_refusals",
+  "C2_identity",
+  "C3_flux",
+  "C3_first_order",
+  "C4_rung_1ms",
+  "C4_rung_0p5ms",
+  "C4_rung_0p25ms",
+  "C4_rung_0p125ms",
+  "C5_saturable",
+  "C6_rung_1ms",
+  "C6_rung_0p5ms",
+  "C6_rung_0p25ms",
+  "C6_rung_0p125ms",
+  "C7_rung_1ms",
+  "C7_rung_0p5ms",
+  "C7_rung_0p25ms",
+  "C7_rung_0p125ms",
+  "C8_rung_1ms",
+  "C8_rung_0p5ms",
+  "C8_rung_0p25ms",
+  "C8_rung_0p125ms",
+  "C9_silence",
+  "C10_rk4",
+  "C11_flux_export_ars",
+  "C11_flux_export_rk4",
+  "C11_first_order_export_ars",
+  "C11_first_order_export_rk4",
+  "C11_saturable_import_ars",
+  "C11_saturable_import_rk4",
+  "C11_first_order_import_ars",
+  "C11_first_order_import_rk4",
+  "C12_restart",
+  "C12_batch",
+  "K1_one_way",
+  "K2_no_clearance",
+  "C13_controls",
+  "K3_planted",
+  "references"
+ ],
  "outcome_rules": "a criterion passes or fails as written; a failed criterion is reported, not repaired; the protocol passes when every judged criterion passes",
  "development_runs": {
   "runs": [
@@ -137,5 +176,767 @@
  "disclosures": [
   "Drafted on 17 November 2026 after milestone 1, whose gates and silence results are known (§12). No budget, threshold or ladder here has been run against: no generator exists, and the worlds were only admitted and run once to their horizons to check they are well posed",
   "The reference input file was written before this draft, at the lead's request, from the same builders, and is pinned to them"
- ]
+ ],
+ "judge": {
+  "written": "17 November 2026, by the FR owner, after the protocol's worlds were fixed and before any run of the protocol (development runs of the generator's parts on quick horizons, to test the tools, had run)",
+  "generator": "validation/tissue/compartment_acceptance_qualification.py (records only)",
+  "judge": "validation/tissue/compartment_acceptance_judge.py (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only from validation/tissue/compartment_ph_judge.py)",
+  "references": "the FR references agent's R-closed, R-step-map, R-linear, R-capacitor and R-energy, from Appendix A and validation/closed_compartment/reference_inputs.json",
+  "derivation": {
+   "run_parts": [
+    "C3_flux",
+    "C3_first_order",
+    "C5_saturable",
+    "C4_rung_1ms",
+    "C4_rung_0p5ms",
+    "C4_rung_0p25ms",
+    "C4_rung_0p125ms",
+    "C6_rung_1ms",
+    "C6_rung_0p5ms",
+    "C6_rung_0p25ms",
+    "C6_rung_0p125ms",
+    "C7_rung_1ms",
+    "C7_rung_0p5ms",
+    "C7_rung_0p25ms",
+    "C7_rung_0p125ms",
+    "C8_rung_1ms",
+    "C8_rung_0p5ms",
+    "C8_rung_0p25ms",
+    "C8_rung_0p125ms",
+    "C10_rk4",
+    "C11_flux_export_ars",
+    "C11_flux_export_rk4",
+    "C11_first_order_export_ars",
+    "C11_first_order_export_rk4",
+    "C11_saturable_import_ars",
+    "C11_saturable_import_rk4",
+    "C11_first_order_import_ars",
+    "C11_first_order_import_rk4",
+    "K1_one_way",
+    "K2_no_clearance",
+    "C1_refusals",
+    "C2_identity",
+    "C9_silence",
+    "C12_restart",
+    "C12_batch"
+   ],
+   "band": [
+    1.8,
+    2.2
+   ],
+   "observables": [
+    "amount_S_cell_0",
+    "amount_S_ecs_0"
+   ],
+   "split_fraction": 0.001,
+   "C3": {
+    "parts": [
+     "C3_flux",
+     "C3_first_order"
+    ],
+    "route": "load",
+    "node": "ecs_0"
+   },
+   "C5": {
+    "part": "C5_saturable"
+   },
+   "C4": {
+    "ladder_parts": [
+     "C4_rung_1ms",
+     "C4_rung_0p5ms",
+     "C4_rung_0p25ms",
+     "C4_rung_0p125ms"
+    ],
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025,
+     0.000125
+    ],
+    "observables": [
+     "amount_S_cell_0",
+     "amount_S_ecs_0"
+    ],
+    "a": 10.0,
+    "b": 20.0
+   },
+   "C6": {
+    "ladder_parts": [
+     "C6_rung_1ms",
+     "C6_rung_0p5ms",
+     "C6_rung_0p25ms",
+     "C6_rung_0p125ms"
+    ],
+    "observables": [
+     "amount_S_cell_0",
+     "amount_S_ecs_0"
+    ],
+    "cleared": "cleared_ecs_0_fmol"
+   },
+   "C7": {
+    "ladder_parts": [
+     "C7_rung_1ms",
+     "C7_rung_0p5ms",
+     "C7_rung_0p25ms",
+     "C7_rung_0p125ms"
+    ],
+    "observables": [
+     "amount_S_cell_0",
+     "amount_S_ecs_0",
+     "amount_P_ecs_0"
+    ]
+   },
+   "C8": {
+    "ladder_parts": [
+     "C8_rung_1ms",
+     "C8_rung_0p5ms",
+     "C8_rung_0p25ms",
+     "C8_rung_0p125ms"
+    ],
+    "observables": [
+     "amount_S_cell_0",
+     "amount_S_ecs_0",
+     "amount_S_ecs_e"
+    ]
+   },
+   "C10": {
+    "closure_parts": [
+     "C3_flux",
+     "C3_first_order",
+     "C5_saturable",
+     "C11_flux_export_ars",
+     "C11_flux_export_rk4",
+     "C11_first_order_export_ars",
+     "C11_first_order_export_rk4",
+     "C11_saturable_import_ars",
+     "C11_saturable_import_rk4",
+     "C11_first_order_import_ars",
+     "C11_first_order_import_rk4",
+     "C4_rung_1ms",
+     "C4_rung_0p5ms",
+     "C4_rung_0p25ms",
+     "C4_rung_0p125ms",
+     "C6_rung_1ms",
+     "C6_rung_0p5ms",
+     "C6_rung_0p25ms",
+     "C6_rung_0p125ms",
+     "C8_rung_1ms",
+     "C8_rung_0p5ms",
+     "C8_rung_0p25ms",
+     "C8_rung_0p125ms"
+    ],
+    "clearance": [
+     "C6_rung_1ms",
+     "C6_rung_0p5ms",
+     "C6_rung_0p25ms",
+     "C6_rung_0p125ms"
+    ],
+    "rk4_part": "C10_rk4",
+    "imex_parts": [
+     "C3_flux",
+     "C3_first_order",
+     "C5_saturable",
+     "C4_rung_1ms",
+     "C6_rung_1ms",
+     "C7_rung_1ms",
+     "C8_rung_1ms"
+    ]
+   },
+   "C11": {
+    "parts": [
+     "C11_flux_export_ars",
+     "C11_flux_export_rk4",
+     "C11_first_order_export_ars",
+     "C11_first_order_export_rk4",
+     "C11_saturable_import_ars",
+     "C11_saturable_import_rk4",
+     "C11_first_order_import_ars",
+     "C11_first_order_import_rk4"
+    ]
+   },
+   "ledger_parts": [
+    "C3_flux",
+    "C3_first_order",
+    "C5_saturable",
+    "C4_rung_1ms",
+    "C4_rung_0p5ms",
+    "C4_rung_0p25ms",
+    "C4_rung_0p125ms",
+    "C6_rung_1ms",
+    "C6_rung_0p5ms",
+    "C6_rung_0p25ms",
+    "C6_rung_0p125ms",
+    "C7_rung_1ms",
+    "C7_rung_0p5ms",
+    "C7_rung_0p25ms",
+    "C7_rung_0p125ms",
+    "C8_rung_1ms",
+    "C8_rung_0p5ms",
+    "C8_rung_0p25ms",
+    "C8_rung_0p125ms",
+    "C10_rk4",
+    "C11_flux_export_ars",
+    "C11_flux_export_rk4",
+    "C11_first_order_export_ars",
+    "C11_first_order_export_rk4",
+    "C11_saturable_import_ars",
+    "C11_saturable_import_rk4",
+    "C11_first_order_import_ars",
+    "C11_first_order_import_rk4",
+    "K1_one_way",
+    "K2_no_clearance"
+   ],
+   "material_ledgers": [
+    "local",
+    "outside",
+    "total",
+    "charge",
+    "electrode",
+    "global_charge"
+   ],
+   "C12": {
+    "restarts": 6,
+    "worlds": 4
+   },
+   "C1": {
+    "checks": {
+     "R1_a_face": "refusal 1 (the node: a face)",
+     "R1_a_held_bath": "refusal 1 (the node: a held bath)",
+     "R2_two_patches": "refusal 2 (the patch)",
+     "R3_one_compartment_per_node": "refusal 3 (one compartment per node)",
+     "R4_an_ion_route": "refusal 4 (an ion route)",
+     "R5_a_charge_anchor": "refusal 5 (the charge anchor)",
+     "R6_no_held_bath": "refusal 6 (a held-bath topology)",
+     "R7_replacement_on_an_owner": "refusal 7 (replacement's owners)"
+    }
+   },
+   "C2": {
+    "pairs": 4
+   },
+   "record_unit_s": 0.01
+  },
+  "criteria": [
+   {
+    "id": "C0_admission",
+    "metrics": [
+     "derived.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every run part admitted and run to its end with every host check on every row (the runner)",
+    "judged": true
+   },
+   {
+    "id": "C1_refusals",
+    "metrics": [
+     "derived.C1.all"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each of §1.4's refusals refused by its own check, its neighbour admitted and run",
+    "judged": true
+   },
+   {
+    "id": "C1_reported",
+    "metrics": [
+     "derived.C1.R1_a_face",
+     "derived.C1.R1_a_held_bath",
+     "derived.C1.R2_two_patches",
+     "derived.C1.R3_one_compartment_per_node",
+     "derived.C1.R4_an_ion_route",
+     "derived.C1.R5_a_charge_anchor",
+     "derived.C1.R6_no_held_bath",
+     "derived.C1.R7_replacement_on_an_owner"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each refusal class, reported",
+    "judged": false
+   },
+   {
+    "id": "C2_identity",
+    "metrics": [
+     "derived.C2"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "S5: the four traced pairs identical in program text, constants and bindings",
+    "judged": true
+   },
+   {
+    "id": "C3_loading",
+    "metrics": [
+     "derived.C3.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "both loading laws at rounding of R-closed at every record, and each route's moved amount at rounding of the compartment's gain",
+    "judged": true
+   },
+   {
+    "id": "C4_order_amount_S_cell_0",
+    "metrics": [
+     "derived.orders.C4_amount_S_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C4's amount_S_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C4_order_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.C4_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C4's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C6_order_amount_S_cell_0",
+    "metrics": [
+     "derived.orders.C6_amount_S_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C6's amount_S_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C6_order_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.C6_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C6's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C7_order_amount_S_cell_0",
+    "metrics": [
+     "derived.orders.C7_amount_S_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C7's amount_S_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C7_order_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.C7_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C7's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C7_order_amount_P_ecs_0",
+    "metrics": [
+     "derived.orders.C7_amount_P_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C7's amount_P_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C8_order_amount_S_cell_0",
+    "metrics": [
+     "derived.orders.C8_amount_S_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C8's amount_S_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C8_order_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.C8_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C8's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C8_order_amount_S_ecs_e",
+    "metrics": [
+     "derived.orders.C8_amount_S_ecs_e.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C8's amount_S_ecs_e on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "C4_C8_state_error",
+    "metrics": [
+     "derived.state_error.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at the declared 1 ms, each observable's Richardson error within B_split",
+    "judged": true
+   },
+   {
+    "id": "C4_C8_reference",
+    "metrics": [
+     "derived.reference.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "C4 against R-closed, and C6, C7 and C8 against R-linear, within B_split at every record at the declared 1 ms",
+    "judged": true
+   },
+   {
+    "id": "C6_cleared",
+    "metrics": [
+     "derived.C6_cleared"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "C6's cleared amount within B_split of R-linear's at every record",
+    "judged": true
+   },
+   {
+    "id": "C4_step_map",
+    "metrics": [
+     "derived.C4_map.map_max",
+     "derived.C4_map.x_star_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at every rung, the engine at rounding of R-step-map's iterated map, and its last x at rounding of x*",
+    "judged": true
+   },
+   {
+    "id": "C4_splitting_term",
+    "metrics": [
+     "derived.C4_map.splitting_worst"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "at every rung, (x/x_eq - 1) within 1e-3 of -a(a + 2b) dt^2 / 96",
+    "judged": true
+   },
+   {
+    "id": "C5_saturable",
+    "metrics": [
+     "derived.C5.reference"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the saturable release within rounding and its Newton tolerance of R-closed at every record",
+    "judged": true
+   },
+   {
+    "id": "C9_S1",
+    "metrics": [
+     "derived.C9.s1"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "S1: the compartment's ion rows bitwise at every row of every program",
+    "judged": true
+   },
+   {
+    "id": "C9_S2_S3",
+    "metrics": [
+     "derived.C9.s2",
+     "derived.C9.s3"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "S2 and S3 within @3's charge tolerance at every row of every program",
+    "judged": true
+   },
+   {
+    "id": "C9_live",
+    "metrics": [
+     "derived.C9.live"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the owner live in every program: its ion rows moving, |phi| >= 0.05 V",
+    "judged": true
+   },
+   {
+    "id": "C10_closure",
+    "metrics": [
+     "derived.C10.closure_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "each exact world's route work (and C6's clearance work) equal to its nodes' free-energy change on its own trajectory at rounding",
+    "judged": true
+   },
+   {
+    "id": "C10_rk4",
+    "metrics": [
+     "derived.C10.rk4_energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the RK4 face-free world within the absolute energy bound at every row",
+    "judged": true
+   },
+   {
+    "id": "C10_imex",
+    "metrics": [
+     "derived.C10.imex_over_flows"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "the IMEX worlds' energy residual over the integrated flows <= 2e-3 at every record",
+    "judged": true
+   },
+   {
+    "id": "C11_from_trace",
+    "metrics": [
+     "derived.C11.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "every row of the eight from-trace runs within its energy bound",
+    "judged": true
+   },
+   {
+    "id": "C11_ledgers",
+    "metrics": [
+     "derived.ledgers"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "every material and charge ledger within its bound at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "C12_restart",
+    "metrics": [
+     "derived.C12_restart"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every restart, in process and through a snapshot, bitwise the straight run",
+    "judged": true
+   },
+   {
+    "id": "C12_batch_scalar",
+    "metrics": [
+     "derived.C12_batch_relative"
+    ],
+    "comparison": "le",
+    "threshold": 1e-12,
+    "basis": "each batched world within 1e-12 relative of its scalar run",
+    "judged": true
+   },
+   {
+    "id": "C12_batch_reversed",
+    "metrics": [
+     "derived.C12_batch_reversed"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each batched world bitwise its place in the reversed batch",
+    "judged": true
+   },
+   {
+    "id": "K1",
+    "metrics": [
+     "derived.controls.K1_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "C4 without its import against R-closed: at least 10 x B_split",
+    "judged": true
+   },
+   {
+    "id": "K2",
+    "metrics": [
+     "derived.controls.K2_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "C6 without its clearance against R-linear: at least 10 x B_split",
+    "judged": true
+   },
+   {
+    "id": "K4",
+    "metrics": [
+     "derived.controls.K4_moved_change_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "C12's restart with its change moved one step is not bitwise the straight run",
+    "judged": true
+   }
+  ],
+  "units": {
+   "C1_refusals": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C2_identity": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C3_flux": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C3_first_order": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C4_rung_1ms": {
+    "dt_s": 0.001,
+    "note": "sized at the rehearsal"
+   },
+   "C4_rung_0p5ms": {
+    "dt_s": 0.0005,
+    "note": "sized at the rehearsal"
+   },
+   "C4_rung_0p25ms": {
+    "dt_s": 0.00025,
+    "note": "sized at the rehearsal"
+   },
+   "C4_rung_0p125ms": {
+    "dt_s": 0.000125,
+    "note": "sized at the rehearsal"
+   },
+   "C5_saturable": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C6_rung_1ms": {
+    "dt_s": 0.001,
+    "note": "sized at the rehearsal"
+   },
+   "C6_rung_0p5ms": {
+    "dt_s": 0.0005,
+    "note": "sized at the rehearsal"
+   },
+   "C6_rung_0p25ms": {
+    "dt_s": 0.00025,
+    "note": "sized at the rehearsal"
+   },
+   "C6_rung_0p125ms": {
+    "dt_s": 0.000125,
+    "note": "sized at the rehearsal"
+   },
+   "C7_rung_1ms": {
+    "dt_s": 0.001,
+    "note": "sized at the rehearsal"
+   },
+   "C7_rung_0p5ms": {
+    "dt_s": 0.0005,
+    "note": "sized at the rehearsal"
+   },
+   "C7_rung_0p25ms": {
+    "dt_s": 0.00025,
+    "note": "sized at the rehearsal"
+   },
+   "C7_rung_0p125ms": {
+    "dt_s": 0.000125,
+    "note": "sized at the rehearsal"
+   },
+   "C8_rung_1ms": {
+    "dt_s": 0.001,
+    "note": "sized at the rehearsal"
+   },
+   "C8_rung_0p5ms": {
+    "dt_s": 0.0005,
+    "note": "sized at the rehearsal"
+   },
+   "C8_rung_0p25ms": {
+    "dt_s": 0.00025,
+    "note": "sized at the rehearsal"
+   },
+   "C8_rung_0p125ms": {
+    "dt_s": 0.000125,
+    "note": "sized at the rehearsal"
+   },
+   "C9_silence": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C10_rk4": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_flux_export_ars": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_flux_export_rk4": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_first_order_export_ars": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_first_order_export_rk4": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_saturable_import_ars": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_saturable_import_rk4": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_first_order_import_ars": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C11_first_order_import_rk4": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C12_restart": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C12_batch": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K1_one_way": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K2_no_clearance": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "C13_controls": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K3_planted": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "references": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr1-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_acceptance_qualification judged SNAPSHOT/validation/tissue/compartment_acceptance_protocol.json OUT/PART PART",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_acceptance_judge judged SNAPSHOT/validation/tissue/compartment_acceptance_protocol.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "D150's rule on the larger of a sizing rate and the rehearsal's wall (3 x estimate + 600 s, rounded up to the minute)",
+   "attempts": "harness_limits"
+  }
+ }
 }

@@ -106,14 +106,16 @@ def first_order_loading(*, dt=DECLARED_DT, solver=ARS, end=C3_END_S, lumen_mM=LU
     return _declared(raw)
 
 
-def two_way(*, dt=DECLARED_DT, solver=ARS, end=C4_END_S, a=C4_A, b=C4_B, changes=()):
+def two_way(*, dt=DECLARED_DT, solver=ARS, end=C4_END_S, a=C4_A, b=C4_B, changes=(),
+            volume=V_O):
     """C4: a first-order export (a = k_e) and a first-order import (b = kappa) on the bounding
-    patch, from the pool in the cytosol; `changes`: later (time, a, b) changes (C12's restarts)."""
-    raw = _base(dt=dt, solver=solver, end=end, profile={fx.SPECIES: {OWNER: POOL_mM,
-                                                                     NODE: LUMEN_mM}})
+    patch, from the pool in the cytosol; `changes`: later (time, a, b) changes (C12's restarts);
+    `volume`: the compartment's (pL; C12's batch varies it)."""
+    raw = _base(dt=dt, solver=solver, end=end, nodes=((NODE, volume),),
+                profile={fx.SPECIES: {OWNER: POOL_mM, NODE: LUMEN_mM}})
     export = [(0.0, a), *((t, x) for t, x, _ in changes)]
-    release = [(0.0, uptake_velocity(b, V_O)),
-               *((t, uptake_velocity(y, V_O)) for t, _, y in changes)]
+    release = [(0.0, uptake_velocity(b, volume)),
+               *((t, uptake_velocity(y, volume)) for t, _, y in changes)]
     raw = fx.with_exchange(raw, [("load", PATCH, "export", "first_order"),
                                  ("release", PATCH, "import", "first_order")],
                            [("load", OWNER, export), ("release", OWNER, release)])
