@@ -869,4 +869,23 @@ must fix:
 - **Capacity:** raised a thousandfold, so the head's rate is about 8e3/s and the steps are 1.2 µs or
   more.
 
+**A second amendment to P1, committed before P1 runs.** Host-side parses, made while writing P1,
+showed two more things. Their outcomes were seen before this amendment.
+- **Capacity.** A thousandfold capacity is refused at the initial domain ("Initial resolved
+  channel/junction/pump domain invalid") at every dt tried, from 1e-3 to 1e-7 s; up to 500-fold is
+  admitted. So the refusal does not come from a step rule.
+  - P1 uses 500-fold. The head's rate is about 4e3/s, and the smallest step is 1.2 µs.
+  - The thousandfold refusal is reported as found. The likeliest cause, the proton buffer's envelope,
+    is not traced.
+- **Host P's world** is FR-4's with the compartment operator removed and the lumen made a faced node:
+  one face to the bath.
+  - Version 1 refuses a face that moves two-form buffer rows. It also refuses a face that moves the
+    proton row at a buffered node ("proton routes there read through the closure").
+  - So the face moves Na⁺, K⁺, Cl⁻ and the trace rows, but neither buffer row nor H.
+  - That world parses with the transporter on the cell's patch facing the faced node, so the existing
+    kinds do parse on that topology.
+  - Its start is charged so that the patch voltage is 5 mV past the head. Its ΣG/C is taken over the
+    cell's capacitance (both its patches), the per-stage rule's quantity at a free node.
+  - It records refusals only, as committed.
+
 ## 6. Results of the probes (to follow)
