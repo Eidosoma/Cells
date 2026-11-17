@@ -114,7 +114,8 @@
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-cda5dc82/measured.json",
   "/mnt/workspaces/Cells/d188-r1-20261117/measure-ba2b6e2b/measured.json",
   "/mnt/workspaces/Cells/d188-m1-20261117/measure-c2bebaea/measured.json",
-  "/mnt/workspaces/Cells/gard-g1-20261117/measure-518d22e7/measured.json"
+  "/mnt/workspaces/Cells/gard-g1-20261117/measure-518d22e7/measured.json",
+  "/mnt/workspaces/Cells/gard-g1-20261117/measure-99509d45/measured.json"
  ],
  "measured_provenance": [
   {
@@ -948,6 +949,13 @@
    "root": ".claude/worktrees/gard-g1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T12:25:17+00:00"
+  },
+  {
+   "git_revision": "99509d45c452941b959d925d079ceb653e93aa03",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T12:42:26+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1681,6 +1689,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_cli_own_runner.py",
+    "seconds": 2.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
     }
    },
    {
