@@ -6467,8 +6467,9 @@ tracking relationships in the most effective way".
   pair-consistent rule is the note's "kinetic factor on the common state", so it carries a planted
   control.
 
-**Open: U8, the scope.** The lead recommends OL0–OL9 as one programme, built in order with its
-gates. It binds nothing until G1 and seam F land, and it waits for the user's answer.
+**U8, the scope: the whole programme.** The user, the same day: "whole program". OL0–OL9 is built
+as one programme, in order with its gates, starting once G1 and seam F land. The estimate, about
+33–51 agent-days, is the design lane's own.
 
 **Relationship tracking: four checks.** Descent, whose material is whose, who depends on whom,
 and what history a state carries.
@@ -6496,6 +6497,31 @@ visible.
 - **Two cheap fit tests:**
   - Does the note's assembly admit a fibre that grows and breaks under shear?
   - Is SpudCell's plasmid-set inheritance reachable on G1's partition machinery in population mode?
+
+## D200: Relationships are tracked in general, so that graphs come easily from the raw data
+
+2026-11-17. Asked whether the lead had read "tracking relationships" right (descent, whose material
+is whose, who depends on whom, and what history a state carries), the user answered: "yes, let's
+have a good way to track things in general so we can create graphs from the raw data easily, for
+example so plug the gaps".
+
+- **A general engine feature, not one per experiment (D144).** A design note with options comes
+  first (D142); building follows the user's ruling on it.
+- **The gaps D199 found:**
+  - **Material provenance:** declared labels on species amounts, which every law moves without
+    seeing.
+  - **Every descendant:** a population of lineages with one record shape across tissue division,
+    replacement and assembly fission.
+  - **Supplied material names its source,** as work names a payer.
+  - **History:** branching, and transplants between lineages.
+- **Graphs from the raw data.** The records give relationships as plain node and edge tables with
+  stable identifiers, so a lineage tree, a material-flow graph, a dependency graph or a history of
+  branches is a join, not a reconstruction.
+- **The standing rules hold:**
+  - a world that declares no tracking gets identical programs;
+  - with tracking, events and results are unchanged, and any label draw is on its own stream;
+  - totals are conserved per label;
+  - each claim is tested with a planted error (D187).
 
 ## Implementation choices and remaining work
 
