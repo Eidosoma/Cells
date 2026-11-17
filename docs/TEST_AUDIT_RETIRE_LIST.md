@@ -33,8 +33,9 @@ the list's.
 
 **Checks on the result:**
 - The edited files' 1731 remaining tier-1/2 tests keep their outcomes per test ID.
-- At the final head the collected IDs are 18473: the 20792 before, minus exactly the 2322 retired IDs,
-  plus the three tests added on the branch since (one merged from fr45-next, two for the tier tool).
+- At the merged head c96eb080 the collected IDs are 18482: the 20792 before, minus exactly the 2322
+  retired IDs, plus the 12 tests added since (one merged from fr45-next, nine from the BLAS pin, two
+  for the tier tool).
 - `tests/tier3_record.json` lost the retired files and IDs, and names D189 and the tag. Its 218 files'
   IDs equal the tree's.
 - The evidence is in `/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/`.
