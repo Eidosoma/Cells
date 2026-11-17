@@ -29,6 +29,9 @@ to the healthy state, and how do the tumor's membrane voltage and connexin expre
   (F8). The lead filed these as FR-15 to FR-17.
 - **One tissue condition runs on today's engine:** the "neither" condition on the 1D line. Its
   reference is BITSEY's log, not a printed number (§7).
+  - Its threshold search stopped: an engine check refused most search points (§7).
+  - At the two D values both Cells and the log ran to the end (0 and 6.25e-15), Cells' end state
+    equals the log's to every printed digit (descriptive, not judged).
 - **The preprint's linear model ("intuitive model": equations 1-2, appendix, Figures 3, 5 and 8)
   runs on the engine in two forms**, both in the committed driver (§4).
   - **As written:** a source and a decay in each cell (`local_species_reactions@1`) and a junction
@@ -275,7 +278,9 @@ for this work.
 | `dev-03` | eebd608a, clean | The same with the engine's run records and views; stopped, superseded by `dev-04` |
 | `fixture-02` | 7cdd7dce, clean | Two 60 s format fixtures for the viewer, Norton and as written |
 | `dev-04` | 7cdd7dce, clean | Every part: the Norton form, the as-written form with its dt study, records and views (the numbers below) |
-| `neither-01` | 52caf2dc, clean | The "neither" search (§7) |
+| `dev-05` | 9079070d, clean | The as-written arms with views, from M (main's reactions view fix merged): bitwise the same concentrations as `dev-04` |
+| `dev-06` | 6729160b, clean | Every part without the dt study; every sweep arm packaged with sidecars; superseding `dev-04`'s and `dev-05`'s packages |
+| `neither-01` | 52caf2dc, clean | The "neither" search (§7): stopped, most points refused by an engine check |
 
 The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded in their
 `checkout.patch`. No run's code differed from its revision.
@@ -445,13 +450,22 @@ of the unperturbed reference. E1 catches it (K1).
     files).
 - `viewer/summary.json` lists the sweeps for the viewer's charts (`cells.experiment_summary@1`):
   Figures 3b, 5b, 5a and 8, each a parameter, its readouts and, where the preprint states one,
-  equation 2's values. Only the Norton sweeps are listed until the as-written arms have views.
-  `dev-04`'s was written after the run, from its `results.json`, by the driver's `sweep_summary`.
-- **The as-written arms have complete records but no run view.** The writer refuses them:
-  `local_species_reactions@1` declares no view layers, no set for its `reaction_route` axis and no
-  axes for its readout columns. Seam F's registry owner is adding those declarations. Views for
-  these arms will then be written from the saved records, or from a rerun.
-- `runs/fixture-01` and `runs/dev-03` are superseded and are not for the viewer.
+  equation 2's values. Each readout's label says its unit and that the preprint's scaled unit is
+  1 mM (Norton) or 1 µM (as written) in that world.
+- Each package has `concentration.json` beside it: each cell's concentration per observed row,
+  from the package's own amounts and volumes. It is a viewer sidecar written by the driver, not
+  an engine field.
+- **`dev-06` is the viewer's run** (from 6729160b).
+  - Every arm of the seven sweeps is packaged, 30 within the 2 MB layer limit. Figure 5a at 10
+    and 50 G_eq do not fit (7.7 and 30.5 MB): their small steps keep many rows.
+  - The packages keep the model's own species alone (the as-written world's ions are a static
+    background).
+  - All 77 written views pass `run_view.validate`. All 44 arms' concentrations are bitwise those
+    of `dev-04`.
+- The as-written arms first had no run view: `local_species_reactions@1` declared none. Main's
+  fix (72409622, declarations only) gave them one; `dev-05` and `dev-06` carry it.
+- `runs/fixture-01`, `runs/dev-03`, `runs/dev-06-stopped` and the packages of `dev-04` and
+  `dev-05` are superseded and are not for the viewer.
 
 ## 5. Gaps, as general engine features
 
@@ -655,4 +669,37 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
   - Descriptive, not judged: Cells' first points (0 and 1e-13 / 2^k) include the first six of the
     log's bisection (0, 1e-13, 5e-14, 2.5e-14, 1.25e-14 and 6.25e-15). Their outcomes, and the end
     states the log dumps, compare point by point.
+
+**3. What happened: the search stopped** (`runs/neither-01`, from 52caf2dc; its `points.jsonl`
+and `search.json`).
+- The uncoupled stage ran. Of the first eight points, five were refused by the engine and the
+  search stopped by its own rule ("a point failed"), as written above. The last running point
+  (1e-13) was stopped by hand once no threshold could follow.
+  - Refused: D = 1.5625e-15 (at 45 s), 3.125e-15 (37 s), 1.25e-14 (4.4 s), 2.5e-14 (4.4 s) and
+    5e-14 (1032 s), each "imex_ars222_face_electromigration@1 trial/endpoint domain failure".
+  - Reproduced: the refusal is deterministic, and not monotone in D or in the step (at 1.25e-14
+    it is refused at 1/8 and 1/32 s and runs at 1/16 s). `probes/neither-fail-01`.
+  - The refusing check is the passive routes' exact heat booking. A step is refused when any
+    exact route's heat share is negative (`passive_routes.book`). Its measurement is below.
+- **No threshold and no ratio are reported.** The pre-registered comparison has no result.
+- **The two points that ran to the end** (descriptive, not judged; `probes/neither-compare-01`,
+  generated by its `compare.py`):
+  - At D = 6.25e-15 and D = 0, Cells' end state, formatted as the log formats a cell, is
+    character for character the log's end-state line (lines 70 and 25 of
+    `tumor_isolate_1D_V1M`, saved at b2cb370, written by an earlier revision of its code).
+  - Epithelial cells: 20 of 25 in both at 6.25e-15, not normalized; 19 of 25 in both at 0.
+  - The 6.25e-15 profile is partly converted, set by transport over the 20,000 units, so this
+    also tests the time unit (BITSEY's taken as 1 s) through a coupled run.
+  - A correction: a message of 17 November gave "19 in BITSEY's log" at 6.25e-15. That was the
+    log's count at D = 0, attached to the wrong D while writing by hand. The generated
+    comparison gives 20 and 20.
+
+**4. The tissue line for the viewer: picks chosen before the run.**
+- D = 0, 6.25e-15, 7.18e-15, 1e-14 and 1e-13 m²/s, each at section 7's step rule, run with
+  `neither.py --record` (run view and `criterion.json`). Fixed here before any of them runs.
+- They are picks around BITSEY's logged threshold, chosen before the run. Most other D values in
+  the search were refused by an engine check.
+- Every refused pick is reported. No D and no step is swapped in because it passes.
+- `criterion.json` gives each cell's miR200 minus Zeb mRNA (µM) per observed row and its state as
+  the log's dumps give it (BITSEY's `state_char`): E above 2, M below -2, X between.
 

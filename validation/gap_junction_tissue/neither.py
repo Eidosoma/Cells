@@ -430,15 +430,25 @@ def final_units(directory, species_ids):
 
 CRITERION_FORMAT = "cells.experiment_criterion@1"
 CRITERION_WORDS = (
-    "A cell is epithelial when its miR200 exceeds its Zeb mRNA by more than 2 scaled units "
-    "(2 uM here, one unit being 1 uM), and mesenchymal otherwise: BITSEY's criterion "
-    "(healthy_snapped_rows)."
+    "A cell is epithelial (E) when its miR200 exceeds its Zeb mRNA by more than 2 scaled units "
+    "(2 uM here, one unit being 1 uM), mesenchymal (M) when its Zeb mRNA exceeds its miR200 by "
+    "more than 2, and neither (X) in between: BITSEY's state_char; the tissue is normalized when "
+    "every cell is E (healthy_snapped_rows)."
 )
 CRITERION_SOURCE = (
     "BITSEY's log tumor_isolate_1D_V1M at b2cb370, written by an earlier revision of its code "
-    "(cancer_GJ_sims/GRN_miRNA.py, healthy_snapped_rows, line 519); "
+    "(cancer_GJ_sims/GRN_miRNA.py: state_char, lines 443-448; healthy_snapped_rows, line 519); "
     "docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7"
 )
+
+
+def cell_state(value):
+    """BITSEY's state_char on miR200 minus Zeb mRNA (units): E above 2, M below -2, X between."""
+    if value > MARGIN_UNITS:
+        return "E"
+    if value < -MARGIN_UNITS:
+        return "M"
+    return "X"
 
 
 def criterion_sidecar(directory, species_ids):
@@ -493,14 +503,15 @@ def criterion_sidecar(directory, species_ids):
         criterion=dict(
             threshold=MARGIN_UNITS,
             above="epithelial",
-            below="mesenchymal",
+            lower=dict(threshold=-MARGIN_UNITS, below="mesenchymal"),
+            between="neither (X)",
             words=CRITERION_WORDS,
             source=CRITERION_SOURCE,
         ),
         times_s=times,
         cells=list(cells),
         values=values,
-        states=[["E" if x > MARGIN_UNITS else "M" for x in row] for row in values],
+        states=[[cell_state(x) for x in row] for row in values],
     )
     (directory / "criterion.json").write_text(json.dumps(sidecar, allow_nan=False))
     return "criterion.json"
