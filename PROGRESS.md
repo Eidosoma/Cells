@@ -85,6 +85,20 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
+  Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.
+  - **The search** (`runs/neither-02`, clean snapshot of main 1f4c740a): 37 points, none refused,
+    monotone; the half-step rerun at dt 1/16 s gives the same outcomes on both sides.
+  - **Its threshold:** x2 = 7.1777e-15 m²/s, bracket ratio 1.0002. That is 0.99968 of the value
+    logged by BITSEY's saved run (7.18e-15, written by an earlier revision of its code), inside the
+    0.95–1.05 band fixed before the run, so agreement is called.
+  - **Against that log, point by point:** normalised-or-not agrees at all 16 shared points. The
+    end-state lines are identical at 15 of 16; the 16th differs by one printed digit.
+  - **FR-19's effect:** the first search had 5 of its first 8 points refused; this one had none.
+  - **The tissue line's three arms** (`runs/picks-02`): at x2/2 the tumour holds (6 M, 19 E); at x2
+    and 2·x2 the tissue normalises (25 E). They replace `picks-01` in the viewer.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/neither-02/` and `runs/picks-02/`.
+
 - **D198's retire batch on main (17 November 2026, evening).** The merge of `retire-processes` at
   292aa967.
   - **Retired:**
