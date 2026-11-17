@@ -244,8 +244,12 @@ def step_map(part, reference, a, b, dt):
 def against_by_step(part, reference, observables):
     """An every-step part against its reference record by record (both recorded at every step,
     so keyed by index), each observable over its rounding budget; None when either is missing or
-    their record times differ."""
-    if not completed(part) or not reference or reference.get("record_s") != part["record_s"]:
+    their record times differ (by more than 1e-12 s)."""
+    if not completed(part) or not reference:
+        return None
+    times = reference.get("record_s") or []
+    if len(times) != len(part["record_s"]) or any(
+            abs(a - b) > 1e-12 for a, b in zip(times, part["record_s"], strict=True)):
         return None
     out = []
     for x in observables:
