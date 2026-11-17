@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cells.legacy.processes import finite_calcium_pumps as process
+from cells.legacy.processes import finite_energy as energy
 from cells.processes import er_calcium, kinetic_pump, plasma_calcium
-from cells.processes import finite_calcium_pumps as process
-from cells.processes import finite_energy as energy
 from cells.processes.electrochemistry import R
 from validation.chemistry import finite_calcium_pump_reference as reference
 from validation.chemistry import finite_energy_reference as pool_reference

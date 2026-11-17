@@ -4,7 +4,7 @@ import jax
 import numpy as np
 
 from cells.assembly.engine import device_for
-from cells.models import surface_cotransport_water as model
+from cells.legacy.models import surface_cotransport_water as model
 from tests.unit.test_surface_cotransport_water import evidence, initial
 
 

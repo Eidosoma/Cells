@@ -5,7 +5,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from cells.processes import stable_seed_control_volumes as volumes
+from cells.legacy.processes import stable_seed_control_volumes as volumes
 from validation.geometry import stable_mesh_physical_reconstruction_saved as saved
 
 ROSTER_SHA256 = "1728bbbc2847270ac5441d2cae338d4ce845acbbb469ee5149accae6524fa622"

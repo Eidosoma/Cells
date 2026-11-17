@@ -141,7 +141,7 @@ def test_contracts_public_dispatch_absolute_controls_and_refusals():
     from cells.core.specs import ConfigError, parse_spec
     from cells.core.windows import WindowPolicy, plan_windows
     from cells.io import runtime_identity, source_hashes
-    from cells.models import surface_calcium_energy_regulated as model
+    from cells.legacy.models import surface_calcium_energy_regulated as model
     from cells.models.registry import get_model
 
     spec = parse_spec(raw())

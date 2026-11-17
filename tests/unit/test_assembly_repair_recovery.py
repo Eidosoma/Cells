@@ -9,13 +9,13 @@ import numpy as np
 import pytest
 
 from cells.assembly.spec import AssemblyError
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cell.spec import tick_at
-from cells.assembly_cluster import controls, engine
-from cells.assembly_cluster.spec import parse_spec
 from cells.ensemble.families import bind_definition
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.models import surface_repair as model
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cell.spec import tick_at
+from cells.legacy.assembly_cluster import controls, engine
+from cells.legacy.assembly_cluster.spec import parse_spec
+from cells.legacy.models import surface_repair as model
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories, same
 from tests.unit.test_surface_calcium import BACKEND, EVIDENCE, evidence
 from tests.unit.test_surface_kinetic import assert_states

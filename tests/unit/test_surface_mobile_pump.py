@@ -18,8 +18,8 @@ from cells.core.schedule import SurfaceControl, control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot
-from cells.models import surface_mobile_pump as model
-from cells.models import surface_redistribution as prior
+from cells.legacy.models import surface_mobile_pump as model
+from cells.legacy.models import surface_redistribution as prior
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
 from validation.tissue import surface_mobile_pump_fixtures as fixtures

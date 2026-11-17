@@ -551,7 +551,7 @@ def test_candidate_definition_existing_parser_and_resource_guard(
     from cells.core.resources import trace_bytes
     from cells.core.runner import timeline
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     variant = registered["transport_protocol"]["variants"][variant_index]
     row = fabricated["rows"][variant["id"] + "/observed"]
@@ -576,7 +576,7 @@ def test_independent_continuous_coupling_matches_own_state_rhs(
 ):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     variant = registered["transport_protocol"]["variants"][index]
     row = fabricated["rows"][variant["id"] + "/observed"]

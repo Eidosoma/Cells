@@ -10,9 +10,9 @@ import pytest
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
-from cells.core.surface_energy_spec import initial_ionic_spec
-from cells.models import surface_cav as prior
-from cells.models import surface_energy as model
+from cells.legacy.core.surface_energy_spec import initial_ionic_spec
+from cells.legacy.models import surface_cav as prior
+from cells.legacy.models import surface_energy as model
 from validation.chemistry import finite_energy_reference as chemistry
 from validation.tissue import surface_energy_fixtures as fixtures
 from validation.tissue import surface_energy_reference as reference

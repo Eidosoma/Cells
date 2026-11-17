@@ -21,12 +21,12 @@ import jax
 import numpy as np
 
 from cells.assembly.io import runtime, write_json
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.spec import parse_spec
 from cells.core.output_paths import within_output_root
 from cells.ensemble import cli
 from cells.ensemble.families import bind_definition
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.spec import parse_spec
 
 if __package__:
     from validation.assembly.cluster_partition_replay import differences

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cells.core import conservative_polygon_tissue_preparation as physical
+from cells.legacy.core import conservative_polygon_tissue_preparation as physical
 from cells.processes import conservative_polygon_geometry as geometry
 from validation.geometry import conservative_polygon_geometry_fixtures as fixtures
 from validation.geometry import conservative_polygon_geometry_reference as reference

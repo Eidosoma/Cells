@@ -14,7 +14,7 @@ from cells.core.runner import run, timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.models import surface_sodium as model
+from cells.legacy.models import surface_sodium as model
 from cells.models.registry import get_model
 from cells.processes import sodium_channels as channels
 from tests.unit import test_surface_channels as shared

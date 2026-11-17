@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 MODEL_ID = "source_decay@1"
 UNITS = {"amount": "fmol", "volume": "pL", "time": "s"}
-# The EMT models cite BITSEY (Grodstein and Pietak) at b2cb370; see models/emt_mirna.py.
+# The EMT models cite BITSEY (Grodstein and Pietak) at b2cb370; see legacy/models/emt_mirna.py.
 EMT_MODEL_ID = "emt_mirna@1"
 EMT_UNITS = {"concentration": "scaled_coordinate", "time": "nominal_time_unit"}
 EMT_PARAMETER_SET = "emt-mirna-scaled-simple"

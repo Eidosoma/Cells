@@ -155,11 +155,11 @@ def run(bundle, job_id, output, dependency_runs):
         protocol, job, raw = artifact.load_job(bundle, job_id, "projection")
         sources = artifact.dependencies(bundle, job, dependency_runs)
         if job["family"] == "calcium":
-            from cells.core import surface_open_calcium_bath_events_spec as schema
-            from cells.models import surface_open_calcium_bath_events as model
+            from cells.legacy.core import surface_open_calcium_bath_events_spec as schema
+            from cells.legacy.models import surface_open_calcium_bath_events as model
         else:
-            from cells.core import surface_open_calcium_energy_bath_events_spec as schema
-            from cells.models import surface_open_calcium_energy_bath_events as model
+            from cells.legacy.core import surface_open_calcium_energy_bath_events_spec as schema
+            from cells.legacy.models import surface_open_calcium_energy_bath_events as model
         spec = schema.parse(raw)
         zero, layout = model.initial_values(spec)
         context = reference.bind(raw)

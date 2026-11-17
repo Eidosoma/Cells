@@ -16,7 +16,7 @@ from cells.core.runner import run, timeline
 from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_repair as model
+from cells.legacy.models import surface_repair as model
 from tests.unit.test_surface_calcium import BACKEND, EVIDENCE, evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_repair_fixtures as fixtures

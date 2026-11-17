@@ -7,7 +7,7 @@ import pytest
 from cells.core.runner import NumericalError, run
 from cells.core.specs import ExperimentSpec, InputChange
 from cells.core.state import initialise
-from cells.models.source_decay import rhs
+from cells.legacy.models.source_decay import rhs
 from tests.reference import exact_amount
 
 

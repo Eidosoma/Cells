@@ -29,7 +29,7 @@ def artifact(name="irregular-native-radial"):
     }
     # The frozen handoff predates the neutral geometry law ID. Re-prepare its recipe under
     # the current law; the prepared definition must be unchanged.
-    from cells.core import geometry_tissue_preparation as bridge
+    from cells.legacy.core import geometry_tissue_preparation as bridge
 
     again = bridge.prepare(stored["provenance"]["request"])
     if again.definition != stored["definition"]:

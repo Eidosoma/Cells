@@ -14,8 +14,8 @@ from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_run
-from cells.models import surface_calcium_channels as prior
-from cells.models import surface_calcium_sodium as model
+from cells.legacy.models import surface_calcium_channels as prior
+from cells.legacy.models import surface_calcium_sodium as model
 from cells.models import surface_kinetic
 from cells.models.registry import get_model
 from cells.processes import sodium_channels

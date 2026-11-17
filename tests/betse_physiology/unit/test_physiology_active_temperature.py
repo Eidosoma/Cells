@@ -11,7 +11,7 @@ import pytest
 
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
-from cells.models import surface_calcium_energy as fuel
+from cells.legacy.models import surface_calcium_energy as fuel
 from cells.numerics.fixed_step import rk4_step
 from cells.processes import global_controls as setters
 from cells.processes.mass_action import reversible_flux

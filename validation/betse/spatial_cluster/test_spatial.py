@@ -14,9 +14,9 @@ from cells.core.schedule import PhysicalIonicGraphControl, control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import junction_finite_extracellular as local
-from cells.models import spatial_extracellular as passive
-from cells.models import spatial_junction as model
+from cells.legacy.models import junction_finite_extracellular as local
+from cells.legacy.models import spatial_extracellular as passive
+from cells.legacy.models import spatial_junction as model
 from cells.models.registry import get_model
 
 

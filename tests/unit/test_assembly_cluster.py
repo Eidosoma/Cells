@@ -15,14 +15,14 @@ from cells.assembly.engine import device_for
 from cells.assembly.io import write_json
 from cells.assembly.kernel import random_pair
 from cells.assembly.spec import AssemblyError
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.spec import channel_owners, parse_spec
 from cells.assembly_pool import engine as pool_engine
 from cells.assembly_pool import reference as pool_reference
 from cells.core.errors import NumericalError
 from cells.ensemble.families import bind_definition, first_completion, runtime_for
 from cells.ensemble.plan import balance, jupiter_plan, plan
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
@@ -563,8 +563,8 @@ def test_scheduler_adapter_and_per_cell_aggregation(baseline, tmp_path):
 
 
 def test_one_cell_no_spatial_faces_reduces_to_previous_composition():
-    from cells.assembly_cell import engine as previous
-    from cells.assembly_cell.spec import parse_spec as parse_previous
+    from cells.legacy.assembly_cell import engine as previous
+    from cells.legacy.assembly_cell.spec import parse_spec as parse_previous
 
     old = json.loads((ROOT / "configs/assembly_regulated_cell.json").read_text())
     old["pool"].update(worlds=2, k_off_s_inv=300.0, k_close_s_inv=1000.0)
@@ -605,7 +605,7 @@ def test_one_cell_no_spatial_faces_reduces_to_previous_composition():
 
 
 def test_detached_cli_selects_correct_module(tmp_path, monkeypatch, capsys):
-    from cells.assembly_cell import cli
+    from cells.legacy.assembly_cell import cli
 
     launches = []
 
@@ -630,7 +630,7 @@ def test_detached_cli_selects_correct_module(tmp_path, monkeypatch, capsys):
         )
         command, kwargs = launches[-1]
         # The worker module, named in full (D188 R2).
-        worker = "cells.assembly_cluster" if cluster else "cells.assembly_cell"
+        worker = "cells.legacy.assembly_cluster" if cluster else "cells.legacy.assembly_cell"
         assert command[command.index("-m") + 1] == worker
         assert kwargs["start_new_session"] is True
         assert kwargs["env"]["PYTHONPATH"] == str(output / "source")

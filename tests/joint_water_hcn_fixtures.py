@@ -28,20 +28,20 @@ def stem(family):
 # full (D188 R2).
 COMPONENTS = {
     ("water", 1): (
-        "cells.core.surface_calcium_energy_water_spec",
-        "cells.models.surface_calcium_energy_water",
+        "cells.legacy.core.surface_calcium_energy_water_spec",
+        "cells.legacy.models.surface_calcium_energy_water",
     ),
     ("water", 2): (
-        "cells.core.surface_calcium_energy_water_hcn_extra_spec",
-        "cells.models.surface_calcium_energy_water_hcn_extra",
+        "cells.legacy.core.surface_calcium_energy_water_hcn_extra_spec",
+        "cells.legacy.models.surface_calcium_energy_water_hcn_extra",
     ),
     ("repair", 1): (
-        "cells.core.surface_calcium_energy_water_repair_spec",
-        "cells.models.surface_calcium_energy_water_repair",
+        "cells.legacy.core.surface_calcium_energy_water_repair_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair",
     ),
     ("repair", 2): (
-        "cells.core.surface_calcium_energy_water_repair_hcn_extra_spec",
-        "cells.models.surface_calcium_energy_water_repair_hcn_extra",
+        "cells.legacy.core.surface_calcium_energy_water_repair_hcn_extra_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_hcn_extra",
     ),
 }
 

@@ -16,9 +16,9 @@ from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError
-from cells.models import surface_calcium_energy as fuel
-from cells.models import surface_calcium_energy_water_hcn_extra as water_parent
-from cells.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
+from cells.legacy.models import surface_calcium_energy as fuel
+from cells.legacy.models import surface_calcium_energy_water_hcn_extra as water_parent
+from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
 from tests.joint_water_barrier_fixtures import components, definition
 from tests.owned_joint_water_hcn_helpers import changed
 from validation.transport import joint_water_barrier_interventions_fixtures as fixtures

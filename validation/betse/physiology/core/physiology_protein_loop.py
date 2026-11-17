@@ -18,7 +18,7 @@ import numpy as np
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import event_index
-from cells.models import compartment_reactions as chemistry
+from cells.legacy.models import compartment_reactions as chemistry
 from cells.numerics import surface_field as field
 from cells.processes.electrochemistry import R
 from validation.betse.physiology import native_noise as perturb

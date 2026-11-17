@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import tissue_profile_preparation as bridge
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import tissue_profile_preparation as bridge
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.models.registry import get_model
-from cells.processes import tissue_target_selectors as native
 from validation.topology import tissue_profile_preparation_fixtures as fixtures
 from validation.topology import tissue_profile_preparation_reference as reference
 

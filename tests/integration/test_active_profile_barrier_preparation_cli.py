@@ -8,7 +8,7 @@ from copy import deepcopy
 import pytest
 
 from cells.core.specs import ConfigError, digest
-from cells.tissue_profiles import main, prepare_request, read_preparation, replay
+from cells.legacy.tissue_profiles import main, prepare_request, read_preparation, replay
 from tests.active_profile_barrier_dispatch_fixtures import prepared
 from tests.unit.test_surface_catalog import evidence
 
@@ -88,7 +88,7 @@ def test_combined_public_request_refuses_mismatch_without_writing(fault, tmp_pat
 
 
 def test_combined_writer_refuses_overwrite_and_changed_artifact(tmp_path, capsys):
-    from cells.tissue_profiles import _write_preparation
+    from cells.legacy.tissue_profiles import _write_preparation
 
     _, _, expected = prepared()
     output = _write_preparation(tmp_path / "prepared", expected)

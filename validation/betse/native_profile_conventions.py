@@ -1,16 +1,16 @@
 """BETSE target-selection conventions, built on the engine's tissue target selectors.
 
-The engine selects explicit stable-owner targets (`cells.processes.tissue_target_selectors`).
+The engine selects explicit stable-owner targets (`cells.legacy.processes.tissue_target_selectors`).
 BETSE v1.5.0's global gap-junction selection has a quirk: it shuffles a copy that
 is then discarded, so the actual prefix of the membrane list wins. That reference
 behaviour lives here, for the BETSE-loop reproduction only. Engine names are
 re-exported unchanged.
 """
 
-from cells.processes import tissue_target_selectors as _selectors
+from cells.legacy.processes import tissue_target_selectors as _selectors
 
 globals().update({k: v for k, v in vars(_selectors).items() if not k.startswith("__")})
-from cells.processes.tissue_target_selectors import (  # noqa: E402
+from cells.legacy.processes.tissue_target_selectors import (  # noqa: E402
     _number,
     _target,
     validate_layout,

@@ -2,8 +2,8 @@
 
 from copy import deepcopy
 
-from cells.assembly_cluster.spec import parse_spec
 from cells.ensemble.plan import jupiter_plan, plan
+from cells.legacy.assembly_cluster.spec import parse_spec
 from tests.unit.test_assembly_cluster import ensemble_definition
 from tests.unit.test_surface_calcium_catalog import evidence
 from validation.tissue import surface_calcium_catalog_fixtures as fixtures

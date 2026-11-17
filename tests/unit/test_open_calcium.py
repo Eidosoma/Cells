@@ -9,13 +9,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_open_calcium_energy_spec as fuel_schema
-from cells.core import surface_open_calcium_spec as calcium_schema
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError
-from cells.models import surface_open_calcium as calcium
-from cells.models import surface_open_calcium_energy as fuel
+from cells.legacy.core import surface_open_calcium_energy_spec as fuel_schema
+from cells.legacy.core import surface_open_calcium_spec as calcium_schema
+from cells.legacy.models import surface_open_calcium as calcium
+from cells.legacy.models import surface_open_calcium_energy as fuel
 from cells.numerics.fixed_step import rk4_step
 from validation.tissue import open_calcium_fixtures as fixtures
 from validation.tissue import open_calcium_reference as reference

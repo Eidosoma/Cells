@@ -16,11 +16,11 @@ from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_redistribution_spec import base_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_redistribution as model
+from cells.legacy.core.surface_redistribution_spec import base_spec
+from cells.legacy.models import surface_redistribution as model
 from cells.models import surface_tissue as base
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step

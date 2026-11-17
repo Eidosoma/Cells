@@ -10,11 +10,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import environment_barrier_composition_preparation as bridge
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import environment_barrier_composition_preparation as bridge
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from validation.transport import owned_barrier_interventions_fixtures as fixtures
@@ -23,16 +23,16 @@ from validation.transport import owned_barrier_interventions_reference as refere
 # Each family's definition and model modules, named in full (D188 R2).
 MODULES = {
     "ionic": (
-        "cells.core.surface_active_barrier_interventions_spec",
-        "cells.models.surface_active_barrier_interventions",
+        "cells.legacy.core.surface_active_barrier_interventions_spec",
+        "cells.legacy.models.surface_active_barrier_interventions",
     ),
     "calcium": (
-        "cells.core.surface_calcium_barrier_interventions_spec",
-        "cells.models.surface_calcium_barrier_interventions",
+        "cells.legacy.core.surface_calcium_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_barrier_interventions",
     ),
     "energy": (
-        "cells.core.surface_calcium_energy_barrier_interventions_spec",
-        "cells.models.surface_calcium_energy_barrier_interventions",
+        "cells.legacy.core.surface_calcium_energy_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_barrier_interventions",
     ),
 }
 

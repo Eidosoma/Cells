@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_water_repair_hcn_extra_spec as schema
 from cells.core.errors import NumericalError
-from cells.models import surface_calcium_energy_water_hcn_extra as parent
-from cells.models import surface_calcium_energy_water_repair_hcn_extra as model
+from cells.legacy.core import surface_calcium_energy_water_repair_hcn_extra_spec as schema
+from cells.legacy.models import surface_calcium_energy_water_hcn_extra as parent
+from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as model
 from tests.owned_joint_water_hcn_helpers import changed, evidence, initial, refinement, stage
 
 
@@ -116,8 +116,8 @@ def test_complete_repair_trajectory_at_every_observation_and_control_boundary():
 
 
 def test_legacy53_state_and_rates_match_the_unchanged_v1_repair():
-    from cells.core import surface_calcium_energy_water_repair_spec as legacy_schema
-    from cells.models import surface_calcium_energy_water_repair as legacy
+    from cells.legacy.core import surface_calcium_energy_water_repair_spec as legacy_schema
+    from cells.legacy.models import surface_calcium_energy_water_repair as legacy
     from tests.owned_joint_water_hcn_helpers import control
     from validation.tissue import calcium_energy_water_repair_fixtures as legacy_inputs
 

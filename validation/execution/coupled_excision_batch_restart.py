@@ -20,8 +20,8 @@ from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
 from cells.core.grid import EventGrid
 from cells.core.windows import WindowPolicy
-from cells.excision_io import load_excision
 from cells.io import load_snapshot, runtime_identity, source_hashes, write_run
+from cells.legacy.excision_io import load_excision
 from tests.unit.test_surface_kinetic import assert_states, exact
 
 WORLD_IDS = (3, 79)

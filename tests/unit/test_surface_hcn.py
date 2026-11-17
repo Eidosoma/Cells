@@ -17,7 +17,7 @@ from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.models import surface_hcn as model
+from cells.legacy.models import surface_hcn as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.processes import hcn_channels as channels

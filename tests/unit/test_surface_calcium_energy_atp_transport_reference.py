@@ -7,9 +7,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_atp_transport_spec as schema
 from cells.core.schedule import control_values
-from cells.models import surface_calcium_energy_atp_transport as model
+from cells.legacy.core import surface_calcium_energy_atp_transport_spec as schema
+from cells.legacy.models import surface_calcium_energy_atp_transport as model
 from cells.numerics.fixed_step import rk4_step
 from validation.tissue import calcium_energy_atp_transport_fixtures as fixtures
 from validation.tissue import calcium_energy_atp_transport_reference as reference

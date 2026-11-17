@@ -8,21 +8,21 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.active_tissue_excision import GATES, capture_source, decode_source, physical
 from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.errors import NumericalError
-from cells.core.excision import excise
 from cells.core.grid import EventGrid
 from cells.core.runner import run, timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import Checkpoint, initialise
-from cells.core.surface_active_excision_spec import base_spec
 from cells.core.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
-from cells.excision_io import ACTIVE_KIND, KIND, load_excision, write_excision
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_active_excision as model
-from cells.models import surface_hcn_extra as parent
+from cells.legacy.core.active_tissue_excision import GATES, capture_source, decode_source, physical
+from cells.legacy.core.excision import excise
+from cells.legacy.core.surface_active_excision_spec import base_spec
+from cells.legacy.excision_io import ACTIVE_KIND, KIND, load_excision, write_excision
+from cells.legacy.models import surface_active_excision as model
+from cells.legacy.models import surface_hcn_extra as parent
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_surface_catalog import evidence

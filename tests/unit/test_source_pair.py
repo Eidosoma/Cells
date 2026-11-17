@@ -13,7 +13,7 @@ from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, ContactChange, ExperimentSpec, load_spec, parse_spec
 from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
-from cells.models import source_pair as model
+from cells.legacy.models import source_pair as model
 from cells.numerics.fixed_step import rk4_checked_step
 from tests import reference_source_pair_numerics as ref
 from tests.source_pair_fixtures import definition, reference_model, spec_for, values

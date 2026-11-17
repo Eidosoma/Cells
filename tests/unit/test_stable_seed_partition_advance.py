@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from cells.processes import stable_seed_partition_advance as advance
+from cells.legacy.processes import stable_seed_partition_advance as advance
 
 CASES = (
     "uniform-two-species",
@@ -51,10 +51,10 @@ def approved_input(case):
         entry["first_interval_acceptance"],
     )
     advance._qualification_gate(qualification)
-    from cells.core import finite_ecm_polygon_preparation as physical
-    from cells.processes import finite_ecm_polygon_geometry as finite
-    from cells.processes import stable_seed_explicit_ecm_partition as constructor
-    from cells.processes import stable_seed_partition_physiology_bridge as initial
+    from cells.legacy.core import finite_ecm_polygon_preparation as physical
+    from cells.legacy.processes import finite_ecm_polygon_geometry as finite
+    from cells.legacy.processes import stable_seed_explicit_ecm_partition as constructor
+    from cells.legacy.processes import stable_seed_partition_physiology_bridge as initial
 
     incoming = json.loads(original("input"))
     assert incoming["case_id"] == case and set(incoming) == {"case_id", "request", "preparation"}

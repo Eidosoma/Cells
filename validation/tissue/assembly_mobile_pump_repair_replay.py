@@ -9,9 +9,9 @@ import jax
 import numpy as np
 
 from cells.assembly.io import digest, write_json
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine
-from cells.assembly_cluster.spec import parse_spec
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine
+from cells.legacy.assembly_cluster.spec import parse_spec
 
 
 def execute(root, backend, phase, baseline):

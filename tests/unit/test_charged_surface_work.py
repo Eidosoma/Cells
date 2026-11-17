@@ -24,7 +24,7 @@ if os.environ.get("CELLS_CHARGED_SURFACE_RELEASED") != "1":
 
 import numpy as np  # noqa: E402 - explicit qualification release precedes scientific imports
 
-from cells.processes import charged_surface_work as owner  # noqa: E402
+from cells.legacy.processes import charged_surface_work as owner  # noqa: E402
 from cells.processes.electrochemistry import F, R  # noqa: E402
 from validation import charged_surface_work_declarations as cases  # noqa: E402
 

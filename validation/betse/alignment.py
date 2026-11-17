@@ -399,7 +399,7 @@ def cells_worker(registration, output):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
     from cells.io import runtime_identity
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     c.require(jax.default_backend() == "cpu" and jax.config.x64_enabled, "Require CPU float64")
     c.require(not jax.config.jax_disable_jit, "JIT disabled")
@@ -776,7 +776,7 @@ def provenance(registration, native, local):
         "Native path differs",
     )
     c.require(local["accepted_runtime"] == registration["cells_runtime"], "Cells runtime differs")
-    source = c.ROOT / "src/cells/models/finite_extracellular.py"
+    source = c.ROOT / "src/cells/legacy/models/finite_extracellular.py"
     c.require(
         Path(local["source_path"]) == source and local["source_sha256"] == c.sha(source),
         "Cells source differs",

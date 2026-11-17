@@ -1,6 +1,6 @@
 """BETSE-convention geometry operators, built on the engine's geometry operator binding.
 
-The engine binds mesh, grid and cell geometry (`cells.processes.geometry_operator_binding`).
+The engine binds mesh, grid and cell geometry (`cells.legacy.processes.geometry_operator_binding`).
 The calculus below reproduces BETSE v1.5.0's discrete operators on those bindings,
 including the source radial-volume and collocation conventions. It is validation
 tooling only. Engine names are re-exported unchanged.
@@ -9,10 +9,10 @@ tooling only. Engine names are re-exported unchanged.
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import geometry_operator_binding as _binding
+from cells.legacy.processes import geometry_operator_binding as _binding
 
 globals().update({k: v for k, v in vars(_binding).items() if not k.startswith("__")})
-from cells.processes.geometry_operator_binding import _domain, _field, _matvec  # noqa: E402
+from cells.legacy.processes.geometry_operator_binding import _domain, _field, _matvec  # noqa: E402
 
 
 def edge_gradient(values, mesh, *, domain, xp=jnp):

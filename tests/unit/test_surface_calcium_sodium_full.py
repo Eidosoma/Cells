@@ -12,13 +12,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.assembly_cluster.spec import channel_owners
 from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
 from cells.core.resources import trace_bytes
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.specs import ConfigError, parse_spec
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_calcium_sodium as model
+from cells.legacy.assembly_cluster.spec import channel_owners
+from cells.legacy.models import surface_calcium_sodium as model
 from tests.unit import test_surface_calcium as shared
 from tests.unit import test_surface_calcium_sodium as wiring
 from tests.unit.test_surface_kinetic import assert_states, exact

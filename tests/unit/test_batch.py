@@ -244,7 +244,7 @@ def test_guarded_map_never_evaluates_invalid_or_completed_world_rhs():
 
 
 def test_batch_failure_names_world_and_never_returns_partial_results(monkeypatch):
-    from cells.models import source_decay
+    from cells.legacy.models import source_decay
 
     original = source_decay.rhs
 

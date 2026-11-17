@@ -12,9 +12,6 @@ import jax
 import numpy as np
 import pytest
 
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cluster import engine as assembly
-from cells.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec, run_batch
 from cells.core.batch_windows import iter_batch_windows
@@ -26,7 +23,10 @@ from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble import ionic
 from cells.ensemble.plan import jupiter_plan, plan
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_calcium as model
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cluster import engine as assembly
+from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
+from cells.legacy.models import surface_calcium as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories, same
@@ -861,7 +861,7 @@ def assert_owned_assembly_readouts(spec, state, report):
 
 
 def test_assembly_aggregation_retains_owned_ligand(coupled):
-    from cells.ensemble.cluster import aggregate
+    from cells.legacy.ensemble.cluster import aggregate
 
     spec, state, report = coupled
     assert_owned_assembly_readouts(spec, state, report)

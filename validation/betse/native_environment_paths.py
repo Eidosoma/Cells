@@ -1,7 +1,7 @@
 """BETSE literal extracellular update paths, built on the engine's face-transport law.
 
 The engine keeps the conservative Bernoulli-fitted face law, the grid binding, bath
-ledgers and barriers (`cells.processes.extracellular_face_transport`). The paths
+ledgers and barriers (`cells.legacy.processes.extracellular_face_transport`). The paths
 below reproduce BETSE v1.5.0's collocated derivative, boundary and smoothing
 conventions, defects included. They are validation tooling only. Engine names are
 re-exported unchanged.
@@ -12,10 +12,10 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import extracellular_face_transport as _faces
+from cells.legacy.processes import extracellular_face_transport as _faces
 
 globals().update({k: v for k, v in vars(_faces).items() if not k.startswith("__")})
-from cells.processes.extracellular_face_transport import (  # noqa: E402
+from cells.legacy.processes.extracellular_face_transport import (  # noqa: E402
     _field,
     _fields,
     _number,

@@ -22,8 +22,8 @@ from cells.core.specs import ChannelChange, ConfigError, parse_spec
 from cells.core.state import initialise
 from cells.core.windows import WindowPolicy, iter_windows, plan_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import multispecies_membrane as ionic
-from cells.models import voltage_gated_membrane as model
+from cells.legacy.models import multispecies_membrane as ionic
+from cells.legacy.models import voltage_gated_membrane as model
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.processes.voltage_gates import kinetics
 from tests import reference_voltage_gated_channel as reference

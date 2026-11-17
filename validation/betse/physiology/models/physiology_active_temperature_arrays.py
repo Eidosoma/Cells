@@ -12,10 +12,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from cells.core.schedule import SurfaceCalciumControl, SurfaceKineticControl
-from cells.core.surface_calcium_energy_spec import Control as FuelControl
-from cells.models import surface_calcium as calcium
-from cells.models import surface_calcium_energy as fuel
-from cells.models.kinetic_finite_extracellular import pump_parameters
+from cells.legacy.core.surface_calcium_energy_spec import Control as FuelControl
+from cells.legacy.models import surface_calcium as calcium
+from cells.legacy.models import surface_calcium_energy as fuel
+from cells.legacy.models.kinetic_finite_extracellular import pump_parameters
 from cells.numerics import surface_transport
 from cells.numerics.extracellular_field import scatter
 from cells.processes import kinetic_pump

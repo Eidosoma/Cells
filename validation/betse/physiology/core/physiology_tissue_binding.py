@@ -14,11 +14,11 @@ from numbers import Real
 
 import numpy as np
 
-from cells.core import surface_calcium_energy_spec as fuel
-from cells.core import surface_calcium_spec as calcium
 from cells.core import surface_kinetic_spec as ionic
 from cells.core import surface_tissue_spec as passive
 from cells.core.specs import SimulationSpec
+from cells.legacy.core import surface_calcium_energy_spec as fuel
+from cells.legacy.core import surface_calcium_spec as calcium
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

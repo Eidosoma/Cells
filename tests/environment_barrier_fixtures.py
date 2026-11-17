@@ -3,8 +3,8 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import environment_barrier_preparation as preparation
-from cells.core.environment_barrier_interventions_spec import MODEL_ID
+from cells.legacy.core import environment_barrier_preparation as preparation
+from cells.legacy.core.environment_barrier_interventions_spec import MODEL_ID
 from validation.transport import environment_barrier_interventions_fixtures as fixtures
 
 

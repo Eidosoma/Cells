@@ -9,9 +9,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_spec as old_fuel
-from cells.core import surface_calcium_spec as old_calcium
 from cells.core.specs import ConfigError, SimulationSpec
+from cells.legacy.core import surface_calcium_energy_spec as old_fuel
+from cells.legacy.core import surface_calcium_spec as old_calcium
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_open_calcium import OWNERS, control, setup
 from validation.tissue import open_calcium_fixtures as fixtures
@@ -249,11 +249,11 @@ def _moved_back(node, root):
     "path,expected",
     (
         (
-            "src/cells/core/surface_calcium_spec.py",
+            "src/cells/legacy/core/surface_calcium_spec.py",
             "55e7d3dd78fd8dad1e56e562feacef3aa02af7e5dfacbb093f6581b48ecf302d",
         ),
         (
-            "src/cells/core/surface_calcium_energy_spec.py",
+            "src/cells/legacy/core/surface_calcium_energy_spec.py",
             "ab7840fce6131206ab3ea5a0d16914a7ecb5d5ae1cd243a80b75be59893b4aaf",
         ),
     ),

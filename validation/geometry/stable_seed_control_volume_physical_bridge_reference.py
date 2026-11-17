@@ -30,13 +30,13 @@ CONSTRUCTOR_SOURCE_REVIEW_SHA256 = (
 )
 POLYGON_REFERENCE_SHA256 = "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8"
 SOURCE_PINS = {
-    "core/conservative_polygon_tissue_preparation.py": (
+    "legacy/core/conservative_polygon_tissue_preparation.py": (
         "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039"
     ),
     "processes/conservative_polygon_geometry.py": (
         "48d564c30d48aa8cb0980ec43f16696ef5a77e6de50a5c448f7ff635a9735e0d"
     ),
-    "processes/stable_seed_control_volumes.py": (
+    "legacy/processes/stable_seed_control_volumes.py": (
         "25fb1c11d90a577be4a2e725b42850ca2c786fb4c89f9abf5b00f0b0842eccec"
     ),
 }

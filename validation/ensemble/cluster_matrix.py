@@ -11,10 +11,10 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from cells.assembly_cluster.spec import parse_spec
 from cells.core.output_paths import within_output_root
 from cells.ensemble.cli import read, sha, sources, write
 from cells.ensemble.plan import plan
+from cells.legacy.assembly_cluster.spec import parse_spec
 
 ARMS = {
     "dynamic": "baseline",

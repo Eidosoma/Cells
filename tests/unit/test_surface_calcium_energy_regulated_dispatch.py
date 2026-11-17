@@ -23,12 +23,12 @@ from tests.unit.test_surface_kinetic import exact
 # Each version's definition and model modules, named in full (D188 R2).
 REGULATED = {
     1: (
-        "cells.core.surface_calcium_energy_regulated_spec",
-        "cells.models.surface_calcium_energy_regulated",
+        "cells.legacy.core.surface_calcium_energy_regulated_spec",
+        "cells.legacy.models.surface_calcium_energy_regulated",
     ),
     2: (
-        "cells.core.surface_calcium_energy_regulated_v2_spec",
-        "cells.models.surface_calcium_energy_regulated_v2",
+        "cells.legacy.core.surface_calcium_energy_regulated_v2_spec",
+        "cells.legacy.models.surface_calcium_energy_regulated_v2",
     ),
 }
 
@@ -105,10 +105,12 @@ def test_distinct_regulation_versions_cannot_share_one_compiled_cohort():
 
 # The model module each existing family dispatches to, named in full (D188 R2).
 FAMILY_MODELS = {
-    "surface_calcium_energy_hcn_extra": "cells.models.surface_calcium_energy_hcn_extra",
-    "surface_calcium_energy_transport": "cells.models.surface_calcium_energy_transport",
-    "surface_calcium_energy_mitochondria": "cells.models.surface_calcium_energy_mitochondria",
-    "surface_calcium_energy_water": "cells.models.surface_calcium_energy_water",
+    "surface_calcium_energy_hcn_extra": "cells.legacy.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_transport": "cells.legacy.models.surface_calcium_energy_transport",
+    "surface_calcium_energy_mitochondria": (
+        "cells.legacy.models.surface_calcium_energy_mitochondria"
+    ),
+    "surface_calcium_energy_water": "cells.legacy.models.surface_calcium_energy_water",
 }
 
 

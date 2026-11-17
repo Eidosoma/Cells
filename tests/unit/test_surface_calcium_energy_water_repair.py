@@ -9,9 +9,9 @@ from cells.core.errors import NumericalError
 from cells.core.runner import timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_calcium_energy_water_repair_spec import base_spec
-from cells.models import surface_calcium_energy_water as parent
-from cells.models import surface_calcium_energy_water_repair as model
+from cells.legacy.core.surface_calcium_energy_water_repair_spec import base_spec
+from cells.legacy.models import surface_calcium_energy_water as parent
+from cells.legacy.models import surface_calcium_energy_water_repair as model
 from cells.models.registry import get_model
 from tests.unit.test_surface_calcium_energy_water import changed as change_parent
 from tests.unit.test_surface_catalog import evidence

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from cells.models import surface_repair as model
+from cells.legacy.models import surface_repair as model
 from validation.tissue import surface_repair_fixtures as short
 from validation.tissue import surface_repair_recovery as ordinary
 

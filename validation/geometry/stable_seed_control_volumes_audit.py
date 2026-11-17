@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_control_volumes.py"
+CORE = "src/cells/legacy/processes/stable_seed_control_volumes.py"
 REFERENCE = "validation/geometry/stable_seed_control_volumes_reference.py"
 PARENT = Path("/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-prepared-20261031-03")
 PARENT_SHA256 = "39c7dae39a44409cd83cf352d60f98ae5a96133537b51549296d611ff66522f9"

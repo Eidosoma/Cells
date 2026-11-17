@@ -25,18 +25,24 @@ def run(bundle, job_id, output, dependency_runs=None):
         protocol, job, raw = artifact.load_job(bundle, job_id, "production")
         parents = artifact.dependencies(bundle, job, dependency_runs)
         if job["family"] == "calcium":
-            from cells.core import surface_open_calcium_bath_epoch_spec as epoch_schema
-            from cells.core import surface_open_calcium_bath_events_spec as ordinary_schema
-            from cells.models import surface_open_calcium_bath_epoch as epoch_model
-            from cells.models import surface_open_calcium_bath_events as ordinary_model
+            from cells.legacy.core import surface_open_calcium_bath_epoch_spec as epoch_schema
+            from cells.legacy.core import surface_open_calcium_bath_events_spec as ordinary_schema
+            from cells.legacy.models import surface_open_calcium_bath_epoch as epoch_model
+            from cells.legacy.models import surface_open_calcium_bath_events as ordinary_model
         else:
-            from cells.core import surface_open_calcium_energy_bath_epoch_spec as epoch_schema
-            from cells.core import surface_open_calcium_energy_bath_events_spec as ordinary_schema
-            from cells.models import surface_open_calcium_energy_bath_epoch as epoch_model
-            from cells.models import surface_open_calcium_energy_bath_events as ordinary_model
+            from cells.legacy.core import (
+                surface_open_calcium_energy_bath_epoch_spec as epoch_schema,
+            )
+            from cells.legacy.core import (
+                surface_open_calcium_energy_bath_events_spec as ordinary_schema,
+            )
+            from cells.legacy.models import surface_open_calcium_energy_bath_epoch as epoch_model
+            from cells.legacy.models import (
+                surface_open_calcium_energy_bath_events as ordinary_model,
+            )
         source = None
         if job.get("parent"):
-            from cells.core import open_calcium_bath_phase_handoff as bridge
+            from cells.legacy.core import open_calcium_bath_phase_handoff as bridge
 
             source = parents[job["parent"]]
             record = source["record"]

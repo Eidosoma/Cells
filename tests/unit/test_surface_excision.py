@@ -14,12 +14,12 @@ from cells.core.runner import run, timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import Checkpoint, initialise
-from cells.core.surface_excision_spec import MODEL_ID, base_spec
-from cells.core.tissue_excision import capture_source, decode_source, excise
 from cells.core.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
-from cells.excision_io import load_excision, write_excision
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_excision as model
+from cells.legacy.core.surface_excision_spec import MODEL_ID, base_spec
+from cells.legacy.core.tissue_excision import capture_source, decode_source, excise
+from cells.legacy.excision_io import load_excision, write_excision
+from cells.legacy.models import surface_excision as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_surface_catalog import evidence

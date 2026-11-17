@@ -3,11 +3,11 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import surface_calcium_energy_profile_barrier_interventions_spec as energy
-from cells.core import surface_calcium_profile_barrier_interventions_spec as calcium
-from cells.models import surface_calcium_energy_profile_barrier_interventions as energy_model
-from cells.models import surface_calcium_profile_barrier_interventions as calcium_model
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
+from cells.legacy.core import surface_calcium_energy_profile_barrier_interventions_spec as energy
+from cells.legacy.core import surface_calcium_profile_barrier_interventions_spec as calcium
+from cells.legacy.models import surface_calcium_energy_profile_barrier_interventions as energy_model
+from cells.legacy.models import surface_calcium_profile_barrier_interventions as calcium_model
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from validation.transport import owned_calcium_profile_barrier_fixtures as fixtures
 
 DT = 1e-9

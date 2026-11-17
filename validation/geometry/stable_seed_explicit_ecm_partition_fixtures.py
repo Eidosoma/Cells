@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from cells.processes import stable_seed_explicit_ecm_partition as constructor
+from cells.legacy.processes import stable_seed_explicit_ecm_partition as constructor
 
 CASES = ("one-cell", "unequal-clefts", "two-cells", "four-cells", "translated-cell")
 BASE = "one-cell"

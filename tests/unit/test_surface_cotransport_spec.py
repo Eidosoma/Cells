@@ -5,13 +5,13 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from cells.core import surface_cotransport_spec as schema
-from cells.core import surface_energy_spec as energy
 from cells.core.runner import timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble.families import parse_definition, population
-from cells.models import surface_cotransport as model
+from cells.legacy.core import surface_cotransport_spec as schema
+from cells.legacy.core import surface_energy_spec as energy
+from cells.legacy.models import surface_cotransport as model
 from cells.models.registry import get_model
 from validation.tissue import surface_cotransport_fixtures as fixtures
 

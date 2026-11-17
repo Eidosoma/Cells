@@ -11,9 +11,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import geometry_tissue_preparation as bridge
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import geometry_tissue_preparation as bridge
 from cells.models import surface_tissue as model
 from validation.geometry import geometry_tissue_preparation_fixtures as fixtures
 from validation.geometry import geometry_tissue_preparation_reference as reference

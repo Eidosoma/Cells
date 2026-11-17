@@ -13,9 +13,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells import tissue_geometry as cli
-from cells.core import geometry_tissue_preparation as bridge
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy import tissue_geometry as cli
+from cells.legacy.core import geometry_tissue_preparation as bridge
 from cells.models import surface_tissue as model
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,11 +32,11 @@ def refuse_external_capture(event, arguments):
                             '/mnt/workspaces/Cells/geometry-tissue-preparation-')):
             raise RuntimeError('Portable CLI attempted an external geometry read: ' + path)
 sys.addaudithook(refuse_external_capture)
-sys.argv = ['cells.tissue_geometry', *sys.argv[1:]]
+sys.argv = ['cells.legacy.tissue_geometry', *sys.argv[1:]]
 if entry := os.environ.get('CELLS_GEOMETRY_CLI_PATCHED_MAIN'):
     runpy.run_path(entry, run_name='__main__')
 else:
-    runpy.run_module('cells.tissue_geometry', run_name='__main__')
+    runpy.run_module('cells.legacy.tissue_geometry', run_name='__main__')
 """
 
 
@@ -248,7 +248,7 @@ def test_malformed_requests_fail_cleanly_without_output(fault, tmp_path, capsys)
     captured = capsys.readouterr()
     assert (
         captured.out == ""
-        and "cells.tissue_geometry:" in captured.err
+        and "cells.legacy.tissue_geometry:" in captured.err
         and "Traceback" not in captured.err
     )
     assert not output.exists()

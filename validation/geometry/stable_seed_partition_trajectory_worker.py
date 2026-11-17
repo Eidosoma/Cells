@@ -68,7 +68,7 @@ def launch(payload, directory, *, input_path):
         authority = {name: Path(path).read_text() for name, path in index["authority"].items()}
         authority_gate.require(authority, phase="trajectory")
         # No production imports before complete prerequisite authentication.
-        from cells.processes import stable_seed_partition_trajectory as trajectory
+        from cells.legacy.processes import stable_seed_partition_trajectory as trajectory
 
         request = trajectory.from_index(
             index, payload["case_id"], refusal_id=payload.get("refusal_id")

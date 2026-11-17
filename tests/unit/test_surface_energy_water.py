@@ -10,10 +10,10 @@ import pytest
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
-from cells.core.surface_energy_water_spec import energy_spec
-from cells.models import surface_energy as energy
-from cells.models import surface_energy_water as model
-from cells.models import surface_water as water
+from cells.legacy.core.surface_energy_water_spec import energy_spec
+from cells.legacy.models import surface_energy as energy
+from cells.legacy.models import surface_energy_water as model
+from cells.legacy.models import surface_water as water
 from cells.processes.electrochemistry import R
 from validation.chemistry import finite_energy_reference as chemistry
 from validation.tissue import surface_energy_water_fixtures as fixtures

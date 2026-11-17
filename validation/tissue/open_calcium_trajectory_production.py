@@ -22,11 +22,11 @@ def run(bundle, job_id, output):
         bundle = Path(bundle).resolve()
         protocol, job, raw = artifact.load_job(bundle, job_id, "production")
         if job["family"] == "calcium":
-            from cells.core import surface_open_calcium_spec as schema
-            from cells.models import surface_open_calcium as model
+            from cells.legacy.core import surface_open_calcium_spec as schema
+            from cells.legacy.models import surface_open_calcium as model
         else:
-            from cells.core import surface_open_calcium_energy_spec as schema
-            from cells.models import surface_open_calcium_energy as model
+            from cells.legacy.core import surface_open_calcium_energy_spec as schema
+            from cells.legacy.models import surface_open_calcium_energy as model
 
         spec = schema.parse(raw)
         state, layout = model.initial_values(spec)

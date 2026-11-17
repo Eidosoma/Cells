@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+CORE = "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py"
 FINITE = Path("/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01")
 FINITE_SHA256 = "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f"
 ECM = Path("/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-prepared-20261031-02")
@@ -274,7 +274,7 @@ def independent_source(project, inventory):
     reconstructed_caller.name = "declaration"
     reconstructed_caller.body.pop(0)
     upstream = ast.parse(
-        (project / "src/cells/processes/stable_seed_explicit_ecm_partition.py").read_bytes()
+        (project / "src/cells/legacy/processes/stable_seed_explicit_ecm_partition.py").read_bytes()
     )
 
     class CallerMetadataConstants(ast.NodeTransformer):
@@ -549,7 +549,7 @@ def audit(project):
     )
     schema = ast.parse((project / "src/cells/core/surface_tissue_spec.py").read_bytes())
     admission = ast.parse(
-        (project / "src/cells/core/finite_ecm_polygon_preparation.py").read_bytes()
+        (project / "src/cells/legacy/core/finite_ecm_polygon_preparation.py").read_bytes()
     )
     assert "check_definition" in calls(function(schema, "parse"))
     assert "schema.parse" in calls(function(admission, "prepare"))
