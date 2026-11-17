@@ -6622,3 +6622,97 @@ answers.
 
 These are normal design tasks. They do not require a new language-selection
 discussion or prevent the next independent implementation work.
+
+## D204: Molecular machines go on the engine's backlog (FR-13)
+
+2026-11-17. The visualizer session relayed the user's request:
+- a "Machines" tab in the viewer, cataloguing molecular machines per species as the proteins were;
+- modelling the machines put on the engine's backlog.
+
+The user confirmed it to the lead, "yes new feature request from me", and added:
+> "only thing with the machines, if there is something missing in our core archtecture or if they can
+> be naturally modeled there"
+
+> "and we'd to be able to model them both individuall and in aggregate in a cell or whatever, LODs
+> based on what is being looked at"
+
+- **[FR-13](FEATURE_REQUESTS.md#fr-13--molecular-machines-individually-and-in-aggregate) records the
+  request.** Its scope stands on D140: assembly, not folding.
+- **The first step is a read-only design note.** It answers the user's question: can the core
+  architecture model machines naturally, individually and in aggregate, with the level of detail set
+  by what is looked at, or what is missing?
+  - It presents options.
+  - Nothing is built before the user has discussed them.
+- **The tab and its catalogue are the viewer's own data,** under D173, D178, D186 and D201. Its
+  fields follow what a declared model carries, once one exists.
+
+## D205: Declared extension goes on the backlog (FR-14)
+
+2026-11-17. The user asked: "one question is it possible to extend a model or an operator, like object
+oriently?" The lead answered from the code: subclasses register under new IDs, but the engine does not
+record or check an extension. The user then said: "cool get also adviser in on this so put the oo
+extension on the backlog".
+
+- **[FR-14](FEATURE_REQUESTS.md#fr-14--declared-extension-of-laws-operators-and-models) records it.** It
+  holds what was verified at seam F's registry head and the three missing pieces: a declared extends
+  link, inherited checks, and version rules.
+- **FR-13's design note covers it,** since machines are its likely first use. No separate note is
+  written.
+
+## D206: The laws in D198's retire batch are transformed into the new engine, even unused
+
+2026-11-17. The lead listed the eight capabilities that D198's batch drops, none of them transformed.
+The user answered within the window the lead gave: "so those old models, we should transform those laws
+even if we don't use them yet", then "if that makes sense". This amends D198, whose rule was "transform
+them into the new engine if necessary".
+
+- **The retire batch is held out of landing.** Branch `retire-processes`, at 81a96128, stays as gated
+  until the split below is agreed.
+- **Scope: the eight capabilities of D198's batch.** Whether the same applies to `legacy/`'s laws is the
+  user's call; D196 stands until then.
+- **The lead's proposal, made with the advisor, is put to the user.** Nothing is built before the user
+  agrees.
+  - **Physical laws** in the batch go onto seam F's law template now. Each one gets:
+    - one reference check, against saved outputs of the old code run from a frozen snapshot, not
+      against the old test files;
+    - its old status carried over: charged-surface work, for example, was "held, never released";
+    - a visible "not qualified" status in the manifest and the library.
+  - **Numerical methods and geometry machinery** (meshes, polygons, control volumes, partitions) wait
+    for the engine's own geometry design, instead of being ported as they are.
+  - **Kernels that carry BETSE's conventions** enter `src/cells` only under neutral names, with a
+    citation.
+- **A classification table of the batch's 33 source modules is being made, read-only.** For each
+  module it gives the class (law, method or machinery) and what the modular engine already covers.
+- **The user agreed the split** the same day: "yes, the levin work has highest priority as we want to
+  use that as an example in the viz, machinery can wait for sure".
+  - The batch's laws go onto seam F's template, after the classification table, at a lower priority
+    than the gap-junction replication (D207).
+  - The machinery waits for the engine's geometry design.
+  - `legacy/` stays under D196 unless the user extends this.
+
+## D207: The gap-junction replication has the highest priority
+
+2026-11-17. The user: "the levin work has highest priority as we want to use that as an example in the
+viz". The work replicates, with the Cells engine, the experiment of the public bioRxiv preprint
+10.64898/2026.09.02.748840, which was made with BITSEY. It is on branch `gap-junction-replication`.
+
+- **Its jobs have first claim on CPUs 6, 7, 22 and 23,** at nice 0 while other light work stays at
+  nice 10. It takes lane A when it needs dedicated cores.
+- **Its runs are designed to be shown in the viewer as an example.** The format is agreed with the
+  visualizer session. Anything shown is published from a stated run with its revision, and a
+  development run is labelled not judged.
+- **Lead's note, not part of the user's decision:** FR-4's and FR-5's judged run, already queued on lane
+  B, is not interrupted.
+
+## D208: Numbers from BITSEY's code and logs may be used, cited
+
+2026-11-17. The gap-junction replication found that BITSEY's repository carries no licence. It asked
+whether numbers from BITSEY's code and logs may be used: the Cx45 gate constants and Table 3's
+provenance. The user: "its fine on BITSEY code we are MIT here".
+
+- **Numbers from BITSEY's code and logs may be used,** each cited to the repository and the commit
+  read.
+- **AGENTS.md stands.** BITSEY's code is never copied or imported into Cells. It may be run out of
+  process, in its own environment, as a reference; that is proposed to the lead first.
+- **Lead's note:** downloaded copies of BITSEY stay under /mnt/workspaces and are never committed.
+

@@ -1,8 +1,10 @@
 """cells.modules, the provisional import surface (docs/CORE_SEAMS_DESIGN.md §8.5; D195; seam F).
 
-- It re-exports exactly §8.5's names that exist today (with Citation, the lead's addition), each
-  the internal object itself, imported from where it lives and never copied (planted: a surface
-  holding one copied constant and one wrapped helper, which the same check must catch).
+- It re-exports exactly §8.5's names that exist today (with Citation, the lead's addition, and
+  the templates a family builds its own interfaces on, Law and FamilyOperator: §15), each the
+  internal object itself, imported from where it lives and never copied (planted: a surface
+  holding one copied constant and one wrapped helper, which the same check must catch). A
+  registration entry stays module stage 1's, fenced.
 - It says "provisional" where contributors read it.
 - KindRates lives in the kind contract, and @3's module re-exports the same object.
 """
@@ -15,7 +17,16 @@ from cells.core import kind_registry
 from cells.models import surface_pump_v3
 
 HOMES = {  # Each name's own module: where it is defined.
-    "cells.registry.laws": ("ChannelLaw", "CycleLaw", "RouteLaw", "BindingLaw", "Citation"),
+    "cells.registry.laws": (
+        "Law",
+        "ChannelLaw",
+        "CycleLaw",
+        "RouteLaw",
+        "BindingLaw",
+        "Citation",
+        "CitedWork",
+    ),
+    "cells.registry.operators": ("FamilyOperator",),
     "cells.core.kind_registry": (
         "Kind",
         "KindFields",

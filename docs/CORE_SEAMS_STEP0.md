@@ -1002,3 +1002,31 @@ sets and planted controls):
   basis.
 - **A parse-time Wegscheider check per Hill cycle** (ln(Π⁺/Π⁻) + ΔG/RT = 0) catches O'Hara–Rudy's
   charge error exactly. A population-total check misses it.
+
+## 8. P1's result (17 November 2026)
+
+P1 ran unchanged against §5.2 and its amendments, from a frozen snapshot of main 2bb3e0a4, which is
+identical in code to ef9fc1a8. It ran on the gate lane under its lock, 13:57–14:01 UTC. Evidence:
+`/mnt/workspaces/Cells/core-seams-step0-20261117/p1_result_note_20261117.md` and `probes/out/`.
+
+- **Neither compared check ever refused,** not the per-stage rule and not the energy ledger. Other
+  checks refuse first:
+  - **Host C:** admitted at rungs 0.01 and 0.02, with second-order error (×4.03, 4.5e-6 and 1.8e-5
+    of the offset). Refused at step 0 from 0.05, by the step's validity flag. Refused before
+    stepping from 0.5, by the transporter's explicit-rate bound, which caps the ladder at 0.289.
+  - **Host P:** admitted at 0.01. Refused at step 0 from 0.02. Refused before stepping from 0.2, by
+    the face term's bound, which caps it at 0.108.
+- **Branch X, the exact charged booking, is not built, by the committed rule.** This is a weak no:
+  the ledger was observed only up to rung 0.02. Host C's ledger stayed under 0.2% of its tolerance
+  there. The trapezoid stays the plan for channels and cycles. A rerun on the same ladder, after
+  the gap below is fixed, can only return "ledger first" or "neither".
+- **An engine gap, named after the run** (`surface_pump_v3.imex_step`, main lines 1098–1102).
+  - At every active outside node, the face-weight predictor requires a positive value: the stage
+    read's amount plus θ·dt times the stored amount's derivative.
+  - At a buffered node the read is the *free* proton amount, while the derivative is that of the
+    stored proton *equivalents*.
+  - So the check fails once θ·dt of pumping exceeds the free pool, although the buffer holds about
+    38,000 times more. Here that is dt > 3.37 µs.
+  - This caps explicit steps wherever a route draws protons from a buffered outside node. It
+    matters for mitochondria and for strong proton pumps.
+  - It goes to seam C (the binding closure) and @3's owner. No fix is proposed yet.
