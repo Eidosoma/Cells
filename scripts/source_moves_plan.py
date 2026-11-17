@@ -21,6 +21,7 @@ PYTHONPATH=src:. :
   python scripts/source_moves_plan.py classes --out DIR --g1 G1_MERGED_DIR
   python scripts/source_moves_plan.py reach|move1|move2 --out DIR
   python scripts/source_moves_plan.py pins --out DIR [--report SCAN_JSON ...]
+  python scripts/source_moves_plan.py selftest   (move_set's rules on planted cases)
 """
 
 import argparse
@@ -289,29 +290,57 @@ def _packages(pairs, existing=()):
     return dict(sorted(packages.items()))
 
 
+def move_set(c, reached, index, edges):
+    """Move 1's modules and how each rule placed them. The rules:
+      - older families' modules the active path does not reach (by name), and the modules
+        reached only from them or importing them (classes), move;
+      - kept: a module that is not an older family's own (definition or model) module and that
+        a module the active path reaches imports, anywhere in it, stays: what the core imports
+        is the core's (surface_kinetic_spec's parse, which the older families still run from
+        the core, needs its junction parser; cav_channels' CaV kinetics need calcium_gates).
+        An older family's module imported so is a coupling, for a refactor before the move;
+      - pulled: a module that imports a moved module moves, unless it is kept or reached.
+    The dispatch points never move (R1 refactors them) and their imports keep nothing."""
+    family = set(c["legacy"])
+    kept, _ = li.closure(sorted(reached - CHAINS), edges, stop=family, leaves=CHAINS)
+    kept = {m for m in kept if m.startswith("cells")} | (reached - CHAINS)
+    fixed = kept | reached | CHAINS
+    moved = (family | set(c["private"]) | set(c["side"])) - fixed
+    cells = sorted(m for m in index if m.startswith("cells"))
+    notes = dict(pulled_in_by_importers=[])
+    changed = True
+    while changed:
+        changed = False
+        for m in cells:
+            if m in moved or m in fixed:
+                continue
+            why = None
+            if {t for t in edges.get(m, {}) if t.startswith("cells")} & moved:
+                why = "pulled_in_by_importers"
+            if why:
+                moved.add(m)
+                notes[why].append(m)
+                changed = True
+    notes["kept_imported_by_the_core"] = sorted(
+        m for m in kept - reached if m in family | set(c["private"]) | set(c["side"])
+    )
+    return moved, notes
+
+
 def move1(args):
     """Move 1's draft: older families' modules the active path does not reach, then their
-    importers, except the dispatch points."""
+    importers, except the dispatch points (move_set has the rules)."""
     c = _load(args.out, "classes.json")
     r = _load(args.out, "reach.json")
     reached = {m for m, x in r.items() if x["status"] != "unreached"}
     index = li.module_index()
     edges = li.graph(index)
-    legacy = (set(c["legacy"]) | set(c["private"]) | set(c["side"])) - reached - CHAINS
-    pulled, changed = [], True
-    while changed:
-        changed = False
-        for m in sorted(index):
-            if not m.startswith("cells") or m in legacy or m in CHAINS or m in reached:
-                continue
-            if {t for t in edges.get(m, {}) if t.startswith("cells")} & legacy:
-                legacy.add(m)
-                pulled.append(m)
-                changed = True
+    legacy, notes = move_set(c, reached, index, edges)
+    pulled = notes["pulled_in_by_importers"]
     couplings = [
         [m, sorted(t for t in edges.get(m, {}) if t in legacy)]
-        for m in sorted(reached)
-        if m not in CHAINS and set(edges.get(m, {})) & legacy
+        for m in sorted(x for x in index if x.startswith("cells"))
+        if m not in legacy and m not in CHAINS and set(edges.get(m, {})) & legacy
     ]
     chains = {ch: sorted(t for t in edges.get(ch, {}) if t in legacy) for ch in sorted(CHAINS)}
     pairs = [[m, "cells.legacy." + m.removeprefix("cells.")] for m in sorted(legacy)]
@@ -330,7 +359,7 @@ def move1(args):
         keep=[],
         reviewed=[],
         draft_notes=dict(
-            pulled_in_by_importers=pulled,
+            **notes,
             reached_modules_importing_moved=couplings,
             dispatch_points=chains,
         ),
@@ -555,19 +584,98 @@ def pins(args):
     print(json.dumps({k: (len(v) if isinstance(v, list) else v) for k, v in summary.items()}))
 
 
+# ------------------------------------------------------------------ planted cases
+
+
+def _graph(spec):
+    """A synthetic tree for move_set: {module: [imports]}, packages named with a trailing '/'."""
+    index, edges = {}, {}
+    for name, targets in spec.items():
+        module = name.rstrip("/")
+        tail = "/__init__.py" if name.endswith("/") else ".py"
+        index[module] = Path("src/" + module.replace(".", "/") + tail)
+        edges[module] = {t: ([], "import") for t in targets}
+    return index, edges
+
+
+def couplings_of(moved, edges, cells):
+    """[(module, [moved modules it imports])] of the modules that stay, dispatch points apart."""
+    return [
+        (m, sorted(t for t in edges.get(m, {}) if t in moved))
+        for m in sorted(cells)
+        if m not in moved and m not in CHAINS and set(edges.get(m, {})) & moved
+    ]
+
+
+def selftest(args):
+    """move_set's rules on a synthetic tree, each with a planted case it must catch."""
+    index, edges = _graph(
+        {
+            "cells/": [],
+            "cells.core/": [],
+            "cells.core.specs": ["cells.core.old_spec"],  # A dispatch point: keeps nothing.
+            "cells.core.old_spec": ["cells.models.old_model"],  # An older family's definition.
+            "cells.models/": [],
+            "cells.models.old_model": ["cells.processes.law", "cells.processes.only_old"],
+            "cells.core.shared_spec": ["cells.processes.law", "cells.core.old_spec"],
+            "cells.processes/": [],
+            "cells.processes.law": [],  # Reached only from older families, imported by the core.
+            "cells.processes.only_old": [],  # Reached only from older families.
+            "cells.core.helper": ["cells.models.old_model"],  # Imports a moved module.
+        }
+    )
+    c = dict(
+        legacy=["cells.core.old_spec", "cells.models.old_model", "cells.core.shared_spec"],
+        private=["cells.processes.law", "cells.processes.only_old"],
+        side=[],
+    )
+    reached = {"cells.core.shared_spec", "cells.core.specs", "cells", "cells.core"}
+    moved, notes = move_set(c, reached, index, edges)
+    cells = [m for m in index if m.startswith("cells")]
+    checks = {
+        "an unreached family module moves": "cells.core.old_spec" in moved,
+        "a reached family module stays": "cells.core.shared_spec" not in moved,
+        "kept: a non-family module the core imports stays": "cells.processes.law" not in moved
+        and notes["kept_imported_by_the_core"] == ["cells.processes.law"],
+        "a module only older families reach moves": "cells.processes.only_old" in moved,
+        "pulled: an importer of a moved module moves": "cells.core.helper" in moved
+        and notes["pulled_in_by_importers"] == ["cells.core.helper"],
+        "a family module the core imports is a coupling, not kept": couplings_of(
+            moved, edges, cells
+        )
+        == [("cells.core.shared_spec", ["cells.core.old_spec"])],
+        "a dispatch point neither moves nor keeps": "cells.core.specs" not in moved,
+    }
+    # The planted control: without the rule, the law moves and the core imports a moved module.
+    unkept = dict(c, private=c["private"])
+    moved_plain = (set(unkept["legacy"]) | set(unkept["private"])) - reached - CHAINS
+    checks["planted: without the keep rule the core would import a moved law"] = any(
+        "cells.processes.law" in t for _, t in couplings_of(moved_plain, edges, cells)
+    )
+    failed = [k for k, v in checks.items() if not v]
+    print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
+    return 1 if failed else 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("action", choices=["classes", "reach", "move1", "move2", "pins"])
-    parser.add_argument("--out", required=True)
+    parser.add_argument(
+        "action", choices=["classes", "reach", "move1", "move2", "pins", "selftest"]
+    )
+    parser.add_argument("--out")
     parser.add_argument("--g1", help="classes: a G1 run's merged folder (SET/WORLD.json)")
     parser.add_argument("--report", nargs="*", help="pins: source_moves.py scan reports")
     args = parser.parse_args(argv)
+    if args.action == "selftest":
+        return selftest(args)
+    if not args.out:
+        parser.error(f"{args.action} needs --out")
     if args.action == "classes" and not args.g1:
         parser.error("classes needs --g1")
     dict(classes=classes, reach=reach, move1=move1, move2=move2, pins=pins)[args.action](args)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
