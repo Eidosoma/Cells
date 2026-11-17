@@ -22,7 +22,9 @@ built on `Law`, which holds what every law declares:
 - B8's four optional fields (D175), reserved: a declaration that sets one is refused until their
   first consumer lands.
 Each interface's type adds its own fields after `law_id`, so today's declarations keep their
-fields and their positional order. The template's own fields are keyword-only.
+fields and their positional order. The template's own fields are keyword-only. Each type also
+states, as class constants, the units (UNITS) and signs (SIGNS) of its own fields, which the
+declarations manifest (registry/declarations.py) writes out.
 
 **The interfaces:**
 - `cells.channel_law@1`, `ChannelLaw`: a channel population's law on @3
@@ -55,6 +57,7 @@ type built on `Law`. The `cells` interfaces are only those above.
 import importlib
 import math
 import re
+import sys
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -138,6 +141,8 @@ class Law:
     qualified: object = None
 
     interface: ClassVar[str | None] = None
+    UNITS: ClassVar = MappingProxyType({})  # {own field: unit}
+    SIGNS: ClassVar = MappingProxyType({})  # {own field: its sign convention}
 
     def errors(self):
         """Why this declaration breaks the template (empty: it keeps it)."""
@@ -210,6 +215,7 @@ class ChannelLaw(Law):
     loop_term: object = None
 
     interface: ClassVar[str] = CHANNEL_LAW
+    UNITS: ClassVar = MappingProxyType({"voltage_domain_V": "V", "rk4_step_s": "s"})
 
     @property
     def gated(self):
@@ -275,6 +281,7 @@ class CycleLaw(Law):
     loop_term: str | None = None
 
     interface: ClassVar[str] = CYCLE_LAW
+    SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
 
     def errors(self):
         out = super().errors() + _callables(self, "kinetics", "domain_valid")
@@ -355,6 +362,7 @@ class JunctionLaw(Law):
     max_abs_voltage_V: float
 
     interface: ClassVar[str] = JUNCTION_LAW
+    UNITS: ClassVar = MappingProxyType({"max_abs_voltage_V": "V"})
 
     def errors(self):
         out = super().errors() + _callables(self, "kinetics", "rhs", "domain_valid")
@@ -382,10 +390,12 @@ class LawRegistry:
 
     def __init__(self):
         self._laws = {}
+        self._modules = {}  # {namespaced ID: the module that registered it}
 
     def register(self, law):
         """The one registration call: `law` checked against the template, then held under its
-        namespaced ID. Returns the law."""
+        namespaced ID, with the module that called this (its declaring module, for the
+        declarations manifest). Returns the law."""
         if not isinstance(law, Law):
             raise ValueError(f"A law's declaration is built on the template (Law), not {law!r}")
         problems = law.errors()
@@ -417,7 +427,12 @@ class LawRegistry:
                         "are distinct)"
                     )
         self._laws[key] = law
+        self._modules[key] = sys._getframe(1).f_globals.get("__name__")
         return law
+
+    def module(self, law_id):
+        """The module that registered a law (its declaring module), or None."""
+        return self._modules.get(qualified(law_id))
 
     def lookup(self, law_id):
         key = qualified(law_id)
@@ -443,9 +458,16 @@ class LawRegistry:
         `laws`; this one is unchanged."""
         if self is BUILTIN:
             _load_builtins()
+        caller = sys._getframe(1).f_globals.get("__name__")
         out = LawRegistry()
-        for law in (*self._laws.values(), *laws):
+        for law in self._laws.values():
             out.register(law)
+        out._modules.update(self._modules)  # Each copied law keeps its declaring module.
+        for law in laws:
+            new = qualified(law.law_id) not in out._laws
+            out.register(law)
+            if new:
+                out._modules[qualified(law.law_id)] = caller
         return out
 
 
