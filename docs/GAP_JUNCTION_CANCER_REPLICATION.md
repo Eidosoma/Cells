@@ -751,6 +751,20 @@ and `search.json`).
 - They are picks chosen before the run. Most other D values in the search were refused by an
   engine check. They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s.
 
+**5. The rerun after FR-19's fix** (`runs/neither-02`; the user approved it on 17 November).
+Written before the rerun's search reaches any point.
+- From a clean snapshot of main at 1f4c740a, which carries FR-19's fix (merge 49494e49): the
+  passive routes' sign rule now has the raw-sum check's rounding floor. The search's code
+  (`search`, `evaluate`, `execute`, the worlds and `step`) is unchanged since `neither-01`.
+- Sections 7.1 and 7.2 hold unchanged: the model, criterion, bracket, tolerance, step rule,
+  agreement band, half-step rerun and the descriptive comparisons.
+- It is a comparison with BITSEY's log saved at b2cb370, written by an earlier revision of its
+  code. A refused point stops the search by its own rule, and is reported with its measurement.
+- **The tissue line after convergence**, fixed here: with x2 the reported threshold, three
+  `--record` arms at D = x2/2 (below), x2 (near) and 2 x2 (above), each at section 7's step
+  rule, with views and `criterion.json` (E/M/X). They replace no earlier pick; every refusal is
+  reported.
+
 ## 8. The next stage, for a next owner
 
 This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-junction-20261117/`.
