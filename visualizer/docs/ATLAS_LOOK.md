@@ -24,7 +24,7 @@ recommended, and built as the page's own (not the prototypes):
 2. **Look A.** Every marker, family and member takes the colour of its side: a family's line the side where most
    of its members sit (as the file states it; right for 96% of the human's proteins, 81% of the planarian's); a
    gathering its side's own colour too (paler, it fell under 3 : 1 as drawn), told by its dashed ring and its
-   name; what has no known side stays hollow and grey. What makes a machine Cells has a law for keeps
+   name; what has no known side stays hollow and grey. What makes a unit Cells has a law for keeps
    its machine's shape and its blue base. Light theme: plum `#57295d` beyond, violet `#4a4cd0` in, burnt orange
    `#a04600` enclosed; dark theme: rose `#efb9e4`, violet `#7c6cf2`, orange `#ef6c1a` (`src/page.css`, `--own-*`).
 3. **"Colour" in the legend** offers the side (the default), how the side is known, essentiality where a species

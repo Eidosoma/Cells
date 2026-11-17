@@ -12,12 +12,13 @@ has a plain-language line first and the technical detail after it.
 
 ## What it shows
 
-One data file, the scene, drawn through five lenses, each under a tab, in this order (the tabs' titles and their order were decided on 17 November 2026; the second place is kept for a view of molecular machines):
+One data file, the scene, drawn through six lenses, each under a tab, in this order (the tabs' titles and their order were decided on 17 November 2026):
 
 | Tab | What you see |
 | --- | --- |
 | **Scope** (the Cell view) | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
-| **Proteins** (the Protein atlas) | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
+| **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). The membrane units Cells has laws for stand in a tray of their own, as the Protein atlas lists them. All of it is illustration |
+| **Proteins** (the Protein atlas) | The units Cells has laws for, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each unit (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 | **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared says so, with no door. Its files link at the manifest's revision |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
@@ -120,7 +121,7 @@ others) atlases".
 
 A unit is a machine that a law acts on, so it has no species. The units drawn, their
 laws, their mapping and their shapes are the engine's and stay the same whichever species
-is shown. What changes is the gene products that would make each machine in that species,
+is shown. What changes is the gene products that would make each unit in that species,
 and how sure that is. Nothing here says the engine models a species' protein.
 
 - **The species list** is the page's one Species control, a drop-down in which the
@@ -245,7 +246,7 @@ must bve configurable as well based on our different species as we add them".
   machine, such as a beta subunit or a regulator, is a plain grey marker, and its panel
   says how the atlas found it and that it goes with the machine (`found_by`,
   `schema/SPECIES_PROTEINS.md`, since 16 November 2026). Every other protein is a plain
-  marker, and the page says Cells has no law for it. The card's switch moves between "Cells' 48 machines"
+  marker, and the page says Cells has no law for it. The card's switch moves between "Cells' 48 units"
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
   on the machines.
 - **Colour says the side** (the user, 16 November 2026, choosing the atlas's look: colour by
@@ -253,7 +254,7 @@ must bve configurable as well based on our different species as we add them".
   side of each one's own membrane: beyond it, in it, enclosed by it (a family by the side
   where most of its members sit); what has no known side is hollow and grey. "Colour" at
   the head of the legend also shows how each side is known, essentiality where the
-  species states it, and Cells' laws (one hue for what makes a machine Cells has a law
+  species states it, and Cells' laws (one hue for what makes a unit Cells has a law
   for). Each shelf's own words name its sides. A gathering takes its side's own colour
   and is told by its dashed ring and its name.
 - **Finding your way.** A trail above the picture says where you are (species, shelf,

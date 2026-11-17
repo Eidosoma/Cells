@@ -191,10 +191,10 @@ try {
   if (wants("atlas")) {
     await open("lens=proteins");
     await open(`lens=proteins&atlas=${await ownAtlas()}`);
-    // The order decided on 17 November 2026, by the views' ids (the Laws library and Experiments only where the scene holds them).
+    // The order decided on 17 November 2026, by the views' ids (Machines, the Laws library and Experiments only where the scene holds them).
     // The titles are the viewer's own list's (src/ui/viewer.js), read from the page: no check holds a title of its own.
     const tabs = await evaluate(`(() => { const v = ${VIEWER}, buttons = [...v.shadowRoot.querySelectorAll(".switch button")]; return { ids: buttons.map((button) => button.dataset.lens), said: buttons.map((button) => button.getAttribute("aria-label")), titles: buttons.map((button) => v.views.find((view) => view.id === button.dataset.lens)?.label) }; })()`);
-    const ORDER = ["cell", "proteins", "engine", "laws", "experiments"];
+    const ORDER = ["cell", "machines", "proteins", "engine", "laws", "experiments"];
     check("atlas: the views are in the order decided, the Cell view first, each tab titled from the viewer's list of views", ["cell", "proteins", "engine"].every((id) => tabs.ids.includes(id)) && JSON.stringify(tabs.ids) === JSON.stringify(ORDER.filter((id) => tabs.ids.includes(id))) && tabs.titles.every(Boolean) && JSON.stringify(tabs.said) === JSON.stringify(tabs.titles), JSON.stringify(tabs));
     // A unit whose top is in plain view, with no label lying over the point clicked.
     const unit = await evaluate(`(() => {

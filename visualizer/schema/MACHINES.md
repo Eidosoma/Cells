@@ -11,6 +11,9 @@ that make each, and a source for every number. The Cell view draws a closer view
 machine from the file alone; the viewer holds no drawing that belongs to one machine or one
 species (`src/lenses/machine_parts.js`, `src/layers/machine_motion.js`).
 
+The Machines catalogue (`schema/MACHINE_CATALOGUE.md`) lists the same machine under the same id,
+draws it from this file at its levels, and opens its closer view from its panel.
+
 **It never says that Cells models the machine.** `modelled.state` is `none` unless the
 project's record names a registered model of it, and the page says "Cells has no model of
 this motor" (or of the machine, in its own name) wherever the machine is drawn.

@@ -1375,7 +1375,7 @@ def build_atlas(c):
             "label": LABEL,
             "organism": ORGANISM,
             "taxon": TAXON,
-            "plain": f"A small bacterium of the human airways with {len(c.proteins)} proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are machines of animal cells, and it has none of them.",
+            "plain": f"A small bacterium of the human airways with {len(c.proteins)} proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them.",
         },
         "made": MADE,
         "method": [

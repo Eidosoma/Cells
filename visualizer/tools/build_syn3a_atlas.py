@@ -1129,7 +1129,7 @@ def build_atlas(c):
             "label": LABEL,
             "organism": ORGANISM,
             "taxon": TAXON,
-            "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are machines of animal cells, and it has none of them.",
+            "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them.",
         },
         "made": MADE,
         "method": [

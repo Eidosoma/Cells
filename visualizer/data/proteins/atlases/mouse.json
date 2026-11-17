@@ -5,7 +5,7 @@
   "label": "Mouse",
   "organism": "Mus musculus",
   "taxon": 10090,
-  "plain": "The laboratory mouse, with 21,872 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."
+  "plain": "The laboratory mouse, with 21,872 genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene."
  },
  "made": "2026-11-16",
  "method": [

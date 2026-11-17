@@ -133,7 +133,7 @@ Two marks pick out the machines of the proposed track. Both come from permissive
 ## Its side of the atlas
 
 - **None of the 49 units is found:** 43 "none found", 6 "nothing to look for". The units
-  are machines of animal cells. The search is the one the other small species use: each
+  are channels, pumps and junctions of animal cells. The search is the one the other small species use: each
   unit's family signatures, looked for among the InterPro entries of the 4,403 proteins,
   with a control count among all bacteria.
 - **One near miss, and a reading of this file's own.** `yfbK` carries the family signature

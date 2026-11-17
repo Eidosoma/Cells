@@ -103,6 +103,13 @@ const SUITE = [
   { name: "laws-phone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "phone", NAME: "laws-phone" }, minutes: 1 },
   { name: "laws-text", tool: "check_laws.mjs", args: [pictures], env: { CASE: "text", NAME: "laws-text" }, minutes: 1 },
   { name: "laws-gone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "gone", NAME: "laws-gone" }, minutes: 1 },
+  // The Machines tab (tools/check_catalogue.mjs): wide in both themes, a phone, by address, with no 3D, and the six tabs' row on phones.
+  { name: "catalogue-main", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "main", NAME: "catalogue-main" }, minutes: 2 },
+  { name: "catalogue-dark", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "main", NAME: "catalogue-dark", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "phone", NAME: "catalogue-phone" }, minutes: 1 },
+  { name: "catalogue-address", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "address", NAME: "catalogue-address" }, minutes: 2 },
+  { name: "catalogue-text", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "text", NAME: "catalogue-text" }, minutes: 1 },
+  { name: "catalogue-tabs", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "tabs", NAME: "catalogue-tabs" }, minutes: 6 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

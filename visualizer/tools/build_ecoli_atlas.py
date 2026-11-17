@@ -767,7 +767,7 @@ def build(datasets_folder, snapshot):
     findings = Counter(unit["finding"] for unit in units.values())
     atlas = {
         "format": P.ATLAS_FORMAT,
-        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A rod-shaped bacterium of the animal gut with {len(entries):,} proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it."},
+        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A rod-shaped bacterium of the animal gut with {len(entries):,} proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are channels, pumps and junctions of animal cells; this is what the same families' signatures find in it."},
         "made": made,
         "method": [
             f"The organism's proteins are the {len(entries):,} reviewed entries of UniProt's reference proteome {PROTEOME} (release {release}), one protein each.",

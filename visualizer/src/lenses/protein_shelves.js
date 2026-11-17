@@ -696,10 +696,10 @@ export class Shelves {
       !modelled
         ? { label: "No law in Cells", swatch: "own-plain", title: "Cells has no law for this protein. It is one of the species' own proteins, drawn as a plain marker." }
         : goes && this.roleOf.has(protein.id)
-          ? { label: "Goes with a machine Cells has a law for", swatch: "own-plain", title: `The law inventory names it among the unit's products as ${this.roleOf.get(protein.id).map((role) => `"${role}"`).join(" and ")}: a part that goes with the machine, not the one that does its work. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein.` }
+          ? { label: "Goes with a unit Cells has a law for", swatch: "own-plain", title: `The law inventory names it among the unit's products as ${this.roleOf.get(protein.id).map((role) => `"${role}"`).join(" and ")}: a part that goes with the machine, not the one that does its work. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein.` }
           : goes
-          ? { label: "Goes with a machine Cells has a law for", swatch: "own-plain", title: "The species' atlas lists it with a unit of the law inventory because its own record carries only the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein." }
-          : { label: "Would make a machine Cells has a law for", swatch: "map-assigned", title: "The species' atlas lists it among the gene products that would make a unit of the law inventory. The law is the unit's: the engine does not model this protein." },
+          ? { label: "Goes with a unit Cells has a law for", swatch: "own-plain", title: "The species' atlas lists it with a unit of the law inventory because its own record carries only the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. It is no candidate for the machine's own work, and is drawn as a plain marker. The law is the unit's: the engine does not model this protein." }
+          : { label: "Would make a unit Cells has a law for", swatch: "map-assigned", title: "The species' atlas lists it among the gene products that would make a unit of the law inventory. The law is the unit's: the engine does not model this protein." },
       { label: words.short, swatch: words.swatch, title: words.long },
       { label: basis.label, title: basis.sentence },
     ];
@@ -822,10 +822,10 @@ export class Shelves {
         !modelled
           ? { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." }
           : this.goesWithOnly(item) && this.rolesFamilies.has(item.id)
-            ? { label: "Holds parts that go with a machine Cells has a law for", swatch: "own-family", title: "The law inventory names its members with a unit only in roles that go with the machine: an auxiliary subunit, or a regulator. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
+            ? { label: "Holds parts that go with a unit Cells has a law for", swatch: "own-family", title: "The law inventory names its members with a unit only in roles that go with the machine: an auxiliary subunit, or a regulator. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
           : this.goesWithOnly(item)
-            ? { label: "Holds parts that go with a machine Cells has a law for", swatch: "own-family", title: "Its members are listed with a unit of the law inventory only because they carry the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
-            : { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its machine, or parts that go with it. The law is the unit's: the engine does not model these proteins." },
+            ? { label: "Holds parts that go with a unit Cells has a law for", swatch: "own-family", title: "Its members are listed with a unit of the law inventory only because they carry the signature of a family that goes with the machine: a regulator, or a subunit that makes none by itself. None is a candidate for the machine's own work, and the family is drawn plain. The law is the unit's: the engine does not model these proteins." }
+            : { label: "Holds parts of a unit Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its unit, or parts that go with it. The law is the unit's: the engine does not model these proteins." },
         { label: loose ? "No place known" : `Most ${lower(sides[item.side].short)}`, swatch: sides[item.side].swatch, title: "A family stands on the side where most of its members sit; each member keeps its own." },
       ],
       plain: `${what} ${this.membersBasis()}`,
@@ -925,7 +925,7 @@ export class Shelves {
   }
 
   /**
-   * What holds a protein listed with a machine Cells has a law for, in a catalogue that
+   * What holds a protein listed with a unit Cells has a law for, in a catalogue that
    * stands as families: the families that do (one with lines on several shelves counted
    * once), the gatherings of families of one, the groups of "no family" (counted once
    * likewise), and the markers at rest that are lit for any of them.

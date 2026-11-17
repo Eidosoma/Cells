@@ -316,7 +316,7 @@ def build(datasets_folder, snapshot):
         "cell": {
             "facts": [
                 {"label": "Proteins", "value": f"{stated['genes']:,} genes in UniProt's reference proteome, with {stated['entries']:,} entries: {stated['reviewed']:,} reviewed by a curator and {stated['unreviewed']:,} annotated automatically. One protein is shown for each gene", "sources": ["uniprot"]},
-                {"label": "Cells' machines", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the fly and {findings['different family']} are built from another family; {findings['none found']} were not found", "sources": ["uniprot"]},
+                {"label": "Cells' units", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the fly and {findings['different family']} are built from another family; {findings['none found']} were not found", "sources": ["uniprot"]},
             ],
             "parts": {"membranes": 1, "wall": False, "nucleus": True, "organelles": ["er", "golgi", "mitochondria"]},
         },
@@ -324,7 +324,7 @@ def build(datasets_folder, snapshot):
     }
     atlas = {
         "format": P.ATLAS_FORMAT,
-        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The fruit fly of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."},
+        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The fruit fly of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene."},
         "made": made,
         "method": [
             f"The fly's proteins are the {len(entries):,} of UniProt's gene-by-gene set of the reference proteome {PROTEOME} (release {release}): one for each gene, {stated['shown_reviewed']:,} with a reviewed entry and {stated['shown_unreviewed']:,} with an unreviewed one.",
@@ -392,7 +392,7 @@ def build_readme(report, header, closing):
         f"- {r['families']:,} InterPro families hold {r['in_families']:,} proteins: {r['family_sizes']['one']:,} of one, {r['family_sizes']['two to four']:,} of two to four, {r['family_sizes']['five or more']:,} of five or more. {r['no_family']:,} proteins have no family.",
         f"- {r['lines']:,} lines of {r['distinct']:,} families; the {r['lone']:,} only members of their families stand in {r['lone_parts']} parts; the proteins with no family in {r['part_lines']} lines.",
         "- The largest: " + "; ".join(f"{name} ({n})" for name, n in r["largest_families"]) + ".",
-        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' machines and name its units.",
+        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' units and name it.",
         "",
         "## What rests on tools and rule systems of other owners",
         "",

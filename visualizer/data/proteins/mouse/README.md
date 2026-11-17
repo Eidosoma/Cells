@@ -37,7 +37,7 @@ Nothing of the mouse is in the engine. This is reference data for the viewer.
 - 7,789 InterPro families hold 17,969 proteins: 5,101 of one, 2,124 of two to four, 564 of five or more. 3,903 proteins have no family.
 - 4,330 lines of 2,688 families; the 5,101 only members of their families stand in 164 parts; the proteins with no family in 652 lines.
 - The largest: Olfactory receptor (938); Vomeronasal receptor, type 1 (210); Immunoglobulin Variable Light Chain (166); Immunoglobulin Heavy Variable (165); Olfactory receptor 51/52/56-like (130); GPCR, family 3, vomeronasal receptor, type 2 (115); Peptidase S1A, chymotrypsin family (86); Olfactory receptor subfamily 6C-like (62).
-- 150 proteins carry the family signature of one of Cells' machines and name its units.
+- 150 proteins carry the family signature of one of Cells' units and name it.
 
 ## What rests on tools and rule systems of other owners
 

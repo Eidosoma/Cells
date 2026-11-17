@@ -166,7 +166,7 @@ others 2024, Quantitative Plant Biology, CC BY), saved with its record and full 
   flower or root is drawn.
 - **`modelled` is `generic`,** the only state of the three that is not false: no model
   and no proposal to model the plant is on record (main names it only as a benchmark for
-  gene networks). Its text says that Cells' laws name the machines of animal cells and
+  gene networks). Its text says that Cells' laws name the channels and pumps of animal cells and
   that no plant cell is modelled. If a fourth state, "data only", is wanted for a species
   whose cell Cells' generic cell does not fit, that is a change to the contract.
 

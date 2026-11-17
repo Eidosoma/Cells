@@ -7,7 +7,7 @@ outside for syn3a and all of them - humans have a 100k ones so let's maybe think
 that last". And of the catalogues too large for one marker each: "we should show them all
 but maybe cool expandable protein families, same for humans".
 
-The protein atlas draws the machines Cells has laws for. A species' side of it
+The protein atlas draws the units Cells has laws for. A species' side of it
 (`SPECIES_ATLAS.md`) says which of those machines the species has. This file is the other
 half: **the species' own proteins**, whether or not Cells has a law for them, laid out the
 same way for every species.

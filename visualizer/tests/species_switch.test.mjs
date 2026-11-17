@@ -557,7 +557,7 @@ test("a species that lacks most of the machines is shown quietly: faint units an
   const said = speciesWords(quiet, atlas);
   assert.match(said.caveat, /A unit drawn faint is one the Bare-B1 atlas found no gene product for/, "a proper name keeps its capitals in a sentence");
   assert.ok(!/A ring marks/.test(said.caveat));
-  assert.match(said.card.check, /Most of these machines were not found in it\. The 1 of its own proteins that bear on the picture are listed below/);
+  assert.match(said.card.check, /Most of these units were not found in it\. The 1 of its own proteins that bear on the picture are listed below/);
   assert.equal(said.card.extraOpen, true);
   assert.deepEqual(said.findings.items.filter((item) => item.swatch).map((item) => item.swatch), ["find-faint", "find-faint"]);
   // A species named by a plain word is written small in a sentence.
@@ -595,7 +595,7 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   // Nowhere do the view's own words, or the vocabulary, say that the engine models this species' proteins.
   const words = JSON.stringify([said, overlay.species]);
   assert.ok(!/(engine|Cells) (models|simulates) (a |the )?(test worm|this species|species'|planarian)/i.test(words));
-  assert.ok(!/The proteins Cells models/.test(words), "that heading is the inventory's own atlas's");
+  assert.ok(!/The units Cells has laws for/.test(words), "that heading is the inventory's own atlas's");
 });
 
 // ---------------------------------------------------------------- the whole build

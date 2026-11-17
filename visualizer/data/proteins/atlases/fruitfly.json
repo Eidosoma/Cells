@@ -5,7 +5,7 @@
   "label": "Fruit fly",
   "organism": "Drosophila melanogaster",
   "taxon": 7227,
-  "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."
+  "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene."
  },
  "made": "2026-11-15",
  "method": [

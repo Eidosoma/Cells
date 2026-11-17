@@ -469,7 +469,6 @@ cells-trace { display: grid; gap: 4px; }
 .with-species .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .with-species .switch, .with-species .species, .with-species .pill-button { flex: none; }
 .with-species .brand { flex: none; white-space: nowrap; }
-@media (max-width: 1240px) { .with-species .switch .long { display: none; } .with-species .switch .short { display: inline; } }
 @media (max-width: 1180px) { .with-species .stamp { display: none; } }
 /* Where the words are wider than that (more species, or a fallback font), the viewer asks for the same, by measure. */
 .with-species[data-tight="2"] .switch .long { display: none; }
@@ -752,6 +751,16 @@ cells-trace { display: grid; gap: 4px; }
   /* The page's name gives way last; it is still read out. */
   .bar[data-squeeze~="3"] .brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .bar[data-squeeze~="4"] .switch button { padding-inline: 4px; font-size: 12px; }
+  /* Last, where six tabs and the List still do not fit (a 360 px phone, the stand-in font): the tabs' row scrolls sideways inside
+     the bar, the bar keeps to one row and the List stays whole; each cut edge fades (viewer.js fadeTabs), and the tab of the
+     view shown is brought into sight (showPressedTab). */
+  .bar[data-squeeze~="5"] { flex-wrap: nowrap; }
+  .bar[data-squeeze~="5"] .bar-end { flex: none; }
+  .bar[data-squeeze~="5"] .switch { flex: 0 1 auto; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%); }
+  .bar[data-squeeze~="5"] .switch::-webkit-scrollbar { display: none; }
+  .bar[data-squeeze~="5"] .switch button { flex: none; }
   /* A view's card (the protein atlas, the Laws library, a model system's) folds to one line under the bar, or under the trail;
      a press opens it over the picture, and opening the legend folds it again (viewer.js). */
   .card-folds:not(.view-open) .view { display: none; }

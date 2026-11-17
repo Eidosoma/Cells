@@ -1,0 +1,137 @@
+{
+  "format": "cells.visualizer.machine_catalogue_overlay@1",
+  "note": "The hand-kept part of the Machines catalogue (schema/MACHINE_CATALOGUE.md): what each kind of machine is and does, which group it stands in, which species' records name it, and where its size, count and proteins are read. tools/build_catalogue.py reads this file, the species files, the species' own proteins and the machine files, and writes data/catalogue/catalogue.json. No number is written here that a source does not give, and no sentence of a paper but the one quoted with its place. The membrane machines Cells has laws for are not listed here: the page reads them from the scene's protein units, as the Protein atlas does.",
+  "decided": "The tab and its catalogue were asked for on 17 November 2026: a catalogue of molecular machines by species, gathered as the proteins were, in a design of its own. Decided 17 November 2026 (D209): the tab is the first milestone (M0) of the engine's path for machines, a catalogue with drawing levels labelled illustration; no machine is in the engine, and the drawing levels are the viewer's, not simulation detail. The coordinator ruled the same evening that a machine keeps one identity on the page.",
+  "groups": [
+    { "id": "proteins", "label": "Making proteins", "plain": "Machines that read a messenger RNA and build the protein it codes for." },
+    { "id": "genes", "label": "Reading genes", "plain": "Machines that copy a gene's DNA into RNA." },
+    { "id": "atp", "label": "Making ATP", "plain": "Machines that make the cell's fuel from a flow of ions across a membrane." },
+    { "id": "ions", "label": "Moving ions: machines with laws", "plain": "Channels, pumps, exchangers and junctions: the membrane machines the engine has laws for, as the Protein atlas lists them." },
+    { "id": "membranes", "label": "Putting proteins into membranes", "plain": "Channels that thread new proteins across a membrane or set them into it." },
+    { "id": "breaking", "label": "Breaking proteins down", "plain": "Proteases that unfold proteins and cut them, using ATP." },
+    { "id": "moving", "label": "Moving, sensing and attaching", "plain": "Machines that move the cell, steer it, or hold it to a surface." }
+  ],
+  "records": {
+    "fr13": {
+      "label": "FR-13, Molecular machines, individually and in aggregate",
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-13, line 655",
+      "revision": "7538b0cd87c024ef62e0b469caa93499924afed6",
+      "status": "No model yet (D209)",
+      "names_absent": ["ribosome", "RNA polymerase", "ATP synthase", "proteasome", "translocon", "flagellar motor", "chemoreceptor array", "attachment organelle"]
+    },
+    "d209": {
+      "label": "D209, Molecular machines: M0 now, then M1",
+      "path": "docs/DECISIONS.md",
+      "where": "D209, line 6723",
+      "revision": "7538b0cd87c024ef62e0b469caa93499924afed6"
+    },
+    "cell-structures": {
+      "label": "The Cell view's structures",
+      "path": "visualizer/docs/CELL_STRUCTURES.md",
+      "where": "What each status rests on: Ribosomes",
+      "entity": "cap.ribosomes"
+    }
+  },
+  "units_left_out": {
+    "note": "Units of the law inventory that the catalogue does not hold, because they are not protein assemblies: a leak, a permeability, a lumped conductance, or a law that names no protein. The Protein atlas keeps all its units.",
+    "units": {
+      "unit.U18": "a generic delayed-rectifier current that names no protein",
+      "unit.U23": "an always-open leak",
+      "unit.U34": "always-open leak populations",
+      "unit.U35": "a passive membrane permeability",
+      "unit.U46": "a transporter configured in a run, that names no protein",
+      "unit.U47": "a passive permeability of the mitochondrial inner membrane",
+      "unit.U49": "the membrane's lumped water permeability"
+    }
+  },
+  "kinds": [
+    {
+      "id": "ribosome", "label": "Ribosome", "group": "proteins", "absent_as": "ribosome",
+      "plain": "Reads a messenger RNA and joins amino acids, one at a time, into the protein it codes for.",
+      "cell_part": "cap.ribosomes",
+      "records": ["fr13", "cell-structures"]
+    },
+    {
+      "id": "rna-polymerase", "label": "RNA polymerase", "group": "genes", "absent_as": "RNA polymerase",
+      "plain": "Copies a gene's DNA into RNA, the first step from a gene to a protein.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "atp-synthase", "label": "ATP synthase", "group": "atp", "absent_as": "ATP synthase",
+      "plain": "Turns as ions flow through it across a membrane, and makes ATP as it turns; run the other way, it spends ATP to pump ions out.",
+      "records": [
+        { "ref": "d209", "status": "Planned, first", "says": "Decided 17 November 2026 (D209): the ATP synthase is to be the first machine built in the engine (M1), as general pieces, after the core-seams pass; its law is to be D193's proton_coupled_atp_synthesis_cycle@1, built by the mitochondria lane. There is no model of it yet." },
+        "fr13"
+      ]
+    },
+    {
+      "id": "protein-translocon", "label": "Protein translocon", "group": "membranes", "absent_as": "translocon",
+      "plain": "A channel in the membrane that threads a new protein across it, or opens sideways to set it into the membrane.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "ftsh", "label": "FtsH protease", "group": "breaking",
+      "plain": "A protease that stands in the cell membrane and unfolds and cuts proteins, using ATP.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "lon", "label": "Lon protease", "group": "breaking",
+      "plain": "A protease that unfolds and cuts proteins inside the cell, using ATP.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "hslv", "label": "HslV protease", "group": "breaking",
+      "plain": "A protease whose subunits carry the signature of the proteasome's: they form a barrel that cuts proteins.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "flagellar-motor", "label": "Flagellar motor", "group": "moving", "absent_as": "flagellar motor",
+      "machine_file": "flagellar-motor",
+      "records": ["fr13"]
+    },
+    {
+      "id": "chemoreceptor-array", "label": "Chemoreceptor array", "group": "moving", "absent_as": "chemoreceptor array",
+      "plain": "A lattice of receptor proteins in the membrane that senses chemicals and steers the cell's swimming toward food.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "attachment-organelle", "label": "Attachment organelle", "group": "moving", "absent_as": "attachment organelle",
+      "plain": "A membrane protrusion at one pole with an internal core: it carries the adhesins that hold the cell to a surface, and leads the cell when it glides.",
+      "records": ["fr13"]
+    }
+  ],
+  "species": {
+    "syn3a": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
+      { "kind": "protein-translocon", "named": { "capability": "cap.trafficking", "word": "Sec translocon" } },
+      { "kind": "ftsh", "named": { "capability": "cap.machines", "word": "FtsH" } },
+      { "kind": "lon", "named": { "capability": "cap.machines", "word": "Lon" } }
+    ],
+    "mpneumoniae": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" } },
+      { "kind": "protein-translocon", "named": { "capability": "cap.trafficking", "word": "Sec translocon" } },
+      { "kind": "ftsh", "named": { "capability": "cap.machines", "word": "FtsH" } },
+      { "kind": "lon", "named": { "capability": "cap.machines", "word": "Lon" } },
+      { "kind": "attachment-organelle", "named": { "capability": "cap.machines", "word": "attachment organelle" }, "count": { "fact": "Attachment organelle", "says": "one, at one pole" }, "size": { "fact": "Attachment organelle", "shape": "rod", "long_nm": [250, 300] }, "proteins": { "mark": "where", "value": "attachment organelle" } }
+    ],
+    "ecoli": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
+      { "kind": "protein-translocon", "label": "Protein translocases (Sec and Tat)", "named": { "capability": "cap.trafficking", "word": "Sec and Tat translocases" } },
+      { "kind": "hslv", "named": { "capability": "cap.machines", "word": "HslV" } },
+      { "kind": "flagellar-motor", "named": { "capability": "cap.machines", "word": "the motor of its flagella" }, "count": { "fact": "Flagella", "says": "one at the foot of each flagellum" }, "proteins": { "mark": "complex", "value": "flagellum" } },
+      { "kind": "chemoreceptor-array", "named": { "capability": "cap.assembly", "word": "chemoreceptor arrays" }, "proteins": { "mark": "complex", "value": "chemoreceptor array" } }
+    ],
+    "human": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
+    "mouse": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
+    "planarian": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
+    "fruitfly": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }],
+    "thalecress": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" } }]
+  }
+}

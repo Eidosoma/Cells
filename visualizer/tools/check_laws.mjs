@@ -19,7 +19,7 @@
 //            A piece links where it is declared at the manifest's revision. A unit of the
 //            Protein atlas opens a declared law through its door, and says of an undeclared one
 //            that no active model declares it, with no door.
-//   phone    on a 360 px phone the views' switch fits the bar; the library opens on its wall,
+//   phone    on a 360 px phone the six views' switch fits the bar (its row scrolls, the library's tab in sight); the library opens on its wall,
 //            a piece chosen opens the panel as a sheet, and no room is kept on the left.
 //   gone     on a check-only scene without the Engine view's box that holds the declared laws'
 //            file: no panel links it, and no level of a box is said.
@@ -180,7 +180,7 @@ try {
     // ---------------------------------------------------------- the fifth view, with its room clear of the cards
     check("the page opens on lens=laws", await open("lens=laws"));
     let s = await state();
-    check("the switch offers five views, the Laws library pressed", s.views.length === 5 && s.views.find((view) => view.id === "laws")?.pressed === "true", JSON.stringify(s.views));
+    check("the switch offers six views, the Laws library pressed", s.views.length === 6 && s.views.find((view) => view.id === "laws")?.pressed === "true", JSON.stringify(s.views));
     const card = await evaluate(`(() => { const r = ${V}.shadowRoot.querySelector("#cells-view").getBoundingClientRect(); return { right: r.right, hidden: ${V}.shadowRoot.querySelector("#cells-view").hidden }; })()`);
     check("the room is kept clear of the view card on the left (a left inset)", s.insets.left > 0 && Math.abs(s.insets.left - (card.right + 12)) < 30, JSON.stringify([s.insets, card]));
     const corners = await evaluate(`(() => { const v = ${V}, l = v.current, b = l.layout.bounds, w = l.layout.wall; const r = v.canvas.getBoundingClientRect(); const xs = []; for (const x of [b.minX, b.maxX]) for (const y of [0, w.y + w.h]) { const p = new v.stage.camera.position.constructor(x, y, b.maxZ); v.stage.project(p, p); xs.push(r.left + p.x); } return { min: Math.min(...xs), max: Math.max(...xs) }; })()`);
@@ -400,8 +400,9 @@ try {
     check("a piece chosen from the list has its panel, with no level stated", /not stated: the engine's declarations give no level for it/.test(panel), panel.slice(0, 120));
   } else if (CASE === "phone") {
     check("the page opens on lens=laws", await open("lens=laws"));
-    const fit = await evaluate(`(() => { const root = ${V}.shadowRoot, box = root.querySelector(".switch"), buttons = [...box.querySelectorAll("button")]; const r = box.getBoundingClientRect(); return { count: buttons.length, scroll: box.scrollWidth - box.clientWidth, left: Math.min(...buttons.map((b) => b.getBoundingClientRect().left)), right: Math.max(...buttons.map((b) => b.getBoundingClientRect().right)), page: document.documentElement.scrollWidth - document.documentElement.clientWidth, words: buttons.map((b) => b.textContent) }; })()`);
-    check(`the five views' switch fits a ${WIDTH} px phone`, fit.count === 5 && fit.scroll <= 0 && fit.left >= 0 && fit.right <= WIDTH && fit.page <= 0, JSON.stringify(fit));
+    // Six tabs may not all fit a narrow phone: the row then scrolls inside the bar, and the tab of the view shown is in sight (viewer.js showPressedTab).
+    const fit = await evaluate(`(() => { const root = ${V}.shadowRoot, box = root.querySelector(".switch"), buttons = [...box.querySelectorAll("button")]; const r = box.getBoundingClientRect(), pressed = box.querySelector('[aria-pressed="true"]').getBoundingClientRect(); return { count: buttons.length, scroll: box.scrollWidth - box.clientWidth, left: r.left, right: r.right, seen: pressed.left >= r.left - 0.5 && pressed.right <= r.right + 0.5, page: document.documentElement.scrollWidth - document.documentElement.clientWidth, words: buttons.map((b) => b.textContent) }; })()`);
+    check(`the six views' switch fits a ${WIDTH} px phone, the library's tab in sight`, fit.count === 6 && fit.left >= 0 && fit.right <= WIDTH && fit.seen && fit.page <= 0, JSON.stringify(fit));
     let s = await state();
     check("no room is kept on the left on a phone", !s.insets.left, JSON.stringify(s.insets));
     // The phone's second pass (17 November 2026): the bar on one row, every switch of it at least 44 px; the library's card

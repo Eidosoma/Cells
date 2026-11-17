@@ -22,6 +22,9 @@ import { ReplayLens } from "../lenses/replay.js";
 import { LawsLens } from "../lenses/laws.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
+import { MachinesLens } from "../lenses/machines.js";
+import { doorsFor as machinesDoors, textSections as machinesSections, textDescribe as machinesDescribe, present as machinesPresent, owns as machinesOwn } from "../lenses/machines_card.js";
+import { MACHINES_CSS } from "../lenses/machines_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
 import { chartOf, tableOf, armWords, unitSign } from "../replay/sweep.js";
 import { renderAtlasNav } from "./atlas_nav.js";
@@ -32,13 +35,15 @@ import "./model_views.js"; // the views of model systems, each registered beside
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
 // stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
 // (the Cell view, the Protein atlas, the Laws library); only its tab is titled here. The titles and their order were
-// decided on 17 November 2026; the second place is kept for a view of molecular machines.
+// decided on 17 November 2026.
 // "needs" says what the scene must hold for the view to be offered.
 // From this width up the species switch stands in the bar; below it, in the view's card.
 const SPECIES_IN_BAR = 1000;
 
 const LENSES = [
   { id: "cell", label: "Scope", short: "Scope", make: (stage, model, labels) => new CellLens(stage, model, labels) },
+  // The Machines catalogue (schema/MACHINE_CATALOGUE.md), by species. "present": how it shows a part of another view's that it holds too (a unit with laws).
+  { id: "machines", label: "Machines", short: "Machines", needs: (scene) => scene.catalogue?.entries?.length, owns: machinesOwn, doorsFor: machinesDoors, textSections: machinesSections, textDescribe: machinesDescribe, present: machinesPresent, styles: MACHINES_CSS, make: (stage, model, labels) => new MachinesLens(stage, model, labels) },
   { id: "proteins", label: "Proteins", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
   // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
@@ -101,6 +106,7 @@ class CellsViewer extends HTMLElement {
     this.canvas = h("canvas", { tabIndex: 0, role: "img", "aria-label": "3D map of the Cells simulator. The list of parts gives the same content as text." });
     this.labelBox = h("div", { class: "labels" });
     this.switchBox = h("div", { class: "switch", role: "group", "aria-label": "View" });
+    this.switchBox.addEventListener("scroll", () => this.fadeTabs(), { passive: true });
     this.speciesBox = h("div", { class: "species", hidden: true });
     this.stamp = h("span", { class: "stamp" });
     this.indexButton = h("button", { class: "pill-button", type: "button", "aria-pressed": "false", onclick: () => this.toggleIndex() }, "List");
@@ -255,7 +261,7 @@ class CellsViewer extends HTMLElement {
     if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
-    // The protein atlas: the machines Cells has laws for ("units") or the species' own proteins ("own").
+    // The protein atlas: the units Cells has laws for ("units") or the species' own proteins ("own").
     if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
@@ -368,6 +374,7 @@ class CellsViewer extends HTMLElement {
     }
     if (!this.shows(this.state.selected)) this.state.selected = null;
     for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
+    this.showPressedTab();
     if (fromUser && location.hash.slice(1) !== id) {
       try {
         history.replaceState(null, "", `#${id}`);
@@ -386,7 +393,7 @@ class CellsViewer extends HTMLElement {
     if (this.state.lens === "experiments") return this.replays.entities();
     // A view that makes its own parts gives them as text where no 3D can be drawn (the Laws library).
     const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
-    if (text) return text(this.model.raw).flatMap((section) => section.entities);
+    if (text) return text(this.model.raw, this.state.species).flatMap((section) => section.entities);
     return this.model.inLens(this.state.lens);
   }
 
@@ -399,21 +406,23 @@ class CellsViewer extends HTMLElement {
   /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
   lookup(id) {
     if (!id) return null;
-    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id) : null) || null;
-    // A door another view offers on this part (the Laws library on an Engine view box that holds its pieces).
-    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw)) : [];
-    if (offered.length) entity = { ...entity, doors: [...(entity.doors || []), ...offered] };
+    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id, this.state.species) : null) || null;
+    // A part of another view's that the view shown holds too (a unit with laws, in the Machines catalogue): as that view shows it.
+    const present = this.views.find((view) => view.id === this.state.lens)?.present;
+    if (entity && present) entity = present(entity, this.model.raw, this.state.species);
+    // A door another view offers on this part (the Laws library on an Engine view box that holds its pieces), after the view's own doors.
+    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw, { species: this.state.species })) : [];
     // A part is shown as the chosen species has it: a unit with that species' side of the atlas,
     // a level under the species' name for it.
-    if (this.state.lens === "proteins") return this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species);
-    return this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
+    const shown = this.state.lens === "proteins" ? (this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species)) : this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
+    return shown && offered.length ? { ...shown, doors: [...(shown.doors || []), ...offered] } : shown;
   }
 
   sections() {
     if (this.current) return this.current.sections();
     if (this.state.lens === "experiments") return this.replays.sections();
     const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
-    if (text) return text(this.model.raw);
+    if (text) return text(this.model.raw, this.state.species);
     const groups = new Map();
     for (const part of this.shownEntities()) {
       const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.species) : part;
@@ -430,9 +439,13 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf, ids, look, machine }) {
-    // A door within the view shown: a closer view of a machine (Look closer), or back out of it.
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select }) {
+    // A closer view of a machine (Look closer), in the view shown or, from the Machines catalogue, in the Cell view; or back out of it.
     if (look === "closer") {
+      if (lens && lens !== this.state.lens && this.views.some((view) => view.id === lens)) {
+        this.select(null);
+        this.setLens(lens, true);
+      }
       Promise.resolve(this.current?.lookCloser?.(machine)).then((shown) => shown && this.select(`machine:${machine}`));
       return;
     }
@@ -455,6 +468,8 @@ class CellsViewer extends HTMLElement {
         view.setMark?.(null); // a set picked out before would stand in the way of the shelf
         view.setFinding?.(shelf);
       }
+      // A part the door names in the view it opens (the Machines catalogue's door to a unit in the atlas, or to a part of the cell).
+      if (select) this.select(select, { fly: true });
       this.renderChrome();
     });
   }
@@ -463,7 +478,8 @@ class CellsViewer extends HTMLElement {
 
   select(id, { fly = false } = {}) {
     // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
-    const owner = id && this.views?.find((view) => view.owns?.(id));
+    // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).
+    const owner = id && !this.current?.has?.(id) && this.views?.find((view) => view.owns?.(id));
     if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true);
     if (id && !this.lookup(id)) return;
     if (id && !this.shows(id)) {
@@ -647,7 +663,8 @@ class CellsViewer extends HTMLElement {
     const out = { ...chrome };
     if (chrome.view?.species) out.view = { ...chrome.view, species };
     if (chrome.card) out.card = { ...chrome.card, species };
-    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the machines Cells has laws for, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units Cells has laws for, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "machines") out.caveat = [`${entry.label} is a model system, not an organism: it has no machines of a species. The catalogue shows ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}'s.`, chrome.caveat].filter(Boolean).join(" ");
     return out;
   }
 
@@ -695,7 +712,7 @@ class CellsViewer extends HTMLElement {
     this.frame.classList.toggle("model-card", modelCard);
     // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).
     this.frame.classList.toggle("bar-ground", Boolean(this.current?.drawsUnderBar));
-    // The folded line says what is shown: the card's heading, and the drawing chosen where there is a choice ("Cells' 48 machines"; not "All").
+    // The folded line says what is shown: the card's heading, and the drawing chosen where there is a choice ("Cells' 48 units"; not "All").
     // A model system's line names it alone: its packing is the picture's choice, not what is shown.
     const mode = this.clientWidth < 760 && chrome.card?.modes && !chrome.nav && !modelCard && chrome.card.modes.active !== "all" ? chrome.card.modes.options.find(([value]) => value === chrome.card.modes.active)?.[1] : null;
     const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : [chrome.card?.heading, mode].filter(Boolean).join(" · ");
@@ -801,18 +818,45 @@ class CellsViewer extends HTMLElement {
    * On a phone the bar keeps to one row, whatever the first tab is called (a model system's view)
    * and whichever font has arrived: where it would wrap, it is squeezed in steps (styles.js,
    * data-squeeze): tighter switches, a smaller name, the name put out of sight (still read out),
-   * smaller words. A wide window is never squeezed.
+   * smaller words, and last the tabs' row scrolls sideways inside the bar, its cut edges fading (decided
+   * 17 November 2026, for six tabs on a phone). A wide window is never squeezed.
    */
   fitBar() {
-    const bar = this.bar;
+    const bar = this.bar, box = this.switchBox, before = bar.dataset.squeeze || "", kept = box.scrollLeft;
     delete bar.dataset.squeeze;
-    if (this.clientWidth >= 760) return;
-    const oneRow = () => {
-      const rects = [...bar.children].filter((element) => !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect()).filter((rect) => rect.width > 1);
-      return rects.every((a) => rects.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1));
-    };
-    const steps = ["1", "1 2", "1 2 3", "1 2 3 4"];
-    for (let step = 0; step < steps.length && !oneRow(); step++) bar.dataset.squeeze = steps[step];
+    if (this.clientWidth < 760) {
+      const oneRow = () => {
+        const rects = [...bar.children].filter((element) => !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect()).filter((rect) => rect.width > 1);
+        return rects.every((a) => rects.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1));
+      };
+      const steps = ["1", "1 2", "1 2 3", "1 2 3 4", "1 2 3 4 5"];
+      for (let step = 0; step < steps.length && !oneRow(); step++) bar.dataset.squeeze = steps[step];
+    }
+    // The tab of the view shown is brought into sight when the row first scrolls or the window's width changes;
+    // otherwise the row keeps where it was (a visitor's own scroll of it holds when the chrome is drawn again).
+    if ((bar.dataset.squeeze || "") !== before || this.centredWidth !== this.clientWidth) this.showPressedTab();
+    else {
+      box.scrollLeft = kept;
+      this.fadeTabs();
+    }
+  }
+
+  /** Where the tabs' row scrolls (a narrow phone): the tab of the view shown stands in the middle of what is seen, and each cut edge fades. */
+  showPressedTab() {
+    const box = this.switchBox, button = box?.querySelector('[aria-pressed="true"]');
+    if (!box) return;
+    if (button && box.scrollWidth > box.clientWidth + 1) {
+      const b = button.getBoundingClientRect(), r = box.getBoundingClientRect();
+      box.scrollLeft += (b.left + b.right) / 2 - (r.left + r.right) / 2;
+    }
+    this.centredWidth = this.clientWidth;
+    this.fadeTabs();
+  }
+
+  fadeTabs() {
+    const box = this.switchBox, more = box.scrollWidth - box.clientWidth;
+    box.style.setProperty("--fade-l", more > 1 && box.scrollLeft > 1 ? "28px" : "0px");
+    box.style.setProperty("--fade-r", more > 1 && box.scrollLeft < more - 1 ? "28px" : "0px");
   }
 
   /**
@@ -1210,7 +1254,7 @@ class CellsViewer extends HTMLElement {
       // A model system's card (src/lenses/entry_card.js) gives its word under the switch, as the Cell view's card does a species'.
       species?.model && !this.speciesInBar ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
       organism ? h("p", { class: "card-organism" }, organism) : null,
-      // The protein atlas: the machines Cells has laws for, or the species' own proteins.
+      // The protein atlas: the units Cells has laws for, or the species' own proteins.
       modes
         ? h(
             "div",

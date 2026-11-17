@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-17",
-  "generated_at": "2026-11-17T18:18:53Z",
+  "generated_at": "2026-11-17T20:24:09Z",
   "revision": "a16b2571",
   "revision_date": "2026-11-17",
   "dirty": false,
@@ -704,7 +704,7 @@
     "label": "E. coli",
     "organism": "Escherichia coli K-12",
     "taxon": 83333,
-    "plain": "A rod-shaped bacterium of the animal gut with 4,403 proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it.",
+    "plain": "A rod-shaped bacterium of the animal gut with 4,403 proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are channels, pumps and junctions of animal cells; this is what the same families' signatures find in it.",
     "made": "2026-11-15",
     "method": [
      "The organism's proteins are the 4,403 reviewed entries of UniProt's reference proteome UP000000625 (release 2026_04), one protein each.",
@@ -1199,7 +1199,7 @@
     "label": "Fruit fly",
     "organism": "Drosophila melanogaster",
     "taxon": 7227,
-    "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene.",
+    "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene.",
     "made": "2026-11-15",
     "method": [
      "The fly's proteins are the 13,814 of UniProt's gene-by-gene set of the reference proteome UP000000803 (release 2026_04): one for each gene, 3,850 with a reviewed entry and 9,964 with an unreviewed one.",
@@ -1297,7 +1297,7 @@
     "label": "Mouse",
     "organism": "Mus musculus",
     "taxon": 10090,
-    "plain": "The laboratory mouse, with 21,872 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene.",
+    "plain": "The laboratory mouse, with 21,872 genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene.",
     "made": "2026-11-16",
     "method": [
      "The mouse's proteins are the 21,872 of UniProt's gene-by-gene set of the reference proteome UP000000589 (release 2026_04): one for each gene, 17,221 with a reviewed entry and 4,651 with an unreviewed one.",
@@ -1395,7 +1395,7 @@
     "label": "M. pneumoniae",
     "organism": "Mycoplasma pneumoniae M129",
     "taxon": 272634,
-    "plain": "A small bacterium of the human airways with 688 proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are machines of animal cells, and it has none of them.",
+    "plain": "A small bacterium of the human airways with 688 proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them.",
     "made": "2026-11-15",
     "method": [
      "The organism's proteins are the 688 protein products of one frozen genome annotation, GenBank U00089.2: the genome of strain M129 as its submitters re-annotated it in 2000. UniProtKB holds a reviewed entry for 687 of them, and UniProt's archive (UniParc) holds all 688 sequences letter for letter, with the family signatures on each.",
@@ -1955,7 +1955,7 @@
     "label": "Syn3A",
     "organism": "JCVI-syn3A",
     "taxon": 2144189,
-    "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are machines of animal cells, and it has none of them.",
+    "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them.",
     "made": "2026-11-15",
     "method": [
      "The organism's proteins are the 455 protein products of one frozen genome annotation, GenBank CP016816.2 (annotation of 12 April 2018): 452 kept from Mycoplasma mycoides and 3 added for genetic manipulation. UniProtKB holds no entry of the organism; UniProt's archive (UniParc) holds exactly these 455 sequences, with the family signatures on each.",
@@ -2285,7 +2285,7 @@
     "label": "Thale cress",
     "organism": "Arabidopsis thaliana",
     "taxon": 3702,
-    "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene.",
+    "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are channels, pumps and junctions of animal cells; this is what their family signatures find among the one protein shown for each gene.",
     "made": "2026-11-15",
     "method": [
      "The plant's proteins are the 27,368 of UniProt's gene-by-gene set of the reference proteome UP000006548 (release 2026_04): one for each gene, 16,212 with a reviewed entry and 11,156 with an unreviewed one.",
@@ -4052,7 +4052,7 @@
       ]
      },
      {
-      "label": "Cells' machines",
+      "label": "Cells' units",
       "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the mouse; the other 6 name no natural protein to look for",
       "sources": [
        "uniprot"
@@ -4182,7 +4182,7 @@
        ]
       },
       {
-       "label": "Cells' machines",
+       "label": "Cells' units",
        "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the mouse; the other 6 name no natural protein to look for",
        "sources": [
         "uniprot"
@@ -4662,7 +4662,7 @@
       ]
      },
      {
-      "label": "Cells' machines",
+      "label": "Cells' units",
       "value": "of the 49 units of the law inventory, 38 have proteins of the same family in the fly and 3 are built from another family; 2 were not found",
       "sources": [
        "uniprot"
@@ -4778,7 +4778,7 @@
        ]
       },
       {
-       "label": "Cells' machines",
+       "label": "Cells' units",
        "value": "of the 49 units of the law inventory, 38 have proteins of the same family in the fly and 3 are built from another family; 2 were not found",
        "sources": [
         "uniprot"
@@ -6995,7 +6995,7 @@
       ]
      },
      {
-      "label": "Cells' machines",
+      "label": "Cells' units",
       "value": "of the 49 units of the law inventory, 5 have proteins of the same family in the plant; 38 were not found, the gap junctions and the sodium-potassium pump among them",
       "sources": [
        "uniprot"
@@ -7218,7 +7218,7 @@
        ]
       },
       {
-       "label": "Cells' machines",
+       "label": "Cells' units",
        "value": "of the 49 units of the law inventory, 5 have proteins of the same family in the plant; 38 were not found, the gap junctions and the sodium-potassium pump among them",
        "sources": [
         "uniprot"

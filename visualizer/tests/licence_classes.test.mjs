@@ -249,6 +249,24 @@ test("a cell type's or a model system's file: every source has its class; its fa
 // By the user's ruling of 17 November 2026, numbers from papers that are free to read but not open access may be used, each with its citation.
 const NUMBERS_ONLY = { "ecoli.json": ["matias2003", "berry2010"] };
 
+// The Machines catalogue (schema/MACHINE_CATALOGUE.md): its sources are copied with their terms from the species files
+// it reads, and whatever it gives (the words that name a machine, a count, a size) rests on a permissive one.
+const catalogueFiles = await listed(path.join(DATA, "catalogue"), (entry) => isJson(entry) && entry.name !== "overlay.json");
+
+test("the Machines catalogue: every source has its class, and what names a machine, counts it or sizes it rests on a permissive source", async () => {
+  assert.equal(catalogueFiles.length, 1, "data/catalogue/ holds the catalogue and its overlay");
+  for (const file of catalogueFiles) {
+    const catalogue = await json(file);
+    const where = rel(file);
+    for (const [key, source] of Object.entries(catalogue.sources || {})) held(source, `${where}: source ${key}`);
+    for (const entry of catalogue.entries) {
+      for (const [name, block] of Object.entries({ named: entry.named, count: entry.count, size: entry.size })) {
+        for (const key of block?.sources || []) assert.equal(catalogue.sources[key]?.class, "permissive", `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
+      }
+    }
+  }
+});
+
 test("a machine file: every source has its class; its sentences are of permissive sources; an open paper with no licence gives numbers alone, and is in the register", async () => {
   assert.ok(machineFiles.length >= 1, "no machine file was found");
   for (const file of machineFiles) {
