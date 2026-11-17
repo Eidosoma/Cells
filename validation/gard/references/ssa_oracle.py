@@ -65,7 +65,6 @@ class SSAConvention:
     uniform: str
 
     KNOWN = {
-        "channel_order": (JOINS_THEN_LEAVES,),
         "tau": (TAU_NEG_LOG_U1,),
         "select": (SELECT_FIRST_PREFIX_GT,),
         "uniform": (UNIFORM_LOW52_HALF,),
@@ -73,7 +72,11 @@ class SSAConvention:
 
     @staticmethod
     def from_declared(declared: dict | None) -> "SSAConvention":
-        """Read a declared convention; refuse a missing or unknown one."""
+        """Read a declared convention; refuse a missing or unknown one.
+
+        The channel order is not part of it: it is read from the run's channel table.
+        A convention that also names an order must name the table's.
+        """
         if not declared:
             raise ConventionMissing("the run declares no SSA convention; the oracle refuses it")
         missing = [k for k in SSAConvention.KNOWN if k not in declared]
@@ -82,7 +85,93 @@ class SSAConvention:
         for key, allowed in SSAConvention.KNOWN.items():
             if declared[key] not in allowed:
                 raise ConventionMissing(f"unknown SSA convention {key}={declared[key]!r}; known: {allowed}")
-        return SSAConvention(**{k: declared[k] for k in SSAConvention.KNOWN})
+        return SSAConvention(channel_order=str(declared.get("channel_order", "table")),
+                             **{k: declared[k] for k in SSAConvention.KNOWN})
+
+
+@dataclass(frozen=True)
+class ChannelTable:
+    """A run's declared channel table: row j's kind (+1 join, -1 leave), type and event code.
+
+    The prefix sums of the direct method fold in this order. The table must list each join
+    and each leave exactly once. Its stoichiometry must agree with its kinds, and its event
+    codes must be unique. Anything else is refused.
+    """
+
+    sign: np.ndarray
+    type_index: np.ndarray
+    code: np.ndarray
+    n_types: int
+
+    @staticmethod
+    def default(n_types: int) -> "ChannelTable":
+        """Joins of types 0..G-1, then their leaves; codes +(i+1) and -(i+1)."""
+        t = np.concatenate([np.arange(n_types), np.arange(n_types)])
+        sg = np.concatenate([np.ones(n_types, dtype=np.int64), -np.ones(n_types, dtype=np.int64)])
+        return ChannelTable(sg, t, sg * (t + 1), n_types)
+
+    @staticmethod
+    def from_declared(channels: dict | None, n_types: int, type_names=None) -> "ChannelTable":
+        if not isinstance(channels, dict) or not isinstance(channels.get("rows"), list):
+            raise ConventionMissing("the run declares no channel table; the oracle refuses it")
+        rows = channels["rows"]
+        if len(rows) != 2 * n_types:
+            raise ConventionMissing(f"the channel table has {len(rows)} rows; {2 * n_types} expected")
+        sign, tidx, code, seen = [], [], [], set()
+        for pos, row in enumerate(rows):
+            try:
+                kind, i, c = row["kind"], int(row["type_index"]), int(row["event_channel"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ConventionMissing(f"channel row {pos} lacks kind, type_index or event_channel") from exc
+            if int(row.get("row", pos)) != pos:
+                raise ConventionMissing(f"channel row {pos} declares row {row.get('row')}")
+            if kind not in ("join", "leave") or not 0 <= i < n_types:
+                raise ConventionMissing(f"channel row {pos}: kind {kind!r}, type_index {i}")
+            sg = 1 if kind == "join" else -1
+            if (sg, i) in seen:
+                raise ConventionMissing(f"channel row {pos} repeats the {kind} of type {i}")
+            seen.add((sg, i))
+            if type_names is not None and "type" in row and row["type"] != type_names[i]:
+                raise ConventionMissing(f"channel row {pos} names type {row['type']!r}, world has {type_names[i]!r}")
+            stoich = row.get("stoichiometry")
+            if isinstance(stoich, dict) and "assembly" in stoich:
+                vals = list(stoich["assembly"].values())
+                if vals != [sg]:
+                    raise ConventionMissing(f"channel row {pos}: assembly stoichiometry {stoich['assembly']} "
+                                            f"contradicts kind {kind!r}")
+            sign.append(sg)
+            tidx.append(i)
+            code.append(c)
+        if len(set(code)) != len(code):
+            raise ConventionMissing("the channel table's event codes are not unique")
+        return ChannelTable(np.asarray(sign, dtype=np.int64), np.asarray(tidx, dtype=np.int64),
+                            np.asarray(code, dtype=np.int64), n_types)
+
+    def vector(self, a_plus: np.ndarray, a_minus: np.ndarray) -> np.ndarray:
+        return np.where(self.sign > 0, a_plus[self.type_index], a_minus[self.type_index])
+
+    def event(self, j: int) -> tuple[int, int]:
+        return int(self.type_index[j]), int(self.sign[j])
+
+    def canonical(self, codes) -> np.ndarray:
+        """Map declared event codes to the references' canonical sign * (type + 1)."""
+        codes = np.asarray(codes, dtype=np.int64)
+        lookup = {int(c): int(sg * (t + 1)) for c, sg, t in zip(self.code, self.sign, self.type_index)}
+        try:
+            return np.array([lookup[int(c)] for c in codes], dtype=np.int64)
+        except KeyError as exc:
+            raise ConventionMissing(f"event code {exc.args[0]} is not in the channel table") from exc
+
+    def to_declared(self, type_names) -> dict:
+        rows = []
+        for j in range(self.code.size):
+            i, sg = int(self.type_index[j]), int(self.sign[j])
+            name = type_names[i]
+            rows.append({"row": j, "kind": "join" if sg > 0 else "leave", "type": name, "type_index": i,
+                         "event_channel": int(self.code[j]),
+                         "stoichiometry": {"assembly": {name: sg}, "held phase": {name: -sg}},
+                         "rate": "k_join*rho*N*b(x)" if sg > 0 else "k_leave*x*b(.)"})
+        return {"order": "joins then leaves", "event_channel": "+(i+1) join, -(i+1) leave", "rows": rows}
 
 
 class ConventionMissing(ValueError):
@@ -102,31 +191,19 @@ def uniforms_from_words(words: np.ndarray) -> np.ndarray:
     return (m + 0.5) * 2.0 ** -52
 
 
-def channel_vector(a_plus: np.ndarray, a_minus: np.ndarray, order: str = JOINS_THEN_LEAVES) -> np.ndarray:
-    if order != JOINS_THEN_LEAVES:
-        raise ConventionMissing(f"unknown channel order {order!r}")
-    return np.concatenate([a_plus, a_minus])
-
-
-def channel_event(j: int, n_types: int) -> tuple[int, int]:
-    """Channel index -> (type, sign) for joins 0..G-1 then leaves 0..G-1."""
-    return (j, +1) if j < n_types else (j - n_types, -1)
-
-
 def signed_channel(type_: int, sign: int) -> int:
     """The engine's signed event code: +(i+1) for a join of i, -(i+1) for a leave."""
     return sign * (type_ + 1)
 
 
-def select_channel(a: np.ndarray, u2: float, leave_weight: float = 1.0) -> tuple[int, float]:
-    """First j with prefix_j > u2 * a0; returns (j, relative margin to the nearest boundary).
+def select_channel(a: np.ndarray, u2: float, weights: np.ndarray | None = None) -> tuple[int, float]:
+    """First j with prefix_j > u2 * a0, prefixes folded left in table order.
 
-    ``leave_weight`` != 1 is the planted biased choice (leaves under-weighted); it is only
-    used by tests and controls.
+    Returns (j, relative margin of u2 * a0 to the nearest boundary). ``weights`` other than
+    None is the planted biased choice; only the controls use it.
     """
-    if leave_weight != 1.0:
-        a = a.copy()
-        a[a.size // 2:] *= leave_weight
+    if weights is not None:
+        a = a * weights
     prefix = np.cumsum(a)
     a0 = prefix[-1]
     target = u2 * a0
@@ -138,29 +215,32 @@ def select_channel(a: np.ndarray, u2: float, leave_weight: float = 1.0) -> tuple
     return j, float(margin)
 
 
-def direct_step(law: ExchangeLaw, x: np.ndarray, u1: float, u2: float,
+def bias_weights(table: "ChannelTable", leave_weight: float) -> np.ndarray | None:
+    return None if leave_weight == 1.0 else np.where(table.sign < 0, leave_weight, 1.0)
+
+
+def direct_step(law: ExchangeLaw, x: np.ndarray, u1: float, u2: float, table: "ChannelTable",
                 leave_weight: float = 1.0) -> tuple[int, int, float, float]:
     """One direct-method event: (type, sign, tau, tie margin); tau is inf when stuck."""
     a_plus, a_minus = propensities(law, x)
-    a = channel_vector(a_plus, a_minus)
+    a = table.vector(a_plus, a_minus)
     a0 = float(np.cumsum(a)[-1])
     if not a0 > 0.0:
         return -1, 0, math.inf, 1.0
-    j, margin = select_channel(a, u2, leave_weight)
+    j, margin = select_channel(a, u2, bias_weights(table, leave_weight))
     tau = -math.log(u1) / a0
-    type_, sign = channel_event(j, law.n_types)
+    type_, sign = table.event(j)
     return type_, sign, tau, margin
 
 
 def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_mass: int,
-           splits: np.ndarray, followed: np.ndarray, event_guard: int | None = None,
+           splits: np.ndarray, followed: np.ndarray, table: "ChannelTable", event_guard: int | None = None,
            leave_weight: float = 1.0) -> dict:
     """Replay a single lineage from its uniforms; fissions use the recorded splits.
 
-    Returns the oracle's signed channels, event times, events per growth and tie margins.
+    Returns the oracle's canonical event codes, event times, events per growth and tie margins.
     """
     x = np.array(founder, dtype=np.int64)
-    G = law.n_types
     E = uniforms.shape[0]
     channels = np.zeros(E, dtype=np.int64)
     times = np.zeros(E, dtype=np.float64)
@@ -171,7 +251,7 @@ def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_
     in_growth = 0
     k = 0
     while k < E:
-        type_, sign, tau, margin = direct_step(law, x, uniforms[k, 0], uniforms[k, 1], leave_weight)
+        type_, sign, tau, margin = direct_step(law, x, uniforms[k, 0], uniforms[k, 1], table, leave_weight)
         if type_ < 0:
             break
         x[type_] += sign
@@ -199,15 +279,18 @@ def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_
 def check_crn_replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray,
                      event_channel: np.ndarray, event_time: np.ndarray, fission_mass: int,
                      splits: np.ndarray, followed: np.ndarray, events_per_growth: np.ndarray | None,
-                     event_guard: int | None = None) -> CheckResult:
-    """Compare a run's event trace with the oracle's replay under the same uniforms."""
+                     table: "ChannelTable", event_guard: int | None = None) -> CheckResult:
+    """Compare a run's event trace with the oracle's replay under the same uniforms.
+
+    The run's event codes are read through its declared channel table.
+    """
     uniforms = np.asarray(uniforms, dtype=np.float64)
-    event_channel = np.asarray(event_channel, dtype=np.int64)
+    event_channel = table.canonical(event_channel)
     event_time = np.asarray(event_time, dtype=np.float64)
     if uniforms.shape != (event_channel.size, 2):
         return CheckResult("ssa_crn_replay", False, dict(
             error=f"event_uniforms shape {uniforms.shape} does not match {event_channel.size} events"))
-    rep = replay(law, founder, uniforms, fission_mass, splits, followed, event_guard)
+    rep = replay(law, founder, uniforms, fission_mass, splits, followed, table, event_guard)
     n = min(rep["channels"].size, event_channel.size)
     same = rep["channels"][:n] == event_channel[:n]
     differ = np.flatnonzero(~same)

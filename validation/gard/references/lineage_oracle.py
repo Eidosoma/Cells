@@ -25,7 +25,7 @@ import numpy as np
 
 from .kernels import ExchangeLaw, HeldReservoir, PAIR_CONSISTENT, SINGLE_EVENT, log_weight, propensities
 from .records import canonical_digest
-from .ssa_oracle import DECLARED_BY_ENGINE, channel_event, channel_vector, select_channel, uniforms_from_words
+from .ssa_oracle import DECLARED_BY_ENGINE, ChannelTable, bias_weights, select_channel, uniforms_from_words
 
 DOMAIN_EVENTS = 1
 DOMAIN_PARTITION = 2
@@ -93,6 +93,7 @@ def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, pa
                                    "empty_daughter": "end_lineage"},
                   "sink": {"kind": "declared_sink"},
                   "boundary": law.boundary},
+        "units": {"time": "nominal", "temperature_K": None},
     }
     body["id"] = canonical_digest(body)
     return body
@@ -130,7 +131,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
                      p: float = 0.5, continuation: str = "first", event_guard: int | None = 40000,
                      diagnostics: bool = True, leave_weight: float = 1.0, join_factor: float = 1.0,
                      max_events: int | None = None, t_max: float | None = None,
-                     world: dict | None = None) -> tuple[dict, dict, dict]:
+                     world: dict | None = None, table: ChannelTable | None = None) -> tuple[dict, dict, dict]:
     """Run one lineage; return (world, run, arrays) in the canonical bundle layout.
 
     ``leave_weight`` and ``join_factor`` exist only to plant errors for the controls:
@@ -177,6 +178,8 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
 
     save_row()
     events = EventStream(seed, branch)
+    table = ChannelTable.default(G) if table is None else table
+    weights = bias_weights(table, leave_weight)
     a_plus, a_minus = propensities(law, x)
     f = 0
     in_growth = 0
@@ -184,15 +187,14 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         if max_events is not None and k >= max_events:
             status = "max_events"
             break
-        ap = a_plus * join_factor
-        a = channel_vector(ap, a_minus)
+        a = table.vector(a_plus * join_factor, a_minus)
         a0 = float(np.cumsum(a)[-1])
         if not a0 > 0:
             status = "stuck"
             break
         u1, u2 = events.pair(k)
-        j, _ = select_channel(a, u2, leave_weight)
-        i, sign = channel_event(j, G)
+        j, _ = select_channel(a, u2, weights)
+        i, sign = table.event(j)
         tau = -math.log(u1) / a0
         if t_max is not None and t + tau > t_max:
             status = "t_max"
@@ -211,7 +213,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
             left[i] += 1
         t += tau
         ev_time.append(t)
-        ev_chan.append(sign * (i + 1))
+        ev_chan.append(int(table.code[j]))
         ev_u.append((u1, u2))
         k += 1
         in_growth += 1
@@ -308,6 +310,9 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
                                "fission_work": "ln_pi_parent_minus_ln_pi_daughters",
                                "sink": "minus_ln_pi_unfollowed", "log_weight_constant": 0.0},
         "end_status": status,
+        "channels": table.to_declared(world["types"]),
+        "time": {"unit": world["units"]["time"], "temperature_K": world["units"]["temperature_K"],
+                 "rates": "per " + world["units"]["time"] + " time unit", "bases": ["fission"]},
     }
     if t_max is not None:
         run["t_end"] = float(t_max) if status == "t_max" else float(t)

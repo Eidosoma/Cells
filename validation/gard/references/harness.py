@@ -33,6 +33,7 @@ from .common import CheckResult, jsonable
 from .kernels import (PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT, canonical_form,
                       gard_beta)
 from .records import Bundle, MissingRecord, RecordFormatError, load_bundle
+from .ssa_oracle import ChannelTable, ConventionMissing
 
 KERNEL_PROBE_SEED = 20261117
 OBSERVER_PROBE_SEED = 20261118
@@ -151,11 +152,14 @@ def law_of(bundle: Bundle) -> ExchangeLaw:
 
 
 def lineage_arrays(b: Bundle) -> dict:
+    """The lineage records, with event codes read through the declared channel table."""
     names = ("assembly_count", "joined_total", "left_total", "discarded_total", "exchange_heat_kT",
              "fission_work_kT", "discarded_free_energy_kT", "log_weight", "ledger_residual_kT", "row_event",
              "fission_split", "fission_followed", "fission_similarity", "event_channel", "events_per_growth",
              "event_time")
-    return dict(zip(names, b.require(*names)))
+    out = dict(zip(names, b.require(*names)))
+    out["event_channel"] = canonical_events(b)
+    return out
 
 
 def check_founder_declared(b: Bundle) -> None:
@@ -163,6 +167,37 @@ def check_founder_declared(b: Bundle) -> None:
         raise RecordFormatError(f"{b.path}: run founder is {b.run.founder!r}, expected 'world'")
     if b.run.world_id and b.world.world_id and b.run.world_id != b.world.world_id:
         raise RecordFormatError(f"{b.path}: run names world {b.run.world_id}, world record is {b.world.world_id}")
+
+
+def channel_table(b: Bundle) -> ChannelTable:
+    """The run's declared channel table; a run without one is refused."""
+    try:
+        return ChannelTable.from_declared(b.run.channels, b.world.n_types, b.world.type_names)
+    except ConventionMissing as exc:
+        raise MissingRecord(f"{b.path}/run.json: {exc}") from exc
+
+
+def canonical_events(b: Bundle) -> np.ndarray:
+    (codes,) = b.require("event_channel")
+    try:
+        return channel_table(b).canonical(codes)
+    except ConventionMissing as exc:
+        raise RecordFormatError(f"{b.path}: {exc}") from exc
+
+
+def time_unit(b: Bundle):
+    """The run's time unit; the world's and the run's declarations must agree when both exist."""
+    w_unit = (b.world.units or {}).get("time") if isinstance(b.world.units, dict) else None
+    r_unit = (b.run.time or {}).get("unit") if isinstance(b.run.time, dict) else None
+    if w_unit is not None and r_unit is not None and w_unit != r_unit:
+        raise RecordFormatError(f"{b.path}: world time unit {w_unit!r} but run time unit {r_unit!r}")
+    return w_unit if w_unit is not None else r_unit
+
+
+def same_units(*bundles: Bundle) -> None:
+    units = {time_unit(b) for b in bundles}
+    if len(units) > 1:
+        raise RecordFormatError(f"compared runs declare different time units: {sorted(map(str, units))}")
 
 
 # ------------------------------------------------------------------ rows
@@ -184,6 +219,7 @@ def ensemble_counts(runs: list[Bundle]):
     """Counts [run, time, type] at the registered times from each run's event trace."""
     times = np.asarray(exchange_law.REGISTERED_DESIGN["times"], dtype=np.float64)
     w0 = runs[0].world
+    same_units(*runs)
     if np.any(w0.beta != 0):
         raise RecordFormatError("the beta0_ensemble world must have beta = 0")
     out = np.zeros((len(runs), times.size, w0.n_types), dtype=np.int64)
@@ -191,7 +227,8 @@ def ensemble_counts(runs: list[Bundle]):
         w = b.world
         if w.world_id != w0.world_id:
             raise RecordFormatError(f"{b.path}: ensemble runs must share one world")
-        et, ch = b.require("event_time", "event_channel")
+        (et,) = b.require("event_time")
+        ch = canonical_events(b)
         ft = b.optional("fission_time")
         if ft is not None and ft.size and ft[0] <= times[-1]:
             raise RecordFormatError(f"{b.path}: a fission at t = {ft[0]} precedes the last registered time")
@@ -227,8 +264,10 @@ def row2(ctx: Context) -> list[CheckResult]:
         raise RecordFormatError("the rescaling pair must share a founder")
     if json.dumps(b0.run.stream, sort_keys=True) != json.dumps(bc.run.stream, sort_keys=True):
         raise RecordFormatError("the rescaling pair must share its stream keys")
-    ch0, t0, s0, f0 = b0.require("event_channel", "event_time", "fission_split", "fission_time")
-    chc, tc, sc, fc = bc.require("event_channel", "event_time", "fission_split", "fission_time")
+    same_units(b0, bc)
+    t0, s0, f0 = b0.require("event_time", "fission_split", "fission_time")
+    tc, sc, fc = bc.require("event_time", "fission_split", "fission_time")
+    ch0, chc = canonical_events(b0), canonical_events(bc)
     res = [time_rescaling.check_time_rescaling(ch0, t0, chc, tc, float(c_vals[0]), s0, sc, f0, fc)]
     res.append(time_rescaling.uniform_beta_identity_exact(3, int(c_vals[0]) if float(c_vals[0]).is_integer()
                                                           else 1, 5))
@@ -280,6 +319,7 @@ def row5(ctx: Context) -> list[CheckResult]:
         ssa_oracle.SSAConvention.from_declared(conv_raw)
     except ssa_oracle.ConventionMissing as exc:
         raise MissingRecord(f"{bd.path}: {exc}") from exc
+    same_units(b, bd)
     ch, et = b.require("event_channel", "event_time")
     chd, etd, u, split, fol, epg = bd.require("event_channel", "event_time", "event_uniforms", "fission_split",
                                               "fission_followed", "events_per_growth")
@@ -287,7 +327,7 @@ def row5(ctx: Context) -> list[CheckResult]:
     out.append(CheckResult("diagnostic_mode_leaves_events_unchanged", unchanged, dict(events=int(ch.size))))
     w = bd.world
     out.append(ssa_oracle.check_crn_replay(law_of(bd), w.founder, u, chd, etd, w.fission_mass, split, fol, epg,
-                                           w.event_guard))
+                                           channel_table(bd), w.event_guard))
     runs = ctx.bundles("beta0_ensemble")
     times, counts, w0 = ensemble_counts(runs)
     k_join, k_leave = uniform_constants(w0)
@@ -319,6 +359,7 @@ def lineage_pair(ctx: Context) -> tuple[Bundle, Bundle]:
         raise RecordFormatError("lineage must be pair-consistent and lineage_single_event single-event")
     if a.world.world_id != s.world.world_id or not np.array_equal(a.world.founder, s.world.founder):
         raise RecordFormatError("the two forms must share one world and one founder")
+    same_units(a, s)
     return a, s
 
 
@@ -413,7 +454,7 @@ def run_rows(roles: dict, rows=None) -> dict:
             entry["passed"] = all(r.passed for r in results)
             if not entry["passed"]:
                 report["status"] = max(report["status"], 1)
-        except (MissingRecord, RecordFormatError, FileNotFoundError) as exc:
+        except (MissingRecord, RecordFormatError, ConventionMissing, FileNotFoundError) as exc:
             entry["passed"] = False
             entry["error"] = f"{type(exc).__name__}: {exc}"
             report["status"] = 2

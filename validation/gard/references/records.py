@@ -65,8 +65,9 @@ WORLD_FIELDS = {
     "partition_p": "rules.fission.p",
     "continuation": "rules.continuation.rule",
     "boundary": "rules.boundary",
+    "units": "units",
 }
-WORLD_OPTIONAL = ("event_guard", "partition_fraction", "partition_p", "boundary")
+WORLD_OPTIONAL = ("event_guard", "partition_fraction", "partition_p", "boundary", "units")
 
 RUN_FIELDS = {
     "world_id": "world_id",
@@ -81,9 +82,11 @@ RUN_FIELDS = {
     "ledger_conventions": "ledger_conventions",
     "revision": "revision",
     "end_status": "end_status",
+    "channels": "channels",
+    "time": "time",
 }
 RUN_OPTIONAL = ("energy_role", "check_verdict", "ledger_conventions", "end_status", "revision",
-                "ssa_convention")
+                "ssa_convention", "channels", "time")
 
 
 def _dig(obj: dict, dotted: str):
@@ -113,11 +116,20 @@ class WorldView:
     continuation: str
     event_guard: int | None
     boundary: str
+    units: dict | None = None
     raw: dict = field(repr=False, default_factory=dict)
 
     @property
     def n_types(self) -> int:
         return self.beta.shape[0]
+
+    @property
+    def type_names(self) -> list:
+        """Type names, whether the record lists names or objects carrying a name."""
+        out = []
+        for t in self.types:
+            out.append(t.get("name", t.get("id")) if isinstance(t, dict) else t)
+        return out
 
 
 @dataclass
@@ -134,6 +146,8 @@ class RunView:
     ledger_conventions: dict | None
     revision: str | None
     end_status: object
+    channels: dict | None = None
+    time: dict | None = None
     raw: dict = field(repr=False, default_factory=dict)
 
 
@@ -184,7 +198,7 @@ def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
         partition_p=None if values["partition_p"] is None else float(values["partition_p"]),
         continuation=str(values["continuation"]),
         event_guard=None if values["event_guard"] is None else int(values["event_guard"]),
-        boundary=str(values["boundary"] or "last_molecule_stays"), raw=raw)
+        boundary=str(values["boundary"] or "last_molecule_stays"), units=values["units"], raw=raw)
 
 
 def adapt_run(raw: dict, source: str = "run.json") -> RunView:

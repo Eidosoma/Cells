@@ -97,6 +97,30 @@ def test_a_run_without_ssa_convention_is_refused(standin, tmp_path):
     assert report["status"] == 2 and "convention" in report["rows"]["5"]["error"]
 
 
+@pytest.mark.parametrize("row", [5, 7, 8])
+def test_a_run_without_a_channel_table_is_refused(standin, tmp_path, row):
+    _, roles = standin
+    role = "lineage_diagnostic" if row == 5 else "lineage"
+    dst = tmp_path / f"nochannels{row}"
+    shutil.copytree(roles[role], dst)
+    run = json.loads((dst / "run.json").read_text())
+    del run["channels"]
+    (dst / "run.json").write_text(json.dumps(run))
+    report = harness.run_rows(dict(roles, **{role: str(dst)}), rows=[row])
+    assert report["status"] == 2 and "channel table" in report["rows"][str(row)]["error"]
+
+
+def test_mismatched_time_units_are_refused(standin, tmp_path):
+    _, roles = standin
+    dst = tmp_path / "units"
+    shutil.copytree(roles["lineage"], dst)
+    run = json.loads((dst / "run.json").read_text())
+    run["time"]["unit"] = "s"
+    (dst / "run.json").write_text(json.dumps(run))
+    report = harness.run_rows(dict(roles, lineage=str(dst)), rows=[7])
+    assert report["status"] == 2 and "time unit" in report["rows"]["7"]["error"]
+
+
 def test_a_planted_heat_sign_error_fails_row_8(standin, tmp_path):
     _, roles = standin
     dst = tmp_path / "signerr"
