@@ -79,11 +79,12 @@ function labelLayer() {
  * (worked out by the lens's own plan), its cell built by the cell's own builder in each size
  * mode it is drawn in, and stand-ins for the zones, the stage and the labels.
  */
-function lensFor(id, { mode = null, stage = stageOf(), flux = FLUX } = {}) {
+function lensFor(id, { mode = null, stage = stageOf(), flux = FLUX, replays = null, before = null } = {}) {
   const species = scene.species.find((item) => item.id === id);
   const lens = {
     species, sizeMode: mode || "schematic", selected: null, active: true, dustFade: 1, chromes: 0, stage,
-    model: { ofKind: (kind) => (kind === "capability" ? capabilities : []), get: (entity) => scene.entities.find((item) => item.id === entity) || null, raw: scene },
+    // `replays`: the page's catalogue of runs, for a species whose cell type names its looping run.
+    model: { ofKind: (kind) => (kind === "capability" ? capabilities : []), get: (entity) => scene.entities.find((item) => item.id === entity) || null, raw: replays ? { ...scene, replays } : scene },
     capabilityByPart: new Map(capabilities.map((entity) => [entity.part, entity])),
     leftOut: new Set((scene.left_out || []).map((item) => item.part).filter(Boolean)),
     zones: [], cells: {},
@@ -99,6 +100,7 @@ function lensFor(id, { mode = null, stage = stageOf(), flux = FLUX } = {}) {
     lens.cells[size] = handles;
     lens.zones.push({ name: "cell", mode: size, root: new THREE.Group(), fade: 1 }, { name: "molecules", mode: size, root: new THREE.Group(), fade: 1 });
   }
+  before?.(lens); // what a test sets on the lens before its flux is built (a fetch that serves the catalogue's files)
   lens.flux = new CellFlux(lens, flux);
   lens.flux.build();
   lens.labels = labelLayer();
@@ -113,6 +115,9 @@ function lensFor(id, { mode = null, stage = stageOf(), flux = FLUX } = {}) {
   return lens;
 }
 const lanesOf = (lens) => lens.flux.tokens.flatMap((set) => set.lanes);
+// A species shown as the engine's generic cell whose file names no looping run: its flux is illustration (rule 11). The
+// planarian's own cell type names its run, so its flux comes from that run, and it has tests of its own below.
+const ILLUSTRATED = "human";
 const kindsOf = (plan) => plan.kinds.map((kind) => kind.id);
 
 // ------------------------------------------------------------ the declarations
@@ -212,8 +217,8 @@ test("a law of the engine speaks for a species shown as the generic cell whose f
 
 test("for each species the plan follows its file: nothing for a part it lacks, and no direction its file sets apart", () => {
   const plans = Object.fromEntries(SPECIES.map((id) => [id, lensFor(id).flux.plan]));
-  // The three animals, shown as the engine's generic cell: all of it, with fuel alone withheld.
-  for (const id of ["human", "planarian", "fruitfly"]) {
+  // The animals with no run of their own, shown as the engine's generic cell: all of it, with fuel alone withheld.
+  for (const id of ["human", "mouse", "fruitfly"]) {
     assert.deepEqual(kindsOf(plans[id]), ["channels", "pumps", "junctions", "water", "secretion"], id);
     assert.deepEqual(plans[id].withheld.map((item) => item.id), ["fuel"], id);
     const pumps = plans[id].kinds[1];
@@ -242,6 +247,8 @@ test("for each species the plan follows its file: nothing for a part it lacks, a
     assert.equal(signals.basis, null);
     assert.match(signals.says, /^Both ways are drawn, and neither is claimed to carry more: no law of the engine speaks for what this species releases and takes up\.$/);
   }
+  // The planarian's own cell type names its looping run: no illustration is planned for it, whether or not the run is had.
+  assert.deepEqual([kindsOf(plans.planarian), lensFor("planarian").flux.source.kind], [[], "pending"]);
   // Whatever the species: a lane is either the engine's declaration with its law named, or one of two ways neither of which is claimed.
   for (const [id, plan] of Object.entries(plans)) {
     for (const kind of plan.kinds) {
@@ -256,7 +263,7 @@ test("for each species the plan follows its file: nothing for a part it lacks, a
 });
 
 test("a part's flux shows when the part is chosen, alone; the switch shows all; at rest nothing", () => {
-  const plan = lensFor("planarian").flux.plan;
+  const plan = lensFor(ILLUSTRATED).flux.plan;
   assert.deepEqual(shownKinds(plan, {}), []);
   assert.deepEqual(shownKinds(plan, { part: "pumps" }).map((kind) => kind.id), ["pumps"]);
   assert.deepEqual(shownKinds(plan, { on: true }).map((kind) => kind.id), ["channels", "pumps", "junctions", "water", "secretion"]);
@@ -271,7 +278,7 @@ test("a part's flux shows when the part is chosen, alone; the switch shows all; 
 // ------------------------------------------------------------ where the lanes run
 
 test("each kind's lanes cross the membrane where the cell's builder put the part", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const cell = lens.cells.schematic, depth = (point) => cell.shape.depth(point);
   assert.deepEqual(Object.keys(cell.spots).sort(), ["channels", "charges", "furrow", "gap", "junction", "pumps", "secretion", "water", "wound"]);
   const count = (kind) => seatsOf(kind, cell, "schematic").length;
@@ -301,14 +308,14 @@ test("each kind's lanes cross the membrane where the cell's builder put the part
   const coli = lensFor("ecoli");
   assert.equal(seatsOf("junctions", coli.cells[coli.sizeMode], coli.sizeMode).length, 0);
   assert.equal(coli.cells[coli.sizeMode].spots.junction, null);
-  const real = lensFor("planarian", { mode: "real" });
+  const real = lensFor(ILLUSTRATED, { mode: "real" });
   const toScale = seatsOf("channels", real.cells.real, "real")[0].inward(0);
   assert.ok(near(toScale(0).distanceTo(toScale(1)), 2 * SIZES.real.reach, 0.02), "to scale a lane is under a micrometre long");
   assert.equal(seatsOf("channels", null, "schematic").length, 0);
 });
 
 test("an illustration draws each lane at every place of its group; a run gives each stream one lane", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const cell = lens.cells.schematic, pitch = SIZES.schematic.pitch;
   const pumps = lens.flux.plan.kinds.find((kind) => kind.id === "pumps");
   const placed = arrange(pumps, seatsOf("pumps", cell, "schematic"), { every: true, pitch });
@@ -406,7 +413,7 @@ test("the beads stay out of the look, cannot be chosen, and fade with the part o
 // ------------------------------------------------------------ the lens's side
 
 test("the page opens with nothing flowing: the switch off, no bloom asked for, the look's motion free", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const { flux, stage } = lens;
   assert.equal(flux.on, false);
   assert.equal(flux.tokens.length, 0);
@@ -424,11 +431,11 @@ test("the page opens with nothing flowing: the switch off, no bloom asked for, t
   for (const part of ["water", "secretion", "channels", "pumps"]) assert.equal(flux.takes(part), false, "the picture's own drops, signals and ions are as they are");
   assert.equal(flux.flowing, false);
   // Where nothing may move, nothing is said of motion at rest.
-  assert.equal(lensFor("planarian", { stage: stageOf({ moving: false }) }).flux.legend().hint, "Or choose a part to see its flux.");
+  assert.equal(lensFor(ILLUSTRATED, { stage: stageOf({ moving: false }) }).flux.legend().hint, "Or choose a part to see its flux.");
 });
 
 test("at rest the cell's own drops, signals and ions move; while flux shows they hold where they stood, and the chosen part's give way", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const cell = lens.cells[lens.sizeMode];
   Object.assign(lens, { clock: 0, fades: () => false, animate: (time, resting) => CellLens.prototype.animate.call(lens, time, resting) });
   const update = (ms) => CellLens.prototype.update.call(lens, ms);
@@ -467,7 +474,7 @@ test("at rest the cell's own drops, signals and ions move; while flux shows they
 });
 
 test("choosing a part shows that part's flux alone, with bloom, the look's motion held and the notice on the picture", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const { flux, stage } = lens;
   lens.choose("cap.pumps");
   assert.equal(flux.on, false, "the switch stays off");
@@ -519,7 +526,7 @@ test("choosing a part shows that part's flux alone, with bloom, the look's motio
 });
 
 test("a part that the page's address names is chosen as the page opens and shows no flux until the visitor chooses", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const { flux, stage } = lens;
   // The viewer chooses the part the address names, then tells the view that the choice was the address's.
   lens.selected = "cap.pumps";
@@ -542,14 +549,14 @@ test("a part that the page's address names is chosen as the page opens and shows
   lens.choose("cap.pumps");
   assert.deepEqual([...new Set(lanesOf(lens).map((item) => item.lane.key.split("/")[0]))], ["pumps"]);
   // Or the visitor chooses nothing and then the same part again.
-  const again = lensFor("planarian");
+  const again = lensFor(ILLUSTRATED);
   again.selected = "cap.pumps";
   again.flux.hold("cap.pumps");
   again.choose(null);
   again.choose("cap.pumps");
   assert.equal(again.flux.tokens.length, 1);
   // Or presses the name of the very part the address chose: the viewer says that a choice was made, and sets the same one.
-  const same = lensFor("planarian");
+  const same = lensFor(ILLUSTRATED);
   same.selected = "cap.pumps";
   same.flux.hold("cap.pumps");
   same.flux.refresh(); // the view is shown again, or its species changes: no choice of the visitor's, and nothing flows
@@ -558,7 +565,7 @@ test("a part that the page's address names is chosen as the page opens and shows
   same.choose("cap.pumps");
   assert.equal(same.flux.tokens.length, 1);
   // Or presses the switch: from then on the part, still chosen, shows alone as any chosen part does.
-  const pressed = lensFor("planarian");
+  const pressed = lensFor(ILLUSTRATED);
   pressed.selected = "cap.pumps";
   pressed.flux.hold("cap.pumps");
   assert.equal(pressed.flux.tokens.length, 0);
@@ -567,7 +574,7 @@ test("a part that the page's address names is chosen as the page opens and shows
   pressed.flux.setOn(false);
   assert.equal(pressed.flux.tokens.length, 1, "the chosen part goes on showing: the visitor has chosen");
   // An address that names nothing holds nothing.
-  const plain = lensFor("planarian");
+  const plain = lensFor(ILLUSTRATED);
   plain.flux.hold(null);
   plain.choose("cap.pumps");
   assert.equal(plain.flux.tokens.length, 1);
@@ -603,7 +610,7 @@ test("a statement has room on a row where no card lies, as near to where it was 
 });
 
 test("the Flux switch shows all of it under one legend, and a panel says what stands behind it", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const { flux } = lens;
   flux.setOn(true);
   const keys = lanesOf(lens).map((item) => item.lane.key.split("/")[0]);
@@ -628,7 +635,7 @@ test("the Flux switch shows all of it under one legend, and a panel says what st
   assert.equal(flux.has(FLUX_PANEL), true);
   const panel = flux.describe(FLUX_PANEL);
   assert.equal(panel.chips[0].label, "Illustration: not a run");
-  assert.match(panel.plain, /^Illustration: not a run\. Planarian has no looping run of its own cell, so what flows is shown as illustration\. Direction only: /);
+  assert.match(panel.plain, /^Illustration: not a run\. Human has no looping run of its own cell, so what flows is shown as illustration\. Direction only: /);
   assert.equal(panel.note, declarations.illustration.speaks_for);
   assert.deepEqual(panel.sections.map((section) => section.title), ["Drawn", "Not drawn", "The laws the directions are drawn from", "The two forms of illustration"]);
   assert.deepEqual(panel.sections[0].items.map((item) => item.label), ["Ions through the channels: Ions", "Ions through the pumps: Sodium–potassium pump", "Ions through the pumps: Calcium pump", "Exchange with neighbours: Ions", "Water", "Secreted signals: Signals"]);
@@ -655,7 +662,7 @@ test("the Flux switch shows all of it under one legend, and a panel says what st
 });
 
 test("for a visitor who asks for less motion the beads stand, and the picture and the legend say so", () => {
-  const lens = lensFor("planarian", { stage: stageOf({ moving: false }) });
+  const lens = lensFor(ILLUSTRATED, { stage: stageOf({ moving: false }) });
   const { flux, stage } = lens;
   flux.setOn(true);
   const tokens = flux.tokens[0].tokens;
@@ -696,20 +703,20 @@ test("the statement is said in the fewest lines that have room between the cards
   const inTwo = "Direction only: the number of beads\nand their pace stand for no number";
   const card = { left: 16, top: 64, right: 252, bottom: 250 };
   // A wide window: the view's card at the left, the rail at the right's middle. The middle of the window is free at the top.
-  let said = shown(lensFor("planarian"), [card, { left: 1180, top: 300, right: 1264, bottom: 500 }]);
+  let said = shown(lensFor(ILLUSTRATED), [card, { left: 1180, top: 300, right: 1264, bottom: 500 }]);
   assert.equal(said.lines.text, whole);
   assert.deepEqual(said.at, [[640, STATEMENT.top + 18], [640, STATEMENT.top + 18 + STATEMENT.gap + 18]]);
   // A part's panel open at the right: the statement moves aside as little as will do, and stays whole.
-  said = shown(lensFor("planarian"), [card, { left: 888, top: 64, right: 1264, bottom: 780 }]);
+  said = shown(lensFor(ILLUSTRATED), [card, { left: 888, top: 64, right: 1264, bottom: 780 }]);
   assert.equal(said.lines.text, whole);
   assert.equal(said.at[0][0], 888 - STATEMENT.margin - said.lines.width / 2);
   // Less room between the two cards than the whole line needs: it is said in two lines.
-  said = shown(lensFor("planarian"), [card, { left: 700, top: 64, right: 1264, bottom: 780 }]);
+  said = shown(lensFor(ILLUSTRATED), [card, { left: 700, top: 64, right: 1264, bottom: 780 }]);
   assert.equal(said.lines.text, inTwo);
   assert.ok(Math.abs(said.at[0][0] - (700 - STATEMENT.margin - said.lines.width / 2)) <= 1 && said.at[0][1] === STATEMENT.top + 18);
   // A phone: the view's card takes the top left and the rail the right from 124 px down. Beside the card there is
   // no room, so the statement stands under the card, in two lines, over the top of the picture; never in the foot.
-  const phone = () => lensFor("planarian", { stage: stageOf({ width: 400, height: 780 }) });
+  const phone = () => lensFor(ILLUSTRATED, { stage: stageOf({ width: 400, height: 780 }) });
   const small = { left: 16, top: 54, right: 224, bottom: 196 }, rail = { left: 316, top: 124, right: 390, bottom: 262 }, toggle = { left: 16, top: 716, right: 130, bottom: 764 };
   said = shown(phone(), [small, rail, toggle]);
   assert.equal(said.lines.text, inTwo);
@@ -733,22 +740,22 @@ test("the statement is said in the fewest lines that have room between the cards
   // A window 800 wide with the view's card, the legend and a part's panel all open: between the card and the panel
   // 160 px are left, less than the statement needs in any of its ways. It is not shown on the picture there; the
   // legend and the panel, which lie in front, carry the notice. (Rule 11 asks for it on the picture: reported.)
-  const tight = lensFor("planarian", { stage: stageOf({ width: 800, height: 700 }) });
+  const tight = lensFor(ILLUSTRATED, { stage: stageOf({ width: 800, height: 700 }) });
   said = shown(tight, [{ left: 16, top: 64, right: 252, bottom: 218 }, { left: 16, top: 226, right: 252, bottom: 684 }, { left: 424, top: 64, right: 784, bottom: 684 }]);
   assert.deepEqual([said.notice.hidden, said.lines.hidden], [true, true]);
   assert.equal(tight.flux.legend().example, "Illustration: not a run");
   assert.equal(tight.flux.inPanel(tight.model.get("cap.pumps")).sections.at(-1).title, "Flux. Illustration: not a run");
   // A window narrower still: short lines.
-  said = shown(lensFor("planarian", { stage: stageOf({ width: 270, height: 600 }) }), []);
+  said = shown(lensFor(ILLUSTRATED, { stage: stageOf({ width: 270, height: 600 }) }), []);
   assert.equal(said.lines.text, "Direction only:\nthe number of beads and their pace\nstand for no number");
   assert.deepEqual([said.notice.hidden, said.lines.hidden], [false, false]);
   // Where nothing may move the last line says so, in every way of breaking it.
-  const still = lensFor("planarian", { stage: stageOf({ moving: false, width: 270, height: 600 }) });
+  const still = lensFor(ILLUSTRATED, { stage: stageOf({ moving: false, width: 270, height: 600 }) });
   assert.equal(shown(still, []).lines.text, "Direction only:\nthe number of beads and their pace\nstand for no number\nshown still");
 });
 
 test("the beads move in the time that passed, fade with the cell, and leave with the view", () => {
-  const lens = lensFor("planarian");
+  const lens = lensFor(ILLUSTRATED);
   const { flux, stage } = lens;
   lens.choose("cap.channels");
   const tokens = flux.tokens[0].tokens;
@@ -820,7 +827,7 @@ test("every species goes through its own file: what its cell lacks is never offe
 });
 
 test("drawn to scale, lanes of the channel's own size stand in the close-up, where the cell's own lanes fade", () => {
-  const lens = lensFor("planarian", { mode: "real" });
+  const lens = lensFor(ILLUSTRATED, { mode: "real" });
   assert.equal(lens.sizeMode, "real");
   lens.choose("cap.channels");
   assert.equal(lens.flux.tokens.length, 2);
@@ -849,7 +856,7 @@ test("drawn to scale, lanes of the channel's own size stand in the close-up, whe
 });
 
 test("drawn to scale, the close-up's pump has lanes of its own size, over the pump where the cell's builder stands it", () => {
-  const lens = lensFor("planarian", { mode: "real" });
+  const lens = lensFor(ILLUSTRATED, { mode: "real" });
   lens.choose("cap.pumps");
   assert.equal(lens.flux.tokens.length, 2);
   const [wide, close] = lens.flux.tokens;
@@ -989,13 +996,16 @@ test("a run is read as a species' loop only where it says so, names the engine, 
   assert.deepEqual(cycle.loop.follows, [{ time: 6, from: cell, to: daughter }]);
   assert.match(loopWords(cycle.loop, "JCVI-syn3A", clock), new RegExp(`· a loop of 12 s of the cell's time · from 6 s it follows ${daughter}, a daughter of ${cell}$`));
   assert.match(readLoop(await opened(asLoop(cell, { follows: [{ time: 6, from: cell, to: "no-such-cell" }] })), "planarian").why, /^The loop follows a cell the run does not have/);
-  // A run's own label stands beside its name, whatever it says of the run.
+  // A run's own label is carried in its words for the legend and the panel; the picture names the run and keeps the label off.
   const label = "one period of a periodic drive, at a low level of detail (illustration)";
   const paced = readLoop(await opened((view) => {
     asLoop(cell)(view);
     view.run.label = label;
   }), "planarian");
-  assert.equal(loopWords(paced.loop, "Generic cell", clock), `Generic cell · the engine's looping run ${SHEET} (${label}) · a loop of 12 s of the cell's time`);
+  assert.equal(paced.loop.label, label);
+  assert.equal(loopWords(paced.loop, "Generic cell", clock), `Generic cell · the engine's looping run ${SHEET} · a loop of 12 s of the cell's time`);
+  assert.equal(loopWords({ ...paced.loop, title: "Planarian loop (development run)" }, "Planarian", clock), "Planarian loop (development run) · a loop of 12 s of the cell's time", "the catalogue's title, where the page has it; it names the species already");
+  assert.equal(loopWords({ ...paced.loop, title: "Interim loop" }, "Planarian", clock), "Planarian · Interim loop · a loop of 12 s of the cell's time");
   const unnamed = await opened((view) => {
     asLoop(cell)(view);
     view.run.engine_models = [];
@@ -1072,7 +1082,7 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.deepEqual(kindsOf(flux.plan), ["channels", "pumps", "junctions", "membrane"]);
   assert.deepEqual(flux.plan.withheld.map((item) => [item.id, item.why]), [
     ["water", `Not read from the run: ${READ_WORDS}, and no total of this is among them.`],
-    ["secretion", "The run saved no total for it."],
+    ["secretion", "The run has no exchange route: nothing is secreted or taken up in it."],
     ["fuel", FLUX.kinds.find((kind) => kind.id === "fuel").nothing],
   ]);
   assert.equal(flux.tokens.length, 0, "the switch is still off");
@@ -1080,10 +1090,11 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.equal(flux.tokens.length, 0, "no bead is drawn for water: the run says nothing of it, and illustration is not mixed in");
   assert.equal(flux.legend().example, null);
   assert.match(flux.legend().cannot[0].why, /^Not read from the run/);
-  // The pumps, from the run: one lane a stream, turned by the run's sign.
+  // The pumps, from the run: one lane a stream, turned by the run's sign. The pump is one element of the run: its two ions share one seat, side by side.
   lens.choose("cap.pumps");
   const lanes = lanesOf(lens);
-  assert.deepEqual(lanes.map((item) => [item.lane.species, item.key.split("@")[1]]), [["Na", "0"], ["K", "1"]]);
+  assert.deepEqual(lanes.map((item) => [item.lane.species, item.key.split("@")[1]]), [["Na", "0"], ["K", "0"]]);
+  assert.ok(lanes[0].path(0.5).distanceTo(lanes[1].path(0.5)) > 0.1, "side by side, apart");
   const tokens = flux.tokens[0].tokens;
   const readings = flux.readings().filter((rate) => rate.stream.kind === "pump");
   assert.deepEqual(tokens.lanes.map((lane) => [near(lane.perSecond, readings.find((rate) => rate.stream.species === (lane.key.includes("/Na@") ? "Na" : "K")).perSecond), lane.reverse]), [[true, true], [true, false]]);
@@ -1091,27 +1102,32 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   const [notice, lines] = lens.labels.made;
   assert.equal(notice.hidden, true, "no notice of illustration: this is a run");
   const token = loopToken(flux.loop.busiest, 1);
-  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nOne bead is ${token.toLocaleString("en-US")} ions · true speed · mean of ${clock(run.t[0])} to ${clock(run.t[1])}`);
+  // At true speed a record's interval (half a second here) passes too fast to read its place: the picture gives its length. And it says what the cell takes from the run.
+  const cellId = run.sets.get("cell").ids[flux.loop.cell];
+  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nOne bead is ${token.toLocaleString("en-US")} ions · true speed · means over each 500 ms between records\nFrom the run's lumped cell ${cellId}\nNot a measurement of a living cell`);
   // The legend: the slow-down, what a bead stands for, the time with the loop's length, whose word the direction is.
   let legend = flux.legend();
   assert.deepEqual(legend.time.options.map((option) => [option.id, option.label, option.on]), [[1, "True", true], [1000, "1/1,000", false], [1000000, "1/1,000,000", false]]);
-  assert.deepEqual(legend.keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "pump"]);
-  assert.equal(legend.keys[1].text, `One bead is ${token.toLocaleString("en-US")} ions. More beads a second means more of them a second; how fast a bead travels stands for nothing`);
+  assert.deepEqual(legend.keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "from", "closes", "pump"]);
+  assert.equal(legend.keys[1].text, `One bead is ${token.toLocaleString("en-US")} ions. More beads a second means more of them a second; how fast a bead travels stands for nothing. Where a lane passes less than a bead now and then, its arrowhead alone shows`);
+  assert.equal(legend.keys[5].text, `From the run's cell ${cellId}: a lumped cell with the run's own laws. Not a measurement of a living cell. Drawn: channels from channel_transferred (kir_1, nal_1); pumps from pump_cycles (pump of membrane_1); neighbours from junction_transferred (6 junctions); membrane itself from membrane_transferred (membrane_1)`, "the whole cell's: which part takes a flux from which record");
+  assert.equal(legend.keys[6].text, closesWords(flux.loop));
   assert.equal(legend.keys[2].text, `True speed: one second here is one second of the run. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start`);
   assert.equal(legend.keys[3].text, "A bead goes the way its total grew over the interval shown, by the run's own signs");
   assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux, from the looping run");
-  // Time passes at true speed: the interval shown moves on with the loop, and comes round to its start.
+  // Time passes at true speed: the interval shown moves on with the loop, and comes round to its start. The words stay the same, so nothing is laid out again.
   const gap = run.t[1] - run.t[0];
+  const said = flux.said;
   flux.advance(gap * 1.5);
   assert.equal(flux.step, 2);
-  assert.match(lines.text, new RegExp(`mean of ${clock(run.t[1])} to ${clock(run.t[2])}$`));
+  assert.equal(flux.said, said, "the same words: the statement is not written again at each record");
   flux.advance(flux.loop.length);
   assert.equal(flux.step, 2, "once round");
-  // Slowed a thousand times: the loop's time runs a thousandth as fast, and the token is smaller.
+  // Slowed a thousand times: the loop's time runs a thousandth as fast, and the token is smaller. Each interval now lasts long enough to read its place.
   flux.setSlow(1000);
   legend = flux.legend();
   assert.deepEqual(legend.time.options.map((option) => option.on), [false, true, false]);
-  assert.match(lens.labels.made[1].text, / · slowed 1,000 times · /);
+  assert.match(lens.labels.made[1].text, / · slowed 1,000 times · mean of 0\.5 s to 1\.0 s of the loop\n/);
   const before = flux.elapsed;
   flux.advance(1);
   assert.ok(near(flux.elapsed - before, 0.001, 1e-9));
@@ -1135,18 +1151,20 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.equal(flux.loop.closes.says, "the last observed row meets the first within 2.8e-05 relative (largest in observed_membrane_flux_fmol_s)");
   flux.loop.closes.says = says;
   assert.match(panel.note, /no difference is taken across the seam/);
-  assert.deepEqual(panel.sections.map((section) => section.title), ["Drawn", "Not drawn", "Over the interval shown"]);
-  assert.equal(panel.sections[2].items.length, flux.loop.streams.length);
+  assert.deepEqual(panel.sections.map((section) => section.title), ["What this cell takes from the run", "Drawn", "Not drawn", "Over the interval shown"]);
+  assert.deepEqual(panel.sections[0].items.map((item) => [item.label, item.detail]), [["Ions through the channels", "from channel_transferred"], ["Ions through the pumps", "from pump_cycles"], ["Exchange with neighbours", "from junction_transferred"], ["Ions through the membrane itself", "from membrane_transferred"]]);
+  assert.equal(panel.sections[3].items.length, flux.loop.streams.length);
   assert.deepEqual([stage.bloom, [...stage.decoration.holds]], [BLOOM, ["flux"]]);
   // Another species keeps illustration: the run is the planarian's.
   const other = lensFor("human");
   assert.equal(other.flux.setLoop("human", run).ok, false);
   assert.equal(other.flux.source.kind, "illustration");
-  // And an example is never taken for a species' run.
+  // And an example is never taken for a species' run: the planarian, which names a run of its own, still shows no illustration.
   const refused = lensFor("planarian");
   const answer = refused.flux.setLoop("planarian", plain);
   assert.equal(answer.ok, false);
-  assert.equal(refused.flux.source.kind, "illustration");
+  assert.equal(refused.flux.source.kind, "pending");
+  assert.equal(refused.flux.plan.kinds.length, 0);
 });
 
 test("a loop's exchange routes are read as its secreted signals: released out, taken up in, by the run's own signs", async () => {
@@ -1250,4 +1268,137 @@ test("the Speed row is offered wherever a rate stands behind what moves: a machi
   assert.equal(ecoli.flux.slowSaid(), "true speed");
   ecoli.flux.slow = 1000;
   assert.equal(ecoli.flux.slowSaid(), "slowed 1,000 times");
+});
+
+// ------------------------------------------------------------ the planarian's own looping run (FR-11), from the fixture in the tree
+
+// The engine's first looping run, as its run-view writer wrote it (tests/engine-views/loop-b08af640/), packaged here as the
+// page gets its runs, under the experiment id the page's catalogue gives it. The overlay holds what the catalogue says of it.
+const LOOPED = path.join(scratch, "loop"), LOOP_ID = "planarian-loop--planarian-b08af640";
+{
+  const overlay = { format: "cells.visualizer.replay_overlay@1", experiments: { "planarian-loop": { adapter: "standard-history", development: true, label: "Planarian loop (development run)", plain: "A development run of the engine, not judged.", sources: [], engine_entities: [], outcome: { judged: false, status: "Development run, no verdict" }, parameters: {}, readouts: {}, events: { current: { label: "Electrode current", plain: "The electrode's current changes." } }, stops: { complete: { label: "Ran to its end" } } } } };
+  const settings = path.join(scratch, "loop-settings");
+  spawnSync("mkdir", ["-p", settings]);
+  for (const [name, content] of [["overlay.json", overlay], ["selection.json", { "planarian-loop": { evidence_folder: "loop-b08af640", runs: ["planarian-b08af640"] } }]]) spawnSync("python3", ["-c", `import json,sys; json.dump(json.loads(sys.argv[2]), open(sys.argv[1], "w"))`, path.join(settings, name), JSON.stringify(content)]);
+  const done = spawnSync("python3", [path.join(ROOT, "tools", "adapt_run.py"), "--evidence", path.join(ROOT, "tests", "engine-views"), "--overlay", path.join(settings, "overlay.json"), "--selection", path.join(settings, "selection.json"), "--out", LOOPED], { encoding: "utf8" });
+  assert.equal(done.status, 0, `adapt_run.py failed:\n${done.stderr}`);
+}
+
+/** The planarian's lens, its species naming its run, with the page's catalogue of runs and a fetch that serves the packaged files. */
+function planarianWithLoop({ catalogue = readJson(path.join(LOOPED, "index.json")), fail = false, refuse = 0 } = {}) {
+  const asked = [];
+  const before = globalThis.fetch;
+  let refused = refuse; // how many loads the network gives up on first
+  globalThis.fetch = async (url) => {
+    asked.push(String(url));
+    if (refused-- > 0) throw new TypeError("Failed to fetch");
+    if (fail) return { ok: false, status: 404 };
+    const file = path.join(LOOPED, path.basename(String(url)));
+    return { ok: true, status: 200, json: async () => readJson(file) };
+  };
+  // The scene's planarian: its own cell type names the run (ENTRIES.md, CELL_TYPES.md: `cell_type.loop`), as its file does.
+  const lens = lensFor("planarian", { replays: catalogue });
+  assert.deepEqual(lens.species.cell_type, { loop: LOOP_ID });
+  const restore = () => (globalThis.fetch = before);
+  return { lens, asked, restore };
+}
+const settle = async (flux) => {
+  for (let tries = 0; tries < 200 && flux.fetches.size; tries++) await new Promise((resolve) => setTimeout(resolve, 5));
+};
+
+test("the planarian names its own looping run: the page fetches it from its catalogue, and the Cell view plays it as what the catalogue says it is", async (t) => {
+  // The species' file names it for its own cell type, and the scene carries that as it is (tools/lib/species.py).
+  assert.deepEqual(json("data/species/planarian.json").cell_type, { loop: LOOP_ID });
+  assert.equal(json("data/species/planarian.json").cell.loop, undefined, "the loop belongs to a cell type, not to the cell block");
+  const { lens, asked, restore } = planarianWithLoop();
+  t.after(restore);
+  const { flux } = lens;
+  assert.deepEqual([flux.named, flux.typeKey], [LOOP_ID, "planarian/cell"]);
+  // Once the species is read through its entries, the default cell type names it: the same run, found the same way.
+  const typed = { ...lens.species, cell_types: [{ id: "cell", label: "Generic cell", loop: LOOP_ID }], default_cell_type: "cell" };
+  assert.equal(Object.getOwnPropertyDescriptor(CellFlux.prototype, "named").get.call({ get cellType() { return Object.getOwnPropertyDescriptor(CellFlux.prototype, "cellType").get.call({ species: typed, lens: {} }); } }), LOOP_ID);
+  // As the species is shown, its run is asked for; until it is read, nothing is drawn and no illustration stands in.
+  flux.build();
+  assert.equal(flux.source.kind, "pending");
+  assert.ok(flux.plan.kinds.length === 0 && flux.plan.withheld.every((item) => item.why === "The Planarian's own run is being fetched."));
+  assert.equal(flux.legend().hint, "The Planarian's own run is being fetched. What moves at rest is the picture's own, not a measured flow.");
+  await settle(flux);
+  assert.equal(flux.source.kind, "run");
+  assert.ok(asked[0].endsWith(`${LOOP_ID}.json`) && asked.length > 1, "the run, then the files of records it reads");
+  const loop = flux.loop;
+  assert.deepEqual([loop.title, loop.status, loop.cell, loop.length, loop.revision], ["Planarian loop (development run)", "Development run of the engine, not judged", 3, 2, "b08af640c3db83e891e29ade36c300d6f8e5a553"]);
+  // What it draws, from which of the run's records: the centre cell's channels (only those that pass something), its pump, its membrane itself and its six junctions.
+  assert.deepEqual(flux.plan.kinds.map((kind) => kind.id), ["channels", "pumps", "junctions", "membrane"]);
+  assert.deepEqual(flux.plan.withheld.map((item) => [item.id, item.why]), [
+    ["water", `Not read from the run: ${READ_WORDS}, and no total of this is among them.`],
+    ["secretion", "The run has no exchange route: nothing is secreted or taken up in it."],
+    ["fuel", FLUX.kinds.find((kind) => kind.id === "fuel").nothing],
+  ]);
+  assert.deepEqual(loop.streams.filter((stream) => stream.kind === "channel").map((stream) => [stream.name, stream.species]), [["nav_3", "Na"], ["kir_3", "K"]], "a channel population's total of an ion it never passes gets no lane");
+  assert.equal(new Set(loop.streams.filter((stream) => stream.kind === "junction").map((stream) => stream.name)).size, 6);
+  // At true speed: a bead is a million ions, sized by the busiest stream (the membrane's own sodium, about five million a second).
+  assert.equal(loopToken(loop.busiest, 1), 1_000_000);
+  assert.ok(ionsASecond(loop.busiest) > 4e6 && ionsASecond(loop.busiest) < 6e6);
+  // All of it shown: the picture says what the run is, names it, says that it loops, the token and speed, and what the cell takes from it.
+  flux.setOn(true);
+  const [notice, lines] = lens.labels.made;
+  assert.equal(notice.text, "Development run of the engine, not judged");
+  assert.equal(lines.text, "Planarian loop (development run) · a loop of 2 s of the cell's time\nOne bead is 1,000,000 ions · true speed · means over each 20 ms between records\nFrom the run's lumped cell cell_3, with a prescribed electrode current injection (not drawn)\nNot a measurement of a living cell");
+  assert.match(flux.legend().keys.find((item) => item.key === "from").text, /^From the run's cell cell_3: a lumped cell with the run's own laws, under the run's prescribed electrode current injection, which is not drawn\. Not a measurement of a living cell\. Drawn: /, "the legend says it in full");
+  const legend = flux.legend();
+  assert.equal(legend.example, "Development run of the engine, not judged", "the legend carries it too, for a narrow screen whose picture has no room");
+  assert.match(legend.keys.find((item) => item.key === "from").text, /Drawn: channels from channel_transferred \(nav_3, kir_3\); pumps from pump_cycles \(pump of membrane_3\); neighbours from junction_transferred \(6 junctions\); membrane itself from membrane_transferred \(membrane_3\)$/);
+  assert.equal(legend.keys.find((item) => item.key === "closes").text, "Its last record meets its first within 2.8e-5 (tolerance 1.0e-4), in the records it measures; of its records, 7 are not measured (cumulative totals: they grow by design, so the reader differences them inside the loop)");
+  assert.deepEqual(legend.time.options.map((option) => [option.label, option.on]), [["True", true], ["1/1,000", false], ["1/1,000,000", false]]);
+  // The six junctions each cross a side of their own, the three species of one junction side by side there.
+  const junctions = flux.tokens[0].lanes.filter((item) => item.lane.stream?.kind === "junction");
+  const sides = new Set(junctions.map((item) => item.key.split("@")[1]));
+  assert.equal(sides.size, 6);
+  for (const side of sides) assert.equal(new Set(junctions.filter((item) => item.key.endsWith(`@${side}`)).map((item) => item.lane.stream.name)).size, 1, "one junction on a side");
+  // A chosen part's panel says what the run is, where the legend is hidden behind it.
+  lens.choose("cap.pumps");
+  assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux, from the looping run. Development run of the engine, not judged");
+  const panel = (lens.choose(null), flux.describe(FLUX_PANEL));
+  assert.equal(panel.chips[0].label, "Development run of the engine, not judged");
+  assert.match(panel.plain, /^Planarian loop \(development run\) · a loop of 2 s of the cell's time\. A development run of the engine, not judged\. The last observed row meets the first within 2\.8e-05 relative/);
+  assert.match(panel.plain, /Made by the engine at revision b08af640c3db83e891e29ade36c300d6f8e5a553, from a clean tree\.$/);
+  assert.match(panel.sections[0].note, /The run's own words for itself: “interim planarian loop: .*\(illustration, no verdict\)”\.$/);
+  // On a phone the picture keeps the notice and the run's name, in two lines; the rest stands in the legend and the panel.
+  const phone = planarianWithLoop({ });
+  t.after(phone.restore);
+  phone.lens.stage.width = 400;
+  phone.lens.stage.height = 780;
+  await settle(phone.lens.flux);
+  phone.lens.flux.setOn(true);
+  assert.deepEqual([phone.lens.labels.made[0].text, phone.lens.labels.made[1].text], ["Development run of the engine, not judged", "Planarian loop (development run)\nloops every 2 s"]);
+  assert.ok(phone.lens.flux.legend().keys.some((item) => /^One bead is 1,000,000 ions/.test(item.text)), "the token stands in the legend");
+  // Slowed a thousand times: the record's interval lasts twenty seconds of watching, long enough to read its place in the loop.
+  flux.setOn(true);
+  flux.setSlow(1000);
+  assert.match(lens.labels.made[1].text, /^Planarian loop .*\nOne bead is 1,000 ions · slowed 1,000 times · mean of 0\.00 s to 0\.02 s of the loop\n/);
+});
+
+test("a species whose own run cannot be had shows no illustration in its place, and says why", async (t) => {
+  const missing = planarianWithLoop({ catalogue: { experiments: [], runs: [] } });
+  t.after(missing.restore);
+  missing.lens.flux.build();
+  assert.equal(missing.lens.flux.source.kind, "pending");
+  assert.equal(missing.lens.flux.source.state, "failed");
+  assert.equal(missing.lens.flux.source.why, `The Planarian's own run (${LOOP_ID}) is not among the runs this page carries.`);
+  missing.lens.flux.setOn(true);
+  assert.equal(missing.lens.flux.tokens.length, 0, "nothing drawn, and no illustration");
+  assert.match(missing.lens.flux.describe(FLUX_PANEL).plain, /no illustration stands in for it/);
+  // A load the network gave up on is asked for again: the second answer is had.
+  const flaky = planarianWithLoop({ refuse: 1 });
+  t.after(flaky.restore);
+  for (let tries = 0; tries < 400 && flaky.lens.flux.source.kind !== "run"; tries++) await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(flaky.lens.flux.source.kind, "run", "read on the second asking");
+  assert.equal(flaky.asked.filter((url) => url.endsWith(`${LOOP_ID}.json`)).length, 2);
+  flaky.restore();
+  const broken = planarianWithLoop({ fail: true });
+  t.after(broken.restore);
+  broken.lens.flux.build();
+  await settle(broken.lens.flux);
+  for (let tries = 0; tries < 200 && broken.lens.flux.fetches.get("planarian/cell")?.state !== "failed"; tries++) await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.match(broken.lens.flux.source.why, /^The Planarian's own run could not be read: runs\/planarian-loop--planarian-b08af640\.json answered 404$/);
 });

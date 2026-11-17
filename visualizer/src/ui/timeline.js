@@ -19,7 +19,7 @@
 
 import { h, svg } from "./dom.js";
 import { clock, duration } from "../replay/format.js";
-import { SPEEDS, SECONDS } from "../replay/player.js";
+import { SPEEDS, SECONDS, whereWords } from "../replay/player.js";
 
 const PLAY = "M7 4.5v15l12-7.5z", PAUSE = "M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z";
 
@@ -212,15 +212,14 @@ class CellsTimeline extends HTMLElement {
       this.rest.textContent = "";
       return;
     }
-    const base = player.base || SECONDS;
-    const total = base.length ? base.length(player.end - player.start) : duration(player.end - player.start);
-    const now = base.clock ? base.clock(player.time) : clock(player.time);
+    // The run's own time, and what it lies in: its length, or, for a run whose records start later, its first and last record.
+    const { now, of } = whereWords({ time: player.time, start: player.start, end: player.end, base: player.base || SECONDS });
     this.now.textContent = now;
-    const parts = [` of ${total}`];
+    const parts = [of];
     if (run.events.length) parts.push(`${this.eventWord} ${run.eventsBy(player.time)} of ${run.events.length}`);
     if (!run.isValid(player.index)) parts.push("this record is not valid in the run");
     this.rest.textContent = parts.join(" · ");
-    this.range.setAttribute("aria-valuetext", `${now} of ${total}`);
+    this.range.setAttribute("aria-valuetext", `${now}${of}`);
   }
 
   /** One step faster (1) or slower (-1) along the speeds the run is offered. */

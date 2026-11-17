@@ -423,6 +423,15 @@ class Reader:
                         problems.append(f"the fact {fact['label']!r} cites {key!r}, which is not among the sources")
         if set(cell) - {"facts", "parts", "capabilities"}:
             problems.append(f"cell does not take {', '.join(sorted(set(cell) - {'facts', 'parts', 'capabilities'}))}")
+        # The species' own cell type (schema/ENTRIES.md, CELL_TYPES.md): {id, label, loop}, `loop` the id of its looping run
+        # among the packaged replays. The entries reader (tools/lib/entries.py) gives the species its cell types from it;
+        # until the scene is read through that reader, the block is carried as it is, so that the Cell view finds the run.
+        own_type = data.get("cell_type")
+        if own_type is not None and not (
+            isinstance(own_type, dict) and not set(own_type) - {"id", "label", "loop"}
+            and all(isinstance(own_type[key], str) and own_type[key].strip() for key in own_type)
+        ):
+            problems.append("cell_type is {id, label, loop}, each a text that is not empty")
 
         if problems:
             self.warn(where, problems[0] if len(problems) == 1 else f"{problems[0]} (and {len(problems) - 1} more: {'; '.join(problems[1:4])})")
@@ -451,6 +460,8 @@ class Reader:
             self.remark(where, f"its place for {', '.join(waiting)} is not shown: left out of the picture for now")
             capabilities = {key: entry for key, entry in capabilities.items() if key not in self.left_out}
         out["cell"] = {"facts": facts, "parts": parts, "capabilities": capabilities}
+        if own_type is not None:
+            out["cell_type"] = {key: value.strip() for key, value in own_type.items()}
         out["sources"] = sources
         return out
 

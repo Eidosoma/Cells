@@ -34,7 +34,10 @@ import { speedWords } from "../../replay/player.js";
 
 export const PER_FMOL = 6.02214076e23 * 1e-15; // ions in a femtomole
 export const BUSIEST = 10; // beads a second on the screen for a run's busiest stream
-export const SLOWS = [1, 1e3, 1e6]; // the slow-downs a species' looping run is offered in the Cell view, which has no timeline: true speed, a thousand times, a million times
+// The slow-downs a species' looping run and a machine's rotor are offered in the Cell view, which has no timeline: true
+// speed, a thousand times, a million times. Never faster than life (the coordinator's ruling, 16 November 2026): a replay
+// played in the Cell view later gets the faster steps of its own timeline.
+export const SLOWS = [1, 1e3, 1e6];
 export const CROSSING = 1.6; // seconds a bead takes to cross: the same for every bead
 export const MOST = 18; // beads on one lane at a time
 const SIZE = { quiet: 1, bold: 1.35 };

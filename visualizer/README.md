@@ -401,16 +401,26 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   and a sheet's transfers until a saved run of a sheet carries those totals.
 - **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
   view's legend, off as the page opens; a part shows its flux alone when the visitor
-  chooses it; beads with bloom. No species' flux in the Cell view comes from a run yet
-  (the engine's first looping run, a planarian development run, is a replay under
-  Experiments, and wiring it into the planarian's cell is under way), so what
-  shows is illustration, marked "Illustration: not a run", of the form "direction only":
-  pumps and secreted signals go the way the engine's own laws say (cited in
-  `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
-  claimed, and fuel draws nothing. No textbook direction is drawn. At rest nothing
-  flows. The cell's own drops, signals and close-up ions move as they always did: the
+  chooses it; beads with bloom. A species with no run of its own shows illustration,
+  marked "Illustration: not a run", of the form "direction only": pumps and secreted
+  signals go the way the engine's own laws say (cited in `data/layers/flux.json`),
+  channels, junctions and water are drawn both ways with none claimed, and fuel draws
+  nothing. No textbook direction is drawn. At rest nothing flows. The cell's own drops, signals and close-up ions move as they always did: the
   picture's own motion, not a measured flow, as the legend says beside the switch; they
   hold still while any flux shows.
+- **The planarian's own run** (17 November 2026). The planarian's cell type names its
+  looping run (`cell_type.loop`): the engine's first, FR-11's interim planarian loop, a
+  development run of the engine, not judged. The Cell view fetches it from the page's
+  catalogue of runs and draws from it what the planarian's cell can show: its channels,
+  its pump, its membrane itself and its six junctions, each from the run's own totals.
+  The picture says what the run is, that it loops every 2 s of the cell's time, what one
+  bead stands for (a million ions at true speed), and that the cell is the run's lumped
+  `cell_3` under a prescribed current: not a measurement of a living cell. Water, secreted
+  signals and fuel are not drawn from it, each with its reason. No illustration stands in
+  while the run is on its way or cannot be had.
+- **One Speed row** slows the flux a thousand or a million times; it is the same control,
+  with the same words, that slows the flagellar motor. A looping run and the motor stop
+  at true speed: nothing runs faster than life there.
 - **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
@@ -428,6 +438,12 @@ on the membrane. The other three views are unchanged.
 - **A switch** ("Look": Rich or Plain) turns it off, and `look=plain` in the address
   opens the page without it. A device that cannot keep the picture moving smoothly sheds
   the costly effects in steps, and the page says which.
+- **The glow of flux** is drawn against the depth the contact shade has already worked
+  out, so the cell's parts are drawn once, not twice, while beads shine; the picture is
+  the same to the pixel. In the plain look the glow still draws the parts in front of the
+  beads itself. With the planarian's run and its glow, a frame's own work on the project's
+  graphics card was 12.6 ms at 1400 by 900 in the one quiet measurement taken (20.1 ms
+  before the mend); a clean pair of measurements is still owed.
 
 ## Sizes in the cell view
 

@@ -141,12 +141,18 @@ test("what breaks the contracts is warned about, and the species is left out", a
     ["a heading for the list that is not a few words", (data) => (data.group = ["Bacteria"]), /group is a heading of a few words/],
     ["an empty heading for the list", (data) => (data.group = " "), /group is a heading of a few words/],
     ["framing the level does not take", (data) => (data.levels[3].camera = "near"), /does not take camera/],
+    ["a looping run named by no id", (data) => (data.cell_type = { loop: " " }), /cell_type is \{id, label, loop\}/],
+    ["a cell type with a key it does not take", (data) => (data.cell_type = { loops: "x" }), /cell_type is \{id, label, loop\}/],
+    ["a loop in the cell block, where the cell type holds it", (data) => (data.cell.loop = "some-run"), /cell does not take loop/],
   ];
   for (const [name, change, expected] of cases) {
     const result = await read({ rodlet: madeUp(change) }, { rodlet: body() });
     assert.ok(result.warnings.some((warning) => expected.test(warning)), `${name}: ${JSON.stringify(result.warnings)}`);
     assert.equal(result.species.length, 0, `${name}: the species is left out`);
   }
+  // A species' own cell type may name its looping run among the packaged replays (CELL_TYPES.md, `loop`): the scene carries the block.
+  const looped = await read({ rodlet: madeUp((data) => (data.cell_type = { loop: "some-run--its-arm" })) }, { rodlet: body() });
+  assert.deepEqual([looped.warnings, looped.species[0]?.cell_type], [[], { loop: "some-run--its-arm" }]);
   const loft = await read({ rodlet: madeUp() }, { rodlet: body((data) => (data.parts[0].stations = [[0, 0, 0]])) });
   assert.ok(loft.warnings.some((warning) => /two or more stations/.test(warning)), JSON.stringify(loft.warnings));
   const kind = await read({ rodlet: madeUp() }, { rodlet: body((data) => (data.parts[1].kind = "blob")) });

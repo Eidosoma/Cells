@@ -13,8 +13,13 @@
 //
 // Where the flux comes from is one of two declared classes, never both in one picture:
 //   the species' own looping run (./loop.js, rule 7): true speed, with what one bead
-//     stands for and a slow-down; the picture names the run, says that it loops and gives
-//     the loop's length in the cell's time;
+//     stands for and a slow-down; the picture names the run, says what it is (a development
+//     run of the engine, not judged, as its catalogue says), that it loops, the loop's length
+//     in the cell's time, and what the cell drawn takes from it. The species names the run
+//     in its file (`cell.loop`, a packaged replay's id); the page finds it in the replay
+//     catalogue, fetches it and its records (want), and plays it. While it is on its way, or
+//     where it cannot be had, nothing is drawn and the reason is given: a species that names
+//     a run never falls back to illustration;
 //   illustration (./flux.js, rule 11), where the species has no such run: it carries
 //     "Illustration: not a run" on the picture, in the legend and in the chosen part's
 //     panel for as long as it shows.
@@ -26,13 +31,15 @@
 
 import * as THREE from "../three.js";
 import { readFlux, planFor, shownKinds, shownWithheld, illustrationWords, citation, PACE } from "./flux.js";
-import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords } from "./loop.js";
+import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, intervalWords, statusWords, takenWords, takenShort, everMoves } from "./loop.js";
 import { Tokens } from "./marks/tokens.js";
 import { fitOnRow } from "./statement.js";
 import { SLOWS, statementOf, tokenWords, timeWords, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
 import { ionColours } from "./ions.js";
 import { clock } from "../replay/format.js";
 import { speedWords } from "../replay/player.js";
+import { loadRun, loadPart } from "../replay/source.js";
+import { Catalogue } from "../replay/catalogue.js";
 import declaredFlux from "../../data/layers/flux.json" with { type: "json" };
 import ionTable from "../../data/layers/ions.json" with { type: "json" };
 
@@ -44,6 +51,8 @@ export const FLUX_SWITCH = "flux";
 export const BLOOM = 0.6;
 /** What the legend says, beside the switch, of the motion the cell's own tokens have at rest. */
 export const REST_WORDS = "What moves at rest is the picture's own, not a measured flow.";
+/** Under this width (a phone) a looping run's statement on the picture is its notice and its name alone. */
+export const PHONE = 600;
 /** The statement on the picture, in pixels: where its top may lie at the highest (under the top bar), the gap between its notice and its lines, and the room kept round it. */
 export const STATEMENT = { top: 64, gap: 6, margin: 6 };
 
@@ -86,7 +95,7 @@ export function closePump(molecule, sideways, nm) {
  * the lane's path from outside the cell to inside it, moved `lateral` along the membrane;
  * a seat with `outward` has a path of its own for what leaves.
  */
-export function seatsOf(kind, cell, mode) {
+export function seatsOf(kind, cell, mode, { sides = 0 } = {}) {
   const size = SIZES[mode], spots = cell?.spots, outline = cell?.frame?.outline;
   if (!size || !spots || !outline) return [];
   const cut = cell.frame.cut, reach = size.reach;
@@ -95,7 +104,13 @@ export function seatsOf(kind, cell, mode) {
   if (kind === "membrane") return (spots.charges || []).map((angle) => across(angle, reach * 0.9, -reach * 1.1, cut + size.over.membrane));
   if (kind === "pumps") return spots.pumps.map((angle) => across(angle, reach * 0.9, -reach * 1.2, cut + size.over.pumps));
   // A junction joins the cell to its first neighbour: "into the cell" is from the neighbour, across the cleft.
-  if (kind === "junctions") return spots.junction === null || spots.junction === undefined ? [] : [across(spots.junction, (spots.gap || 0) + reach * 0.9, -reach * 0.9, cut + size.over.junctions)];
+  // A run's junctions each cross a side of their own where the cell faces `sides` neighbours: the sides face them at
+  // equal turns from the first (lenses/cell_layout.js, SPOT). Which junction of the run takes which side is the picture's choice.
+  if (kind === "junctions") {
+    if (spots.junction === null || spots.junction === undefined) return [];
+    const turns = sides > 1 ? sides : 1;
+    return Array.from({ length: turns }, (_, k) => across(spots.junction + (k * 2 * Math.PI) / turns, (spots.gap || 0) + reach * 0.9, -reach * 0.9, cut + size.over.junctions));
+  }
   if (kind === "water") {
     const far = cell.streams?.[0]?.reach ?? reach * 1.6;
     return cell.streams?.length ? spots.water.map((angle) => across(angle, far, -far * 0.9, cut + size.over.water)) : [];
@@ -112,15 +127,23 @@ export function seatsOf(kind, cell, mode) {
 /**
  * The lanes of one kind laid on its seats: [{ lane, path, reverse }]. An illustration
  * draws each lane at every seat of its group, since its counts stand for no number; a run
- * gives each stream one lane, the lanes dealt over the seats in turn, so that as many
- * beads pass as the run's rate says. Lanes that share a seat run side by side, `pitch` apart.
+ * gives each stream one lane, so that as many beads pass as the run's rate says: the
+ * streams of one element of the run (one channel population, the pump, one junction) share
+ * a seat, side by side, and the elements are dealt over the seats in turn. Lanes that share
+ * a seat run side by side, `pitch` apart.
  */
 export function arrange(kind, seats, { every, pitch }) {
   if (!seats.length) return [];
   const at = seats.map(() => []);
   const lanes = kind.groups.flatMap((group) => group.lanes);
+  const elements = [];
+  for (const lane of lanes) {
+    const name = lane.stream?.name ?? lane.key;
+    if (!elements.includes(name)) elements.push(name);
+  }
   lanes.forEach((lane, index) => {
-    const places = every ? (lane.spots ? lane.spots.filter((spot) => spot < seats.length) : seats.map((_, spot) => spot)) : [index % seats.length];
+    const element = elements.indexOf(lane.stream?.name ?? lane.key);
+    const places = every ? (lane.spots ? lane.spots.filter((spot) => spot < seats.length) : seats.map((_, spot) => spot)) : [(lane.stream ? element : index) % seats.length];
     for (const spot of places) at[spot].push(lane);
   });
   const placed = [];
@@ -146,6 +169,7 @@ export class CellFlux {
     this.on = false; // the Flux switch: off as the page opens
     this.slow = 1; // a run opens at true speed
     this.loops = new Map(); // species id -> its looping run, read
+    this.fetches = new Map(); // species id -> { state: "fetching" | "failed", why }: a run the species names, not yet read
     this.plan = { kinds: [], withheld: [] };
     this.source = { kind: "illustration", form: "direction only" };
     this.tokens = []; // [{ tokens, zone, dust }]
@@ -173,9 +197,81 @@ export class CellFlux {
     return this.lens.cells?.[this.lens.sizeMode] || null;
   }
 
-  /** The species' own looping run as read, or null. */
+  /**
+   * The cell type shown (schema/CELL_TYPES.md): the lens's own where it has one, else the
+   * species' default type from its entries (`cell_types`, `default_cell_type`), else the
+   * species' own type as its file gives it (`cell_type`). Null for a species with none.
+   */
+  get cellType() {
+    const species = this.species;
+    if (!species) return null;
+    return this.lens.cellType || species.cell_types?.find((type) => type.id === (species.default_cell_type ?? species.cell_types[0]?.id)) || species.cell_type || null;
+  }
+
+  /** What a looping run is kept under: the species and its cell type shown (a loop belongs to a cell type). */
+  get typeKey() {
+    return this.species?.id ? `${this.species.id}/${this.cellType?.id || "cell"}` : null;
+  }
+
+  /** The looping run of the cell type shown, as read, or null. */
   get loop() {
-    return (this.species?.id && this.loops.get(this.species.id)) || null;
+    return (this.typeKey && this.loops.get(this.typeKey)) || null;
+  }
+
+  /** The id of the looping run the cell type shown names (`cell_type.loop`), or null. */
+  get named() {
+    return this.cellType?.loop || null;
+  }
+
+  /** How many sides of the cell drawn face a neighbour: the cell's own sides where the species has a sheet. */
+  get sides() {
+    const shape = this.lens.levels?.cell?.shape;
+    return shape?.kind === "prism" ? shape.sides || 6 : 6;
+  }
+
+  /**
+   * Fetch the looping run the species names, and its records, from the page's replay
+   * catalogue, and give it to the species (setLoop). Asked once for each species; what it
+   * is doing, or why it could not, is kept for the legend and the panel.
+   */
+  want() {
+    const species = this.species?.id, key = this.typeKey, id = this.named;
+    if (!species || !id || this.loops.has(key) || this.fetches.has(key)) return;
+    const catalogue = new Catalogue(this.lens.model?.raw?.replays);
+    const entry = catalogue.byId.get(id);
+    const fail = (why) => {
+      this.fetches.set(key, { state: "failed", why });
+      if (this.typeKey === key) {
+        this.build();
+        this.refresh(true);
+        this.lens.onChrome?.();
+      }
+    };
+    if (!entry) return fail(`The ${this.species.label}'s own run (${id}) is not among the runs this page carries.`);
+    this.fetches.set(key, { state: "fetching", why: `The ${this.species.label}'s own run is being fetched.` });
+    const experiment = catalogue.experimentOf(entry);
+    const about = { title: experiment.label || null, status: statusWords(experiment), plain: experiment.plain || null, record: experiment.outcome?.text || null, catalogue: entry };
+    (async () => {
+      // A load the network gave up on (it was cancelled, or the connection failed) is asked for again, twice, a moment apart.
+      const again = async (load) => {
+        for (let attempt = 1; ; attempt++) {
+          try {
+            return await load();
+          } catch (error) {
+            if (attempt >= 3 || !(error instanceof TypeError)) throw error;
+            await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+          }
+        }
+      };
+      const run = await again(() => loadRun(entry));
+      // The records the loop reads come in files of their own beside the run's: fetched first, so that the loop is read once.
+      const first = readLoop(run, species);
+      if (first.ok) for (const part of loopStreams(first.loop).needs) await again(() => loadPart(run, part));
+      this.fetches.delete(key);
+      const answer = this.setLoop(species, run, about, key);
+      if (!answer.ok) throw new Error(answer.why);
+      if (this.typeKey === key) this.lens.onChrome?.();
+    })().catch((error) => fail(`The ${this.species?.label || "species"}'s own run could not be read: ${error.message}`));
   }
 
   /**
@@ -192,17 +288,22 @@ export class CellFlux {
 
   /**
    * Give a species its looping run (a packaged replay, opened, with its records fetched).
-   * Returns { ok } or { ok: false, why }: a run that is refused changes nothing, and the
-   * species keeps illustration. No species names such a run yet; the page does not call this.
+   * Returns { ok } or { ok: false, why }: a run that is refused changes nothing. `about` is
+   * what the page's catalogue says of the run: its `title`, its `status` (a development run
+   * of the engine, not judged), its `plain` words. The page calls this once the run the
+   * species names has come (want); a test may call it with a run of its own.
    */
-  setLoop(speciesId, run) {
+  setLoop(speciesId, run, about = {}, key = `${speciesId}/${(this.species?.id === speciesId && this.cellType?.id) || "cell"}`) {
     const read = readLoop(run, speciesId);
     if (!read.ok) return read;
     // From here on the species has a run, and illustration is no longer shown for it (rule 11), even where
     // nothing of the run can be read yet: everything is then withheld, with the reason. `needs` names the
     // files of records to fetch before calling this again.
     const streams = loopStreams(read.loop);
-    this.loops.set(speciesId, { ...read.loop, streams: streams.streams, busiest: streams.busiest, unread: streams.ok ? null : streams.why });
+    const hasRoutes = [...run.sets.keys()].some((set) => run.sets.get(set)?.holds === "route" || set === "route");
+    // A stream whose total never changes over the loop carried nothing: it gets no lane, and takes no seat from one that does.
+    const moving = streams.streams.filter((stream) => everMoves(run, stream));
+    this.loops.set(key, { ...read.loop, ...about, hasRoutes, streams: moving, busiest: streams.busiest, unread: streams.ok ? null : streams.why });
     this.build();
     this.refresh(true);
     return streams.ok ? { ok: true } : { ok: true, reads: false, why: streams.why, needs: streams.needs };
@@ -212,9 +313,17 @@ export class CellFlux {
   build() {
     const loop = this.loop;
     const has = (part) => this.offers(part);
+    if (!loop && this.named) this.want();
+    const fetching = !loop && this.typeKey ? this.fetches.get(this.typeKey) : null;
     if (loop) {
       this.source = { kind: "run", loop };
       this.plan = planFromLoop(this.flux, loop, loop.streams, { has, unread: loop.unread });
+      // A run with no exchange route has nothing secreted in it: that is not a total it failed to save.
+      for (const item of this.plan.withheld) if (item.id === "secretion" && !loop.hasRoutes && !loop.unread) item.why = "The run has no exchange route: nothing is secreted or taken up in it.";
+    } else if (fetching) {
+      // The species names a run that is not read yet, or cannot be: nothing is drawn, illustration does not stand in, and the reason is given for each part.
+      this.source = { kind: "pending", state: fetching.state, why: fetching.why };
+      this.plan = { kinds: [], withheld: (this.flux?.kinds || []).filter((kind) => kind.only !== "run" && has(kind.part)).map((kind) => ({ id: kind.id, part: kind.part, label: kind.label, why: fetching.why })) };
     } else {
       this.source = { kind: "illustration", form: "direction only" };
       this.plan = this.flux ? planFor(this.flux, { species: this.species, has, capabilityOf: (part) => this.lens.capabilityByPart.get(part) || null }) : { kinds: [], withheld: [] };
@@ -291,6 +400,17 @@ export class CellFlux {
   }
 
   /**
+   * The Cell view's one clock, as a speed: seconds of the cell's time for each second of
+   * watching (1 is true speed; a slow-down of a thousand is a thousandth). The loop and a
+   * machine's rotor keep it; it is the Experiments timeline's measure (replay/player.js), so
+   * that a replay played in the Cell view later can take the same control. Today it is set
+   * only through `setSlow`, and only to the slow-downs the Speed row offers (SLOWS).
+   */
+  get speed() {
+    return 1 / this.slow;
+  }
+
+  /**
    * The slow-down in force, in the words the picture says it: "true speed", "slowed 1,000
    * times". The one place the Cell view's speed is put in words: a machine's closer view
    * (lenses/machine_view.js) says its own speed with these.
@@ -352,7 +472,7 @@ export class CellFlux {
       };
       const lanes = [];
       for (const kind of showing.kinds) {
-        lanes.push(...arrange(kind, seatsOf(kind.id, this.cell, lens.sizeMode), { every: !run, pitch: kind.id === "junctions" ? size.bridge : size.pitch }).map(laid));
+        lanes.push(...arrange(kind, seatsOf(kind.id, this.cell, lens.sizeMode, { sides: run ? this.sides : 0 }), { every: !run, pitch: kind.id === "junctions" ? (run ? size.pitch : size.bridge) : size.pitch }).map(laid));
       }
       // Drawn to scale, the cell's own lanes are far too large beside one channel: they fade with the
       // membrane's dots as the camera comes close, and lanes of the close-up's own size take their place there:
@@ -491,8 +611,16 @@ export class CellFlux {
     }
     const loop = this.loop, at = loopAt(loop, this.elapsed);
     const what = this.showing().kinds[0]?.token || "ion";
-    const lines = [loopWords(loop, this.species.label, clock), statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still })].join("\n");
-    return { notice: null, ways: [lines, lines.replace(/ · /g, "\n")] };
+    // The interval: its place in the loop where it can be read at this speed, else its length (loop.js, intervalWords).
+    const bead = statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still }).replace(/ · (mean of .*|no rate at .*)$/, ` · ${intervalWords(loop, at.interval, this.slow)}`);
+    // On a phone the picture keeps two lines: what the run is (the notice) and its name; the token, the speed and what the
+    // cell takes from the run stand in the legend and the panel (the coordinator's ruling, 16 November 2026).
+    const name = loopWords(loop, this.species.label, clock);
+    if (this.lens.stage.width < PHONE) return { notice: loop.status, ways: [name.replace(/ · a loop of /, "\nloops every ").replace(/ of the cell's time$/, ""), name] };
+    // What the cell takes from the run, in the fewest words; the legend and the panel say it in full.
+    const lines = [name, bead, ...takenShort(loop)].join("\n");
+    const narrow = lines.replace(/ · /g, "\n").replace(/, with a prescribed /, ",\nwith a prescribed ");
+    return { notice: loop.status, ways: [lines, lines.replace(/ · /g, "\n"), narrow] };
   }
 
   /** The lens has made its labels anew: the flux's own are made with them. */
@@ -505,14 +633,17 @@ export class CellFlux {
     };
     // What the picture says of its flux gives way to no other label: it stays for as long as the flux shows.
     this.tags.notice.boost = this.tags.lines.boost = 1000;
+    this.said = null; // new labels: the words are written into them whatever they were
     this.words();
   }
 
-  /** Write the picture's statement into its labels, or hide them. */
+  /** Write the picture's statement into its labels, or hide them. Nothing is laid out again where the words are the same. */
   words() {
     const tags = this.tags;
     if (!tags) return;
-    this.said = this.statement();
+    const said = this.statement();
+    if (said && this.said && said.notice === this.said.notice && said.ways.join("\u0000") === this.said.ways.join("\u0000")) return;
+    this.said = said;
     tags.labels.setText(tags.notice, this.said?.notice || "");
     tags.labels.setText(tags.lines, this.said ? this.said.ways[0] : "");
     this.fitted = null; // other words need their room found again
@@ -601,10 +732,13 @@ export class CellFlux {
       if (groups.some((group) => group.lanes.some((lane) => this.colourOf(lane) === neutral))) keys.push({ key: "bead", text: "Sodium and potassium wear their own colours. Every other bead wears one neutral tone and is told by the part it passes" });
       if (run) {
         const loop = this.loop, what = showing.kinds[0]?.token || "ion";
-        keys.push({ key: "bead", text: `${tokenWords(loopToken(loop.busiest, this.slow), what)}. More beads a second means more of them a second; how fast a bead travels stands for nothing` });
+        keys.push({ key: "bead", text: `${tokenWords(loopToken(loop.busiest, this.slow), what)}. More beads a second means more of them a second; how fast a bead travels stands for nothing. Where a lane passes less than a bead now and then, its arrowhead alone shows` });
         keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start${still ? `. ${STILL_WORDS}` : ""}` });
         keys.push({ key: "way", text: "A bead goes the way its total grew over the interval shown, by the run's own signs" });
         keys.push({ key: "head", text: HEAD_WORDS });
+        // What the cell drawn takes from the run, and how closely the run closes, in the run's own measure.
+        keys.push({ key: "from", text: `${takenWords(loop)}. ${this.fromWords()}` });
+        keys.push({ key: "closes", text: closesWords(loop) });
       } else {
         keys.push({ key: "bead", text: flux.illustration.forms["direction only"].says });
         if (groups.some((group) => group.claimed)) keys.push({ key: "way", text: "A lane that goes one way goes as a law of the engine declares for that part; the panel names the law" });
@@ -622,11 +756,11 @@ export class CellFlux {
     const chosen = Boolean(part) && !(this.held && selected === this.held);
     const nothing = chosen && !showing.kinds.some((kind) => kind.part === showing.part);
     // Where the legend lists what is not drawn and why, that says it; else the chosen part's panel does (inPanel).
-    const ask = cannot.length ? null : nothing ? "This part draws no flux: its panel says why." : "Or choose a part to see its flux.";
+    const ask = this.source.kind === "pending" ? this.source.why : cannot.length ? null : nothing ? "This part draws no flux: its panel says why." : "Or choose a part to see its flux.";
     return {
       title: "Flux",
-      // An illustration says so for as long as it shows (rule 11).
-      example: flowing && !run ? flux.illustration.notice : null,
+      // An illustration says so for as long as it shows (rule 11); a run says what it is, as its catalogue does.
+      example: flowing ? (run ? this.loop.status || null : flux.illustration.notice) : null,
       rows: [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that flows in this cell" }] }],
       time,
       // While nothing flows the cell's own drops, signals and ions move (a chosen part that draws nothing included): the
@@ -665,6 +799,25 @@ export class CellFlux {
     };
   }
 
+  /**
+   * Which parts of the cell drawn take a flux from which of the run's records, in one line:
+   * "channels from channel_transferred (kir_3, nav_3); pumps from pump_cycles (pump of
+   * membrane_3)". Only for a run.
+   */
+  fromWords() {
+    const parts = this.takenFrom().map((item) => `${item.label.replace(/^Ions through the /, "").replace(/^Exchange with /, "").toLowerCase()} from ${item.records.join(" and ")} (${item.elements.length > 3 ? `${item.elements.length} ${item.plural}` : item.elements.join(", ")})`);
+    return parts.length ? `Drawn: ${parts.join("; ")}` : "Nothing of the run is drawn here";
+  }
+
+  /** For a run: each kind drawn, with the records its lanes are read from and the elements of the run they cross. */
+  takenFrom() {
+    if (this.source.kind !== "run") return [];
+    return this.plan.kinds.map((kind) => {
+      const streams = kind.groups.flatMap((group) => group.lanes.map((lane) => lane.stream)).filter(Boolean);
+      return { id: kind.id, label: kind.label, records: [...new Set(streams.map((stream) => stream.source?.field || stream.record.id.replace(/\.[^.]+$/, "")))], elements: [...new Set(streams.map((stream) => stream.name))], plural: { junctions: "junctions", channels: "channel populations" }[kind.id] || "elements" };
+    });
+  }
+
   /** The lines of one group of lanes, for a panel. */
   item(kind, group) {
     const lanes = group.lanes.map((lane) => lane.label);
@@ -685,18 +838,29 @@ export class CellFlux {
     const laws = [...new Set(plan.kinds.flatMap((kind) => kind.groups.map((group) => group.law)).filter(Boolean))];
     const forms = flux.illustration.forms;
     const name = species?.label || "This cell";
+    if (this.source.kind === "pending") {
+      return { id, kind: "flux", group: "biology", label: "What flows in this cell", eyebrow: "Flux", chips: [], plain: `${this.source.why} Nothing is drawn until it is read, and no illustration stands in for it.`, sections: [{ title: "Not drawn", items: plan.withheld.map((item) => ({ label: item.label, lines: [item.why] })) }] };
+    }
+    const loop = this.loop;
     return {
       id,
       kind: "flux",
       group: "biology",
       label: "What flows in this cell",
       eyebrow: "Flux",
-      chips: [{ label: run ? "From the looping run" : flux.illustration.notice, title: run ? "The species' own run, made by the engine and packaged to loop" : "Nothing here is a number from a run" }],
+      chips: run ? [{ label: loop.status || "From the looping run", title: "The species' own run, made by the engine and packaged to loop, as the page's catalogue of runs says it is" }] : [{ label: flux.illustration.notice, title: "Nothing here is a number from a run" }],
       plain: run
-        ? `${loopWords(this.loop, name, clock)}. ${this.loop.closes.says.replace(/^./, (first) => first.toUpperCase()).replace(/\.?$/, ".")} ${closesWords(this.loop)}. ${engineWords(this.loop)}.${this.loop.follows.length ? " Where the loop follows a daughter cell, the beads are still read for its first cell: the hand-over is not drawn yet." : ""}`
+        ? `${loopWords(loop, name, clock)}. ${loop.plain ? `${loop.plain} ` : ""}${loop.record ? `The record: ${loop.record} ` : ""}${loop.closes.says.replace(/^./, (first) => first.toUpperCase()).replace(/\.?$/, ".")} ${closesWords(loop)}. ${engineWords(loop)}.${loop.follows.length ? " Where the loop follows a daughter cell, the beads are still read for its first cell: the hand-over is not drawn yet." : ""}`
         : `${flux.illustration.notice}. ${name} has no looping run of its own cell, so what flows is shown as illustration. ${forms["direction only"].says}.`,
       note: run ? "Every rate is a mean between two records that both lie inside the loop: no difference is taken across the seam." : flux.illustration.speaks_for,
       sections: [
+        ...(run
+          ? [{
+              title: "What this cell takes from the run",
+              note: `${takenWords(loop)}.${loop.label ? ` The run's own words for itself: “${loop.label}”.` : ""}`,
+              items: this.takenFrom().map((item) => ({ label: item.label, detail: `from ${item.records.join(" and ")}`, lines: [`Through ${item.elements.join(", ")}, each in a lane of its own.`] })),
+            }]
+          : []),
         { title: "Drawn", note: "Where a lane runs is the picture's choice: the engine has no place for a single channel or pump.", items: drawn },
         { title: "Not drawn", items: plan.withheld.map((item) => ({ label: item.label, lines: [item.why] })) },
         ...(run
@@ -727,10 +891,11 @@ export class CellFlux {
       const list = drawn.map((label) => `${label[0].toLowerCase()}${label.slice(1)}`).join(", ").replace(/, (?=[^,]*$)/, " and ");
       return { ...entity, sections: [...(entity.sections || []), { title: "Flux", items: [{ label: "None drawn for this part", lines: [`The picture draws flux only for ${list}. This part is none of them.`] }] }] };
     }
-    const run = this.source.kind === "run";
+    const run = this.source.kind === "run", pending = this.source.kind === "pending";
     const items = [...kinds.flatMap((kind) => kind.groups.map((group) => this.item(kind, group))), ...withheld.map((item) => ({ label: `${item.label}: not drawn`, lines: [item.why] }))];
-    const title = run ? "Flux, from the looping run" : `Flux. ${this.flux.illustration.notice}`;
-    const note = run ? loopWords(this.loop, this.species.label, clock) : kinds.length ? `${this.flux.illustration.forms["direction only"].says}.` : null;
+    // A run says what it is in the panel too, since a narrow screen hides the legend behind it.
+    const title = run ? `Flux, from the looping run${this.loop.status ? `. ${this.loop.status}` : ""}` : pending ? "Flux" : `Flux. ${this.flux.illustration.notice}`;
+    const note = run ? `${loopWords(this.loop, this.species.label, clock)}. ${takenWords(this.loop)}.` : pending ? this.source.why : kinds.length ? `${this.flux.illustration.forms["direction only"].says}.` : null;
     return { ...entity, sections: [...(entity.sections || []), { title, note, items }] };
   }
 

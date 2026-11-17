@@ -149,7 +149,7 @@ the viewer changes.
    states the speed (true speed, how much it is slowed or made faster), that the replay
    is paused where it is, the loop it plays, and what one token stands for. The rate
    sets how many tokens pass, never how fast one travels. The interval the rate is a
-   mean over stands with the time. An arrowhead ends each lane that carries something and points the way
+   mean over stands with the time. Where an interval passes too fast to be read at the speed in force, the picture gives its length ("means over each 20 ms between records") in place of its place. An arrowhead ends each lane that carries something and points the way
    its tokens go, so that a still picture, and a visitor who asks for less motion, are
    told the way. Where nothing may move, the tokens stand, as many as would be on their
    way at one moment, and the picture says that it is shown still; a stream too thin for
@@ -176,7 +176,15 @@ the viewer changes.
    view of a species it is drawn only from that species' own looping run, a run the
    engine made of that one cell and packaged to loop. The picture then names the run,
    says that it loops, and gives the loop's length in the cell's time and how much it is
-   slowed. A species with no such run shows no run-fed layer in its Cell view. A
+   slowed. A species with no such run shows no run-fed layer in its Cell view. The run
+   belongs to the species' cell type (`cell_type.loop`, `CELL_TYPES.md`). The page finds
+   it in its catalogue of runs and says what the catalogue says it is (a development run
+   of the engine, not judged); while it is on its way, or where the page cannot have it,
+   nothing is drawn and the reason is given, and illustration does not stand in for it.
+   The picture says, in the fewest words, which of the run's cells the Cell view's cell is
+   and what drives it that is not drawn, and that it is no measurement of a living cell;
+   the legend and the panel say which part takes a flux from which record, and what the
+   run's closure leaves out. A
    packaged replay says that it is such a loop in its view (`loop`,
    `schema/RUN_VIEW.md`, in the shape the engine's writer gives it): the species whose
    cell it is, the cell, the loop's period, and the run's own word that its last record

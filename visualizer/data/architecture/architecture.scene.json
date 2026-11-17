@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-16T23:24:24Z",
+  "generated_at": "2026-11-17T00:00:12Z",
   "revision": "1d86a192",
   "revision_date": "2026-11-16",
   "dirty": false,
@@ -4121,6 +4121,9 @@
      ]
     },
     "capabilities": {}
+   },
+   "cell_type": {
+    "loop": "planarian-loop--planarian-b08af640"
    },
    "sources": {
     "lu2025": {

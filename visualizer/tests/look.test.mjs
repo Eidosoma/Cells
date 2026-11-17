@@ -511,7 +511,10 @@ function recorder() {
     setRenderTarget(target) {
       this.target = target;
     },
-    clear() {},
+    clears: [],
+    clear(colour = true, depth = true, stencil = true) {
+      this.clears.push({ target: this.target, clear: [colour, depth, stencil] });
+    },
     render(scene, camera) {
       log.push({ target: this.target, scene, layers: camera.layers?.mask, during: renderer.during?.() });
     },
@@ -598,25 +601,40 @@ test("a frame with the passes: contact shade is worked out first, then laid over
   renderer.log.length = 0;
   finish.before(scene, camera);
   assert.equal(renderer.log.length, 3, "nothing marked: nothing more is drawn");
-  // Something marked: its picture, the blurs, and one pass that adds the glow.
+  // Something marked: its picture, the blurs, and one pass that adds the glow. With contact shade on, the solid parts'
+  // depth is already in the contact picture: what was marked is drawn alone against that depth (its colour cleared, its
+  // depth kept), and the solid parts are not drawn a second time.
   const bead = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshBasicMaterial({ color: 0xffcc00 }));
   scene.add(bead);
   finish.glow(bead);
+  const box = scene.children[0];
+  renderer.during = () => ({ box: box.layers.isEnabled(30), bead: bead.layers.isEnabled(30) });
   renderer.log.length = 0;
   finish.before(scene, camera);
-  assert.equal(renderer.log[3].target, finish.bloom.picture, "what was marked, in a picture of its own");
-  assert.ok(renderer.log.length > 4 + 10, "then the high pass and five blurs each way");
+  const drawn = renderer.log;
+  assert.equal(drawn[3].target, finish.bloom.over, "what was marked, in a picture of its own");
+  assert.equal(finish.bloom.over.depthTexture, finish.contact.picture.depthTexture, "over the solid parts' depth, the contact picture's");
+  assert.deepEqual([finish.bloom.over.width, finish.bloom.over.height], [finish.contact.picture.width, finish.contact.picture.height]);
+  assert.deepEqual(drawn[3].during, { box: false, bead: true }, "the marked thing alone: no solid part drawn again");
+  assert.deepEqual(renderer.clears.find((entry) => entry.target === finish.bloom.over).clear, [true, false, false], "its colour cleared, the depth kept");
+  assert.ok(drawn.length > 4 + 10, "then the high pass and five blurs each way");
+  renderer.during = null;
   assert.equal(finish.bloom.pass.strength, 0.6);
   renderer.log.length = 0;
   finish.after();
   assert.equal(renderer.log.length, 2, "the shade, then the glow");
   assert.equal(finish.add.material.uniforms.tDiffuse.value, finish.bloom.pass.renderTargetsHorizontal[0].texture);
   assert.equal(finish.add.material.blendDst, THREE.OneFactor, "added as light");
-  // Contact shade off (a device that gave it up) while flux glows: only the glow's passes run.
+  // Contact shade off (a device that gave it up, or the plain look) while flux glows: only the glow's passes run, and the
+  // solid parts are drawn black in front of what was marked, in the glow's own picture.
   finish.setContact(0);
+  renderer.during = () => ({ box: box.layers.isEnabled(30), boxDark: box.material.isMeshBasicMaterial === true && box.material.color.getHex() === 0 });
   renderer.log.length = 0;
   finish.before(scene, camera);
-  assert.equal(renderer.log[0].target, finish.bloom.picture);
+  const alone = renderer.log;
+  assert.equal(alone[0].target, finish.bloom.picture);
+  assert.deepEqual(alone[0].during, { box: true, boxDark: true });
+  renderer.during = null;
   finish.setBloom(0);
   assert.equal(finish.active, false);
   finish.dispose();

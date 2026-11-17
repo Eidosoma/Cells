@@ -7,6 +7,8 @@
 //
 // Events: "time" when the playhead moves, "state" when playing, speed or the run changes.
 
+import { clock, duration } from "./format.js";
+
 /**
  * Seconds of the run per second of watching, slowest first: the ladder every run is offered
  * from. Below true speed a replay is slowed, so that a short run, and a bead of a fast flow,
@@ -78,6 +80,20 @@ export function speedWords(speed) {
  *                                            (null: time + seconds × speed).
  */
 export const SECONDS = Object.freeze({ id: "seconds", speedsFor, openingSpeed, words: speedWords, clock: null, length: null, advance: null });
+
+/**
+ * Where the playhead stands, in the timeline's words: { now, of }. `now` is the run's own time
+ * (the time its records, its events and its panels give); `of` says what that time lies in. A
+ * run whose records start at nought is "of" its length ("0.4 s of 4 s"); one whose records start
+ * later (one period of a longer run, packaged to loop) lies between its first and its last
+ * record ("9.2 s, between 8 s and 10 s"), so that a time and a length that do not belong
+ * together are never set side by side.
+ */
+export function whereWords({ time, start, end, base = SECONDS }) {
+  const clockOf = base.clock || clock, lengthOf = base.length || duration;
+  const now = clockOf(time);
+  return start === 0 ? { now, of: ` of ${lengthOf(end - start)}` } : { now, of: `, between ${clockOf(start)} and ${clockOf(end)}` };
+}
 
 /** The time base a run keeps. */
 export function baseOf(run) {

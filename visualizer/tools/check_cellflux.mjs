@@ -46,7 +46,8 @@ const check = (name, ok, detail = "") => {
 const note = (text) => console.log(`note  ${text}`);
 const pageLog = [];
 const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 20) * 60 * 1000 });
-const server = createServer({ offline: true, scene: DEFAULT_SCENE, runs: DEFAULT_RUNS, log: (line) => pageLog.push(line) });
+// SCENE and RUNS name another scene and another folder of runs to serve (a scratch scene whose species names its run, say).
+const server = createServer({ offline: true, scene: process.env.SCENE ? path.resolve(process.env.SCENE) : DEFAULT_SCENE, runs: process.env.RUNS ? path.resolve(process.env.RUNS) : DEFAULT_RUNS, log: (line) => pageLog.push(line) });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/`;
 const chrome = spawn(
@@ -55,6 +56,7 @@ const chrome = spawn(
   { stdio: ["ignore", "ignore", "pipe"] }
 );
 let failed = null, socket = null;
+const failedLoads = [];
 // Whether the page's own font had arrived by the end, once the page can be asked.
 let fontOf = async () => "not known";
 try {
@@ -76,6 +78,9 @@ try {
   const waiting = new Map();
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
+    // A load the page asked for that failed in the network (with LOOP=1, where the page fetches the species' run).
+    if (message.method === "Network.loadingFailed") failedLoads.push(message.params);
+    if (message.method === "Network.requestWillBeSent" && /\/runs\//.test(message.params.request?.url || "")) failedLoads.push({ asked: message.params.request.url, at: message.params.timestamp });
     const entry = waiting.get(message.id);
     if (!entry) return;
     waiting.delete(message.id);
@@ -92,6 +97,7 @@ try {
   const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
   const page = (method, params) => send(method, params, sessionId);
   await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
+  if (process.env.LOOP === "1") await page("Network.enable");
   if (process.env.THEME === "dark") await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
   const evaluate = async (expression) => {
     const reply = await page("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
@@ -141,6 +147,10 @@ try {
       const panel = root.querySelector("cells-panel");
       return {
         species: lens.species.id, mode: lens.sizeMode, on: flux.on, source: flux.source.kind, selected: v.state.selected, width: stage.width, height: stage.height,
+        // The species' own looping run, where it names one: what was read of it, and where it stands.
+        named: flux.named, pending: flux.source.kind === "pending" ? flux.source.why : null,
+        loop: flux.loop ? { title: flux.loop.title, status: flux.loop.status, cell: flux.loop.cell, length: flux.loop.length, streams: flux.loop.streams.length, token: flux.loop.busiest, elapsed: flux.elapsed, slow: flux.slow } : null,
+        timeRow: [...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
         plan: flux.plan.kinds.map((kind) => kind.id), withheld: flux.plan.withheld.map((item) => item.id), shown: flux.showing().kinds.map((kind) => kind.id),
         parts: flux.plan.kinds.map((kind) => lens.capabilityByPart.get(kind.part).id),
         tokens: flux.tokens.map((set) => ({ zone: set.zone.name, lanes: set.lanes.length, beads: set.tokens.drawn.beads, heads: set.tokens.drawn.heads, visible: set.tokens.group.visible, opacity: set.tokens.materials[0].opacity, first: set.tokens.lanes[0].beads[0] ?? null })),
@@ -164,6 +174,8 @@ try {
         foot: [...root.querySelectorAll(".scalebar, .look-box, .caveat")].filter((el) => !el.hidden && el.getBoundingClientRect().height > 0).map((el) => [el.className.split(" ")[0], ...box(el)]),
       };
     })()`);
+  /** The notice the picture and the legend carry: the run's own status where the species plays its run, else illustration's. */
+  const noticeOf = (now) => (now.source === "run" ? now.loop?.status : "Illustration: not a run");
   /**
    * Look again until the page shows what is waited for; the last look is returned either way. It waits up to 40 s:
    * drawn in software, the first frame with the bloom's passes can take many seconds, and the labels are laid out
@@ -191,7 +203,77 @@ try {
   await sleep(500);
 
   let s = await state();
-  if (ADDRESS) {
+  if (process.env.LOOP === "1") {
+    // ---------------------------------------------------------- the species' own looping run (rule 7)
+    s = await until((now) => now.source === "run" || (now.source === "pending" && !/being fetched/.test(now.pending || "")));
+    note(`species ${s.species}, ${s.width} by ${s.height}; fonts: ${s.fonts}; it names ${s.named}; ${JSON.stringify(s.loop)}`);
+    check("the species names its own run, and the page fetches and reads it: no illustration stands in", s.source === "run" && s.loop?.length > 0 && s.loop.streams > 0, JSON.stringify([s.source, s.pending, s.loop]));
+    if (s.source !== "run") note(`the page's loads of runs, and the loads that failed: ${JSON.stringify(failedLoads).slice(0, 1500)}`);
+    check("nothing flows as the page opens, run or no run", s.tokens.length === 0 && s.bloom === 0 && s.said.every((item) => !item.shown), JSON.stringify([s.tokens.length, s.bloom]));
+    // A real press on the legend's Flux switch: all of the run that this cell draws.
+    const all = 'cells-legend .layer-row[data-channel="motion"] button[data-layer="flux"]';
+    let opened = false, reached = await press(all);
+    if (!reached) {
+      opened = await press("cells-legend .legend-toggle");
+      reached = await press(all);
+    }
+    s = await until((now) => now.on && now.tokens.length > 0 && now.said.some((item) => item.shown));
+    if (opened) await press("cells-legend .legend-toggle");
+    await rest();
+    s = await until((now) => now.said.some((item) => item.shown));
+    const said = s.said.filter((item) => item.shown).map((item) => item.text);
+    check("a real press on All draws the run's lanes, with bloom", reached && s.on && s.tokens.length > 0 && s.bloom > 0, JSON.stringify([reached, s.tokens, s.bloom]));
+    check("the picture says what the run is: a development run of the engine, not judged, as the catalogue says", said.includes("Development run of the engine, not judged"), JSON.stringify(said));
+    check("the picture names the run, says that it loops and how long the loop is, the token, the speed, and what the cell takes from the run", said.some((text) => /Planarian loop \(development run\)/.test(text) && /a loop of 2 s of the cell's time/.test(text) && /One bead is [\d,]+ ions( · |\n)true speed/.test(text) && /From the run's lumped cell cell_3/.test(text) && /Not a measurement of a living cell/.test(text)), JSON.stringify(said));
+    check("the legend carries what the run is, and the Speed row at true speed", s.notice === "Development run of the engine, not judged" && JSON.stringify(s.timeRow) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify([s.notice, s.timeRow]));
+    check("the legend says which part takes a flux from which record, and how closely the run closes", s.keys.some((text) => /Drawn: channels from channel_transferred/.test(text)) && s.keys.some((text) => /meets its first within 2\.8e-5 \(tolerance 1\.0e-4\)/.test(text)), JSON.stringify(s.keys.filter((text) => /Drawn:|meets its first/.test(text))));
+    await shot(`${NAME}-loop`);
+    if (MOVING) {
+      const before = s.loop.elapsed;
+      const later = await until((now) => now.loop.elapsed > before + 0.2);
+      check("at true speed the loop's time runs as the watching does", later.loop.elapsed > before + 0.2, JSON.stringify([before, later.loop.elapsed]));
+    }
+    // The cost of a frame while the loop plays: the stage's own draw with gl.finish, the whole handler, and the flux's own share.
+    if (MOVING) {
+      const cost = await evaluate(`(async () => {
+        const v = ${V}, st = v.stage, gl = st.renderer.getContext(), flux = v.current.flux;
+        const draw0 = st.draw, frame0 = st.frame, step0 = flux.frame, drawMs = [], frameMs = [], fluxMs = [];
+        st.draw = function () { const t = performance.now(); draw0.call(this); gl.finish(); drawMs.push(performance.now() - t); };
+        st.frame = function (time) { const t = performance.now(); frame0.call(this, time); frameMs.push(performance.now() - t); };
+        flux.frame = function () { const t = performance.now(); const out = step0.call(this); fluxMs.push(performance.now() - t); return out; };
+        st.invalidate();
+        await new Promise((r) => setTimeout(r, 4000));
+        delete st.draw; delete st.frame; delete flux.frame;
+        const mid = (a) => (a.length ? Math.round(a.slice().sort((x, y) => x - y)[Math.floor(a.length / 2)] * 100) / 100 : null);
+        const high = (a) => (a.length ? Math.round(a.slice().sort((x, y) => x - y)[Math.floor(a.length * 0.95)] * 100) / 100 : null);
+        const info = st.renderer.info.render, ext = gl.getExtension("WEBGL_debug_renderer_info");
+        return { frames: frameMs.length, draw: mid(drawMs), handler: mid(frameMs), handler95: high(frameMs), flux: mid(fluxMs), flux95: high(fluxMs), calls: info.calls, triangles: info.triangles, renderer: String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)) };
+      })()`);
+      note(`frame cost with the loop playing: ${JSON.stringify(cost)}`);
+      // The flux's own work (its rates, its beads, its words) is held small; the whole frame's cost is reported, not judged here:
+      // on the card it is the look's and the bloom's (see the hand-over of 16 November 2026, flux round 2).
+      check("the flux's own work in a frame is small beside a frame at 60 a second", cost.flux !== null && cost.flux < 1.5, JSON.stringify(cost));
+    }
+    // A real press on 1/1,000 in the Speed row: the loop is slowed, a bead is a thousandth as many, and each interval can be read.
+    // On a narrow window the legend is folded behind its title: a real press opens it first, and another closes it after.
+    const slower = 'cells-legend .layer-row[data-channel="time"] button[data-layer="1000"]';
+    if (!(await press(slower)) && (await press("cells-legend .legend-toggle"))) {
+      await press(slower);
+      await press("cells-legend .legend-toggle");
+    }
+    s = await until((now) => now.loop?.slow === 1000 && now.said.some((item) => item.shown && /slowed 1,000 times/.test(item.text)));
+    const slowed = s.said.filter((item) => item.shown).map((item) => item.text);
+    check("a real press on 1/1,000 slows the loop: the picture says so, with the interval's place in the loop", s.loop?.slow === 1000 && slowed.some((text) => /One bead is [\d,]+ ions( · |\n)slowed 1,000 times(, shown still)?( · |\n)mean of [\d.]+ s to [\d.]+ s of the loop/.test(text)) && JSON.stringify(s.timeRow) === JSON.stringify(["True", "1/1,000*", "1/1,000,000"]), JSON.stringify([s.loop?.slow, slowed, s.timeRow]));
+    await shot(`${NAME}-loop-slowed`);
+    // The panel behind all of it: what the cell takes from the run, and the run's own words for itself.
+    if (opened) await press("cells-legend .legend-toggle");
+    await press("cells-legend .layer-keys summary");
+    if (await press("cells-legend .layer-details")) {
+      s = await until((now) => now.panel?.title === "What flows in this cell");
+      check("a panel says what the cell takes from the run, the run's own words for itself, its closure and its revision", /What this cell takes from the run/.test(s.panel?.text || "") && /The run's own words for itself/.test(s.panel.text) && /Made by the engine at revision b08af640/.test(s.panel.text), (s.panel?.text || "no panel").slice(0, 300));
+      await shot(`${NAME}-loop-panel`);
+    } else note("the door to the panel behind the flux could not be pressed at this size");
+  } else if (ADDRESS) {
     // ---------------------------------------------------------- a part named in the page's address
     check(`the address names ${ADDRESS}: it is chosen as the page opens, and its panel is open`, s.selected === ADDRESS && Boolean(s.panel), JSON.stringify([s.selected, s.panel?.title]));
     check("nothing flows as the page opens: no bead, no bloom, the look's own motion free, nothing said of flux on the picture", s.tokens.length === 0 && s.bloom === 0 && !s.holds.includes("flux") && s.said.every((item) => !item.shown), JSON.stringify([s.tokens.length, s.bloom, s.holds, s.said]));
@@ -240,10 +322,12 @@ try {
     check(`${pressed ? "a real press on" : "choosing"} ${part} shows that part's flux alone`, s.selected === part && JSON.stringify(s.shown) === JSON.stringify([kind]) && s.tokens.length > 0 && s.tokens.every((set) => set.lanes > 0), JSON.stringify([s.selected, s.shown, s.tokens]));
     check("an arrowhead ends each lane, and beads stand or travel on it", s.tokens.every((set) => set.heads === set.lanes && set.beads > 0), JSON.stringify(s.tokens));
     check("the bloom is on, what shines is marked, and the look's own motion is held", s.bloom > 0 && s.shining >= 2 && s.holds.includes("flux") && s.moving === false, JSON.stringify([s.bloom, s.shining, s.holds, s.moving]));
-    const notice = s.said.find((item) => /^Illustration: not a run$/.test(item.text));
-    check("the picture says \"Illustration: not a run\", and what form it is", s.source === "illustration" && notice?.shown && s.said.some((item) => item.shown && /^Direction only:/.test(item.text)), JSON.stringify(s.said));
+    // A species with its own run says what the run is, where one without says "Illustration: not a run" (rules 7 and 11).
+    const notice = s.said.find((item) => item.text === noticeOf(s));
+    if (s.source === "run") check("the picture says what the run is, and names the run", notice?.shown && s.said.some((item) => item.shown && /(a loop of|loops every) [\d.]+ (s|ms|min)/.test(item.text)), JSON.stringify(s.said));
+    else check("the picture says \"Illustration: not a run\", and what form it is", s.source === "illustration" && notice?.shown && s.said.some((item) => item.shown && /^Direction only:/.test(item.text)), JSON.stringify(s.said));
     check("the statement stands on the picture, under the top bar and inside the window", s.said.filter((item) => item.shown).every((item) => item.box[1] >= 56 && item.box[0] >= 0 && item.box[2] <= s.width), JSON.stringify(s.said.map((item) => item.box)));
-    check("the part's panel carries the notice and the basis", s.panel && /Flux\. Illustration: not a run/.test(s.panel.text), s.panel ? s.panel.title : "no panel");
+    check("the part's panel carries the notice and the basis", s.panel && (s.source === "run" ? s.panel.text.includes(`Flux, from the looping run. ${noticeOf(s)}`) : /Flux\. Illustration: not a run/.test(s.panel.text)), s.panel ? s.panel.title : "no panel");
     // With a panel open beside it or above it, the scale bar and its words stand clear of the caveat under the picture.
     const foot = Object.fromEntries(s.foot.map(([name, ...edges]) => [name, edges]));
     const apart = (a, b) => !a || !b || a[2] <= b[0] || b[2] <= a[0] || a[3] <= b[1] - 2 || b[3] <= a[1] - 2;
@@ -263,7 +347,10 @@ try {
       const moved = (now) => typeof now.tokens[0]?.first === "number" && Math.abs(now.tokens[0].first - before) > 1e-3;
       const later = await until(moved);
       check("a bead moves", moved(later) && later.still === false, JSON.stringify([before, later.tokens[0]?.first]));
-    } else check("opened still, the beads stand and the picture says so", s.still === true && s.said.some((item) => /shown still$/.test(item.text)), JSON.stringify(s.said.map((item) => item.text)));
+    } else if (s.source === "run" && s.width < 600) {
+      // A phone's picture keeps the run's notice and its name; the legend says that the beads stand.
+      check("opened still, the beads stand and the legend says so", s.still === true && s.keys.some((text) => /Shown still here/.test(text)), JSON.stringify(s.keys));
+    } else check("opened still, the beads stand and the picture says so", s.still === true && s.said.some((item) => /shown still($| · |\n)/m.test(item.text)), JSON.stringify(s.said.map((item) => item.text)));
     await shot(`${NAME}-part`);
     // With the part's panel still open, a real press reaches the Flux switch: on a narrow window the legend's title
     // stands on the top edge of the panel, which is a sheet along the bottom there, and the legend opens upward.
@@ -304,13 +391,14 @@ try {
   s = await until((now) => now.plan.length === 0 || now.said.some((item) => item.shown));
   check("the switch shows all that the species' file allows, under one legend", s.on && JSON.stringify(s.shown) === JSON.stringify(s.plan) && s.rows.some((row) => /All\*/.test(row)), JSON.stringify([s.shown, s.rows]));
   if (s.plan.length) {
-    check("the legend carries the notice for as long as the illustration shows", s.notice === "Illustration: not a run", String(s.notice));
-    check("the legend says what a bead stands for and whose word a direction is", s.keys.some((text) => /stand for no number/.test(text)) && s.keys.some((text) => /no direction is claimed|law of the engine/.test(text)), JSON.stringify(s.keys));
+    check(`the legend carries the notice for as long as the ${s.source === "run" ? "run" : "illustration"} shows`, s.notice === noticeOf(s), String(s.notice));
+    if (s.source === "run") check("the legend says what a bead stands for and whose word a direction is", s.keys.some((text) => /^One bead is [\d,]+ /.test(text)) && s.keys.some((text) => /by the run's own signs/.test(text)), JSON.stringify(s.keys));
+    else check("the legend says what a bead stands for and whose word a direction is", s.keys.some((text) => /stand for no number/.test(text)) && s.keys.some((text) => /no direction is claimed|law of the engine/.test(text)), JSON.stringify(s.keys));
   }
   check("what is not drawn is named in the legend with its reason", s.withheld.length === 0 || s.cannot.length === s.withheld.length || /not drawn/.test(JSON.stringify(s.keys) + (await evaluate(`${V}.shadowRoot.querySelector("cells-legend .layer-cannots summary")?.textContent ?? ""`))), JSON.stringify(s.cannot));
   check("with all of it on the legend still stands clear of the view's card", clear(s), JSON.stringify({ legend: s.legendBox, view: s.viewBox }));
   if (s.width >= 760) check("and the switch is still in sight without scrolling", inSight(s), JSON.stringify({ switch: s.switchBox, legend: s.legendBox, scrolled: s.legendScroll }));
-  if (s.plan.length) check("the picture says what it shows for as long as it shows it", s.said.some((item) => item.shown && /^Illustration: not a run$/.test(item.text)), JSON.stringify(s.said));
+  if (s.plan.length) check("the picture says what it shows for as long as it shows it", s.said.some((item) => item.shown && item.text === noticeOf(s)), JSON.stringify(s.said));
   check("the statement on the picture lies over no card and not in the foot", s.said.filter((item) => item.shown).every((item) => item.box[3] < s.height * 0.62 && (!s.viewBox || item.box[1] >= s.viewBox[3] || item.box[0] >= s.viewBox[2])), JSON.stringify({ said: s.said.map((item) => item.box), view: s.viewBox }));
   note(`all: ${JSON.stringify({ tokens: s.tokens, bloom: s.bloom, legendBox: s.legendBox, viewBox: s.viewBox, said: s.said, foot: s.foot })}`);
   await shot(`${NAME}-all`);

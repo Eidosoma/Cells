@@ -497,7 +497,9 @@ try {
         const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
         const said = [...root.querySelectorAll(".label-example")].some((el) => !el.classList.contains("is-off"));
         return { toggle: box(root.querySelector(".view-toggle")), card: box(root.querySelector(".view.card")), panel: box(root.querySelector("cells-panel")), look: box(root.querySelector(".look-switch")), colour: ${V}.current.colourBy, selected: ${V}.state.selected,
-          flux: ${V}.current.flux?.tokens.length > 0, said, notice: box(root.querySelector(".view-notice")) ? root.querySelector(".view-notice").textContent : null };
+          flux: ${V}.current.flux?.tokens.length > 0, said, notice: box(root.querySelector(".view-notice")) ? root.querySelector(".view-notice").textContent : null,
+          // The notice the flux carries: illustration's, or, for a species that plays its own looping run, what the run is.
+          wanted: ${V}.current.flux?.source.kind === "run" ? ${V}.current.flux.loop?.status : "Illustration: not a run" };
       })()`);
     let fold = await folded();
     check("on a phone with a panel open the view's card folds behind a button at least 44 px tall under the bar, and the look's switch stands on the panel's edge", Boolean(fold.toggle) && fold.card === null && fold.toggle[3] - fold.toggle[1] >= 44 && Boolean(fold.look) && Boolean(fold.panel) && fold.look[3] <= fold.panel[1], JSON.stringify(fold));
@@ -506,7 +508,7 @@ try {
     fold = await folded();
     check("a real press opens the card over the picture, and a real press on Colour: Status takes it, the part still chosen", Boolean(fold.card) && fold.colour === "status" && fold.selected === "cap.pumps", JSON.stringify(fold));
     // The part's flux shows: where the opened card leaves the picture's statement no room, the card carries its notice (rule 11).
-    check("while the part's flux shows, the words \"Illustration: not a run\" stay in sight: on the picture, or in the opened card", !fold.flux || fold.said || fold.notice === "Illustration: not a run", JSON.stringify(fold));
+    check("while the part's flux shows, its notice (\"Illustration: not a run\", or what the species' own run is) stays in sight: on the picture, or in the opened card", !fold.flux || fold.said || fold.notice === fold.wanted, JSON.stringify(fold));
     await press(button("Colour", "Biology"), "Colour: Biology, over the panel");
     await press(button("Look", "Plain"), "Plain, on the panel's edge");
     s = await state();
