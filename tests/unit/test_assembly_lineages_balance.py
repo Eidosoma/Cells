@@ -17,8 +17,14 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError
-from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT, GARD_SINGLE_EVENT, balance, gard
+from cells.models.assembly_lineages import (
+    GARD_PAIR_CONSISTENT,
+    GARD_SINGLE_EVENT,
+    balance,
+    gard,
+)
 from cells.models.assembly_lineages.kernel import Layout, rates
+from cells.registry import laws as law_registry
 
 ANCHORS = {1.0: 0.012, 10.0: 0.080, 100.0: 0.113, 1000.0: 0.117}
 
@@ -69,20 +75,21 @@ def test_p1_anchors(b):
     assert abs(cycle(blind, b) - closed) > 1e-3
 
 
-def test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as_passive(
-    monkeypatch,
-):
+def test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as_passive():
     assert balance.verdict(GARD_PAIR_CONSISTENT)["local_detailed_balance"] == "holds"
     assert balance.verdict(None)["local_detailed_balance"] == "holds"  # Exchange alone.
     single = balance.verdict(GARD_SINGLE_EVENT)
     assert single["local_detailed_balance"] == "fails" and single["admitted_as"] == "driven"
     assert single["probe"]["max_abs_deviation_ln"] > 1e-3
-    planted = dataclasses.replace(gard.SINGLE_EVENT, energy_role="passive")
-    monkeypatch.setattr(gard, "LAWS", (planted, gard.PAIR_CONSISTENT))
-    balance.verdict.cache_clear()
+    # Planted: the single-event form declared passive, registered in a scope under its own ID.
+    law_registry.active()
+    planted = dataclasses.replace(
+        gard.SINGLE_EVENT, law_id="tests.single_event_as_passive@1", energy_role="passive"
+    )
     try:
-        with pytest.raises(ConfigError, match="Refused as passive"):
-            balance.verdict(GARD_SINGLE_EVENT)
+        with law_registry.scope(law_registry.BUILTIN.extended(planted)):
+            with pytest.raises(ConfigError, match="Refused as passive"):
+                balance.verdict(planted.law_id)
     finally:
         balance.verdict.cache_clear()
 

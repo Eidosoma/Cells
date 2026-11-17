@@ -51,10 +51,14 @@ from cells.core.specs import ConfigError
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
     GARD_SINGLE_EVENT,
-    RATE_FACTOR_INTERFACE,
+    MODEL_ID,
     folds,
 )
 from cells.models.assembly_lineages.factors import RateFactorLaw
+from cells.modules import Citation
+
+# The registration call is the registry's own (the surface exports it in module stage 1).
+from cells.registry import laws as law_registry
 
 LAW_SET = "gard"
 FIELD = "catalysis_matrix"
@@ -154,18 +158,25 @@ STATE_FORMULAS = {
     "relative 1e-15",
 }
 
-PROVENANCE = {
-    "kind": "cited",
-    "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, "
-    "Appendix F (Zenodo 10.5281/zenodo.22143269)",
-    "place": "Appendix F, 'Common state, kinetics and environment': b_i = 1 + (beta x)_i / N",
-    "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
-    "departures": [],
+SOURCE = (
+    "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, Appendix F "
+    "(Zenodo 10.5281/zenodo.22143269)"
+)
+PLACE = "Appendix F, 'Common state, kinetics and environment': b_i = 1 + (beta x)_i / N"
+LICENCE = "CC BY 4.0 (the preprint); numbers cited under D186"
+TESTS = {
+    GARD_SINGLE_EVENT: "tests/unit/test_assembly_lineages_kernel.py::"
+    "test_a_row_for_column_update_is_caught",
+    GARD_PAIR_CONSISTENT: "tests/unit/test_assembly_lineages_balance.py::"
+    "test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as_passive",
 }
 
 SINGLE_EVENT = RateFactorLaw(
-    law_id=GARD_SINGLE_EVENT,
-    interface=RATE_FACTOR_INTERFACE,
+    GARD_SINGLE_EVENT,
+    host=MODEL_ID,
+    provenance="cited",
+    source=Citation(SOURCE, PLACE, LICENCE, ()),
+    test=TESTS[GARD_SINGLE_EVENT],
     form="single-event",
     energy_role="driven",
     law_set=LAW_SET,
@@ -177,12 +188,13 @@ SINGLE_EVENT = RateFactorLaw(
     update=update,
     factors=factors_single_event,
     probe=probe,
-    provenance=PROVENANCE,
     comparison_only=True,
     formulas={
         "g_join_i(n)": "1 + x_i / N, at the current state; 1 when N = 0",
         "g_leave_i(n)": "1 + x_i / N, at the current state (the leaving molecule counted); 1 "
         "when N = 0",
+        "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1 + beta_ii: the "
+        "molecule catalyses its own leave",
         **STATE_FORMULAS,
     },
     note=(
@@ -194,8 +206,19 @@ SINGLE_EVENT = RateFactorLaw(
 )
 
 PAIR_CONSISTENT = RateFactorLaw(
-    law_id=GARD_PAIR_CONSISTENT,
-    interface=RATE_FACTOR_INTERFACE,
+    GARD_PAIR_CONSISTENT,
+    host=MODEL_ID,
+    provenance="cited",
+    source=Citation(
+        SOURCE,
+        PLACE,
+        LICENCE,
+        (
+            "the factor of a transfer is evaluated on the assembly without the moving molecule, "
+            "so a transfer and its reverse see the same catalysts (GARD_DESIGN §1.4, 2)",
+        ),
+    ),
+    test=TESTS[GARD_PAIR_CONSISTENT],
     form="pair-consistent",
     energy_role="passive",
     law_set=LAW_SET,
@@ -207,19 +230,14 @@ PAIR_CONSISTENT = RateFactorLaw(
     update=update,
     factors=factors_pair_consistent,
     probe=probe,
-    provenance={
-        **PROVENANCE,
-        "departures": [
-            "the factor of a transfer is evaluated on the assembly without the moving molecule, "
-            "so a transfer and its reverse see the same catalysts (GARD_DESIGN §1.4, 2)",
-        ],
-    },
     comparison_only=True,
     formulas={
         "g_join_i(n)": "1 + x_i / N, on n (the state without the moving molecule); 1 when N = 0",
         "g_leave_i(n)": "1 + (x_i - beta_ii) / (N - 1), on n - e_i (the state without the "
         "leaving molecule), when N >= 2 and n_i >= 1; 1 otherwise (the last molecule leaves "
         "uncatalysed; a type with n_i = 0 has no leave)",
+        "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1: no catalyst "
+        "remains (this form only; the single-event form's carries 1 + beta_ii)",
         **STATE_FORMULAS,
     },
     note=(
@@ -228,4 +246,5 @@ PAIR_CONSISTENT = RateFactorLaw(
     ),
 )
 
-LAWS = (SINGLE_EVENT, PAIR_CONSISTENT)
+# Registered from this home, which the static model table lists, through the public call.
+LAWS = tuple(law_registry.BUILTIN.register(law) for law in (SINGLE_EVENT, PAIR_CONSISTENT))

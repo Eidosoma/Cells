@@ -22,7 +22,12 @@ and an assembly's random streams follow from its key alone (streams.py).
 from dataclasses import dataclass
 
 from cells.core.specs import ConfigError, require_fields
-from cells.models.assembly_lineages import CONTINUATION, OPERATOR_INTERFACE
+from cells.models.assembly_lineages import CONTINUATION, MODEL_ID
+from cells.models.assembly_lineages.lineage_operators import LineageOperator
+from cells.modules import Citation
+
+# The registration call is the registry's own (the surface exports it in module stage 1).
+from cells.registry import operators as operator_registry
 
 DAUGHTERS = ("first", "second", "uniform")
 EMPTY = ("extinct", "other")
@@ -37,21 +42,38 @@ class Continuation:
     sink: str
 
 
-DECLARATION = {
-    "id": CONTINUATION,
-    "interface": OPERATOR_INTERFACE,
-    "reads": "the two daughters of a fission",
-    "writes": "the slot's occupant, generation and carrier keys; the discarded material",
-    "energy_role": "none of its own: the unfollowed daughter's -k_BT ln pi leaves to the sink",
-    "rules": {"daughter": list(DAUGHTERS), "empty": list(EMPTY), "sink": list(SINKS)},
-    "stream": "continuation: one uniform, from the parent's carrier key (rule uniform only)",
+CONTRACT = {  # The operator's statements in words, as a run record states them.
     "uniform": "the continuation stream's draw u at counter 0: u < 1/2 picks the first daughter, "
     "otherwise the second",
     "empty": "extinct: an empty pick is followed and the lineage ends; other: an empty pick moves "
     "to the other daughter when it holds a molecule",
-    "carrier_keys": "the founder holds 0; each fission gives its first daughter the lineage's next "
-    "key and its second the one after; the followed daughter's key becomes the slot's occupant",
+    "carrier_keys": "the founder holds 0:0; each fission gives its first daughter the next key of "
+    "its parent's counter and its second the one after; the followed daughter continues the "
+    "counter and becomes the slot's occupant (keys.py)",
 }
+OPERATOR = operator_registry.BUILTIN.register(
+    LineageOperator(
+        CONTINUATION,
+        host=MODEL_ID,
+        provenance="cited",
+        source=Citation(
+            "Plastic Heredity preprint v5.0, Appendix F, contracts T2-02, T1-03 and T2-03 (Zenodo "
+            "10.5281/zenodo.22143269)",
+            "the continued daughter: first (T2-02), second (T1-03), either with probability 1/2 "
+            "with a nonempty fallback (T2-03)",
+            "CC BY 4.0",
+            (),
+        ),
+        test="tests/unit/test_assembly_lineages_fission.py::test_continuation_rules",
+        reads="the two daughters of a fission",
+        writes="the slot's occupant, generation and carrier keys; the discarded material",
+        energy_role="none of its own: the unfollowed daughter's -k_BT ln pi leaves to the sink",
+        rules={"daughter": list(DAUGHTERS), "empty": list(EMPTY), "sink": list(SINKS)},
+        stream="continuation: one uniform, from the parent's carrier key (rule uniform only)",
+        contract=CONTRACT,
+    )
+)
+DECLARATION = OPERATOR.record()  # As a run record states it (records.py).
 
 
 def parse(raw):

@@ -15,7 +15,9 @@ Key derivation (Threefry-2x32; every fold is jax.random.fold_in of one unsigned 
 - carrier: the assembly's carrier key (int64, written at its birth). fold_in narrows its data
   to 32 bits, so a 64-bit value is folded as two words; folding it once would give two carriers
   that differ only above bit 31 the same stream.
-- domain: DOMAINS, one stream per purpose of an assembly.
+- domain: DOMAINS, one stream per purpose of an assembly. `label` (4) is reserved (D202): its
+  number is fixed for the material labels' draws (docs/RELATIONSHIPS_DESIGN.md §2.7), and no
+  stream of it can be made until labels are built, so no run draws from it.
 - counter: the draw's index within its stream (the exchange stream counts the assembly's own
   events from 0 at its birth; partition and continuation draw once, at counter 0).
 
@@ -32,8 +34,9 @@ from types import MappingProxyType
 
 GENERATOR = "threefry2x32"
 DOMAINS = MappingProxyType(
-    {"initial_composition": 0, "exchange": 1, "partition": 2, "continuation": 3}
+    {"initial_composition": 0, "exchange": 1, "partition": 2, "continuation": 3, "label": 4}
 )
+RESERVED = ("label",)  # Numbered, never drawn: stream_key_data refuses them.
 FOLD_ORDER = (
     "seed",
     "environment",
@@ -66,6 +69,7 @@ def identity(seed, environment, lineage, branch):
         "branch": branch,
         "fold_order": list(FOLD_ORDER),
         "domains": dict(DOMAINS),
+        "reserved_domains": list(RESERVED),
         "uniform": UNIFORM,
     }
 
@@ -106,6 +110,8 @@ def stream_key_data(base, carrier, domain):
     import jax
     import jax.numpy as jnp
 
+    if domain in RESERVED:
+        raise ValueError(f"The {domain} stream domain is reserved: nothing draws from it yet")
     key = _fold64(_wrap(base), carrier)
     key = jax.random.fold_in(key, jnp.uint32(DOMAINS[domain]))
     return jax.random.key_data(key)
