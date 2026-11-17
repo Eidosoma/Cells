@@ -226,6 +226,40 @@ in the same form as OL1.
    - **Refusals.** Unsourced driven laws are refused, as registered refusals.
    - **Planted:** a fuel step booked without its stored term; a driven law admitted.
 
+### Built ahead of the rulings (17 November 2026)
+
+These pieces need no ruling, so they are written and tested now. The lead rules OL2's and OL3's
+open choices as §0.2b of the design note before OL2 starts. They were sent as seven questions:
+- the exchange encounter;
+- the lumen's evaluation state;
+- lysis;
+- the geometric term at small N;
+- the two-level fold;
+- permeation;
+- the unequal-area partition.
+
+The worlds, token menus and probe files of OL2 and OL3 are registered after §0.2b, before any
+OL2 engine output.
+
+- **`geometry.py`** (OL2: geometry from the counts):
+  - A, V_osm, V_sph, V = min(V_osm, V_sph), v, R, Δp and σ = ΔpR/2, at registered states of a
+    100 nm oleate-like vesicle (a_L = 0.3 nm²; c_ext = 0.2 M; osmotic excess 0.8, 1.0 and 1.2);
+  - the potential drop σa_L/2 equals −∂F_lumen/∂n on both sides of the floppy–tense boundary,
+    where F is continuously differentiable;
+  - the zero-tension area (6√π V_osm)^{2/3};
+  - the two-vesicle end state at equal tensions, with the degenerate both-relaxed case reported;
+  - the admission thresholds k^{−1/2}.
+  - Planted: a_L doubled, the Laplace factor doubled, 6π for 6√π.
+- **`division.py`** (OL3: the equal-area partition):
+  - the multivariate hypergeometric membrane split for k daughters of fixed counts, equal to
+    brute-force labelled counting;
+  - the multinomial lumen split by V_j/V;
+  - count conservation;
+  - a registered χ² design: parent (40, 30, 10), 400 splits, eleven pooled cells, α = 10⁻³. Its
+    power against a split at 0.55 is 1.0, and against a binomial split presented as
+    hypergeometric it exceeds 0.999.
+- Tests: `test_ool_references_geometry.py` and `test_ool_references_division.py`.
+
 ## What could not be confirmed from the sources
 
 - **The design's §2.2 table writes F in the continuum (Stirling) form.** Textbook mass action
