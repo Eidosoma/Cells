@@ -340,6 +340,19 @@
           "note": "Version 3 (version id 1794897080-f3ea), built from a clean copy of 236d0e5c (624 KB): on a phone and with less motion the assembly is the cluster, as the user decided (Version 2 packed the micelle there); of the example the form of its law is named and no more. Looked at on the card at a phone's width in the dark theme (opened) and loaded wide: no error. Read back from the artifact service after the publish: the built page stands whole inside the published index.html, byte for byte."
         }
       ]
+    },
+    "organelle_options": {
+      "title": "Organelle Placement Options",
+      "url": "https://claude.ai/artifact/3ui8ecPZB7hq4qRkGhTzpn",
+      "page": "out/publish-previews/organelles-options.html (not tracked: 1.7 MB with nine pictures inlined; made by out/scratch-coordinator/make_organelles_page.py from the review's pictures)",
+      "note": "Options for the user, who asked on 16 November 2026 to look at 'the position and scale of the golgi v. er and nucleaus': what the Cell view draws today (measured from the cell builder), what a biologist would notice, and three options with a picture each: A, leave it and say so; B, place them as a cell does (the review's recommendation; about a day; no new source); C, B with a cell's proportions (two to three days; needs cited numbers, two papers to be read with the user's yes). Nothing is built: the pictures of B and C are sketches from a switch in the reviewing agent's own checkout. The review is out/handover/organelles-review.md (not tracked). Awaits the user's choice.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-17",
+          "note": "Version 1 (version id 1794899192-baa7). Looked at once before publishing, wide in the light theme (opened) and at a phone's width in the dark theme (loaded): nine pictures, none broken, no sideways scroll, no error. Each of the nine pictures was opened and looked at in the review's folder first."
+        }
+      ]
     }
   }
 }
