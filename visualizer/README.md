@@ -652,9 +652,13 @@ it used, and one gate or one before-and-after pair of pictures never mixes the t
   other file makes a texture from a canvas, and `check_look.mjs loss` makes every view,
   loses the process once and holds each picture against the one before, to the last
   count in software and within one part in a million on the card (11 of 11 both ways on
-  the mended code; 71 s on the card, about five minutes in software). Found by losing
-  the process on purpose in every view on the card; the lost-context check alone had not
-  shown it.
+  the mended code; 71 s on the card, about five minutes in software). On the code before
+  the mend it fails for the same four pictures both ways (the Cell view, both sides of the
+  Protein atlas, the Engine view): the fault was never the card's. Found by losing the
+  process on purpose in every view; the lost-context check alone had not shown it. The
+  two explainer pages that draw in 3D with textures of their own (Flux and Look; the Laws
+  library's options) still paint them through canvases: they are records of decisions and
+  are not kept up.
 - **Compared with software on the whole suite** (16 November 2026, one clean copy of
   9e3e5538): 33 scenarios and 600 checks passed in software and through Vulkan, with the
   same count in every scenario. In software 32 scenarios passed in the full run; the
