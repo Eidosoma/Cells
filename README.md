@@ -37,11 +37,6 @@ agents help write and check its models, and its experiments are declared
 definitions with machine-readable records, so people and AI systems alike can
 design, run and read them.
 
-Cells and its viewer were partly inspired by 3D visualizations of the cell over
-the years. We gathered some of them in [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V), a timeline of
-thirty-five years of making the inside of a cell visible, from hand-painted
-cross-sections to whole-cell simulations.
-
 Unlike a real microscope, it shows a model, not the cell itself, so it is only
 as true as what goes into it. That is why every law names its source, every
 quantity of matter, charge and energy is accounted for, every result traces back
@@ -190,8 +185,7 @@ views: **Cell and scales** (a cell opened by a cut, its sheet, and placeholder
 outlines of an organ and a body), the **Protein atlas** (the molecular machines
 the engine's laws act on, and each species' own proteins), **Experiments**
 (replays of saved runs) and **Engine** (the simulator's layers, mapped from the
-code). It was partly inspired by 3D visualizations of the cell over the years,
-some of which we gathered in [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V).
+code).
 
 ![A replay of the judged experiment E07-v1 in the viewer: a hexagonal sheet of cells, each standing as high as its membrane voltage, with the written disc outlined, a timeline at 19 min 30 s and the record's verdict, "the disc did not renew", beside it](visualizer/docs/screenshots/replay-e07v1-voltage-as-height.webp)
 
@@ -315,6 +309,15 @@ need saved run folders that stay outside it
 (`npm run adapt:runs -- --evidence PATH`). The real-click checks in headless
 Chrome (`npm run check:all`) and publishing are in the
 [visualizer's README](visualizer/README.md#run-it).
+
+### Inspiration
+
+Cells and its viewer were partly inspired by 3D visualizations of the cell over
+the years. We gathered some of them in [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V), a timeline of
+thirty-five years of making the inside of a cell visible, from hand-painted
+cross-sections to whole-cell simulations.
+
+[![The opening of The Cell on Screen: its title in white and a rainbow gradient, a line on thirty-five years of making the inside of a cell visible, and its timeline of 18 landmarks from 1991 to 2026, drawn as glowing spots coloured by era](docs/assets/the-cell-on-screen.png)](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V)
 
 ## Roadmap
 
