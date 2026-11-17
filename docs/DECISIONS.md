@@ -6333,6 +6333,40 @@ found:
 - **G3 and G4,** owed since D172's landing, run once with tier 3 on D188's final tree.
 - **No dates** until the core-seams pass is scoped.
 
+## D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2
+
+2026-11-17. On the four items of the core-seams design (`docs/CORE_SEAMS_DESIGN.md`, §14), the
+user: "Get adviser on those options but sounds good from my perspective, we want to focus on the
+core but in parallel". With the advisor, every default stands, with the conditions below.
+
+**1. The pass, at its scope.**
+- **The estimate is the design lane's own, not yet re-derived:** 20–31.5 agent-days plus 2–3 on
+  branch X, and about 9–13 working days elapsed.
+- **The code starts after D188's move 2.**
+- **The cycle kind (A) and the binding closure (C) wait for step 0's cycle-law screen.** The
+  screen asks whether O'Hara–Rudy's and Beard's cycles factor in A's form. A's contract rests on
+  that, and the note lists it as unverified.
+
+**2. Staffing within seven.**
+- **Each file has one owner for the whole pass.** §13's table is redone so that no file has two
+  owners, and the elapsed estimate is re-derived from it.
+- **One operators owner** does composition's M1–M5 first, then B1.
+- **An FR owner** runs FR-4 and FR-5 in parallel.
+
+**3. `cells.modules` is built as provisional.** The word "provisional" stands where contributors
+read it: the module's docstring and its docs. There is no public stability promise until a first
+outside module arrives; then the promise comes back to the user.
+
+**4. No checkpoint crosses move 2.** A checkpoint written before move 2 is refused cleanly, and the
+refusal names the tag of the tree before the move, where it restores.
+
+**In parallel now ("focus on the core but in parallel"):**
+- D188's move 2, starting with a full dry run;
+- an FR owner, for FR-4's and FR-5's tools, rehearsals and registration;
+- step 0's desk work: the cycle-law screen, the pins against F's extractions, the search for
+  worlds that refusal 4 per move would newly refuse, and one owner per file;
+- P1 and the booking probe, in scratch, once their criteria are committed.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
