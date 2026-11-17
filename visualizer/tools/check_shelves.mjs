@@ -1061,10 +1061,41 @@ try {
     await still();
     const column = await evaluate(`(() => { const box = ${V}.shadowRoot.querySelector(".atlas-map").getBoundingClientRect(); return { width: Math.round(box.width), right: Math.round(innerWidth - box.right), rows: ${V}.shadowRoot.querySelectorAll(".atlas-map .atlas-row").length, tall: Math.round(${V}.shadowRoot.querySelector(".atlas-map .atlas-row").getBoundingClientRect().height) }; })()`);
     check("on a phone the map is a column of bars at the right edge, each row 44 pixels tall", column.width <= 60 && column.right <= 12 && column.tall >= 44, JSON.stringify(column));
-    await press(`.atlas-map [data-shelf="${file.shelves[1].id}"]`, 600);
+    await press(`.atlas-map [data-shelf="${file.shelves[1].id}"]`, 150);
+    // The phone's second pass (17 November 2026): the press also says the shelf's name, beside its bar and inside the window,
+    // for a while (read at once: it goes after a few seconds).
+    const said = await evaluate(`(() => { const root = ${V}.shadowRoot, say = root.querySelector(".atlas-say"), map = root.querySelector(".atlas-map").getBoundingClientRect(), row = root.querySelector('.atlas-map [data-shelf="${file.shelves[1].id}"]').getBoundingClientRect(); if (!say || say.hidden) return null; const r = say.getBoundingClientRect(); return { text: say.textContent, box: [r.left, r.top, r.right, r.bottom].map(Math.round), beside: r.right <= map.left + 0.5 && r.top <= row.bottom && r.bottom >= row.top, inside: r.left >= 0 && r.right <= innerWidth, live: say.getAttribute("aria-live") }; })()`);
     await still();
     check("and a press on a bar brings its shelf near", (await evaluate(`${L}.mounted.focused`)) === file.shelves[1].id);
+    check("on a phone that press says the shelf's name beside its bar, inside the window, and to a screen reader", Boolean(said) && said.text.startsWith(file.shelves[1].label) && said.beside && said.inside && said.live === "polite", JSON.stringify(said));
     await shot(`map-${id}-phone`);
+    // The trail on one row, no step of it cut inside a word; the bar on one row; the card folded to one line saying what is shown.
+    const phone = () =>
+      evaluate(`(() => {
+        const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, edges = (el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); };
+        const crumbs = root.querySelector(".atlas-crumbs");
+        const steps = [...crumbs.querySelectorAll("li")].filter(shown).map((li) => { const c = li.querySelector(".atlas-crumb"); const text = c.textContent, full = c.dataset.full || text; return { text, whole: c.scrollWidth <= c.clientWidth + 1, word: text === full || text === "…" || text === full.replace(/ · [\\d,]+$/, "") || (text.endsWith("…") && full.startsWith(text.slice(0, -1)) && /[\\s·,]/.test(full.charAt(text.length - 1))) }; });
+        const kids = [...root.querySelector(".bar").children].filter(shown).map((el) => el.getBoundingClientRect()).filter((r) => r.width > 1); // the page's name put out of sight is 1 px
+        const toggle = root.querySelector(".view-toggle"), card = root.querySelector(".view"), legend = root.querySelector("cells-legend"), caveat = root.querySelector(".caveat");
+        return { trail: { fits: crumbs.scrollWidth <= crumbs.clientWidth + 1, steps }, barRow: kids.every((a) => kids.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1)),
+          toggle: shown(toggle) ? { box: edges(toggle), says: toggle.textContent, expanded: toggle.getAttribute("aria-expanded") } : null, card: shown(card) ? edges(card) : null,
+          legend: { open: legend.classList.contains("is-open"), box: edges(legend), lead: legend.querySelector(".legend-lead")?.textContent ?? null },
+          caveat: { shown: shown(caveat), text: caveat.textContent }, sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+      })()`);
+    let p = await phone();
+    check("on a phone the trail stands on one row and no step of it is cut inside a word", p.trail.fits && p.trail.steps.length >= 2 && p.trail.steps.every((step) => step.whole && step.word), JSON.stringify(p.trail));
+    check("on a phone the bar stands on one row and the page does not scroll sideways", p.barRow && !p.sideways, JSON.stringify([p.barRow, p.sideways]));
+    check("on a phone the card is folded to one line, 44 px or more, naming what is shown; the picture has the rest", Boolean(p.toggle) && p.card === null && p.toggle.box[3] - p.toggle.box[1] >= 44 && /proteins/i.test(p.toggle.says) && p.toggle.expanded === "false", JSON.stringify([p.toggle, p.card]));
+    check("on a phone the atlas's caveat does not lie over the picture: the legend's sheet opens with it", !p.caveat.shown && Boolean(p.caveat.text) && p.legend.lead === p.caveat.text, JSON.stringify([p.caveat, p.legend.lead]));
+    await press(".view-toggle", 500);
+    p = await phone();
+    const switchAt = await middle('.view-card [data-show="units"]');
+    check("a real press opens the card under its line, with the switch between Cells' machines and the species' proteins in it", Boolean(p.card) && p.toggle.expanded === "true" && p.card[1] >= p.toggle.box[3] && Boolean(switchAt) && switchAt.y > p.card[1] && switchAt.y < p.card[3], JSON.stringify([p.toggle, p.card, switchAt]));
+    await press("cells-legend .legend-toggle", 500);
+    p = await phone();
+    check("a real press on the legend's title opens its sheet and folds the card: the two never lie over each other", p.legend.open && p.card === null && p.toggle.expanded === "false", JSON.stringify([p.legend, p.card, p.toggle]));
+    await shot(`map-${id}-phone-legend`);
+    await press("cells-legend .legend-toggle", 400);
     await size(WIDTH, HEIGHT);
   }
 

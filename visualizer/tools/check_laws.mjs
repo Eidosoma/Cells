@@ -285,6 +285,35 @@ try {
     check(`the five views' switch fits a ${WIDTH} px phone`, fit.count === 5 && fit.scroll <= 0 && fit.left >= 0 && fit.right <= WIDTH && fit.page <= 0, JSON.stringify(fit));
     let s = await state();
     check("no room is kept on the left on a phone", !s.insets.left, JSON.stringify(s.insets));
+    // The phone's second pass (17 November 2026): the bar on one row, every switch of it at least 44 px; the library's card
+    // folded to one line under the bar, so that the wall is the picture; a real press opens the card with its search, and folds it.
+    const phone = () =>
+      evaluate(`(() => {
+        const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, edges = (el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); };
+        const kids = [...root.querySelector(".bar").children].filter(shown).map((el) => el.getBoundingClientRect()).filter((r) => r.width > 1); // the page's name put out of sight is 1 px
+        const presses = [...root.querySelectorAll(".bar button")].filter(shown).map((el) => { const r = el.getBoundingClientRect(); return Math.round(Math.min(r.width, r.height)); });
+        const toggle = root.querySelector(".view-toggle"), card = root.querySelector(".view");
+        return { barRow: kids.every((a) => kids.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1)), least: Math.min(...presses), squeeze: root.querySelector(".bar").dataset.squeeze || "",
+          toggle: shown(toggle) ? { box: edges(toggle), says: toggle.textContent, expanded: toggle.getAttribute("aria-expanded") } : null, card: shown(card) ? edges(card) : null, find: shown(root.querySelector("#cells-find")) };
+      })()`);
+    let p = await phone();
+    check(`on a ${WIDTH} px phone the bar stands on one row, each of its buttons at least 44 px`, p.barRow && p.least >= 44, JSON.stringify(p));
+    check("the library's card is folded to one line under the bar, at least 44 px tall, naming the library", Boolean(p.toggle) && p.card === null && p.toggle.box[3] - p.toggle.box[1] >= 44 && /Laws library/.test(p.toggle.says) && p.toggle.expanded === "false", JSON.stringify(p));
+    const fold = await placeOf(`root.querySelector(".view-toggle")`);
+    if (fold) await click(fold.x, fold.y, 600);
+    p = await phone();
+    check("a real press opens the card under its line, with its search", Boolean(fold) && Boolean(p.card) && p.toggle.expanded === "true" && p.card[1] >= p.toggle.box[3] && p.find, JSON.stringify(p));
+    if (fold) await click(fold.x, fold.y, 600);
+    p = await phone();
+    check("and a real press on the line folds it again", p.card === null && p.toggle?.expanded === "false", JSON.stringify(p));
+    // A piece named in the address on a phone: the room is laid out again for the tall screen after the piece was chosen,
+    // and the piece is framed in the new room, in the picture above the panel's sheet (17 November 2026: it stood far above the screen).
+    check("select=laws:<id> opens the library on a phone, with the piece chosen", (await open("select=laws:kir2p1_mh2@1")) && (await state()).selected === "laws:kir2p1_mh2@1");
+    await sleep(2200);
+    const named = await barAt("kir2p1_mh2@1");
+    const sheet = await evaluate(`(() => { const p = ${V}.shadowRoot.querySelector("cells-panel"); const r = p && !p.hidden ? p.getBoundingClientRect() : null; return r && r.height ? Math.round(r.top) : ${HEIGHT}; })()`);
+    check("the piece named in the address stands in the picture, between the bar and the panel", Boolean(named) && named.x >= 0 && named.x <= WIDTH && named.y >= 56 && named.y <= sheet, JSON.stringify([named, sheet]));
+    await shot(`${NAME}-named`);
     await shot(`${NAME}-rest`);
     await evaluate(`${V}.select("laws:nak_atp_mass_action_positive@1", { fly: true })`);
     await sleep(2000);

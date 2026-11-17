@@ -29,6 +29,7 @@ class CellsLegend extends HTMLElement {
    *          signs, the `cannot` entries and the door to the panel (the Cell view's flux), with the channel's name beside its options
    * folded   the keys and the note start closed (a short window)
    * layersFirst  the switch for layers stands first (a phone with a panel open, where the legend has little room)
+   * lead     words that open the legend, before its first block (on a phone, the protein atlas's caveat), or none
    */
   render(chrome) {
     // The same words and the same switches as were drawn last: nothing is drawn again. Drawing
@@ -82,7 +83,7 @@ class CellsLegend extends HTMLElement {
     this.letGo = null;
     this.pressed = false;
   }
-  draw({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false, colour = null }) {
+  draw({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false, layersFirst = false, colour = null, lead = null }) {
     // Drawn again while its Colour select has the keyboard, the new select takes it back, so that a second key reaches it.
     const hadColour = this.getRootNode()?.activeElement?.id === "cells-own-colour";
     this.replaceChildren();
@@ -116,7 +117,7 @@ class CellsLegend extends HTMLElement {
         item.count === undefined ? null : h("span", { class: "legend-count" }, String(item.count))
       )
     );
-    const body = h("div", { class: "legend-body" }, chooser, chooser ? h("p", { class: "legend-title legend-colour-title" }, title) : null, scale ? this.scale(scale) : null, rows);
+    const body = h("div", { class: "legend-body" }, lead ? h("p", { class: "legend-lead" }, lead) : null, chooser, chooser ? h("p", { class: "legend-title legend-colour-title" }, title) : null, scale ? this.scale(scale) : null, rows);
     if (layers?.rows?.length || layers?.cannot?.length) {
       const block = this.layers(layers);
       if (layersFirst) body.prepend(block);

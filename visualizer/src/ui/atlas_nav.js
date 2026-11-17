@@ -30,9 +30,10 @@ export function renderAtlasNav(viewer, nav) {
   box.map.hidden = !on || !nav?.map;
   viewer.frame.classList.toggle("has-trail", on);
   viewer.frame.classList.toggle("has-map", on && Boolean(nav?.map));
+  if (box.say && (!on || !nav?.map)) box.say.hidden = true;
   if (!on) return;
   drawTrail(viewer, lens, nav, box);
-  if (nav.map) drawMap(lens, nav.map, box.map);
+  if (nav.map) drawMap(viewer, lens, nav.map, box.map);
 }
 
 function drawTrail(viewer, lens, nav, box) {
@@ -65,7 +66,56 @@ function drawTrail(viewer, lens, nav, box) {
     (target.disabled ? viewer.canvas : target).focus({ preventScroll: true });
   }
   // Where the steps do not fit, the middle ones give way to "…" (its title names them), the first and the last stay whole.
-  requestAnimationFrame(() => fitCrumbs(crumbs));
+  // On a phone no word is cut: after the middle, words give way from a step's end (fitCrumbsPhone).
+  requestAnimationFrame(() => (viewer.clientWidth < 760 ? fitCrumbsPhone(crumbs) : fitCrumbs(crumbs)));
+}
+
+/**
+ * The trail on a phone: on one line, never cut inside a word. What gives way, in this order: the
+ * steps between the first and the last (to "…", whose title names them); the count after the
+ * first step's name ("Thale cress · 27,368" → "Thale cress"; a count is no part of a name, so
+ * nothing marks it); the last step's words from its end ("Endoplasmic reticulum…"); the first
+ * step's words; and only then the first step itself. The arrow still goes back one level.
+ */
+function fitCrumbsPhone(crumbs) {
+  const items = [...crumbs.children];
+  const over = () => crumbs.scrollWidth > crumbs.clientWidth + 1;
+  if (!items.length || !over()) return;
+  const more = h("li", { class: "atlas-more" }, h("span", { class: "atlas-crumb" }, "…"));
+  if (items.length > 2) items[0].after(more);
+  for (const item of items.slice(1, -1)) {
+    if (!over()) break;
+    item.hidden = true;
+  }
+  const first = items[0].querySelector(".atlas-crumb"), last = items.at(-1);
+  if (items.length > 1 && over() && first && / · [\d,]+$/.test(first.textContent)) {
+    first.dataset.full = first.textContent;
+    first.title ||= first.textContent;
+    first.textContent = first.textContent.replace(/ · [\d,]+$/, "");
+  }
+  if (over()) shortenCrumb(last, over);
+  if (items.length > 1 && over()) shortenCrumb(items[0], over);
+  if (items.length > 1 && over()) {
+    items[0].hidden = true;
+    (more.isConnected ? more : last).classList.add("is-lead");
+  }
+  const gone = items.filter((item) => item.hidden && item !== items[0]);
+  if (!gone.length) more.remove();
+  else more.title = gone.map((item) => item.textContent).join(" › ");
+}
+
+/** Take words from the end of a step's words until the trail fits or one word is left; what is left ends in "…". */
+function shortenCrumb(item, over) {
+  const crumb = item.querySelector(".atlas-crumb");
+  if (!crumb) return;
+  const words = crumb.textContent.split(" ");
+  crumb.dataset.full ||= crumb.textContent;
+  crumb.title ||= crumb.dataset.full;
+  while (over() && words.length > 1) {
+    words.pop();
+    while (words.length > 1 && /^[·,:;–—-]$/.test(words.at(-1))) words.pop();
+    crumb.textContent = `${words.join(" ").replace(/[\s·,:;–—-]+$/, "")}…`;
+  }
 }
 
 function fitCrumbs(crumbs) {
@@ -170,7 +220,23 @@ function makeSearch(viewer, lens, nav) {
   return { species: nav.species, box, input, results, close, fill };
 }
 
-function drawMap(lens, map, box) {
+/** On a phone the map's rows show no names: a press on a row, or the keyboard on it, says the shelf's name beside it for a while. */
+function sayRow(viewer, button, row) {
+  if (viewer.clientWidth >= 760) return;
+  const box = viewer.atlasNav;
+  if (!box.say) {
+    box.say = h("p", { class: "atlas-say", role: "status", "aria-live": "polite", hidden: true });
+    viewer.frame.append(box.say);
+  }
+  const frame = viewer.frame.getBoundingClientRect(), at = button.getBoundingClientRect();
+  box.say.textContent = `${row.label} · ${number(row.count)}`;
+  box.say.style.top = `${Math.round(at.top - frame.top + at.height / 2)}px`;
+  box.say.hidden = false;
+  clearTimeout(box.sayTimer);
+  box.sayTimer = setTimeout(() => (box.say.hidden = true), 2600);
+}
+
+function drawMap(viewer, lens, map, box) {
   const bar = (counts, count) =>
     h(
       "span",
@@ -182,7 +248,19 @@ function drawMap(lens, map, box) {
     ...map.rows.map((row) =>
       h(
         "button",
-        { class: `atlas-row${row.id === map.active ? " is-on" : ""}${row.open ? " has-open" : ""}`, type: "button", "aria-pressed": String(row.id === map.active), "aria-label": `${row.label}, ${number(row.count)} proteins${row.open ? ", a family open" : ""}`, title: `${row.label} · ${number(row.count)}`, dataset: { shelf: row.id }, onclick: () => lens.showShelf(row.id) },
+        {
+          class: `atlas-row${row.id === map.active ? " is-on" : ""}${row.open ? " has-open" : ""}`,
+          type: "button",
+          "aria-pressed": String(row.id === map.active),
+          "aria-label": `${row.label}, ${number(row.count)} proteins${row.open ? ", a family open" : ""}`,
+          title: `${row.label} · ${number(row.count)}`,
+          dataset: { shelf: row.id },
+          onclick: (event) => {
+            sayRow(viewer, event.currentTarget, row);
+            lens.showShelf(row.id);
+          },
+          onfocus: (event) => event.currentTarget.matches(":focus-visible") && sayRow(viewer, event.currentTarget, row),
+        },
         h("span", { class: "atlas-row-name" }, row.label, row.open ? h("span", { class: "atlas-row-open" }, " · open") : null),
         h("span", { class: "atlas-row-count" }, number(row.count)),
         bar(row.counts || map.whole, row.counts ? row.count : map.most)

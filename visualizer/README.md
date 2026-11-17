@@ -880,16 +880,26 @@ Ideas kept for after the basics (the user, 14 November 2026):
   (`tests/palette.test.mjs`) and as drawn on the graphics card (`check_shelves.mjs
   colours`): every side stands at least 3 : 1 against the page in both themes. Colour is
   never the only cue: position and form say the side too. The ramps were sampled as drawn
-  on Syn3A only. On a phone the atlas is crowded, and the map's names show only under a
-  pointer or the keyboard, never on touch.
+  on Syn3A only.
+- On a phone (a window under 760 px) the picture comes first: the bar keeps to one row
+  (where its words would not fit, its switches tighten and the page's name is put out of
+  sight, still read out); the Protein atlas's and the Laws library's cards fold to one
+  line that a press opens; the atlas's caveat stands at the head of its legend; its trail
+  never cuts a word (the steps in its middle, the count and the words at a step's end give
+  way first); and the map of the stack says a shelf's name when its bar is pressed. Two
+  overlaps are meant: the open legend lies over the map, and the opened search over the
+  folded card's line. A model system's stand-in card does not fold, and at 360 px with
+  the stand-in font it overlaps the rail's button. Not a pixel of a window 760 px wide or
+  more changed (13 wide pictures compared before and after, the cards and words to the
+  pixel).
 - "To scale" sizes are generic textbook values, as the table above says. No capability's
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library's card scrolls beside its legend on a window under about 1000 px tall,
-  and on a phone the open card lies over the top of the wall. The room it keeps clear on
+- The Laws library's card scrolls beside its legend on a wide window under about 1000 px
+  tall. The room it keeps clear on
   the left is worked out when a panel opens or closes, so it goes stale when a window is
   resized across 760 px. A model's box on the Engine view holds frames, not pieces, and
   has no door into the library.

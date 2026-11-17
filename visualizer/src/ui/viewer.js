@@ -150,6 +150,8 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-slow", (event) => this.current?.setSlow?.(event.detail));
     root.addEventListener("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
+      // On a phone the legend's sheet and a view's card never lie over each other: opening the one folds the other.
+      if (this.state.legendOpen && this.clientWidth < 760 && this.state.viewOpen) this.toggleViewCard(false);
       this.renderLegend();
     });
   }
@@ -305,6 +307,7 @@ class CellsViewer extends HTMLElement {
     const spec = this.views?.find((lens) => lens.id === id);
     if (!spec || !this.model) return;
     this.current?.deactivate();
+    if (this.state.lens !== id && this.state.viewOpen) this.toggleViewCard(false); // a phone's folded card starts folded in the next view
     this.state.lens = id;
     this.state.isolate = null;
     if (this.stage) {
@@ -638,8 +641,12 @@ class CellsViewer extends HTMLElement {
     else delete this.dataset.show;
     // A caveat on the picture, or what a view is doing (loading a run, or why it could not).
     const words = chrome.caveat || chrome.status || "";
+    // On a phone the protein atlas's caveat stands at the head of the legend's sheet, not over the picture (renderLegend).
+    this.frame.classList.toggle("caveat-in-legend", this.caveatInLegend(chrome));
     this.caveat.hidden = !words;
     this.hint.hidden = Boolean(words) || Boolean(chrome.quiet) || !this.stage;
+    // A phone is touched, not pointed at: its hint names the touch's own moves (the camera control takes a pinch).
+    this.hint.textContent = this.clientWidth < 760 ? "Drag to turn · pinch to zoom · tap a part" : "Drag to turn · scroll to zoom · click a part";
     this.caveat.textContent = words;
     this.caveat.classList.toggle("is-status", Boolean(chrome.status));
     // A view whose data has its own date says so in place of the map's.
@@ -650,8 +657,15 @@ class CellsViewer extends HTMLElement {
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     this.viewToggle.hidden = this.viewCard.hidden;
     const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 && !chrome.view.machine ? "sizes" : null, chrome.view.machine ? "detail" : null].filter(Boolean) : [];
-    const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : chrome.card?.heading || "";
+    // On a phone a view's card folds to one line saying what is shown (styles.js .card-folds): the protein atlas's, the Laws
+    // library's. The Cell view's card, a model system's in its place and a replay's keep their own phone layouts.
+    this.frame.classList.toggle("card-folds", this.clientWidth < 760 && Boolean(chrome.card) && !chrome.run && !chrome.view && this.state.lens !== "cell");
+    // The folded line says what is shown: the card's heading, and the drawing chosen where there is a choice ("Cells' 48 machines"; not "All").
+    const mode = this.clientWidth < 760 && chrome.card?.modes && !chrome.nav && chrome.card.modes.active !== "all" ? chrome.card.modes.options.find(([value]) => value === chrome.card.modes.active)?.[1] : null;
+    const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : [chrome.card?.heading, mode].filter(Boolean).join(" · ");
     this.viewToggle.replaceChildren(h("span", {}, folded), h("span", { class: "chevron", "aria-hidden": "true" }));
+    this.viewToggle.removeAttribute("aria-label"); // set again by fitFolded where the line had to be shortened
+    if (this.clientWidth < 760) this.fitFolded(chrome.card?.heading || "");
     this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
     this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
     if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
@@ -729,12 +743,55 @@ class CellsViewer extends HTMLElement {
       this.railToggle.setAttribute("aria-label", `${chrome.railTitle || "Scale"}: ${active?.label || ""}. Press for the other levels.`);
     }
     this.fitCard();
+    this.fitBar();
+  }
+
+  /**
+   * On a phone the bar keeps to one row, whatever the first tab is called (a model system's view)
+   * and whichever font has arrived: where it would wrap, it is squeezed in steps (styles.js,
+   * data-squeeze): tighter switches, a smaller name, the name put out of sight (still read out),
+   * smaller words. A wide window is never squeezed.
+   */
+  fitBar() {
+    const bar = this.bar;
+    delete bar.dataset.squeeze;
+    if (this.clientWidth >= 760) return;
+    const oneRow = () => {
+      const rects = [...bar.children].filter((element) => !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect()).filter((rect) => rect.width > 1);
+      return rects.every((a) => rects.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1));
+    };
+    const steps = ["1", "1 2", "1 2 3", "1 2 3 4"];
+    for (let step = 0; step < steps.length && !oneRow(); step++) bar.dataset.squeeze = steps[step];
+  }
+
+  /** The folded card's line on a phone never cuts a word: where it does not fit it says the heading alone, then fewer of its words. */
+  fitFolded(heading) {
+    const line = this.viewToggle.firstChild;
+    if (!line || this.viewToggle.hidden || !this.viewToggle.getClientRects().length) return;
+    const over = () => line.scrollWidth > line.clientWidth + 1;
+    if (!over()) return;
+    this.viewToggle.setAttribute("aria-label", line.textContent);
+    if (heading && line.textContent !== heading) line.textContent = heading;
+    const words = line.textContent.split(" ");
+    while (over() && words.length > 1) {
+      words.pop();
+      line.textContent = `${words.join(" ")}…`;
+    }
+  }
+
+  /** On a phone the protein atlas's caveat (not what a view is doing: loading, or why it could not) stands in the legend's sheet. */
+  caveatInLegend(chrome) {
+    return this.clientWidth < 760 && this.state.lens === "proteins" && Boolean(chrome.caveat) && !chrome.status && !this.legend.hidden;
   }
 
   /** Open or close the view's card, folded on a phone while a panel is open. */
   toggleViewCard(force) {
     const open = force ?? !this.state.viewOpen;
     this.state.viewOpen = open;
+    if (open && this.state.legendOpen && this.clientWidth < 760) {
+      this.state.legendOpen = false;
+      this.renderLegend();
+    }
     this.frame.classList.toggle("view-open", open);
     this.viewToggle.classList.toggle("is-open", open);
     this.viewToggle.setAttribute("aria-expanded", String(open));
@@ -1359,7 +1416,10 @@ class CellsViewer extends HTMLElement {
       // A species' findings add a block. On all but a tall window the evidence block then starts closed, so the card keeps its room.
       const filter = chrome.findings && chrome.filter && this.clientHeight < 1040 ? { ...chrome.filter, folded: true } : chrome.filter;
       // A view may ask for its marks to fold away (a replay whose layers add signs of their own).
-      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: legend.folded || this.clientHeight < 880 });
+      // On a phone the atlas's caveat is the legend's opening words (renderChrome hides it from over the picture).
+      const full = this.withEntries(chrome);
+      const lead = this.caveatInLegend(full) ? full.caveat : null;
+      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: legend.folded || this.clientHeight < 880, ...(lead ? { lead } : {}) });
       return;
     }
     const counts = new Map();

@@ -537,6 +537,12 @@ export class LawsLens {
       this.writePlaques();
       this.buildLabels();
       this.refresh();
+      // What was chosen before the room was laid out again (a piece named in the address, on a phone)
+      // is framed in the new room: the move made for it went to where it stood in the old one.
+      if (this.selected) {
+        this.focused = null;
+        this.focus(this.selected);
+      }
     }
     return true;
   }

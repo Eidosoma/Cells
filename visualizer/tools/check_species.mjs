@@ -528,6 +528,24 @@ if (process.env.CASE === "model") {
     check("on a phone its rail opens under its button with its levels, and the button is clear of the bar", rail.below && rail.clear && rail.levels === gard.levels.join(" "), JSON.stringify(rail));
     await shot("model-phone-rail-light");
     await press(".rail-toggle");
+    // The phone's second pass (17 November 2026): at 390 px the bar stands on one row with the model system's longer first
+    // tab, every button of it at least 44 px, with the page's own font and with the stand-in, whose words run longer.
+    await size(390, 844);
+    await open(`lens=cell&entry=${gard.id}`);
+    await settled();
+    const barNow = () =>
+      evaluate(`(() => {
+        const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0;
+        const kids = [...root.querySelector(".bar").children].filter(shown).map((el) => el.getBoundingClientRect()).filter((r) => r.width > 1); // the page's name put out of sight is 1 px
+        const presses = [...root.querySelectorAll(".bar button")].filter(shown).map((el) => { const r = el.getBoundingClientRect(); return Math.round(Math.min(r.width, r.height)); });
+        return { row: kids.every((a) => kids.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1)), least: Math.min(...presses), squeeze: root.querySelector(".bar").dataset.squeeze || "", tabs: [...root.querySelectorAll(".switch button")].map((b) => b.textContent).join(" "), sideways: document.documentElement.scrollWidth > innerWidth + 1 };
+      })()`);
+    let barRow = await barNow();
+    check("on a 390 px phone the bar stands on one row with a model system's first tab, each of its buttons at least 44 px", barRow.row && barRow.least >= 44 && !barRow.sideways, JSON.stringify(barRow));
+    await evaluate(`(async () => { document.querySelector('link[href*="fonts.googleapis"]')?.remove(); await new Promise((resolve) => setTimeout(resolve, 400)); ${V}.renderChrome(); })()`);
+    barRow = await barNow();
+    check("and so it does with the stand-in font, whose words run longer", barRow.row && barRow.least >= 44 && !barRow.sideways, JSON.stringify(barRow));
+    await shot("model-phone-390-standin");
     await size(WIDTH, 800);
   } catch (error) {
     check("the run completed", false, error.stack || error.message);

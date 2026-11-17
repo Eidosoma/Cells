@@ -697,4 +697,55 @@ cells-trace { display: grid; gap: 4px; }
   .atlas-row { height: 44px; padding: 4px; align-content: center; }
   .atlas-bar { width: 100% !important; height: 10px; }
 }
+
+/* ---------------------------------------------------------------- a phone, its second pass (17 November 2026)
+   Below 760 px only: the phone block above also takes a window 760 px wide, and what is added here leaves that window as it was.
+   The picture first: a view's card folds to one line, the trail stays on one line and never cuts a word, the atlas's caveat
+   stands in the legend's sheet, the map of the stack says a shelf's name when a bar is pressed, and the bar keeps to one row.
+   Nothing here lies over the canvas with a backdrop blur (see .card). */
+.atlas-say { display: none; }
+@media (max-width: 759px) {
+  /* The bar on one row. Every switch is at least 44 px wide as well as tall; where the words would still wrap the bar (a model
+     system's longer name, the stand-in font), the viewer squeezes it in steps (viewer.js fitBar, data-squeeze). */
+  .switch button, .bar-end .pill-button { min-width: 44px; }
+  .bar[data-squeeze~="1"] { gap: 6px; }
+  .bar[data-squeeze~="1"] .switch button { padding-inline: 6px; }
+  .bar[data-squeeze~="1"] .bar-end .pill-button { padding-inline: 8px; }
+  .bar[data-squeeze~="2"] .brand b { font-size: 16px; }
+  .bar[data-squeeze~="2"] .switch button { padding-inline: 5px; font-size: 12.5px; }
+  /* The page's name gives way last; it is still read out. */
+  .bar[data-squeeze~="3"] .brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .bar[data-squeeze~="4"] .switch button { padding-inline: 4px; font-size: 12px; }
+  /* A view's card (the protein atlas, the Laws library, a model system's) folds to one line under the bar, or under the trail;
+     a press opens it over the picture, and opening the legend folds it again (viewer.js). */
+  .card-folds:not(.view-open) .view { display: none; }
+  .card-folds .view-toggle { display: flex; position: absolute; top: max(68px, calc(var(--bar-height, 0px) + 8px)); left: max(16px, env(safe-area-inset-left, 0px)); max-width: calc(100% - 32px); align-items: center; gap: 12px; padding: 0 14px; font-weight: 500; z-index: 4; }
+  .card-folds.has-map .view-toggle { max-width: calc(100% - 96px); }
+  .card-folds .view-toggle > span:first-child { white-space: nowrap; overflow: hidden; }
+  .card-folds.has-trail .view-toggle { top: max(116px, calc(var(--bar-height, 0px) + 56px)); }
+  .card-folds.view-open .view { top: max(118px, calc(var(--bar-height, 0px) + 58px)); max-height: calc(100% - 118px - 96px); z-index: 4; }
+  .card-folds.has-trail.view-open .view { top: max(166px, calc(var(--bar-height, 0px) + 106px)); max-height: calc(100% - 166px - 96px); }
+  .card-folds.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 126px); }
+  .card-folds.has-trail.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 174px); }
+  /* The trail never cuts a word: the steps in its middle give way to "…", then words from a step's end (atlas_nav.js). */
+  .atlas-crumbs li:not(.is-here):not(:nth-last-child(2)):not([hidden]) { display: flex; }
+  .atlas-crumbs li:nth-last-child(2) { max-width: none; }
+  .atlas-crumbs li:nth-last-child(2)::before { display: inline; }
+  .atlas-crumbs li:nth-last-child(2) .swatch { display: inline-block; }
+  .atlas-crumbs li:first-child::before, .atlas-crumbs li.is-lead::before { display: none; }
+  .atlas-crumb, .is-here .atlas-crumb { max-width: none; text-overflow: clip; }
+  /* The atlas's caveat stands at the head of the legend's sheet, not over the picture (viewer.js renderLegend). */
+  .caveat-in-legend .caveat { display: none; }
+  /* Links in a card's or a panel's lists (sources, a protein's databases) are pressed as often as buttons: a line of 44 px. */
+  .view details li a, .item-links a, .sources a { display: inline-block; min-width: 44px; min-height: 44px; line-height: 44px; }
+  /* The hint (drag, zoom, choose) would lie under a panel's sheet. */
+  .has-panel .hint { display: none; }
+  /* The map of the stack: a column of bars 44 px wide that does not open under a pointer; a press on a bar, or the keyboard on
+     it, brings its shelf near and says its name beside it (atlas_nav.js). */
+  .atlas-map, .atlas-map:hover, .atlas-map:focus-within { width: 52px; }
+  .atlas-say { display: flex; align-items: center; position: absolute; right: calc(max(8px, env(safe-area-inset-right, 0px)) + 58px); transform: translateY(-50%); z-index: 4; max-width: calc(100% - 96px); min-height: 36px; margin: 0; padding: 0 12px; border-radius: 8px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 8px 20px -12px rgb(0 0 0 / .45); font-size: 13px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+  .atlas-say[hidden] { display: none; }
+}
+/* The legend's opening words, where a view gives them (on a phone, the protein atlas's caveat). */
+.legend-lead { margin: 0 0 4px; padding: 4px 8px 8px; font-size: 12.5px; line-height: 1.4; color: var(--muted); border-bottom: 1px solid var(--line); }
 `;
