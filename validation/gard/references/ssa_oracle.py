@@ -235,7 +235,7 @@ def direct_step(law: ExchangeLaw, x: np.ndarray, u1: float, u2: float, table: "C
 
 def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_mass: int,
            splits: np.ndarray, followed: np.ndarray, table: "ChannelTable", event_guard: int | None = None,
-           leave_weight: float = 1.0) -> dict:
+           leave_weight: float = 1.0, guard_rule: str = "stop") -> dict:
     """Replay a single lineage from its uniforms; fissions use the recorded splits.
 
     Returns the oracle's canonical event codes, event times, events per growth and tie margins.
@@ -261,7 +261,11 @@ def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_
         margins[k] = margin
         k += 1
         in_growth += 1
+        if x.sum() == 0:  # extinction ends the lineage
+            break
         guard_hit = event_guard is not None and in_growth >= event_guard
+        if guard_hit and guard_rule == "stop" and x.sum() != fission_mass:
+            break  # the engine stops the lineage at its guard (declared, not a fault)
         if x.sum() == fission_mass or guard_hit:
             per_growth.append(in_growth)
             in_growth = 0
@@ -279,7 +283,8 @@ def replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray, fission_
 def check_crn_replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray,
                      event_channel: np.ndarray, event_time: np.ndarray, fission_mass: int,
                      splits: np.ndarray, followed: np.ndarray, events_per_growth: np.ndarray | None,
-                     table: "ChannelTable", event_guard: int | None = None) -> CheckResult:
+                     table: "ChannelTable", event_guard: int | None = None,
+                     guard_rule: str = "stop") -> CheckResult:
     """Compare a run's event trace with the oracle's replay under the same uniforms.
 
     The run's event codes are read through its declared channel table.
@@ -290,7 +295,7 @@ def check_crn_replay(law: ExchangeLaw, founder: np.ndarray, uniforms: np.ndarray
     if uniforms.shape != (event_channel.size, 2):
         return CheckResult("ssa_crn_replay", False, dict(
             error=f"event_uniforms shape {uniforms.shape} does not match {event_channel.size} events"))
-    rep = replay(law, founder, uniforms, fission_mass, splits, followed, table, event_guard)
+    rep = replay(law, founder, uniforms, fission_mass, splits, followed, table, event_guard, guard_rule=guard_rule)
     n = min(rep["channels"].size, event_channel.size)
     same = rep["channels"][:n] == event_channel[:n]
     differ = np.flatnonzero(~same)

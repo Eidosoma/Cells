@@ -164,3 +164,19 @@ def test_too_few_splits_fail_as_underpowered():
     parents, splits = _splits("binomial", 0.5, 30, 80)
     res = fp.check_partition_records(parents, splits, "binomial")
     assert res.detail["underpowered"] and not res.passed
+
+
+@pytest.mark.parametrize("rule", ["stop", "fission"])
+def test_the_event_guard_rule_is_followed(rule):
+    law, founder = preprint_law(10, PAIR_CONSISTENT, n_types=40)
+    _, run, a = simulate_lineage(law, founder, n_fissions=3, seed=35, event_guard=25, guard_rule=rule)
+    table = so.ChannelTable.from_declared(run["channels"], law.n_types)
+    args = (law, founder, a["event_uniforms"], a["event_channel"], a["event_time"], 80, a["fission_split"],
+            a["fission_followed"], a["events_per_growth"], table, 25)
+    if rule == "stop":
+        assert run["end_status"] == "event_guard" and a["fission_split"].shape[0] == 0
+    else:
+        assert a["fission_split"].shape[0] == 3
+    assert so.check_crn_replay(*args, guard_rule=rule).passed
+    other = "fission" if rule == "stop" else "stop"
+    assert not so.check_crn_replay(*args, guard_rule=other).passed or rule == "stop"

@@ -23,7 +23,7 @@ import math
 
 import numpy as np
 
-from .kernels import ExchangeLaw, HeldReservoir, PAIR_CONSISTENT, SINGLE_EVENT, log_weight, propensities
+from .kernels import ExchangeLaw, HeldReservoir, PAIR_CONSISTENT, SINGLE_EVENT, event_heat, log_weight, propensities
 from .records import canonical_digest
 from .ssa_oracle import DECLARED_BY_ENGINE, ChannelTable, bias_weights, select_channel, uniforms_from_words
 
@@ -68,7 +68,7 @@ class EventStream:
 
 def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, partition: str = "exact_fraction",
                  fraction: float = 0.5, p: float = 0.5, continuation: str = "first",
-                 event_guard: int | None = 40000) -> dict:
+                 event_guard: int | None = 40000, guard_rule: str = "stop") -> dict:
     """A world record in the canonical layout of ``records.WORLD_FIELDS``."""
     if not isinstance(law.reservoir, HeldReservoir):
         raise ValueError("lineage worlds use a held supply")
@@ -81,6 +81,7 @@ def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, pa
         fission["p"] = float(p)
     if event_guard is not None:
         fission["event_guard"] = int(event_guard)
+        fission["guard_rule"] = guard_rule
     body = {
         "schema": "cells.assembly_lineages.world@1",
         "types": [f"type{i:03d}" for i in range(G)],
@@ -90,7 +91,7 @@ def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, pa
         "founder": [int(v) for v in founder],
         "rules": {"fission": fission,
                   "continuation": {"operator": "cells.daughter_continuation@1", "rule": continuation,
-                                   "empty_daughter": "end_lineage"},
+                                   "empty_daughter": "fallback_nonempty"},
                   "sink": {"kind": "declared_sink"},
                   "boundary": law.boundary},
         "units": {"time": "nominal", "temperature_K": None},
@@ -131,7 +132,8 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
                      p: float = 0.5, continuation: str = "first", event_guard: int | None = 40000,
                      diagnostics: bool = True, leave_weight: float = 1.0, join_factor: float = 1.0,
                      max_events: int | None = None, t_max: float | None = None,
-                     world: dict | None = None, table: ChannelTable | None = None) -> tuple[dict, dict, dict]:
+                     world: dict | None = None, table: ChannelTable | None = None,
+                     guard_rule: str = "stop") -> tuple[dict, dict, dict]:
     """Run one lineage; return (world, run, arrays) in the canonical bundle layout.
 
     ``leave_weight`` and ``join_factor`` exist only to plant errors for the controls:
@@ -141,7 +143,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
     x = np.array(founder, dtype=np.int64)
     if world is None:
         world = world_record(law, x, fission_mass=fission_mass, partition=partition, fraction=fraction,
-                             p=p, continuation=continuation, event_guard=event_guard)
+                             p=p, continuation=continuation, event_guard=event_guard, guard_rule=guard_rule)
     rows = {k: [] for k in ("row_time", "row_event", "assembly_count", "joined_total", "left_total",
                             "discarded_total", "exchange_heat_kT", "fission_work_kT",
                             "discarded_free_energy_kT", "log_weight", "ledger_residual_kT",
@@ -202,9 +204,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         y = x.copy()
         y[i] += sign
         b_plus, b_minus = propensities(law, y)
-        q = (math.log(a_plus[i]) - math.log(b_minus[i])) if sign > 0 else \
-            (math.log(a_minus[i]) - math.log(b_plus[i]))
-        heat += q
+        heat += event_heat(law, x, i, sign, (a_plus, a_minus), (b_plus, b_minus))
         x = y
         a_plus, a_minus = b_plus, b_minus
         if sign > 0:
@@ -217,7 +217,13 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         ev_u.append((u1, u2))
         k += 1
         in_growth += 1
+        if int(x.sum()) == 0:
+            status = "extinct"  # neither a fission nor a break (preprint, Appendix F)
+            break
         guard = event_guard is not None and in_growth >= event_guard
+        if guard and guard_rule == "stop" and int(x.sum()) != fission_mass:
+            status = "event_guard"  # the engine stops the lineage; T2-02 would force a fission
+            break
         if int(x.sum()) == fission_mass or (guard and x.sum() >= 2):
             per_growth.append(in_growth)
             in_growth = 0
@@ -225,20 +231,19 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
             P = x.copy()
             N = int(P.sum())
             n_u = int(math.floor(fraction * N)) if partition == "exact_fraction" else N
-            pu = stream_uniforms(seed, DOMAIN_PARTITION, branch, f, max(n_u, 1))
+            pu = stream_uniforms(seed, DOMAIN_PARTITION, branch, occupant, max(n_u, 1))  # keyed by the parent
             d1 = _split(P, partition, fraction, p, pu)
             d2 = P - d1
-            cu = float(stream_uniforms(seed, DOMAIN_CONTINUATION, branch, f, 1)[0])
+            cu = float(stream_uniforms(seed, DOMAIN_CONTINUATION, branch, occupant, 1)[0])
             if continuation == "first":
                 fol = 0
             elif continuation == "second":
                 fol = 1
             else:
                 fol = 0 if cu < 0.5 else 1
+            if (d1 if fol == 0 else d2).sum() == 0:
+                fol = 1 - fol  # the declared empty-daughter rule: fall back to the nonempty daughter
             D, U = (d1, d2) if fol == 0 else (d2, d1)
-            if D.sum() == 0:
-                status = "empty_followed_daughter"
-                break
             lp, ld1, ld2 = log_weight(law, P), log_weight(law, d1), log_weight(law, d2)
             work += lp - ld1 - ld2
             sink += -log_weight(law, U)
@@ -252,7 +257,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
             fis["fission_followed"].append(fol)
             fis["fission_split"].append(d1.copy())
             fis["fission_similarity"].append((_cosine(P, d1), _cosine(P, d2)))
-            fis["fission_partition_counter"].append(f)
+            fis["fission_partition_counter"].append(0)
             fis["continuation_uniform"].append(cu)
             occupant = keys[fol]
             generation += 1

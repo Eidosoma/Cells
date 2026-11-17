@@ -11,15 +11,17 @@ counters. So:
    keys must not share randomness. For independent streams, two branches repeat the same
    first L events with probability at most (max_j p_j)^L. That is below 1e-20 for
    L = 50 in GARD worlds. Any repeat of a branch's first ``PREFIX`` events therefore
-   flags a reused key. So does any repeat of its uniforms, when the diagnostic records
-   exist. Distinct declared identities are required too.
+   flags a reused key. So does any repeat of its event or partition uniforms, when the
+   diagnostic records exist. Partition streams are keyed by the parent's carrier key, so
+   branches from one landmark must not share carrier keys. Distinct declared identities
+   are required too.
 4. Restart. A run restarted from a checkpoint (mid-growth, or across a fission) matches
    the uninterrupted run bitwise on every array from the checkpoint on.
 
 What the harness needs: a reference bundle and its replay; a solo bundle and a batched
 one; at least two branch bundles from one landmark; and restarted bundles, each declaring
-``restart.row`` and ``restart.event`` in run.json. ``VOLATILE_RUN_FIELDS`` lists the
-run.json fields allowed to differ between replays.
+``restart.row``, ``restart.event`` and ``restart.fission`` in run.json.
+``IDENTITY_RUN_FIELDS`` lists the run.json fields replays must share.
 
 Planted control: a reused key. Two branches that share a stream must be caught.
 """
@@ -31,7 +33,10 @@ import numpy as np
 from .common import CheckResult
 
 PREFIX = 50
-VOLATILE_RUN_FIELDS = ("wall_time", "started", "finished", "host", "pid", "created", "restart", "batch")
+IDENTITY_RUN_FIELDS = ("world_id", "founder", "law", "mode", "stream", "ssa_convention", "channels",
+                       "ledger_conventions", "time")
+"""run.json fields that define what was run; replays must agree on them. Any other
+differing field (run ids, timestamps, hosts, batch placement) is listed, not failed."""
 ROW_AXIS_ARRAYS = ("row_time", "row_event", "assembly_count", "joined_total", "left_total", "discarded_total",
                    "exchange_heat_kT", "fission_work_kT", "discarded_free_energy_kT", "log_weight",
                    "ledger_residual_kT", "occupant", "generation")
@@ -55,17 +60,18 @@ def compare_arrays(a: dict, b: dict) -> dict:
     return dict(only_in_first=only_a, only_in_second=only_b, differ=differ)
 
 
-def _strip(run: dict) -> dict:
-    return {k: v for k, v in run.items() if k not in VOLATILE_RUN_FIELDS}
-
-
 def check_bitwise_replay(arrays_a: dict, arrays_b: dict, run_a: dict, run_b: dict,
                          name: str = "bitwise_replay") -> CheckResult:
+    """Arrays bitwise equal and the identity fields of run.json equal; other fields listed."""
     cmp = compare_arrays(arrays_a, arrays_b)
-    same_run = _strip(run_a) == _strip(run_b)
-    passed = not cmp["only_in_first"] and not cmp["only_in_second"] and not cmp["differ"] and same_run
-    return CheckResult(name, bool(passed), dict(arrays=len(set(arrays_a) | set(arrays_b)), run_records_equal=same_run,
-                                                **cmp))
+    identity_differs = [k for k in IDENTITY_RUN_FIELDS if run_a.get(k) != run_b.get(k)]
+    other_differs = sorted(k for k in set(run_a) | set(run_b)
+                           if k not in IDENTITY_RUN_FIELDS and run_a.get(k) != run_b.get(k))
+    passed = (not cmp["only_in_first"] and not cmp["only_in_second"] and not cmp["differ"]
+              and not identity_differs)
+    return CheckResult(name, bool(passed), dict(arrays=len(set(arrays_a) | set(arrays_b)),
+                                                identity_fields_differ=identity_differs,
+                                                other_run_fields_differ=other_differs, **cmp))
 
 
 def check_batch_invariance(solo: dict, batched: dict, run_solo: dict, run_batched: dict) -> CheckResult:
@@ -127,7 +133,13 @@ def check_branch_independence(branches: list[dict], identities: list, prefix: in
                 ub = np.asarray(branches[b]["event_uniforms"])
                 m = min(ua.shape[0], ub.shape[0], prefix)
                 same_u = m > 0 and np.array_equal(ua[:m], ub[:m])
-            if same_events or same_u:
-                repeats.append((a, b, bool(same_events), bool(same_u)))
+            same_p = False
+            if "partition_uniforms" in branches[a] and "partition_uniforms" in branches[b]:
+                pa = np.asarray(branches[a]["partition_uniforms"]).ravel()
+                pb = np.asarray(branches[b]["partition_uniforms"]).ravel()
+                m = min(pa.size, pb.size, prefix)
+                same_p = m > 0 and np.array_equal(pa[:m], pb[:m])
+            if same_events or same_u or same_p:
+                repeats.append((a, b, bool(same_events), bool(same_u), bool(same_p)))
     return CheckResult("branch_independence", bool(distinct_ids and not repeats), dict(
         branches=n, distinct_identities=distinct_ids, prefix=prefix, repeated_pairs=repeats[:10]))

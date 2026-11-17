@@ -65,9 +65,13 @@ WORLD_FIELDS = {
     "partition_p": "rules.fission.p",
     "continuation": "rules.continuation.rule",
     "boundary": "rules.boundary",
+    "guard_rule": "rules.fission.guard_rule",
     "units": "units",
 }
-WORLD_OPTIONAL = ("event_guard", "partition_fraction", "partition_p", "boundary", "units")
+WORLD_OPTIONAL = ("event_guard", "partition_fraction", "partition_p", "boundary", "guard_rule", "units")
+ENGINE_BOUNDARY = "extinction_uncatalysed"
+"""The engine's declared edge convention (17 November): the last molecule leaves
+uncatalysed and Phi(empty) = 0. A world that does not name its rule is read this way."""
 
 RUN_FIELDS = {
     "world_id": "world_id",
@@ -117,6 +121,8 @@ class WorldView:
     event_guard: int | None
     boundary: str
     units: dict | None = None
+    boundary_declared: bool = True
+    guard_rule: str = "stop"
     raw: dict = field(repr=False, default_factory=dict)
 
     @property
@@ -182,6 +188,12 @@ def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
         raise RecordFormatError(f"{source}: founder must be {G} integer counts")
     if len(values["types"]) != G:
         raise RecordFormatError(f"{source}: {len(values['types'])} types but beta is {G}x{G}")
+    K_declared = [t.get("K", t.get("transfer_constant")) for t in values["types"] if isinstance(t, dict)]
+    if K_declared and all(k is not None for k in K_declared):
+        K = np.asarray(K_declared, dtype=np.float64)
+        ratio = per_type(values["k_join"], "k_join") / per_type(values["k_leave"], "k_leave")
+        if K.shape != (G,) or np.any(np.abs(K - ratio) > 1e-12 * np.abs(ratio)):
+            raise RecordFormatError(f"{source}: the types' transfer constants K disagree with k_join/k_leave")
     partition = str(values["partition"])
     if partition not in ("binomial", "exact_fraction"):
         raise RecordFormatError(f"{source}: unknown partition {partition!r}")
@@ -198,7 +210,9 @@ def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
         partition_p=None if values["partition_p"] is None else float(values["partition_p"]),
         continuation=str(values["continuation"]),
         event_guard=None if values["event_guard"] is None else int(values["event_guard"]),
-        boundary=str(values["boundary"] or "last_molecule_stays"), units=values["units"], raw=raw)
+        boundary=str(values["boundary"] or ENGINE_BOUNDARY), units=values["units"],
+        boundary_declared=values["boundary"] is not None, guard_rule=str(values["guard_rule"] or "stop"),
+        raw=raw)
 
 
 def adapt_run(raw: dict, source: str = "run.json") -> RunView:

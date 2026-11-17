@@ -109,3 +109,32 @@ def test_log_weight_constant_is_allowed_and_found(runs):
                   discarded_free_energy_kT=a["discarded_free_energy_kT"] - C * done)
     assert res.detail["log_weight_constant_ok"] and abs(res.detail["log_weight_constant"] - C) < 1e-9
     assert res.passed, res.detail
+
+
+def test_the_last_molecules_leave_books_minus_ln_theta():
+    from validation.gard.references.kernels import (EXTINCTION_UNCATALYSED, ExchangeLaw, HeldReservoir,
+                                                    event_heat, log_weight, propensities)
+    for form in (PAIR_CONSISTENT, SINGLE_EVENT):
+        law = ExchangeLaw(np.array([[5.0, 1.0], [2.0, 3.0]]), [0.2, 0.3], [0.7, 0.4],
+                          HeldReservoir(np.array([0.5, 0.25])), form, EXTINCTION_UNCATALYSED)
+        x = np.array([0, 1])
+        assert propensities(law, x)[1][1] == 0.4  # uncatalysed: the bare k_b
+        q = event_heat(law, x, 1, -1)
+        assert np.isclose(q, -np.log(0.3 / 0.4 * 0.25), rtol=1e-15)
+        assert log_weight(law, np.zeros(2, dtype=int)) == 0.0
+        assert np.isclose(q, log_weight(law, np.zeros(2, dtype=int)) - log_weight(law, x), rtol=1e-15)
+
+
+def test_an_extinct_lineage_stays_consistent():
+    from validation.gard.references.kernels import EXTINCTION_UNCATALYSED, ExchangeLaw, HeldReservoir
+    G = 6
+    law = ExchangeLaw(np.zeros((G, G)), 1.0, 1.2, HeldReservoir(np.full(G, 1.0 / G)), PAIR_CONSISTENT,
+                      EXTINCTION_UNCATALYSED)  # births 1.0 N, deaths 1.2 N: fissions happen, then extinction
+    founder = np.array([1, 1, 0, 0, 0, 0])
+    for seed in range(40):
+        _, run, a = simulate_lineage(law, founder, fission_mass=4, n_fissions=50, seed=seed, diagnostics=False)
+        if run["end_status"] == "extinct" and a["fission_split"].shape[0] >= 1:
+            break
+    assert run["end_status"] == "extinct" and a["fission_split"].shape[0] >= 1
+    assert _conserve(founder, a).passed
+    assert _ledger(law, founder, a).passed

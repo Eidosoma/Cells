@@ -237,3 +237,21 @@ def check_partition_records(parents: np.ndarray, splits: np.ndarray, rule: str, 
         rule=rule, fissions=F, bounds_ok=bounds_ok, exact_size_ok=size_ok, impossible_outcomes=impossible,
         chi_square=stat, chi_square_crit=crit, bins=bins, alpha=alpha, planted_power=power,
         min_power=min_power, underpowered=not enough))
+
+
+def check_partition_exact(parents: np.ndarray, splits: np.ndarray, rule: str, fraction: float | None = None,
+                          name: str = "fission_partition_exact") -> CheckResult:
+    """The exact constraints on recorded splits: 0 <= d <= P, and sum d = floor(f N) for the exact rule."""
+    if rule not in ("binomial", "exact_fraction"):
+        return CheckResult(name, False, dict(error=f"unknown partition rule {rule!r}"))
+    parents = np.atleast_2d(np.asarray(parents, dtype=np.int64))
+    splits = np.atleast_2d(np.asarray(splits, dtype=np.int64))
+    if parents.shape != splits.shape:
+        return CheckResult(name, False, dict(error=f"shapes {parents.shape} vs {splits.shape}"))
+    bounds = np.all((splits >= 0) & (splits <= parents), axis=1)
+    sizes = np.ones(parents.shape[0], dtype=bool)
+    if rule == "exact_fraction":
+        sizes = splits.sum(axis=1) == np.floor(float(fraction) * parents.sum(axis=1)).astype(np.int64)
+    bad = np.flatnonzero(~(bounds & sizes))
+    return CheckResult(name, bool(bad.size == 0), dict(rule=rule, fissions=int(parents.shape[0]),
+                                                      failing_fissions=bad[:10].tolist()))

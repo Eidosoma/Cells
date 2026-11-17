@@ -32,7 +32,7 @@ from . import observers, ssa_oracle, streams, time_rescaling
 from .common import CheckResult, jsonable
 from .kernels import (PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT, canonical_form,
                       gard_beta)
-from .records import Bundle, MissingRecord, RecordFormatError, load_bundle
+from .records import ENGINE_BOUNDARY, Bundle, MissingRecord, RecordFormatError, load_bundle
 from .ssa_oracle import ChannelTable, ConventionMissing
 
 KERNEL_PROBE_SEED = 20261117
@@ -48,7 +48,7 @@ ROWS = {
     3: ("Local detailed balance (pair-consistent)", ("kernel_probe",)),
     4: ("The stationary law in a closed world", ("closed_world",)),
     5: ("The SSA is exact", ("lineage", "lineage_diagnostic", "beta0_ensemble")),
-    6: ("The fission partition", ("partition_probe",)),
+    6: ("The fission partition", ("partition_probe", "lineage")),
     7: ("Conservation", ("lineage", "lineage_single_event")),
     8: ("The thermodynamic ledger", ("lineage", "lineage_single_event")),
     9: ("Streams", ("lineage", "replay", "batched", "restart", "branches")),
@@ -93,6 +93,9 @@ def make_probe_inputs(out_dir: str | Path) -> Path:
         rules=[dict(partition="exact_fraction", fraction=0.5), dict(partition="binomial", p=0.5)]), indent=1))
     (out / "README.txt").write_text(
         "Registered probe inputs for the GARD component references (see README.md in the package).\n")
+    (out / "inputs.json").write_text(json.dumps(dict(
+        numpy=np.__version__, kernel_probe_seed=KERNEL_PROBE_SEED, observer_probe_seed=OBSERVER_PROBE_SEED,
+        note="regenerated in-process by the harness and compared bitwise with the probe's echo"), indent=1))
     return out
 
 
@@ -158,8 +161,47 @@ def lineage_arrays(b: Bundle) -> dict:
              "fission_split", "fission_followed", "fission_similarity", "event_channel", "events_per_growth",
              "event_time")
     out = dict(zip(names, b.require(*names)))
+    G = b.world.n_types
+    if out["assembly_count"].ndim != 3 or out["assembly_count"].shape[1] != G:
+        raise RecordFormatError(f"{b.path}: assembly_count has shape {out['assembly_count'].shape}; "
+                                f"[row, {G} types, assembly] expected")
+    for name in ("joined_total", "left_total", "discarded_total"):
+        if out[name].shape != out["assembly_count"].shape:
+            raise RecordFormatError(f"{b.path}: {name} has shape {out[name].shape}, "
+                                    f"assembly_count {out['assembly_count'].shape}")
+    for name in ("exchange_heat_kT", "fission_work_kT", "discarded_free_energy_kT", "log_weight",
+                 "ledger_residual_kT"):
+        if out[name].shape != out["assembly_count"].shape[:1] + out["assembly_count"].shape[2:]:
+            raise RecordFormatError(f"{b.path}: {name} has shape {out[name].shape}; [row, assembly] expected")
+    R = out["assembly_count"].shape[0]
+    if out["row_event"].shape != (R,):
+        raise RecordFormatError(f"{b.path}: row_event has shape {out['row_event'].shape}; ({R},) expected")
+    E = out["event_channel"].shape[0] if out["event_channel"].ndim == 1 else -1
+    if E < 0 or out["event_time"].shape != (E,):
+        raise RecordFormatError(f"{b.path}: event_channel {out['event_channel'].shape} and event_time "
+                                f"{out['event_time'].shape} must be one-dimensional and equally long")
+    if np.any(np.diff(out["row_event"]) < 0) or (R and (out["row_event"][0] < 0 or out["row_event"][-1] > E)):
+        raise RecordFormatError(f"{b.path}: row_event must be nondecreasing within 0..{E}")
+    if np.any(out["events_per_growth"] < 0) or out["events_per_growth"].sum() > E:
+        raise RecordFormatError(f"{b.path}: events_per_growth must be nonnegative and sum to at most {E}")
+    F = out["fission_split"].shape[0]
+    if R != 1 + 2 * F:
+        raise RecordFormatError(f"{b.path}: {R} rows for {F} fissions; the row base needs 1 + 2F = {1 + 2 * F}")
+    if out["fission_split"].shape != (F, G) or out["fission_similarity"].shape != (F, 2):
+        raise RecordFormatError(f"{b.path}: fission table shapes {out['fission_split'].shape}, "
+                                f"{out['fission_similarity'].shape}; [f, {G}] and [f, 2] expected")
+    if out["fission_followed"].shape != (F,) or not np.all(np.isin(out["fission_followed"], (0, 1))):
+        raise RecordFormatError(f"{b.path}: fission_followed must hold 0 (first daughter) or 1 (second), "
+                                f"found {np.unique(out['fission_followed'])[:5].tolist()}")
     out["event_channel"] = canonical_events(b)
     return out
+
+
+def note_world(res: CheckResult, b: Bundle) -> CheckResult:
+    """Surface the world's boundary rule, and whether it was declared or assumed."""
+    res.detail["boundary_rule"] = b.world.boundary
+    res.detail["boundary_rule_declared"] = b.world.boundary_declared
+    return res
 
 
 def check_founder_declared(b: Bundle) -> None:
@@ -287,7 +329,7 @@ def row3(ctx: Context) -> list[CheckResult]:
         verdicts = meta.get("check_verdict")
         if not isinstance(verdicts, dict) or form not in verdicts:
             raise MissingRecord(f"kernel_probe/probe.json lacks check_verdict[{form!r}]")
-        law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form)
+        law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form, meta.get("boundary", ENGINE_BOUNDARY))
         out.append(detailed_balance.check_local_detailed_balance(
             law, states, dict(join=join, leave=leave, leave_up=leave_up), verdicts[form]))
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
@@ -307,6 +349,7 @@ def row4(ctx: Context) -> list[CheckResult]:
                 raise RecordFormatError(f"closed_world {tag} was not evaluated on the registered states")
             cj, cl = closed_world.held_to_closed(states, join, leave, reg["rho"], reg["k_join"], reg["k_leave"],
                                                  float(reg["theta"]), tuple(reg["M"]))
+            cl = np.where(states.sum(axis=1)[:, None] == 1, 0.0, cl)  # the claim's chain: N >= 1, no extinction
             out.append(closed_world.check_closed_table(states, cj, cl, float(reg["theta"]), tuple(reg["M"]), form))
     return out
 
@@ -326,8 +369,9 @@ def row5(ctx: Context) -> list[CheckResult]:
     unchanged = bool(np.array_equal(ch, chd) and np.array_equal(et, etd))
     out.append(CheckResult("diagnostic_mode_leaves_events_unchanged", unchanged, dict(events=int(ch.size))))
     w = bd.world
-    out.append(ssa_oracle.check_crn_replay(law_of(bd), w.founder, u, chd, etd, w.fission_mass, split, fol, epg,
-                                           channel_table(bd), w.event_guard))
+    out.append(note_world(ssa_oracle.check_crn_replay(law_of(bd), w.founder, u, chd, etd, w.fission_mass, split,
+                                                      fol, epg, channel_table(bd), w.event_guard,
+                                                      guard_rule=w.guard_rule), bd))
     runs = ctx.bundles("beta0_ensemble")
     times, counts, w0 = ensemble_counts(runs)
     k_join, k_leave = uniform_constants(w0)
@@ -346,6 +390,13 @@ def row6(ctx: Context) -> list[CheckResult]:
         out.append(fission_partition.check_partition_records(parents, splits, rule))
     for P, rule in (([3, 2, 2, 1], "exact_fraction"), ([3, 2, 1], "binomial")):
         out.append(fission_partition.check_enumeration(P, rule))
+    b = ctx.bundle("lineage")
+    r = lineage_arrays(b)
+    F = r["fission_split"].shape[0]
+    parents = r["assembly_count"][1:1 + 2 * F:2, :, 0]
+    res = fission_partition.check_partition_exact(parents, r["fission_split"], b.world.partition,
+                                                  b.world.partition_fraction, "lineage_partition_exact")
+    out.append(note_world(res, b))
     return out
 
 
@@ -372,7 +423,7 @@ def row7(ctx: Context) -> list[CheckResult]:
                                               r["fission_followed"], r["event_channel"], r["events_per_growth"],
                                               r["row_event"])
         res.detail["form"] = b.run.form
-        out.append(res)
+        out.append(note_world(res, b))
     return out
 
 
@@ -380,10 +431,10 @@ def row8(ctx: Context) -> list[CheckResult]:
     out = []
     for b in lineage_pair(ctx):
         r = lineage_arrays(b)
-        out.append(ledger.check_ledger(law_of(b), r["assembly_count"], r["exchange_heat_kT"], r["fission_work_kT"],
-                                       r["discarded_free_energy_kT"], r["log_weight"], r["ledger_residual_kT"],
-                                       r["fission_split"], r["fission_followed"], r["row_event"],
-                                       r["event_channel"], b.world.founder))
+        out.append(note_world(ledger.check_ledger(
+            law_of(b), r["assembly_count"], r["exchange_heat_kT"], r["fission_work_kT"],
+            r["discarded_free_energy_kT"], r["log_weight"], r["ledger_residual_kT"], r["fission_split"],
+            r["fission_followed"], r["row_event"], r["event_channel"], b.world.founder), b))
     return out
 
 
@@ -457,6 +508,10 @@ def run_rows(roles: dict, rows=None) -> dict:
         except (MissingRecord, RecordFormatError, ConventionMissing, FileNotFoundError) as exc:
             entry["passed"] = False
             entry["error"] = f"{type(exc).__name__}: {exc}"
+            report["status"] = 2
+        except Exception as exc:  # a present but unreadable record must not end the report silently
+            entry["passed"] = False
+            entry["error"] = f"unexpected {type(exc).__name__} reading the records: {exc}"
             report["status"] = 2
         report["rows"][str(n)] = entry
     return jsonable(report)

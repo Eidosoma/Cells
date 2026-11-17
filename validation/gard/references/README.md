@@ -21,8 +21,8 @@ Nothing imports `cells`; the code uses NumPy, SciPy and exact `fractions` only.
 
 Numbers are cited under D186. No text, figures or data files are copied.
 
-- **S01, the preprint.** R. Bjarnason, *Plastic heredity: Predicting and steering how
-  inheritance breaks, returns, and persists*, v5.0, Zenodo, doi:10.5281/zenodo.22799362
+- **S01, the preprint.** *Plastic heredity: Predicting and steering how inheritance
+  breaks, returns, and persists*, v5.0, Zenodo, doi:10.5281/zenodo.22799362
   (concept doi:10.5281/zenodo.22143269), CC BY 4.0. The references use p. 10 (the kinetic
   contract), p. 11 (H, strict inheritance and F12), p. 68 (the exhaustive 4,096-sequence
   check) and Appendix F (contracts O-02 to T2-03; T2-02 is the direct-method contract).
@@ -47,8 +47,16 @@ Numbers are cited under D186. No text, figures or data files are copied.
   beta.
 - **Product measure.** That ratio is pi(x + e_i)/pi(x) for
   pi(x) = (N - 1)! prod (K_i rho_i)^{x_i}/x_i!.
-- **Boundary rule.** The last molecule never leaves (`last_molecule_stays`), because N = 0
-  is absorbing and b(0) is undefined.
+- **Boundary rules.** N = 0 is absorbing, and b at the empty state is undefined.
+  - The closed world and the kernel identities use `last_molecule_stays`.
+  - Engine runs use the engine's declared convention, `extinction_uncatalysed`. The last
+    molecule leaves at the bare k_b, Phi(empty) = ln pi(empty) = 0, and that leave books
+    q = -ln(K_i rho_i).
+  - A world that names no rule is read as `extinction_uncatalysed`. Every lineage row
+    reports which rule it used.
+  - In the preprint's lineage regime (masses 40-80) no rule ever acts.
+- **The event guard** stops a lineage (the engine's rule; T2-02's guard would force a
+  fission). The CRN replay follows the world's declared `guard_rule`.
 - Float64 and exact rational versions are provided.
 
 ## The rows
@@ -60,10 +68,10 @@ Numbers are cited under D186. No text, figures or data files are copied.
 | 3 | Local detailed balance (pair-consistent) | `detailed_balance.py`. ln(a^+(x)/a^-(x + e_i)) = ln(K rho N/(x_i + 1)) to within 1e-12, on 200 registered states of a 100-type preprint matrix. P1's square is checked in exact rationals. | The single-event form is refused as passive: its residual exceeds 1e-9. P1 at (1, 1) gives 0.012, 0.080, 0.113 and 0.117, and at (40, 40) from 1.7e-5 to 1.5e-4, matching §2.2. §2.5's 44/63 square is reproduced. |
 | 4 | The stationary law in a closed world | `closed_world.py`. pi(x) is proportional to (N - 1)! prod theta^{x_i} C(M_i, x_i) for every beta, because detailed balance holds on every edge of the connected box N >= 1. The master equation is solved exactly in rationals for N_G = 2 and 3, and in float64 at larger M. The rank-one exception of §2.5 is checked exactly. | The single-event form departs. P2 (M = (8, 8), theta = 0.05, only beta_11 = 50) gives TV 0.579293, matching the design's 0.5793; only beta_12 = 50 gives 0.153475, against the design's 0.15. The pair-consistent form matches exactly: TV = 0 in rationals for the N_G = 2 and 3 test worlds, and 3e-15 in float at P2. |
 | 5 | The SSA is exact | `ssa_oracle.py`, the host oracle: Gillespie's direct method with tau = -ln(u1)/a0 and the first j with prefix_j > u2 a0. Prefixes fold left in the declared channel table's order. It replays the run's own uniforms across fissions. At beta = 0 the total size is the linear birth-death process, with closed-form pmf, mean and variance (Kendall 1948). | A biased channel choice (leaves at 0.9 weight) is caught at the first differing event under common variates. In the ensemble, the mean test (power ~1) and the chi-square on the law of N(2) (power 0.99996) catch it. |
-| 6 | The fission partition | `fission_partition.py`. Binomial: prod C(P_i, d_i)/2^{P_i}. Exact fraction: prod C(P_i, d_i)/C(N, floor(fN)). Both are checked against enumeration of every labelled assignment, in rationals. A conditional randomized-PIT chi-square (10 cells, alpha = 1e-3) is run on S_A, the daughter's count over the half-mass prefix of types. | A split at 0.55 is caught: p = 0.55, or floor(0.55 N) molecules. Registered design: parent 16 x 5 (mass 80), 400 splits, power >= 0.99 for both rules (the exact rule also by its size alone). Binomial splits presented as exact are caught. |
+| 6 | The fission partition | `fission_partition.py`. The lineage's own splits must also obey the world's declared rule exactly (bounds, and size floor(fN) for the exact rule). Binomial: prod C(P_i, d_i)/2^{P_i}. Exact fraction: prod C(P_i, d_i)/C(N, floor(fN)). Both are checked against enumeration of every labelled assignment, in rationals. A conditional randomized-PIT chi-square (10 cells, alpha = 1e-3) is run on S_A, the daughter's count over the half-mass prefix of types. | A split at 0.55 is caught: p = 0.55, or floor(0.55 N) molecules. Registered design: parent 16 x 5 (mass 80), 400 splits, power >= 0.99 for both rules (the exact rule also by its size alone). Binomial splits presented as exact are caught. |
 | 7 | Conservation | `conservation.py`. In exact integers at every row: count = founder + joined - left - discarded. Each fission discards exactly the unfollowed daughter. The trace, replayed from the founder, reaches every parent and reproduces the totals at every `row_event`. | A dropped molecule is caught at its row. A mis-booked discard is caught at the fission. |
 | 8 | The thermodynamic ledger | `ledger.py`. Q(r) - Q(0) = Delta ln pi + W - S, with W_f = ln pi(P) - ln pi(D1) - ln pi(D2) and S_f = -ln pi(U). The hard check is convention-free: heat over each growth segment equals Delta ln pi~. `log_weight` = ln pi~ + C (one constant), the work and sink increments are checked, the trace is re-booked, and the residual is checked. The tolerance, u[E(2G + 72) + 8(E + 2)M + 64], is derived in the docstring. | A heat sign error is caught by the closure and by the booking. A work sign error is caught too. The single-event form's residual (the unsourced cycle work) is reported, not closed. |
-| 9 | Streams | `streams.py`. Bitwise replay; batch-partition invariance; restart, compared bitwise from the checkpoint (whole run or tail); independence of branches, with distinct identities and no repeated 50-event prefix or uniforms. | A reused key (two branches sharing a stream under different declared identities) is caught. A reseeding restart is caught. |
+| 9 | Streams | `streams.py`. Bitwise replay of every array, with run.json's identity fields (world, law, stream, conventions, channels, time) equal and any other differing field listed; batch-partition invariance; restart, compared bitwise from the checkpoint (whole run or tail); independence of branches, with distinct identities and no repeated 50-event prefix or uniforms. | A reused key (two branches sharing a stream under different declared identities) is caught. A reseeding restart is caught. |
 | 10 | Observers | `observers.py`. H = x.y/(\|x\|\|y\|) against NumPy to within 1e-14. Inheritance is strict, H > 0.9, decided in exact integers: 100(x.y)^2 > 81\|x\|^2\|y\|^2. F12 (JOINT_BREAK_RUN3) has two independent predicates, a scan and the regex 0[01]*111, which agree on all 4,096 sequences with 2065 positives. That count is derived from the no-111 recurrence. | H = 0.9 counted as inherited is caught on exact-0.9 probes such as (45, 15, 15, 5) against (40, 0, 0, 0). A plain float `H > 0.9` is also caught, because rounding pushes some exact-0.9 pairs with irrational norms above 0.9. Off-by-one F12 detectors are caught. |
 
 Statistical checks use alpha = 1e-3, registered in `common.py`. Each computes, before reading
@@ -128,12 +136,28 @@ layout. When the engine's container is fixed, only these two tables change, plus
 | `beta0_ensemble` | A list of bundles of the registered design, without fission, reaching t = 2 (or declaring `t_end`) | 1, 5 |
 | `replay`, `batched`, `restart` (a list), `branches` (a list) | A replay of `lineage`; the same world run inside a batch; restarted runs declaring `restart.row`, `restart.event` and `restart.fission`; at least two branches from one landmark | 9 |
 | `kernel_probe` | Probe: `join_*`, `leave_*` and `leave_up_*` (the leave of type i at x + e_i), for `*` = `pair_consistent` and `single_event`, on the registered 200 states, with the inputs echoed and `check_verdict` per form | 3 |
-| `closed_world` | Probe: `states_*`, `join_*` and `leave_*` with the held supply rho = 1, for `*` = `{p2_beta11, p2_beta12, three_types}_{form}`; converted to closed-world rates by the harness | 4 |
+| `closed_world` | Probe: `states_*`, `join_*` and `leave_*` with the held supply rho = 1, for `*` = `{p2_beta11, p2_beta12, three_types}_{form}`. The harness converts them to closed-world rates and drops the leaves at N = 1, because the claim concerns the chain on N >= 1 | 4 |
 | `partition_probe` | Probe: `parents_*` and `splits_*`, for `*` = `exact_fraction` and `binomial`, giving 400 splits of the registered parent | 6 |
 | `observer_probe`, `f12_table` | Probe: the engine's `H` and `inherited` on the registered pairs; `verdicts` [4096] with the declared `bit_order` | 10 |
 
 A probe is a directory with `probe.json`, `probe.npz` and `manifest.json`. Its inputs come
-from `make-probes`, which regenerates them deterministically from registered seeds.
+from `make-probes`, which regenerates them deterministically from registered seeds through
+NumPy's `Generator` (`inputs.json` records the NumPy version).
+
+**Run `make-probes` and `run` in the same environment** (`venv-cpu`). The harness regenerates
+the inputs in-process and requires each probe's echo of them to match bitwise. A different
+NumPy fails loudly; it never matches silently.
+
+A world that does not declare `rules.boundary` is read as `last_molecule_stays`. Every
+lineage row's detail reports the rule and whether it was declared.
+
+Other conventions:
+- If the world's types carry transfer constants K, they must equal k_join/k_leave.
+- `fission_followed` is 0 for the first daughter and 1 for the second.
+- Partition streams are keyed by the parent's carrier key (`fission_partition_counter`
+  is 0). So row 9 also flags repeated partition uniforms across branches.
+- Events after the last fission are covered by no saved row. Their heat is checked only
+  if an end row is saved.
 
 ## What could not be confirmed from the sources
 

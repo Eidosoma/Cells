@@ -38,13 +38,11 @@ Planted control: a heat sign error. A and E must catch it.
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
 from .common import UNIT_ROUNDOFF, CheckResult
 from .conservation import followed_and_unfollowed
-from .kernels import PAIR_CONSISTENT, ExchangeLaw, log_weight, propensities
+from .kernels import PAIR_CONSISTENT, ExchangeLaw, event_heat, log_weight, propensities
 
 
 def rounding_tol(n_events: int, magnitude: float, n_types: int) -> float:
@@ -138,8 +136,7 @@ def _check_booking(law, founder, count, Q, chan, row_event, F, mag) -> dict:
         y = x.copy()
         y[i] += sign
         bp, bm = propensities(law, y)
-        q = (math.log(ap[i]) - math.log(bm[i])) if sign > 0 else (math.log(am[i]) - math.log(bp[i]))
-        acc += q
+        acc += event_heat(law, x, i, sign, (ap, am), (bp, bm))
         q_cum[k + 1] = acc
         x = y
         ap, am = bp, bm

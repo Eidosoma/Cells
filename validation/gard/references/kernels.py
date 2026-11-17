@@ -20,11 +20,17 @@ Sources (numbers cited under D186; no text copied):
   in volume V, rho_i = (M_i - x_i) / V. The ratio becomes theta_i N (M_i - x_i)/(x_i + 1),
   theta_i = k_f,i / (k_b,i V), and pi(x) = (N - 1)! prod_i theta_i^{x_i} C(M_i, x_i).
 
-Boundary rule: the size-proportional join makes N = 0 absorbing, and the pair-consistent
-leave of the last molecule would need b at the empty state, which is undefined. The
-default rule, ``last_molecule_stays``, disables leaves at N = 1 in both forms. The
-single-event form also accepts ``extinction`` (the leave at N = 1 is allowed, at
-k_b b_i(x)), which is the preprint's behaviour; the references never need it.
+Boundary rule. The size-proportional join makes N = 0 absorbing, and the pair-consistent
+leave of the last molecule would need b at the empty state, which is undefined. Three
+rules are supported:
+- ``last_molecule_stays`` disables leaves at N = 1 in both forms. The closed world and
+  the kernel identities use it.
+- ``extinction_uncatalysed`` is the engine's declared convention (17 November). The
+  last molecule leaves at the bare k_b,i in both forms, the empty state is absorbing,
+  Phi(empty) = ln pi(empty) = 0, and that leave books q = -ln(K_i rho_i).
+- ``extinction`` (single-event only) lets the last molecule leave at k_b b_i(x), as the
+  preprint's kernel would.
+In the preprint's lineage regime (masses 40-80) no rule ever acts.
 """
 
 from __future__ import annotations
@@ -43,6 +49,8 @@ FORMS = (SINGLE_EVENT, PAIR_CONSISTENT)
 
 LAST_MOLECULE_STAYS = "last_molecule_stays"
 EXTINCTION = "extinction"
+EXTINCTION_UNCATALYSED = "extinction_uncatalysed"
+BOUNDARY_RULES = (LAST_MOLECULE_STAYS, EXTINCTION, EXTINCTION_UNCATALYSED)
 
 
 def canonical_form(form: str) -> str:
@@ -107,7 +115,7 @@ class ExchangeLaw:
         object.__setattr__(self, "k_leave", _per_type(self.k_leave, G, "k_leave"))
         object.__setattr__(self, "form", canonical_form(self.form))
         object.__setattr__(self, "diag", np.ascontiguousarray(np.diag(beta)))
-        if self.boundary not in (LAST_MOLECULE_STAYS, EXTINCTION):
+        if self.boundary not in BOUNDARY_RULES:
             raise ValueError(f"unknown boundary rule {self.boundary!r}")
         if self.boundary == EXTINCTION and self.form == PAIR_CONSISTENT:
             raise ValueError("the pair-consistent leave of the last molecule is undefined")
@@ -159,6 +167,8 @@ def propensities(law: ExchangeLaw, x: np.ndarray) -> tuple[np.ndarray, np.ndarra
     a_plus = law.k_join * rho * N * b
     if N == 1 and law.boundary == LAST_MOLECULE_STAYS:
         return a_plus, np.zeros(G)
+    if N == 1 and law.boundary == EXTINCTION_UNCATALYSED:
+        return a_plus, law.k_leave * xf
     if law.form == SINGLE_EVENT:
         a_minus = law.k_leave * xf * b
     else:
@@ -168,15 +178,16 @@ def propensities(law: ExchangeLaw, x: np.ndarray) -> tuple[np.ndarray, np.ndarra
 
 
 def log_weight(law: ExchangeLaw, x: np.ndarray) -> float:
-    """ln pi~(x): the unnormalised product measure, N >= 1.
+    """ln pi~(x): the unnormalised product measure.
 
     Held:   ln[(N - 1)! prod_i (K_i rho_i)^{x_i} / x_i!],  K_i = k_join_i / k_leave_i.
     Closed: ln[(N - 1)! prod_i theta_i^{x_i} C(M_i, x_i)], theta_i = K_i / V.
+    The empty assembly takes ln pi = 0 (the engine's Phi(empty) = 0).
     """
     x = np.asarray(x)
     N = int(x.sum())
     if N < 1:
-        raise ValueError("ln pi is undefined for an empty assembly")
+        return 0.0
     K = law.k_join / law.k_leave
     res = law.reservoir
     if isinstance(res, HeldReservoir):
@@ -197,15 +208,21 @@ def join_affinity(law: ExchangeLaw, x: np.ndarray) -> np.ndarray:
         return np.log(K * rho * N / (xf + 1.0))
 
 
-def event_heat(law: ExchangeLaw, x: np.ndarray, i: int, sign: int) -> float:
-    """q = ln(w(x -> x') / w(x' -> x)) in k_BT: the event's booked heat (GARD_DESIGN §2.4)."""
+def event_heat(law: ExchangeLaw, x: np.ndarray, i: int, sign: int, props_x=None, props_y=None) -> float:
+    """q = ln(w(x -> x') / w(x' -> x)) in k_BT: the event's booked heat (GARD_DESIGN §2.4).
+
+    The last molecule's leave has no reverse (a join into an empty assembly has rate 0).
+    It books ln pi(empty) - ln pi(x) = -ln(K_i rho_i), the engine's convention.
+    """
     x = np.asarray(x)
     y = x.copy()
     y[i] += sign
-    ap_x, am_x = propensities(law, x)
-    ap_y, am_y = propensities(law, y)
+    ap_x, am_x = propensities(law, x) if props_x is None else props_x
+    ap_y, am_y = propensities(law, y) if props_y is None else props_y
     if sign > 0:
         return float(np.log(ap_x[i]) - np.log(am_y[i]))
+    if int(y.sum()) == 0:
+        return log_weight(law, y) - log_weight(law, x)
     return float(np.log(am_x[i]) - np.log(ap_y[i]))
 
 
@@ -269,6 +286,8 @@ class ExactLaw:
         a_plus = tuple(self.k_join[i] * rho[i] * N * b[i] for i in range(G))
         if N == 1 and self.boundary == LAST_MOLECULE_STAYS:
             return a_plus, zero
+        if N == 1 and self.boundary == EXTINCTION_UNCATALYSED:
+            return a_plus, tuple(self.k_leave[i] * x[i] for i in range(G))
         if self.form == SINGLE_EVENT:
             a_minus = tuple(self.k_leave[i] * x[i] * b[i] for i in range(G))
         else:

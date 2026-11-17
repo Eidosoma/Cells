@@ -16,7 +16,8 @@ import numpy as np
 
 from . import closed_world, detailed_balance, exchange_law, fission_partition, observers
 from .harness import CLOSED_WORLD_CONFIGS, probe_input_arrays
-from .kernels import PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT, gard_beta, gard_founder
+from .kernels import (EXTINCTION_UNCATALYSED, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
+                      gard_beta, gard_founder)
 from .lineage_oracle import DOMAIN_PARTITION, _split, simulate_lineage, stream_uniforms
 from .records import write_bundle
 
@@ -29,7 +30,7 @@ def preprint_law(seed: int, form: str, n_types: int = PREPRINT["n_types"],
     mass = min(PREPRINT["founder_mass"], n_types) if founder_mass is None else founder_mass
     founder = gard_founder(n_types, mass, rng)
     law = ExchangeLaw(beta, PREPRINT["k_join"], PREPRINT["k_leave"], HeldReservoir(np.full(n_types, PREPRINT["rho"])),
-                      form)
+                      form, EXTINCTION_UNCATALYSED)
     return law, founder
 
 
@@ -51,7 +52,7 @@ def ensemble_arrays(runs: int, *, kb_factor: float = 1.0, leave_weight: float = 
     d = exchange_law.REGISTERED_DESIGN
     G = len(d["rho"])
     law = ExchangeLaw(np.zeros((G, G)), d["k_join"], d["k_leave"] * kb_factor, HeldReservoir(np.asarray(d["rho"])),
-                      PAIR_CONSISTENT)
+                      PAIR_CONSISTENT, EXTINCTION_UNCATALYSED)
     founder = np.asarray(d["founder"], dtype=np.int64)
     out = []
     world = None
@@ -109,19 +110,22 @@ def build_standin(out_dir: str | Path, *, seed: int = 5, n_fissions: int = 12, e
     kp = dict(kin)
     verdicts = {}
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
-        law = ExchangeLaw(kin["beta"], kin["k_join"], kin["k_leave"], HeldReservoir(kin["rho"]), form)
+        law = ExchangeLaw(kin["beta"], kin["k_join"], kin["k_leave"], HeldReservoir(kin["rho"]), form,
+                          EXTINCTION_UNCATALYSED)
         t = detailed_balance.kernel_table(law, kin["states"])
         tag = form.replace("-", "_")
         kp.update({f"join_{tag}": t["join"], f"leave_{tag}": t["leave"], f"leave_up_{tag}": t["leave_up"]})
         r_max = float(np.nanmax(np.abs(detailed_balance.ldb_residuals_from_table(t["join"], t["leave_up"],
                                                                                t["affinity"]))))
         verdicts[form] = detailed_balance.classify(r_max)
-    roles["kernel_probe"] = str(write_probe(out / "kernel_probe", {"check_verdict": verdicts}, kp))
+    roles["kernel_probe"] = str(write_probe(out / "kernel_probe", {"check_verdict": verdicts,
+                                                                   "boundary": EXTINCTION_UNCATALYSED}, kp))
     cw: dict = {}
     for cfg in CLOSED_WORLD_CONFIGS:
         cin = inputs[f"closed_world_{cfg['name']}_inputs"]
         for form in (PAIR_CONSISTENT, SINGLE_EVENT):
-            law = ExchangeLaw(cin["beta"], cin["k_join"], cin["k_leave"], HeldReservoir(cin["rho"]), form)
+            law = ExchangeLaw(cin["beta"], cin["k_join"], cin["k_leave"], HeldReservoir(cin["rho"]), form,
+                              EXTINCTION_UNCATALYSED)
             tag = f"{cfg['name']}_{form.replace('-', '_')}"
             j = np.zeros(cin["states"].shape)
             lv = np.zeros(cin["states"].shape)
