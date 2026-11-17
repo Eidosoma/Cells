@@ -137,7 +137,8 @@
   "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
   "/mnt/workspaces/Cells/fr10-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/fr10-references-20261117/measure-02/measured.json",
-  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json"
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-258d2be7/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1133,6 +1134,13 @@
    "root": ".claude/worktrees/fr10-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T22:24:30+00:00"
+  },
+  {
+   "git_revision": "258d2be799e17df3abcc5474418c1f419234fcda",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:41:56+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2226,15 +2234,15 @@
    },
    {
     "file": "tests/unit/test_fr10_qualification.py",
-    "seconds": 2.27,
+    "seconds": 2.37,
     "exit_code": 0,
     "counts": {
-     "passed": 30
+     "passed": 31
     }
    },
    {
     "file": "tests/unit/test_fr10_reference_inputs.py",
-    "seconds": 1.32,
+    "seconds": 1.52,
     "exit_code": 0,
     "counts": {
      "passed": 1
