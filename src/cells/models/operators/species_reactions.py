@@ -132,6 +132,12 @@ CODES = {
 }
 FACTOR_LAWS = {"hill_activation": 1, "hill_inhibition": 2}
 LAW_KEYS = {PASSIVE_LAW: {"forward_rate_per_s"}, MASS_ACTION: {"rate_constant"}}
+# Each law as a word, for the run view's set of routes (a set's kinds are words, never IDs).
+LAW_WORDS = {
+    PASSIVE_LAW: "passive",
+    MASS_ACTION: "mass_action",
+    MICHAELIS_MENTEN: "michaelis_menten",
+}
 # Michaelis-Menten's rate key by case (the lead's ruling Q8): k_cat with a catalyst, V_max without.
 CATALYTIC_RATE, MAX_RATE = "catalytic_rate_per_s", "max_rate_mM_per_s"
 REACTION_KEYS = {"id", "sites", "reactants", "products", "law", "factors"}
@@ -1270,6 +1276,82 @@ class LocalSpeciesReactions(Operator):
             "reaction_outside_consumed_fmol",
         ),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): simulated, since every rate follows
+    # from the state (the multipliers only scale it).
+    VIEW_LAYERS = (
+        {"id": "reactions", "label": "Species reactions", "representation": "simulated"},
+    )
+    # Its records in the run view (the contract): the readouts are per route, as the extent is;
+    # A/RT is a number; every accumulator is a total since the start (the heat and work fields by
+    # their roles); the rate is a rate and the affinity a level.
+    OBSERVATION_AXES = {
+        "reaction_rate_fmol_per_s": ("reaction_route",),
+        "reaction_affinity_RT": ("reaction_route",),
+    }
+    UNITS = {"reaction_affinity_RT": "1"}
+    RECORD_KINDS = {
+        "reaction_extent_fmol": "cumulative",
+        "reaction_produced_fmol": "cumulative",
+        "reaction_consumed_fmol": "cumulative",
+        "reaction_outside_produced_fmol": "cumulative",
+        "reaction_outside_consumed_fmol": "cumulative",
+        "reaction_standard_energy_pJ": "cumulative",
+        "reaction_outside_standard_energy_pJ": "cumulative",
+        "reaction_energy_magnitude_pJ": "cumulative",
+        "reaction_outside_energy_magnitude_pJ": "cumulative",
+        "reaction_rate_fmol_per_s": "rate",
+        "reaction_affinity_RT": "level",
+    }
+    # Signs, by the roles of its route set (view_sets), as the code computes them: a passive
+    # route's net rate is its forward flux less its reverse one, and its affinity the forward
+    # log-term less the reverse one (processes/mass_action.reversible_flux); a driven route runs
+    # forward only, and its affinity is reported as 0 (observe).
+    ORIENTATION = {
+        "reaction_extent_fmol": {
+            "from": "reactants",
+            "to": "products",
+            "says": "a positive extent is net forward progress since the start: the route has "
+            "turned its reactants into its products; a driven route's is zero or more",
+            "source": "species_reactions' half-step: dxi = h (J(Y1) + J(Y2) + 4 J(Y3)) / 6",
+        },
+        "reaction_rate_fmol_per_s": {
+            "from": "reactants",
+            "to": "products",
+            "says": "a positive rate runs the route forward, its reactants into its products; a "
+            "passive route's is its forward flux less its reverse flux, a driven route's is zero "
+            "or more",
+            "source": "processes/mass_action.reversible_flux and species_reactions.route_rates",
+        },
+        "reaction_affinity_RT": {
+            "plus": "reactants",
+            "minus": "products",
+            "says": "A/RT, the reactants' chemical potential less the products' over RT (minus "
+            "the reaction's free energy over RT): positive drives a passive route forward, zero "
+            "at its equilibrium; 0 on driven routes",
+            "source": "processes/mass_action.reversible_flux and species_reactions.observe",
+        },
+    }
+
+    def view_sets(self, spec, declaration):
+        """The run view's set of its own axis (cells/run_view.py): its routes, each one reaction
+        at one site, in the declaration's order (reaction by reaction, then site), each named
+        `reaction:node`, at its cell or outside node, with its law as a word and the roles its
+        signs name."""
+        laws = {r.id: r.law for r in declaration.reactions}
+        routes = declaration.routes
+        return {
+            "reaction_route": {
+                "id": "reaction_route",
+                "ids": tuple(f"{r.reaction}:{r.node}" for r in routes),
+                "holds": "reaction route",
+                "at": tuple({"cell" if r.kind == "cell" else "outside": r.node} for r in routes),
+                "kinds": tuple(LAW_WORDS[laws[r.reaction]] for r in routes),
+                "roles": {
+                    "reactants": "the species the route's reaction consumes when it runs forward",
+                    "products": "the species it makes when it runs forward",
+                },
+            }
+        }
 
     # ------------------------------------------------------------ definition
 
