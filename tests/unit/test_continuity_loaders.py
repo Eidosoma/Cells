@@ -966,3 +966,21 @@ def test_every_declared_move_left_no_engine_file_in_its_folders():
 
     assert [move.name for move in source_layout.MOVES if left(move)] == []
     assert left(MOVE)  # The planted control: a move over a folder this tree still has is caught.
+
+
+# The folders D188 move 2 dissolves (the lead's ruling). Its declaration lands in a commit after the
+# move commit; a tree that lacks one of them and declares no move dissolving it fails here, so a
+# forgotten declaration cannot let a record admit a checkpoint from before the move.
+DISSOLVED_BY_MOVE_2 = ("core", "processes")
+
+
+def undeclared(sources, moves):
+    declared = {folder for move in moves for folder in move.dissolved}
+    held = source_layout.folders(sources)
+    return [f for f in DISSOLVED_BY_MOVE_2 if f not in held and f not in declared]
+
+
+def test_a_tree_after_move_2_declares_it():
+    assert undeclared(io.source_hashes(), source_layout.MOVES) == []
+    # The planted control: a tree without the folders and no declared move is caught.
+    assert undeclared({"x.py": "0"}, ()) == list(DISSOLVED_BY_MOVE_2)
