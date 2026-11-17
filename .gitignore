@@ -15,13 +15,9 @@ reports/*.tar.gz
 reports/*tests.xml
 reports/ref-*.xml
 
-# Generated source and native-input snapshots for local jobs.
-/agent-work/*/workfiles/*/source/
-/agent-work/*/workfiles/*/native-inputs/
-
-# Generated large synthetic capture-limit payloads; retain manifests and results.
-/agent-work/*/workfiles/betse_normal_ecm_capture_limits_software_*/above_catalog_limit/arrays.npz
-/agent-work/*/workfiles/betse_normal_ecm_capture_limits_software_*/above_catalog_limit/data.json
+# The old agent-work/ folder, removed from the repository on 17 November 2026. Its last tracked
+# state is in history (tag native-betse-frozen-2026-11-08); a local copy may remain on disk.
+/agent-work/
 
 # Local agent worktrees.
 /.claude/worktrees/

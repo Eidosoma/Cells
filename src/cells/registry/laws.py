@@ -16,7 +16,10 @@ built on `Law`, which holds what every law declares:
   A route law's `hosts` are something else: the entities its routes sit on;
 - `provenance`: "parity" (moved from an older family; moving is not calibrating), "cited" or
   "calibrated", with `source`, what it rests on. A cited law gives a `Citation` and a calibrated
-  law its data and method; both are required. A parity law may give §8.6's `moved_from` record;
+  law its data and method; both are required. A parity law may give §8.6's `moved_from` record.
+  A Citation names its works as data (`works`, each a `CitedWork`: authors, year, title, and a DOI
+  or a URL), so a reader can link them; whether a work was read is said on the piece's page
+  (docs/library/), since that changes as people read it;
 - `test`: the ID of the test that checks its kernel against its reference with a planted error
   (D187), so a manifest can link the evidence;
 - B8's four optional fields (D175), reserved: a declaration that sets one is refused until their
@@ -37,14 +40,19 @@ declarations manifest (registry/declarations.py) writes out.
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
   membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
   its own.
-A family may declare an interface of its own in its own namespace, such as GARD's event laws, as a
-type built on `Law`. The `cells` interfaces are only those above.
+These five are the initial set, each held to its type. The set is open to built-in families: the
+`cells` namespace is reserved (docs/MODULE_SYSTEM_DESIGN.md §2.3), so a built-in family declares its
+interfaces as `cells.*` in its row of the static model table (registry/model_table.py), named for
+what they are, and a declaration of one is a type built on `Law` whose own `errors()` checks its own
+fields. An outside package's interfaces are in its own namespace.
 
 **The registry (§8.3)** is build-scoped, as the kinds' is (core/kind_registry.py):
 - one registration call, `registry.register(law)`. It checks the declaration against the
   template and refuses a second law under one namespaced ID, whatever the spelling;
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
-  are loaded by name (BUILTIN_PACKAGES), so the core imports no law module to find a law;
+  are the static model table's `law_homes` (registry/model_table.py), loaded by name, once, when
+  the registry is first used, so the core imports no law module to find a law, and what is
+  registered never depends on what happened to be imported first;
 - the active registry is BUILTIN, unless a caller builds inside `scope(registry)`;
 - a registered law that no definition declares changes nothing: the inner model and the kinds
   read only the laws their declarations name;
@@ -66,6 +74,7 @@ from types import MappingProxyType
 from typing import ClassVar, NamedTuple
 
 from cells.core.kind_registry import NAMESPACE, qualified
+from cells.registry.model_table import MODELS
 
 __all__ = (
     "BINDING_LAW",
@@ -73,6 +82,7 @@ __all__ = (
     "BUILTIN_PACKAGES",
     "CHANNEL_LAW",
     "CYCLE_LAW",
+    "FAMILY_INTERFACES",
     "INTERFACES",
     "JUNCTION_LAW",
     "PROVENANCES",
@@ -80,6 +90,7 @@ __all__ = (
     "BindingLaw",
     "ChannelLaw",
     "Citation",
+    "CitedWork",
     "CycleLaw",
     "JunctionLaw",
     "Law",
@@ -114,14 +125,27 @@ def _number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+class CitedWork(NamedTuple):
+    """One work a Citation rests on, as data: its authors (a tuple of names, as the work gives
+    them), its year, its title, and its DOI (without "https://doi.org/") or a URL; one at least."""
+
+    authors: tuple
+    year: int
+    title: str
+    doi: str | None = None
+    url: str | None = None
+
+
 class Citation(NamedTuple):
     """A cited law's source (§8.1): the work, the place in it, the licence of any numbers taken
-    from it (D186) and the law's departures from it, each in a few words."""
+    from it (D186) and the law's departures from it, each in a few words; and `works`, the works it
+    names, each a CitedWork. A citation of Cells' own documents names no work."""
 
     source: str
     place: str
     licence: str
     departures: tuple = ()
+    works: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -152,27 +176,22 @@ class Law:
         interface = type(self).interface
         if not _is_id(interface, namespaced=True):
             out.append("its type declares a namespaced interface ID with its major")
-        elif interface.split(".", 1)[0] == NAMESPACE and not isinstance(
-            self, INTERFACES.get(interface, ())
-        ):
+        elif interface in INTERFACES:
+            if not isinstance(self, INTERFACES[interface]):
+                out.append(
+                    f"{interface} is not a cells interface of its type (cells' law interfaces: "
+                    + ", ".join(INTERFACES)
+                    + ")"
+                )
+        elif interface.split(".", 1)[0] == NAMESPACE and interface not in FAMILY_INTERFACES:
             out.append(
-                f"{interface} is not a cells interface of its type (cells' interfaces: "
+                f"{interface} is not a cells interface of its type: neither one of "
                 + ", ".join(INTERFACES)
-                + ")"
+                + " nor one a family declares in the model table"
             )
         if not _is_id(self.host):
             out.append("its host is the ID of the kind or model that runs it")
-        if self.provenance not in PROVENANCES:
-            out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
-        elif self.provenance == "cited" and not _cited(self.source):
-            out.append(
-                "a cited law gives its source as a Citation (source, place, licence and a tuple "
-                "of departures)"
-            )
-        elif self.provenance == "calibrated" and self.source is None:
-            out.append("a calibrated law gives its data and method as its source")
-        if self.test is not None and not _named(self.test):
-            out.append("its test is a test ID")
+        out += source_errors(self.provenance, self.source, self.test, "law")
         reserved = [
             name
             for name in ("represents", "preserves", "supports", "qualified")
@@ -185,13 +204,49 @@ class Law:
         return out
 
 
+def _work(work):
+    return (
+        isinstance(work, CitedWork)
+        and isinstance(work.authors, tuple)
+        and bool(work.authors)
+        and all(map(_named, work.authors))
+        and isinstance(work.year, int)
+        and not isinstance(work.year, bool)
+        and _named(work.title)
+        and (_named(work.doi) or _named(work.url))
+        and all(v is None or _named(v) for v in (work.doi, work.url))
+    )
+
+
 def _cited(source):
     return (
         isinstance(source, Citation)
         and all(_named(v) for v in (source.source, source.place, source.licence))
         and isinstance(source.departures, tuple)
         and all(_named(d) for d in source.departures)
+        and isinstance(source.works, tuple)
+        and all(map(_work, source.works))
     )
+
+
+def source_errors(provenance, source, test, what):
+    """Why a declaration's provenance, source and test break the template (empty: they keep it).
+    Shared with the operator template of a family's own operators (registry/operators.py), so a
+    piece states what it rests on in one form whatever it is."""
+    out = []
+    if provenance not in PROVENANCES:
+        out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
+    elif provenance == "cited" and not _cited(source):
+        out.append(
+            f"a cited {what} gives its source as a Citation (source, place, licence, a tuple of "
+            "departures and a tuple of works, each a CitedWork with its authors, year, title and "
+            "a DOI or URL)"
+        )
+    elif provenance == "calibrated" and source is None:
+        out.append(f"a calibrated {what} gives its data and method as its source")
+    if test is not None and not _named(test):
+        out.append("its test is a test ID")
+    return out
 
 
 def _callables(law, *names):
@@ -382,6 +437,8 @@ INTERFACES = MappingProxyType(
         JUNCTION_LAW: JunctionLaw,
     }
 )
+# The cells interfaces the built-in families declare in the static model table (module docstring).
+FAMILY_INTERFACES = frozenset(i for model in MODELS.values() for i in model.interfaces)
 
 
 class LawRegistry:
@@ -473,11 +530,12 @@ class LawRegistry:
 
 BUILTIN = LawRegistry()
 _ACTIVE = ContextVar("cells_law_registry", default=None)
-# The built-in laws' homes, imported by name, so the core imports no law module. They are @3's own
-# declarations, and the kinds' package, whose modules declare their laws
-# (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)) until each law moves to its own module under laws/
+# The built-in laws' homes, imported by name, so the core imports no law module: every model's
+# `law_homes` in the static model table, in its order (registry/model_table.py). For @3 they are its
+# own declarations and the kinds' package, whose modules declare their laws
+# (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)), until each law moves to its own module under laws/
 # (docs/CORE_SEAMS_DESIGN.md §8.2).
-BUILTIN_PACKAGES = ("cells.models.inner_laws", "cells.models.inner_kinds")
+BUILTIN_PACKAGES = tuple(home for model in MODELS.values() for home in model.law_homes)
 _builtins_loaded = False
 
 

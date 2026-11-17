@@ -639,7 +639,6 @@ PENDING_UNITS = frozenset(
         ("isopotential_partition@1", "partition_units_moved"),
         ("k_anion_symport_mass_action@1", "symport_availability"),
         ("k_anion_symport_mass_action@1", "symport_volume_factor"),
-        ("local_species_reactions@1", "reaction_affinity_RT"),
         ("membrane_entity_state@1", "population_abundance_increment"),
         ("membrane_entity_state@1", "population_units"),
         ("scheduled_cell_replacement@1", "generation"),
@@ -668,7 +667,6 @@ PENDING_UNITS = frozenset(
 PENDING_SETS = frozenset(
     {
         ("isopotential_partition@1", "division_slot"),
-        ("local_species_reactions@1", "reaction_route"),
         ("site_occupancy@1", "site_population"),
         ("species_regulated_availability@1", "coupling"),
         ("species_regulated_availability@1", "one"),

@@ -147,7 +147,8 @@ def fr5_arm_series(arm, t, dt, *, control=False, exact_d=False):
         moved_X_transfer=m_cond, moved_H_pump=pump, moved_H_leak=leak, moved_H_pore=pore_h,
         Heq_L=[2.6 + a + b + c for a, b, c in zip(pump, leak, pore_h, strict=True)],
         Heq_c=[105.0 - a - b - c for a, b, c in zip(pump, leak, pore_h, strict=True)],
-        energy_residual_pJ=[1e-5 * s for s in t], energy_flows_pJ=[0.5 * s for s in t],
+        # The energy residual's step error: 2e-5 of the flows at the declared 0.5 ms, second order.
+        energy_residual_pJ=[1e-5 * e * s for s in t], energy_flows_pJ=[0.5 * s for s in t],
         **{f"heat_{r}_pJ": [0.01 * s for s in t] for r in (
             "proton_leak_0", "proton_pore_0", "bounding_0_K", "cargo_transfer_0",
             "cargo_pore_0")})
@@ -419,6 +420,25 @@ def test_route_heat_is_judged_on_the_routes_the_engine_does_not_refuse_per_step(
     assert failed(parts, protocol) == ["J7_T_route_heat"]
 
 
+def test_the_energy_line_judges_f4_on_the_coarsest_rung_and_its_fall_beside_the_declared_one():
+    """FR-5's energy criterion as settled before registration (17 November 2026): the dt study's F4
+    as written first, the residual over flows <= 2e-3 at 1 ms (the coarsest rung) and falling at
+    second order, with the declared 0.5 ms kept. A residual over 2e-3 at 1 ms alone, which a reading
+    of the declared rung passes, fails J7_T_energy; a first-order fall fails J7_T_energy_falls."""
+    protocol = PROTOCOLS["fr5"]
+    parts = fr5_parts()
+    coarse = parts["T_rung_1ms"]["series"]
+    coarse["energy_residual_pJ"] = [3e-3 * f for f in coarse["energy_flows_pJ"]]
+    assert judge.derive(parts, protocol)["T"]["energy"]["over_flows_at_declared"] < 2e-3
+    assert failed(parts, protocol) == ["J7_T_energy"]
+    parts = fr5_parts()
+    for name, (arm, dt) in generator.FR5_RUNGS.items():
+        if arm == "T":
+            s = parts[name]["series"]
+            s["energy_residual_pJ"] = [2e-5 * (dt / 5e-4) * f for f in s["energy_flows_pJ"]]
+    assert failed(parts, protocol) == ["J7_T_energy_falls"]
+
+
 def test_every_prose_criterion_has_a_judged_machine_criterion():
     for protocol in PROTOCOLS.values():
         machine = [c["id"] for c in protocol["judge"]["criteria"] if c["judged"]]
@@ -436,11 +456,74 @@ def test_the_checked_in_judge_sections_are_the_drafters():
             assert any(a.startswith(asked) and ruling in a
                        for a in protocol["questions_answered"])
             assert f"{drafter.RULED} {which.upper()}'s {ruling}" in protocol["disclosures"]
-        for path, text in drafter.PROSE[which].items():
-            leaf = protocol
-            for key in path:
-                leaf = leaf[key]
-            assert leaf == text
+        assert prose_mismatches(protocol, which) == []
+
+
+def registered(protocol):
+    """Registered in register's form: the status begins 'registered' and the registration record's
+    status equals it."""
+    status, record = protocol.get("status"), protocol.get("registration")
+    return (isinstance(status, str) and status.startswith("registered")
+            and isinstance(record, dict) and record.get("status") == status)
+
+
+def prose_mismatches(protocol, which):
+    """The drafter's PROSE leaves that the protocol does not hold. Once registered, the status leaf
+    is the record's (register replaces it), so it alone is exempt, and only then."""
+    out = []
+    for path, text in drafter.PROSE[which].items():
+        if path == ("status",) and registered(protocol):
+            continue
+        leaf = protocol
+        for key in path:
+            leaf = leaf[key]
+        if leaf != text:
+            out.append(path)
+    return out
+
+
+@pytest.mark.parametrize("which", ["fr4", "fr5"])
+def test_the_status_leaf_is_the_drafters_while_proposed_and_the_records_once_registered(
+        tmp_path, which):
+    """The checked-in protocol in either state: PROPOSED, every PROSE leaf the drafter's; registered
+    by register, its status the record's and every other leaf the drafter's. Planted: a changed
+    status while PROPOSED, a 'registered' status without its matching record, and a changed scope
+    once registered each fail."""
+    proposed = {k: v for k, v in PROTOCOLS[which].items() if k != "registration"}
+    proposed["status"] = drafter.PROSE[which][("status",)]
+    assert prose_mismatches(proposed, which) == []
+    assert prose_mismatches(dict(proposed, status="PROPOSED (another text)"), which) == [
+        ("status",)]
+    path, record = tmp_path / "protocol.json", tmp_path / "record.json"
+    path.write_text(json.dumps(proposed))
+    record.write_text(json.dumps(dict(status="registered by the lead (a test)")))
+    done = drafter.register(path, record)
+    assert registered(done) and prose_mismatches(done, which) == []
+    unmatched = dict(done, registration=dict(status="registered otherwise"))
+    assert not registered(unmatched)
+    assert prose_mismatches(unmatched, which) == [("status",)]
+    assert prose_mismatches(dict(done, scope="another scope"), which) == [("scope",)]
+
+
+@pytest.mark.parametrize("which", ["fr4", "fr5"])
+def test_draft_refuses_a_registered_protocol_and_leaves_it_as_registered(tmp_path, which):
+    """draft never overwrites a registered protocol's status or registration: it refuses before
+    writing, both for register's form and for a PROPOSED status carrying a registration record."""
+    proposed = {k: v for k, v in PROTOCOLS[which].items() if k != "registration"}
+    proposed["status"] = drafter.PROSE[which][("status",)]
+    path, record = tmp_path / "protocol.json", tmp_path / "record.json"
+    path.write_text(json.dumps(proposed))
+    record.write_text(json.dumps(dict(status="registered by the lead (a test)")))
+    drafter.register(path, record)
+    before = path.read_bytes()
+    with pytest.raises(SystemExit, match="only a PROPOSED protocol"):
+        drafter.draft(which, path)
+    assert path.read_bytes() == before
+    path.write_text(json.dumps(dict(proposed, registration=dict(status="registered (a test)"))))
+    before = path.read_bytes()
+    with pytest.raises(SystemExit, match="carries a registration record"):
+        drafter.draft(which, path)
+    assert path.read_bytes() == before
 
 
 # ------------------------------------------------------------------------ refusals

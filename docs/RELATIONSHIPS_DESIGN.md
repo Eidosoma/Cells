@@ -923,3 +923,74 @@ note names remains.
 **Sequencing:**
 - No relationships code before the user's ruling, and none in files move 2 moves until it lands.
 - A GARD-only slice of the tables can go with GARD's G1 part 2, since its files are new.
+
+## The lead's rulings on the format (17 November 2026)
+
+`cells.relations@1` is built in `src/cells/records/relations.py`. Its second consumer was the
+partition's and replacement's lineages, from four real worlds (`validation/relationships/`).
+- The consumer forced one change, and it was in the format: records name their time base, kind and
+  files.
+- The provisional label is lifted (D202), so a change to the format is now a new version.
+
+The lead accepts these choices beyond §1.2 and §5.1 as the format:
+1. **`lives` gains four columns:**
+   - `lineage`: the sub-lineage whose counter the life's own daughters draw from, -1 for none. It
+     makes §1.3's rule checkable and records which life opened each sub-lineage;
+   - `share`: `parent_of`'s weight;
+   - `donor`: for `copied_from`;
+   - `declared_by`.
+2. **`labels` gain `declared_by`.**
+3. **Event ids are `event:<name>`,** unique within a world. A family may qualify the name by carrier
+   where that keeps it unique (`event:extinction/<carrier key>/<count>`).
+4. **Records are described as `{array, times, kind, shape, files}`:**
+   - the array;
+   - the array of its rows' times;
+   - `cumulative` or `amount`;
+   - its whole shape;
+   - the files that hold its rows in order, a windowed run's chunks included.
+5. **`weight_index`** gives one position on each of the record's axes after the first,
+   comma-separated.
+6. **The event-row rule.** An event at time t acts between a record's first row saved at a time no
+   earlier than t and the row after it. An edge with an event is weighed by that change. Tissue's
+   saved rows and GARD's bundles both meet it.
+7. **Nulls:** "" for text, NaN for floats, -1 for `lineage` and `step`.
+8. **`copied_from` points from the donor to the copy,** forward in time like the other descent
+   edges.
+9. **A copy has generation 0 and is its own root.** `copied_from` links it to its donor.
+10. **Source classes.** A replacement template's material, or a donor copy's, comes from a source of
+    class `intervention`. A route-only template is a source of class `machinery`.
+11. **A censored life has no end event.** Censoring is where observation stopped, not an event of
+    the carrier.
+12. **The reader compares the descriptor's machine fields only:** the format, world and arrays file,
+    each table's key, rows and columns, and the records. The prose may be reworded within a version.
+
+**Also accepted:** the run qualifier is `qualifier(fingerprint, start, stop=None)`. A run stopped
+before its end folds in its stop (GARD's `{events, fissions}`), and a run without a stop keeps the
+qualifier of `{fingerprint, start}` alone.
+
+## Requirements collected for cells.relations@2 (17 November 2026)
+
+Collected for one design (D209, L1). `@1` is bound, so each is a change for a new version. One line
+each, with its source; nothing here designs them.
+
+**Machines** (MOLECULAR_MACHINES_DESIGN §2 and §9, L1):
+- `assembled`: a birth by assembly.
+- `disassembled` and `degraded`: ends.
+- `assembled_from`: many parents, an edge weighted by stoichiometry, from pools or subunit lives.
+- `member_of`: from a tagged or promoted individual to its population node.
+
+**GARD** (the relations fix on `gard-g1-merge`, in c6dd5956's commit message):
+- An order between same-time events: the event-row rule cannot order two events at one time.
+- Case 1: a run continued from a pending-fission checkpoint, whose start row sits at the fission's
+  time.
+- Case 2: a daughter born at the fission size, whose own fission falls at its parent's time.
+
+**Mitochondria** (D210; MITOCHONDRIA_DESIGN, addendum B.4):
+- Two parents at fusion: `lives.parent` is one id, present exactly when born by division, with
+  generation and root from that one parent (`records/relations.py`:199, :675–676, :713–726).
+- Lives that are not cells: a life's id is `carrier:<name>` (:652); a mitochondrion needs a declared
+  entity kind, and an "inside" relation over time that moves at its owner's division.
+- Removal in a living owner: `degraded`, since `removed` is a declared bottleneck (:104).
+- An order between same-time events: one fixed step often holds a fission, a fusion and a removal.
+- Keys for a life with two parents: §1.3's sub-lineage rule assumes one.
+- Labels that mix at fusion and split at fission (RT3).

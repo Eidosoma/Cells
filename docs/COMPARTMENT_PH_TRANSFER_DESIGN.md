@@ -8,10 +8,10 @@ design before code (D142).
   - its world and qualification tools (`validation/compartment_ph_engine/`,
     `validation/tissue/compartment_ph_*.py`).
 
-  Its protocol, `fr4-acidification-v1`, is proposed. Its dt study's development reading passed on
+  Its protocol, `fr4-acidification-v1`, is registered (17 November 2026), not yet judged. Its dt study's development reading passed on
   16 November. Registration is the lead's.
 - **FR-5 (§16) is accepted,** and built and on main since fr45-next merged (16 November), for
-  development, not judged. Its protocol, `fr5-transfer-v1`, is proposed. What merged:
+  development, not judged. Its protocol, `fr5-transfer-v1`, is registered (17 November 2026), not yet judged. What merged:
   - the two source kinds;
   - refusal 4 version 1.2 and refusal 5 version 1.1 (CLOSED_COMPARTMENT_DESIGN §3.4.2–3.4.3);
   - FR-5's start part.

@@ -56,6 +56,12 @@ def get_model(spec):
         return surface_pump
     if isinstance(spec, ReactionTransportSpec):
         return reaction_transport
+    from cells.models.assembly_lineages.spec import LineageModel
+
+    if isinstance(spec, LineageModel):  # Its own event-driven runner shape (runner.py there).
+        from cells.models.assembly_lineages import model as lineages
+
+        return lineages
     model = legacy().model_for(spec)  # The older families (D188 R1).
     if model is not None:
         return model

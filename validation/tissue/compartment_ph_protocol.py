@@ -23,6 +23,7 @@ Usage:
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -38,10 +39,34 @@ J4_NODES = ("at every buffered node, the lumen and the cytosol: the maximum over
             "every record (pre-run correction, the lead, 15 November 2026)")
 START_TOLERANCE = 1e-11  # row 0 against the reference: rounding (the reference stage's)
 START_X_OVER_BUDGET = 1e-9  # X_L's row 0 in budgets: the same products, so rounding
-# The vector path's measured cost on FR-4's world (fr45-transporter 427e4a05, CPU 1, rung_1ms over
-# 20 s): the run phase per step, and the compile per unit (the pre-run correction on the cost).
-COST_S_PER_STEP = 0.95e-3
-COMPILE_S = 48.0
+# The units' sizing (the lead's ruling of 17 November 2026): 1.5 ms per step plus 90 s of compile
+# per engine unit (the rehearsal's compile took 74-134 s), 300 s as the estimate of a part without
+# steps; each runtime limit is D150's rule on the larger of that estimate and the rehearsal's wall.
+# (The earlier basis, 0.95 ms per step plus 48 s, was FR-4's world on a quiet core: fr45-transporter
+# 427e4a05, CPU 1.)
+SIZING_S_PER_STEP = 1.5e-3
+COMPILE_ALLOWANCE_S = 90.0
+NO_STEPS_ESTIMATE_S = 300.0
+UNIT_CAP = "2G"
+# The rehearsal (17 November 2026: run-e79b4232 from snapshot e79b4232, on CPUs 6, 7, 22 and 23,
+# two pairs of sibling hyperthreads, all four busy): each unit's wall time (s) and memory peak, from
+# its results and its journal (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/
+# rehearsal-20261117/run-e79b4232/reading.json).
+REHEARSAL = {
+    "fr4": dict(rung_2ms=(880.7, "1.3G"), rung_1ms=(1675.3, "1.3G"), rung_0p5ms=(3468.1, "1.3G"),
+                rung_0p25ms=(5480.0, "1.3G"), control_k1=(2101.1, "1.3G"),
+                control_k2=(1719.4, "1.3G"), control_k3=(3.6, "108.6M"),
+                reference=(87.4, "58.2M")),
+    "fr5": dict(start=(2687.2, "1.3G"), T_rung_1ms=(687.7, "1.3G"), T_rung_0p5ms=(1716.6, "1.3G"),
+                T_rung_0p25ms=(3089.7, "1.4G"), T_rung_0p125ms=(6507.0, "1.3G"),
+                T_control=(1653.9, "1.3G"), R_rung_1ms=(825.5, "1.3G"),
+                R_rung_0p5ms=(1580.9, "1.3G"), R_rung_0p25ms=(3342.3, "1.3G"),
+                R_rung_0p125ms=(5230.5, "1.3G"), R_control=(1464.7, "1.3G"),
+                reference=(39.1, "57.9M")),
+}
+LANE = "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45"
+REHEARSAL_RUN = f"{LANE}/rehearsal-20261117/run-e79b4232"
+PIPELINE = f"{LANE}/pipeline"
 PYTHON = "/mnt/workspaces/Cells/venv-cpu/bin/python"
 FILES = {"fr4": "fr4_acidification_v1.json", "fr5": "fr5_transfer_v1.json"}
 WRITTEN = ("15 November 2026, by the FR-4/FR-5 physics owner, before any run of this world (no "
@@ -239,8 +264,21 @@ def criteria_fr5():
             criterion(f"J6_{arm}_protons", [f"{d}.protons.max_over_allowance"], "le", 1,
                       "H_eq at each node changes only by its routes' proton transfers (pump, leak, "
                       "proton pore), to H's material allowance, at every record (0.5 ms)"),
-            criterion(f"J7_{arm}_energy", [f"{d}.energy.over_flows_at_declared"], "le", 2e-3,
-                      "the energy identity at every record within FR-4's ledger tolerance"),
+            # F4's two clauses, settled before registration (ENERGY_SETTLED): the level on the
+            # coarsest rung (the ladder's first value, ladder_parts[0] = 1 ms) and on the
+            # declared rung, and the fall down the ladder.
+            criterion(f"J7_{arm}_energy", [f"{d}.energy.ladder.values.0",
+                                           f"{d}.energy.over_flows_at_declared"], "le", 2e-3,
+                      "the energy identity at every record within FR-4's ledger tolerance: the "
+                      "residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms "
+                      "(the dt study's F4, as written before any run and kept at 1 ms by the "
+                      "lead's Q1 ruling), and on the declared 0.5 ms (pre-registration "
+                      "correction, 17 November 2026)"),
+            criterion(f"J7_{arm}_energy_falls", [f"{d}.energy.ladder.passes"], "ge", 1,
+                      "the energy residual falls at second order down the ladder: every "
+                      "successive pair by the classes rule with no upper edge (resolved orders "
+                      ">= 1.8), F4's second clause, as FR-4's J6_energy_falls (pre-registration "
+                      "correction, 17 November 2026)"),
             criterion(f"J7_{arm}_route_heat",
                       [f"{d}.energy.smallest_judged_route_heat_increment_pJ"], "ge", -1e-12,
                       "the routes §7.5 does not book exactly (the proton leak, the proton pore, "
@@ -297,26 +335,40 @@ def criteria_fr5():
 # ------------------------------------------------------------------------ units and resources
 
 
+def d150(estimate_s):
+    """D150's runtime limit: 3 x the estimate plus 600 s, rounded up to the minute."""
+    return 60 * math.ceil((3 * estimate_s + 600) / 60)
+
+
+def unit_steps(which, part):
+    """A part's steps: None for the references, 0 for K3 (refused at the definition)."""
+    if part == "reference":
+        return None
+    if part == "control_k3":  # Refused at the definition (the lead's ruling): no step runs.
+        return 0
+    if which == "fr4":
+        return round(900.0 / generator.FR4_RUNGS.get(part, generator.FR4_DECLARED_DT))
+    if part == "start":
+        return round(stage.START_TIME_S / generator.FR4_DECLARED_DT)
+    return round(400.0 / generator.FR5_RUNGS.get(part, (None, dt_study.FR5_DECLARED_DT_S))[1])
+
+
 def units(which):
+    """Each part's steps, its cost at the sizing, its runtime limit (the larger of D150's rule on
+    the sizing and on the rehearsal's wall time) and cap, and the rehearsal's measurements."""
     out = {}
     for part in generator.PARTS[which]:
+        steps = unit_steps(which, part)
+        estimate = (NO_STEPS_ESTIMATE_S if steps is None
+                    else steps * SIZING_S_PER_STEP + COMPILE_ALLOWANCE_S)
+        wall, peak = REHEARSAL[which][part]
+        out[part] = dict(steps=steps, cpu_hours=round(estimate / 3600, 2) if steps else None,
+                         runtime_max_s=max(d150(estimate), d150(wall)), cap=UNIT_CAP,
+                         rehearsal=dict(wall_s=wall, memory_peak=peak))
         if part == "reference":
-            out[part] = dict(steps=None, cpu_hours=None, note="the references: minutes")
-            continue
-        if part == "control_k3":  # Refused at the definition (the lead's ruling): no step runs.
-            out[part] = dict(steps=0, cpu_hours=None,
-                             note="refused at the definition through the envelope: seconds")
-            continue
-        if which == "fr4":
-            dt = generator.FR4_RUNGS.get(part, generator.FR4_DECLARED_DT)
-            steps = round(900.0 / dt)
-        elif part == "start":
-            steps = round(stage.START_TIME_S / generator.FR4_DECLARED_DT)
-        else:
-            dt = generator.FR5_RUNGS.get(part, (None, dt_study.FR5_DECLARED_DT_S))[1]
-            steps = round(400.0 / dt)
-        out[part] = dict(steps=steps,
-                         cpu_hours=round((steps * COST_S_PER_STEP + COMPILE_S) / 3600, 2))
+            out[part]["note"] = "the references: minutes"
+        elif part == "control_k3":
+            out[part]["note"] = "refused at the definition through the envelope: seconds"
     return out
 
 
@@ -325,8 +377,9 @@ def resources(which):
     entry = (f"{PYTHON} -B -m validation.tissue.compartment_ph_qualification judged "
              f"SNAPSHOT/validation/compartment_ph/protocols/{name} OUT/PART PART")
     out = dict(
-        status="a template until the rehearsal measures each unit: CPU, RUNTIME_MAX_S and the "
-               "caps are placeholders, filled by the lead at the final check",
+        status="filled from the rehearsal (run-e79b4232, 17 November 2026): one unit per CPU, its "
+               "runtime limit RUNTIME_MAX_S = judge.units[PART].runtime_max_s and its cap CAP = "
+               "judge.units[PART].cap; the CPUs are the lead's at the launch",
         environment="from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, "
                     "JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), "
                     "PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
@@ -337,23 +390,26 @@ def resources(which):
         judge=(f"{PYTHON} -B -m validation.tissue.compartment_ph_judge judged "
                f"SNAPSHOT/validation/compartment_ph/protocols/{name} OUT/verdict "
                "OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)"),
-        runtime_max_rule="3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the "
-                         "minute (D150's rule)",
-        caps="2G per unit (the runbook) until the rehearsal measures the peaks",
-        cost_note="the units' cpu_hours use the vector path's measured cost on FR-4's world, "
-                  "0.95 ms per step plus about 48 s of compile per unit (fr45-transporter "
-                  "427e4a05, CPU 1), in place of the charged-patch test's 3.6 ms upper bound "
-                  "(pre-run correction, the lead, 15 November 2026); the rehearsal runs the full "
-                  "horizon and measures each unit, a world with more routes and rows (FR-5's) at "
-                  "its own rate",
+        runtime_max_rule="the larger of D150's rule on the sizing, 3 x (steps x 1.5 ms + 90 s of "
+                         "compile) + 600 s (300 s as the estimate of a part without steps), and "
+                         "D150's rule on the rehearsal's wall time, 3 x wall + 600 s, each rounded "
+                         "up to the minute (the lead's ruling, 17 November 2026)",
+        caps="2G per unit: the rehearsal's peaks were 1.3-1.4G for every engine part, 0.11G for "
+             "K3 and 0.06G for the references; the judge 1G",
+        cost_note="the rehearsal (run-e79b4232: snapshot e79b4232 on CPUs 6, 7, 22 and 23, two "
+                  "pairs of sibling hyperthreads, all four busy, so not a quiet-core rate) "
+                  "measured 1.43-2.21 ms per step of execution and 74-134 s of compile per engine "
+                  "unit; the units' cpu_hours use the lead's sizing, 1.5 ms per step plus 90 s. "
+                  "The earlier basis, 0.95 ms per step plus about 48 s, was FR-4's world on a "
+                  "quiet core (fr45-transporter 427e4a05, CPU 1; pre-run correction, the lead, 15 "
+                  "November 2026)",
         no_wait_headroom="judged units run without --wait-headroom: the wait would run inside "
                          "the unit and count against its runtime limit; the lead checks the "
                          "slice's room before each launch",
-        attempts="an infrastructure ending (a runtime or memory kill, a signal, an incomplete "
-                 "results.json) is rerun once from the same snapshot into a new OUT/PART; a "
-                 "refusal by the engine is a verdict",
+        attempts=f"{HARNESS_RULE} (harness_limits)",
         enforced_by="the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and "
-                    "RuntimeMaxSec): no code reads these fields",
+                    "RuntimeMaxSec, with the values above): neither the generator nor the judge "
+                    "reads these fields",
     )
     if which == "fr5":
         out["order"] = ("the start unit first; when it has written OUT/start/start.json, every "
@@ -539,7 +595,9 @@ PROSE = {
         "charged-patch test's upper bound of 0.9 CPU-hours per 1 ms rung: the 900 s world at 1 ms "
         "about 15 minutes, the ladder's 6.75e6 steps about 1.8 CPU-hours, K1 and K2 about 15 "
         "minutes each and K3 seconds; the rehearsal runs the full horizon (pre-run correction, "
-        "the lead, 15 November 2026)",
+        "the lead, 15 November 2026). The rehearsal (run-e79b4232) measured 1.43-2.21 ms per step "
+        "on sibling hyperthreads, and each unit's runtime limit and cap are judge.units' "
+        "(judge.resources.runtime_max_rule; pre-registration correction, 17 November 2026)",
         ("rules", "ledgers"): "material per species within its allowance at every record: the "
         "declared floor plus N eps max over records of the species' total over the cell, the "
         "lumen and the bath (N the run's steps), computed by the judge from the records and "
@@ -557,7 +615,10 @@ PROSE = {
         "each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to "
         "H's material allowance (FR-4's rules.ledgers), at every record",
         ("criteria", "J7_energy"): "the energy identity at every record: stored change + heat = "
-        "the maintenance's supplied work, within FR-4's ledger tolerance; each passive route's "
+        "the maintenance's supplied work, within FR-4's ledger tolerance (the residual over the "
+        "integrated flows <= 2e-3) on the coarsest rung, 1 ms, and on the declared 0.5 ms, "
+        "falling at second order down the ladder: the dt study's F4 (pre-registration "
+        "correction, 17 November 2026); each passive route's "
         "heat >= 0: the routes §7.5 books exactly (the cargo routes) are refused per step by the "
         "engine, and the rest (the proton leak, the proton pore, K+) are judged on their "
         "increments between records at >= -1e-12 pJ (record resolution), each route's smallest "
@@ -583,6 +644,146 @@ PROSE = {
         "are reported with their values, without repair or retuning after the judged run",
     },
 }
+
+# The harness-limit rule (the lead's ruling of 17 November 2026, before registration: text only).
+HARNESS_RULE = (
+    "a part ended by its runtime limit or its memory cap (as by any other infrastructure ending: a "
+    "signal, an incomplete results.json) is a harness failure, not a verdict: the judged run is "
+    "void and is relaunched once, whole, from the same snapshot under the same protocol, into a "
+    "new output directory; the void attempt is kept and reported beside the relaunch's verdict. A "
+    "second harness failure goes to the lead. A refusal by the engine is a verdict, never a "
+    "harness failure"
+)
+
+# The text brought level with the runs before registration (the lead's ruling, 17 November 2026:
+# text only, no criterion changed), set by `draft` as PROSE's leaves are.
+SCOPE_LINE = ("The verdict covers cell_owned_compartments@1 as built at the judged snapshot "
+              "(refusal 4 version 1.2, refusal 5 version 1.1)")
+LEVEL_NOTE = ("its text brought level with the runs before registration on 17 November 2026, no "
+              "criterion changed")
+LAUNCH = ("each judged unit through scripts/run_detached.sh as judge.resources has it: one unit "
+          "per CPU, its cap and runtime limit from judge.units, --oom-first, no --wait-headroom; "
+          "the judge in its own unit")
+OPTION_A = ("The judged run follows once, from a fresh clean snapshot of main taken after the "
+            "registration commit, past seam F (the lead's ruling of 17 November 2026: option (a))")
+MODELS_COMMON = [
+    "resolved_pump_composite@1, the declared world: the composite with resolved_pump_tissue@3 as "
+    "its inner model and FR-1's compartment operator "
+    "(validation/compartment_ph_engine/definitions.declared_world)",
+    "resolved_pump_tissue@3, the inner model, with its stage-read, transporter, held-row and "
+    "face-free-term insertion points",
+]
+FR4_KINDS = [
+    "cells.rapid_proton_buffer@1, the kind of the stage read rapid_proton_buffer@1 (a declared "
+    "reduced representation, D175)",
+    "cells.transporter@1, the kind of the pump on the bounding patch: the law "
+    "cells.proton_atp_mass_action_positive@1 on the fuel kind maintained_held_rows@1 (the held "
+    "ATP, ADP and Pi rows at the cytosol)",
+    "cells.passive_routes@1, the kind of the proton leak on the bounding patch: the law "
+    "proton_constant_field_leak@1",
+    "constant_field@1, the bounding patch's own law: the K+ counterion route",
+]
+LEVEL = {
+    "fr4": {
+        ("status",): "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch "
+        f"fr45-physics; {LEVEL_NOTE}). Its dt study and its rehearsal have run on the integrated "
+        "candidate (development_runs); registration is the lead's",
+        ("registration_plan", "no_judged_run_yet"): "No judged run yet. The engine path is wired "
+        "and has run for development: the dt study (dev-3c10b833-dt) and the rehearsal on a "
+        "registered dry-run copy (run-e79b4232: 21 of 21 judged criteria, every part's records "
+        "bitwise the dt study's)",
+        ("registration_plan", "launch"): LAUNCH,
+        ("registration_plan", "path"): "The lead registers it on main, after its dt study and "
+        f"its rehearsal (the D150/MG0c path, both done). {OPTION_A}; the judge's compare of every "
+        "judged part against the rehearsal's (run-e79b4232) is its full-horizon check across F, "
+        "expecting every part identical",
+        ("development_runs",): dict(
+            runs=[dict(path="/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/"
+                            f"charged_patch/run-0{k}", status=status)
+                  for k, status in ((2, "development (charged-patch test), not this world"),
+                                    (3, "development (charged-patch test), not this world"),
+                                    (4, "development (state against booking), not this world"))],
+            fr4_world_runs=[
+                dict(path=f"{PIPELINE}/dev-3c10b833-dt", status="development: the dt study, from "
+                     "snapshot 3c10b833 on the vector path and the declared world; not judged",
+                     reading="J1-J7 pass in its development reading (reading/verdict.json)"),
+                dict(path=f"{REHEARSAL_RUN}/fr4", status="the rehearsal, on a registered dry-run "
+                     "copy from snapshot e79b4232; not a verdict",
+                     reading="21 of 21 judged criteria pass (verdict/verdict.json); every part's "
+                     "records bitwise the dt study's, run times apart (compare/)")]),
+        ("engine_models",): [*MODELS_COMMON, *FR4_KINDS,
+                             "cell_owned_compartments@1, FR-1's operator: the compartment's "
+                             "identity (refusal 4 version 1.2, refusal 5 version 1.1)"],
+        ("scope",): "Maintained fuel only (no depletion or recovery: that is the finite-fuel "
+        "case's acceptance, D176 item 2). The K+ counterion only, at 5e-10 m/s (Cl- at lysosomal "
+        "values and every ionic pore wait for the implicit patch). A lumped population of N = 1000 "
+        "identical compartments as one node, declared; the single-compartment form is reported, "
+        "not judged, in version 1 (a later version may judge it once species-scaled energy floors "
+        "exist). Fixed volume (no water). The cytosol's pH within its fuel band (7.2 ± 0.05). "
+        "Explicit ARS(2,2,2) at the world's declared dt; no implicit patch in this rung. "
+        f"{SCOPE_LINE}",
+        ("references", "self_tests"): "tests/unit/test_fr45_proton_laws.py, "
+        "test_fr45_damage_and_worlds.py, test_fr45_patch_implicit.py (tier 1)",
+    },
+    "fr5": {
+        ("status",): "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch "
+        f"fr45-physics; {LEVEL_NOTE}). Its world agreement, its dt study and its rehearsal have "
+        "run on the integrated candidate (development_runs); registration is the lead's. The arm "
+        "values and restated claims are confirmed by the references' readout (branch 931fb38a; "
+        "compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/"
+        "independent-references-20261115-01/compartment-transfer-arms-01/), which reran the "
+        "record's own worlds and reproduced it exactly",
+        ("registration_plan", "no_judged_run_yet"): "No judged run yet. The engine path is wired "
+        "and has run for development: the world agreement (worlds-d82e1935), the dt study "
+        "(dt5-a6639e79) and the rehearsal on a registered dry-run copy (run-e79b4232: 51 of 51 "
+        "judged criteria, every part's records bitwise the dt study's apart from the start "
+        "extract's identity)",
+        ("registration_plan", "path"): "The lead registers it on main, after its dt study and "
+        f"its rehearsal (the D150/MG0c path, both done). {OPTION_A}, FR-5's start part first from "
+        "the same snapshot; the judge's compare of every judged part against the rehearsal's "
+        "(run-e79b4232) is its full-horizon check across F, expecting only the start extract's "
+        "identity to differ",
+        ("registration_plan", "launch"): f"{LAUNCH}; FR-5's start part first",
+        ("development_runs",): dict(
+            runs=[
+                dict(path=f"{PIPELINE}/worlds-d82e1935", status="development: the world "
+                     "agreement over 400 s, both arms, from snapshot d82e1935; not judged",
+                     reading="the declared world bitwise the development world on both arms, "
+                     "800000 steps each (check.json)"),
+                dict(path=f"{PIPELINE}/dt5-a6639e79", status="development: the dt study, from "
+                     "snapshot a6639e79 on the vector path and the declared world; not judged",
+                     reading="J1-J11 pass on both arms in its development reading "
+                     "(reading/verdict.json), and again under the energy line settled on 17 "
+                     "November 2026 (rehearsal-20261117/dt5-a6639e79-reread/)"),
+                dict(path=f"{REHEARSAL_RUN}/fr5", status="the rehearsal, on a registered dry-run "
+                     "copy from snapshot e79b4232; not a verdict",
+                     reading="51 of 51 judged criteria pass (verdict/verdict.json); every part's "
+                     "records bitwise the dt study's, run times apart, except the start "
+                     "extract's identity (compare/)")],
+            note="the charged-patch test's runs (fr45/charged_patch/) are development evidence "
+                 "for the explicit limit only"),
+        ("engine_models",): [
+            *MODELS_COMMON,
+            "FR-4's kinds and laws, unchanged: " + "; ".join(FR4_KINDS),
+            "cells.passive_routes@1 also carries FR-5's routes: passive_neutral_permeation@1 (the "
+            "conditioned transfer and the cargo pore) and proton_constant_field_leak@1 (the "
+            "proton pore)",
+            "cells.patch_damage@1, the kind of the damage control state: the law "
+            "bounding_patch_damage@1, exact per step",
+            "cells.ph_condition@1, the kind of the condition: the law ph_conditioned_factor@1",
+            "the routing door, which multiplies the routes' openings by their factors",
+            "cell_owned_compartments@1, FR-1's operator: refusal 4 version 1.2 (its FACTOR_KINDS "
+            "admit the two source kinds) and refusal 5 version 1.1 (it admits the charged 1800 s "
+            "start)"],
+        ("scope",): "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 "
+        "as declared, fixed volume, explicit ARS(2,2,2)), plus FR-5's damage, a proton pore and a "
+        "neutral cargo pore. Ionic pores are refused in version 1 (they wait for the implicit "
+        f"patch). The single-compartment form is reported, not judged. {SCOPE_LINE}",
+    },
+}
+for _which, _leaves in LEVEL.items():
+    PROSE[_which].update(_leaves)
+    PROSE[_which][("harness_limits",)] = HARNESS_RULE[0].upper() + HARNESS_RULE[1:]
 
 
 DISCLOSURE = (
@@ -687,6 +888,45 @@ COST_FR5 = (
     "by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs "
     "the full horizon, not a shortened one"
 )
+ENERGY_SETTLED = (
+    "pre-registration correction, 17 November 2026, the energy criterion, settled by the FR owner "
+    "at the lead's order of 16 November (the dt study's F4 and the protocol's J7 to agree before "
+    "registration), its direction approved by the lead on 17 November: J7 now judges F4 as it was "
+    "written before any run (dt_study.FR5_CRITERIA and dt_study_criteria_written_first) and as "
+    "the lead's Q1 ruling kept it at 1 ms. J7_*_energy judges the energy residual over the "
+    "integrated flows <= 2e-3 on the coarsest rung, 1 ms (the ladder's first value), as well as "
+    "on the declared 0.5 ms, which it alone had read; J7_*_energy_falls judges its fall at second "
+    "order down the ladder (every successive pair by the classes rule, with no upper edge), as "
+    "FR-4's J6_energy_falls does, where it had been reported only. Why: the declared rung alone is "
+    "about four times looser than F4, since the residual falls at second order, which is what Q1 "
+    "ruled out; the choice adds and tightens, and loosens nothing. It was made after FR-5's "
+    "development dt study (dt5-a6639e79, 16 November 2026), whose values were known when the line "
+    "was settled: the residual over flows 1.32e-10 (T) and 8.21e-11 (R) at 1 ms, 3.30e-11 and "
+    "2.09e-11 at 0.5 ms, the ladder passing on both arms (T mixed, then at rounding; R at rounding "
+    "on every pair). That study's records, read again by the judge under these criteria, pass "
+    "both arms (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/"
+    "dt5-a6639e79-reread/)"
+)
+TEXT_LEVELLED = (
+    "pre-registration correction, 17 November 2026, the lead's ruling on the stale text (text "
+    "only: no criterion, derivation or threshold changed, checked byte for byte when redrafted): "
+    "the status prose, the registration plan ('not yet wired', its path and its launch), the "
+    "development runs (now listed), engine_models (the landed IDs), the scope line (the verdict "
+    "covers cell_owned_compartments@1 as built at the judged snapshot: refusal 4 version 1.2, "
+    "refusal 5 version 1.1), and judge.units and judge.resources (the cost basis is the lead's "
+    "sizing of 1.5 ms per step plus 90 s, with the rehearsal's measured walls and peaks beside "
+    "each unit, and each runtime limit D150's rule on the larger of the sizing and the "
+    "rehearsal's wall) were brought level with the runs"
+)
+HARNESS_LIMITS = (
+    "pre-registration correction, 17 November 2026, the lead's ruling on harness limits (text "
+    "only: no criterion, derivation or threshold changed, checked byte for byte when redrafted): "
+    f"{HARNESS_RULE}. It is the protocol's leaf harness_limits, and judge.resources.attempts "
+    "follows it, in place of rerunning the failed part alone; it is fixed before any judged run, "
+    "so a first timeout needs no ruling after the fact"
+)
+TEXT_LEVELLED_FR4 = (f"{TEXT_LEVELLED}; and the timing rule's measured rate and the "
+                     "references' tier-1 note")
 CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
     "fr4": [
         CHARGE_CHECK,
@@ -708,6 +948,8 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "reference recording that its effect exceeds the budget (D176's G3); the moves flipped "
         "alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a "
         "verdict",
+        TEXT_LEVELLED_FR4,
+        HARNESS_LIMITS,
     ],
     "fr5": [
         CHARGE_CHECK,
@@ -721,6 +963,9 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
         "lag estimate (gap 7) within 1e-3 pH at every buffered node",
+        ENERGY_SETTLED,
+        TEXT_LEVELLED,
+        HARNESS_LIMITS,
     ],
 }
 
