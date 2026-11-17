@@ -74,8 +74,9 @@ const SUITE = [
   { name: "input-engine", tool: "check_input.mjs", env: { CHECK_ONLY: "engine" }, minutes: 2 },
   { name: "look-switch", tool: "check_look.mjs", args: ["switch"], minutes: 2 },
   { name: "look-views", tool: "check_look.mjs", args: ["views"], minutes: 2 },
+  // `minutes` only orders the scenarios, the longest first; every scenario has the same limit (--limit, 40 minutes).
   // In software the three walks took 4.7 and 6.2 minutes beside other work (17 November 2026); on the card, 71 s.
-  { name: "look-loss", tool: "check_look.mjs", args: ["loss"], minutes: 9 },
+  { name: "look-loss", tool: "check_look.mjs", args: ["loss"], minutes: 6 },
   // The Laws library (tools/check_laws.mjs): presses, keys, the card's search and Family, the Engine view's door and the way back, a lost context; the address, and what it leaves behind; a 360 px phone; no 3D.
   { name: "laws-main", tool: "check_laws.mjs", args: [pictures], env: { CASE: "main", NAME: "laws-main" }, minutes: 3 },
   { name: "laws-address", tool: "check_laws.mjs", args: [pictures], env: { CASE: "address", NAME: "laws-address" }, minutes: 1 },

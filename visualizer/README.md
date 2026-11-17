@@ -920,7 +920,11 @@ Ideas kept for after the basics (the user, 14 November 2026):
   the head of its legend; its trail never cuts a word (the steps in its middle, the count
   and the words at a step's end give way first); and the map of the stack says a shelf's
   name when its bar is pressed. Two overlaps are meant: the open legend lies over the map
-  (and over a timeline), and the opened search over the folded card's line. Not a pixel of
+  (and over a timeline), and the opened search over the folded card's line. Not right
+  there yet: at 360 by 780 the opened origin card covers the picture's line "No law of
+  Cells computes…" until it is folded (the example's mark stands in the opened card); at
+  exactly 760 px the cards do not fold; under 360 px the bar wraps to two rows; on a wide
+  window the hint still shows through a timeline. Not a pixel of
   a window 760 px wide or more changed but the bar's band while the origin view is shown
   (13 wide pictures of the other views compared before and after with the canvas hidden,
   the cards and words to the pixel).
@@ -928,6 +932,9 @@ Ideas kept for after the basics (the user, 14 November 2026):
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
+- A model system's stand-in card (shown while its run file is read, or where it fails to
+  load) is no longer seen by a browser check, since GARD's own view is registered: its
+  words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
 - The Laws library's card scrolls beside its legend on a wide window under about 1000 px
