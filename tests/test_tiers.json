@@ -132,7 +132,8 @@
   "/mnt/workspaces/Cells/reactions-run-view-20261117/measure-9551d1ba/measured.json",
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json",
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
-  "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json"
+  "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
+  "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1092,6 +1093,13 @@
    "root": ".claude/worktrees/passive-share-tolerance",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T19:31:52+00:00"
+  },
+  {
+   "git_revision": "ea8a62a7400e0785368aecd47aa8f4b98457e91c",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g2-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:28:46+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2299,10 +2307,10 @@
    },
    {
     "file": "tests/unit/test_gard_references_harness.py",
-    "seconds": 12.45,
+    "seconds": 13.11,
     "exit_code": 0,
     "counts": {
-     "passed": 48
+     "passed": 49
     }
    },
    {
@@ -2315,10 +2323,10 @@
    },
    {
     "file": "tests/unit/test_gard_references_row03_04.py",
-    "seconds": 4.18,
+    "seconds": 5.38,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 14
     }
    },
    {
@@ -3949,6 +3957,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_engine_layout.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_ensemble_design.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    }
   ],

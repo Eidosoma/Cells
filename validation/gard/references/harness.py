@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import functools
+import hashlib
 import json
 import math
 import sys
@@ -27,12 +28,12 @@ from pathlib import Path
 
 import numpy as np
 
-from . import closed_world, conservation, detailed_balance, exchange_law, fission_partition, ledger
+from . import closed_world, conservation, detailed_balance, engine_layout, exchange_law, fission_partition, ledger
 from . import observers, ssa_oracle, streams, time_rescaling
-from .common import CheckResult, jsonable
+from .common import ALPHA as ALPHA_REGISTERED, MIN_POWER as MIN_POWER_REGISTERED, CheckResult, jsonable
 from .kernels import (BOUNDARY_RULES, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
                       canonical_form, gard_beta)
-from .records import ENGINE_BOUNDARY, Bundle, MissingRecord, RecordFormatError, load_bundle
+from .records import ENGINE_BOUNDARY_BY_FORM, Bundle, MissingRecord, RecordFormatError, load_bundle
 from .ssa_oracle import ChannelTable, ConventionMissing
 
 KERNEL_PROBE_SEED = 20261117
@@ -45,7 +46,7 @@ CLOSED_WORLD_CONFIGS = (
 ROWS = {
     1: ("The exchange law (mean field)", ("beta0_ensemble",)),
     2: ("Catalysis is kinetic only", ("rescale_beta0", "rescale_betac")),
-    3: ("Local detailed balance (pair-consistent)", ("kernel_probe",)),
+    3: ("Local detailed balance (pair-consistent)", ("kernel_probe", "lineage", "lineage_single_event")),
     4: ("The stationary law in a closed world", ("closed_world",)),
     5: ("The SSA is exact", ("lineage", "lineage_diagnostic", "beta0_ensemble")),
     6: ("The fission partition", ("partition_probe", "lineage")),
@@ -82,6 +83,50 @@ def probe_input_arrays() -> dict:
     return out
 
 
+def ensemble_design_record() -> dict:
+    """The registered beta = 0 ensemble design (rows 1 and 5), machine-readable."""
+    d = exchange_law.REGISTERED_DESIGN
+    G = len(d["rho"])
+    return {
+        "format": "gard_g2.beta0_ensemble_design@1",
+        "note": ("Transcribed 17 November 2026 from the registered beta = 0 ensemble design in "
+                 "validation/gard/references/README.md (row 1) and exchange_law.REGISTERED_DESIGN, "
+                 "with no value changed."),
+        "law": "the exchange law alone: no rate factor (beta = 0)",
+        "types": G,
+        "k_join": [float(d["k_join"])] * G,
+        "k_leave": [float(d["k_leave"])] * G,
+        "transfer_constant": [float(d["k_join"]) / float(d["k_leave"])] * G,
+        "rho": [float(v) for v in d["rho"]],
+        "founder": [int(v) for v in d["founder"]],
+        "observation_times": [float(v) for v in d["times"]],
+        "observation_time": float(d["times"][-1]),
+        "runs": int(d["runs"]),
+        "streams": (f"{int(d['runs'])} independent streams, one per run, each declared in its run.json. No two "
+                    "runs may share a stream identity or repeat an event trace. The design does not fix the "
+                    f"seed values or lineage words (lineage words 0..{int(d['runs']) - 1} are one valid choice)."),
+        "requirements": {
+            "running_at_observation_time": (
+                f"Every run must still be running at t = {float(d['times'][-1])}. A run that stops earlier for "
+                "any reason but extinction is a harness failure, not a verdict."),
+            "extinction": "A run that empties earlier is a valid sample; its state afterwards is empty.",
+            "no_fission": (f"No fission at or before t = {float(d['times'][-1])}. Set a fission size and an "
+                           "event guard large enough (for example 2048 and 4096) and record them in run.json."),
+            "cut": ("At each observation time t the harness takes the state after the last event with time "
+                    "<= t (the founder if there is none)."),
+            "time_unit": "the world's declared time unit; the rates are per that unit",
+        },
+        "statistics": {
+            "alpha": ALPHA_REGISTERED,
+            "min_power": MIN_POWER_REGISTERED,
+            "planted_controls": {
+                "row 1": f"k_leave too large by the factor {exchange_law.PLANTED_KB_FACTOR}",
+                "row 5": f"leave channels selected at weight {ssa_oracle.PLANTED_LEAVE_WEIGHT}",
+            },
+        },
+    }
+
+
 def make_probe_inputs(out_dir: str | Path) -> Path:
     """Write the registered probe inputs the engine side evaluates."""
     out = Path(out_dir)
@@ -93,8 +138,10 @@ def make_probe_inputs(out_dir: str | Path) -> Path:
         rules=[dict(partition="exact_fraction", fraction=0.5), dict(partition="binomial", p=0.5)]), indent=1))
     (out / "README.txt").write_text(
         "Registered probe inputs for the GARD component references (see README.md in the package).\n")
+    (out / "beta0_ensemble_design.json").write_text(json.dumps(ensemble_design_record(), indent=1))
     (out / "inputs.json").write_text(json.dumps(dict(
         numpy=np.__version__, kernel_probe_seed=KERNEL_PROBE_SEED, observer_probe_seed=OBSERVER_PROBE_SEED,
+        beta0_ensemble="beta0_ensemble_design.json",
         note="regenerated in-process by the harness and compared bitwise with the probe's echo"), indent=1))
     return out
 
@@ -131,27 +178,48 @@ class Context:
 
     def bundle(self, role: str) -> Bundle:
         if role not in self._cache:
-            self._cache[role] = load_bundle(self.path(role))
+            path = self.path(role)
+            if role == "batched" and isinstance(path, str) and engine_layout.has(path, "batched.json"):
+                path = engine_layout.batched_lane0(path)  # lane 0 holds the lineage's definition
+            self._cache[role] = load_bundle(path)
         return self._cache[role]
 
     def bundles(self, role: str) -> list[Bundle]:
         key = ("many", role)
         if key not in self._cache:
             paths = self.path(role)
+            if isinstance(paths, str) and role == "beta0_ensemble" and engine_layout.has(paths, "beta0_ensemble.json"):
+                used = engine_layout.ensemble_design_used(paths)
+                if used is not None and used != ensemble_design_record():
+                    raise RecordFormatError(f"{paths}/beta0_ensemble_design.json differs from the registered design")
+                paths = engine_layout.ensemble_paths(paths)
+            elif isinstance(paths, str) and role == "branches" and engine_layout.has(paths, "branches.json"):
+                paths = engine_layout.branch_paths(paths)
             paths = [paths] if isinstance(paths, str) else list(paths)
             if not paths:
                 raise MissingRecord(f"role {role!r} lists no bundles")
             self._cache[key] = [load_bundle(p) for p in paths]
         return self._cache[key]
 
+    def is_engine(self, role: str, marker: str) -> bool:
+        path = self.path(role)
+        return isinstance(path, str) and engine_layout.has(path, marker)
+
     def probe(self, role: str) -> tuple[dict, dict]:
         return load_probe(self.path(role))
 
 
+def boundary_for(world, form: str) -> str:
+    """The edge rule a law uses: the world's, if it names one; otherwise the form's own."""
+    if world.boundary_declared:
+        return world.boundary
+    return ENGINE_BOUNDARY_BY_FORM[form if form in ENGINE_BOUNDARY_BY_FORM else canonical_form(form)]
+
+
 def law_of(bundle: Bundle) -> ExchangeLaw:
     w = bundle.world
-    return ExchangeLaw(w.beta, w.k_join, w.k_leave, HeldReservoir(w.rho), canonical_form(bundle.run.form),
-                       w.boundary)
+    form = canonical_form(bundle.run.form)
+    return ExchangeLaw(w.beta, w.k_join, w.k_leave, HeldReservoir(w.rho), form, boundary_for(w, form))
 
 
 def lineage_arrays(b: Bundle) -> dict:
@@ -185,7 +253,14 @@ def lineage_arrays(b: Bundle) -> dict:
     if np.any(out["events_per_growth"] < 0) or out["events_per_growth"].sum() > E:
         raise RecordFormatError(f"{b.path}: events_per_growth must be nonnegative and sum to at most {E}")
     F = out["fission_split"].shape[0]
-    if R != 1 + 2 * F:
+    kinds = b.optional("row_kind")
+    out["end_row"] = False
+    if kinds is not None:
+        want = np.concatenate([[0], np.tile([1, 2], F), [3]]).astype(np.int64)
+        if kinds.shape != want.shape or not np.array_equal(kinds.astype(np.int64), want):
+            raise RecordFormatError(f"{b.path}: row_kind is not start, (parent, daughter) per fission, end")
+        out["end_row"] = True
+    elif R != 1 + 2 * F:
         raise RecordFormatError(f"{b.path}: {R} rows for {F} fissions; the row base needs 1 + 2F = {1 + 2 * F}")
     if out["fission_split"].shape != (F, G) or out["fission_similarity"].shape != (F, 2):
         raise RecordFormatError(f"{b.path}: fission table shapes {out['fission_split'].shape}, "
@@ -198,9 +273,13 @@ def lineage_arrays(b: Bundle) -> dict:
 
 
 def note_world(res: CheckResult, b: Bundle) -> CheckResult:
-    """Surface the world's boundary rule, and whether it was declared or assumed."""
-    res.detail["boundary_rule"] = b.world.boundary
+    """Surface the boundary rule the law used, and whether the world declared it."""
+    form = b.run.form if b.run.form in ENGINE_BOUNDARY_BY_FORM else canonical_form(b.run.form)
+    res.detail["boundary_rule"] = boundary_for(b.world, form)
     res.detail["boundary_rule_declared"] = b.world.boundary_declared
+    formulas = ((b.run_raw.get("law") or {}).get("formulas") or {}) if isinstance(b.run_raw, dict) else {}
+    if "last_molecule" in formulas:
+        res.detail["declared_last_molecule"] = formulas["last_molecule"]
     return res
 
 
@@ -244,11 +323,38 @@ def same_units(*bundles: Bundle) -> None:
 
 # ------------------------------------------------------------------ rows
 
+DIAGNOSTIC_TIMES = (10.0, 20.0, 30.0, 40.0)
+"""World-scale times for the preprint's beta = 0 world, fixed before its ensemble was read:
+growth there takes about 70 time units, so these sample the growth long before any run can
+reach the fission size. They are reported beside the verdict; they never decide it."""
+
+
 def row1(ctx: Context) -> list[CheckResult]:
     runs = ctx.bundles("beta0_ensemble")
     times, counts, w = ensemble_counts(runs)
     k_join, k_leave = uniform_constants(w)
-    return [exchange_law.check_ensemble_means(times, counts, w.founder, k_join, k_leave, w.rho)]
+    res = exchange_law.check_ensemble_means(times, counts, w.founder, k_join, k_leave, w.rho)
+    res.detail["design"] = ensemble_design(w, len(runs))
+    if not res.detail["design"]["registered_design"]:
+        try:
+            dt, dc, _ = ensemble_counts(runs, DIAGNOSTIC_TIMES)
+            diag = exchange_law.check_ensemble_means(dt, dc, w.founder, k_join, k_leave, w.rho)
+            res.detail["diagnostic_world_scale"] = dict(diag.detail, means_agree=bool(
+                np.all(np.abs(diag.detail["z_size"]) <= diag.detail["crit_size"])
+                and diag.detail["max_abs_z_types"] <= diag.detail["crit_types"]))
+        except RecordFormatError as exc:
+            res.detail["diagnostic_world_scale"] = {"skipped": str(exc)}
+    return [res]
+
+
+def ensemble_design(w, runs: int) -> dict:
+    d = exchange_law.REGISTERED_DESIGN
+    registered = (runs >= d["runs"] and np.allclose(w.k_join, d["k_join"]) and np.allclose(w.k_leave, d["k_leave"])
+                  and w.n_types == len(d["rho"]) and np.allclose(w.rho, d["rho"])
+                  and np.array_equal(w.founder, d["founder"]))
+    return dict(registered_design=bool(registered), runs=runs, registered_runs=d["runs"],
+                k_join=float(w.k_join[0]), k_leave=float(w.k_leave[0]), rho_sum=float(w.rho.sum()),
+                founder_size=int(w.founder.sum()), types=w.n_types)
 
 
 def uniform_constants(w) -> tuple[float, float]:
@@ -257,14 +363,16 @@ def uniform_constants(w) -> tuple[float, float]:
     return float(w.k_join[0]), float(w.k_leave[0])
 
 
-def ensemble_counts(runs: list[Bundle]):
+def ensemble_counts(runs: list[Bundle], times=None):
     """Counts [run, time, type] at the registered times from each run's event trace."""
-    times = np.asarray(exchange_law.REGISTERED_DESIGN["times"], dtype=np.float64)
+    times = np.asarray(exchange_law.REGISTERED_DESIGN["times"] if times is None else times, dtype=np.float64)
     w0 = runs[0].world
     same_units(*runs)
     if np.any(w0.beta != 0):
         raise RecordFormatError("the beta0_ensemble world must have beta = 0")
     out = np.zeros((len(runs), times.size, w0.n_types), dtype=np.int64)
+    identities, traces = {}, {}
+    t_obs = float(times[-1])
     for r, b in enumerate(runs):
         w = b.world
         if w.world_id != w0.world_id:
@@ -272,14 +380,27 @@ def ensemble_counts(runs: list[Bundle]):
         (et,) = b.require("event_time")
         ch = canonical_events(b)
         ft = b.optional("fission_time")
-        if ft is not None and ft.size and ft[0] <= times[-1]:
+        if ft is not None and ft.size and ft[0] <= t_obs:
             raise RecordFormatError(f"{b.path}: a fission at t = {ft[0]} precedes the last registered time")
-        t_end = b.run.t_end
-        reached = (et.size and et[-1] >= times[-1]) or (t_end is not None and float(t_end) >= times[-1])
-        if not reached:
-            raise RecordFormatError(f"{b.path}: cannot tell that the run reached t = {times[-1]} "
-                                    "(no later event and no declared t_end)")
         out[r] = counts_at_times(w.founder, et, ch, times)
+        status, t_end = str(b.run.end_status), b.run.t_end
+        ran_past = bool(et.size and et[-1] > t_obs)
+        reached = ran_past or (t_end is not None and float(t_end) >= t_obs and status != "stalled")
+        if not reached:
+            if status == "extinct" and int(out[r, -1].sum()) == 0:
+                pass  # an absorbed run is a valid sample: its state at t is empty
+            else:
+                raise RecordFormatError(
+                    f"{b.path}: the run stopped before t = {t_obs} (status {status!r} at t = {t_end}); "
+                    "a harness failure, not a verdict")
+        key = json.dumps(b.run.stream, sort_keys=True, default=str)
+        if key in identities:
+            raise RecordFormatError(f"{b.path}: shares its stream identity with {identities[key]}")
+        identities[key] = b.path
+        trace = hashlib.sha256(et.tobytes() + b"|" + ch.tobytes()).hexdigest()
+        if et.size and trace in traces:
+            raise RecordFormatError(f"{b.path}: repeats the event trace of {traces[trace]} (a reused stream)")
+        traces[trace] = b.path
     return times, out, w0
 
 
@@ -317,24 +438,58 @@ def row2(ctx: Context) -> list[CheckResult]:
 
 
 def row3(ctx: Context) -> list[CheckResult]:
+    if not ctx.is_engine("kernel_probe", "manifest.json"):
+        return row3_engine(ctx)
     meta, arr = ctx.probe("kernel_probe")
     beta, states, kj, kl, rho = require(arr, ("beta", "states", "k_join", "k_leave", "rho"), "kernel_probe")
     reg = _registered_inputs()["kernel"]
     if not (np.array_equal(beta, reg["beta"]) and np.array_equal(states, reg["states"])):
         raise RecordFormatError("kernel_probe was not evaluated on the registered inputs")
     out = []
+    runs = {PAIR_CONSISTENT: ctx.bundle("lineage").run, SINGLE_EVENT: ctx.bundle("lineage_single_event").run}
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
         tag = form.replace("-", "_")
         join, leave, leave_up = require(arr, (f"join_{tag}", f"leave_{tag}", f"leave_up_{tag}"), "kernel_probe")
         verdicts = meta.get("check_verdict")
         if not isinstance(verdicts, dict) or form not in verdicts:
             raise MissingRecord(f"kernel_probe/probe.json lacks check_verdict[{form!r}]")
-        boundary = meta.get("boundary", ENGINE_BOUNDARY)
+        if runs[form].check_verdict is not None and \
+                verdict_token(runs[form].check_verdict) != verdict_token(verdicts[form]):
+            raise RecordFormatError(f"the probe's {form} verdict disagrees with its lineage run's")
+        declared = meta.get("boundary")
+        boundary = declared.get(form) if isinstance(declared, dict) else declared
+        boundary = ENGINE_BOUNDARY_BY_FORM[form] if boundary is None else boundary
         if boundary not in BOUNDARY_RULES:
             raise RecordFormatError(f"kernel_probe: unknown boundary rule {boundary!r}; known {BOUNDARY_RULES}")
         law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form, boundary)
         out.append(detailed_balance.check_local_detailed_balance(
             law, states, dict(join=join, leave=leave, leave_up=leave_up), verdict_token(verdicts[form])))
+    for form in (PAIR_CONSISTENT, SINGLE_EVENT):
+        out.append(detailed_balance.check_p1_square(form))
+    return out
+
+
+def row3_engine(ctx: Context) -> list[CheckResult]:
+    """The engine's kernel probe; each form's guard verdict is its lineage run's."""
+    inputs, tables = engine_layout.kernel_tables(ctx.path("kernel_probe"))
+    reg = _registered_inputs()["kernel"]
+    for k in ("beta", "states", "k_join", "k_leave", "rho"):
+        if not np.array_equal(inputs[k], reg[k]):
+            raise RecordFormatError(f"kernel_probe was not evaluated on the registered input {k!r}")
+    verdicts = {PAIR_CONSISTENT: ctx.bundle("lineage").run, SINGLE_EVENT: ctx.bundle("lineage_single_event").run}
+    out = []
+    for form in (PAIR_CONSISTENT, SINGLE_EVENT):
+        run = verdicts[form]
+        if canonical_form(run.form) != form:
+            raise RecordFormatError(f"the {form} verdict must come from a {form} run, found {run.form!r}")
+        if run.check_verdict is None:
+            raise MissingRecord(f"run.json law.check.admitted_as is missing for the {form} law")
+        law = ExchangeLaw(inputs["beta"], inputs["k_join"], inputs["k_leave"], HeldReservoir(inputs["rho"]), form,
+                          ENGINE_BOUNDARY_BY_FORM[form])
+        res = detailed_balance.check_local_detailed_balance(law, inputs["states"], tables[form],
+                                                            verdict_token(run.check_verdict))
+        res.detail["verdict_source"] = "law.check.admitted_as of the lineage run"
+        out.append(res)
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
         out.append(detailed_balance.check_p1_square(form))
     return out
@@ -354,6 +509,8 @@ def verdict_token(value) -> str:
 
 
 def row4(ctx: Context) -> list[CheckResult]:
+    if ctx.is_engine("closed_world", "closed_world.json"):
+        return row4_engine(ctx)
     meta, arr = ctx.probe("closed_world")
     out = []
     for cfg in CLOSED_WORLD_CONFIGS:
@@ -367,6 +524,29 @@ def row4(ctx: Context) -> list[CheckResult]:
                                                  float(reg["theta"]), tuple(reg["M"]))
             cl = np.where(states.sum(axis=1)[:, None] == 1, 0.0, cl)  # the claim's chain: N >= 1, no extinction
             out.append(closed_world.check_closed_table(states, cj, cl, float(reg["theta"]), tuple(reg["M"]), form))
+    return out
+
+
+def row4_engine(ctx: Context) -> list[CheckResult]:
+    tables = engine_layout.closed_world_tables(ctx.path("closed_world"))
+    out = []
+    for cfg in CLOSED_WORLD_CONFIGS:
+        if cfg["name"] not in tables:
+            raise MissingRecord(f"closed_world lacks the registered world {cfg['name']!r}")
+        reg = _registered_inputs()[f"closed_{cfg['name']}"]
+        t = tables[cfg["name"]]
+        for k in ("states", "M", "theta", "rho", "k_join", "k_leave", "beta"):
+            if not np.array_equal(np.asarray(t["inputs"][k]), np.asarray(reg[k])):
+                raise RecordFormatError(f"closed_world {cfg['name']} was not evaluated on the registered {k!r}")
+        states = reg["states"]
+        for form in (PAIR_CONSISTENT, SINGLE_EVENT):
+            join, leave = t["forms"][form]["join"], t["forms"][form]["leave"]
+            cj, cl = closed_world.held_to_closed(states, join, leave, reg["rho"], reg["k_join"], reg["k_leave"],
+                                                 float(reg["theta"]), tuple(reg["M"]))
+            cl = np.where(states.sum(axis=1)[:, None] == 1, 0.0, cl)  # the claim's chain: N >= 1, no extinction
+            res = closed_world.check_closed_table(states, cj, cl, float(reg["theta"]), tuple(reg["M"]), form)
+            res.detail["world"] = cfg["name"]
+            out.append(res)
     return out
 
 
@@ -391,16 +571,36 @@ def row5(ctx: Context) -> list[CheckResult]:
     runs = ctx.bundles("beta0_ensemble")
     times, counts, w0 = ensemble_counts(runs)
     k_join, k_leave = uniform_constants(w0)
-    out.append(ssa_oracle.check_birth_death_ensemble(times, counts.sum(axis=2), int(w0.founder.sum()),
-                                                     k_join * float(w0.rho.sum()), k_leave))
+    lam = k_join * float(w0.rho.sum())
+    bd_res = ssa_oracle.check_birth_death_ensemble(times, counts.sum(axis=2), int(w0.founder.sum()), lam, k_leave)
+    bd_res.detail["design"] = ensemble_design(w0, len(runs))
+    if not bd_res.detail["design"]["registered_design"]:
+        try:
+            dt, dc, _ = ensemble_counts(runs, DIAGNOSTIC_TIMES)
+            diag = ssa_oracle.check_birth_death_ensemble(dt, dc.sum(axis=2), int(w0.founder.sum()), lam, k_leave)
+            bd_res.detail["diagnostic_world_scale"] = dict(diag.detail, law_agrees=bool(
+                np.all(np.abs(diag.detail["z_mean"]) <= diag.detail["z_crit"])
+                and diag.detail["chi_square"] <= diag.detail["chi_square_crit"]))
+        except RecordFormatError as exc:
+            bd_res.detail["diagnostic_world_scale"] = {"skipped": str(exc)}
+    out.append(bd_res)
     return out
 
 
 def row6(ctx: Context) -> list[CheckResult]:
-    meta, arr = ctx.probe("partition_probe")
+    engine = ctx.is_engine("partition_probe", "partition_probe.json")
+    if engine:
+        by_rule = engine_layout.partition_splits(ctx.path("partition_probe"))
+    else:
+        meta, arr = ctx.probe("partition_probe")
     out = []
     for rule in ("exact_fraction", "binomial"):
-        parents, splits = require(arr, (f"parents_{rule}", f"splits_{rule}"), "partition_probe")
+        if engine:
+            if rule not in by_rule:
+                raise MissingRecord(f"partition_probe lacks the {rule} rule")
+            parents, splits = by_rule[rule]["parents"], by_rule[rule]["splits"]
+        else:
+            parents, splits = require(arr, (f"parents_{rule}", f"splits_{rule}"), "partition_probe")
         if not np.all(parents == fission_partition.REGISTERED_PARENT[None, :]):
             raise RecordFormatError(f"partition_probe {rule}: parents differ from the registered parent")
         out.append(fission_partition.check_partition_records(parents, splits, rule))
@@ -437,7 +637,7 @@ def row7(ctx: Context) -> list[CheckResult]:
         res = conservation.check_conservation(b.world.founder, r["assembly_count"], r["joined_total"],
                                               r["left_total"], r["discarded_total"], r["fission_split"],
                                               r["fission_followed"], r["event_channel"], r["events_per_growth"],
-                                              r["row_event"])
+                                              r["row_event"], end_row=r["end_row"])
         res.detail["form"] = b.run.form
         out.append(note_world(res, b))
     return out
@@ -450,7 +650,7 @@ def row8(ctx: Context) -> list[CheckResult]:
         out.append(note_world(ledger.check_ledger(
             law_of(b), r["assembly_count"], r["exchange_heat_kT"], r["fission_work_kT"],
             r["discarded_free_energy_kT"], r["log_weight"], r["ledger_residual_kT"], r["fission_split"],
-            r["fission_followed"], r["row_event"], r["event_channel"], b.world.founder), b))
+            r["fission_followed"], r["row_event"], r["event_channel"], b.world.founder, end_row=r["end_row"]), b))
     return out
 
 
@@ -460,6 +660,19 @@ def row9(ctx: Context) -> list[CheckResult]:
                                         a.run_raw, rep.run_raw),
            streams.check_batch_invariance(a.arrays, bat.arrays, a.run.identity(), bat.run.identity(),
                                           a.run_raw, bat.run_raw)]
+    if ctx.is_engine("restart", "restart.json"):
+        uninterrupted, cases = engine_layout.restart_cases(ctx.path("restart"))
+        U = load_bundle(uninterrupted)
+        for name, case in sorted(cases.items()):
+            S, C = load_bundle(case["stopped"]), load_bundle(case["continued"])
+            out.append(streams.check_restart_case(U.arrays, S.arrays, C.arrays, int(case["stop_event"]),
+                                                  f"restart_{name}"))
+        branches = ctx.bundles("branches")
+        for br in branches:
+            br.require("event_channel", "event_uniforms", "partition_uniforms")
+        out.append(streams.check_branch_independence([br.arrays for br in branches],
+                                                     [br.run.stream for br in branches]))
+        return out
     for rb in ctx.bundles("restart"):
         spec = rb.run.restart
         if not isinstance(spec, dict) or not {"row", "event", "fission"} <= set(spec):
@@ -482,6 +695,24 @@ def row10(ctx: Context) -> list[CheckResult]:
     daughters = count[2:2 + 2 * F:2]
     out = [observers.check_fission_similarity(parents, r["fission_split"], r["fission_followed"], daughters,
                                               r["fission_similarity"])]
+    if ctx.is_engine("observer_probe", "probe.json") and not ctx.is_engine("observer_probe", "manifest.json"):
+        obs = engine_layout.observer_outputs(ctx.path("observer_probe"))
+        reg = _registered_inputs()["observer"]
+        if not (np.array_equal(obs["parents"], reg["probe_parent"])
+                and np.array_equal(obs["daughters"], reg["probe_daughter"])):
+            raise RecordFormatError("observer_probe was not evaluated on the registered probes")
+        out.append(observers.check_observer_h(obs["parents"], obs["daughters"], obs["H"]))
+        if obs["inherited"] is None:
+            out.append(missing_check("observer_probe_inheritance_marks",
+                                     "observer_probe/probe.npz lacks 'inherited' (per-pair marks of H > 0.9)"))
+        else:
+            out.append(observers.check_observer_probes(obs["parents"], obs["daughters"], obs["H"],
+                                                       obs["inherited"]))
+        f12 = engine_layout.f12_outputs(ctx.path("f12_table"))
+        res = observers.check_f12_sequences(f12["sequences"], f12["f12"], f12["certified_at"])
+        res.detail["declared_count"] = f12["meta"].get("count")
+        out.append(res)
+        return out
     meta, arr = ctx.probe("observer_probe")
     P, D, H, I = require(arr, ("probe_parent", "probe_daughter", "H", "inherited"), "observer_probe")
     reg = _registered_inputs()["observer"]
@@ -496,6 +727,11 @@ def row10(ctx: Context) -> list[CheckResult]:
         raise RecordFormatError(f"f12_table: unknown bit_order {meta['bit_order']!r}; accepted lsb_first, msb_first")
     out.append(observers.check_f12_table(table, meta["bit_order"]))
     return out
+
+
+def missing_check(name: str, what: str) -> CheckResult:
+    """A check that cannot run because a record is absent: the row is reported MISSING."""
+    return CheckResult(name, False, dict(missing_record=what))
 
 
 RUNNERS = {1: row1, 2: row2, 3: row3, 4: row4, 5: row5, 6: row6, 7: row7, 8: row8, 9: row9, 10: row10}
@@ -523,7 +759,11 @@ def run_rows(roles: dict, rows=None) -> dict:
             results = RUNNERS[n](ctx)
             entry["checks"] = [r.as_dict() for r in results]
             entry["passed"] = all(r.passed for r in results)
-            if not entry["passed"]:
+            missing = [str(r.detail["missing_record"]) for r in results if "missing_record" in r.detail]
+            if missing:
+                entry["error"] = "MissingRecord: " + "; ".join(missing)
+                report["status"] = 2
+            elif not entry["passed"]:
                 report["status"] = max(report["status"], 1)
         except (MissingRecord, RecordFormatError, ConventionMissing, FileNotFoundError) as exc:
             entry["passed"] = False

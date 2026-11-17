@@ -49,11 +49,14 @@ Numbers are cited under D186. No text, figures or data files are copied.
   pi(x) = (N - 1)! prod (K_i rho_i)^{x_i}/x_i!.
 - **Boundary rules.** N = 0 is absorbing, and b at the empty state is undefined.
   - The closed world and the kernel identities use `last_molecule_stays`.
-  - Engine runs use the engine's declared convention, `extinction_uncatalysed`. The last
-    molecule leaves at the bare k_b, Phi(empty) = ln pi(empty) = 0, and that leave books
-    q = -ln(K_i rho_i).
-  - A world that names no rule is read as `extinction_uncatalysed`. Every lineage row
-    reports which rule it used.
+  - In engine runs the rule depends on the form (see the amendment below).
+    - The pair-consistent form uses `extinction_uncatalysed`: the last molecule leaves at
+      the bare k_b.
+    - The single-event form uses `extinction`: the last molecule's leave carries
+      1 + beta_ii.
+    - In both forms Phi(empty) = ln pi(empty) = 0, and that leave books q = -ln(K_i rho_i).
+  - A world that names no rule is read per form. Every lineage row reports which rule it
+    used.
   - In the preprint's lineage regime (masses 40-80) no rule ever acts.
 - **The event guard** stops a lineage (the engine's rule; T2-02's guard would force a
   fission). The CRN replay follows the world's declared `guard_rule`.
@@ -145,6 +148,18 @@ A probe is a directory with `probe.json`, `probe.npz` and `manifest.json`. Its i
 from `make-probes`, which regenerates them deterministically from registered seeds through
 NumPy's `Generator` (`inputs.json` records the NumPy version).
 
+`make-probes` also writes the registered β = 0 ensemble design as
+`beta0_ensemble_design.json` (named in `inputs.json`). It is a transcription, with no value
+changed, of row 1's design:
+- the constants, the founder, the observation times (to t = 2) and 500 runs;
+- independent streams, one per run;
+- every run still running at t = 2, with no fission by then;
+- the cut: at each time, the state after the last event at or before it.
+
+A run that stops before t = 2 for any reason other than extinction is a harness failure
+(status 2), not a verdict. So are two runs that share a stream identity or repeat an event
+trace.
+
 **Run `make-probes` and `run` in the same environment** (`venv-cpu`). The harness regenerates
 the inputs in-process and requires each probe's echo of them to match bitwise. A different
 NumPy fails loudly; it never matches silently.
@@ -169,6 +184,82 @@ Other conventions:
   is 0). So row 9 also flags repeated partition uniforms across branches.
 - Events after the last fission are covered by no saved row. Their heat is checked only
   if an end row is saved.
+
+### The engine's layout
+
+`engine_layout.py` and `records.adapt_engine_world`/`adapt_engine_run` read the engine's
+role set as its FORMAT.md describes it (`cells.assembly_lineages@1`).
+
+**World and run records:**
+- **World:** `{format, id, world, derived}`.
+  - β is `world.law_data.catalysis_matrix`; without it, β = 0.
+  - ρ is `world.supply`; k_join and k_leave come from `derived`; K is
+    `world.types.transfer_constant` and must equal k_join/k_leave.
+  - The event guard is `experiment.growth_event_limit` in `resolved_config.json`, and the
+    lineage stops at it.
+- **Run:** the verdict is `law.check.admitted_as`, and `law.form` is the form. A run with
+  no rate-factor law is read as form `none`, the exchange law alone.
+- **SSA:** the prose in `run.json` `ssa` and `stream.uniform` maps onto the oracle's tokens
+  (`records.ENGINE_SSA`). Any other wording is refused.
+
+**Records and groups:**
+- **Row base:** start, (parent, daughter) per fission, then a final end row (`row_kind`
+  0/1/2/3). The end row lets conservation and the ledger check the last growth too.
+- **Groups:**
+  - `batched/batched.json`: lane 0 is the lineage's definition;
+  - `restart/restart.json`: each case is a stopped run and its continued run, compared
+    bitwise with the uninterrupted run;
+  - `branches/branches.json`: the branch runs;
+  - `beta0_ensemble/beta0_ensemble.json`: the ensemble's members.
+
+**Probes:** each is `probe.json` + `probe.npz`, with arrays `<form>.<array>` and the
+registered inputs echoed as `input_*`. Each echo must match the inputs this package
+regenerates.
+- The kernel probe's verdicts come from the lineage runs.
+- The observer probe gives H only; the per-pair inheritance marks are reported missing.
+- The F12 table's explicit `sequences` and `certified_at` are checked against both
+  predicates.
+
+**Ensembles off the registered design:** a β = 0 ensemble that does not follow the registered
+design is judged at the registered times. It fails as underpowered if it cannot catch its
+planted control. Its agreement with the closed form at world-scale times (10, 20, 30, 40) is
+reported beside the verdict and never decides it.
+
+## Amendment, 17 November 2026: the single-event form's last leave
+
+- **What changed.** In the single-event form, the leave at N = 1 now carries the factor
+  1 + beta_ii (rule `extinction`). That is the preprint's kernel, which counts the leaving
+  molecule. The pair-consistent rule is unchanged: its last molecule leaves uncatalysed.
+- **Why.** The earlier rule followed a relayed convention: "the last molecule leaves
+  uncatalysed, in both forms". The lead has since said that relay was wrong for the
+  single-event form. The rule now follows `docs/GARD_DESIGN.md`, written before any engine
+  run, at:
+  - line 43 (cited by the lead): the pair-consistent factor equals the published one to
+    O(1/N), except under strong self-catalysis;
+  - lines 260-262: the pair-consistent form retains strongly self-catalytic types a little
+    more, because their leaving is no longer self-catalysed;
+  - line 318: in the pair-consistent form, the leaving molecule does not catalyse its own
+    leave.
+- **When.** The change was made after report-2 (the provisional set 6af93a51) showed the
+  disagreement on the 4 mass-1 probe states. Read with the amended rule, the engine's
+  single-event table matches there exactly. report-2 is kept unchanged.
+- **Planted control.** A single-event kernel whose last molecule leaves uncatalysed must fail
+  row 3 (`tests/unit/test_gard_references_row03_04.py`).
+
+## Amendment, 17 November 2026: the registered ensemble design's bytes
+
+- **What changed.** In `beta0_ensemble_design.json`, a registered input, one byte: the
+  trailing newline was removed. No value changed. This is a byte change to a registered
+  input.
+- **Why.** The committed copy then matches `make-probes`' copy byte for byte, so the two
+  SHA-256s agree. The engine side records the SHA-256 of `make-probes`' copy.
+- **When.** After report-3; the change is in commit b84abb17, before report-4.
+- **SHA-256 before (commit 94e3ca4b):**
+  `2fe56c84a1ec70d4106a0b8103f9f3dc55dd08c1b872f354e1b34f808fb48048`.
+- **SHA-256 after (commit b84abb17, and `make-probes`' copy):**
+  `04a30ac6938ab9debbec65e93773afebcff8f450444ba02536fbc787c0b17c3a`.
+- **Test.** `test_gard_references_ensemble_design.py` now holds the two copies equal byte
+  for byte.
 
 ## What could not be confirmed from the sources
 

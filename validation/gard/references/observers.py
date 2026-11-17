@@ -205,3 +205,59 @@ def check_observer_probes(parents, daughters, H_engine, inherited_engine) -> Che
         probes=int(parents.shape[0]), exact_point_nine=int(exact_nine.sum()), max_abs_H_error=h_err,
         mark_mismatches=int(wrong.size), mismatches_at_exact_point_nine=int(np.sum(exact_nine[wrong])),
         atol=H_ATOL))
+
+
+def f12_certified_at(marks, horizon: int = HORIZON) -> int:
+    """The 1-based boundary completing the first qualifying run; 0 if never certified."""
+    seen_break = False
+    run = 0
+    for t, m in enumerate(list(marks)[:horizon], start=1):
+        if not m:
+            seen_break = True
+            run = 0
+        elif seen_break:
+            run += 1
+            if run >= 3:
+                return t
+    return 0
+
+
+def check_f12_sequences(sequences, verdicts, certified_at=None) -> CheckResult:
+    """An F12 detector given as explicit sequences [4096, 12] and its verdicts."""
+    seqs = np.asarray(sequences).astype(np.int64)
+    verdicts = np.asarray(verdicts).astype(bool).ravel()
+    if seqs.shape != (1 << HORIZON, HORIZON) or verdicts.shape != (1 << HORIZON,):
+        return CheckResult("f12_exhaustive", False, dict(error=f"shapes {seqs.shape}, {verdicts.shape}"))
+    codes = seqs @ (1 << np.arange(HORIZON)[::-1])
+    complete = np.unique(codes).size == 1 << HORIZON and np.all((seqs == 0) | (seqs == 1))
+    scan = np.array([f12_scan(row.astype(bool)) for row in seqs])
+    regex = np.array([f12_regex(row.astype(bool)) for row in seqs])
+    refs_agree = bool(np.array_equal(scan, regex)) and int(scan.sum()) == F12_POSITIVES
+    wrong = np.flatnonzero(verdicts != scan)
+    cert_ok = None
+    if certified_at is not None:
+        want = np.array([f12_certified_at(row.astype(bool)) for row in seqs])
+        cert_ok = bool(np.array_equal(np.asarray(certified_at).astype(np.int64), want))
+    passed = bool(complete and refs_agree and wrong.size == 0 and cert_ok is not False)
+    return CheckResult("f12_exhaustive", passed, dict(
+        all_4096_sequences=bool(complete), references_agree=refs_agree, reference_positives=int(scan.sum()),
+        detector_positives=int(verdicts.sum()), mismatches=int(wrong.size),
+        certified_at_matches=cert_ok,
+        first_mismatches=["".join(str(int(v)) for v in seqs[k]) for k in wrong[:5]]))
+
+
+def check_observer_h(parents, daughters, H_engine) -> CheckResult:
+    """The engine's H on the registered probes against NumPy (no inheritance marks needed)."""
+    parents = np.asarray(parents)
+    daughters = np.asarray(daughters)
+    H_engine = np.asarray(H_engine, dtype=np.float64)
+    want = np.array([similarity(p, d) for p, d in zip(parents, daughters)])
+    both_nan = np.isnan(want) & np.isnan(H_engine)
+    err = np.where(both_nan, 0.0, np.abs(H_engine - want))
+    exact_nine = np.array([100 * int(np.dot(p, d)) ** 2 == 81 * int(np.dot(p, p)) * int(np.dot(d, d))
+                           for p, d in zip(parents, daughters)])
+    above = int(np.sum(exact_nine & (H_engine > 0.9)))
+    return CheckResult("observer_probe_H", bool(np.nanmax(err) <= H_ATOL and not np.any(np.isnan(err))), dict(
+        probes=int(parents.shape[0]), max_abs_H_error=float(np.nanmax(err)), atol=H_ATOL,
+        exact_point_nine_pairs=int(exact_nine.sum()),
+        exact_point_nine_with_float_H_above=above))
