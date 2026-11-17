@@ -286,6 +286,19 @@
           "note": "First version, built from a clean copy of 9b1b97a8 (474,979 bytes; a second build gave the same bytes). Loaded as an artifact page is wrapped, on the graphics card through Vulkan, at 1280, 400 (light and dark) and 360 px: no sideways scroll, no error. The agent's own pictures of the built page were looked at before that (wide and phone, light and dark, at rest, a piece chosen, a rack chosen, a search, less motion). Known fault: after a lost WebGL context comes back, the names written on the room (the families on their planks, the rows, the revision on the foot rail) do not come back; the room, its light and the labels do. A visitor's browser does not lose its context while the page is in front."
         }
       ]
+    },
+    "gard_preview": {
+      "title": "GARD Assembly Preview",
+      "url": "https://claude.ai/artifact/4AYNKZ4PkjZ2w2fp9XueDx",
+      "page": "built by `node tools/build_view_page.mjs lineage --out FILE` (not committed)",
+      "note": "The origin-of-life view as built, on a page of its own: a GARD assembly drawn as lipids in water, gathering from free molecules, taking molecules in and letting them go, and splitting in two, with its composition, its lineages and its molecules as further levels. It plays an example run of invented numbers, marked 'Example: invented numbers · not a run of Cells' engine', and says on itself that the lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine is designed, not built (D192). It is a preview of a view that is not on the map's page yet. The options page that came before it is origin_of_life.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-17",
+          "note": "First version, built from a clean copy holding this commit's files (598,728 bytes; a second build gave the same bytes). The user, 16 November 2026: 'let's make that one visually amazing - for example lets simulate the self assembly of the lipids (visuall for now but maybe law later), and the different chemicals seeping in and out, and the split, let's use nice water and lipid 3D elements and textures'. Loaded as an artifact page is wrapped, on the graphics card through Vulkan, at 1280, 400 (light and dark) and 360 px: no sideways scroll, no error. The agent's 41 pictures of the built page were looked at before that, in part (wide and phone, light and dark: gathering, steady, a join, mid-fission). Its own measurements: a frame's own work 2.5 ms at 1400 by 900 while playing and 2.4 ms at a phone's size, frames 16.7 ms apart; a deliberately lost context came back unchanged. Changed from the user's earlier answer: a phone and less motion keep the micelle, where the answer had been the cluster; the cluster is a choice in the bar. Known faults: in one wide still the example's mark on the picture itself was not drawn (the notice above the view always says it); on a phone a molecule seeping in can come from outside the frame, and the Lineages level is crowded."
+        }
+      ]
     }
   }
 }
