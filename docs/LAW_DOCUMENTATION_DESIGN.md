@@ -43,8 +43,8 @@ the Laws library's five needs from each manifest entry (§4.1).
   three meanings of null (§7).
 - **Three pilot pages** are drafted in Appendices A–C. Writing them found ten gaps in what the
   code declares (§8).
-- **The estimate:** 8.5–14.5 agent-days in all. A first landing is 3–4 of them. Upkeep is about
-  0.1–0.2 agent-day per new piece (§9).
+- **The estimate:** 8.5–14.5 agent-days in all. A first landing is 3.5–5.5 of them, @2 included.
+  Upkeep is about 0.1–0.2 agent-day per new piece (§9).
 
 | # | Question | Options | Recommendation |
 | --- | --- | --- | --- |
@@ -109,10 +109,17 @@ The page is at `docs/library/<namespace>/<section>/<name>@<major>.md`.
   (D185: its own folder, namespace and named owner).
 - **The ID verbatim, `@` included,** so a search for the ID finds its page.
   - `@` is legal in Git paths and in URL paths, and GitHub serves paths such as
-    `node_modules/@types/…` (from memory). The tool's first build checks one link on GitHub.
+    `node_modules/@types/…` (from memory). The tool's first build renders one page on GitHub and
+    checks its links, mathematics and tables.
   - IDs and file names are always written in backticks. Otherwise GitHub's Markdown would turn
     `name@1.md` into an e-mail link (the GFM autolink rule, from memory).
-- **A changed piece takes a new ID** (D147; CORE_SEAMS §8.6), so it gets a new page.
+- **A changed piece takes a new ID,** so it gets a new page. This is D147's rule as D148 reads it
+  ("D147 makes an ID promise its semantics"), and as the inner-model design (§6) states it for
+  each piece: "a changed behaviour takes a new ID". D148 admits an in-place fix only when physical
+  fields stay bitwise identical.
+  - The model IDs are the exception: a restructure that passes the results gate keeps @3's ID
+    (D172). A model page holds words and rows, never mathematics, so it is regenerated, not
+    rewritten.
   - The old page stays while its ID is registered, and it goes in the commit that unregisters the
     ID.
   - Links pinned at a revision, as the viewer's are, keep working.
@@ -151,47 +158,61 @@ the same thing differently>
 
 ## At a glance
 <!-- generated: at-a-glance -->
+
 <G: piece and interface; the ID and the spelling definitions use; its host; the models whose
 definitions can declare it; its provenance tag; for a channel law, its registry code>
+
 <!-- /generated -->
 
 ## What it reads and changes
 <!-- generated: touches -->
+
 <G: one table, a row per field or per row by role (reads, changes, owns, writes, provides, controls),
 with its axes, unit and which way is positive; ledgers and energy roles; the laws it hosts or the
 pieces it needs, each linked to its page>
+
 <!-- /generated -->
 <H, optional: two or three sentences on what the signs mean physically>
 
 ## The mathematics
 <!-- generated: bounds -->
+
 <G: the declared domain, step bounds and stage terms>
+
 <!-- /generated -->
 <H: the equations, each symbol with its unit; the assumptions; the domain and why; what it leaves out>
 
 ## Sources
 <!-- generated: provenance -->
+
 <G: the provenance tag; the declared citation: its works, place, licence and departures>
+
 <!-- /generated -->
 <H: each work with its mark; what was taken from it, the form or the numbers; each departure in words>
 
 ## How it is checked
 <!-- generated: tests -->
+
 <G: the declared test IDs, linked>
+
 <!-- /generated -->
 <H, in words: the independent reference, the planted error it must catch, and any recorded evidence
 with its scope. Never a level: that is the Status>
 
 ## Status
 <!-- generated: status -->
+
 <G: the level, with the record it was copied from; or "Not stated: no record states a level for
 this piece.">
+
 <!-- /generated -->
 
 ## Links
 <!-- generated: links -->
+
 <G: the declaring module and kernels, as file paths; the tests; the host and related pages; the
 manifest key; the format page's section; the address in the Laws library>
+
 <!-- /generated -->
 <H, optional: further reading, to design notes only>
 ````
@@ -205,6 +226,8 @@ manifest key; the format page's section; the address in the Laws library>
 - **IDs, field names and file names are always in backticks.**
 - **Code and test paths appear only in generated blocks,** so that a file move needs one
   regeneration and no hand edit.
+- **The tool writes a blank line inside each marker,** so that a table or a list never runs into
+  it.
 - **The mathematics uses GitHub math,** with each symbol's unit.
 - **Each work in Sources carries a mark:**
   - the project's own marks: FT (full text), FT-img (an equation image), ABS (abstract only) and
@@ -272,9 +295,9 @@ manifest key; the format page's section; the address in the Laws library>
 | C4 Every relative link and anchor resolves, glossary anchors included | A link to a missing glossary term |
 | C5 The format page's key tables equal the code's key sets (§7) | A key added to a copy of `PIECE_KEYS` |
 
-- **What it cannot check:** that the hand-written equations match the kernel. D147 keeps them
-  stable per ID, since a changed law takes a new ID. So a page's mathematics is reviewed once, when
-  its piece lands.
+- **What it cannot check:** that the hand-written equations match the kernel. D147's rule keeps
+  them stable per ID, since a changed behaviour takes a new ID (§1.2). So a page's mathematics is
+  reviewed once, when its piece lands.
 - **The tool is `scripts/library_pages.py`:**
   - `--new <section> <ID>` writes a page from the template, with its generated blocks filled in;
   - `--write` renders every generated block again;
@@ -292,9 +315,13 @@ Yes (S): as `doc`, which is the coordinator's item 1.
   - Its `Module` (module stage 1) declares where its pages are.
   - `doc` is that address, or null.
   - The conformance kit checks those pages.
-- **`doc` lands with full coverage.** While the pages are written in batches, C1 checks only that
-  each page names a registered piece or model. It requires a page for every one from the commit
-  that completes them, and `doc` lands in that commit. So on main, a `doc` always names a file.
+- **`doc` is in @2's key set from the start, and null until the pages are complete.**
+  - The key set is fixed once, because `format_errors` requires it exactly (§7).
+  - While the pages are written in batches, C1 checks only that each page names a registered
+    piece or model, and the viewer shows no page link.
+  - The commit that completes the pages flips one switch in the manifest's generator, so that
+    `doc` takes §1.2's path, and sets C1 to require a page for every piece.
+  - So on main, a `doc` that is not null always names a file.
 
 ## 4. The viewer's links (Q4)
 
@@ -430,8 +457,8 @@ population's channels in which that gate is open: a number from 0 to 1.
 - **The three meanings of null (CORE_SEAMS §15):**
   - a key that does not apply to a piece is null;
   - a key not yet extracted is listed in a top-level `not_extracted` list of (piece, key) pairs.
-    Today these are the kinds' `ledgers` and `energy`, and the `test` of kinds and operators,
-    whose contracts have no test field yet;
+    Today these are the kinds' `ledgers` and `energy`, and the `provenance` and `test` of kinds
+    and operators, whose contracts have no such fields yet (§8, gaps 1 and 6);
   - any other null means "not stated". A law's `test` is extracted, so its null means that no
     test is declared.
 - **Each interface's own `fields`, explained once:** for example, the channel law's `gates`,
@@ -449,7 +476,7 @@ population's channels in which that gate is open: a number from 0 to 1.
 
 **@2's changes, made as one format change before the viewer binds** (CORE_SEAMS §15 says it has
 not bound yet):
-- `doc` (§3.4);
+- `doc`, null until the pages are complete (§3.4);
 - `module_path` and `line` (§4.1);
 - the citation's `works` (§4.1);
 - the `models` section (§4.1);
@@ -524,14 +551,23 @@ and the kernel, writing the layers, marking the sources).
 | Review: the advisor, and a reading of the plain layers by someone outside each field | 0.5 |
 | **Total** | **8.5–14.5**: about 4–6 working days elapsed, with three or four agents |
 
-- **A first landing, if the user wants it small:** the tool and the test, the template, the
-  glossary's seed, the format page and the three pilot pages, about 3–4 agent-days.
-- **The rest comes in batches,** and C1 changes to full coverage with the last batch.
+**The order of building:**
+1. `cells.declarations@2` and the format page, by the manifest's owner, with `doc` null (§3.4).
+   The pages render from @2: the model pages need its `models` section, and the null meanings
+   need its `not_extracted`.
+2. The tool and the test (C1 in its partial form), the template, the glossary's seed, the index
+   and the three pilot pages.
+3. The other 40 pages, in batches.
+4. The commit that completes them: `doc` takes its paths, and C1 requires every page.
+
+- **A first landing, if the user wants it small,** is steps 1 and 2: about 3.5–5.5 agent-days, of
+  which @2 is 2–3. The viewer shows no page links until step 4.
 - **The viewer's side** is the visualizer session's work, not counted here.
 
 ## 10. Questions
 
 **For the user:**
+
 1. **Approve building it?** It is tooling (AGENTS.md). As a whole, or the first landing first?
 2. **Where does the one sentence live?** On the page (recommended), or in the code, where every
    wording fix would strand checkpoints (§3.2)?
@@ -549,6 +585,7 @@ and the kernel, writing the layers, marking the sources).
    Recommended: (a) now, and (b) when the first level is wanted.
 
 **For the lead:**
+
 5. **`cells.declarations@2` (§7):** one change, owned by seam F's step 2, made before the viewer
    binds?
 6. **The ten gaps of §8:** which go to seam F's step 2, and which to the owners of the kinds and
@@ -559,6 +596,10 @@ and the kernel, writing the layers, marking the sources).
 
 The page as it would stand at `docs/library/cells/laws/kv1p5_mh@1.md`. Its generated blocks show
 the manifest's entry as it is at 75e925ea, with its nulls and empty values.
+
+In all three pilots, the plain layers use a few textbook statements as background, such as that
+potassium usually leaves the cell and that ATP is the cell's energy currency. These are from memory
+and carry no citation.
 
 ````markdown
 # Kv1.5-type potassium channel gating (`cells.kv1p5_mh@1`)
@@ -592,6 +633,7 @@ that moves when a gate moves, and the energy of the channel protein itself.
 ## At a glance
 
 <!-- generated: at-a-glance -->
+
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.channel_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#channel-laws)) |
@@ -599,26 +641,31 @@ that moves when a gate moves, and the energy of the channel protein itself.
 | Runs in | [`cells.resolved_pump_tissue@3`](../models/resolved_pump_tissue@3.md), its host. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
 | Registry code | 0 |
 | Provenance | `parity` |
+
 <!-- /generated -->
 
 ## What it reads and changes
 
 <!-- generated: touches -->
+
 | Role | What | Unit | Which way is positive |
 | --- | --- | --- | --- |
 | Reads | None declared | | |
 | Changes | `K`: valence 1, relative permeability 1.0 | Not stated | Not stated |
 | Its gates, kept by the host | `m`, `h` | | |
+
 <!-- /generated -->
 
 ## The mathematics
 
 <!-- generated: bounds -->
+
 | Declared | Value | Unit |
 | --- | --- | --- |
 | Voltage domain | −0.12 to 0.06 | V |
 | Reference RK4 step | 2.5e-05 | s |
 | Stage term | `constant_field_slope` | |
+
 <!-- /generated -->
 
 With $V$ the membrane voltage (inside less outside, in volts), $t$ in seconds and
@@ -646,7 +693,9 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 ## Sources
 
 <!-- generated: provenance -->
+
 Provenance: `parity`, moved from an older family. No citation is declared.
+
 <!-- /generated -->
 
 | Work | What was taken | Mark |
@@ -663,7 +712,9 @@ current is the constant-field flux; the domain and the fixed temperature are Cel
 ## How it is checked
 
 <!-- generated: tests -->
+
 Declared test: not stated.
+
 <!-- /generated -->
 
 An independent scalar implementation of the equations above agrees with the kernel at 19 voltages
@@ -673,17 +724,21 @@ that comparison yet.
 ## Status
 
 <!-- generated: status -->
+
 Not stated: no record states a level for this piece.
+
 <!-- /generated -->
 
 ## Links
 
 <!-- generated: links -->
+
 - Declared in [`src/cells/models/inner_laws.py`](../../../../src/cells/models/inner_laws.py) (`cells.models.inner_laws`).
 - Kernels: `kinetics`, `cells.models.inner_laws._kv1p5_kinetics`; `opening`, `cells.models.inner_laws._open_mh`.
 - Host: [`cells.resolved_pump_tissue@3`](../models/resolved_pump_tissue@3.md).
 - Manifest entry: (law, `cells.kv1p5_mh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.kv1p5_mh@1`.
+
 <!-- /generated -->
 
 Further reading: [SPEC-006](../../../VOLTAGE_GATED_CHANNEL_SPEC.md); the inner model's
@@ -735,18 +790,21 @@ designed but refused for now.
 ## At a glance
 
 <!-- generated: at-a-glance -->
+
 | | |
 | --- | --- |
 | Piece | Kind, interface `cells.kind@1` ([its fields](../../DECLARATIONS_FORMAT.md#kinds)) |
 | ID | `cells.transporter@1`; definitions write `cells.transporter@1` |
 | Runs in | [`cells.resolved_pump_tissue@3`](../models/resolved_pump_tissue@3.md). Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it, under the key `transporters` |
 | Laws it hosts | [`cells.atp_driven_transporter_mass_action_positive@1`](../laws/atp_driven_transporter_mass_action_positive@1.md), [`cells.proton_atp_mass_action_positive@1`](../laws/proton_atp_mass_action_positive@1.md) |
-| Provenance | Not declared: kinds have no provenance field |
+| Provenance | Not yet extracted: kinds have no provenance field yet |
+
 <!-- /generated -->
 
 ## What it reads and changes
 
 <!-- generated: touches -->
+
 | Field | Role | Axes | Unit | Record | Which way is positive |
 | --- | --- | --- | --- | --- | --- |
 | `transporter_cycles` | Owns | membrane_slot | fmol | cumulative | From inside to outside: "a positive cycle moves n (the stoichiometry) of the role from the patch's cell to its outside node; held fuel's maintenance restores its ATP (transporter_fuel_supplied_fmol)" |
@@ -770,12 +828,15 @@ Hooks: `bound_rate`, `check_definition`, `control_values`, `domain`, `held_rows`
 `transporter_drive0_J_mol`, `transporter_c0_mM`, `transporter_ph_ref`, `transporter_ph_band`.
 Experiment keys: none.
 </details>
+
 <!-- /generated -->
 
 ## The mathematics
 
 <!-- generated: bounds -->
+
 None declared by the kind; each law it hosts declares its own.
+
 <!-- /generated -->
 
 For one population with stoichiometry $n$ (1 to 4), one cycle turns ATP into ADP and phosphate at
@@ -802,7 +863,9 @@ hosted law gives the cycle rate $J$; for each population the kind books:
 ## Sources
 
 <!-- generated: provenance -->
-Not declared: kinds have no provenance field.
+
+Provenance: not yet extracted; kinds have no provenance field yet.
+
 <!-- /generated -->
 
 - **The kind is Cells' own design:** the inner model's transporter kind
@@ -817,7 +880,9 @@ Not declared: kinds have no provenance field.
 ## How it is checked
 
 <!-- generated: tests -->
+
 Declared tests: not yet extracted; kinds have no test field yet.
+
 <!-- /generated -->
 
 Its tests run a one-cell world through the runner. The cargo lands in the shared inventory, the
@@ -829,16 +894,20 @@ the built implementation, and that the law's domain and the pH band refuse at th
 ## Status
 
 <!-- generated: status -->
+
 Not stated: no record states a level for this piece.
+
 <!-- /generated -->
 
 ## Links
 
 <!-- generated: links -->
+
 - Declared in [`src/cells/models/inner_kinds/transporter.py`](../../../../src/cells/models/inner_kinds/transporter.py) (`cells.models.inner_kinds.transporter`).
 - Hosts [`cells.atp_driven_transporter_mass_action_positive@1`](../laws/atp_driven_transporter_mass_action_positive@1.md) and [`cells.proton_atp_mass_action_positive@1`](../laws/proton_atp_mass_action_positive@1.md); runs in [`cells.resolved_pump_tissue@3`](../models/resolved_pump_tissue@3.md).
 - Manifest entry: (kind, `cells.transporter@1`) ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.transporter@1`.
+
 <!-- /generated -->
 ````
 
@@ -887,6 +956,7 @@ open solution, and the effect of temperature on permeability.
 ## At a glance
 
 <!-- generated: at-a-glance -->
+
 | | |
 | --- | --- |
 | Piece | Operator, interface `cells.operator@1` ([its fields](../../DECLARATIONS_FORMAT.md#operators)) |
@@ -894,12 +964,14 @@ open solution, and the effect of temperature on permeability.
 | Runs in | [`cells.resolved_pump_composite@1`](../models/resolved_pump_composite@1.md) |
 | Where it acts in the step | A split part, by `heun_frozen_amount_water@1`; scheduled by `water_controls` |
 | Needs | No law or kind |
-| Provenance | Not declared: operators have no provenance field |
+| Provenance | Not yet extracted: operators have no provenance field yet |
+
 <!-- /generated -->
 
 ## What it reads and changes
 
 <!-- generated: touches -->
+
 | Field | Role | Axes | Unit | Which way is positive |
 | --- | --- | --- | --- | --- |
 | `membrane_area` | Reads | | Not stated | |
@@ -914,12 +986,15 @@ open solution, and the effect of temperature on permeability.
 
 Writes into other pieces' fields: none. Ledgers: `water_local`, `water_outside`, `water_total`,
 `bath_water_work`. Records: none declared.
+
 <!-- /generated -->
 
 ## The mathematics
 
 <!-- generated: bounds -->
+
 None declared.
+
 <!-- /generated -->
 
 With amounts $n$ in fmol, volumes $V$ in pL, pressures in Pa and energies in pJ:
@@ -949,7 +1024,9 @@ $$Q = 10^{15} A\, L_p\, a\, (\psi_\text{cell} - \psi_\text{out}) \ \text{pL/s, c
 ## Sources
 
 <!-- generated: provenance -->
-Not declared: operators have no provenance field.
+
+Provenance: not yet extracted; operators have no provenance field yet.
+
 <!-- /generated -->
 
 | Work | What was taken | Mark |
@@ -964,7 +1041,9 @@ its own marks.
 ## How it is checked
 
 <!-- generated: tests -->
+
 Declared tests: not yet extracted; operators have no test field yet.
+
 <!-- /generated -->
 
 The water kernel is compared with an independent reference written for its thermodynamics and its
@@ -980,16 +1059,20 @@ operator in today's compositions, so no status is copied from it.
 ## Status
 
 <!-- generated: status -->
+
 Not stated: no record states a level for this piece.
+
 <!-- /generated -->
 
 ## Links
 
 <!-- generated: links -->
+
 - Declared in [`src/cells/models/operators/osmotic_water.py`](../../../../src/cells/models/operators/osmotic_water.py), class `OsmoticWater` (`cells.models.operators.osmotic_water`).
 - Runs in [`cells.resolved_pump_composite@1`](../models/resolved_pump_composite@1.md).
 - Manifest entry: (operator, `cells.ideal_osmosis_linear_compliance_water@1`) ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.ideal_osmosis_linear_compliance_water@1`.
+
 <!-- /generated -->
 
 Further reading: [the water guide](../../../PUMP_WATER_MODEL.md);
