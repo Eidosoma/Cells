@@ -329,7 +329,21 @@ REPRESENTS = (
 )
 
 
-def record(out_dir, d, start, *, end=COUPLED_S, label=""):
+def record_times(dt, end, log_rows=0):
+    """The record's observed times: 0, every RECORD_EVERY_S and the end; with log_rows, as many
+    log-spaced times from the first step to the end, each on the step grid (a multiple of dt), so
+    that no record splits a step and the integration grid, and so the run, is unchanged."""
+    times = {0.0, *(k * RECORD_EVERY_S for k in range(int(end // RECORD_EVERY_S) + 1)), end}
+    if log_rows:
+        steps = round(end / dt)
+        for k in range(log_rows):
+            fraction = k / (log_rows - 1) if log_rows > 1 else 1.0
+            n = max(1, min(steps, round(math.exp(fraction * math.log(steps)))))
+            times.add(n * dt)
+    return sorted(t for t in times if t <= end)
+
+
+def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0):
     """The coupled stage at d written as a run record with its run view (module docstring)."""
     from cells import run_view
     from cells.core.specs import parse_spec
@@ -339,10 +353,7 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
     arm_id = f"neither-d{d:.6g}"
     directory = Path(out_dir) / "viewer" / arm_id
     raw = coupled_world(d, start, end=end)
-    observe = sorted(
-        {0.0, *(k * RECORD_EVERY_S for k in range(int(end // RECORD_EVERY_S) + 1)), end}
-    )
-    raw["experiment"]["observation_times"] = [t for t in observe if t <= end]
+    raw["experiment"]["observation_times"] = record_times(step(d), end, log_rows)
     spec = parse_spec(raw)
     spacing = 2.0 * R_CELL_M * 1e6
     geometry = run_view.Geometry(
@@ -393,6 +404,7 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
     out["seconds"] = time.perf_counter() - started
     out["final_units"] = final_units(directory, list(spec.model.species_ids))
     out["sidecar"] = criterion_sidecar(directory, list(spec.model.species_ids))
+    out["species_sidecars"] = species_sidecars(directory, list(spec.model.species_ids))
     entry = dict(
         format="gap_junction_tissue.neither_run@1",
         status="development run of the engine, not judged (D138)",
@@ -408,6 +420,12 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
         d_m2_s=d,
         g_gj_m3_s=conductance(d),
         start_units=start,
+        species=dict(u="miR200", m="Zeb mRNA", z="ZEB protein"),
+        concentration=(
+            "amount / the cell's volume in the layout (4/3 pi (5 um)^3 = "
+            f"{V_CELL_PL:.6g} pL); fmol / pL = mM, and one scaled unit of the switch is 1 uM"
+        ),
+        sidecars=[*SPECIES_SIDECARS_FILES, "criterion.json"],
         **_snapshot_identity(),
     )
     (directory / "run.json").write_text(json.dumps(entry, indent=1))
@@ -461,46 +479,12 @@ def criterion_sidecar(directory, species_ids):
     observed amounts (its chunks) and volumes, and its state under BITSEY's criterion. The cells
     are the view's cell set (the layout's order, the arrays' columns); without a view, the
     layout's ids."""
-    import numpy as np
-
-    from cells import io
-
     directory = Path(directory)
-    layout = io.load_snapshot(directory / "checkpoint_initial").checkpoint.layout  # A read.
-    reference = np.asarray(layout.amount_reference)
-    volume = np.asarray(layout.volume)[:N_CELLS]
-    layout_ids = [str(i) for i in np.asarray(layout.ids)[:N_CELLS]]
-    view = directory / "view.json"
-    sets = {s["id"]: s for s in json.loads(view.read_text())["sets"]} if view.is_file() else {}
-    cells = sets["cell"]["ids"] if "cell" in sets else layout_ids
-    recorded = sets.get("species", {}).get("recorded")  # The kept species, when a subset.
-
-    def kept(name):
-        full = species_ids.index(name)
-        return full if recorded is None else recorded.index(full)
-
-    u, m = kept("u"), kept("m")
-    ref_u, ref_m = species_ids.index("u"), species_ids.index("m")
-    times, values = [], []
-    for line in (directory / "windows.jsonl").read_text().splitlines():
-        entry = json.loads(line)
-        if entry.get("kind") != "window" or not entry.get("path"):
-            continue
-        with np.load(directory / entry["path"]) as chunk:
-            if "observation_times" not in chunk.files:
-                continue
-            rows = np.asarray(chunk["observation_times"], dtype=float)
-            increment = chunk["observed_amount_increment"][:, :, :N_CELLS]
-        for k, when in enumerate(rows):
-            if times and when <= times[-1]:
-                continue
-            times.append(float(when))
-            mir200 = reference[ref_u, :N_CELLS] + increment[k, u]
-            zeb = reference[ref_m, :N_CELLS] + increment[k, m]
-            values.append(((mir200 - zeb) / volume / UNIT_mM).tolist())
-    flat = [x for row in values for x in row]
-    if not all(math.isfinite(x) for x in [*flat, *times]):
-        raise ValueError(f"{directory}: a value or time is not finite")
+    times, cells, values = observed_units(directory, species_ids)
+    values = [
+        [u - m for u, m in zip(row_u, row_m, strict=True)]
+        for row_u, row_m in zip(values["u"], values["m"], strict=True)
+    ]
     sidecar = dict(
         format=CRITERION_FORMAT,
         quantity=dict(id="mir200_minus_zeb_mrna", label="miR200 minus Zeb mRNA", unit="uM"),
@@ -519,6 +503,83 @@ def criterion_sidecar(directory, species_ids):
     )
     (directory / "criterion.json").write_text(json.dumps(sidecar, allow_nan=False))
     return "criterion.json"
+
+
+SPECIES_SIDECARS = {
+    "u": ("concentration_mir200.json", "mir200", "miR200"),
+    "m": ("concentration_zeb_mrna.json", "zeb_mrna", "Zeb mRNA"),
+    "z": ("concentration_zeb_protein.json", "zeb_protein", "ZEB protein"),
+}
+SPECIES_SIDECARS_FILES = [filename for filename, _, _ in SPECIES_SIDECARS.values()]
+
+
+def observed_units(directory, species_ids):
+    """(times, cells, {species: rows of each cell's concentration in units}) from a written
+    record's own observed amounts (its chunks) and the layout's volumes, read through the loader."""
+    import numpy as np
+
+    from cells import io
+
+    directory = Path(directory)
+    layout = io.load_snapshot(directory / "checkpoint_initial").checkpoint.layout  # A read.
+    reference = np.asarray(layout.amount_reference)
+    volume = np.asarray(layout.volume)[:N_CELLS]
+    layout_ids = [str(i) for i in np.asarray(layout.ids)[:N_CELLS]]
+    view = directory / "view.json"
+    sets = {s["id"]: s for s in json.loads(view.read_text())["sets"]} if view.is_file() else {}
+    cells = sets["cell"]["ids"] if "cell" in sets else layout_ids
+    recorded = sets.get("species", {}).get("recorded")  # The kept species, when a subset.
+    rows = {}
+    for name in NAMES:
+        full = species_ids.index(name)
+        rows[name] = (full, full if recorded is None else recorded.index(full))
+    times, values = [], {name: [] for name in NAMES}
+    for line in (directory / "windows.jsonl").read_text().splitlines():
+        entry = json.loads(line)
+        if entry.get("kind") != "window" or not entry.get("path"):
+            continue
+        with np.load(directory / entry["path"]) as chunk:
+            if "observation_times" not in chunk.files:
+                continue
+            when_rows = np.asarray(chunk["observation_times"], dtype=float)
+            increment = chunk["observed_amount_increment"][:, :, :N_CELLS]
+        for k, when in enumerate(when_rows):
+            if times and when <= times[-1]:
+                continue
+            times.append(float(when))
+            for name, (full, kept) in rows.items():
+                amount = reference[full, :N_CELLS] + increment[k, kept]
+                values[name].append((amount / volume / UNIT_mM).tolist())
+    flat = [x for rows_ in values.values() for row in rows_ for x in row]
+    if not all(math.isfinite(x) for x in [*flat, *times]):
+        raise ValueError(f"{directory}: a value or time is not finite")
+    return times, list(cells), values
+
+
+def species_sidecars(directory, species_ids):
+    """Each cell's miR200, Zeb mRNA and ZEB protein (uM) per observed row, beside a tissue arm's
+    package (cells.experiment_quantity@1; viewer sidecars written by the driver)."""
+    times, cells, values = observed_units(directory, species_ids)
+    written = []
+    for name, (filename, quantity_id, label) in SPECIES_SIDECARS.items():
+        sidecar = dict(
+            format=QUANTITY_FORMAT,
+            quantity=dict(
+                id=quantity_id,
+                label=f"{label} in each cell, in µM; the switch's scaled unit is 1 µM in this "
+                "world (amount / volume from the record's own arrays)",
+                unit="uM",
+            ),
+            times_s=times,
+            cells=cells,
+            values=values[name],
+        )
+        (Path(directory) / filename).write_text(json.dumps(sidecar, allow_nan=False))
+        written.append(filename)
+    return written
+
+
+QUANTITY_FORMAT = "cells.experiment_quantity@1"
 
 
 def records_summary(results):
@@ -560,7 +621,8 @@ def records_summary(results):
         format="cells.experiment_summary@1",
         experiment=EXPERIMENT,
         note="Development runs of the engine, not judged (D138). One scaled unit of the switch is "
-        "1 uM here.",
+        "1 uM here. Species: u is miR200, m Zeb mRNA, z ZEB protein; each concentration is the "
+        f"amount over the cell's volume in the layout ({V_CELL_PL:.6g} pL).",
         sweeps=[sweep] if len(arms) >= 2 else [],
     )
 
@@ -578,10 +640,10 @@ def _snapshot_identity():
 
 
 def _record_work(args):
-    d, start, end, out_dir = args
+    d, start, end, out_dir, log_rows = args
     _start_engine()
     try:
-        return record(out_dir, d, start, end=end)
+        return record(out_dir, d, start, end=end, log_rows=log_rows)
     except Exception as error:  # A refused pick is reported, never swapped (section 7).
         return dict(
             arm=f"neither-d{d:.6g}",
@@ -592,7 +654,7 @@ def _record_work(args):
         )
 
 
-def record_all(out_dir, ds, end, cpus):
+def record_all(out_dir, ds, end, cpus, log_rows=0):
     """Stage 1, then each D's record, one process per CPU of `cpus` (in this process when none);
     records.json and viewer/summary.json once every pick has ended."""
     from concurrent.futures import ProcessPoolExecutor
@@ -611,7 +673,8 @@ def record_all(out_dir, ds, end, cpus):
             if stage1["status"] != "done":
                 return 1
             futures = [
-                pool.submit(_record_work, (d, stage1["start_units"], end, str(out_dir))) for d in ds
+                pool.submit(_record_work, (d, stage1["start_units"], end, str(out_dir), log_rows))
+                for d in ds
             ]
             results = [future.result() for future in futures]
     else:
@@ -620,7 +683,9 @@ def record_all(out_dir, ds, end, cpus):
         (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
         if stage1["status"] != "done":
             return 1
-        results = [_record_work((d, stage1["start_units"], end, str(out_dir))) for d in ds]
+        results = [
+            _record_work((d, stage1["start_units"], end, str(out_dir), log_rows)) for d in ds
+        ]
     (out_dir / "records.json").write_text(json.dumps(results, indent=1))
     (out_dir / "viewer").mkdir(parents=True, exist_ok=True)
     summary = records_summary([r for r in results if r.get("status") == "done"])
@@ -814,6 +879,7 @@ def main():
     parser.add_argument("--points", default="")
     parser.add_argument("--end", type=float, default=COUPLED_S)
     parser.add_argument("--record", default="")
+    parser.add_argument("--record-log", type=int, default=0)
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -853,7 +919,8 @@ def main():
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
     if args.record:  # Records for the viewer: stage 1, then each D written with its view.
         cpus = [int(c) for c in args.cpus.split(",") if c]
-        return record_all(out_dir, [float(x) for x in args.record.split(",")], args.end, cpus)
+        ds = [float(x) for x in args.record.split(",")]
+        return record_all(out_dir, ds, args.end, cpus, log_rows=args.record_log)
     if args.points:  # A probe: stage 1, then the given points in this process; no search.
         _start_engine()
         stage1 = uncoupled()
