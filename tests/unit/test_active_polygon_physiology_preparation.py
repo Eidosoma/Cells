@@ -89,8 +89,8 @@ def prepared(name, case):
 def initial_packet(name, packet):
     raw = packet["definition"]
     target = raw["model"]["id"]
-    parser = importlib.import_module("cells.core." + active.FAMILIES[target][0])
-    model = importlib.import_module("cells.models." + active.FAMILIES[target][1])
+    parser = importlib.import_module(active.FAMILIES[target][0])
+    model = importlib.import_module(active.FAMILIES[target][1])
     try:
         spec = parser.parse(raw)
         state, p = model.initial_values(spec)

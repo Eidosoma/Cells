@@ -223,6 +223,15 @@ def test_public_cli_validates_the_complete_scheduled_profile_model(tmp_path):
     assert path.read_bytes() == saved
 
 
+# The model module each existing family dispatches to, named in full (D188 R2).
+FAMILY_MODELS = {
+    "surface_calcium_energy_hcn_extra": "cells.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_transport": "cells.models.surface_calcium_energy_transport",
+    "surface_calcium_energy_mitochondria": "cells.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_water": "cells.models.surface_calcium_energy_water",
+}
+
+
 @pytest.mark.parametrize(
     "filename,module",
     [
@@ -235,6 +244,6 @@ def test_public_cli_validates_the_complete_scheduled_profile_model(tmp_path):
 def test_profile_registration_preserves_existing_physical_families(filename, module):
     raw = json.loads((Path(__file__).resolve().parents[2] / "configs" / filename).read_text())
     spec = parse_spec(raw)
-    assert get_model(spec.model) is importlib.import_module("cells.models." + module)
+    assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == raw["model"]["id"]

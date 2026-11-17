@@ -629,7 +629,9 @@ def test_detached_cli_selects_correct_module(tmp_path, monkeypatch, capsys):
             == 0
         )
         command, kwargs = launches[-1]
-        assert command[command.index("-m") + 1] == "cells." + name
+        # The worker module, named in full (D188 R2).
+        worker = "cells.assembly_cluster" if cluster else "cells.assembly_cell"
+        assert command[command.index("-m") + 1] == worker
         assert kwargs["start_new_session"] is True
         assert kwargs["env"]["PYTHONPATH"] == str(output / "source")
         assert (output / "launch.json").exists()

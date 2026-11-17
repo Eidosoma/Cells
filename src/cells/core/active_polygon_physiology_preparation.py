@@ -23,8 +23,8 @@ MAX_CHANNELS = 256
 # explicit nested ionic identity (None for a direct ionic/energy definition).
 FAMILIES = {
     "resolved_tissue@2": (
-        "surface_kinetic_spec",
-        "surface_kinetic",
+        "cells.core.surface_kinetic_spec",
+        "cells.models.surface_kinetic",
         "SurfaceKineticModel",
         False,
         False,
@@ -32,8 +32,8 @@ FAMILIES = {
         None,
     ),
     "resolved_tissue@12": (
-        "surface_kinetic_spec",
-        "surface_hcn_extra",
+        "cells.core.surface_kinetic_spec",
+        "cells.models.surface_hcn_extra",
         "SurfaceHCNExtraModel",
         False,
         False,
@@ -41,8 +41,8 @@ FAMILIES = {
         None,
     ),
     "resolved_calcium@1": (
-        "surface_calcium_spec",
-        "surface_calcium",
+        "cells.core.surface_calcium_spec",
+        "cells.models.surface_calcium",
         "SurfaceCalciumModel",
         True,
         False,
@@ -50,8 +50,8 @@ FAMILIES = {
         "resolved_tissue@2",
     ),
     "resolved_calcium@11": (
-        "surface_calcium_spec",
-        "surface_calcium_hcn_extra",
+        "cells.core.surface_calcium_spec",
+        "cells.models.surface_calcium_hcn_extra",
         "SurfaceCalciumHCNExtraModel",
         True,
         False,
@@ -59,8 +59,8 @@ FAMILIES = {
         "resolved_tissue@12",
     ),
     "resolved_energy@1": (
-        "surface_energy_spec",
-        "surface_energy",
+        "cells.core.surface_energy_spec",
+        "cells.models.surface_energy",
         "SurfaceEnergyModel",
         False,
         True,
@@ -68,8 +68,8 @@ FAMILIES = {
         None,
     ),
     "resolved_energy@2": (
-        "surface_energy_spec",
-        "surface_energy_morris_lecar",
+        "cells.core.surface_energy_spec",
+        "cells.models.surface_energy_morris_lecar",
         "SurfaceEnergyMorrisLecarModel",
         False,
         True,
@@ -77,8 +77,8 @@ FAMILIES = {
         None,
     ),
     "resolved_calcium_energy@1": (
-        "surface_calcium_energy_spec",
-        "surface_calcium_energy",
+        "cells.core.surface_calcium_energy_spec",
+        "cells.models.surface_calcium_energy",
         "SurfaceCalciumEnergyModel",
         True,
         True,
@@ -86,8 +86,8 @@ FAMILIES = {
         "resolved_tissue@8",
     ),
     "resolved_calcium_energy@5": (
-        "surface_calcium_energy_spec",
-        "surface_calcium_energy_hcn_extra",
+        "cells.core.surface_calcium_energy_spec",
+        "cells.models.surface_calcium_energy_hcn_extra",
         "SurfaceCalciumEnergyHCNExtraModel",
         True,
         True,
@@ -95,8 +95,8 @@ FAMILIES = {
         "resolved_tissue@12",
     ),
     "resolved_open_calcium@1": (
-        "surface_open_calcium_spec",
-        "surface_open_calcium",
+        "cells.core.surface_open_calcium_spec",
+        "cells.models.surface_open_calcium",
         "SurfaceOpenCalciumModel",
         True,
         False,
@@ -104,8 +104,8 @@ FAMILIES = {
         "resolved_tissue@12",
     ),
     "resolved_open_calcium_energy@1": (
-        "surface_open_calcium_energy_spec",
-        "surface_open_calcium_energy",
+        "cells.core.surface_open_calcium_energy_spec",
+        "cells.models.surface_open_calcium_energy",
         "SurfaceOpenCalciumEnergyModel",
         True,
         True,
@@ -649,9 +649,9 @@ def prepare(geometry_request, bound, request):
         stage = "geometric_quantities"
         materialized, conversions = _materialize(bound, raw, owners)
         stage = "existing_complete_physical_admission"
-        parser = importlib.import_module("cells.core." + owners["family"][0])
+        parser = importlib.import_module(owners["family"][0])
         spec = parser.parse(materialized)
-        expected_type = "cells.core." + owners["family"][0] + "." + owners["family"][2]
+        expected_type = owners["family"][0] + "." + owners["family"][2]
         if type(spec.model).__module__ + "." + type(spec.model).__name__ != expected_type:
             raise ValueError("The actual family parser did not return its exact model type")
         definition = parser.to_dict(spec)
@@ -691,7 +691,7 @@ def prepare(geometry_request, bound, request):
         conversions=conversions,
         target_model_id=raw["target_model_id"],
         actual_model_type=expected_type,
-        parser="cells.core." + owners["family"][0] + ".parse",
+        parser=owners["family"][0] + ".parse",
         owner_projection=owners["owner_projection"],
         actual_reservoir_flags=owners["reservoirs"],
         volume_policy=raw["volume_policy"],

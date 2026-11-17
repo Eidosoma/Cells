@@ -270,6 +270,15 @@ def test_public_owned_profiles_artifact_replay_and_cli(family, tmp_path):
     assert json.loads(path.read_text()) == spec.to_dict()
 
 
+# The model module each existing family dispatches to, named in full (D188 R2).
+FAMILY_MODELS = {
+    "surface_calcium_cav": "cells.models.surface_calcium_cav",
+    "surface_calcium_energy_hcn_extra": "cells.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_water": "cells.models.surface_calcium_energy_water",
+    "surface_calcium_energy_mitochondria": "cells.models.surface_calcium_energy_mitochondria",
+}
+
+
 @pytest.mark.parametrize(
     "filename,module",
     [
@@ -283,7 +292,7 @@ def test_owned_profile_registration_preserves_existing_family_routes(filename, m
     root = Path(__file__).resolve().parents[2]
     raw = json.loads((root / "configs" / filename).read_text())
     spec = parse_spec(raw)
-    assert get_model(spec.model) is importlib.import_module("cells.models." + module)
+    assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == raw["model"]["id"]
 

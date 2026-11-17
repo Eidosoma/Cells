@@ -25,6 +25,9 @@ from cells.assembly_cell.io import (
 from cells.assembly_cell.spec import tick_at
 from cells.core.output_paths import configure_caches
 
+# The detached worker's module for each command name, named in full (D188 R2).
+WORKERS = {"assembly-cell": "cells.assembly_cell", "assembly-cluster": "cells.assembly_cluster"}
+
 
 def execute(output, *, cluster=False):
     last, began = None, time.monotonic()
@@ -236,7 +239,7 @@ def main(argv=None, *, cluster=False):
                             sys.executable,
                             "-B",
                             "-m",
-                            "cells." + cli_name.replace("-", "_"),
+                            WORKERS[cli_name],
                             "_worker",
                             str(output),
                         ],
