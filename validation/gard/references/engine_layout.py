@@ -9,6 +9,7 @@ arrays the references read. It reads files only: nothing here imports or runs th
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -31,12 +32,18 @@ def load_json(path, name: str) -> dict:
 
 
 def load_engine_probe(path) -> tuple[dict, dict]:
-    """probe.json and probe.npz; both must exist."""
+    """probe.json and probe.npz; both must exist, and the npz must have the declared SHA-256."""
     p = Path(path)
     missing = [f for f in ("probe.json", "probe.npz") if not (p / f).is_file()]
     if missing:
         raise MissingRecord(f"probe {p} lacks {missing}")
     meta = json.loads((p / "probe.json").read_text())
+    declared = meta.get("arrays_sha256")
+    if declared is None:
+        raise MissingRecord(f"{p}/probe.json lacks arrays_sha256")
+    actual = hashlib.sha256((p / "probe.npz").read_bytes()).hexdigest()
+    if actual != declared:
+        raise RecordFormatError(f"{p}/probe.npz has SHA-256 {actual}, probe.json declares {declared}")
     with np.load(p / "probe.npz", allow_pickle=False) as npz:
         arrays = {k: npz[k] for k in npz.files}
     return meta, arrays
@@ -60,6 +67,12 @@ def members(path, group_file: str, key: str) -> dict:
 def ensemble_paths(path) -> list[str]:
     m = members(path, "beta0_ensemble.json", "members")
     return [m[k] for k in sorted(m, key=lambda v: int(v))]
+
+
+def ensemble_design_used(path) -> dict | None:
+    """The design file the engine side copied into the ensemble's folder, if any."""
+    p = Path(path) / "beta0_ensemble_design.json"
+    return json.loads(p.read_text()) if p.is_file() else None
 
 
 def branch_paths(path) -> list[str]:

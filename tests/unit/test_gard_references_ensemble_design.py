@@ -32,9 +32,9 @@ def test_the_design_file_transcribes_the_readme_values(tmp_path):
 
 def test_the_committed_design_file_is_what_make_probes_writes(tmp_path):
     from pathlib import Path
-    committed = Path(harness.__file__).with_name("beta0_ensemble_design.json").read_text()
+    committed = Path(harness.__file__).with_name("beta0_ensemble_design.json").read_bytes()
     out = harness.make_probe_inputs(tmp_path / "p")
-    assert json.loads(committed) == json.loads((out / "beta0_ensemble_design.json").read_text())
+    assert committed == (out / "beta0_ensemble_design.json").read_bytes()  # byte for byte: hashes agree
 
 
 @pytest.fixture(scope="module")

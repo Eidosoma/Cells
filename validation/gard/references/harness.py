@@ -189,6 +189,9 @@ class Context:
         if key not in self._cache:
             paths = self.path(role)
             if isinstance(paths, str) and role == "beta0_ensemble" and engine_layout.has(paths, "beta0_ensemble.json"):
+                used = engine_layout.ensemble_design_used(paths)
+                if used is not None and used != ensemble_design_record():
+                    raise RecordFormatError(f"{paths}/beta0_ensemble_design.json differs from the registered design")
                 paths = engine_layout.ensemble_paths(paths)
             elif isinstance(paths, str) and role == "branches" and engine_layout.has(paths, "branches.json"):
                 paths = engine_layout.branch_paths(paths)
@@ -274,6 +277,9 @@ def note_world(res: CheckResult, b: Bundle) -> CheckResult:
     form = b.run.form if b.run.form in ENGINE_BOUNDARY_BY_FORM else canonical_form(b.run.form)
     res.detail["boundary_rule"] = boundary_for(b.world, form)
     res.detail["boundary_rule_declared"] = b.world.boundary_declared
+    formulas = ((b.run_raw.get("law") or {}).get("formulas") or {}) if isinstance(b.run_raw, dict) else {}
+    if "last_molecule" in formulas:
+        res.detail["declared_last_molecule"] = formulas["last_molecule"]
     return res
 
 

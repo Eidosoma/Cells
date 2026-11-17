@@ -67,3 +67,31 @@ def test_engine_run_prose_maps_to_tokens_and_unknown_prose_is_refused():
     unfolded = adapt_run(_run(prefix="pairwise sum"), "run.json")
     with pytest.raises(so.ConventionMissing):
         so.SSAConvention.from_declared(unfolded.ssa_convention)
+
+
+def test_a_probe_whose_npz_differs_from_its_declared_hash_is_refused(tmp_path):
+    import hashlib
+    import json as _json
+    from validation.gard.references import engine_layout
+    d = tmp_path / "probe"
+    d.mkdir()
+    np.savez(d / "probe.npz", similarity=np.array([0.5]))
+    digest = hashlib.sha256((d / "probe.npz").read_bytes()).hexdigest()
+    (d / "probe.json").write_text(_json.dumps({"arrays_sha256": digest}))
+    engine_layout.load_engine_probe(d)
+    np.savez(d / "probe.npz", similarity=np.array([0.6]))  # planted: outputs changed after the hash
+    with pytest.raises(RecordFormatError):
+        engine_layout.load_engine_probe(d)
+
+
+def test_an_ensemble_run_on_another_design_is_refused(tmp_path):
+    import json as _json
+    from validation.gard.references import harness
+    d = tmp_path / "ens"
+    d.mkdir()
+    design = harness.ensemble_design_record()
+    design["runs"] = 200  # planted: a design other than the registered one
+    (d / "beta0_ensemble_design.json").write_text(_json.dumps(design))
+    (d / "beta0_ensemble.json").write_text(_json.dumps({"members": {}}))
+    report = harness.run_rows({"beta0_ensemble": str(d)}, rows=[1])
+    assert report["status"] == 2 and "registered design" in report["rows"]["1"]["error"]
