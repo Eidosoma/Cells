@@ -34,7 +34,13 @@ def test_registered_power_and_inputs_identity():
         assert abs(rung["splitting"]["relative_over_leading"] - 1) < 10 * rung["dt_s"]
     assert len(d["settled_readings"]) == 9
     names = " ".join(z["control"] for z in d["zero_power"])
-    assert "dropped -1" in names and "orientation" in names
+    assert "orientation" in names
+    # the amendment (2305446b) gave power to two zero-power cases of the registration
+    e = d["power"]["C10_C11_energy"]["C6_load_and_degrade"]
+    for key in ("dropped_minus_one", "one_molar_standard_state"):
+        assert e["controls"][key] >= 1e6 * e["floor_pJ"]
+    c8 = d["power"]["C6_C7_C8_linear"]["C8_uptake_path"]["controls"]
+    assert c8["kappa_on_cytosol_volume"] > 1e-4
 
 
 def test_nothing_imports_the_engine():

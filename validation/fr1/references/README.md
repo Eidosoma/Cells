@@ -1,6 +1,8 @@
 # FR-1's independent references: the closed compartment
 
-**Registered 17 November 2026, before any engine output exists.** These are the independent
+**Registered 17 November 2026, before any engine output exists** (registering commit 6319913f;
+amended the same day at the FR lane's inputs 2305446b, also before any engine output; see the
+amendment below). These are the independent
 references for FR-1's acceptance items C3 to C11 (`docs/CLOSED_COMPARTMENT_DESIGN.md` §6.3),
 written from Appendix A.2–A.10 on the FR lane's registered worlds. The protocol calls them inside
 its judged snapshot; `REFERENCES_USAGE.md` is the interface. The model is FR-10's references and
@@ -101,12 +103,42 @@ the tolerance, with at least 10 required.
     absolute 2e-8 pJ.
   - A dropped −1 and a 1 M standard state have no power: Σ dn = 0 in every world.
 
-**Zero power** (in the design file, with remedies):
-- κ on the wrong volume in C8, since ecs_e and cell_0 are both 1 pL;
-- a dropped −1 or a 1 M standard state in A.10;
+**Zero power** (in the design file, with remedies). The amendment below gives power to κ on the
+wrong volume in C8 and to a dropped −1 or a 1 M standard state, through C6's energy. These remain:
+- a dropped −1 or a 1 M standard state in every two-node world but C6;
 - V_b's orientation in a silent compartment;
 - the swapped palindrome against the closed form;
 - the halves plan against the single plan, which is not an error.
+
+## Amendment, 17 November 2026: the FR lane's amended inputs (2305446b)
+
+After the registering commit 6319913f, and before any engine output, the FR lane amended its
+inputs at the lead's ruling on this registration's power findings. The copy here is replaced byte
+for byte: branch `fr1-protocol`, commit 2305446b ("FR-1: the references' power findings, at the
+lead's ruling, before any engine output of the protocol"), git blob
+3c875823c6bca584b49bc198ca4bd04e83fd3a96.
+
+**What changed in the inputs:**
+1. **C8.** `ecs_e` is 2 pL with 0.002 fmol of S, so c is unchanged. k_u is 4e-4 m/s and κ_u is
+   unchanged at 2/s. κ computed on the cytosol's volume now departs by 5.0e-4 fmol: power where
+   the registration had none.
+2. **R_energy gains `C6_load_and_degrade`** (A.6 with A.10, clearance 2/s at `ecs_0`). Its S
+   leaves both nodes (Σ dn ≠ 0), so a dropped −1 now departs by 2.3e-3 pJ and a 1 M standard
+   state by 1.6e-2 pJ. Their floor is 1.0e-17 pJ. Both had no power in every earlier world.
+3. **R_step_map's returns line** now names the relative displacement x*/x_eq − 1 (§2.3), as
+   reading 7 had settled.
+
+**What changed here:**
+- `api.energy` follows A.6's trajectory (`api.linear`'s) for a world with clearance. dG is the
+  change of both nodes' G, which the loading's and the clearance's work book together, with its
+  floor. A world with a reaction is refused, since no world declares the standard potentials a
+  reaction's work needs.
+- The design's sources, readings, zero-power list and notes follow. C8's power and the energy
+  controls are recomputed: a dropped −1 and a 1 M standard state are now computed from Σ dn,
+  not set to 0.
+- The usage note's `energy` entry gains C6.
+
+Every other registered value is bitwise unchanged.
 
 ## Tests
 

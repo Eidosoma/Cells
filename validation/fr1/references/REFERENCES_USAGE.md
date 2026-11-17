@@ -94,8 +94,13 @@ compartment (node j), in C, each a scalar or an array of one shape.
 
 ## `api.energy(world, constants)` and `api.free_energy(amounts, volumes, temperature_K)`: A.10
 
-`energy` takes a two-node world (R_closed's or R_energy's) and follows its reference trajectory
-(`api.closed`).
+`energy` takes a two-node world, R_closed's or R_energy's, and follows its reference trajectory:
+- `api.closed` for C3–C5 and the C11 worlds;
+- `api.linear` for `C6_load_and_degrade`, A.6's loading with clearance. There dG is the change of
+  both nodes' G, which the loading's and the clearance's work book together; the cleared amount
+  has left both nodes.
+
+A world with a reaction is refused: no world declares the standard potentials its work needs.
 
 | Key | Layout | Meaning |
 | --- | --- | --- |
