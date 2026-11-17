@@ -6350,7 +6350,9 @@ core but in parallel". With the advisor, every default stands, with the conditio
 **2. Staffing within seven.**
 - **Each file has one owner for the whole pass.** §13's table is redone so that no file has two
   owners, and the elapsed estimate is re-derived from it.
-- **One operators owner** does composition's M1–M5 first, then B1.
+- **One operators owner** does composition's M1–M5 first, then B1. *Amended the same day:* B1's
+  operator part comes first, and composition after. This follows D194's order (the core first), and
+  it keeps composition's 12–15 days off the pass's critical path.
 - **An FR owner** runs FR-4 and FR-5 in parallel.
 
 **3. `cells.modules` is built as provisional.** The word "provisional" stands where contributors
@@ -6405,6 +6407,92 @@ only for comparison".
   single-event form and the pair-consistent form, and D192's comparison (D138) stands as approved.
 - **The first-principles engine starts with a design note that gives the user options (D142)**,
   before any of its laws are built.
+
+## D198: `processes/` is dissolved: its pinning legacy laws retire, and what the engine uses moves
+
+2026-11-17. Move 2 found that keeping the bytes of the files that legacy laws pin would need a
+leftover `src/cells/processes/` folder: option (L). Option (R) was to retire the tests and laws
+behind those pins. The user: "So let's retire any old files but transform them into the new engine
+if neccasary so (R)".
+
+- **D196's first removal batch, scoped to the `processes/` cluster and its own leftovers.** That is
+  the pinning legacy laws, `charged_surface_work` and the stable-seed and conservative-polygon
+  geometry cluster, together with the tests that run only them.
+  - The 91 held tier-3 files and the rest of `legacy/` wait for a later batch.
+- **One fact per file decides "transform if necessary":** does an active entry point reach it?
+  - A reached file moves like any other, and its law kernels become law modules in seam F's
+    extraction step.
+  - An unreached file retires.
+- **The batch, in the manner of D187 and D189:**
+  - the tree is tagged first;
+  - the exact list is taken from the dissolved tree, with one line on each capability that goes;
+  - collection falls by exactly the retired IDs, and the tier records follow.
+  - If a registered protocol's guard tests or a kept family's tests are on the list, the batch
+    stops and asks the user.
+- **Superseded:** the moves note's byte-keeping rulings (§17 item 2, §18 and §19 on the six files),
+  and step 0's extraction exclusion rule, once the batch lands.
+- **The BLAS pin.** If `src/cells/__init__.py` is no longer pinned, the pin may return to one
+  home, as D190 first said. Move 2's owner measures it as R6 was measured: on 2 CPUs, with a
+  planted control, and with continuity still importing no numpy.
+
+## D199: The origin-of-life engine's first decisions, and relationship tracking
+
+2026-11-17. On the design note (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`), the user said: "Then I go
+with your recommendations on the origin of life", adding "but look at docs/SOTA_ORIGIN_OF_LIFE.md
+also", "first with your adviser also" and "also to see if we are missing some engine features for
+tracking relationships in the most effective way".
+
+**Decided, as recommended:**
+- **U1:** amphiphile assemblies, with their geometry derived from the counts, first; oligomers
+  after.
+- **U4,** which follows U1: selection by a finite shared pool and serial transfer. Moran
+  replacement is used only for comparisons.
+- **U5:** templating after oligomers.
+- **U6(b), the experimental anchors:**
+  - A1 (tension competition) and A4 (shape and shear division) are judged anchors (D138);
+  - A2 is reported until its question is settled;
+  - A3 comes later;
+  - A5–A8 are reported only.
+
+**The lead's calls:**
+- **U2: one free-energy function for every law.** Driven laws without a declared source are
+  refused. D192's single-event GARD law is admitted as the labelled exception.
+- **U3:** ideal and regular mixing in OL1.
+- **U7:** the deterministic limit of the same laws, declared as a representation for
+  vesicle-scale anchors and qualified against exact events where both run.
+- **U6(a): the GARD limit is a consistency check by construction, not a D138 comparison.** G1's
+  pair-consistent rule is the note's "kinetic factor on the common state", so it carries a planted
+  control.
+
+**Open: U8, the scope.** The lead recommends OL0–OL9 as one programme, built in order with its
+gates. It binds nothing until G1 and seam F land, and it waits for the user's answer.
+
+**Relationship tracking: four checks.** Descent, whose material is whose, who depends on whom,
+and what history a state carries.
+- **Descent:** G1's fission table records both daughters, but its single-lineage mode follows one.
+  Check that carrier keys are unique across a world, that each row carries its parent and end
+  reason, and that tissue division and replacement write the same shape.
+- **Material provenance, the likely real gap.** Nothing in the active engine labels material by
+  origin; a search finds no tracer or label machinery.
+  - The general form is a declared label on a species' amount, which every law moves without
+    seeing.
+  - Without labels, programs are identical. With them, events are unchanged, and any label draw is
+    on its own stream.
+  - It is one mechanism with step 0's moiety ledgers, in the core, with the species rows.
+  - A design section comes first. It is put to the user as a finding to confirm.
+- **Dependence:** FR-12's manifest (reads, writes and provides) answers the static question. "Who
+  fed whom" is provenance again, and supplied material names its source, as work names a payer.
+- **History:** a carrier swap needs branching plus a transplant. Check whether E07's donor-copy
+  machinery is general or tissue-only.
+
+**The state-of-the-art note (`docs/SOTA_ORIGIN_OF_LIFE.md`).** It asks for resemblance, function
+and renewal kept apart, every descendant tracked, founder material traced, and external help
+visible.
+- SpudCell and Otto-type replicators are candidate benchmarks. Each is a D138 question, raised only
+  after its primary sources have been read.
+- **Two cheap fit tests:**
+  - Does the note's assembly admit a fibre that grows and breaks under shear?
+  - Is SpudCell's plasmid-set inheritance reachable on G1's partition machinery in population mode?
 
 ## Implementation choices and remaining work
 

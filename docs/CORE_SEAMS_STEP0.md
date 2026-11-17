@@ -28,6 +28,15 @@ criteria, written before they run.
 
 ## 1. The cycle-law screen (D195's condition on seams A and C)
 
+**The scope of every verdict below.**
+- Each verdict is about a law **as printed**, tested against **seam A's contract** (thermodynamics
+  in the kind, kinetics in the law), in **our reading** of the printed equations.
+- A verdict is not a claim about the authors' own simulations or code, which may differ from the
+  print.
+- The results that change the design are the exchanger's charge sum, with its negative total
+  dissipation, and Beard's Eqs. 11, 16 and 24. An independent check of them is under way
+  (17 November). Seam A's contract is amended only after it reports.
+
 ### 1.1 Criterion
 
 **The form under test** (CORE_SEAMS_DESIGN §3.2). For each mode m of a law, an integer

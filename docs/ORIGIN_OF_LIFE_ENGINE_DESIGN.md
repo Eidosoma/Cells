@@ -730,3 +730,40 @@ SHARED_INVENTORY_REACTIONS_DESIGN.md; CLOSED_COMPARTMENT_DESIGN.md; CELL_DIVISIO
 CELL_DIVISION_S5_DESIGN.md; SYN3A_MINIMAL_CELL_TRACK.md and SOTA_SYN3A.md; SCIENTIFIC_BASIS.md; the
 module design's §5; README.md; and the code's docstrings for mass action, the assembly kernel,
 membrane state and osmotic water.
+
+## 10. The lead's review and the user's decisions (17 November 2026)
+
+**Decided (D199):**
+- U1: assemblies first, then oligomers.
+- U4: a finite pool and serial transfer.
+- U5: templating after oligomers.
+- U6(b): A1 and A4 judged, A2 reported until settled, A3 later, A5–A8 reported.
+- **The lead's calls:** U2 (one F; GARD's single-event law is the labelled exception), U3 (ideal
+  and regular mixing in OL1) and U7 (the deterministic limit for vesicle-scale anchors).
+- **U6(a) is a consistency check:** G1's pair-consistent rule is §0.1's kinetic factor on the
+  common state, so the GARD limit agrees by construction and carries a planted control.
+- **U8:** recommended OL0–OL9 as one programme, waiting for the user.
+
+**G1's names, as built** (gard-g1):
+- `cells.assembly_lineages@1`;
+- `cells.reservoir_exchange@1`;
+- `cells.size_threshold_fission@1` and `cells.daughter_continuation@1`;
+- GARD's comparison set, `cells.gard_catalysis_single_event@1` and
+  `cells.gard_catalysis_pair_consistent@1`.
+
+They replace the provisional names this note took from GARD_DESIGN §1.
+
+**G1 and §6.3:**
+- **Admitted now:** a declared channel table in the run record, in today's order, and an optional
+  `units` block (seconds, temperature).
+- **Already true:** R2 in substance; the provider rename comes later. R8 is true structurally.
+- **Later:** R1's general-stoichiometry channels, a 2–4 day redesign of the channel layer.
+- **Wait for this note's milestones:** R4–R6.
+- **Belongs to the core-seams registry owner:** R7.
+
+**Still to add to this note,** from D199:
+- the four relationship-tracking checks, with a design section for material provenance (labels);
+- the measures kept apart: resemblance, function and renewal;
+- every descendant tracked;
+- external help visible;
+- the two fit tests from `docs/SOTA_ORIGIN_OF_LIFE.md`.
