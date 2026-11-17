@@ -85,6 +85,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-4 and FR-5 judged: both passed (17 November 2026, 16:12–18:34 UTC).** The registered protocols
+  `fr4-acidification-v1` and `fr5-transfer-v1` were judged once from the clean snapshot of their
+  registration commit 32a1d439, on lane B. Tags: fr4-v1-qualified-2026-11-17 and
+  fr5-v1-qualified-2026-11-17.
+  - **FR-4:** 21 of 21 judged criteria. Examples:
+    - pH to 1.31e-12;
+    - material 1.89e-6, charge 3.05e-5, energy 1.90e-8;
+    - K2 caught at 3.276;
+    - K3 refused at the definition with reason "envelope", as designed.
+  - **FR-5:** 51 of 51. Examples:
+    - arm T: X_L 2.77e-7 of its budget;
+    - arm R: cargo 0.147 of its allowance, its one visible margin;
+    - controls: 313.7 and 872 budgets.
+  - **No harness failure** (D195's harness-limit rule): all 20 results are complete, peak memory was
+    1.3–1.4G of 2G, and no unit used more than 29% of its runtime limit.
+  - **Against the rehearsal, the full-horizon check across seam F:** identical verdicts and values.
+    FR-4's 8 parts are bitwise equal. FR-5's 12 parts differ only in the start extract's identity, which
+    was expected and listed before launch.
+  - **Scope:** `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).
+  - **Evidence:** `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/judged-20261117/run-32a1d439/`
+    (`fr4/verdict/verdict.json`, `fr5/verdict/verdict.json`, `reading.json`, `fr4/compare/` and
+    `fr5/compare/`).
+
 - **GARD's G1, part 2, on main (17 November 2026, evening).** The merge of gard-g1-merge at 23f82dd7.
   - **What's on main:** `cells.assembly_lineages@1`'s three laws and two lineage operators, registered
     under `cells.exchange_law@1`, `cells.rate_factor_law@1` and `cells.lineage_operator@1`, and frozen.
