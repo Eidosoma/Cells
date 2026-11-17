@@ -376,10 +376,14 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
     request = run_view.Request(
         labels,
         geometry=geometry,
-        recording=run_view.Recording(fields=RECORD_FIELDS, elements={"species": list(NAMES)}),
+        recording=run_view.Recording(
+            # D = 0 declares no routes, so it records no route transfers.
+            fields=tuple(f for f in RECORD_FIELDS if d > 0.0 or f != "passive_transferred"),
+            elements={"species": list(NAMES)},
+        ),
     )
     started = time.perf_counter()
-    out = dict(arm=arm_id, d=d, directory=str(directory), dt_s=spec.execution.dt)
+    out = dict(arm=arm_id, d=d, directory=str(directory), dt_s=spec.execution.dt, status="done")
     try:
         write_windowed_run(directory, spec, policy, provenance=provenance, view=request)
         out["view"] = "written"
@@ -571,6 +575,59 @@ def _snapshot_identity():
         snapshot=Path.cwd().name,
         clean=not snapshot["selected_status_porcelain_v1_z"],
     )
+
+
+def _record_work(args):
+    d, start, end, out_dir = args
+    _start_engine()
+    try:
+        return record(out_dir, d, start, end=end)
+    except Exception as error:  # A refused pick is reported, never swapped (section 7).
+        return dict(
+            arm=f"neither-d{d:.6g}",
+            d=d,
+            status="refused",
+            error=repr(error),
+            traceback=traceback.format_exc(),
+        )
+
+
+def record_all(out_dir, ds, end, cpus):
+    """Stage 1, then each D's record, one process per CPU of `cpus` (in this process when none);
+    records.json and viewer/summary.json once every pick has ended."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if cpus:
+        ctx = multiprocessing.get_context("spawn")
+        queue = ctx.Queue()
+        for cpu in cpus:
+            queue.put(cpu)
+        with ProcessPoolExecutor(
+            len(cpus), mp_context=ctx, initializer=_pin, initargs=(queue,)
+        ) as pool:
+            stage1 = pool.submit(_uncoupled_work, None).result()
+            (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
+            if stage1["status"] != "done":
+                return 1
+            futures = [
+                pool.submit(_record_work, (d, stage1["start_units"], end, str(out_dir))) for d in ds
+            ]
+            results = [future.result() for future in futures]
+    else:
+        _start_engine()
+        stage1 = uncoupled()
+        (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
+        if stage1["status"] != "done":
+            return 1
+        results = [_record_work((d, stage1["start_units"], end, str(out_dir))) for d in ds]
+    (out_dir / "records.json").write_text(json.dumps(results, indent=1))
+    (out_dir / "viewer").mkdir(parents=True, exist_ok=True)
+    summary = records_summary([r for r in results if r.get("status") == "done"])
+    (out_dir / "viewer" / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False))
+    for r in results:
+        print(json.dumps({k: r.get(k) for k in ("arm", "status", "view", "seconds", "error")}))
+    return 0 if all(r.get("status") == "done" for r in results) else 1
 
 
 def _rss():
@@ -795,21 +852,8 @@ def main():
     )
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
     if args.record:  # Records for the viewer: stage 1, then each D written with its view.
-        _start_engine()
-        stage1 = uncoupled()
-        (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
-        if stage1["status"] != "done":
-            return 1
-        results = []
-        for d in (float(x) for x in args.record.split(",")):
-            results.append(record(out_dir, d, stage1["start_units"], end=args.end))
-            (out_dir / "records.json").write_text(json.dumps(results, indent=1))
-            summary = records_summary(results)
-            (out_dir / "viewer" / "summary.json").write_text(
-                json.dumps(summary, indent=1, allow_nan=False)
-            )
-            print(json.dumps({k: results[-1].get(k) for k in ("arm", "view", "seconds")}))
-        return 0
+        cpus = [int(c) for c in args.cpus.split(",") if c]
+        return record_all(out_dir, [float(x) for x in args.record.split(",")], args.end, cpus)
     if args.points:  # A probe: stage 1, then the given points in this process; no search.
         _start_engine()
         stage1 = uncoupled()
