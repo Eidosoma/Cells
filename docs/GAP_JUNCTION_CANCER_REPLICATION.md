@@ -871,6 +871,26 @@ each runs. All are development runs of the engine, not judged (D138).
 - **The ladder** (`runs/ladder-01`): the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and
   7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step
   rule, with dense records. 1e-13 is left out for its step (1/64 s).
+  - **Result** (from 3ed9ef24, lane B, one arm per core; packaged at 0471f7c3): all ten arms ran
+    to 20,000 s with views (`run_view.validate`) and the sidecars; none was refused. Layers at
+    most 0.56 MB.
+
+    | D (m²/s) | D / x2 | End states (cells 1-25) | First record with every cell E |
+    | --- | --- | --- | --- |
+    | 5e-15 | 0.697 | 6 M, 19 E: the tumor holds | none |
+    | 6.25e-15 | 0.871 | 5 M, 20 E: partly converted | none |
+    | 7e-15 | 0.975 | 5 M, 20 E: partly converted | none |
+    | 7.5e-15 | 1.045 | 25 E | 6,800 s |
+    | 8.5e-15 | 1.184 | 25 E | 4,300 s |
+    | 1e-14 | 1.393 | 25 E | 3,200 s |
+    | 1.2e-14 | 1.672 | 25 E | 2,500 s |
+    | 2e-14 | 2.786 | 25 E | 1,200 s |
+    | 3e-14 | 4.180 | 25 E | 650 s |
+    | 5e-14 | 6.966 | 25 E | 311 s |
+
+  - The times are the first observed record at which every cell is E, so they are as fine as the
+    records (log-spaced, and every 100 s). Above x2, normalization comes sooner as the coupling
+    grows; below it, the tumor holds or converts only partly.
 
 ## 8. The next stage, for a next owner
 
