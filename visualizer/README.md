@@ -983,9 +983,11 @@ Ideas kept for after the basics (the user, 14 November 2026):
   does not settle on its marks: let go one step (about a pixel) off its middle, it is
   slowed 930 or 1,150 times, and says so. `slow=` is read from the address and not
   written back to it. Where lanes crowd, the chevrons are drawn small to fit, and at a
-  thousandfold they are faint beside the packets. Which way of showing a lane's direction
-  the page keeps is the user's to choose from a comparison of four (chevrons along the
-  lane, a tapered trail, an arrowhead at the lane's end, chevrons drawn in the stream).
+  thousandfold they are faint beside the packets. A lane's direction is shown by chevrons
+  along the lane: shown a comparison of four ways on 17 November 2026 (those chevrons, a
+  tapered trail, an arrowhead at the lane's end, chevrons drawn in the stream), the user
+  kept the chevrons for now. The other three stay in the code (`STYLES` in
+  `src/layers/marks/flow.js`).
 - **Flux in a bacterium drawn to scale.** Its beads and lanes are sized in pixels at the
   cell's stop, as that layout sizes its drops and signals, so that they can be seen; they
   are not to scale there, and the picture's words say what is drawn. Close to the
