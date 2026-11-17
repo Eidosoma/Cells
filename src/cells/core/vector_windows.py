@@ -91,6 +91,14 @@ DEVICE_HOOKS = (
     "DEVICE_DIAGNOSTICS",
 )
 STEP_REFUSED = "step"  # Failure bit 0: the model's checked step refused the step.
+# The failure mask: one int32 per world. Bit 0 is STEP_REFUSED, and the model's device checks
+# follow from bit FAILURE_SHIFT, in DEVICE_CHECKS order (_pack; _unpack reads it back). Every
+# _pack call takes FAILURE_SHIFT, so the capacity is the dtype's bits less the shift; the last
+# check takes bit 31, int32's sign bit. A model with more checks is refused at admission
+# (require_device_checks): a bit at or past the dtype's width would drop the check's failure.
+FAILURE_MASK_DTYPE = jnp.int32
+FAILURE_SHIFT = 1
+MAX_DEVICE_CHECKS = jnp.iinfo(FAILURE_MASK_DTYPE).bits - FAILURE_SHIFT  # 31.
 MIN_CONTROL_ROWS = 2  # One held control change per window keeps one executable.
 REFUSALS = ("batch", "world")  # A failing world refuses the batch, or is refused alone.
 
@@ -112,10 +120,18 @@ class WorldCheckError(NumericalError):
 
 
 def require_device_checks(model):
+    """Admission: the model's device hooks, and a check count the failure mask can hold."""
     missing = [name for name in DEVICE_HOOKS if not hasattr(model, name)]
     if missing:
         raise ConfigError(
             "Vectorized worlds require the model's device checks; missing " + ", ".join(missing)
+        )
+    if len(model.DEVICE_CHECKS) > MAX_DEVICE_CHECKS:
+        raise ConfigError(
+            f"Vectorized worlds hold at most {MAX_DEVICE_CHECKS} device checks: the failure mask "
+            f"is one int32 per world, bit 0 the step refusal and bits {FAILURE_SHIFT}-"
+            f"{FAILURE_SHIFT + MAX_DEVICE_CHECKS - 1} the checks. This model declares "
+            f"{len(model.DEVICE_CHECKS)}"
         )
 
 
@@ -297,6 +313,14 @@ def _pack(failed, shift):
     return jnp.sum(jnp.where(failed, bits, 0), axis=-1, dtype=jnp.int32)
 
 
+def _unpack(mask, checks):
+    """The host's reading of one world's failure mask: the names whose bits are set, in host
+    order (STEP_REFUSED at bit 0, then the checks from FAILURE_SHIFT). Python's ints read the sign
+    bit, bit 31, as any other."""
+    names = (STEP_REFUSED, *((None,) * (FAILURE_SHIFT - 1)), *checks)
+    return tuple(name for bit, name in enumerate(names) if name and int(mask) & (1 << bit))
+
+
 def _expand(mask, value):
     return mask.reshape(mask.shape + (1,) * (value.ndim - 1))
 
@@ -330,7 +354,7 @@ def _vector_window(
     stepped, checked = jax.vmap(step), jax.vmap(checks)
     worlds = counts.shape[0]
     failed, values = checked(state, state, params, constants, first_step)
-    bits = _pack(failed, 1)
+    bits = _pack(failed, FAILURE_SHIFT)
     ok = bits == 0
     first = jnp.where(ok, -1, 0).astype(jnp.int32)
     maxima = jnp.where(ok[:, None], values, 0.0)
@@ -345,7 +369,7 @@ def _vector_window(
         control = jax.tree.map(lambda t: jax.vmap(lambda u, i: u[i])(t, held), table)
         updated, accepted = stepped(current, dt, control, params, active)
         failed, values = checked(current, updated, params, constants, first_step + row)
-        flags = jnp.where(accepted, _pack(failed, 1), 1)
+        flags = jnp.where(accepted, _pack(failed, FAILURE_SHIFT), 1)
         live = (row <= counts) & ok
         failing = live & (flags != 0)
         accept = live & (flags == 0)
@@ -582,9 +606,7 @@ def _check_refusal(plan, model, ids, times, first, bits, i, start):
     step, stage "step", or a failed device check, stage "check"); start is its checkpoint at the
     window's start, its last accepted state at window granularity."""
     row, mask = int(first[i]), int(bits[i])
-    names = tuple(
-        name for bit, name in enumerate((STEP_REFUSED, *model.DEVICE_CHECKS)) if mask & (1 << bit)
-    )
+    names = _unpack(mask, model.DEVICE_CHECKS)
     interval = (float(times[i][max(row - 1, 0)]), float(times[i][row]))
     if names[0] == STEP_REFUSED:
         reason = f"numerical failure on [{interval[0]}, {interval[1]}]"
