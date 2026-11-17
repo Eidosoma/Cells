@@ -855,8 +855,9 @@ def references_part(name, context):
         series = _series_of(r["amount_fmol"])
         if "cleared_fmol" in r:
             series[f"cleared_{af.NODE}_fmol"] = [float(x) for x in r["cleared_fmol"]]
+        moiety = r.get("moiety_fmol")
         worlds[key] = dict(record_s=t, series=series,
-                           moiety_fmol=[float(x) for x in r.get("moiety_fmol") or []])
+                           moiety_fmol=[] if moiety is None else [float(x) for x in moiety])
         worlds[key + "_floor"] = dict(record_s=t,
                                       series=_series_of(r["amount_fmol"], r["floor_fmol"]))
     step_map = {}
