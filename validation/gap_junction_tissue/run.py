@@ -11,6 +11,8 @@ Parts:
   miRNA) against the same world without the junction route; the junction, channel and pump laws
   @3 hosts; the field solver's node bound against the preprint's lattices (a shared-bath world
   one node over the bound must be refused).
+* gate: F3 and F4 measured. The engine's one junction law (its own kinetics, at steady state)
+  fitted to Figure 1's Cx45 small-ion curve, and the same law against the miRNA curve.
 * figure3: two equal linear cells (unloaded 5 and 10) joined by G_GJ = g G_eq, g = 0.5 ... 50.
 * figure5: Figure 5b's lumped model (cell B 4/3 cell A) and Figure 5a's seven-cell network.
 * figure8: straight chains of 1-5 and 10 cells, each loaded at its port by two held
@@ -73,7 +75,7 @@ FIGURE5_G = (1.0, 10.0, 100.0)
 FIGURE8_N = (1, 2, 3, 4, 5, 10)
 FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
 PLANTED_SCALE = 1.01
-PARTS = ("refusals", "figure3", "figure5", "figure8", "control")
+PARTS = ("refusals", "gate", "figure3", "figure5", "figure8", "control")
 
 
 def reference(cells_, edges, probes):
@@ -187,6 +189,39 @@ def part_refusals():
         and not out["shared_bath_over_bound"]["accepted"],
     )
     return out
+
+
+def part_gate():
+    """F3/F4 measured: the engine's one junction law (its own kinetics, steady target) fitted to
+    Figure 1's Cx45 small-ion curve normalized at dV = 0, over the figure's -100..100 mV; then the
+    same law, with the same single minimum, against the miRNA curve (floor 0)."""
+    from cells.processes import junction_gate
+
+    dv = np.linspace(-0.1, 0.1, 201)
+    peak = paper.chen_izu(0.0, paper.CX45_SMALL_ION_GMIN)
+    ions = paper.chen_izu(dv, paper.CX45_SMALL_ION_GMIN) / peak
+    mirna = paper.chen_izu(dv, 0.0) / peak
+    thresholds = np.linspace(0.0, junction_gate.MAX_ABS_VOLTAGE_V, 121)
+    minima = np.linspace(0.0, 0.2, 101)
+    t, m = np.meshgrid(thresholds, minima, indexing="ij")
+    params = junction_gate.Parameters(t[..., None], m[..., None])
+    target = junction_gate.kinetics(dv, params, xp=np).target  # [threshold, minimum, dV]
+    error = np.max(np.abs(target - ions), axis=-1)
+    k = np.unravel_index(np.argmin(error), error.shape)
+    best = target[k]
+    return dict(
+        law=junction_gate.LAW_ID,
+        cx45_small_ion_at_0=float(peak),
+        cx45_mirna_at_0=float(paper.chen_izu(0.0, 0.0)),
+        cx45_floor_small_ion=float(ions[0]),
+        best_threshold_V=float(thresholds[k[0]]),
+        best_minimum=float(minima[k[1]]),
+        max_abs_error_small_ions=float(error[k]),
+        max_abs_error_mirna_same_law=float(np.max(np.abs(best - mirna))),
+        engine_at_40mV=float(np.interp(0.04, dv, best)),
+        cx45_small_ion_at_40mV=float(np.interp(0.04, dv, ions)),
+        cx45_mirna_at_40mV=float(np.interp(0.04, dv, mirna)),
+    )
 
 
 def part_figure3():
@@ -303,6 +338,7 @@ def part_control():
 
 FUNCTIONS = dict(
     refusals=part_refusals,
+    gate=part_gate,
     figure3=part_figure3,
     figure5=part_figure5,
     figure8=part_figure8,
