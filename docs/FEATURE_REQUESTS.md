@@ -22,7 +22,7 @@ and a general feature, never one built for one study (D144).
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped | Covered by FR-13's design note: options for a declared extends link, inherited checks and version rules |
 | [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Requested; awaits the user's go | First find why `check_impermeant` refuses, and whether D191's composition rule is the intended lift |
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
-| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | Needed only for the preprint's 3D table |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -758,7 +758,17 @@ explored.
 
 - **F7:** the field solve is capped at 2048 nodes. The preprint's 3D table needs a 25³ field, 15,626
   nodes.
-- **Status:** requested; awaits the user's go. Only the 3D table needs it.
+- **A second consumer: mitochondria (D210).** Compartment nodes count toward the cap, as cells and
+  outside nodes do. K cells of N compartments, with B other outside nodes, allow
+  N ≤ ⌊(2,048 − B)/K⌋ − 1: 2,046 for one cell in one bath, 126 per cell for 16 cells, and 14 for
+  FR-1's 127-cell sheet. Any field-input provider, every event door among them, lowers the cap to 64
+  field nodes ([MITOCHONDRIA_DESIGN](MITOCHONDRIA_DESIGN.md), addendum A.3).
+- **A route that may fit compartments better than raising the cap:** condensing face-free
+  compartment nodes out of the dense solve, which is exact. It is FR-1's condensation door, a new
+  solver ID (D147; [CLOSED_COMPARTMENT_DESIGN](CLOSED_COMPARTMENT_DESIGN.md) §3.6, §8), and it also
+  removes the 64-node cap's reason for compartment doors.
+- **Status:** requested; awaits the user's go. Its consumers are the 3D table and, unless
+  condensation serves them, mitochondria.
 
 ## FR-18 — The composite's energy check at moderate step sizes
 
