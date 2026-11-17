@@ -40,7 +40,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models.operators import partition
 from cells.models.operators.contract import Operator

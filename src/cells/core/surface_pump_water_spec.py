@@ -34,8 +34,7 @@ import numpy as np
 from cells.core import surface_pump_spec as first
 from cells.core import surface_pump_v2_spec as second
 from cells.core import surface_pump_v3_spec as ionic
-from cells.core.bioelectric_spec import positive, signed_number
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier, positive, signed_number
 from cells.core.specs import ChannelChange, ConfigError, _fields, _number
 from cells.numerics.osmotic_water import LAW_ID as WATER_LAW_ID
 

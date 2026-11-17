@@ -7,6 +7,7 @@ or a loader for the independently frozen reference schema. No test data imports.
 from dataclasses import asdict
 
 from cells.core.bioelectric_spec import positive, signed_number
+from cells.core.spec_values import aligned, identifier
 from cells.core.specs import (
     MULTISPECIES_ID,
     ConfigError,
@@ -20,22 +21,6 @@ from cells.core.specs import (
     _integer,
     _number,
 )
-
-
-def identifier(value):
-    if (
-        not isinstance(value, str)
-        or not value
-        or not value.isascii()
-        or any(not (c.isalnum() or c in "_-") for c in value)
-    ):
-        raise ConfigError("IDs require nonempty ASCII letters, digits, underscore or hyphen")
-    return value
-
-
-def aligned(mapping, ids, name, number=_number):
-    _fields(mapping, set(ids), name)
-    return tuple(number(mapping[s], name) for s in ids)
 
 
 def to_dict(spec):

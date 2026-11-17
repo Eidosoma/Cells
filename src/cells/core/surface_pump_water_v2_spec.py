@@ -23,8 +23,7 @@ import numpy as np
 
 from cells.core import surface_pump_spec as first
 from cells.core import surface_pump_water_spec as water
-from cells.core.bioelectric_spec import positive
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier, positive
 from cells.core.specs import ChannelChange, ConfigError, _fields, _number
 from cells.processes.k_anion_symport import LAW_ID, VOLUME_FACTOR_ID
 

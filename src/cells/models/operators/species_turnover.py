@@ -59,7 +59,7 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common

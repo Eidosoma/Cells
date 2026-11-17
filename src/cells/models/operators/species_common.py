@@ -39,7 +39,7 @@ import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
 from cells.core import species_registry as registry
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields
 
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"

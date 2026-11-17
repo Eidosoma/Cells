@@ -3,8 +3,7 @@
 from bisect import bisect_right
 from dataclasses import asdict, dataclass
 
-from cells.core.bioelectric_spec import positive, signed_number
-from cells.core.multispecies_spec import aligned, identifier
+from cells.core.spec_values import aligned, fraction, identifier, positive, signed_number
 from cells.core.specs import (
     ChannelChange,
     ConfigError,
@@ -16,7 +15,6 @@ from cells.core.specs import (
     _integer,
     _number,
 )
-from cells.core.voltage_gated_spec import fraction
 from cells.numerics.surface_field import LAW_ID, NODE_BOUNDS, SOLVER_ID
 
 MODEL_ID = "resolved_tissue@1"

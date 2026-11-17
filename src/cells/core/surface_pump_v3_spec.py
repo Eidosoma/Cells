@@ -38,9 +38,8 @@ from cells.core import species_registry as registry
 from cells.core import surface_kinetic_spec as kinetic
 from cells.core import surface_pump_spec as first
 from cells.core import surface_pump_v2_spec as second
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import fraction, identifier
 from cells.core.specs import ConfigError, _fields, _integer, _number
-from cells.core.voltage_gated_spec import fraction
 
 MODEL_ID = "resolved_pump_tissue@3"
 KV1P5_LAW_ID = "kv1p5_mh@1"
