@@ -132,7 +132,8 @@
   "/mnt/workspaces/Cells/reactions-run-view-20261117/measure-9551d1ba/measured.json",
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json",
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
-  "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json"
+  "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
+  "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1092,6 +1093,13 @@
    "root": ".claude/worktrees/passive-share-tolerance",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T19:31:52+00:00"
+  },
+  {
+   "git_revision": "7ec2d78cb8cfebeeffde88f1ae4bdc2bad8abc9b",
+   "dirty": false,
+   "root": ".claude/worktrees/passive-share-band",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:50:04+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2946,10 +2954,10 @@
    },
    {
     "file": "tests/unit/test_passive_share_floor.py",
-    "seconds": 18.57,
+    "seconds": 19.86,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 11
     }
    },
    {
