@@ -48,6 +48,13 @@ resolved_capacitor_components_current_continuity@1, integrated by
 imex_ars222_face_electromigration@1 (worlds.py). Definition probes: local_species_reactions@1 in
 resolved_pump_composite@1, and the law registry.
 
+Records. Every arm's run is written by the engine's own writer, cells.io.write_run, under
+OUTDIR/worlds/<arm id>/: trajectory.npz (every accepted step, the layout, the observations),
+resolved_config.json, checkpoint_final, summary.json and manifest.json, and with them view.json,
+the run view (cells.run_view@1) with the prescribed geometry of worlds.geometry, so that a viewer
+package can be made from the records without re-running. A refused view is recorded and the run
+is written without one.
+
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
     python -B validation/gap_junction_tissue/run.py OUTDIR [part ...]
 results.json is rewritten after every arm.
@@ -60,6 +67,7 @@ import sys
 import time
 import traceback
 from pathlib import Path
+from typing import NamedTuple
 
 import jax
 
@@ -68,6 +76,7 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np  # noqa: E402
 
 import cells  # noqa: E402,F401
+from cells import io, run_view  # noqa: E402
 from cells.core import blas_threads, runner  # noqa: E402
 from cells.core.specs import ConfigError, parse_spec  # noqa: E402
 from validation.gap_junction_tissue import paper, worlds  # noqa: E402
@@ -85,6 +94,8 @@ FIGURE8_N = (1, 2, 3, 4, 5, 10)
 FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
 PLANTED_SCALE = 1.01
 TIME_MATCH_RTOL = 1e-12
+EXPERIMENT = "gap-junction-cancer-linear-network"
+RECORDS = None  # OUTDIR/worlds, set by main(); None writes no records (tools that only check).
 PARTS = ("refusals", "gate", "figure3", "figure5", "figure8", "control")
 
 
@@ -103,13 +114,13 @@ class Recorder:
         self.path.write_text(json.dumps(self.data, indent=1, default=str))
 
 
-def reference(cells_, edges, probes):
+def reference(network):
     """The dense solve of the same network (paper.linear_steady_state), in SI units."""
-    conductance = [size * worlds.G_EQ1_M3_S for _, _, size in cells_]
-    unloaded = [u for _, u, _ in cells_]
-    dense_edges = [(i, j, g * worlds.G_EQ1_M3_S) for _, i, j, g in edges]
-    dense_probes = [(i, g * worlds.G_EQ1_M3_S, held) for _, i, held, g in probes]
-    return paper.linear_steady_state(conductance, unloaded, dense_edges, dense_probes)
+    conductance = [size * worlds.G_EQ1_M3_S for _, _, size in network.cells]
+    unloaded = [u for _, u, _ in network.cells]
+    edges = [(i, j, g * worlds.G_EQ1_M3_S) for _, i, j, g in network.edges]
+    probes = [(i, g * worlds.G_EQ1_M3_S, held) for _, i, held, g in network.probes]
+    return paper.linear_steady_state(conductance, unloaded, edges, probes)
 
 
 def _row(times, t):
@@ -119,9 +130,41 @@ def _row(times, t):
     return k
 
 
-def run_network(cells_, edges, probes, *, junction_scale=1.0):
+def write_record(result, arm_id, label):
+    """The engine's own run record with its run view (module docstring); the view's refusal is
+    recorded and the run written without one."""
+    if RECORDS is None:
+        return None
+    directory = RECORDS / arm_id
+    labels = dict(id=arm_id, experiment=EXPERIMENT, arm=arm_id, label=label)
+    provenance = dict(
+        operation="fresh",
+        driver="validation/gap_junction_tissue/run.py",
+        experiment=EXPERIMENT,
+        arm=arm_id,
+        citation=paper.CITATION,
+    )
+    source = (
+        "validation/gap_junction_tissue/worlds.py: touching spheres after the preprint's drawing"
+    )
+    request = run_view.Request(labels, geometry=worlds.geometry(result.network, source))
+    try:
+        io.write_run(directory, result.run, provenance=provenance, view=request)
+        return dict(directory=str(directory), view="written")
+    except run_view.ViewRefused as error:
+        io.write_run(directory, result.run, provenance=provenance)
+        return dict(directory=str(directory), view="refused", refusal=str(error))
+
+
+class Outcome(NamedTuple):
+    run: object
+    network: object
+
+
+def run_network(network, *, junction_scale=1.0, arm_id=None, label=""):
     """Run one linear network to steady state; return the engine's readouts and the reference."""
-    raw = worlds.linear_network(cells_, edges, probes, junction_scale=junction_scale)
+    cells_, probes = network.cells, network.probes
+    raw = worlds.linear_network(cells_, network.edges, probes, junction_scale=junction_scale)
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = runner.run(spec)
@@ -138,7 +181,7 @@ def run_network(cells_, edges, probes, *, junction_scale=1.0):
         return (reference_amount + increment) / volume  # fmol / pL = mM
 
     c_end, c_before = concentration(end), concentration(before)
-    c_ref, flux_ref = reference(cells_, edges, probes)
+    c_ref, flux_ref = reference(network)
     out = dict(
         dt_s=spec.execution.dt,
         steps=int(round(end / spec.execution.dt)),
@@ -164,13 +207,15 @@ def run_network(cells_, edges, probes, *, junction_scale=1.0):
             exit_flux_reference_mol_s=float(flux_ref[-1]),
             ledger_rel_error=float(abs(ledger - formula) / abs(formula)),
         )
+    if arm_id is not None:
+        out["record"] = write_record(Outcome(result, network), arm_id, label)
     return out
 
 
-def arm(cells_, edges, probes, **kwargs):
+def arm(network, *, arm_id=None, label="", **kwargs):
     """run_network with its checks, or the failure (recorded as evidence, never retried)."""
     try:
-        out = run_network(cells_, edges, probes, **kwargs)
+        out = run_network(network, arm_id=arm_id, label=label, **kwargs)
     except Exception as error:
         return dict(status="failed", error=repr(error), traceback=traceback.format_exc())
     out["status"] = "done"
@@ -274,7 +319,11 @@ def part_figure3(out, save):
     rep = paper.REPORTED["figure3b"]
     out["arms"] = []
     for g in FIGURE3_G:
-        result = arm(*worlds.figure3(g, rep["unloaded"]))
+        result = arm(
+            worlds.figure3(g, rep["unloaded"]),
+            arm_id=f"figure3-g{g:g}",
+            label=f"Figure 3: two equal linear cells (unloaded 5 and 10 mM), G_GJ = {g:g} G_eq",
+        )
         result.update(g=g, eq2=list(paper.eq2(*rep["unloaded"], g, g)))
         out["arms"].append(result)
         save()
@@ -297,11 +346,19 @@ def part_figure5(out, save):
     ua, ub = rep["unloaded"]["A"], rep["unloaded"]["B"]
     out["lumped"], out["network"] = [], []
     for g in FIGURE5_G:
-        result = arm(*worlds.figure5_lumped(g, rep["size_ratio"], (ua, ub)))
+        result = arm(
+            worlds.figure5_lumped(g, rep["size_ratio"], (ua, ub)),
+            arm_id=f"figure5-lumped-g{g:g}",
+            label=f"Figure 5b: cell B 4/3 of cell A (unloaded 10 and 5 mM), G_GJ = {g:g} G_eq",
+        )
         result.update(g=g, eq2=list(paper.eq2(ua, ub, g, g / rep["size_ratio"])))
         out["lumped"].append(result)
         save()
-        result = arm(*worlds.figure5_network(g, (ua, ub)))
+        result = arm(
+            worlds.figure5_network(g, (ua, ub)),
+            arm_id=f"figure5-network-g{g:g}",
+            label=f"Figure 5a: A with two backup cells, B with three, G_GJ = {g:g} G_eq",
+        )
         result.update(g=g)
         out["network"].append(result)
         save()
@@ -327,7 +384,14 @@ def part_figure8(out, save):
         entry = dict(n=n, physical_ratio=physical[n - 1], plotted_ratio=plotted[n - 1], loads=[])
         out["chains"].append(entry)
         for held in FIGURE8_LOADS:
-            entry["loads"].append(arm(*worlds.chain(n, held)))
+            entry["loads"].append(
+                arm(
+                    worlds.chain(n, held),
+                    arm_id=f"figure8-chain{n}-held{held:g}",
+                    label=f"Figure 8: a straight chain of {n} linear cells, its port loaded by "
+                    f"a reservoir held at {held:g} mM",
+                )
+            )
             save()
         if any(load["status"] != "done" for load in entry["loads"]):
             continue
@@ -364,11 +428,16 @@ def part_figure8(out, save):
 
 
 def part_control(out, save):
-    result = arm(*worlds.figure3(1.0), junction_scale=PLANTED_SCALE)
+    result = arm(
+        worlds.figure3(1.0),
+        junction_scale=PLANTED_SCALE,
+        arm_id="control-planted",
+        label="Planted control: Figure 3 at G_GJ = G_eq with every junction permeability x1.01",
+    )
     out.update(result, junction_scale=PLANTED_SCALE)
     if result["status"] == "done":
         # Judged against the unperturbed g = 1 network's dense solve.
-        unperturbed = reference(*worlds.figure3(1.0))[0]
+        unperturbed = reference(worlds.figure3(1.0))[0]
         concentration = np.asarray(result["concentration_mM"])
         error = float(np.max(np.abs(concentration - unperturbed) / np.abs(unperturbed)))
         out.update(
@@ -399,6 +468,8 @@ def main(argv):
     if unknown:
         raise SystemExit(f"Unknown parts: {sorted(unknown)}")
     out_dir.mkdir(parents=True, exist_ok=True)
+    global RECORDS
+    RECORDS = out_dir / "worlds"
     plan = dict(
         criteria=CRITERIA,
         parts=parts,
@@ -414,6 +485,7 @@ def main(argv):
             g_eq1_m3_s=worlds.G_EQ1_M3_S,
             end_s=worlds.END_S,
             settle_s=worlds.SETTLE_S,
+            observe_every_s=worlds.OBSERVE_EVERY_S,
             base_dt_s=worlds.BASE_DT_S,
             step_bound_margin=worlds.STEP_BOUND_MARGIN,
             solver=worlds.SOLVER,

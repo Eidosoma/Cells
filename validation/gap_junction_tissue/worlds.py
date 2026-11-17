@@ -21,11 +21,18 @@ reduced this way (and runs into the gaps that `refusals` records).
 Parameters (declared, not from the preprint, which reports the linear model in ratios): a sphere
 of radius 5 um, K_dec = 0.05 1/s (a nominal rate: every reported quantity depends only on G_GJ /
 G_eq and the unloaded values), junction area 1e-11 m^2, membrane capacitance 0.05 F/m^2.
+
+Each network builder returns a Network: the cells, junctions and probes, and the cells' centres in
+um for the run view (a prescribed 2D layout after the preprint's drawings, touching spheres; the
+engine has no geometry for these worlds, so the layout changes no result). Every run is observed
+every OBSERVE_EVERY_S, which adds rows to the record and changes no step.
 """
 
 import copy
 import math
+from typing import NamedTuple
 
+from cells import run_view
 from cells.core.surface_tissue_spec import NODE_BOUNDS
 
 SPECIES = "mR"
@@ -52,6 +59,37 @@ STEP_BOUND_MARGIN = 0.04
 BASE_DT_S = 0.0625  # 1/16 s, exact in binary, so every observation time is an exact grid point.
 END_S = 600.0  # 30 slowest-mode time constants (1/K_dec = 20 s): residual e^-30 at most.
 SETTLE_S = 10.0  # The steady-state check compares end - SETTLE_S with end.
+OBSERVE_EVERY_S = 2.0  # Observation rows for the record and the viewer (a multiple of every dt).
+
+
+class Network(NamedTuple):
+    """cells: (id, unloaded mM, size); edges: (id, i, j, g); probes: (id, i, held mM, g);
+    centres_um: one (x, y) per cell, for the run view only."""
+
+    cells: tuple
+    edges: tuple
+    probes: tuple
+    centres_um: tuple
+
+
+def radius_um(size):
+    return R_CELL_M * 1e6 * size ** (1.0 / 3.0)
+
+
+def geometry(network, source):
+    """The run view's prescribed geometry: the cells as touching spheres in the plane."""
+    return run_view.Geometry(
+        unit="um",
+        dimensions=2,
+        sets={
+            "cell": {
+                "kind": "spheres",
+                "centres": [list(c) for c in network.centres_um],
+                "radius": [radius_um(size) for _, _, size in network.cells],
+            }
+        },
+        source=source,
+    )
 
 
 def _node(node_id, mM, volume_pL, *, reservoir):
@@ -140,7 +178,11 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
         for edge_id, i, j, g in edges
     ]
     always = [dict(time=0.0, availability=1.0)]
-    observe = [0.0, end - SETTLE_S, end] if end > SETTLE_S else [0.0, end]
+    if end > SETTLE_S:
+        every = [k * OBSERVE_EVERY_S for k in range(int(end // OBSERVE_EVERY_S) + 1)]
+        observe = sorted({*every, end - SETTLE_S, end})
+    else:
+        observe = [0.0, end]
     return dict(
         schema_version=1,
         model=dict(
@@ -193,16 +235,18 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
 # --- The preprint's networks -------------------------------------------------------------------
 
 
-def figure3(g, unloaded=(5.0, 10.0), *, junction_scale=1.0):
+def figure3(g, unloaded=(5.0, 10.0)):
     """Two equal cells, A and B, at their unloaded values, joined by G_GJ = g G_eq."""
     cells = (("A", unloaded[0], 1.0), ("B", unloaded[1], 1.0))
-    return cells, (("gj_AB", 0, 1, g),), ()
+    d = 2.0 * radius_um(1.0)
+    return Network(cells, (("gj_AB", 0, 1, g),), (), ((0.0, 0.0), (d, 0.0)))
 
 
 def figure5_lumped(g, ratio=4.0 / 3.0, unloaded=(10.0, 5.0)):
     """Figure 5b's model: cell B `ratio` times cell A (equation 2 with G_eq,B = ratio G_eq,A)."""
     cells = (("A", unloaded[0], 1.0), ("B", unloaded[1], ratio))
-    return cells, (("gj_AB", 0, 1, g),), ()
+    d = radius_um(1.0) + radius_um(ratio)
+    return Network(cells, (("gj_AB", 0, 1, g),), (), ((0.0, 0.0), (d, 0.0)))
 
 
 def figure5_network(g, unloaded=(10.0, 5.0)):
@@ -212,7 +256,14 @@ def figure5_network(g, unloaded=(10.0, 5.0)):
     cells += [(f"B{k}", unloaded[1], 1.0) for k in (1, 2, 3)]
     edges = [("gj_AB", 0, 1, g), ("gj_A1", 0, 2, g), ("gj_A2", 0, 3, g)]
     edges += [("gj_B1", 1, 4, g), ("gj_B2", 1, 5, g), ("gj_B3", 1, 6, g)]
-    return tuple(cells), tuple(edges), ()
+    d = 2.0 * radius_um(1.0)
+
+    def at(origin, degrees):
+        return (origin + d * math.cos(math.radians(degrees)), d * math.sin(math.radians(degrees)))
+
+    centres = [(0.0, 0.0), (d, 0.0), at(0.0, 150.0), at(0.0, 210.0)]
+    centres += [at(d, 60.0), at(d, 0.0), at(d, -60.0)]
+    return Network(tuple(cells), tuple(edges), (), tuple(centres))
 
 
 def chain(n, held, *, g=1.0, g_probe=1.0, unloaded=1.0):
@@ -220,7 +271,9 @@ def chain(n, held, *, g=1.0, g_probe=1.0, unloaded=1.0):
     probe of conductance g_probe G_eq to a reservoir held at `held` (Figure 8's exit current)."""
     cells = tuple((f"c{k}", unloaded, 1.0) for k in range(n))
     edges = tuple((f"gj_{k}", k, k + 1, g) for k in range(n - 1))
-    return cells, edges, (("probe", n - 1, held, g_probe),)
+    d = 2.0 * radius_um(1.0)
+    centres = tuple((k * d, 0.0) for k in range(n))
+    return Network(cells, edges, (("probe", n - 1, held, g_probe),), centres)
 
 
 # --- Gap probes: the engine's own refusals and registries, definition time only -----------------
