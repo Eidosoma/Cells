@@ -6385,6 +6385,27 @@ learned use the old code then we can drop it".
   and a coverage check lists what each removal would lose.
 - **The viewer's map already leaves out `legacy/`.**
 
+## D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only
+
+2026-11-17. The user, on starting GARD: "and we will also do our own first principle engine, GARD is
+only for comparison".
+
+- **The origin-of-life track's engine is Cells' own,** with laws derived from physical chemistry
+  rather than an abstract catalysis matrix:
+  - thermodynamically consistent catalysis;
+  - physical assemblies;
+  - explicit sources of free energy.
+- **It runs on the general machinery built in GARD's G1 (D192),** under neutral names, not GARD's:
+  - the exact SSA kernel with keyed streams;
+  - assemblies exchanging with a held phase;
+  - fission, continuation and lineage;
+  - the stochastic thermodynamic ledger;
+  - the run records.
+- **GARD is one declared law set on that machinery, used only for comparison.** It has the preprint's
+  single-event form and the pair-consistent form, and D192's comparison (D138) stands as approved.
+- **The first-principles engine starts with a design note that gives the user options (D142)**,
+  before any of its laws are built.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
