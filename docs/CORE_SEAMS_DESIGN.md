@@ -1026,3 +1026,6 @@ The check is recorded in `docs/CORE_SEAMS_STEP0.md` §7. It lifts seam A's hold,
   basis-independent. Per-mode bookings are readouts, not guards.
 - **Printed laws that fail the check** (O'Hara–Rudy's INaCa; Beard's Eqs. 11, 16 and 24) enter only
   with declared departures. The user rules on those with the cardiac and mitochondria lanes.
+- **One-way fluxes (D202).** Every admitted Hill cycle has J⁺ and J⁺·e^{ΔG/RT}, so a factored cycle
+  law exposes both one-way fluxes. Material labels need them. Only fallback laws lack them, and
+  those declare net-flow mode.

@@ -6543,6 +6543,42 @@ the lead.
   purposes. Non-commercial material otherwise stays analysis-only.
 - **No full-text copy is saved.** The records are under `/mnt/datasets/Cells/ecoli/`.
 
+## D202: Relationship tracking: GARD first, then everywhere, as one general engine feature
+
+2026-11-17. On the relationships design (`docs/RELATIONSHIPS_DESIGN.md`), the user said: "sounds good
+and agree on 1. as you suggest then we make it work everywhere but we want it to be a general
+feature of the engine - also get adviser in on those choces then lets go".
+
+**The order:**
+- **First, GARD's runs.** GARD's G1 part 2 writes the relationship tables for GARD's lineages. The
+  first graphs show descent and supply. Who fed whom, founder material against rebuilt material,
+  needs the material labels, which belong in the core.
+- **Then everywhere,** after the core-seams pass: descent across tissue division and replacement,
+  named sources, material labels, and branches and transplants.
+
+**One general feature from the start.**
+- The tables' writer and its row interface live in their own engine module, outside the GARD
+  family, with their own owner. GARD only calls it.
+- **Before anyone binds to it,** a second consumer must use the same function with no edit to the
+  writer: an existing division world's and an existing replacement world's lineage. No operator
+  file is touched.
+- `cells.relations@1` is provisional until that passes.
+
+**The lead's choices, reviewed with the advisor:**
+- **Labels follow one-way flows.**
+  - Net-flow mode is declared per law.
+  - Any founder-fraction or renewal readout refuses a label that used it.
+  - A factored cycle law exposes both one-way fluxes (CORE_SEAMS_DESIGN §16).
+- **The format is NPZ plus a JSON descriptor, settled by a test.**
+  - The arrays load with `allow_pickle=False`, so string ids are fixed-width columns.
+  - A lineage tree and a supply graph are drawn from a GARD bundle by a short script that imports
+    no engine code.
+- **Written by default for GARD.** For existing worlds this is decided at RT1, from the results
+  gate's file comparison.
+- **Frozen before any bundle is shared:** the `s:c` key rule, end reasons (an unfollowed daughter
+  differs from an extinct one), the final row, and a reserved `label` stream domain. The run
+  qualifier appears only in ids, never in a stream fold.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
