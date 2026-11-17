@@ -235,12 +235,14 @@ export async function bundle(entry, { three = THREE_CDN } = {}) {
 export const DEFAULT_LAWS = path.join(ROOT, "data", "laws", "pieces.json");
 
 /** The page content, as published: no doctype, html, head or body tags of its own. */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
   const replays = await readReplays(runsDir);
-  if (replays) data.replays = replays;
+  // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
+  // finds a species' looping run among them.
+  if (replays) data.replays = hideExperiments ? { ...replays, hidden: true } : replays;
   const scene = JSON.stringify(data).replaceAll("<", "\\u003c");
   // A page that cannot fetch (a file opened from disk) carries its runs inline.
   let inline = "";

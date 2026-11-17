@@ -45,7 +45,8 @@ const LENSES = [
   // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
   // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
   { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
-  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
+  // "hidden": a page exported without the Experiments view keeps its replays, since the cell view's flux reads a species' looping run from them.
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {

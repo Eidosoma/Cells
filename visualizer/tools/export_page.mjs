@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // Writes the page to a file.
 //
-//   node tools/export_page.mjs [--scene PATH] [--runs DIR] [--out out/cells-architecture.html] [--standalone] [--inline-runs]
+//   node tools/export_page.mjs [--scene PATH] [--runs DIR] [--out out/cells-architecture.html] [--standalone] [--inline-runs] [--hide-experiments]
 //
 // Default: the page as an artifact wants it (content only; the service adds the document
 // around it). Replays stay in their own files, which are published beside the page, and so
 // do the species' own proteins (schema/SPECIES_PROTEINS.md); the tool prints that list and
 // writes it to cells-architecture.files.json. --standalone writes a complete HTML document
 // to open straight from disk; it carries all of them inline, because a file opened from
-// disk cannot fetch. --inline-runs puts them inline in the artifact page too.
+// disk cannot fetch. --inline-runs puts them inline in the artifact page too. --hide-experiments writes the
+// page without its Experiments view: the replays stay with it, because the cell view's flux reads a species'
+// looping run from them, but no tab, list or address opens the view.
 
 import { mkdir, readFile, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -21,7 +23,8 @@ const inlineRuns = standalone || args.includes("--inline-runs");
 const runsDir = path.resolve(value("--runs", DEFAULT_RUNS));
 const out = path.resolve(value("--out", path.join(ROOT, "out", standalone ? "cells-architecture.standalone.html" : "cells-architecture.html")));
 const scenePath = path.resolve(value("--scene", DEFAULT_SCENE));
-const content = await buildPage({ scenePath, runsDir, inlineRuns });
+const hideExperiments = args.includes("--hide-experiments");
+const content = await buildPage({ scenePath, runsDir, inlineRuns, hideExperiments });
 await mkdir(path.dirname(out), { recursive: true });
 await writeFile(out, standalone ? wrap(content) : content);
 const size = (bytes) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(2)} MB` : `${(bytes / 1024).toFixed(0)} KB`);
@@ -40,8 +43,9 @@ const replays = await readReplays(runsDir);
 if (!replays) {
   console.log("no replays: the Experiments view is left out (run tools/adapt_run.py to make them)");
 } else if (inlineRuns) {
-  console.log(`${replays.runs.length} replays are inside the page`);
+  console.log(`${replays.runs.length} replays are inside the page${hideExperiments ? "; the Experiments view is hidden" : ""}`);
 } else {
+  if (hideExperiments) console.log("the Experiments view is hidden: its replays stay beside the page for the cell view's flux");
   for (const run of replays.runs) {
     await beside(run.file, path.join(runsDir, path.basename(run.file)));
     // A layer's records come in files of their own beside the replay (schema/QUANTITY_LAYERS.md, rule 10).

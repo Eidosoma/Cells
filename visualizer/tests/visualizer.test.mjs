@@ -359,6 +359,14 @@ test("the page carries the replay catalogue, and the runs themselves only when a
     assert.ok(!linked.includes('<script type="application/json" data-replay='), "by default a run stays in its own file beside the page");
     const inline = await buildPage({ runsDir: runs, inlineRuns: true });
     assert.ok(inline.includes('<script type="application/json" data-replay="x--arm--seed1">'), "a standalone page carries its runs");
+    // A page exported without the Experiments view keeps its replays (the cell view's flux reads a species' looping run from
+    // them) and says the view is hidden; the page's list of views offers Experiments only where it is not.
+    assert.equal(sceneOf(linked).replays.hidden, undefined, "by default the view is offered");
+    const hidden = await buildPage({ runsDir: runs, hideExperiments: true });
+    assert.equal(sceneOf(hidden).replays.hidden, true);
+    assert.equal(sceneOf(hidden).replays.runs[0].id, "x--arm--seed1", "the replays stay with the page");
+    const viewer = await readFile(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
+    assert.match(viewer, /id: "experiments"[^\n]*needs: \(scene\) => scene\.replays\?\.runs\?\.length && !scene\.replays\.hidden/, "the view is offered only where the scene does not hide it");
   } finally {
     await rm(folder, { recursive: true, force: true });
   }
