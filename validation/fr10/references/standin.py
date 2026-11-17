@@ -115,7 +115,7 @@ def build_standin(out_dir, variant: str = "honest") -> Path:
         p = iw.permeant[0]
         cell = np.tile([float(iw.amounts0[s]) for s in species], (iw.times.size, 1))
         cell[:, species.index(p)] = run["amount_fmol"]
-        supply = -(cell - cell[0])
+        supply = cell - cell[0]          # the cell's gain: positive out of the bath
         arrays = {"time_s": iw.times, "V_m_V": run["V_m_V"], "cell_amount_fmol": cell,
                   "supply_fmol": supply}
         arrays.update(_records_arrays(rw["W2"], const, species, variant))

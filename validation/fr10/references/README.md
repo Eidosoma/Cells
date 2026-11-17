@@ -40,6 +40,18 @@ one inputs file the lead named, or anything the FR owner wrote under `/mnt/works
 - the inputs file and the lead's relay of it (paths only, plus its two points: use the file's
   exact constants, and keep the code here).
 
+**Also touched, disclosed for exactness** (none of it is the bath schedule's code, tests or
+fixtures):
+- `grep` of `src/cells/__init__.py` and `src/cells/core/__init__.py` for BLAS thread variables
+  (no line matched, so none was printed);
+- one `import cells.core.specs`, run but not read, which showed that importing the engine pins
+  BLAS to one thread (D190) and so moves the floors' last bits;
+- `grep -i capacit` of `docs/PUMP_COMPOSITE.md`, `docs/PUMP_COMPOSITE_V2_DESIGN.md` and
+  `docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md`, which printed contract-table lines naming the
+  `membrane_area` and `membrane_capacitance` fields;
+- `tests/conftest.py` and the gate environment's lines of `scripts/test_tiers.py`, which are the
+  test tooling.
+
 **Not blind.** §7–§8 of the design report measured engine outcomes: probe 1's table, the
 staircase probe, milestone 2's probes and the step rule's measured points (for example "the
 admissible step ratio between resolved levels is 10"). I read them before writing. They inform
@@ -95,7 +107,7 @@ F = 96485.33 C/mol. Inputs are the exact values of the file's doubles.
 - **K(t)** comes from any supply series at the record times. The primary is the epoch sum in
   decimals; the second is the operator's B form in float64.
 - **K from the reference supplies** at the last record: 0.10195363 pJ for W1 and
-  −0.0037835518 pJ for W2.
+  0.0037835518 pJ for W2 (the sign as amended below).
 
 ## The registered design: tolerance basis and power
 
@@ -180,6 +192,25 @@ After the registering commit 7aba937b, and before any engine output:
   world reaches.
 - **What changed in the files:** floors only, 1,041 entries of the values file and one of the
   design file. Every reference value and every control deviation is bitwise unchanged.
+
+## Amendment, 17 November 2026: W2's supply has the inputs' sign
+
+After 7e27b9e1, and before any engine output:
+- **What was wrong.** R-ion returned W2's supply as −(n_s(t) − n_s(0)), the cell's loss. The
+  inputs define S_s as the bath's supply to the tissue, positive out of the bath. After the step
+  the cell takes up K (its K rises by 6.4e-4 fmol as the wall depolarises), so S_K is positive. The
+  advisor found it. The tests had passed because they restated the same formula, and the
+  stand-in built its supply with the same sign.
+- **What changed.**
+  - `ion.solve`'s `supply_fmol` is now the cell's gain, n_s(t) − n_s(0), as W1's is the nodes'
+    gain. Its docstring, the design file's reading, the usage note's row and the stand-in's W2
+    supply follow.
+  - In the values file, `R_ion/supply_fmol/K` and `R_records/K_from_reference_supply/W2/K_pJ`
+    change sign: 300 entries, each a pure sign flip. K for W2 is now +0.0037835518 pJ at 2 s.
+  - Every other value, and every control's deviation, is bitwise unchanged.
+- **The test now anchors the sign on physics.** After the step V_m rises by more than 60 mV, so
+  K entered the cell. S_K and K must then be positive. A supply booked as the cell's loss gives a
+  negative K and fails.
 
 ## Tests, harness and stand-in (17 November 2026)
 

@@ -81,7 +81,7 @@ The block is the inputs file's `R_ion` layout: `temperature_K`, `species` (the v
 | `amount_fmol` | {species: [T]} | The cytosol's amounts (fmol): Na, K, Cl and S. Impermeant species are the inputs' values, exactly |
 | `floor` | `{"V_m_V": [T], "amount_fmol": {species: [T]}}` | The larger of |DOP853 − Radau| and QUADPACK's time residual, plus ½ ulp |
 | `V_m_radau_V` | [T] | The second method's V_m |
-| `supply_fmol` | {species: [T]} | S_s(t) = −(n_s(t) − n_s(0)), the bath's supply to the cell (fmol, out of the bath) |
+| `supply_fmol` | {species: [T]} | S_s(t) = n_s(t) − n_s(0), the cell's gain: the bath's cumulative supply to the cell (fmol, positive out of the bath) |
 | `event_times_s` | [E] | The events, in order |
 | `zero_current_V` | [E] | Reading (a): the zero-current constant-field potential at the cytosol's composition at each event, with the new bath (the Nernst potential with one permeant ion) |
 | `zero_current_floor_V` | [E] | Its floor (decimal against a float64 root) |

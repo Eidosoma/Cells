@@ -34,8 +34,9 @@ also moves the cytosol's amounts, the epoch's own limit differs slightly: ``limi
 point of the scalar equation on the invariant line (one permeant species only), by a decimal fixed
 point iteration and by a float64 root, whose difference is its floor. Both are returned, labelled.
 
-**The supply.** The cell is the tissue the bath supplies, so S_s(t) = -(n_s(t) - n_s(0)) (fmol,
-positive out of the bath), the input A.5's K needs.
+**The supply.** The cell is the only tissue the bath supplies, so the bath's cumulative supply
+(fmol, positive out of the bath) is the cell's gain, S_s(t) = n_s(t) - n_s(0): positive when the
+cell takes up K after the step. It is the input A.5's K needs.
 """
 
 from __future__ import annotations
@@ -360,7 +361,7 @@ def solve(world: IonWorld, epochs=None) -> dict:
             per = float(10 ** 15 * world.capacitance_F /
                         (world.constants.faraday * world.z[s]))
             floor_n[s] = np.maximum(floor_n[s], abs(per) * floor_V)
-    supply = {s: -(prim["amounts"][s] - float(world.amounts0[s])) for s in world.species}
+    supply = {s: prim["amounts"][s] - float(world.amounts0[s]) for s in world.species}
     zc, zc_floor, lim, lim_floor, at_event = [], [], [], [], []
     for e in range(1, len(epochs)):
         t_e, bath = epochs[e]

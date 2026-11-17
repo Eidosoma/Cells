@@ -153,7 +153,7 @@ def build(inputs_path=INPUTS_PATH) -> tuple:
             "own limit, where the charge that depolarises the wall has also moved K into the "
             "cytosol. They differ by about 1.2e-7 V; both are returned, labelled.",
             "W1's supply is the finite nodes' gain, S(t) = sum_i (n_i(t) - n_i(0)); W2's is the "
-            "cell's gain, S_s(t) = -(n_s(t) - n_s(0)), positive out of the bath.",
+            "cell's gain, S_s(t) = n_s(t) - n_s(0); both are positive out of the bath.",
         ],
         "claims": {
             "R-faces (B1, A.2)": {

@@ -21,7 +21,7 @@
   "K(t) needs S_s at every event time: every event time must be a record time (to 1e-12 s), else the call is refused; nothing is interpolated.",
   "K from the engine's own supply checks the reconciliation's arithmetic only; it has no power against a wrong supply. K from the reference supply (R-faces, R-ion) does.",
   "R-ion's zero-current potential after the step has two readings: (a) at the cytosol's composition at t_e with the new bath (the Nernst potential), and (b) the epoch's own limit, where the charge that depolarises the wall has also moved K into the cytosol. They differ by about 1.2e-7 V; both are returned, labelled.",
-  "W1's supply is the finite nodes' gain, S(t) = sum_i (n_i(t) - n_i(0)); W2's is the cell's gain, S_s(t) = -(n_s(t) - n_s(0)), positive out of the bath."
+  "W1's supply is the finite nodes' gain, S(t) = sum_i (n_i(t) - n_i(0)); W2's is the cell's gain, S_s(t) = n_s(t) - n_s(0); both are positive out of the bath."
  ],
  "claims": {
   "R-faces (B1, A.2)": {

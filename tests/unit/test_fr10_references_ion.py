@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
-from validation.fr10.references import controls, ion
+from validation.fr10.references import controls, ion, records
 from validation.fr10.references.common import DIGITS, Constants, dec, exact, load_inputs
 
 INPUTS = load_inputs()
@@ -74,8 +74,28 @@ def test_charge_is_conserved_on_the_invariant(w2):
     rhs = 1e-15 * float(CONST.faraday) * (ref["amount_fmol"]["K"] - 140.0)
     bound = 4 * np.spacing(140.0) * 1e-15 * float(CONST.faraday)   # 4 ulps of n_K, as charge
     assert np.abs(lhs - rhs).max() < bound          # coulombs
-    assert np.allclose(ref["supply_fmol"]["K"], -(ref["amount_fmol"]["K"] - 140.0), rtol=0,
-                       atol=0)
+
+
+def test_the_supply_is_positive_out_of_the_bath_after_the_step(w2):
+    """The step raises K outside, the wall depolarises, so K entered the cell from the bath.
+
+    Planted: the supply booked as the outward flux's integral (the cell's loss) has the wrong
+    sign here, and so does the K it gives.
+    """
+    world, ref = w2
+    t = ref["times_s"]
+    after = t > 0.5
+    assert ref["V_m_V"][-1] > ref["V_m_V"][int(np.flatnonzero(t == 0.5)[0])] + 0.06
+    S = ref["supply_fmol"]["K"]
+    assert np.all(S[after] > 0) and S[-1] > 6e-4
+    for s in ("Na", "Cl", "S"):
+        assert np.all(ref["supply_fmol"][s] == 0.0)
+    w = INPUTS["R_records"]["worlds"]["W2"]
+    K = records.reconciliation_K(w, t, ref["supply_fmol"], INPUTS["constants"])["K_pJ"]
+    assert np.all(K[after] > 0) and K[-1] > 3e-3
+    outward = {s: -v for s, v in ref["supply_fmol"].items()}
+    K_bad = records.reconciliation_K(w, t, outward, INPUTS["constants"])["K_pJ"]
+    assert K_bad[-1] < -3e-3
 
 
 def test_the_two_readings_of_the_zero_current_potential(w2):
