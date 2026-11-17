@@ -32,8 +32,8 @@ One catalogue for all species, with species' entries: a kind (the ribosome, the 
 recurs across species, and what it is and does, its group and what the record says Cells models of
 it are the kind's, said once; what names it, its count, its size and its proteins are the species',
 each entry with its own sources. The page carries the catalogue in its scene as `catalogue` (as the
-Laws library's list), so the view, its List and the text page read one file. The membrane machines
-the engine has laws for are not in the file: the page reads them from the scene's protein units, as
+Laws library's list), so the view, its List and the text page read one file. The membrane units of
+the law inventory are not in the file: the page reads them from the scene's protein units, as
 the Protein atlas does ("Cells' N units"), and lists a unit for a species where that species' atlas
 found its family there or found it built from another (for the inventory's own species, a unit that
 names gene products). A unit that is no protein assembly (a leak, a permeability, a lumped
@@ -82,7 +82,7 @@ catalogue never says their count.
 `src/lenses/machines.js`, the second tab, "Machines" (`lens=machines`).
 
 - **The bench.** The machines of the species shown lie on a bench in trays, one for each group,
-  the membrane machines with laws in one wide tray behind the others. A machine with a size is a
+  the law inventory's membrane units in one wide tray behind the others. A machine with a size is a
   simple shape at that size, every one at one scale (one unit of the scene is ten nanometres),
   with a scale bar of 100 nm on the bench; a machine with no size in hand is a card with its name,
   the same size for all. The legend names each mark that is drawn and each group's colour.
@@ -93,7 +93,7 @@ catalogue never says their count.
 - **Its panel** gives what it is, what names it, how many and how big with their sources, its
   proteins, what Cells models of it (each record line), and its doors: the Protein atlas on its
   proteins where the species' own data can show the set, the place it sits in the Cell view (the
-  ribosomes), or its closer view there ("Look closer in the cell"). A unit with laws has the Protein
+  ribosomes), or its closer view there ("Look closer in the cell"). A unit of the law inventory has the Protein
   atlas's own panel of it, for the species shown, and a door into the atlas.
 - **Addresses.** `lens=machines`, `select=machine:<id>` (the kind's id; with no lens it opens the
   catalogue). Under the Cell view the same id stays the closer view's: the view shown keeps an id

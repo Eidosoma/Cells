@@ -709,6 +709,9 @@ class CellsViewer extends HTMLElement {
     // A model system's card in the first tab's place (its own view's, or the card that stands in for it): on a phone it shows its choices.
     const example = this.state.lens === "experiments" && Boolean(this.state.example) && Boolean(chrome.card);
     const modelCard = (this.state.lens === "cell" && Boolean(chrome.card?.species?.model)) || example;
+    // Its stamp (a long line of the runs it plays) is shortened clear of the card, the whole line in its title (styles.js).
+    this.bar.classList.toggle("tab-example", example);
+    this.stamp.title = example ? this.stamp.textContent : "";
     this.frame.classList.toggle("model-card", modelCard);
     // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).
     this.frame.classList.toggle("bar-ground", Boolean(this.current?.drawsUnderBar));
@@ -1390,8 +1393,12 @@ class CellsViewer extends HTMLElement {
     const choose = sweeps.length > 1
       ? h("label", { class: "sweep-choose" }, h("span", { class: "seg-label" }, `Sweeps · ${sweeps.length}`), (() => {
           const select = h("select", { class: "run-select", "aria-label": "Sweep", onchange: () => {
-            this.sweepPicked = { id: select.value, run: runShown };
-            this.renderChrome();
+            // A sweep chosen shows a run of it: the run shown where it is one of its arms, else its first arm with a run.
+            const sweep = sweeps.find((item) => item.id === select.value);
+            const arm = sweep?.arms.find((item) => item.active) || sweep?.arms.find((item) => item.run);
+            this.sweepPicked = { id: select.value, run: arm?.run || runShown };
+            if (arm?.run && !arm.active) pick(arm.run);
+            else this.renderChrome();
           } }, sweeps.map((sweep) => h("option", { value: sweep.id, selected: sweep.id === shown.id }, `${sweep.label}${sweep === holding && runShown ? " (the run shown)" : ""}`)));
           return select;
         })())
@@ -1445,6 +1452,35 @@ class CellsViewer extends HTMLElement {
     if (listOnly) return listPart;
     return [
       ...listPart,
+      // The runs, at the head under the list of examples, so that they are in sight: a few are rows to press; many are a
+      // list to choose from, grouped by the sweep that holds them, in the sweeps' order.
+      h(
+        "div",
+        { class: "runs", role: "group", "aria-label": "Runs" },
+        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
+        runs.length > 8
+          ? (() => {
+              const option = (run) => h("option", { value: run.id, selected: run.active }, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "));
+              const left = new Map(runs.map((run) => [run.id, run])), groups = [];
+              for (const sweep of sweeps) {
+                const held = sweep.arms.map((arm) => left.get(arm.run)).filter(Boolean);
+                held.forEach((run) => left.delete(run.id));
+                if (held.length) groups.push([sweep.label, held]);
+              }
+              if (left.size) groups.push([groups.length ? "Other runs" : null, [...left.values()]]);
+              const select = h("select", { id: "cells-run", class: "run-select", "aria-label": "Run", onchange: () => pick(select.value) }, groups.map(([label, list]) => (label ? h("optgroup", { label }, list.map(option)) : list.map(option))));
+              return select;
+            })()
+          : runs.map((run) =>
+              h(
+                "button",
+                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
+                h("span", { class: "run-name" }, run.title),
+                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
+              )
+            )
+      ),
+      units ? h("p", { class: "card-text run-units" }, units) : null,
       // An experiment whose summary lists arms with a parameter and readouts: its chart first, where the card opens.
       ...(this.clientWidth < 760 ? this.sweepsShown(sweeps, pick) : []),
       // The first sentence says what the experiment asks; the rest is a click away.
@@ -1463,23 +1499,6 @@ class CellsViewer extends HTMLElement {
             h("details", { class: "run-plain" }, h("summary", {}, outcome.status || "In the record's words"), h("p", { class: "card-text" }, outcome.text))
           )
         : null,
-      h(
-        "div",
-        { class: "runs", role: "group", "aria-label": "Runs" },
-        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
-        // A few runs are rows to press; many are a list to choose from.
-        runs.length > 8
-          ? chooser("cells-run", "Run", runs.map((run) => [run.id, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · ")]), runs.find((run) => run.active)?.id)
-          : runs.map((run) =>
-              h(
-                "button",
-                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
-                h("span", { class: "run-name" }, run.title),
-                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
-              )
-            )
-      ),
-      units ? h("p", { class: "card-text run-units" }, units) : null,
       klass
         ? h(
             "div",
@@ -1505,7 +1524,9 @@ class CellsViewer extends HTMLElement {
     const card = this.viewCard;
     // The Experiments tab's card keeps the page's list of examples (the listed experiments and the model systems) in view above
     // the legend; a card whose list also holds a run opened by its address keeps its least height, as before.
-    const list = [...card.querySelectorAll('.experiments[data-examples="page"]')].pop();
+    // With it, the run chooser under the list (many runs), so that the runs are in sight.
+    const listed = [...card.querySelectorAll('.experiments[data-examples="page"]')].pop();
+    const list = listed ? card.querySelector("#cells-run") || listed : null;
     const least = Math.max(150, list ? list.getBoundingClientRect().bottom - card.getBoundingClientRect().top + card.scrollTop + 14 : 0);
     this.placeFoot();
     if (this.clientWidth < 760) {

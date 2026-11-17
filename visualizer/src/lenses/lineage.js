@@ -380,6 +380,19 @@ export class LineageLens {
     return true;
   }
 
+  /**
+   * What the coloured types are, in plain words: a type's panel says it whole (lineage_card.js); the legend's first
+   * line is a caption of one line, so that the legend's note stays in view on a short window. Nothing where no type
+   * is coloured.
+   */
+  leadingWords({ short = false } = {}) {
+    const n = this.leading.length, count = ["no", "one", "two", "three"][n] ?? n, all = this.mainEnvironment.count;
+    if (!n) return "";
+    if (short) return n === 1 ? "The most common type" : `The ${count} most common types`;
+    const both = this.pairRuns ? ", counted in the first run and coloured the same in both" : "";
+    return `The ${count} coloured types are the most common of the run's ${all}, summed over its parents${both}; the names are the run's own.`;
+  }
+
   chrome() {
     const example = this.mark;
     const types = this.mainEnvironment.types, others = this.mainEnvironment.count - this.leading.length;
@@ -397,6 +410,7 @@ export class LineageLens {
       },
       legend: {
         title: lipids ? "Molecules, as lipids" : "Molecule types",
+        lead: this.leadingWords({ short: true }) || null,
         example,
         // Each level keys what it draws, in few words, so that the note below stays in view.
         items: [

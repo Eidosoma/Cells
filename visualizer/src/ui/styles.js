@@ -474,6 +474,10 @@ cells-trace { display: grid; gap: 4px; }
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
 .with-species[data-tight="2"] .stamp { display: none; }
+/* A model system shown in the Experiments tab's place: its stamp is shortened clear of the card at the left. On a phone no
+   stamp is shown, and the bar's end holds only the List, which stays whole. */
+@media (min-width: 760px) { .tab-example .bar-end { max-width: calc(100% - 300px); overflow: hidden; } }
+.tab-example .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
 .view-card:not(.run-card) > * { min-width: 0; }

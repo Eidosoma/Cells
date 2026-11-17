@@ -233,7 +233,7 @@ try {
     }
   } else if (CASE === "levin" && levin) {
     const R = "gap-junction-linear-network";
-    const state = () => evaluate(`(async () => { await new Promise((r) => setTimeout(r, 1500)); const v = ${V}, lens = v.current, legend = lens.chrome().legend; return { unit: legend.scale?.unit ?? null, said: legend.scale?.said || "", units: v.shadowRoot.querySelector(".run-units")?.textContent || null, run: lens.runId, cells: lens.sheet?.cells.length ?? null, error: lens.error, colour: lens.switch.holder("colour"), on: lens.switch.on, links: lens.markOn("links")?.mark.counts || null, note: lens.scaleInfo?.()?.note || null, list: v.shadowRoot.querySelector("#cells-experiment") ? [...v.shadowRoot.querySelector("#cells-experiment").options].map((o) => o.textContent) : [...v.shadowRoot.querySelectorAll(".exp-row")].map((b) => b.textContent), sweep: v.shadowRoot.querySelector(".sweep .seg-label")?.textContent || null, shown: [...v.shadowRoot.querySelectorAll(".sweep-arm")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.arm), errors: window.__pageErrors }; })()`);
+    const state = () => evaluate(`(async () => { await new Promise((r) => setTimeout(r, 1500)); const v = ${V}, lens = v.current, legend = lens.chrome().legend; return { outside: lens.surface?.outside?.tiles?.length ?? 0, unit: legend.scale?.unit ?? null, said: legend.scale?.said || "", units: v.shadowRoot.querySelector(".run-units")?.textContent || null, run: lens.runId, cells: lens.sheet?.cells.length ?? null, error: lens.error, colour: lens.switch.holder("colour"), on: lens.switch.on, links: lens.markOn("links")?.mark.counts || null, note: lens.scaleInfo?.()?.note || null, list: v.shadowRoot.querySelector("#cells-experiment") ? [...v.shadowRoot.querySelector("#cells-experiment").options].map((o) => o.textContent) : [...v.shadowRoot.querySelectorAll(".exp-row")].map((b) => b.textContent), sweep: v.shadowRoot.querySelector(".sweep .seg-label")?.textContent || null, shown: [...v.shadowRoot.querySelectorAll(".sweep-arm")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.arm), errors: window.__pageErrors }; })()`);
     // The view opens on the listed experiment, its list the two examples.
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
     await until(`Boolean(${V}?.current?.run && ${V}.current.sheet)`, 240);
@@ -241,6 +241,13 @@ try {
     check("the Experiments view opens on the replication, and its list is the two examples: the replication and GARD", s.run?.startsWith(`${R}--`) && s.list.length === 2 && /^(Development run: )?Gap-junction networks of a linear model/.test(s.list[0]) && /GARD/.test(s.list[1]), JSON.stringify([s.run, s.list]));
     // Each arm opens on the quantity the experiment's driver states beside it (concentration.json), in its own unit, with Coupling on; else on the amount.
     const index = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8"));
+    // It opens on the run its entry names (opens.run): Figure 5a's seven-cell network, where that arm is packaged.
+    const named = index.runs.some((row) => row.id === `${R}--figure5-network-g1`);
+    check(named ? "it opens on the run its entry names: Figure 5a's seven-cell network" : "the arm its entry names is not packaged here: it opens on its first run", named ? s.run === `${R}--figure5-network-g1` && s.cells === 7 : s.run === index.runs.find((row) => row.experiment === R)?.id, JSON.stringify([s.run, s.cells]));
+    // The runs stand at the card's head, under the list of examples and over its text: grouped by their sweep, in the sweeps' order.
+    const head = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector("#cells-view"), runs = card.querySelector(".runs"), list = [...card.querySelectorAll(".experiments, #cells-experiment")].pop(), text = card.querySelector(".run-lead"), select = card.querySelector("#cells-run"), box = (el) => el?.getBoundingClientRect(); const order = (a, b) => Boolean(a && b) && Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); return { afterList: order(list, runs), beforeText: order(runs, text), inSight: ${WIDTH >= 760} ? box(select || runs).bottom <= box(card).bottom : true, groups: select ? [...select.querySelectorAll("optgroup")].map((group) => [group.label, group.children.length]) : [], sweeps: (${L}.chrome().run.sweeps || []).map((sweep) => sweep.label), count: card.querySelector(".runs .seg-label")?.textContent }; })()`);
+    const sweptLabels = head.groups.map(([label]) => label).filter((label) => label !== "Other runs");
+    check("the runs stand at the card's head, under the list of examples and over its text, in sight, grouped by their sweep in the sweeps' order", head.afterList && head.beforeText && head.inSight && head.groups.length > 1 && JSON.stringify(sweptLabels) === JSON.stringify(head.sweeps.filter((label) => sweptLabels.includes(label))) && sweptLabels.length >= 2, JSON.stringify(head));
     const stated = (arm) => /"stated\.concentration"/.test(readFileSync(path.join(levinRuns, `${R}--${arm}.json`), "utf8"));
     for (const [arm, cells, lines, label, unit] of [["figure5-network-g1", 7, 6, "Figure 5a's seven cells", "mM"], ["figure8-chain10-held0.5", 10, 9, "a chain of ten", "mM"], ["aw-figure3-g1", 2, 1, "the two-cell pair as written", "µM"], ["figure3-g1", 2, 1, "the two-cell pair", "mM"]]) {
         if (!index.runs.some((row) => row.id === `${R}--${arm}`)) { note(`${label}: ${arm} is not among the runs the folder's index chooses: skipped`); continue; }
@@ -249,7 +256,7 @@ try {
         const colour = stated(arm) ? "stated-concentration-tint" : "amount-mr-tint";
         await until(`${L}.markOn("links")?.mark.counts && ${L}.switch.holder("colour") === ${JSON.stringify(colour)}`, 60);
         s = await state();
-        check(`${label}: the cells stand where the run's view prescribes them, every junction a line between its two cells`, s.cells === cells && (s.links?.open || 0) + (s.links?.shut || 0) === lines && s.note === "cell positions as the run's view prescribes" && !s.error, JSON.stringify([s.cells, s.links, s.note, s.error]));
+        check(`${label}: the cells stand where the run's view prescribes them, every junction a line between its two cells, and no outside node is given a tile of the viewer's`, s.cells === cells && (s.links?.open || 0) + (s.links?.shut || 0) === lines && s.note === "cell positions as the run's view prescribes" && s.outside === 0 && !s.error, JSON.stringify([s.cells, s.links, s.note, s.outside, s.error]));
         check(colour.startsWith("stated") ? `${label}: it opens on the quantity the experiment's driver states beside it, in its own unit (${unit}), said to be the experiment's and not the engine's, with Coupling on` : `${label}: it opens on the experiment's quantity, the amount of its species in each cell, with Coupling on`, s.colour === colour && s.on.includes("junction-coupling") && (!colour.startsWith("stated") || (s.unit === unit && /experiment's own quantity, stated by its driver beside the run \(concentration\.json\)/.test(s.said) && /not a field of the engine/.test(s.said))), JSON.stringify([s.colour, s.on, s.unit, s.said.slice(0, 160)]));
         check(`${label}: the card says the two forms state the quantity in their own units, never converted`, /Norton form's runs in mM, the as-written runs in µM/.test(s.units || "") && /never converts/.test(s.units || ""), s.units || "");
         check(`${label}: the sweeps' card shows the sweep that holds the run shown, its arm marked`, Boolean(s.sweep) && JSON.stringify(s.shown) === JSON.stringify([arm]), JSON.stringify([s.sweep, s.shown]));
@@ -259,6 +266,18 @@ try {
           check(`${label}: the picture makes room for the sweeps' card, no cell under it`, room && room.right <= room.card, JSON.stringify(room));
         }
         await shot(arm);
+    }
+    // Choosing a sweep shows a run of it: from the two-cell pair (Figure 3b), Figure 5a's network is one choice away.
+    if (index.runs.some((row) => row.id === `${R}--figure5-network-g1`)) {
+      if (WIDTH < 760 && !(await evaluate(`${V}.state.viewOpen`))) {
+        const fold = await placeOf(`root.querySelector(".view-toggle")`);
+        if (fold) await click(fold.x, fold.y, 900);
+      }
+      const chosen = await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector(".sweep-choose select"); if (!select) return false; select.value = "figure5a"; select.dispatchEvent(new Event("change")); return true; })()`);
+      await until(`${L}.runId === ${JSON.stringify(`${R}--figure5-network-g1`)} && Boolean(${L}.run && ${L}.sheet)`, 120);
+      s = await state();
+      check("choosing a sweep in the list shows a run of it: Figure 5a's network from the two-cell pair, its arm marked", chosen && s.run === `${R}--figure5-network-g1` && s.cells === 7 && JSON.stringify(s.shown) === JSON.stringify(["figure5-network-g1"]), JSON.stringify([chosen, s.run, s.sweep, s.shown]));
+      if (WIDTH < 760 && (await evaluate(`${V}.state.viewOpen`))) await evaluate(`${V}.toggleViewCard(false)`);
     }
     // GARD's row shows the origin view in the Experiments tab's place (its levels, its clock, its panels); the species switch and the first tab stay as they were.
     const before = await evaluate(`({ run: ${L}.runId, model: ${V}.state.model || null, first: ${V}.shadowRoot.querySelector('[data-lens="cell"] .long')?.textContent })`);
@@ -282,6 +301,16 @@ try {
     check("a real press on GARD's row shows the origin view in the Experiments tab's place: the tab stays pressed, the species switch and the first tab as they were", Boolean(gard) && d.tab === "experiments" && d.pressed === "true" && d.door === "gard" && d.view && d.model === before.model && d.first === before.first && !d.entry, JSON.stringify(d));
     check("its levels stand on the rail, its clock on the timeline, and the tab's list at the head of its card, GARD's row pressed", d.rail === "Level" && d.levels >= 2 && d.timeline && d.list.length === 2 && d.list[1][1] === "true" && d.list[0][1] === "false" && !d.sweepCard, JSON.stringify([d.rail, d.levels, d.timeline, d.list, d.sweepCard]));
     check(d.pair ? "the entry names the engine's two runs: the card offers the two forms of the law (side by side where there is room)" : "the entry names no pair of the engine's runs here: the card offers none", d.pair === d.pairChoice, JSON.stringify([d.pair, d.pairChoice]));
+    // Its legend says what the coloured types are, and so does a type's panel; its stamp is not cut under the card.
+    const words = await evaluate(`(() => { const root = ${V}.shadowRoot, stamp = root.querySelector(".stamp"), card = root.querySelector("#cells-view"), shown = stamp && getComputedStyle(stamp).display !== "none" && stamp.getClientRects().length; return { lead: root.querySelector("cells-legend .legend-lead")?.textContent || "", stamp: shown ? Math.round(stamp.getBoundingClientRect().left) : null, card: Math.round(card.getBoundingClientRect().right), type: ${L}.sections().flatMap((section) => section.entities || []).find((entity) => /:type:/.test(String(entity?.id)))?.id || null }; })()`);
+    check("GARD's legend says at its head, in one short line, what the three coloured types are", words.lead === "The three most common types", words.lead);
+    check(WIDTH >= 760 ? "its stamp stands clear of the card, not cut under it" : "on a phone its stamp is not shown, as before", WIDTH >= 760 ? words.stamp !== null && words.stamp >= words.card : words.stamp === null, JSON.stringify(words));
+    if (words.type) await evaluate(`${V}.select(${JSON.stringify(words.type)})`);
+    await sleep(1000);
+    const typePanel = await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`);
+    check("a coloured type's panel says the same", /coloured types are the most common of the run's 100/.test(typePanel) && /the names are the run's own/.test(typePanel), `${words.type}: ${typePanel.slice(0, 200)}`);
+    await evaluate(`${V}.select(null)`);
+    await sleep(500);
     // Its panels: a part the view describes opens its panel here.
     const part = await evaluate(`${L}.sections().flatMap((section) => section.entities || []).find((entity) => entity?.id && !String(entity.id).startsWith("model:"))?.id || null`);
     if (part) await evaluate(`${V}.select(${JSON.stringify(part)})`);

@@ -1,6 +1,6 @@
 // The Machines catalogue as the page reads it (schema/MACHINE_CATALOGUE.md): the generated
 // catalogue (data/catalogue/catalogue.json, carried in the scene as `catalogue`) and, beside it,
-// the membrane machines the engine has laws for, read from the scene's protein units as the
+// the membrane units of the law inventory, read from the scene's protein units as the
 // Protein atlas reads them. Nothing here draws; the view (machines.js), its card and the text
 // page all read the catalogue through this one class.
 

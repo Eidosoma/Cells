@@ -257,7 +257,7 @@ try {
     await evaluate(`${V}.setSpecies("planarian")`);
     await sleep(1500);
     const planarian = await evaluate(`(() => { const lens = ${L}; return { cards: lens.layout.items.filter((i) => i.type === "card").length, shapes: lens.layout.items.filter((i) => i.type === "shape").length, notice: lens.chrome().card.notice }; })()`);
-    check("the planarian's bench is all cards, its machines with laws among them, and the card says why", planarian.shapes === 0 && planarian.cards > 30 && /no size in hand|each is a card/i.test(planarian.notice || ""), JSON.stringify(planarian));
+    check("the planarian's bench is all cards, the law inventory's units among them, and the card says why", planarian.shapes === 0 && planarian.cards > 30 && /no size in hand|each is a card/i.test(planarian.notice || ""), JSON.stringify(planarian));
     await shot(`${NAME}-planarian`);
     await errorsAtEnd();
   } else if (CASE === "phone") {
@@ -325,8 +325,8 @@ try {
     check("a machine chosen from the List has its panel", s.selected === "machine:ribosome" && /Making proteins/.test(s.panel) && /FR-13/.test(s.panel), s.panel.slice(0, 160));
     await evaluate(`${V}.setSpecies("planarian")`);
     await sleep(400);
-    const units = await evaluate(`${V}.sections().find((section) => /machines with laws/.test(section.label))?.entities.length ?? 0`);
-    check("the planarian's List holds its machines with laws", units > 30, String(units));
+    const units = await evaluate(`${V}.sections().find((section) => /units of the law inventory/.test(section.label))?.entities.length ?? 0`);
+    check("the planarian's List holds the law inventory's units", units > 30, String(units));
     await errorsAtEnd();
   } else if (CASE === "tabs") {
     // The six tabs on a phone: one row, each button at least 44 px, the List whole, and every tab pressed in sight.
@@ -341,6 +341,13 @@ try {
       })()`);
     for (const width of [360, 390, 400]) {
       await size(width, 800);
+      // A model system shown in the Experiments tab's place (example=gard): the bar is as tight there, and the List stays whole.
+      await open("lens=experiments&example=gard", 2500);
+      await until(`${V}.state.example === "gard" && Boolean(${V}.current)`, 60);
+      if (await until(lettered, 40)) await evaluate(`${V}.renderChrome()`);
+      const inTab = await barNow();
+      const listShown = await evaluate(`(() => { const list = ${V}.shadowRoot.querySelector(".bar-end .pill-button"), end = list.parentElement.getBoundingClientRect(), box = list.getBoundingClientRect(); return box.left >= end.left - 0.5 && box.right <= end.right + 0.5 && box.right <= innerWidth; })()`);
+      check(`${width} px, a model system shown in the Experiments tab: its tab is in sight, the bar on one row, every button at least 44 px, the List whole and not cut by the bar's end`, inTab.row && inTab.least >= 44 && inTab.seen && inTab.list && listShown && !inTab.sideways && inTab.tabs === 6, JSON.stringify({ ...inTab, listShown }));
       for (const entry of ["planarian", "gard"]) {
         for (const font of ["the page's own font", "the stand-in font"]) {
           await open(`lens=cell&entry=${entry}`, 2500);

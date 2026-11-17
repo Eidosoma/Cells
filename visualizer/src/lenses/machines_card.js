@@ -2,7 +2,7 @@
 // (schema/MACHINE_CATALOGUE.md, "What the view may say"). The shapes are the ones every view
 // hands to <cells-panel> and <cells-index>. What Cells models of a machine is said only as a
 // record says it: a line of the engine's feature requests, the map's own status of a part, or,
-// for the membrane machines the engine has laws for, the Protein atlas's own panel of the unit.
+// for the membrane units of the law inventory, the Protein atlas's own panel of the unit.
 
 import { Catalogue, IONS, PREFIX, kindOf, citeShort } from "./machines_data.js";
 import { inSpecies } from "./proteins.js";
@@ -95,7 +95,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   if (item.unit) {
     // A membrane machine with laws: the Protein atlas's own panel of the unit, for this species, with the way into the atlas.
     const shown = inSpecies(item.unit, scene?.proteins, species);
-    return { ...shown, eyebrow: `${group?.label || "Machines"} · ${item.unit.eyebrow || "unit"}`, swatch: SWATCH.card, doors: [...(shown.doors || []), ...doorsOf(item, scene, species)], note: "A unit of the law inventory, and a protein assembly: Cells has laws for it, and the panel says what the inventory states of each, as the Protein atlas does. No size of it is in hand, so it is a card, not a shape." };
+    return { ...shown, eyebrow: `${group?.label || "Machines"} · ${item.unit.eyebrow || "unit"}`, swatch: SWATCH.card, doors: [...(shown.doors || []), ...doorsOf(item, scene, species)], note: "A unit of the law inventory, and a protein assembly. The panel says what the inventory states of its laws, as the Protein atlas does. No size of it is in hand, so it is a card, not a shape." };
   }
   const entry = item.entry, kind = item.kind;
   const facts = [];

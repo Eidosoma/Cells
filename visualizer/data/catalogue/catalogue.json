@@ -38,8 +38,8 @@
   },
   {
    "id": "ions",
-   "label": "Moving ions: machines with laws",
-   "plain": "Channels, pumps, exchangers and junctions: the membrane machines the engine has laws for, as the Protein atlas lists them."
+   "label": "Moving ions: units of the law inventory",
+   "plain": "Channels, pumps, exchangers and junctions: the units of the engine's law inventory that are protein assemblies, as the Protein atlas lists them. A unit's panel says which of its laws an active model declares."
   },
   {
    "id": "membranes",

@@ -8,6 +8,7 @@
       "listed": true,
       "summary": "summary.json",
       "opens": {
+        "run": "figure5-network-g1",
         "record": [
           "stated.concentration",
           "amount.mR"

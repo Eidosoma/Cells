@@ -383,12 +383,12 @@ export class MachinesLens {
         marks: groups.length > 1 ? { label: "Group", options: [["all", "All groups"], ...groups.map((group) => [group.id, group.label])], active: this.focusGroup || "all" } : null,
         modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level) } : null,
         notice: counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
-        stats: [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "with laws"]],
-        text: `Illustration: simple shapes from published sizes, not structures, and cards where no size is in hand. No machine here is in the engine. The membrane machines in the last tray are units of the law inventory, which have laws; each panel says what the record states.`,
+        stats: [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
+        text: `Illustration: simple shapes from published sizes, not structures, and cards where no size is in hand. No machine here is in the engine. The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares.`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
           { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length), and from the flagellar motor's own file", licence: "each source's own, named in each panel" },
-          { name: "The law inventory", holds: "the units Cells has laws for that are protein assemblies, as the Protein atlas lists its units; its leaks and permeabilities are not machines and are left out", licence: "the project's own, MIT" },
+          { name: "The law inventory", holds: "its units that are protein assemblies, as the Protein atlas lists them; its leaks and permeabilities are not machines and are left out", licence: "the project's own, MIT" },
         ],
       },
       legend: {

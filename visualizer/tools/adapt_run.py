@@ -2518,7 +2518,7 @@ def adapt_engine_view(root, name, experiment, entry):
             )
     # The spaces outside the cells, where the viewer can stand them beside the cells: not beside the run's own geometry,
     # which places the cells and gives the outside nodes no tiles of the adapter's.
-    if built is not None and "outside" in packaged:
+    if (built is not None or getattr(sheet, "prescribed", False)) and "outside" in packaged:
         derivation.append("The outside nodes are not drawn: the cells stand where the run's own geometry places them, and the adapter lays out no tiles of its own beside them.")
     elif membranes and "outside" in packaged:
         face_links = packaged.get("face", {}).get("geometry") if "face" in packaged else None

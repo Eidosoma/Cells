@@ -37,6 +37,15 @@ test("only listed experiments stand in the list, the view opens on the first of 
   assert.ok(["listed-one", "old", "loop"].every((id) => plain.isListed(id)) && plain.firstListed() === "old--a");
 });
 
+test("an experiment opens on the run its entry names (opens.run, an arm), where that arm is packaged; else on its first run", () => {
+  const two = { ...index, runs: [...index.runs, { id: "listed-one--y", experiment: "listed-one", arm: "y" }] };
+  const named = (arm) => new Catalogue({ ...two, experiments: two.experiments.map((item) => (item.id === "listed-one" ? { ...item, opens: { run: arm } } : item)) });
+  assert.equal(named("y").firstListed(), "listed-one--y");
+  assert.equal(named("y").listRows().find((row) => row.id === "listed-one").first, "listed-one--y", "its row in the list opens the same run");
+  assert.equal(named("not-packaged").firstListed(), "listed-one--x");
+  assert.equal(new Catalogue(two).firstListed(), "listed-one--x");
+});
+
 test("a published page carries the listed experiments' runs and the runs its scene names, nothing else", () => {
   const scene = { species: [{ id: "planarian", cell_type: { loop: "loop--planarian" } }] };
   const published = publishedReplays(index, scene);
@@ -52,7 +61,7 @@ test("the page's overlay lists the replication and GARD's door, each source with
   assert.deepEqual(overlay.doors, [{ entry: "gard" }]);
   const entry = overlay.experiments["gap-junction-linear-network"];
   // Its runs open on the quantity the driver states beside each (concentration.json), else on the amount; the two forms' units are said, never converted.
-  assert.deepEqual([entry.development, entry.outcome.judged, entry.summary, entry.opens], [true, false, "summary.json", { record: ["stated.concentration", "amount.mR"], layers: ["junction-coupling"] }]);
+  assert.deepEqual([entry.development, entry.outcome.judged, entry.summary, entry.opens], [true, false, "summary.json", { run: "figure5-network-g1", record: ["stated.concentration", "amount.mR"], layers: ["junction-coupling"] }]);
   assert.match(entry.units, /the Norton form's runs in mM, the as-written runs in µM .* never converts one to the other\.$/);
   assert.match(entry.outcome.status, /^Development work, not judged/);
   assert.match(entry.plain, /^How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state, and how do the tumor's membrane voltage and connexin expression change that\?/);

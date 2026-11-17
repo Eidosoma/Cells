@@ -103,7 +103,7 @@ export function describe(lens, id) {
         label: typeName(lens, type),
         eyebrow: "A molecule type",
         kind: "type",
-        plain: `A molecule type of the environment. It has no chemistry of its own in the model: what it does comes from the table of catalysis.`,
+        plain: `A molecule type of the environment. It has no chemistry of its own in the model: what it does comes from the table of catalysis. ${lens.leadingWords()}`.trim(),
         note: slot >= 0 ? `One of the three types that lead over the run: it wears a colour and a shape (${["a diamond", "a cube", "a tetrahedron"][slot]}), and in the assembly its lipids have a ${["soft diamond", "soft cube", "soft tetrahedron"][slot]} of a head.` : "Drawn grey, as every type but the three that lead over the run: in the assembly, a round grey head.",
         facts: [["In the assembly now", `${x[type]} of ${sizeOf(x)}`], ["Speeds itself by", `a factor of ${formatFactor(lens.mainEnvironment.catalysis(type, type))} (the table's diagonal)`], ["In the water", `held at ${lens.mainEnvironment.raw.reservoir?.each ?? "the run's"} by the run, as every type is: the free molecules drawn are the picture's number`]],
       };

@@ -29,20 +29,31 @@ export class Catalogue {
     return entries.some((item) => "listed" in item) ? this.experiments.get(id)?.listed === true : true;
   }
 
-  /** The run the view opens on where none is asked for: the first of a listed experiment. */
+  /** The run the view opens on where none is asked for: the opening run of the first listed experiment. */
   firstListed() {
-    return (this.runs.find((run) => this.isListed(run.experiment)) || this.runs[0])?.id || null;
+    const first = this.runs.find((run) => this.isListed(run.experiment)) || this.runs[0];
+    return first ? this.openingRun(first.experiment) : null;
+  }
+
+  /**
+   * The run an experiment opens on: the one its entry names (`opens.run`, an arm's name) where that arm is packaged,
+   * else its first run.
+   */
+  openingRun(experiment) {
+    const arm = this.experiments.get(experiment)?.opens?.run;
+    const runs = this.runs.filter((run) => run.experiment === experiment);
+    return ((typeof arm === "string" && runs.find((run) => run.arm === arm)) || runs[0])?.id || null;
   }
 
   /**
    * The page's list of experiments, one row each: those listed that have runs, and the experiment of the run shown
-   * (`shown`, a run's id) though it is not listed. A row opens the experiment's first run (`first`).
+   * (`shown`, a run's id) though it is not listed. A row opens the experiment's opening run (`first`).
    */
   listRows(shown = null) {
     const active = this.byId.get(shown)?.experiment;
     return [...this.experiments.values()]
       .filter((item) => this.runs.some((one) => one.experiment === item.id) && (this.isListed(item.id) || item.id === active))
-      .map((item) => ({ id: item.id, label: item.label, listed: this.isListed(item.id), active: item.id === active, first: this.runs.find((one) => one.experiment === item.id).id, outcome: this.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) }));
+      .map((item) => ({ id: item.id, label: item.label, listed: this.isListed(item.id), active: item.id === active, first: this.openingRun(item.id), outcome: this.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) }));
   }
 
   experimentOf(run) {
