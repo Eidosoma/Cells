@@ -157,26 +157,22 @@ VIEWER_FIELDS = {
         "junction_voltage_V",
     ),
 }
+# Every arm of the summary's sweeps is packaged, so that each chart point opens its run (the
+# lead, 17 November), with Figure 5a's network as written; the index keeps those within the limit.
 VIEWER_ARMS = (
-    "figure3-g1",
-    "aw-figure3-g1",
-    "figure3-g5",
-    "aw-figure3-g5",
-    "figure5-network-g1",
-    "aw-figure5-network-g1",
-    "figure8-chain3-held0.5",
-    "aw-figure8-chain3-held0.5",
-    "figure8-chain10-held0.5",
-    "aw-figure8-chain10-held0.5",
-    "figure5-lumped-g1",
-    "aw-figure5-lumped-g1",
-    "figure8-chain5-held0.5",
-    "aw-figure8-chain5-held0.5",
+    *(f"figure3-g{g:g}" for g in FIGURE3_G),
+    *(f"figure5-lumped-g{g:g}" for g in FIGURE5_G),
+    *(f"figure5-network-g{g:g}" for g in FIGURE5_G),
+    *(f"figure8-chain{n}-held{FIGURE8_LOADS[0]:g}" for n in FIGURE8_N),
+    *(f"aw-figure3-g{g:g}" for g in AS_WRITTEN_FIGURE3_G),
+    *(f"aw-figure5-lumped-g{g:g}" for g in AS_WRITTEN_FIGURE5_G),
+    *(f"aw-figure5-network-g{g:g}" for g in AS_WRITTEN_FIGURE5_G),
+    *(f"aw-figure8-chain{n}-held{FIGURE8_LOADS[0]:g}" for n in FIGURE8_N),
     "fixture-figure3-g1",
     "fixture-aw-figure3-g1",
 )
 VIEWER_LAYER_BYTES = 2**21  # 2 MB: Figure 5a's 1.06 MB layer is fine (the lead, 17 November).
-VIEWER_MAX = 10
+VIEWER_MAX = 64
 # The sweeps' summary for the viewer's charts (cells.experiment_summary@1, the visualizer's
 # schema/RUN_VIEW.md, "A sweep's chart"): numbers only, copied as stated. A run lists the Norton
 # sweeps, and the as-written ones once its as-written records carry run views (they do once
@@ -287,12 +283,60 @@ def write_record(result, arm_id, label, kind):
                 out[target].update(
                     layer_bytes=sizes,
                     within_limit=all(v < VIEWER_LAYER_BYTES for v in sizes.values()),
+                    sidecar=concentration_sidecar(directory, kind),
                 )
         except run_view.ViewRefused as error:
             io.write_run(directory, result.run, provenance=provenance)
             out[target] = dict(directory=str(directory), view="refused", refusal=str(error))
         write_run_json(directory, arm_id, kind, result.run.spec, provenance, experiment=None)
     return out
+
+
+QUANTITY_FORMAT = "cells.experiment_quantity@1"
+
+
+def concentration_sidecar(directory, kind):
+    """concentration.json beside a viewer package (a viewer sidecar written by the driver, not an
+    engine field): each cell's concentration of the linear model's species per observed row, from
+    the package's own saved amounts and volumes (fmol / pL = mM), in the unit of the summary's
+    readouts for the form (the Norton form mM; as written uM, one of the preprint's units being
+    1 uM there). The cells are the view's cell set, in the layout's order, which is the
+    arrays' column order."""
+    directory = Path(directory)
+    view = json.loads((directory / "view.json").read_text())
+    cell_ids = next(s for s in view["sets"] if s["id"] == "cell")["ids"]
+    species = worlds.SPECIES if kind == NORTON else worlds.AS_WRITTEN_SPECIES
+    unit, scale = ("mM", 1.0) if kind == NORTON else ("uM", worlds.AS_WRITTEN_SCALE_mM)
+    species_ids = json.loads((directory / "summary.json").read_text())["species_ids"]
+    with np.load(directory / "trajectory.npz") as arrays:
+        if len(arrays["cell_ids"]) < len(cell_ids) or arrays["volume"].shape[0] < len(cell_ids):
+            raise ValueError(f"{directory}: the arrays hold fewer cells than the view")
+        row, n = species_ids.index(species), len(cell_ids)
+        times = np.asarray(arrays["observation_times"], dtype=float)
+        amount = (
+            arrays["amount_reference"][row, :n] + arrays["observed_amount_increment"][:, row, :n]
+        )
+        values = amount / arrays["volume"][:n] / scale
+    if not (np.all(np.isfinite(values)) and np.all(np.isfinite(times))):
+        raise ValueError(f"{directory}: a concentration or time is not finite")
+    label = (
+        "[mR], the preprint's linear species, in each cell"
+        if kind == NORTON
+        else "[mR] as written (the species S), in each cell"
+    )
+    sidecar = dict(
+        format=QUANTITY_FORMAT,
+        quantity=dict(
+            id="concentration",
+            label=f"{label}: amount / volume from the run's own arrays",
+            unit=unit,
+        ),
+        times_s=times.tolist(),
+        cells=list(cell_ids),
+        values=values.tolist(),
+    )
+    (directory / "concentration.json").write_text(json.dumps(sidecar, allow_nan=False))
+    return "concentration.json"
 
 
 def write_run_json(directory, arm_id, kind, spec, provenance, experiment):
@@ -1011,8 +1055,21 @@ FUNCTIONS = dict(
 )
 
 
+def write_sidecars(run_dir):
+    """concentration.json for every viewer package of a finished run (each with its view)."""
+    written = {}
+    for directory in sorted((Path(run_dir) / "viewer").iterdir()):
+        if directory.is_dir() and (directory / "view.json").is_file():
+            kind = AS_WRITTEN if "aw-" in directory.name else NORTON
+            written[directory.name] = concentration_sidecar(directory, kind)
+    return written
+
+
 def main(argv):
     global DT_STUDY
+    if argv[1:2] == ["--sidecars"]:  # Sidecars for a finished run's packages (run made before).
+        print(json.dumps(write_sidecars(argv[2]), indent=1))
+        return 0
     if "--no-dt-study" in argv:
         argv = [a for a in argv if a != "--no-dt-study"]
         DT_STUDY = False

@@ -386,6 +386,7 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
         out.update(view="refused", refusal=str(error))
     out["seconds"] = time.perf_counter() - started
     out["final_units"] = final_units(directory, list(spec.model.species_ids))
+    out["sidecar"] = criterion_sidecar(directory, list(spec.model.species_ids))
     entry = dict(
         format="gap_junction_tissue.neither_run@1",
         status="development run of the engine, not judged (D138)",
@@ -418,6 +419,78 @@ def final_units(directory, species_ids):
         name: (amount[species_ids.index(name), :N_CELLS] / volume / UNIT_mM).tolist()
         for name in NAMES
     }
+
+
+CRITERION_FORMAT = "cells.experiment_criterion@1"
+CRITERION_WORDS = (
+    "A cell is epithelial when its miR200 exceeds its Zeb mRNA by more than 2 scaled units "
+    "(2 uM here, one unit being 1 uM), and mesenchymal otherwise: BITSEY's criterion "
+    "(healthy_snapped_rows)."
+)
+CRITERION_SOURCE = (
+    "BITSEY's log tumor_isolate_1D_V1M at b2cb370, written by an earlier revision of its code "
+    "(cancer_GJ_sims/GRN_miRNA.py, healthy_snapped_rows, line 519); "
+    "docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7"
+)
+
+
+def criterion_sidecar(directory, species_ids):
+    """criterion.json beside a tissue arm's package (a viewer sidecar written by the driver, not an
+    engine field): each cell's miR200 minus Zeb mRNA (uM) per observed row, from the record's own
+    observed amounts (its chunks) and volumes, and its state under BITSEY's criterion. The cells
+    are the view's cell set (the layout's order, the arrays' columns); without a view, the
+    layout's ids."""
+    import numpy as np
+
+    directory = Path(directory)
+    with np.load(directory / "checkpoint_initial" / "state.npz") as state:
+        reference = state["amount_reference"]
+        volume = state["volume"][:N_CELLS]
+        layout_ids = [str(i) for i in state["ids"][:N_CELLS]]
+    view = directory / "view.json"
+    cells = (
+        next(s for s in json.loads(view.read_text())["sets"] if s["id"] == "cell")["ids"]
+        if view.is_file()
+        else layout_ids
+    )
+    u, m = species_ids.index("u"), species_ids.index("m")
+    times, values = [], []
+    for line in (directory / "windows.jsonl").read_text().splitlines():
+        entry = json.loads(line)
+        if entry.get("kind") != "window" or not entry.get("path"):
+            continue
+        with np.load(directory / entry["path"]) as chunk:
+            if "observation_times" not in chunk.files:
+                continue
+            rows = np.asarray(chunk["observation_times"], dtype=float)
+            amount = (
+                reference[None, :, :N_CELLS] + chunk["observed_amount_increment"][:, :, :N_CELLS]
+            )
+        for k, when in enumerate(rows):
+            if times and when <= times[-1]:
+                continue
+            times.append(float(when))
+            values.append(((amount[k, u] - amount[k, m]) / volume / UNIT_mM).tolist())
+    flat = [x for row in values for x in row]
+    if not all(math.isfinite(x) for x in [*flat, *times]):
+        raise ValueError(f"{directory}: a value or time is not finite")
+    sidecar = dict(
+        format=CRITERION_FORMAT,
+        quantity=dict(id="mir200_minus_zeb_mrna", label="miR200 minus Zeb mRNA", unit="uM"),
+        criterion=dict(
+            threshold=MARGIN_UNITS,
+            above="epithelial",
+            below="mesenchymal",
+            words=CRITERION_WORDS,
+            source=CRITERION_SOURCE,
+        ),
+        times_s=times,
+        cells=list(cells),
+        values=values,
+        states=[["E" if x > MARGIN_UNITS else "M" for x in row] for row in values],
+    )
+    (directory / "criterion.json").write_text(json.dumps(sidecar, allow_nan=False))
+    return "criterion.json"
 
 
 def records_summary(results):
