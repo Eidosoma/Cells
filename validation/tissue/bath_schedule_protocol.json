@@ -12,7 +12,9 @@
   ],
   "path": "Write first: the references, the builders, the generator, the judge and the machine criteria. Then the dt study (development), a rehearsal of every judged part on a registered dry-run copy, the lead's registration, and one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's and FR-5's)",
   "launch": "each judged part through scripts/run_detached.sh, one part per unit and per CPU, --oom-first, its cap and runtime limit from the rehearsal (D150's rule on the larger of a sizing rate and the rehearsal's wall)",
-  "references": "delivered (fr10-references, 23b8ff58) and merged into fr10-protocol"
+  "references": "delivered (fr10-references, 23b8ff58) and merged into fr10-protocol",
+  "rehearsed": "every judged part, the references included, on a registered dry-run copy (r2/run-ed2b8ee0): the judged entry passed every judged criterion on the copy",
+  "judged_run_launcher": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/judge-run.sh SNAPSHOT OUT CPU,CPU,CPU,CPU /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0: from the registration's clean snapshot, on its own registered protocol; each part's runtime limit by D150's rule on the larger of the rehearsal plan's estimate and the rehearsal's wall; then the judge's judged entry and the compare of every part against the rehearsal's"
  },
  "rung": "FR-10, acceptance 1 (numerical verification, D174's first claim kind; no living-cell claim)",
  "question": "Does scheduled_bath_composition@1 change a held bath's composition on the dt grid so that @3's transport and membrane see the new composition (a neutral species through a face chain against the matrix exponential with the stepped boundary; an ion substitution's membrane relaxation against an independent constant-field ODE), with every ledger closing across events (the energy ledger at rounding under RK4; the reservoir-work ledger closing only with the operator's reconciliation term), its records exact, the composition bitwise idle when nothing is scheduled, restart and batch bitwise, and every refusal of its declared scope holding?",
@@ -228,9 +230,17 @@
    {
     "path": "/mnt/workspaces/Cells/closed-compartment-20261114-01/probe1",
     "status": "probe 1: the dose from nothing (D150's onset limit)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/run-e8c45bcb",
+    "status": "the dt study (development) and the first rehearsal of every judged part but the references, on a registered dry-run copy, from snapshot e8c45bcb: the declared 1 ms stands (orders 2.003 to 2.011; Richardson errors 0.37 to 0.92% of the budgets; energy over flows 5.8e-5 and 1.7e-5); every part ran; the judged judge refused as it must (the references absent); J9 failed on R12's neighbour at 0.25 ms (refused at run time by the IMEX energy ledger), now at 0.1 ms"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0",
+    "status": "the dt study again and the full rehearsal, the references included, on a new registered dry-run copy, from snapshot ed2b8ee0 (the references merged, main 295b3333): all 19 parts ran; the judge's judged entry on the copy passed every judged criterion (31 of 31; not a judgement); the ten dt parts bitwise between the development and judged entries; walls 4 to 261 s on CPUs 6, 7, 22 and 23 at nice 10"
    }
   ],
-  "note": "development evidence only: no run of this protocol exists"
+  "note": "development evidence only: no judged run of this protocol exists; the rehearsals ran on registered dry-run copies"
  },
  "questions_for_the_lead": [],
  "questions_answered": [
