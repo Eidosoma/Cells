@@ -8,9 +8,11 @@ The evidence that scripts/source_moves.py's maps are built from
            both that import them, and the module-level couplings into them
   reach    name-level reachability from the active entry points: the top-level definitions of
            each module that are reached, following imported names
-  move1    move 1's draft map: what moves to src/cells/legacy/ (mirroring the sub-packages), the
-           modules pulled in by their importers, the reached modules that still import a moved
-           one (the refactors to make first) and the dispatch points' imports of moved modules
+  move1    move 1's draft map: what moves to src/cells/legacy/ (mirroring the sub-packages), by
+           move_set's rules: the modules kept because the core imports them, pulled in by their
+           importers, moved with their only importers, and the package __init__s moved with
+           their last module; the modules that stay but still import a moved one (the refactors
+           to make first) and the dispatch points' imports of moved modules
   move2    move 2's draft map, by a rule table, with the modules it does not place
   pins     the code pins in src/cells (a hex literal equal to a tracked file's SHA-256), their
            kind, the modules computing paths from their own __file__, and which of them the
@@ -299,15 +301,26 @@ def move_set(c, reached, index, edges):
         is the core's (surface_kinetic_spec's parse, which the older families still run from
         the core, needs its junction parser; cav_channels' CaV kinetics need calcium_gates).
         An older family's module imported so is a coupling, for a refactor before the move;
-      - pulled: a module that imports a moved module moves, unless it is kept or reached.
+      - pulled: a module that imports a moved module moves, unless it is kept or reached;
+      - moved with its importers: a module whose src importers are all moved (at least one)
+        moves, unless it is kept or reached (assembly_cluster/controls);
+      - a package's __init__ moves with its last module, unless it is kept or reached
+        (assembly_cell, assembly_cluster).
     The dispatch points never move (R1 refactors them) and their imports keep nothing."""
     family = set(c["legacy"])
     kept, _ = li.closure(sorted(reached - CHAINS), edges, stop=family, leaves=CHAINS)
     kept = {m for m in kept if m.startswith("cells")} | (reached - CHAINS)
     fixed = kept | reached | CHAINS
     moved = (family | set(c["private"]) | set(c["side"])) - fixed
+    importers = defaultdict(set)
+    for u, targets in edges.items():
+        if u.startswith("cells"):
+            for v in targets:
+                if v.startswith("cells") and v != u:
+                    importers[v].add(u)
     cells = sorted(m for m in index if m.startswith("cells"))
-    notes = dict(pulled_in_by_importers=[])
+    packages = {m for m in cells if index[m].name == "__init__.py"}
+    notes = dict(pulled_in_by_importers=[], moved_with_their_only_importers=[], package_inits=[])
     changed = True
     while changed:
         changed = False
@@ -317,6 +330,12 @@ def move_set(c, reached, index, edges):
             why = None
             if {t for t in edges.get(m, {}) if t.startswith("cells")} & moved:
                 why = "pulled_in_by_importers"
+            elif importers[m] and importers[m] <= moved:
+                why = "moved_with_their_only_importers"
+            elif m in packages:
+                inside = [x for x in cells if x.startswith(m + ".")]
+                if inside and all(x in moved for x in inside):
+                    why = "package_inits"
             if why:
                 moved.add(m)
                 notes[why].append(m)
@@ -588,13 +607,21 @@ def pins(args):
 
 
 def _graph(spec):
-    """A synthetic tree for move_set: {module: [imports]}, packages named with a trailing '/'."""
+    """A synthetic tree for move_set: {module: [imports]}, packages named with a trailing '/'.
+    As in legacy_inventory's graph, importing a.b.c also imports the packages a and a.b."""
     index, edges = {}, {}
     for name, targets in spec.items():
         module = name.rstrip("/")
         tail = "/__init__.py" if name.endswith("/") else ".py"
         index[module] = Path("src/" + module.replace(".", "/") + tail)
         edges[module] = {t: ([], "import") for t in targets}
+    for module, found in edges.items():
+        for target in list(found):
+            parts = target.split(".")
+            for k in range(1, len(parts)):
+                parent = ".".join(parts[:k])
+                if parent in index and parent != module:
+                    found.setdefault(parent, ([], "package"))
     return index, edges
 
 
@@ -617,19 +644,48 @@ def selftest(args):
             "cells.core.old_spec": ["cells.models.old_model"],  # An older family's definition.
             "cells.models/": [],
             "cells.models.old_model": ["cells.processes.law", "cells.processes.only_old"],
+            "cells.models.active": ["cells.core.shared_spec"],  # Reached: models/ stays.
             "cells.core.shared_spec": ["cells.processes.law", "cells.core.old_spec"],
             "cells.processes/": [],
             "cells.processes.law": [],  # Reached only from older families, imported by the core.
             "cells.processes.only_old": [],  # Reached only from older families.
             "cells.core.helper": ["cells.models.old_model"],  # Imports a moved module.
+            # A package whose modules move: engine is pulled, controls has only engine as its
+            # importer, and the package's __init__ follows them (a dispatch point imports it).
+            "cells.assembly/": [],
+            "cells.assembly.engine": [
+                "cells.models.old_model",
+                "cells.assembly.controls",
+                "cells.assembly",
+            ],
+            "cells.assembly.controls": [],
+            "cells.core.schedule": ["cells.assembly.engine", "cells.assembly"],
+            "cells.tool": [],  # An entry point: no importer at all, so it stays.
+            "cells.core.independent": ["cells.processes.both"],  # Unreached, stays.
+            "cells.processes.both": [],  # Imported by a moved and by a staying module: stays.
+            "cells.processes.reached_law": [],  # Reached, imported only by a moved module.
+            "cells.pkg/": [],
+            "cells.pkg.a": ["cells.models.old_model"],  # Moves.
+            "cells.pkg.b": [],  # Stays, so the package's __init__ stays.
         }
     )
+    for target in ("cells.processes.both", "cells.processes.reached_law"):
+        edges["cells.models.old_model"][target] = ([], "import")
     c = dict(
         legacy=["cells.core.old_spec", "cells.models.old_model", "cells.core.shared_spec"],
         private=["cells.processes.law", "cells.processes.only_old"],
         side=[],
     )
-    reached = {"cells.core.shared_spec", "cells.core.specs", "cells", "cells.core"}
+    reached = {
+        "cells.core.shared_spec",
+        "cells.core.specs",
+        "cells",
+        "cells.core",
+        "cells.processes.reached_law",
+        "cells.models.active",
+        "cells.models",
+        "cells.processes",
+    }
     moved, notes = move_set(c, reached, index, edges)
     cells = [m for m in index if m.startswith("cells")]
     checks = {
@@ -639,12 +695,25 @@ def selftest(args):
         and notes["kept_imported_by_the_core"] == ["cells.processes.law"],
         "a module only older families reach moves": "cells.processes.only_old" in moved,
         "pulled: an importer of a moved module moves": "cells.core.helper" in moved
-        and notes["pulled_in_by_importers"] == ["cells.core.helper"],
+        and "cells.core.helper" in notes["pulled_in_by_importers"],
         "a family module the core imports is a coupling, not kept": couplings_of(
             moved, edges, cells
         )
         == [("cells.core.shared_spec", ["cells.core.old_spec"])],
         "a dispatch point neither moves nor keeps": "cells.core.specs" not in moved,
+        "moved with its importers: a module only moved modules import moves": (
+            "cells.assembly.controls" in moved
+            and "cells.assembly.controls" in notes["moved_with_their_only_importers"]
+        ),
+        "an entry point with no importer stays": "cells.tool" not in moved,
+        "a module a staying module also imports stays": "cells.processes.both" not in moved,
+        "a reached module stays though only moved modules import it": (
+            "cells.processes.reached_law" not in moved
+        ),
+        "a package's __init__ moves with its last module": notes["package_inits"]
+        == ["cells.assembly"],
+        "a package's __init__ stays while one of its modules stays": "cells.pkg" not in moved
+        and "cells.pkg.a" in moved,
     }
     # The planted control: without the rule, the law moves and the core imports a moved module.
     unkept = dict(c, private=c["private"])

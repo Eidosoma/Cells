@@ -31,8 +31,10 @@ Usage (PYTHONPATH=src:. with the venv's Python; ruff from the same venv):
   python scripts/source_moves.py apply MAP [--stage]
   python scripts/source_moves.py verify MAP --base REV --head REV [--out JSON]
   python scripts/source_moves.py table MAP [--out JSON]   (the old-to-new path table)
+  python scripts/source_moves.py ids MAP BASE_IDS HEAD_IDS [--base-log LOG --head-log LOG]
+      [--out JSON]   (the collected-ID gate through the map)
   python scripts/source_moves.py selftest
-All but selftest take --tree DIR, the checkout to work on (default: this one).
+All but ids and selftest take --tree DIR, the checkout to work on (default: this one).
 Exit status: 0 ok, 1 a check failed, 2 the map or tree is refused.
 """
 
@@ -958,6 +960,76 @@ def cmd_verify(args):
     return 0 if result["verdict"] == "holds" else 1
 
 
+# ------------------------------------------------------------------ the collected-ID gate
+
+
+def map_top(mp):
+    """The folders of src/cells that the map's modules live in: a path relative to src/cells
+    names a moved file only if it starts with one of them."""
+    return {m.split(".")[1] for pair in mp.pairs.items() for m in pair if m.count(".") > 1}
+
+
+def compare_ids(mp, base, head):
+    """The collected test IDs of two trees, through the map (design note section 17): each base
+    ID is mapped by the rewriter's own text rules (dotted names and file paths of moved modules),
+    so an ID that differs only by a path the map renames, as a parametrization naming a moved
+    file does, is the same test. Returns the differences; empty when the gate holds."""
+    top = map_top(mp)
+    mapped = defaultdict(list)
+    for test_id in base:
+        mapped[rewrite_text(test_id, mp, top)].append(test_id)
+    head = set(head)
+    return dict(
+        collisions=sorted(sorted(v) for v in mapped.values() if len(v) > 1),
+        missing_in_head=sorted(k for k in mapped if k not in head),
+        new_in_head=sorted(head - set(mapped)),
+        renamed_by_the_map=sorted(
+            (v[0], k) for k, v in mapped.items() if len(v) == 1 and v[0] != k
+        ),
+    )
+
+
+def _error_lines(path):
+    return [
+        line.rstrip("\n")
+        for line in Path(path).read_text().splitlines()
+        if line.startswith("ERROR ")
+    ]
+
+
+def cmd_ids(args):
+    mp = load_map(args.map)
+    lines = {
+        side: [x for x in Path(path).read_text().splitlines() if x.strip()]
+        for side, path in (("base", args.base_ids), ("head", args.head_ids))
+    }
+    result = dict(kind=REPORT_KIND, move=mp.name, base=len(lines["base"]), head=len(lines["head"]))
+    result["ids"] = compare_ids(mp, lines["base"], lines["head"])
+    if args.base_log and args.head_log:  # Collection errors, compared the same way.
+        result["errors"] = compare_ids(mp, _error_lines(args.base_log), _error_lines(args.head_log))
+    blocking = [
+        k
+        for part in ("ids", "errors")
+        if part in result
+        for k in ("collisions", "missing_in_head", "new_in_head")
+        if result[part][k]
+    ]
+    result["verdict"] = "same tests" if not blocking else "differs: " + ", ".join(blocking)
+    if args.out:
+        Path(args.out).write_text(json.dumps(result, indent=1) + "\n")
+    summary = {
+        part: {k: len(v) for k, v in result[part].items()}
+        for part in ("ids", "errors")
+        if part in result
+    }
+    print(
+        json.dumps(
+            dict(base=result["base"], head=result["head"], **summary, verdict=result["verdict"])
+        )
+    )
+    return 0 if not blocking else 1
+
+
 # ------------------------------------------------------------------ planted cases
 
 
@@ -1149,6 +1221,41 @@ def cmd_selftest(args):
     checks["relative import made absolute when its file moves"] = (
         got["src/cells/b/m.py"][1].decode() == "from cells.a import n\nfrom cells.a.n import f\n"
     )
+    base_ids = [
+        "tests/test_old.py::test_old",
+        "tests/test_pin.py::test_pin[src/cells/core/old_spec.py-aaaa]",
+        "tests/test_pin.py::test_pin[core/old_spec.py]",
+        "tests/test_mod.py::test_mod[cells.models.old_model]",
+        "tests/test_keep.py::test_keep[src/cells/core/specs.py]",
+    ]
+    head_ids = [
+        "tests/test_old.py::test_old",
+        "tests/test_pin.py::test_pin[src/cells/legacy/core/old_spec.py-aaaa]",
+        "tests/test_pin.py::test_pin[legacy/core/old_spec.py]",
+        "tests/test_mod.py::test_mod[cells.legacy.models.old_model]",
+        "tests/test_keep.py::test_keep[src/cells/core/specs.py]",
+    ]
+    same = compare_ids(mp, base_ids, head_ids)
+    checks["ids: a moved path or module in a parametrization is the same test"] = (
+        not (same["collisions"] or same["missing_in_head"] or same["new_in_head"])
+        and len(same["renamed_by_the_map"]) == 3
+    )
+    renamed = compare_ids(mp, base_ids, [*head_ids[:4], "tests/test_keep.py::test_kept"])
+    checks["ids: a renamed test is caught"] = renamed["missing_in_head"] == [
+        base_ids[4]
+    ] and renamed["new_in_head"] == ["tests/test_keep.py::test_kept"]
+    dropped = compare_ids(mp, base_ids, head_ids[1:])
+    checks["ids: a dropped test is caught"] = dropped["missing_in_head"] == [base_ids[0]]
+    stale = compare_ids(mp, base_ids, [*head_ids[:3], base_ids[3], head_ids[4]])
+    checks["ids: an old module name left in a head ID is caught"] = stale["new_in_head"] == [
+        base_ids[3]
+    ]
+    collide = compare_ids(
+        mp,
+        [base_ids[1], "tests/test_pin.py::test_pin[src/cells/legacy/core/old_spec.py-aaaa]"],
+        [head_ids[1]],
+    )
+    checks["ids: two tests that the map makes one are caught"] = len(collide["collisions"]) == 1
     failed = [k for k, v in checks.items() if not v]
     print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
     if failed and args.verbose:
@@ -1177,12 +1284,20 @@ def main(argv=None):
             p.add_argument("--base", required=True)
             p.add_argument("--head", required=True)
             p.add_argument("--out")
+    i = sub.add_parser("ids", help="the collected-ID gate through the map")
+    i.add_argument("map")
+    i.add_argument("base_ids", help="one test ID per line (pytest --collect-only -q, :: lines)")
+    i.add_argument("head_ids")
+    i.add_argument("--base-log", help="the base's collection log (its ERROR lines)")
+    i.add_argument("--head-log")
+    i.add_argument("--out")
     s = sub.add_parser("selftest")
     s.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
     try:
         return dict(
             check=cmd_check,
+            ids=cmd_ids,
             table=cmd_table,
             scan=cmd_scan,
             apply=cmd_apply,
