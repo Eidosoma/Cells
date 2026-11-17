@@ -117,6 +117,23 @@ machine-readable inputs, results, checks and failures.
   - **Evidence:** `/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/run-407ba164/`
     (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
 
+- **The gap-junction tissue line, dense records, and the sheet (17 November 2026, night).**
+  Development, not judged (D138). Note §7.6, registered before these runs, merged from
+  `gap-junction-replication` at 0471f7c3.
+  - **Dense records** (`runs/dense-01`, D = 0, x2/2, x2 and 2·x2): about 370 log-spaced records per
+    arm, the first one step in. Every end state is bitwise its earlier run (picks-02 and picks-01),
+    so the records changed nothing. Each package carries the tumour cells, a species map, each
+    arm's place against x2, and the cells' miR200, Zeb mRNA and ZEB protein in µM.
+  - **The 9×9 sheet** (`runs/sheet-01`): an extension beyond the replication, not part of it.
+    - Its setup: 4-neighbour junctions, a 3×3 tumour patch in the middle, the same seeds and
+      protocol, and a coupled horizon of 2,000 s (a tenth of the line's).
+    - The tumour holds at D = 0, x2/16 and x2/8, and the sheet normalises at x2/4, x2/2 and x2.
+      No arm is still changing at 2,000 s.
+    - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (0.9–1.8e-15 m²/s), 4 to 8
+      times below the line's. That is observed; why is not measured.
+  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/` and `runs/sheet-01/`.
+
 - **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
   Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.
   - **The search** (`runs/neither-02`, clean snapshot of main 1f4c740a): 37 points, none refused,
