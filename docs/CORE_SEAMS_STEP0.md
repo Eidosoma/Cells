@@ -857,4 +857,16 @@ the two nodes' proton equivalents is solved with Radau at rtol 1e-12, with the l
   - L_eff is reported both with L_ledger and without it, since branch X would lift the ledger's
     limit.
 
+**Amendment to P1, committed before P1 runs.** Writing P1's world showed two things the criterion
+must fix:
+- **The pump's slope past its head carries e^{a},** with a = nF·offset/RT. So a 20 mV offset would
+  start the run with a slope 22 times the head's, and the per-stage rule would bind near rung 0.045
+  of a ladder scaled at the head.
+- **The fix:** the offset is 5 mV (e^{a} = 2.2), and ΣG/C is taken at the start. That is
+  G = n²F²J₁/RT with J₁ = k·S·e^{a}, the reverse one-way flux there, the per-stage rule's own
+  quantity. The ladder's rungs then read against the stage rule's bound of 1.
+- **Run length:** each rung runs ten relaxation times at the head.
+- **Capacity:** raised a thousandfold, so the head's rate is about 8e3/s and the steps are 1.2 µs or
+  more.
+
 ## 6. Results of the probes (to follow)
