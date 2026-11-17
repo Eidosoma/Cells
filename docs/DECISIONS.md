@@ -6622,3 +6622,27 @@ answers.
 
 These are normal design tasks. They do not require a new language-selection
 discussion or prevent the next independent implementation work.
+
+## D204: Molecular machines go on the engine's backlog (FR-13)
+
+2026-11-17. The visualizer session relayed the user's request:
+- a "Machines" tab in the viewer, cataloguing molecular machines per species as the proteins were;
+- modelling the machines put on the engine's backlog.
+
+The user confirmed it to the lead, "yes new feature request from me", and added:
+> "only thing with the machines, if there is something missing in our core archtecture or if they can
+> be naturally modeled there"
+
+> "and we'd to be able to model them both individuall and in aggregate in a cell or whatever, LODs
+> based on what is being looked at"
+
+- **[FR-13](FEATURE_REQUESTS.md#fr-13--molecular-machines-individually-and-in-aggregate) records the
+  request.** Its scope stands on D140: assembly, not folding.
+- **The first step is a read-only design note.** It answers the user's question: can the core
+  architecture model machines naturally, individually and in aggregate, with the level of detail set
+  by what is looked at, or what is missing?
+  - It presents options.
+  - Nothing is built before the user has discussed them.
+- **The tab and its catalogue are the viewer's own data,** under D173, D178, D186 and D201. Its
+  fields follow what a declared model carries, once one exists.
+

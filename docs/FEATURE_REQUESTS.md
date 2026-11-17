@@ -18,6 +18,7 @@ and a general feature, never one built for one study (D144).
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Its registration, rehearsal and judged run on the landed core |
 | [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Partly built, on main with the run-view writer since 16 November: its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November), the writer's loop block with its closure measure, and the planarian loop's builder (`validation/replay/`), with one development run of that loop, not judged. The human loop waits for the human cardiac laws |
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
+| [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | Requested; not scoped; no model | A read-only design note: does the core architecture host machines naturally at both levels, or is something missing? Options for the user before anything is built |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -646,3 +647,44 @@ explored.
 - **Status:** accepted, since D185 already decided the manifest. It is being built in seam F of the
   core-seams pass (D195).
 
+## FR-13 — Molecular machines, individually and in aggregate
+
+- **The request (D204).** It came from the user on 17 November 2026, first through the visualizer
+  session, then to the lead directly.
+  - **The viewer** gains a "Machines" tab: a catalogue of molecular machines gathered per species,
+    as the proteins were.
+  - **The engine** models them "both individuall and in aggregate in a cell or whatever, LODs based
+    on what is being looked at".
+  - **The first question is the user's:** "if there is something missing in our core archtecture
+    or if they can be naturally modeled there".
+- **Standing scope: D140.** Cells models the assembly of folded subunits into complexes and
+  machines, from protein cages toward the proteasome and larger, and how the machines are used.
+  Protein folding itself is not simulated.
+  - On 16 November the user also asked for the nucleus, the Golgi apparatus and ribosomes "modeled
+    to some extend, not protein folding level (yet)". That is recorded in
+    `visualizer/docs/CELL_STRUCTURES.md`.
+- **What exists today:**
+  - membrane machines with laws: channels, pumps, exchangers and junctions;
+  - `capsid_graph@1`, the first assembly case: one prescribed 20-site cage in a fixed bath
+    (`docs/CAPSID_ASSEMBLY.md`);
+  - `cells.assembly_lineages@1`, the stochastic assembly family built for GARD (D192, D197);
+  - seam A's cycle contract: Hill cycles, the Wegscheider check and the J·ΔG guard
+    (`docs/CORE_SEAMS_DESIGN.md` §16);
+  - the relationship tables (`cells.relations@1`, D202) and the declarations manifest (FR-12).
+  - **What is absent:** there is no model of a ribosome, RNA polymerase, ATP synthase, proteasome,
+    translocon, flagellar motor, chemoreceptor array or attachment organelle.
+- **The levels to scope.** This is the lead's framing, made with the advisor. A machine is one entity
+  with three layers, not one model per machine:
+  - **aggregate:** copy numbers and rates, with what the machine consumes and produces booked on the
+    ledgers of the compartment it sits in;
+  - **cycle:** the states of the machine's working cycle;
+  - **assembly:** its subunits, their stoichiometry and the order they join.
+
+  The level of detail follows what is looked at. So the layers must agree where they meet, and a
+  switch between them must keep conserved accounting.
+- **The first machines are chosen by constraint,** not by the catalogue's order:
+  - the engine already carries what they consume and produce;
+  - free-to-read data supports a judged check (D186, D201);
+  - more than one organism target needs them.
+- **Status:** requested, not scoped, no model. The viewer's catalogue fields will follow what a
+  declared model carries in the manifest once one exists; they are not fixed now.
