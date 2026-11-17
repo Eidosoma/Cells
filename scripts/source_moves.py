@@ -72,6 +72,17 @@ PATH = re.compile(
 )
 
 
+# Packages no move touches: cells.modules is the stable import surface for contributed modules,
+# "one package whose path never moves" (D185, D195; docs/CORE_SEAMS_DESIGN.md section 8.5). A map
+# may neither move a module into it or out of it nor create a package there; a tree that already
+# holds it (seam F's provisional package) is moved around it.
+RESERVED = (PACKAGE + ".modules",)
+
+
+def _under(module, package):
+    return module == package or module.startswith(package + ".")
+
+
 class Refused(Exception):
     """The map or the tree cannot be moved as asked."""
 
@@ -100,6 +111,10 @@ class MoveMap:
         if set(news) & set(self.pairs):
             raise Refused(f"{name}: a module moves onto another moved module's old name")
         self.packages = dict(doc.get("packages", {}))
+        touched = [*self.pairs, *news, *self.packages]
+        reserved = sorted(m for m in touched if any(_under(m, r) for r in RESERVED))
+        if reserved:
+            raise Refused(f"{name}: moves into or out of a reserved package: {reserved[:5]}")
         self.keep = {k["path"]: k["reason"] for k in doc.get("keep", [])}
         self.reviewed = {k["path"]: k["reason"] for k in doc.get("reviewed", [])}
         # Splits and merges are refactors, never part of a move commit: each is declared with
@@ -1306,6 +1321,32 @@ def cmd_selftest(args):
     got, _ = transform(rel, rel_map)
     checks["relative import made absolute when its file moves"] = (
         got["src/cells/b/m.py"][1].decode() == "from cells.a import n\nfrom cells.a.n import f\n"
+    )
+    # cells.modules (D195's surface) is reserved: a map that moves into or out of it, or creates a
+    # package there, is refused; a tree that already holds it is moved around it.
+    reserved = {
+        "into it": dict(modules=[["cells.core.old_spec", "cells.modules.old_spec"]], packages={}),
+        "out of it": dict(modules=[["cells.modules.surface", "cells.core.surface"]], packages={}),
+        "a package there": dict(SELFTEST_MAP, packages={"cells.modules.extra": ""}),
+    }
+    refused = []
+    for label, doc in reserved.items():
+        try:
+            MoveMap(dict(SELFTEST_MAP, **doc))
+        except Refused as error:
+            refused.append(label if "reserved" in str(error) else None)
+    surface = dict(files)
+    surface["src/cells/modules/__init__.py"] = (
+        "100644",
+        b'"""Provisional surface."""\n\nfrom cells.core.old_spec import parse\n',
+    )
+    got, _ = transform(surface, mp)
+    checks["cells.modules reserved: refused into it, out of it and as a new package"] = (
+        refused == list(reserved)
+    )
+    checks["cells.modules reserved: an existing surface stays in place, its imports rewritten"] = (
+        got["src/cells/modules/__init__.py"][1]
+        == b'"""Provisional surface."""\n\nfrom cells.legacy.core.old_spec import parse\n'
     )
     # D188 move 2: a from-import in free text (a program string with escapes, a comment) maps
     # each moved submodule by its own new home, not by its package's.
