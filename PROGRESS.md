@@ -85,6 +85,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D188's move 1 landed on main (17 November 2026).** Merge 7bb8bf23, tagged
+  `d188-move1-landed-2026-11-17`; the tree before it is tagged `pre-d188-move1-2026-11-17`
+  ([evidence](/mnt/workspaces/Cells/d188-m1-20261117/gate-9b20034a/summary.txt)).
+  - **What moved:** the 334 older-family modules went into `src/cells/legacy/`, done by
+    `scripts/source_moves.py apply` with no hand edits.
+    - The map is `scripts/moves/move1.json`, with its path table beside it.
+    - It came after R5: the detached assembly worker now takes its root from the package.
+  - **What didn't change:** no law, kind, operator or model ID; the test file paths; and the active
+    modules, which wait for move 2.
+  - **Verify:** 334 moved, 649 files rewritten, 0 problems, and a second apply is a no-op.
+  - **The gates:**
+    - collected IDs the same through the map (18,504);
+    - crossrev identical;
+    - G1 113 of 113, bitwise;
+    - tiers 1+2: 481 files, none changed, with the 38 red files keeping every outcome;
+    - a continuity resume across the move, admitted and bitwise;
+    - R1's guard passes, and nothing outside `legacy/` imports it.
+  - **Commands and docs:** the older CLIs run as `-m cells.legacy.*`. Code links in the docs follow
+    the new paths.
+
 - **D188's R2–R4 merged into main (17 November 2026), with the moves' tools.** Branch d188-r2r4
   8c41d7ec ([evidence](/mnt/workspaces/Cells/d188-r2r4-20261117/)).
   - **What changed:**

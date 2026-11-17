@@ -834,3 +834,24 @@ R1 landed at d61d4618 and R2–R4 at the merge of d188-r2r4 8c41d7ec. The eviden
 - **Lint:** the move adds 12 line-length findings. They are fixed in a separate commit, never in
   the move commit.
 
+## 19. Move 1 landed (17 November 2026)
+
+Merge 7bb8bf23 (d188-m1 9b20034a), tagged `d188-move1-landed-2026-11-17`. The tree before it is
+tagged `pre-d188-move1-2026-11-17` (097f802e). Every gate of §18 held; the evidence is in
+`/mnt/workspaces/Cells/d188-m1-20261117/gate-9b20034a/`.
+
+**The lead's rulings on what the move found:**
+- **Docs.** Code paths of moved modules are rewritten in living and dated notes by the move's own
+  text rules: paths only, with the text otherwise unchanged. This note keeps the old paths it
+  documents, and `docs/history/` is untouched.
+- **`cells tissue-geometry --help`** now shows `usage: cells.legacy.tissue_geometry`, because the
+  rewriter followed its `prog=` string. This is accepted, since the module is legacy.
+- **One registered protocol's data pin went stale** through R5:
+  `validation/topology/joint_water_profile_phase_handoff_protocol.json`. 94 of its 263 digests
+  were already stale, and no test reads it. It stays unedited, under §17 item 7.
+- **For move 2's map:** `assembly/cli.py`, `assembly_pool/cli.py` and `ensemble/cli.py` still copy
+  file-relative roots. Any map that moves one of them needs R5's treatment first.
+- **Move 2 is next.** It waits for the user's answer on checkpoints (§17 item 4). Its 36 unplaced
+  modules are placed against `docs/CORE_SEAMS_DESIGN.md` §8.2, so files move once, and
+  `charged_surface_work`'s six pinned files keep their bytes.
+
