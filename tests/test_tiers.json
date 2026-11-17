@@ -113,7 +113,8 @@
   "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-restore/measured.json",
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-cda5dc82/measured.json",
   "/mnt/workspaces/Cells/d188-r1-20261117/measure-ba2b6e2b/measured.json",
-  "/mnt/workspaces/Cells/d188-m1-20261117/measure-c2bebaea/measured.json"
+  "/mnt/workspaces/Cells/d188-m1-20261117/measure-c2bebaea/measured.json",
+  "/mnt/workspaces/Cells/gard-g1-20261117/measure-518d22e7/measured.json"
  ],
  "measured_provenance": [
   {
@@ -940,6 +941,13 @@
    "root": ".claude/worktrees/d188-m1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T04:51:32+00:00"
+  },
+  {
+   "git_revision": "518d22e774ffd4905275c979e587eda4663158bd",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T12:25:17+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1242,6 +1250,54 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_balance.py",
+    "seconds": 1.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_fission.py",
+    "seconds": 8.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_ledger.py",
+    "seconds": 10.29,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_records.py",
+    "seconds": 11.74,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_spec.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_streams.py",
+    "seconds": 16.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -3823,6 +3879,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_kernel.py",
+    "seconds": 34.25,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
