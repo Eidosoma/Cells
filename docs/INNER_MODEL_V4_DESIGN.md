@@ -1887,23 +1887,31 @@ active), with check_onsets' refusal kept.
       share: step-bound breach". That covers a negative row decrease too, since the shares sum to
       it;
       - **Amended 17 November 2026 (the sign rule's floor; the lead's four conditions):** a share
-        is refused only below its floor, −16 × eps × (|μ̄_in m| + |μ̄_out m|), its own terms at the
-        raw-sum check's factor and scale (in pJ, the share's 1e-3 RT). A share within its floor
-        is booked as computed, with no clamp, so every row's raw sum and the energy ledger close
-        exactly as before.
+        is refused only below its floor, −16 × eps × (|μ̄_in| + |μ̄_out| + 2)·|m|, in pJ (the
+        share's 1e-3 RT). That is the raw-sum check's factor on the share's own terms, |μ̄| |m| at
+        each end, plus its potentials' evaluation rounding, 2|m| (added the same day: the band
+        below). A share within its floor is booked as computed, with no clamp, so every row's
+        raw sum and the energy ledger close exactly as before.
       - **What it was refused at:** the gap-junction replication's line of 25 cells, between
         identical healthy cells. In the step measured, two miR200 routes moved 4.8e-20 fmol each,
         below the amounts' resolution (about 7e-18 fmol, so no stored amount changed), against a
         potential difference of 4.44e-16 (2 eps, one ulp at ln c ≈ −2.3). Each share was
         −2.1e-35 RT fmol, about 40 times inside its floor
         (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-fail-01/`).
-      - **Where it closes:** the floor's terms scale with |μ̄|, but the potential difference keeps
-        the ulp of ln c + 1 (the kernel's divided difference adds and removes 1). So the floor
-        closes as c → 1 mM (μ̄ → 0), and there a rounding-level negative share is still refused.
-        On the closed pair, a rounding-level share is refused within about 1% of 1 mM for a 1-ulp
-        lead, 5% for 4 ulp and at least 10% for 16 ulp (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/probes/
-        band.json`). Steps admitted before are unchanged, and a share orders of magnitude below
-        its floor is still refused (tests/unit/test_passive_share_floor.py);
+      - **The band near 1 mM, closed the same day (the lead's call; FR-19's follow-up):**
+        - **Why it existed.** With the share's own terms alone, the floor scaled with |μ̄|, but
+          the potential difference keeps the ulp of ln c + 1: the kernel forms μ̄ as
+          ln(n0/V) + p(x) − 1, with p near 1. So that floor closed as c → 1 mM (μ̄ → 0). On the
+          closed pair, a rounding-level share was refused within about 1% of 1 mM for a 1-ulp
+          lead, 5% for 4 ulp and at least 10% for 16 ulp
+          (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/probes/band.json`).
+        - **The fix.** The floor's 2|m| carries that evaluation rounding, so at 1 mM the floor
+          is 32 eps |m|. On the same plant, all 47 rounding-level cases of the table are admitted
+          (leads of 1–16 ulp, 1e-4 to 100 mM), the worst at half its floor (1 mM, 16 ulp)
+          (`/mnt/workspaces/Cells/passive-share-band-20261117/probes/band.json`).
+        - **What stays refused.** At 1 mM a share at twice its floor is refused, and so is one a
+          million times below it. Steps admitted before are unchanged, since the floor only
+          moved down (tests/unit/test_passive_share_floor.py);
     - **why a share can be negative at all:**
       - Under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can reverse the applied transfer
         against stage rates of one sign.
@@ -1929,9 +1937,9 @@ active), with check_onsets' refusal kept.
       at each node. A dt-study criterion covers accuracy. Exact booking closes the ledger up to
       h = 2, so it no longer signals an overshoot by itself;
     - **for the run view:** route heat stays monotone to rounding, since a step with a share below
-      its floor is refused (a share within it moves a route's heat by at most 16 eps of its own
-      terms). A route's value is an exact attribution of its rows' decrease (the
-      divided-difference split), not a separately measurable quantity.
+      its floor is refused (a share within it moves a route's heat by at most 16 eps of its
+      scale, (|μ̄_in| + |μ̄_out| + 2)·|m|). A route's value is an exact attribution of its rows'
+      decrease (the divided-difference split), not a separately measurable quantity.
   - **The probe's numbers.** They are recorded here because they exist only as data and hand-back
     text: FR45's `fr45/booking-probe/` (`HANDOFF.md`, `results.json`, `round2.json`).
     - R1 (the share, else the trapezoid) missed the ledger's allowance by 48× to 480× wherever its

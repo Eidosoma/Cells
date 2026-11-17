@@ -24,7 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
-| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged | Close the band near 1 mM by adding the potential's evaluation rounding to the floor's scale (a follow-up) |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed on branch `passive-share-band`: the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\| | Land `passive-share-band`, and renew crossrev's kinds record at its landing |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -813,8 +813,15 @@ explored.
     `@2` stays the user's alternative.
   - **The replays:** the replication's previously refused points now run the full 20,000 s
     (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/`).
-- **Follow-up, the lead's call:** near 1 mM the floor still closes, since its terms scale with |μ̄|
-  while the potential keeps the ulp of ln c + 1. The fix is to add the potential's evaluation
-  rounding, (|μ̄_in| + |μ̄_out| + 2)·|m|, to the floor's scale, with the same gates. The replication
-  never reaches the band, since its concentrations stay at or below 0.1 mM.
+- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band`.**
+  - **Why.** Near 1 mM the first floor still closed, since its terms scaled with |μ̄| while the
+    potential keeps the ulp of ln c + 1.
+  - **The fix.** The floor's scale adds the potential's evaluation rounding, (|μ̄_in| + |μ̄_out| +
+    2)·|m|, so at 1 mM it is 32 eps |m|.
+  - **On the closed pair:** all 47 rounding-level cases are admitted (leads of 1–16 ulp, 1e-4 to
+    100 mM), the worst at half its floor. At 1 mM a share at twice its floor, or a million times
+    below it, is still refused.
+  - **Unchanged:** previously admitted steps, since the floor only moved down. The same gates
+    apply, and crossrev's kinds record is renewed again at its landing.
+  - The replication never reaches the band, since its concentrations stay at or below 0.1 mM.
 
