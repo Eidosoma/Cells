@@ -20,6 +20,10 @@ and a general feature, never one built for one study (D144).
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
 | [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | Requested; not scoped; no model | A read-only design note: does the core architecture host machines naturally at both levels, or is something missing? Options for the user before anything is built |
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped | Covered by FR-13's design note: options for a declared extends link, inherited checks and version rules |
+| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Requested; awaits the user's go | First find why `check_impermeant` refuses, and whether D191's composition rule is the intended lift |
+| [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | Needed only for the preprint's 3D table |
+| [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -715,3 +719,47 @@ explored.
   likely first use: one general machine cycle, specialised per machine.
 - **Status:** requested; not scoped. FR-13's design note covers it, as part of the user's question
   about the core architecture.
+
+## FR-15 — Junction-crossing and charged species in the species operators
+
+- **Where it came from.** The gap-junction replication (D207) found it on 17 November 2026. In the
+  public preprint 10.64898/2026.09.02.748840, a microRNA is made in cells and crosses gap junctions.
+- **What refuses:**
+  - **F1:** `local_species_reactions@1`, turnover, exchange and site occupancy refuse any species
+    with a junction route (`species_common.check_impermeant`). Even the preprint's linear model as
+    written is refused, so the replication ran its exact Norton equivalent instead.
+  - **F2:** the same operators refuse charged species.
+- **Why it is general.** Any signalling species that cells make or use and that also crosses
+  junctions needs it: second messengers, small RNAs, metabolites.
+- **First step:** find why `check_impermeant` refuses (its design reason and the decisions it
+  cites), and whether D191's composition rule is the intended way to lift it.
+- **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
+  features.
+
+## FR-16 — Junction gating and availability
+
+- **F3:** @3 hosts one junction law, `junction_voltage_relaxation@1`. The preprint's Cx45 gate needs a
+  two-state voltage gate in the manner of Chen-Izu. The existing law's best fit is off by 0.05.
+- **F4:** a junction has one minimum open fraction for every species. The preprint's microRNA curve
+  needs a per-species floor (0); one floor for all is off by 0.11.
+- **F5:** regulated junction availability combines the two sides only by product. The preprint
+  needs min and mean as well.
+- **Why it is general:** connexin-specific gating and permselectivity are general junction
+  physiology.
+- **Status:** requested; awaits the user's go.
+
+## FR-17 — Field solves beyond 2048 nodes
+
+- **F7:** the field solve is capped at 2048 nodes. The preprint's 3D table needs a 25³ field, 15,626
+  nodes.
+- **Status:** requested; awaits the user's go. Only the 3D table needs it.
+
+## FR-18 — The composite's energy check at moderate step sizes
+
+- **The finding.** @3's energy check (2e-3 under ARS(2,2,2)) refused neutral-species junction worlds
+  at dt × rate from 0.08 to 0.31, well inside the stability bound of 1. Two dt studies show the error
+  is second order, with a coefficient that depends on the world. The replication passed by using
+  dt × rate ≤ 0.04.
+- **What is asked of the core:** review whether the check's tolerance, or the step-size advice that
+  goes with it, should change. It is not loosened for one experiment.
+- **Status:** reported to the core.
