@@ -406,9 +406,7 @@ def resources(which):
         no_wait_headroom="judged units run without --wait-headroom: the wait would run inside "
                          "the unit and count against its runtime limit; the lead checks the "
                          "slice's room before each launch",
-        attempts="an infrastructure ending (a runtime or memory kill, a signal, an incomplete "
-                 "results.json) is rerun once from the same snapshot into a new OUT/PART; a "
-                 "refusal by the engine is a verdict",
+        attempts=f"{HARNESS_RULE} (harness_limits)",
         enforced_by="the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and "
                     "RuntimeMaxSec, with the values above): neither the generator nor the judge "
                     "reads these fields",
@@ -647,6 +645,16 @@ PROSE = {
     },
 }
 
+# The harness-limit rule (the lead's ruling of 17 November 2026, before registration: text only).
+HARNESS_RULE = (
+    "a part ended by its runtime limit or its memory cap (as by any other infrastructure ending: a "
+    "signal, an incomplete results.json) is a harness failure, not a verdict: the judged run is "
+    "void and is relaunched once, whole, from the same snapshot under the same protocol, into a "
+    "new output directory; the void attempt is kept and reported beside the relaunch's verdict. A "
+    "second harness failure goes to the lead. A refusal by the engine is a verdict, never a "
+    "harness failure"
+)
+
 # The text brought level with the runs before registration (the lead's ruling, 17 November 2026:
 # text only, no criterion changed), set by `draft` as PROSE's leaves are.
 SCOPE_LINE = ("The verdict covers cell_owned_compartments@1 as built at the judged snapshot "
@@ -775,6 +783,7 @@ LEVEL = {
 }
 for _which, _leaves in LEVEL.items():
     PROSE[_which].update(_leaves)
+    PROSE[_which][("harness_limits",)] = HARNESS_RULE[0].upper() + HARNESS_RULE[1:]
 
 
 DISCLOSURE = (
@@ -909,6 +918,13 @@ TEXT_LEVELLED = (
     "each unit, and each runtime limit D150's rule on the larger of the sizing and the "
     "rehearsal's wall) were brought level with the runs"
 )
+HARNESS_LIMITS = (
+    "pre-registration correction, 17 November 2026, the lead's ruling on harness limits (text "
+    "only: no criterion, derivation or threshold changed, checked byte for byte when redrafted): "
+    f"{HARNESS_RULE}. It is the protocol's leaf harness_limits, and judge.resources.attempts "
+    "follows it, in place of rerunning the failed part alone; it is fixed before any judged run, "
+    "so a first timeout needs no ruling after the fact"
+)
 TEXT_LEVELLED_FR4 = (f"{TEXT_LEVELLED}; and the timing rule's measured rate and the "
                      "references' tier-1 note")
 CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
@@ -933,6 +949,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a "
         "verdict",
         TEXT_LEVELLED_FR4,
+        HARNESS_LIMITS,
     ],
     "fr5": [
         CHARGE_CHECK,
@@ -948,6 +965,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "lag estimate (gap 7) within 1e-3 pH at every buffered node",
         ENERGY_SETTLED,
         TEXT_LEVELLED,
+        HARNESS_LIMITS,
     ],
 }
 
