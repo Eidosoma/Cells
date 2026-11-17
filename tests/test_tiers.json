@@ -137,7 +137,8 @@
   "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
   "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/fr1-references-20261117/measure-02/measured.json",
-  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json"
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1133,6 +1134,13 @@
    "root": ".claude/worktrees/fr1-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T22:53:40+00:00"
+  },
+  {
+   "git_revision": "09fa5daf94b5c783984e916522ce02c1c5d377f2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:39:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2226,15 +2234,15 @@
    },
    {
     "file": "tests/unit/test_fr1_qualification.py",
-    "seconds": 3.12,
+    "seconds": 3.67,
     "exit_code": 0,
     "counts": {
-     "passed": 32
+     "passed": 42
     }
    },
    {
     "file": "tests/unit/test_fr1_reference_inputs.py",
-    "seconds": 1.47,
+    "seconds": 1.52,
     "exit_code": 0,
     "counts": {
      "passed": 1
