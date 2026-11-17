@@ -2460,8 +2460,8 @@ def _excise(args):
 
 def ensemble(model):
     """The ensemble adapters' hooks of an older assembly family, by model ID: parse_spec(),
-    runtime(), flatten() and, for the cluster, aggregate(), each importing as the adapters did
-    and returning what they used; None for any other model."""
+    runtime(), flatten(), for the cluster aggregate() and for the cell working_size(), each
+    importing as the adapters did and returning what they used; None for any other model."""
     if model == "assembly_regulated_cluster@1":
         return _CLUSTER
     if model == "assembly_regulated_cell@1":
@@ -2505,10 +2505,22 @@ def _cluster_aggregate():
     return aggregate_cluster
 
 
+def _cell_working_size():
+    """ensemble/families.output_bound's ionic working size (D188 R3: the model module moves)."""
+    from cells.models.kinetic_finite_extracellular import working_size
+
+    return working_size
+
+
 _CLUSTER = SimpleNamespace(
     parse_spec=_cluster_parse_spec,
     runtime=_cluster_runtime,
     flatten=_flatten,
     aggregate=_cluster_aggregate,
 )
-_CELL = SimpleNamespace(parse_spec=_cell_parse_spec, runtime=_cell_runtime, flatten=_flatten)
+_CELL = SimpleNamespace(
+    parse_spec=_cell_parse_spec,
+    runtime=_cell_runtime,
+    flatten=_flatten,
+    working_size=_cell_working_size,
+)
