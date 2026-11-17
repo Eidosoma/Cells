@@ -744,3 +744,45 @@ These are all older families' modules:
   moved modules, and a package's `__init__` with its last module.
 - **A stale comment.** `core/__init__.py` names `processes/charged_surface_work` in a comment
   without `.py`, which the path rule does not match. A docs-level fix after the move.
+
+## 17. The lead's rulings (17 November 2026, with the advisor)
+
+On §15's eight items, after the dry run (§16):
+1. **CLI paths: accepted.** `-m cells.assembly_cell` and `-m cells.assembly_cluster` become
+   `-m cells.legacy.*`, with no aliases (§12). The rewriter does not touch `docs/` or the
+   README, so user-facing commands and import paths there are updated in a separate docs commit
+   with move 1.
+2. **The pinned cluster: the proposal of §5 is accepted.** R4 applies to `charged_surface_work`;
+   the stable-seed and conservative-polygon cluster moves as it is and refuses at its pins.
+   - No test that is green today turns red through a pin (§16.3).
+   - `test_conservative_polygon_tissue_preparation.py` stays a recorded red, and goes to the
+     user's next retire batch.
+   - **For move 2:** `charged_surface_work`'s six other pinned files keep their bytes:
+     `processes/electrochemistry.py`, `numerics/fixed_step.py`, `numerics/extracellular_field.py`
+     and the three package files.
+3. **The coupling list is R3's 7 sites, not the 42: accepted, as an amendment to D189.**
+   - The older families' shared modules stay in the core (`models/`), because the four families
+     D189 keeps are built on them: `surface_tissue` and `surface_tissue_spec` (resolved_tissue@1),
+     `surface_kinetic` and `surface_kinetic_spec` (resolved_tissue@2–@12), and the reached kernel
+     of `kinetic_finite_extracellular` (finite_extracellular@2).
+   - Their registrations move to `legacy/registration.py` in R1.
+4. **Checkpoints across move 2: put to the user.** The default is none, with older checkpoints
+   restoring on the tag of the tree before the moves. This blocks move 2, not move 1.
+5. **The tier-3 diff reads `tier3_record.json` through the maps: accepted.** It is needed before
+   the final tier-3 run.
+6. **`ensemble/{cluster,coupled}` move to `legacy/ensemble/`: accepted.**
+7. **Registered protocol JSON and other records stay unedited: confirmed.**
+8. **The 20 audits that read one path in two trees.** None is run by a green test or an active
+   protocol: the dry run's tiers show no red beyond §16.1. They are left untouched, listed here
+   as broken by move 1 for the live-tree read, and go to the user's next retire batch (D187).
+
+**From the dry run:**
+- **The AST-hash test** (`test_open_calcium_regression.py`, two cases). It compares the parser's
+  AST through the map: moved module names are translated back to their old names before the
+  hash. No hash literal changes (D187). This is a test change before move 1, with R2. If it
+  cannot be done cleanly, the two cases go to the user as a retire item.
+- **The collected-ID gate compares IDs through the map,** so a parametrization that names a moved
+  path is the same test.
+- **The planner takes a reverse closure,** and a package's `__init__` moves with its last module
+  (§16.6).
+
