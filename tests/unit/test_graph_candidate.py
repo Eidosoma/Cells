@@ -167,32 +167,6 @@ def test_complete_checkpoint_restart_changes_only_recording_windows(tmp_path, mo
         candidate.load_checkpoint(tmp_path / "parent", 99, contract)
 
 
-@pytest.mark.parametrize(
-    "case",
-    [
-        "E_to_M/active",
-        "M_to_E/active",
-        "E_to_M/one_neighbor",
-        "M_to_E/one_neighbor",
-        "M_to_E/blocked",
-    ],
-)
-def test_graph_stage_and_cubic_audit_covers_edges_and_complete_typed_histories(
-    tmp_path, protocol, case
-):
-    registered = ref.read_json(profile.PANEL / "registration.json")
-    model = prep.graph.Model(registered["cases"][case])
-    args = arguments(tmp_path, protocol, width=2)
-    candidate.integrate(model, tmp_path / "candidate", **args)
-    expected = candidate.contract(
-        model, candidate.Grid(args["step"], args["end"]), args["numerics"], args["identity"]
-    )
-    checked = audit.audit_trajectory(
-        tmp_path / "candidate", expected, args["resources"], model.panel, perf_counter() + 60
-    )
-    assert checked["steps"] == 4 and checked["maximum_accounting_residual"] < 2e-9
-
-
 def test_candidate_samples_copy_exact_endpoints_and_match_legacy(tmp_path, model, protocol):
     args = arguments(tmp_path, protocol, width=16)
     candidate.integrate(model, tmp_path / "candidate", **args)
@@ -389,21 +363,6 @@ def test_failed_accuracy_stops_without_step_refinement(
     assert not (tmp_path / "bad/trajectory.json").exists()
 
 
-def test_real_preregistered_scope_selected_trios_and_aggregate_budget():
-    r = profile.specification(profile.OUTPUT_PARENT / "engineering-01")
-    assert len(r["planned_attempts"]) == 12 and r["plan"]["duration"] == 5.12
-    assert r["plan"]["steps_per_profile"] == 512 and not r["plan"]["long_study_run"]
-    assert r["storage_budget"]["prior_bytes"] == 762443122
-    assert r["storage_budget"]["new_root_limit_bytes"] == 311298702
-    assert len(r["production_source_hashes"]) == 39 and len(profile.SOURCES) == 48
-    for case, value in r["cases"].items():
-        assert value["selected"]["duration"] == (500 if case.startswith("prepare_") else 1000)
-        assert len(value["trajectories"]) == 3
-    assert "bdf_tight" in r["cases"]["M_to_E/one_neighbor"]["trajectories"]
-    assert "bdf" in r["cases"]["M_to_E/active"]["trajectories"]
-    assert r["observation_times"] == [0, 0.113, 0.613, 1, 2, 3, 4, 5, 5.12]
-
-
 def test_prior_closeout_tamper_refused(tmp_path, monkeypatch):
     monkeypatch.setattr(profile, "ROOT", tmp_path)
     (tmp_path / "reports").mkdir()
@@ -476,17 +435,6 @@ def registration_fixture(tmp_path, monkeypatch, protocol):
     for key, value in profile.campaign.THREADS.items():
         monkeypatch.setenv(key, value)
     return tmp_path / "new", source
-
-
-def test_registration_roundtrip_archive_identity_and_exclusivity(registration_fixture):
-    output, source = registration_fixture
-    registered = profile.register(output)
-    assert profile.check_registration(output) == registered
-    with pytest.raises(FileExistsError):
-        profile.register(output)
-    source.write_text("changed fixture source\n")
-    with pytest.raises(ValueError, match="source identity"):
-        profile.check_registration(output)
 
 
 @pytest.mark.parametrize("timeout", [False, True])

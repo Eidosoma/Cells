@@ -409,22 +409,6 @@ def test_microprofile_call_budget_is_explicit(model, calls):
         profile.microprofile(model.case, "scalar_cached", calls)
 
 
-def test_real_registration_keeps_prior_caps_and_separates_evaluator_identity():
-    r = profile.specification(profile.OUTPUT_PARENT / "evaluation-01")
-    r["source_hashes"] = {name: ref.sha(profile.ROOT / name) for name in profile.SOURCES}
-    assert len(profile.SOURCES) == len(set(profile.SOURCES)) == 74
-    assert r["storage_budget"]["prior_bytes"] == 831126114
-    assert r["storage_budget"]["new_root_limit_bytes"] == 242615710
-    assert len(r["planned_attempts"]) == 12
-    for case in r["plan"]["cases"]:
-        a, b = [profile.identity(r, case, p) for p in evaluation.POLICIES]
-        assert (
-            a["integration_evaluation"]["model_sha256"]
-            == b["integration_evaluation"]["model_sha256"]
-        )
-        assert a != b
-
-
 @pytest.fixture
 def registration_fixture(tmp_path, monkeypatch, protocol):
     source = tmp_path / "fixture.txt"
@@ -442,17 +426,6 @@ def registration_fixture(tmp_path, monkeypatch, protocol):
     for key, value in profile.campaign.THREADS.items():
         monkeypatch.setenv(key, value)
     return tmp_path / "new", source
-
-
-def test_registration_is_exclusive_and_source_pinned(registration_fixture):
-    output, source = registration_fixture
-    registered = profile.register(output)
-    assert profile.check_registration(output) == registered
-    with pytest.raises(FileExistsError):
-        profile.register(output)
-    source.write_text("changed\n")
-    with pytest.raises(ValueError, match="source identity"):
-        profile.check_registration(output)
 
 
 @pytest.mark.parametrize("timeout", [False, True])

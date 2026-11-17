@@ -153,11 +153,3 @@ def test_jacobian_work_claim_is_recomputed(saved):
     rehash(saved, receipt, relative)
     with pytest.raises(ValueError, match="Jacobian work"):
         audit.audit(saved)
-
-
-def test_complete_saved_session_is_audited():
-    result = audit.audit(SESSION)
-    assert result["status"] == result["qualification_status"] == "pass"
-    assert result["cases"] == 14
-    assert result["replayed_arrays"] + result["rejected_candidates"] == 112
-    assert result["depletion_witness"]["pass"]

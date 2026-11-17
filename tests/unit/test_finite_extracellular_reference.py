@@ -31,22 +31,6 @@ def world(definition):
     return ref.resolve(definition)
 
 
-def test_frozen_panel_and_bounded_scope():
-    result = check.verify()
-    assert result["status"] == "pass", result["failures"]
-    assert result["checks_failed"] == 0
-    assert result["groups"]["blocked_gates_keep_relaxing"]["checks"] == 60
-    assert result["groups"]["blocked_outside_exact_zero"]["checks"] == 69
-    assert len(result["assemblies"]) == 9
-    assert len(result["production_source_sha256"]) == 46
-    assert result["production_version"] == "0.13.0"
-    assert result["production_change"] is result["independent_ode_solver_run"] is False
-    assert (
-        result["coupled_trajectory_qualification"] == result["method_selection"] == "not_performed"
-    )
-    assert result["biological_acceptance"] == "not_assessable"
-
-
 @pytest.mark.parametrize("case", range(9))
 def test_immutable_resolution_and_evaluation_without_input_mutation(panel, case):
     raw = check.definition(panel["cases"][case])

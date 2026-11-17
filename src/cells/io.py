@@ -19,6 +19,7 @@ import numpy as np
 import cells
 from cells import continuity as _continuity
 from cells import run_view
+from cells.core import blas_threads
 from cells.core.devices import execution_device
 from cells.core.runner import RunResult, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, digest, parse_spec, read_json
@@ -288,6 +289,7 @@ def write_run(
         "cpu_affinity": sorted(os.sched_getaffinity(0))
         if hasattr(os, "sched_getaffinity")
         else None,
+        "blas": blas_threads.record(),  # D190: each library's version, kernels and threads.
         "observer": {
             "id": model.OBSERVER_ID,
             "sampling": getattr(model, "OBSERVATION_SAMPLING", "read_only_linear_interpolation"),

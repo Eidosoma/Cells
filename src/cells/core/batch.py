@@ -16,7 +16,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import phases
+from cells.core import blas_threads, phases
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError
 from cells.core.grid import refinement_times
@@ -372,6 +372,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
     with one untimed warm-up. Only one biological trajectory is returned. Its phases
     write start, completion and failure records (core.phases.Recorder).
     """
+    blas_threads.require_pinned("run_batch")  # D190.
     with phases.Recorder() as record:
         return _run_batch(spec, checkpoints, timing_repeats, record)
 

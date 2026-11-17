@@ -1,7 +1,5 @@
 """Static physical preparation, stable ownership, units and complete replay."""
 
-import ast
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -13,10 +11,8 @@ import pytest
 
 from cells.core import tissue_profile_preparation as bridge
 from cells.core.specs import ConfigError, digest, parse_spec
-from cells.coupling.selective import selective_flux
 from cells.models.registry import get_model
 from cells.processes import tissue_target_selectors as native
-from cells.processes.electrochemistry import F, R
 from validation.topology import tissue_profile_preparation_fixtures as fixtures
 from validation.topology import tissue_profile_preparation_reference as reference
 
@@ -305,84 +301,3 @@ def test_ambiguous_or_nonphysical_binding_refuses(fault):
         )
     assert raw["definition"] == before
     evidence("refused-" + fault, dict(fault=fault, source_unchanged=True))
-
-
-def test_native_units_actual_area_direction_and_independent_decimal_flux():
-    folder = os.environ["CELLS_PROFILE_PREPARATION_NATIVE"]
-    capture = json.loads((Path(folder) / "result.json").read_text())
-    assert (
-        capture["status"] == "passed"
-        and not capture["cells_imported"]
-        and not capture["jax_imported"]
-    )
-    assert capture["common_constants"] == dict(F_C_mol=F, R_J_mol_K=R)
-    rows = []
-    for entry in capture["cases"]:
-        v = entry["inputs"]
-        P = v["D_m2_s"] / v["thickness_m"]
-        actual = float(
-            selective_flux(
-                v["ci_mM"],
-                v["co_mM"],
-                v["voltage_V"],
-                v["valence"],
-                v["temperature_K"],
-                v["area_m2"],
-                P,
-                0.0,
-                1.0,
-                1.0,
-                xp=np,
-            )
-        )
-        source = -entry["native_inward_mol_m2_s"] * v["area_m2"] / 1e-15
-        expected = reference.outward_flux(
-            v["ci_mM"],
-            v["co_mM"],
-            v["voltage_V"],
-            v["valence"],
-            v["temperature_K"],
-            v["area_m2"],
-            v["D_m2_s"],
-            v["thickness_m"],
-            F,
-            R,
-        )
-        np.testing.assert_allclose(actual, [source, expected], rtol=5e-12, atol=1e-19)
-        rows.append(
-            dict(
-                name=v["name"],
-                permeability_m_s=P,
-                cells_outward_fmol_s=actual,
-                native_converted_outward_fmol_s=source,
-                decimal_outward_fmol_s=expected,
-            )
-        )
-    evidence(
-        "units",
-        dict(
-            source_ast_sha256=capture["electroflux_ast_sha256"],
-            rows=rows,
-            baseline_rho=1.0,
-            constants_scope=PROTOCOL["native_units"]["constants_scope"],
-        ),
-    )
-
-
-def test_readonly_component_identities_and_independent_reference_imports():
-    for name, expected in PROTOCOL["readonly_source_sha256"].items():
-        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected
-    receipt = PROTOCOL["native_component_receipt"]
-    assert hashlib.sha256(Path(receipt["path"]).read_bytes()).hexdigest() == receipt["sha256"]
-    for module in (fixtures, reference):
-        for node in ast.walk(ast.parse(Path(module.__file__).read_text())):
-            if isinstance(node, ast.ImportFrom):
-                assert not (node.module or "").startswith(("cells", "jax"))
-    evidence(
-        "provenance",
-        dict(
-            frozen_component=receipt,
-            source_hashes=PROTOCOL["readonly_source_sha256"],
-            no_shared_or_native_kernel_edits=True,
-        ),
-    )

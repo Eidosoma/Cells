@@ -1,6 +1,5 @@
 """Mocked solver and saved-array contracts; no physical trajectory is run."""
 
-import ast
 import importlib.util
 import os
 from copy import deepcopy
@@ -74,68 +73,10 @@ def mocked_run(monkeypatch, module, refinement=None, supplied=False):
     return result, calls
 
 
-@pytest.mark.parametrize("supplied", (False, True))
-def test_default_and_explicit_one_match_accepted_reference_bitwise(monkeypatch, supplied):
-    old, old_calls = mocked_run(monkeypatch, prior_module(), supplied=supplied)
-    for factor in (None, 1):
-        actual, calls = mocked_run(monkeypatch, reference, factor, supplied)
-        for a, b in zip(actual[:2], old[:2], strict=True):
-            assert a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
-        assert actual[2] == old[2]
-        for call, original in zip(calls, old_calls, strict=True):
-            np.testing.assert_array_equal(call.pop("atol"), original["atol"])
-            assert call == {k: v for k, v in original.items() if k != "atol"}
-
-
-@pytest.mark.parametrize("supplied", (False, True))
-def test_refinement_two_halves_every_accuracy_setting_without_reclocking(monkeypatch, supplied):
-    old, old_calls = mocked_run(monkeypatch, prior_module(), supplied=supplied)
-    actual, calls = mocked_run(monkeypatch, reference, 2, supplied)
-    np.testing.assert_array_equal(actual[0], old[0])
-    np.testing.assert_array_equal(actual[1], old[1])
-    for call, original in zip(calls, old_calls, strict=True):
-        for key in ("rtol", "max_step", "atol"):
-            np.testing.assert_array_equal(call[key], original[key] / 2)
-        assert call["span"] == original["span"]
-    for key in (
-        "rtol",
-        "amount_volume_energy_atol",
-        "background_transfer_atol_fmol",
-        "charge_atol_C",
-        "clock_atol_s",
-        "max_step_s",
-    ):
-        assert actual[2][key] == old[2][key] / 2
-
-
 @pytest.mark.parametrize("factor", (0, -1, 3, True, False, 1.0, 2.0, "2", None))
 def test_undeclared_refinement_refused_before_binding(factor):
     with pytest.raises(ValueError, match="integer 1 or 2"):
         reference.integrate({}, refinement=factor)
-
-
-def test_exact_inverse_ast_recovers_all_accepted_equations_and_control_semantics():
-    old = ast.parse(Path(prior_module().__file__).read_text())
-    tree = ast.parse(Path(reference.__file__).read_text())
-    node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "integrate")
-    assert len(node.args.kwonlyargs) == 1 and node.args.kwonlyargs[0].arg == "refinement"
-    node.args.kwonlyargs, node.args.kw_defaults = [], []
-    guard = node.body.pop(0)
-    assert isinstance(guard, ast.If) and "refinement" in ast.unparse(guard)
-
-    class Restore(ast.NodeTransformer):
-        def visit_BinOp(self, value):
-            value = self.generic_visit(value)
-            if (
-                isinstance(value.op, ast.Div)
-                and isinstance(value.right, ast.Name)
-                and value.right.id == "refinement"
-            ):
-                return value.left
-            return value
-
-    tree = Restore().visit(tree)
-    assert ast.dump(tree, include_attributes=False) == ast.dump(old, include_attributes=False)
 
 
 def synthetic(phase="SIM"):

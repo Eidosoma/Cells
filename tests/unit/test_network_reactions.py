@@ -1,6 +1,5 @@
 """Native reaction/growth correspondence, explicit accounting and CPU JAX."""
 
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -15,7 +14,6 @@ from validation.chemistry.betse_network_reactions_fixtures import (
     SPECIES,
     base,
     cases,
-    limitations,
     molecule,
     reaction,
 )
@@ -82,51 +80,6 @@ def close(actual, expected, *, material=False):
         expected,
         rtol=TOL["relative"],
         atol=TOL["material_atol_fmol"] if material else TOL["rate_atol_mM_s"],
-    )
-
-
-@pytest.mark.parametrize("raw", CASES, ids=lambda r: r["name"])
-def test_native_and_independent_correspondence(raw):
-    raw, c, volume, t, p = prepare(raw)
-    assert chemistry.domain_valid(c, volume, t, p, xp=np)
-    result = chemistry.rates(c, volume, t, p, xp=np)
-    expected = reference.evaluate(raw)
-    native = captured(raw["name"])
-    assert native["status"] == "passed"
-    assert len(expected["routes"]) == t.kind.size
-    for key, actual in result._asdict().items():
-        close(actual, [r[key] for r in expected["routes"]], material=key == "extent_fmol_s")
-    for i, route in enumerate(native["routes"]):
-        assert route["owner"] == t.owner[i]
-        close(result.concentration_rate_mM_s[i], route["concentration_rate_mM_s"])
-        if route["kind"] == "growth":
-            close(result.growth_optimization_alpha[i], route["growth_optimization_alpha"])
-            close(result.decay_optimization_mM_s[i], route["decay_optimization_mM_s"])
-    ledger = chemistry.accounting(result.extent_fmol_s, t, xp=np)
-    close(ledger.total_change_fmol, expected["amount_fmol_s"], material=True)
-    close(ledger.total_change_fmol, native["amount_fmol_s"], material=True)
-    close(ledger.growth_source_sink_fmol, expected["growth_source_sink_fmol_s"], material=True)
-    close(ledger.reaction_conversion_fmol, expected["reaction_conversion_fmol_s"], material=True)
-    for zone, kinds in (
-        ("cell", (chemistry.GROWTH, chemistry.CELL)),
-        ("mit", (chemistry.MIT,)),
-        ("env", (chemistry.ENV,)),
-    ):
-        owner = next(i for i, name in enumerate(raw["compartment_zones"]) if name == zone)
-        selection = np.isin(t.kind, kinds) & (t.owner == owner)
-        np.testing.assert_array_equal(
-            t.stoichiometry[:, selection],
-            np.asarray(native["matrices"][zone]).reshape(len(SPECIES), -1),
-        )
-    evidence(
-        raw["name"],
-        dict(
-            status="passed",
-            input=raw,
-            routes=expected["routes"],
-            amount_fmol_s=ledger.total_change_fmol.tolist(),
-            source_sink_fmol_s=ledger.growth_source_sink_fmol.tolist(),
-        ),
     )
 
 
@@ -285,27 +238,6 @@ def test_growth_scale_time_modulation_and_auxiliary_contract():
     close(signed.production_mM_s, -actual.production_mM_s)
 
 
-@pytest.mark.parametrize("raw", limitations(), ids=lambda r: r["name"])
-def test_native_limitations_are_preserved(raw):
-    record = captured(raw["name"])
-    assert record["status"] == (
-        "captured_failure" if raw["expected_failure"] else "captured_limitation"
-    )
-    if raw["name"] == "disabled-mito-fallback":
-        assert record["reader_zones"]["cell"] == {"convert": "mit"}
-        assert record["reader_zones"]["mit"] == {}
-    elif raw["name"] == "duplicate-overwrite":
-        assert len(record["routes"]) == 2
-        assert ".vmax" in record["expressions"]["reactions"]["cell"]["convert"]
-    elif raw["name"] == "zero-reversible-substrate":
-        assert record["routes"][0]["concentration_rate_mM_s"] == "-inf"
-    elif raw["name"] == "negative-growth-scale":
-        assert all(row["concentration_rate_mM_s"] > 0 for row in record["routes"])
-    if raw["name"] not in ("disabled-mito-fallback", "zero-reversible-substrate"):
-        with pytest.raises((ValueError, TypeError)):
-            prepare(raw)
-
-
 @pytest.mark.parametrize(
     "change",
     ("negative", "nan", "inf", "zero-substrate", "zero-volume", "nan-volume", "negative-volume"),
@@ -401,27 +333,6 @@ def test_explicit_maps_controls_and_identity_validation():
     invalid["species_ids"][0] = invalid["species_ids"][1]
     with pytest.raises(ValueError, match="unique"):
         prepare(invalid)
-
-
-def test_native_constants_and_authenticated_independence():
-    record = captured("modern-gas-constant-explicit")
-    folder = Path(os.environ["CELLS_BETSE_REACTIONS_NATIVE_CAPTURE"])
-    manifest = json.loads((folder / "source-manifest.json").read_text())
-    assert manifest["component_cases"] == len(CASES) == 38
-    assert manifest["limitations"] == len(limitations()) == 11
-    assert manifest["native_default_R_J_mol_K"] == chemistry.NATIVE_R == 8.314
-    assert not manifest["production_cells_imported"] and not manifest["jax_imported"]
-    for relative, expected in PROTOCOL["native_source"]["source_sha256"].items():
-        assert hashlib.sha256((folder / "upstream" / relative).read_bytes()).hexdigest() == expected
-    raw = deepcopy(record["input"])
-    _, c, v, t, modern = prepare(raw)
-    native = modern._replace(gas_constant_J_mol_K=np.asarray([chemistry.NATIVE_R]))
-    left, right = (chemistry.rates(c, v, t, p, xp=np) for p in (modern, native))
-    assert np.max(np.abs(left.concentration_rate_mM_s - right.concentration_rate_mM_s)) > 1e-6
-    source = (ROOT / "validation/chemistry/betse_network_reactions_reference.py").read_text()
-    assert (
-        "import numpy" not in source and "import jax" not in source and "from cells" not in source
-    )
 
 
 def test_negative_euler_trial_is_rejected_and_rate_is_unclipped():

@@ -1,6 +1,5 @@
 """Actual native selections/target writes, independent owner reference and CPU JAX."""
 
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -12,7 +11,7 @@ import pytest
 
 from validation.betse import native_profile_conventions as profiles
 from validation.topology import betse_tissue_profiles_reference as reference
-from validation.topology.betse_tissue_profiles_fixtures import base, cases, limitations
+from validation.topology.betse_tissue_profiles_fixtures import base, cases
 
 CASES = cases()
 ROOT = Path(__file__).resolve().parents[2]
@@ -178,109 +177,6 @@ def close(actual, expected, field):
     np.testing.assert_allclose(actual, expected, rtol=5e-12, atol=atol)
 
 
-@pytest.mark.parametrize("raw", CASES, ids=lambda r: r["name"])
-def test_native_independent_selection_precedence_and_intervention(raw):
-    native = captured(raw["name"])
-    assert native["status"] == "passed"
-    raw, binding, events, state = prepared(raw, native["resolved_permutations"], native)
-    expected = reference.profiles(raw, native["resolved_permutations"])
-    event_expected = reference.events(raw, expected)
-    for name, target in binding.targets.items():
-        actual = native["targets"][name]
-        for field, record in (
-            ("cells", target.cells),
-            ("membranes", target.membranes),
-            ("environments", target.environments),
-        ):
-            np.testing.assert_array_equal(record.indices, actual[field])
-            np.testing.assert_array_equal(record.indices, expected["targets"][name][field])
-        assert target.environment_declared == actual["environment_declared"]
-        np.testing.assert_array_equal(
-            [binding.layout.cell_ids.index(v) for v in target.picked_cell_ids],
-            expected["targets"][name]["picked_cells"],
-        )
-    np.testing.assert_array_equal(state.membrane_base_m2_s, native["diffusion_m2_s"])
-    np.testing.assert_array_equal(state.membrane_base_m2_s, expected["diffusion_m2_s"])
-    weights = profiles.insular_membrane_weights(
-        binding, np.asarray(raw["layout"]["partner_membrane"], int), adjacency(raw), xp=np
-    )
-    np.testing.assert_array_equal(weights, native["gj_weights"])
-    np.testing.assert_array_equal(weights, expected["gj_weights"])
-    before = deepcopy(state)
-    for point, oracle, actual in zip(
-        raw["times_s"], event_expected["records"], native["event_records"], strict=True
-    ):
-        assert profiles.intervention_domain_valid(point, state, events.kernel, xp=np)
-        result = profiles.apply_interventions(point, state, events.kernel, xp=np)
-        fields = dict(
-            membrane_scheduled_m2_s=result.state.membrane_scheduled_m2_s,
-            membrane_total_m2_s=result.membrane_total_m2_s,
-            pressure_mod_Pa=result.state.pressure_mod_Pa,
-            pressure_total_Pa=result.pressure_total_Pa,
-            environment_current_m2_s=result.state.environment_current_m2_s,
-            environment_weight_current=result.state.environment_weight_current,
-        )
-        for field, value in fields.items():
-            close(value, actual[field], field)
-            close(value, oracle[field], field)
-        close(result.pulse, oracle["pulse"], "pulse")
-        state = result.state
-    for first, second in zip(
-        before, prepared(raw, native["resolved_permutations"], native)[3], strict=True
-    ):
-        np.testing.assert_array_equal(first, second)
-    evidence(
-        raw["name"],
-        dict(
-            status="passed",
-            layout_identity=binding.layout_identity,
-            profile_manifest=profiles.binding_manifest(binding),
-            intervention_manifest=profiles.intervention_manifest(events, binding),
-            native_rng_permutations=native["resolved_permutations"],
-            source_geometry_changed=False,
-        ),
-    )
-
-
-def test_percentage_view_aliases_are_explicit_and_layout_is_immutable():
-    native = captured("percent-all-multiple-alias")
-    raw = next(r for r in CASES if r["name"] == "percent-all-multiple-alias")
-    layout = make_layout(raw)
-    original_ids, coordinates = tuple(layout.cell_ids), layout.cell_centres_m.copy()
-    _, binding, _, _ = prepared(raw, native["resolved_permutations"], native)
-    assert binding.final_cell_order != original_ids
-    assert binding.targets["Default"].cells.ids == binding.final_cell_order
-    assert binding.targets["Default"].picked_cell_ids == original_ids
-    initial_mems = tuple(v for group in layout.cell_membrane_ids for v in group)
-    assert binding.targets["Default"].membranes.ids == initial_mems
-    assert tuple(layout.cell_ids) == original_ids
-    np.testing.assert_array_equal(layout.cell_centres_m, coordinates)
-    assert not layout.cell_centres_m.flags.writeable
-    assert native["pick_steps"][0]["cells_at_pick"] != native["targets"]["Default"]["cells"]
-    assert all(
-        step["cell_i_before"] != step["cell_i_after"]
-        for step in native["pick_steps"]
-        if step["class_name"] == "TissuePickerPercent"
-    )
-
-
-def test_duplicate_occurrences_and_default_diffusion_are_preserved():
-    raw = next(r for r in CASES if r["name"] == "event-gradient-duplicate-last")
-    native = captured(raw["name"])
-    raw, binding, events, state = prepared(raw, native["resolved_permutations"], native)
-    target = events.targets[0]
-    assert len(target.ids) > len(set(target.ids))
-    result = profiles.apply_interventions(0.5, state, events.kernel, xp=np)
-    pulse = float(result.pulse[0])
-    expected = state.membrane_scheduled_m2_s[0].copy()
-    samples = native["event_declarations"]["Na_mem"]["scalar"]
-    for i, sample in zip(target.indices, samples, strict=True):
-        expected[i] = 2.0 * pulse * sample * raw["default"]["diffusivity_m2_s"][0]
-    close(result.state.membrane_scheduled_m2_s[0], expected, "membrane_scheduled_m2_s")
-    at = target.indices[0]
-    assert state.membrane_base_m2_s[0, at] != binding.kernel.diffusivity_m2_s[0, 0]
-
-
 def test_empty_and_non_ECM_environment_absence_is_declared():
     for name in ("indices-empty", "ECM-disabled-maps-absent"):
         raw = next(r for r in CASES if r["name"] == name)
@@ -291,59 +187,6 @@ def test_empty_and_non_ECM_environment_absence_is_declared():
         assert target.environments.indices.dtype.kind == "i"
         with pytest.raises(ValueError, match="absent"):
             profiles.bind_targets(binding, [profile_name], domain="environment")
-
-
-def test_bitmap_source_threshold_flip_clamp_hole_and_fast_nonparity():
-    raw = next(r for r in CASES if r["name"] == "image-flip-threshold")
-    native = captured(raw["name"])
-    layout = make_layout(raw)
-    row = raw["profiles"][0]
-    mask, x, y = profiles.bitmap_data(
-        profiles.Bitmap(np.asarray(row["bitmap"], np.float32)), layout.bounds_m
-    )
-    np.testing.assert_array_equal(mask, np.flipud(np.asarray(row["bitmap"]) != 255))
-    values = profiles.bitmap_values(layout.cell_centres_m, mask, x, y, xp=np)
-    close(values, native["image_masks"]["Mask"]["linear_values"], "bitmap")
-    close(values, reference.image_values(row, raw["layout"]), "bitmap")
-    assert (
-        np.max(np.abs(values - np.asarray(native["image_masks"]["Mask"]["unused_fast_values"])))
-        > 0.01
-    )
-    hole = captured("bitmap-hole-is-not-hull")
-    assert 0 not in hole["targets"]["Mask"]["cells"]
-    clamp = captured("bitmap-rectangle-clamping")
-    assert 0 in clamp["targets"]["Mask"]["cells"]
-    rgba = captured("image-alpha-ignored")
-    assert rgba["targets"]["Mask"]["cells"] == native["targets"]["Mask"]["cells"]
-
-
-def test_axes_are_explicit_even_if_cell_membrane_counts_match():
-    native = captured("gradient-equal-count-axis-confusion")
-    raw = next(r for r in limitations() if r["name"] == "gradient-equal-count-axis-confusion")
-    layout = make_layout(raw)
-    default = profiles.Profile(
-        "Default", profiles.Selector("all"), tuple(raw["default"]["diffusivity_m2_s"])
-    )
-    binding = profiles.compile_profiles(layout, default, [])
-    target = profiles.bind_targets(binding, ["Default"], domain="cell")
-    with pytest.raises(ValueError, match="axis/domain"):
-        profiles.gather_owner_field(np.arange(5.0), target, domain="membrane", axis=-1, xp=np)
-    event = profiles.Intervention(
-        "P",
-        "pressure",
-        ("Default",),
-        0.2,
-        0.8,
-        0.12,
-        1.0,
-        profiles.Sampled(np.ones(5), "membrane"),
-        "gradient_x",
-    )
-    with pytest.raises(ValueError):
-        profiles.compile_interventions(binding, [event])
-    assert native["status"] == "captured_limitation"
-    with pytest.raises(TypeError):
-        profiles.gather_owner_field(np.arange(5.0), target, domain="cell", xp=np)
 
 
 def test_stale_indices_owner_maps_and_manifests_are_rejected():
@@ -417,29 +260,6 @@ def test_explicit_stable_ID_carry_requires_removed_owner_policy():
     )
 
 
-def test_global_GJ_actual_targets_are_prefix_and_rng_copy_is_unused():
-    native = captured("global-GJ-prefix")
-    raw = next(r for r in CASES if r["name"] == "global-GJ-prefix")
-    target = profiles.global_gj_prefix_targets(make_layout(raw), raw["global_gj_percent"])
-    np.testing.assert_array_equal(target.indices, native["global_gj_targets"])
-    np.testing.assert_array_equal(target.indices, np.arange(5))
-    assert native["python_rng_consumed_global_GJ"]
-
-
-@pytest.mark.parametrize("raw", limitations(), ids=lambda r: r["name"])
-def test_native_failures_are_retained_and_supported_binding_rejects(raw):
-    native = captured(raw["name"])
-    assert native["status"] == (
-        "captured_failure" if raw["expected_failure"] else "captured_limitation"
-    )
-    if raw["name"] in ("gradient-equal-count-axis-confusion",):
-        return
-    if raw["name"] == "image-missing-file":
-        assert native["failure_type"] == "FileNotFoundError"
-    with pytest.raises((ValueError, TypeError)):
-        prepared(raw)
-
-
 def test_intervention_padding_empty_buffers_and_no_input_mutation():
     raw = next(r for r in CASES if r["name"] == "event-all-kinds-and-order")
     _, binding, events, state = prepared(raw)
@@ -504,23 +324,6 @@ def test_invalid_intervention_domains(variant):
         assert not profiles.intervention_domain_valid(time, state, k, dynamic, xp=np)
 
 
-def test_source_identity_reference_independence_and_dual_runtime_record():
-    if not (folder := os.environ.get("CELLS_BETSE_PROFILES_NATIVE_CAPTURE")):
-        pytest.skip("Bounded wrapper supplies native profile captures")
-    directory = Path(folder)
-    manifest = json.loads((directory / "source-manifest.json").read_text())
-    assert manifest["component_cases"] == len(CASES) == 38
-    assert manifest["limitations"] == len(limitations()) == 19
-    assert not manifest["production_cells_imported"] and not manifest["jax_imported"]
-    for relative, sha in PROTOCOL["native_source"]["source_sha256"].items():
-        assert hashlib.sha256((directory / "upstream" / relative).read_bytes()).hexdigest() == sha
-    source = (ROOT / "validation/topology/betse_tissue_profiles_reference.py").read_text()
-    assert (
-        "import numpy" not in source and "import jax" not in source and "from cells" not in source
-    )
-    assert "Pillow" in manifest["versions"]
-
-
 def test_cpu_jax_profile_diffusion_bitmap_and_insularity():
     import jax
     import jax.numpy as jnp
@@ -551,31 +354,6 @@ def test_cpu_jax_profile_diffusion_bitmap_and_insularity():
         )
     )(binding.layout.cell_centres_m)
     close(values, reference.image_values(raw["profiles"][0], raw["layout"]), "bitmap")
-
-
-def test_cpu_jax_interventions_batching_padding_and_duplicate_order():
-    import jax
-    import jax.numpy as jnp
-
-    raw = next(r for r in CASES if r["name"] == "event-gradient-duplicate-last")
-    native = captured(raw["name"])
-    _, _, events, state = prepared(raw, native=native, padding=2, target_padding=3)
-    k, s = (jax.tree.map(jnp.asarray, v) for v in (events.kernel, state))
-    times = jnp.asarray([[0.3], [0.5]])
-    actual = jax.jit(lambda clock: profiles.apply_interventions(clock, s, k))(times)
-    for i, t in enumerate((0.3, 0.5)):
-        expected = profiles.apply_interventions(t, state, events.kernel, xp=np)
-        for left, right in zip(actual.state, expected.state, strict=True):
-            close(
-                left[i],
-                right,
-                "membrane" if right.shape[-2:] == state.membrane_base_m2_s.shape else "other",
-            )
-    np.testing.assert_array_equal(actual.pulse[:, -2:], 0.0)
-    evidence(
-        "jax-duplicate-batch",
-        dict(status="passed", shape=list(actual.membrane_total_m2_s.shape), duplicates=True),
-    )
 
 
 def test_cpu_jax_invalid_world_and_exact_control_carry_restart():

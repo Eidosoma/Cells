@@ -33,23 +33,6 @@ def protocol(panel):
     )
 
 
-def test_frozen_panel_and_separate_claims():
-    result = check.verify()
-    assert result["status"] == "pass", result["failures"]
-    assert result["checks_failed"] == 0
-    assert result["groups"]["source_unit_rates"]["checks"] == 13 * 4
-    assert result["groups"]["decimal_channel_flux"]["checks"] == 2 * 2 * 7 * 3
-    assert result["groups"]["species_permutation"]["checks"] == 30
-    assert len(result["gate_protocols"]) == 7
-    assert sum(len(v) for v in result["gate_protocols"].values()) == 62
-    assert len(result["production_source_sha256"]) == 41
-    assert len(result["source_sha256"]) == 10
-    assert result["coupled_trajectory_qualification"] == "not_performed"
-    assert result["method_selection"] == result["gpu_qualification"] == "not_performed"
-    assert result["biological_acceptance"] == "not_assessable"
-    assert result["production_change"] is result["native_betse_execution"] is False
-
-
 @pytest.mark.parametrize("v", [-0.12, -0.065, -0.0253, -0.006, 0, 0.04, 0.06])
 def test_native_ms_mv_units_and_gate_boundaries(v):
     k = ref.kinetics(v)

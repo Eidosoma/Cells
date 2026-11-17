@@ -6,7 +6,7 @@ from time import perf_counter
 
 import numpy as np
 
-from cells.core import row_checks
+from cells.core import blas_threads, row_checks
 from cells.core.devices import execution_device
 from cells.core.grid import EventGrid, checked_grid
 from cells.core.resources import trace_bytes
@@ -192,6 +192,7 @@ def iter_windows(spec, policy=DEFAULT_POLICY, checkpoint=None):
     Preflight runs before returning the iterator. Recording affects the disk
     writer only; an iterator/sink always sees every checked state and observation.
     """
+    blas_threads.require_pinned("iter_windows")  # D190.
     return _iter_windows(plan_windows(spec, policy, checkpoint), checkpoint)
 
 
@@ -288,6 +289,7 @@ def run_windowed(spec, policy=DEFAULT_POLICY, checkpoint=None, *, sink=None):
     """Execute without retaining a whole trace. A sink runs only after window checks."""
     if sink is not None and not callable(sink):
         raise ConfigError("Window sink must be callable")
+    blas_threads.require_pinned("run_windowed")  # D190.
     started = perf_counter()
     plan = plan_windows(spec, policy, checkpoint)
     return _consume_windows(

@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import phases
+from cells.core import blas_threads, phases
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError as NumericalError
 from cells.core.grid import EventGrid, checked_grid, require_refinement_model
@@ -323,6 +323,7 @@ class CheckedRunResult(RunResult):
 
 
 def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult:
+    blas_threads.require_pinned("run")  # D190: refused unless every BLAS is at 1 thread.
     started = perf_counter()
     spec = parse_spec(spec.to_dict())  # Also validates specs constructed through the Python API.
     if spec.projective is not None:  # Opt-in coarse mode; absent, nothing below changes.

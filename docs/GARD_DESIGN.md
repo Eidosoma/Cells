@@ -425,7 +425,7 @@ cross-check, using numbers from the open paper under D186.
 
 ## 5. Run records and the run view
 
-This section is in the terms of `docs/RUN_VIEW_DESIGN.md` and the writer on branch `run-view-d154`
+This section is in the terms of `docs/RUN_VIEW_DESIGN.md` and the writer on main since 16 November
 (`cells/run_view.py`; the contract's `RECORD_KINDS`, `view_events`, `living_intervals`,
 `time.event_rows` and `resets`).
 
@@ -498,6 +498,32 @@ leaves are saved only on request; the totals carry them.
    scheduled interventions.
 3. **A nominal time unit,** where the writer's time bases state `s`.
 4. **Scope.** The writer's version 1 refuses every family but the composite and @3.
+
+### 5.4 The viewer's request (17 November 2026), for the build
+
+The visualizer's assembly-run contract is `visualizer/schema/ASSEMBLY_RUN.md`. The viewer binds to no
+name until it is on main. Against §5.1–5.2:
+- **Already covered:** the counts, the exchange totals, H, and the fission table (parent, first
+  daughter, the followed daughter, H, time).
+- **New:**
+  - **A world record, written once, with an id that its runs name:** the ordered type list, β at
+    full precision, the supply, the basal join and leave constants, and the founder, fission, split
+    and continuation rules. Two runs of one world share it.
+  - **Per run:**
+    - the law's form as a declared field of its own (the preprint's single-event form, or the
+      pair-consistent form), beside the law id and version;
+    - the revision and the registered model ids;
+    - the mode (one lineage now, a population later);
+    - the random stream's identity.
+  - **A pair of forms starts from one founder and says so,** so that only the law differs.
+  - **The event trace saved by default** for single-lineage runs: each event's type and sign, and
+    the events per growth. That is about 12 kB a run.
+  - **Optional: which member's catalysis drew a join.** If it is built, it draws from its own
+    stream, so a run's events and results are the same with it on or off.
+  - **One file, or one adapter call, holding both runs of a pair** under one clock.
+- **Not the engine's:** the analysis. Inheritance (what is compared, the threshold, a mark per
+  fission) and any composome clustering (method and settings) are validation outputs, saved beside
+  the run.
 
 ## 6. Verification
 

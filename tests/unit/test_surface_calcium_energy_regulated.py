@@ -1,7 +1,5 @@
 """Complete common-stage pump regulation, owner views and physical accounting."""
 
-import ast
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -89,28 +87,6 @@ def test_roundtrip_38_fields_and_source_contract(padded):
             rule_capacity=spec.execution.regulation_capacity,
             source_law=PROTOCOL["law"],
             timing=schema.TIMING,
-        ),
-    )
-
-
-def test_frozen_source_identity_and_independent_reference_imports():
-    for relative, expected in PROTOCOL["readonly_source_sha256"].items():
-        assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
-    native = PROTOCOL["frozen_native_handoff"]
-    path = Path(native["path"])
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == native["sha256"]
-    report = json.loads(path.read_text())
-    assert report["status"] == "passed"
-    for module in (fixtures, reference):
-        for node in ast.walk(ast.parse(Path(module.__file__).read_text())):
-            if isinstance(node, ast.ImportFrom):
-                assert not (node.module or "").startswith(("cells", "jax"))
-    evidence(
-        "source-provenance",
-        dict(
-            native_handoff=native,
-            readonly_source_sha256=PROTOCOL["readonly_source_sha256"],
-            new_native_timing_claim=False,
         ),
     )
 

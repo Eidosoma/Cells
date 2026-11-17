@@ -6143,6 +6143,15 @@ review. The user: "1. agreed all four" and "2. as you suggest".
   reviewed again once D188 has cut the 42 couplings.
 - **The saving:** about 7.5 of tier 3's 29.8 core-hours per run, and 2.1 minutes per tier 1+2 gate.
 
+**Done on 17 November** (test-audit a676930b):
+- **Retired:** 11 tier-3 and 40 tier-1/2 files, plus 23 and 788 cases. Collection fell by exactly the
+  2,322 retired IDs.
+- **8 firm rows moved to held,** each with its reason:
+  - four tier-3 files that run a coupling target (check a);
+  - three files whose code the remaining tests need;
+  - three cases that pass in a checkout with Git history.
+- **The saving as done:** 5.5 core-hours per tier-3 run, and 2.0 minutes per tier 1+2 gate.
+
 ## D190: BLAS is pinned to one thread, in a lean form
 
 2026-11-16. The core found that a CPU run's bits follow its CPU allocation through OpenBLAS's thread
@@ -6151,10 +6160,19 @@ answered: "lets not go overboard here but take your adviser". The form below was
 advisor.
 
 **What is built:** the proposal as committed in ARCHITECTURE.md.
-- One small module force-loads scipy's LAPACK, then sets every loaded BLAS to 1 thread through
-  threadpoolctl (BSD). It runs at `import cells` and again at each run entry point.
+- One small module, `core/blas_threads.py`, pins every BLAS to 1 thread. It runs at the first
+  import of `cells.core`, which every computing path passes through, and again at each of the eight
+  run entry points.
+  - At import it sets `OPENBLAS_NUM_THREADS=1`. If numpy is already loaded, it also force-loads
+    scipy's LAPACK and sets every loaded BLAS through threadpoolctl (BSD).
+  - **Amended at the landing (17 November):** "at `import cells`" became "at the first import of
+    `cells.core`". `src/cells/__init__.py` stays unchanged, because a held legacy law
+    (`processes/charged_surface_work`) pins that file's content, and D187 forbids updating a pin
+    by hand.
 - **The run is refused** if, at run entry, a read-back finds any loaded BLAS not at 1 thread.
-- **The run manifest records** each library's version, kernel architecture and thread count.
+- **The run manifest records** each library's version, kernel architecture and thread count, and
+  so does the results baseline's environment. The runtime identity that checkpoints compare is
+  unchanged, so checkpoints written before the pin still restore.
 - **Two tests,** each with a planted error.
 
 **What is dropped:**
@@ -6176,7 +6194,8 @@ advisor.
 - If a tier test with stored bit-exact values moves, it is attributed before anything is renewed.
 
 **When:** the pin lands before D188's move 1, so the moves' gates no longer depend on the CPU
-allocation.
+allocation. It landed on 17 November (core-pin 52dd5816). crossrev's renewed record is
+`record-cda5dc82`, and with the pin the 825-node world gives the same bits on 1, 2 and 4 CPUs.
 
 ## D191: Operator composition takes one general rule (option A)
 

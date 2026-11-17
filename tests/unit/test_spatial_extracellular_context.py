@@ -1,34 +1,15 @@
 """Version separation preserves old guards instead of weakening them for new code."""
 
 import hashlib
-import json
-import tarfile
-import tomllib
 from pathlib import Path
 
 import pytest
 
-import cells
 from scripts import audit_preserved_spatial_extracellular_reference as preserved
 from scripts import test_spatial_extracellular_build as matrix
 from tests.spatial_extracellular_fixtures import REFERENCE, REFERENCE_SHA
 
 ROOT = Path(__file__).resolve().parents[2]
-
-
-def test_archive_and_receipt_authenticate_every_preserved_member():
-    receipt = json.loads((ROOT / "reports/core-010-preservation.json").read_text())
-    assert receipt["status"] == "pass"
-    assert receipt["archive_sha256"] == preserved.ARCHIVE_SHA
-    assert hashlib.sha256(preserved.ARCHIVE.read_bytes()).hexdigest() == preserved.ARCHIVE_SHA
-    with tarfile.open(preserved.ARCHIVE) as archive:
-        assert set(archive.getnames()) == set(receipt["archive_files_sha256"])
-        for name, expected in receipt["archive_files_sha256"].items():
-            assert hashlib.sha256(archive.extractfile(name).read()).hexdigest() == expected
-        project = tomllib.loads(archive.extractfile("pyproject.toml").read().decode())
-        assert project["project"]["version"] == "0.14.0"
-    current = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    assert current["project"]["version"] == cells.__version__ != "0.14.0"
 
 
 def test_original_reference_no_production_change_guard_still_refuses_current_build():

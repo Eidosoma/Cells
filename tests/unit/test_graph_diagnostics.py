@@ -341,18 +341,6 @@ def test_batched_readout_failure_is_retained_without_scalar_fallback(
     assert all(reader._iterator.gi_frame is None for reader in consumer.readers.values())
 
 
-def test_real_profile_scope_capsule_and_shared_quota():
-    r = profile.specification(profile.OUTPUT_PARENT / "diagnostics-01")
-    assert len(r["planned_attempts"]) == 12 and len(profile.SOURCES) == 55
-    assert r["plan"]["window_steps"] == 256 and r["plan"]["duration"] == 5.12
-    assert r["plan"]["policies"] == ["scalar_frozen", "batched_cached"]
-    assert r["storage_budget"]["prior_bytes"] == 783644175
-    assert r["storage_budget"]["new_root_limit_bytes"] == 290097649
-    assert not r["plan"]["compact_evidence_used"] and not r["plan"]["long_study_run"]
-    assert r["readout_tolerances"] == fixtures.definition()["instantaneous_tolerances"]
-    assert len(r["production_source_hashes"]) == 39 and len(r["parent_results"]) == 12
-
-
 @pytest.fixture
 def registration_fixture(tmp_path, monkeypatch):
     source = tmp_path / "fixture.txt"
@@ -369,17 +357,6 @@ def registration_fixture(tmp_path, monkeypatch):
     for key, value in profile.campaign.THREADS.items():
         monkeypatch.setenv(key, value)
     return tmp_path / "new", source
-
-
-def test_registration_roundtrip_source_identity_and_exclusivity(registration_fixture):
-    output, source = registration_fixture
-    registered = profile.register(output)
-    assert profile.check_registration(output) == registered
-    with pytest.raises(FileExistsError):
-        profile.register(output)
-    source.write_text("modified fixture source\n")
-    with pytest.raises(ValueError, match="source identity"):
-        profile.check_registration(output)
 
 
 @pytest.mark.parametrize("timeout", [False, True])

@@ -18,6 +18,8 @@ design before code (D142).
 
   The routing door and the kind schedules it uses are the core's (INNER_MODEL_V4_DESIGN §7.4 (l),
   (n)).
+- **Finite fuel (§17) is accepted,** ruled by the lead on 16 November. It is built after FR-5's
+  dt study is launched.
 - **Its first readers:**
   - the references agent, who writes independent references from Appendix A without reading
     engine code;
@@ -1137,6 +1139,225 @@ FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every 
    - (c) accept the change: FR-4's records stay bitwise equal, but its Control type and compile
      key change, after its dt study and before its judged run, so the rehearsal would no longer
      run the dt study's program.
+
+## 17. Finite fuel on the kind interface (design, 16 November 2026, before code; D142, D176 item 2)
+
+**Status: accepted, ruled by the lead on 16 November 2026 (§17.5), within D176 item 2.** It is
+built after FR-5's dt study is launched. Tags: **(code)** read in code on main 7c8bfa47; **S** this
+owner's arithmetic.
+
+### 17.1 What it is, and what it claims
+
+- **The feature.** `cells.transporter@1` gains its second fuel kind, `finite_fuel_rows@1`. The pump
+  moves its ATP, ADP and Pi rows, one ATP to ADP + Pi per cycle, so fuel can deplete and recover
+  when a reaction regenerates it. Maintained fuel (`maintained_held_rows@1`, §5.1) is unchanged.
+- **Its first world is R-fuel** (`validation/compartment_ph/fuel_reference.py`; REFERENCES_USAGE
+  "Finite fuel"), the lead's option (a) of 15 November and D176 item 2:
+  - a neutral solute Y pumped into a store;
+  - D152's passive regeneration D + ADP + Pi ⇌ P + ATP, stopped on [100, 300) s;
+  - Y's leak back.
+
+  The proton pump stays on held fuel. Finite fuel at a node with a dynamic proton row is still
+  refused (§5.2) and is out of scope here.
+- **The claim:** numerical verification against R-fuel only (D174's first kind). There is no
+  calibration and no living-cell claim.
+- **Engine models it runs:**
+  - `resolved_pump_composite@1` over `resolved_pump_tissue@3`;
+  - `cells.transporter@1` with `atp_driven_transporter_mass_action_positive@1` on
+    `finite_fuel_rows@1`;
+  - `cells.passive_routes@1` with `passive_neutral_permeation@1`, for Y's leak;
+  - `local_species_reactions@1` with `ideal_detailed_balance_mass_action@1` and its
+    `reaction_controls` schedule, for the regeneration;
+  - under ruling D2's recommendation, `cell_owned_compartments@1` for the store.
+
+### 17.2 The kind's finite-fuel path
+
+On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
+- **Moves:** per cycle, ATP −1, ADP +1 and Pi +1 at the fuel node (the patch's inside cell), and
+  n of the role across the patch.
+  - Today, `moved_rows` already lists finite fuel's rows, and the parse refuses the fuel kind
+    (`GAP_FINITE_FUEL`) **(code)**.
+  - To be written: the rates' fuel moves, the stored rate and the two ledger roles below.
+- **Stored energy:** the standard part of the fuel rows' change, booked as `stored_pJ` (per
+  cycle × cycles) and as its rate `KindRates.stored_pJ_s` (per cycle × J_cyc). One helper serves
+  both. That is (m)'s rule for a kind's author: @3's RT ln c terms carry the rest.
+  - **Its frame.** @3's rows carry RT n (ln(n/V) − 1), with n/V in mM: a 1 mM frame with no
+    standard part. So each row's standard part is μ°' = RT (μ°/RT − ln c0), with μ°/RT the
+    registry's at its c0 in mM. That is D152's own convention (§3.3 of its note).
+  - Hydrolysis has Σν = +1 (ATP → ADP + Pi), so c0 does not cancel. The stored part per cycle is
+    RT (Σν μ°/RT − ln c0) = `transporter_drive0_J_mol` − RT ln `transporter_c0_mM` **(code: the
+    layout's names)**.
+  - It is not the kernel's Δ_rG'° at 1 M, which adds RT ln(1000 mM / c0). Nor is it R-fuel's
+    −30.5 kJ/mol, which is at 1 M. The two differ by RT ln 1000 per cycle.
+- **Material:** the role `produced` records ATP −cycles, ADP +cycles and Pi +cycles. It is
+  charge-neutral, so the global ledger `total` closes. Without it, `total` fails by exactly that
+  record (the core's (m) finding).
+- **Heat:** −cycles × ΔG_cyc ≥ 0, as today. There is no work, since the free energy comes from the
+  stored rows.
+- **Near zero ATP:** the kernel's rational form is already written. ATP falls to about 1.7e-4 mM
+  in R-fuel's window.
+- **Refusals kept:** a fuel row without a registry potential, and a held row any other mover
+  writes (held fuel only).
+- **§5.2's refusal, made fail-closed.** Today only the proton law refuses finite fuel. Once the
+  gap's refusal is lifted, a neutral finite-fuel pump beside FR-4's protons would be admitted. So
+  version 1 refuses finite fuel in any world with a dynamic proton row. That is any proton row
+  that a declared kind names: the buffer's (`cells.rapid_proton_buffer@1`), a proton law's role,
+  or the proton leak's row. Its test is FR-4's world with a neutral finite-fuel pump added.
+
+### 17.3 What the code shows for R-fuel's world
+
+1. **It composes (code).** D152 refuses a reacting species with a membrane, junction or channel
+   route of @3's (`species_common.check_impermeant`). A kind's node moves are none of those, so
+   ATP, ADP and Pi can be both regenerated and pumped. D152 runs as Strang halves around @3's
+   step, and the pump runs inside it. The schedule m(t) is D152's own `reaction_controls`, which
+   change at exact multiples of dt.
+2. **One authority for potentials: a gap (code).**
+   - The pump reads μ°'/RT from the species registry (`species_registry.standard_potential`).
+   - D152 parses its own `standard_mu_RT` and `standard_concentration_mM` per species and never
+     reads the registry.
+   - Only `cells.proton_buffer` and the transporter call `standard_potential`.
+
+   So in R-fuel two declarations would carry ATP's, ADP's and Pi's potentials, and nothing checks
+   that they agree. F2 asks for one authority (ruling D3).
+3. **Y's leak is tableau-booked (code).** Y has two movers on one patch: the pump and the leak.
+   `passive_routes._exact` drops a route that shares a row with a non-passive mover, so the leak
+   keeps the tableau's booking of its dissipation, not §7.5's exact one. This answers
+   transporter/PLAN.md §6's open question. The leak's heat is then second order in dt, like
+   every tableau-booked route's.
+4. **The neutral transporter on a bounding patch is open (code).**
+   - CLOSED_COMPARTMENT_DESIGN §3.4.1 admits it, but records it as open: it has no `bound_rate`
+     and no stage term. `transporter.bound_rate` covers the proton law only.
+   - Near its static head, its material slope at the outside node is about k S n e^a / n_out,
+     which grows as the store empties.
+   - R-fuel would be its first consumer (ruling D4).
+5. **The step does not bind at milliseconds (S).** transporter/PLAN.md's "0.1 ms or finer" read
+   k_f as the rate; D152's condition is dt·L ≤ 1 on each unidirectional flux.
+   - The regeneration's largest L is k_f a_D a_Pi: 0.9 s⁻¹ at the start, about 1.8 s⁻¹ when Pi
+     reaches 6 mM. Its reverse flux is about 4e-4 s⁻¹.
+   - The pump's slope at the store is about k n / n_Y,s ≈ 0.02 s⁻¹ (n_Y,s ≈ 6 fmol).
+   - The leak's L = 1e15 P A (1/V_c + 1/V_s) ≈ 0.012 s⁻¹.
+   - The world has no charged row, so no electrical stiffness.
+   - The step is therefore set by accuracy. The recovery's time constant is about 1 s, so the
+     error is about (dt/1 s)²: 1e-6 at 1 ms and 1e-4 at 10 ms, against the 1e-3 budget (S). A probe
+     measures this before the ladder is declared (ruling D5).
+
+### 17.4 Acceptance, from transporter/PLAN.md §4 (kept, with the corrections above)
+
+- **The runs:** R-fuel's calibrated world, with three runs.
+  1. **Finite fuel, depletion and recovery.** J_cyc and ATP at 99 and 299 s; ADP and Pi at 299 s;
+     Δ_rG'_ATP; Y in the store at 99, 299 and 900 s; recovery within 1% by 302 s and 0.1% by 303 s;
+     cycles and regenerated material; the three heats; W = 0; moiety drift; the energy ledger.
+  2. **Held fuel.** Nothing depletes, and W is the maintenance's work.
+  3. **The control, m ≡ 1.** Its effect is at least 10 × the budget (G3).
+- **Budgets:** 1e-3 relative, as FR-4's J3 and J4. R-fuel's floor resolves this: ATP within
+  6.3e-14 mM and J_cyc within 4.3e-16 fmol/s.
+- **Planted errors**, each of which must be caught:
+  - the stored rate omitted: the observation's residual is exactly minus the stored part's rate,
+    in §17.2's 1 mM frame, at a test c0 other than 1 mM, so a missing ln c0 would show;
+  - `produced` omitted: `total` fails by the record;
+  - a fuel stoichiometry off by one: the moiety check;
+  - the regeneration's potentials declared unlike the registry's: D3's check, under its option
+    (a).
+- **The record:** a third protocol beside FR-4's and FR-5's (generic name `finite-fuel-v1`),
+  drafted, rehearsed and registered as theirs are. It uses the same generator and judge.
+
+### 17.5 The decisions, each with its cost and a recommendation, and the rulings
+
+- **D1. The first finite-fuel world.**
+  - (a) R-fuel's neutral pump (D176 item 2, as planned).
+  - (b) FR-4's proton pump on finite fuel. That needs §5.2's explicit-proton boundary: charged
+    reactions (§11 row 4, not started) and untransformed hydrolysis protons, weeks of work.
+
+  **Recommended: (a).** (b) follows later, on the same kind path.
+- **D2. Where R-fuel's store lives.**
+  - (a) As FR-1's owned compartment inside the cell, the reference's own geometry (a 2.5 µm store
+    in a 5 µm cell). It exercises the compartment with a pump on its bounding patch, as FR-4 does.
+  - (b) As a finite outside node, with no compartment operator. That is simpler, but the
+    small-node question of §17.3 item 4 stays the same.
+
+  **Recommended: (a).**
+- **D3. One authority for ATP's, ADP's and Pi's potentials** (§17.3 item 2).
+  - (a) A binding check that refuses a world where D152's declared μ°/RT for a species differs
+    from the registry's, converted to one c0. It is small, about 0.25 agent-day, and the
+    operators' or the core's file.
+  - (b) D152 reads the registry's potentials and drops its own. That is larger, since D152's
+    declaration format changes.
+  - (c) No check. That falls short of F2's one authority.
+
+  **Recommended: (a) now, (b) later.**
+- **D4. The neutral transporter's material bound at a small node** (§17.3 item 4).
+  - (a) A per-stage material-rate refusal for the neutral law, at both of its nodes, in the kind's
+    own hooks. This is general, and it closes §3.4.1's open item. Whether a kind's hook can see
+    dt is a question for the core (§17.7).
+  - (b) Measurement only: R-fuel's pump slope is about 2e-5 of 1/dt at 1 ms (S). That is cheap
+    now, but it leaves the item open for the next, faster consumer.
+
+  **Recommended: (a)**, if the core confirms a seam; otherwise (b), with the item kept open.
+- **D5. The dt ladder.** PLAN's criteria (2, 1, 0.5 and 0.25 ms; 6.75e6 steps, about 2.5 CPU-h)
+  were written before any code.
+  - (a) Keep them.
+  - (b) Run a probe first, at 1 and 10 ms over 900 s (S: a few CPU-minutes). Then a dated pre-run
+    correction would declare the ladder; for example 8, 4, 2 and 1 ms costs about 0.6 CPU-h.
+
+  **Recommended: (b).** Either way the criteria stay fixed before any judged run.
+
+**Ruled by the lead, 16 November 2026** (within D176 item 2, which was already planned):
+- **D1: (a).** R-fuel's neutral pump comes first. The proton pump on finite fuel follows later, on
+  the same kind path.
+- **D2: (a).** The store is FR-1's owned compartment.
+- **D3: (a) now, fail-closed; (b) later.**
+  - The evidence includes every registered world still parsing under the check.
+  - First, main is searched for any world that declares one species' potential both through
+    D152's `standard_mu_RT` and through the registry, so the check cannot newly refuse an existing
+    world unannounced. **Searched 16 November on main 7c8bfa47 (code): none.**
+    - D152's worlds are built in `tests/unit/test_species_reactions*.py`,
+      `validation/tissue/species_reactions_fixtures.py` and `_crossrev.py`, and one protocol
+      (`mg0c_turing_v1.json`). None declares the inner model's registry potentials.
+    - The registry's worlds are in `test_species_registry*.py`, `test_transporter_kind.py`,
+      `test_proton_buffer_kind.py`, `test_fr45_damage_and_worlds.py` and
+      `validation/compartment_ph_engine/definitions.py`. None declares D152's operator.
+    - No JSON world on disk declares both. The older calcium family's `standard_mu_RT` belongs to
+      its own reaction networks (`core/reaction_spec.py`), not to either.
+  - The check's location waits on the core's answer (§17.7 question 2).
+- **D4:** (a) if the core confirms a seam, otherwise (b), with the item kept open. This waits on
+  the core's answer (§17.7 question 1).
+- **D5: (b).** The probe runs at 1 and 10 ms first. Then a dated pre-run correction declares the
+  ladder, and the criteria stay fixed before any judged run.
+
+### 17.6 Who does what, and the cost (agent-days, S)
+
+- **FR45 (this lane):**
+  - the kind's finite-fuel path, its tests and planted errors: 0.5–1;
+  - R-fuel's engine world, records, generator parts and protocol draft: 1;
+  - the probe, the dt study and the rehearsal on CPU: about 1–3 CPU-h.
+- **The operators' or the core's owner:** D3's check, about 0.25, and D4's seam question.
+
+### 17.7 Questions for the core
+
+1. **D4's seam:** can a kind refuse a stage on a material slope that depends on dt, or should the
+   per-stage material rule gain a kind term, as B7's charge rule did (`stage_term`)?
+2. **D3's check:** in `species_registry.check_definition`, or in D152's parse?
+3. **The energy observation:** under (m), with D152's standard term booked per half-step and the
+   pump's stored rate in-step, is `energy_balance_pJ_s` expected to close at rounding in a world
+   where both write the fuel rows? This lane's probe will measure it either way.
+
+**The core's answers (16 November 2026, relayed by the lead):**
+1. **D4: (a), go.**
+   - The core builds a kind hook, `material_term(read, potentials, control, p, *, xp)`. It returns
+     the kind's material slope (1/s) on [cells, then outside nodes].
+   - @3's checked step refuses when dt × max(slope) > `EXPLICIT_STEP_BOUND`, beside B7's rule.
+   - No program changes until a kind declares the hook.
+   - This lane adds the neutral transporter's term, which closes CLOSED_COMPARTMENT_DESIGN
+     §3.4.1's open item.
+2. **D3:** the check lives in `species_registry` as `check_potentials`, called from
+   `check_definition`. A contract hook, `species_potentials(declaration)`, is implemented by D152.
+   The core builds both.
+3. **The observation closes at rounding.**
+   - D152 is not part of it, since its in-step rates are zero.
+   - With `stored_pJ_s` the pump's terms cancel exactly. Leaving it out leaves minus the stored
+     part's rate, as §17.4's planted error expects, in §17.2's frame.
+   - D152's standard term matters for the integrated energy ledger instead, which is why D3's
+     check is the guard of record.
 
 ## Appendix A. Equations for the independent references
 

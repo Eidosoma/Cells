@@ -85,6 +85,68 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D189's test retire merged into main (17 November 2026, early).** test-audit a676930b; the
+  tree before it is tagged `pre-retire-2026-11-16` ([summary](/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/SUMMARY.json)).
+  - **Retired:**
+    - tier 3: 11 whole files (844 tests), and 23 cases in 4 files;
+    - tiers 1 and 2: 40 whole files, and 788 cases in 38 files.
+  - **The saving:** 5.5 core-hours per tier-3 run, and 2.0 minutes per tier 1+2 gate.
+  - **Held instead, 8 rows, each with its reason.** Four tier-3 files run a coupling target, three
+    files are needed by remaining tests, and three cases pass in a checkout with Git history. The
+    L4 block runs no tests, so check (b) found nothing.
+  - **Collection:** from 20,792 IDs to 18,482. That is exactly the 2,322 retired IDs fewer, plus 12
+    added since. In the 38 edited files, all 1,731 remaining tests keep their outcomes.
+  - **The records:**
+    - the tiers now hold 327, 152 and 222 files;
+    - tier 3's frozen record holds 218 files and 6,869 tests, naming D189 and the tag;
+    - the tier tool records roots relative to the repository.
+  - **The gate:** tier 1 with the BLAS pin merged, 327 files, none changed.
+  - **Found by the gate:** a path-based read by a kept test. The file it reads was restored
+    (351d7b6b).
+
+- **The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC).** core-pin
+  52dd5816 ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/); probes in `/mnt/workspaces/Cells/core-pin-20261116/`).
+  - **What it does:**
+    - Every BLAS runs at 1 thread, from the first import of `cells.core` and again at each of the
+      eight run entry points.
+    - The counts are read back, and the run is refused otherwise (4.4 ms per call).
+    - Run manifests record each library's version, kernel architecture and thread count.
+  - **The environment:** threadpoolctl 3.8.0 was installed into venv-cpu and venv-gpu at 22:57 UTC on
+    16 November. `pyproject.toml` declares it, with scipy 1.18.1.
+  - **The effect:** the 825-node world gives the same bits on 1, 2 and 4 CPUs.
+  - **crossrev was renewed once** (`record-cda5dc82`). Only the two S825 `field_capacitor_factor`
+    bindings changed, and they equal the unpinned 1-CPU record exactly.
+  - **The gate:**
+    - G1: 113 of 113 identical;
+    - tiers 1+2: 519 files, none changed;
+    - the qualification and kinds sets: identical on the merged head.
+  - **Found on the way:** a held legacy law pins `src/cells/__init__.py`'s content. So the import pin
+    lives in `cells/core/__init__.py`, and D190's wording was amended.
+
+- **FR-5's dt study: the development reading passes (16 November 2026, late evening).** Run
+  dt5-a6639e79, from snapshot-a6639e79 on CPUs 8–11, 21:44–23:23 UTC
+  ([verdict](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/reading/verdict.json),
+  [summary](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/summary.log),
+  [the start against 4b81a39c's](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/start-vs-4b81a39c.json)). This is
+  development evidence: `fr5-transfer-v1` stays proposed and is not judged.
+  - **Result:** every criterion, J1–J11, holds on both arms, so the declared 0.5 ms step stands.
+    All 12 parts exited 0, with the expected step counts.
+  - **The start** was re-run from the same snapshot. Its extract equals the earlier start's, leaf
+    by leaf, apart from the source fields.
+  - **Arm T (transfer):** the state errors at 0.5 ms are 2.8e-7 of the budget for X_L and 2.9e-9
+    for pH. The crossings fall within 6e-8 s of the independent reference, and the planted
+    control reads 314 × the budget.
+  - **Arm R (release):** the X_L error is 3.3e-5 of the budget. The release in the window, 0.87363,
+    equals the reference's, and the control reads 872 × the budget.
+  - **Both arms:** energy residuals of 3.3e-11 and 2.1e-11, against 2e-3.
+  - **The one visible margin:** arm R's cargo route ledger, at 0.147 of its allowance. Every other
+    ledger ratio is at 1e-5 or below.
+  - **Before registration:** the judge's F4 names the 1 ms rung for the energy residual, while the
+    protocol's J7 reads 0.5 ms. Both pass here (1.3e-10 and 8.2e-11 at 1 ms).
+  - **Costs:** 0.82–1.5 ms per step (spread unexplained), so runtime limits are sized from 1.5 ms.
+  - **The judge's fix merged with fr45-next dac02715:** a part whose records end inside the injury
+    window reads None for the release through the pore, rather than crashing.
+
 - **The test audit (D187) merged into main (16 November 2026, late evening).** It ships its tools
   and the inventory ([evidence](/mnt/workspaces/Cells/test-audit-20261116-01/)). Nothing is retired by this merge.
   - **Tier 3's frozen record** (`tests/tier3_record.json`): D172's 229 files and 7,736 test IDs, with
