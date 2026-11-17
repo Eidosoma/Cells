@@ -633,10 +633,11 @@ try {
     await press(step("0.001"));
     s = await until((now) => now.flow.speed === 0.001 && /slowed 1,000 times/.test(now.flow.statement[0] || ""));
     const slowed = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
-    const same = s.flow.lanes.token * 1000 === trueToken ? Object.keys(lanes).every((name) => close(slowed[name].beads, lanes[name].beads, 1e-6)) : true;
+    // Slowed, fewer beads pass and each crosses more slowly (17 November 2026): the arithmetic holds against the token.
+    const fewer = Object.keys(lanes).every((name) => !lanes[name].beads || (slowed[name].beads < lanes[name].beads && close(slowed[name].beads * s.flow.lanes.token, slowed[name].particles * 0.001, 1e-6)));
     check(
-      "slowed a thousand times on the timeline, a bead stands for a thousandth as many and as many beads pass; the picture, the legend and the timeline say so",
-      s.flow.lanes.token === Math.max(1, trueToken / 1000) && same && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond of the run")) && s.flow.speedButton?.text === "1/1,000×" && !s.flow.speedsOpen,
+      "slowed a thousand times on the timeline, a bead stands for fewer and fewer beads pass, each crossing more slowly; the picture, the legend and the timeline say so",
+      s.flow.lanes.token < trueToken && s.flow.lanes.token >= 1 && /^[125]0*$/.test(String(s.flow.lanes.token)) && fewer && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond of the run") && /Slowed, fewer beads pass/.test(text)) && s.flow.speedButton?.text === "1/1,000×" && !s.flow.speedsOpen,
       JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.speedButton])
     );
     await press("cells-timeline .tl-speed");
@@ -685,7 +686,7 @@ try {
       viewer.stage.rig.instant = true;
       lens.draw();
       viewer.stage.invalidate();
-      return { paused, first, later, drawn, statement, covered, clock, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, still: lens.still(), standing: lane.beads.length };
+      return { paused, first, later, drawn, statement, covered, clock, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, crossing: lane.crossing, still: lens.still(), standing: lane.beads.length };
     })()`);
     check(
       "paused, the beads stand although the view may move, and the picture says it is paused",
@@ -694,7 +695,7 @@ try {
     );
     check(
       "played, beads set out one after another and travel in the replay's time: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
-      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * 1.6) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1 && /slowed 1,000 times · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
+      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * moving.crossing) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1 && /slowed 1,000 times(: fewer beads, crossing more slowly)? · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
       JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn, statement: moving.statement, covered: moving.covered })
     );
     // From the stage through the viewer to the playhead: a frame longer than a tenth of a second counts in full. Were

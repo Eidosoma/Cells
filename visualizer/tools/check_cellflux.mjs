@@ -151,9 +151,11 @@ try {
         named: flux.named, pending: flux.source.kind === "pending" ? flux.source.why : null,
         loop: flux.loop ? { title: flux.loop.title, status: flux.loop.status, cell: flux.loop.cell, length: flux.loop.length, streams: flux.loop.streams.length, token: flux.loop.busiest, elapsed: flux.elapsed, slow: flux.slow } : null,
         timeRow: [...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
+        // The Speed slider: where it stands, its words for a screen reader, its marks, its box.
+        slider: (() => { const input = root.querySelector("cells-legend .speed-slider"); if (!input) return null; const r = input.getBoundingClientRect(); return { value: Number(input.value), text: input.getAttribute("aria-valuetext"), now: root.querySelector("cells-legend .speed-now")?.textContent, marks: [...root.querySelectorAll("cells-legend .speed-marks span")].map((m) => m.textContent), words: [...root.querySelectorAll("cells-legend .speed-marks span")].filter((m) => m.textContent).map((m) => { const b = m.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.right), Math.round(b.top)]; }), within: (() => { const b = root.querySelector("cells-legend").getBoundingClientRect(); return [Math.round(b.left), Math.round(b.right)]; })(), box: [r.left, r.top, r.right, r.bottom].map(Math.round) }; })(),
         plan: flux.plan.kinds.map((kind) => kind.id), withheld: flux.plan.withheld.map((item) => item.id), shown: flux.showing().kinds.map((kind) => kind.id),
         parts: flux.plan.kinds.map((kind) => lens.capabilityByPart.get(kind.part).id),
-        tokens: flux.tokens.map((set) => ({ zone: set.zone.name, lanes: set.lanes.length, beads: set.tokens.drawn.beads, heads: set.tokens.drawn.heads, visible: set.tokens.group.visible, opacity: set.tokens.materials[0].opacity, first: set.tokens.lanes[0].beads[0] ?? null })),
+        tokens: flux.tokens.map((set) => ({ zone: set.zone.name, lanes: set.lanes.length, beads: set.tokens.drawn.beads, heads: set.tokens.drawn.heads, chevrons: set.tokens.drawn.chevrons, stream: Number(set.tokens.blend.stream.toFixed(2)), streaks: set.tokens.flow.time, visible: set.tokens.group.visible, opacity: set.tokens.materials[0].opacity, first: set.tokens.lanes[0].beads[0] ?? null })),
         bloom: stage.finish?.bloom?.strength ?? 0, shining: stage.finish?.sources?.size ?? 0, holds: [...stage.decoration.holds], moving: stage.decoration.moving, still: flux.still(),
         rows: [...root.querySelectorAll("cells-legend .layer-row")].map((row) => row.dataset.channel + ": " + [...row.querySelectorAll("button")].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")).join(" | ")),
         notice: root.querySelector("cells-legend .layer-example")?.textContent ?? null,
@@ -231,8 +233,8 @@ try {
     const said = s.said.filter((item) => item.shown).map((item) => item.text);
     check("a real press on All draws the run's lanes, with bloom", reached && s.on && s.tokens.length > 0 && s.bloom > 0, JSON.stringify([reached, s.tokens, s.bloom]));
     check("the picture says what the run is: a development run of the engine, not judged, as the catalogue says", said.includes("Development run of the engine, not judged"), JSON.stringify(said));
-    check("the picture names the run, says that it loops and how long the loop is, the token, the speed, and what the cell takes from the run", said.some((text) => /Planarian loop \(development run\)/.test(text) && /a loop of 2 s of the cell's time/.test(text) && /One bead is [\d,]+ ions( · |\n)true speed/.test(text) && /From the run's lumped cell cell_3/.test(text) && /Not a measurement of a living cell/.test(text)), JSON.stringify(said));
-    check("the legend carries what the run is, and the Speed row at true speed", s.notice === "Development run of the engine, not judged" && JSON.stringify(s.timeRow) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify([s.notice, s.timeRow]));
+    check("the picture names the run, says that it loops and how long the loop is, the token, the speed, and what the cell takes from the run", said.some((text) => /Planarian loop \(development run\)/.test(text) && /a loop of 2 s of the cell's time/.test(text) && /Streams as wide as their rates: the widest carries [\d,]+ ions a second( · |\n)true speed/.test(text) && /From the run's lumped cell cell_3/.test(text) && /Not a measurement of a living cell/.test(text)), JSON.stringify(said));
+    check("the legend carries what the run is, and the Speed slider at true speed, its marks' words on one line inside the legend with none meeting another, and its words", s.notice === "Development run of the engine, not judged" && s.slider?.value === 0 && s.slider.now === "True" && JSON.stringify(s.slider.marks) === JSON.stringify(["True", "1/1,000", "1/1,000,000", ""]) && s.slider.words.length === 3 && s.slider.words.every((box, k, all) => box[2] === all[0][2] && (k === 0 || box[0] > all[k - 1][1]) && box[0] >= s.slider.within[0] && box[1] <= s.slider.within[1]) && /^True speed: one second here is one second of the run/.test(s.slider.text) && s.slider.box[3] - s.slider.box[1] >= 44, JSON.stringify([s.notice, s.slider]));
     check("the legend says which part takes a flux from which record, and how closely the run closes", s.keys.some((text) => /Drawn: channels from channel_transferred/.test(text)) && s.keys.some((text) => /meets its first within 2\.8e-5 \(tolerance 1\.0e-4\)/.test(text)), JSON.stringify(s.keys.filter((text) => /Drawn:|meets its first/.test(text))));
     await shot(`${NAME}-loop`);
     if (MOVING) {
@@ -261,16 +263,79 @@ try {
       // on the card it is the look's and the bloom's (see the hand-over of 16 November 2026, flux round 2).
       check("the flux's own work in a frame is small beside a frame at 60 a second", cost.flux !== null && cost.flux < 1.5, JSON.stringify(cost));
     }
-    // A real press on 1/1,000 in the Speed row: the loop is slowed, a bead is a thousandth as many, and each interval can be read.
-    // On a narrow window the legend is folded behind its title: a real press opens it first, and another closes it after.
-    const slower = 'cells-legend .layer-row[data-channel="time"] button[data-layer="1000"]';
-    if (!(await press(slower)) && (await press("cells-legend .legend-toggle"))) {
-      await press(slower);
-      await press("cells-legend .legend-toggle");
+    // The Speed slider, for real: a press at each mark and between, a drag along it, and the keyboard. At each place, measured in the
+    // page over a few seconds: the beads set out a second on the busiest lane, how long one takes to cross, and how much of the
+    // stream shows. On a narrow window the legend is folded behind its title: a real press opens it first.
+    if (!(await middle("cells-legend .speed-slider"))) await press("cells-legend .legend-toggle");
+    // Where the slider stands is looked up before each press: the legend's words change with the speed, and its rows move.
+    let sliderBox = null;
+    const findSlider = async () => (sliderBox = await evaluate(`(() => { const r = ${V}.shadowRoot.querySelector("cells-legend .speed-slider").getBoundingClientRect(); return { left: r.left, right: r.right, y: r.top + r.height / 2 }; })()`));
+    await findSlider();
+    // A native range's thumb travels between its two half-widths: the place of a value on the screen.
+    const xAt = (position) => sliderBox.left + 8 + position * (sliderBox.right - sliderBox.left - 16);
+    const measure = () => evaluate(`(async () => {
+      const flux = ${L}.flux, set = flux.tokens[0], tokens = set.tokens;
+      const lane = tokens.lanes.reduce((most, item) => (item.perSecond > most.perSecond ? item : most), tokens.lanes[0]);
+      // Beads set out: the whole ones counted and the share of the next one on its way to setting out.
+      const sent = (lane.sent || 0) + lane.due, t0 = performance.now(), seen = [];
+      for (let i = 0; i < 40; i++) { await new Promise((r) => setTimeout(r, 100)); seen.push({ t: performance.now(), beads: lane.beads.slice(), sent: lane.sent || 0 }); }
+      const seconds = (performance.now() - t0) / 1000, sentNow = (lane.sent || 0) + lane.due;
+      // A bead's crossing, from how far the beads moved between two looks (the same bead: counted from the first set out).
+      const rates = [];
+      for (let k = 1; k < seen.length; k++) {
+        const a = seen[k - 1], b = seen[k], dt = (b.t - a.t) / 1000, gone = (b.sent - a.sent) - (b.beads.length - a.beads.length);
+        for (let i = 0; i < a.beads.length; i++) { const j = i - gone; if (j >= 0 && j < b.beads.length && b.beads[j] > a.beads[i]) rates.push((b.beads[j] - a.beads[i]) / dt); }
+      }
+      rates.sort((x, y) => x - y);
+      return { slow: flux.slow, mode: tokens.mode, perSecond: Number(lane.perSecond.toFixed(3)), setOut: Number(((sentNow - sent) / seconds).toFixed(2)), crossing: rates.length ? Number((1 / rates[Math.floor(rates.length / 2)]).toFixed(2)) : null, stream: Number(tokens.blend.stream.toFixed(2)), stretch: Number(tokens.blend.stretch.toFixed(2)), statement: flux.said?.ways[0] || "" };
+    })()`);
+    const steps = [];
+    for (const [name, position] of [["the start", 0], ["between the start and the middle", 0.25], ["the middle mark", 0.5], ["the three-quarter mark", 0.75], ["the end", 1]]) {
+      await findSlider();
+      await click(xAt(position), sliderBox.y, 400);
+      s = await until((now) => Math.abs((now.slider?.value ?? -1) - position) < 0.02);
+      const seen = await measure();
+      steps.push({ name, position, slider: s.slider?.value, now: s.slider?.now, ...seen });
     }
-    s = await until((now) => now.loop?.slow === 1000 && now.said.some((item) => item.shown && /slowed 1,000 times/.test(item.text)));
+    note(`along the slider: ${JSON.stringify(steps.map(({ statement, ...rest }) => rest))}`);
+    const [start, , middleMark, three, end] = steps;
+    check("a real press at the start, the two marks and the end puts the slider there, and the page follows", steps.every((step) => Math.abs(step.slider - step.position) < 0.02) && start.slow === 1 && Math.abs(Math.log10(middleMark.slow) - 3) < 0.05 && Math.abs(Math.log10(three.slow) - 6) < 0.05 && Math.abs(Math.log10(end.slow) - 7) < 0.05, JSON.stringify(steps.map((step) => [step.position, step.slider, step.slow, step.now])));
+    check("at true speed the lanes are streams, with no bead to count; at the middle mark packets; at three quarters single beads", start.mode === "stream" && start.stream > 0.9 && middleMark.mode === "packets" && middleMark.stream < 0.05 && three.mode === "beads" && three.stretch < 1.05, JSON.stringify(steps.map((step) => [step.position, step.mode, step.stream, step.stretch])));
+    // From the middle mark on, beads are counted: at each step fewer set out a second on the busiest lane and each crosses more slowly, by a factor the eye sees.
+    const counted = [middleMark, three, end];
+    if (MOVING) check("from mark to mark, fewer beads set out a second and each crosses more slowly, both: from the middle to three quarters one of the two halves, and on to the end it falls by half again", counted.every((step, k) => k === 0 || ((step.setOut < counted[k - 1].setOut * 0.8 && step.crossing > counted[k - 1].crossing * (k === 1 ? 1.2 : 1.1)) && Math.max(counted[k - 1].setOut / Math.max(1e-9, step.setOut), step.crossing / counted[k - 1].crossing) >= (k === 1 ? 1.9 : 1.5))) && middleMark.crossing > 2.3 && middleMark.crossing < 2.9 && three.crossing > 3.7 && three.crossing < 4.5, JSON.stringify(counted.map((step) => [step.position, step.setOut, step.perSecond, step.crossing])));
+    check("the statement follows the slider: streams at true speed, a packet's and then a bead's number slowed", /Streams as wide as their rates/.test(start.statement) && /One packet is [\d,]+ ions/.test(middleMark.statement) && /One bead is [\d,]+ ions?/.test(three.statement) && /One bead is 2 ions/.test(end.statement), JSON.stringify(steps.map((step) => step.statement.split("\n")[1])));
+    // A drag along it, for real: from the start to the middle mark, the picture follows the hand without a jump.
+    await findSlider();
+    await click(xAt(0), sliderBox.y, 300);
+    await findSlider();
+    const path = [];
+    await mouse("mouseMoved", xAt(0), sliderBox.y, { button: "none", buttons: 0 });
+    await mouse("mousePressed", xAt(0), sliderBox.y);
+    for (let k = 1; k <= 10; k++) {
+      await mouse("mouseMoved", xAt(k * 0.05), sliderBox.y, { buttons: 1 });
+      await sleep(120);
+      path.push(await evaluate(`(() => { const t = ${L}.flux.tokens[0].tokens; return [Number(${L}.flux.slow.toPrecision(3)), Number(t.blend.stream.toFixed(2)), Number(t.blend.stretch.toFixed(2))]; })()`));
+    }
+    await mouse("mouseReleased", xAt(0.5), sliderBox.y, { buttons: 0 });
+    note(`a drag from the start to the middle: ${JSON.stringify(path)}`);
+    check("dragged, the slow-down grows and the stream thins step by step, with no jump", path.length === 10 && path.every((step, k) => k === 0 || (step[0] >= path[k - 1][0] && step[1] <= path[k - 1][1] + 1e-9 && Math.abs(step[1] - path[k - 1][1]) < 0.4)) && path.at(-1)[0] > 500, JSON.stringify(path));
+    // The keyboard: Home to the start, the arrows step it, End to its end; a screen reader hears the speed in words.
+    await evaluate(`${V}.shadowRoot.querySelector("cells-legend .speed-slider").focus()`);
+    const key = async (name) => {
+      await page("Input.dispatchKeyEvent", { type: "rawKeyDown", key: name, code: name, windowsVirtualKeyCode: { Home: 36, End: 35, ArrowRight: 39, ArrowLeft: 37 }[name] });
+      await page("Input.dispatchKeyEvent", { type: "keyUp", key: name, code: name, windowsVirtualKeyCode: { Home: 36, End: 35, ArrowRight: 39, ArrowLeft: 37 }[name] });
+      await sleep(250);
+      return state();
+    };
+    const home = await key("Home"), right = await key("ArrowRight"), last = await key("End");
+    check("the keyboard: Home to true speed, an arrow steps it, End to its end, the speed said in words", home.loop?.slow === 1 && right.loop?.slow > 1 && Math.abs(Math.log10(last.loop?.slow) - 7) < 0.05 && /^Slowed 10,000,000 times: one second here is 100 nanoseconds of the run/.test(last.slider?.text || ""), JSON.stringify([home.loop?.slow, right.loop?.slow, last.loop?.slow, last.slider?.text]));
+    // Back to the middle mark for the picture of the run slowed.
+    await findSlider();
+    await click(xAt(0.5), sliderBox.y, 600);
+    s = await until((now) => Math.abs((now.slider?.value ?? -1) - 0.5) < 0.02 && now.said.some((item) => item.shown && /slowed 1,000 times/.test(item.text)));
     const slowed = s.said.filter((item) => item.shown).map((item) => item.text);
-    check("a real press on 1/1,000 slows the loop: the picture says so, with the interval's place in the loop", s.loop?.slow === 1000 && slowed.some((text) => /One bead is [\d,]+ ions( · |\n)slowed 1,000 times(, shown still)?( · |\n)mean of [\d.]+ s to [\d.]+ s of the loop/.test(text)) && JSON.stringify(s.timeRow) === JSON.stringify(["True", "1/1,000*", "1/1,000,000"]), JSON.stringify([s.loop?.slow, slowed, s.timeRow]));
+    check("slowed a thousand times the picture says so, with the interval's place in the loop", Math.abs(Math.log10(s.loop?.slow) - 3) < 0.02 && slowed.some((text) => /One packet is [\d,]+ ions( · |\n)slowed 1,000 times(: packets, crossing more slowly|, shown still)?( · |\n)mean of [\d.]+ s to [\d.]+ s of the loop/.test(text)), JSON.stringify([s.loop?.slow, slowed]));
     await shot(`${NAME}-loop-slowed`);
     // The panel behind all of it: what the cell takes from the run, and the run's own words for itself.
     if (opened) await press("cells-legend .legend-toggle");
@@ -327,7 +392,8 @@ try {
     await rest();
     s = await state();
     check(`${pressed ? "a real press on" : "choosing"} ${part} shows that part's flux alone`, s.selected === part && JSON.stringify(s.shown) === JSON.stringify([kind]) && s.tokens.length > 0 && s.tokens.every((set) => set.lanes > 0), JSON.stringify([s.selected, s.shown, s.tokens]));
-    check("an arrowhead ends each lane, and beads stand or travel on it", s.tokens.every((set) => set.heads === set.lanes && set.beads > 0), JSON.stringify(s.tokens));
+    // The way is told by chevrons along each lane (since 17 November 2026); a run at true speed is a stream, with no bead to count.
+    check("chevrons point each lane's way, and beads stand or travel on it, or a stream flows along it", s.tokens.every((set) => set.chevrons > 0 && (set.beads > 0 || set.stream > 0.9)), JSON.stringify(s.tokens));
     check("the bloom is on, what shines is marked, and the look's own motion is held", s.bloom > 0 && s.shining >= 2 && s.holds.includes("flux") && s.moving === false, JSON.stringify([s.bloom, s.shining, s.holds, s.moving]));
     // A species with its own run says what the run is, where one without says "Illustration: not a run" (rules 7 and 11).
     const notice = s.said.find((item) => item.text === noticeOf(s));
@@ -350,12 +416,13 @@ try {
     }
     if (MOVING) {
       // A bead is somewhere else a moment later: by more than rounding, and not by a whole turn of its lane.
-      const before = s.tokens[0].first;
-      const moved = (now) => typeof now.tokens[0]?.first === "number" && Math.abs(now.tokens[0].first - before) > 1e-3;
+      // A bead moves; or, where the lanes are streams (a run at true speed), the streaks run on.
+      const before = s.tokens[0].first, streaks = s.tokens[0].streaks, stream = s.tokens[0].stream > 0.9;
+      const moved = (now) => (stream ? now.tokens[0]?.streaks > streaks + 0.1 : typeof now.tokens[0]?.first === "number" && Math.abs(now.tokens[0].first - before) > 1e-3);
       const later = await until(moved);
-      check("a bead moves", moved(later) && later.still === false, JSON.stringify([before, later.tokens[0]?.first]));
-    } else if (s.source === "run" && s.width < 600) {
-      // A phone's picture keeps the run's notice and its name; the legend says that the beads stand.
+      check(stream ? "the streams' streaks run" : "a bead moves", moved(later) && later.still === false, JSON.stringify([before, streaks, later.tokens[0]?.first, later.tokens[0]?.streaks]));
+    } else if (s.source === "run" && (s.width < 600 || !s.said.some((item) => item.shown && /shown still/.test(item.text)))) {
+      // A phone's picture, or a short window's, keeps the run's notice and its name; the legend says that the beads stand.
       check("opened still, the beads stand and the legend says so", s.still === true && s.keys.some((text) => /Shown still here/.test(text)), JSON.stringify(s.keys));
     } else check("opened still, the beads stand and the picture says so", s.still === true && s.said.some((item) => /shown still($| · |\n)/m.test(item.text)), JSON.stringify(s.said.map((item) => item.text)));
     await shot(`${NAME}-part`);
@@ -399,7 +466,7 @@ try {
   check("the switch shows all that the species' file allows, under one legend", s.on && JSON.stringify(s.shown) === JSON.stringify(s.plan) && s.rows.some((row) => /All\*/.test(row)), JSON.stringify([s.shown, s.rows]));
   if (s.plan.length) {
     check(`the legend carries the notice for as long as the ${s.source === "run" ? "run" : "illustration"} shows`, s.notice === noticeOf(s), String(s.notice));
-    if (s.source === "run") check("the legend says what a bead stands for and whose word a direction is", s.keys.some((text) => /^One bead is [\d,]+ /.test(text)) && s.keys.some((text) => /by the run's own signs/.test(text)), JSON.stringify(s.keys));
+    if (s.source === "run") check("the legend says what is drawn and what it stands for, and whose word a direction is", s.keys.some((text) => /^(Streams as wide as their rates|One (bead|packet) is [\d,]+ )/.test(text)) && s.keys.some((text) => /by the run's own signs/.test(text)), JSON.stringify(s.keys));
     else check("the legend says what a bead stands for and whose word a direction is", s.keys.some((text) => /stand for no number/.test(text)) && s.keys.some((text) => /no direction is claimed|law of the engine/.test(text)), JSON.stringify(s.keys));
   }
   check("what is not drawn is named in the legend with its reason", s.withheld.length === 0 || s.cannot.length === s.withheld.length || /not drawn/.test(JSON.stringify(s.keys) + (await evaluate(`${V}.shadowRoot.querySelector("cells-legend .layer-cannots summary")?.textContent ?? ""`))), JSON.stringify(s.cannot));

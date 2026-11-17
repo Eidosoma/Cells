@@ -240,7 +240,8 @@ CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], compac
   }
   if (notice && compact) block.append(notice);
   // The time a layer that moves keeps: true speed as it opens, with a slow-down beside it (rule 3).
-  if (time) block.append(h("div", { class: "layer-row", role: "group", "aria-label": "How fast the beads' time runs", dataset: { channel: "time" } }, h("span", { class: "layer-channel" }, time.label), segment(time.options, (option) => !option.on && emit(this, "cells-slow", option.id))));
+  if (time?.kind === "slider") block.append(this.speedSlider(time));
+  else if (time) block.append(h("div", { class: "layer-row", role: "group", "aria-label": "How fast the beads' time runs", dataset: { channel: "time" } }, h("span", { class: "layer-channel" }, time.label), segment(time.options, (option) => !option.on && emit(this, "cells-slow", option.id))));
   // A layer that is on and waits for a cell to be chosen says how it is seen.
   if (hint) block.append(h("p", { class: "layer-hint", role: "status" }, hint));
   const lacking = cannot.map((item) => h("p", { class: "layer-cannot", dataset: { layer: item.id } }, h("span", { class: "layer-cannot-name" }, short(item.label)), " ", item.why));
@@ -272,6 +273,79 @@ CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], compac
   // What stands behind the layers' numbers is said in the panel, where there is room for it.
   if (details) block.append(h("p", { class: "layer-more" }, h("button", { class: "link-button layer-details", type: "button", onclick: () => emit(this, "cells-select", { id: details }) }, "What stands behind them")));
   return block;
+};
+
+/**
+ * The Speed row as a slider (the Cell view's flux, layers/cellflux.js, speedRow): `time` is { label, value (0 to 1),
+ * marks: [{ at, label }], slowAt(position), short(position), words(position) }. True speed at its start; its marks
+ * stand under it on one line, each with its words but the end, which has its tick alone. Dragged, it tells the page at once (`cells-slow` with `live`), so that the picture
+ * follows the hand; let go, it tells it once more, and the legend is written again. Arrow keys step it, Home and End
+ * go to its ends; a screen reader hears the speed in words. At least 44 px tall to the touch.
+ */
+CellsLegend.prototype.speedSlider = function (time) {
+  const now = h("span", { class: "speed-now", style: "font-variant-numeric: tabular-nums; font-weight: 600; min-width: 7.5em; text-align: right; color: var(--fg)" }, time.short(time.value));
+  const input = h("input", {
+    type: "range",
+    class: "speed-slider",
+    min: "0",
+    max: "1",
+    step: "0.005",
+    value: String(time.value),
+    "aria-label": "Speed of what flows",
+    "aria-valuetext": time.words(time.value),
+    title: time.words(time.value),
+    style: "width: 100%; height: 44px; margin: 0; accent-color: var(--accent); background: transparent; cursor: pointer",
+  });
+  const tell = (live) => {
+    const position = Number(input.value);
+    input.setAttribute("aria-valuetext", time.words(position));
+    input.title = time.words(position);
+    now.textContent = time.short(position);
+    emit(this, "cells-slow", { slow: time.slowAt(position), live });
+  };
+  // Let go after a press or a drag, the legend is written again (its words follow the speed). Moved by the keys, it is
+  // written again only when the slider loses the focus, so that the keys keep working on the slider the hand is on.
+  let pressed = false, keyed = false;
+  input.addEventListener("pointerdown", () => (pressed = true));
+  input.addEventListener("input", () => tell(true));
+  input.addEventListener("change", () => {
+    if (pressed) {
+      pressed = false;
+      tell(false);
+    } else keyed = true;
+  });
+  input.addEventListener("blur", () => {
+    if (!keyed) return;
+    keyed = false;
+    tell(false);
+  });
+  // The marks: a tick at each, and under it the words of the start and of the two marks between (a thousandfold at the
+  // middle, a millionfold at three quarters: the user, 17 November 2026). They keep to one line: the first stands inside
+  // the row's start, a mark past two thirds of the way leans back from its tick so that its words end inside the row,
+  // and the end has its tick alone (its speed is said beside the row's name once the slider is there).
+  const last = time.marks.length - 1;
+  const lean = (mark, k) => (k === 0 ? "0" : k === last ? "-100%" : mark.at > 2 / 3 ? "-12px" : "-50%");
+  const tick = (mark, k) => (k === 0 ? "left: 0" : k === last ? "right: 0" : mark.at > 2 / 3 ? "left: 12px" : "left: 50%");
+  const marks = h(
+    "div",
+    { class: "speed-marks", "aria-hidden": "true", style: "position: relative; height: 16px; margin: -10px 8px 0; font-size: 10.5px; line-height: 1.2; color: var(--muted)" },
+    time.marks.map((mark, k) =>
+      h(
+        "span",
+        { style: `position: absolute; top: 2px; left: ${(mark.at * 100).toFixed(2)}%; transform: translateX(${lean(mark, k)}); white-space: nowrap; padding: 0 1px; min-width: 1px; min-height: 1em` },
+        h("i", { style: `position: absolute; ${tick(mark, k)}; top: -2px; width: 1px; height: 3px; background: currentColor` }),
+        k === last ? "" : mark.label
+      )
+    )
+  );
+  // Its name and the speed in force on one line; the slider under them, the whole width of the legend.
+  return h(
+    "div",
+    { class: "layer-row speed-row", role: "group", "aria-label": "How fast the time of what flows runs", dataset: { channel: "time" }, style: "display: block; padding: 2px 8px 0" },
+    h("div", { style: "display: flex; justify-content: space-between; align-items: baseline; gap: 8px" }, h("span", { class: "layer-channel" }, time.label), now),
+    input,
+    marks
+  );
 };
 
 customElements.define("cells-legend", CellsLegend);

@@ -20,8 +20,9 @@ import { readFlux, planFor, speaksFor, shownKinds, shownWithheld, illustrationWo
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, bordersOf, READ_WORDS } from "../src/layers/loop.js";
 import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT, REST_WORDS, CLOSE_PUMP } from "../src/layers/cellflux.js";
 import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
+import { Flow, CHEVRONS, STYLES, widthOf, STREAK_PACE } from "../src/layers/marks/flow.js";
 import { fitOnRow, clearOf } from "../src/layers/statement.js";
-import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, STILL_WORDS, SLOWS } from "../src/layers/marks/beads.js";
+import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, paceAt, paceKey, modeAt, blendAt, resolveAt, flowWords, headSize, advance, slowAt, positionOf, slowLabel, STILL_WORDS, SLOWS, SLOWEST, SLIDER, BUSIEST } from "../src/layers/marks/beads.js";
 import { CellLens } from "../src/lenses/cell.js";
 import { cellTypeOf } from "../src/scene/entries.js";
 import { buildCell, buildMolecules } from "../src/lenses/cell_parts.js";
@@ -343,11 +344,12 @@ const sizeOf = (mesh, index) => new THREE.Vector3().setFromMatrixScale(new THREE
 
 test("beads in three dimensions keep the bead layer's arithmetic: as many a second as the rate says, at any frame rate", () => {
   const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(4, 0, 0);
-  const make = () => new Tokens({ lanes: [{ key: "in", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: PACE, reverse: false }, { key: "out", path: straight(a, b), colour: new THREE.Color("#eb6834"), perSecond: PACE, reverse: true }], radius: 0.1, ground: new THREE.Color("#eef2f6") });
+  // Beads with today's arrowhead at each lane's end (the style kept to be compared; the page's own is chevrons, below).
+  const make = () => new Tokens({ lanes: [{ key: "in", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: PACE, reverse: false }, { key: "out", path: straight(a, b), colour: new THREE.Color("#eb6834"), perSecond: PACE, reverse: true }], radius: 0.1, ground: new THREE.Color("#eef2f6"), style: "arrow" });
   const tokens = make();
   // As full as it would be had it been watched all along: a bead and a quarter a second, a crossing of 1.6 s.
   assert.equal(CROSSING, 1.6);
-  assert.deepEqual(tokens.drawn, { beads: 4, heads: 2 });
+  assert.deepEqual(tokens.drawn, { beads: 4, heads: 2, chevrons: 0, streams: 0 });
   // Sixty frames of a sixtieth, or two frames of half a second: the same beads stand at the same places.
   const fine = make(), coarse = make();
   for (let frame = 0; frame < 60; frame++) fine.tick(1 / 60);
@@ -374,14 +376,14 @@ test("beads in three dimensions keep the bead layer's arithmetic: as many a seco
 
 test("where nothing may move the beads stand, as many as would be on their way; the arrowheads still say the way", () => {
   const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(0, 0, 3);
-  const tokens = new Tokens({ lanes: [{ key: "k", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: PACE, reverse: false }, { key: "thin", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 0.1, reverse: false }, { key: "none", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 0, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff") });
+  const tokens = new Tokens({ lanes: [{ key: "k", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: PACE, reverse: false }, { key: "thin", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 0.1, reverse: false }, { key: "none", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 0, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff"), style: "arrow" });
   assert.equal(tokens.tick(1, true), false, "nothing moves");
   assert.deepEqual(standing(PACE), [0.25, 0.75]);
-  assert.deepEqual(tokens.drawn, { beads: 2, heads: 2 }, "two beads stand on the lane that carries a bead and a quarter a second; the thin lane shows its arrowhead alone; the empty one nothing");
+  assert.deepEqual(tokens.drawn, { beads: 2, heads: 2, chevrons: 0, streams: 0 }, "two beads stand on the lane that carries a bead and a quarter a second; the thin lane shows its arrowhead alone; the empty one nothing");
   assert.ok(near(placeOf(tokens.cores, 0).z, 0.75) && near(placeOf(tokens.cores, 1).z, 2.25));
   assert.ok(sizeOf(tokens.heads, 1) < sizeOf(tokens.heads, 0), "a thin stream's arrowhead is smaller");
   // A lane of a run that turns round starts empty: no bead is carried back.
-  const moving = new Tokens({ lanes: [{ key: "k", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 2, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff") });
+  const moving = new Tokens({ lanes: [{ key: "k", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 2, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff"), style: "arrow" });
   assert.ok(moving.drawn.beads > 0);
   moving.setRate("k", 2, true);
   moving.tick(0);
@@ -400,7 +402,8 @@ test("the beads stay out of the look, cannot be chosen, and fade with the part o
     assert.equal(material.transparent, true, "drawn after what is solid, with what is see-through");
   }
   assert.equal(tokens.group.userData.unpickable, true);
-  assert.deepEqual(tokens.shines, [tokens.cores, tokens.heads], "the beads and the arrowheads are what the bloom shines from; their rims are not");
+  assert.deepEqual(tokens.shines, [tokens.cores, tokens.heads, tokens.flow.chevrons], "the beads, the arrowheads and the chevrons are what the bloom shines from; their rims are not");
+  for (const material of tokens.flow.materials) assert.deepEqual([material.toneMapped, material.userData.noContact, material.depthWrite, material.transparent], [false, true, false, true], "the chevrons and the streams stay out of the look as the beads do");
   assert.equal(tokens.setFade(0.5), true);
   assert.equal(tokens.materials[0].opacity, 0.5);
   assert.equal(tokens.setFade(0), false);
@@ -668,7 +671,7 @@ test("for a visitor who asks for less motion the beads stand, and the picture an
   flux.setOn(true);
   const tokens = flux.tokens[0].tokens;
   assert.equal(flux.advance(2), false, "nothing moves");
-  assert.deepEqual(tokens.drawn, { beads: 50, heads: 25 }, "two beads stand on each lane, and each lane has its arrowhead");
+  assert.deepEqual(tokens.drawn, { beads: 50, heads: 0, chevrons: 75, streams: 0 }, "two beads stand on each lane, and each lane has its chevrons, which stand too and point its way");
   assert.equal(lens.labels.made[1].text, "Direction only: the number of beads and their pace stand for no number · shown still");
   assert.equal(flux.legend().keys.at(-2).text, STILL_WORDS);
   assert.deepEqual([...stage.decoration.holds], ["flux"], "the look's own motion is held all the same");
@@ -778,7 +781,7 @@ test("the beads move in the time that passed, fade with the cell, and leave with
   assert.deepEqual([stage.bloom, stage.shining.size, stage.decoration.holds.size], [0, 0, 0]);
   lens.active = true;
   flux.refresh();
-  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds]], [BLOOM, 2, ["flux"]]);
+  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds]], [BLOOM, 3, ["flux"]], "the beads, the arrowheads and the chevrons shine");
   // The colours follow the page's theme: the rims take the dark ground.
   stage.palette = { ...stage.palette, bg: "#0b151e", dark: true };
   flux.refresh();
@@ -822,7 +825,7 @@ test("every species goes through its own file: what its cell lacks is never offe
       const drawn = [...new Set(lanesOf(lens).map((item) => item.lane.key.split("/")[0]))].sort();
       assert.deepEqual(drawn, kindsOf(lens.flux.plan).sort(), `${id}, ${mode}`);
       for (const kind of drawn) assert.ok(lens.draws(lens.flux.plan.kinds.find((item) => item.id === kind).part), `${id}: ${kind}`);
-      for (const set of lens.flux.tokens) assert.ok(set.tokens.drawn.beads > 0 && set.tokens.drawn.heads === set.lanes.length);
+      for (const set of lens.flux.tokens) assert.ok(set.tokens.drawn.beads > 0 && set.tokens.drawn.chevrons === set.lanes.length * CHEVRONS, "every lane has its chevrons");
     }
   }
 });
@@ -1068,8 +1071,10 @@ test("the loop's rates are means inside the loop, never across its seam", async 
   const [sodium, potassium] = rates.filter((rate) => rate.stream.kind === "pump");
   assert.deepEqual([sodium.out, potassium.out], [true, false]);
   assert.ok(near(sodium.ions / potassium.ions, 1.5, 1e-9));
-  // Slowed a thousand times, a smaller token: the same streams, as many beads a second or fewer.
-  assert.ok(loopToken(read.busiest, 1000) <= token / 500);
+  // Slowed a thousand times, a smaller token, and fewer beads a second on the busiest lane: four at most, where true speed has ten.
+  const slowed = loopToken(read.busiest, 1000);
+  assert.ok(slowed <= token / 200 && slowed >= 1);
+  assert.ok(beadsASecond(ionsASecond(most), slowed, 1e-3) <= 4 + 1e-9);
 });
 
 test("with a looping run the Cell view shows the run and no illustration, even for what the run lacks", async () => {
@@ -1105,16 +1110,19 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   const token = loopToken(flux.loop.busiest, 1);
   // At true speed a record's interval (half a second here) passes too fast to read its place: the picture gives its length. And it says what the cell takes from the run.
   const cellId = run.sets.get("cell").ids[flux.loop.cell];
-  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nOne bead is ${token.toLocaleString("en-US")} ions · true speed · means over each 500 ms between records\nFrom the run's lumped cell ${cellId}\nNot a measurement of a living cell`);
+  // At true speed there is no single ion to follow: each lane is a stream, as wide as its rate; the picture says the widest's rate.
+  const widest = Math.round(ionsASecond(flux.loop.busiest)).toLocaleString("en-US");
+  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nStreams as wide as their rates: the widest carries ${widest} ions a second · true speed · means over each 500 ms between records\nFrom the run's lumped cell ${cellId}\nNot a measurement of a living cell`);
+  assert.deepEqual([tokens.mode, tokens.drawn.beads, tokens.drawn.streams > 0, tokens.drawn.chevrons > 0], ["stream", 0, true, true], "no bead to count: streams, and chevrons for their way");
   // The legend: the slow-down, what a bead stands for, the time with the loop's length, whose word the direction is.
   let legend = flux.legend();
   assert.deepEqual(legend.time.options.map((option) => [option.id, option.label, option.on]), [[1, "True", true], [1000, "1/1,000", false], [1000000, "1/1,000,000", false]]);
   assert.deepEqual(legend.keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "from", "closes", "pump"]);
-  assert.equal(legend.keys[1].text, `One bead is ${token.toLocaleString("en-US")} ions. More beads a second means more of them a second; how fast a bead travels stands for nothing. Where a lane passes less than a bead now and then, its arrowhead alone shows`);
+  assert.equal(legend.keys[1].text, `Streams as wide as their rates: the widest carries ${widest} ions a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing`);
   assert.equal(legend.keys[5].text, `From the run's cell ${cellId}: a lumped cell with the run's own laws. Not a measurement of a living cell. Drawn: channels from channel_transferred (kir_1, nal_1); pumps from pump_cycles (pump of membrane_1); neighbours from junction_transferred (6 junctions); membrane itself from membrane_transferred (membrane_1)`, "the whole cell's: which part takes a flux from which record");
   assert.equal(legend.keys[6].text, closesWords(flux.loop));
-  assert.equal(legend.keys[2].text, `True speed: one second here is one second of the run. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start`);
-  assert.equal(legend.keys[3].text, "A bead goes the way its total grew over the interval shown, by the run's own signs");
+  assert.equal(legend.keys[2].text, `True speed: one second here is one second of the run. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start. ${paceKey(1)}`);
+  assert.equal(legend.keys[3].text, "A lane flows the way its total grew over the interval shown, by the run's own signs");
   assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux, from the looping run");
   // Time passes at true speed: the interval shown moves on with the loop, and comes round to its start. The words stay the same, so nothing is laid out again.
   const gap = run.t[1] - run.t[0];
@@ -1128,14 +1136,27 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   flux.setSlow(1000);
   legend = flux.legend();
   assert.deepEqual(legend.time.options.map((option) => option.on), [false, true, false]);
-  assert.match(lens.labels.made[1].text, / · slowed 1,000 times · mean of 0\.5 s to 1\.0 s of the loop\n/);
+  assert.match(lens.labels.made[1].text, /\nOne packet is [\d,]+ ions · slowed 1,000 times: packets, crossing more slowly · mean of 0\.5 s to 1\.0 s of the loop\n/);
+  assert.equal(flux.tokens[0].tokens.mode, "packets");
   const before = flux.elapsed;
   flux.advance(1);
   assert.ok(near(flux.elapsed - before, 0.001, 1e-9));
   assert.ok(loopToken(flux.loop.busiest, 1000) < token);
+  // The slider: any slow-down from true speed to its end, never faster than life; the slider's own words come with it.
   flux.setSlow(7);
-  assert.equal(flux.slow, 1000, "only the declared slow-downs");
-  assert.ok(SLOWS.includes(flux.slow));
+  assert.equal(flux.slow, 7);
+  flux.setSlow(0.25);
+  assert.equal(flux.slow, 1, "never faster than life");
+  flux.setSlow(1e9);
+  assert.equal(flux.slow, SLOWEST);
+  flux.setSlow({ slow: 1000, live: true });
+  assert.equal(flux.slow, 1000);
+  const chromes = lens.chromes;
+  flux.setSlow({ slow: 2000, live: true });
+  assert.equal(lens.chromes, chromes, "while the slider is dragged the legend is left as it is");
+  flux.setSlow({ slow: 2000, live: false });
+  assert.equal(lens.chromes, chromes + 1, "and written again when it is let go");
+  flux.setSlow(1000);
   // The panel behind all of it names the run and says that no rate crosses the seam.
   lens.choose(null);
   flux.setOn(true);
@@ -1344,7 +1365,7 @@ test("the planarian names its own looping run: the page fetches it from its cata
   flux.setOn(true);
   const [notice, lines] = lens.labels.made;
   assert.equal(notice.text, "Development run of the engine, not judged");
-  assert.equal(lines.text, "Planarian loop (development run) · a loop of 2 s of the cell's time\nOne bead is 1,000,000 ions · true speed · means over each 20 ms between records\nFrom the run's lumped cell cell_3, with a prescribed electrode current injection (not drawn)\nNot a measurement of a living cell");
+  assert.equal(lines.text, "Planarian loop (development run) · a loop of 2 s of the cell's time\nStreams as wide as their rates: the widest carries 5,083,478 ions a second · true speed · means over each 20 ms between records\nFrom the run's lumped cell cell_3, with a prescribed electrode current injection (not drawn)\nNot a measurement of a living cell");
   assert.match(flux.legend().keys.find((item) => item.key === "from").text, /^From the run's cell cell_3: a lumped cell with the run's own laws, under the run's prescribed electrode current injection, which is not drawn\. Not a measurement of a living cell\. Drawn: /, "the legend says it in full");
   const legend = flux.legend();
   assert.equal(legend.example, "Development run of the engine, not judged", "the legend carries it too, for a narrow screen whose picture has no room");
@@ -1372,11 +1393,15 @@ test("the planarian names its own looping run: the page fetches it from its cata
   await settle(phone.lens.flux);
   phone.lens.flux.setOn(true);
   assert.deepEqual([phone.lens.labels.made[0].text, phone.lens.labels.made[1].text], ["Development run of the engine, not judged", "Planarian loop (development run)\nloops every 2 s"]);
-  assert.ok(phone.lens.flux.legend().keys.some((item) => /^One bead is 1,000,000 ions/.test(item.text)), "the token stands in the legend");
+  assert.ok(phone.lens.flux.legend().keys.some((item) => /^Streams as wide as their rates: the widest carries 5,083,478 ions a second/.test(item.text)), "what is drawn, and the numbers, stand in the legend");
   // Slowed a thousand times: the record's interval lasts twenty seconds of watching, long enough to read its place in the loop.
   flux.setOn(true);
   flux.setSlow(1000);
-  assert.match(lens.labels.made[1].text, /^Planarian loop .*\nOne bead is 1,000 ions · slowed 1,000 times · mean of 0\.00 s to 0\.02 s of the loop\n/);
+  assert.match(lens.labels.made[1].text, /^Planarian loop .*\nOne packet is 5,000 ions · slowed 1,000 times: packets, crossing more slowly · mean of 0\.00 s to 0\.02 s of the loop\n/);
+  // Slowed a million times: single beads crossing slowly.
+  flux.setSlow(1e6);
+  assert.match(lens.labels.made[1].text, /\nOne bead is 10 ions · slowed 1,000,000 times: single beads, crossing slowly · /);
+  assert.deepEqual([flux.tokens[0].tokens.mode, Number(flux.tokens[0].tokens.lanes[0].crossing.toFixed(6))], ["beads", 4.096]);
 });
 
 test("a species whose own run cannot be had shows no illustration in its place, and says why", async (t) => {
@@ -1402,4 +1427,137 @@ test("a species whose own run cannot be had shows no illustration in its place, 
   await settle(broken.lens.flux);
   for (let tries = 0; tries < 200 && broken.lens.flux.fetches.get("planarian/cell")?.state !== "failed"; tries++) await new Promise((resolve) => setTimeout(resolve, 5));
   assert.match(broken.lens.flux.source.why, /^The Planarian's own run could not be read: runs\/planarian-loop--planarian-b08af640\.json answered 404$/);
+});
+
+// ------------------------------------------------------------ slowing down is seen (17 November 2026)
+
+test("each step of the Speed row is seen: a stream at true speed, packets slowed a thousand times, single beads slowed a million times", () => {
+  // The pace: at most ten, 2.5 and 0.625 beads a second on the busiest lane; a crossing of 1.6, 2.56 and 4.1 s. True speed and faster alike.
+  const at = (speed) => paceAt(speed);
+  assert.deepEqual([at(1), at(4), at(240)].map((pace) => [pace.busiest, pace.crossing]), [[10, 1.6], [10, 1.6], [10, 1.6]]);
+  assert.ok(near(at(1e-3).busiest, 2.5, 1e-12) && near(at(1e-3).crossing, 2.56, 1e-12));
+  assert.ok(near(at(1e-6).busiest, 0.625, 1e-12) && near(at(1e-6).crossing, 4.096, 1e-12));
+  assert.ok(at(0.25).busiest < 10 && at(0.25).busiest > 2.5 && at(0.25).crossing > 1.6 && at(0.25).crossing < 2.56, "the replay's quarter speed lies between");
+  assert.deepEqual([1, 0.5, 0.25, 1e-3, 1e-4, 1e-5, 1e-6].map(modeAt), ["stream", "stream", "stream", "packets", "packets", "beads", "beads"]);
+  // Between the steps nothing jumps: the stream gives way to packets by a thousandfold, a packet rounds into a bead by a millionfold.
+  assert.deepEqual([0, 3, 6].map((decades) => blendAt(decades)), [{ stream: 1, beads: 0, stretch: 3.9 }, { stream: 0, beads: 1, stretch: 1.5 }, { stream: 0, beads: 1, stretch: 1 }]);
+  for (let decades = 0; decades < 7; decades += 0.01) {
+    const here = blendAt(decades), next = blendAt(decades + 0.01);
+    assert.ok(Math.abs(next.stream - here.stream) < 0.02 && Math.abs(next.beads - here.beads) < 0.02 && Math.abs(next.stretch - here.stretch) < 0.04, `no jump at ${decades.toFixed(2)}`);
+  }
+  // The token: 1, 2 or 5 times a power of ten, never under one ion, and the arithmetic exact at every step.
+  for (const busiest of [7, 950, 5.08e6, 4.4e9]) {
+    for (const speed of [1, 1e-3, 1e-6, 0.25, 4]) {
+      const token = tokenFor(busiest, speed), passing = beadsASecond(busiest, token, speed);
+      assert.match(String(token), /^[125]0*$/, `${busiest} at ${speed}`);
+      assert.ok(token >= 1);
+      assert.ok(near(passing * token, busiest * speed, 1e-12), "beads a second times ions in a bead is ions a second of the run times the speed");
+      if (token > 1) assert.ok(passing <= paceAt(speed).busiest + 1e-9 && passing > paceAt(speed).busiest / 2.5 - 1e-9, `${busiest} at ${speed}: ${passing}`);
+    }
+  }
+  // The planarian's busiest stream, about 5.08 million ions a second: a bead (or packet) is a million, five thousand, ten ions.
+  assert.deepEqual([1, 1e-3, 1e-6].map((speed) => tokenFor(5.083478e6, speed)), [1_000_000, 5000, 10]);
+  assert.deepEqual([1, 1e-3, 1e-6].map((speed) => Number(beadsASecond(5.083478e6, tokenFor(5.083478e6, speed), speed).toFixed(2))), [5.08, 1.02, 0.51], "fewer at each step");
+  // A lane at each pace: as many set out a second as its rate says, each crossing in its time; standing, fewer when slowed.
+  const lane = (perSecond, crossing) => ({ perSecond, crossing, due: 0, beads: [] });
+  for (const [perSecond, crossing] of [[5.08, 1.6], [1.02, 2.56], [0.51, 4.096]]) {
+    const one = lane(perSecond, crossing);
+    advance(one, 100);
+    assert.equal(one.sent, Math.floor(perSecond * 100), "beads set out in a hundred seconds");
+    const first = one.beads.at(-1);
+    advance(one, 0.5);
+    assert.ok(near(one.beads.find((share) => share > first) - first, 0.5 / crossing, 1e-9) || one.beads.length, "a bead moves half a second over its crossing");
+  }
+  assert.deepEqual([standing(5.08, 1.6).length, standing(1.02, 2.56).length, standing(0.51, 4.096).length], [8, 3, 2], "fewer stand when slowed");
+  assert.deepEqual([headSize(5.08, 1.6), headSize(0.51, 4.096)], [1, 1], "the arrowhead follows the beads on the lane at one moment");
+  // The words.
+  assert.equal(flowWords({ speed: 1, token: 1e6, widest: 5.083478e6 }), "Streams as wide as their rates: the widest carries 5,083,478 ions a second");
+  assert.equal(flowWords({ speed: 1e-3, token: 5000 }), "One packet is 5,000 ions");
+  assert.equal(flowWords({ speed: 1e-6, token: 10 }), "One bead is 10 ions");
+  assert.match(paceKey(1e-3), /^Slowed, the stream resolves into packets: at most 2\.5 a second on the busiest lane, each taking 2\.6 s to cross/);
+  assert.match(paceKey(1e-6), /single beads: at most 0\.63 a second on the busiest lane, each taking 4\.1 s to cross/);
+  assert.match(paceKey(1e-3, false), /^Slowed, fewer beads pass \(at most 2\.5 a second on the busiest lane, where true speed has 10\) and each takes 2\.6 s to cross/);
+});
+
+test("a stream is as wide as its rate, its streaks run its way, and chevrons tell the way when nothing moves", () => {
+  const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(4, 0, 0);
+  const lanes = () => [
+    { key: "busy", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: false },
+    { key: "thin", path: straight(a, b), colour: new THREE.Color("#eb6834"), perSecond: 0.5, reverse: true },
+    { key: "none", path: straight(a, b), colour: new THREE.Color("#eb6834"), perSecond: 0, reverse: false },
+  ];
+  const stream = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "stream", full: 5 });
+  stream.tick(0.5);
+  assert.deepEqual(stream.drawn, { beads: 0, heads: 0, chevrons: 2 * CHEVRONS, streams: 2 }, "no bead to count; a stream and its chevrons on each lane that carries something");
+  // Widths: the busiest the fullest; the area goes with the rate.
+  const widths = stream.flow.widths.array, per = widths.length / 3;
+  assert.deepEqual([widths[0], widths[per], widths[2 * per]], [widthOf(1), Math.fround(widthOf(0.1)), 0], "kept in 32 bits for the card");
+  assert.ok(near(widthOf(1), 1) && widthOf(0.1) < widthOf(1) && widthOf(0) === 0.25);
+  // The streaks run on, and stand where nothing may move.
+  const before = stream.flow.time;
+  stream.tick(0.5);
+  assert.ok(near(stream.flow.time - before, 0.5 * STREAK_PACE, 1e-12));
+  stream.tick(0.5, true);
+  assert.ok(near(stream.flow.time - before, 0.5 * STREAK_PACE, 1e-12), "still: the streaks stand");
+  // A chevron points the way its lane flows: along +x on the first lane, along -x on the reversed one.
+  const turned = (index) => {
+    const turn = new THREE.Quaternion();
+    new THREE.Matrix4().fromArray(stream.flow.chevrons.instanceMatrix.array, index * 16).decompose(new THREE.Vector3(), turn, new THREE.Vector3());
+    return new THREE.Vector3(0, 1, 0).applyQuaternion(turn);
+  };
+  assert.ok(turned(0).distanceTo(new THREE.Vector3(1, 0, 0)) < 1e-6 && turned(CHEVRONS).distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6);
+  // Still, they stand where they are: the way is told without motion.
+  const where = () => Array.from(stream.flow.chevrons.instanceMatrix.array.slice(12, 15));
+  const standingAt = where();
+  stream.tick(2, true);
+  assert.deepEqual(where(), standingAt);
+  // The streams are one draw call, the chevrons another: nothing per lane.
+  assert.equal(stream.flow.group.children.length, 2);
+  // Packets: long along their lane; beads: round. The tapered trail and today's arrowhead are kept to be compared.
+  const packets = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "packets", full: 5 });
+  packets.tick(1);
+  const scale = new THREE.Vector3();
+  new THREE.Matrix4().fromArray(packets.cores.instanceMatrix.array, 0).decompose(new THREE.Vector3(), new THREE.Quaternion(), scale);
+  assert.ok(scale.y > 1.3 * scale.x, "a packet is long the way it travels");
+  const taper = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "stream", style: "taper", full: 5 });
+  assert.deepEqual([taper.drawn.chevrons, taper.flow.streams.material.uniforms.uTaper.value], [0, 1], "a tapered trail: the head leads the flow, still or moving");
+  const arrow = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "beads", style: "arrow", full: 5 });
+  assert.equal(arrow.drawn.heads, 2);
+  assert.deepEqual(STYLES, ["chevrons", "taper", "arrow"]);
+});
+
+test("the Speed slider: true speed at its start, a thousandfold at its middle, a millionfold at three quarters, ten millionfold at its end, and nothing jumps between", () => {
+  assert.deepEqual(SLIDER.map((mark) => [mark.at, mark.slow, mark.label]), [[0, 1, "True"], [0.5, 1e3, "1/1,000"], [0.75, 1e6, "1/1,000,000"], [1, 1e7, "1/10,000,000"]]);
+  for (const mark of SLIDER) {
+    assert.ok(near(slowAt(mark.at), mark.slow, 1e-9), mark.label);
+    assert.ok(near(positionOf(mark.slow), mark.at, 1e-9) || mark.at === 0, mark.label);
+  }
+  // Evenly in powers of ten between two marks, and back again.
+  assert.ok(near(slowAt(0.25), Math.pow(10, 1.5), 1e-9) && near(slowAt(0.625), Math.pow(10, 4.5), 1e-9) && near(slowAt(0.875), Math.pow(10, 6.5), 1e-9));
+  for (let p = 0; p <= 1; p += 0.01) assert.ok(near(positionOf(slowAt(p)), p, 1e-9) || p < 1e-9, `there and back at ${p.toFixed(2)}`);
+  assert.deepEqual([slowAt(-1), slowAt(2)], [1, 1e7], "never faster than life, never past its end");
+  assert.deepEqual([slowLabel(1), slowLabel(1000), slowLabel(31_622.8), slowLabel(1e7)], ["True", "1/1,000", "1/32,000", "1/10,000,000"]);
+  // At its end a bead of the planarian's busiest stream (about 5.08 million ions a second) is two ions, one setting out every four seconds.
+  assert.equal(tokenFor(5.083478e6, 1 / SLOWEST), 2);
+  // Along it, what the eye sees thins without a jump: fewer on the busiest lane, each crossing more slowly.
+  let before = null;
+  for (let p = 0; p <= 1; p += 0.05) {
+    const speed = 1 / slowAt(p), pace = paceAt(speed), blend = blendAt(resolveAt(speed));
+    if (before) assert.ok(pace.busiest <= before.busiest + 1e-9 && pace.crossing >= before.crossing - 1e-9 && blend.stream <= before.stream + 1e-9, `at ${p.toFixed(2)}`);
+    before = { ...pace, stream: blend.stream };
+  }
+});
+
+test("the page's address may carry a slow-down (`slow=`): the Cell view opens slowed so, never faster than life", () => {
+  const before = globalThis.location;
+  try {
+    globalThis.location = { search: "?lens=cell&slow=1000" };
+    assert.equal(lensFor(ILLUSTRATED).flux.slow, 1000);
+    globalThis.location = { search: "?slow=0.5" };
+    assert.equal(lensFor(ILLUSTRATED).flux.slow, 1, "never faster than life");
+    globalThis.location = { search: "?slow=1e12" };
+    assert.equal(lensFor(ILLUSTRATED).flux.slow, SLOWEST);
+  } finally {
+    globalThis.location = before;
+  }
 });

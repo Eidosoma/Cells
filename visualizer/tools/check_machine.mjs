@@ -302,7 +302,8 @@ try {
     check("at real-life speed every turning part is drawn swept, no mark sharp, with the arrowhead", s.sets.length > 0 && s.sets.every((set) => set.swept && !set.marks) && s.arrow, JSON.stringify(s.sets));
     check("the picture says it is an illustration and no run, the way, where it is seen from and the speed, and nothing of being too fast", says(s, /Illustration: not a run · Cells has no model of this motor/) && says(s, /Turning as in a run: counter-clockwise, seen from outside the cell/) && says(s, /At real-life speed: about 150 turns a second/) && !says(s, /too fast|follow/i), JSON.stringify([whereSaid(s), s.said, s.statement]));
     check("the look's own motion is held while it turns", s.holds.includes("machine"), JSON.stringify(s.holds));
-    check("the legend offers the Speed row while it turns", s.rows.some((row) => /^time: True\* \| 1\/1,000 \| 1\/1,000,000$/.test(row)), JSON.stringify(s.rows));
+    // The Speed row is a slider since 17 November 2026 (the flux's, shared): a row of the channel "time" with no buttons.
+    check("the legend offers the Speed row while it turns", s.rows.some((row) => /^time: (True\* \| 1\/1,000 \| 1\/1,000,000)?$/.test(row)), JSON.stringify(s.rows));
     const swept = await drawnNow();
     note(`drawn, the motor swept at real-life speed (level ${s.level}): ${swept.calls} draw calls, ${swept.triangles.toLocaleString("en-US")} triangles`);
     if (s.frames !== null) note(`frames readout: ${s.frames}`);

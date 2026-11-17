@@ -26,7 +26,7 @@
 // go, so that a still picture, and a visitor who asks for less motion, are told the way too.
 
 import * as THREE from "../../three.js";
-import { tokenFor, beadsASecond, ionsASecond, tokenWords, meanRate, restarted, standing, advance, headSize, timeKey, MOST, HEAD_WORDS } from "./beads.js";
+import { tokenFor, beadsASecond, ionsASecond, tokenWords, meanRate, restarted, standing, advance, headSize, timeKey, paceAt, MOST, HEAD_WORDS } from "./beads.js";
 import { fromFirst, signedByShort } from "../records.js";
 
 const SIZE = { quiet: 1, bold: 1.35 };
@@ -187,7 +187,7 @@ export const stream = {
         position.x += border.across[0] * lane.way * surface.pitch * 0.075;
         position.z += border.across[1] * lane.way * surface.pitch * 0.075;
         turn.setFromAxisAngle(upwards, -Math.atan2(border.across[1] * lane.way, border.across[0] * lane.way));
-        const grown = headSize(lane.perSecond);
+        const grown = headSize(lane.perSecond, lane.crossing);
         heads.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 1.5 * grown)));
         headRims.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 2.1 * grown)));
         heads.setColorAt(ends, lane.species ? tones.ion(lane.species) : tones.ink);
@@ -204,14 +204,15 @@ export const stream = {
     const stands = () => still() || paused();
     let shown = { step: 0, valid: false };
     const settle = () => {
-      const one = token(), fast = speed();
+      const one = token(), fast = speed(), crossing = paceAt(fast).crossing;
       for (const lane of lanes) {
         lane.mean = shown.valid ? meanRate(run, lane.record, lane.entity, shown.step) : null;
         lane.perSecond = lane.mean ? beadsASecond(ionsASecond(lane.mean), one, fast) : 0;
+        lane.crossing = crossing; // slowed, a bead crosses more slowly: a sign of the slow-down
         if (lane.mean) lane.way = (lane.mean > 0) === lane.forward ? 1 : -1;
         // With nothing passing, the lane empties; where nothing may move or the replay is paused, the beads stand as many as would be crossing.
         if (!lane.perSecond) lane.beads = [];
-        else if (stands()) lane.beads = standing(lane.perSecond);
+        else if (stands()) lane.beads = standing(lane.perSecond, crossing);
       }
       drawBeads();
     };

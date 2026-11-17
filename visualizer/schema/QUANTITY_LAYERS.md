@@ -136,24 +136,44 @@ the viewer changes.
    Switching a layer on takes its channels from whichever layer held them. Layers on
    different channels show together.
 3. **Something moves only where a rate stands behind it.** A level or a difference never
-   moves. A bead is a token of a rate: the legend says how much one stands for. A layer
-   on the `motion` channel keeps the clock of what it is drawn in (the user, 16 November
-   2026, asked whether beads keep a clock of their own or follow the playhead: "the
-   replays and you must be able to slow down and make replays faster"). On a replay that
-   is the replay's own clock: its tokens stand while the replay is paused and, while it
-   plays, as many pass as the rate gives over the stretch of the run the playhead covers.
-   A replay may be slowed below true speed and made faster than it, from its timeline,
-   which says in words what each step is. In the Cell view a looping run keeps its
-   loop's clock, slowed from the legend. What one token stands for follows the speed, so
-   that the busiest lane passes about as many tokens a second at any speed. The picture
-   states the speed (true speed, how much it is slowed or made faster), that the replay
-   is paused where it is, the loop it plays, and what one token stands for. The rate
-   sets how many tokens pass, never how fast one travels. The interval the rate is a
-   mean over stands with the time. Where an interval passes too fast to be read at the speed in force, the picture gives its length ("means over each 20 ms between records") in place of its place. An arrowhead ends each lane that carries something and points the way
-   its tokens go, so that a still picture, and a visitor who asks for less motion, are
-   told the way. Where nothing may move, the tokens stand, as many as would be on their
-   way at one moment, and the picture says that it is shown still; a stream too thin for
-   one token shows a small arrowhead alone.
+   moves. A token (a packet or a bead) is a token of a rate: the legend says how much one
+   stands for. A layer on the `motion` channel keeps the clock of what it is drawn in (the
+   user, 16 November 2026, asked whether beads keep a clock of their own or follow the
+   playhead: "the replays and you must be able to slow down and make replays faster"). On
+   a replay that is the replay's own clock: its tokens stand while the replay is paused
+   and, while it plays, as many pass as the rate gives over the stretch of the run the
+   playhead covers. A replay may be slowed below true speed and made faster than it, from
+   its timeline, which says in words what each step is. In the Cell view a looping run
+   keeps its loop's clock, slowed from the legend's slider.
+
+   **How a rate is drawn follows the speed the picture keeps, so that slowing down is
+   seen** (the user, 17 November 2026: "the speed does not change the anymation of the
+   beads and arrows in flux"; "nice visual effects to show the speed at full speed, you
+   wont see any individual ions"). At true speed no single particle can be followed: each
+   lane is a stream, as wide and as bright as its rate (the busiest the fullest), and the
+   picture says the busiest's rate in numbers. Slowed, the stream resolves into packets
+   and then into single beads, with no jump between: fewer pass a second and each crosses
+   more slowly, the more the picture is slowed. A token stands for 1, 2 or 5 times a
+   power of ten of what flows, never under one particle, and the tokens passing a second
+   times what one stands for is the rate at the speed in force, exactly. The rate sets how
+   many tokens pass and how wide a stream is, never how fast one travels: how fast a
+   streak, a packet or a bead goes is a sign of the slow-down and stands for nothing
+   measured.
+
+   The picture states what is drawn and what one token stands for, the speed (true speed,
+   how much it is slowed or made faster), that the replay is paused where it is, the loop
+   it plays, and the interval the rate is a mean over. Where an interval passes too fast
+   to be read at the speed in force, the picture gives its length ("means over each 20 ms
+   between records") in place of its place. The way a lane flows is shown by chevrons
+   along it, which stand where nothing may move, so that a still picture, and a visitor
+   who asks for less motion, are told the way; a stream too thin for one token shows its
+   chevrons alone. Where nothing may move, the tokens stand, as many as would be on their
+   way at one moment, and the picture says that it is shown still.
+
+   Not everywhere yet: the stream and the chevrons are drawn in the Cell view. A replay's
+   sheet and close-up draw beads at every speed, fewer and slower the more it is slowed,
+   with an arrowhead at each lane's end; an illustration (a species with no run) has no
+   speed, and keeps beads at one pace.
 4. **Always a legend:** the quantity, its unit and scale, what stands behind it (the
    record's owner and how it is represented), and for a derivation the rule and its
    inputs. Text wears the page's text colours, never the mark's colour. For a run
@@ -249,7 +269,7 @@ the viewer changes.
       chooses), on a page opened still, and for a visitor who asks for reduced motion.
     - **Its speed.** It turns at real-life speed, at the rate the file draws. Only the Cell
       view's flux slow-down slows it: it keeps that one speed, offered in the legend's Speed
-      row while it turns, and has no speed, no steps and no words for them of its own. Its
+      slider while it turns, and has no speed, no steps and no words for them of its own. Its
       clock is the real time that passed.
     - **An arrowhead shows the way** whenever the machine is drawn, turning or still.
     - **No mark may be read as another way or another rate.** The marks give way to a swept
@@ -281,6 +301,12 @@ Flux switch shows all of it**; its numbers come first from the species' own loop
 and **illustration is allowed** where there is none (rule 11); and **all of it flows**:
 ions through channels and pumps, the exchange with neighbours, water, secreted signals
 and fuel, each where a rate stands behind it.
+
+Since 17 November 2026 how a rate is drawn follows the speed (rule 3): a stream at true
+speed, packets and then single beads as it is slowed. The Cell view's speed is a slider,
+from true speed to ten million times slower, marked at a thousandfold (half way) and a
+millionfold (three quarters); it never goes faster than life. The motor and a looping run
+share it.
 
 **How it is switched.** The legend of the Cell view has a Flux switch, off as the page
 opens. A part's flux shows when the visitor chooses the part, alone, whatever the

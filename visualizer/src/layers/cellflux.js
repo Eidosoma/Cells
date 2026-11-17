@@ -34,7 +34,8 @@ import { readFlux, planFor, shownKinds, shownWithheld, illustrationWords, citati
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, intervalWords, statusWords, takenWords, takenShort, everMoves } from "./loop.js";
 import { Tokens } from "./marks/tokens.js";
 import { fitOnRow } from "./statement.js";
-import { SLOWS, statementOf, tokenWords, timeWords, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
+import { SLOWS, SLIDER, SLOWEST, slowAt, positionOf, slowLabel, statementOf, tokenWords, timeWords, paceAt, paceKey, modeAt, resolveAt, flowWords, ionsASecond, CROSSING, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
+import { STYLES } from "./marks/flow.js";
 import { ionColours } from "./ions.js";
 import { clock } from "../replay/format.js";
 import { speedWords } from "../replay/player.js";
@@ -53,6 +54,8 @@ export const BLOOM = 0.6;
 export const REST_WORDS = "What moves at rest is the picture's own, not a measured flow.";
 /** Under this width (a phone) a looping run's statement on the picture is its notice and its name alone. */
 export const PHONE = 600;
+/** How the way a lane flows is drawn: chevrons along it (the page's), or, to compare, a tapered trail or an arrowhead at its end (marks/flow.js, STYLES). */
+export const DIRECTION = "chevrons";
 /** The statement on the picture, in pixels: where its top may lie at the highest (under the top bar), the gap between its notice and its lines, and the room kept round it. */
 export const STATEMENT = { top: 64, gap: 6, margin: 6 };
 
@@ -167,7 +170,9 @@ export class CellFlux {
     this.lens = lens;
     this.flux = flux;
     this.on = false; // the Flux switch: off as the page opens
-    this.slow = 1; // a run opens at true speed
+    this.slow = 1; // a run opens at true speed, unless the page's address carries a slow-down (`slow=1000`)
+    const asked = Number(new URLSearchParams(globalThis.location?.search || "").get("slow"));
+    if (asked >= 1) this.slow = Math.min(SLOWEST, asked);
     this.loops = new Map(); // species id -> its looping run, read
     this.fetches = new Map(); // species id -> { state: "fetching" | "failed", why }: a run the species names, not yet read
     this.plan = { kinds: [], withheld: [] };
@@ -419,11 +424,34 @@ export class CellFlux {
     return speedWords(1 / this.slow).phrase;
   }
 
-  setSlow(slow) {
-    if (!SLOWS.includes(slow) || slow === this.slow) return;
+  /**
+   * Slow the Cell view's clock to any point from true speed to the slider's end (a number, or the slider's
+   * `{ slow, live }`). What is drawn follows in place, without a new build, so that nothing jumps as the slider
+   * moves; while it is dragged (`live`) the legend is left as it is, and it is written again when the slider is let go.
+   */
+  setSlow(value) {
+    const live = typeof value === "object" && value !== null && value.live === true;
+    const slow = Math.min(SLOWEST, Math.max(1, Number(typeof value === "object" && value !== null ? value.slow : value)));
+    if (!(slow >= 1)) return;
+    if (slow === this.slow) {
+      if (!live) this.lens.onChrome?.();
+      return;
+    }
     this.slow = slow;
-    this.refresh(true);
-    this.lens.onChrome?.();
+    this.retime();
+    if (!live) this.lens.onChrome?.();
+  }
+
+  /** The clock's speed changed: each set of lanes takes its blend, its crossing and its fullest stream in place, and the rates and the words follow. */
+  retime() {
+    const run = this.source.kind === "run";
+    if (!this.tokens.length || !run) return this.refresh(true);
+    const crossing = paceAt(this.speed).crossing, full = (ionsASecond(this.loop.busiest) * this.speed) / loopToken(this.loop.busiest, this.slow);
+    for (const set of this.tokens) set.tokens.setResolve(resolveAt(this.speed), { crossing, full });
+    this.step = null;
+    this.rates();
+    this.words();
+    this.lens.stage.invalidate?.();
   }
 
   /**
@@ -449,7 +477,8 @@ export class CellFlux {
     if (this.builtFor !== lens.sizeMode) this.build();
     const showing = this.showing();
     const palette = lens.stage.palette || {};
-    const signature = [this.species?.id, lens.sizeMode, this.source.kind, this.slow, palette.dark ? 1 : 0, palette.bg, ...showing.kinds.map((kind) => kind.id)].join("|");
+    // The speed is not in it: a slow-down is followed in place (retime), not by a new build.
+    const signature = [this.species?.id, lens.sizeMode, this.source.kind, this.style || DIRECTION, palette.dark ? 1 : 0, palette.bg, ...showing.kinds.map((kind) => kind.id)].join("|");
     if (!force && signature === this.signature) {
       this.shine(); // the view may have been shown or left since
       return;
@@ -463,10 +492,16 @@ export class CellFlux {
     if (zone && size && showing.kinds.length) {
       const run = this.source.kind === "run";
       const ground = new THREE.Color(palette.bg || "#ffffff");
-      const laid = (item) => ({ key: item.key, lane: item.lane, path: item.path, reverse: item.reverse, colour: new THREE.Color(this.colourOf(item.lane)), perSecond: run ? 0 : PACE });
+      // A run's beads cross more slowly where it is slowed (a sign of the slow-down, marks/beads.js, paceAt); an illustration's at one pace.
+      const crossing = run ? paceAt(this.speed).crossing : CROSSING;
+      const laid = (item) => ({ key: item.key, lane: item.lane, path: item.path, reverse: item.reverse, colour: new THREE.Color(this.colourOf(item.lane)), perSecond: run ? 0 : PACE, crossing });
+      // A run is drawn by its speed: a stream at true speed, packets, then beads (marks/beads.js, modeAt); a stream is as
+      // wide as its rate beside the loop's busiest. An illustration's beads stand for no number, and stay beads.
+      const resolve = run ? resolveAt(this.speed) : 6, style = STYLES.includes(this.style) ? this.style : DIRECTION;
+      const full = run ? (ionsASecond(this.loop.busiest) * this.speed) / loopToken(this.loop.busiest, this.slow) : null;
       const draw = (lanes, radius, home, dust) => {
         if (!lanes.length) return;
-        const tokens = new Tokens({ lanes, radius, ground });
+        const tokens = new Tokens({ lanes, radius, ground, resolve, style, full });
         home.root.add(tokens.group);
         this.tokens.push({ tokens, zone: home, dust, lanes });
       };
@@ -612,7 +647,7 @@ export class CellFlux {
     const loop = this.loop, at = loopAt(loop, this.elapsed);
     const what = this.showing().kinds[0]?.token || "ion";
     // The interval: its place in the loop where it can be read at this speed, else its length (loop.js, intervalWords).
-    const bead = statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still }).replace(/ · (mean of .*|no rate at .*)$/, ` · ${intervalWords(loop, at.interval, this.slow)}`);
+    const bead = statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still, flow: true, widest: ionsASecond(loop.busiest) }).replace(/ · (mean of .*|no rate at .*)$/, ` · ${intervalWords(loop, at.interval, this.slow)}`);
     // On a phone the picture keeps two lines: what the run is (the notice) and its name; the token, the speed and what the
     // cell takes from the run stand in the legend and the panel (the coordinator's ruling, 16 November 2026).
     const name = loopWords(loop, this.species.label, clock);
@@ -620,7 +655,9 @@ export class CellFlux {
     // What the cell takes from the run, in the fewest words; the legend and the panel say it in full.
     const lines = [name, bead, ...takenShort(loop)].join("\n");
     const narrow = lines.replace(/ · /g, "\n").replace(/, with a prescribed /, ",\nwith a prescribed ");
-    return { notice: loop.status, ways: [lines, lines.replace(/ · /g, "\n"), narrow] };
+    // Where none of those has room between the cards (a short window), the phone's two lines: the notice and the run's name.
+    const fewest = name.replace(/ · a loop of /, "\nloops every ").replace(/ of the cell's time$/, "");
+    return { notice: loop.status, ways: [lines, lines.replace(/ · /g, "\n"), narrow, fewest] };
   }
 
   /** The lens has made its labels anew: the flux's own are made with them. */
@@ -732,10 +769,12 @@ export class CellFlux {
       if (groups.some((group) => group.lanes.some((lane) => this.colourOf(lane) === neutral))) keys.push({ key: "bead", text: "Sodium and potassium wear their own colours. Every other bead wears one neutral tone and is told by the part it passes" });
       if (run) {
         const loop = this.loop, what = showing.kinds[0]?.token || "ion";
-        keys.push({ key: "bead", text: `${tokenWords(loopToken(loop.busiest, this.slow), what)}. More beads a second means more of them a second; how fast a bead travels stands for nothing. Where a lane passes less than a bead now and then, its arrowhead alone shows` });
-        keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start${still ? `. ${STILL_WORDS}` : ""}` });
-        keys.push({ key: "way", text: "A bead goes the way its total grew over the interval shown, by the run's own signs" });
-        keys.push({ key: "head", text: HEAD_WORDS });
+        // What is drawn follows the speed: a stream as wide as its rate at true speed; packets, then beads, slowed.
+        const said = flowWords({ speed: this.speed, token: loopToken(loop.busiest, this.slow), what, widest: ionsASecond(loop.busiest) });
+        keys.push({ key: "bead", text: modeAt(this.speed) === "stream" ? `${said}. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing` : `${said}. More of them a second means more ${what}s a second; how fast one travels stands for nothing. Where a lane passes less than one now and then, its chevrons alone show` });
+        keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start. ${paceKey(this.speed)}${still ? `. ${STILL_WORDS}` : ""}` });
+        keys.push({ key: "way", text: "A lane flows the way its total grew over the interval shown, by the run's own signs" });
+        keys.push({ key: "head", text: (this.style || DIRECTION) === "chevrons" ? "Chevrons along each lane point the way it flows; they stand where they are when nothing may move" : (this.style || DIRECTION) === "taper" ? "Each lane widens toward the end it flows to: its head leads the flow" : HEAD_WORDS });
         // What the cell drawn takes from the run, and how closely the run closes, in the run's own measure.
         keys.push({ key: "from", text: `${takenWords(loop)}. ${this.fromWords()}` });
         keys.push({ key: "closes", text: closesWords(loop) });
@@ -780,8 +819,23 @@ export class CellFlux {
    * looping run as it flows, and a machine's rotor as it turns. A later step gives the whole
    * Cell view the Experiments timeline's control in its place.
    */
-  speedRow() {
-    return { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(1 / value), on: this.slow === value })) };
+  speedRow(beads = true) {
+    // A slider (ui/legend.js): true speed at its start, its marks at a half and three quarters, never faster than life. Its value is
+    // said in words (what a second here is in the run and, where beads move, what the eye sees), for the eye and for a screen reader.
+    const words = (position) => {
+      const slow = slowAt(position);
+      return beads && slow > 1.05 ? `${timeWords(1 / slow)}. ${paceKey(1 / slow)}` : timeWords(1 / slow);
+    };
+    return {
+      kind: "slider",
+      label: "Speed",
+      value: positionOf(this.slow),
+      marks: SLIDER.map((mark) => ({ at: mark.at, label: mark.label })),
+      slowAt,
+      short: (position) => slowLabel(slowAt(position)),
+      words,
+      options: SLOWS.map((value) => ({ id: value, label: slowLabel(value), title: words(positionOf(value)), on: Math.abs(this.slow - value) < 1e-9 })),
+    };
   }
 
   /** The legend in a machine's closer view: the switch, the Speed row while the rotor turns, and what its motion means. */
@@ -790,7 +844,7 @@ export class CellFlux {
       title: "Flux",
       example: machine.example,
       rows: [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that moves" }] }],
-      time: machine.turning ? this.speedRow() : null,
+      time: machine.turning ? this.speedRow(false) : null,
       hint: machine.hint,
       keys: machine.keys,
       cannot: [],
@@ -864,7 +918,7 @@ export class CellFlux {
         { title: "Drawn", note: "Where a lane runs is the picture's choice: the engine has no place for a single channel or pump.", items: drawn },
         { title: "Not drawn", items: plan.withheld.map((item) => ({ label: item.label, lines: [item.why] })) },
         ...(run
-          ? [{ title: "Over the interval shown", items: this.readings().map((rate) => ({ label: [rate.stream.name, rate.stream.species].filter(Boolean).join(" · "), detail: rate.ions === null ? "no rate" : `${Math.round(rate.ions).toLocaleString("en-US")} a second ${rate.out === null ? "" : rate.out ? "out of the cell" : "into the cell"}`.trim(), lines: [`${rate.perSecond.toFixed(2)} beads a second, one bead being ${rate.token.toLocaleString("en-US")}`] })) }]
+          ? [{ title: "Over the interval shown", items: this.readings().map((rate) => ({ label: [rate.stream.name, rate.stream.species].filter(Boolean).join(" · "), detail: rate.ions === null ? "no rate" : `${Math.round(rate.ions).toLocaleString("en-US")} a second ${rate.out === null ? "" : rate.out ? "out of the cell" : "into the cell"}`.trim(), lines: [`${rate.perSecond.toFixed(2)} beads a second, one bead being ${rate.token.toLocaleString("en-US")}; each crosses in ${Number(paceAt(this.speed).crossing.toPrecision(2))} s`] })) }]
           : [
               { title: "The laws the directions are drawn from", note: flux.engine.says, items: laws.map((law) => ({ label: law.id, detail: `${law.path} at ${flux.engine.branch} ${flux.engine.revision}`, lines: [`It declares ${law.declares}.`, law.limit].filter(Boolean) })) },
               { title: "The two forms of illustration", items: [{ label: "Direction only", lines: [`${forms["direction only"].says}.`] }, { label: "Typical values", lines: [`${forms["typical values"].says}. ${forms["typical values"].needs}`] }] },
