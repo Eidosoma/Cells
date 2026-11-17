@@ -26,7 +26,7 @@ population on a host, with what it moves booked on the ledgers. That holds today
 pumps on membrane patches, and seam A [designed] extends it to any membrane cycle. The core's design
 rules also reach further: hosts, populations, declared laws, keyed random streams and declared
 representations (D175). What is not built is a set of general features those rules already
-anticipate (§7):
+anticipate (§7; the options and the recommendation are in §8):
 - the states of a machine's cycle;
 - assembly from subunits;
 - individual machines with their own identity, coupled both ways to the cell;
@@ -34,13 +34,9 @@ anticipate (§7):
 
 | Layer | What the core hosts | What is missing |
 | --- | --- | --- |
-| **Aggregate:** copy numbers, rates, ledgers | [main] Channel populations with an abundance and mean gate fractions (`core/surface_kinetic_spec.py`:84–92); @3's two pumps; the transporter kind, one population per patch, n of 1–4 (`models/inner_kinds/transporter.py`:41, :164); abundance as state, with its own ledger (`models/operators/membrane_state.py`:1–30); D152's reactions, with a Michaelis–Menten law that reads a catalyst row (`models/operators/species_reactions.py`:21–24). [designed] Seam A: any integer stoichiometry, many populations per host, finite fuel. Seam B: capacity as extensive state | Copies made from, and returned to, subunit rows: units appear today from an operator's booked supply. A host for soluble machines, which have one end, not two |
+| **Aggregate:** copy numbers, rates, ledgers | [main] Channel populations with an abundance and mean gate fractions (`core/surface_kinetic_spec.py`:84–92); @3's junction law and two pumps (`models/inner_laws.py`:131, :146); no exchanger on @3; the transporter kind, one population per patch, n of 1–4 (`models/inner_kinds/transporter.py`:41, :164); abundance as state, with its own ledger (`models/operators/membrane_state.py`:1–30); D152's reactions, with a Michaelis–Menten law that reads a catalyst row (`models/operators/species_reactions.py`:21–24). [designed] Seam A: any integer stoichiometry, many populations per host, finite fuel. Seam B: capacity as extensive state | Copies made from, and returned to, subunit rows: units appear today from an operator's booked supply. A host for soluble machines, which have one end, not two |
 | **Cycle:** the states of the working cycle | [designed] Seam A's §16: Hill cycles, Wegscheider's condition at parse, Σ J·ΔG ≤ 0, one-way fluxes. These are lumped steady-state fluxes, and a law holds no cycle state | A law that declares the cycle's states and edges. The individual chain, the occupancies and the lumped flux all follow from it |
 | **Assembly:** subunits, stoichiometry, order | [main] `capsid_graph@1`: one prescribed 20-site cage of one subunit type in a held bath (`assembly/graph.py`:7–9; `assembly/spec.py`:18–23). `finite_bond_assembly@1`: the same graph with a finite pool. The lineages family: a bag of label-only types (`models/assembly_lineages/family.py`:1–17). D152's passive mass action, which holds a small pathway with subunits as moieties (`species_reactions.py`:26–28, :37) | A general assembly map: typed subunits, declared intermediates and steps, in three representations |
-
-**Recommended (§8):** the viewer's catalogue now, labelled as illustration; ATP synthase as the
-first machine, built as general pieces after the core-seams pass, with the level of detail fixed
-per run; the ribosome after a user ruling on D145's hold.
 
 ## 1. One machine, three layers
 
@@ -52,10 +48,17 @@ per run; the ribosome after a user ruling on D145's hold.
     (`core/surface_kinetic_spec.py`:84–92).
   - Kinds book what they move into the ledgers by role: material per node, a `produced` record for
     chemistry, heat, work and stored energy (`core/kind_registry.py`:264, the `ledger_terms` hook).
+  - @3 runs a junction law and two pumps on maintained fuel (`models/inner_laws.py`:131, :146). No
+    exchanger runs on @3.
+- **Only in `legacy/`** (D196): finite energy (`legacy/processes/finite_energy.py`), mitochondria
+  (`legacy/processes/mitochondrial_passive.py`), pumps whose abundance is state
+  (`legacy/models/surface_redistribution.py`), the Na⁺/Ca²⁺ exchanger (its law,
+  `processes/plasma_calcium.py`:16, runs only in older families) and the assembly–cell coupling.
 - **Copy number as state [main].** `membrane_entity_state@1` holds each population's abundance in
   units, under an entity ledger (`membrane_state.py`:1–30).
   - Each population also carries a functional-unit ID and a catalogue reference (:62–67).
-  - Its writers book where the units come from, as a supply.
+  - Its writer, insertion, adds units and books them in its own `inserted_units`; no material is
+    consumed (`models/operators/membrane_insertion.py`:428, :490).
 - **What is missing (S).** Units are not made from subunit rows, so a cell cannot spend material on
   new pumps. Seam E's moieties [designed] can state what a complex is made of, but nothing ties a
   population's capacity to an amount on the inventory. FR-7 asks for the same link.
@@ -76,8 +79,9 @@ per run; the ribosome after a user ruling on D145's hold.
   gives a pure kinetic factor S ≥ 0, and J = k a S (1 − e^{ΔG/RT}) (CORE_SEAMS §3.2). §16 admits a
   law only if each declared Hill cycle meets Wegscheider's condition. It guards Σ J·ΔG ≤ 0 at run
   time and exposes both one-way fluxes.
-- **It hosts machines that are not transporters,** where the machine's job is a stoichiometric
-  cycle: ATP synthase, a proteasome's ATP per substrate, a translocon's ATP and protons per residue.
+- **Its thermodynamic form carries over to any stoichiometric cycle,** transporter or not; its hosts
+  and the inventory's rows do not yet. ATP synthase fits as designed. A proteasome needs a node host
+  (N2) and protein rows, and a translocon needs rows for nascent chains.
 - **It cannot host two kinds of output:**
   - mechanical output: there is no torque or momentum ledger (MODULE_SYSTEM §7, rule (a));
   - work along a template, such as a ribosome's place on an mRNA (F10).
@@ -95,11 +99,9 @@ per run; the ribosome after a user ruling on D145's hold.
     declared state free energies.
   - It implies Wegscheider's condition for every cycle (§16). It is also the stochastic kernel check
     of GARD_DESIGN §2.4.
-- **Run-time guards follow the level:**
-  - lumped: Σ J·ΔG ≤ 0 per population (§16);
-  - occupancy: heat booked from the edges' affinities, closing against the free-energy state
-    function;
-  - individual: event heat, declared non-monotone, closing the same way (GARD_DESIGN §2.4).
+- **Run-time guards follow the level:** lumped, Σ J·ΔG ≤ 0 per population (§16); occupancy, heat
+  booked from the edges' affinities and closing against the free-energy state function; individual,
+  event heat declared non-monotone and closing the same way (GARD_DESIGN §2.4).
 
 ### 1.3 Assembly
 
@@ -128,8 +130,8 @@ per run; the ribosome after a user ruling on D145's hold.
   - rate equations over the intermediates, deterministic;
   - counts of the intermediates, by exact stochastic simulation;
   - individual complexes, each with a typed site occupancy, as the capsid code holds a bitmask.
-- **Combinatorics.** n distinct subunits allow up to 2ⁿ intermediates. The declared map, not the
-  code, keeps them few.
+
+  n distinct subunits allow up to 2ⁿ intermediates; the declared map, not the code, keeps them few.
 - **Rule (c) binds the deterministic form:** its intermediates must be inventory rows unless kinds
   may own pools (MODULE_SYSTEM §4, §7).
 
@@ -151,37 +153,34 @@ per run; the ribosome after a user ruling on D145's hold.
   - Births and deaths reuse slots under seam B's open, split and retire [designed].
 - **The dynamics do not fit yet.** The fixed-step path is deterministic: a checkpoint with random
   state is refused (`io.py`:158–159), and operator events fall on multiples of dt (GARD_DESIGN
-  §4.6). The only machinery for discrete entities is in the event-driven families, with one
-  assembly per lane.
+  §4.6). Discrete entities live only in the event-driven families, one assembly per lane. The
+  assembly–cell families coupled one assembly to an ionic cell one way only (CAPSID_ASSEMBLY.md),
+  and now sit in `legacy/`, to be removed (D196).
 - **Two ways to coexist (S):**
 
 | | I1: tagged individuals (one-way) | I2: promoted individuals (two-way) |
 | --- | --- | --- |
 | What | k of the N machines are followed one by one. Each moves on the rates of the occupancy aggregate, at the environment the step computed. The aggregate still holds all N | m machines leave the aggregate (N → N − m) and run as individuals. Their events move material on the shared inventory |
-| Exact? | In distribution, for independent identical machines (§3.1): each tag follows the law of any one machine | In principle, if the hybrid clock is right |
+| Exact? | In distribution, for independent identical machines (§3.1), up to the declared quadrature of its hazard: each tag follows the law of any one machine | In principle, if the hybrid clock is right |
 | Effect on the run | None: every other array is bitwise the same with tags on or off, as D200 asks of labels | Individuals feed back on the cell |
-| Needs | A keyed stream per tag (a `tag` domain); each tag's hazard integrated over the step by a declared quadrature | F11's stochastic regime: events inside a fixed step, hazards integrated and rescheduled when rates change (MULTISCALE_EXECUTION_ARCHITECTURE, "Coupled numerical execution"); random state in checkpoints |
+| Needs | Tag states and per-tag counters as integer state fields. Draws are counter-based from the definition's seed and the tag's key (a `tag` domain), so no random-number state is checkpointed and `io.py`:158–159 stands. Each tag's hazard is integrated over the step by a declared quadrature | F11's stochastic regime: events inside a fixed step, hazards integrated and rescheduled when rates change (MULTISCALE_EXECUTION_ARCHITECTURE, "Coupled numerical execution"); random state in checkpoints |
 | Gives | Dwell times, step statistics, one machine to show | Effects of fluctuations at low copy numbers |
 
-- **The precedent is one-way.** The assembly-cell families coupled one stochastic assembly to an
-  ionic cell in one direction only (CAPSID_ASSEMBLY.md, "One-way assembly regulation"). They now sit
-  in `legacy/`, a holding area to be removed (D196).
 - **Identity and streams [main].** In the lineages family, "an assembly's draws depend on its
   identity alone" (`models/assembly_lineages/streams.py`:22–23), folded from the seed, the world,
   the carrier key, a domain and a counter. An individual machine would take the same fold.
 - **Relations [branch].** `cells.relations@1` is built on `relations-writer` (35a5bbb9), not merged.
-  Its vocabulary is closed (`records/relations.py`:98–107 on that branch). Machines need four
+  Its vocabulary is closed (`records/relations.py`:98–107 on that branch). Machines need three
   additions (S):
   - a birth by assembly, `assembled`, and the ends `disassembled` and `degraded`;
   - many parents: `lives.parent` is one entity, but a complex is made of many subunits. An
     `assembled_from` edge, weighted by stoichiometry, would run from pools or from subunit lives;
   - `member_of`, from a tagged or promoted individual to its population node. The `population` node
-    kind already exists;
-  - a key case: under RELATIONSHIPS_DESIGN §1.3 a parentless newcomer opens a new sub-lineage, so
-    10⁴ assembled ribosomes would open 10⁴. Keys from a counter per machine population avoid that.
+    kind already exists.
 - **At a cell division** an individual keeps its life and changes its `occupies` edge (S).
-- **Timing.** The lead's rulings on that branch lift the format's provisional label. So these
-  additions are a new version, unless they enter before a bundle is shared (§9, L1).
+- **Timing.** The lead's rulings on that branch lift the format's provisional label: "a change to
+  the format is now a new version". So these additions are a new version, unless the lead amends
+  @1 before it lands on main (§9, L1). Whether any bundle has been shared was not checked.
 
 ## 3. Level of detail "based on what is being looked at"
 
@@ -216,7 +215,7 @@ rates set by the free concentrations c and the voltage V it sees.
 | **(b) Per region or compartment,** from a declared focus: individuals in one cell, the aggregate in its neighbours | Each region closes its own ledgers. Regions meet only on shared inventory rows, and no machine crosses a boundary | As (a), per region | The focus is in the definition, so in its fingerprint | Declared per scope | (a), plus a representation per scope and synchronised accounting (ARCHITECTURE: "static mixed-detail regions") |
 | **(c) Adaptive switching** during a run, as the focus moves | Restriction (individuals to counts) is exact. Prolongation draws individuals from counts. Bound ligands are released or drawn (§3.3) | Prolongation is exact in distribution only from a count-level stochastic aggregate; from deterministic fractions it needs a declared rounding. Hidden history, such as a ribosome's place on its mRNA, cannot be rebuilt | Draws on a `lod` stream keyed by region and switch count. The focus must be a declared schedule, never the live camera, or results depend on who watched | Last: "automatic promotion and demotion is a later milestone" (ARCHITECTURE) | (b), maps both ways, §3.3's bookings, hysteresis |
 | **(d) In the viewer only:** a stored run drawn at different detail | None: nothing runs | Counts drawn equal the run's. Individuals drawn from an aggregate are illustration | Drawing seeded by machine ID and time | No engine change | Partly exists: `cells.visualizer.machine@1` has three drawing levels and states "Cells has no model of this motor" (`visualizer/data/machines/ecoli.flagellar-motor.json`) |
-| **(e) Zoom by branching (S):** looking closer starts a new run from a stored checkpoint, with a declared focus | One prolongation at the branch, booked as in (c); then as (b) | As (b) | The parent run is unchanged. The new run's inputs are its focus and its branch time (D153's new run from imported state; the relations' `branched_into`) | Declared by the new run | (b), one prolongation, `cells branch` |
+| **(e) Zoom by branching (S):** looking closer starts a new run from a stored checkpoint, with a declared focus | One prolongation at the start, booked as in (c); then as (b) | As (b) | The parent run is unchanged. The new run is recorded and judged on its own (D153); its inputs are its focus and start time | Declared by the new run | (b), and a tool that imports the parent's state through a declared map. `cells branch` refuses a changed model (`core/runner.py`:117–122), and a checkpoint's state type is checked (:80). D153 lets a new run start from imported state, with the tool listed as exempt (`tests/unit/test_continuity_bypass.py`:44) |
 
 ### 3.3 Bound material and free energy at a switch
 
@@ -245,12 +244,11 @@ rates set by the free concentrations c and the voltage V it sees.
 - **It does not carry over directly.** No machine model exists, and today's membrane machines are
   deterministic aggregates. Individuals by default would be unworkable at a cell's copy numbers and
   would change every existing world.
-- **Two readings, for the user (§9, U2):**
-  - **(A)** each machine declares a reference representation, which a world gets unless it opts
-    for another;
-  - **(B), recommended:** a world that declares nothing is unchanged, and every representation is
-    declared and opt-in. The finer representation is always the reference when a coarser one is
-    qualified, with the envelope declared first and one case outside it failing (D175).
+- **Two readings, for the user (§9, U2).** **(A):** each machine declares a reference
+  representation, which a world gets unless it opts for another. **(B), recommended:** a world that
+  declares nothing is unchanged, and every representation is declared and opt-in. The finer one is
+  always the reference when a coarser one is qualified, with the envelope declared first and one
+  case outside it failing (D175).
 
 ## 4. First machines, chosen by constraint
 
@@ -263,7 +261,7 @@ rates set by the free concentrations c and the voltage V it sees.
 | Machine | Substrates in the modular engine | Free-to-read data for a judged check | Targets that need it | Verdict |
 | --- | --- | --- | --- | --- |
 | **ATP synthase** | **Yes:** ATP, ADP and Pi rows (D176's F2; `core/species_registry.py`:5–6), H⁺ with buffering (FR-4), patch voltage [main]. Moving them through a synthesis cycle needs seam A [designed]: `proton_coupled_atp_synthesis_cycle@1` (MITOCHONDRIA_DESIGN §1.2, §4). FR-4's proton law already reverses past its static head, on held fuel | Thermodynamic H⁺/ATP of about 4.0 for the *E. coli* and chloroplast enzymes (Steigmiller et al. 2008, PNAS, PMC2268821). Yeast mitochondria 2.9 ± 0.2, against 3.3 from its 10-subunit ring (Petersen et al. 2012, PNAS, PMC3396544). The bovine ring has 8 c subunits (Watt et al. 2010, PNAS, PMC2947889) | 4 of 4: Syn3A, where its reconstruction runs it in the hydrolysis direction (viewer `syn3a.json`); mitochondria in the three animals | **First** |
-| **Ribosome** | **No:** no amino-acid, tRNA, GTP or mRNA rows, no polymers (F10), 16 species | In-cell structures: 101,696 ribosomes from 356 tomograms of *M. pneumoniae*, sorted into 13 classes of translating ribosomes (Xue et al. 2022, *Nature*, PMC9534751, open access). About 500 per Syn3A cell, from cryo-electron tomograms (viewer `syn3a.json`; PAPER_REVIEW_WHOLE_CELL §2.6) | 4 of 4 | The flagship. Blocked by F8, F10 and F11; crosses D145's hold |
+| **Ribosome** | **No:** no amino-acid, tRNA, GTP or mRNA rows, no polymers (F10), 16 species | In-cell structures: 101,696 ribosomes from 356 tomograms of *M. pneumoniae*, sorted into 13 ribosome classes (Xue et al. 2022, *Nature*, PMC9534751, open access). About 500 per Syn3A cell, from cryo-electron tomograms (viewer `syn3a.json`; PAPER_REVIEW_WHOLE_CELL §2.6) | 4 of 4 | Needed everywhere, but blocked by F8, F10 and F11; crosses D145's hold |
 | **RNA polymerase** | **No:** NTPs, the DNA template and transcripts are absent | Not searched | 4 of 4 | With the ribosome |
 | **Proteasome** | **Partly:** ATP yes; protein substrates and peptides as rows, no | Degradation tracks ATP hydrolysis: tens of ATP per substrate, 50–80 for a stabilised one (Peth, Nathan and Goldberg 2013, *JBC*, PMC3790020; abstract level). Assembly kinetics not searched | 3 of 4: not Syn3A, whose annotation lists the proteases FtsH and Lon (viewer `syn3a.json`) | **Second:** D140's named case, a node machine and an assembly case |
 | **Translocon (Sec)** | **Partly:** ATP and the proton-motive force yes; nascent chains no | Not searched | 4 of 4: Syn3A's Sec translocon and YidC (viewer); Sec61 in the three animals | After the ribosome, whose products it moves |
@@ -279,9 +277,11 @@ rates set by the free concentrations c and the voltage V it sees.
     of 17 kinds.
 - **A sharp judged check.** With integer roles per rotation, c H⁺ per 3 ATP, the declared c and the
   registry's potentials fix the zero-flux point, with no free parameter.
-  - Against the thermodynamic measurements it may fail. Petersen et al. report their ratios outside
-    the rotational models' values.
-  - A failure would be informative, and is a reason to choose the first acceptance with care.
+  - The measured ratios are for *E. coli*, chloroplast and yeast enzymes; this search found none for
+    a target organism. So the first check would run in a reconstituted-vesicle world, with one of
+    those enzymes' numbers (**S**).
+  - It may fail: Petersen et al. report their ratios outside the rotational models' values. A
+    failure would be informative, and is a reason to choose the first acceptance with care.
 
 ## 5. What a declared machine would carry
 
@@ -299,9 +299,8 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
 | Assembly map | Intermediates and steps | An assembly law (§1.3) | As that law's `fields` |
 | Copy numbers and rates | Values with evidence records | Organism definitions (SYN3A_MINIMAL_CELL_TRACK §10), never the manifest | No |
 
-- **A `machine` piece is a new key set,** so it is a new major of the manifest
-  (LAW_DOCUMENTATION_DESIGN §7). Its @2 is designed and not built.
-- **The viewer's Machines tab** binds to that piece once one exists, as D204 says.
+A `machine` piece is a new key set, so a new major of the manifest (LAW_DOCUMENTATION_DESIGN §7;
+its @2 is designed, not built). The viewer's Machines tab binds to it once it exists (D204).
 
 ## 6. Extension: one general machine law, specialised per machine?
 
@@ -311,7 +310,8 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
   its inherited interface (:453).
 - **Correct:** operators are checked by `check_declarations` at registration
   (`registry/operators.py`:42–45). A `cells` ID names one object, for operators (:53–61) and for
-  laws (`register`). So an extension takes a new ID (D147, D148).
+  laws (`register`). So an extension takes a new ID: an ID promises its semantics (D148's reading
+  of D147).
 - **Partly correct:** "models extend by composition under D191's one rule". Composition over model
   families is D142's and D143's rule: new combinations are definitions. D191 rules how a composition
   reads a field. And inheritance is used today:
@@ -342,7 +342,7 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
   the child must equal the parent. The parent's kernel test runs on the child at that case, and the
   manifest records the link. About 1–2 agent-days (**S**).
 - **X2:** Python subclassing as the declared mechanism. Not recommended: inherited code does not
-  state what the child promises (D147), and an overridden kernel can hide a change of meaning.
+  state what the child promises (D148), and an overridden kernel can hide a change of meaning.
 
 ## 7. Gaps
 
@@ -355,8 +355,8 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
 | **N3.** Copies made from, and returned to, subunit rows; capacity from the count | The closed molecular-to-physiology loop | FR-7; the junction-channel unit (D145); protein turnover (SYN3A_MINIMAL_CELL_TRACK §9.3) | 2–4 |
 | **N4.** An assembly map in three representations (§1.3) | Any complex | Proteasome (D140); ribosome subunits; ATP synthase modules; typed capsids | 8–12 |
 | **N5.** Tagged individuals, I1 (§2) | Single-entity statistics with no change to a run | Rotary steps; dwell times of any cycle | 2–3 |
-| **N6.** Zoom by branching (e), then switching (c) (§3) | Any pair of a reduced and a detailed representation | FR-13; ARCHITECTURE's first level-of-detail consumer (D174's fuel case) | (e) 2–3; (c) 5–8 |
-| **N7.** Relations vocabulary and a key case for machines (§2) | Any entity made from many parts | FR-13; material provenance of complexes (D200) | 0.5–1, before sharing |
+| **N6.** Zoom by branching (e), then switching (c) (§3) | Any pair of a reduced and a detailed representation | FR-13; ARCHITECTURE's first level-of-detail consumer (D174's fuel case) | (e) 2–3 and (c) 5–8, each after (b) |
+| **N7.** Relations vocabulary for machines (§2) | Any entity made from many parts | FR-13; material provenance of complexes (D200) | 0.5–1 |
 | **N8.** A `machine` piece in the manifest (§5) | Every functional unit | The Machines tab; the catalogue's 49 functional units (PROTEIN_CATALOGUE_PLAN) | 1–1.5 |
 | **N9.** Declared extension, X1 (§6) | Any family of laws | ATP synthesis over FR-4's law; D167's moved laws | 1–2 |
 
@@ -376,24 +376,23 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
 | Option | What | Agent-days (S) | When |
 | --- | --- | --- | --- |
 | **M0** | The viewer's Machines tab as a catalogue with drawing levels, labelled illustration: meaning (d) | Viewer only | Now |
-| **M1** | ATP synthase as the first machine, built as general pieces: N1, N2, N3, N5 and N8, its law and data, and meaning (a). Less if D193's synthesis law lands first | 13–20 | After the core-seams pass (A, B, E) |
-| **M2** | The proteasome core second: a node machine, then the first stoichiometric assembly (N4) | 10–15 | After M1 |
-| **M3** | Zoom by branching (e), then switching (c), on request | 2–3; then 5–8 | After M1 |
+| **M1** | ATP synthase as the first machine, built as general pieces: N1, N3, N5 and N8; its law and data; independent references, a protocol and a judged run (D187); meaning (a). Less if D193's synthesis law lands first | 14–23, plus B8's fields (no estimate) | After the core-seams pass (A, B, E) |
+| **M2** | The proteasome core second: a node machine (N2), then the first stoichiometric assembly (N4), with its references | 12–18 | After M1 |
+| **M3** | Per-scope focus (b), then zoom by branching (e), then switching (c), on request | (b) not estimated; (e) 2–3; (c) 5–8 | After M1 |
 | **M4** | Ribosome and RNA polymerase, with promoted individuals (I2) | Large; F8, F10 and F11 first | After the user's ruling on D145 |
 
-**Recommended: M0 now, then M1, and N7 now,** before `cells.relations@1` bundles are shared.
+**Recommended: M0 now, then M1,** with N7's vocabulary reserved by the lead (§9, L1).
 - **Why ATP synthase:** its substrates are on the inventory once the pass lands; free-to-read
   numbers give it a sharp check; all four targets need it.
-- **Why general pieces:** the proteasome is the second consumer of N1–N3, which keeps D144: no
-  machine-specific code.
-- **Why (a) with tagged individuals first:** it answers "individually and in aggregate" cheaply,
-  with no change to any run.
+- **Why general pieces:** the proteasome is the second consumer of N1 and N3, which keeps D144.
+- **Why (a) with tagged individuals:** it answers "individually and in aggregate" with no change to
+  any run.
 
 **Risks:**
 - **Seam A's contract is not on main.** FR-13 builds on it, so changes there reach FR-13.
 - **The first judged check may fail on stoichiometry** (§4). That is science, but it can stall an
   acceptance.
-- **The most-wanted machine, the ribosome, waits** on F8, F10, F11 and D145.
+- **The ribosome, which every target needs, waits** on F8, F10, F11 and D145.
 - **Assembly kinetics are thin in free-to-read sources.** Maps give the order, not the rates.
 - **Switching (c) can make results depend on viewing.** Only a declared focus prevents that.
 - **A machine framework built before a second consumer** would break D144 and D187. M1 names its
@@ -412,38 +411,40 @@ So a machine is a declared entity that binds laws; it is not a law itself (S).
 - **U6.** Extension: X1, once the first parent and child exist?
 
 **For the lead:**
-- **L1. Time-sensitive:** add N7's vocabulary and key case to `cells.relations@1` before its first
-  bundle is shared?
+- **L1. Time-sensitive:** reserve N7's vocabulary (`assembled`, `disassembled`, `degraded`,
+  `assembled_from`, `member_of`) in `cells.relations@1` before it lands on main, or leave it to a
+  later version? Building waits for the user's discussion.
 - **L2.** Reserve the node host and a cycle-diagram interface in seam A's template now, while
   `cells.cycle_law@1` is provisional (CORE_SEAMS §15)?
 - **L3.** The manifest's `machine` piece: in @2, before the viewer binds, or in a later major?
 
 ## Sources
 
-- **Engine documents read:** AGENTS.md; DECISIONS.md (D135, D136, D140, D142–D145, D148, D152,
-  D173, D175, D176, D185, D186, D191–D204); FEATURE_REQUESTS.md (FR-6, FR-7, FR-13); ARCHITECTURE.md
-  ("Levels of detail"); MULTISCALE_EXECUTION_ARCHITECTURE.md ("Fidelity and resolution", "Coupled
-  numerical execution", "Precision, randomness"); CORE_SEAMS_DESIGN.md (§0–§17);
-  MODULE_SYSTEM_DESIGN.md; RELATIONSHIPS_DESIGN.md (§0, §1, §5–§8); LAW_DOCUMENTATION_DESIGN.md (§7,
-  §8); CAPSID_ASSEMBLY.md; GARD_DESIGN.md (§1, §2.4, §4.6, §7); PROTEIN_CATALOGUE_PLAN.md;
-  PROTEIN_ASSEMBLY_IDEAS.md (§6, §7); SYN3A_MINIMAL_CELL_TRACK.md (§4.3, §4.4, §9–§11);
-  SOTA_SYN3A.md; PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL.md (§2, §4, §5); MITOCHONDRIA_DESIGN.md (§1.2,
-  §1.4, §3.2, §4); `visualizer/docs/CELL_STRUCTURES.md`.
+- **Engine documents read:** AGENTS.md; DECISIONS.md (D135, D136, D140, D142–D145, D147, D148,
+  D152, D153, D173, D175, D176, D185, D186, D191–D204); FEATURE_REQUESTS.md (FR-6, FR-7, FR-13);
+  ARCHITECTURE.md ("Levels of detail"); MULTISCALE_EXECUTION_ARCHITECTURE.md ("Fidelity and
+  resolution", "Coupled numerical execution", "Precision, randomness"); CORE_SEAMS_DESIGN.md
+  (§0–§17); MODULE_SYSTEM_DESIGN.md; RELATIONSHIPS_DESIGN.md (§0, §1, §4–§8);
+  LAW_DOCUMENTATION_DESIGN.md (§7, §8); CAPSID_ASSEMBLY.md; GARD_DESIGN.md (§1, §2.4, §4.6, §7);
+  PROTEIN_CATALOGUE_PLAN.md; PROTEIN_ASSEMBLY_IDEAS.md (§6, §7); SYN3A_MINIMAL_CELL_TRACK.md (§4.3,
+  §4.4, §9–§11); SOTA_SYN3A.md; PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL.md (§2, §4, §5);
+  MITOCHONDRIA_DESIGN.md (§1.1, §1.2, §1.4, §3.2, §4); `visualizer/docs/CELL_STRUCTURES.md`.
 - **Code read at e5edba97:** the files cited above, under `src/cells/` (`registry/`, `core/`,
-  `models/inner_kinds/`, `models/operators/`, `models/assembly_lineages/`, `assembly/`, `io.py`).
+  `models/`, `assembly/`, `processes/plasma_calcium.py`, `io.py`), and
+  `tests/unit/test_continuity_bypass.py`.
 - **Branches read:** `relations-writer` at 35a5bbb9 (`src/cells/records/relations.py`, and the
   lead's rulings in its RELATIONSHIPS_DESIGN.md); the `visualizer` branch's species list.
 - **Viewer data read on main:** `visualizer/data/machines/ecoli.flagellar-motor.json`;
   `visualizer/data/species/{syn3a,mpneumoniae,ecoli,human,planarian}.json`.
-- **External sources, checked for access by web search on 17 November 2026** (abstracts, PMC records
-  and search summaries, not full texts; numbers only, each cited, D186 and D201; no text, figure or
-  data file copied): Steigmiller, Turina and Gräber 2008, PNAS 105:3745 (PMC2268821); Petersen,
-  Förster, Turina and Gräber 2012, PNAS 109:11150 (PMC3396544, its PMC page's ratios and ring
-  sizes); Watt et al. 2010, PNAS 107:16823 (PMC2947889); Xue et al. 2022, *Nature* 610:205
-  (PMC9534751); Peth, Nathan and Goldberg 2013, *J. Biol. Chem.* 288:29215 (PMC3790020).
-- **Cited from memory, not read for this note:**
-  - Hill's diagram method and King and Altman's, for steady-state cycle fluxes;
-  - linearity of expectation for independent Markov chains, and van Kampen's system-size expansion,
-    for the mean-field error;
-  - Gillespie's direct method, and next-reaction methods with integrated hazards, for I2;
-  - the Berg group's torque–speed measurements on the flagellar motor.
+- **External sources, checked for access on 17 November 2026 by five web lookups** (four searches
+  and one PMC page; abstracts, records and search summaries, not full texts; numbers only, each
+  cited, D186 and D201; no text, figure or data file copied): Steigmiller, Turina and Gräber 2008,
+  PNAS 105:3745 (PMC2268821); Petersen, Förster, Turina and Gräber 2012, PNAS 109:11150
+  (PMC3396544, its PMC page's ratios and ring sizes); Watt et al. 2010, PNAS 107:16823
+  (PMC2947889); Xue et al. 2022, *Nature* 610:205 (PMC9534751); Peth, Nathan and Goldberg 2013,
+  *J. Biol. Chem.* 288:29215 (PMC3790020).
+- **Cited from memory, not read for this note:** Hill's diagram method and King and Altman's, for
+  steady-state cycle fluxes; linearity of expectation for independent Markov chains, and van
+  Kampen's system-size expansion, for the mean-field error; Gillespie's direct method, and
+  next-reaction methods with integrated hazards, for I2; the Berg group's torque–speed measurements
+  on the flagellar motor.
