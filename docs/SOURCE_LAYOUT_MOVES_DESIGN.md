@@ -597,3 +597,150 @@ code, which those checks' worlds do not load.
    confirm.
 8. **The audits that read one path in two trees** (§3.2): retire with the cluster's tests, or
    translate by hand.
+
+## 16. Move 1's dry run (17 November, at main df2b910b)
+
+*Scratch, never merged: `/mnt/workspaces/Cells/d188-dryrun-20261117/` (`$R`), the moved tree in
+`tree/`.*
+
+**What ran:**
+- R4 by hand (91fb70a5), as in the probe's P5a.
+- The draft map regenerated at df2b910b: the same 318 modules as at fa19d80c and b844f920. The
+  tool applied it (10e83979), rewriting 630 files with 2597 edits.
+- R1–R3 were not applied. Every hazard file was listed under `reviewed` with its category
+  (below), so the 17 R2 sites stand unrefactored and their failures are the known ones.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Collected test IDs | 18482 against main's 18482, with the same 5 collection errors. **2 IDs differ, only by the mapped path in a parametrization:** `test_open_calcium_regression.py::test_mechanically_reversing_private_extraction_retains_the_complete_closed_parser_AST[src/cells/core/surface_calcium{,_energy}_spec.py-…]` now names `src/cells/legacy/core/…` | `$R/evidence/collect-*.ids` |
+| crossrev's nine sets against `record-cda5dc82`, 1 CPU (8) | identical in all nine; file listings identical | `$R/evidence/crossrev-10e83979/` |
+| Tiers 1+2 against the record, 6 CPUs | 479 files; 4 changed (§16.1); no count increase | `$R/evidence/tiers-1+2-10e83979/summary.json` |
+| `verify` of the move commit (91fb70a5 → 10e83979) | holds: 318 moved, 630 rewritten, 0 problems | `$R/evidence/verify-move1-dryrun.json` |
+
+**The ID gate needs a reading rule.** An ID that differs only by a path the map renames is the
+move's own change. The proposal is to compare IDs through the map, as with tier 3's error lines.
+The alternative is a stable `ids=` in that test, made by a refactor before the move. **For the
+lead.**
+
+### 16.1 The red list
+
+These are every test green on main (df2b910b) and not green in the dry run. Each file was run on
+both trees, one CPU per process (`$R/evidence/red-list/`).
+
+| Tests | Cause | Class |
+| --- | --- | --- |
+| `test_surface_calcium_energy_regulated_dispatch.py`: all 7 | `ModuleNotFoundError` on `cells.models.surface_calcium_energy_*` and `cells.core.surface_calcium_energy_regulated{,_v2}_spec`, from `import_module("cells.models." + module)` | R2, known |
+| `test_surface_profile_interventions_dispatch.py`: 4 of 14 (`test_profile_registration_preserves_existing_physical_families`, 4 cases) | `ModuleNotFoundError` on `cells.models.surface_calcium_energy_{hcn_extra,transport,mitochondria,water}` | R2, known |
+| `test_surface_active_profile_interventions_dispatch.py`: 5 of 16 (`test_active_profile_registration_preserves_parent_and_composed_dispatch`, 5 cases) | `ModuleNotFoundError` on `cells.models.surface_hcn_extra` and `cells.models.surface_calcium_energy_*` | R2, known |
+| **`test_open_calcium_regression.py`: 2 of 44** (`test_mechanically_reversing_private_extraction_retains_the_complete_closed_parser_AST`, both cases) | **An AST-hash pin** (below) | **new** |
+
+**The AST-hash pin.**
+- The test rebuilds a parser from `_decode_components` and `parse`'s body, and hashes its
+  `ast.dump`.
+- `parse` holds a function-level import that the move rewrites (`from cells.models.surface_calcium
+  import check_definition` becomes `cells.legacy.models…`; likewise `surface_calcium_energy`). So
+  the hash moves: `55e7d3dd…` → `76a77824…`, and `ab7840fc…` → `741915a4…`.
+- No move can keep it without a hash change (D187), so it is not an R2 case. It is also one of
+  the two renamed IDs.
+- **For the lead:**
+  - retire the two cases: they pin a reversed extraction of older families' parsers, and the
+    frozen evidence keeps them; or
+  - change the test before move 1 to hash the parser without its import statements, with its
+    reason. That is a test change, not a hash-only update.
+
+**Less the known R2 sites, the tier-1/2 red list is these 2 tests.**
+
+**R2's other test sites are tier 3,** passing in `tests/tier3_record.json`:
+`test_active_ecm_polygon_preparation.py`, `test_active_polygon_physiology_preparation.py`,
+`test_owned_barrier_interventions.py`, `test_owned_calcium_profile_barriers.py` and
+`test_owned_calcium_profile_interventions_dispatch.py`. `test_assembly_cluster.py` already fails
+there. The five joint-water fixtures serve tier-3 and integration files. All are expected to fail
+on the same cause until R2, and the tier-3 run on the final tree checks them.
+
+**The 38 files that are red on main too** were run on both trees. Their 1648 tests keep their
+outcomes one by one, so no failure hides behind an unchanged count
+(`$R/evidence/red-files-compare.txt`).
+
+### 16.2 The scan's 135 hazards, by category
+
+| Category | Hazards | Files | Can it reach a moved module? |
+| --- | --- | --- | --- |
+| A: a computed module path: `import_module("cells.core." + name)`, the `__module__` comparison and the recorded `parser=` path | 30 | 15 (2 src, 13 tests) | yes: R2 |
+| B: a computed `-m` path of a CLI worker: `assembly_cell/cli.py:239` builds `"cells." + cli_name`, and `tests/unit/test_assembly_cluster.py:632` asserts it | 2 | 2 | yes: R2. New since step 0, which matched only package prefixes |
+| C: a namespace check of the top package: `startswith("cells.")`, `== "cells"`, `removeprefix("cells.")` (the BETSE natives, validation references, `legacy_inventory.py`) | 82 | 78 | no: a moved module stays under `cells.` |
+| D: prose ending in `cells.` in a docstring or string, or an embedded program that checks the namespace | 19 | 18 | no |
+| E: an f-string labelling a BETSE object's attribute (`f"cells.{name}"`, `validation/betse/betse_reference_extract.py`) | 2 | 1 | no |
+
+- **R2's list at df2b910b is 17 files:** A's 15 and B's 2. Step 0's 17 at fa19d80c included two
+  files that D189's retire removed: `test_joint_water_profile_barriers.py` and
+  `test_betse_ecm_material_callback.py`.
+- **In the real map,** C, D and E files go under `reviewed` with their category, and A and B are
+  refactored first.
+- Listing: `$R/evidence/hazards-by-category.json`.
+
+### 16.3 The pin intersection
+
+§5's 22 live pinned files carry 43 pins, each a (law, file) pair.
+- **R1's six dispatch files:** none is pinned.
+- **R3's seven extraction sites:** none is pinned.
+- **M1 and move 2** touch 26 of the 43 pins. All are path pins of the 7 path-pinning laws;
+  M1 moves all 7 of them. No module pin is touched.
+- Move 2 was scanned on the moved tree (`$R/evidence/scan-move2-after-move1.json`). Its draft
+  moves 110 modules and rewrites 1160 files.
+
+| Pinning law | Its touched pins, and whether the pinned file's bytes change | Green test today behind it |
+| --- | --- | --- |
+| `processes/charged_surface_work` | 7 pins. M1 moves `numerics/membrane_redistribution.py` with its bytes kept; the other 6 files are untouched by M1 and by move 2's draft. The law moves (R4 keeps its root) | `test_charged_surface_repository.py` |
+| `core/conservative_polygon_tissue_preparation` | `numerics/surface_transport.py`: rewritten by move 2 | none (its test is red today) |
+| `processes/stable_seed_control_volume_environment` | `processes/stable_seed_control_volume_physical_bridge.py`: moved and rewritten by M1 | none (D189 retired its tests) |
+| `processes/stable_seed_control_volume_physical_bridge` | `core/conservative_polygon_tissue_preparation.py`: moved by M1 with its bytes kept, rewritten by move 2 | none (retired) |
+| `processes/stable_seed_partition_advance` | `processes/stable_seed_partition_physiology_bridge.py`: moved and rewritten by M1. `core/{state,devices}.py`: moved and rewritten by move 2. `numerics/surface_transport.py`: rewritten by move 2 | none (red today) |
+| `processes/stable_seed_partition_physiology_bridge` | `numerics/surface_transport.py`: rewritten by move 2 | none (red today) |
+| `processes/stable_seed_partition_trajectory` | `core/resources.py`: moved and rewritten by move 2 | none (red today) |
+
+- **The only green test behind a touched pin** is `test_charged_surface_repository.py`. It
+  holds with R4 (P5).
+- **Move 2 must keep that law's six other pinned files byte for byte:**
+  `processes/electrochemistry.py` stays where it is, and
+  `numerics/{fixed_step,extracellular_field}.py` and the three package files are not rewritten.
+  Otherwise the test turns red, because no hash is updated.
+- Evidence: `$R/evidence/pin-intersection.json`.
+
+### 16.4 charged_surface_work's binding identity
+
+- **No compared record holds it.** Crossrev's record (`record-cda5dc82`) and G1's saves have no
+  charged-surface world: no file names the law ID `held_charged_surface_prescribed_field_work@1`.
+  No registered protocol in the checkout names it either; the only JSON mention is the
+  visualizer's laws listing.
+- **Frozen development evidence from 30–31 October holds bindings made with the old pin table**
+  (`/mnt/workspaces/Cells/betse-charged-surface-work-*-20261031-*`).
+- **Any later comparison with those is a D148 case:** an in-place change to shared code, here
+  the pin table's path key. It is not "identical".
+
+### 16.5 Family membership
+
+These are all older families' modules:
+- `models/surface_tissue`: resolved_tissue@1's model;
+- `models/surface_kinetic`: the model of resolved_tissue@2–@12;
+- `core/surface_kinetic_spec`: that family's definitions;
+- `core/surface_tissue_spec`: resolved_tissue@1's definitions;
+- `models/kinetic_finite_extracellular`: finite_extracellular@2's model.
+- **They stay in the core** because the four families D189 kept are built on them: reached
+  75%, 90%, 18%, 100% and 25% at name level. This is D189's "shared code of the four".
+- **Their families' registrations move** to `legacy/registration.py` with R1.
+- **Their modules stay,** so those older families keep running on core modules. This is allowed:
+  the rule is only that nothing outside `legacy/` imports from it.
+
+### 16.6 Found by the dry run, for the real map
+
+- **R2 has 17 files** (§16.2), two of them new since step 0 (category B).
+- **Two test IDs carry a mapped path** (§16, ID gate) and need a reading rule, or a stable
+  `ids=`.
+- **One AST-hash pin** (`test_open_calcium_regression.py`, 2 cases) needs a ruling before move 1.
+
+- **Packages split.** `assembly_cell/__init__.py` and `assembly_cluster/{__init__,controls}.py`
+  stay where they are while their other modules move. `controls` is imported only by moved
+  modules and two tests. The planner should also move a module whose only src importers are
+  moved modules, and a package's `__init__` with its last module.
+- **A stale comment.** `core/__init__.py` names `processes/charged_surface_work` in a comment
+  without `.py`, which the path rule does not match. A docs-level fix after the move.
