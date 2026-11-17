@@ -86,6 +86,10 @@ RUN_FIELDS = {
     "time", "channels", "layers", "records", "diagnostics",
 }  # fmt: skip
 WORLD_FIELDS = {"format", "id", "world", "derived"}
+BUNDLE = {
+    "world.json", "run.json", "records.npz", "relations.npz", "relations.json",
+    "resolved_config.json", "summary.json", "manifest.json",
+}  # fmt: skip
 WORLD_BODY = {
     "types",
     "supply",
@@ -171,6 +175,7 @@ def test_the_key_rule_and_the_lives_vocabulary_are_frozen():
 def test_the_bundle_format_is_frozen(tmp_path):
     run = runner.run(parse_spec(definition(world(), fissions=2, uniforms=True)))
     records.write_run(tmp_path / "run", run)
+    assert {f.name for f in (tmp_path / "run").iterdir()} == BUNDLE
     run_json = json.loads((tmp_path / "run" / "run.json").read_text())
     world_json = json.loads((tmp_path / "run" / "world.json").read_text())
     assert set(run_json) == RUN_FIELDS and set(run_json["run"]) == {"qualifier", "start"}

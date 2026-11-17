@@ -7,6 +7,9 @@ A bundle is a new directory (never overwritten) holding:
 - run.json (RUN_FORMAT): the run record (below);
 - records.npz: the arrays, each declared in run.json's `records`;
 - resolved_config.json: the definition; summary.json: how the run ended;
+- relations.npz and relations.json: the relationship tables, cells.relations@1 (relation_tables):
+  the lives, the fission and extinction events, the slot, the reservoir and the unmodelled agent
+  as sources, and the material edges weighed by the bundle's own records;
 - manifest.json, written last: every file's SHA-256, the runtime and the source, as io.write_run
   writes it (its helpers are used here, so the conventions are the engine's).
 
@@ -537,6 +540,119 @@ def relation_nodes(arrays):
     return [{"id": f"slot:{s}", "kind": "slot", "declared_by": MODEL_ID} for s in slots]
 
 
+RESERVOIR = "source:reservoir"
+AGENT = "source:unmodelled_agent"
+SLOT = "slot:0"
+
+
+def relation_tables(directory, run):
+    """cells.relations@1's tables of a run whose bundle's records.npz is in `directory`, as the
+    writer's keyword arguments: lives, events (each fission paid by the unmodelled agent), nodes,
+    sources, edges and the records they point at.
+
+    - Sources: the held reservoir (`source:reservoir`, kind reservoir, class substrate), which
+      supplies every join and takes every leave, and the unmodelled agent of the fissions
+      (`source:unmodelled_agent`, kind unmodelled, class energy), the payer of fission_work_kT.
+    - Single lineage: material sits in the slot (`slot:0`). `supplies` edges run from the
+      reservoir to the slot and `removes_to` edges from the slot back to it, one per type that
+      moved, each weighed by the bundle's own cumulative record (joined_total, left_total; one
+      way). An unfollowed daughter's material goes from its carrier to the declared sink
+      (`sink:discard`, or the reservoir) at its fission's event, weighed by discarded_total.
+    - Every descendant: no slots, so material sits in each carrier, and its rows are per life
+      (their times are not one series), so each life's edges carry their weights as numbers over
+      its window (birth to end): the molecules of each type it took up and gave back."""
+    from cells.models.assembly_lineages import CONTINUATION, FISSION
+    from cells.records import relations as rel
+
+    arrays = {**run.lives, **run.fissions}
+    world = run.spec.model.world
+    types = list(world.types.ids)
+    single = run.bound is None
+    lives = [rel.Life(**row) for row in descent(arrays)]
+    events = [
+        rel.Event(**(row | {"source": AGENT} if row["kind"] == "fission" else row))
+        for row in relation_events(arrays)
+    ]
+    nodes = [rel.Node(**row) for row in relation_nodes(arrays)]
+    rows = run.rows
+    joined, left = rows["joined_total"][:, :, 0], rows["left_total"][:, :, 0]
+    supplied = sorted(types[i] for i in np.flatnonzero(joined.max(0) > joined[0]))
+    edges, records = [], {}
+    if single:
+        records = rel.records_in(
+            directory,
+            [ARRAYS],
+            {
+                "joined_total": "cumulative",
+                "left_total": "cumulative",
+                "discarded_total": "cumulative",
+                "fission_work_kT": "cumulative",
+            },
+            times="row_time",
+        )
+        for i in range(len(types)):
+            for relation, record, total, ends in (
+                ("supplies", "joined_total", joined, (RESERVOIR, SLOT)),
+                ("removes_to", "left_total", left, (SLOT, RESERVOIR)),
+            ):
+                if total[-1, i] > total[0, i]:
+                    edges.append(
+                        rel.Edge(relation, *ends, EXCHANGE_LAW, species=types[i],
+                                 weight_record=record, weight_index=f"{i},0", mode="one_way")
+                    )  # fmt: skip
+        sink = RESERVOIR if world.continuation.sink == "reservoir" else "sink:discard"
+        if sink != RESERVOIR:
+            nodes.append(rel.Node(sink, "sink", CONTINUATION))
+        discarded = rows["discarded_total"][:, :, 0]
+        times = rows["row_time"]
+        for life in lives:
+            if life.end_reason != "not_followed":
+                continue
+            row = int(np.searchsorted(times, life.end_time, side="left"))  # The event's rows.
+            for i in np.flatnonzero(discarded[row + 1] != discarded[row]):
+                edges.append(
+                    rel.Edge("removes_to", life.id, sink, CONTINUATION, event=life.end_event,
+                             species=types[i], weight_record="discarded_total",
+                             weight_index=f"{i},0", mode="event")
+                )  # fmt: skip
+    else:
+        for k, life in enumerate(lives):
+            born, ended = 2 * k, 2 * k + 1  # Every descendant: each life's birth and end rows.
+            for relation, total, ends in (
+                ("supplies", joined, (RESERVOIR, life.id)),
+                ("removes_to", left, (life.id, RESERVOIR)),
+            ):
+                moved = total[ended] - total[born]
+                for i in np.flatnonzero(moved > 0):
+                    edges.append(
+                        rel.Edge(relation, *ends, EXCHANGE_LAW, species=types[i],
+                                 time_from=life.birth_time, time_to=life.end_time,
+                                 weight=float(moved[i]), mode="one_way")
+                    )  # fmt: skip
+    sources = [
+        rel.Source(RESERVOIR, "reservoir", "substrate", EXCHANGE_LAW, carries=",".join(supplied),
+                   record="joined_total" if single else ""),
+        rel.Source(AGENT, "unmodelled", "energy", FISSION,
+                   payer_of="fission_work_kT" if single else ""),
+    ]  # fmt: skip
+    return {
+        "lives": lives,
+        "events": events,
+        "nodes": nodes,
+        "sources": sources,
+        "edges": edges,
+        "records": records,
+    }
+
+
+def write_relations(directory, run):
+    """Write cells.relations@1's tables (relations.npz, relations.json) beside the bundle in
+    `directory`, whose records.npz is already there; returns the writer's descriptor."""
+    from cells.records import relations as rel
+
+    return rel.write(directory, world=run.qualifier, **relation_tables(directory, run))
+
+
 def _arrays(run):
     out = dict(run.rows)
     out.update(run.fissions)
@@ -580,6 +696,7 @@ def write_run(directory, run, *, provenance=None):
         "timings": run.timings,
     }
     _write_json(directory / "summary.json", summary)
+    write_relations(directory, run)  # Before the manifest, so its checksums cover them.
     backend = run.spec.execution.backend
     manifest = {
         "schema_version": 1,
