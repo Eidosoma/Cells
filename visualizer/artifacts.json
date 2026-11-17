@@ -363,6 +363,19 @@
           "note": "Version 1 (version id 1794899192-baa7). Looked at once before publishing, wide in the light theme (opened) and at a phone's width in the dark theme (loaded): nine pictures, none broken, no sideways scroll, no error. Each of the nine pictures was opened and looked at in the review's folder first."
         }
       ]
+    },
+    "heart_cell_options": {
+      "title": "Heart Cell Options",
+      "url": "https://claude.ai/artifact/JTtyS2NseTMx6juAyxFRat",
+      "page": "out/publish-previews/heart-cell-options.html (not tracked: 1.7 MB with three pictures inlined; made by out/scratch-coordinator/make_heart_page.py from the review's pictures)",
+      "note": "Options for the user on how the engine's first real cell type, the human ventricular heart cell (D183, D184; designed, not modelled), should be drawn in the Cell view: A, the heart cell's name and words on today's generic cell (about half a day); B, the model's own cell, a cylinder holding the engine's four calcium pools and the membrane's two patches (2 to 4 agent-days by the reviewer's estimate; best built when the engine's pools exist); C, the anatomical cell with myofibrils, T-tubules, the SR, mitochondria in rows (8 to 12 agent-days, and a source for every size). The review recommends A now, then B. Nothing is built: A's picture is the map with a cell type added in the reviewing agent's own checkout, B's and C's are sketches drawn outside the Cell view. The review is out/handover/heart-cell-review.md (not tracked). Awaits the user's choice.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-17",
+          "note": "Version 1 (version id 1794916391-f19b). Loaded before publishing, wide in the light theme and at a phone's width in the dark theme: three pictures, none broken, no sideways scroll, no error; the page itself was not opened as a picture. Each of its three pictures was opened and looked at in the review's folder first."
+        }
+      ]
     }
   }
 }
