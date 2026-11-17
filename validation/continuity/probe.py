@@ -240,14 +240,17 @@ def require_entry_points():
         raise CannotDecide("the tree lacks the probe's entry points: " + ", ".join(missing))
 
 
+LAYOUT = "cells.source_layout"  # The loaders' layout rule (D195 item 4), in trees that have it.
+
+
 def require_layout(manifest, what):
     """The loaders' layout check under this tree (D195 item 4): a checkpoint written before a
-    source move that this tree declares is refused. A tree without cells.source_layout predates
-    the rule and declares no move."""
+    source move that this tree declares is refused. A tree without the module, or without its
+    package, predates the rule and declares no move."""
     try:
-        source_layout = importlib.import_module("cells.source_layout")
+        source_layout = importlib.import_module(LAYOUT)
     except ModuleNotFoundError as exc:
-        if exc.name != "cells.source_layout":
+        if exc.name is None or not (LAYOUT == exc.name or LAYOUT.startswith(exc.name + ".")):
             raise
         return
     source_layout.require(manifest["source_hashes"], what)

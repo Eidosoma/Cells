@@ -231,6 +231,9 @@ def test_the_probes_read_keeps_the_layout_check(tmp_path, monkeypatch):
         probe.read_cohort(path)
     with pytest.raises(ConfigError, match="^Checkpoint was written .* tagged tag$"):
         probe.read_scalar(path / "world-10")
+    monkeypatch.setattr(probe, "LAYOUT", "cells.not_here.source_layout")  # A tree before the rule.
+    assert sorted(probe.read_cohort(path)[1]) == [10, 11]
+    monkeypatch.undo()
     monkeypatch.setattr(source_layout, "MOVES", ())  # The control: no move made.
     assert sorted(probe.read_cohort(path)[1]) == [10, 11]
 
