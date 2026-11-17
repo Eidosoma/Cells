@@ -13,10 +13,14 @@ export default {
   draws: ["mitochondria", "atp"],
   build(env) {
     const { ctx } = env;
-    const { real, style, has, organelle, outline, random, inside, vacuole, inCytoplasm, scatter, seat, NUCLEUS, coreAt, coreRadius } = env.layout;
+    const { real, style, has, organelle, outline, random, inside, vacuole, inCytoplasm, scatter, seat, NUCLEUS, coreAt, coreRadius, fine } = env.layout;
     if (!organelle("mitochondria")) {
       // No mitochondria: the fuel is made in the cytoplasm, and is drawn through it near the cut.
-      if (has("atp")) {
+      if (has("atp") && fine) {
+        // To scale ATP is a small molecule, under two nanometres: a haze of dots through the cytoplasm, each standing for many.
+        const fuel = ctx.part("atp", seat(new THREE.Vector3(-0.9, CUT + 0.55, 7.4), 1.3));
+        fuel.add(dots(scatter(1500, (point) => inside(point) > 0.9 && point.y < CUT && point.y > CUT - 2.6), fuel.points({ hue: "bioFuel", size: 1.3, opacity: 0.55 })));
+      } else if (has("atp")) {
         const fuel = ctx.part("atp", seat(new THREE.Vector3(-0.9, CUT + 0.55, 7.4), 1.3));
         const sparks = scatter(real ? 400 : 30, (point) => inside(point) > 0.9 && point.y < CUT + 0.2 && point.y > CUT - 1.4 && point.distanceTo(coreAt) > coreRadius * 0.5);
         fuel.add(instanced(new THREE.SphereGeometry(0.17, 12, 9), fuel.material({ hue: "bioFuel", emissive: 0.22, roughness: 0.3 }), sparks.map((position) => ({ position, scale: 0.8 + random() * 0.5 }))));

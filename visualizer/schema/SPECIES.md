@@ -130,6 +130,16 @@ says the engine models an organism unless the project's record says so.
   changed, so the place is there again when the flag is removed. The engine parts that
   implement the capability stay on the Engine view, which maps the code; the flag's
   `engine_note` is added to their text, so each says that it is not drawn elsewhere.
+- **A capability that one species keeps out of its own picture.** A capability that is
+  `present` may carry `left_out`, `{since, says, reason, why}`: `since` the day (as
+  `2026-11-17`), `says` how the page names what is not drawn, `reason` a short one for the
+  page, and `why` what was decided, by whom and when, in plain past tense (no quotation). The Cell view then does not
+  draw that capability's structure in this species' cell, in either size mode, and does not
+  count it, list it or let it be chosen there; the species' own panel lists it under "Left out
+  of the picture for now", with the day, the reason and the capability's `note`. The place and
+  its `note` stay in the file and in the scene, and the builder remarks on the flag; removing
+  the flag draws it again as it was. The bacteria's molecular machines are so flagged (at
+  the user's request, 17 November 2026).
 - **`cell.parts`** says what the cell holds, from a fixed list the viewer can draw:
   how many membranes, a wall or none, a nucleus or none, the organelles it holds (an
   animal cell's `er`, `golgi` and `mitochondria`; a plant cell's `chloroplasts` and

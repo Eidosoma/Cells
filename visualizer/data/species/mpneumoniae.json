@@ -123,7 +123,7 @@
    },
    {
     "label": "Proteins",
-    "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds",
+    "value": "about 120,000 protein molecules in a cell (120,700 on average over all samples), the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds",
     "sources": [
      "weber2023"
     ],
@@ -209,7 +209,13 @@
    "wall": false,
    "nucleus": false,
    "chromosome_kbp": 816,
-   "ribosomes": 300
+   "ribosomes": 300,
+   "proteins": {
+    "count": 120700,
+    "sources": [
+     "weber2023"
+    ]
+   }
   },
   "capabilities": {
    "cap.membrane": {
@@ -266,7 +272,13 @@
    },
    "cap.machines": {
     "place": "present",
-    "note": "About 300 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+    "note": "About 300 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.",
+    "left_out": {
+     "since": "2026-11-17",
+     "says": "the barrel drawn for its molecular machines",
+     "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn",
+     "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."
+    }
    },
    "cap.secretion": {
     "place": "present",

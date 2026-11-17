@@ -15,10 +15,15 @@
 //             still"); a real press on a part turns it; Escape closes the panel, a second Escape
 //             goes back to the cell.
 //   reduced  with less motion asked for, Look closer jumps there and the motor stands.
+//   scale    with "To scale" chosen (a bacterium has both size modes since 17 November 2026), a real
+//             press on the rail's motor stop flies in: the motor stands alone with its own envelope
+//             and bar. "Back to the cell" flies out to the cell to scale at its stop, its shells,
+//             flagella and the card's words in place, nothing of the motor left. Pictures at each
+//             end and one in mid-flight each way.
 //
 //   node tools/check_machine.mjs [OUT_DIR]
 //
-// Set by the environment: CASE (main, address or reduced; main unless set), WIDTH and HEIGHT
+// Set by the environment: CASE (main, address, reduced or scale; main unless set), WIDTH and HEIGHT
 // (1400 by 900), THEME (dark), NAME (what the pictures are called in OUT_DIR), FRAMES=1 (the page
 // opens with the frames readout, and the check says what it reads). It also reports the draw
 // calls and triangles the renderer counted for the cell alone, the motor turning sharp and the
@@ -162,6 +167,9 @@ try {
         holds: [...stage.decoration.holds],
         drawnFrames: (stage.afterRender.has(window.__countFrame) || stage.afterRender.add((window.__countFrame ??= () => (window.__framesDrawn = (window.__framesDrawn || 0) + 1))), window.__framesDrawn || 0),
         running: stage.running,
+        size: lens.sizeMode, stop: lens.activeStop, note: root.querySelector(".view-note")?.textContent ?? null,
+        atStop: (() => { const stop = lens.currentStops.find((item) => item.id === "cell"); return stop ? Math.round((stage.rig.distance / lens.stopView(stop).distance) * 100) / 100 : null; })(),
+        machineShown: Boolean(m.zone?.root?.visible),
         errors: (window.__pageErrors || []).slice(0, 3),
       };
     })()`);
@@ -187,8 +195,32 @@ try {
   };
   // A flight advances at most a tenth of a second a frame, and the software renderer draws the whole cell slowly: up to five minutes.
   const arrived = () => until(`(() => { const m = ${M}; return m.open && !m.leaving && m.fade > 0.98 && !${V}.stage.rig.flight; })()`, 1200);
+  /** A picture in mid-flight: taken as soon as the motor is between a tenth and nine tenths faded in; the fade it was taken at. */
+  const midway = async (name) => {
+    for (let k = 0; k < 600; k++) {
+      const fade = await evaluate(`${M}.fade`).catch(() => null);
+      if (fade > 0.1 && fade < 0.9) {
+        if (outDir) {
+          const { data } = await page("Page.captureScreenshot", { format: "png" });
+          await writeFile(path.join(outDir, `${name}.png`), Buffer.from(data, "base64"));
+          note(`wrote ${path.join(outDir, `${name}.png`)} (the motor ${Math.round(fade * 100)}% faded in)`);
+        }
+        return fade;
+      }
+      await sleep(30);
+    }
+    note(`${name}: no frame was caught between the cell and the motor`);
+    return null;
+  };
 
   const query = ["lens=cell", "species=ecoli", process.env.FRAMES === "1" ? "frames=1" : null, CASE === "address" ? "machine=flagellar-motor" : null].filter(Boolean).join("&");
+  // A fresh browser's first WebGL context is lost and made again a few seconds in, and its first page comes back darker:
+  // the to-scale case, whose pictures are looked at, loads the page once first and pictures only the second load.
+  if (CASE === "scale") {
+    await page("Page.navigate", { url: `${base}?${query}` });
+    await until(`Boolean(${V} && ${L} && ${V}.state.lens === "cell" && ${L}.cells)`, 1440);
+    await sleep(6000);
+  }
   await page("Page.navigate", { url: `${base}?${query}` });
   if (!(await until(`Boolean(${V} && ${L} && ${V}.state.lens === "cell" && ${L}.cells && ${L}.machine)`, 1440))) throw new Error("the Cell view was not drawn within six minutes");
   await sleep(1500);
@@ -262,7 +294,19 @@ try {
     return null;
   };
 
-  if (CASE !== "address") {
+  if (CASE === "scale") {
+    // ---------------------------------------------------------- To scale, then the rail's stop, as a visitor goes
+    const sizes = await placeOf(`[...root.querySelectorAll(".view .seg button")].find((button) => button.textContent === "To scale")`);
+    if (sizes) await click(sizes.x, sizes.y, 2500);
+    const s0 = await state();
+    check("a real press on To scale draws the cell to scale, and the card says so", Boolean(sizes) && s0.size === "real" && /^To scale/.test(s0.note || ""), JSON.stringify([Boolean(sizes), s0.size, s0.note]));
+    await shot(`${NAME}-cell-before`);
+    const stop = await placeOf(`root.querySelector('.rail button[data-stop="machine"]')`);
+    check("the scale rail has the motor's stop", Boolean(stop), JSON.stringify(stop));
+    if (stop) await click(stop.x, stop.y, 0);
+    await midway(`${NAME}-flying-in`);
+    check("a real press on the rail's stop flies in: the motor fades in, the cell out", await arrived(), JSON.stringify(await state()));
+  } else if (CASE !== "address") {
     // ---------------------------------------------------------- the foot's panel and its door
     let foot = await pressFoot();
     if (!foot) {
@@ -408,6 +452,25 @@ try {
     await key("Escape");
     const out = await until(`!${M}.open`, 1200);
     check("a second Escape goes back to the cell", out, JSON.stringify(await state()));
+  } else if (CASE === "scale") {
+    // ---------------------------------------------------------- the motor alone, then back to the cell to scale
+    check("to scale, the motor stands alone: nothing of the cell is drawn, and the scale bar is the motor's", s.machineShown && Object.entries(s.zones).every(([name, fade]) => name === "machine" || fade < 0.02) && /nm · drawn to scale from published sizes/.test(s.scale || ""), JSON.stringify([s.zones, s.scale]));
+    const layers = await evaluate(`[...(${M}.ids || [])].filter((id) => /:(inner-membrane|wall|outer-membrane)$/.test(id))`);
+    check("the motor's own envelope is drawn: its two membranes and its wall", layers.length === 3, JSON.stringify(layers));
+    await shot(`${NAME}-motor`);
+    // Pressed with no wait after it, so that the flight out can be pictured on its way.
+    const back = await placeOf(door("Back to the cell"));
+    if (back) await click(back.x, back.y, 0);
+    check("the motor's panel offers Back to the cell, and it can be pressed", Boolean(back));
+    await midway(`${NAME}-flying-out`);
+    const out = await until(`!${M}.open && !${V}.stage.rig.flight`, 1200);
+    await someFrames(1);
+    s = await state();
+    check("Back to the cell flies out to the cell to scale at its stop", out && s.size === "real" && s.stop === "cell" && Math.abs(Math.log(s.atStop || 1e-9)) < 0.1 && (s.zones.cell ?? 0) > 0.98, JSON.stringify([out, s.size, s.stop, s.atStop, s.zones]));
+    check("nothing of the motor is left in the picture", !s.open && !s.machineShown && (s.zones.machine ?? 0) < 0.02 && s.rail !== "machine" && !/drawn to scale from published sizes/.test(s.scale || ""), JSON.stringify([s.open, s.machineShown, s.zones, s.rail, s.scale]));
+    const cell = await evaluate(`(() => { const lens = ${L}, real = lens.cells.real; return { shells: real.shells, flagella: (real.scenery || []).filter((item) => item.kind === "flagellum").length, fine: Boolean(real.scale?.fine) }; })()`);
+    check("the cell's shells and flagella are in place, and the card's words are the to-scale ones", cell.fine && cell.shells?.outerGap > 0 && cell.shells?.wallGap > 0 && cell.flagella > 0 && /^To scale, a cell about 1 µm across/.test(s.note || ""), JSON.stringify([cell, s.note]));
+    await shot(`${NAME}-cell`);
   } else if (CASE === "reduced") {
     const first = s.angle;
     await someFrames();

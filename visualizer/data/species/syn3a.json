@@ -91,7 +91,7 @@
    },
    {
     "label": "Proteins",
-    "value": "about 77,000 molecules in an average cell, an estimate from proteomics; 427 of the 452 kinds were detected, and the added marker tetM",
+    "value": "about 77,000 molecules in an average cell, an estimate from proteomics (77,028 by the paper's table); 427 of the 452 kinds were detected, and the added marker tetM. An estimated 7,685 of the molecules are of the 99 kinds that this file's shelves place in or on the membrane",
     "sources": [
      "breuer2019"
     ]
@@ -152,7 +152,15 @@
    "wall": false,
    "nucleus": false,
    "chromosome_kbp": 543,
-   "ribosomes": 500
+   "ribosomes": 500,
+   "proteins": {
+    "count": 77028,
+    "membrane": 7685,
+    "membrane_from": "the proteins that the species' own shelves place in or on the membrane",
+    "sources": [
+     "breuer2019"
+    ]
+   }
   },
   "capabilities": {
    "cap.membrane": {
@@ -209,7 +217,13 @@
    },
    "cap.machines": {
     "place": "present",
-    "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+    "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.",
+    "left_out": {
+     "since": "2026-11-17",
+     "says": "the barrel drawn for its molecular machines",
+     "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn",
+     "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."
+    }
    },
    "cap.secretion": {
     "place": "present",

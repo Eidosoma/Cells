@@ -333,8 +333,7 @@ must bve configurable as well based on our different species as we add them".
 - **Rough edges:** the human heart and body are quick placeholders; the mouse's ears are laid flat, so
   that the sheet, which the viewer draws level, can lie on one; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
-  organelle; a cell under 2 µm across has one size mode for now (a second, to scale, is
-  planned); to scale, thale cress's wall reaches past its neighbours' membranes, because
+  organelle; to scale, thale cress's wall reaches past its neighbours' membranes, because
   the neighbouring cells are drawn closer than two walls would let them stand.
 
 ## Experiment replays
@@ -613,31 +612,49 @@ In "To scale" the close-up of the membrane is to scale as well: a bilayer about 
 thick, a channel about 9 nm across, and a 10 nm scale bar. For comparison, the cells of
 the E07 sheet are about 11 µm across by their declared volume (0.75 pL).
 
-A single cell under 2 µm across (today the three bacteria) is drawn in one size mode for
-now: the schematic layout, made for a cell about 20 µm across and scaled down to the
-cell's own size. What that does to each part:
+**A bacterium has both size modes**, by one rule for every cell: to scale, a part's size is
+worked out in nanometres from the cell's own size, and drawn as a shape where it covers two
+pixels at the cell's stop and as dots where it covers less. A cell 20 µm across draws every
+molecule as dots; a bacterium draws its membranes, membrane proteins and ribosomes as
+themselves (E. coli's stop holds about 2.4 nm a pixel, Syn3A's 0.75).
 
-- **Flagella and fimbriae** are drawn at the sizes the species' file gives with its
-  sources, and **ribosomes** at a textbook 20 nm across, the picture's choice.
-- **Membranes and membrane proteins** are enlarged by how small the cell is: in E. coli
-  (1 µm across) the membrane about 6 times and its proteins about 5 times, in Syn3A
-  (0.4 µm) about twice, in M. pneumoniae (0.2 µm) near their own size.
-- **A wall or an outer membrane** stands at one distance outside the cell membrane all
-  round: in E. coli 17.5 nm and 37.5 nm, the picture's choice. In thale cress to scale
-  the wall stands the 150 nm its file gives.
-- **The free chromosome** is one closed thread whose width, length and winding are the
-  picture's choice. Its panel says how thick and how long the thread is drawn, and what
-  share that is of the length its base pairs would make (2 to 4%, at a textbook 0.34 nm
-  a base pair).
-- **The scale bar** keeps the words "small parts enlarged" at every distance, since such
-  a cell is never drawn to scale.
+| Part | Drawn to scale as | In schematic mode |
+| --- | --- | --- |
+| Cell | its shape and size from its file | the same |
+| Membrane | a band of its thickness at the cut: E. coli's 5.84 nm (Matias and others 2003), elsewhere a textbook 4.5 nm | the schematic band: about 5 times in E. coli, twice in Syn3A, near its size in M. pneumoniae |
+| Wall and outer membrane (E. coli) | at the widths one paper measured: the wall's middle 15.4 nm and the outer membrane's 27.3 nm out, each a clear shell with a band of its thickness at the cut | clear shells 17.5 and 37.5 nm out, the picture's choice |
+| Channels and pumps | the close-up's shapes: a channel 7.4 nm across and 10 nm long, a pump 8.4 nm across, one size each for the shapes, their spacing and the words; on the skin, rings and low domes as wide; how many is the picture's choice | a few, enlarged as the membrane is |
+| Ribosomes | 20 nm across (textbook), 60% of the file's count, those below the cut | the same, in both modes |
+| Crowd of proteins | Syn3A and M. pneumoniae: marks about 5 nm across, only in a slab 10 nm deep under the cut, at the density the file's count gives (Syn3A 2,709, M. pneumoniae 7,649); E. coli: none, since its sources disagree a hundredfold | none |
+| Chromosome | a fine line in the same slab, the share of its length (0.34 nm a base pair) that the slab holds | a thread whose width and length are the picture's choice; its panel says what share it shows |
+| Ions, fuel, small molecules | dots, each standing for many | enlarged beads |
+| Close-up | true proportions along the cell's curve; no channel where the species has none; E. coli's whole envelope; the cut's band gives way to it, so the membrane is drawn once | the schematic close-up |
+
+The crowd and the chromosome stand only in the slab because drawn whole they would hide the
+cell: Syn3A's 77,028 protein molecules would cover its cut face more than six times over. The
+card says in one short line what the mode shown draws, with a link, "What each mode draws", to
+the cell's own panel, which says it in full for both modes; and the scale bar keeps "small
+parts enlarged" in the schematic picture at every distance.
+
+E. coli's envelope widths are numbers from two papers that are free to read but not open
+access (Matias and others 2003; Berry and others 2010 for the larger spacing its fact
+names), used with their citations under the user's rulings on such papers (D186 and D201 on
+main). Taking the widths between the membranes' facing surfaces is the viewer's reading, and
+the fact says so. The cell's to-scale envelope and the flagellar motor's closer view keep
+different spacings for now (27.3 nm and 31 nm between the membranes' middles), each naming
+the other.
+
+The bacteria's molecular machines keep their place in each file but are left out of the
+picture for now (the user, 17 November 2026): the barrel drawn for them stood among the
+largest things in so small a cell. Each species' panel says so under "Left out of the
+picture for now". The animal and plant cells keep theirs.
 
 ## Run it
 
 ```bash
 cd visualizer
 npm install                 # three.js 0.170.0 and esbuild, both pinned
-npm run extract             # read the main checkout, write data/architecture/architecture.scene.json
+npm run extract             # read the main checkout (or --repo PATH, or the one CELLS_ENGINE_REPO names), write data/architecture/architecture.scene.json
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
@@ -928,6 +945,12 @@ Ideas kept for after the basics (the user, 14 November 2026):
   species with no run) keeps beads at one pace. A packet can still overlap the next where
   a lane is short and its rate high. The slider's end, ten million times slower, makes a
   planarian bead two ions. `slow=` is read from the address and not written back to it.
+- **Flux in a bacterium drawn to scale** is not right yet. Its lanes are a few pixels
+  long at the cell's stop (a channel is 10 nm long there), so the marks are specks; and
+  the flux check fails one of its 30 checks in three of four to-scale cases (E. coli at
+  the cell's stop and at the molecule stop, Syn3A at the molecule stop): a lane stands
+  without its chevrons, or a zone that should show is hidden. The schematic picture's flux
+  passes. The suite does not run flux to scale yet.
 - **The protocell.** With 40 to 80 molecules, each drawn as one lipid, only about a fifth
   to a quarter of each face is heads: the glassy faces, the picture's own, carry the
   shell. The composition ring crosses the protocell's equator. See-through overlaps are

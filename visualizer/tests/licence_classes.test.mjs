@@ -140,6 +140,9 @@ test("a species file: every source has its class; facts, levels and capabilities
     const sources = species.sources || {};
     for (const [key, source] of Object.entries(sources)) held(source, `${where}: source ${key}`);
     const permissive = (key) => sources[key]?.class === "permissive";
+    // An open paper whose numbers alone the file takes (D186): only in the register below, and only behind a number.
+    const register = NUMBERS_ONLY[path.basename(file)] || [];
+    const numbersOnly = (key) => sources[key]?.standing === "open paper, numbers only" && register.includes(key);
     const basis = new Set();
     const pointed = new Set();
     for (const level of species.levels) {
@@ -151,7 +154,7 @@ test("a species file: every source has its class; facts, levels and capabilities
     for (const fact of species.cell.facts || []) {
       assert.ok(Array.isArray(fact.sources) && fact.sources.length, `${where}: the fact "${fact.label}" names no source`);
       for (const key of fact.sources) {
-        assert.ok(permissive(key), `${where}: the fact "${fact.label}" rests on ${key}, which is ${sources[key]?.class ?? "not a source"}`);
+        assert.ok(permissive(key) || (numbersOnly(key) && /\d/.test(fact.value)), `${where}: the fact "${fact.label}" rests on ${key}, which is ${sources[key]?.class ?? "not a source"}`);
         basis.add(key);
       }
       for (const key of fact.see || []) {
@@ -175,9 +178,27 @@ test("a species file: every source has its class; facts, levels and capabilities
       for (const number of words.match(/\d+(\.\d+)?/g) || []) assert.ok(new RegExp(`(^|[^\\d.])${number.replace(".", "\\.")}([^\\d]|$)`).test(backed), `${where}: ${id} gives ${number}, which no fact and no permissive source's citation holds`);
     }
     // A source that is not permissive: pointed to by a fact, behind nothing, and it says so.
+    // The cell's parts give numbers too: each block's sources are permissive, or an open paper of the register with the place of its numbers.
+    for (const [name, block] of Object.entries(species.cell.parts || {})) {
+      if (!block || Array.isArray(block) || typeof block !== "object" || !block.sources) continue;
+      for (const key of block.sources) {
+        assert.ok(permissive(key) || numbersOnly(key), `${where}: cell.parts.${name} rests on ${key}, which is ${sources[key]?.class ?? "not a source"}`);
+        if (numbersOnly(key)) assert.ok(block.read?.source === key && block.read.where, `${where}: cell.parts.${name} takes numbers from ${key} and does not say where in it they stand`);
+      }
+    }
     const note = NOTES[species.id];
     for (const [key, source] of Object.entries(sources)) {
       if (source.class === "permissive") continue;
+      if (numbersOnly(key)) {
+        // Numbers alone: the citation, its DOI and where they stand; the note names it.
+        assert.equal(source.class, "no stated terms", `${where}: ${key}`);
+        assert.ok(source.doi && source.where, `${where}: ${key} has no DOI or no place for its numbers`);
+        const paper = paperOf(source.text);
+        assert.ok(paper, `${where}: the citation of ${key} does not begin with an author and a year`);
+        if (note) mustName(note, `${key} (${where})`, named(...paper));
+        continue;
+      }
+      assert.ok(source.standing !== "open paper, numbers only", `${where}: ${key} gives numbers with no licence declared and is not in the register NUMBERS_ONLY: put it to the user`);
       assert.ok(!basis.has(key), `${where}: ${key} is ${source.class} and something rests on it`);
       assert.ok(pointed.has(key), `${where}: ${key} is ${source.class} and no fact points to it: take it out, or point to it`);
       assert.match(source.licence, /nothing is taken from it/, `${where}: ${key} does not say that nothing is taken from it`);
@@ -221,9 +242,12 @@ test("a cell type's or a model system's file: every source has its class; its fa
 // user's ruling of 16 November 2026 ("you can use any numbers from open papers even if no
 // licence is decrlared"). Each is named here, by machine file and key, so that a new one is
 // seen; the file holds the number, the citation and the place in the paper, and none of its text.
-// None yet: Deme and others 2020 was taken out on 16 November 2026, because its manuscript's
-// own text states terms for academic research, and the ruling is for papers with none.
-const NUMBERS_ONLY = {};
+// Deme and others 2020 was taken out on 16 November 2026, because its manuscript's own text
+// states terms for academic research, and the ruling is for papers with none. A species file
+// is named by its file too: E. coli's envelope (17 November 2026), each paper read at PubMed
+// Central for a limit on use in its own text, and stating none.
+// By the user's ruling of 17 November 2026, numbers from papers that are free to read but not open access may be used, each with its citation.
+const NUMBERS_ONLY = { "ecoli.json": ["matias2003", "berry2010"] };
 
 test("a machine file: every source has its class; its sentences are of permissive sources; an open paper with no licence gives numbers alone, and is in the register", async () => {
   assert.ok(machineFiles.length >= 1, "no machine file was found");

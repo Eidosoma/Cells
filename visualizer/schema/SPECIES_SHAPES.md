@@ -27,12 +27,17 @@ is not a kind yet: `tip_um` narrows the whole cell, so such a cell is given as a
 
 The viewer opens every cell with one flat cut and lays its contents out on the cut face.
 Where the cut lies, how parts are spread and the "Schematic" enlargement are the viewer's
-own, the same for every species. A cell under 2 µm across is drawn in one size mode only,
-for now: the schematic layout scaled down to the cell's own size. Its flagella and fimbriae
-are then drawn at the sizes its file gives and its ribosomes at a textbook 20 nm, while its
-membranes, membrane proteins, ions and small molecules stay enlarged, the more so the larger
-the cell: the membrane about 6 times in a cell 1 µm across, and near its own thickness in a
-cell 0.2 µm across.
+own, the same for every species. Every cell is drawn in both size modes. To scale, each
+part is worked out in nanometres from the cell's own size and drawn as a shape where it
+covers two pixels or more at the cell's stop on a wide screen, and as dots where it covers
+less: in a cell 20 µm across every molecule is a dot, and in a bacterium its membranes,
+membrane proteins and ribosomes are shapes and its ions and small molecules dots. Where the
+file gives an `envelope` or `proteins`, the cell drawn to scale takes them; the crowd of
+proteins and the free chromosome are then drawn only in a slab 10 nm deep under the cut, as
+an electron tomogram shows a cell, at the density the file's numbers give. For such a cell
+the view's card says in one short line what the mode shown draws, and the cell's own panel
+("One cell", under "As drawn") says it in full for both modes, with the numbers and their
+sources.
 
 A cell of a species that has a tissue level is drawn as one cell of a layer, with its
 neighbours round it, side against side (four for a four-sided `prism`, six for any other
@@ -53,12 +58,16 @@ close-up shows a pump, and says in the species' words that no channel has a plac
 | `organelles` | a list from `er`, `golgi`, `mitochondria`, `chloroplasts`, `vacuole` | The organelles the cell holds. The first three are an animal cell's: left out, a cell with a nucleus has those three and a cell without one has none. `chloroplasts` and `vacuole` (one large central vacuole) are a plant cell's, and are named only where the file lists them. Both are scenery: a chloroplast is a lens against the inside of the membrane; the vacuole takes the cell's own shape and presses the other parts to the side. The vacuole is neutral glass. A chloroplast is green, as it is in life, where the cell is coloured by kind (the user, 16 November 2026: the one piece of scenery with a colour of its own), and neutral where colour shows status, since green there says "qualified" |
 | `organelle_sizes` | keyed by organelle: `count`, `volume_fl`, `across_um`, `share`, `sources` | How many of an organelle the cell holds and how large each is, or what share of the cell's volume it fills (above 0, at most 1). Each a number or a range of two, with the keys of its sources; each number is also a fact of the species' card. `chloroplasts` are drawn from `count` and `across_um`, and the picture says how many of how many; the `vacuole` from `share`, in both size modes |
 | `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall. To scale the wall stands that far outside the cell membrane, all round; in the schematic picture it is enlarged |
-| `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus |
+| `envelope` | `membrane_nm`, `wall_nm`, `outer_nm`, `between_nm`, `wall_to_outer_nm`, each a number or a range of two; `sources`; `read` (`source` and `where`) | The envelope's widths, for the cell drawn to scale: the cell membrane's thickness, the wall's and the outer membrane's, the distance between the two membranes and from the wall to the outer membrane, each taken between the facing surfaces (from the outer face of the one to the inner face of the other). Where a paper does not say between which faces it measured, that reading is the viewer's, and the species' fact says so. A wall and an outer membrane are given only to a cell that has them. Where a number is an open paper's alone (D186), `read` says where in it the number stands. Each number is also a fact of the species' card. A cell without one is drawn with a textbook membrane 4.5 nm thick, the picture's choice |
+| `proteins` | `count`, a number; `membrane`, how many of them stand in or on the membrane, optional; `membrane_from`, how that share was found; `sources` | How many protein molecules the cell holds, for its crowd drawn to scale: in the slab under the cut, the share of the count that the slab's share of the cell's volume holds, and of the membrane's share what the slab's ring of membrane holds. Each mark is neutral scenery, about 5 nm across (the picture's choice), and cannot be chosen. A cell without it draws no crowd, and its card says so |
+| `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus. To scale it is a fine line, 0.34 nm a base pair (a textbook figure), drawn in the slab under the cut: the share of its length that the slab's share of the cell's volume holds |
 | `ribosomes` | a count | Ribosomes, a part of the map (planned; the user, 16 November 2026). Where the count is given, the share of it that lies in the part of the cell kept below the picture's cut is drawn (300 of Syn3A's 500), and the panel says how many of how many; where none is given, the number drawn is the picture's choice and the panel says so. Every cell has them |
 | `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot. A piece of scenery that the species' file describes can be chosen: its panel says that it is scenery and gives the file's numbers with their sources |
 
 A capability is drawn where its structure is. Marked `absent` in `cell.capabilities`, it
-is not drawn and the species' card lists it with its `why`. A capability that is present
+is not drawn and the species' card lists it with its `why`. A present capability flagged
+`left_out` in the species' file (`SPECIES.md`) is not drawn either, in both size modes, and
+the species' card lists it under "Left out of the picture for now" with its reason. A capability that is present
 but whose structure the cell does not hold (calcium stores without `er`, say) cannot be
 drawn; the build remarks on it.
 
@@ -159,7 +168,9 @@ note beside it must say that it is not to scale.
   A species with no level beyond its cell shows its `no_further_levels` sentence under
   the rail and where those levels would be, and zooming out ends at its cell.
 - A capability marked `absent` is not drawn, cannot be chosen and is not in the list of
-  parts; the species' own panel lists it with its `why`. A capability of a level the
+  parts; the species' own panel lists it with its `why`. One that the species' file flags
+  `left_out` is treated the same way, and its panel lists it as left out for now, with
+  since when, its reason and its `note`. A capability of a level the
   species lacks is listed there with `no_further_levels` as its reason.
 - A species whose atlas found nothing for most of the units is shown quietly in the
   protein atlas: those units are drawn faint, with no ring beside each.

@@ -65,6 +65,14 @@
     ]
    },
    {
+    "label": "Envelope's widths",
+    "value": "in frozen-hydrated sections of strain K-12, measured where the sections were least deformed, the inner membrane is 5.84 nm thick, the wall 6.35 nm and the outer membrane 6.87 nm; the space between the two membranes is 20.99 nm wide, and the wall lies 5.34 nm from the outer membrane, each the mean of eight measurements. Its authors give the periplasm's average compression in the sections as 32.47%. The paper does not say between which faces these widths run: taking them between the facing surfaces is this viewer's reading. Another paper measured 25.5 nm between the outer surface of the inner membrane and the inner surface of the outer membrane, at the middle of 31 whole cells of K-12, without osmoprotectants or fixation; the flagellar motor's close view takes a wider spacing from a third paper, of whole cells in hyperosmotic conditions, which its own file names",
+    "sources": [
+     "matias2003",
+     "berry2010"
+    ]
+   },
+   {
     "label": "Inside",
     "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds",
     "sources": [
@@ -224,7 +232,21 @@
       "jahnke2016"
      ]
     }
-   ]
+   ],
+   "envelope": {
+    "membrane_nm": 5.84,
+    "wall_nm": 6.35,
+    "outer_nm": 6.87,
+    "between_nm": 20.99,
+    "wall_to_outer_nm": 5.34,
+    "sources": [
+     "matias2003"
+    ],
+    "read": {
+     "source": "matias2003",
+     "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"
+    }
+   }
   },
   "capabilities": {
    "cap.membrane": {
@@ -281,7 +303,13 @@
    },
    "cap.machines": {
     "place": "present",
-    "note": "Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\"."
+    "note": "Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\".",
+    "left_out": {
+     "since": "2026-11-17",
+     "says": "the barrel drawn for its molecular machines",
+     "reason": "the picture drew it as a proteasome's core, and in a cell this small that barrel stood among the largest things drawn",
+     "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."
+    }
    },
    "cap.secretion": {
     "place": "present",
@@ -419,6 +447,26 @@
    "licence": "CC BY",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "matias2003": {
+   "text": "Matias VRF, Al-Amoudi A, Dubochet J, Beveridge TJ (2003) Cryo-transmission electron microscopy of frozen-hydrated sections of Escherichia coli and Pseudomonas aeruginosa. J Bacteriol 185:6112–6118.",
+   "doi": "10.1128/JB.185.20.6112-6118.2003",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC225031/",
+   "licence": "No open licence stated: the publisher's copyright (American Society for Microbiology), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+   "class": "no stated terms",
+   "standing": "open paper, numbers only",
+   "where": "Table 1, the row for E. coli K-12: the five widths, each the mean of eight measurements, made on the least deformed regions of the sections (as its methods say), and the periplasm's average compression in the sections, 32.47%",
+   "accessed": "2026-11-17"
+  },
+  "berry2010": {
+   "text": "Berry J, Savva C, Holzenburg A, Young R (2010) The lambda spanin components Rz and Rz1 undergo tertiary and quaternary rearrangements upon complex formation. Protein Sci 19:1967–1977.",
+   "doi": "10.1002/pro.485",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2998730/",
+   "licence": "No open licence stated: the publisher's copyright (The Protein Society), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+   "class": "no stated terms",
+   "standing": "open paper, numbers only",
+   "where": "the legend of Figure 7: the distance between the inner and outer membranes at the mid-length of 31 cells of K-12, 25.5 ± 3.1 nm",
+   "accessed": "2026-11-17"
   }
  }
 }

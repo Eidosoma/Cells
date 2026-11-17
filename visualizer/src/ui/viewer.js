@@ -690,12 +690,14 @@ class CellsViewer extends HTMLElement {
       const view = chrome.view, species = view.species;
       const sizes = view.sizes || ["schematic", "real"];
       const width = view.across >= 1 ? `${Number(view.across.toPrecision(1))} µm` : `${Number((view.across * 1000).toPrecision(1))} nm`;
+      // The lens may give the words for the cell shown (a bacterium's: a short line, with a link to the panel that says
+      // in full what each mode draws of it); else these.
+      const own = view.sizeNote;
       const sized =
-        sizes.length < 2
-          ? `One size mode: the schematic layout, scaled down to a cell about ${width} across. Ribosomes and appendages are drawn at their sizes; the membrane, its proteins, ions and small molecules are drawn larger than life where each would otherwise be too small to see. Counts are indicative.`
-          : view.size === "real"
-            ? `Sizes and numbers nearer a real cell, about ${width} across. Dots stand for what is too small to see; counts are indicative.`
-            : "Parts are enlarged and few, so each can be seen.";
+        own?.text ||
+        (view.size === "real"
+          ? `Sizes and numbers nearer a real cell, about ${width} across. Dots stand for what is too small to see; counts are indicative.`
+          : "Parts are enlarged and few, so each can be seen.");
       // On a narrow window the species switch stands here, at the head of the card.
       const here = species && !this.speciesInBar;
       this.viewCard.replaceChildren(
@@ -708,7 +710,7 @@ class CellsViewer extends HTMLElement {
           sizes.length > 1 && !view.machine ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
           // In a machine's closer view: how much of it is drawn, and what the picture is.
           view.machine ? this.segmented("Detail", view.machine.detail.options.map(([value, label]) => [value, label]), view.machine.detail.active, (value) => this.current.setDetail(value)) : null,
-          h("p", { class: "view-note" }, view.machine ? view.machine.note : sized),
+          h("p", { class: "view-note" }, view.machine ? view.machine.note : [sized, own?.open ? [" ", h("button", { class: "link-button", type: "button", onclick: () => this.select(own.open) }, own.more)] : null]),
         ].filter(Boolean)
       );
     }

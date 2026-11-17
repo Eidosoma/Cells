@@ -81,6 +81,91 @@ export const STYLE = {
 // The lipid heads along the cut edge: their spacing, a whole number of them round the outline.
 export const beadStep = (outline) => outline.length / Math.round(outline.length / 0.43);
 
+// ---------------------------------------------------------------- to scale, in nanometres
+// Drawn to scale, a part's size is worked out in nanometres from the cell's own size, and the
+// part is a shape where it covers two pixels or more at the cell's stop and dots where it covers
+// less. So a cell 20 µm across draws every molecule as dots (its stop holds about 34 nm a pixel),
+// and a bacterium draws its membranes, membrane proteins and ribosomes as themselves (E. coli's
+// stop holds about 2.3 nm a pixel, Syn3A's 0.75). Nothing here names a size of cell.
+//
+// The cell's stop as the lens frames it (cell.js, makeStops and nominal()): 31 units tall, as
+// wide as the cell's length asks (1.3 times it, between 42 and 96 units), on a nominal wide
+// screen 900 pixels tall and half as wide again, through the camera's view 34 degrees tall.
+export const STOP = { tall: 31, wide: [42, 96], length: 1.3, view: 34, aspect: 1.5, pixels: 900 };
+/** The cell's stop: its frame [wide, tall] in units, and how many nanometres one pixel holds there on the nominal wide screen. */
+export function stopOf(frame) {
+  const half = Math.tan((STOP.view * Math.PI) / 360);
+  const size = [Math.min(STOP.wide[1], Math.max(STOP.wide[0], frame.long * STOP.length)), STOP.tall];
+  const distance = Math.max(size[1] / (2 * half), size[0] / (2 * half * STOP.aspect)); // in units
+  return { size, pixel: ((2 * distance * half) / STOP.pixels) * frame.u * 1000 };
+}
+// A channel and a pump as the picture draws them to scale, in nanometres (the picture's choice): in every
+// cell's close-up, and in a bacterium's cut edge and on its skin. The shapes, their spacing on the skin and
+// the page's words all read these, so that the words say what is drawn.
+// A channel: two walls `wall` in radius and `length` long, their middles `apart` apart, with a pore between.
+const channelOf = (wall, length, apart) => Object.freeze({ wall, length, apart, across: apart + 2 * wall });
+export const CHANNEL = channelOf(1.5, 10, 4.4); // 7.4 nm across
+// A pump: three lobes, each [how far inward of the membrane's middle, radius], most of its bulk on the cytoplasm side.
+const pumpOf = (lobes) => Object.freeze({ lobes, across: 2 * Math.max(...lobes.map(([, radius]) => radius)) });
+export const PUMP = pumpOf([[0, 4.2], [5.5, 3.6], [-3.2, 2.6]]); // 8.4 nm across
+/** Where the close-up of the membrane stands: at a channel, or in a cell that has none, at a pump (cell_parts.js, buildMolecules). */
+export const closeUpAngle = (has) => (has("channels") || !has("pumps") ? SPOT.channels[1] : SPOT.pumps[0]);
+// How far either way along the outline the close-up drawn to scale reaches, in nanometres: its heads (60 nm) and the wall's strip (72).
+export const CLOSE_UP_REACH = 75;
+// The picture's choices for a cell drawn to scale, in nanometres, where the species' file gives
+// nothing: a membrane's thickness (the textbook bilayer, as the close-up draws it), the depth of the
+// slab under the cut in which the crowd of proteins and the chromosome are drawn (as an electron
+// tomogram shows a cell: drawn whole they would hide it), a protein's size there, a ribosome's,
+// DNA's width and length a base pair, and a channel's and a pump's width (the shapes above).
+export const TO_SCALE = { membrane: 4.5, slab: 10, protein: 5, ribosome: 20, dna: 2, perBase: 0.34, channel: CHANNEL.across, pump: PUMP.across };
+const middleOf = (value) => (Array.isArray(value) ? (value[0] + value[1]) / 2 : value);
+
+/** The size of a cell's body in its frame: the surface of its membrane, its volume, and the area and length of its outline at the cut. */
+function bodyOf(frame) {
+  const outline = frame.outline, ring = outline.ring(0, CUT, 16);
+  let section = 0;
+  ring.forEach((point, index) => {
+    const next = ring[(index + 1) % ring.length];
+    section += point.x * next.z - next.x * point.z;
+  });
+  section = Math.abs(section) / 2;
+  if (frame.round) {
+    // A sphere or a capsule: a cylinder between two half spheres (a club is taken at its full width, a little over).
+    const r = frame.top, straight = Math.max(0, frame.long - 2 * r);
+    return { area: 2 * Math.PI * r * straight + 4 * Math.PI * r * r, volume: Math.PI * r * r * straight + (4 / 3) * Math.PI * r ** 3, section, perimeter: outline.length };
+  }
+  // A prism: its outline drawn up through its height (its rounded edges are left out: a little over).
+  const height = frame.top - frame.base, equator = frame.equator.ring(0, 0, 16);
+  let face = 0;
+  equator.forEach((point, index) => {
+    const next = equator[(index + 1) % equator.length];
+    face += point.x * next.z - next.x * point.z;
+  });
+  face = Math.abs(face) / 2;
+  return { area: frame.equator.length * height + 2 * face, volume: face * height, section, perimeter: outline.length };
+}
+
+/**
+ * Where the shells of a cell drawn to scale stand from its envelope's widths (schema/SPECIES_SHAPES.md,
+ * `envelope`), in nanometres from the cell membrane's middle to each shell's middle, with each
+ * one's thickness. Null where the file gives no envelope.
+ */
+export function envelopeOf(parts) {
+  const given = parts.envelope;
+  if (!given) return null;
+  const membrane = middleOf(given.membrane_nm ?? TO_SCALE.membrane);
+  const out = { membrane };
+  if (parts.membranes === 2 && given.between_nm !== undefined) {
+    const outer = middleOf(given.outer_nm ?? TO_SCALE.membrane), between = middleOf(given.between_nm);
+    out.outer = { at: membrane / 2 + between + outer / 2, thick: outer };
+    if (parts.wall && given.wall_nm !== undefined && given.wall_to_outer_nm !== undefined) {
+      const wall = middleOf(given.wall_nm);
+      out.wall = { at: membrane / 2 + between - middleOf(given.wall_to_outer_nm) - wall / 2, thick: wall };
+    }
+  }
+  return out;
+}
+
 /**
  * The layout of one cell in one size mode, from what the species says of it (buildCell's
  * `cell`: shape, parts, has, neighbours, notes). Returns the places, tests, finders and claims
@@ -88,9 +173,23 @@ export const beadStep = (outline) => outline.length / Math.round(outline.length 
  * nothing from the stream.
  */
 export function makeLayout(mode, cell) {
-  const style = STYLE[mode];
   const real = mode === "real";
-  const frame = cellFrame(cell.shape, cell.neighbours ? style.neighbourGap : 0);
+  const frame = cellFrame(cell.shape, cell.neighbours ? STYLE[mode].neighbourGap : 0);
+  // To scale, in nanometres: one nanometre in the cell's frame, how many a pixel holds at the cell's stop, whether a
+  // thing of a given size is drawn as a shape there, and whether the cell's molecules are drawn as themselves (its
+  // ribosomes cover two pixels): a cell `fine` to scale takes the sizes below in place of STYLE.real's, which are
+  // micrometres of a cell 20 µm across.
+  const nm = 0.001 / frame.u, pixel = stopOf(frame).pixel;
+  const seen = (size) => real && size / pixel >= 2;
+  const fine = seen(TO_SCALE.ribosome);
+  const envelope = fine ? envelopeOf(cell.parts) : null;
+  const membraneNm = envelope?.membrane ?? TO_SCALE.membrane;
+  // The marks that move or point (drops, signals, a wound, a dashed line) are the picture's choice: a few pixels at the stop.
+  const mark = (pixels) => pixels * pixel * nm;
+  const style = fine ? { ...STYLE.real, fine: true, band: membraneNm * nm, drop: mark(2.5), bead: mark(2.5), wound: mark(12), dash: mark(0.7) } : STYLE[mode];
+  const body = bodyOf(frame);
+  // The close-up of the membrane is built from the frame alone (cell_parts.js, buildMolecules): it reads the scale there.
+  frame.scale = { fine, nm, pixel, envelope, membraneNm };
   const outline = frame.outline; // the cell's outline where the cut passes through it
   const { top: TOP, base: BASE, bevel: BEVEL } = frame;
   const { has, parts } = cell;
@@ -177,6 +276,7 @@ export function makeLayout(mode, cell) {
 
   return {
     mode, real, style, cell, has, parts, organelle,
+    nm, pixel, seen, fine, envelope, membraneNm, body, slab: TO_SCALE.slab * nm,
     frame, outline, TOP, BASE, BEVEL, prism,
     random, inCut, inside, vacuole, inCytoplasm, scatter, seat, skinAt, onSkin,
     NUCLEUS, ER_FACING, GOLGI, CENTROSOME,

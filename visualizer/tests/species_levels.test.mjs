@@ -113,8 +113,8 @@ test("a made-up species with a rod-shaped cell and a body of its own is read fro
   assert.equal(species.no_further_levels, "It has no organs.");
   assert.deepEqual(Object.keys(sound.shapes), ["rodlet"], "the scene carries the shape files the species use");
   assert.equal(sound.shapes.rodlet.parts.length, 3);
-  // Its cell is small, so it is drawn in one size mode: the build remarks on it.
-  assert.ok(sound.remarks.some((remark) => /drawn in one size mode/.test(remark)), JSON.stringify(sound.remarks));
+  // Its cell is small, and is drawn in both size modes all the same: the build no longer remarks on its size.
+  assert.ok(!sound.remarks.some((remark) => /size mode/.test(remark)), JSON.stringify(sound.remarks));
 });
 
 test("what breaks the contracts is warned about, and the species is left out", async () => {
@@ -393,8 +393,8 @@ function planned(species) {
 test("the levels, the size modes and what has no place follow the species", () => {
   const rodlet = planned(sound.species[0]);
   assert.deepEqual(Object.entries(rodlet.levels).filter(([, level]) => level).map(([id]) => id), ["molecules", "cell", "tissue", "organism"]);
-  assert.deepEqual(rodlet.modes, ["schematic"], "a cell this small is drawn in one size mode");
-  assert.equal(rodlet.sizeMode, "schematic", "a mode the species does not have is left");
+  assert.deepEqual(rodlet.modes, ["schematic", "real"], "every cell is drawn in both size modes, however small");
+  assert.equal(rodlet.sizeMode, "real", "the mode asked for is kept");
   assert.equal(rodlet.absent.get("cap.calcium"), "It has no endoplasmic reticulum.");
   assert.equal(rodlet.absent.get("scale.organ"), "It has no organs.", "a level the species lacks has the species' own sentence as its reason");
   assert.ok(!rodlet.absent.has("cap.sheet") && !rodlet.absent.has("cap.circuits"));
@@ -405,7 +405,7 @@ test("the levels, the size modes and what has no place follow the species", () =
       const said = species.cell.capabilities[id]?.place === "absent";
       assert.equal(lens.absent.has(id), said || !levels.includes(scale), `${species.id}: ${id}`);
     }
-    assert.equal(lens.modes.length, cellAcross(species.levels.find((level) => level.id === "cell").shape) < REF.small ? 1 : 2, species.id);
+    assert.deepEqual(lens.modes, ["schematic", "real"], species.id);
   }
   // The planarian and the human are animals: every capability has a place, in both size modes.
   for (const id of ["planarian", "human"]) {

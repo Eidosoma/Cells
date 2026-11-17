@@ -43,7 +43,7 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
 const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
-const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
+const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
 // The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
 const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
@@ -135,6 +135,9 @@ test("every fact has a source, and every number drawn has a fact or is called th
   const cell = species.levels[1];
   const parts = species.cell.parts;
   for (const name of Object.keys(parts)) assert.ok(PARTS.includes(name), `${name} is not a part the viewer can draw`);
+  // Its protein molecules, for the crowd drawn to scale: the paper's estimate and the membrane's share, both in the fact.
+  assert.ok(fact("Proteins").includes(parts.proteins.count.toLocaleString("en-US")) && fact("Proteins").includes(parts.proteins.membrane.toLocaleString("en-US")), fact("Proteins"));
+  assert.deepEqual(parts.proteins.sources, ["breuer2019"]);
   // The sphere's width, the chromosome's length and the one membrane are facts.
   assert.ok(fact("Shape and size").includes(`${cell.shape.across_um * 1000} nm`));
   assert.equal(parts.chromosome_kbp, Math.round(Number(fact("Chromosome").match(/([\d,]+) base pairs/)[1].replace(/,/g, "")) / 1000));
@@ -162,7 +165,8 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   for (const [id, item] of Object.entries(stated)) {
     assert.ok(["absent", "present"].includes(item.place), `${id}: ${item.place}`);
     if (item.place === "absent") assert.deepEqual(Object.keys(item), ["place", "why"], id);
-    else assert.deepEqual(Object.keys(item), ["place", "note"], id);
+    // Its molecular machines keep their place but are left out of its picture for now (the user, 17 November 2026; schema/SPECIES.md).
+    else assert.deepEqual(Object.keys(item), id === "cap.machines" ? ["place", "note", "left_out"] : ["place", "note"], id);
     assert.ok((item.why || item.note).trim(), id);
   }
   // A single cell has no tissue: every capability of tissues is absent.

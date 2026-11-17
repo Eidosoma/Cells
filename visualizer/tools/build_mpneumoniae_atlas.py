@@ -1220,7 +1220,7 @@ def build_species(c):
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the internal core of its attachment organelle. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": f"About {RIBOSOMES} ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
+        "cap.machines": {"place": "present", "note": f"About {RIBOSOMES} ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.", "left_out": {"since": "2026-11-17", "says": "the barrel drawn for its molecular machines", "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn", "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."}},
         "cap.secretion": {"place": "present", "note": "It releases lactate and acetate, the end products of its fermentation, and takes its nutrients up. Signalling between its own cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."},
         "cap.division": {"place": "present", "note": "It divides in two as a single cell. Its attachment organelle is duplicated first and takes part in the division; the division gene ftsZ is in its genome."},
@@ -1247,7 +1247,7 @@ def build_species(c):
         {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"], "see": ["himmelreich1996"]},
         {"label": "Genes", "value": f"{count} protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has {len(c.entries)} entries", "sources": ["genbank", "parrott2016", "lluchsenar2015", "uniprot"], "see": ["himmelreich1996", "dandekar2000", "wodke2013"]},
         {"label": "Ribosomes", "value": f"about {RIBOSOMES} in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry", "sources": ["weber2023"], "see": ["maier2011", "kuhner2009"]},
-        {"label": "Proteins", "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
+        {"label": "Proteins", "value": "about 120,000 protein molecules in a cell (120,700 on average over all samples), the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
         {"label": "Doubling time", "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium", "sources": ["weber2023", "gaspari2020"]},
         {"label": "Essential genes", "value": "342 of 694 genes essential, 93 needed for normal growth and 259 dispensable, by transposon mutagenesis", "sources": ["lluchsenar2015"]},
         {"label": "Energy", "value": "ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle", "sources": ["gaspari2020", "awadh2021", "li2021"], "see": ["wodke2013"]},
@@ -1297,7 +1297,8 @@ def build_species(c):
         "no_further_levels": "A single-celled organism: each cell lives on its own, on the cells of its host, so it has no tissue, organ or body of its own.",
         "cell": {
             "facts": facts,
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES},
+            # The protein molecules of the cell, for its crowd drawn to scale: the paper's average over all samples, 1.207 × 10^5.
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES, "proteins": {"count": 120700, "sources": ["weber2023"]}},
             "capabilities": capabilities,
         },
         "capability_sources": capability_sources,

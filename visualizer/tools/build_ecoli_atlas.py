@@ -128,6 +128,35 @@ PAPERS = {
 }
 RIBOSOMES_DRAWN = 6800  # the low end of the range the paper gives
 
+# Open papers whose numbers alone the species file takes, by the user's ruling of 16 November 2026
+# (D186) that numbers from open papers may be used even where no licence is declared. Each was read
+# at PubMed Central on 17 November 2026 for a limit on use in its own text, and states none; nothing
+# of its text is copied, and nothing is downloaded. The file gives each number, the citation and
+# where in the paper the number stands (schema/SPECIES_SHAPES.md, `envelope`). Each is named in
+# the register of tests/licence_classes.test.mjs.
+# By the user's ruling of 17 November 2026, numbers from papers that are free to read but not open access may be used, each with its citation.
+NUMBERS_ONLY = {
+    "matias2003": {
+        "text": "Matias VRF, Al-Amoudi A, Dubochet J, Beveridge TJ (2003) Cryo-transmission electron microscopy of frozen-hydrated sections of Escherichia coli and Pseudomonas aeruginosa. J Bacteriol 185:6112–6118.",
+        "doi": "10.1128/JB.185.20.6112-6118.2003", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC225031/",
+        "licence": "No open licence stated: the publisher's copyright (American Society for Microbiology), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+        "where": "Table 1, the row for E. coli K-12: the five widths, each the mean of eight measurements, made on the least deformed regions of the sections (as its methods say), and the periplasm's average compression in the sections, 32.47%",
+    },
+    "berry2010": {
+        "text": "Berry J, Savva C, Holzenburg A, Young R (2010) The lambda spanin components Rz and Rz1 undergo tertiary and quaternary rearrangements upon complex formation. Protein Sci 19:1967–1977.",
+        "doi": "10.1002/pro.485", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2998730/",
+        "licence": "No open licence stated: the publisher's copyright (The Protein Society), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+        "where": "the legend of Figure 7: the distance between the inner and outer membranes at the mid-length of 31 cells of K-12, 25.5 ± 3.1 nm",
+    },
+}
+NUMBERS_READ = "2026-11-17"
+# The envelope's widths in nanometres, as Matias and others 2003 give them in Table 1 for E. coli K-12, each the
+# mean of eight measurements made on the least deformed regions of the sections: the plasma (inner) membrane's
+# thickness, the peptidoglycan's (the wall), the outer membrane's, the periplasm's width (between the two membranes),
+# and the distance from the wall to the outer membrane. The paper does not say between which faces the last two run:
+# this viewer reads them as between the facing surfaces, and the fact says so.
+ENVELOPE = {"membrane_nm": 5.84, "wall_nm": 6.35, "outer_nm": 6.87, "between_nm": 20.99, "wall_to_outer_nm": 5.34}
+
 SOURCES = {
     KB: {
         "what": f"UniProtKB: every reviewed entry of the reference proteome {PROTEOME} of Escherichia coli K-12 with its name, gene, locus, length, level of evidence, keywords, stated subcellular locations with the evidence for each, membrane-spanning segments, signal peptides and lipid anchors; the InterPro entries and Gene Ontology terms UniProt gives each; the proteome's own record; counts of its entries; and, for each family signature asked, how many reviewed entries of bacteria carry it",
@@ -650,7 +679,10 @@ def build(datasets_folder, snapshot):
         "uniprot": uniprot_source,
         "genbank": {"text": f"GenBank {GENOME}: {record['title']}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{GENOME}", "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".", "class": "permissive", "accessed": d.day(NCBI, f"genbank_{GENOME}_summary.json")},
         **{key_: {"text": paper_cite(d, key_), "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, f"{key_}_fulltext.xml")} for key_, paper in PAPERS.items() if paper.get("use") != "note"},
+        **{key_: {"text": paper["text"], "doi": paper["doi"], "url": paper["url"], "licence": paper["licence"], "class": "no stated terms", "standing": "open paper, numbers only", "where": paper["where"], "accessed": NUMBERS_READ} for key_, paper in NUMBERS_ONLY.items()},
     }
+    # The envelope's widths (schema/SPECIES_SHAPES.md, `envelope`): numbers alone, each with where it stands in the paper.
+    envelope = {**ENVELOPE, "sources": ["matias2003"], "read": {"source": "matias2003", "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"}}
     # The appendages (schema/SPECIES.md): each number is a fact below, with its source.
     base = {"id": "flagellar-motor", "label": "Flagellar motor", "mark": "complex", "value": "flagellum"}
     if base["value"] not in marks[base["mark"]]["values"] or not complexes_said[base["value"]]:
@@ -677,7 +709,7 @@ def build(datasets_folder, snapshot):
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi: no entry of its proteome states a place in either. By the names of their entries, its proteins cross or enter the inner membrane through the Sec and Tat translocases."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase, its flagella and its chemoreceptor arrays. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": f"Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. {proteasome_said}"},
+        "cap.machines": {"place": "present", "note": f"Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. {proteasome_said}", "left_out": {"since": "2026-11-17", "says": "the barrel drawn for its molecular machines", "reason": "the picture drew it as a proteasome's core, and in a cell this small that barrel stood among the largest things drawn", "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."}},
         "cap.secretion": {"place": "present", "note": "Some of its proteins are stated to be secreted, and porins and transporters carry molecules across its two membranes. Signalling between its own cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its envelope. No source read for this file describes an injury of it or its resealing in this organism."},
         "cap.division": {"place": "present", "note": "It divides as a single cell: its proteome names the cell division protein FtsZ."},
@@ -707,6 +739,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Shape and size", "value": "a straight rod; earlier work put its average length between 1.6 and 3.1 µm and its width at 0.7 to 1.1 µm, and one study measured 1.6 µm (cells at rest) to 3.9 µm (cells growing on a rich medium) in length and 1.26 µm in width", "sources": ["volkmer2011", "uniprot"]},
                 {"label": "Volume", "value": "1.5 to 4.4 femtolitres, by the conditions it grows in", "sources": ["volkmer2011"]},
                 {"label": "Envelope", "value": "two membranes: the inner one separates the cytoplasm from the periplasm, the outer one the periplasm from the cell's surroundings; the cell wall lies between them", "sources": ["uniprot"]},
+                {"label": "Envelope's widths", "value": f"in frozen-hydrated sections of strain K-12, measured where the sections were least deformed, the inner membrane is {ENVELOPE['membrane_nm']} nm thick, the wall {ENVELOPE['wall_nm']} nm and the outer membrane {ENVELOPE['outer_nm']} nm; the space between the two membranes is {ENVELOPE['between_nm']} nm wide, and the wall lies {ENVELOPE['wall_to_outer_nm']} nm from the outer membrane, each the mean of eight measurements. Its authors give the periplasm's average compression in the sections as 32.47%. The paper does not say between which faces these widths run: taking them between the facing surfaces is this viewer's reading. Another paper measured 25.5 nm between the outer surface of the inner membrane and the inner surface of the outer membrane, at the middle of 31 whole cells of K-12, without osmoprotectants or fixation; the flagellar motor's close view takes a wider spacing from a third paper, of whole cells in hyperosmotic conditions, which its own file names", "sources": ["matias2003", "berry2010"]},
                 {"label": "Inside", "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds", "sources": ["uniprot"]},
                 {"label": "Chromosome", "value": f"one circle of {genome_length:,} base pairs", "sources": ["genbank"]},
                 {"label": "Proteins", "value": f"{len(entries):,} in UniProt's reference proteome of strain K-12, every one with a reviewed entry", "sources": ["uniprot"]},
@@ -722,7 +755,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Signalling", "value": f"{two_component} proteins carry UniProt's keyword for two-component regulatory systems", "sources": ["uniprot"]},
                 {"label": "Strain", "value": f"K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly ({proteome['genomeAssembly']['assemblyId']})", "sources": ["genbank", "uniprot"]},
             ],
-            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages},
+            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages, "envelope": envelope},
             "capabilities": capabilities,
         },
         "capability_sources": {key_: ["uniprot"] for key_ in capabilities if key_ not in ("cap.grn", "cap.replacement", "cap.mechanics", "cap.sheet", "cap.repair", "cap.junctions")} | {"cap.junctions": ["uniprot"]},

@@ -23,6 +23,7 @@ import { disposeTree } from "../core/stage.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { LookTrial } from "../core/look_trial.js";
 import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
+import { stopOf, CHANNEL, PUMP, TO_SCALE } from "./cell_layout.js";
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
 import { middle, words } from "./cell_scenery.js";
@@ -268,6 +269,12 @@ class Part {
   }
 }
 
+/** Whether a part of the map is not shown in the lens's cell: it has no place in it, or the species keeps it out of its picture for now. */
+const unshown = (lens, id) => lens.absent.has(id) || Boolean(lens.leftHere?.has(id));
+
+/** A day of the form 2026-11-17, in the page's words: "17 November 2026". */
+const dayWords = (day) => new Date(`${day}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
 export class CellLens {
   constructor(stage, model, labels) {
     this.id = "cell";
@@ -372,9 +379,9 @@ export class CellLens {
     this.levels = Object.fromEntries(LEVELS.map(({ id }) => [id, own(id) || species.levels.find((level) => level.id === id) || null]));
     const across = cellAcross(this.levels.cell.shape);
     this.u = across / REF.pitch; // micrometres per unit of the cell's frame
-    // A cell this small is drawn in one size mode: its molecules are large enough to see.
-    this.small = across < REF.small;
-    this.modes = this.small ? ["schematic"] : SIZE_MODES;
+    // Every cell is drawn in both size modes. To scale, a part is a shape where it covers two pixels at the cell's
+    // stop and dots where it covers less (cell_layout.js, the layout's scale), so a bacterium's molecules are shapes.
+    this.modes = SIZE_MODES;
     if (!this.modes.includes(this.sizeMode)) this.sizeMode = this.modes[0];
     // What has no place in this cell, with the reason the species or its cell type gives.
     const said = type?.capabilities || species.cell.capabilities || {};
@@ -387,7 +394,16 @@ export class CellLens {
     // Drawn at a structure the cell does not hold (a nucleus, a Golgi), where its file says nothing of it: cell_structures.js.
     for (const [id, why] of structureAbsence(this.model.ofKind("capability"), { ...species, cell: { parts: type?.parts || species.cell.parts || {}, capabilities: said } })) if (!this.absent.has(id)) this.absent.set(id, why);
     for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
+    // What the species keeps out of its own picture for now, though the capability has a place in it (its file's `left_out`
+    // on the capability, schema/SPECIES.md): not drawn, not chosen, not counted or listed; its panel says so, with the reason
+    // and the capability's note. Its place stays in the file, so removing the flag draws it again.
+    this.leftHere = new Map();
+    for (const entity of this.model.ofKind("capability")) {
+      const entry = said[entity.id];
+      if (entry?.left_out && !this.absent.has(entity.id)) this.leftHere.set(entity.id, { ...entry.left_out, note: entry.note || null });
+    }
   }
+
 
   /**
    * Whether a part of the cell is drawn for the species shown. A part that the scene leaves
@@ -397,7 +413,7 @@ export class CellLens {
   draws(part) {
     if (this.leftOut.has(part)) return false;
     const entity = this.capabilityByPart.get(part);
-    return !entity || !this.absent.has(entity.id);
+    return !entity || !unshown(this, entity.id);
   }
 
   /** Takes down what was drawn for the species shown before. */
@@ -547,7 +563,7 @@ export class CellLens {
     const out = molecule.outward, centre = molecule.centre.clone().multiplyScalar(u), view = molecule.view.map((value) => value * u);
     const stops = [
       { id: "molecule", level: "molecules", zone: "molecules", anchor: centre.clone().addScaledVector(out, view[1] * 0.3), size: view, target: centre.clone(), azimuth: molecule.fromInside ? Math.atan2(-out.x, -out.z) : Math.atan2(out.x, out.z), polar: molecule.fromInside ? 0.42 : 0.6 },
-      { id: "cell", level: "cell", zone: "cell", anchor: cell.shape.point(-Math.PI / 2, 1.6, CUT + 2.6).multiplyScalar(u), size: [Math.min(96, Math.max(42, cell.frame.long * 1.3)) * u, 31 * u], target: new THREE.Vector3(0.8 + cell.frame.middle, CUT - 2.6, 0.2).multiplyScalar(u), azimuth: 0.52, polar: 0.84 },
+      { id: "cell", level: "cell", zone: "cell", anchor: cell.shape.point(-Math.PI / 2, 1.6, CUT + 2.6).multiplyScalar(u), size: stopOf(cell.frame).size.map((value) => value * u), target: new THREE.Vector3(0.8 + cell.frame.middle, CUT - 2.6, 0.2).multiplyScalar(u), azimuth: 0.52, polar: 0.84 },
     ];
     if (this.sheet) {
       const extent = this.sheet.extent;
@@ -590,9 +606,16 @@ export class CellLens {
       if (after) ranges[name].out = level.fade_out_um || (far[after] > far[name] * 25 ? null : this.levels[after].fade_in_um) || cross(name, after).out;
     });
     const leave = ranges.cell.out ? { out: ranges.cell.out } : {};
+    // To scale, the close-up gives way between 0.45 and 1.2 µm and the membrane's dots come in between 0.5 and 1.6 µm:
+    // distances for a cell 20 µm across, whose stop stands about 50 µm out. A small cell's stop stands nearer (a bacterium's
+    // 1 to 3 µm out), so there each is held to a share of the stop's distance (dustRange), and a large cell's are as they were.
+    this.dustRange = [Math.min(0.5, far.cell * 0.15), Math.min(1.6, far.cell * 0.4)];
+    // A cell whose molecules are shapes to scale (cell_layout.js, `fine`) has its channels and pumps on the skin as shapes at their
+    // own size, not dots: they stay as the camera comes close.
+    const fine = this.cells?.real?.scale?.fine;
     const byMode = {
       schematic: { molecules: { out: [7 * u, 13 * u] }, studs: leave, cell: leave },
-      real: { molecules: { out: [0.45, 1.2] }, studs: { in: [0.5, 1.6], ...leave }, cell: leave },
+      real: { molecules: { out: [Math.min(0.45, far.cell * 0.13), Math.min(1.2, far.cell * 0.36)] }, studs: fine ? leave : { in: this.dustRange, ...leave }, cell: leave },
     };
     for (const zone of this.zones) {
       if (zone.mode) zone.range = byMode[zone.mode][zone.name];
@@ -630,7 +653,7 @@ export class CellLens {
     if (this.machine?.has(id)) return true;
     if (this.species.id && id === `species:${this.species.id}`) return true;
     if (this.sceneryItem(id) || this.flux.has(id)) return true;
-    return this.model.get(id)?.group === "biology" && !this.absent.has(id);
+    return this.model.get(id)?.group === "biology" && !unshown(this, id);
   }
 
   /**
@@ -670,6 +693,8 @@ export class CellLens {
       note: species.plain,
       sections: [
         { title: "Not in this organism", note: "Capabilities of Cells that have no place in this species, each with the reason.", items: absent.map((item) => ({ label: item.entity.label, lines: [item.why] })) },
+        // What has a place in it but is left out of its picture for now (its file's `left_out`), with since when and why.
+        { title: "Left out of the picture for now", note: "Capabilities that have a place in this species but are not drawn for now, each with the reason. Its file keeps their place.", items: [...(this.leftHere || [])].map(([key, flag]) => ({ label: this.model.get(key)?.label || key, lines: [`Since ${dayWords(flag.since)}: ${flag.reason}.`, flag.note ? `In this cell: ${flag.note}` : null].filter(Boolean) })) },
         { title: "Its cell", items: (this.cellType?.facts || species.cell.facts || []).map((fact) => ({ label: fact.label, detail: fact.value, links: links(fact.sources) })) },
         // Its cell types, where it has more than one (schema/CELL_TYPES.md): each with what Cells models of it.
         ...(this.cellTypes.length > 1 ? [{ title: "Its cell types", items: this.cellTypes.map((type) => ({ label: type.label, detail: MODELLED[type.modelled?.state] || type.modelled?.state || "", lines: [type.plain || type.modelled?.text].filter(Boolean) })) }] : []),
@@ -685,7 +710,7 @@ export class CellLens {
   }
 
   entities() {
-    return this.model.entities.filter((entity) => entity.group === "biology" && !this.absent.has(entity.id)).map((entity) => this.inSpecies(entity));
+    return this.model.entities.filter((entity) => entity.group === "biology" && !unshown(this, entity.id)).map((entity) => this.inSpecies(entity));
   }
 
   /** A part as the species shown has it: a level under the species' name for it, with what the species says of it. */
@@ -693,8 +718,11 @@ export class CellLens {
     if (!entity || !this.species.id) return entity;
     if (entity.kind === "scale") {
       const level = this.levels[LEVELS.find((item) => item.entity === entity.id)?.id];
-      if (!level || (!level.label && !level.note)) return entity;
-      return { ...entity, label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") };
+      // A bacterium's own cell: what each size mode draws of it, in full (the card links here).
+      const drawn = entity.id === "scale.cell" ? this.sizeWords()?.drawn : null;
+      const named = level && (level.label || level.note) ? { label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") } : null;
+      if (!named && !drawn) return entity;
+      return { ...entity, ...named, ...(drawn ? { sections: [...(entity.sections || []), { title: "As drawn", items: drawn.map(([label, text]) => ({ label, lines: [text] })) }] } : {}) };
     }
     const said = (this.cellType?.capabilities || this.species.cell.capabilities)?.[entity.id];
     // In a cell type of its own file, a capability may carry its word in this cell, beside the map's status (schema/CELL_TYPES.md).
@@ -720,11 +748,11 @@ export class CellLens {
   }
 
   sections() {
-    const capabilities = this.model.ofKind("capability").filter((entity) => !this.absent.has(entity.id));
+    const capabilities = this.model.ofKind("capability").filter((entity) => !unshown(this, entity.id));
     return [
       { label: "One cell", entities: capabilities.filter((entity) => entity.scale === "cell") },
       { label: "Tissue", entities: capabilities.filter((entity) => entity.scale === "tissue") },
-      { label: "Scales", entities: this.model.ofKind("scale").filter((entity) => !this.absent.has(entity.id)).sort((a, b) => a.order - b.order).map((entity) => this.inSpecies(entity)) },
+      { label: "Scales", entities: this.model.ofKind("scale").filter((entity) => !unshown(this, entity.id)).sort((a, b) => a.order - b.order).map((entity) => this.inSpecies(entity)) },
       { label: "Species", entities: this.species.id ? [this.describe(`species:${this.species.id}`)] : [] },
     ].filter((section) => section.entities.length);
   }
@@ -752,6 +780,7 @@ export class CellLens {
         look: this.lookChrome(),
         machine: this.machine?.chrome(), // while the closer view is open: its detail switch and what the card says of it
         across: cellAcross(this.levels.cell.shape),
+        sizeNote: this.sizeNote(), // the card's words on the size mode, for a cell whose molecules are shapes to scale
         species: species.id
           ? {
               options: this.list.map((item) => [item.id, item.label, item.organism]),
@@ -768,6 +797,55 @@ export class CellLens {
             }
           : null,
       },
+    };
+  }
+
+  /**
+   * The card's words on the size mode shown, for a cell whose molecules are drawn as themselves to scale (a bacterium:
+   * cell_layout.js, the layout's `fine`): one short sentence and a link to the cell's own panel, where `sizeWords` says
+   * in full what each mode draws of it. Null for any other cell, whose card keeps its own words. The card has room
+   * for three lines of them at 1280 by 800 (tools/check_species.mjs holds that they show whole, with no scrolling).
+   */
+  sizeNote() {
+    const said = this.sizeWords();
+    return said ? { text: said.card[this.sizeMode], more: "What each mode draws", open: "scale.cell" } : null;
+  }
+
+  /**
+   * What each size mode draws of a bacterium, worked out from what each drew of it: short, for the card, and in full,
+   * for the "As drawn" section of the cell's own panel ("One cell"), which a phone can open too. The schematic's
+   * factors are its sizes against the picture's own to scale: the membrane's band (0.5 units) against the membrane's
+   * thickness (the file's, or a textbook 4.5 nm), and a pump's outer lobe (0.92 units) against the pump drawn to
+   * scale (cell_layout.js, PUMP). Null for a cell whose molecules are not shapes to scale.
+   */
+  sizeWords() {
+    const real = this.cells?.real, schematic = this.cells?.schematic;
+    if (!real?.scale?.fine || !schematic) return null;
+    const { u } = this, membrane = real.scale.membraneNm, across = cellAcross(this.levels.cell.shape);
+    const width = across >= 1 ? `${Number(across.toPrecision(1))} µm` : `${Number((across * 1000).toPrecision(1))} nm`;
+    const threads = (real.scenery || []).filter((item) => item.kind === "flagellum" || item.kind === "pilus").map((item) => item.label.toLowerCase());
+    const theirs = threads.length ? `, its ${threads.length > 1 ? `${threads.slice(0, -1).join(", ")} and ${threads.at(-1)}` : threads[0]} as its file gives them` : "";
+    // To scale.
+    const crowd = real.crowd, depth = crowd?.depth ?? TO_SCALE.slab;
+    const envelope = real.scale.envelope?.outer ? "its two membranes and its wall at the widths one paper measured" : `its membrane a textbook ${Number(membrane.toPrecision(2))} nm thick`;
+    const shapes = real.molecule?.pored ? `its channels ${CHANNEL.across} nm and its pumps ${PUMP.across} nm across` : `its pumps ${PUMP.across} nm across`;
+    const scale = `A cell about ${width} across: ${envelope}, ${shapes}, its ribosomes a textbook 20 nm across${theirs}. Ions and small molecules are dots, each standing for many. Other counts are the picture's choice.`;
+    const slab = crowd
+      ? `The crowd of proteins and the chromosome are drawn only in a slab ${depth} nm deep under the cut, as an electron tomogram shows a cell: of its ${crowd.count.toLocaleString("en-US")} protein molecules, ${(crowd.loose + crowd.held).toLocaleString("en-US")} stand there.`
+      : `The chromosome is drawn only in a slab ${depth} nm deep under the cut, as an electron tomogram shows a cell. No crowd of proteins is drawn, since the sources read for its file give no one count.`;
+    // The schematic picture.
+    const band = (0.5 * u * 1000) / membrane, protein = (0.92 * u * 1000) / PUMP.across;
+    const times = (factor) => (Math.round(factor) === 2 ? "about twice" : `about ${Math.round(factor)} times`);
+    const thin = band < 1.6 && protein < 1.6;
+    const enlarged = thin
+      ? `Parts are enlarged and few, so each can be seen. In a cell this thin its membrane and its membrane proteins are drawn near their own size and its ribosomes at a textbook 20 nm${theirs}; only ions and small molecules are enlarged. The two pictures differ mainly in the crowd of proteins and the small molecules.`
+      : `Parts are enlarged and few, so each can be seen: here the membrane is drawn ${times(band)} as thick as it is and its proteins ${times(protein)} their size, and ions and small molecules more; its ribosomes are drawn at a textbook 20 nm${theirs}.`;
+    return {
+      card: {
+        schematic: thin ? "Enlarged to be seen: in a cell this thin, only the small molecules." : `Enlarged to be seen: the membrane ${times(band)} as thick as it is.`,
+        real: `To scale, a cell about ${width} across; small molecules are dots.`,
+      },
+      drawn: [["Schematic", enlarged], ["To scale", scale], ["In a slab under the cut, to scale", slab]],
     };
   }
 
@@ -988,7 +1066,7 @@ export class CellLens {
       for (const item of outline.notes) note(name, item);
     }
     const molecule = this.cells[this.sizeMode].molecule, u = this.u;
-    const text = this.sizeMode === "real" ? "To scale: the membrane is about 5 nm thick, the channel about 9 nm across" : molecule.pored ? "Illustration: channels and pumps are modelled as populations" : "Illustration: pumps and transporters are modelled as populations";
+    const text = molecule.note || (this.sizeMode === "real" ? `To scale: the membrane is about 5 nm thick, the channel ${CHANNEL.across} nm across` : molecule.pored ? "Illustration: channels and pumps are modelled as populations" : "Illustration: pumps and transporters are modelled as populations");
     const beside = molecule.centre.clone().multiplyScalar(u).addScaledVector(molecule.outward, -molecule.view[1] * u * 0.3);
     zoneOf("molecules").labels.push(labels.add({ text, anchor: beside, priority: 290, kind: "note", lift: 0 }));
     if (!molecule.pored) {
@@ -1127,7 +1205,7 @@ export class CellLens {
     const rig = this.stage.rig;
     const distance = rig.distance, u = this.u;
     let changed = false;
-    const dust = this.sizeMode === "real" ? smooth(0.5, 1.6, distance) : 1;
+    const dust = this.sizeMode === "real" ? smooth(...(this.dustRange || [0.5, 1.6]), distance) : 1;
     if (Math.abs(dust - this.dustFade) > 0.004) {
       this.dustFade = dust;
       force = true;

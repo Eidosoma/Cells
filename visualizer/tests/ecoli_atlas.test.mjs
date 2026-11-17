@@ -59,8 +59,14 @@ test("the species file says what it is: a data-only organism, proposed and never
   assert.deepEqual(species.levels.map((level) => level.id), ["molecules", "cell"]);
   assert.deepEqual(species.levels[1].shape, { kind: "capsule", length_um: 2.5, across_um: 1 });
   assert.match(species.levels[1].note, /the picture's choice/);
-  const { appendages, ...parts } = species.cell.parts;
+  const { appendages, envelope, ...parts } = species.cell.parts;
   assert.deepEqual(parts, { membranes: 2, wall: true, nucleus: false, chromosome_kbp: 4642, ribosomes: 6800 });
+  // Its envelope's widths, for the cell drawn to scale: one open paper's numbers alone, with where they stand, each in the fact.
+  const widths = species.cell.facts.find((fact) => fact.label === "Envelope's widths");
+  assert.deepEqual(envelope.sources, ["matias2003"]);
+  assert.equal(envelope.read.source, "matias2003");
+  for (const key of ["membrane_nm", "wall_nm", "outer_nm", "between_nm", "wall_to_outer_nm"]) assert.ok(widths.value.includes(`${envelope[key]} nm`), key);
+  for (const key of ["matias2003", "berry2010"]) assert.deepEqual([species.sources[key].class, species.sources[key].standing], ["no stated terms", "open paper, numbers only"], key);
   // Its appendages (schema/SPECIES.md): flagella and type 1 fimbriae, each number a fact with a permissive source, and
   // at the foot of a flagellum the mark and value under which the shelves list the motor's proteins.
   assert.deepEqual(appendages.map((item) => [item.kind, item.label, item.count, item.length_um, item.width_nm, item.where, item.from]), [
@@ -78,7 +84,8 @@ test("the species file says what it is: a data-only organism, proposed and never
   const other = await json(path.join(ROOT, "data", "species", "mpneumoniae.json"));
   assert.deepEqual(Object.keys(species.cell.capabilities).sort(), Object.keys(other.cell.capabilities).sort());
   for (const [id, item] of Object.entries(species.cell.capabilities)) assert.ok(item.place === "present" ? item.note : item.place === "absent" && item.why, id);
-  for (const fact of species.cell.facts) assert.ok(fact.sources.every((key) => species.sources[key]?.class === "permissive"), fact.label);
+  // A fact rests on permissive sources, or on an open paper whose numbers alone are taken (D186), and then it gives a number.
+  for (const fact of species.cell.facts) assert.ok(fact.sources.every((key) => species.sources[key]?.class === "permissive" || (species.sources[key]?.standing === "open paper, numbers only" && /\d/.test(fact.value))), fact.label);
   // Nothing in the three files says the engine models it.
   for (const text of [JSON.stringify(species), JSON.stringify(atlas), shelvesText, readme]) assert.ok(!/\b(is|are|was|were) modelled\b|Cells models (it|this organism|E\. coli)/i.test(text));
 });

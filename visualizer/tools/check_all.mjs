@@ -49,12 +49,13 @@ const SUITE = [
   { name: "origin-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "phone", NAME: "origin-phone" }, minutes: 2 },
   { name: "origin-address", tool: "check_origin.mjs", args: [pictures], env: { CASE: "address", NAME: "origin-address" }, minutes: 2 },
   { name: "origin-pair", tool: "check_origin.mjs", args: [pictures], env: { CASE: "pair", NAME: "origin-pair" }, minutes: 1 },
-  // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, and with less
-  // motion. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
+  // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, with less
+  // motion, and with the cell drawn to scale. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
   { name: "machine-main", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-main" }, minutes: 20 },
   { name: "machine-phone", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 12 },
   { name: "machine-address", tool: "check_machine.mjs", args: [pictures], env: { CASE: "address", NAME: "machine-address" }, minutes: 10 },
   { name: "machine-reduced", tool: "check_machine.mjs", args: [pictures], env: { CASE: "reduced", NAME: "machine-reduced" }, minutes: 5 },
+  { name: "machine-scale", tool: "check_machine.mjs", args: [pictures], env: { CASE: "scale", NAME: "machine-scale" }, minutes: 10 },
   { name: "input-cell", tool: "check_input.mjs", env: { CHECK_ONLY: "cell" }, minutes: 5 },
   { name: "cell-ecoli", tool: "check_input.mjs", env: { CHECK_ONLY: "cell", CHECK_SPECIES: "ecoli" }, minutes: 5 },
   { name: "cell-thalecress", tool: "check_input.mjs", env: { CHECK_ONLY: "cell", CHECK_SPECIES: "thalecress" }, minutes: 5 },

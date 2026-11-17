@@ -568,7 +568,7 @@ try {
   await press("Status");
   check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
   await press("Biology");
-  // A cell under two micrometres is drawn in one size mode: its card has no Sizes switch to press.
+  // Every cell is drawn in both size modes (a bacterium too, since 17 November 2026); a card without a Sizes switch is checked for none.
   if (await evaluate(`${VIEWER}.current.modes.length > 1`)) {
   await press("To scale");
   await until(`(() => { const lens = ${VIEWER}.current; return lens.sizeMode === "real" && lens.zones.some((zone) => zone.root.visible && zone.name === "cell" && zone.mode === "real"); })()`, 120);
@@ -577,7 +577,11 @@ try {
   check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
   const nucleusToScale = await screen(probe("nucleus"));
   await click(nucleusToScale.x, nucleusToScale.y);
-  check("switch: the to-scale nucleus can be clicked", (await selected()) === atNucleus, String(await selected()));
+  // A cell without a nucleus (a bacterium, to scale since 17 November 2026): as in the schematic picture, a click over
+  // its free chromosome meets the cytoplasm that lies over it, or the chromosome.
+  const toScale = await selected(), free = !(await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`));
+  if (free) check("switch: to scale, a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", atChromatin].includes(toScale), String(toScale));
+  else check("switch: the to-scale nucleus can be clicked", toScale === atNucleus, String(toScale));
   await clear();
   await press("Schematic");
   } else {

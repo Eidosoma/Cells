@@ -151,10 +151,14 @@ function arc(centre, first, second, radius, from, to, steps = 24) {
   });
 }
 
-/** The two subunits of a ribosome: a large one, and a small one that sits on it. Its long way is up. */
-function subunits(radius) {
-  const large = new THREE.SphereGeometry(radius, 12, 9).scale(1, 0.84, 1);
-  const small = new THREE.SphereGeometry(radius * 0.7, 10, 7).scale(1.18, 0.62, 0.92).translate(0, radius * 0.86, 0);
+/**
+ * The two subunits of a ribosome: a large one, and a small one that sits on it. Its long way is up.
+ * `light` draws each with fewer faces (128 triangles in place of 312), for a small cell that holds
+ * thousands of them, each a few pixels across at its stop.
+ */
+function subunits(radius, light = false) {
+  const large = new THREE.SphereGeometry(radius, light ? 8 : 12, light ? 6 : 9).scale(1, 0.84, 1);
+  const small = new THREE.SphereGeometry(radius * 0.7, light ? 6 : 10, light ? 5 : 7).scale(1.18, 0.62, 0.92).translate(0, radius * 0.86, 0);
   return { large, small };
 }
 
@@ -407,6 +411,7 @@ function chromosome(env, random, partName) {
   const { ctx, frame, parts } = env;
   const { at: coreAt, radius: coreRadius, reach: coreReach } = env.core;
   const thread = ctx.part(partName, coreAt.clone().add(new THREE.Vector3(0, coreRadius + 0.3, 0)));
+  if (env.fine) return chromosomeInSlab(env, random, thread);
   // Regulation acts there, so it is where the regulatory circuits are drawn. The thread is a
   // tangle through the cell's middle; its true length would fill the cell far more.
   const turns = Math.round(Math.min(900, Math.max(60, parts.chromosome_kbp / 2)));
@@ -762,6 +767,56 @@ function carriers(env, random, golgi) {
 }
 
 /**
+ * A free chromosome drawn to scale (a cell whose molecules are shapes at its stop): DNA is 2 nm
+ * across and 0.34 nm a base pair (textbook figures), so the file's length in base pairs would fill
+ * the cut face of a small cell more than once over (Syn3A's 1.8 times). It is drawn as an electron
+ * tomogram shows it: only in the slab under the cut, as short pieces of a fine line, the share of
+ * its length that the slab holds of the region it fills in the middle of the cell. Where that
+ * region lies and how the line winds are the picture's choice. A body that draws nothing, where
+ * the schematic thread's is, takes a click as before.
+ */
+function chromosomeInSlab(env, random, thread) {
+  const { frame, parts, nm, slab, cut } = env;
+  const { at: coreAt, radius: coreRadius, reach: coreReach } = env.core;
+  const slim = frame.outline.apothem;
+  // The region it fills: a body round the cell's middle, as long as the schematic thread reaches and 0.7 of the cell's half-width across.
+  const across = slim * 0.7, length = Math.max(coreReach, across), centre = new THREE.Vector3(coreAt.x, 0, 0);
+  const inRegion = (point) => ((point.x - centre.x) / length) ** 2 + (point.y / across) ** 2 + (point.z / across) ** 2 < 1 && env.inside(point) > 4 * nm;
+  const low = cut - slab, mid = cut - slab / 2;
+  const share = mid < across ? 0.75 * (1 - (mid / across) ** 2) * (slab / across) : 0; // the slab's share of the region
+  const whole = parts.chromosome_kbp * 1000 * 0.34 * nm, wanted = whole * share; // in the cell's units
+  const step = 4 * nm, lines = [];
+  let drawn = 0;
+  for (let guard = 0; drawn < wanted && guard < 20000; guard++) {
+    // A piece: where the chain crosses the slab, a short way, before it leaves it.
+    const at = new THREE.Vector3(centre.x + (random() * 2 - 1) * length, low + random() * slab, (random() * 2 - 1) * across);
+    if (!inRegion(at)) continue;
+    const heading = new THREE.Vector3(random() - 0.5, (random() - 0.5) * 0.3, random() - 0.5).normalize();
+    const steps = 5 + Math.floor(random() * 25);
+    for (let index = 0; index < steps && drawn < wanted; index++) {
+      heading.add(new THREE.Vector3(random() - 0.5, (random() - 0.5) * 0.3, random() - 0.5).multiplyScalar(0.8)).normalize();
+      const next = at.clone().addScaledVector(heading, step);
+      if (next.y < low || next.y > cut || !inRegion(next)) break;
+      lines.push(at.x, at.y, at.z, next.x, next.y, next.z);
+      drawn += step;
+      at.copy(next);
+    }
+  }
+  const strands = new THREE.BufferGeometry();
+  strands.setAttribute("position", new THREE.Float32BufferAttribute(lines, 3));
+  const line = new THREE.LineSegments(strands, thread.lineMaterial({ hue: "bioNucleus", opacity: 0.95 }));
+  line.userData.unpickable = true; // a line is picked from far round it: the body below takes the click
+  thread.add(line);
+  const reach = new THREE.Mesh(new THREE.SphereGeometry(coreRadius * 0.92, 20, 14), thread.proxyMaterial());
+  reach.position.copy(coreAt);
+  reach.scale.set(coreReach / coreRadius, 1, 1);
+  thread.add(reach);
+  const um = (units) => Number((units * frame.u).toPrecision(units * frame.u >= 100 ? 3 : 2)).toLocaleString("en-US");
+  const said = [["Drawn", `A fine line, in a slab ${Math.round(slab / nm)} nm deep under the cut, as an electron tomogram shows a cell: ${um(drawn)} µm of the ${um(whole)} µm its ${parts.chromosome_kbp.toLocaleString("en-US")} kbp would make as DNA, at 0.34 nm a base pair, 2 nm across (textbook figures). That is the share the slab holds of the region the chromosome fills in the middle of the cell; drawn whole, it would cover most of the cut face. Where that region lies and how the line winds are the picture's choice.`]];
+  return { knots: [], said, drawn: drawn * frame.u, whole: whole * frame.u };
+}
+
+/**
  * Ribosomes: free in the cytoplasm, several in a string on one messenger, and on the rough
  * ER. Where the species' file gives a count, that many are drawn of the part of the cell
  * kept below the cut; else the number is the picture's choice. To scale in a large cell they
@@ -770,13 +825,12 @@ function carriers(env, random, golgi) {
 function ribosomes(env, random, built, bound) {
   const { ctx, real, frame, parts } = env;
   const given = parts.ribosomes;
-  const kept = (point, clear) => env.inside(point) > clear && point.y < env.cut - clear * 0.4;
   const own = bound ? ctx.part("ribosomes", null) : null;
   if (own) own.priority = 52;
   const tone = (shade) => (own ? own.material({ hue: "bioRibosome", shade, roughness: 0.42, drift: 0.06 }) : ctx.neutral({ opacity: 0.6, glass: 0.35, depthWrite: false, drift: 0.06 }));
-  const drawShapes = (placements, radius, shade = 0) => {
+  const drawShapes = (placements, radius, shade = 0, light = false) => {
     if (!placements.length) return;
-    const { large, small } = subunits(radius);
+    const { large, small } = subunits(radius, light);
     const add = (object) => (own ? own.add(object) : ctx.illustrate(object));
     add(env.instanced(large, tone(shade), placements));
     add(env.instanced(small, tone(shade + 0.38), placements));
@@ -813,11 +867,13 @@ function ribosomes(env, random, built, bound) {
     radius = Math.max(0.085, 0.01 / frame.u);
     const total = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
     const strung = Math.round((total * 0.15) / 5) * 5;
-    const centres = scatterIn(strung / 5, (point) => kept(point, radius * 5 + 0.3), { wide, low: frame.base, high: env.cut });
+    // Each wholly below the cut: a ribosome reaches about 1.3 times its radius up from its middle, a string of five about four times.
+    const below = (point, clear, rise) => env.inside(point) > clear && point.y < env.cut - rise * radius;
+    const centres = scatterIn(strung / 5, (point) => below(point, radius * 5 + 0.3, 4), { wide, low: frame.base, high: env.cut });
     for (const centre of centres) onStrings.push(...polysome(centre, 5, radius));
     polysomes = centres.length;
-    free = scatterIn(total - onStrings.length, (point) => kept(point, radius + 0.25), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), scale: 0.85 + random() * 0.3 }));
-    drawShapes([...free, ...onStrings], radius * 0.95);
+    free = scatterIn(total - onStrings.length, (point) => below(point, radius + 0.25, 1.3), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), scale: 0.85 + random() * 0.3 }));
+    drawShapes([...free, ...onStrings], radius * 0.95, 0, true);
     anchor = (centres[0] || free[0]?.position || env.core.at).clone();
   } else if (!real) {
     // A large cell, parts enlarged: a few hundred, the number the picture's choice.

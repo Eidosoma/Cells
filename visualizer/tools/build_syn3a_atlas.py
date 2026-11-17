@@ -964,7 +964,7 @@ def sources_of_species(c):
     return out
 
 
-def build_species(c):
+def build_species(c, membrane):
     count = len(c.proteins)
     seen_kept = sum(c.classes[locus]["Feature type"] == "CDS" for locus in c.abundance)
     seen_added = sorted(c.by_locus[locus].get("gene") or locus for locus in c.abundance if c.classes[locus]["Feature type"] != "CDS")
@@ -984,7 +984,7 @@ def build_species(c):
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase and the ATP synthase. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
+        "cap.machines": {"place": "present", "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.", "left_out": {"since": "2026-11-17", "says": "the barrel drawn for its molecular machines", "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn", "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."}},
         "cap.secretion": {"place": "present", "note": "By the 2019 reconstruction of its metabolism it releases the end products of sugar breakdown, lactate and acetate, into the medium and takes nutrients up. Signalling between its cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."},
         "cap.division": {"place": "present", "note": "It grows and divides as a single cell. The division genes ftsZ and sepF are among 19 genes that were added to the smaller strain JCVI-syn3.0 to make it, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division."},
@@ -999,7 +999,7 @@ def build_species(c):
         {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"]},
         {"label": "Genes", "value": f"493, of which 452 code for proteins; the genome record lists {count} protein products, 3 of them added for genetic manipulation", "sources": ["breuer2019", "genbank"]},
         {"label": "Ribosomes", "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across", "sources": ["gilbert2021"]},
-        {"label": "Proteins", "value": f"about 77,000 molecules in an average cell, an estimate from proteomics; {seen_kept} of the 452 kinds were detected, and the added marker tetM", "sources": ["breuer2019"]},
+        {"label": "Proteins", "value": f"about 77,000 molecules in an average cell, an estimate from proteomics ({membrane['all_estimated_copies']:,} by the paper's table); {seen_kept} of the 452 kinds were detected, and the added marker tetM. An estimated {membrane['estimated_copies']:,} of the molecules are of the {membrane['in_or_on']} kinds that this file's shelves place in or on the membrane", "sources": ["breuer2019"]},
         {"label": "Doubling time", "value": "about 105 minutes in rich medium", "sources": ["breuer2019"]},
         {"label": "Energy", "value": "ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP", "sources": ["breuer2019"], "see": ["thornburg2022"]},
         {"label": "Food", "value": "glucose, amino acids, fatty acids and cholesterol, taken up from a rich medium that is not fully defined", "sources": ["breuer2019"]},
@@ -1053,7 +1053,10 @@ def build_species(c):
         "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
         "cell": {
             "facts": facts,
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 500},
+            # The protein molecules of the cell, for its crowd drawn to scale: the paper's estimate, and the share in the
+            # membrane by the side the shelves read for each protein (the shelves' checks.membrane).
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 500,
+                      "proteins": {"count": membrane["all_estimated_copies"], "membrane": membrane["estimated_copies"], "membrane_from": "the proteins that the species' own shelves place in or on the membrane", "sources": ["breuer2019"]}},
             "capabilities": capabilities,
         },
         "capability_sources": capability_sources,
@@ -1871,10 +1874,10 @@ def build(evidence_folder, datasets_folder, snapshot):
     context = Context(evidence, snapshot)
     check_sources(context)
     check_shelf_sources(context)
-    species = build_species(context)
     atlas = build_atlas(context)
     rows = build_catalogue(context)
     shelves = build_shelves(context, rows)
+    species = build_species(context, shelves["checks"]["membrane"])  # after the shelves: the cell's membrane proteins are counted there
     files = {
         "species": json.dumps(species, indent=1, ensure_ascii=False) + "\n",
         "atlas": json.dumps(atlas, indent=1, ensure_ascii=False) + "\n",

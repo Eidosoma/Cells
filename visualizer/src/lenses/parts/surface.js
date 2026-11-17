@@ -6,7 +6,7 @@
 // It takes from the layout's one stream of chance, in the builder's fixed order.
 
 import * as THREE from "../../three.js";
-import { CUT, SPOT } from "../cell_layout.js";
+import { CUT, SPOT, TO_SCALE, CHANNEL, PUMP } from "../cell_layout.js";
 import { turnY, instanced, dots } from "./geometry.js";
 
 export default {
@@ -14,7 +14,7 @@ export default {
   draws: ["channels", "pumps"],
   build(env) {
     const { ctx, studsCtx } = env;
-    const { real, has, outline, onSkin } = env.layout;
+    const { real, has, outline, onSkin, fine, nm, body } = env.layout;
     const channels = has("channels") ? ctx.part("channels", outline.point(SPOT.channels[3], 0.5, CUT + 0.5)) : null;
     const pumps = has("pumps") ? ctx.part("pumps", outline.point(SPOT.pumps[1], 0.5, CUT + 0.5)) : null;
     if (!real) {
@@ -51,8 +51,31 @@ export default {
           instanced(new THREE.SphereGeometry(0.44, 16, 12).scale(1, 0.6, 1), exteriorPumps.material({ hue: "bioPump", roughness: 0.4, thin: 0.35 }), onSkin(12, 4))
         );
       }
+    } else if (fine) {
+      // A cell whose molecules are drawn as themselves at its stop (a bacterium): each channel and pump as the
+      // close-up of the membrane draws it, at its own size (cell_layout.js, CHANNEL and PUMP): set in the cut edge where
+      // the schematic picture sets them, and over the rest of the membrane as rings and low domes as wide. How many is the
+      // picture's choice: about 15 channels and 8 pumps to a square micrometre of membrane, at least three widths apart.
+      const onMembrane = (density, least) => Math.round(Math.max(least, density * body.area * (1 / nm / 1000) ** 2));
+      if (channels) {
+        const wall = new THREE.CapsuleGeometry(CHANNEL.wall * nm, (CHANNEL.length - 2 * CHANNEL.wall) * nm, 4, 8).rotateZ(Math.PI / 2);
+        const walls = [];
+        for (const angle of SPOT.channels) for (const offset of [-CHANNEL.apart / 2, CHANNEL.apart / 2]) walls.push({ position: outline.walk(angle, offset * nm, 0, CUT - 0.5 * nm), turn: turnY(-outline.facing(angle, offset * nm)) });
+        channels.add(instanced(wall, channels.material({ hue: "bioProtein", roughness: 0.35, thin: 0.3 }), walls));
+        const exteriorChannels = studsCtx.part("channels");
+        exteriorChannels.add(instanced(new THREE.TorusGeometry((CHANNEL.across / 2 - CHANNEL.wall) * nm, CHANNEL.wall * nm, 6, 12).rotateX(Math.PI / 2), exteriorChannels.material({ hue: "bioProtein", roughness: 0.4 }), onSkin(onMembrane(15, 12), (TO_SCALE.channel * 3) * nm)));
+      }
+      if (pumps) {
+        const lobes = pumps.material({ hue: "bioPump", roughness: 0.35, thin: 0.35 });
+        const shape = new THREE.SphereGeometry(1, 12, 9);
+        const placed = [];
+        for (const angle of SPOT.pumps) for (const [inward, size] of PUMP.lobes) placed.push({ position: outline.point(angle, -inward * nm, CUT - 0.5 * nm), scale: size * nm });
+        pumps.add(instanced(shape, lobes, placed));
+        const exteriorPumps = studsCtx.part("pumps");
+        exteriorPumps.add(instanced(new THREE.SphereGeometry((PUMP.across / 2) * nm, 10, 8).scale(1, 0.6, 1), exteriorPumps.material({ hue: "bioPump", roughness: 0.4, thin: 0.35 }), onSkin(onMembrane(8, 8), (TO_SCALE.pump * 3) * nm)));
+      }
     } else {
-      // At this scale a channel is about 10 nm across: far too small to see. Thousands of them
+      // At this scale a channel is 7.4 nm across (CHANNEL): far too small to see. Thousands of them
       // are drawn as dots; the close-up of the membrane shows them as shapes.
       if (channels) {
         const dust = studsCtx.part("channels");

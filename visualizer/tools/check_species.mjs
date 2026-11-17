@@ -652,7 +652,8 @@ try {
   s = await state();
   check("a click on Syn3A shows it everywhere the page keeps a species", s.species === "syn3a" && s.attribute === "syn3a" && s.atlasAttribute === "syn3a" && /syn3a\*/.test(s.inBar + s.inCard), JSON.stringify([s.species, s.attribute, s.inBar, s.inCard]));
   check("Syn3A: two levels on the rail, and its own sentence where the others would be", s.rail === "molecule cell*" && /single-celled/.test(s.railNote || ""), JSON.stringify([s.rail, s.railNote]));
-  check("Syn3A: one size mode, and the card says why", s.modes === "schematic" && !/Sizes/.test(s.sizes) && /One size mode/.test(s.viewNote || ""), JSON.stringify([s.modes, s.sizes, s.viewNote]));
+  // Every cell has both size modes (the plan for bacteria drawn to scale, 17 November 2026); the card says what the schematic picture enlarges in this cell.
+  check("Syn3A: both size modes, and the card says what the schematic picture enlarges in it", s.modes === "schematic real" && /Sizes/.test(s.sizes) && /about twice as thick as it is/.test(s.viewNote || ""), JSON.stringify([s.modes, s.sizes, s.viewNote]));
   check("Syn3A: what has no place in it is not drawn", s.absent.includes("cap.junctions") && s.absent.includes("cap.mitochondria") && !s.drawn.includes("cap.junctions") && !s.drawn.includes("cap.mitochondria") && !s.drawn.includes("cap.sheet"), `absent: ${s.absent}; drawn: ${s.drawn}`);
   check("Syn3A: the bar says what Cells models of it, in the ladder's words", s.state === syn3aWord && /, not modelled$/.test(s.state), String(s.state));
   check("Syn3A: its cell is drawn at its own size", s.u < 0.05 && s.distance < 3, JSON.stringify([s.u, s.distance]));
@@ -677,6 +678,50 @@ try {
   check("the panel follows the species to Human", s.species === "human" && s.selected === "species:human" && s.panel?.title === "Human", JSON.stringify([s.species, s.selected, s.panel?.title]));
   await evaluate(`${V}.select(null)`);
   await sleep(200);
+
+  // A bacterium's card says in one short line what the size mode shown draws, with a link to the cell's own panel,
+  // where it is said in full (17 November 2026): the line shows whole inside the card, with no scrolling, in both modes
+  // at 1280 by 800 and at 1440 by 900; held by what shows, not by the words alone.
+  await evaluate(`document.fonts.ready.then(() => true)`);
+  const lines = [];
+  for (const [width, height] of [[1280, 800], [1440, 900]]) {
+    await size(width, height);
+    for (const id of ["ecoli", "syn3a", "mpneumoniae"]) {
+      await pressSpecies(id);
+      for (let tries = 0; tries < 80 && !(await evaluate(`${V}.current.species?.id === ${JSON.stringify(id)} && Boolean(${V}.current.cells?.real)`)); tries++) await sleep(250);
+      for (const mode of ["schematic", "real"]) {
+        await evaluate(`${V}.current.setSizeMode(${JSON.stringify(mode)})`);
+        await sleep(500);
+        lines.push({
+          id, mode, width,
+          ...(await evaluate(`(() => {
+            const card = ${V}.shadowRoot.querySelector("#cells-view"), note = card?.querySelector(".view-note");
+            if (!note || !note.offsetParent) return { shown: false };
+            const c = card.getBoundingClientRect(), n = note.getBoundingClientRect();
+            return { shown: true, inside: n.top >= c.top && n.bottom <= c.bottom && n.left >= c.left && n.right <= c.right, scrolls: card.scrollHeight > card.clientHeight + 1 || card.scrollTop > 0, link: Boolean(note.querySelector("button")), text: note.textContent };
+          })()`)),
+        });
+      }
+    }
+  }
+  const whole = (fit) => fit.shown && fit.inside && !fit.scrolls && fit.link;
+  check("each bacterium's card shows its line on the size mode whole, with its link, and no scrolling, in both modes at 1280 by 800 and 1440 by 900", lines.length === 12 && lines.every(whole), JSON.stringify(lines.filter((fit) => !whole(fit))));
+  // The link opens the cell's own panel, where what each mode draws is said in full.
+  const drawnSaid = [];
+  for (const id of ["ecoli", "syn3a", "mpneumoniae"]) {
+    await pressSpecies(id);
+    for (let tries = 0; tries < 80 && !(await evaluate(`${V}.current.species?.id === ${JSON.stringify(id)} && Boolean(${V}.current.cells?.real)`)); tries++) await sleep(250);
+    await press(".view-note button");
+    await sleep(400);
+    drawnSaid.push(await evaluate(`(() => { const v = ${V}, panel = v.shadowRoot.querySelector("cells-panel"); return { id: ${JSON.stringify(id)}, selected: v.state.selected, title: panel.hidden ? null : panel.querySelector("h2")?.textContent, text: panel.hidden ? "" : panel.textContent }; })()`));
+    await evaluate(`${V}.select(null)`);
+    await sleep(200);
+  }
+  const fullSaid = (said) => said.selected === "scale.cell" && /As drawn/.test(said.text) && /Schematic/.test(said.text) && /A cell about \S+ \S+ across: /.test(said.text) && (said.id === "ecoli" ? /No crowd of proteins is drawn, since the sources read for its file give no one count\./.test(said.text) : /of its [\d,]+ protein molecules, [\d,]+ stand there\./.test(said.text));
+  check("the card's link opens the cell's own panel, which says in full what each mode draws: E. coli's missing crowd, and the others' counts", drawnSaid.every(fullSaid), JSON.stringify(drawnSaid.filter((said) => !fullSaid(said)).map((said) => [said.id, said.selected, said.title, said.text.slice(0, 300)])));
+  await evaluate(`${V}.current.setSizeMode("schematic")`);
+  await size(WIDTH, 800);
+  await sleep(300);
 
   // A selected part that has no place in the next species is let go.
   await pressSpecies("planarian");
@@ -713,7 +758,7 @@ try {
 
   // Every species the scene carries, whichever they are: its own levels, its statement, and the
   // switch staying where it stands (the bar or the card) for each of them, in both views.
-  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id) }))`);
+  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id), left: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.left_out).map(([id]) => id) }))`);
   const places = [];
   for (const item of all) {
     await pressSpecies(item.id);
@@ -725,6 +770,23 @@ try {
     // A machine that can be looked at closer (schema/MACHINES.md) has a stop of its own, after the molecules.
     const wanted = item.levels.flatMap((id) => (id === "molecules" ? [stops[id], ...Array(item.machines).fill("machine")] : [stops[id]]));
     check(`${item.label}: the rail has the levels of its file${item.machines ? " and a stop for its machine" : ""}, and nothing it marks absent is drawn`, s.species === item.id && JSON.stringify(rail) === JSON.stringify(wanted) && drawnAbsent.length === 0 && s.listWhole === true, JSON.stringify([s.rail, item.levels, item.machines, drawnAbsent, s.listWhole]));
+    // What the species' file keeps out of its picture for now (a capability's `left_out`, schema/SPECIES.md; the bacteria's
+    // molecular machines since 17 November 2026): not drawn, named, listed or counted, and its own panel says so with the reason.
+    if (item.left.length) {
+      const out = await evaluate(`(() => {
+        const v = ${V}, lens = v.current, root = v.shadowRoot, ids = ${JSON.stringify(item.left)};
+        const told = lens.describe("species:" + lens.species.id).sections.find((section) => section.title === "Left out of the picture for now");
+        return {
+          drawn: ids.filter((id) => lens.byEntity.has(id)),
+          named: ids.filter((id) => [...root.querySelectorAll(".label")].some((label) => label.dataset.label === id)),
+          listed: ids.filter((id) => lens.sections().some((section) => section.entities.some((entity) => entity.id === id))),
+          counted: ids.filter((id) => lens.entities().some((entity) => entity.id === id)), // what the legend counts
+          chosen: ids.filter((id) => lens.has(id)),
+          told: ids.filter((id) => told?.items.some((said) => said.label === v.model.get(id)?.label && /^Since \\d{1,2} \\w+ \\d{4}: \\S/.test(said.lines[0] || ""))),
+        };
+      })()`);
+      check(`${item.label}: what its file keeps out of its picture for now (${item.left.join(", ")}) is not drawn, named, listed, counted or chosen, and its own panel says so with the reason`, ["drawn", "named", "listed", "counted", "chosen"].every((key) => out[key].length === 0) && out.told.length === item.left.length, JSON.stringify(out));
+    }
     const notIn = ["proposed", "planned", "designed"].includes(item.state);
     check(`${item.label}: the caveat under the picture ${notIn ? "says nothing of it is in the engine" : "is the map's own"}`, notIn ? new RegExp(`^${item.label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}: nothing of it is in the engine`).test(s.caveat || "") : !/nothing of it is in the engine/.test(s.caveat || "") && Boolean(s.caveat), String(s.caveat));
   }

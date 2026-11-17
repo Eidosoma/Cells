@@ -1516,6 +1516,15 @@
       ],
       "part": "stator-units",
       "drawn": "one body"
+    },
+    {
+      "of": "the space between the two membranes",
+      "values": "30 to 32 nm between the two membranes' middles, measured in whole cells in hyperosmotic conditions (this file's source); the cell drawn to scale in the Cell view takes the envelope of the species' own file, from another paper, which measured a narrower space in frozen-hydrated sections, where they were least deformed",
+      "says": [
+        "m-im-om"
+      ],
+      "drawn": "31 nm here, the middle of this file's range; the cell drawn to scale keeps the species file's envelope, until the two are made one envelope",
+      "part": "outer-membrane"
     }
   ],
   "sentences": {
