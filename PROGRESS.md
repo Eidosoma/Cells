@@ -85,6 +85,30 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D188's R1 merged into main (17 November 2026): the legacy registration entry point.** Branch
+  d188-r1 4a042ea2 ([evidence](/mnt/workspaces/Cells/d188-r1-20261117/)).
+  - **What changed:**
+    - The legacy halves of the six dispatch points moved verbatim into
+      `cells/legacy/registration.py`: get_model, parse_spec with `_fine_dict`, control_values, the
+      CLI and the ensemble.
+    - Each core chain tries the active families first, then loads that module through one
+      constant.
+    - A guard test, with a planted control, keeps everything outside `legacy/` from importing it
+      any other way.
+  - **The gate:**
+    - the collected IDs are main's plus the guard's 19;
+    - crossrev's nine sets are identical;
+    - G1 is 113 of 113 bitwise;
+    - tiers 1+2: 480 files, none changed;
+    - the 38 red files keep every outcome and failure line.
+  - **Equivalence:**
+    - the chains' statements are verbatim by AST, in base order;
+    - first-match dispatch is unchanged over 15,372 cases, and planted reorders are caught;
+    - 274 saved definitions parse, dispatch and give 1,857 control arrays, all bitwise.
+  - **Known and accepted until the core-seams registration tables:** active worlds still load the
+    legacy registration at run time through misses in `control_values` (and in parsing for
+    reaction_transport@1). Each miss returns None, and the core answers.
+
 - **D189's test retire merged into main (17 November 2026, early).** test-audit a676930b; the
   tree before it is tagged `pre-retire-2026-11-16` ([summary](/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/SUMMARY.json)).
   - **Retired:**
