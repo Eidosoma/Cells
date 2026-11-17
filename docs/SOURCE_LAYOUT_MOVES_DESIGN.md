@@ -23,8 +23,9 @@ Each move has three parts:
 | Move 2 | the continuity probe's names if a checkpoint must cross it; three more pinned files (§5); the visualizer's tools (their owner) | 109 modules into the target folders, 35 left for the lead to place (§9) |
 
 **The probe** ran the cycle on a scratch tree: a family moved, a coupled kernel extracted and
-moved, a file pinned by path moved, and a pinning law moved after R4. Every check came out identical: test IDs, crossrev's
-nine sets, G1 on six worlds, a continuity resume, and tiers 1+2 with 0 changed (§12).
+moved, a file pinned by path moved, and a pinning law moved after R4. Every check came out
+identical: test IDs, crossrev's nine sets, G1 on six worlds, a continuity resume, and tiers 1+2
+with 0 changed (§13).
 
 ## 2. The move map
 
@@ -37,7 +38,8 @@ One JSON file per move, committed with it in `scripts/moves/`:
  "modules": [["cells.core.reaction_spec", "cells.legacy.core.reaction_spec"], ...],
  "packages": {"cells.legacy": "\"\"\"...\"\"\"\n", "cells.legacy.core": "", ...},
  "keep": [{"path": "...", "reason": "..."}],
- "reviewed": [{"path": "...", "reason": "..."}]
+ "reviewed": [{"path": "...", "reason": "..."}],
+ "refactors": [{"kind": "split", "commit": "...", "old": "src/cells/....py", "new": "src/cells/....py", "names": [...]}]
 }
 ```
 
@@ -48,6 +50,9 @@ One JSON file per move, committed with it in `scripts/moves/`:
 - **`keep`** lists the files the rewriter leaves untouched, each with its reason.
 - **`reviewed`** lists the files whose computed module paths a person checked against this
   map (§3.3), each with its reason.
+- **`refactors`** declares the splits and merges that the move depends on. Each was made by its
+  own hand-written commit, named here (for example the probe's P2), never by the move commit.
+  The rewriter does not read this field.
 - **Basenames are kept.** `validation/tissue/composition_matrix.py:795` and
   `processes/stable_seed_control_volumes.py:99` derive names from them. Where move 2 renames a
   leaf, the rewriter adds `as old_name` at each import.
@@ -60,6 +65,18 @@ One JSON file per move, committed with it in `scripts/moves/`:
   - an unmapped module left in a package the map moves, for example a file that exists only on
     a branch;
   - a new folder without its package file.
+
+**The path table, for tools that read src/cells by place** (the visualizer's map tooling).
+- `source_moves.py table MAP` writes one JSON row per file: `old` and `new` path,
+  `old_module` and `new_module`, `kind` and `to_legacy`.
+  - `kind` is `move`, `created` (a new package file) or the `kind` of a declared refactor
+    (`split`, `merge`).
+  - `to_legacy` marks every file that goes into `legacy/`.
+- Moves are pure and keep basenames. A split appears only as a declared refactor with its commit.
+- Each move commits its table beside its map. The drafts are
+  `$E/path-table-move1-draft-fa19d80c.json` (318 moves, 8 package files) and
+  `$E/path-table-move2-draft-fa19d80c.json`. An example refactor row is in
+  `$E/path-table-probe-kernel-example.json`.
 
 ## 3. The rewriter
 
@@ -100,7 +117,7 @@ rewriter's scope, and the note is a doc, so the counts are main's.
 | `docs/` (12 files, this note included), `reports/` (55), `agent-work/` (262), Markdown anywhere | History, and agents' frozen work files. The live docs, ARCHITECTURE.md's "where it lives" column and the module-system design, get one docs-only commit after each move |
 | `visualizer/` (5 files) | The visualizer agent's. Its data are extractions at a revision, and its tools read engine paths at a revision (§10) |
 | Model, kind and format IDs (`cells.transporter@1`, `cells.visualizer.scene@1`) | Not module paths: the token rule skips names followed by `@` |
-| `source_hashes()` keys in run manifests and checkpoints | Written at run time. A checkpoint from before a move carries the old keys, and continuity admission handles that, as the probe showed (§12) |
+| `source_hashes()` keys in run manifests and checkpoints | Written at run time. A checkpoint from before a move carries the old keys, and continuity admission handles that, as the probe showed (§13) |
 
 **Audits that read one relative path in two trees** fit neither rule. 20 validation files hold 30
 path strings of moved files, mostly the stable-seed audits, references and workers in
@@ -111,7 +128,7 @@ a frozen bundle and under the live tree, as in
 - **Kept,** the live read breaks. A file-level `keep` would also skip the file's imports.
 - **Proposed:** these audit frozen evidence of the pinned cluster, so they are retired with its
   tests (D187), or translated by hand before the move: the live path through the maps, the
-  frozen path as recorded. **For the lead** (§14).
+  frozen path as recorded. **For the lead** (§15).
 
 ### 3.3 What it cannot rewrite: computed module paths
 
@@ -258,7 +275,7 @@ bridge by the environment. 15 modules compute paths from their own `__file__`.
   `$T/pins.py`, `$E/json-pins-move1-draft.json`.
 - Which tests read them live is measured by the tier gate on each commit, not predicted. A
   static search for their readers is too coarse, because file names such as `result.json`
-  are generic. The probe's tiers are in §12.
+  are generic. The probe's tiers are in §13.
 
 ## 6. The registry's legacy entry point
 
@@ -368,6 +385,12 @@ that move 1 must cut is different.
 | M1 | move | 318 modules; the rewriter changes 649 files with 2661 edits: 2598 import statements, 54 strings, 7 programs in strings, 2 comments (`$E/scan-move1-draft.json`) |
 
 The map is regenerated on the head that holds the pin and the retire, and after R1–R4.
+- **At main b844f920** (the pin and D189's retire; `$E/plan-b844f920/`):
+  - the module set is identical: 318 modules;
+  - the scan rewrites 630 files with 2597 edits (225 test files, against 242 before the
+    retire) and lists 135 hazards in 114 files;
+  - the pin inventory is unchanged;
+  - `core/blas_threads.py` joins `execution/` in move 2's draft.
 - **The BLAS pin landed on main at df9c5063** (`core/blas_threads.py`, `core/__init__.py` and the
   run entry points; `cells/__init__.py` unchanged). No module it touches moves in move 1.
 - **Gates after the pin** compare crossrev with `record-cda5dc82`, on any CPU count, which is
@@ -463,7 +486,44 @@ Test file paths never move, but their imports are rewritten (the probe rewrote
 | `visualizer` | only `visualizer/`, no src/tests/validation/scripts changes since a83d8f15 | Its tools read engine files at a revision by hard-coded paths (`extract_laws.py`, `extract_architecture.py`); its owner adapts them (rewrite, or resolve old revisions through the maps); outside the default scope |
 | `fr45/transporter/finite-fuel-step2-partial.patch` | `models/inner_kinds/transporter.py` only (base blob `fdefe718`) | Turned into a branch at its base, then handled as a branch; move 1 does not touch it, move 2 moves it to `kinds/` |
 
-## 11. Public imports: no compatibility aliases
+## 11. Identifiers, the registries' new homes, and what keys on a path
+
+**No identifier changes.** Law, kind, operator and model IDs, such as `resolved_pump_tissue@3`,
+`cells.transporter@1` or `passive_neutral_permeation@1`, are names, not paths. The moves change
+none:
+- the rewriter skips a name followed by `@`;
+- `apply` edits no definition body, so no ID constant changes;
+- crossrev's program texts carry function names only, never module paths, and the probe's were
+  identical.
+
+**The new homes.**
+
+| What | Today | After move 1 | After move 2 (draft) |
+| --- | --- | --- | --- |
+| The operator registry (`OPERATORS`) | `models/operators/__init__.py` | unchanged | `operators/__init__.py` |
+| Operators | `models/operators/*.py` | unchanged | `operators/*.py` |
+| Active model modules (@1–@3, composite and adapter, water, replacement, apical_vertex, reaction_transport, surface_tissue, surface_kinetic, inner_laws, checks, projective) | `models/*.py` | unchanged | `models/*.py` (unchanged) |
+| Older families' model modules | `models/*.py` | `legacy/models/*.py` | unchanged |
+| The model registry (`get_model`) | `models/registry.py` | unchanged (refactored by R1) | `registry/models.py` (leaf renamed; the one rename in the draft) |
+| Older families' registrations | inside the dispatch chains | `legacy/registration.py` (R1) | unchanged |
+| Kinds | `models/inner_kinds/*.py` | unchanged | `kinds/*.py` |
+| The kind, species and inventory registries | `core/{kind_registry,species_registry,inventory_species}.py` | unchanged | `registry/*.py` |
+
+**What keys on a module path, and how it stays stable:**
+
+| Keyed on a path | Kept stable by |
+| --- | --- |
+| Registry dispatch (imports, lazy ones included) | the rewriter; after R1, one constant for the legacy entry point |
+| `kind_registry.BUILTIN_PACKAGE` (`"cells.models.inner_kinds"`) | the rewriter (a dotted string) |
+| Computed module paths (`"cells.core." + name`), and the `__module__` comparisons in the two active preparations | R2, before the move: full module names in their tables (§3.3) |
+| `__module__.rsplit(".", 1)[1]` (`composition_matrix.py:795`, `stable_seed_control_volumes.py:99`) | basenames are kept |
+| Code pins keyed by path (§5) | the rewriter rewrites the path and never the hash. Pin tables, and the identities built on them, change deterministically; byte changes make pins stale, and they are never re-hashed |
+| Code pins on a module object (`module.__file__`) | follow the module; unchanged unless its bytes change |
+| `source_hashes()` keys in run manifests and checkpoints | continuity admission (§13) |
+| The continuity probe's `static_name` (`__module__.__qualname__`) | unchanged by move 1; move 2 needs the map-aware resolver (§9) |
+| Records written by code (`parser=`, `actual_model_type=`, `type(x).__module__`) | new records name the new paths, and frozen records keep theirs. No test compares the two (grep) |
+
+## 12. Public imports: no compatibility aliases
 
 Moved modules leave no aliases:
 - **D185 owns the stable import surface** for contributed modules, in the core-seams pass.
@@ -471,7 +531,7 @@ Moved modules leave no aliases:
 - **An alias of a legacy module outside `legacy/` breaks move 1's rule.**
 - **There is no outside user yet:** stage 1 of the module system has not started.
 
-## 12. The probe (main fa19d80c → scratch head d4fa8719, never merged)
+## 13. The probe (main fa19d80c → scratch head d4fa8719, never merged)
 
 **The commits:**
 - **P1:** compartment_reactions@1 (`core/reaction_spec`, `models/compartment_reactions`) into
@@ -503,7 +563,7 @@ code, which those checks' worlds do not load.
 | Tiers 1+2 (P3), 6 CPUs | 518 files, 0 changed against `tests/test_tiers.json`. One count increase, `test_cell_owned_compartments.py` at 148 passed against 140, the same as at a83d8f15. The 8 red files that read pins on moved files keep their failure lines | `$E/tiers-1+2-db8086ea/summary.json`, `$E/red-files-failure-lines.txt` |
 | Tiers 1+2 (P4), 6 CPUs | PENDING | `$E/tiers-1+2-cea0fa6c/summary.json` |
 
-## 13. Estimates
+## 14. Estimates
 
 | | Agent-days | Gate wall time |
 | --- | --- | --- |
@@ -518,7 +578,7 @@ code, which those checks' worlds do not load.
 
 **Branches** take about 0.25 day each.
 
-## 14. For the lead
+## 15. For the lead
 
 1. **CLI paths:** `-m cells.assembly_cell` and `-m cells.assembly_cluster` become
    `-m cells.legacy.*` (§7.1).

@@ -375,6 +375,7 @@ EXECUTION = {
     "schedule",
     "errors",
     "output_paths",
+    "blas_threads",
 }
 REGISTRY = {"kind_registry", "species_registry", "inventory_species"}
 RECORDS = {"io", "window_io", "batch_io", "batch_window_io", "run_view", "observers"}

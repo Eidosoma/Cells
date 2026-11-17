@@ -30,7 +30,9 @@ Usage (PYTHONPATH=src:. with the venv's Python; ruff from the same venv):
   python scripts/source_moves.py scan MAP [--out JSON]
   python scripts/source_moves.py apply MAP [--stage]
   python scripts/source_moves.py verify MAP --base REV --head REV [--out JSON]
+  python scripts/source_moves.py table MAP [--out JSON]   (the old-to-new path table)
   python scripts/source_moves.py selftest
+All but selftest take --tree DIR, the checkout to work on (default: this one).
 Exit status: 0 ok, 1 a check failed, 2 the map or tree is refused.
 """
 
@@ -96,6 +98,9 @@ class MoveMap:
         self.packages = dict(doc.get("packages", {}))
         self.keep = {k["path"]: k["reason"] for k in doc.get("keep", [])}
         self.reviewed = {k["path"]: k["reason"] for k in doc.get("reviewed", [])}
+        # Splits and merges are refactors, never part of a move commit: each is declared with
+        # the separate commit that made it, for tools that follow src/cells by place.
+        self.refactors = list(doc.get("refactors", []))
         self.files_table, self.parents = None, None  # Caches.
 
     def resolve(self, dotted):
@@ -702,6 +707,62 @@ def load_map(path):
 # ------------------------------------------------------------------ actions
 
 
+def path_table(mp, files):
+    """The old-to-new path table of one map, for tools that read src/cells by place: one row
+    per file the move relocates (with whether it goes to legacy/), the package files it creates,
+    and the map's declared refactors (splits or merges, each with its own commit)."""
+    moves, creates, done = plan_files(mp, files)
+    rows = [
+        dict(
+            old=old,
+            new=new,
+            kind="move",
+            to_legacy="/legacy/" in new and "/legacy/" not in old,
+            old_module=dotted_of(old),
+            new_module=dotted_of(new),
+        )
+        for old, new in sorted(moves.items())
+    ]
+    rows += [
+        dict(
+            old=None,
+            new=path,
+            kind="created",
+            to_legacy="/legacy/" in path,
+            old_module=None,
+            new_module=dotted_of(path),
+        )
+        for path in sorted(creates)
+    ]
+    for r in mp.refactors:
+        rows.append(dict(r, kind=r.get("kind", "split")))
+    return dict(
+        kind="cells.source_moves.path_table@1",
+        move=mp.name,
+        rows=rows,
+        already_moved=done,
+        identifiers_changed=[],
+    )
+
+
+def cmd_table(args):
+    mp = load_map(args.map)
+    table = path_table(mp, worktree_files(args.tree))
+    text = json.dumps(table, indent=1) + "\n"
+    if args.out:
+        Path(args.out).write_text(text)
+    print(
+        json.dumps(
+            dict(
+                move=mp.name,
+                rows=len(table["rows"]),
+                to_legacy=sum(bool(r.get("to_legacy")) for r in table["rows"]),
+            )
+        )
+    )
+    return 0
+
+
 def cmd_check(args):
     mp = load_map(args.map)
     files = worktree_files(args.tree)
@@ -996,6 +1057,15 @@ def cmd_selftest(args):
     }
     again, _ = transform(out, mp)
     checks["idempotent"] = again == out
+    table = path_table(mp, files)["rows"]
+    checks["path table"] = {
+        "old": "src/cells/core/old_spec.py",
+        "new": "src/cells/legacy/core/old_spec.py",
+        "kind": "move",
+        "to_legacy": True,
+        "old_module": "cells.core.old_spec",
+        "new_module": "cells.legacy.core.old_spec",
+    } in table and sum(r["kind"] == "created" for r in table) == 3
     planted = dict(out)
     p = "src/cells/legacy/models/old_model.py"
     planted[p] = (planted[p][0], planted[p][1].replace(b"None", b"0"))
@@ -1092,13 +1162,13 @@ def main(argv=None):
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("check", "scan", "apply", "verify"):
+    for name in ("check", "scan", "apply", "verify", "table"):
         p = sub.add_parser(name)
         p.add_argument("map")
         p.add_argument(
             "--tree", default=str(ROOT), help="the checkout to work on (default: this one)"
         )
-        if name == "scan":
+        if name in ("scan", "table"):
             p.add_argument("--out")
         if name == "apply":
             p.add_argument("--stage", action="store_true", help="git add the scope afterwards")
@@ -1113,6 +1183,7 @@ def main(argv=None):
     try:
         return dict(
             check=cmd_check,
+            table=cmd_table,
             scan=cmd_scan,
             apply=cmd_apply,
             verify=cmd_verify,
