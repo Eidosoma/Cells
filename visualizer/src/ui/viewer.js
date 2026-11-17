@@ -834,7 +834,8 @@ class CellsViewer extends HTMLElement {
     // statement a species of this scene would show beside it. The end of the bar gives way first
     // (its stamp shortens), so that is measured too: the List button must stay whole.
     const statement = h("button", { class: "species-state", type: "button" });
-    this.speciesBox.append(h("span", { class: "species-label" }, "Species"), this.speciesPicker(species), statement);
+    // The switch names what it holds: a species, or the model system shown in the first tab's place.
+    this.speciesBox.append(h("span", { class: "species-label" }, species.model ? "Model" : "Species"), this.speciesPicker(species), statement);
     const end = this.indexButton.parentElement;
     const words = [...new Set([...(this.model.raw.species || []), ...(this.model.raw.species || []).flatMap((item) => item.cell_types || []), ...modelSystems(this.model.raw)].map((item) => MODELLED[item.modelled?.state] || item.modelled?.state).filter(Boolean))];
     const holds = () =>
@@ -890,7 +891,7 @@ class CellsViewer extends HTMLElement {
     const names = rows.map((row) => h("span", row.id === current.id ? {} : { "aria-hidden": "true" }, row.label));
     const button = h(
       "button",
-      { class: "species-pick", type: "button", role: "combobox", "aria-haspopup": "listbox", "aria-controls": "species-list", "aria-expanded": String(menu.open), "aria-label": `Species: ${current.label}`, dataset: { speciesPick: current.id } },
+      { class: "species-pick", type: "button", role: "combobox", "aria-haspopup": "listbox", "aria-controls": "species-list", "aria-expanded": String(menu.open), "aria-label": `${current.kind === "model system" ? "Model system" : "Species"}: ${current.label}`, dataset: { speciesPick: current.id } },
       h("span", { class: "species-pick-name" }, names),
       h("span", { class: "species-pick-caret", "aria-hidden": "true" })
     );
@@ -906,7 +907,7 @@ class CellsViewer extends HTMLElement {
   /** The list of species, built once and filled each time it is shown. */
   speciesListbox() {
     if (this.speciesList) return this.speciesList;
-    const list = (this.speciesList = h("div", { class: "species-list", role: "listbox", id: "species-list", "aria-label": "Species", hidden: true }));
+    const list = (this.speciesList = h("div", { class: "species-list", role: "listbox", id: "species-list", "aria-label": modelSystems(this.model.raw).length ? "Species and model systems" : "Species", hidden: true }));
     // A press on the list must not take the focus from the button, which holds it while the list is open.
     list.addEventListener("mousedown", (event) => event.preventDefault());
     list.addEventListener("pointermove", (event) => {
@@ -1056,7 +1057,7 @@ class CellsViewer extends HTMLElement {
 
   /** The switch as a row of a card. */
   speciesRow(species) {
-    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, "Species"), this.speciesPicker(species));
+    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, species.model ? "Model" : "Species"), this.speciesPicker(species));
   }
 
   /** What Cells models of the species shown, in two or three words; pressing it opens all that is said of the species. */

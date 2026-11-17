@@ -410,6 +410,9 @@ if (process.env.CASE === "model") {
     let s = await state(), m = await more();
     check("choosing it shows it in the first tab's place: the tab takes its view's name, the pill names it", m.model === gard.id && m.entry === gard.id && s.lens === "cell" && m.tab.endsWith("|true") && !m.tab.startsWith("Cell and scales|") && `${s.inBar}${s.inCard}` === `${gard.id}*` && s.pillText === gard.label, JSON.stringify([m, s.inBar, s.inCard, s.pillText]));
     check("the statement beside the pill says what Cells models of it, in the ladder's words, and not modelled", s.state === WORDS[gard.state] && gard.state !== "modelled" && gard.state !== "generic", String(s.state));
+    // The switch does not call a model system a species: its label reads "Model", and it is read out as a model system.
+    const named = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0; return { label: [...root.querySelectorAll(".species-label, .seg-species .seg-label")].filter(shown).map((el) => el.textContent)[0] ?? null, list: root.querySelector("#species-list")?.getAttribute("aria-label") ?? null }; })()`);
+    check("the switch calls it a model, not a species, in its label and to a screen reader", named.label === "Model" && s.pillLabel === `Model system: ${gard.label}` && named.list === "Species and model systems", JSON.stringify([named, s.pillLabel]));
     check("the address names it", new URLSearchParams(m.address).get("entry") === gard.id, m.address);
     tab = m.tab.split("|").slice(0, 2).join("|");
     card = tab === "Model system|Model";
