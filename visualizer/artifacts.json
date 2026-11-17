@@ -382,7 +382,7 @@
       "title": "GARD Assembly Preview",
       "url": "https://claude.ai/artifact/4AYNKZ4PkjZ2w2fp9XueDx",
       "page": "built by `node tools/build_view_page.mjs lineage --out FILE` (not committed)",
-      "note": "The origin-of-life view as built, on a page of its own: a GARD assembly drawn as lipids in water, gathering from free molecules, taking molecules in and letting them go, and splitting in two, with its composition, its lineages and its molecules as further levels. It plays an example run of invented numbers, marked 'Example: invented numbers · not a run of Cells' engine', and says on itself that the lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine is designed, not built (D192). It is a preview of a view that is not on the map's page yet. The options page that came before it is origin_of_life. Since Version 13 of the map the view is on the map's page too; this page is the view standing alone.",
+      "note": "The origin-of-life view on a page of its own: a GARD assembly drawn as lipids in water, taking molecules in and letting them go, and splitting in two, with its composition, its lineages and its molecules as further levels. Since its Version 5 (17 November 2026) it plays what GARD's entry names, the engine's own pair of runs (the pair-consistent form, the engine's passive law, first; the preprint's single-event form beside it), marked 'Development run of the engine, not judged' with the revision and the engine's model, and says on itself that the lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine is modelled, for comparison only (D197); nothing of it is judged. Before Version 5 it played an example run of invented numbers. The view is on the map's page too (since its Version 13); this page is the view standing alone. The options page that came before it is origin_of_life.",
       "sharing": "private; the owner shares it from the page's Share menu",
       "versions": [
         {
@@ -400,6 +400,10 @@
         {
           "date": "2026-11-17",
           "note": "Version 4 (version id 1794922037-1b07), built from a clean copy of 2a7de02a (652 KB): the view as it stands on the map's page since its Version 18, opening on the protocell, with the run's molecules moving in and out and the lit network inside; its line says the order of joins and leaves is the run's. Loaded on the card wide in the light theme and at a phone's width in the dark theme, after 9 s: no error (but the local server's missing favicon). The wide still was opened and looked at: the protocell, the stream's two words, the example's mark, the page's notice. Read back from the artifact service after the publish: the built page stands whole inside the published index.html, byte for byte."
+        },
+        {
+          "date": "2026-11-17",
+          "note": "Version 5 (version id 1794941001-20a8), built from a clean copy of 1ace3680 (721 KB): the view as it stands on the page since its Version 25, playing the engine's final pair of GARD runs; its notice reads 'Development run of the engine, not judged. … GARD in Cells' engine: modelled.' Loaded on the card wide in the light theme and at a phone's width in the dark theme: no error (but the local server's missing favicon), no sideways scroll. Both stills were opened and looked at: the pair side by side with each run's name and law and the mark (wide); the engine's passive law alone with the mark (phone). Read back from the artifact service after the publish: the built page stands whole inside the published index.html, byte for byte."
         }
       ]
     },
