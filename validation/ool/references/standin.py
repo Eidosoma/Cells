@@ -22,6 +22,7 @@ from scipy.linalg import expm
 from . import ledger, mass_action
 from .common import RecordFormatError
 from .design import (
+    BOUNDARY_PROBE_FILE,
     CLOSED_WORLD_FILE,
     KERNEL_PROBE_FILE,
     LEDGER_RUN,
@@ -48,10 +49,22 @@ def _states(name: str) -> np.ndarray:
     return np.asarray(json.loads((DESIGN_DIR / name).read_text())["states"], dtype=np.int64)
 
 
+def float_table(law: Law, states) -> dict:
+    """A kernel table from the float path (``FloatRates``), as a float64 engine would report it."""
+    fr = FloatRates(law)
+    R = len(law.world.steps)
+    return dict(a_plus=np.array([[fr.forward(r, s) for r in range(R)] for s in states]),
+                a_minus=np.array([[fr.reverse(r, s) for r in range(R)] for s in states]))
+
+
 def write_probe(out: Path, world_id: str, conv: Conventions, states, planted=None, planted_params=None) -> Path:
+    """Honest probes come from the float path; planted ones from the exact planted law."""
     out.mkdir(parents=True, exist_ok=False)
     w = registered_world(world_id)
-    t = reference_table(Law(w, conv, planted=planted, planted_params=planted_params), states)
+    if planted is None:
+        t = float_table(Law(w, conv), states)
+    else:
+        t = reference_table(Law(w, conv, planted=planted, planted_params=planted_params), states)
     (out / "probe.json").write_text(json.dumps(dict(world=world_id, conventions=conv.as_dict(),
                                                     steps=[st.name for st in w.steps],
                                                     places=[p.name for p in w.finite]), indent=1))
@@ -156,14 +169,16 @@ def build_standin(out_dir, *, ensemble_runs: int = mass_action.ENSEMBLE_RUNS, ev
     out.mkdir(parents=True, exist_ok=False)
     events = events or LEDGER_RUN["max_events"]
     pp = dict(step="r3", place="D@membrane", lam=1)
-    roles = {k: [] for k in ("kernel_probe", "closed_world", "closed_world_uncatalysed", "ledger_run", "replay",
-                             "other_stream")}
-    kp, cw = _states(KERNEL_PROBE_FILE), _states(CLOSED_WORLD_FILE)
+    roles = {k: [] for k in ("kernel_probe", "boundary_probe", "closed_world", "closed_world_uncatalysed",
+                             "ledger_run", "replay", "other_stream")}
+    kp, cw, bp = _states(KERNEL_PROBE_FILE), _states(CLOSED_WORLD_FILE), _states(BOUNDARY_PROBE_FILE)
     for i, pair in enumerate(PROBED_CONVENTIONS):
         conv = Conventions(**pair)
         tag = f"{conv.condensed_measure}-{conv.last_molecule}"
         roles["kernel_probe"].append(str(write_probe(out / f"kernel_probe-{tag}", "ol1_wa", conv, kp,
                                                      planted.get("kernel_probe"), pp)))
+        roles["boundary_probe"].append(str(write_probe(out / f"boundary_probe-{tag}", "ol1_boundary", conv, bp,
+                                                       planted.get("boundary_probe"))))
         roles["closed_world"].append(str(write_probe(out / f"closed_world-{tag}", "ol1_wa_closed", conv, cw,
                                                      planted.get("closed_world"), pp)))
         roles["closed_world_uncatalysed"].append(str(write_probe(out / f"closed_world_uncatalysed-{tag}",

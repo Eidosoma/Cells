@@ -50,6 +50,12 @@ def parallel_pairs(world: World) -> list[tuple[int, int]]:
     return [(r, q) for r, q in step_pairs(world) if nus[r] == nus[q]]
 
 
+def antiparallel_pairs(world: World) -> list[tuple[int, int]]:
+    """Steps declared in opposite directions (nu_q = -nu_r), such as a join and a declared leave."""
+    nus = [world.nu(st) for st in world.steps]
+    return [(r, q) for r, q in step_pairs(world) if nus[r] == tuple(-v for v in nus[q])]
+
+
 def base_states(world: World, seed: int = KERNEL_PROBE_SEED, n_base: int = KERNEL_PROBE_BASES,
                 max_count: int = KERNEL_PROBE_MAX_COUNT) -> list[tuple[int, ...]]:
     rng = np.random.default_rng(seed)
@@ -111,12 +117,25 @@ def squares(world: World, states) -> list[tuple[tuple, int, int]]:
 
 
 def two_cycles(world: World, states) -> list[tuple[tuple, int, int]]:
-    """Every (n, r, q) for parallel steps r, q with n and n + nu listed."""
+    """Every (n, r, q) for parallel steps r, q with n and n + nu_r listed."""
     listed = {tuple(int(v) for v in s) for s in states}
     nus = [world.nu(st) for st in world.steps]
     out = []
     for n in sorted(listed):
         for r, q in parallel_pairs(world):
+            if add(n, nus[r]) in listed:
+                out.append((n, r, q))
+    return out
+
+
+def antiparallel_cycles(world: World, states) -> list[tuple[tuple, int, int]]:
+    """Every (n, r, q) for opposite steps r, q (nu_q = -nu_r) with n and n + nu_r listed: the
+    two-cycle n -> n + nu_r by r's forward channel and back by q's forward channel."""
+    listed = {tuple(int(v) for v in s) for s in states}
+    nus = [world.nu(st) for st in world.steps]
+    out = []
+    for n in sorted(listed):
+        for r, q in antiparallel_pairs(world):
             if add(n, nus[r]) in listed:
                 out.append((n, r, q))
     return out

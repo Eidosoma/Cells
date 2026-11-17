@@ -76,8 +76,19 @@ def design_document() -> dict:
             "covered_by_the_references": "all four admissible (condensed_measure, last_molecule) pairs",
             "rule": "every bundle and probe declares every token; a missing or unknown token is refused (status 2)",
         },
+        "amendments": [
+            {"date": "2026-11-17", "after_commit": "08870ef6", "before_engine_output": True,
+             "what": "world ol1_boundary and its probe states (role boundary_probe, row OL1-1): §0.2a's extinct "
+                     "rule in the forward direction; anti-parallel two-cycles added to the Kolmogorov check",
+             "why": "ol1_wa reaches the extinct boundary only through the reverse of a join"},
+            {"date": "2026-11-17", "after_commit": "08870ef6", "before_engine_output": True,
+             "what": "the harness enforces the registered sizes: 2,000 runs per rung (row OL1-4b) and 500 events "
+                     "per rescale run (row OL1-3b), as it does the ledger run's 2,000 events",
+             "why": "a smaller submission would otherwise be judged at a power the design never registered"},
+        ],
         "worlds": {
-            "registered": ["ol1_wa", "ol1_wa_closed", "ol1_wa_closed_uncatalysed", "ol1_wa_closed_x2"]
+            "registered": ["ol1_wa", "ol1_wa_closed", "ol1_wa_closed_uncatalysed", "ol1_wa_closed_x2",
+                           "ol1_boundary"]
             + [f"ol1_wb_m{M}" for M in WB_RUNGS],
             "refusals": "designs/refusals/*.world.json: each must be refused at parse",
             "files": "designs/<id>.world.json",
@@ -85,8 +96,8 @@ def design_document() -> dict:
         "rows": {
             "OL1-1": {
                 "claim": "every channel keeps local detailed balance (§0.1, §7.1)",
-                "role": "kernel_probe",
-                "world": "ol1_wa",
+                "role": "kernel_probe; boundary_probe (amendment)",
+                "world": "ol1_wa; ol1_boundary (amendment)",
                 "inputs": {"seed": probes.KERNEL_PROBE_SEED, "bases": probes.KERNEL_PROBE_BASES,
                            "max_count": probes.KERNEL_PROBE_MAX_COUNT,
                            "states": "probes.kernel_probe_states (written by make-probes; echoed by the engine)"},
@@ -163,6 +174,8 @@ def design_document() -> dict:
 CONVENTIONS_FILE = "ol1_conventions.json"
 KERNEL_PROBE_FILE = "ol1_kernel_probe_states.json"
 CLOSED_WORLD_FILE = "ol1_closed_world_states.json"
+BOUNDARY_PROBE_FILE = "ol1_boundary_probe_states.json"
+BOUNDARY_MAX_A = 5
 
 TOKEN_MEANINGS = {
     "free_energy_form": {"discrete": "F uses ln n! exactly (the exact kernel's only form)",
@@ -229,6 +242,19 @@ def closed_world_document() -> dict:
             "count": int(len(states)), "states": [[int(v) for v in s] for s in states]}
 
 
+def boundary_probe_document() -> dict:
+    """Amendment, 17 November 2026: the boundary world's probe states, A@membrane = 0..5."""
+    from .registered import registered_world
+
+    w = registered_world("ol1_boundary")
+    states = [[a] for a in range(BOUNDARY_MAX_A + 1)]
+    return {"format": "ool_references.probe_states@1", "registered": REGISTERED_ON, "amendment": True,
+            "world": "ol1_boundary", "places": [p.name for p in w.finite], "steps": [st.name for st in w.steps],
+            "generator": {"function": "A@membrane = 0..5"},
+            "report": "a_plus and a_minus at every listed state (as the kernel probe)",
+            "count": len(states), "states": states}
+
+
 def canonical_bytes(doc: dict) -> bytes:
     return json.dumps(doc, indent=1).encode()
 
@@ -237,7 +263,8 @@ def write_design(out_dir) -> list[Path]:
     """Write the design, the convention menu and the probe-state files into out_dir."""
     out = []
     for name, doc in ((DESIGN_FILE, design_document()), (CONVENTIONS_FILE, conventions_document()),
-                      (KERNEL_PROBE_FILE, kernel_probe_document()), (CLOSED_WORLD_FILE, closed_world_document())):
+                      (KERNEL_PROBE_FILE, kernel_probe_document()), (CLOSED_WORLD_FILE, closed_world_document()),
+                      (BOUNDARY_PROBE_FILE, boundary_probe_document())):
         p = Path(out_dir) / name
         p.write_bytes(canonical_bytes(doc))
         out.append(p)

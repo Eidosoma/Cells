@@ -28,15 +28,21 @@ import numpy as np
 
 from . import catalysis, closed_world, detailed_balance, ledger, mass_action, streams
 from .common import CheckResult, MissingRecord, RecordFormatError, jsonable
-from .design import CLOSED_WORLD_FILE, KERNEL_PROBE_FILE, LEDGER_RUN
+from .design import (
+    BOUNDARY_PROBE_FILE,
+    CLOSED_WORLD_FILE,
+    KERNEL_PROBE_FILE,
+    LEDGER_RUN,
+    RESCALE_RUN,
+)
 from .laws import Law
 from .records import load_ensemble, load_probe, load_refusals, load_run
-from .registered import DESIGN_DIR, registered_world
+from .registered import DESIGN_DIR, WB_RUNGS, registered_world
 from .ssa_oracle import ChannelTable, FloatRates, check_convention, replay
 from .world import Conventions
 
 ROWS = {
-    "OL1-1": ("Every channel keeps local detailed balance", ("kernel_probe",)),
+    "OL1-1": ("Every channel keeps local detailed balance", ("kernel_probe", "boundary_probe")),
     "OL1-2": ("A closed world relaxes to exp(-F/k_BT)", ("closed_world",)),
     "OL1-3": ("Catalysis is kinetic only", ("closed_world_uncatalysed", "rescale_pair")),
     "OL1-4": ("Mass action with registry potentials", ("kernel_probe", "wb_ensemble", "ledger_run", "refusals")),
@@ -127,11 +133,15 @@ def tagged(res: CheckResult, **tags) -> CheckResult:
 
 def row_1(ctx: Context) -> list:
     out = []
-    for meta, states, ap, am in probe_tables(ctx.path("kernel_probe"), "ol1_wa", KERNEL_PROBE_FILE):
-        law = law_for("ol1_wa", meta["conventions"])
-        res = detailed_balance.check_kernel_table(law, states, ap, am)
-        for key in ("kolmogorov", "identity", "reverse_rates"):
-            out.append(tagged(res[key], conventions=meta["conventions"]))
+    for role, world_id, states_file in (("kernel_probe", "ol1_wa", KERNEL_PROBE_FILE),
+                                        ("boundary_probe", "ol1_boundary", BOUNDARY_PROBE_FILE)):
+        for meta, states, ap, am in probe_tables(ctx.path(role), world_id, states_file):
+            law = law_for(world_id, meta["conventions"])
+            res = detailed_balance.check_kernel_table(law, states, ap, am)
+            keys = ("kolmogorov", "identity", "reverse_rates") if role == "kernel_probe" else (
+                "kolmogorov", "identity", "forward_form", "reverse_rates")
+            for key in keys:
+                out.append(tagged(res[key], world=world_id, conventions=meta["conventions"]))
     return out
 
 
@@ -158,6 +168,9 @@ def row_3(ctx: Context) -> list:
     ms, as_, _, _ = run_records(pair["scaled"])
     if (mb["world"], ms["world"]) != ("ol1_wa_closed", "ol1_wa_closed_x2"):
         raise RecordFormatError("rescale_pair: the worlds must be ol1_wa_closed and ol1_wa_closed_x2")
+    sizes = (len(np.asarray(ab.get("event_channel", []))), len(np.asarray(as_.get("event_channel", []))))
+    out.append(CheckResult("registered_run_length", sizes == (RESCALE_RUN["events"],) * 2,
+                           dict(events=list(sizes), registered=RESCALE_RUN["events"])))
     if mb["stream"] != ms["stream"]:
         out.append(CheckResult("uniform_factor_rescales_time", False, dict(problem="the two runs declare different streams")))
     else:
@@ -172,7 +185,13 @@ def row_4(ctx: Context) -> list:
         out.append(tagged(detailed_balance.compare_rates(law, states, ap, am, "forward"), part="a",
                           conventions=meta["conventions"]))
     meta, arrays = load_ensemble(ctx.path("wb_ensemble"))
-    design = mass_action.design_numbers(Conventions(condensed_measure="multinomial", last_molecule="kept"))
+    rungs = list(WB_RUNGS)
+    for M in rungs:
+        x = np.asarray(arrays.get(f"observation_counts_m{M}", np.empty((0, 0, 0))))
+        if x.ndim != 3 or x.shape[0] != mass_action.ENSEMBLE_RUNS or x.shape[1] != len(mass_action.OBSERVATION_TIMES):
+            raise RecordFormatError(f"wb_ensemble rung {M}: {x.shape[:2]} runs and times; the registered design "
+                                    f"is {mass_action.ENSEMBLE_RUNS} runs at {len(mass_action.OBSERVATION_TIMES)} times")
+    design = mass_action.registered_ladder_design()
     samples, streams_seen = {}, set()
     for M in design["rungs"]:
         key = f"observation_counts_m{M}"

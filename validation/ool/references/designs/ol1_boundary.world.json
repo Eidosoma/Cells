@@ -1,0 +1,150 @@
+{
+ "format": "ool_references.world@1",
+ "id": "ol1_boundary",
+ "registered": "2026-11-17",
+ "description": "OL1 boundary world (amendment): a membrane of A only; A and D held in the pool; a join, a declared leave and a two-molecule leave, so that the extinct rule acts in the forward direction.",
+ "units": {
+  "time": "s",
+  "energy": "k_BT",
+  "concentration": "mM",
+  "volume": "L"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_mM": {
+  "exact": "1",
+  "float": 1.0
+ },
+ "avogadro_per_mol": {
+  "exact": "602214076000000000000000",
+  "float": 6.02214076e+23
+ },
+ "phases": {
+  "membrane": {
+   "kind": "condensed"
+  },
+  "pool": {
+   "kind": "dilute",
+   "volume_L": {
+    "exact": "1/75276759500000000000",
+    "float": 1.3284312537390773e-20
+   },
+   "X": "8"
+  }
+ },
+ "species": [
+  {
+   "id": "A",
+   "moieties": {
+    "a": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "1",
+     "float": -0.0
+    },
+    "solution": {
+     "exp_minus": "1/8",
+     "float": 2.0794415416798357
+    }
+   }
+  },
+  {
+   "id": "D",
+   "moieties": {
+    "a": 2
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1/2",
+     "float": 0.6931471805599453
+    }
+   }
+  }
+ ],
+ "places": [
+  {
+   "species": "A",
+   "phase": "membrane"
+  },
+  {
+   "species": "A",
+   "phase": "pool",
+   "held_mM": {
+    "exact": "1/4",
+    "float": 0.25
+   }
+  },
+  {
+   "species": "D",
+   "phase": "pool",
+   "held_mM": {
+    "exact": "1/2",
+    "float": 0.5
+   }
+  }
+ ],
+ "regular_mixing_chi": [],
+ "steps": [
+  {
+   "id": "x1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@pool": 1
+   },
+   "products": {
+    "A@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1",
+    "float": 1.0
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "x3",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 1
+   },
+   "products": {
+    "A@pool": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/4",
+    "float": 0.25
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "x4",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 2
+   },
+   "products": {
+    "D@pool": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/2",
+    "float": 0.5
+   },
+   "transition_state_factor": []
+  }
+ ],
+ "initial_state": {
+  "A@membrane": 3
+ },
+ "conventions_required": [
+  "free_energy_form",
+  "condensed_measure",
+  "membrane_kinetics",
+  "lumen_volume",
+  "empty_catalyst_phase",
+  "last_molecule"
+ ]
+}

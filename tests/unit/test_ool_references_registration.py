@@ -26,7 +26,7 @@ from validation.ool.references.world import (
 
 
 def test_committed_world_files_equal_the_generator():
-    docs = {**R.world_documents(), **R.variant_documents()}
+    docs = {**R.world_documents(), **R.variant_documents(), "ol1_boundary": R.boundary_document()}
     for wid, doc in docs.items():
         assert (R.DESIGN_DIR / f"{wid}.world.json").read_bytes() == R.canonical_bytes(doc), wid
     for rid, doc in R.refusal_documents().items():

@@ -47,6 +47,7 @@ The design fails as underpowered if any control's family power is below 0.99.
 
 from __future__ import annotations
 
+import functools
 import math
 
 import numpy as np
@@ -247,6 +248,14 @@ def design_numbers(conv, rungs=None, R: int = ENSEMBLE_RUNS, times=OBSERVATION_T
     out["power"] = power
     out["underpowered"] = [f for f, p in power.items() if p["family"] < MIN_POWER]
     return out
+
+
+@functools.lru_cache(maxsize=1)
+def registered_ladder_design() -> dict:
+    """The registered ladder's numbers (the pool takes no convention token; computed once)."""
+    from .world import Conventions
+
+    return design_numbers(Conventions(condensed_measure="multinomial", last_molecule="kept"))
 
 
 # ---------------------------------------------------------------- the check on an ensemble

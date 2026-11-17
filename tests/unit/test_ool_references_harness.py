@@ -62,6 +62,45 @@ def test_planted_forms_fail_their_rows(standin, tmp_path):
     assert status == 1
 
 
+def test_registered_sizes_are_enforced(standin, tmp_path):
+    _, roles = standin
+    # a ladder with fewer runs than registered is refused, not judged at an unregistered power
+    src = Path(roles["wb_ensemble"])
+    copy = tmp_path / "ladder-small"
+    shutil.copytree(src, copy)
+    arrays = dict(np.load(copy / "ensemble.npz"))
+    meta = json.loads((copy / "ensemble.json").read_text())
+    for key in list(arrays):
+        arrays[key] = arrays[key][:50]
+    for M in meta["rungs"]:
+        meta["rungs"][M]["streams"] = meta["rungs"][M]["streams"][:50]
+    np.savez(copy / "ensemble.npz", **arrays)
+    (copy / "ensemble.json").write_text(json.dumps(meta))
+    status, report = H.run_rows(dict(roles, wb_ensemble=str(copy)), ["OL1-4"])
+    assert status == 2 and "2000 runs" in report["OL1-4"]["missing_or_malformed"]
+    # a rescale pair shorter than registered fails
+    from validation.ool.references.design import PROBED_CONVENTIONS as PC
+    conv = Conventions(**PC[0])
+    base = S.write_run(tmp_path / "b", "ol1_wa_closed", conv, 9, max_events=100, row_every=100, t_end=1e9, stream="s")
+    scaled = S.write_run(tmp_path / "s", "ol1_wa_closed_x2", conv, 9, max_events=100, row_every=100, t_end=1e9,
+                         stream="s")
+    status, report = H.run_rows(dict(roles, rescale_pair={"base": str(base), "scaled": str(scaled)}), ["OL1-3"])
+    assert status == 1
+
+
+def test_a_literal_zero_at_the_extinct_boundary_fails_row_1(standin, tmp_path):
+    _, roles = standin
+    probe = Path(roles["boundary_probe"][1])  # the (multinomial_less_one, extinct) pair
+    copy = tmp_path / "boundary-zero"
+    shutil.copytree(probe, copy)
+    arrays = dict(np.load(copy / "probe.npz"))
+    arrays["a_plus"] = arrays["a_plus"].copy()
+    arrays["a_plus"][1, 1] = 0.0
+    np.savez(copy / "probe.npz", **arrays)
+    status, report = H.run_rows(dict(roles, boundary_probe=[roles["boundary_probe"][0], str(copy)]), ["OL1-1"])
+    assert status == 1 and not report["OL1-1"]["passed"]
+
+
 def test_missing_or_malformed_records_exit_2(standin, tmp_path):
     _, roles = standin
     status, report = H.run_rows({k: v for k, v in roles.items() if k != "ledger_run"}, ["OL1-5"])

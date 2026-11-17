@@ -41,7 +41,7 @@ import numpy as np
 
 from .common import UNIT_ROUNDOFF, CheckResult
 from .laws import Law
-from .probes import add, squares, two_cycles
+from .probes import add, antiparallel_cycles, squares, two_cycles
 from .world import World
 
 U = UNIT_ROUNDOFF
@@ -126,6 +126,21 @@ def kolmogorov(world: World, states, a_plus, a_minus) -> CheckResult:
             if len(examples) < 5:
                 examples.append(dict(n=n, steps=(world.steps[r].name, world.steps[q].name), residual=res, tol=tol,
                                      cycle="parallel"))
+        worst = max(worst, abs(res))
+    for n, r, q in antiparallel_cycles(world, states):
+        a, b = idx[n], idx[add(n, nus[r])]
+        terms = (lp[a, r], lp[b, q], lm[a, q], lm[b, r])
+        if not all(np.isfinite(terms)):
+            n_skipped += 1
+            continue
+        res = terms[0] + terms[1] - terms[2] - terms[3]
+        tol = TOL_FACTOR * U * (4 + sum(abs(t) for t in terms))
+        n_checked += 1
+        if abs(res) > tol:
+            n_fail += 1
+            if len(examples) < 5:
+                examples.append(dict(n=n, steps=(world.steps[r].name, world.steps[q].name), residual=res, tol=tol,
+                                     cycle="antiparallel"))
         worst = max(worst, abs(res))
     return CheckResult("kolmogorov", n_checked > 0 and n_fail == 0,
                        dict(cycles_checked=n_checked, cycles_failing=n_fail, cycles_skipped=n_skipped,

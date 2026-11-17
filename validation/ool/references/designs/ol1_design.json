@@ -53,12 +53,29 @@
   "covered_by_the_references": "all four admissible (condensed_measure, last_molecule) pairs",
   "rule": "every bundle and probe declares every token; a missing or unknown token is refused (status 2)"
  },
+ "amendments": [
+  {
+   "date": "2026-11-17",
+   "after_commit": "08870ef6",
+   "before_engine_output": true,
+   "what": "world ol1_boundary and its probe states (role boundary_probe, row OL1-1): \u00a70.2a's extinct rule in the forward direction; anti-parallel two-cycles added to the Kolmogorov check",
+   "why": "ol1_wa reaches the extinct boundary only through the reverse of a join"
+  },
+  {
+   "date": "2026-11-17",
+   "after_commit": "08870ef6",
+   "before_engine_output": true,
+   "what": "the harness enforces the registered sizes: 2,000 runs per rung (row OL1-4b) and 500 events per rescale run (row OL1-3b), as it does the ledger run's 2,000 events",
+   "why": "a smaller submission would otherwise be judged at a power the design never registered"
+  }
+ ],
  "worlds": {
   "registered": [
    "ol1_wa",
    "ol1_wa_closed",
    "ol1_wa_closed_uncatalysed",
    "ol1_wa_closed_x2",
+   "ol1_boundary",
    "ol1_wb_m5",
    "ol1_wb_m20",
    "ol1_wb_m80",
@@ -70,8 +87,8 @@
  "rows": {
   "OL1-1": {
    "claim": "every channel keeps local detailed balance (\u00a70.1, \u00a77.1)",
-   "role": "kernel_probe",
-   "world": "ol1_wa",
+   "role": "kernel_probe; boundary_probe (amendment)",
+   "world": "ol1_wa; ol1_boundary (amendment)",
    "inputs": {
     "seed": 2026111701,
     "bases": 24,

@@ -190,3 +190,43 @@ def test_the_other_measure_is_caught_by_the_identity(wa, probe_slice, tables):
     res = DB.check_kernel_table(Law(w, PHYSICAL), probe_slice, t["a_plus"], t["a_minus"], tables[PHYSICAL][None])
     assert res["kolmogorov"].passed and not res["identity"].passed
     assert res["identity"].detail["max_abs_residual"] == pytest.approx(math.log(2), rel=1e-12)
+
+
+def test_the_boundary_world_closes_its_cycles_and_its_forward_extinct_form_is_probed():
+    """Amendment (17 November 2026): ol1_boundary probes §0.2a's extinct rule forward."""
+    import json
+
+    w = R.registered_world("ol1_boundary")
+    states = np.asarray(json.loads((R.DESIGN_DIR / "ol1_boundary_probe_states.json").read_text())["states"])
+    x3, x4 = w.step("x3"), w.step("x4")
+    for conv in PAIRS:
+        law = Law(w, conv)
+        ref = DB.reference_table(law, states)
+        res = DB.check_kernel_table(law, states, ref["a_plus"], ref["a_minus"], ref)
+        assert all(r.passed for r in res.values())
+        assert res["kolmogorov"].detail["cycles_checked"] >= 4  # anti-parallel x1/x3 cycles included
+    law = Law(w, GARD_LIMIT)
+    assert law.forward(x3, (1,)) == RatExp(x3.rate.exact)                  # k ff(1,1)/ff(0,0)
+    assert law.forward(x4, (2,)) == RatExp(x4.rate.exact * 2)              # k ff(2,2)/ff(1,1)
+    assert Law(w, PHYSICAL).forward(x3, (1,)).is_zero()                    # kept: never empties
+    # planted: an engine that gives the emptying forward channels a literal zero under extinct
+    ref = DB.reference_table(law, states)
+    a_plus = ref["a_plus"].copy()
+    a_plus[1, 1] = 0.0
+    a_plus[2, 2] = 0.0
+    res = DB.check_kernel_table(law, states, a_plus, ref["a_minus"], ref)
+    assert not res["forward_form"].passed and res["forward_form"].detail["zero_pattern_mismatches"] == 2
+
+
+@pytest.mark.parametrize("conv", [PHYSICAL, GARD_LIMIT], ids=["physical", "gard_limit"])
+def test_a_float_kernel_passes_the_registered_tolerances(wa, conv):
+    """The tolerances hold for a float64 kernel, not only for tables rounded from the exact law."""
+    from validation.ool.references.standin import float_table
+
+    w, states = wa
+    states = np.asarray(states)
+    law = Law(w, conv)
+    t = float_table(law, states)
+    res = DB.check_kernel_table(law, states, t["a_plus"], t["a_minus"])
+    assert all(r.passed for r in res.values()), {k: r.detail for k, r in res.items() if not r.passed}
+    assert res["kolmogorov"].detail["max_abs_log_ratio"] < 1e-13

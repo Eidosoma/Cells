@@ -160,6 +160,30 @@ def world_documents() -> dict:
     return docs
 
 
+def boundary_document() -> dict:
+    """Amendment, 17 November 2026 (after the registering commit 08870ef6, before any engine
+    output): a small world whose steps empty the membrane in the forward direction, so that
+    §0.2a's extinct rule is probed in both directions. ``ol1_wa`` reaches it only through the
+    reverse of a join.
+
+    One membrane species A; A and D held in the pool. x1 joins A; x3 is a declared leave,
+    A@membrane -> A@pool (opposite to x1, an anti-parallel pair); x4 takes two A out as one
+    held D, A + A -> D@pool, so its emptying form continues ff(N - 1, 2) to ff(N - 1, 1)."""
+    return _world(
+        "ol1_boundary",
+        "OL1 boundary world (amendment): a membrane of A only; A and D held in the pool; a join, a "
+        "declared leave and a two-molecule leave, so that the extinct rule acts in the forward direction.",
+        [_species("A", {"a": 1}, bilayer=1, solution=Fraction(1, 8)), _species("D", {"a": 2}, solution=Fraction(1, 2))],
+        [{"species": "A", "phase": "membrane"}, {"species": "A", "phase": "pool", "held_mM": _q(Fraction(1, 4))},
+         {"species": "D", "phase": "pool", "held_mM": _q(Fraction(1, 2))}],
+        [],
+        [_step("x1", "membrane", {"A@pool": 1}, {"A@membrane": 1}, 1),
+         _step("x3", "membrane", {"A@membrane": 1}, {"A@pool": 1}, Fraction(1, 4)),
+         _step("x4", "membrane", {"A@membrane": 2}, {"D@pool": 1}, Fraction(1, 2))],
+        WA_POOL_X,
+        {"A@membrane": 3})
+
+
 def variant_documents() -> dict:
     """Registered variants of the closed world, for row OL1-3: without any catalyst, and with
     every forward rate constant doubled (a uniform factor on every channel)."""
@@ -240,7 +264,7 @@ def write_designs(out_dir: str | Path, *, exist_ok: bool = False) -> list[Path]:
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=exist_ok)
     paths = []
-    for wid, doc in {**world_documents(), **variant_documents()}.items():
+    for wid, doc in {**world_documents(), **variant_documents(), "ol1_boundary": boundary_document()}.items():
         parse_world(doc)  # every registered world parses under the reference's own rules
         p = out / f"{wid}.world.json"
         p.write_bytes(canonical_bytes(doc))

@@ -24,11 +24,11 @@ the same day:
 | Test file | What it holds | Planted controls |
 | --- | --- | --- |
 | `test_ool_references_registration.py` | Every committed design file equals its generator; every world parses; every registered refusal is refused; the menu refuses missing, unknown and refused tokens | A changed byte; a float that is not its exact value; each registered defect |
-| `test_ool_references_laws.py` | Exact Kolmogorov, the products' rule against F, and the edge identity, on a slice of the probe under all four token pairs; the extinct boundary's k⁻; the float rates against the exact law; E1 and E2 | Every row OL1-1 and OL1-4a form, each by its named check, under both probed pairs |
+| `test_ool_references_laws.py` | Exact Kolmogorov, the products' rule against F, and the edge identity, on a slice of the probe under all four token pairs; the extinct boundary's k⁻ in both directions (`ol1_boundary`); a float64 kernel within the registered tolerances; the float rates against the exact law; E1 and E2 | Every row OL1-1 and OL1-4a form, each by its named check, under both probed pairs; a literal zero at the boundary |
 | `test_ool_references_closed_world.py` | 1,312 exact edges; stationary laws within 10⁻¹³; catalysts that leave the law unchanged | Five planted laws and the other measure depart; a rate leading outside is caught |
 | `test_ool_references_mass_action.py` | The Riccati form against SciPy's Radau; the master equation's O(1/X) approach; the registered null means and powers; the test on exact samples | Wrong sign, S → T, and biased selection fail; an underpowered design is refused |
 | `test_ool_references_runs.py` | Replay, ledger closure, moieties, the bitwise time rescaling, and streams on host runs | Biased selection, a heat sign error, dropped work, an update off by one, a forward-only factor, a reused key |
-| `test_ool_references_harness.py` | Every row passes end to end on the stand-in (exit 0) | A planted form fails its row (exit 1); a missing role, manifest or token, or a changed echo, exits 2 |
+| `test_ool_references_harness.py` | Every row passes end to end on the stand-in (exit 0) | A planted form, a literal zero at the boundary, or a short rescale pair fails its row (exit 1); a ladder below its registered size, a missing role, manifest or token, or a changed echo exits 2 |
 
 ## Independence, sources and a disclosure
 
@@ -48,8 +48,9 @@ lead relayed the file, which held declarations and forms only, with no values.
 - I replaced my own volume-based encounter forms for membrane steps with its `count_on_m` form,
   after re-deriving that form's key property myself. The property: the reverse rate derived from F
   equals the same rule applied to the products, for every order up to three on each side and under
-  both measures. `laws.py` derives it, and `exact_wa` checks it exactly on all 4,123 probe
-  state-step pairs.
+  both measures. `laws.py` derives it. The full check, exact on all 4,123 probe state-step pairs,
+  is the design-time evidence in `/mnt/workspaces/Cells/ool-references-20261117/evidence/`
+  (`exact_wa.py`, `exact_wa.out`). `test_ool_references_laws.py` holds it on a slice of the probe.
 - My volume-based forms lacked the property for termolecular steps.
 - The lead's rulings (§0.2a) govern wherever they differ from the draft.
 - One point of mine became a ruling. Under `extinct`, the last molecule's rate is the pair rule in
@@ -136,6 +137,7 @@ marked.
 | Role | Content | Rows |
 | --- | --- | --- |
 | `kernel_probe` | Over `ol1_wa` at the registered states: `input_states` [S, D] (the echo, compared bitwise), `a_plus` and `a_minus` [S, R] for every step, the declared tokens, and step and place order | 1, 4a |
+| `boundary_probe` (amendment) | The same arrays over `ol1_boundary` at its six registered states (`designs/ol1_boundary_probe_states.json`) | 1 |
 | `closed_world`, `closed_world_uncatalysed` | The same arrays over every state of `ol1_wa_closed` and of its uncatalysed variant | 2, 3a |
 | `refusals` | For each `designs/refusals/*.world.json`: refused (true/false) and the message. Needed once | 4d |
 | `wb_ensemble` | Per rung: `observation_counts` [runs, 4, D] at the registered times, and each run's stream identity (all distinct). Needed once; the pool takes no token | 4b |
@@ -153,6 +155,34 @@ declared token is missing or malformed.
 
 `standin.py` writes a complete stand-in record set from the host oracle for dry runs. On it every
 row passes.
+
+## Amendments
+
+**17 November 2026, after the registering commit 08870ef6 and before any engine output.** Both
+follow from a review of the registered design.
+
+1. **The extinct rule is now probed in the forward direction.**
+   - `ol1_wa` reaches the extinct boundary only through the reverse of a join, while §0.2a rules both
+     directions.
+   - The new world `ol1_boundary` has a membrane of A only, with A and D held in the pool. Its steps
+     are a join x1, a declared leave x3 (A@membrane → A@pool) and a two-molecule leave x4
+     (2 A@membrane → D@pool).
+   - It is probed at A = 0..5 under the role `boundary_probe`, in row OL1-1.
+   - Kolmogorov's check now also closes anti-parallel two-cycles: a step and a step declared in the
+     opposite direction, here x1 and x3.
+   - Under `extinct`, the forward x3 at A = 1 fires at k and x4 at A = 2 at 2k: the cancelled forms
+     1/ff(0, 0) and ff(2, 2)/ff(1, 1). A literal zero there fails the row.
+2. **The harness enforces the registered sizes.**
+   - The ladder must have 2,000 runs per rung at the four times; otherwise the record is refused
+     (status 2). A smaller ensemble would otherwise be judged at a power the design never
+     registered.
+   - The rescale pair must have 500 events per run, as the ledger run must have its 2,000.
+
+**The same day, on the stand-in only (not the design).** Honest stand-in probes are now
+evaluated by the float path (`FloatRates`), as a float64 engine would report them. A test holds
+that such a kernel passes the registered tolerances: Kolmogorov below 10⁻¹³ against a tolerance
+near 10⁻¹². So the tolerances have now met a float kernel, not only tables rounded from the exact
+law.
 
 ## Then OL2–OL4, in order (D212's priority)
 
