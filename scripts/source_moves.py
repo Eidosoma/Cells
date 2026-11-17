@@ -7,7 +7,9 @@ in the files in scope, and only those references:
     the move would change becomes absolute);
   - attribute chains of a module imported without an alias (`pkg.mod.name`);
   - dotted module paths in strings and comments, with or without an attribute after them
-    (mock targets, `-m` arguments, `module:function` entry points);
+    (mock targets, `-m` arguments, `module:function` entry points); a `from PKG import X` in
+    free text (a program in a string with escapes, a comment) maps X by X's own new home when X
+    is a moved module, as a Python from-import is mapped, not by PKG's;
   - file paths of moved modules in strings and comments, as `src/cells/<path>.py`, `cells/<path>`
     or a path relative to src/cells that starts with one of its folders.
 A file the rewrite changed then gets ruff's import sorting (`--select I --fix`) and nothing else.
@@ -195,11 +197,13 @@ def plan_files(mp, files):
 # ------------------------------------------------------------------ text rewrites
 
 
-def _rewrite_dotted(text, mp, edits_out=None, base=0):
+def _rewrite_dotted(text, mp, edits_out=None, base=0, skip=()):
     if PACKAGE + "." not in text:
         return text
     out, last = [], 0
     for m in DOTTED.finditer(text):
+        if any(a <= m.start() < b for a, b in skip):
+            continue  # Inside a from-import the text rule below has already mapped.
         new = mp.resolve(m.group(0))
         if new is None:
             continue
@@ -208,6 +212,55 @@ def _rewrite_dotted(text, mp, edits_out=None, base=0):
         if edits_out is not None:
             edits_out.append(("dotted", base + m.start(), m.group(0), new))
     return "".join(out) + text[last:]
+
+
+_NAME_AS = r"[A-Za-z_]\w*(?:[ \t]+as[ \t]+[A-Za-z_]\w*)?"
+FROM_TEXT = re.compile(  # After a word boundary, or after an escape (a program with "\n" in it).
+    r"(?:(?<=\\[nt])|(?<![\w.\\]))from[ \t]+("
+    + PACKAGE
+    + r"(?:\.[A-Za-z_]\w*)*)[ \t]+import[ \t]+("
+    + _NAME_AS
+    + r"(?:[ \t]*,[ \t]*"
+    + _NAME_AS
+    + r")*)"
+)
+
+
+def _from_text(text, mp):
+    """`from PKG import a, b as c` statements in free text (a string, a comment, a shell or TOML
+    file), each mapped as the Python rewriter maps a from-import: an imported name that is a moved
+    module goes to that module's new parent (with `as old_name` where its leaf is renamed), any
+    other name stays with PKG's new name. The dotted rule alone maps PKG, the package, which is
+    wrong for a submodule moving elsewhere (`from cells.core import devices` when core's package
+    file and devices move to different folders). Names that diverge become one statement per new
+    parent, joined by "; ". Returns [(start, end, replacement)], only for statements this rule
+    changes differently from the dotted rule."""
+    out = []
+    for m in FROM_TEXT.finditer(text):
+        base = m.group(1)
+        names = [re.split(r"[ \t]+as[ \t]+", n.strip()) for n in m.group(2).split(",")]
+        if not any(f"{base}.{n[0]}" in mp.pairs for n in names):
+            continue  # No moved submodule: the dotted rule maps it.
+        here = mp.resolve(base) or base
+        groups, order = defaultdict(list), []
+        for n in names:
+            name, asname = n[0], (n[1] if len(n) > 1 else None)
+            full = f"{base}.{name}"
+            if full in mp.pairs:
+                parent, _, leaf = mp.pairs[full].rpartition(".")
+                item = (leaf, asname if asname else (None if leaf == name else name))
+            else:
+                parent, item = here, (name, asname)
+            if parent not in groups:
+                order.append(parent)
+            groups[parent].append(item)
+        statements = [
+            f"from {p} import "
+            + ", ".join(n if a in (None, n) else f"{n} as {a}" for n, a in groups[p])
+            for p in order
+        ]
+        out.append((m.start(), m.end(), "; ".join(statements)))
+    return out
 
 
 def _old_files(mp):
@@ -244,9 +297,22 @@ def _rewrite_paths(text, mp, top, edits_out=None, base=0):
 
 
 def rewrite_text(text, mp, top, edits_out=None, base=0):
-    """Dotted module paths, then moved files' paths, in free text."""
+    """From-imports of moved modules (by each module's own new home), dotted module paths, then
+    moved files' paths, in free text."""
     found = []
-    text = _rewrite_dotted(text, mp, found, base)
+    spans = _from_text(text, mp) if "import" in text else []
+    if spans:
+        out, last, skip, shift = [], 0, [], 0
+        for s, e, new in spans:
+            out += [text[last:s], new]
+            skip.append((s + shift, s + shift + len(new)))
+            shift += len(new) - (e - s)
+            found.append(("from-text", base + s, text[s:e], new))
+            last = e
+        text = "".join(out) + text[last:]
+    else:
+        skip = []
+    text = _rewrite_dotted(text, mp, found, base, skip)
     text = _rewrite_paths(text, mp, top, found, base)
     if edits_out is not None:
         edits_out.extend(found)
@@ -352,7 +418,8 @@ STRING_PARTS = re.compile(r"^([rRuU]?)(\"\"\"|\'\'\'|\"|\')(.*)\2$", re.S)
 def _embedded(tok, mp, modules, top, report):
     """A string holding a Python program that imports a cells module (a test's subprocess
     program): its body rewritten as Python, or None. Bodies with escapes cannot be mapped to
-    source text and are left to the plain string rules (scan lists them as hazards)."""
+    source text and are left to the plain string rules, whose from-import rule maps each
+    imported module by its own new home (scan still lists them as hazards, for review)."""
     m = STRING_PARTS.match(tok)
     if not m or "import" not in m.group(3) or PACKAGE not in m.group(3):
         return None, []
@@ -1239,6 +1306,63 @@ def cmd_selftest(args):
     got, _ = transform(rel, rel_map)
     checks["relative import made absolute when its file moves"] = (
         got["src/cells/b/m.py"][1].decode() == "from cells.a import n\nfrom cells.a.n import f\n"
+    )
+    # D188 move 2: a from-import in free text (a program string with escapes, a comment) maps
+    # each moved submodule by its own new home, not by its package's.
+    escaped = dict(files)
+    escaped["tests/test_escaped.py"] = (
+        "100644",
+        b'PROGRAM = "import sys\\nfrom cells.core import old_spec, specs\\n"\n'
+        b'LINES = ("import sys\\n" "from cells.core import old_spec as o\\n")\n'
+        b"# from cells.core import old_spec\n",
+    )
+    got, _ = transform(escaped, mp)
+    t = got["tests/test_escaped.py"][1].decode()
+    checks["text from-import: a moved submodule by its own home, the rest by the package's"] = (
+        "import sys\\nfrom cells.legacy.core import old_spec; from cells.core import specs\\n" in t
+        and '"from cells.legacy.core import old_spec as o\\n"' in t
+        and "# from cells.legacy.core import old_spec\n" in t
+        and transform(got, mp)[0] == got
+    )
+    split = {
+        "src/cells/__init__.py": "",
+        "src/cells/core/__init__.py": '"""Core."""\n',
+        "src/cells/core/devices.py": "X = 1\n",
+        "src/cells/core/specs.py": "Y = 2\n",
+        "src/cells/models/__init__.py": "",
+        "src/cells/models/registry.py": "Z = 3\n",
+        "tests/test_split.py": (
+            'A = "from cells.core import devices\\n"\n'
+            'B = "from cells.core import devices, specs\\n"\n'
+            'C = "from cells.models import registry as r\\n"\n'
+            'D = "from cells.models import registry\\n"\n'
+        ),
+    }
+    split = {p: ("100644", t.encode()) for p, t in split.items()}
+    split_map = MoveMap(
+        dict(
+            kind=MAP_KIND,
+            move="split",
+            modules=[
+                ["cells.core", "cells.definitions"],
+                ["cells.core.devices", "cells.execution.devices"],
+                ["cells.core.specs", "cells.definitions.specs"],
+                ["cells.models.registry", "cells.registry.models"],
+            ],
+            packages={"cells.execution": "", "cells.registry": ""},
+        )
+    )
+    got, _ = transform(split, split_map)
+    t = got["tests/test_split.py"][1].decode()
+    checks["text from-import: a package file and its submodules re-homed apart, a leaf renamed"] = (
+        'A = "from cells.execution import devices\\n"' in t
+        and 'B = "from cells.execution import devices; from cells.definitions import specs\\n"' in t
+        and 'C = "from cells.registry import models as r\\n"' in t
+        and 'D = "from cells.registry import models as registry\\n"' in t
+        and transform(got, split_map)[0] == got
+        # The planted error: the dotted rule alone maps the package, not the submodule.
+        and _rewrite_dotted("from cells.core import devices", split_map)
+        == "from cells.definitions import devices"
     )
     base_ids = [
         "tests/test_old.py::test_old",
