@@ -1,5 +1,5 @@
 // Where everything of the Laws library stands, in the scene's units: the wall of bars by
-// family, the frames with their slot rows, and the strip of older families. Numbers only, no
+// family, the frames with their slot rows, and the model families' cases. Numbers only, no
 // drawing, so that the tests can hold the picture to the list without a renderer.
 
 /** On a tall screen, how many families stand side by side at most. */
@@ -8,7 +8,8 @@ export const PER_BAND = 6;
 export const WIDE = {
   bar: { w: 1.3, d: 0.22, col: 1.5, gap: 0.32, height: 9, pitchMax: 0.3, z: -3, base: 7.8 },
   frames: { z: 4, height: 6.4 },
-  older: { z: 7.4, pitch: 0.24, w: 0.16, h: 0.42 },
+  // A model family whose laws are tables inside it: a closed case on the plinth, its name on its face.
+  cases: { z: 6.6, pitch: 2.7, w: 2.5, h: 0.5, d: 0.5 },
 };
 
 /** The frames' boxes and slots, laid out from the list: each slot names the piece its row names. */
@@ -109,7 +110,7 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
     const { band, place } = spots[n];
     const x = (place - (inBand(band) - 1) / 2) * (col + gap);
     const y0 = base + (bands - 1 - band) * (bandHeight + 1.6);
-    // The older families' laws stand on their own part of the shelf, above a gap, and narrower: marked as in an older family.
+    // A law of a model family's table, or in no registry, stands on its own part of the shelf, above a gap, and narrower.
     let lift = 0, before = false, olderFoot = null;
     column.pieces.forEach((piece, j) => {
       const older = piece?.registry === "an older family" || piece?.registry === "no registry";
@@ -123,7 +124,15 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
   });
   const wallWidth = perBand * (col + gap) - gap;
   const wall = { x: 0, y: base - 1.35, w: wallWidth + 1.4, h: bands * (bandHeight + 1.6) + 0.65, z: z - 0.32 };
-  const older = library.older.map((frame, index, all) => ({ id: frame.id, x: (index - (all.length - 1) / 2) * (narrow ? 0.09 : WIDE.older.pitch), y: WIDE.older.h / 2 - 0.05, z: WIDE.older.z }));
   const spanX = Math.max(wall.w, ...frames.map((frame) => Math.abs(frame.x) * 2 + frame.w));
-  return { narrow, bars, heads, frames, wall, older, pitch, bounds: { minX: -spanX / 2, maxX: spanX / 2, minY: -0.6, maxY: wall.y + wall.h + 1.4, minZ: z - 1, maxZ: WIDE.older.z + 1 } };
+  // The model families' cases stand in a row in front of the racks. On a tall screen they stand three
+  // to a row, lower and further apart, so that a row's names show over the row in front of it.
+  const C = WIDE.cases, per = narrow ? 3 : Math.max(1, library.cases.length);
+  const cases = library.cases.map((frame, index, all) => {
+    const row = Math.floor(index / per), place = index % per, inRow = Math.min(per, all.length - row * per);
+    const pitch = narrow ? 3.15 : C.pitch, w = narrow ? 2.9 : C.w, h = narrow ? 0.36 : C.h;
+    return { id: frame.id, x: (place - (inRow - 1) / 2) * pitch, y: h / 2 - 0.02, z: C.z + row * 1.5, w, h, d: C.d };
+  });
+  const front = cases.length ? Math.max(...cases.map((item) => item.z + item.d / 2)) + 0.6 : WIDE.frames.z + 1.6;
+  return { narrow, bars, heads, frames, wall, cases, pitch, bounds: { minX: -spanX / 2, maxX: spanX / 2, minY: -0.6, maxY: wall.y + wall.h + 1.4, minZ: z - 1, maxZ: front } };
 }

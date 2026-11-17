@@ -45,24 +45,55 @@ export function problemsOf(raw) {
   return problems;
 }
 
+/** The list's kind for a model family whose laws are tables inside it (the reading tool's word; the map says "model family"). */
+export const FAMILY = "older family";
+
+/** Where the engine keeps legacy code since D188's first move: the map does not show it. */
+export const LEGACY = "src/cells/legacy/";
+
+/**
+ * What the map no longer shows (the user, 17 November 2026: "no legacy code, it will be removed - we're
+ * still building Cells so not really any legacy data"): legacy code is what stands under
+ * src/cells/legacy/ after the engine's first move. So: every model family and piece the file says it
+ * left out (`left_out`), and any read from a file under src/cells/legacy/. A model family whose module
+ * stayed is shown. The view and the panel ask the Library, so a list read with them shows none of them.
+ */
+export function leftOutOf(raw) {
+  const out = new Map();
+  for (const frame of raw.left_out?.frames || []) out.set(frame.id, { ...frame, as: "frame" });
+  for (const piece of raw.left_out?.pieces || []) out.set(piece.id, { ...piece, as: "piece" });
+  for (const frame of raw.frames || []) if (frame.read?.path?.startsWith(LEGACY)) out.set(frame.id, { id: frame.id, kind: frame.kind, path: frame.read.path, now: frame.read.path, as: "frame" });
+  for (const piece of raw.pieces || []) if (piece.read?.path?.startsWith(LEGACY)) out.set(piece.id, { id: piece.id, registry: piece.registry, path: piece.read.path, now: piece.read.path, as: "piece" });
+  return out;
+}
+
 export class Library {
   constructor(raw) {
     const problems = problemsOf(raw);
     if (problems.length) throw new Error(`The Laws library's list is not valid: ${problems.slice(0, 3).join("; ")}`);
     this.raw = raw;
     this.stamp = raw.stamp;
+    this.leftOut = leftOutOf(raw);
+    const shown = (id) => !this.leftOut.has(id);
     this.families = raw.families;
     this.shelves = raw.shelves;
-    this.pieces = raw.pieces;
-    this.frames = raw.frames;
-    this.byId = new Map(raw.pieces.map((piece) => [piece.id, piece]));
-    this.frameById = new Map(raw.frames.map((frame) => [frame.id, frame]));
+    // A rack names only what the map shows.
+    this.frames = raw.frames.filter((frame) => shown(frame.id)).map((frame) => ((frame.rows || []).every((row) => row.pieces.every(shown)) ? frame : { ...frame, rows: frame.rows.map((row) => ({ ...row, pieces: row.pieces.filter(shown) })) }));
+    // A piece keeps only what declares it on the map.
+    this.pieces = raw.pieces.filter((piece) => shown(piece.id)).map((piece) => (piece.declared_by.every((entry) => shown(entry.frame)) ? piece : { ...piece, declared_by: piece.declared_by.filter((entry) => shown(entry.frame)) }));
+    this.byId = new Map(this.pieces.map((piece) => [piece.id, piece]));
+    this.frameById = new Map(this.frames.map((frame) => [frame.id, frame]));
     this.familyById = new Map(raw.families.map((family) => [family.id, family]));
     this.shelfById = new Map((raw.shelves || []).map((shelf) => [shelf.id, shelf]));
-    this.inFamily = new Map(raw.families.map((family) => [family.id, raw.pieces.filter((piece) => piece.family === family.id)]));
+    this.inFamily = new Map(raw.families.map((family) => [family.id, this.pieces.filter((piece) => piece.family === family.id)]));
     // A kind's own pieces, as the file reads them.
     this.kindOf = new Map();
-    for (const piece of raw.pieces) for (const id of piece.kind === "kind" ? piece.read?.fields?.pieces || [] : []) this.kindOf.set(id, piece.id);
+    for (const piece of this.pieces) for (const id of piece.kind === "kind" ? piece.read?.fields?.pieces || [] : []) this.kindOf.set(id, piece.id);
+  }
+
+  /** What the map no longer shows, by id: { id, as: "frame" | "piece", path, now } (now: its file under src/cells/legacy/, where known). */
+  notShown(id) {
+    return this.leftOut.get(id) || null;
   }
 
   piece(id) {
@@ -73,13 +104,14 @@ export class Library {
     return this.frameById.get(id) || null;
   }
 
-  /** The frames drawn as racks (the older families stand apart, as a strip). */
+  /** The frames drawn as racks: the models that declare pieces. */
   get racks() {
-    return this.frames.filter((frame) => frame.kind !== "older family");
+    return this.frames.filter((frame) => frame.kind !== FAMILY);
   }
 
-  get older() {
-    return this.frames.filter((frame) => frame.kind === "older family");
+  /** The model families whose laws are tables inside each: drawn as closed cases on the plinth, with no declared pieces. */
+  get cases() {
+    return this.frames.filter((frame) => frame.kind === FAMILY);
   }
 
   /** Whether a piece matches a search: its id, its unit, its file, its family and its label. */
@@ -147,6 +179,6 @@ export class Library {
   counts() {
     const where = Object.fromEntries(WHERE.map((item) => [item.id, this.pieces.filter((piece) => piece.where === item.id).length]));
     const family = Object.fromEntries(this.families.map((item) => [item.id, this.inFamily.get(item.id).length]));
-    return { pieces: this.pieces.length, where, family, frames: this.racks.length, older: this.older.length };
+    return { pieces: this.pieces.length, where, family, frames: this.racks.length, cases: this.cases.length };
   }
 }

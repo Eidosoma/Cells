@@ -45,13 +45,13 @@ export const MARKS = [
   { id: "laws-main", label: "Solid slate: on main", description: "A solid slate bar on the wall, or a slate card in a rack: a piece read on main.", when: (lens) => lens.library.counts().where.main > 0 },
   { id: "laws-candidate", label: "Dark band: on the landing candidate, not main", description: "A dark band across a bar or card: the piece is read on the landing candidate and is not on main yet.", when: (lens) => lens.library.counts().where.candidate > 0 },
   { id: "laws-design", label: "Glass outline: a design note's; no code", description: "A bar of clear glass with an outline: a design note names the piece; there is no code for it.", when: (lens) => lens.library.counts().where.design > 0 },
-  { id: "laws-older", label: "Narrower, higher: an older family's, or no registry", description: "A narrower bar on the upper part of its column, above a gap: a law of an older model family's tables, or a named law in no registry. Neither is a piece of the one model.", when: (lens) => lens.layout.bars.some((bar) => bar.id && bar.older) },
+  { id: "laws-older", label: "Narrower, higher: a law of a model family's table, or in no registry", description: "A narrower bar on the upper part of its column, above a gap: a law of a model family's table (a LAW_CODES table inside its own module), or a named law in no registry. Neither is a declared piece of the one model.", when: (lens) => lens.layout.bars.some((bar) => bar.id && bar.older) },
   { id: "laws-height", label: "Column height: the family's count", description: "Each column holds one bar for each piece of its family, so its height is the family's count.", when: () => true },
   { id: "laws-rack", label: "Rack: a model, by its MODEL_ID", description: "Each rack in front of the wall is a model the engine names by its MODEL_ID; its rows are the kinds of piece it declares.", when: (lens) => lens.layout.frames.length > 0 },
+  { id: "laws-case", label: "A closed case: a model family; its laws are a table inside it", description: "Each closed case on the plinth is a model family the engine names by its MODEL_ID: one module for each combination of features, whose laws are a table inside it. It declares no piece of the list.", when: (lens) => lens.cases.mesh.count > 0 },
   { id: "laws-slot", label: "Card: a piece the model declares", description: "A card seated in a rack's slot: a piece the model declares there, drawn in the piece's own form.", when: (lens) => lens.cardList.length > 0 },
   { id: "laws-block", label: "Block: the inner model a rack holds", description: "A long block across the head of a rack: the inner model that model holds whole.", when: (lens) => lens.blocks.mesh.count > 0 },
   { id: "laws-next", label: "Empty socket, 'free': a next code; no piece", description: "An empty socket at the end of a row, marked with a number and 'free': the row's next free registry code, as read from the code. No piece stands there.", when: (lens) => lens.nextCount > 0 },
-  { id: "laws-older-family", label: "Box on the plinth: an older model family", description: "Each small box on the plinth's front is an older model family; its laws are tables inside it.", when: (lens) => lens.older.mesh.count > 0 },
   { id: "laws-found", label: "Forward: found; faint: not found", description: "While a search, a filter or a mark of the legend is chosen, what it picks out stands forward in its own form, and the rest fades.", when: (lens) => Boolean(lens.filter.family || lens.filter.where || lens.filter.query || lens.filter.box || lens.isolate) },
   { id: "laws-empty", label: "Faint bar: an empty place (size test)", description: "A faint bar is no piece: an empty place added to test the wall at a larger size.", when: (lens) => lens.size > 0 },
   { id: "laws-chosen", label: "Blue light: your choice, its slots and routes", description: "Blue light marks what you chose, every slot that declares it and a route from the piece to each slot; after a choice the light runs along each route from the piece to its slot, then holds.", when: () => true },
@@ -194,7 +194,7 @@ export class LawsLens {
     for (const child of [...this.shine.children]) this.shine.remove(child);
     const library = this.library;
     this.layout = layoutOf(library, { size: this.size, narrow: this.narrow });
-    const { bars, frames, wall, older, heads } = this.layout;
+    const { bars, frames, wall, heads, cases } = this.layout;
     const box = new THREE.BoxGeometry(1, 1, 1);
     this.box = box;
     const zWall = bars[0]?.z ?? WIDE.bar.z;
@@ -221,7 +221,7 @@ export class LawsLens {
     ]);
     this.rim.mesh.userData.unpickable = true;
 
-    // Each column stands on a plank, its older part on a plank of its own; dividers keep the columns apart.
+    // Each column stands on a plank, its narrower part on a plank of its own; dividers keep the columns apart.
     const planks = [], dividers = [];
     const { col, gap } = WIDE.bar;
     for (const head of heads) {
@@ -311,6 +311,9 @@ export class LawsLens {
     this.sockets = boxes(this.root, box, this.materials.socket, sockets);
     this.sockets.mesh.userData.unpickable = true;
     this.blocks = boxes(this.root, box, this.materials.rail, blocks, { pick: pickFrame });
+    // The model families: a closed case each on the plinth, in front of the racks; their laws are tables inside them.
+    this.cases = boxes(this.root, box, this.materials.rail, cases, { pick: (item) => (item ? pageId(item.id) : null) });
+    this.cases.mesh.castShadow = true;
     for (const card of cards) {
       const piece = library.piece(card.piece);
       card.form = piece?.where === "candidate" ? "band" : piece?.where === "design" ? "design" : "solid";
@@ -324,9 +327,6 @@ export class LawsLens {
     // The next free registry code: an empty socket, its number written in it (laws_marks.js).
     this.nextCount = nexts.length;
 
-    // The older families: a strip of small closed boxes on the plinth's front edge.
-    const thin = this.narrow ? 0.07 : WIDE.older.w;
-    this.older = boxes(this.root, box, this.materials.rail, older.map((item) => ({ ...item, w: thin, h: WIDE.older.h, d: thin })), { pick: (item) => (item ? pageId(item.id) : null) });
 
     // The names the room carries: on the planks, on the wall's foot, beside the rows.
     this.plaques = plaquesOf(library, this.layout);
@@ -384,11 +384,14 @@ export class LawsLens {
 
   has(id) {
     const name = engineId(id);
-    return Boolean(name && (this.library.piece(name) || this.library.frame(name)));
+    return Boolean(name && (this.library.piece(name) || this.library.frame(name) || this.library.notShown(name)));
   }
 
   describe(id) {
-    return describePart(this.library, id);
+    // Whether the page draws an Engine view box: asked of its scene as the viewer routes (the part, in the Engine view).
+    const model = this.model;
+    const drawn = model?.entities?.length ? (box) => Boolean(model.get(box)) && model.lensOf(model.get(box)) === "engine" : null;
+    return describePart(this.library, id, { drawn, map: model?.meta || null });
   }
 
   entities() {
@@ -411,9 +414,9 @@ export class LawsLens {
     const lit = this.lit || { bars: new Set(), cards: new Set(), blocks: new Set() };
     const count = {
       "laws-main": counts.where.main, "laws-candidate": counts.where.candidate, "laws-design": counts.where.design,
-      "laws-older": this.layout.bars.filter((bar) => bar.id && bar.older).length, "laws-height": this.layout.heads.length,
+      "laws-older": this.layout.bars.filter((bar) => bar.id && bar.older).length, "laws-height": this.layout.heads.length, "laws-case": this.cases.mesh.count,
       "laws-rack": this.layout.frames.length, "laws-slot": this.cardList.length, "laws-block": this.blocks.mesh.count, "laws-next": this.nextCount,
-      "laws-older-family": this.older.mesh.count, "laws-found": this.library.pieces.filter((piece) => this.library.passes(piece, this.filter) && (!ISOLATES[this.isolate] || ISOLATES[this.isolate](piece))).length, "laws-empty": this.layout.bars.filter((bar) => !bar.id).length,
+      "laws-found": this.library.pieces.filter((piece) => this.library.passes(piece, this.filter) && (!ISOLATES[this.isolate] || ISOLATES[this.isolate](piece))).length, "laws-empty": this.layout.bars.filter((bar) => !bar.id).length,
       "laws-chosen": lit.bars.size + lit.cards.size + lit.blocks.size,
     };
     return {
@@ -501,7 +504,7 @@ export class LawsLens {
 
   /**
    * The opening view, fitted to the screen by projection: on a wide screen the whole library,
-   * the wall, the racks and the older strip, nothing cut and no band left empty. On a tall
+   * the wall, the racks and the model families' cases, nothing cut and no band left empty. On a tall
    * screen the whole wall, where the library's size shows and its names can be read; the racks
    * stand below it, and the camera goes to them when one is chosen.
    */
@@ -719,14 +722,14 @@ export class LawsLens {
       this.blocks.target[index] = chosen ? LIFT.slot : 0;
     });
     this.rails.items.forEach((rail, index) => this.rails.tint(index, lit.frame && engineId(rail.id) === lit.frame.id ? base.accent : base.rail));
-    this.older.items.forEach((item, index) => this.older.tint(index, pageId(item.id) === this.selected ? base.accent : base.rail));
-    for (const set of [this.slots, this.slotBands, this.blocks, this.rails, this.older]) if (set.mesh.instanceColor) set.mesh.instanceColor.needsUpdate = true;
+    this.cases.items.forEach((item, index) => this.cases.tint(index, pageId(item.id) === this.selected ? base.accent : base.rail));
+    for (const set of [this.slots, this.slotBands, this.blocks, this.rails, this.cases]) if (set.mesh.instanceColor) set.mesh.instanceColor.needsUpdate = true;
     this.placeLit(lit);
     this.drawLines(lit);
     this.markChosen(lit);
     this.labelChosen(lit);
     // Bloom only while something is chosen, and only from what was marked: the chosen and its routes.
-    const any = Boolean(lit.piece || lit.frame || (this.selected && this.has(this.selected)));
+    const any = Boolean(lit.piece || lit.frame); // a chosen rack, piece or model family; an address naming what is not shown lights nothing
     const bloom = this.palette?.dark ? LAWS_BLOOM : LAWS_BLOOM_LIGHT;
     this.stage.setBloom?.(any && this.active ? bloom.strength : 0, { radius: bloom.radius, floor: bloom.floor });
     this.stage.invalidate?.();
@@ -753,15 +756,15 @@ export class LawsLens {
     });
     const slots = [];
     this.cardList.forEach((card, index) => lit.cards.has(`${card.frame}|${card.row}|${card.index}`) && slots.push({ item: card, set: this.slots, index }));
-    // A chosen older family: its box on the plinth.
-    this.older.items.forEach((item, index) => pageId(item.id) === this.selected && slots.push({ item: { ...item, w: this.narrow ? 0.07 : WIDE.older.w, h: WIDE.older.h, d: this.narrow ? 0.07 : WIDE.older.w }, set: this.older, index, lift: 0 }));
+    // A chosen model family: its case.
+    this.cases.items.forEach((item, index) => pageId(item.id) === this.selected && slots.push({ item, set: this.cases, index, lift: 0, whole: true }));
     this.blocks.items.forEach((block, index) => lit.blocks.has(`${block.frame}|${engineId(block.id)}`) && slots.push({ item: block, set: this.blocks, index }));
     if (light && lit.frame) this.rails.items.forEach((rail, index) => engineId(rail.id) === lit.frame.id && slots.push({ item: rail, set: this.rails, index, lift: 0, whole: true }));
     this.litSlots.mesh.count = slots.length;
     slots.forEach(({ item, set, index, lift = LIFT.slot, whole = false }, n) => {
       this.litSlots.offset[n] = set.offset[index];
       this.litSlots.target[n] = lift;
-      const rim = light && !whole && set !== this.older;
+      const rim = light && !whole;
       this.litSlots.place(n, rim ? { ...item, w: item.w + RIM, h: item.h + RIM, d: item.d * 0.5, z: item.z - item.d * 0.25 - 0.01 } : whole ? { ...item, w: item.w + 0.02, h: item.h + 0.02, d: item.d + 0.02 } : { ...item, w: item.w * 1.02, h: item.h * 1.08, d: item.d * 1.1 });
     });
     for (const set of [this.litBars, this.litSlots]) set.flush();
@@ -837,11 +840,11 @@ export class LawsLens {
     if (point) this.chosenLabel = this.labels.add({ id: this.selected, text: lit.piece.id, anchor: point.clone().add(new THREE.Vector3(0, 0, LIFT.chosen)), priority: 2000, kind: "part", lift: 10 });
   }
 
-  /** A move toward what was chosen: a piece's column and the racks it plugs into, a rack and its pieces on the wall, or an older family's box. */
+  /** A move toward what was chosen: a piece's column and the racks it plugs into, a rack and its pieces on the wall, or a model family's case. */
   focus(id) {
     const name = engineId(id);
     const frame = this.layout.frames.find((item) => item.id === name);
-    const older = this.older.items.find((item) => item.id === name);
+    const family = this.layout.cases.find((item) => item.id === name);
     // The whole of what is lit, and the chosen thing alone for when the whole cannot be seen beside the panel.
     const box = new THREE.Box3(), core = new THREE.Box3();
     let approach = false; // a rack is come up to: its own box
@@ -853,10 +856,10 @@ export class LawsLens {
       }
       for (const piece of this.library.piecesOf(frame.id)) add(this.barPoint(piece), 0.4);
       approach = true;
-    } else if (older) {
-      // The box among its neighbours on the plinth, with the racks behind it.
-      add(new THREE.Vector3(older.x - 2.5, older.y, older.z), 0.4);
-      add(new THREE.Vector3(older.x + 2.5, older.y + 1.6, older.z - 2), 0.4);
+    } else if (family) {
+      // The case among its neighbours, with the racks behind it.
+      add(new THREE.Vector3(family.x - 3, family.y, family.z + 0.5), 0.4);
+      add(new THREE.Vector3(family.x + 3, family.y + 2, family.z - 2.5), 0.4);
     } else {
       const point = this.barPoint(name);
       if (!point) return;

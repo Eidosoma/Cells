@@ -82,6 +82,7 @@ const SUITE = [
   { name: "laws-address", tool: "check_laws.mjs", args: [pictures], env: { CASE: "address", NAME: "laws-address" }, minutes: 1 },
   { name: "laws-phone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "phone", NAME: "laws-phone" }, minutes: 1 },
   { name: "laws-text", tool: "check_laws.mjs", args: [pictures], env: { CASE: "text", NAME: "laws-text" }, minutes: 1 },
+  { name: "laws-gone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "gone", NAME: "laws-gone" }, minutes: 1 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

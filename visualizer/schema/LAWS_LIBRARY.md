@@ -35,7 +35,7 @@ own static reader (`tools/lib/static_eval.py`) and imports nothing of `cells`.
 ```json
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "main": { "ref": "origin/main", "revision": "ab267c39", "date": "2026-11-16", "on_remote": true },
+  "main": { "ref": "origin/main", "revision": "ab267c39", "full_revision": "ab267c39…(40 hex digits)", "date": "2026-11-16", "on_remote": true },
   "candidate": null,
   "landed": null,
   "records": { "scene_revision": "…", "inventory": "2026-11-12 (engine fec863f)" },
@@ -47,6 +47,8 @@ own static reader (`tools/lib/static_eval.py`) and imports nothing of `cells`.
   06684552. Where the checkout read has a remote, the revision must be on a remote branch as
   last fetched. Otherwise the tool warns, and `--strict` fails. A checkout with no remote (a
   test's copy) is taken as it is.
+- **`full_revision` is the main revision in full** (40 hex digits), on main's history. The view
+  links the files it read there (see "Sources and links"), so the tool writes it at every read.
 - **A candidate is a working branch.** Working branches are not in the public repository until
   they land, so the candidate's revision is stated and never linked. Once the candidate is an
   ancestor of the main revision, it adds nothing: `landed` names it, and every piece is read
@@ -123,9 +125,11 @@ answers (`stamp.what_counts`), and the tool follows them:
   - a model by its `MODEL_ID` (the frames).
 
   Each piece says where it stands registered (`registry`, below).
-- **The older families' laws count.** They stand on their own part of each shelf, marked as in
-  an older family. The user chose this on 16 November 2026. A law named only by a constant
-  (`no registry`) stands on that upper part too, with its own words.
+- **The model families' table laws count.** A law of a model family's table (registry value
+  `an older family`, the reading tool's word) stands on its own part of each shelf, narrower. The
+  user chose this on 16 November 2026. A law named only by a constant (`no registry`) stands on
+  that upper part too, with its own words. The map does not call either "older" (the
+  coordinator's ruling, 17 November 2026): both are active code.
 - **Solvers and step methods count**, an operator's `STEP_ID` among them. `rk4` has no version. It is shown as it is (`unversioned`),
   and the manifest's design is to close that gap. No version is given to it.
 - **A kernel in the code that no kind imports is not a piece yet.** It becomes one when
@@ -147,7 +151,7 @@ answers (`stamp.what_counts`), and the tool follows them:
 | `a registered operator` | A law named in a registered operator's own module (`registered_in.operator`); the page's reading |
 | `the inner model's structure` | Named by the inner model's own declarations outside `inner_laws` (its heat booking) |
 | `a solver or step method` | A solver or step method |
-| `an older family` | A law of the older families' channel catalogue: a `LAW_CODES` table inside its own module, until a use moves it (D167) |
+| `an older family` | A law of a model family's table: the channel catalogue's `LAW_CODES` inside its own module, until a use moves it (D167). The map says "in a model family's table" |
 | `no registry` | A constant named for a law that no registry the tool reads holds: shelved by the page's reading until the manifest says what it is |
 
 A `design` piece has `registry: null`.
@@ -201,7 +205,7 @@ no piece of Cells. Quoted docstrings may name one as the source of a law's coeff
 }
 ```
 
-- **`kind`** is `inner model`, `composite`, `composition` or `older family`.
+- **`kind`** is `inner model`, `composite`, `composition` or `older family` (the reading tool's word for a model family; the map says "model family").
 - **The inner model's rows** are read from `models/inner_laws.py` where the revision has it:
   - its channel, junction and pump registries;
   - its route ids and its fuel kind;
@@ -211,14 +215,16 @@ no piece of Cells. Quoted docstrings may name one as the source of a law's coeff
   Each row says the ref it was read at. Where main has no `inner_laws.py` (before the landing of
   16 November 2026), the rows come from the candidate, and main's closed table stands beside
   them (`closed_on_main`). `codes` are the inner model's own registry codes (`LAW_CODES` of
-  `core/surface_pump_v3_spec.py`), a registry apart from the older families' catalogue codes.
+  `core/surface_pump_v3_spec.py`), a registry apart from the model families' catalogue codes.
   `next_code` is the next free one: a new channel law takes it, and no code is reused.
 - **The composite's row** is the operator registry: any ordered subset of it is a definition
   (`any_order`).
 - **A composition's row** is curated: the operators of the blocks that `frozen_definition`
   moves into the operator list, with that source.
-- **An older family** has no rows. Its laws are a table inside its own module, and they become
-  declared pieces as each moves into the one model, when a use needs it (D167).
+- **A model family** (kind `older family`) has no rows: one module for each combination of
+  features, whose laws are a table inside it. It declares no piece, and the map draws it as a
+  closed case on the plinth, in front of the racks. One whose module moved into
+  `src/cells/legacy/` is legacy code and is not shown (below).
 - **`boxes`** are the Engine view's boxes for the model, with their levels and sources. A
   frame's status never comes from its parts: "integration grants no acceptance"
   (`development_status`, read from `core/pump_composite_spec.py`).
@@ -240,9 +246,16 @@ The view lights exactly these when a piece is chosen: its slots in each frame, a
 Every source here is the engine's own record (its code and documents, under the project's MIT
 licence) or the viewer's own data. No third-party source is read.
 
-A file on main may be linked at the map's source address. A file read on a candidate or a
-development branch, and a design note on a branch, is named in words and never linked: those
-branches are not in the public repository until they land.
+A file the list read on main is linked at the revision the list was read at
+(`stamp.main.full_revision`), in the repository of the map's source address: the file is there by
+construction, though it may have moved since. The panel's source carries that revision
+(`{ path, where, revision }`), and `SceneModel.sourceUrl` links a source that carries its own
+revision there. Where the map's revision is another, the words beside the link say so ("MODEL_ID,
+as read at main fa19d80c"). A status's source and an Engine view box's source are the scene's, and
+link at the map's revision as before.
+
+A file read on a candidate or a development branch, and a design note on a branch, is named in
+words and never linked: those branches are not in the public repository until they land.
 
 ## What the view may say
 
@@ -261,11 +274,11 @@ each one that is drawn (`MARKS` in `src/lenses/laws.js`, with a swatch for each 
 
 - solid slate: on main; a dark band: on the landing candidate; a glass outline: named in a design
   note, with no code;
-- a narrower bar higher on its shelf: an older family's law, or a named law in no registry;
+- a narrower bar higher on its shelf: a law of a model family's table, or a named law in no registry;
+- a closed case on the plinth: a model family; its laws are a table inside it;
 - a column's height: the family's count; a rack: a model; a card in it: a piece it declares; a
   block across its head: the inner model it holds; an empty socket marked "free": a row's next
   free registry code, with no piece;
-- a small box on the plinth: an older model family;
 - forward and faint: what a search or a filter finds and does not; a faint bar: an empty place,
   in a test of size only;
 - blue light: what is chosen, the slots that declare it and the routes between. Only these are
@@ -298,3 +311,44 @@ offers the Laws library as its fifth view only when it does.
   one before; the arrow keys turn the camera, as on every view.
 - **The room** is kept clear of the cards on the left on a wide window (a left inset), and the
   names written on it come back with a lost context or a lost graphics process.
+
+## No legacy code on the map
+
+The user, 17 November 2026: "no legacy code, it will be removed - we're still building Cells so not
+really any legacy data". Legacy code is what stands under `src/cells/legacy/` after the engine's
+first move (D188's move 1, main 7bb8bf23, with its table `scripts/moves/move1-table.json`), which
+moved 88 model families' modules there. The view does not show:
+
+- **a model family whose module moved into `src/cells/legacy/`**;
+- **a piece read from a file under `src/cells/legacy/`**;
+- **a piece the file leaves out (`left_out`)**: one whose file moved to legacy code, that no model
+  declares and that no file outside `src/cells/legacy/` names.
+
+`left_out` records what was left out of a list read before the move, and by which table:
+
+```json
+"left_out": {
+  "why": "No legacy code on the map (the user, 17 November 2026: …)",
+  "table": "scripts/moves/move1-table.json at main 6a5d509f (D188's move 1)",
+  "frames": [{ "id": "assembly_regulated_cell@1", "kind": "older family", "path": "src/cells/assembly_cell/spec.py", "now": "src/cells/legacy/assembly_cell/spec.py" }],
+  "pieces": [{ "id": "neutral_mobile_leak@1", "registry": "no registry", "path": "…", "now": "src/cells/legacy/…" }]
+}
+```
+
+A model family whose module stayed (nine at main 6a5d509f) is not legacy code and is shown, as a
+model family. The
+`Library` (`src/lenses/laws_data.js`) is the one gate: it leaves all of these out whatever the
+list holds, and a piece keeps only what declares it on the map. An address naming one
+(`select=laws:<id>`) opens the library and says plainly that the map does not show it, with
+nothing of what it was.
+
+A piece still stands when an active model declares it or when a file outside legacy code names
+it, even when the file it was read from moved (the next read finds it where it is now). What is
+neither clearly legacy nor clearly active is left as it was, and listed for the user.
+
+**A box the Engine view no longer draws.** A piece read under such a box says so, "Its box when
+the list was read, … is not on the Engine view now". Its status is not quoted, and no link leads
+to it. A frame's panel names only the boxes the page draws. The page judges "drawn" as the viewer
+routes: the part is in the scene, in the Engine view. Standing alone, with no Engine view, nothing
+is said of the boxes beyond what the list read.
+

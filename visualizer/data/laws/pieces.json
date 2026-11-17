@@ -6,7 +6,8 @@
    "ref": "fa19d80c",
    "revision": "fa19d80c",
    "date": "2026-11-16",
-   "on_remote": true
+   "on_remote": true,
+   "full_revision": "fa19d80cce338c5fefde179f580339efe8947d8b"
   },
   "candidate": null,
   "landed": null,
@@ -143,9 +144,9 @@
   }
  ],
  "counts": {
-  "pieces": 190,
+  "pieces": 154,
   "by_where": {
-   "main": 177,
+   "main": 141,
    "design": 13
   },
   "by_family": {
@@ -153,23 +154,23 @@
    "potassium": 26,
    "calcium": 15,
    "hcn": 7,
-   "leak": 8,
-   "routes": 6,
-   "junctions": 4,
-   "pumps": 16,
-   "release": 5,
+   "leak": 7,
+   "routes": 4,
+   "junctions": 3,
+   "pumps": 9,
+   "release": 3,
    "factors": 3,
    "fuel": 3,
    "kinds": 5,
    "operators": 19,
    "solvers": 20,
-   "other": 44
+   "other": 21
   },
   "frames": {
    "inner model": 1,
    "composite": 1,
    "composition": 3,
-   "older family": 97
+   "older family": 9
   },
   "by_registry": {
    "inner_laws.py": 11,
@@ -180,9 +181,13 @@
    "the inner model's structure": 1,
    "a solver or step method": 19,
    "an older family": 51,
-   "no registry": 61
+   "no registry": 25
   },
-  "unregistered": 2
+  "unregistered": 2,
+  "left_out": {
+   "frames": 88,
+   "pieces": 36
+  }
  },
  "pieces": [
   {
@@ -3482,41 +3487,6 @@
    "registry": "an older family"
   },
   {
-   "id": "neutral_mobile_leak@1",
-   "kind": "channel law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_redistribution_spec.py",
-    "found_by": "POPULATION_LAW constant",
-    "fields": {
-     "doc": "Neutral mobile leak populations on explicitly identified fixed membrane patches."
-    }
-   },
-   "family": "leak",
-   "curated": {
-    "family": "leak",
-    "family_by": "unit kind",
-    "unit": "Always-open single-ion and cation leak populations",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.specs",
-    "label": "Definitions",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/ARCHITECTURE.md",
-     "where": "System shape"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "constant_field@1",
    "kind": "route law",
    "where": "main",
@@ -3773,70 +3743,6 @@
    }
   },
   {
-   "id": "bernoulli_fitted_environment_faces@1",
-   "kind": "route law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/extracellular_face_transport.py",
-    "found_by": "FACE_LAW_ID constant",
-    "fields": {
-     "doc": "Conservative Bernoulli-fitted extracellular face law, grid binding and bath ledgers."
-    }
-   },
-   "family": "routes",
-   "curated": {
-    "family": "routes",
-    "family_by": "family_of"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.electrodiffusion",
-    "label": "Membrane transport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/BIOELECTRIC_CELL_SPEC.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "extracellular_face_transport@1",
-   "kind": "route law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/extracellular_face_transport.py",
-    "found_by": "SOURCE_LAW_ID constant",
-    "fields": {
-     "doc": "Conservative Bernoulli-fitted extracellular face law, grid binding and bath ledgers."
-    }
-   },
-   "family": "routes",
-   "curated": {
-    "family": "routes",
-    "family_by": "family_of"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.electrodiffusion",
-    "label": "Membrane transport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/BIOELECTRIC_CELL_SPEC.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "junction_voltage_relaxation@1",
    "kind": "junction law",
    "where": "main",
@@ -3950,41 +3856,6 @@
     "as_of": null,
     "source": {
      "path": "docs/CELL_REPLACEMENT.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "symmetric_opposing_relaxation@1",
-   "kind": "junction law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/physical_ionic_graph_spec.py",
-    "found_by": "GATE_LAW constant",
-    "fields": {
-     "doc": "Strict fixed-graph assembly composed from the existing local physical schemas."
-    }
-   },
-   "family": "junctions",
-   "curated": {
-    "family": "junctions",
-    "family_by": "unit kind",
-    "unit": "Gap-junction channel (generic)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.specs",
-    "label": "Definitions",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/ARCHITECTURE.md",
-     "where": "System shape"
     }
    },
    "declared_by": [],
@@ -4285,74 +4156,6 @@
    "registry": null
   },
   {
-   "id": "cell_zone_transporter@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/cell_zone_transport.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Configurable cell-zone transporter law, versioned @1."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "Declared (configured) transporter",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.cotransport",
-    "label": "Cotransport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/COTRANSPORT.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "electroneutral_symport_reversible_tanh@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/cotransport.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Manufactured reversible electroneutral symport, without geometry or stepping."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "Declared (configured) transporter",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.cotransport",
-    "label": "Cotransport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/COTRANSPORT.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "er_calcium_pump_positive@1",
    "kind": "pump law",
    "where": "main",
@@ -4387,143 +4190,6 @@
    "registry": "no registry"
   },
   {
-   "id": "finite_atp_er_1ca_positive@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/finite_calcium_pumps.py",
-    "found_by": "ER_LAW constant",
-    "fields": {
-     "doc": "Live finite-energy adapters for the unchanged positive-domain calcium laws."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "ER Ca pump (SERCA family)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.pumps",
-    "label": "Pumps",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/KINETIC_PUMP_PROCESS.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "finite_atp_pmca_positive@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/finite_calcium_pumps.py",
-    "found_by": "PMCA_LAW constant",
-    "fields": {
-     "doc": "Live finite-energy adapters for the unchanged positive-domain calcium laws."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "Plasma-membrane Ca-ATPase (PMCA)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.pumps",
-    "label": "Pumps",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/KINETIC_PUMP_PROCESS.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "kcc_reversible_tanh@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/cotransport.py",
-    "found_by": "KCC_LAW_ID constant",
-    "fields": {
-     "doc": "Manufactured reversible electroneutral symport, without geometry or stepping."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "K+-Cl- cotransporter (KCC)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.cotransport",
-    "label": "Cotransport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/COTRANSPORT.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "nak_atp_affinity_tanh@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/finite_extracellular_spec.py",
-    "found_by": "the protein inventory's record, found in the code",
-    "fields": {
-     "doc": "Strict finite-inventory assembly. No maintained-bath conversion or reference imports."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "Na+/K+-ATPase",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.specs",
-    "label": "Definitions",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/ARCHITECTURE.md",
-     "where": "System shape"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "ncx_3na_1ca_symmetric_barrier@1",
    "kind": "pump law",
    "where": "main",
@@ -4552,40 +4218,6 @@
     "as_of": null,
     "source": {
      "path": "docs/ER_CALCIUM.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "nkcc_reversible_tanh@1",
-   "kind": "pump law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/cotransport.py",
-    "found_by": "NKCC_LAW_ID constant",
-    "fields": {
-     "doc": "Manufactured reversible electroneutral symport, without geometry or stepping."
-    }
-   },
-   "family": "pumps",
-   "curated": {
-    "family": "pumps",
-    "family_by": "unit kind",
-    "unit": "Na+-K+-2Cl- cotransporter (NKCC)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.cotransport",
-    "label": "Cotransport",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/COTRANSPORT.md"
     }
    },
    "declared_by": [],
@@ -4737,74 +4369,6 @@
     "as_of": null,
     "source": {
      "path": "docs/ER_CALCIUM.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "ip3_er_release@1",
-   "kind": "release law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/ip3_release.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "BETSE v1.5.0 IP3 Hill factor, evaluated on the current owned concentration."
-    }
-   },
-   "family": "release",
-   "curated": {
-    "family": "release",
-    "family_by": "unit kind",
-    "unit": "ER Ca release channel (IP3R-like)",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.calcium",
-    "label": "Calcium and IP3",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/ER_CALCIUM.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "mitochondrial_passive_continuous_si@1",
-   "kind": "release law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/mitochondrial_passive.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Continuous physical form of BETSE mitochondrial constant-field transport."
-    }
-   },
-   "family": "release",
-   "curated": {
-    "family": "release",
-    "family_by": "unit kind",
-    "unit": "Mitochondrial inner-membrane passive permeability",
-    "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.energy",
-    "label": "Fuel and mitochondria",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/FINITE_ENERGY_POOLS.md"
     }
    },
    "declared_by": [],
@@ -7602,38 +7166,6 @@
    "registry": "no registry"
   },
   {
-   "id": "cells_active_ecm_polygon_initialization@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/active_ecm_polygon_preparation.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Complete active initialization on explicit finite-ECM polygon owners."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.preparation",
-    "label": "Tissue preparation",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_PHASES.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "cells_conforming_polygon_physical_owners@1",
    "kind": "law",
    "where": "main",
@@ -7666,166 +7198,6 @@
    "registry": "no registry"
   },
   {
-   "id": "cells_explicit_cleft_width_tensor_grid_cell_bath_partition@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_explicit_ecm_partition.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Bounded manufactured cell/bath rectangles with explicit cleft widths."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_explicit_seed_partition_first_original_rk4_interval@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_partition_advance.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Draft first original-grid RK4 interval after qualified initial physiology."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_explicit_seed_partition_passive_initial_physiology_bridge@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_partition_physiology_bridge.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Passive initial physiology on explicit positive cell/bath partitions."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_finite_ecm_conforming_polygon_partition@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/finite_ecm_polygon_geometry.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Explicit finite cell/ECM partition with orthogonal bath-face distances."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_finite_ecm_polygon_passive_preparation@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/finite_ecm_polygon_preparation.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Complete passive physical admission on explicit finite-ECM polygons."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.preparation",
-    "label": "Tissue preparation",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_PHASES.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "cells_fixed_polygon_removal_rebuild@1",
    "kind": "law",
    "where": "main",
@@ -7852,198 +7224,6 @@
     "as_of": null,
     "source": {
      "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_fixed_seed_environment_prerequisite_correspondence@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_control_volume_environment.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Owned bridge-to-environment correspondence with finite-ECM obstruction proof."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_fixed_seed_explicit_domain_manufactured_polygon_physical_bridge@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_control_volume_physical_bridge.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Explicit fixed-seed output to manufactured polygon physical preparation."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_fixed_seed_explicit_domain_voronoi_control_volumes@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_control_volumes.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Prospective exact bounded Voronoi control volumes on immutable source seeds."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_partition_full_horizon_checked_trajectory_exact_restart@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_partition_trajectory.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Unfrozen, bounded full-horizon continuation using the existing checked kernel."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_partition_original_endpoint_clock_resource_controls@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/stable_seed_partition_advance_refinement.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Source-only common-endpoint proposal over separately qualified clock arms."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "cells_polygon_active_physiology_preparation@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/active_polygon_physiology_preparation.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Candidate complete active definitions bound to polygon physical owners."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "exec.preparation",
-    "label": "Tissue preparation",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_PHASES.md"
     }
    },
    "declared_by": [],
@@ -8178,199 +7358,6 @@
    "registry": "no registry"
   },
   {
-   "id": "complete_owned_calcium_static_reservoir_material_electrode_work@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/models/open_calcium_reservoirs.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Complete static ideal-reservoir closure for owned calcium/plasma rates."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "models.calcium",
-    "label": "Calcium and chemistry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/SPATIAL_CALCIUM.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "conservative_tissue_removal_remap@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/tissue_removal.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Pure conservative tissue removal, explicit owners and stable layout identities."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "driven_atp_regeneration_tanh@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/finite_energy.py",
-    "found_by": "REGENERATION_LAW_ID constant",
-    "fields": {
-     "doc": "Finite transformed ATP/ADP/Pi pools and an explicitly driven synthesis port."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.energy",
-    "label": "Fuel and mitochondria",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/FINITE_ENERGY_POOLS.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "finite_atp_adp_pi_transformed@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/finite_energy.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Finite transformed ATP/ADP/Pi pools and an explicitly driven synthesis port."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.energy",
-    "label": "Fuel and mitochondria",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/FINITE_ENERGY_POOLS.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "fixed_surface_conservative_drift_diffusion@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/numerics/membrane_redistribution.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Conservative lateral transport of membrane-bound populations on fixed patches."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "num.redistribution",
-    "label": "Membrane redistribution",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/ROADMAP.md",
-     "where": "Membrane redistribution"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "geometry_operator_binding@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/geometry_operator_binding.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Explicit geometry ownership and CPU/JAX operator binding."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.geometry",
-    "label": "Tissue geometry",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_GEOMETRY.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
    "id": "global_controls@1",
    "kind": "law",
    "where": "main",
@@ -8398,125 +7385,6 @@
     "source": {
      "path": "docs/TISSUE_RETURN_CURRENT.md",
      "where": "Live network regulation of pumps, channels and junctions"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "held_charged_surface_prescribed_field_work@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/charged_surface_work.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "HELD supplied-patch charged-cargo owner with explicit prescribed-field work."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "mitochondrial_ion_voltage@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/mitochondrial_passive.py",
-    "found_by": "SOURCE_LAW constant",
-    "fields": {
-     "doc": "Continuous physical form of BETSE mitochondrial constant-field transport."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.energy",
-    "label": "Fuel and mitochondria",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/FINITE_ENERGY_POOLS.md"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "network_control_factors@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/network_control.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Local reaction-network control factors and ordered target writes, @1."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.regulation",
-    "label": "Network regulation",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_RETURN_CURRENT.md",
-     "where": "Live network regulation of pumps, channels and junctions"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "network_reactions@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/network_reactions.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Local reaction and cell growth/decay laws, version @1."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.reactions",
-    "label": "Reactions",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/COMPARTMENT_REACTIONS.md"
     }
    },
    "declared_by": [],
@@ -8686,39 +7554,6 @@
     "found_by": "LAW_ID constant",
     "fields": {
      "doc": "x/y/r gradient factors with explicit geometry and source-axis binding."
-    }
-   },
-   "family": "other",
-   "curated": {
-    "family": "other",
-    "family_by": "rule"
-   },
-   "status": null,
-   "box": {
-    "id": "laws.regulation",
-    "label": "Network regulation",
-    "level": "established",
-    "level_label": "Established",
-    "as_of": null,
-    "source": {
-     "path": "docs/TISSUE_RETURN_CURRENT.md",
-     "where": "Live network regulation of pumps, channels and junctions"
-    }
-   },
-   "declared_by": [],
-   "registry": "no registry"
-  },
-  {
-   "id": "tissue_target_selectors@1",
-   "kind": "law",
-   "where": "main",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/processes/tissue_target_selectors.py",
-    "found_by": "LAW_ID constant",
-    "fields": {
-     "doc": "Tissue target selectors, explicit stable owners and intervention maps."
     }
    },
    "family": "other",
@@ -9153,56 +7988,12 @@
    "rows": []
   },
   {
-   "id": "assembly_regulated_cell@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/assembly_cell/__init__.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "assembly_regulated_cluster@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/assembly_cluster/__init__.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
    "id": "capsid_graph@1",
    "kind": "older family",
    "read": {
     "ref": "fa19d80c",
     "revision": "fa19d80c",
     "path": "src/cells/assembly/__init__.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "compartment_reactions@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/reaction_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "er_calcium@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/er_spec.py",
     "found_by": "MODEL_ID"
    },
    "rows": []
@@ -9230,754 +8021,6 @@
    "rows": []
   },
   {
-   "id": "resolved_active_bath_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_bath_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_bath_events@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_bath_events_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_extracellular_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_profile_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_profile_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_active_profile_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_profile_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_atp_transport@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_atp_transport_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_extracellular_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_irreversible_transport@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_irreversible_transport_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_mitochondria@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_mitochondria_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_mitochondria_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_mitochondria_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_profile_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_profile_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_regulated@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_regulated_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_regulated@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_regulated_v2_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_regulated_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_regulated_v2_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_transport@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_transport_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_transport_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_transport_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_hcn_extra_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_profile_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_profile_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_energy_water_repair_profile_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_extracellular_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_profile_barrier_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_profile_barrier_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_profile_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_profile_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_calcium_water@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_calcium_water_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_cotransport@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_cotransport_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_cotransport_water@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_cotransport_water_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_energy@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_energy_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_energy_water@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_energy_water_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_extracellular_barriers@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/environment_barrier_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_membrane_profile_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_profile_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_membrane_profiles@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_profile_interventions_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium_bath_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_bath_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium_bath_events@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_bath_events_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium_energy@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_energy_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium_energy_bath_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_open_calcium_energy_bath_events@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_open_calcium_energy_bath_events_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_passive_bath_epoch@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_passive_bath_epoch_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_passive_bath_events@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_passive_bath_events_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
    "id": "resolved_pump_tissue@1",
    "kind": "older family",
    "read": {
@@ -9995,72 +8038,6 @@
     "ref": "fa19d80c",
     "revision": "fa19d80c",
     "path": "src/cells/core/surface_pump_v2_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_redistribution@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_redistribution_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_redistribution@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_mobile_pump_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_redistribution@3",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_mobile_channel_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_repair@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_repair_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_repair@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_mobile_repair_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_repair@3",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_mobile_pump_repair_spec.py",
     "found_by": "MODEL_ID"
    },
    "rows": []
@@ -10088,50 +8065,6 @@
    "rows": []
   },
   {
-   "id": "resolved_tissue_active_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_active_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_tissue_excision@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_excision_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_water@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_water_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_water@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_water_kinetic_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
    "id": "source_decay@1",
    "kind": "older family",
    "read": {
@@ -10141,73 +8074,759 @@
     "found_by": "MODEL_ID"
    },
    "rows": []
-  },
-  {
-   "id": "spatial_calcium@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/spatial_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "spatial_calcium@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/plasma_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "spatial_calcium@3",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/gated_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "spatial_calcium@4",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/ip3_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "spatial_calcium@5",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/tissue_calcium_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "spatial_extracellular@3",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/tissue_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
   }
  ],
- "older_words": "An older model family: one module for each combination of features. Its laws are a table inside its own module; each becomes a declared piece only as it moves into the one model, when a use needs it (D167)."
+ "older_words": "A model family: one module for each combination of features. Its laws are a table inside its own module; each becomes a declared piece only as it moves into the one model, when a use needs it (D167).",
+ "left_out": {
+  "why": "No legacy code on the map (the user, 17 November 2026: \"no legacy code, it will be removed - we're still building Cells so not really any legacy data\").",
+  "table": "scripts/moves/move1-table.json at main 6a5d509f (D188's move 1)",
+  "frames": [
+   {
+    "id": "assembly_regulated_cell@1",
+    "kind": "older family",
+    "path": "src/cells/assembly_cell/__init__.py",
+    "now": "src/cells/legacy/assembly_cell/__init__.py"
+   },
+   {
+    "id": "assembly_regulated_cluster@1",
+    "kind": "older family",
+    "path": "src/cells/assembly_cluster/__init__.py",
+    "now": "src/cells/legacy/assembly_cluster/__init__.py"
+   },
+   {
+    "id": "compartment_reactions@1",
+    "kind": "older family",
+    "path": "src/cells/core/reaction_spec.py",
+    "now": "src/cells/legacy/core/reaction_spec.py"
+   },
+   {
+    "id": "er_calcium@1",
+    "kind": "older family",
+    "path": "src/cells/core/er_spec.py",
+    "now": "src/cells/legacy/core/er_spec.py"
+   },
+   {
+    "id": "resolved_active_bath_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_bath_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_active_bath_epoch_spec.py"
+   },
+   {
+    "id": "resolved_active_bath_events@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_bath_events_spec.py",
+    "now": "src/cells/legacy/core/surface_active_bath_events_spec.py"
+   },
+   {
+    "id": "resolved_active_extracellular_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_active_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_active_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_active_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_active_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_active_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_active_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_active_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_active_profile_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_profile_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_active_profile_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_active_profile_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_profile_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_active_profile_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_atp_transport@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_atp_transport_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_extracellular_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_irreversible_transport@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_irreversible_transport_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_mitochondria@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_mitochondria_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_mitochondria_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_mitochondria_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_profile_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_profile_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_regulated@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_regulated_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_regulated@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_regulated_v2_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_regulated_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_regulated_v2_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_transport@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_transport_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_transport_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_transport_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_transport_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_transport_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_hcn_extra_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_hcn_extra_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_profile_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_profile_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_hcn_extra_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_energy_water_repair_profile_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_excision_spec.py"
+   },
+   {
+    "id": "resolved_calcium_extracellular_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_profile_barrier_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_profile_barrier_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_epoch_spec.py"
+   },
+   {
+    "id": "resolved_calcium_profile_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_profile_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_calcium_water@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_calcium_water_spec.py",
+    "now": "src/cells/legacy/core/surface_calcium_water_spec.py"
+   },
+   {
+    "id": "resolved_cotransport@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_cotransport_spec.py",
+    "now": "src/cells/legacy/core/surface_cotransport_spec.py"
+   },
+   {
+    "id": "resolved_cotransport_water@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_cotransport_water_spec.py",
+    "now": "src/cells/legacy/core/surface_cotransport_water_spec.py"
+   },
+   {
+    "id": "resolved_energy@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_energy_spec.py",
+    "now": "src/cells/legacy/core/surface_energy_spec.py"
+   },
+   {
+    "id": "resolved_energy_water@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_energy_water_spec.py",
+    "now": "src/cells/legacy/core/surface_energy_water_spec.py"
+   },
+   {
+    "id": "resolved_extracellular_barriers@1",
+    "kind": "older family",
+    "path": "src/cells/core/environment_barrier_interventions_spec.py",
+    "now": "src/cells/legacy/core/environment_barrier_interventions_spec.py"
+   },
+   {
+    "id": "resolved_membrane_profile_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_profile_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_profile_epoch_spec.py"
+   },
+   {
+    "id": "resolved_membrane_profiles@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_profile_interventions_spec.py",
+    "now": "src/cells/legacy/core/surface_profile_interventions_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium_bath_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_bath_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_bath_epoch_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium_bath_events@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_bath_events_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_bath_events_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium_energy@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_energy_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium_energy_bath_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_epoch_spec.py"
+   },
+   {
+    "id": "resolved_open_calcium_energy_bath_events@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_open_calcium_energy_bath_events_spec.py",
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_events_spec.py"
+   },
+   {
+    "id": "resolved_passive_bath_epoch@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_passive_bath_epoch_spec.py",
+    "now": "src/cells/legacy/core/surface_passive_bath_epoch_spec.py"
+   },
+   {
+    "id": "resolved_passive_bath_events@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_passive_bath_events_spec.py",
+    "now": "src/cells/legacy/core/surface_passive_bath_events_spec.py"
+   },
+   {
+    "id": "resolved_redistribution@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_redistribution_spec.py",
+    "now": "src/cells/legacy/core/surface_redistribution_spec.py"
+   },
+   {
+    "id": "resolved_redistribution@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_mobile_pump_spec.py",
+    "now": "src/cells/legacy/core/surface_mobile_pump_spec.py"
+   },
+   {
+    "id": "resolved_redistribution@3",
+    "kind": "older family",
+    "path": "src/cells/core/surface_mobile_channel_spec.py",
+    "now": "src/cells/legacy/core/surface_mobile_channel_spec.py"
+   },
+   {
+    "id": "resolved_repair@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_repair_spec.py",
+    "now": "src/cells/legacy/core/surface_repair_spec.py"
+   },
+   {
+    "id": "resolved_repair@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_mobile_repair_spec.py",
+    "now": "src/cells/legacy/core/surface_mobile_repair_spec.py"
+   },
+   {
+    "id": "resolved_repair@3",
+    "kind": "older family",
+    "path": "src/cells/core/surface_mobile_pump_repair_spec.py",
+    "now": "src/cells/legacy/core/surface_mobile_pump_repair_spec.py"
+   },
+   {
+    "id": "resolved_tissue_active_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_active_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_active_excision_spec.py"
+   },
+   {
+    "id": "resolved_tissue_excision@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_excision_spec.py",
+    "now": "src/cells/legacy/core/surface_excision_spec.py"
+   },
+   {
+    "id": "resolved_water@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_water_spec.py",
+    "now": "src/cells/legacy/core/surface_water_spec.py"
+   },
+   {
+    "id": "resolved_water@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_water_kinetic_spec.py",
+    "now": "src/cells/legacy/core/surface_water_kinetic_spec.py"
+   },
+   {
+    "id": "spatial_calcium@1",
+    "kind": "older family",
+    "path": "src/cells/core/spatial_calcium_spec.py",
+    "now": "src/cells/legacy/core/spatial_calcium_spec.py"
+   },
+   {
+    "id": "spatial_calcium@2",
+    "kind": "older family",
+    "path": "src/cells/core/plasma_calcium_spec.py",
+    "now": "src/cells/legacy/core/plasma_calcium_spec.py"
+   },
+   {
+    "id": "spatial_calcium@3",
+    "kind": "older family",
+    "path": "src/cells/core/gated_calcium_spec.py",
+    "now": "src/cells/legacy/core/gated_calcium_spec.py"
+   },
+   {
+    "id": "spatial_calcium@4",
+    "kind": "older family",
+    "path": "src/cells/core/ip3_calcium_spec.py",
+    "now": "src/cells/legacy/core/ip3_calcium_spec.py"
+   },
+   {
+    "id": "spatial_calcium@5",
+    "kind": "older family",
+    "path": "src/cells/core/tissue_calcium_spec.py",
+    "now": "src/cells/legacy/core/tissue_calcium_spec.py"
+   },
+   {
+    "id": "spatial_extracellular@3",
+    "kind": "older family",
+    "path": "src/cells/core/tissue_spec.py",
+    "now": "src/cells/legacy/core/tissue_spec.py"
+   }
+  ],
+  "pieces": [
+   {
+    "id": "neutral_mobile_leak@1",
+    "registry": "no registry",
+    "path": "src/cells/core/surface_redistribution_spec.py",
+    "now": "src/cells/legacy/core/surface_redistribution_spec.py"
+   },
+   {
+    "id": "bernoulli_fitted_environment_faces@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/extracellular_face_transport.py",
+    "now": "src/cells/legacy/processes/extracellular_face_transport.py"
+   },
+   {
+    "id": "extracellular_face_transport@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/extracellular_face_transport.py",
+    "now": "src/cells/legacy/processes/extracellular_face_transport.py"
+   },
+   {
+    "id": "symmetric_opposing_relaxation@1",
+    "registry": "no registry",
+    "path": "src/cells/core/physical_ionic_graph_spec.py",
+    "now": "src/cells/legacy/core/physical_ionic_graph_spec.py"
+   },
+   {
+    "id": "cell_zone_transporter@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/cell_zone_transport.py",
+    "now": "src/cells/legacy/processes/cell_zone_transport.py"
+   },
+   {
+    "id": "electroneutral_symport_reversible_tanh@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/cotransport.py",
+    "now": "src/cells/legacy/processes/cotransport.py"
+   },
+   {
+    "id": "finite_atp_er_1ca_positive@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/finite_calcium_pumps.py",
+    "now": "src/cells/legacy/processes/finite_calcium_pumps.py"
+   },
+   {
+    "id": "finite_atp_pmca_positive@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/finite_calcium_pumps.py",
+    "now": "src/cells/legacy/processes/finite_calcium_pumps.py"
+   },
+   {
+    "id": "kcc_reversible_tanh@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/cotransport.py",
+    "now": "src/cells/legacy/processes/cotransport.py"
+   },
+   {
+    "id": "nak_atp_affinity_tanh@1",
+    "registry": "no registry",
+    "path": "src/cells/core/finite_extracellular_spec.py",
+    "now": "src/cells/legacy/core/finite_extracellular_spec.py"
+   },
+   {
+    "id": "nkcc_reversible_tanh@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/cotransport.py",
+    "now": "src/cells/legacy/processes/cotransport.py"
+   },
+   {
+    "id": "ip3_er_release@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/ip3_release.py",
+    "now": "src/cells/legacy/processes/ip3_release.py"
+   },
+   {
+    "id": "mitochondrial_passive_continuous_si@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/mitochondrial_passive.py",
+    "now": "src/cells/legacy/processes/mitochondrial_passive.py"
+   },
+   {
+    "id": "cells_active_ecm_polygon_initialization@1",
+    "registry": "no registry",
+    "path": "src/cells/core/active_ecm_polygon_preparation.py",
+    "now": "src/cells/legacy/core/active_ecm_polygon_preparation.py"
+   },
+   {
+    "id": "cells_explicit_cleft_width_tensor_grid_cell_bath_partition@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_explicit_ecm_partition.py",
+    "now": "src/cells/legacy/processes/stable_seed_explicit_ecm_partition.py"
+   },
+   {
+    "id": "cells_explicit_seed_partition_first_original_rk4_interval@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_partition_advance.py",
+    "now": "src/cells/legacy/processes/stable_seed_partition_advance.py"
+   },
+   {
+    "id": "cells_explicit_seed_partition_passive_initial_physiology_bridge@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_partition_physiology_bridge.py",
+    "now": "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py"
+   },
+   {
+    "id": "cells_finite_ecm_conforming_polygon_partition@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/finite_ecm_polygon_geometry.py",
+    "now": "src/cells/legacy/processes/finite_ecm_polygon_geometry.py"
+   },
+   {
+    "id": "cells_finite_ecm_polygon_passive_preparation@1",
+    "registry": "no registry",
+    "path": "src/cells/core/finite_ecm_polygon_preparation.py",
+    "now": "src/cells/legacy/core/finite_ecm_polygon_preparation.py"
+   },
+   {
+    "id": "cells_fixed_seed_environment_prerequisite_correspondence@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_control_volume_environment.py",
+    "now": "src/cells/legacy/processes/stable_seed_control_volume_environment.py"
+   },
+   {
+    "id": "cells_fixed_seed_explicit_domain_manufactured_polygon_physical_bridge@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_control_volume_physical_bridge.py",
+    "now": "src/cells/legacy/processes/stable_seed_control_volume_physical_bridge.py"
+   },
+   {
+    "id": "cells_fixed_seed_explicit_domain_voronoi_control_volumes@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_control_volumes.py",
+    "now": "src/cells/legacy/processes/stable_seed_control_volumes.py"
+   },
+   {
+    "id": "cells_partition_full_horizon_checked_trajectory_exact_restart@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_partition_trajectory.py",
+    "now": "src/cells/legacy/processes/stable_seed_partition_trajectory.py"
+   },
+   {
+    "id": "cells_partition_original_endpoint_clock_resource_controls@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/stable_seed_partition_advance_refinement.py",
+    "now": "src/cells/legacy/processes/stable_seed_partition_advance_refinement.py"
+   },
+   {
+    "id": "cells_polygon_active_physiology_preparation@1",
+    "registry": "no registry",
+    "path": "src/cells/core/active_polygon_physiology_preparation.py",
+    "now": "src/cells/legacy/core/active_polygon_physiology_preparation.py"
+   },
+   {
+    "id": "complete_owned_calcium_static_reservoir_material_electrode_work@1",
+    "registry": "no registry",
+    "path": "src/cells/models/open_calcium_reservoirs.py",
+    "now": "src/cells/legacy/models/open_calcium_reservoirs.py"
+   },
+   {
+    "id": "conservative_tissue_removal_remap@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/tissue_removal.py",
+    "now": "src/cells/legacy/processes/tissue_removal.py"
+   },
+   {
+    "id": "driven_atp_regeneration_tanh@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/finite_energy.py",
+    "now": "src/cells/legacy/processes/finite_energy.py"
+   },
+   {
+    "id": "finite_atp_adp_pi_transformed@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/finite_energy.py",
+    "now": "src/cells/legacy/processes/finite_energy.py"
+   },
+   {
+    "id": "fixed_surface_conservative_drift_diffusion@1",
+    "registry": "no registry",
+    "path": "src/cells/numerics/membrane_redistribution.py",
+    "now": "src/cells/legacy/numerics/membrane_redistribution.py"
+   },
+   {
+    "id": "geometry_operator_binding@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/geometry_operator_binding.py",
+    "now": "src/cells/legacy/processes/geometry_operator_binding.py"
+   },
+   {
+    "id": "held_charged_surface_prescribed_field_work@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/charged_surface_work.py",
+    "now": "src/cells/legacy/processes/charged_surface_work.py"
+   },
+   {
+    "id": "mitochondrial_ion_voltage@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/mitochondrial_passive.py",
+    "now": "src/cells/legacy/processes/mitochondrial_passive.py"
+   },
+   {
+    "id": "network_control_factors@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/network_control.py",
+    "now": "src/cells/legacy/processes/network_control.py"
+   },
+   {
+    "id": "network_reactions@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/network_reactions.py",
+    "now": "src/cells/legacy/processes/network_reactions.py"
+   },
+   {
+    "id": "tissue_target_selectors@1",
+    "registry": "no registry",
+    "path": "src/cells/processes/tissue_target_selectors.py",
+    "now": "src/cells/legacy/processes/tissue_target_selectors.py"
+   }
+  ]
+ }
 }

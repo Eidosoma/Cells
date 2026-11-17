@@ -53,10 +53,10 @@ export function plaquesOf(library, layout) {
   const stamp = library.stamp.main;
   const read = `Read from the engine's code at main ${stamp.revision} (committed ${longDate(stamp.date)})${narrow ? "" : ". No level is shown that a record does not state."}`;
   out.push({ text: read, x: layout.wall.x, y: layout.wall.y + FOOT.y, z: layout.wall.z + FOOT.z + FOOT.d / 2 + 0.006, h: narrow ? 0.22 : 0.24, align: "center", tone: "soft", kind: "revision" });
-  // The older families, on the front face of the plinth their strip stands on.
-  if (layout.older.length) {
-    out.push({ text: `${layout.older.length} older model families: their laws are tables inside each family`, x: 0, y: PLINTH.y + PLINTH.h / 2, z: layout.bounds.maxZ + PLINTH.z + PLINTH.bevel + 0.01, h: 0.18, align: "center", tone: "soft", kind: "older" });
-  }
+  // Each model family's name on its case's face, and what the row is on the plinth's face.
+  // (in front of the lit copy a chosen case wears, which stands 0.01 proud of the case)
+  for (const item of layout.cases || []) out.push({ text: item.id, x: item.x, y: item.y, z: item.z + item.d / 2 + 0.02, h: narrow ? 0.17 : 0.15, align: "center", tone: "strong", kind: "case" });
+  if (layout.cases?.length) out.push({ text: "Model families: the laws of each are a table inside it", x: 0, y: PLINTH.y + PLINTH.h / 2, z: layout.bounds.maxZ + PLINTH.z + PLINTH.bevel + 0.01, h: 0.18, align: "center", tone: "soft", kind: "cases" });
   return out;
 }
 

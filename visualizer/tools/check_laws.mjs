@@ -2,18 +2,25 @@
 // Checks the Laws library on the map's page (schema/LAWS_LIBRARY.md) with real pointer and key
 // input, through the DevTools protocol, in the manner of tools/check_machine.mjs:
 //
-//   main     lens=laws opens the fifth view, its room clear of the cards on the left; a real press
-//            on a piece's bar chooses it, and the panel says "No level recorded for this piece"; ]
-//            steps to the next piece and Escape lets go; typing in the card's search field finds
-//            pieces and the field keeps its focus; the card's Family control goes to a family; the
-//            panel's link to the piece's Engine view box opens the Engine view on that box, and the
+//   main     lens=laws opens the fifth view, its room clear of the cards on the left, the nine
+//            model families standing as cases; a real press on a piece's bar chooses it, and the
+//            panel says "No level recorded for this piece"; ] steps to the next piece and Escape
+//            lets go; a press on a model family's case chooses it, the List's search finds the
+//            model families, and nothing the page shows says older or legacy; typing in the card's
+//            search field finds pieces and the field keeps its focus; the card's Family control
+//            goes to a family; the panel's link to the piece's Engine view box opens the Engine view on that box, and the
 //            box's door ("Show its N pieces in the Laws library") opens the library with them
 //            picked out, and the card's Close lets them go; a lost WebGL context, and a lost GPU
 //            process, leave the names written on the room as they were.
 //   address  select=laws:<id> with no lens opens the library on that piece; so does it from
-//            lens=engine.
+//            lens=engine. An address naming what moved into legacy code opens it on a panel that
+//            says so; one naming a model family that stayed opens that family's own panel. A kept
+//            piece whose file moved links that file at the revision the list was read at.
 //   phone    on a 360 px phone the five views' switch fits the bar; the library opens on its wall,
 //            a piece chosen opens the panel as a sheet, and no room is kept on the left.
+//   gone     on a check-only scene without the Engine view's Pumps box: a piece read under it says
+//            its box is not on the Engine view now, with no link and no status of it, and no panel
+//            links a box the page does not draw.
 //   text     with no 3D (WebGL switched off), the page says so, and the List gives the library's
 //            families and frames, and a piece's panel.
 //
@@ -28,11 +35,11 @@
 // tools/lib/browser_lock.mjs.
 
 import { spawn } from "node:child_process";
-import { writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
-import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
@@ -49,7 +56,17 @@ const check = (name, ok, detail = "") => {
 const note = (text) => console.log(`note  ${text}`);
 const pageLog = [];
 const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 30) * 60 * 1000 });
-const server = createServer({ offline: true, scene: DEFAULT_SCENE, runs: DEFAULT_RUNS, log: (line) => pageLog.push(line) });
+// "gone": a check-only scene without the Engine view's Pumps box, as when the Engine view no longer draws a box a
+// piece of the list was read under (CHECK_SCENE names another file to draw instead).
+let scene = process.env.CHECK_SCENE || DEFAULT_SCENE;
+if (CASE === "gone" && !process.env.CHECK_SCENE) {
+  const whole = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
+  whole.entities = whole.entities.filter((entity) => entity.id !== "laws.pumps");
+  whole.relations = whole.relations.filter((relation) => relation.from !== "laws.pumps" && relation.to !== "laws.pumps");
+  scene = path.join(outDir || path.join(ROOT, "out"), "laws-gone.scene.json");
+  await writeFile(scene, JSON.stringify(whole));
+}
+const server = createServer({ offline: true, scene, runs: DEFAULT_RUNS, log: (line) => pageLog.push(line) });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/`;
 const chrome = spawn(
@@ -161,6 +178,8 @@ try {
     const corners = await evaluate(`(() => { const v = ${V}, l = v.current, b = l.layout.bounds, w = l.layout.wall; const r = v.canvas.getBoundingClientRect(); const xs = []; for (const x of [b.minX, b.maxX]) for (const y of [0, w.y + w.h]) { const p = new v.stage.camera.position.constructor(x, y, b.maxZ); v.stage.project(p, p); xs.push(r.left + p.x); } return { min: Math.min(...xs), max: Math.max(...xs) }; })()`);
     check("and the room stands right of the card, nothing cut", corners.min >= card.right - 4 && corners.max <= WIDTH + 2, JSON.stringify([corners, card.right]));
     check("the names are written on the room", (await inked()) > 1000);
+    const cases = await evaluate(`({ drawn: ${L}.cases.mesh.count, listed: ${L}.library.cases.length, legend: [...${V}.shadowRoot.querySelectorAll("cells-legend .legend-label")].map((label) => label.textContent) })`);
+    check("the nine model families stand as closed cases, named in the legend; nothing shown says older", cases.drawn === 9 && cases.listed === 9 && cases.legend.some((text) => /^A closed case: a model family/.test(text)) && !cases.legend.some((text) => /older|legacy/i.test(text)), JSON.stringify(cases));
     const rest = s;
     await shot(`${NAME}-rest`);
 
@@ -181,6 +200,37 @@ try {
     await key("Escape");
     s = await state();
     check("Escape lets go", !s.selected, String(s.selected));
+
+    // ---------------------------------------------------------- a model family: chosen by a press, found in the List; no word says older
+    const family = "resolved_tissue@2";
+    const caseAt = await evaluate(`(() => { const v = ${V}, item = v.current.layout.cases.find((c) => c.id === ${JSON.stringify(family)}); const p = new v.stage.camera.position.constructor(item.x, item.y, item.z + item.d / 2); v.stage.project(p, p); const r = v.canvas.getBoundingClientRect(); return { x: r.left + p.x, y: r.top + p.y }; })()`);
+    await click(caseAt.x, caseAt.y, 1500);
+    s = await state();
+    check("a real press on a model family's case chooses it, and its panel says what it is", s.selected === `laws:${family}` && /A model family/.test(s.panel) && /Its laws are a table inside it; it declares no piece/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 120)]));
+    await shot(`${NAME}-family`);
+    await evaluate(`${V}.toggleIndex(true)`);
+    await sleep(400);
+    const listed = await evaluate(`(() => { const root = ${V}.shadowRoot, search = root.querySelector("#cells-index-search"); search.value = "resolved_tissue"; search.dispatchEvent(new Event("input")); return [...root.querySelectorAll("cells-index section")].map((section) => [section.querySelector("h3").textContent, [...section.querySelectorAll(".index-name")].map((name) => name.textContent)]); })()`);
+    check("the List's search finds the model families by name, under Model families", JSON.stringify(listed.find(([label]) => label === "Model families")?.[1]) === JSON.stringify(["resolved_tissue@1", "resolved_tissue@2"]), JSON.stringify(listed));
+    await evaluate(`(() => { const search = ${V}.shadowRoot.querySelector("#cells-index-search"); search.value = ""; search.dispatchEvent(new Event("input")); })()`);
+    if (!(await evaluate(`${V}.state.legendOpen`))) await evaluate(`${V}.shadowRoot.dispatchEvent(new CustomEvent("cells-legend-toggle"))`);
+    await sleep(400);
+    // Every word the page holds (text, titles, labels, placeholders), but a module's own words quoted in a panel.
+    const pageWords = () => evaluate(`(() => { const root = ${V}.shadowRoot, out = [document.title]; const walk = (node) => { for (const child of node.childNodes) { if (child.nodeType === 3) out.push(child.textContent); else if (child.nodeType === 1 && child.tagName !== "STYLE" && child.tagName !== "SCRIPT") { for (const name of ["title", "aria-label", "placeholder", "alt"]) if (child.getAttribute(name)) out.push(child.getAttribute(name)); walk(child); } } }; walk(root); return out.join(" ").replace(/“[^”]*”/g, "“…”"); })()`);
+    const said = (text) => (text.match(/.{0,50}(older|legacy).{0,50}/i) || [""])[0];
+    let text = await pageWords();
+    check("with a model family chosen, the List and the legend open, nothing the page shows says older or legacy", !/older|legacy/i.test(text) && /A closed case: a model family/.test(text) && /Model families/.test(text), said(text));
+    const narrow = await evaluate(`${L}.library.pieces.find((piece) => piece.registry === "an older family").id`);
+    await evaluate(`${V}.select("laws:${narrow}")`);
+    await sleep(1500);
+    text = await pageWords();
+    check("so with a law of a model family's table chosen", /In a model family's table/.test(text) && !/older|legacy/i.test(text), `${narrow}: ${said(text)}`);
+    await evaluate(`${V}.shadowRoot.dispatchEvent(new CustomEvent("cells-legend-toggle"))`);
+    await evaluate(`${V}.toggleIndex(false)`);
+    await evaluate(`${V}.canvas.focus({ preventScroll: true })`);
+    await key("Escape");
+    s = await state();
+    check("and Escape lets go of it", !s.selected && !(await evaluate(`${V}.state.legendOpen || ${V}.state.indexOpen`)), String(s.selected));
 
     // ---------------------------------------------------------- the card's search and its Family control
     const field = await placeOf(`root.querySelector("#cells-find")`);
@@ -221,12 +271,13 @@ try {
     check("it opens the Engine view on the box that holds the piece's file", s.lens === "engine" && s.selected === "laws.pumps", JSON.stringify([s.lens, s.selected]));
     const words = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door button")].map((button) => button.textContent)`);
     const doorWords = words.find((text) => /in the Laws library/.test(text));
-    check("the box's panel has a door into the Laws library, with the list's count", /Show its 4 pieces in the Laws library/.test(doorWords || ""), JSON.stringify(words));
+    const inPumps = await evaluate(`${V}.lenses.get("laws").library.inBox("laws.pumps").length`);
+    check("the box's panel has a door into the Laws library, with the list's count", new RegExp(`Show its ${inPumps} pieces? in the Laws library`).test(doorWords || ""), JSON.stringify([words, inPumps]));
     await shot(`${NAME}-engine-box`);
     const door = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /in the Laws library/.test(button.textContent))`);
     if (door) await click(door.x, door.y, 2000);
     s = await state();
-    check("the door opens the library with the box's pieces picked out", s.lens === "laws" && s.filter.box === "laws.pumps" && (await evaluate(`${L}.order().length`)) === 4, JSON.stringify([s.lens, s.filter]));
+    check("the door opens the library with the box's pieces picked out", s.lens === "laws" && s.filter.box === "laws.pumps" && (await evaluate(`${L}.order().length`)) === inPumps, JSON.stringify([s.lens, s.filter]));
     await until(`!${V}.stage.rig.flight`, 240);
     s = await state();
     check("and the camera goes to them, away from the opening view", s.distance < rest.distance - 1 && s.target.join() !== rest.target.join(), JSON.stringify([rest.distance, s.distance, rest.target, s.target]));
@@ -253,11 +304,45 @@ try {
     const afterCrash = await inked();
     check("so does a lost GPU process, which takes the 2D canvases on the card with it", afterCrash > 0 && Math.abs(afterCrash - ink) <= ink * 0.01, JSON.stringify([ink, afterCrash]));
     await shot(`${NAME}-after-loss`);
+  } else if (CASE === "gone") {
+    // ---------------------------------------------------------- a box the Engine view does not draw
+    check("the page opens on a piece whose box is not drawn", await open("lens=laws&select=laws:nak_atp_mass_action_positive@1"));
+    const s = await state();
+    check("its panel says its box is not on the Engine view now, and quotes no status of it", /Its box when the list was read, Pumps, is not on the Engine view now/.test(s.panel) && !/Pumps, is established/.test(s.panel), s.panel.slice(0, 200));
+    check("and offers no link to it", !/On the Engine view/.test(s.panel));
+    const links = await evaluate(`(() => { const v = ${V}, lens = v.current, bad = []; for (const id of [...lens.library.pieces.map((p) => "laws:" + p.id), ...lens.library.frames.map((f) => "laws:" + f.id)]) for (const group of lens.describe(id).related || []) for (const box of group.ids) { const part = v.model.get(box); if (!part || v.model.lensOf(part) !== "engine") bad.push(id + " -> " + box); } return bad; })()`);
+    check("no panel of the library links a box the page does not draw", links.length === 0, links.slice(0, 3).join(", "));
+    await shot(`${NAME}-piece`);
+    check("the Engine view has no Pumps box to open", (await open("lens=engine&select=laws.pumps")) && !(await state()).selected);
   } else if (CASE === "address") {
     check("select=laws:<id> with no lens opens the library on that piece", (await open("select=laws:kir2p1_mh2@1")) && (await state()).selected === "laws:kir2p1_mh2@1" && (await state()).lens === "laws", JSON.stringify(await state()));
     await shot(`${NAME}-select`);
     check("and so it does from lens=engine", (await open("lens=engine&select=laws:resolved_pump_tissue@3")) && (await state()).lens === "laws" && (await state()).selected === "laws:resolved_pump_tissue@3", JSON.stringify(await state()));
     check("#laws in the address opens it too", (await open("x=1#laws")) && (await state()).lens === "laws");
+    // An address naming what the map no longer shows: the library opens and says so plainly.
+    const said = {
+      "assembly_regulated_cell@1": (text) => /The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//.test(text),
+      "neutral_mobile_leak@1": (text) => /The map no longer shows this piece: no model declares it/.test(text),
+    };
+    for (const [id, says] of Object.entries(said)) {
+      await open(`select=laws:${id}`);
+      const s = await state();
+      check(`select=laws:${id} opens the library and says plainly it is not shown`, s.lens === "laws" && s.selected === `laws:${id}` && /Not shown on the map/.test(s.panel) && says(s.panel), s.panel.slice(0, 260));
+    }
+    await shot(`${NAME}-not-shown`);
+    // A model family whose module stayed is not legacy code: the address opens its own panel, and its case is lit.
+    await open("select=laws:apical_vertex_mechanics@1");
+    const family = await state();
+    const lit = await evaluate(`${L}.litSlots.mesh.count`);
+    check("select=laws:apical_vertex_mechanics@1 opens a model family's panel, its case lit", family.selected === "laws:apical_vertex_mechanics@1" && /A model family/.test(family.panel) && /Its laws are a table inside it/.test(family.panel) && !/Not shown|older|legacy/i.test(family.panel) && lit === 1, JSON.stringify([family.panel.slice(0, 200), lit]));
+    // A kept piece whose file moved after the list was read: its file links at the revision the list was read at, where it is,
+    // and the words beside the link say so; a box's source stays at the map's revision.
+    await open("select=laws:maintained_chemical_reservoirs@1");
+    const links = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .sources li")].map((item) => ({ href: item.querySelector("a")?.href || null, text: item.textContent }))`);
+    const meta = await evaluate(`${V}.model.meta.source_base_url`);
+    const moved = links.find((link) => link.text.startsWith("src/cells/core/kinetic_finite_spec.py"));
+    check("a kept piece whose file moved links its file at the revision the list was read at, and says so beside the link", Boolean(moved?.href?.includes("/blob/fa19d80cce338c5fefde179f580339efe8947d8b/src/cells/core/kinetic_finite_spec.py")) && /as read at main fa19d80c/.test(moved.text) && links.filter((link) => link !== moved).every((link) => link.href?.startsWith(meta)), JSON.stringify([links, meta]));
+    await shot(`${NAME}-not-shown`);
     // What the view leaves behind: the Cell view opened after it is as the Cell view opened alone.
     const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3) }; })()`);
     await open("lens=cell");
@@ -273,7 +358,7 @@ try {
     const said = await evaluate(`${V}.shadowRoot.querySelector(".fallback")?.textContent || ""`);
     check("it says that 3D is not available", /3D drawing is not available/.test(said), said);
     const listed = await evaluate(`${V}.sections().map((section) => [section.label, section.entities.length])`);
-    check("the list holds the library's families, frames and older families", listed.length >= 15 && listed.some(([label, n]) => label === "Frames" && n === 5), JSON.stringify(listed.slice(0, 4)));
+    check("the list holds the library's families, frames and model families", listed.length >= 15 && listed.some(([label, n]) => label === "Frames" && n === 5) && listed.some(([label, n]) => label === "Model families" && n === 9), JSON.stringify(listed.slice(-3)));
     await evaluate(`${V}.select("laws:kir2p1_mh2@1")`);
     await sleep(800);
     const s = await state().catch(() => null);

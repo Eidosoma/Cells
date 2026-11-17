@@ -14,6 +14,7 @@ import { LawsLens, LAWS_LOOK, LAWS_BLOOM, LAWS_BLOOM_LIGHT, MARKS } from "../src
 import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND } from "../src/lenses/laws_layout.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
+import { sections as listSections } from "../src/lenses/laws_card.js";
 
 const raw = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 const overlay = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "overlay.json"), "utf8"));
@@ -362,7 +363,7 @@ test("the panel says a status only where the record states one, and 'no level re
     if (piece.read && piece.read.revision !== raw.stamp.main.revision) assert.ok(!entity.sources.some((source) => source.path === piece.read.path), `${piece.id}: a branch's file is linked`);
     if (piece.read?.fields?.doc) assert.ok(entity.plain.includes(piece.read.fields.doc), `${piece.id}: what it computes is its module's own words`);
     if (piece.read?.fields?.provenance) assert.match(entity.facts.find(([label]) => label === "Provenance tag")[1], /a source tag in inner_laws\.py, not a level/, piece.id);
-    if (piece.registry === "an older family") assert.ok(chips.includes("In an older family"), piece.id);
+    if (piece.registry === "an older family") assert.ok(chips.includes("In a model family's table"), piece.id);
     if (piece.registry === "no registry") assert.ok(chips.includes("A named law in no registry"), piece.id);
     if (piece.read?.fields?.unversioned) assert.match(entity.facts.find(([label]) => label === "Version")[1], /no version/, piece.id);
   }
@@ -455,7 +456,7 @@ test("the legend says what each visual difference stands for, and nothing else d
   for (const id of ["laws-height", "laws-chosen", "laws-rack", "laws-slot"]) assert.ok(ids.has(id), id);
   assert.equal(ids.has("laws-block"), lens.blocks.mesh.count > 0, "the inner model's block, where a rack holds it");
   assert.equal(ids.has("laws-next"), lens.nextCount > 0, "the next free code's empty socket, where a row has one");
-  assert.equal(ids.has("laws-older-family"), lens.older.mesh.count > 0);
+  assert.ok(!ids.has("laws-older-family") && !MARKS.some((mark) => mark.id === "laws-older-family"), "no mark for the older model families: the map does not show them");
   assert.match(legend.note.text, /stand for nothing/, "the room is said to stand for nothing");
   if (!raw.pieces.some((piece) => piece.where === "candidate")) assert.ok(!ids.has("laws-candidate"), "a mark with nothing to show is left out");
   // What only a search, a filter or a test of size draws is named while it is drawn.
@@ -510,7 +511,7 @@ test("the legend says what each visual difference stands for, and nothing else d
   assert.equal(new Set(bars.map((bar) => `${bar.h}|${bar.d}`)).size, 1, "every bar is as tall and as deep as every other");
   assert.equal(new Set(bars.map((bar) => `${bar.older}|${bar.w}`)).size, new Set(bars.map((bar) => bar.older)).size, "a bar is narrower only for being an older family's or in no registry");
   // The room: one colour to each of its parts.
-  for (const [name, set] of Object.entries({ planks: lens.planks, dividers: lens.dividers, rim: lens.rim, panels: lens.panels, rails: lens.rails, sockets: lens.sockets, blocks: lens.blocks, older: lens.older })) assert.equal(colours(set).size, 1, `${name}: the room's ${name} are one colour`);
+  for (const [name, set] of Object.entries({ planks: lens.planks, dividers: lens.dividers, rim: lens.rim, panels: lens.panels, rails: lens.rails, sockets: lens.sockets, blocks: lens.blocks })) assert.equal(colours(set).size, 1, `${name}: the room's ${name} are one colour`);
   // The cards in the racks are coloured by where their piece stands, as the bars are.
   const cardForms = new Map();
   lens.cardList.forEach((card, index) => {
@@ -539,8 +540,7 @@ test("the room's names are written from the list: each family once, a shelf only
     const revision = plaques.find((plaque) => plaque.kind === "revision");
     assert.ok(revision.text.includes(`main ${raw.stamp.main.revision}`) && revision.text.includes(longDate(raw.stamp.main.date)), revision.text);
     assert.match(longDate("2026-11-16"), /^16 November 2026$/);
-    const older = raw.frames.filter((frame) => frame.kind === "older family").length;
-    assert.ok(plaques.some((plaque) => plaque.kind === "older" && plaque.text.startsWith(`${older} older model families`)));
+    assert.ok(!plaques.some((plaque) => /older model famil/i.test(plaque.text)), "nothing is written of the older model families: the map does not show them");
     // Names of one band never run into each other: each is narrower than the step between columns (letters at most 0.62 of an em wide).
     const heads = lens.layout.heads;
     const step = Math.min(...heads.flatMap((head, n) => (n && heads[n - 1].band === head.band ? [head.x - heads[n - 1].x] : [])));
@@ -616,13 +616,13 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   assert.ok(Math.abs(flights.at(-1).target.x - potassium.x) < 2.5 && flights.at(-1).distance < home.distance, "toward the family's column");
   lens.setMark("all");
   assert.ok(Math.abs(flights.at(-1).distance - home.distance) < 1e-6, "and home again");
-  // An older family: toward its box on the plinth, which alone is lit.
-  const older = raw.frames.find((frame) => frame.kind === "older family");
-  lens.setSelection(`laws:${older.id}`);
-  lens.focus(`laws:${older.id}`);
-  const box = lens.older.items.find((item) => item.id === older.id);
-  assert.ok(Math.abs(flights.at(-1).target.x - box.x) < 3, "toward the older family's box");
-  assert.equal(lens.litSlots.mesh.count, 1, "its box is lit, and nothing else is");
+  // An address naming what the map no longer shows (a model family now in legacy code): accepted, nothing lit, no move, no bloom.
+  const gone = raw.left_out.frames[0];
+  const moves = flights.length;
+  lens.setSelection(`laws:${gone.id}`);
+  lens.focus(`laws:${gone.id}`);
+  assert.equal(flights.length, moves, "the camera stays where it was");
+  assert.equal(lens.litSlots.mesh.count + lens.litBars.mesh.count + lens.routes.length, 0, "nothing is lit");
   // On a tall screen the library opens on its whole wall, where its size shows and its names can be read.
   const tall = lensFor({ width: 400, height: 860 });
   tall.lens.update(16);
@@ -742,4 +742,121 @@ test("where no 3D can be drawn, the list and the panel come from the scene's lis
   assert.deepEqual(textDescribe(scene, "laws:kir2p1_mh2@1"), describe(library, "laws:kir2p1_mh2@1"));
   assert.deepEqual(textSections({}), [], "a page that carries no list lists nothing");
   assert.equal(textDescribe({}, "laws:kir2p1_mh2@1"), null);
+});
+
+// ------------------------------------------------------------ no legacy code on the map
+
+test("the map shows no legacy code: what moved into src/cells/legacy/ is left out, whatever the list holds, and the model families that stayed are shown", async () => {
+  const { describe } = await import("../src/lenses/laws_card.js");
+  // The list the page carries says what it left out, and by which table; none of it is drawn or listed.
+  assert.ok(raw.left_out && /move1-table\.json at main [0-9a-f]{7,}/.test(raw.left_out.table), "the file says what it left out, and by which table");
+  assert.ok(raw.left_out.frames.every((frame) => frame.now?.startsWith("src/cells/legacy/")), "every model family left out moved into legacy code");
+  const library = new Library(raw);
+  const listed = new Set(listSections(library).flatMap((section) => section.entities.map((entity) => entity.id)));
+  for (const gone of [...raw.left_out.frames.map((item) => ({ ...item, as: "frame" })), ...raw.left_out.pieces.map((item) => ({ ...item, as: "piece" }))]) {
+    assert.ok(!listed.has(`laws:${gone.id}`), `${gone.id} is not in the list`);
+    assert.ok(!library.piece(gone.id) && !library.frame(gone.id), `${gone.id} is not drawn`);
+    // An address naming it opens the library and says plainly it is not shown; nothing of what it was.
+    const said = describe(library, `laws:${gone.id}`);
+    assert.equal(said.status, null, gone.id);
+    assert.deepEqual([said.facts, said.sources], [[], []], `${gone.id}: no facts and no source`);
+    assert.match(said.plain, gone.as === "frame" ? /^The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//
+      : /^The map no longer shows this piece/, gone.id);
+  }
+  // The model families whose module stayed are not legacy code: drawn as cases, listed, found, and with their own panel.
+  const families = raw.frames.filter((frame) => frame.kind === "older family");
+  assert.deepEqual(families.map((frame) => frame.id).sort(), ["apical_vertex_mechanics@1", "capsid_graph@1", "finite_bond_assembly@1", "ionic_worlds@1", "resolved_pump_tissue@1", "resolved_pump_tissue@2", "resolved_tissue@1", "resolved_tissue@2", "source_decay@1"]);
+  assert.deepEqual(library.cases.map((frame) => frame.id), families.map((frame) => frame.id));
+  for (const frame of families) {
+    assert.ok(listed.has(`laws:${frame.id}`), `${frame.id} is in the list`);
+    const said = describe(library, `laws:${frame.id}`);
+    assert.equal(said.eyebrow, "A model family");
+    assert.match(said.plain, /^A model family: one module for each combination of features\. Its laws are a table inside its own module/);
+  }
+  // Nothing the map shows calls a thing older or legacy, but the panel of what it does not show.
+  const shownWords = [
+    ...MARKS.map((mark) => `${mark.label} ${mark.description}`),
+    ...listSections(library).map((section) => section.label),
+    ...[...library.pieces, ...library.frames].flatMap((part) => { const said = describe(library, `laws:${part.id}`); return [said.eyebrow, said.plain, ...said.chips.map((chip) => chip.label), ...said.facts.map(([label, value]) => `${label} ${value}`)]; }),
+  ].join("\n").replace(/“[^”]*”/g, "“…”"); // a module's own words, quoted, are its own
+  assert.ok(!/older|legacy/i.test(shownWords), (shownWords.match(/.{0,60}(older|legacy).{0,60}/i) || [""])[0]);
+  // A list read before the move, with a model family and a piece in legacy code, shows neither; a model family that stayed is shown.
+  const before = JSON.parse(JSON.stringify(raw));
+  delete before.left_out;
+  const law = before.pieces.find((piece) => piece.registry === "no registry" && piece.read);
+  before.frames.push({ id: "moved_family@1", kind: "older family", read: { ...law.read, path: "src/cells/legacy/models/moved_family.py", found_by: "MODEL_ID" }, rows: [] });
+  before.frames.push({ id: "kept_family@1", kind: "older family", read: { ...law.read, path: "src/cells/models/kept_family.py", found_by: "MODEL_ID" }, rows: [] });
+  law.read = { ...law.read, path: "src/cells/legacy/processes/old.py" };
+  const kept = before.pieces.find((piece) => piece.kind === "operator");
+  kept.declared_by = [...kept.declared_by, { frame: "moved_family@1", how: "direct" }];
+  const other = new Library(before);
+  assert.ok(!other.frame("moved_family@1") && !other.piece(law.id), "neither is shown");
+  assert.ok(other.frame("kept_family@1") && other.cases.some((frame) => frame.id === "kept_family@1"), "a model family that stayed is shown");
+  assert.ok(other.notShown("moved_family@1") && other.notShown(law.id), "both are known as not shown");
+  assert.ok(other.piece(kept.id).declared_by.every((entry) => entry.frame !== "moved_family@1"), "a piece keeps only what declares it on the map");
+  assert.equal(other.counts().pieces, raw.pieces.length - 1);
+  // What still stands and was read where legacy code now is: active models declare it, or active code names it.
+  for (const id of ["constant_field@1", "logmean_electrodiffusion@1", "maintained_chemical_reservoirs@1", "rk4", "gauged_dense_kirchhoff@1", "ideal_detailed_balance_mass_action@1", "prescribed_patch_injury_resealing@1"]) assert.ok(library.piece(id), `${id} stays`);
+});
+
+test("the library's own sources link at the revision the list was read at, said beside the link where the map's differs; the scene's own sources stay at the map's", async (t) => {
+  const { describe } = await import("../src/lenses/laws_card.js");
+  const { SceneModel } = await import("../src/scene/model.js");
+  const main = raw.stamp.main;
+  assert.match(main.full_revision, /^[0-9a-f]{40}$/, "the list states the full revision it was read at");
+  assert.ok(main.full_revision.startsWith(main.revision));
+  const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
+  const model = new SceneModel(scene);
+  const library = new Library(raw);
+  const at = /\/blob\/[^/]+\/$/;
+  const linked = [];
+  for (const part of [...library.pieces, ...library.frames]) {
+    const read = part.read;
+    const said = describe(library, `laws:${part.id}`, { map: scene.meta });
+    const own = said.sources.filter((source) => source.revision);
+    // Each piece or frame read on main hands out its file once, at the list's revision, and links there.
+    assert.equal(own.length, read?.revision === main.revision ? 1 : 0, part.id);
+    for (const source of own) {
+      assert.deepEqual([source.path, source.revision], [read.path, main.full_revision], part.id);
+      assert.equal(model.sourceUrl(source), scene.meta.source_base_url.replace(at, `/blob/${main.full_revision}/`) + read.path, part.id);
+      assert.equal(source.where, `${read.found_by}, as read at main ${main.revision}`, `${part.id}: the map is at ${scene.meta.revision}, so the link says where it goes`);
+      linked.push(read.path);
+    }
+    // A status's or a box's source is the scene's: at the map's revision, as before.
+    for (const source of said.sources.filter((item) => !item.revision)) assert.ok(model.sourceUrl(source).startsWith(scene.meta.source_base_url), `${part.id}: ${source.path}`);
+  }
+  assert.ok(linked.length >= library.frames.length + library.pieces.filter((piece) => piece.where === "main").length);
+  // On a map read at the list's own revision, the link needs no words.
+  const same = { ...scene.meta, revision: main.revision, source_base_url: scene.meta.source_base_url.replace(at, `/blob/${main.full_revision}/`) };
+  const piece = library.piece("maintained_chemical_reservoirs@1");
+  assert.equal(describe(library, "laws:maintained_chemical_reservoirs@1", { map: same }).sources[0].where, piece.read.found_by);
+  // Where the main checkout is here to ask, every file linked is there at that revision.
+  const common = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).stdout.trim();
+  const repo = common ? path.dirname(common) : null;
+  if (!repo || spawnSync("git", ["-C", repo, "cat-file", "-e", `${main.full_revision}^{commit}`]).status !== 0) return t.skip("the main checkout, or the list's revision, is not here to ask");
+  for (const file of new Set(linked)) assert.equal(spawnSync("git", ["-C", repo, "cat-file", "-e", `${main.full_revision}:${file}`]).status, 0, `${file} is not at ${main.full_revision}`);
+});
+
+test("a piece whose Engine view box is not drawn says so, and no link leads to a box that is not drawn", async () => {
+  const { describe, doorsFor, drawnIn } = await import("../src/lenses/laws_card.js");
+  const library = new Library(raw);
+  const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
+  const without = { ...scene, entities: scene.entities.filter((entity) => entity.id !== "laws.pumps") };
+  const drawn = drawnIn(without);
+  const nak = describe(library, "laws:nak_atp_mass_action_positive@1", { drawn });
+  assert.match(nak.facts.find(([label]) => label === "Status")[1], /Its box when the list was read, Pumps, is not on the Engine view now\./);
+  assert.ok(!/established|implemented|qualified/i.test(nak.facts.find(([label]) => label === "Status")[1]), "a gone box's status is not said");
+  assert.deepEqual(nak.related, [], "no link to it");
+  // Every link a panel offers leads to a box the page draws, whichever box is missing.
+  for (const scenePart of [scene, without]) {
+    const isDrawn = drawnIn(scenePart);
+    for (const piece of library.pieces) for (const group of describe(library, `laws:${piece.id}`, { drawn: isDrawn }).related || []) for (const id of group.ids) assert.ok(isDrawn(id), `${piece.id} links ${id}, which is not drawn`);
+    for (const frame of library.frames) for (const group of describe(library, `laws:${frame.id}`, { drawn: isDrawn }).related || []) for (const id of group.ids) assert.ok(isDrawn(id), `${frame.id} links ${id}`);
+  }
+  // Standing alone, with no Engine view, nothing is said of the boxes beyond what the list read.
+  assert.equal(drawnIn({ entities: [] }), null);
+  assert.match(describe(library, "laws:nak_atp_mass_action_positive@1").facts.find(([label]) => label === "Status")[1], /a status of the box, not of the piece/);
+  // The door counts only the pieces the map shows.
+  const [door] = doorsFor({ id: "laws.pumps" }, { laws: raw });
+  assert.equal(door.label, `Show its ${library.inBox("laws.pumps").length} pieces in the Laws library`);
 });

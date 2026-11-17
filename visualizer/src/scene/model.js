@@ -62,9 +62,16 @@ export class SceneModel {
 
   /**
    * Where a source's path links to: an engine file at the revision the map was read at, and one of the
-   * viewer's own files (under visualizer/) on the viewer's branch, where the scene gives that base.
+   * viewer's own files (under visualizer/) on the viewer's branch, where the scene gives that base. A
+   * source that carries its own revision (one read from a list read at another revision, such as the
+   * Laws library's) links at that revision, in the same repository.
    */
   sourceUrl(source) {
+    if (source.revision) {
+      const base = this.meta.source_base_url;
+      const at = /\/blob\/[^/]+\/$/;
+      return base && at.test(base) && /^[0-9a-f]{7,40}$/.test(source.revision) ? base.replace(at, `/blob/${source.revision}/`) + source.path : null;
+    }
     const own = this.meta.own_source_base_url && String(source.path || "").startsWith("visualizer/");
     const base = own ? this.meta.own_source_base_url : this.meta.source_base_url;
     return base ? base + source.path : null;

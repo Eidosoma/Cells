@@ -420,7 +420,7 @@
       "path": "src/cells/core/pump_composite_spec.py",
       "where": "frozen_definition: each block the frozen definition moves into the operator list names its law"
     },
-    "older": "An older model family: one module for each combination of features. Its laws are a table inside its own module; each becomes a declared piece only as it moves into the one model, when a use needs it (D167)."
+    "older": "A model family: one module for each combination of features. Its laws are a table inside its own module; each becomes a declared piece only as it moves into the one model, when a use needs it (D167)."
   },
   "references": [
     "betse",
