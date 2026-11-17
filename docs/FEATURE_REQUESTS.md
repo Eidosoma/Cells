@@ -19,6 +19,7 @@ and a general feature, never one built for one study (D144).
 | [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Partly built, on main with the run-view writer since 16 November: its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November), the writer's loop block with its closure measure, and the planarian loop's builder (`validation/replay/`), with one development run of that loop, not judged. The human loop waits for the human cardiac laws |
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
 | [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | Requested; not scoped; no model | A read-only design note: does the core architecture host machines naturally at both levels, or is something missing? Options for the user before anything is built |
+| [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped | Covered by FR-13's design note: options for a declared extends link, inherited checks and version rules |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -688,3 +689,29 @@ explored.
   - more than one organism target needs them.
 - **Status:** requested, not scoped, no model. The viewer's catalogue fields will follow what a
   declared model carries in the manifest once one exists; they are not fixed now.
+
+## FR-14 — Declared extension of laws, operators and models
+
+- **The request (D205).** The user asked on 17 November 2026, "is it possible to extend a model or an
+  operator, like object oriently?", and then: "put the oo extension on the backlog".
+- **What works today.** This was checked by planting subclasses in a scratch registry at seam F's
+  registry head 6a0a9dc6, on 17 November.
+  - A subclass of a law interface (`ChannelLaw`, built from `kv1p5_mh@1`'s fields) passes the law
+    template's checks and registers under its own ID.
+  - A subclass of a built-in operator (`OsmoticWater`) registers under a new ID. The operator
+    contract checks it again at registration.
+  - A subclass under a built-in `cells` ID is refused. Each built-in ID is one object, so a run
+    cannot silently change meaning.
+  - Models extend by composition, under D191's one rule.
+  - A registry's `extended(...)` is a scoped copy with extra pieces planted in it. It is not
+    extension.
+- **What is missing:**
+  - **A declared "extends" link:** the parent's ID and what changed, like a citation's departures.
+    It would live in the registries and the declarations manifest, so the library and the viewer
+    can show a family tree.
+  - **Inherited checks:** the parent's contract and reference tests also run on the child.
+  - **Rules for a child** when its parent moves to a new major version.
+- **Why it is general.** It follows D142's object-oriented design. Molecular machines (FR-13) are a
+  likely first use: one general machine cycle, specialised per machine.
+- **Status:** requested; not scoped. FR-13's design note covers it, as part of the user's question
+  about the core architecture.

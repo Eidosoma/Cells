@@ -6646,3 +6646,41 @@ The user confirmed it to the lead, "yes new feature request from me", and added:
 - **The tab and its catalogue are the viewer's own data,** under D173, D178, D186 and D201. Its
   fields follow what a declared model carries, once one exists.
 
+## D205: Declared extension goes on the backlog (FR-14)
+
+2026-11-17. The user asked: "one question is it possible to extend a model or an operator, like object
+oriently?" The lead answered from the code: subclasses register under new IDs, but the engine does not
+record or check an extension. The user then said: "cool get also adviser in on this so put the oo
+extension on the backlog".
+
+- **[FR-14](FEATURE_REQUESTS.md#fr-14--declared-extension-of-laws-operators-and-models) records it.** It
+  holds what was verified at seam F's registry head and the three missing pieces: a declared extends
+  link, inherited checks, and version rules.
+- **FR-13's design note covers it,** since machines are its likely first use. No separate note is
+  written.
+
+## D206: The laws in D198's retire batch are transformed into the new engine, even unused
+
+2026-11-17. The lead listed the eight capabilities that D198's batch drops, none of them transformed.
+The user answered within the window the lead gave: "so those old models, we should transform those laws
+even if we don't use them yet", then "if that makes sense". This amends D198, whose rule was "transform
+them into the new engine if necessary".
+
+- **The retire batch is held out of landing.** Branch `retire-processes`, at 81a96128, stays as gated
+  until the split below is agreed.
+- **Scope: the eight capabilities of D198's batch.** Whether the same applies to `legacy/`'s laws is the
+  user's call; D196 stands until then.
+- **The lead's proposal, made with the advisor, is put to the user.** Nothing is built before the user
+  agrees.
+  - **Physical laws** in the batch go onto seam F's law template now. Each one gets:
+    - one reference check, against saved outputs of the old code run from a frozen snapshot, not
+      against the old test files;
+    - its old status carried over: charged-surface work, for example, was "held, never released";
+    - a visible "not qualified" status in the manifest and the library.
+  - **Numerical methods and geometry machinery** (meshes, polygons, control volumes, partitions) wait
+    for the engine's own geometry design, instead of being ported as they are.
+  - **Kernels that carry BETSE's conventions** enter `src/cells` only under neutral names, with a
+    citation.
+- **A classification table of the batch's 33 source modules is being made, read-only.** For each
+  module it gives the class (law, method or machinery) and what the modular engine already covers.
+
