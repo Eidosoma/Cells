@@ -39,7 +39,7 @@
   "C10_energy": "every C3, C4 and C5 world's route work against R-energy; the RK4 face-free world (C3's first-order loading at 0.1 ms, every row); the IMEX species-only worlds of C3 to C8",
   "C11_from_trace": "from_trace: each of the four laws (flux and first-order export into a 1e-15 mM compartment; saturable and first-order import into a 1e-15 mM cytosol) under ARS at 1 ms (1 s) and RK4 at 0.1 ms (0.2 s), recorded at every step",
   "C12_restart_batch": "two_way with a change of both rates at 0.5 s: restarts through the engine's checkpoint at 0.25, 0.5 and 0.75 s (before, at and after the change), in process and through a snapshot; a vector batch of four worlds with different compartment volumes and rates against each world's scalar run and against the reversed batch",
-  "C13_controls": "a misbooked move (the exchange stage's booked move into the compartment off by 1e-6 relative, its route accumulator unchanged) and a misbooked work (the stage's booked work off by 1e-6 relative), each planted in the generator's control part only (questions_for_the_lead 2)",
+  "C13_controls": "each plant in its own process (validation/tissue/compartment_acceptance_plants), its identity and size in its bundle (the lead's ruling 2). A misbooked move: C3's first-order loading under ARS at 1 ms, recorded at every step to 0.1 s, where the compartment's S is raised by 1e-6 of the route's booked move, its accumulator unchanged. A misbooked work: C10's RK4 world to 0.3 s, where the route's booked work is scaled by 1 + 2e-3. The rows before a plant are the unplanted run's; the planted row is the edited checkpoint, which the engine checks on resuming (runner.validate_checkpoint runs the row checks): a state edit, so no engine code is patched and no compiled step is shared with a judged world",
   "C1_refusals": "a representative of each of §1.4's refusals 1 to 7 beside its admitted neighbour (FR-10's ruling 4), with the reason each must name: R1 a face naming the node, R1 a held bath declared as the node, R2 a second patch facing the node, R3 two compartments on one node, R4 a K permeability on the bounding patch, R5 a 1e-17 C anchor, R6 an owner whose capacitor component holds no held bath (a gauge instead), R7 replacement@1 scheduling an event on the owner; each neighbour is W (or replacement on the other cell)",
   "C2_identity": "S5's four traced pairs (W under ARS and RK4, W with clearance beside exchange, the declaration alone against no operators): program text, constants and bindings identical"
  },
@@ -54,7 +54,7 @@
  },
  "budgets": {
   "status": "declared before any protocol run (FR-10's rule, the lead's ruling of 17 November 2026: declared first; the dt study reports against them as development)",
-  "B_split": "C4's closed form, C6, C7 and C8 (the items with a splitting error): each node's S (and C7's P) within 1e-3 of the world's initial S (and P) content, a declared number (about 1e-6 fmol in each of these worlds), of the reference at every record at the declared 1 ms, and each observable's Richardson error within it",
+  "B_split": "C4's closed form, C6, C7 and C8 (the items with a splitting error): each node's S (and C7's P) within 1e-3 of the world's initial S (and P) content, a declared number (about 1e-6 fmol in each of these worlds), of the reference at every record at the declared 1 ms, and each observable's Richardson error within it. The scale is the world's initial content because it is positive in every world, while a node's largest change can be zero (the lead's ruling 1)",
   "rounding": "C3, C5, C11's trajectories and C4's step map: within the classes rule's floor, N eps max|q| over the run's N steps (FR-4's), times 10; C5 also within its Newton tolerance, NEWTON_RTOL = 1e-12 of the solve's absolute terms per step",
   "energy": "each world's summed route work (and C6's clearance work) within 10 x 2N eps times the largest size of G's terms over the run, RT sum |n (ln(n/V) - 1)|, of the free-energy change of its nodes along the engine's own trajectory (each booked change is a difference of such terms, two half-steps per step); R-energy's trajectory reported beside it",
   "silence": "S1 to S3 as §3.3 fixed them before milestone 1, unchanged",
@@ -64,19 +64,19 @@
   "C1_refusals": "each refusal class's representative refused by its own check with its reason, and its neighbour admitted and run",
   "C2_identity": "S5: the four traced pairs identical in program text, constants and bindings",
   "C3_loading": "both laws' node amounts at rounding of R-closed at every record; each route's moved accumulator equal to the node's gain at rounding (per-route reconciliation)",
-  "C4_two_way": "the observed order of each node's S on the three finest rungs by FR-4's classes rule; at the declared 1 ms, the Richardson error and the difference from R-closed within B_split; at every rung, the engine equal to R-step-map's iterated map at rounding; the engine's late-time x within rounding of A.4's x*; and the splitting term identified: at every rung the engine's x/x_eq - 1 at the last record within 1e-3 relative of -a(a + 2b) dt^2/96, the fixed point's relative displacement (its next term is O(dt^4): 5.3e-6 relative at 1 ms; questions_for_the_lead 6)",
+  "C4_two_way": "the observed order of each node's S on the three finest rungs by FR-4's classes rule; at the declared 1 ms, the Richardson error and the difference from R-closed within B_split; at every rung, the engine equal to R-step-map's iterated map at rounding; the engine's late-time x within rounding of A.4's x*; and the splitting term identified: at every rung the engine's x/x_eq - 1 at the last record within 1e-3 relative of -a(a + 2b) dt^2/96, the fixed point's relative displacement as docs/CLOSED_COMPARTMENT_DESIGN.md §2.3 derives it and §6.3 names it (main 4adb6fed; the lead's ruling 6); its next term is O(dt^4): 5.3e-6 relative at 1 ms",
   "C5_saturable": "the node amounts within rounding and the Newton tolerance of R-closed's implicit solution at every record",
   "C6_C7_C8_linear": "each node's S (C7's P too) at the declared 1 ms within B_split of R-linear at every record; orders on the ladder by the classes rule; C6's cleared amount and C7's moiety within B_split",
   "C9_silence": "S1 bitwise, S2 and S3 within @3's charge tolerance at every row in every program and across the restart; the owner live (its K row moving, |phi| >= 0.05 V); S4 reported",
   "C10_energy": "each route's cumulative work equal to its touched nodes' free-energy change at rounding on the engine's trajectory, and against R-energy within the energy budget; the RK4 world within the absolute 2e-8 pJ at every row; the IMEX worlds' energy residual over the integrated flows <= 2e-3 at every record",
   "C11_from_trace": "every row of the eight runs: the energy ledger within its bound (RK4's absolute 2e-8 pJ; ARS's 2e-3 relative), and the onset step's residual at rounding of its own flows; the trajectory at rounding of R-energy's",
   "C12_restart_batch": "every restart bitwise the straight run from its time; each batched world within 1e-12 relative of its scalar run and bitwise its place in the reversed batch",
-  "C13_controls": "the misbooked move fails the compartment's outside ledger while the cytosol's passes; the misbooked work fails the RK4 world's energy ledger"
+  "C13_controls": "the misbooked move fails the compartment's outside ledger while the cytosol's passes; the misbooked work fails the RK4 world's energy ledger. Exactly the planted rows are flagged: every unplanted row before a plant within every bound, and the planted row refused by the engine naming the plant's ledger; each detection margin, the planted row's ratio to its bound, at least 10 x (the move's about 9e6 x, the work's about 21 x; stated in the bundle)"
  },
  "controls": {
   "K1": "C4 at the declared rung against R-closed without its import (a one-way world's solution): at least 10 x B_split",
   "K2": "C6 without its clearance against R-linear's C6: at least 10 x B_split",
-  "K3": "C9's planted controls (a) a K route of 1e-13 m/s and (b) a 1e-17 C anchor on the compartment, through the refusals' test-only bypass: each breaks S1 or S2",
+  "K3": "C9's planted controls (a) a K route of 1e-13 m/s and (b) a 1e-17 C anchor on the compartment, through milestone 1's test-only bypass of refusals 4 and 5, each in its own process (the lead's ruling 2): the anchor breaks S2 at every row, the route breaks S1 and S2 at every row after its first, each S2 ratio at least 10 x its bound, and no other row flagged",
   "K4": "C12: a restart with the rate change moved one step is not bitwise the straight run",
   "K5": "C13's two plants (the criteria's own controls)"
  },
@@ -112,7 +112,8 @@
   "S4 (the rest of the world against the world without the node)",
   "each reference's floor",
   "compile time, memory and cost per step",
-  "the splitting term's ratio to its leading form at each rung"
+  "the splitting term's ratio to its leading form at each rung",
+  "C12: whether each batched world is also bitwise its scalar run (observed so in development; the criterion stays 1e-12 relative, the lead's ruling 4)"
  ],
  "what_it_does_not_show": "no biological comparison (a measured trafficking or uptake dataset, registered on its own, D151); no charged content (FR-4 and FR-5); no vesicles, stochastic loading or volume change; integration grants no acceptance (D143)",
  "judged_parts": [
@@ -165,13 +166,14 @@
   ],
   "note": "development evidence only: no run of this protocol exists"
  },
- "questions_for_the_lead": [
-  "1. The budgets declared first in FR-10's form: B_split at 1e-3 of each node's largest change; rounding items at 10 x the classes rule's floor. Confirm, or name other fractions",
-  "2. C13's plants: a test-only change of the exchange stage's booked move and work, made in the generator's control part (as milestone 1's tests bypassed refusals 4 and 5 by monkeypatch). Confirm the mechanism for a judged control",
-  "3. C2 and C9 rerun milestone 1's S5 pairs and S1 to S3 from the judged snapshot, in every program family: about 6 minutes of CPU. Confirm the scope",
-  "4. C12's vector criterion as §6.3 wrote it: each batched world within 1e-12 of its scalar run, and bitwise against the reversed batch. Confirm",
-  "5. The worlds' synthetic values (V_O = 0.1 pL; the rates) are chosen to resolve each item above rounding at the declared 1 ms. Confirm, or name other values before the references agent starts FR-1",
-  "6. A reading to confirm: §6.3's splitting term -a(a + 2b) dt^2/96 is the fixed point's relative displacement, x*/x_eq - 1, not x* - x_eq. From A.4's x* = alpha(1 - beta)/(1 - alpha^2 beta) with h = dt/2, in 60-digit arithmetic at four rate pairs, (x* - x_eq) / (-a(a + 2b) dt^2/96) -> x_eq exactly, with an O(dt^2) correction (0.9999947 x_eq at a = 10/s, b = 20/s, dt = 1 ms). C4 judges it so; the design's line could say 'relative' (a docs clarification, the lead's call)"
+ "questions_for_the_lead": [],
+ "questions_answered": [
+  "1. Budgets (the lead, 17 November 2026): confirmed. B_split is 1e-3 of each world's initial total content, a scale positive in every world, where a node's largest change can be zero; rounding items at 10 x the classes rule's floor",
+  "2. C13's plants (the lead): a test-only plant in the generator's control part, with four conditions: each planted part runs in its own subprocess, so no plant reaches a judged world; each plant's identity and size are recorded in its bundle; the judge flags exactly the planted rows and nothing else; each detection margin over its bound is stated and at least 10 x. The move at 1e-6 relative; the work at 1e-4 relative, about 13 x RK4's absolute 2e-8 pJ, its margin stated. K3 by milestone 1's bypass of refusals 4 and 5. As built, C13's plants edit the checkpoint state at the planted row in their own process (no engine code patched), so the engine's own row checks see exactly that row. The work's plant is 2e-3, not 1e-4: 1e-4 was accepted on the FR owner's estimate of the booked work at the planted row (about 2.6e-3 pJ); the first development run measured 2.1e-4 pJ there, a margin of 1.06; 2e-3 gives about 21, and condition (d), at least 10, decides",
+  "3. C2's and C9's scope (about 6 CPU minutes): confirmed",
+  "4. C12 as §6.3 wrote it: within 1e-12 of the scalar run and bitwise against the reversed batch; the bitwise equality to the scalar runs observed in development is reported, not judged",
+  "5. The synthetic values: confirmed, as the registered inputs state them",
+  "6. The splitting term is relative, x*/x_eq - 1, as §2.3 derives it; the design note says so at all three mentions (main 4adb6fed); C4 judges it so and cites the note"
  ],
  "disclosures": [
   "Drafted on 17 November 2026 after milestone 1, whose gates and silence results are known (§12). No budget, threshold or ladder here has been run against: no generator exists, and the worlds were only admitted and run once to their horizons to check they are well posed",
@@ -219,7 +221,9 @@
     "C2_identity",
     "C9_silence",
     "C12_restart",
-    "C12_batch"
+    "C12_batch",
+    "C13_controls",
+    "K3_planted"
    ],
    "band": [
     1.8,
@@ -744,6 +748,96 @@
     "comparison": "ge",
     "threshold": 1,
     "basis": "each batched world bitwise its place in the reversed batch",
+    "judged": true
+   },
+   {
+    "id": "C12_batch_scalar_bitwise",
+    "metrics": [
+     "derived.C12_batch_scalar_bitwise"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each batched world bitwise its scalar run (reported; the lead's ruling 4)",
+    "judged": false
+   },
+   {
+    "id": "C13_move",
+    "metrics": [
+     "derived.C13.move.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the misbooked move: every row before it within every bound, the planted row refused by the outside ledger with the cytosol's local ledger passing",
+    "judged": true
+   },
+   {
+    "id": "C13_move_margin",
+    "metrics": [
+     "derived.C13.move.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the misbooked move's outside ratio at the planted row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "C13_work",
+    "metrics": [
+     "derived.C13.work.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the misbooked work: every row before it within every bound, the planted row refused by the energy ledger with every material and charge ledger passing",
+    "judged": true
+   },
+   {
+    "id": "C13_work_margin",
+    "metrics": [
+     "derived.C13.work.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the misbooked work's energy ratio at the planted row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "K3_route",
+    "metrics": [
+     "derived.K3.route.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the planted K route breaks S1 and S2 at every row after its first, and at no row before",
+    "judged": true
+   },
+   {
+    "id": "K3_route_margin",
+    "metrics": [
+     "derived.K3.route.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "its smallest S2 ratio over the planted rows, at least 10",
+    "judged": true
+   },
+   {
+    "id": "K3_anchor",
+    "metrics": [
+     "derived.K3.anchor.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the planted anchor breaks S2 at every row",
+    "judged": true
+   },
+   {
+    "id": "K3_anchor_margin",
+    "metrics": [
+     "derived.K3.anchor.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "its smallest S2 ratio, at least 10",
     "judged": true
    },
    {

@@ -144,6 +144,21 @@ def parts():
     out["C12_restart"] = comparison(
         restarts={f"{t:g} {m}": dict(equal=True) for t in generator.RESTART_TIMES_S
                   for m in ("in_process", "snapshot")}, planted=dict(equal=False))
+    def plant(ledger, margin):
+        ratios = {name: 0.0 for name in (*drafter.MATERIAL_LEDGERS, "energy")}
+        ratios[ledger] = margin
+        if ledger == "outside":
+            ratios["total"] = margin / 2
+        return dict(plant=dict(kind=ledger), prefix_rows=101,
+                    prefix_max_ratio={name: 1e-12 for name in ratios},
+                    planted_ratios=ratios, engine=dict(
+                        refused=True, message="Resolved pump accounting failed: " + ledger))
+    out["C13_controls"] = dict(kind="plants", admitted=True, completed=True, plants=dict(
+        move=plant("outside", 9e6), work=plant("energy", 21.0)))
+    out["K3_planted"] = dict(kind="plants", admitted=True, completed=True, plants=dict(
+        route=dict(plant=dict(kind="route"), s1_rows=[True] + [False] * 20,
+                   s2_rows=[2e-6] + [4e4] * 20),
+        anchor=dict(plant=dict(kind="anchor"), s1_rows=[True] * 21, s2_rows=[3e7] * 21)))
     out["C12_batch"] = comparison(worlds={
         f"world_{i}": dict(scalar_relative=0.0, reversed_equal=True, final_reversed_equal=True)
         for i in range(1, len(generator.C12_WORLDS) + 1)})
@@ -204,6 +219,14 @@ def _rungs(p, prefix, **kwargs):
     ("k1_close", {"K1"}),
     ("k2_close", {"K2"}),
     ("k4", {"K4"}),
+    ("move_wrong_ledger", {"C13_move"}),
+    ("move_prefix", {"C13_move"}),
+    ("move_cytosol", {"C13_move"}),
+    ("work_margin", {"C13_work_margin"}),
+    ("work_material", {"C13_work"}),
+    ("route_row0", {"K3_route"}),
+    ("route_margin", {"K3_route_margin"}),
+    ("anchor_row", {"K3_anchor", "K3_anchor_margin"}),
 ])
 def test_each_planted_error_fails_its_own_criterion(plant, expected):
     p = parts()
@@ -261,6 +284,22 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
         p["K2_no_clearance"] = engine("C6", 1e-3)
     elif plant == "k4":
         p["C12_restart"]["planted"] = dict(equal=True)
+    elif plant == "move_wrong_ledger":
+        p["C13_controls"]["plants"]["move"]["engine"]["message"] = "accounting failed: total"
+    elif plant == "move_prefix":
+        p["C13_controls"]["plants"]["move"]["prefix_max_ratio"]["outside"] = 1.5
+    elif plant == "move_cytosol":
+        p["C13_controls"]["plants"]["move"]["planted_ratios"]["local"] = 2.0
+    elif plant == "work_margin":
+        p["C13_controls"]["plants"]["work"]["planted_ratios"]["energy"] = 1.06
+    elif plant == "work_material":
+        p["C13_controls"]["plants"]["work"]["planted_ratios"]["outside"] = 1.2
+    elif plant == "route_row0":
+        p["K3_planted"]["plants"]["route"]["s1_rows"][0] = False
+    elif plant == "route_margin":
+        p["K3_planted"]["plants"]["route"]["s2_rows"][7] = 5.0
+    elif plant == "anchor_row":
+        p["K3_planted"]["plants"]["anchor"]["s2_rows"][3] = 0.5
     found = set(failed(p))
     assert expected <= found and found <= expected | {"C0_admission"}, found
 
@@ -346,9 +385,8 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, monkeypatch)
     (snapshot / "SNAPSHOT.json").write_text(json.dumps(dict(
         status="complete", patch_sha256=hashlib.sha256(b"").hexdigest())))
     monkeypatch.setattr(generator, "judged_run_refusal", lambda protocol, root=snapshot: None)
-    for part in ("references", "C13_controls", "K3_planted"):
-        with pytest.raises(SystemExit, match="stand-in"):
-            generator.main(["judged", str(registered_copy(tmp_path)), str(out), part])
+    with pytest.raises(SystemExit, match="stand-in"):
+        generator.main(["judged", str(registered_copy(tmp_path)), str(out), "references"])
     with pytest.raises(SystemExit, match="no quick horizon"):
         generator.main(["judged", str(registered_copy(tmp_path)), str(out), "C3_flux",
                         "--quick"])

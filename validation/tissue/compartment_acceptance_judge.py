@@ -35,7 +35,9 @@ The FR-1 derivations, fixed before any run:
   residual over the integrated flows.
 * **Silence (C9):** S1 bitwise, S2 and S3 at most 1, the owner live, in every program.
 * **Comparisons** (C2, C12): the generator's identity and bit-for-bit results, read as 1 or 0; the
-  batch within 1e-12 relative of its scalar runs.
+  batch within 1e-12 relative of its scalar runs (its bitwise equality to them reported).
+* **Plants (C13, K3):** exactly the planted rows flagged and nothing else (plant_verdict,
+  planted_rows), each detection margin over its bound reported for its criterion (at least 10).
 * **Refusals (C1):** a class passes (1) when its representative is refused with the check the
   protocol names, and its neighbour is admitted and runs.
 * **Undefined values are None, never NaN;** a None fails its criterion.
@@ -210,6 +212,36 @@ def step_map(part, reference, a, b, dt):
     return out
 
 
+def plant_verdict(bundle, ledger, passing):
+    """C13: exactly the planted row flagged. Every unplanted row before the plant within every
+    bound, the planted row refused by the engine naming the plant's ledger, the `passing`
+    ledgers within their bounds there; and the detection margin, the planted row's ratio of the
+    plant's ledger to its bound. None without the bundle."""
+    if not bundle or "engine" not in bundle:
+        return dict(exact=None, margin=None)
+    clean = all(v <= 1.0 for v in bundle["prefix_max_ratio"].values())
+    engine = bundle["engine"]
+    named = bool(engine.get("refused")) and (
+        "accounting failed: " + ledger) in (engine.get("message") or "")
+    ratios = bundle["planted_ratios"]
+    others = all(ratios.get(name, math.inf) <= 1.0 for name in passing)
+    return dict(exact=int(clean and named and others), margin=ratios.get(ledger))
+
+
+def planted_rows(bundle, first):
+    """K3: exactly the planted rows flagged, rows from `first` on (S1 broken where the plant can
+    act, S2 above 1), none before; and the smallest S2 ratio over the planted rows."""
+    if not bundle or "s2_rows" not in bundle:
+        return dict(exact=None, margin=None)
+    s1, s2 = bundle["s1_rows"], bundle["s2_rows"]
+    before = all(s1[k] and s2[k] <= 1.0 for k in range(first))
+    planted = all(s2[k] > 1.0 for k in range(first, len(s2)))
+    if bundle["plant"]["kind"] == "route":
+        planted = planted and not any(s1[first:])
+    return dict(exact=int(before and planted and len(s2) > first),
+                margin=min(s2[first:]) if len(s2) > first else None)
+
+
 def refusal_class(rows, expected):
     if not rows:
         return None
@@ -315,6 +347,16 @@ def derive(parts, protocol):
     pairs = (parts.get("C2_identity") or {}).get("pairs")
     out["C2"] = (int(len(pairs) == d["C2"]["pairs"] and all(v == [] for v in pairs.values()))
                  if pairs else None)
+    # C13 and K3: the planted controls, each in its own process.
+    plants = (parts.get("C13_controls") or {}).get("plants") or {}
+    out["C13"] = dict(move=plant_verdict(plants.get("move"), "outside", ["local"]),
+                      work=plant_verdict(plants.get("work"), "energy", d["material_ledgers"]))
+    k3 = (parts.get("K3_planted") or {}).get("plants") or {}
+    out["K3"] = dict(route=planted_rows(k3.get("route"), 1),
+                     anchor=planted_rows(k3.get("anchor"), 0))
+    out["C12_batch_scalar_bitwise"] = (
+        int(all(w["scalar_relative"] == 0.0 for w in batch.values()))
+        if len(batch) == d["C12"]["worlds"] else None)
     # The controls.
     out["controls"] = dict(
         K1_over_budget=against(parts.get("K1_one_way"), refs.get("C4"), w4["observables"],

@@ -54,7 +54,7 @@ def derivation():
               "K2_no_clearance"]
     return dict(
         run_parts=[*engine, "C1_refusals", "C2_identity", "C9_silence", "C12_restart",
-                   "C12_batch"],
+                   "C12_batch", "C13_controls", "K3_planted"],
         band=BAND,
         observables=OBSERVABLES,
         split_fraction=SPLIT_FRACTION,
@@ -154,6 +154,28 @@ def criteria():
                   "each batched world within 1e-12 relative of its scalar run"),
         criterion("C12_batch_reversed", [f"{d}.C12_batch_reversed"], "ge", 1,
                   "each batched world bitwise its place in the reversed batch"),
+        criterion("C12_batch_scalar_bitwise", [f"{d}.C12_batch_scalar_bitwise"], "ge", 1,
+                  "each batched world bitwise its scalar run (reported; the lead's ruling 4)",
+                  judged=False),
+        criterion("C13_move", [f"{d}.C13.move.exact"], "ge", 1,
+                  "the misbooked move: every row before it within every bound, the planted row "
+                  "refused by the outside ledger with the cytosol's local ledger passing"),
+        criterion("C13_move_margin", [f"{d}.C13.move.margin"], "ge", CONTROLS_MARGIN,
+                  "the misbooked move's outside ratio at the planted row, at least 10"),
+        criterion("C13_work", [f"{d}.C13.work.exact"], "ge", 1,
+                  "the misbooked work: every row before it within every bound, the planted row "
+                  "refused by the energy ledger with every material and charge ledger passing"),
+        criterion("C13_work_margin", [f"{d}.C13.work.margin"], "ge", CONTROLS_MARGIN,
+                  "the misbooked work's energy ratio at the planted row, at least 10"),
+        criterion("K3_route", [f"{d}.K3.route.exact"], "ge", 1,
+                  "the planted K route breaks S1 and S2 at every row after its first, and at "
+                  "no row before"),
+        criterion("K3_route_margin", [f"{d}.K3.route.margin"], "ge", CONTROLS_MARGIN,
+                  "its smallest S2 ratio over the planted rows, at least 10"),
+        criterion("K3_anchor", [f"{d}.K3.anchor.exact"], "ge", 1,
+                  "the planted anchor breaks S2 at every row"),
+        criterion("K3_anchor_margin", [f"{d}.K3.anchor.margin"], "ge", CONTROLS_MARGIN,
+                  "its smallest S2 ratio, at least 10"),
         criterion("K1", [f"{d}.controls.K1_over_budget"], "ge", CONTROLS_MARGIN,
                   "C4 without its import against R-closed: at least 10 x B_split"),
         criterion("K2", [f"{d}.controls.K2_over_budget"], "ge", CONTROLS_MARGIN,

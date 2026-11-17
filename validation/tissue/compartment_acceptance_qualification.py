@@ -24,8 +24,9 @@ Parts (the protocol's judged_parts):
   restart whose change is moved one step; C12_batch: four worlds of different compartment volumes
   and rates in one vector batch, against each scalar run and against the reversed batch;
 * K1_one_way: C4 at 1 ms without its import; K2_no_clearance: C6 at 1 ms without its clearance;
-* C13_controls and K3_planted: the planted misbookings and C9's planted controls (stand-ins until
-  the lead rules on their mechanism, questions_for_the_lead 2);
+* C13_controls: the misbooked move and work; K3_planted: C9's planted controls; each plant in
+  its own process (validation/tissue/compartment_acceptance_plants), with its identity and size
+  in its bundle;
 * references: the FR references agent's (a stand-in until written).
 
 Each run part records, at every observation time: every node's S (and P) amount
@@ -93,10 +94,8 @@ C9_END_S = {ARS: 0.1, RK4: 0.01}
 STAND_INS = {
     "references": "FR-1's references are not yet written (the FR references agent, code-blind, "
                   "from Appendix A and validation/closed_compartment/reference_inputs.json)",
-    "plants": "C13's misbookings and C9's planted controls wait for the lead's ruling on a "
-              "judged control's mechanism (questions_for_the_lead 2)",
 }
-STAND_IN_PARTS = {"references": {"references"}, "plants": {"C13_controls", "K3_planted"}}
+STAND_IN_PARTS = {"references": {"references"}}
 # The checks a refusal may name (C1's classes), by a phrase of their messages.
 CHECKS = (
     ("refusal 1 (the node: a face)", "has no face (it is closed)"),
@@ -767,6 +766,40 @@ def c1_refusals(name, context):
                 wall_s=time.perf_counter() - started)
 
 
+def _plant(plant, context):
+    """One planted control in its own process (validation/tissue/compartment_acceptance_plants:
+    the lead's ruling, so no plant reaches a judged world), its bundle read back."""
+    import os
+
+    directory = Path(tempfile.mkdtemp(prefix=f"plant-{plant}-", dir=context["out_dir"]))
+    out = directory / f"{plant}.json"
+    subprocess.run([sys.executable, "-B", "-m", "validation.tissue.compartment_acceptance_plants",
+                    plant, str(out)], check=True, cwd=ROOT, env=dict(os.environ))
+    bundle = json.loads(out.read_text())
+    out.unlink()
+    directory.rmdir()
+    return bundle
+
+
+def c13_controls(name, context):
+    """C13: the misbooked move and the misbooked work, each in its own process."""
+    del name
+    started = time.perf_counter()
+    plants = {plant: _plant(plant, context) for plant in ("move", "work")}
+    return dict(kind="plants", admitted=True, completed=True, plants=plants,
+                wall_s=time.perf_counter() - started)
+
+
+def k3_planted(name, context):
+    """K3: C9's planted controls (a K route and a compartment anchor through milestone 1's
+    bypass), each in its own process, with S1 and S2 at every row."""
+    del name
+    started = time.perf_counter()
+    plants = {plant: _plant(plant, context) for plant in ("route", "anchor")}
+    return dict(kind="plants", admitted=True, completed=True, plants=plants,
+                wall_s=time.perf_counter() - started)
+
+
 def stand_in(name, context):
     del context
     raise SystemExit(f"{name} is a stand-in (STAND_INS)")
@@ -784,7 +817,7 @@ FUNCTIONS = {
     **{n: _c11(law, solver) for n, (law, solver) in C11_PARTS.items()},
     "C12_restart": c12_restart, "C12_batch": c12_batch,
     "K1_one_way": k1_one_way, "K2_no_clearance": k2_no_clearance,
-    "C13_controls": stand_in, "K3_planted": stand_in, "references": stand_in,
+    "C13_controls": c13_controls, "K3_planted": k3_planted, "references": stand_in,
 }
 
 
