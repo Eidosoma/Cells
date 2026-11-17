@@ -1,0 +1,211 @@
+"""The definition of cells.assembly_lineages@2 (OL1): parse, round trip, and every refusal.
+
+Structural only: nothing here computes a rate or a free energy (the lead's ruling of 17 November
+2026: no numerical output of OL1's laws until the references' design is committed).
+
+Each claim with a planted error it must catch (D187):
+- a world parses, and its definition is a fixed point of parse and to_dict, with a stable world id
+  (planted: a value changed changes the id);
+- every convention is a named token with no default (planted: each token dropped in turn; a
+  reserved, an unknown and a disallowed combination);
+- D152's rules for steps: at most 3 molecules a side, positive integer counts, conserved moieties,
+  no step that changes nothing, places that exist, and a locus that matches the places (planted:
+  one breach each);
+- the free-energy terms: the ideal term first and once; regular mixing with a symmetric, finite
+  chi of zero diagonal over membrane species (planted: a diagonal, a pool species, a pair twice);
+- the rate factor: catalysts of the condensed phase only (§0.2a), each pair once, ddG in its
+  domain; a GARD law (hosted by @1) cannot be named (planted: each);
+- the founder lists every finite place, and holds a membrane molecule under kept and extinct;
+- a membrane place on both sides of a step parses under both measures (under @1's it is singular
+  at one state, N = r, which the kernel declares: a rate of +inf, a run that reaches it stalled);
+- one declaration, two executions: D152's species and passive reaction entries parse here with
+  `phase` in place of `sites` and their values carried unchanged.
+"""
+
+import copy
+
+import pytest
+
+from cells.core.specs import ConfigError, parse_spec
+from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT
+from cells.models.assembly_lineages_v2 import MASS_ACTION, MODEL_ID, conventions
+from cells.models.assembly_lineages_v2 import spec as v2_spec
+from tests.assembly_lineage_v2_fixtures import definition, step, world
+from validation.tissue import species_reactions_fixtures as d152
+
+
+def parsed(the_world, **kw):
+    return parse_spec(definition(the_world, **kw))
+
+
+def refused(the_world, match):
+    with pytest.raises(ConfigError, match=match):
+        parsed(the_world)
+
+
+def test_a_world_parses_and_its_definition_is_a_fixed_point():
+    spec = parsed(world())
+    data = spec.to_dict()
+    again = parse_spec(data)
+    assert again == spec and again.to_dict() == data and again.fingerprint == spec.fingerprint
+    assert data["model"]["id"] == MODEL_ID
+    names = [p.name for p in spec.model.world.places]
+    assert names == [
+        "L@pool", "S@pool", "F@pool", "L@membrane", "P@membrane", "D@membrane", "L@lumen",
+        "S@lumen",
+    ]  # fmt: skip
+    # Planted: one value changed (a step's rate) changes the world's id and the fingerprint.
+    other = world()
+    other["steps"][0]["forward_rate_per_s"] = 11.0
+    changed = parsed(other)
+    assert v2_spec.world_id(changed.model.world) != v2_spec.world_id(spec.model.world)
+    assert changed.fingerprint != spec.fingerprint
+
+
+@pytest.mark.parametrize("token", sorted(conventions.TOKENS))
+def test_every_convention_is_declared_with_no_default(token):
+    planted = world()
+    del planted["conventions"][token]
+    refused(planted, "every token is declared, with no default")
+
+
+def test_reserved_unknown_and_disallowed_tokens_are_refused():
+    refused(world(conventions={"free_energy_form": "continuum"}), "reserved for the deterministic")
+    refused(world(conventions={"membrane_kinetics": "area_on_m"}), "membrane_kinetics is one of")
+    refused(world(measure="multinomial_less_one", last="reversible"), "last_molecule 'reversible'")
+    refused(world(measure="multinomial", last="extinct"), "last_molecule 'extinct'")
+    planted = world()
+    planted["conventions"]["extra"] = "x"
+    refused(planted, "unknown=\\['extra'\\]")
+    for measure, last in (("multinomial", "kept"), ("multinomial", "reversible"),
+                          ("multinomial_less_one", "kept"), ("multinomial_less_one", "extinct")):
+        spec = parsed(world(measure=measure, last=last, lumen=False, catalysis=False))
+        assert spec.model.world.conventions.offset == conventions.OFFSET[measure]  # fmt: skip
+
+
+def _with_step(entry, the_world=None):
+    out = the_world or world()
+    out["steps"].append(entry)
+    return out
+
+
+def test_d152_rules_for_steps_are_kept():
+    refused(_with_step(step("four", {"L": 4}, {"D": 1}, 1.0, phase="membrane")), "4 reactant")
+    refused(_with_step(step("four_out", {"D": 1}, {"L": 4}, 1.0, phase="membrane")), "4 product")
+    refused(_with_step(step("same", {"L": 1}, {"L": 1}, 1.0, phase="membrane")), "changes nothing")
+    refused(_with_step(step("half", {"L": 1.5}, {"D": 1}, 1.0, phase="membrane")), "positive int")
+    refused(_with_step(step("unbalanced", {"L": 1}, {"P": 1}, 1.0, phase="membrane")), "moieties")
+    refused(_with_step(step("nowhere", {"Q@pool": 1}, {"L@membrane": 1}, 1.0, locus="membrane")),
+            "not a declared place")  # fmt: skip
+    refused(_with_step(step("wrong", {"L@pool": 1}, {"L@membrane": 1}, 1.0, locus="pool")),
+            "span phases, so its locus is the membrane")  # fmt: skip
+    refused(_with_step(step("inside", {"S@pool": 2}, {"S@pool": 1, "S@lumen": 1}, 1.0,
+                            locus="lumen")), "span phases")  # fmt: skip
+    planted = world()
+    planted["steps"].append(copy.deepcopy(planted["steps"][0]))
+    refused(planted, "step IDs are unique")
+    planted = world()
+    planted["steps"][0]["law"] = "cells.reservoir_exchange@1"
+    refused(planted, "law is one of")
+
+
+def test_the_free_energy_terms_are_refused_out_of_form():
+    planted = world()
+    planted["free_energy"].reverse()
+    refused(planted, "first, exactly once")
+    planted = world()
+    planted["free_energy"].append({"law": "cells.ideal_mixing@1"})
+    refused(planted, "first, exactly once")
+    for pair, match in ((["L", "L"], "zero diagonal"), (["L", "S"], "not a membrane species")):
+        planted = world()
+        planted["free_energy"][1]["chi_kT"].append({"pair": pair, "chi": 1.0})
+        refused(planted, match)
+    planted = world()
+    planted["free_energy"][1]["chi_kT"].append({"pair": ["P", "L"], "chi": 1.0})
+    refused(planted, "listed twice")
+    planted = world()
+    planted["free_energy"][1]["chi_kT"][0]["chi"] = float("inf")
+    refused(planted, "finite number")
+
+
+def test_the_rate_factor_is_refused_out_of_its_scope():
+    planted = world()
+    planted["rate_factor"]["catalysing_phase"] = "lumen"
+    refused(planted, "the catalysing phase is the membrane in OL1")
+    planted = world()
+    planted["rate_factor"]["entries"][0]["catalyst"] = "S"
+    refused(planted, "is not a species of the membrane")
+    planted = world()
+    planted["rate_factor"]["entries"].append(dict(planted["rate_factor"]["entries"][0]))
+    refused(planted, "listed twice")
+    planted = world()
+    planted["rate_factor"]["entries"][0]["ddG_kT"] = -31.0
+    refused(planted, "ddG_kT is in")
+    planted = world()
+    planted["rate_factor"]["law"] = GARD_PAIR_CONSISTENT  # Hosted by @1: not this family's.
+    refused(planted, "is not a cells.rate_factor_law@2 of cells.assembly_lineages@2")
+
+
+def test_the_founder_and_the_measure_s_refusals():
+    planted = world()
+    del planted["founder"]["S@pool"]
+    refused(planted, "missing=\\['S@pool'\\]")
+    planted = world()
+    planted["founder"]["F@pool"] = 3
+    refused(planted, "unknown=\\['F@pool'\\]")
+    for last in ("kept", "extinct"):
+        planted = world(measure="multinomial_less_one" if last == "extinct" else "multinomial",
+                        last=last, catalysis=False)  # fmt: skip
+        planted["founder"].update({"L@membrane": 0, "P@membrane": 0, "D@membrane": 0})
+        refused(planted, "holds at least one molecule")
+    empty = world(last="reversible")
+    empty["founder"].update({"L@membrane": 0, "P@membrane": 0, "D@membrane": 0})
+    assert parsed(empty).model.world.conventions.last_molecule == "reversible"
+    # P on both sides: a P catalyses L + P -> D, written out (2 P + L -> D + P, balanced).
+    both = step("catalysed", {"P": 2, "L": 1}, {"D": 1, "P": 1}, 1.0, phase="membrane")
+    assert parsed(_with_step(copy.deepcopy(both), world(lumen=False))).model.world.steps[-1]
+    one = world(measure="multinomial_less_one", lumen=False, catalysis=False)
+    assert parsed(_with_step(both, one)).model.world.steps[-1].id == "catalysed"
+
+
+def test_the_experiment_and_execution_are_refused_out_of_form():
+    data = definition(world())
+    del data["experiment"]["trace"]
+    with pytest.raises(ConfigError, match="missing=\\['trace'\\]"):
+        parse_spec(data)
+    data = definition(world(), molecules=10)  # Below the founder's largest count (50).
+    with pytest.raises(ConfigError, match="molecule_capacity"):
+        parse_spec(data)
+    data = definition(world())
+    data["model"]["world"]["units"]["time"] = "nominal"
+    with pytest.raises(ConfigError, match="physical units"):
+        parse_spec(data)
+
+
+def test_one_declaration_d152_s_entries_parse_with_their_values_unchanged():
+    """D152's species and passive reaction entries, as its own fixtures write them, parse here with
+    `phase` in place of `sites` (and no `factors`): stoichiometry, rate constant, potential and
+    moieties are carried unchanged (SHARED_INVENTORY_REACTIONS_DESIGN §2.1; the design note §2.3)."""
+    entries = [
+        d152.species("A", moieties={"x": 1}, mu=-0.5),
+        d152.species("B", moieties={"x": 1}, mu=0.25),
+        d152.species("C", moieties={"x": 2}, mu=-2.0),
+    ]
+    reaction = d152.passive("bind", "all", {"A": 1, "B": 1}, {"C": 1}, 3.5)
+    assert reaction["law"] == d152.PASSIVE
+    the_world = world(lumen=False, regular=False, catalysis=False, held=False)
+    the_world["species"] += entries
+    the_world["phases"]["pool"]["species"] += [{"id": n, "kind": "finite"} for n in "ABC"]
+    the_world["founder"].update({"A@pool": 3, "B@pool": 4, "C@pool": 0})
+    here = {k: v for k, v in reaction.items() if k not in ("sites", "factors")}
+    here.update(phase="pool", law=MASS_ACTION)
+    the_world["steps"].append(here)
+    spec = parsed(the_world)
+    bound = spec.model.world.steps[-1]
+    assert dict(bound.reactants) == {"A@pool": 1, "B@pool": 1}
+    assert dict(bound.products) == {"C@pool": 1}
+    assert bound.forward_rate_per_s == reaction["forward_rate_per_s"] and bound.locus == "pool"
+    by_id = {s.id: s for s in spec.model.world.species}
+    for entry in entries:
+        assert by_id[entry["id"]].mu_solution == entry["standard_mu_RT"]
+        assert dict(by_id[entry["id"]].moieties) == entry["moieties"]

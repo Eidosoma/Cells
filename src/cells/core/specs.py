@@ -830,6 +830,11 @@ class SimulationSpec:
 
         if isinstance(m, LineageModel):
             return lineage_to_dict(self)
+        from cells.models.assembly_lineages_v2.spec import AssemblyModel
+        from cells.models.assembly_lineages_v2.spec import to_dict as assembly_to_dict
+
+        if isinstance(m, AssemblyModel):
+            return assembly_to_dict(self)
         # The older families (D188 R1); their half also holds the execution and experiment
         # type refusals that stood between them, so they still apply to the models below.
         older = legacy().to_dict(self)
@@ -1010,6 +1015,10 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "cells.assembly_lineages@1":
         from cells.models.assembly_lineages.spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.assembly_lineages@2":
+        from cells.models.assembly_lineages_v2.spec import parse
 
         return parse(data)
     older = legacy().parse(data)  # The older families (D188 R1).
