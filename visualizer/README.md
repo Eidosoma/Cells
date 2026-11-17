@@ -717,7 +717,7 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/build_*_atlas.py`, `data/proteins/<species>/` | Each species' own proteins, rebuilt from saved public downloads that stay outside git |
 | `src/core/look.js`, `passes.js`, `environment.js` | The Cell view's resting look and the finishing passes |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
-| `tools/build_view_page.mjs`, `src/standalone/` | A page that holds one view standing alone, for a view that is not on the map's page yet: `node tools/build_view_page.mjs <view> --out FILE`. A view needs a mount module and a page file there; the page says on itself that it is a preview |
+| `tools/build_view_page.mjs`, `src/standalone/` | A page that holds one view standing alone (the Laws library, the origin-of-life view): `node tools/build_view_page.mjs <view> --out FILE`. A view needs a mount module and a page file there; the page says on itself that it is a preview |
 | `src/core/` | Stage (renderer, camera, picking), camera control, labels, theme, status materials |
 | `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales), `proteins.js` and `protein_parts.js` (protein atlas) |
 | `src/ui/` | `<cells-viewer>` and its parts: panel, legend, list |

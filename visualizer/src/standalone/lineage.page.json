@@ -1,7 +1,7 @@
 {
   "view": "lineage",
   "title": "GARD Assembly Preview",
-  "description": "A GARD assembly drawn as lipids in water, gathering, taking molecules in and letting them go, and splitting in two, as an example run of invented numbers plays (not a run of Cells' engine), on a preview of a view that is not on the map's page yet.",
+  "description": "A GARD assembly drawn as lipids in water, gathering, taking molecules in and letting them go, and splitting in two, as an example run of invented numbers plays (not a run of Cells' engine): the origin-of-life view of the Cells map, standing alone.",
   "boot": "Loading the GARD assembly…",
   "scene": {
     "from": "data/architecture/architecture.scene.json",

@@ -303,6 +303,10 @@
         {
           "date": "2026-11-17",
           "note": "Version 2, built from a clean copy of 32c55731 (509,433 bytes). The names written on the room now come back after a lost context: pictured on the first page of a fresh browser on the graphics card, where the context is lost and restored, with the families on their planks, the rows and the revision on the foot rail. The list is the one read at main fa19d80c (190 pieces). The view is now also on the map's page (Version 11), so this page is the view standing alone."
+        },
+        {
+          "date": "2026-11-17",
+          "note": "Version 3 (version id 1794888479-14ad), built from the same copy (516 KB). The page says on itself 'One view of the Cells map, standing alone'; a piece named in the address is framed on a phone. Looked at on the card, wide and at a phone's width: no error."
         }
       ]
     },
@@ -310,12 +314,16 @@
       "title": "GARD Assembly Preview",
       "url": "https://claude.ai/artifact/4AYNKZ4PkjZ2w2fp9XueDx",
       "page": "built by `node tools/build_view_page.mjs lineage --out FILE` (not committed)",
-      "note": "The origin-of-life view as built, on a page of its own: a GARD assembly drawn as lipids in water, gathering from free molecules, taking molecules in and letting them go, and splitting in two, with its composition, its lineages and its molecules as further levels. It plays an example run of invented numbers, marked 'Example: invented numbers · not a run of Cells' engine', and says on itself that the lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine is designed, not built (D192). It is a preview of a view that is not on the map's page yet. The options page that came before it is origin_of_life.",
+      "note": "The origin-of-life view as built, on a page of its own: a GARD assembly drawn as lipids in water, gathering from free molecules, taking molecules in and letting them go, and splitting in two, with its composition, its lineages and its molecules as further levels. It plays an example run of invented numbers, marked 'Example: invented numbers · not a run of Cells' engine', and says on itself that the lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine is designed, not built (D192). It is a preview of a view that is not on the map's page yet. The options page that came before it is origin_of_life. Since Version 13 of the map the view is on the map's page too; this page is the view standing alone.",
       "sharing": "private; the owner shares it from the page's Share menu",
       "versions": [
         {
           "date": "2026-11-17",
           "note": "First version, built from a clean copy holding this commit's files (598,728 bytes; a second build gave the same bytes). The user, 16 November 2026: 'let's make that one visually amazing - for example lets simulate the self assembly of the lipids (visuall for now but maybe law later), and the different chemicals seeping in and out, and the split, let's use nice water and lipid 3D elements and textures'. Loaded as an artifact page is wrapped, on the graphics card through Vulkan, at 1280, 400 (light and dark) and 360 px: no sideways scroll, no error. The agent's 41 pictures of the built page were looked at before that, in part (wide and phone, light and dark: gathering, steady, a join, mid-fission). Its own measurements: a frame's own work 2.5 ms at 1400 by 900 while playing and 2.4 ms at a phone's size, frames 16.7 ms apart; a deliberately lost context came back unchanged. Changed from the user's earlier answer: a phone and less motion keep the micelle, where the answer had been the cluster; the cluster is a choice in the bar. Known faults: in one wide still the example's mark on the picture itself was not drawn (the notice above the view always says it); on a phone a molecule seeping in can come from outside the frame, and the Lineages level is crowded."
+        },
+        {
+          "date": "2026-11-17",
+          "note": "Version 2 (version id 1794888478-0c6e), built from a clean copy of 8d0aaa35 with the standalone pages' new notice (621 KB). The view as it now stands on the map's page (Version 13 of the map): the example's mark takes the first free place under the notice, 'the preprint's single-event form' replaces 'the published form' (D192's scoped words), a seeping molecule starts inside the frame on a phone. The page says on itself 'One view of the Cells map, standing alone' (it said the view was not on the map's page yet). Looked at on the card, wide and at a phone's width in the dark theme, never a fresh browser's first page: no error."
         }
       ]
     }
