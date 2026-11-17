@@ -218,6 +218,30 @@ test("the machine mode refuses, and writes nothing, where a part names no atom o
   }
 });
 
+test("the two-subunit mode takes an entity the caller names for a subunit (by its id), whatever its description, and says how it placed each chain", () => {
+  const folder = mkdtempSync(path.join(tmpdir(), "particle-"));
+  try {
+    const file = path.join(folder, "made.cif");
+    // The messenger's place taken by a small-subunit protein whose name says neither subunit (as RACK1's does).
+    writeFileSync(file, madeUp().replace("3 mRNA", "3 'Receptor of activated protein C kinase 1'"));
+    let done = run(file);
+    assert.equal(done.status, 0, done.stderr);
+    assert.deepEqual(JSON.parse(done.stdout).measured.MADE.left_out, ["Receptor of activated protein C kinase 1"]);
+    assert.match(done.stderr, /chain A \(entity 3, Receptor of activated protein C kinase 1\): left out/);
+    done = run(file, "--small", "3");
+    assert.equal(done.status, 0, done.stderr);
+    const measured = JSON.parse(done.stdout).measured.MADE;
+    assert.deepEqual([measured.left_out, measured.placed_by_the_caller, measured.small.atoms], [[], { 3: { subunit: "small", description: "Receptor of activated protein C kinase 1" } }, 7]);
+    assert.match(done.stderr, /\(entity 3, Receptor of activated protein C kinase 1\): small, by the caller/);
+    assert.match(done.stderr, /\(entity 1, 23S ribosomal RNA\): large, by its description/);
+    // Refused: an entity the entry does not hold, and one named for both subunits.
+    assert.match(run(file, "--small", "9").stderr, /the entity 9 named for a subunit is not in the entry; nothing is measured/);
+    assert.match(run(file, "--small", "3", "--large", "3").stderr, /the entity 3 is named for both subunits/);
+  } finally {
+    rmSync(folder, { recursive: true, force: true });
+  }
+});
+
 test("the record the bacteria are drawn from is the tool's measure of the two entries saved with the downloads", { skip: !existsSync(path.join(ENTRIES, "7K00.cif.gz")) && "the entries are not on this machine" }, () => {
   const folder = mkdtempSync(path.join(tmpdir(), "particle-"));
   try {

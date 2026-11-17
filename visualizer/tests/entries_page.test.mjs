@@ -10,7 +10,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { ROOT, modelFiles } from "../tools/lib/build_page.mjs";
+import { ROOT, modelFiles, shapeFiles } from "../tools/lib/build_page.mjs";
 import { CellLens } from "../src/lenses/cell.js";
 import { EntryCardLens, entryId, levelId } from "../src/lenses/entry_card.js";
 import { LADDER, MODELLED, notInEngine, modelSystems, modelSystemOf, cellTypesOf, cellTypeOf, switchRows } from "../src/scene/entries.js";
@@ -254,4 +254,16 @@ test("a model system's run files are published beside the page, at the path the 
   const broken = await modelFiles({ models: [{ id: "x", runs: [{ file: "data/no/such.json", label: "A run", path: "models/x/such.json" }, { file: "elsewhere.json", label: "Another", path: "../x.json" }] }] });
   assert.equal(broken.files.length, 0);
   assert.equal(broken.problems.length, 2);
+});
+
+test("a machine's shapes are published beside the page, one file a machine, at shapes/<species>.<machine>.json (schema/MACHINE_SHAPES.md)", async () => {
+  const { files, problems } = await shapeFiles();
+  assert.deepEqual(problems, []);
+  assert.ok(files.length >= 6, `${files.length} shape files`);
+  for (const file of files) {
+    assert.match(file.path, /^shapes\/[a-z0-9][a-z0-9_-]*\.[a-z0-9][a-z0-9_-]*\.json$/);
+    assert.equal(path.relative(ROOT, file.source), path.join("data", "catalogue", "shapes", path.basename(file.path)));
+  }
+  // A folder that is not there publishes nothing, and says nothing is wrong.
+  assert.deepEqual(await shapeFiles({ shapesDir: path.join(ROOT, "data", "no-such-folder") }), { files: [], problems: [] });
 });

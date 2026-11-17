@@ -230,21 +230,45 @@ def described(data, path):
     }
 
 
-def measure(path, exclude=()):
-    """One entry's measure as a ribosome: what the file says it is, and the particle's sizes and the arrangement of its two subunits."""
+def sides(names, exclude=(), named=None):
+    """Each entity's subunit in the two-subunit mode: the caller's word where it names the entity (`named`, entity id -> large or
+    small: by ids, never by a name's pattern), else by its own description; None where neither places it."""
+    named = named or {}
+    return {entity: named.get(entity) or ("large" if LARGE.search(description) else "small" if SMALL.search(description) else None) for entity, description in names.items() if entity not in exclude}
+
+
+def measure(path, exclude=(), named=None):
+    """One entry's measure as a ribosome: what the file says it is, and the particle's sizes and the arrangement of its two subunits.
+    `named` places entities the caller names in a subunit (a chain whose description names neither, such as RACK1)."""
     data = categories(opened(path), ["entity", "atom_site", "struct", "exptl", "em_3d_reconstruction", "refine"])
     names = {row.get("id"): row.get("pdbx_description", "") for row in data["entity"]}
+    named = named or {}
+    for entity in named:
+        if entity not in names:
+            raise SystemExit(f"{Path(path).name}: the entity {entity} named for a subunit is not in the entry; nothing is measured")
+    placed = sides(names, exclude, named)
     sets, found = {"large": [], "small": [], "other": []}, {"large": set(), "small": set(), "other": set()}
+    chains = {}
     for row in data["atom_site"]:
         if row.get("group_PDB") != "ATOM" or row.get("pdbx_PDB_model_num", "1") != "1" or row.get("label_entity_id") in exclude:
             continue
-        description = names.get(row.get("label_entity_id"), "")
-        side = "large" if LARGE.search(description) else "small" if SMALL.search(description) else "other"
+        entity = row.get("label_entity_id")
+        description = names.get(entity, "")
+        side = placed.get(entity) or "other"
         try:
             sets[side].append((float(row["Cartn_x"]), float(row["Cartn_y"]), float(row["Cartn_z"])))
         except (KeyError, ValueError):
             continue
         found[side].add(description)
+        chains.setdefault((row.get("auth_asym_id") or row.get("label_asym_id"), entity), side)
+    # Every polymer chain, as it was placed: by its description, by the caller's word, or left out (on the error stream, so
+    # that the record itself is as it was).
+    for (chain, entity), side in chains.items():
+        how = "left out" if side == "other" else f"{side}, by the caller" if entity in named else f"{side}, by its description"
+        print(f"{Path(path).name}: chain {chain} (entity {entity}, {names.get(entity, '')}): {how}", file=sys.stderr)
+    for entity in named:
+        if not any(owner == entity for _, owner in chains):
+            raise SystemExit(f"{Path(path).name}: the entity {entity} named for a subunit has no atoms; nothing is measured")
     if not sets["large"] or not sets["small"]:
         raise SystemExit(f"{Path(path).name}: no atoms of {'a large' if not sets['large'] else 'a small'} subunit were found; nothing is measured")
     whole, large, small = spread(sets["large"] + sets["small"]), spread(sets["large"]), spread(sets["small"])
@@ -273,6 +297,7 @@ def measure(path, exclude=()):
         }
     return {
         **described(data, path),
+        **({"placed_by_the_caller": {entity: {"subunit": side, "description": names.get(entity, "")} for entity, side in sorted(named.items())}} if named else {}),
         "left_out": sorted(found["other"]),
         "whole": {
             "atoms": whole["atoms"],
@@ -412,8 +437,18 @@ def main():
     parser.add_argument("--part", action="append", default=[], help="machine mode: NAME=ENTITY,ENTITY or NAME=chains:A,B (may be given again)")
     parser.add_argument("--frame-from", help="machine mode: the part whose centre the frame's y runs from")
     parser.add_argument("--frame-to", help="machine mode: the part whose centre the frame's y runs to")
+    parser.add_argument("--large", action="append", default=[], help="two-subunit mode: entity ids to place in the large subunit whatever their description says (comma-separated)")
+    parser.add_argument("--small", action="append", default=[], help="two-subunit mode: entity ids to place in the small subunit whatever their description says (comma-separated)")
     arguments = parser.parse_args()
     exclude = tuple(one.strip() for given in arguments.exclude for one in given.split(",") if one.strip())
+    named = {}
+    for side in ("large", "small"):
+        for entity in (one.strip() for given in getattr(arguments, side) for one in given.split(",") if one.strip()):
+            if named.get(entity, side) != side:
+                raise SystemExit(f"the entity {entity} is named for both subunits")
+            named[entity] = side
+    if named and arguments.machine:
+        raise SystemExit("--large and --small are for the two-subunit mode; the machine mode names its parts with --part")
     if not arguments.machine:
         if arguments.part or arguments.frame_from or arguments.frame_to:
             raise SystemExit("--part, --frame-from and --frame-to are for the machine mode: add --machine")
@@ -422,7 +457,7 @@ def main():
             "tool": "tools/measure_particle.py",
             "definition": DEFINITION,
             "frame": "origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y",
-            "measured": {entry["entry"]: entry for entry in (measure(path, exclude) for path in arguments.entries)},
+            "measured": {entry["entry"]: entry for entry in (measure(path, exclude, named) for path in arguments.entries)},
         }
     else:
         parts = {}
