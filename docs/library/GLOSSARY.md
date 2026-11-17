@@ -13,7 +13,7 @@ population's rate. It is a value of the definition, not of the law.
 - **In other fields:** expression level or density (biology); surface concentration of the
   protein (chemistry); a weight on a rate (physics); a per-population input array (computing).
 - **Unit:** none (a factor).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by abundance -->
 
@@ -47,7 +47,7 @@ availability schedule.
 - **In other fields:** the fraction not blocked (biology); an inhibition factor (chemistry); a
   time-dependent coefficient (physics); a control input, held between change times (computing).
 - **Unit:** none (a fraction).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md) (§7.4).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md) (§7.4).
 
 <!-- generated: used-by availability -->
 
@@ -62,7 +62,8 @@ ledgers can check the totals at each step.
 
 - **In other fields:** a mass and energy balance (biology, chemistry); keeping a conserved
   quantity's account (physics); accumulating terms in state that a check reads (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see the operator contract's energy roles and [the core-seams
+  design](../CORE_SEAMS_DESIGN.md), §6 (heat booking).
 
 <!-- generated: used-by booking -->
 
@@ -92,7 +93,7 @@ A provenance tag: the piece was fitted to data by a declared method, and gives i
 as its source.
 
 - **In other fields:** parameter estimation (all four).
-- **Cells' word,** defined in [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
+- **Cells' word;** see [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
 
 <!-- generated: used-by calibrated -->
 
@@ -121,7 +122,7 @@ A provenance tag: the piece's form, and any numbers it takes, come from a source
 place in that source, the licence of the numbers and its departures from it.
 
 - **In other fields:** a literature model (all four).
-- **Cells' word,** defined in [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
+- **Cells' word;** see [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
 
 <!-- generated: used-by cited -->
 
@@ -152,7 +153,7 @@ chooses.
 
 - **In other fields:** a model built from modules (biology, chemistry); operator splitting around
   a core step (physics); composition of step functions (computing).
-- **Cells' word,** defined in [the composite's guide](../PUMP_COMPOSITE.md).
+- **Cells' word;** see [the composite's guide](../PUMP_COMPOSITE.md).
 
 <!-- generated: used-by composite -->
 
@@ -166,7 +167,7 @@ The composite with a fixed list of operators, kept under an older model ID such 
 `resolved_pump_water@1`. Its definitions are read as the composite's.
 
 - **In other fields:** a named configuration (computing).
-- **Cells' word,** defined in [the composite's guide](../PUMP_COMPOSITE.md).
+- **Cells' word;** see [the composite's guide](../PUMP_COMPOSITE.md).
 
 <!-- generated: used-by composition -->
 
@@ -215,7 +216,7 @@ schedules) and its execution (solver and step). Definitions hold values; models 
 
 - **In other fields:** an experimental protocol (biology); a set of initial and boundary conditions
   (chemistry, physics); a configuration file, parsed and checked before anything runs (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by definition -->
 
@@ -231,7 +232,7 @@ refused, never clipped.
 - **In other fields:** the conditions a measurement covered (biology); the range of a fit
   (chemistry); the validity range of an approximation (physics); a precondition checked at run
   time (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by domain -->
 
@@ -260,7 +261,7 @@ A link between two outside nodes, across which species move by electrodiffusion.
 
 - **In other fields:** a diffusion path between extracellular spaces (biology); a boundary of a
   control volume (chemistry, physics); an edge of the outside nodes' graph (computing).
-- **Cells' word,** defined in [the spatial extracellular specification](../SPATIAL_EXTRACELLULAR_SPEC.md).
+- **Cells' word;** see [the spatial extracellular specification](../SPATIAL_EXTRACELLULAR_SPEC.md).
 
 <!-- generated: used-by face -->
 
@@ -275,7 +276,7 @@ or out. A held bath is not one.
 
 - **In other fields:** a compartment (biology, chemistry); a control volume (physics); a node
   whose amounts are state (computing).
-- **Cells' word,** defined in [the water guide](../PUMP_WATER_MODEL.md).
+- **Cells' word;** see [the water guide](../PUMP_WATER_MODEL.md).
 
 <!-- generated: used-by finite-node -->
 
@@ -334,7 +335,7 @@ What flows into or out of it is booked as supply, with its work.
 - **In other fields:** the bathing medium (biology); a reservoir at fixed concentrations
   (chemistry); a boundary held by a thermostat and a chemostat (physics); a node whose amounts are
   not state (computing).
-- **Cells' word,** defined in [the water guide](../PUMP_WATER_MODEL.md).
+- **Cells' word;** see [the water guide](../PUMP_WATER_MODEL.md).
 
 <!-- generated: used-by held-bath -->
 
@@ -395,7 +396,7 @@ between them and the spaces outside them. The composite wraps its step.
 
 - **In other fields:** a tissue model (biology); a reaction–transport network (chemistry); a
   compartmental electrodiffusion model (physics); the core step function (computing).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by inner-model -->
 
@@ -425,7 +426,7 @@ moves it in the inventory.
 
 - **In other fields:** the cell's contents (biology); a mole balance (chemistry); the conserved
   densities (physics); a species-by-node state array (computing).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by inventory -->
 
@@ -440,7 +441,7 @@ has a negative change.
 
 - **In other fields:** biology's currents are often outward-positive instead, so signs must be
   read with care.
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by inward-positive -->
 
@@ -462,7 +463,7 @@ Joules per mole: energy per mole of reaction, or per mole of molecules moved.
 
 A level: the piece was used in a registered experiment whose result was judged.
 
-- **Cells' word,** defined in [the current plan](../CURRENT_PLAN.md).
+- **Cells' word;** see [the current plan](../CURRENT_PLAN.md).
 
 <!-- generated: used-by judged -->
 
@@ -507,7 +508,7 @@ host keeps its state.
 
 - **In other fields:** a rate law (biology, chemistry); a constitutive law (physics); a pure
   function with a declared signature (computing).
-- **Cells' word,** defined in [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
+- **Cells' word;** see [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1).
 
 <!-- generated: used-by law -->
 
@@ -522,7 +523,7 @@ from the bookings at every step and held to a rounding bound.
 
 - **In other fields:** a mass balance (biology, chemistry); a conservation law (physics); an
   invariant checked at run time (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by ledger -->
 
@@ -574,7 +575,7 @@ composition, or a model family of its own.
 The first part of an ID, naming who declares it: `cells` for the engine's own pieces, which no one
 else may use, and another for each outside package.
 
-- **Cells' word,** defined in [the module system design](../MODULE_SYSTEM_DESIGN.md) (§2.3).
+- **Cells' word;** see [the module system design](../MODULE_SYSTEM_DESIGN.md) (§2.3).
 
 <!-- generated: used-by namespace -->
 
@@ -588,7 +589,7 @@ A well-mixed compartment: a cell, or a space outside the cells.
 
 - **In other fields:** a compartment (biology, chemistry); a control volume (physics); a node of
   the world's graph (computing).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by node -->
 
@@ -657,7 +658,7 @@ The pascal, one newton per square metre: Cells' unit of pressure.
 A provenance tag: the piece was moved unchanged from an older model family. Moving is not
 calibrating, so a parity piece claims no more than its original did.
 
-- **Cells' word,** defined in [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1, §8.6).
+- **Cells' word;** see [the core-seams design](../CORE_SEAMS_DESIGN.md) (§8.1, §8.6).
 
 <!-- generated: used-by parity -->
 
@@ -672,7 +673,7 @@ sit.
 
 - **In other fields:** a membrane domain (biology); an interface (chemistry); a capacitor plate
   (physics); an entity with its own slot (computing).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by patch -->
 
@@ -763,7 +764,7 @@ makes comes with one (D187).
 
 - **In other fields:** a positive control (biology, chemistry); a known perturbation (physics); a
   mutation test (computing).
-- **Cells' word,** defined in [the decisions](../DECISIONS.md) (D187).
+- **Cells' word;** see [the decisions](../DECISIONS.md) (D187).
 
 <!-- generated: used-by planted-error -->
 
@@ -777,7 +778,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 - **In other fields:** a channel population (biology); an ensemble of identical molecules
   (chemistry, physics); a slot of a per-population array (computing).
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by population -->
 
@@ -803,7 +804,7 @@ a fuel, usually ATP.
 
 A level, in full "numerically qualified": a registered protocol for the piece passed.
 
-- **Cells' word,** defined in [the current plan](../CURRENT_PLAN.md).
+- **Cells' word;** see [the current plan](../CURRENT_PLAN.md).
 
 <!-- generated: used-by qualified -->
 
@@ -818,7 +819,7 @@ rather than clipping a value or repairing a state. A refused step returns its st
 
 - **In other fields:** a failed quality check (biology, chemistry); outside the model's validity
   (physics); an error raised before a wrong result can be written (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by refusal -->
 
@@ -830,7 +831,7 @@ rather than clipping a value or repairing a state. A refused step returns its st
 
 One species at one node: an entry of the inventory.
 
-- **Cells' word,** defined in [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
+- **Cells' word;** see [the inner-model design](../INNER_MODEL_V4_DESIGN.md).
 
 <!-- generated: used-by species-row -->
 
@@ -845,7 +846,7 @@ order, as the water operator's half-steps do around the inner model's step.
 
 - **In other fields:** operator splitting, here Strang splitting (physics); composing step
   functions (computing).
-- **Cells' word,** defined in [the water guide](../PUMP_WATER_MODEL.md).
+- **Cells' word;** see [the water guide](../PUMP_WATER_MODEL.md).
 
 <!-- generated: used-by split-step -->
 
@@ -858,7 +859,7 @@ order, as the water operator's half-steps do around the inner model's step.
 One evaluation of the rates within a step. A step method combines several stages.
 
 - **In other fields:** a stage of a Runge–Kutta method (physics, computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by stage -->
 
@@ -871,7 +872,7 @@ One evaluation of the rates within a step. A step method combines several stages
 A piece's level, copied from a record: implemented, guarded, numerically qualified or judged. A
 page copies one only from a record that states it, and otherwise says "Not stated".
 
-- **Cells' word,** defined in [the current plan](../CURRENT_PLAN.md).
+- **Cells' word;** see [the current plan](../CURRENT_PLAN.md).
 
 <!-- generated: used-by status -->
 
@@ -885,7 +886,7 @@ One advance of time, accepted only when every check passes. A step that fails a 
 and returns its start.
 
 - **In other fields:** a time step (all four).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by step -->
 
@@ -957,7 +958,7 @@ many independent worlds.
 
 - **In other fields:** one preparation (biology); one system (chemistry, physics); one instance of
   a batch (computing).
-- **Cells' word,** defined in [the architecture](../ARCHITECTURE.md).
+- **Cells' word;** see [the architecture](../ARCHITECTURE.md).
 
 <!-- generated: used-by world -->
 

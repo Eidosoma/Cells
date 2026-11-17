@@ -52,6 +52,9 @@ PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m cells declarations -
   D185's rule once.
 - **`models` and `laws` are namespaced.** A model's `declared_id` in the models section gives its
   declared spelling.
+- **`requires` keeps the operator's own spellings,** as its `REQUIRES` and `REQUIRES_KINDS`
+  declare them, since a definition's operator list is compared with them as written: the
+  composite's operator IDs are bare, and kind IDs namespaced.
 
 ## Pieces
 
@@ -91,7 +94,7 @@ the five `cells` law interfaces; "operators" the composite's operators (`cells.o
 | `energy` | Its heat and work fields, as `heat` and `work` | Operators; not extracted for laws, kinds and family operators |
 | `units` | The unit of every field it names in a role, and of every field of its own with a unit (below). Null: not stated | All |
 | `signs` | Its declared sign conventions, by field: a law type's, a kind's orientation, an operator's | All |
-| `requires` | What an operator needs: `laws`, the operators that must come before it in the list, and `kinds`, the inner kinds it reads or writes | Operators |
+| `requires` | What an operator needs: `laws`, the operators that must come before it in the list, and `kinds`, the inner kinds it reads or writes, each as the operator spells it (the ID rule) | Operators |
 | `laws` | The laws a kind hosts, namespaced and sorted | Kinds |
 | `fields` | The rest of its declaration, as declared (each interface's own fields, below) | All |
 | `status` | A level copied from a record that states one for this piece, or null: not stated. A level is never inferred | All |

@@ -115,9 +115,9 @@ Declared test: not stated.
 <!-- /generated -->
 
 An older model family's test file compares the kernel with an independent scalar implementation of
-the equations above. Its 19 kernel cases passed in D172's tier-3 record. None of them is a planted
-error, and the check is not yet this law's declared test: under D196 it moves beside the law first,
-gains a planted error, and is declared.
+the equations above, at 19 voltages across the domain, from −0.12 to 0.06 V. All 19 cases passed in
+D172's tier-3 record. None of them is a planted error, and the check is not yet this law's declared
+test: under D196 it moves beside the law first, gains a planted error, and is declared.
 
 ## Status
 
