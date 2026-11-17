@@ -1,0 +1,258 @@
+{
+ "format": "ool_references.design@1",
+ "milestone": "OL1",
+ "registered": "2026-11-17",
+ "design_note": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md: \u00a70.1, \u00a70.2a (the lead's rulings, amended 17 November 2026: the last molecule's rate is the pair rule in its cancelled form, in either direction), \u00a72.1-2.4, \u00a73.3, \u00a77.1-7.2",
+ "statistics": {
+  "alpha": 0.001,
+  "min_power": 0.99
+ },
+ "conventions": {
+  "menu": {
+   "free_energy_form": [
+    "discrete"
+   ],
+   "condensed_measure": [
+    "multinomial",
+    "multinomial_less_one"
+   ],
+   "membrane_kinetics": [
+    "count_on_m"
+   ],
+   "lumen_volume": [
+    "declared"
+   ],
+   "empty_catalyst_phase": [
+    "uncatalysed"
+   ],
+   "last_molecule": [
+    "kept",
+    "reversible",
+    "extinct"
+   ]
+  },
+  "refused": {
+   "free_energy_form": [
+    "continuum"
+   ]
+  },
+  "pairing": {
+   "reversible": "multinomial only",
+   "extinct": "multinomial_less_one only"
+  },
+  "probed": [
+   {
+    "condensed_measure": "multinomial",
+    "last_molecule": "kept"
+   },
+   {
+    "condensed_measure": "multinomial_less_one",
+    "last_molecule": "extinct"
+   }
+  ],
+  "covered_by_the_references": "all four admissible (condensed_measure, last_molecule) pairs",
+  "rule": "every bundle and probe declares every token; a missing or unknown token is refused (status 2)"
+ },
+ "worlds": {
+  "registered": [
+   "ol1_wa",
+   "ol1_wa_closed",
+   "ol1_wa_closed_uncatalysed",
+   "ol1_wa_closed_x2",
+   "ol1_wb_m5",
+   "ol1_wb_m20",
+   "ol1_wb_m80",
+   "ol1_wb_m320"
+  ],
+  "refusals": "designs/refusals/*.world.json: each must be refused at parse",
+  "files": "designs/<id>.world.json"
+ },
+ "rows": {
+  "OL1-1": {
+   "claim": "every channel keeps local detailed balance (\u00a70.1, \u00a77.1)",
+   "role": "kernel_probe",
+   "world": "ol1_wa",
+   "inputs": {
+    "seed": 2026111701,
+    "bases": 24,
+    "max_count": 9,
+    "states": "probes.kernel_probe_states (written by make-probes; echoed by the engine)"
+   },
+   "checks": [
+    "Kolmogorov on every registered square and two-cycle (convention-free)",
+    "ln a-(n') - ln a+(n) = F(n') - F(n) - w under the declared tokens",
+    "reverse rates equal the reference's (the extinct boundary's continued form included)"
+   ],
+   "tolerance": "64 u (8 + Sum|ln a|) per cycle; 64 u (4 + |ln a+| + |ln a-| + |DeltaF|) per edge",
+   "planted": [
+    "at_state_factor",
+    "forward_only_catalysis",
+    "one_sided (r3's reverse times exp(x_D), lam = 1)",
+    "wrong_sign",
+    "dropped_c0",
+    "the other measure",
+    "a literal zero for the last molecule's rate under extinct"
+   ]
+  },
+  "OL1-2": {
+   "claim": "a closed world relaxes to exp(-F/k_BT) (\u00a77.1)",
+   "role": "closed_world",
+   "world": "ol1_wa_closed",
+   "inputs": {
+    "states": "probes.closed_world_states from the world's initial state (387 states)"
+   },
+   "checks": [
+    "exact edge identity in the reference (RatExp)",
+    "the engine table's stationary law against exp(-F)/Z",
+    "Kolmogorov on every square of the closed world"
+   ],
+   "tolerance": {
+    "total_variation": 1e-10
+   },
+   "planted": [
+    "at_state_factor",
+    "one_sided",
+    "forward_only_catalysis",
+    "dropped_c0",
+    "wrong_sign"
+   ],
+   "reproduced_design_probes": {
+    "E1": {
+     "tv": 0.08298222756944511,
+     "worst_cycle_ratio": "143/128"
+    },
+    "E2": {
+     "tv": 0.5407883773166593,
+     "worst_cycle_ratio": "2/3"
+    }
+   }
+  },
+  "OL1-3": {
+   "claim": "catalysis is kinetic only (\u00a72.4, \u00a77.1)",
+   "roles": [
+    "closed_world (with and without catalysts)",
+    "rescale_pair"
+   ],
+   "worlds": [
+    "ol1_wa_closed",
+    "ol1_wa_closed_uncatalysed",
+    "ol1_wa_closed_x2"
+   ],
+   "rescale_run": {
+    "worlds": [
+     "ol1_wa_closed",
+     "ol1_wa_closed_x2"
+    ],
+    "events": 500,
+    "shared_stream": true
+   },
+   "checks": [
+    "both closed-world tables relax to exp(-F)/Z",
+    "identical channel sequence, times exactly halved (bitwise)"
+   ],
+   "planted": [
+    "forward_only_catalysis",
+    "the factor on forward channels only"
+   ]
+  },
+  "OL1-4": {
+   "claim": "mass action with registry potentials (\u00a72.1, \u00a77.1)",
+   "a_forward_form": {
+    "role": "kernel_probe",
+    "check": "a+ equals k g(m) E(m) theta+(n) under the declared tokens",
+    "planted": [
+     "power_propensity",
+     "normaliser_power",
+     "extent_offset",
+     "dropped_c0"
+    ]
+   },
+   "b_large_system": {
+    "role": "wb_ensemble",
+    "worlds": [
+     "ol1_wb_m5",
+     "ol1_wb_m20",
+     "ol1_wb_m80",
+     "ol1_wb_m320"
+    ],
+    "runs_per_rung": 2000,
+    "t_end_s": 2.0,
+    "observation_times_s": [
+     0.25,
+     0.5,
+     1.0,
+     2.0
+    ],
+    "cut": "the state after the last event at or before each time",
+    "streams": "independent, one per run; none shared",
+    "null": "the exact master-equation mean on each rung (not the ODE)",
+    "test": "two-sided z on each mean, Bonferroni over 16 (z = 4.003)",
+    "planted": [
+     "power_propensity",
+     "dropped_c0",
+     "wrong_sign",
+     "coefficient",
+     "biased_selection"
+    ],
+    "family_power": {
+     "power_propensity": 0.998,
+     "dropped_c0": 1.0,
+     "wrong_sign": 1.0,
+     "coefficient": 1.0,
+     "biased_selection": 1.0
+    }
+   },
+   "c_exact_ssa": {
+    "role": "ledger_run (diagnostic)",
+    "conventions": {
+     "tau": "neg_log_u1_over_a0",
+     "select": "first_prefix_gt_u2_a0"
+    },
+    "tie_rtol": 1e-12,
+    "time_rtol": 1e-12,
+    "planted": [
+     "reverse channels selected at 0.9 of their weight"
+    ]
+   },
+   "d_moieties": {
+    "roles": [
+     "refusals",
+     "ledger_run"
+    ],
+    "checks": [
+     "each registered refusal refused",
+     "every moiety conserved at every row, held exchange counted from the trace"
+    ]
+   }
+  },
+  "OL1-5": {
+   "claim": "the ledgers for reactions close: F(n_t) - F(n_0) = W_t - Q_t at every row (\u00a73.3)",
+   "role": "ledger_run",
+   "run": {
+    "world": "ol1_wa",
+    "max_events": 2000,
+    "t_end_s": 60.0,
+    "row_every_events": 100,
+    "diagnostic": true,
+    "fission": "none (no fission threshold is reached, or none declared)"
+   },
+   "tolerance": "2 [16 u E (1 + L) + gamma_E (Sum|q| + Sum|w|) + 4 u (|F_t| + |F_0|)] (ledger.py)",
+   "planted": [
+    "a heat sign error",
+    "the reservoir work dropped"
+   ],
+   "note": "validation.ool.references.ledger"
+  },
+  "OL1-6": {
+   "claim": "streams: bitwise replay; distinct identities share no uniforms (\u00a77.1)",
+   "roles": [
+    "ledger_run",
+    "replay",
+    "other_stream"
+   ],
+   "planted": [
+    "a reused key"
+   ]
+  }
+ }
+}
