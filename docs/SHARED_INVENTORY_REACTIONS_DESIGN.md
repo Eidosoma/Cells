@@ -249,7 +249,7 @@ advisor, with a door later; §9 question 3):
 ### 1.2 The shared-state question: `network_reactions@1` stays separate
 
 **What `network_reactions@1` is, at ac5a251** (code read; HANDOFF finding 1):
-- **A law library.** `processes/network_reactions.py` offers:
+- **A law library.** `legacy/processes/network_reactions.py` offers:
   - `rates` over [..., species, compartment] concentrations (mM) and volumes (m³);
   - `accounting` of extents;
   - `bind` from the reference's dictionaries;
@@ -257,7 +257,7 @@ advisor, with a door later; §9 question 3):
 
   Its docstring reads: "No heat, ATP, transport or clipping is owned."
 - **No engine model integrates its kinetics.**
-  - Its one engine consumer is `network_control_factors@1` (`processes/network_control.py`). That
+  - Its one engine consumer is `network_control_factors@1` (`legacy/processes/network_control.py`). That
     module binds its influencer parsing and Hill regulation.
   - `resolved_calcium_energy_regulated@1/@2` apply those factors to existing pumps, channels and
     junctions. Their regulator concentrations "are read views of the existing ion/store/fuel

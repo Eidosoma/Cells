@@ -206,7 +206,7 @@ interpretation, as in the D150 and D152 notes.
   permeabilities at availability 1. R5's worst cases and the bridge's rule ("availability only
   falls") assume the same. **An effective availability above its schedule is not admissible.**
 
-**What is not reused.** `network_control_factors@1` (`processes/network_control.py`) is the
+**What is not reused.** `network_control_factors@1` (`legacy/processes/network_control.py`) is the
 calcium-energy family's regulation.
 - It carries its reference's conventions: ordered overwrite rather than multiplication, signed
   maximum effects, a voltage-dependent half-saturation, and direct and indirect modes.

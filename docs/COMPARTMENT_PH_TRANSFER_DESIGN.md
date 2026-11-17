@@ -598,7 +598,7 @@ i.
 
 ## 9. FR-5: damage, leak and reseal, and pH-conditioned transfer
 
-- **Damage**, `prescribed_patch_injury_resealing@1` (unchanged equation, `processes/membrane_injury.py`),
+- **Damage**, `prescribed_patch_injury_resealing@1` (unchanged equation, `legacy/processes/membrane_injury.py`),
   re-expressed as a control state on the bounding patch:
 
       dd/dt = k_inj u_inj(t) (1 − d) − k_res u_res(t) d,   d(0) = d₀ ∈ [0, 1].
@@ -1317,7 +1317,7 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
       `test_proton_buffer_kind.py`, `test_fr45_damage_and_worlds.py` and
       `validation/compartment_ph_engine/definitions.py`. None declares D152's operator.
     - No JSON world on disk declares both. The older calcium family's `standard_mu_RT` belongs to
-      its own reaction networks (`core/reaction_spec.py`), not to either.
+      its own reaction networks (`legacy/core/reaction_spec.py`), not to either.
   - The check's location waits on the core's answer (§17.7 question 2).
 - **D4:** (a) if the core confirms a seam, otherwise (b), with the item kept open. This waits on
   the core's answer (§17.7 question 1).

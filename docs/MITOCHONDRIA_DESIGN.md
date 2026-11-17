@@ -362,7 +362,7 @@ The mitochondria review (PAPER_REVIEW_MITOCHONDRIA.md) sets three requirements.
   - The older family uses the same relation for its own mitochondrial capacitor
     (`models/surface_calcium_energy_mitochondria.mitochondrial_voltage`). That family is
     `resolved_calcium_energy_mitochondria@1`: passive constant-field transport
-    (`processes/mitochondrial_passive.py`, which "adds neither respiration nor ATP production"),
+    (`legacy/processes/mitochondrial_passive.py`, which "adds neither respiration nor ATP production"),
     off the modular path.
 - **Charged routes on the bounding patch.**
   - Refusal 4 version 1.1 (`operators/compartments.py`) admits the known kinds: `ROUTE_KINDS` (the
@@ -976,7 +976,7 @@ These overlap the cardiac note's open questions (its §9.2), so one ruling could
     "planned".
 11. **Fresh agents** for the component references, R1 and R2. This note's author has read the engine.
 12. **D167's staged move for the older family.** `resolved_calcium_energy_mitochondria@1`'s passive
-    mitochondrial law (`processes/mitochondrial_passive.py`) has no energetics. Once the cycle kind
+    mitochondrial law (`legacy/processes/mitochondrial_passive.py`) has no energetics. Once the cycle kind
     covers its passive ion transport, is it frozen as a reference with a parity check (its
     constant-field law against the passive routes on host C), or without one?
 13. **D186's reach.** Does "numbers from open papers" cover papers free to read in PMC with no

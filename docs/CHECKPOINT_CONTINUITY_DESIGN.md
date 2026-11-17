@@ -91,7 +91,7 @@ Status: **the first landing (§13.1) is implemented, 14 November 2026: branch he
   windowed resume and branch);
 - `tissue_phase.py` 156 (an INIT history carried into a new SIM phase);
 - `excision_io.py` 142 and 156;
-- `processes/stable_seed_partition_trajectory.py` 389;
+- `legacy/processes/stable_seed_partition_trajectory.py` 389;
 - `analysis/cli.py` 90 and 105;
 - `ensemble/ionic.py` 369, which also compares the device kind itself (364–367).
 
@@ -104,9 +104,9 @@ lineage in the run's provenance instead.
 rule:
 - the stochastic assembly family:
   - `assembly/io.py` 98–109 hashes its own package and `core/output_paths.py` only;
-  - `assembly_cell/io.py` hashes all of `src/cells`;
+  - `legacy/assembly_cell/io.py` hashes all of `src/cells`;
   - `assembly_pool/io.py`;
-- the held charged-surface backend (`processes/charged_surface_backend.py`):
+- the held charged-surface backend (`legacy/processes/charged_surface_backend.py`):
   - its identity is a release-manifest digest;
   - its snapshot is an in-memory record (690–716);
   - its `runtime_identity` (156) is its own;

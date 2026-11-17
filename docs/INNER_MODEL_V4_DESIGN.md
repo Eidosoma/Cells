@@ -3009,7 +3009,7 @@ run; host only, from the tag's snapshot, 2.5 s).
   - `core/runner.py`, `core/windows.py`, `core/batch.py`, `core/vector_windows.py`;
   - `numerics/surface_imex.py`;
   - `processes/` (the channel kernels, `junction_gate.py`, `kinetic_pump.py`, `finite_energy.py`);
-  - `core/kinetic_finite_spec.py`, `core/surface_energy_spec.py`, `io.py`;
+  - `legacy/core/kinetic_finite_spec.py`, `legacy/core/surface_energy_spec.py`, `io.py`;
   - `validation/tissue/composite_crossrev.py`, `validation/continuity/probe.py`,
     `validation/tissue/l4_variants/`.
 
