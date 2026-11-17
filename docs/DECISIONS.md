@@ -6703,6 +6703,10 @@ viz". The work replicates, with the Cells engine, the experiment of the public b
   development run is labelled not judged.
 - **Lead's note, not part of the user's decision:** FR-4's and FR-5's judged run, already queued on lane
   B, is not interrupted.
+- **Amended the same day.** The user: "so GARD and Levin highest priority". GARD's work (D192, D197)
+  shares the highest priority with the replication.
+  - On lane A, GARD's short gate runs first and the replication's tissue search follows.
+  - On the light CPUs, both run at nice 0.
 
 ## D208: Numbers from BITSEY's code and logs may be used, cited
 
@@ -6715,4 +6719,72 @@ provenance. The user: "its fine on BITSEY code we are MIT here".
 - **AGENTS.md stands.** BITSEY's code is never copied or imported into Cells. It may be run out of
   process, in its own environment, as a reference; that is proposed to the lead first.
 - **Lead's note:** downloaded copies of BITSEY stay under /mnt/workspaces and are never committed.
+
+## D209: Molecular machines: M0 now, then M1 (FR-13)
+
+2026-11-17. On the machines design (`docs/MOLECULAR_MACHINES_DESIGN.md`), the user said: "lets go with M0
+then m1 - but get adviser in on the final decision then go". The lead reviewed the choice with the
+advisor.
+
+- **M0, now.** The viewer's Machines tab is a catalogue with drawing levels, labelled illustration.
+  - No machine is in the engine; the drawing levels are the viewer's, not simulation detail.
+  - ATP synthase reads "planned, first".
+- **M1, next: ATP synthase as the first machine, built as general pieces.** "Go" means its build plan
+  (§10), not code.
+  - **One law, one owner.** M1's law is D193's `proton_coupled_atp_synthesis_cycle@1`, built by the
+    mitochondria lane after the core-seams pass; FR-13 writes no synthesis law. Beard's printed F1F0
+    law (Eq. 11) fails the step-0 screen, so the user rules on a departure.
+  - **The order:** the core-seams pass, D193's synthesis law, M1a, a minimal form of D175's
+    representation fields, then M1b.
+  - **Seam A.** The note's per-edge detailed-balance check implies §16's Wegscheider condition when
+    every state declares one free energy (§10.2). Seven requirements go to seam A's design.
+  - **Cost:** 17–26.5 agent-days. The second consumer, named before any code, is the proteasome core
+    (M2).
+  - **Sources:** the numbers were read through a page-reading tool. A direct read is owed before any
+    number is registered.
+- **The note's questions:**
+  - **U1, U3 and U5 are answered by this choice:** a level fixed per run first, ATP synthase first,
+    and tagged one-way individuals first.
+  - **U2:** the user's words of the same day, "different researdh would need different levels of
+    detail so you could choose the setup" (D210). The lead reads them as follows: the level is declared
+    per run, undeclared worlds are unchanged, and the finer representation is the reference.
+  - **Open:** U4 (the ribosome and D145) and U6 (a declared extends link, FR-14).
+  - **Put to the user:** U7, which judges ATP synthase's intercept and reports its coupling ratio as a
+    finding. The approved check stands until the user rules.
+- **The lead's rulings:**
+  - **L1 and L3:** the relations vocabulary and the manifest's machine piece wait for later
+    versions. `cells.relations@2` collects its requirements from three sources: machines,
+    mitochondrial fusion (D210), and GARD's need for an order between same-time events.
+  - **L4:** D175's four fields are designed once, against fuel (D174), machines and mitochondria.
+    D174's fuel case stays their first consumer.
+  - **L5:** the zero-rate run belongs to the mitochondria lane, which owns the synthesis law.
+
+## D210: Mitochondria: the level of detail is chosen per research question; individuals sooner
+
+2026-11-17. The lead explained that mitochondria use one set of laws, and that the host sets the level.
+The first level is one lumped mitochondrion of N identical members per cell (D193), which is exact for
+identical members; then classes; then individuals. The user: "sounds great. So yes, the idea is that
+different researdh would need different levels of detail so you could choose the setup. get adviser also
+in on this". On individual mitochondria with fission and fusion, the user added: "yes sooner rather than
+later".
+
+- **This confirms D175.** Levels of detail are declared representations, chosen per mechanism and per
+  question. Two independent laws for one mechanism are not written: a simpler level is declared as a
+  representation of the detailed one.
+- **Individual mitochondria move up in D193.** D193's first step is unchanged: the lumped node stays the
+  reference that N identical individuals must reduce to.
+  - **"Sooner" means the design now, and its dependencies pulled forward.** No mitochondrion runs in
+    the modular engine yet, and the synthesis law still needs the user's ruling on a departure (D209).
+  - **Static individuals** (N mitochondria per cell, with no events) may need no new door. An addendum
+    to `docs/MITOCHONDRIA_DESIGN.md` checks the code.
+  - **Dynamic individuals need more:**
+    - splitting and merging a compartment's patch at fission and fusion;
+    - retiring one compartment in a living cell;
+    - stochastic partition at division;
+    - two-parent relations (`cells.relations@2`).
+- **Choosing between levels that are not exact** needs D175's four fields, designed once for fuel,
+  machines and mitochondria (D209, L4).
+- **The addendum is read-only and gives options.** It names the first research question that needs
+  individuals, and the free-to-read data for it. Inheritance may belong to another target, since
+  cardiac cells rarely divide.
 

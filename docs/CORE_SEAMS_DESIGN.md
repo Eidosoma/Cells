@@ -1058,6 +1058,15 @@ following before work builds on it.
   rehearsals run from a snapshot older than F, so their bitwise checks are repeated from main at or
   after 75e925ea before registration.
 
+- **Amended at landing (17 November 2026, the lead).** Two additions beyond this section's first
+  ruling are accepted:
+  - `cells.modules` exports `Law`, `FamilyOperator` and `CitedWork`, the declaration types a family
+    needs, not `Law` alone;
+  - the static model table (`src/cells/registry/model_table.py`) carries `module` and `composition`
+    beyond the agreed columns. They feed `cells.declarations@2`'s model rows.
+
+  `cells.modules` stays provisional (D195).
+
 ## 16. Seam A's contract, amended after the independent check (17 November 2026)
 
 The check is recorded in `docs/CORE_SEAMS_STEP0.md` §7. It lifts seam A's hold, with these changes:
