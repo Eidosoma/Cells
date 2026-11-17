@@ -3,8 +3,9 @@
     python -m validation.fr10.references.harness run --roles ROLES.json \\
         [--tolerances TOL.json] [--out REPORT.json]
 
-It reads only saved bundles in the canonical layout (``bundles.py``), never engine source. When
-the engine declares its own layout, ``engine_layout.py`` maps it onto the canonical one.
+It reads only saved bundles in the canonical layout (``bundles.py``), never engine source. An
+engine layout would need an adapter; none is planned, since the protocol's judge consumes the
+references through ``REFERENCES_USAGE.md``.
 
 **Roles** (paths relative to ROLES.json):
 - ``faces``: W1 bundles, one per dt of the registered ladder;
