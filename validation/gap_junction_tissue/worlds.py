@@ -1,0 +1,265 @@
+"""Engine worlds for the gap-junction cancer replication (resolved_pump_tissue@3 as it is).
+
+Nothing here adds physics. The worlds use @3's own laws:
+* constant_field@1 on membranes and junctions, for one neutral species `mR` (valence 0, so the
+  constant-field flux is Fick's flux P A (c_out - c_in));
+* held reservoirs (resolved_capacitor_components_current_continuity@1 closes the field; with no
+  charged species every voltage is zero);
+* junction_voltage_relaxation@1 gates pinned open (minimum open fraction 1);
+* the IMEX solver imex_ars222_face_electromigration@1, whose explicit-rate bound covers neutral
+  species on membranes and junctions (surface_pump.neutral_material_rate).
+
+The linear communication network is the preprint's "intuitive model" (its equations 1-2 and
+appendix): a cell with generation i_gen0 = K_dec u and linear decay K_dec has the steady
+input-output law [mR] = u - i_exit / G_eq with G_eq = V K_dec. The world gives each cell exactly
+that law through its Norton equivalent, which the preprint itself draws: a membrane of
+conductance P A = V K_dec to a reservoir held at the unloaded value u. With c the cell's
+concentration, V dc/dt = P A (u - c) - (junction and probe outflows), which is the preprint's
+balance term for term. It is a linear model only: the full EMT model's bistable switch is not
+reduced this way (and runs into the gaps that `refusals` records).
+
+Parameters (declared, not from the preprint, which reports the linear model in ratios): a sphere
+of radius 5 um, K_dec = 0.05 1/s (a nominal rate: every reported quantity depends only on G_GJ /
+G_eq and the unloaded values), junction area 1e-11 m^2, membrane capacitance 0.05 F/m^2.
+"""
+
+import copy
+import math
+
+from cells.core.surface_tissue_spec import NODE_BOUNDS
+
+SPECIES = "mR"
+R_CELL_M = 5e-6
+V_CELL_PL = 4.0 / 3.0 * math.pi * R_CELL_M**3 * 1e15
+A_CELL_M2 = 4.0 * math.pi * R_CELL_M**2
+K_DEC_PER_S = 0.05
+G_EQ1_M3_S = K_DEC_PER_S * V_CELL_PL * 1e-15  # One cell's Norton (decay) conductance.
+JUNCTION_AREA_M2 = 1e-11
+SPECIFIC_CAPACITANCE_F_M2 = 0.05
+SOLVER = "imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+GATE_LAW = "junction_voltage_relaxation@1"
+STEP_BOUND_MARGIN = 0.5  # dt times @3's explicit rate stays below half the engine's bound of 1.
+BASE_DT_S = 0.05
+END_S = 800.0  # >= 40 slowest-mode time constants (1/K_dec = 20 s).
+SETTLE_S = 10.0  # The steady-state check compares end - SETTLE_S with end.
+
+
+def _node(node_id, mM, volume_pL, *, reservoir):
+    node = dict(
+        id=node_id,
+        volume_pL=volume_pL,
+        initial_amount_fmol={SPECIES: mM * volume_pL},
+        fixed_charge_equivalent_fmol=0.0,
+        initial_charge_C=0.0,
+    )
+    if reservoir:
+        node.update(reservoir=True, boundary_potential_V=0.0)
+    return node
+
+
+def _membrane(membrane_id, cell_id, outside_id, conductance_m3_s, size):
+    area = A_CELL_M2 * size ** (2.0 / 3.0)
+    return dict(
+        id=membrane_id,
+        inside=cell_id,
+        outside=outside_id,
+        area_m2=area,
+        capacitance_F=SPECIFIC_CAPACITANCE_F_M2 * area,
+        permeability_m_per_s={SPECIES: conductance_m3_s / area},
+        law="constant_field@1",
+        pump=None,
+        calcium_pump=None,
+    )
+
+
+def explicit_rate(cells, edges, probes):
+    """@3's neutral material rate for this network (1/s): 2 max_i sum P A / V_i."""
+    total = [size * G_EQ1_M3_S for _, _, size in cells]
+    for _, i, j, g in edges:
+        total[i] += g * G_EQ1_M3_S
+        total[j] += g * G_EQ1_M3_S
+    for _, i, _, g in probes:
+        total[i] += g * G_EQ1_M3_S
+    return 2.0 * max(
+        t / (size * V_CELL_PL * 1e-15) for t, (_, _, size) in zip(total, cells, strict=True)
+    )
+
+
+def step(cells, edges, probes):
+    """BASE_DT_S halved until dt * rate <= STEP_BOUND_MARGIN (so END_S stays on the grid)."""
+    dt, rate = BASE_DT_S, explicit_rate(cells, edges, probes)
+    while dt * rate > STEP_BOUND_MARGIN:
+        dt /= 2.0
+    return dt
+
+
+def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S, dt=None):
+    """A resolved_pump_tissue@3 definition of linear cells joined by junctions.
+
+    cells: (id, unloaded mM, size), size scaling the volume and so G_eq = size G_EQ1;
+    edges: (id, i, j, g) with G_GJ = g G_EQ1; probes: (id, i, held mM, g), an extra membrane of
+    conductance g G_EQ1 from cell i to its own held reservoir (a load at the cell, for the
+    Norton measurement). junction_scale multiplies every junction permeability (the planted
+    control). Each cell starts at its unloaded value, as Figure 3b's cells do."""
+    dt = step(cells, edges, probes) if dt is None else dt
+    model_cells, outside, membranes = [], [], []
+    for cell_id, unloaded, size in cells:
+        volume = size * V_CELL_PL
+        model_cells.append(_node(cell_id, unloaded, volume, reservoir=False))
+        outside.append(_node(f"{cell_id}_source", unloaded, 1.0, reservoir=True))
+        membranes.append(
+            _membrane(f"{cell_id}_norton", cell_id, f"{cell_id}_source", size * G_EQ1_M3_S, size)
+        )
+    for probe_id, i, held, g in probes:
+        outside.append(_node(f"{probe_id}_held", held, 1.0, reservoir=True))
+        membranes.append(
+            _membrane(probe_id, cells[i][0], f"{probe_id}_held", g * G_EQ1_M3_S, cells[i][2])
+        )
+    junctions = [
+        dict(
+            id=edge_id,
+            sender=cells[i][0],
+            receiver=cells[j][0],
+            area_m2=JUNCTION_AREA_M2,
+            permeability_m_per_s={SPECIES: junction_scale * g * G_EQ1_M3_S / JUNCTION_AREA_M2},
+            law="constant_field@1",
+            gate=dict(
+                law=GATE_LAW, threshold_voltage_V=0.0, minimum_open_fraction=1.0, initial_gate=1.0
+            ),
+        )
+        for edge_id, i, j, g in edges
+    ]
+    always = [dict(time=0.0, availability=1.0)]
+    observe = [0.0, end - SETTLE_S, end]
+    return dict(
+        schema_version=1,
+        model=dict(
+            id="resolved_pump_tissue@3",
+            temperature_K=310.0,
+            species=[dict(id=SPECIES, valence=0)],
+            cells=model_cells,
+            extracellular=outside,
+            membranes=membranes,
+            junctions=junctions,
+            faces=[],
+            closure=dict(
+                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+            ),
+            channels=[],
+        ),
+        experiment=dict(
+            end_time=end,
+            observation_times=observe,
+            membrane_controls=[
+                dict(membrane_id=p["id"], schedule=copy.deepcopy(always)) for p in membranes
+            ],
+            junction_controls=[
+                dict(junction_id=j["id"], schedule=copy.deepcopy(always)) for j in junctions
+            ],
+            pump_controls=[],
+            calcium_pump_controls=[],
+            channel_controls=[],
+        ),
+        execution=dict(
+            dt=dt,
+            capacity=len(model_cells),
+            extracellular_capacity=len(outside),
+            membrane_capacity=len(membranes),
+            edge_capacity=max(1, len(junctions)),
+            face_capacity=0,
+            channel_capacity=0,
+            backend="cpu",
+            jit=True,
+            precision="float64",
+            solver=SOLVER,
+            field_solver=FIELD_SOLVER,
+            max_steps=int(math.ceil(end / dt)) + 8,
+            max_trace_bytes=2**31,
+            material_balance_atol_fmol={SPECIES: 1e-10},
+        ),
+    )
+
+
+# --- The preprint's networks -------------------------------------------------------------------
+
+
+def figure3(g, unloaded=(5.0, 10.0), *, junction_scale=1.0):
+    """Two equal cells, A and B, at their unloaded values, joined by G_GJ = g G_eq."""
+    cells = (("A", unloaded[0], 1.0), ("B", unloaded[1], 1.0))
+    return cells, (("gj_AB", 0, 1, g),), ()
+
+
+def figure5_lumped(g, ratio=4.0 / 3.0, unloaded=(10.0, 5.0)):
+    """Figure 5b's model: cell B `ratio` times cell A (equation 2 with G_eq,B = ratio G_eq,A)."""
+    cells = (("A", unloaded[0], 1.0), ("B", unloaded[1], ratio))
+    return cells, (("gj_AB", 0, 1, g),), ()
+
+
+def figure5_network(g, unloaded=(10.0, 5.0)):
+    """Figure 5a as drawn: A with two backup cells, B with three, every junction G_GJ = g G_eq."""
+    cells = [("A", unloaded[0], 1.0), ("B", unloaded[1], 1.0)]
+    cells += [(f"A{k}", unloaded[0], 1.0) for k in (1, 2)]
+    cells += [(f"B{k}", unloaded[1], 1.0) for k in (1, 2, 3)]
+    edges = [("gj_AB", 0, 1, g), ("gj_A1", 0, 2, g), ("gj_A2", 0, 3, g)]
+    edges += [("gj_B1", 1, 4, g), ("gj_B2", 1, 5, g), ("gj_B3", 1, 6, g)]
+    return tuple(cells), tuple(edges), ()
+
+
+def chain(n, held, *, g=1.0, g_probe=1.0, unloaded=1.0):
+    """A straight chain of n cells (cell n-1 the port), G_GJ = g G_eq, loaded at the port by a
+    probe of conductance g_probe G_eq to a reservoir held at `held` (Figure 8's exit current)."""
+    cells = tuple((f"c{k}", unloaded, 1.0) for k in range(n))
+    edges = tuple((f"gj_{k}", k, k + 1, g) for k in range(n - 1))
+    return cells, edges, (("probe", n - 1, held, g_probe),)
+
+
+# --- Gap probes: the engine's own refusals and registries, definition time only -----------------
+
+
+def junction_route_reaction(junction_permeability_m_s):
+    """A two-cell composite world in which the neutral species S has a junction route (when the
+    permeability is positive) and local_species_reactions@1 makes S in both cells: the
+    preprint's miRNA, which is made and destroyed in each cell and crosses junctions."""
+    from validation.tissue import secreted_species_fixtures as sfx
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    raw = sfx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(),
+        contacts=(),
+        faces=(),
+        junctions=(("j_0", "cell_0", "cell_1"),),
+        concentrations_mM={"cell_0": 1e-3, "cell_1": 1e-3},
+    )
+    raw["model"]["junctions"][0]["permeability_m_per_s"][sfx.SPECIES] = junction_permeability_m_s
+    sites = {"cells": "all", "outside": []}
+    return rfx.with_reactions(
+        raw,
+        [rfx.species(sfx.SPECIES)],
+        [rfx.mass_action("make_S", sites, {}, {sfx.SPECIES: 1}, 1e-6)],
+        [("make_S", None, [(0.0, 1.0)])],
+    )
+
+
+def lattice_nodes(shape):
+    """Field nodes a lattice of cells on one shared bath needs (cells + 1)."""
+    return math.prod(shape) + 1
+
+
+def shared_bath(n):
+    """n unconnected cells on one held bath: the node count of a tissue of n cells."""
+    raw = linear_network((("c0", 1.0, 1.0),))
+    m, x = raw["model"], raw["execution"]
+    m["cells"] = [_node(f"c{k}", 1.0, V_CELL_PL, reservoir=False) for k in range(n)]
+    m["extracellular"] = [_node("bath", 1.0, 1.0, reservoir=True)]
+    m["membranes"] = [_membrane(f"m{k}", f"c{k}", "bath", G_EQ1_M3_S, 1.0) for k in range(n)]
+    raw["experiment"]["membrane_controls"] = [
+        dict(membrane_id=p["id"], schedule=[dict(time=0.0, availability=1.0)])
+        for p in m["membranes"]
+    ]
+    x.update(capacity=n, extracellular_capacity=1, membrane_capacity=n)
+    return raw
+
+
+FIELD_NODE_BOUND = NODE_BOUNDS[FIELD_SOLVER]
