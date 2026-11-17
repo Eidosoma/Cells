@@ -166,7 +166,7 @@ test("the picture says what is its own: on the picture, in the legend, and while
   assert.ok(chrome.legend.items.some((item) => item.swatch === "origin-halo" && /^in, out: /.test(item.label)), "the haloed molecules coming and going are keyed: the run's joins and leaves");
   assert.ok(chrome.timeline && chrome.timeline.player === lens.player, "the page's one clock");
   // The entry's word, and the law's two forms in D192's words, on the card.
-  assert.match(chrome.card.text, /Designed, not modelled\./);
+  assert.match(chrome.card.text, /Modelled for comparison only \(D197\)|Designed, not modelled\./);
   const facts = lens.describe("assembly:assembly").facts;
   const law = facts.find(([label]) => /two forms/.test(label));
   assert.ok(law && /Kolmogorov's cycle criterion/.test(law[1]) && /docs\/DECISIONS\.md, D192/.test(law[1]), "D192's words, cited");

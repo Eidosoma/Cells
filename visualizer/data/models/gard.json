@@ -8,8 +8,9 @@
  "order": 100,
  "made": "2026-11-16",
  "modelled": {
-  "state": "designed",
-  "text": "Designed, not modelled. Its design was decided on 16 November 2026 (D192). The first part of its build is on main since 17 November, not yet listed in the engine's declarations; its runs are development runs, not judged. By D197 it is kept only for comparison with Cells' own engine.",
+  "state": "modelled",
+  "model": "cells.assembly_lineages@1",
+  "text": "Modelled for comparison only (D197): GARD's two forms are one law set on Cells' stochastic assembly family, on main since 17 November 2026 with its own tests. Its runs so far are development runs, not judged; the comparison is still to come.",
   "record": [
    {
     "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
@@ -26,6 +27,10 @@
    {
     "path": "PROGRESS.md",
     "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
+   },
+   {
+    "path": "PROGRESS.md",
+    "where": "GARD's G1, part 2, on main (17 November 2026, evening)"
    },
    {
     "path": "docs/DECISIONS.md",
@@ -66,9 +71,14 @@
  },
  "runs": [
   {
-   "file": "data/origin/example-run.json",
-   "label": "An example of invented numbers",
-   "kind": "example"
+   "file": "data/origin/gard-pair-consistent-7132e50a.json",
+   "label": "A development run of the engine: the pair-consistent form",
+   "kind": "development"
+  },
+  {
+   "file": "data/origin/gard-single-event-709b243e.json",
+   "label": "A development run of the engine: the preprint's single-event form",
+   "kind": "development"
   }
  ],
  "facts": [

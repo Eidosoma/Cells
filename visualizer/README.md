@@ -535,7 +535,9 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
 - **One timeline** counts fissions, molecule by molecule at its slow end. The levels are
   Molecules (the table of catalysis), One assembly, Population (not drawn yet) and
   Lineages.
-- **It plays an example of invented numbers** once the first assembly has gathered,
+- **It plays what GARD's entry names.** Since 17 November 2026, evening, that is the
+  engine's own pair of runs (below). Before, and still in the checks, it played an example
+  of invented numbers once the first assembly has gathered,
   marked so at every level, on the picture, in the legend and in the bar: "Example:
   invented numbers · not a run of Cells' engine". It stands still for a visitor who asks
   for less motion. The view opens on the protocell everywhere, on a phone and with less
@@ -554,10 +556,12 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   no gloss. `tools/adapt_assembly_run.py` writes those run files from the engine's run
   folders (`cells.assembly_lineages.run@1`) with the viewer's own reader (no numpy, no
   engine import, no interface ID held as a literal); going to new runs is a run of it,
-  the entry's `runs` and the scene. Today the entry names none: the page shows a real
-  run only from the engine's final set, which its lead sends. Held by checks on a
-  check-only scene made from the engine's provisional set where that folder is at hand
-  (the scenarios are skipped, and say so, where it is not). Not right yet there: the
+  the entry's `runs` and the scene. Since 17 November 2026, evening, the entry names the
+  engine's final pair (the set the engine's lead named final at GARD's merge into main,
+  `1f9863ce`; its standing is read from the set's own `roles.json`): two files of about
+  135 KB under `data/origin/`. Held by checks on a check-only scene made from the engine's
+  set where that folder is at hand (the scenarios are skipped, and say so, where it is
+  not); the example of invented numbers stays as the checks' own scene. Not right yet: the
   wide pair runs at about 55 frames a second with the page's cards shown (16.7 ms
   between frames with them hidden; the drawing's own frame is 6 to 7 ms); with a panel
   open the left run goes partly under the left card; the page of its own has no switch.
@@ -579,13 +583,14 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   at half a fission a second: 16.6 to 16.7 ms between frames at both sizes, a frame's own
   work 3.8 to 4.2 ms (the micelle's 3.4 to 3.7 ms), 18 draw calls and 121,748 triangles
   at 1400 by 900; a test holds one protocell to 21 draws and 142,000 triangles.
-- **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md`,
-  D192). Since 17 November 2026 the first part of its build is on main, the stochastic
-  assembly family `cells.assembly_lineages@1` with GARD's two forms as one law set on it,
-  with its own tests and development runs that are not judged (`PROGRESS.md`); it is
-  not yet listed in the engine's declarations, and the entry's word moves to "Modelled"
-  when it is. The page still plays its marked example, and shows a real
-  run only from the engine's final set of runs. Cells' own origin-of-life engine, with
+- **GARD's status.** Its entry reads "Modelled", for comparison only (D197), since 17
+  November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
+  part 2, on main"), and the engine's declarations at main `a16b2571` list the stochastic
+  assembly family `cells.assembly_lineages@1` with GARD's three laws and two lineage
+  operators (`data/engine/declarations.json`). Declared is not qualified: its runs are
+  development runs, not judged, and the page says so on every picture of them. Until
+  that evening the entry read "Designed, not modelled" (`docs/GARD_DESIGN.md`, D192) and
+  the page played a marked example. Cells' own origin-of-life engine, with
   laws from physical chemistry, is designed, its first choices settled by D199
   (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`). The engine builds both forms of GARD's
   catalysis, and the view shows them side by side only for two real runs of the engine of
@@ -800,7 +805,7 @@ run outputs ──adapters (next)── run view ──────────�
 
 | Path | Holds |
 | --- | --- |
-| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells`. It reads the operators' registration in either form the engine has had: a dictionary literal, and since seam F a registration loop. It does not read the engine's declarations file yet: that waits for the file's format page |
+| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells`. Since 17 November 2026 it takes the engine's operators (the composite's, and a family's own), laws, kinds and models from the engine's declarations manifest (`data/engine/declarations.json`, `cells.declarations@2`), and refuses one of another major, one written at another revision than the checkout read, or one from a tree with changes (`tests/engine_declarations.test.mjs`). From the source it still reads the files, their sizes and imports, the plan's gates and the shared-state table, which the manifest does not hold; each model module's `MODEL_ID`, only to place a declared model on its part; and four things of an operator that the manifest does not hold apart: `RK4`, `ACCEPTS_WRITES`, and which of its `provides` and `controls` are view fields and multiplied availabilities |
 | `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map. Each part names the engine files it holds by pattern; the first part whose pattern matches a file takes it, so the catch-all parts stand last. It was last reviewed entry by entry against the record on 16 November 2026, after the landing of the engine's rework, at main 3b7f1cff |
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
@@ -828,14 +833,15 @@ run outputs ──adapters (next)── run view ──────────�
 Each group of the scene belongs to one lens, so the scene says where a part is shown.
 
 **What comes from the code** and so cannot drift: the files in each part and their sizes,
-which part uses which (imports), the registered operators with their contract declarations
-(requires, writes, provides, reads, conflicts), model identifiers, the plan's gates and the
-shared-state table. Every engine file belongs to exactly one part; the extractor warns if
-one does not. Code under `src/cells/legacy/` is left out of the map (the user, 17 November
+which part uses which (imports), the plan's gates and the shared-state table; and, from the
+engine's declarations manifest, the registered operators with their contract declarations
+(requires, writes, provides, reads, conflicts) and the laws, kinds and models the engine
+declares. A model identifier the manifest lists only among the older families is not drawn.
+Every engine file belongs to exactly one part; the extractor warns if one does not. Code under `src/cells/legacy/` is left out of the map (the user, 17 November
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("198 of 198 engine files placed, 341 left out as legacy code").
+build counts them apart ("226 of 226 engine files placed, 341 left out as legacy code").
 The map's patterns are carried through the engine's source moves by `tools/move_paths.py`,
 from the engine's own path tables (`scripts/moves/*-table.json`), with a check that every
 file stands in the part it stood in before.
@@ -891,14 +897,19 @@ stay out of git (61 runs in 327 files, 96 MB).
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at. A strict build fails where that revision is
    on no remote branch as last fetched (a commit not yet pushed, or amended before it
-   was), so that the map never states a revision others cannot find.
+   was), so that the map never states a revision others cannot find. It also reads the
+   engine's declarations manifest, `data/engine/declarations.json`, which must have been
+   written at that same revision from a clean tree (`data/engine/README.md` says how); one of
+   another revision is refused (`--declarations` names another file).
    The map's statuses are reviewed by hand at one revision of main. Once main has moved
    past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
    statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
    main 3b7f1cff on 16 November 2026, again that evening at 050aa741, late that evening at
    1d86a192, on 17 November at df2b910b, after D188's first move at 6a5d509f, at 76846486
    the same day (main's changes were docs only), after seam F at f3b3f526, and with GARD's
-   first part at 95de49de, which it states.
+   first part at 95de49de, after the combined landing at 7538b0cd, where it first read the
+   engine's declarations manifest, and with GARD's second part at a16b2571: 258 parts and 936
+   relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log

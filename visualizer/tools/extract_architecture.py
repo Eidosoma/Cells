@@ -4,9 +4,19 @@
 What comes from the checkout (and so cannot drift from it):
   * which files belong to each part, their counts and lines;
   * which part uses which, from the import statements;
+  * the plan's gates and the shared-state entities.
+
+What comes from the engine's declarations manifest (data/engine/declarations.json,
+cells.declarations@2), written by the engine at the checkout's own revision from a clean tree
+(a manifest of another major or revision, or from a tree with changes, is refused):
   * every registered operator of the composite model, with the declarations of its
     contract (what it requires, writes, provides, reads and conflicts with);
-  * model identifiers, the plan's gates and the shared-state entities.
+  * the laws and kinds the engine registers, each on the part that holds its file;
+  * the active models; the older families' model identifiers, listed by ID only, are not drawn.
+Read from the source beside it, because the manifest does not hold them apart: an operator's
+RK4, ACCEPTS_WRITES, VIEW_FIELDS (the head of its `provides`) and CONTROL_FACTORS (the tail of
+its `controls`); and each model module's MODEL_ID, only to place a declared model on its part
+(the manifest names the module that declares a model's structure, not the one that runs it).
 
 What comes from the overlay (data/architecture/overlay.json), each with a source:
   * the layers and the grouping of files into parts;
@@ -52,11 +62,6 @@ from lib.entries import read_entries  # noqa: E402
 from lib.static_eval import Evaluator, Package, Unresolved, plain  # noqa: E402
 
 SCENE_FORMAT = "cells.visualizer.scene@1"
-DECLARATIONS = (
-    "LAW_ID STEP_ID EVENT SPLIT PROCESS RK4 REQUIRES ENTITY_WRITES VIEW_FIELDS VIEW_READS "
-    "CONTROL_FACTORS CONFLICTS_VIEW ACCEPTS_WRITES CLOSES RETIRES HEAT_FIELDS WORK_FIELDS "
-    "LEDGERS EXPERIMENT_KEYS STATE_AXES"
-).split()
 
 
 # ---------------------------------------------------------------- small helpers
@@ -166,46 +171,56 @@ def join_names(names, limit=6):
     return shown + (f" and {len(names) - limit} more" if len(names) > limit else "")
 
 
-def registered_operators(module):
-    """The operator classes the built-in package registers, in its order, in either form it has had.
+DECLARATIONS_KIND = "cells.declarations@2"
+DECLARATIONS_FILE = HERE.parent / "data" / "engine" / "declarations.json"
 
-    Up to main 76846486: OPERATORS as a dictionary literal, each value check_declarations(Class)().
-    Since seam F (main 75e925ea, 17 November 2026): a module-level loop over a tuple of classes,
-    `for _operator in (A, B, ...): BUILTIN.register(_operator)`, with OPERATORS imported from
-    cells/registry/operators.py as the registry's active section (docs/CORE_SEAMS_DESIGN.md §8.4).
+
+def is_drawn_on_its_part(piece):
+    """A piece of the manifest drawn as a member of the part that holds its file: a law, a kind, or a model family's
+    own operator (an operator of an interface other than the composite's cells.operator@1)."""
+    return piece.get("piece") in ("law", "kind") or (piece.get("piece") == "operator" and piece.get("interface") != "cells.operator@1")
+
+
+def model_module(path):
+    """A model module: src/cells/models/<file>.py, or a model family's package, src/cells/models/<family>/__init__.py
+    (the assembly-lineage family, 17 November 2026, declares its MODEL_ID there)."""
+    parts = path.split("/")
+    return parts[:3] == ["src", "cells", "models"] and (len(parts) == 4 or (len(parts) == 5 and parts[4] == "__init__.py"))
+
+
+def read_declarations(path, revision):
+    """The engine's declarations manifest (docs/library/DECLARATIONS_FORMAT.md in the engine), checked.
+
+    It is the engine's own record of what it declares: every registered law, kind and operator, every
+    active model, and the older families by ID only. The map learns its operators and models from it,
+    never from the engine's registries. Refused: another major of `kind`, a manifest written at
+    another revision than the checkout the scene is built from, and one written from a tree with
+    changes (`dirty`), since then it states pieces no revision holds.
     """
-    literal = module.env.get("OPERATORS")
-    if literal is not None:
-        return [
-            node.func.args[0].id
-            for node in ast.walk(literal)
-            if isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Call)
-            and getattr(node.func.func, "id", "") == "check_declarations"
-        ]
-    for node in module.tree.body:
-        if not (isinstance(node, ast.For) and isinstance(node.target, ast.Name) and isinstance(node.iter, (ast.Tuple, ast.List))):
-            continue
-        name = node.target.id
-        registers = any(
-            isinstance(call, ast.Call)
-            and isinstance(call.func, ast.Attribute)
-            and call.func.attr == "register"
-            and [getattr(argument, "id", None) for argument in call.args] == [name]
-            for statement in node.body
-            for call in ast.walk(statement)
-        )
-        if registers:
-            return [element.id for element in node.iter.elts if isinstance(element, ast.Name)]
-    return []
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"{path}: the engine's declarations cannot be read ({error})")
+    kind = data.get("kind") if isinstance(data, dict) else None
+    if not isinstance(kind, str) or kind.rsplit("@", 1)[0] != DECLARATIONS_KIND.rsplit("@", 1)[0]:
+        raise SystemExit(f"{path}: not the engine's declarations manifest (kind {kind!r})")
+    if kind != DECLARATIONS_KIND:
+        raise SystemExit(f"{path}: {kind} is a major this reader does not know; it reads {DECLARATIONS_KIND}")
+    if not revision or data.get("revision") != revision:
+        raise SystemExit(f"{path}: written at {data.get('revision')}, but the scene is built at {revision or 'no revision'}: write the manifest again at that revision (data/engine/README.md)")
+    if data.get("dirty") is not False:
+        raise SystemExit(f"{path}: written from a tree with changes (dirty: {data.get('dirty')!r}); it must come from a clean checkout")
+    return data
 
 
 # ---------------------------------------------------------------- the build
 
 
 class Build:
-    def __init__(self, repo, overlay, proteins=None):
+    def __init__(self, repo, overlay, proteins=None, declarations=None):
         self.repo = repo
+        self.declarations_path = Path(declarations) if declarations else DECLARATIONS_FILE
+        self._declarations = None
         self.overlay = overlay
         self.protein_data = proteins  # (snapshot, overlay, folder of species atlases) of the protein atlas, or None
         self.proteins = None
@@ -255,6 +270,13 @@ class Build:
                 if row.get("kind") == "move":
                     moved[row["old"]] = (row["new"], table.get("move") or path)
         return moved
+
+    @property
+    def declarations(self):
+        """The engine's manifest, read once, at the checkout's own revision."""
+        if self._declarations is None:
+            self._declarations = read_declarations(self.declarations_path, git(self.repo, "rev-parse", "HEAD").strip())
+        return self._declarations
 
     def is_legacy(self, path):
         return bool(self.legacy_rule) and path.startswith(self.legacy_rule["folder"])
@@ -319,25 +341,65 @@ class Build:
     # ------------------------------------------------------------ operators
 
     def operators(self):
-        module = self.package.module("cells.models.operators")
         config = self.overlay["operators"]
         found = {}
-        registered = registered_operators(module)
-        if not registered:
-            raise SystemExit("cells.models.operators: no operator registration found (neither OPERATORS as a literal nor a registration loop)")
-        for class_name in registered:
-            _, dotted, attribute = module.imports[class_name]
-            source = self.package.module(dotted)
-            values, unresolved = self.evaluator.class_attributes(source, attribute, set(DECLARATIONS))
-            values = plain(values)
-            law = values.get("LAW_ID")
-            if not isinstance(law, str):
-                self.warnings.append(f"operator {class_name}: LAW_ID unresolved; skipped")
+        # The composite's operators, as the engine declares them (its manifest's `pieces`). Four things the
+        # manifest does not hold apart are read from the operator's own class, found by the manifest's module and
+        # class name: RK4 (whether it runs under an RK4 inner step), ACCEPTS_WRITES (the increments it accepts
+        # from other operators), which of its `provides` are view fields rather than readout columns
+        # (VIEW_FIELDS, the head of `provides`), and which of its `controls` are availabilities it multiplies
+        # rather than its own control fields (CONTROL_FACTORS, the tail of `controls`). Each is checked against the
+        # manifest where the manifest holds it.
+        for piece in self.declarations["pieces"]:
+            if piece.get("piece") != "operator":
                 continue
-            needed = [name for name in unresolved if name != "STATE_AXES"]
-            if needed:
-                self.warnings.append(f"operator {law}: unresolved declarations {needed}")
-            path = source.path.relative_to(self.repo).as_posix()
+            if piece.get("interface") != "cells.operator@1":
+                # A model family's own operator, of an interface of its family's (a family operator, seam F): it has
+                # no part in the composite's contract, and is drawn on the part that holds its file, as a law is.
+                continue
+            law, fields = piece["declared_id"], piece.get("fields") or {}
+            class_name, path = fields.get("class_name"), piece.get("module_path")
+            reads = piece.get("reads") or []
+            values = {
+                "LAW_ID": law,
+                "STEP_ID": fields.get("step_method"),
+                "EVENT": "event" in (fields.get("parts") or []),
+                "SPLIT": "split" in (fields.get("parts") or []),
+                "PROCESS": "process" in (fields.get("parts") or []),
+                "REQUIRES": list((piece.get("requires") or {}).get("laws") or []),
+                "ENTITY_WRITES": dict(piece.get("writes") or {}),
+                "VIEW_READS": [read["name"] for read in reads if read.get("mode") == "current"],
+                "CONFLICTS_VIEW": [read["name"] for read in reads if read.get("mode") in ("fixed", "reference")],
+                "CLOSES": list(fields.get("closes") or []),
+                "RETIRES": fields.get("retires"),
+                "HEAT_FIELDS": list((piece.get("energy") or {}).get("heat") or []),
+                "WORK_FIELDS": list((piece.get("energy") or {}).get("work") or []),
+                "LEDGERS": list(piece.get("ledgers") or []),
+                "EXPERIMENT_KEYS": list(fields.get("experiment_keys") or []),
+                "STATE_AXES": dict(piece.get("owns") or {}),
+            }
+            provides = list(piece.get("provides") or [])
+            source = self.package.module(piece["module"]) if piece.get("module") else None
+            if source is None or not class_name:
+                self.warnings.append(f"operator {law}: the manifest names no class the map can read ({piece.get('module')}, {class_name})")
+                own, unresolved = {}, []
+            else:
+                own, unresolved = self.evaluator.class_attributes(source, class_name, {"LAW_ID", "RK4", "ACCEPTS_WRITES", "VIEW_FIELDS", "CONTROL_FACTORS"})
+            if unresolved:
+                self.warnings.append(f"operator {law}: unresolved in {class_name}: {sorted(unresolved)}")
+            own = plain(own)
+            if own.get("LAW_ID") != law:
+                self.warnings.append(f"operator {law}: the manifest names {class_name} in {path}, whose LAW_ID is {own.get('LAW_ID')!r}")
+            view = list(own.get("VIEW_FIELDS") or [])
+            if provides[: len(view)] != view:
+                self.warnings.append(f"operator {law}: its view fields in the source are not the first of the manifest's provides")
+            values["VIEW_FIELDS"] = view
+            controls, factors = list(piece.get("controls") or []), list(own.get("CONTROL_FACTORS") or [])
+            if factors and controls[-len(factors):] != factors:
+                self.warnings.append(f"operator {law}: the availabilities it multiplies in the source are not the last of the manifest's controls")
+            values["CONTROL_FACTORS"] = factors
+            values["RK4"] = own.get("RK4")
+            values["ACCEPTS_WRITES"] = own.get("ACCEPTS_WRITES") or {}
             found[law] = {"class": class_name, "path": path, "values": values}
         for law in config["items"]:
             if law not in found:
@@ -451,7 +513,50 @@ class Build:
 
     # ------------------------------------------------------------ components
 
+    def place_models(self, matched):
+        """Where each model the engine declares is drawn: {(part, file): [(model, detail)]}.
+
+        The models are the manifest's `models`, and only they are drawn as models. The manifest names the module that
+        declares a model's structure (its spec, mostly under src/cells/core/), not the module that runs it, so a model
+        is drawn on the part of the model module that names it (MODEL_ID, read from the source for this placing only:
+        src/cells/models/<file>.py, or a family's package, src/cells/models/<family>/__init__.py). A declared model
+        that no model module names is drawn on the part that holds its declaring module. A MODEL_ID the manifest does
+        not list as active, an older family's, is not drawn (self.undeclared_models).
+        """
+        declared = {}
+        for model in self.declarations["models"]:
+            declared[model["declared_id"]] = declared[model["id"]] = model["declared_id"]
+        self.legacy_models = {item["id"] for item in self.declarations["legacy"]}
+        placed, drawn = defaultdict(list), set()
+        self.undeclared_models = []  # (part, model ID, file)
+        for part, paths in matched.items():
+            for path in paths:
+                if not model_module(path):
+                    continue
+                module = self.package.module(self.package.dotted_of(self.repo / path))
+                try:
+                    model = self.evaluator.constant(module, "MODEL_ID")
+                except Unresolved:
+                    model = None
+                if isinstance(model, str) and model in declared:
+                    placed[(part, path)].append((declared[model], Path(path).name))
+                    drawn.add(declared[model])
+                elif isinstance(model, str):
+                    self.undeclared_models.append((part, model, path))
+                    if model not in self.legacy_models:
+                        self.warnings.append(f"{path} names model {model}, which the engine's declarations list neither as active nor among the older families")
+        for model in self.declarations["models"]:
+            if model["declared_id"] in drawn:
+                continue
+            part = self.owner.get(model.get("module_path"))
+            if part:
+                placed[(part, model["module_path"])].append((model["declared_id"], f"declared in {Path(model['module_path']).name}"))
+            else:
+                self.warnings.append(f"model {model['declared_id']}: declared in {model.get('module_path')}, which no part of the map holds")
+        return placed
+
     def components(self):
+        self.pieces_drawn = set()  # the laws, kinds and family operators drawn as members of their parts
         compiled = []
         for component in self.overlay["components"]:
             patterns = [glob_regex(pattern) for pattern in component.get("match", [])]
@@ -472,6 +577,7 @@ class Build:
             else:
                 if self.is_legacy(path):
                     self.legacy[path] = None
+        placed = self.place_models(matched)
         for component, _ in compiled:
             paths = matched.get(component["id"], [])
             if not paths and held.get(component["id"]):
@@ -488,23 +594,39 @@ class Build:
                 facts.append(["Lines of Python", f"{lines:,}"])
             members, models = [], []
             for path in python:
-                # A model module: src/cells/models/<file>.py, or a model family's package, src/cells/models/<family>/__init__.py
-                # (the assembly-lineage family, 17 November 2026, declares its MODEL_ID there).
-                parts = path.split("/")
-                if parts[:3] != ["src", "cells", "models"] or not (len(parts) == 4 or (len(parts) == 5 and parts[4] == "__init__.py")):
-                    continue
-                module = self.package.module(self.package.dotted_of(self.repo / path))
-                try:
-                    model = self.evaluator.constant(module, "MODEL_ID")
-                except Unresolved:
-                    model = None
-                if isinstance(model, str):
+                for model, detail in placed.get((component["id"], path), []):
                     models.append(model)
-                    members.append({"label": model, "detail": Path(path).name})
-                if module and "device_checks" in module.functions:
-                    members.append({"label": "device checks", "detail": Path(path).name})
+                    members.append({"label": model, "detail": detail})
+                if model_module(path):
+                    module = self.package.module(self.package.dotted_of(self.repo / path))
+                    if module and "device_checks" in module.functions:
+                        members.append({"label": "device checks", "detail": Path(path).name})
             if models:
                 facts.append(["Model identifiers", f"{len(set(models))}"])
+            if component.get("facts_from") == "declarations":
+                # The manifest's own counts, on the part that writes it: what the map read, and at which revision.
+                manifest = self.declarations
+                pieces = Counter(piece["piece"] for piece in manifest["pieces"])
+                facts += [
+                    ["Read by this map", f"{manifest['kind']}, written at {manifest['revision'][:8]}"],
+                    ["Laws, kinds and operators", f"{pieces['law']}, {pieces['kind']} and {pieces['operator']}"],
+                    ["Active models", f"{len(manifest['models'])}"],
+                    ["Older model identifiers, by ID only", f"{len(manifest['legacy'])}"],
+                ]
+            older = sorted({model for part, model, _ in self.undeclared_models if part == component["id"] and model in self.legacy_models})
+            if older:
+                facts.append(["Older families' models, which the engine lists by ID only", ", ".join(older)])
+            # The laws, kinds and family operators the engine declares from this part's files (its manifest's
+            # module_path). A family operator is an operator of an interface other than the composite's.
+            declared = [piece for piece in self.declarations["pieces"] if is_drawn_on_its_part(piece) and piece.get("module_path") in paths]
+            for label, kind in (("Laws it declares", "law"), ("Kinds it declares", "kind"), ("Family operators it declares", "operator")):
+                own = sorted((piece for piece in declared if piece["piece"] == kind), key=lambda piece: piece["declared_id"])
+                if own:
+                    facts.append([label, f"{len(own)}"])
+                    for piece in own:
+                        what = f"operator ({piece.get('interface')})" if kind == "operator" else kind
+                        members.append({"label": piece["declared_id"], "detail": f"{what}, declared in {Path(piece['module_path']).name}"})
+                    self.pieces_drawn.update(piece["declared_id"] for piece in own)
             patterns = component.get("match", [])
             literal = [pattern for pattern in patterns if "*" not in pattern and "?" not in pattern and pattern in paths]
             detail = None
@@ -692,6 +814,9 @@ class Build:
         self.pending = []
         self.operators()
         self.components()
+        for piece in self.declarations["pieces"]:
+            if is_drawn_on_its_part(piece) and piece["declared_id"] not in self.pieces_drawn:
+                self.warnings.append(f"{piece['piece']} {piece['declared_id']}: declared in {piece.get('module_path')}, which no drawn part holds")
         self.shared_state()
         self.gates()
         self.capabilities()
@@ -749,6 +874,7 @@ def main():
     parser.add_argument("--cells", default=str(HERE.parent / "data" / "cells"), help="folder with the cell types' files (schema/CELL_TYPES.md; it need not exist)")
     parser.add_argument("--models", default=str(HERE.parent / "data" / "models"), help="folder with the model systems' files (schema/MODEL_SYSTEMS.md; it need not exist)")
     parser.add_argument("--machines", default=str(HERE.parent / "data" / "machines"), help="folder with the machine files (schema/MACHINES.md; it need not exist)")
+    parser.add_argument("--declarations", default=str(DECLARATIONS_FILE), help="the engine's declarations manifest, written at the revision of the checkout read (data/engine/README.md)")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
 
@@ -761,7 +887,7 @@ def main():
         # The species atlases beside them (schema/SPECIES_ATLAS.md): any number of files, or none.
         # Each species' own proteins lie in a folder of its own there (schema/SPECIES_PROTEINS.md).
         proteins += (Path(arguments.atlases) if arguments.atlases else folder / "atlases", folder)
-    build = Build(repo, overlay, proteins)
+    build = Build(repo, overlay, proteins, declarations=arguments.declarations)
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
@@ -781,6 +907,8 @@ def main():
     species, shapes, models, breaches, noted = read_entries(
         arguments.species, arguments.cells, arguments.models, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden,
         tracked=build.files, own=HERE.parent, parts={item["id"]: item["part"] for item in overlay["capabilities"]},
+        # A modelled entry names a model the engine declares with its structure (schema/ENTRIES.md).
+        declared={name for model in build.declarations["models"] if model.get("rows") for name in (model["declared_id"], model["id"])},
     )
     for model in models:
         for run in model.get("runs", []):
@@ -871,6 +999,14 @@ def main():
             # holds notes that main gets only at its next merge.
             "source_base_url": pinned(overlay.get("source_base_url"), git(repo, "rev-parse", "HEAD").strip()),
             "own_source_base_url": pinned(overlay.get("source_base_url"), "visualizer"),
+            # What the engine declares, as the map read it: its manifest, at the scene's own revision.
+            "declarations": {
+                "kind": build.declarations["kind"],
+                "revision": build.declarations["revision"],
+                "pieces": dict(Counter(piece["piece"] for piece in build.declarations["pieces"])),
+                "models": len(build.declarations["models"]),
+                "legacy_models": len(build.declarations["legacy"]),
+            },
             "counts": {
                 **coverage,
                 "parts": len(entities),
@@ -908,6 +1044,13 @@ def main():
           + (f", {counts['engine_files_legacy']} left out as legacy code ({counts['engine_files_read']} read)" if counts.get("engine_files_legacy") else ""))
     print("by kind:", counts["by_kind"])
     print("by status:", counts["by_status"])
+    declared = build.declarations
+    composite = sum(1 for piece in declared["pieces"] if piece.get("piece") == "operator" and piece.get("interface") == "cells.operator@1")
+    family = sum(1 for piece in declared["pieces"] if piece.get("piece") == "operator") - composite
+    print(f"read from the engine's declarations ({declared['kind']} at {declared['revision'][:8]}): {composite} composite operators, {family} family operators, "
+          f"{len(declared['models'])} active models, {len(declared['legacy'])} legacy model IDs")
+    for part, model, path in build.undeclared_models:
+        print(f"  not drawn as a declared model: {model} ({path}, in {part}), which the manifest {'lists as legacy' if model in {item['id'] for item in declared['legacy']} else 'does not list'}")
     if build.proteins:
         stamp = build.proteins["stamp"]
         print(f"protein inventory of {stamp['created']} (engine read at {stamp['read_at']}): {stamp['records']} law records, found {stamp['found']}")

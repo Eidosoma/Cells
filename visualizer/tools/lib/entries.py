@@ -89,8 +89,11 @@ class Entries:
     not checked); `own` is the viewer's folder, where a `visualizer/` path must name a file (None: not
     checked); `shapes` reads a level's shape and framing as the species reader does."""
 
-    def __init__(self, capabilities, tracked=None, own=None, shapes=None):
+    def __init__(self, capabilities, tracked=None, own=None, shapes=None, models=None):
         self.capabilities = dict(capabilities)
+        # The models the engine's declarations manifest lists with their declared structure (rows), by either
+        # spelling: what a modelled entry may name (None: not checked).
+        self.models = set(models) if models is not None else None
         self.tracked = set(tracked) if tracked is not None else None
         self.own = Path(own) if own is not None else None
         self.shapes = shapes or Reader(Path("."), capabilities)
@@ -184,6 +187,8 @@ class Entries:
                 problems.append(f"modelled.design {design!r} is not a tracked file of main: a design note on a development branch moves no word")
         if state == "modelled" and not text(block.get("model")):
             problems.append("a modelled entry names its registered model (modelled.model)")
+        elif state == "modelled" and self.models is not None and block["model"] not in self.models:
+            problems.append(f"modelled.model {block['model']!r} is not a model the engine's declarations list with its declared structure")
         return problems
 
     def sources(self, sources, where):
@@ -547,11 +552,13 @@ def _read_folder(folder):
     return found, warnings
 
 
-def read_entries(species_folder, cells_folder, models_folder, capabilities, left_out=(), tracked=None, own=None, parts=None):
+def read_entries(species_folder, cells_folder, models_folder, capabilities, left_out=(), tracked=None, own=None, parts=None, declared=None):
     """(species, shapes, models, warnings, remarks) for the folders. The species are read by
     tools/lib/species.py exactly as the scene reads them today; each gains its cell types
     (`cell_types`, `default_cell_type`). Folders that do not exist give nothing. `parts` maps a
-    capability to the map's part it is drawn at, for the species reader's remarks."""
+    capability to the map's part it is drawn at, for the species reader's remarks. `declared`: the models the engine's
+    declarations list with their declared structure, which a modelled entry must name (None: not checked). It is
+    kept apart from `models`, the model systems' own files read below."""
     species, shapes, warnings, remarks = read_species(species_folder, capabilities, left_out, parts)
     raw_species = {}
     for path in sorted(Path(species_folder).glob("*.json")) if Path(species_folder).is_dir() else []:
@@ -561,6 +568,6 @@ def read_entries(species_folder, cells_folder, models_folder, capabilities, left
             pass  # the species reader has warned of it
     cells, cell_warnings = _read_folder(cells_folder)
     models, model_warnings = _read_folder(models_folder)
-    entries = Entries(capabilities, tracked=tracked, own=own, shapes=Reader(Path(species_folder), capabilities, left_out))
+    entries = Entries(capabilities, tracked=tracked, own=own, shapes=Reader(Path(species_folder), capabilities, left_out), models=declared)
     out_species, out_models = entries.run(species, raw_species, cells, models)
     return out_species, shapes, out_models, warnings + cell_warnings + model_warnings + entries.warnings, remarks + entries.remarks

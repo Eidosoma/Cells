@@ -67,9 +67,10 @@ awaited.
 
 ## Status, 16 November 2026, late evening
 
-- **The entry reads "Designed, not modelled"** (`data/models/gard.json`, under `schema/ENTRIES.md`):
+- **The entry read "Designed, not modelled"** then (`data/models/gard.json`, under `schema/ENTRIES.md`):
   the engine's design note is a tracked file of main, decided (`docs/GARD_DESIGN.md`, D192), and GARD
-  is built in step 4 of D194's order. Nothing of it is in the engine.
+  is built in step 4 of D194's order. Nothing of it was in the engine. **Since 17 November 2026,
+  evening, it reads "Modelled", for comparison only** (below, "The record, the same day").
 - **The two forms of the law, in D192's words** (`docs/DECISIONS.md`, D192, "The reversibility
   finding, as checked"): in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer uses these words and no others, and shows no comparison of
   the two forms on invented numbers.
@@ -99,7 +100,8 @@ awaited.
 
 - **The view is on the map's page.** Choosing GARD in the species switch (or `entry=gard` in the
   address) shows it in the first tab's place, named "Origin of life" ("Origin" on a phone, which keeps
-  the bar to one row). It plays the marked example as the page opens it, after the founder has
+  the bar to one row). It plays what the entry names as the page opens it (the marked example until
+  17 November 2026, evening; the engine's own pair of runs since), after the founder has
   gathered, and it stands for a visitor who asks for less motion and with `still=1`.
   - Its levels are the page's rail, under "Level". Its clock is the page's one timeline.
   - Its legend and note are the page's legend. Its similarity is a select on the page's card.
@@ -169,9 +171,14 @@ that state the engine's note's status.
 **The record, the same day.** GARD's build in the engine started on 17 November 2026, and its first
 part merged into main that afternoon: the stochastic assembly family `cells.assembly_lineages@1`,
 with GARD's two forms as one law set on it, its own tests, and development runs that are not judged
-(`PROGRESS.md`). The entry's word stays "Designed, not modelled" until the engine's declarations list
-the model (the lead's word, 17 November 2026); it moves to "Modelled" then. The page still plays its marked example: it shows a real run only from the engine's final
-set of runs. By D197 GARD is one law set, kept only for
+(`PROGRESS.md`). The entry's word stayed "Designed, not modelled" until the engine's declarations
+listed the model (the lead's word, 17 November 2026). **That evening the second part merged into
+main** (`1f9863ce`; `PROGRESS.md`, "GARD's G1, part 2, on main"): the engine's declarations at main
+`a16b2571` list `cells.assembly_lineages@1` with GARD's three laws and its two lineage operators, so
+the entry reads "Modelled", for comparison only, and names the engine's final pair of runs, which
+the page now plays under the mark "Development run of the engine, not judged". Declared is not
+qualified: nothing of GARD is judged. The example of invented numbers stays as the checks' own
+scene. By D197 GARD is one law set, kept only for
 comparison, and the origin-of-life engine is to be Cells' own, with laws from physical chemistry; its
 design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed; its first choices were decided on
 17 November (D199). The entry's words and

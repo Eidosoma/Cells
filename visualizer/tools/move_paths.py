@@ -28,7 +28,9 @@ counted as left out, not as unplaced.
 B and A are each a checkout (its `git ls-files` is read) or a text file of tracked paths, one per
 line. With a checkout, the files the extractor places through the operator registry (not by a
 pattern) are read with the extractor's own reader, as it does; with a list, --preplaced-before
-and --preplaced-after (JSON objects, path -> part) stand in for them.
+and --preplaced-after (JSON objects, path -> part) stand in for them. Since 17 November 2026 the
+extractor reads the operators from the engine's declarations manifest, which is written at one
+revision: a checkout at any other revision is refused, so give its files with --preplaced-*.
 
 Standard library only. It changes nothing but --out and --report, and never imports or runs
 engine code (the extractor's reader parses the source with `ast`).

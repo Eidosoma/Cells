@@ -1023,7 +1023,43 @@
    "module": "cells.models.assembly_lineages.spec",
    "module_path": "src/cells/models/assembly_lineages/spec.py",
    "next_code": null,
-   "rows": [],
+   "rows": [
+    {
+     "declared_id": "cells.gard_catalysis_pair_consistent@1",
+     "id": "cells.gard_catalysis_pair_consistent@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.gard_catalysis_single_event@1",
+     "id": "cells.gard_catalysis_single_event@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.reservoir_exchange@1",
+     "id": "cells.reservoir_exchange@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.daughter_continuation@1",
+     "id": "cells.daughter_continuation@1",
+     "piece": "operator",
+     "role": "operator",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.size_threshold_fission@1",
+     "id": "cells.size_threshold_fission@1",
+     "piece": "operator",
+     "role": "operator",
+     "slot": null
+    }
+   ],
    "type": "family"
   },
   {
@@ -1077,6 +1113,10 @@
    "key": "energy"
   },
   {
+   "interface": "cells.exchange_law@1",
+   "key": "energy"
+  },
+  {
    "interface": "cells.junction_law@1",
    "key": "energy"
   },
@@ -1097,12 +1137,20 @@
    "key": "test"
   },
   {
+   "interface": "cells.lineage_operator@1",
+   "key": "energy"
+  },
+  {
    "interface": "cells.operator@1",
    "key": "provenance"
   },
   {
    "interface": "cells.operator@1",
    "key": "test"
+  },
+  {
+   "interface": "cells.rate_factor_law@1",
+   "key": "energy"
   },
   {
    "interface": "cells.route_law@1",
@@ -1785,6 +1833,208 @@
    "status": null,
    "status_source": null,
    "test": null,
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@1",
+   "declared_id": "cells.gard_catalysis_pair_consistent@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@1",
+   "fields": {
+    "comparison_only": true,
+    "data": [
+     "catalysis_matrix"
+    ],
+    "energy_role": "passive",
+    "form": "pair-consistent",
+    "formulas": {
+     "g_join_i(n)": "1 + x_i / N, on n (the state without the moving molecule); 1 when N = 0",
+     "g_leave_i(n)": "1 + (x_i - beta_ii) / (N - 1), on n - e_i (the state without the leaving molecule), when N >= 2 and n_i >= 1; 1 otherwise (the last molecule leaves uncatalysed; a type with n_i = 0 has no leave)",
+     "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1: no catalyst remains (this form only; the single-event form's carries 1 + beta_ii)",
+     "replay": "a replay that recomputes x at every event agrees with the incremental x to rounding: event sequences exactly (but for a threshold coincidence at rounding), times to a relative 1e-15",
+     "state": "x = beta n, x_i = sum_j beta_ij n_j: a serial left fold over j in declared order, computed exactly for the founder and for each followed daughter",
+     "update": "after an event of type i with sign s (+1 join, -1 leave): x <- x + s * beta[:, i]"
+    },
+    "law_set": "gard",
+    "note": "GARD comparison law set (D192, D197): for comparison with the Plastic Heredity preprint's reconstructed GARD only; Cells' own origin-of-life laws are derived from physical chemistry. The pair-consistent form, passive: the leaving molecule does not catalyse its own leave, so the chain keeps the beta-independent equilibrium exactly."
+   },
+   "host": "cells.assembly_lineages@1",
+   "id": "cells.gard_catalysis_pair_consistent@1",
+   "interface": "cells.rate_factor_law@1",
+   "kernels": {
+    "data_to_dict": {
+     "function": "cells.models.assembly_lineages.gard.data_to_dict",
+     "line": 102,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "factors": {
+     "function": "cells.models.assembly_lineages.gard.factors_pair_consistent",
+     "line": 143,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "layout": {
+     "function": "cells.models.assembly_lineages.gard.layout",
+     "line": 106,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "parse_data": {
+     "function": "cells.models.assembly_lineages.gard.parse_data",
+     "line": 79,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "probe": {
+     "function": "cells.models.assembly_lineages.gard.probe",
+     "line": 114,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "state": {
+     "function": "cells.models.assembly_lineages.gard.state",
+     "line": 120,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "update": {
+     "function": "cells.models.assembly_lineages.gard.update",
+     "line": 126,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 208,
+   "models": [
+    "cells.assembly_lineages@1"
+   ],
+   "module": "cells.models.assembly_lineages.gard",
+   "module_path": "src/cells/models/assembly_lineages/gard.py",
+   "name": "gard_catalysis_pair_consistent",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "the factor of a transfer is evaluated on the assembly without the moving molecule, so a transfer and its reverse see the same catalysts (GARD_DESIGN §1.4, 2)"
+     ],
+     "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
+     "place": "Appendix F, 'Common state, kinetics and environment': b_i = 1 + (beta x)_i / N",
+     "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, Appendix F (Zenodo 10.5281/zenodo.22143269)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_balance.py::test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as_passive",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@1",
+   "declared_id": "cells.gard_catalysis_single_event@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@1",
+   "fields": {
+    "comparison_only": true,
+    "data": [
+     "catalysis_matrix"
+    ],
+    "energy_role": "driven",
+    "form": "single-event",
+    "formulas": {
+     "g_join_i(n)": "1 + x_i / N, at the current state; 1 when N = 0",
+     "g_leave_i(n)": "1 + x_i / N, at the current state (the leaving molecule counted); 1 when N = 0",
+     "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1 + beta_ii: the molecule catalyses its own leave",
+     "replay": "a replay that recomputes x at every event agrees with the incremental x to rounding: event sequences exactly (but for a threshold coincidence at rounding), times to a relative 1e-15",
+     "state": "x = beta n, x_i = sum_j beta_ij n_j: a serial left fold over j in declared order, computed exactly for the founder and for each followed daughter",
+     "update": "after an event of type i with sign s (+1 join, -1 leave): x <- x + s * beta[:, i]"
+    },
+    "law_set": "gard",
+    "note": "GARD comparison law set (D192, D197): for comparison with the Plastic Heredity preprint's reconstructed GARD only; Cells' own origin-of-life laws are derived from physical chemistry. The preprint's single-event form, kept for the reference comparison and declared driven: in a closed two-type world it generically fails Kolmogorov's cycle criterion (a rank-one matrix is the exception). The original authors' kernel is not established either way, and the preprint's driven runs are not affected."
+   },
+   "host": "cells.assembly_lineages@1",
+   "id": "cells.gard_catalysis_single_event@1",
+   "interface": "cells.rate_factor_law@1",
+   "kernels": {
+    "data_to_dict": {
+     "function": "cells.models.assembly_lineages.gard.data_to_dict",
+     "line": 102,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "factors": {
+     "function": "cells.models.assembly_lineages.gard.factors_single_event",
+     "line": 137,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "layout": {
+     "function": "cells.models.assembly_lineages.gard.layout",
+     "line": 106,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "parse_data": {
+     "function": "cells.models.assembly_lineages.gard.parse_data",
+     "line": 79,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "probe": {
+     "function": "cells.models.assembly_lineages.gard.probe",
+     "line": 114,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "state": {
+     "function": "cells.models.assembly_lineages.gard.state",
+     "line": 120,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    },
+    "update": {
+     "function": "cells.models.assembly_lineages.gard.update",
+     "line": 126,
+     "module_path": "src/cells/models/assembly_lineages/gard.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 174,
+   "models": [
+    "cells.assembly_lineages@1"
+   ],
+   "module": "cells.models.assembly_lineages.gard",
+   "module_path": "src/cells/models/assembly_lineages/gard.py",
+   "name": "gard_catalysis_single_event",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [],
+     "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
+     "place": "Appendix F, 'Common state, kinetics and environment': b_i = 1 + (beta x)_i / N",
+     "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, Appendix F (Zenodo 10.5281/zenodo.22143269)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_kernel.py::test_a_row_for_column_update_is_caught",
    "units": {},
    "version": 1,
    "writes": null
@@ -2561,6 +2811,70 @@
   },
   {
    "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@1",
+   "declared_id": "cells.reservoir_exchange@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@1",
+   "fields": {
+    "changes": "one molecule of one type per event: +1 (join) or -1 (leave), from or to the held phase",
+    "data": [
+     "supply",
+     "leave_rate"
+    ],
+    "energy_role": "passive",
+    "formulas": {
+     "affinity_i(n)": "ln theta_i + ln N - ln(n_i + 1), theta_i = K_i rho_i, for n <-> n + e_i",
+     "join_i": "kf_i * rho_i * N, with kf_i = K_i * kb_i (the type family's transfer constant)",
+     "leave_i": "kb_i * n_i",
+     "measure": "pi(n) ~ (N - 1)! prod_i theta_i^n_i / n_i!, N >= 1",
+     "without_a_rate_factor": "g_join_i = g_leave_i = 1"
+    },
+    "reads": "the assembly's counts n_i and size N; the held activities rho_i"
+   },
+   "host": "cells.assembly_lineages@1",
+   "id": "cells.reservoir_exchange@1",
+   "interface": "cells.exchange_law@1",
+   "kernels": {},
+   "laws": null,
+   "ledgers": null,
+   "line": 64,
+   "models": [
+    "cells.assembly_lineages@1"
+   ],
+   "module": "cells.models.assembly_lineages.exchange",
+   "module_path": "src/cells/models/assembly_lineages/exchange.py",
+   "name": "reservoir_exchange",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "the join constant is derived from the type's transfer constant (one authority)"
+     ],
+     "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
+     "place": "the join and leave propensities without the catalytic factor",
+     "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, Appendix F (Zenodo 10.5281/zenodo.22143269)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_kernel.py::test_kernel_matches_the_oracle",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
    "controls": [],
    "declared_host": "resolved_pump_composite@1",
    "declared_id": "cell_owned_compartments@1",
@@ -2753,6 +3067,78 @@
    },
    "version": 1,
    "writes": {}
+  },
+  {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@1",
+   "declared_id": "cells.daughter_continuation@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@1",
+   "fields": {
+    "contract": {
+     "carrier_keys": "the founder holds 0:0; each fission gives its first daughter the next key of its parent's counter and its second the one after; the followed daughter continues the counter and becomes the slot's occupant (keys.py)",
+     "empty": "extinct: an empty pick is followed and the lineage ends; other: an empty pick moves to the other daughter when it holds a molecule",
+     "uniform": "the continuation stream's draw u at counter 0: u < 1/2 picks the first daughter, otherwise the second"
+    },
+    "energy_role": "none of its own: the unfollowed daughter's -k_BT ln pi leaves to the sink",
+    "reads": "the two daughters of a fission",
+    "rules": {
+     "daughter": [
+      "first",
+      "second",
+      "uniform"
+     ],
+     "empty": [
+      "extinct",
+      "other"
+     ],
+     "sink": [
+      "discard",
+      "reservoir"
+     ]
+    },
+    "stream": "continuation: one uniform, from the parent's carrier key (rule uniform only)",
+    "writes": "the slot's occupant, generation and carrier keys; the discarded material"
+   },
+   "host": "cells.assembly_lineages@1",
+   "id": "cells.daughter_continuation@1",
+   "interface": "cells.lineage_operator@1",
+   "kernels": {},
+   "laws": null,
+   "ledgers": null,
+   "line": 55,
+   "models": [
+    "cells.assembly_lineages@1"
+   ],
+   "module": "cells.models.assembly_lineages.continuation",
+   "module_path": "src/cells/models/assembly_lineages/continuation.py",
+   "name": "daughter_continuation",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "operator",
+   "provenance": {
+    "citation": {
+     "departures": [],
+     "licence": "CC BY 4.0",
+     "place": "the continued daughter: first (T2-02), second (T1-03), either with probability 1/2 with a nonempty fallback (T2-03)",
+     "source": "Plastic Heredity preprint v5.0, Appendix F, contracts T2-02, T1-03 and T2-03 (Zenodo 10.5281/zenodo.22143269)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_fission.py::test_continuation_rules",
+   "units": {},
+   "version": 1,
+   "writes": null
   },
   {
    "changes": null,
@@ -3323,7 +3709,19 @@
     "parts": [
      "split"
     ],
-    "record_kinds": {},
+    "record_kinds": {
+     "reaction_affinity_RT": "level",
+     "reaction_consumed_fmol": "cumulative",
+     "reaction_energy_magnitude_pJ": "cumulative",
+     "reaction_extent_fmol": "cumulative",
+     "reaction_outside_consumed_fmol": "cumulative",
+     "reaction_outside_energy_magnitude_pJ": "cumulative",
+     "reaction_outside_produced_fmol": "cumulative",
+     "reaction_outside_standard_energy_pJ": "cumulative",
+     "reaction_produced_fmol": "cumulative",
+     "reaction_rate_fmol_per_s": "rate",
+     "reaction_standard_energy_pJ": "cumulative"
+    },
     "record_layers": {},
     "retires": false,
     "step_method": "ssprk33_unidirectional_stage_condition_exact_bookings@1"
@@ -3334,7 +3732,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 1238,
+   "line": 1244,
    "models": [
     "cells.resolved_pump_composite@1"
    ],
@@ -3429,7 +3827,26 @@
     "kinds": [],
     "laws": []
    },
-   "signs": {},
+   "signs": {
+    "reaction_affinity_RT": {
+     "minus": "products",
+     "plus": "reactants",
+     "says": "A/RT, the reactants' chemical potential less the products' over RT (minus the reaction's free energy over RT): positive drives a passive route forward, zero at its equilibrium; 0 on driven routes",
+     "source": "processes/mass_action.reversible_flux and species_reactions.observe"
+    },
+    "reaction_extent_fmol": {
+     "from": "reactants",
+     "says": "a positive extent is net forward progress since the start: the route has turned its reactants into its products; a driven route's is zero or more",
+     "source": "species_reactions' half-step: dxi = h (J(Y1) + J(Y2) + 4 J(Y3)) / 6",
+     "to": "products"
+    },
+    "reaction_rate_fmol_per_s": {
+     "from": "reactants",
+     "says": "a positive rate runs the route forward, its reactants into its products; a passive route's is its forward flux less its reverse flux, a driven route's is zero or more",
+     "source": "processes/mass_action.reversible_flux and species_reactions.route_rates",
+     "to": "products"
+    }
+   },
    "status": null,
    "status_source": null,
    "test": null,
@@ -3440,7 +3857,7 @@
     "extracellular_amount_reference": "fmol",
     "extracellular_volume": "pL",
     "outside_active": "1",
-    "reaction_affinity_RT": null,
+    "reaction_affinity_RT": "1",
     "reaction_consumed_fmol": "fmol",
     "reaction_dissipated_energy_pJ": "pJ",
     "reaction_energy_magnitude_pJ": "pJ",
@@ -5014,6 +5431,70 @@
   },
   {
    "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@1",
+   "declared_id": "cells.size_threshold_fission@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@1",
+   "fields": {
+    "contract": {
+     "binomial": "an occupied place k goes to the first daughter when u_k < p",
+     "draw": "M uniforms u_0 .. u_(M-1), the partition stream's draw at counter 0, keyed by the parent's carrier key (one per place; only the occupied places' are read)",
+     "exact_fraction": "take = floor(f * N) in float64; rank the occupied places by u_k ascending, ties by place; the first `take` places go to the first daughter",
+     "places": "M = execution.molecule_capacity molecule places, by type in declared order: places 0 .. n_0 - 1 hold type 0, the next n_1 type 1, and so on; places N .. M - 1 are empty",
+     "second_daughter": "the parent less the first daughter",
+     "trigger": "a join that brings the size N to `size` (exact: single-molecule events); a daughter born with N = `size` (a binomial partition can give one daughter every molecule) splits at once, at its birth, before any event (the horizon first: a daughter at the fission limit is not split)"
+    },
+    "energy_role": "work: the split's change in -k_BT ln pi, from an unmodelled agent (signed)",
+    "reads": "the assembly's size N (current) and its counts",
+    "rules": {
+     "binomial": "probability",
+     "exact_fraction": "fraction"
+    },
+    "stream": "partition: one uniform per molecule place, from the parent's carrier key",
+    "writes": "the slot's composition: the followed daughter replaces the parent (continuation)"
+   },
+   "host": "cells.assembly_lineages@1",
+   "id": "cells.size_threshold_fission@1",
+   "interface": "cells.lineage_operator@1",
+   "kernels": {},
+   "laws": null,
+   "ledgers": null,
+   "line": 71,
+   "models": [
+    "cells.assembly_lineages@1"
+   ],
+   "module": "cells.models.assembly_lineages.fission",
+   "module_path": "src/cells/models/assembly_lineages/fission.py",
+   "name": "size_threshold_fission",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "operator",
+   "provenance": {
+    "citation": {
+     "departures": [],
+     "licence": "CC BY 4.0",
+     "place": "exact-size multivariate-hypergeometric split, floor(N/2) to the first daughter",
+     "source": "Plastic Heredity preprint v5.0, Appendix F, contract T2-02 (Zenodo 10.5281/zenodo.22143269)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_fission.py::test_a_daughter_born_at_the_fission_size_splits_at_once",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
    "controls": [
     "coupling_switch",
     "regulatory_write_count",
@@ -5148,5 +5629,5 @@
    "writes": {}
   }
  ],
- "revision": "7538b0cd87c024ef62e0b469caa93499924afed6"
+ "revision": "a16b257184fb3eb471af09d5e442f06d53b072bb"
 }

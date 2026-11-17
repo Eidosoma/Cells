@@ -173,14 +173,19 @@ test("the GARD entry is a model, not an organism, under Origin of life, and clai
   assert.equal(gard.clock.base, "fission");
   // Its runs are files of the assembly view's own contract (schema/ASSEMBLY_RUN.md); the reader holds each to its format, its model and its clock.
   for (const run of gard.runs) assert.ok(existsSync(path.join(ROOT, run.file)), `${run.file} is there`);
-  // What Cells models of it: designed. The first part of GARD's build is on main (PROGRESS, 17 November 2026; D192, D197) but
-  // it is not yet listed in the engine's declarations; the word moves to "modelled" when it is (the lead's word, 17 November 2026). Its runs are not judged.
-  assert.equal(gard.modelled.state, "designed");
-  assert.equal(gard.modelled.model, undefined, "no model is named before the engine's registries list one");
+  // What Cells models of it: modelled, for comparison only. Both parts of GARD's build are on main (PROGRESS, 17 November 2026; D192, D197)
+  // and the engine's declarations at main a16b2571 list its model with its laws and operators (data/engine/declarations.json). Its runs are not judged.
+  assert.equal(gard.modelled.state, "modelled");
+  assert.equal(gard.modelled.model, "cells.assembly_lineages@1", "the model the engine's declarations list");
+  const declared = JSON.parse(readFileSync(path.join(ROOT, "data", "engine", "declarations.json"), "utf8")).models.find((item) => item.id === gard.modelled.model);
+  assert.ok(declared && declared.rows.length > 0, "the model the entry names is a model of the engine's declarations, with its pieces");
   assert.equal(gard.modelled.design, "docs/GARD_DESIGN.md");
-  assert.match(gard.modelled.text, /^Designed, not modelled\./);
-  assert.match(gard.modelled.text, /not yet listed in the engine's declarations/);
-  assert.match(gard.modelled.text, /not judged/);
+  assert.match(gard.modelled.text, /^Modelled for comparison only \(D197\)/);
+  assert.match(gard.modelled.text, /development runs, not judged/);
+  assert.doesNotMatch(gard.modelled.text, /qualified|judged to|validated|replicat/i, "no word above what the record holds");
+  assert.deepEqual(gard.runs.map((run) => run.kind), ["development", "development"], "the engine's two runs, the passive law first");
+  assert.match(gard.runs[0].file, /pair-consistent/);
+  assert.match(gard.runs[1].file, /single-event/);
   for (const cited of ["visualizer/docs/ORIGIN_OF_LIFE.md", "docs/GARD_DESIGN.md", "docs/DECISIONS.md", "PROGRESS.md"]) assert.ok(gard.modelled.record.some((item) => item.path === cited), cited);
   assert.match(gard.modelled.record.find((item) => item.path === "docs/DECISIONS.md").where, /D192/);
   for (const item of gard.modelled.record) assert.deepEqual(Object.keys(item).sort(), ["path", "where"], "a citation names a tracked file and where in it, and no branch");
