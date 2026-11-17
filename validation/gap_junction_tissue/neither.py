@@ -520,7 +520,8 @@ def records_summary(results):
         readouts=[
             dict(
                 id=f"cell_{k + 1:02d}",
-                label=f"Cell {k + 1}{' (tumor)' if k < TUMOR else ''}: miR200 minus Zeb mRNA",
+                label=f"Cell {k + 1}{' (tumor)' if k < TUMOR else ''}: miR200 minus Zeb mRNA, in "
+                "µM; the switch's scaled unit is 1 µM in this world",
                 unit="uM",
             )
             for k in range(N_CELLS)

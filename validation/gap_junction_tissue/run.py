@@ -320,15 +320,17 @@ def concentration_sidecar(directory, kind):
     if not (np.all(np.isfinite(values)) and np.all(np.isfinite(times))):
         raise ValueError(f"{directory}: a concentration or time is not finite")
     label = (
-        "[mR], the preprint's linear species, in each cell"
+        "[mR], the preprint's linear species, in each cell, in mM; the preprint's scaled unit "
+        "is 1 mM in this world"
         if kind == NORTON
-        else "[mR] as written (the species S), in each cell"
+        else "[mR] as written (the species S), in each cell, in µM; the preprint's scaled unit "
+        "is 1 µM in this world"
     )
     sidecar = dict(
         format=QUANTITY_FORMAT,
         quantity=dict(
             id="concentration",
-            label=f"{label}: amount / volume from the run's own arrays",
+            label=f"{label} (amount / volume from the run's own arrays)",
             unit=unit,
         ),
         times_s=times.tolist(),
@@ -523,6 +525,11 @@ def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
     sweeps = []
     for kind in kinds:
         prefix, unit = ("", "mM") if kind == NORTON else ("aw-", "uM")
+        mapping = (
+            "in mM; the preprint's scaled unit is 1 mM in this world"
+            if kind == NORTON
+            else "in µM; the preprint's scaled unit is 1 µM in this world"
+        )
         form = "Norton form" if kind == NORTON else "as written"
         own = {
             key: result("aswritten" if kind == AS_WRITTEN else name)
@@ -540,8 +547,8 @@ def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
                 "junction conductance grows.",
                 parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq"),
                 readouts=[
-                    dict(id="c_A", label="[mR] in cell A, unloaded at 5", unit=unit),
-                    dict(id="c_B", label="[mR] in cell B, unloaded at 10", unit=unit),
+                    dict(id="c_A", label=f"[mR] in cell A, unloaded at 5, {mapping}", unit=unit),
+                    dict(id="c_B", label=f"[mR] in cell B, unloaded at 10, {mapping}", unit=unit),
                 ],
                 reference=EQUATION_2,
                 arms=[
@@ -561,8 +568,8 @@ def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
                 "size, unloaded at 5, as their junction conductance grows.",
                 parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq,A"),
                 readouts=[
-                    dict(id="c_A", label="[mR] in cell A", unit=unit),
-                    dict(id="c_B", label="[mR] in cell B", unit=unit),
+                    dict(id="c_A", label=f"[mR] in cell A, {mapping}", unit=unit),
+                    dict(id="c_B", label=f"[mR] in cell B, {mapping}", unit=unit),
                 ],
                 reference=dict(
                     label="Equation 2, with G_eq,B = 4/3 G_eq,A",
@@ -585,8 +592,8 @@ def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
                 "cells at 10 and B with three at 5, as every junction's conductance grows.",
                 parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq"),
                 readouts=[
-                    dict(id="c_A", label="[mR] in cell A", unit=unit),
-                    dict(id="c_B", label="[mR] in cell B", unit=unit),
+                    dict(id="c_A", label=f"[mR] in cell A, {mapping}", unit=unit),
+                    dict(id="c_B", label=f"[mR] in cell B, {mapping}", unit=unit),
                 ],
                 arms=[
                     dict(
