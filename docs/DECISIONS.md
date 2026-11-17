@@ -6843,3 +6843,24 @@ chemcials going in and out fission".
   - OL1's laws are the foundation.
 - **Priority** follows D207 and D211: this programme, beside the port pilot and the core-seams pass.
 
+## D213: The tissue search reruns now; the core pass restarts through retire, then move 2
+
+2026-11-17, evening. The lead asked two questions:
+- rerun the gap-junction tissue threshold search from main, now that FR-19's fix is there;
+- restart the core-seams pass through the chain retire, then move 2, then the pass with about four
+  owners, folding the Kv1 port pilot into it.
+
+The user: "yes on both as y9u suggest".
+
+- **The "neither" threshold search reruns** exactly as section 7 of the replication's note registered
+  it, from a clean snapshot of main, on lane A. It is labelled a comparison with BITSEY's log at
+  b2cb370, written by an earlier revision of its code. Its arms reach the viewer only from main, and
+  the page only if the user says so (D207).
+- **The chain:**
+  1. D198's retire batch lands once its merged-head gate passes. Its two laws' reference outputs are
+     saved, so they can be rebuilt under D211.
+  2. D188's move 2 follows.
+  3. The core-seams pass (D195) resumes at steps 1–3, with about four owners within the cap of seven.
+- **The Kv1 port pilot (D211) folds into the pass,** as seam F's step-2 per-law extractions, which own
+  the same files.
+
