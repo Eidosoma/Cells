@@ -1076,12 +1076,12 @@ proton balance), so anything transcribed from the XML must be checked against th
 
 ## Individual mitochondria (addendum, 17 November 2026)
 
-**Status: proposed, read-only, with options (D210).** Branch `mito-individuals` from main 7538b0cd.
-Nothing was built or run. Code is cited `file`:line at 7538b0cd, under `src/cells/` unless another
-root is named; `records/relations.py` there equals `relations-writer` 35a5bbb9. One other branch is
-cited, `gard-g1-merge` c6dd5956, for its commit message. **S** marks this addendum's own reading,
-arithmetic or proposal. **Engine models: none.** A.2's check would run `resolved_pump_composite@1`
-over `resolved_pump_tissue@3`, with `cell_owned_compartments@1` and FR-4's three kinds.
+**Status: proposed, read-only, with options (D210).** Branch `mito-individuals` from main 7538b0cd;
+nothing was built or run. Code is cited `file`:line there, under `src/cells/` unless another root is
+named (`records/relations.py` equals `relations-writer` 35a5bbb9); `gard-g1-merge` c6dd5956 is cited
+for its commit message. **S** marks this addendum's own reading, arithmetic or proposal. **Engine
+models: none;** A.2's check would run `resolved_pump_composite@1` over `resolved_pump_tissue@3`,
+with `cell_owned_compartments@1` and FR-4's three kinds.
 
 **The request (D210).** The user: "different researdh would need different levels of detail so you
 could choose the setup"; on individual mitochondria with fission and fusion, "yes sooner rather than
@@ -1097,13 +1097,10 @@ stands: the lumped node of §3.2 is the reference that N identical individuals m
   3.37 µs in its world, for seam C to fix (CORE_SEAMS_STEP0 §8).
 - **So everything below is about hosts and events,** never a mitochondrial law.
 
-**In short.** Static individuals are admitted as compartments today, and as mitochondria once
-refusal 4 admits the cycle kind, as host C needs anyway (A.1). Their first check needs no engine
-code (A.2), and condensation serves them better than FR-17 (A.3). Dynamic individuals need split,
-merge and removal doors, door D with stochastic partition, geometry as state and
-`cells.relations@2` (B); inexact levels need D175's fields on host declarations (C). First
-question: fission, selective fusion and removal (D). Recommended: requirements now, the check soon,
-the doors after the core-seams pass, and M8 before M7 (E).
+**In short.** Static individuals are admitted as compartments today, as mitochondria with host C's
+refusal 4, and their check needs no engine code (A). Dynamic ones need new doors, draws, geometry as
+state and `cells.relations@2` (B); inexact levels need D175's fields (C). Recommended: requirements
+now, the check soon, the doors after the core-seams pass, and M8 before M7 (E).
 
 ### A. Static individuals: N mitochondria per cell, no events
 
@@ -1112,8 +1109,9 @@ the doors after the core-seams pass, and M8 before M7 (E).
   own several)" (`models/operators/compartments.py`:16, :332–335). Each needs its own node and its
   own bounding patch (refusal 2, :296–305). Nothing counts compartments per owner.
 - **Shown by a parse only.** `tests/unit/test_cell_owned_compartments.py`:196–232 parses two
-  compartments in one cell. No stepped world in `validation/` or `tests/` has two in one owner;
-  FR-4's and FR-5's declare one (`validation/compartment_ph_engine/definitions.py`:161–164).
+  compartments in one cell. A search of `validation/` and `tests/` found no stepped world with two
+  in one owner; FR-4's and FR-5's declare one (`validation/compartment_ph_engine/definitions.py`,
+  :161–164).
 - **N mitochondria: refused until the cycle kind is admitted.** Refusal 4 refuses any kind "which
   refusal 4 does not know: a kind's routes may cross its bounding patch" (`compartments.py`:73–81,
   :222–229). Lifting that is §2.1's item 1 for host C (CORE_SEAMS §4.4). So static individuals need
@@ -1155,6 +1153,9 @@ the doors after the core-seams pass, and M8 before M7 (E).
 - **Controls that must be caught:** one member's pump capacity raised by 1e-6 relative; members at
   0.5 and 1.5 times the capacity against the lumped mean (D175's case outside the envelope); an
   intensive parameter divided by N.
+- **A known limit.** FR-4's protocol leaves its single-compartment form unjudged until energy floors
+  scale with species (`validation/compartment_ph/protocols/fr4_acidification_v1.json`:37, :134).
+  I_N's small members meet the same floors, so they stay large enough, or the check waits.
 - **Cost (S):** 1–1.5 agent-days for a builder variant and a protocol in `validation/`, no `src/`
   change. FR-4's 900 s at 1 ms is 900,000 steps (`parameters.py`:71, :75), so most arms take a short
   horizon and a full-length arm runs detached, off CPUs 6, 7, 22 and 23 (D207).
@@ -1177,12 +1178,10 @@ the doors after the core-seams pass, and M8 before M7 (E).
 - **So FR-17 gains a second consumer on paper, but condensation fits compartments better** (FR-1
   §3.6, §8). A face-free node with one patch is a leaf of the capacitor graph, so eliminating it is
   exact: its potential is φ_owner + q_comp/C_b, and the owner's plasma row keeps q_cell + Σ q_comp
-  (**S**, from FR-1 §3.1).
-  - The dense solve then holds cells and other outside nodes only, and each member costs O(1).
-  - The condensed operator holds no compartment capacitance or mask, so a door that changes them
-    need not refactorise it, which is the 64-node cap's reason (**S**).
-  - It is a new solver ID (D147), with its own references. FR-17's entry says only the 3D table
-    needs it; this addendum edits no other file, so that goes to the lead.
+  (**S**, from FR-1 §3.1). The dense solve then holds cells and other outside nodes only; each
+  member costs O(1); and a door that changes a compartment's capacitance or mask need not
+  refactorise it, the 64-node cap's reason (**S**). It is a new solver ID (D147), with its own
+  references. FR-17's entry says only the 3D table needs it; that goes to the lead.
 
 ### B. Dynamic individuals: fission, fusion, removal and inheritance
 
@@ -1213,20 +1212,17 @@ Here the set of compartments changes during a run. FR-1's doors (§1.5, §8) wer
 - **The fixed-step world refuses random state in a checkpoint:** "These deterministic models have no
   random state" (`io.py`:158–159; None is written at :116, "unused" at :313).
 - **The refusal can stand (S).** Keyed counter-based streams hold no state to save: in GARD's
-  family, "an assembly's draws depend on its identity alone"
-  (`models/assembly_lineages/streams.py`:22). The composite would need a stream identity, a carrier
-  key per slot (S5 §6.1 defers it) and draws keyed by event and compartment, as the machines note
-  plans for tags (its §10.4).
+  family "an assembly's draws depend on its identity alone" (`assembly_lineages/streams.py`:22).
+  The composite needs a stream identity, a carrier key per slot (S5 §6.1 defers it) and draws keyed
+  by event and compartment, as the machines note plans for tags (its §10.4).
 - **GARD's two rules are the two needed** (`models/assembly_lineages/fission.py`:8–13, :31,
   :101–122): `exact_fraction` gives floor(f N) to the first daughter as a uniformly random subset,
   and `binomial` sends each to it with probability p. Read "molecules" as "compartments".
-- **They live in another family:** integer counts per assembly, its own interfaces, runner and exact
-  kernel, and streams keyed by assembly. **Reuse is a question for the lead and GARD's owner.** It
-  would take (S): the rule, a pure function of counts and uniforms, moved to a shared module under a
-  neutral name, with GARD kept bitwise; the composite adopting the RNG contract
-  (MODULE_SYSTEM_DESIGN §5); and door D calling it, with a replay reference like GARD's
-  (`assembly_lineages/reference.py`:46). GARD shares the highest priority (D207, amended), so this
-  waits for its G1. The review notes that a morphology graph is not an assembly graph.
+- **They live in another family,** with its own counts, interfaces, runner, kernel and keys. **Reuse
+  is a question for the lead and GARD's owner.** It would take (S): the rule, a pure function of
+  counts and uniforms, moved to a shared module under a neutral name, GARD kept bitwise; the RNG
+  contract in the composite (MODULE_SYSTEM_DESIGN §5); door D calling it, with a replay reference
+  like GARD's (`assembly_lineages/reference.py`:46). It waits for GARD's G1 (D207, amended).
 
 **B.4 `cells.relations@2`: mitochondria's requirements,** which D209's L1 collects with machines'
 and GARD's. Against `records/relations.py`:
@@ -1241,8 +1237,9 @@ and GARD's. Against `records/relations.py`:
    `degraded`, which machines ask for too.
 4. **Same-time order.** GARD found that the event-row rule cannot order two events at one time
    (`gard-g1-merge` c6dd5956). One fixed step often holds a fission, a fusion and a removal.
-5. **Keys** for two parents, since §1.3's sub-lineage rule assumes one.
-6. **Labels** that mix at fusion and split at fission (RT3), for D's second question.
+5. **Keys** for two parents, since RELATIONSHIPS_DESIGN §1.3's sub-lineage rule assumes one.
+6. **Labels** that mix at fusion and split at fission (RELATIONSHIPS_DESIGN's RT3), for D's second
+   question.
 
 The other consumers are machines (`assembled`, `disassembled`, `degraded`, `assembled_from`,
 `member_of`; MOLECULAR_MACHINES_DESIGN §2) and GARD's same-time order: one design serves all three.
@@ -1253,8 +1250,8 @@ mitochondrion at a given time is a connected component of the open routes.
 - **It avoids** split, merge, re-anchoring and any change of capacitance or mask, and descent
   becomes a graph query (D200).
 - **It needs** a route between two compartments of one owner, which refusal 1 refuses
-  (`compartments.py`:289–294); a control on it, which faces lack (only membranes and junctions have
-  controls, `core/surface_tissue_spec.py`:123, :269); and condensation per owner.
+  (`compartments.py`:289–294); a control on it, which faces lack (the base spec controls membranes
+  and junctions only, `core/surface_tissue_spec.py`:123, :269); and condensation per owner.
 - **Its limits:** fission only at segment ends, and sizes in whole segments. Removal and biogenesis
   still need their doors.
 
@@ -1271,16 +1268,14 @@ mitochondrion at a given time is a connected component of the open routes.
   and machines (D209, L4):
   1. **On host declarations, not only on `Law`.** A mitochondrion's level is set by the compartments
      declaration, an operator, and later by the event doors.
-  2. **`represents`:** a key for the population and its owner, with the share each declaration
-     covers. A pool beside k individuals stays admissible when the shares are disjoint and cover the
-     whole.
+  2. **`represents`:** a key for the population and its owner, with each declaration's share. A pool
+     beside k individuals stays admissible when the shares are disjoint and cover the whole.
   3. **`preserves`:** totals, mean state and the capacitor relation (lumped); per-class or
      per-member state; identity, history and connectivity (dynamic). What each level drops is named.
   4. **`supports`:** a lumped node answers mean ΔΨ and ATP output. It refuses the ΔΨ distribution,
      the depolarised share, a member's age, "depolarise one mitochondrion" and "block fusion".
-  5. **`qualified`:** exact for identical members within A.2's tolerances; for members that differ,
-     an error budget declared before a comparison with individuals, with one case outside failing;
-     at run time, the members' spread bounding a lumped claim made beside individuals.
+  5. **`qualified`:** exact for identical members within A.2's tolerances; otherwise an error budget
+     declared before a comparison with individuals, one case outside failing (A.2's controls).
 
 ### D. The science
 
@@ -1289,10 +1284,20 @@ mitochondria polarised, and what spread of ΔΨ and depolarised share do the mea
 give?**
 - **It needs individuals.** A lumped node has one ΔΨ, and classes have fixed members. A depolarised
   subpopulation is made by fission and kept apart by selective fusion, so it depends on each
-  mitochondrion's history. **It comes first** because it needs no cell division.
+  mitochondrion's history. **It comes first** because it needs no cell division and no door D.
+- **Something must break the symmetry (S).** Deterministic laws keep identical members identical
+  (A.2), and a split with a = f keeps V_b (B.1), so selective fusion would have nothing to select:
+  - **a prescribed unequal split** makes Twig's asymmetry an input, and the check a consistency one;
+  - **discrete units drawn at fission** (respiratory or pump units) make it a prediction, but need
+    draws at fission and integer unit state, which kinds lack today (MOLECULAR_MACHINES_DESIGN
+    §10.4);
+  - **a per-member damage law,** such as FR-5's damage kind (`compartments.py`:80), is an input when
+    scheduled and draws when its onset is random.
+  - **Recommended: discrete units,** the only predictive source. Keyed draws then come before the
+    first question, not only with inheritance (E).
 - **The data:** Twig et al. 2008 (EMBO J 27:433–446; PMC2234339), free to read, with no licence
   stated on the page read; numbers only (D186, D201). Read through a page-reading tool, which
-  summarises; a direct read is owed before any number is registered. Cells: rat INS1, monkey COS7,
+  summarises; a direct read is owed before any number is registered. Cells: rat INS1, the COS7 line,
   primary mouse β-cells and mouse embryonic fibroblasts.
 
 | Quantity | Value | Measured or inferred |
@@ -1304,7 +1309,7 @@ give?**
 | Fusion within 3 min of a fission | About 6 times likelier for the hyperpolarised daughter | Counted; that ΔΨ causes it is inferred |
 | Non-fusing mitochondria | TMRE 26 ± 5.3% dimmer, given as 7.8 ± 1.6 mV | Intensity measured; mV inferred |
 | Cells with a non-fusing subpopulation | 32% of INS1 cells (n = 22); 60% of primary β-cells (n = 10) | Measured |
-| Depolarisation before engulfment | "One or more hours" | Inferred from dye pulses |
+| Depolarisation before engulfment | ≥ 1 h | Inferred from dye pulses |
 
 - **A judged check (S).** Cited inputs: the event times, and a declared fusion hazard that depends
   on ΔΨ. Targets for Cells' ΔΨ physics: the depolarised share and its TMRE deficit, compared as
@@ -1314,13 +1319,11 @@ give?**
 
 **Inheritance, second:** Katajisto et al. 2015 (Science; PMC4405120), an author manuscript free to
 read, with no licence stated on the page read, read the same way.
-- Human mammary stem-like cells, their mitochondria labelled through an outer-membrane protein
-  (Omp25, with photoactivatable GFP or a SNAP-tag). Divisions within 10 h of labelling were
-  symmetric and later ones asymmetric, so "old" means at least 10 h.
-- About 5.6-fold more old label went to one daughter (photoactivated GFP). By SNAP-tag, the old
-  label split 89% : 11% of the mother's intensity (n = 5, p = 0.004), and the young 67% : 33% (p =
-  0.04). A fission inhibitor (mDivi-1) reduced the share of daughters receiving mostly young
-  mitochondria; its numbers are in a figure table that was not read, and are not used.
+- Human mammary stem-like cells, mitochondria labelled through an outer-membrane protein (Omp25).
+  Divisions within 10 h of labelling were symmetric and later ones asymmetric: "old" is ≥ 10 h.
+- About 5.6-fold more old label went to one daughter (photoactivatable GFP). By SNAP-tag the old
+  label split 89% : 11% (n = 5, p = 0.004), the young 67% : 33% (p = 0.04). A fission inhibitor
+  (mDivi-1) cut the share of daughters receiving mostly young mitochondria (numbers not read).
 - **Measured:** label intensities per daughter. **Inferred:** "age", from labelling time, and
   stemness, from a sphere-forming assay. An age label is not a damage variable (the review).
 - **What Cells could test (S).** With no space inside a cell, Cells cannot place old mitochondria.
@@ -1329,8 +1332,8 @@ read, with no licence stated on the page read, read the same way.
   labels (B.4).
 
 **Which organism.** Cardiac cells rarely divide (the lead's premise; no number read). The first
-question needs no division; its data are from rat, monkey and mouse cells. Inheritance needs
-dividing human (Katajisto's) or mouse cells. No planarian data were sought; JCVI-syn3A has no
+question needs no division; its data are from rat and mouse cells and the COS7 line. Inheritance
+needs dividing human (Katajisto's) or mouse cells. No planarian data were sought; JCVI-syn3A has no
 mitochondria; mtDNA, the review's optional item, is out of scope.
 
 ### E. Options and a recommendation
@@ -1339,31 +1342,33 @@ Agent-days are rough (**S**).
 
 | Option | What | Agent-days | Needs |
 | --- | --- | --- | --- |
-| **O1, recommended** | (1) **Now:** mitochondria's requirements into three formats before they freeze: seam B, whose operators owner holds `compartments.py` in the pass (CORE_SEAMS §13), for compartments in the entity hierarchy and a merge verb; `cells.relations@2` (D209, L1); D175's fields (D209, L4). Condensation is recorded beside FR-17. (2) **Soon:** A.2's check. (3) **After the pass:** B's doors on FR-4's compartments, prescribed events first | (1) 0.5–1; (2) 1–1.5; (3) 24.5–38 | (2): FR-4's judged run done, and a free lane. (3): seam B and condensation |
+| **O1, recommended** | (1) **Now:** mitochondria's requirements into three formats before they freeze: seam B, whose operators owner holds `compartments.py` in the pass (CORE_SEAMS §13), for compartments in the entity hierarchy and a merge verb; `cells.relations@2` (D209, L1); D175's fields (D209, L4). Condensation is recorded beside FR-17. (2) **Soon:** A.2's check. (3) **After the pass:** B's doors on FR-4's compartments, prescribed events first | (1) 0.5–1; (2) 1–1.5; (3) 25–39 | (2): FR-4's judged run done, and a free lane. (3): seam B and condensation |
 | O2 | D193 as written: individuals at M8, after M7 | (3), later | The formats freeze without these needs and are edited again |
 | O3 | B's doors before D193's M3 | As (3) | No physics to judge them with; it takes the operators owner during the pass |
 | O4 | Fixed segments with gated links (B.5) in place of split and merge | About 13–19 for (3) | A route between compartments and its control. Coarser |
 
-**O1's step (3):** condensation 3–5; door D for compartments 1.5–2 (FR-1 §10 gives about 1.5); split
-3–4; merge with its bookings 3–5; removal 1.5–2.5; geometry as state 3–5; state-triggered events
-1.5–2.5; keyed streams and stochastic partition 3–5; `@2`'s writer 2–3, shared with machines and
-GARD; independent references and a protocol 3–4.
+**O1's step (3), in order:** condensation 3–5; split 3–4; merge with its bookings 3–5; removal
+1.5–2.5; keyed streams for draws at events 2–3, with integer unit state 0.5–1
+(MOLECULAR_MACHINES_DESIGN §10.5); geometry as state 3–5; state-triggered events 1.5–2.5; door D
+for compartments 1.5–2 (FR-1 §10 gives about 1.5) and its stochastic partition 1–2; `@2`'s writer
+2–3, shared with machines and GARD; independent references and a protocol 3–4. **O4's (3):**
+condensation per owner 3–5; a route between compartments with its control 3–4; removal 1.5–2.5;
+creation 1.5–2; relations as interval edges 1–1.5; references and a protocol 3–4.
 
 **The order:**
 1. **GARD and the gap-junction replication keep the highest priority** (D207, amended). O1 takes
    none of their CPUs or files, and the GARD reuse question waits for its G1.
-2. **The core-seams pass comes first.** Seams A and C gate every mitochondrion; seam B gates the
-   doors.
-3. **The desk work now; A.2's check when a lane is free.**
-4. **After the pass, two lanes on disjoint files:** D193's M3–M5, and O1's step (3) on FR-4's
-   compartments.
-5. **M6 (host C) brings static individual mitochondria** with no further door; **M8 then moves
+2. **The core-seams pass comes first:** seams A and C gate every mitochondrion, seam B the doors.
+3. **The desk work now; A.2's check when a lane is free. After the pass, two lanes on disjoint
+   files:** D193's M3–M5, and O1's step (3) on FR-4's compartments.
+4. **M6 (host C) brings static individual mitochondria** with no further door; **M8 then moves
    ahead of M7,** the doors carry over, and D's first question becomes M8's first protocol.
 
 ### Questions
 
 - **For the user.** **U1:** D's first question, on data from cells that are not cardiac, with
-  inheritance second? **U2:** O1, with M8 ahead of M7? **U3:** split and merge, or segments (O4)?
+  inheritance second, and discrete units drawn at fission as the source of asymmetry? **U2:** O1,
+  with M8 ahead of M7? **U3:** split and merge, or segments (O4)?
 - **For the lead.** **L1:** hand B's and C's requirements now to seam B, `cells.relations@2` and
   D175's fields? **L2:** condensation as the route for many compartments, recorded beside FR-17,
   whose entry says only the 3D table needs it? **L3:** reusing GARD's partition rules, with GARD's
@@ -1373,7 +1378,8 @@ GARD; independent references and a protocol 3–4.
 
 - **Read:** the documents, decisions and code cited above, at main 7538b0cd (DECISIONS.md D057,
   D144, D174, D175, D186, D193–D195, D201, D202, D207–D210 among them), and GARD_DESIGN.md §5.2 on
-  `gard-g1-merge`.
+  `gard-g1-merge`. **Cited through those, not read:** MODULE_SYSTEM_DESIGN §5, S5 §3.5, FR-1 §3.1
+  and §5.3 (through FR-1 §0 and §8), D147 and D200.
 - **External, 17 November 2026:** one web search and two pages through a page-reading tool, for Twig
   et al. 2008 and Katajisto et al. 2015. Numbers only; searches used titles and scientific terms.
   **Cited, not read:** Twig et al. 2006.
