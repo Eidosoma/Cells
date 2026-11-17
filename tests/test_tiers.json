@@ -121,7 +121,8 @@
   "/mnt/workspaces/Cells/gard-g2-land-20261117/measured.json/measured.json",
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-bd696fec/measured.json",
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-f7b3940b/measured.json",
-  "/mnt/workspaces/Cells/law-library-20261117/measure-96256ba2/measured.json"
+  "/mnt/workspaces/Cells/law-library-20261117/measure-96256ba2/measured.json",
+  "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1004,6 +1005,13 @@
    "root": ".claude/worktrees/law-library",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T14:57:54+00:00"
+  },
+  {
+   "git_revision": "08ce2f71f0ed4da586e6e0bc98c7277ca6718daa",
+   "dirty": false,
+   "root": ".claude/worktrees/law-library",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:08:44+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1902,7 +1910,7 @@
    },
    {
     "file": "tests/unit/test_declarations.py",
-    "seconds": 2.28,
+    "seconds": 2.27,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -2505,7 +2513,7 @@
    },
    {
     "file": "tests/unit/test_library_pages.py",
-    "seconds": 1.87,
+    "seconds": 2.02,
     "exit_code": 0,
     "counts": {
      "passed": 6
