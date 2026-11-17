@@ -35,9 +35,13 @@ CONTINUATION = "cells.daughter_continuation@1"
 GARD_SINGLE_EVENT = "cells.gard_catalysis_single_event@1"
 GARD_PAIR_CONSISTENT = "cells.gard_catalysis_pair_consistent@1"
 
-# The family's own interfaces (GARD_DESIGN §1.4; CORE_SEAMS_DESIGN §8.1: "a family's own").
-EXCHANGE_INTERFACE = "cells.assembly_exchange_law@1"
-RATE_FACTOR_INTERFACE = "cells.assembly_rate_factor@1"
-OPERATOR_INTERFACE = "cells.assembly_operator@1"
+# The family's own interfaces, in its own namespace (CORE_SEAMS_DESIGN §8.1: "a family's own";
+# the law template admits a `cells` interface only if it is one of the cells interfaces).
+EXCHANGE_INTERFACE = "assembly_lineages.exchange_law@1"
+RATE_FACTOR_INTERFACE = "assembly_lineages.rate_factor@1"
+OPERATOR_INTERFACE = "assembly_lineages.operator@1"
+# The family's built-in law homes. Each registers its laws on the law registry's BUILTIN through
+# the public call, as an outside package would; factors.load_homes imports them by name, once.
+LAW_HOMES = ("cells.models.assembly_lineages.exchange", "cells.models.assembly_lineages.gard")
 
 MODE = "single_lineage"

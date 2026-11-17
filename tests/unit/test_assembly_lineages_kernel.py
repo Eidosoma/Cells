@@ -19,11 +19,12 @@ from cells.core.specs import parse_spec
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
     GARD_SINGLE_EVENT,
+    factors,
     gard,
-    kernel,
     reference,
     runner,
 )
+from cells.registry import laws as law_registry
 from tests.assembly_lineage_fixtures import definition, world
 
 CASES = {
@@ -87,20 +88,23 @@ def test_a_swapped_draw_or_the_other_form_is_caught():
     assert not _agrees(run, _oracle(run, other))
 
 
-def test_a_row_for_column_update_is_caught(monkeypatch):
+def test_a_row_for_column_update_is_caught():
+    """The planted law is the single-event form with beta's row added in place of its column,
+    registered in a scoped registry under its own ID (no edit to the family): the oracle, which
+    recomputes beta n at every event, must disagree with its run."""
+
     def planted(x, data, i, sign, xp):
         return x + sign * data.matrix[i, :]
 
-    kernel.program.cache_clear()
-    runner._COMPILED.clear()
-    law = dataclasses.replace(gard.SINGLE_EVENT, update=planted)
-    monkeypatch.setattr(gard, "LAWS", (law, gard.PAIR_CONSISTENT))
-    try:
-        run = _run("single-event")
-        assert not _agrees(run, _oracle(run))
-    finally:
-        kernel.program.cache_clear()
-        runner._COMPILED.clear()
+    factors.load_homes()
+    law = dataclasses.replace(gard.SINGLE_EVENT, law_id="tests.row_update@1", update=planted)
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        options, _ = CASES["single-event"]
+        the_world = world(**options)
+        run = runner.run(parse_spec(definition(the_world, law.law_id, fissions=5, uniforms=True)))
+    honest = parse_spec(definition(the_world, GARD_SINGLE_EVENT, fissions=5, uniforms=True))
+    assert run.status == "complete" and not _agrees(run, _oracle(run, honest))
+    assert _agrees(_run("single-event"), _oracle(_run("single-event")))  # The honest law agrees.
 
 
 def test_saving_the_uniforms_changes_no_event():

@@ -269,7 +269,8 @@ def _law(run):
         "id": EXCHANGE_LAW,
         "energy_role": exchange_law.LAW.energy_role,
         "formulas": exchange_law.LAW.formulas,
-        "provenance": exchange_law.LAW.provenance,
+        "provenance": exchange_law.provenance(exchange_law.LAW),
+        "interface": exchange_law.LAW.interface,
     }
     if m.rate_factor is None:
         return {"id": None, "form": None, "exchange": exchange, "check": run.verdict}
@@ -282,7 +283,7 @@ def _law(run):
         "comparison_only": law.comparison_only,
         "note": law.note,
         "formulas": law.formulas,
-        "provenance": law.provenance,
+        "provenance": exchange_law.provenance(law),
         "interface": law.interface,
         "check": run.verdict,
         "world_report": run.world_report,
