@@ -6683,4 +6683,24 @@ them into the new engine if necessary".
     citation.
 - **A classification table of the batch's 33 source modules is being made, read-only.** For each
   module it gives the class (law, method or machinery) and what the modular engine already covers.
+- **The user agreed the split** the same day: "yes, the levin work has highest priority as we want to
+  use that as an example in the viz, machinery can wait for sure".
+  - The batch's laws go onto seam F's template, after the classification table, at a lower priority
+    than the gap-junction replication (D207).
+  - The machinery waits for the engine's geometry design.
+  - `legacy/` stays under D196 unless the user extends this.
+
+## D207: The gap-junction replication has the highest priority
+
+2026-11-17. The user: "the levin work has highest priority as we want to use that as an example in the
+viz". The work replicates, with the Cells engine, the experiment of the public bioRxiv preprint
+10.64898/2026.09.02.748840, which was made with BITSEY. It is on branch `gap-junction-replication`.
+
+- **Its jobs have first claim on CPUs 6, 7, 22 and 23,** at nice 0 while other light work stays at
+  nice 10. It takes lane A when it needs dedicated cores.
+- **Its runs are designed to be shown in the viewer as an example.** The format is agreed with the
+  visualizer session. Anything shown is published from a stated run with its revision, and a
+  development run is labelled not judged.
+- **Lead's note, not part of the user's decision:** FR-4's and FR-5's judged run, already queued on lane
+  B, is not interrupted.
 
