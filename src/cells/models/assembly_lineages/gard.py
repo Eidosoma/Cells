@@ -193,6 +193,8 @@ SINGLE_EVENT = RateFactorLaw(
         "g_join_i(n)": "1 + x_i / N, at the current state; 1 when N = 0",
         "g_leave_i(n)": "1 + x_i / N, at the current state (the leaving molecule counted); 1 "
         "when N = 0",
+        "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1 + beta_ii: the "
+        "molecule catalyses its own leave",
         **STATE_FORMULAS,
     },
     note=(
@@ -234,6 +236,8 @@ PAIR_CONSISTENT = RateFactorLaw(
         "g_leave_i(n)": "1 + (x_i - beta_ii) / (N - 1), on n - e_i (the state without the "
         "leaving molecule), when N >= 2 and n_i >= 1; 1 otherwise (the last molecule leaves "
         "uncatalysed; a type with n_i = 0 has no leave)",
+        "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1: no catalyst "
+        "remains (this form only; the single-event form's carries 1 + beta_ii)",
         **STATE_FORMULAS,
     },
     note=(

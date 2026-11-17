@@ -400,21 +400,31 @@ def observer_probe(inputs, out):
     import jax.numpy as jnp
 
     from cells.models.assembly_lineages import kernel
+    from validation.assembly_lineages import inheritance
 
     path = Path(inputs) / "observer_probe_inputs.npz"
     data = _load(path)
     parents = jnp.asarray(data["probe_parent"].astype(np.int64))
     daughters = jnp.asarray(data["probe_daughter"].astype(np.int64))
     similarity = np.asarray(jax.jit(jax.vmap(kernel.cosine))(parents, daughters))
+    marks = [
+        inheritance.inherited(p, d)
+        for p, d in zip(data["probe_parent"], data["probe_daughter"], strict=True)
+    ]
+    if any(m is None for m in marks):
+        raise ValueError("An observer pair holds an empty vector: no boundary")
     return write_probe(
         out,
         "observer_probe",
-        {"similarity": similarity},
+        {"similarity": similarity, "inherited": np.asarray(marks, dtype=bool)},
         {
             "says": {
                 "similarity [pair]": "the kernel's H: integer dot products, then a correctly "
                 "rounded square root and division (kernel.cosine), as fission_similarity is "
-                "computed; NaN for an empty vector",
+                "computed; NaN for an empty vector. Diagnostic: inheritance is not decided from it",
+                "inherited [pair]": "H > 0.9 strictly, decided in exact integer arithmetic, "
+                "100 (P.D)^2 > 81 (P.P)(D.D), by validation/assembly_lineages/inheritance.py: "
+                "H = 0.9 is a break",
             }
         },
         (path, data),
@@ -622,9 +632,19 @@ manifest.json (every file's SHA-256, written last).
 
 ## A probe (kernel_probe, closed_world/<world>, partition_probe/<rule>, observer_probe)
 probe.json (cells.assembly_lineages.probe@1): format, role, source, inputs {file, sha256, arrays},
-arrays_sha256, the engine definitions used, and `says`: what each array of probe.npz is.
-probe.npz holds the outputs and the registered inputs unmodified, prefixed input_.
-Arrays of both forms are named <form>.<array>, form pair_consistent or single_event.
+arrays_sha256 (the SHA-256 of the file probe.npz beside it), the engine definitions used, and
+`says`: what each array of probe.npz is. probe.npz holds the outputs and the registered inputs
+unmodified, prefixed input_. Arrays of both forms are named <form>.<array>, form pair_consistent
+or single_event. observer_probe's `inherited` holds each pair's mark, H > 0.9 strictly, decided in
+exact integers (H = 0.9 is a break); its `similarity` is the kernel's floating-point H, diagnostic.
+
+## Where a reader finds what the probes do not repeat
+- A form's detailed-balance verdict is its lineage run's `law.check.admitted_as` in run.json
+  (`passive` for the pair-consistent form in `lineage`; `driven` for the single-event form in
+  `lineage_single_event`), with the check's probe in `law.check.probe`.
+- A run without a rate-factor law has `law.id` and `law.form` null in run.json (form "none").
+- The event guard of a run is resolved_config.json's `experiment.growth_event_limit`.
+- A form's factor formulas, the last molecule's leave included, are run.json's `law.formulas`.
 
 ## Groups
 batched/batched.json, restart/restart.json, branches/branches.json, beta0_ensemble/
