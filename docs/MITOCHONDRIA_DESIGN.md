@@ -1063,3 +1063,10 @@ These overlap the cardiac note's open questions (its §9.2), so one ruling could
 - `docs/HUMAN_CARDIAC_LAWS_DESIGN.md` on `cardiac-laws`;
 - DECISIONS.md: D138, D142, D144, D151, D167, D173, D178, D180, and D184–D186 on main;
 - AGENTS.md, with D185's module provenance line on main.
+
+**Correction (17 November 2026, the independent check; `docs/CORE_SEAMS_STEP0.md` §7).** Beard
+2005's PDF is the version of record. PLOS's web XML and its MathML carry a stale Eq. 22 (the matrix
+proton balance), so anything transcribed from the XML must be checked against the PDF.
+- Table 1's corrected values are already in the PDF.
+- As printed, Eqs. 11, 16 and 24 do not factor in seam A's form. They enter only with declared
+  departures.

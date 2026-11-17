@@ -72,6 +72,12 @@ experiment).
    - **D195 (17 November):** the core-seams pass is approved at its scope, staffed within seven
      agents. In parallel now: D188's move 2, an FR owner, and step 0's desk work. Move 1 landed
      on 17 November.
+   - **Origin of life (D197, D199):** the whole programme, OL0–OL9, after G1 and seam F land.
+     **Relationship tracking (D200):** a general engine feature, design note first.
+   - **Also started on 17 November, at the user's request:** seam F, the law template and registry
+     (one more agent on the core), and GARD (D192) "as soon as possible". GARD's G1, the engine
+     family registered through today's chain, and G2, the independent component references,
+     run in parallel, as GARD_DESIGN §7.3 plans.
    0. **Merging the lanes built on the round** (done, above). Then D188's source-tree restructure
       (step 0's legacy list, settled in D189, and its probe, then two scripted moves). Owed from
       the landing's acceptance plan, and run with tier 3 on D188's final tree (D194):

@@ -36,11 +36,15 @@ the [project README](../README.md) gives the short feature overview.
 | [Excitable tissue design](EXCITABLE_TISSUE_DESIGN.md) | Track E: conduction in excitable tissue (D155, D170) |
 | [Human cardiac laws design](HUMAN_CARDIAC_LAWS_DESIGN.md) | The human ventricular law set (D183, D184): proposed, nothing built |
 | [Syn3A minimal-cell track](SYN3A_MINIMAL_CELL_TRACK.md) | JCVI-syn3A as the first whole cell: evidence audit and probes, no engine code |
+| [Origin of life: state of the art](SOTA_ORIGIN_OF_LIFE.md) | Two reviews of a November 2026 overview of origin-of-life research, read for Cells: resemblance, function and renewal measured apart; every descendant tracked; founder material traced; SpudCell and Otto-type replicators as candidate benchmarks (D199) |
 | [Syn3A state of the art](SOTA_SYN3A.md) | Why JCVI-syn3A is the first whole-cell validation organism, and its public measurements |
 | [Operator composition design](OPERATOR_COMPOSITION_DESIGN.md) | Operators that read each other's current state: one general rule, option A (D191, 16 November 2026); built in D194's step 3 |
 | [GARD design](GARD_DESIGN.md) | Catalytic assemblies, exchange, fission and lineage for the origin-of-life track (D192); the kernel finding's scope is in §2.5 |
+| [Origin-of-life engine design](ORIGIN_OF_LIFE_ENGINE_DESIGN.md) | Cells' own first-principles engine (D197): laws as detailed-balanced event pairs from one free energy, physical assemblies, declared energy sources, division by geometry and shear, GARD as a declared limit. Proposed, options for the user |
 | [Mitochondria design](MITOCHONDRIA_DESIGN.md) | One law set for mitochondria and bacteria, Beard 2005 as the source (D193) |
 | [Core seams design](CORE_SEAMS_DESIGN.md) | D194 step 2's one pass: the cycle kind, populations, binding, heat booking, laws as modules and the run view's format items, with the order and the estimate. Proposed |
+| [Relationships design](RELATIONSHIPS_DESIGN.md) | D200: descent, material provenance (labels), dependence and history, written as plain node and edge tables so that lineage, flow, dependency and branch graphs are joins. Proposed, options for the user |
+| [Law documentation design](LAW_DOCUMENTATION_DESIGN.md) | One plain-language Markdown page for each law, kind, operator and model, keyed by its ID, with a template that opens in words for every field, declared facts generated from the manifest, a glossary, the manifest's format page and the viewer's links; three pilot pages. Proposed |
 | [Looping replay design](LOOPING_REPLAY_DESIGN.md) | FR-11's looping replay packages: the loop block and its closure measure (ruled 16 November 2026) |
 | [Device row checks design](WINDOW_DEVICE_CHECKS_DESIGN.md) | Device-resident row checks for scalar windows, opt-in on the CPU, and the vector path's seams |
 | [Test audit retire list](TEST_AUDIT_RETIRE_LIST.md) | D187's audit: the firm, held and candidate retirements, approved in D189 |

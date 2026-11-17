@@ -640,7 +640,7 @@ with its citation in our own words. Its fields (**S**):
 
 | Field | Content |
 | --- | --- |
-| Identity | `law_id`, namespaced, naming the mechanism and its form, never a protein; `interface` (`cells.channel_law@1`, `cells.cycle_law@1`, `cells.route_law@1`, `cells.binding_law@1`, or a family's own, such as GARD's event laws) |
+| Identity | `law_id`, namespaced, naming the mechanism and its form, never a protein; `interface` (`cells.channel_law@1`, `cells.cycle_law@1`, `cells.route_law@1`, `cells.binding_law@1`, or a family's own, such as GARD's event laws). A fifth, `cells.junction_law@1`, is @3's junction conductance law's: its contract (a gated state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the membrane channel's (codes, named gates, permeant ions, an RK4 step). `host`: the namespaced ID of the kind or model that runs it, by which a host finds its laws (version 1's restriction, built in step 1; §8.3) |
 | What it reads and changes | Rows by role at named ends, with units and signs; its own state, if any |
 | Its math | Pure kernels in the `xp` style; for a cycle law, S ≥ 0 or J (§3.2) |
 | Energy role | Passive or driven (books work); the heat bookings it admits (§6.1) |
@@ -717,7 +717,8 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
   `src/cells/modules/`.
 - **What it exports:**
   - the declaration types of each interface: `ChannelLaw`, `CycleLaw`, `RouteLaw`, `BindingLaw`,
-    `Kind`, `KindFields`, `KindView`, `KindRates` and `Schedule`;
+    `Citation` (the source a cited law gives), `Kind`, `KindFields`, `KindView`, `KindRates` and
+    `Schedule`;
   - the parsing helpers: `ConfigError`, `require_fields`, `finite_number`, `bounded_integer`,
     `parse_series`, `series_to_dict`, `qualified` and `declared_schedule`;
   - the constants: R, F, `CHARGE_PER_FMOL` and `EXPLICIT_STEP_BOUND`;
@@ -729,8 +730,10 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
 - **Built-ins import only the surface** (the D180 rule extended). An AST test over `kinds/` and
   `laws/` enforces it, with a planted violation that must fail. Internals never import the
   surface, so it adds no cycle.
-- **Stability:** a name in `__all__` changes meaning only with a new major of its interface.
-  Internals may move freely, since the surface re-exports them.
+- **Stability: provisional (D195).** There is no stability promise until a first outside module
+  arrives; then the promise goes back to the user. The word "provisional" stands in the
+  package's docstring and in MODULE_SYSTEM_DESIGN §2.6. Internals may move freely, since the
+  surface re-exports them.
 - **The surface is the stable import path that SOURCE_LAYOUT_MOVES_DESIGN §12 left to this
   pass,** in place of compatibility aliases.
 
@@ -758,7 +761,8 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
   own, so the claim holds by construction. A law re-hosted on a new host adds one test at matched
   inputs, against outputs saved from the frozen reference, with a planted perturbation that must
   fail.
-- **A changed law takes a new ID** (D147). The old ID's kernel stays, frozen, for its family.
+- **A changed law takes a new ID** (D148's reading: "D147 makes an ID promise its semantics"; the
+  inner-model design's §6). The old ID's kernel stays, frozen, for its family.
 
 ### 8.7 Left to module stage 1
 
@@ -977,3 +981,78 @@ provisional, and checkpoints across move 2. §12's items 10 and 12 are not decis
 **Decided, 17 November (D195):** all four as proposed. A and C wait for step 0's cycle-law screen,
 and §13's owner table is redone with one owner per file before the code starts.
 
+
+
+## 15. Seam F's foundation landed: the advisor's follow-ups (17 November 2026)
+
+Seam F's step 1 and D185's declarations manifest are on main (75e925ea). Its gate: crossrev
+identical, G1 113 of 113, and tiers 1+2 with none changed. The advisor's review asks for the
+following before work builds on it.
+- **The interfaces are provisional,** like `cells.modules` (D195).
+  - `cells.cycle_law@1` is PumpLaw's shape while seam A's contract waits for the blind check.
+  - `cells.binding_law@1`'s fields predate seam C.
+  - Both are labelled provisional until their seams land.
+- **F's claim is tested on GARD's family in G1's part 2.** A new piece joins with no edit to other
+  pieces: GARD's laws register under their own interface, importing only `cells.modules`. Any edit
+  to F's files is a finding. Until then GARD is absent from the manifest.
+  - **What the test showed (17 November).** GARD's three laws register on F's template and
+    registry, with no edit to F's files, and are listed with their sources and tests. Four gaps
+    remain on F's side:
+    1. **The surface** exports no `Law`.
+    2. **Loading:** a fresh-process manifest lists only the built-in homes, so its bytes depend on
+       import order. This is a defect.
+    3. **No model section.**
+    4. **Operator entries are wired to the composite's contract.**
+  - **The fixes, reviewed with the advisor,** are their own landing under seam F, ahead of @2:
+    - **The surface:** export `Law` only. A registration entry stays module stage 1, fenced (§8.5,
+      D195).
+    - **Loading and models:** a static table keyed by model, read when the registry loads:
+      `{type, law_homes, operator_homes, interfaces, runner}`. It is the minimal form of §8.4's
+      model table. It feeds the manifest's `models` rows and is guarded by a static scan.
+      Replacing the dispatch chains stays deferred.
+    - **Operators:** a family's operators carry their own interface and host, with their own
+      declaration check. The composite's `OPERATORS` section is unchanged.
+    - **Interfaces:** the set is open to built-in families in the `cells` namespace (MODULE_SYSTEM
+      §2.3: one namespace per distribution, `cells` reserved), with F's five as the initial set.
+      A family's interfaces take general names, because D197's first-principles laws implement
+      them too: for example `cells.exchange_law@1`, `cells.rate_factor_law@1` and
+      `cells.lineage_operator@1`.
+  - **A follow-up for F's next step.** `cells ensemble` dispatches through a hard-coded MODELS table
+    (`ensemble/families.py`). It should dispatch through the static model table's `runner` entry
+    instead, so a family joins the ensemble queue with no edit to `ensemble/*`. Until then, GARD's
+    family runs its own ensemble arm.
+- **The manifest `cells.declarations@1` is partly delivered (FR-12):**
+  - **IDs:** each piece carries `id` (namespaced) and `declared_id` (the spelling definitions use;
+    bare in the `cells` namespace). `host` is namespaced only (`cells.resolved_pump_tissue@3`),
+    while definitions name `resolved_pump_tissue@3`. A raw join needs D185's rule, that a bare ID
+    is the `cells` namespace. The format states it, or the manifest gives hosts in both spellings.
+  - **Nulls carry three meanings:** not stated by any record (`status`), not applicable, and not yet
+    extracted (the kinds' `ledgers` and `energy`, and every piece's `test`). The format
+    distinguishes them before the visualizer binds.
+  - **The format** is documented only in the module's docstring. A format page comes with the
+    documentation analysis.
+  - **Checked as right:** each of the 19 operators names its own declaring module.
+- **Citations.** Fick (1855), Goldman (1943) and Hodgkin and Katz (1949) were named from memory, not
+  read. They are marked unread, or read and confirmed, in step 2.
+- **Open branches.** core-fixes' four commits merge textually with F's files: `passive_routes`, the
+  kinds' registry and @3's step merge automatically, and only the tier record conflicts. They still
+  need their own gate after merging main. Move 2's carry-over proof starts from that merge.
+- **FR-4 and FR-5.** F changed how the transporter and the passive routes find their laws. The FR
+  rehearsals run from a snapshot older than F, so their bitwise checks are repeated from main at or
+  after 75e925ea before registration.
+
+## 16. Seam A's contract, amended after the independent check (17 November 2026)
+
+The check is recorded in `docs/CORE_SEAMS_STEP0.md` §7. It lifts seam A's hold, with these changes:
+- **Modes.** A law that declares per-mode signs declares the full set of its diagram's Hill cycles,
+  dependent ones included. A basis is admitted only when its cycles share no edge.
+- **The admission check.** At parse time, each declared Hill cycle must satisfy Wegscheider's
+  condition, ln(Π⁺/Π⁻) + ΔG/RT = 0, at the engine's potentials. A law that fails is refused, never
+  repaired.
+- **The ledger's guard.** The population's total Σ J·ΔG ≤ 0 is checked at run time. It is
+  basis-independent. Per-mode bookings are readouts, not guards.
+- **Printed laws that fail the check** (O'Hara–Rudy's INaCa; Beard's Eqs. 11, 16 and 24) enter only
+  with declared departures. The user rules on those with the cardiac and mitochondria lanes.
+- **One-way fluxes (D202).** Every admitted Hill cycle has J⁺ and J⁺·e^{ΔG/RT}, so a factored cycle
+  law exposes both one-way fluxes. Material labels need them. Only fallback laws lack them, and
+  those declare net-flow mode.

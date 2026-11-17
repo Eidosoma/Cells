@@ -15,7 +15,12 @@ The declaration (model key `transporters`, absent unless declared), one entry pe
      "role": "H", "fuel": {"kind": "maintained_held_rows@1", "node": "cell_0",
                            "rows": ["ATP", "ADP", "Pi"], "ph_ref": 7.2, "ph_band": 0.05}}
 
-- **law:** a namespaced law ID (a bare ID resolves to `cells.`); stored namespaced.
+- **law:** a namespaced law ID (a bare ID resolves to `cells.`); stored namespaced. The kind finds
+  its laws in the active law registry: the cycle laws it hosts (registry/laws.py; §8.3 of
+  docs/CORE_SEAMS_DESIGN.md), never a module tuple. Its two laws are declared here, on the law
+  template, until each moves to its own module (§8.2). Version 1's layout runs each of the two by
+  name (VERSION_1_LAWS), so it refuses any other cycle law it hosts, until the cycle kind's
+  general layout (§3.5).
 - **capacity_fmol_s** k (fmol cycles/s: N x the per-member value for a lumped node), the
   **stoichiometry** n (an integer 1..4), the role's and ATP's half-saturations K and K_ATP (mM).
 - **role:** the moved species row: valence 0 under the neutral law, +1 under the proton law.
@@ -92,15 +97,56 @@ from cells.numerics.extracellular_field import scatter
 from cells.processes import atp_transporter as neutral
 from cells.processes import proton_pump as proton
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.registry import laws as law_registry
 
 KIND_ID = "cells.transporter@1"
 MODEL_KEY = "transporters"
 NEUTRAL_LAW = qualified(neutral.LAW_ID)
 PROTON_LAW = qualified(proton.LAW_ID)
-LAWS = (NEUTRAL_LAW, PROTON_LAW)
+# The laws version 1's layout runs, each by name through its own slots' mask (the static dispatch).
+VERSION_1_LAWS = (NEUTRAL_LAW, PROTON_LAW)
 HELD = "maintained_held_rows@1"
 FINITE = "finite_fuel_rows@1"
 FUEL_KINDS = (HELD, FINITE)
+# The kind's two laws on the law template (registry/laws.py), registered for the kind to find by
+# interface and host. Each moves to its own module with step 2's extraction (CORE_SEAMS §8.2).
+NEUTRAL = law_registry.BUILTIN.register(
+    law_registry.CycleLaw(
+        NEUTRAL_LAW,
+        (("role", "-stoichiometry"),),  # The role leaves the inside: -n per cycle, inward-positive.
+        FUEL_KINDS,
+        neutral.kinetics,
+        neutral.domain_valid,
+        host=KIND_ID,
+        provenance="cited",
+        source=law_registry.Citation(
+            "an ATP-driven transporter of a neutral role, in the Na/K law's mass-action form "
+            "(processes/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+            "docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2",
+            "no numbers taken: the law is a form, its parameters a definition's values",
+        ),
+    )
+)
+PROTON = law_registry.BUILTIN.register(
+    law_registry.CycleLaw(
+        PROTON_LAW,
+        proton.MOVES,
+        (HELD,),
+        proton.kinetics,
+        proton.domain_valid,
+        reads=proton.READS,
+        stage_term=proton.DECLARATION["stage_term"],
+        loop_term=proton.DECLARATION["loop_term"],
+        host=KIND_ID,
+        provenance=proton.DECLARATION["provenance"],
+        source=law_registry.Citation(
+            "an ATP-driven proton pump, in the Na/K law's mass-action form "
+            "(processes/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+            "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §6",
+            "no numbers taken: the law is a form, its parameters a definition's values",
+        ),
+    )
+)
 ENTRY_FIELDS = (
     "id",
     "patch",
@@ -174,6 +220,13 @@ class Population:
 # ---------------------------------------------------------------------------- definition
 
 
+def hosted_laws():
+    """{namespaced law ID: declaration} of the cycle laws this kind hosts, in canonical order:
+    found in the active law registry by interface and host (CORE_SEAMS §8.3)."""
+    laws = law_registry.active().laws(law_registry.CYCLE_LAW, KIND_ID)
+    return {qualified(law.law_id): law for law in laws}
+
+
 def _taken_ids(m):
     pumps = [p.pump for p in m.membranes if getattr(p, "pump", None) is not None]
     pumps += [p.calcium_pump for p in m.membranes if getattr(p, "calcium_pump", None) is not None]
@@ -237,8 +290,14 @@ def parse(entries, base):
         ids.add(name)
         where = f"transporter {name!r}"
         law = qualified(raw["law"]) if isinstance(raw["law"], str) and raw["law"] else None
-        if law not in LAWS:
-            raise ConfigError(f"{where}: law is one of {', '.join(LAWS)}")
+        hosted = hosted_laws()
+        if law not in hosted:
+            raise ConfigError(f"{where}: law is one of {', '.join(hosted)}")
+        if law not in VERSION_1_LAWS:
+            raise ConfigError(
+                f"{where}: version 1's layout runs {', '.join(VERSION_1_LAWS)}, not {law}; the "
+                "cycle kind's general layout will run any cycle law it hosts (CORE_SEAMS §3.5)"
+            )
         patch = patches.get(raw["patch"])
         if patch is None:
             raise ConfigError(f"{where}: unknown membrane patch {raw['patch']!r}")

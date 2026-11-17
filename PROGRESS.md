@@ -85,6 +85,74 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **GARD's G2, the independent component references, merged into main (17 November 2026).**
+  `validation/gard/references/`, from gard-g2-references 193eaf0d. Its writer never read the engine's
+  code.
+  - **Ten references,** each derived from the preprint (Appendix F) and the three original papers,
+    each with a planted control it catches. Among them:
+    - the closed form at β = 0;
+    - time rescaling under uniform β;
+    - local detailed balance;
+    - the closed world's stationary law, which independently reproduces the design note's
+      0.5793 and 0.15;
+    - an exact SSA oracle;
+    - the fission partition;
+    - conservation;
+    - the ledger;
+    - streams;
+    - the observers, including F12 over all 4,096 sequences.
+  - **A harness** reads run bundles through one adapter function.
+  - **Tests:** six files, 112 tests, all tier 1, measured on the timed lane.
+  - **Not done yet:** the harness has not read a real engine bundle. Its reader adapts to G1's
+    frozen format once part 2 produces the probe bundles.
+
+- **GARD's G1, part 1, merged into main (17 November 2026, afternoon).** Branch gard-g1-merge
+  96643762 ([evidence](/mnt/workspaces/Cells/gard-g1-20261117/), README inside).
+  - **What it adds:** `cells.assembly_lineages@1`, a general stochastic assembly family (D197). It
+    has:
+    - the exact direct-method kernel with keyed streams, vmapped over lanes;
+    - reservoir exchange;
+    - size-threshold fission and daughter continuation;
+    - a stochastic ledger that refuses a passive run whose books don't close;
+    - self-describing run bundles, with a declared channel table and units.
+  - **GARD itself is one comparison law set on it** (D192):
+    - the preprint's single-event form, declared driven;
+    - the pair-consistent form, passive and the default.
+
+    The kernel's detailed-balance check admits only the second as passive.
+  - **The gate:**
+    - tiers 1+2: 489 files, none changed;
+    - the results gate: 113 of 113 identical;
+    - crossrev: all nine sets identical;
+    - 8 new test files, 67 tests, each catching a planted error.
+  - **Development run:** one lineage of 100 fissions on one CPU.
+    - The pair-consistent ledger closes to within 2.9e-11 k_BT.
+    - The single-event form reports 55.6 k_BT of cycle work with no source, as declared, about
+      0.55 k_BT per fission.
+    - Speed: 2.2×10⁴ events per second per lane, and up to 5.8×10⁴ with 16 lanes on one CPU.
+  - **Next:** part 2 (keys, end reasons, the probe driver, checkpoints, branching, every descendant)
+    and the general relationship tables (D202).
+
+- **Seam F of the core-seams pass merged into main (17 November 2026, afternoon).** Branch
+  core-seams-f 10a6bb19 ([evidence](/mnt/workspaces/Cells/core-seams-f-20261117/)).
+  - **What it adds, all structure:**
+    - **The law template:** `ChannelLaw`, `CycleLaw` (the same type as `PumpLaw`), `RouteLaw`,
+      `BindingLaw` and `JunctionLaw`. Each carries its `host`, its provenance and a `Citation`,
+      with units and signs declared. @3's ten laws now use it.
+    - **A build-scoped law registry,** in which kinds find their laws by interface and host.
+    - **Operators as a registry section.** `OPERATORS` is a view of the active section.
+    - **`cells.modules`,** marked PROVISIONAL (D195).
+    - **D185's declarations manifest,** FR-12: `python -m cells declarations --out FILE` writes
+      `cells.declarations@1`. It covers 14 laws, 5 kinds and 19 operators, with legacy model IDs
+      flagged.
+  - **The gate:**
+    - crossrev identical;
+    - G1 113 of 113;
+    - tiers 1+2: 485 files, none changed;
+    - 16 planted errors caught.
+  - **Still to come in F:** the per-law extractions and the built-ins' import guard, after move 2
+    and the retire batch.
+
 - **D188's move 1 landed on main (17 November 2026).** Merge 7bb8bf23, tagged
   `d188-move1-landed-2026-11-17`; the tree before it is tagged `pre-d188-move1-2026-11-17`
   ([evidence](/mnt/workspaces/Cells/d188-m1-20261117/gate-9b20034a/summary.txt)).
