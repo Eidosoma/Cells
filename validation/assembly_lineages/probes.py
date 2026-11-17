@@ -23,8 +23,8 @@ the references' code.
   that makes fission 3 due (its fission pending), each continued from its checkpoint;
 - `branches`: `lineage_diagnostic`'s post-fission landmark at fission 20, then 8 branch words
   (1-8), 12 fissions each, with uniforms (diagnostic);
-- `beta0_ensemble`: the exchange law alone (no catalysis) on the T2-02-like constants and founder,
-  200 lineages (lineage words 0-199), each to its first fission;
+- `beta0_ensemble`: G2's registered design (ENSEMBLE_DESIGN): the exchange law alone on four
+  types, 500 lineages (lineage words 0-499), each observed past t = 2;
 - `rescale_beta0`, `rescale_betac`: the pair-consistent form on the T2-02-like world with beta = 0
   and with beta = 3 everywhere (so 1 + c = 4, a power of two: the same events, every time scaled
   by exactly 1/4), one set of streams, 5 fissions, with uniforms;
@@ -58,7 +58,23 @@ PROBE_FORMAT = "cells.assembly_lineages.probe@1"
 MATRIX_SEED, FOUNDER_SEED, STREAM_SEED = 20261117, 1117, 1
 FISSIONS = 100
 BRANCH_LANDMARK, BRANCH_WORDS, BRANCH_FISSIONS = 20, tuple(range(1, 9)), 12
-ENSEMBLE = 200
+# G2's registered design of the beta = 0 ensemble (relayed by the lead, 17 November 2026): four
+# types, k_join = 1, k_leave = 0.5, held activities (0.1, 0.2, 0.3, 0.4), the founder (5, 5, 5, 5),
+# no catalysis, 500 lineages observed to t = 2. The engine has no time horizon, so each lineage
+# runs to its first fission at a size it cannot reach by t = 2 (2,048; its expected size there is
+# about 54), under an event guard it cannot reach first (4,096), as the lead ruled: every event to
+# t = 2 is in its trace, and the ensemble's record says, for each lineage, that it did not stop
+# before t = 2 (its run.json's end.time is past it).
+ENSEMBLE_DESIGN = {
+    "types": 4,
+    "k_join": 1.0,
+    "k_leave": 0.5,
+    "rho": (0.1, 0.2, 0.3, 0.4),
+    "founder": (5, 5, 5, 5),
+    "runs": 500,
+    "t_end": 2.0,
+}
+ENSEMBLE_FISSION_SIZE, ENSEMBLE_GUARD = 2048, 4096
 RESCALE_C, RESCALE_FISSIONS = 3.0, 5
 PROBE_FISSION_SIZE = 128  # Probe worlds never run a lineage; above every registered state.
 
@@ -560,28 +576,76 @@ def lineages(out):
     return roles
 
 
+def ensemble_world():
+    """The registered beta = 0 ensemble's world (ENSEMBLE_DESIGN), exchange alone."""
+    from cells.models.assembly_lineages import CONTINUATION, EXCHANGE_LAW, FISSION
+
+    d = ENSEMBLE_DESIGN
+    return {
+        "types": {
+            "prefix": "t",
+            "count": d["types"],
+            "transfer_constant": d["k_join"] / d["k_leave"],
+        },
+        "supply": list(d["rho"]),
+        "exchange": {"law": EXCHANGE_LAW, "leave_rate": d["k_leave"]},
+        "founder": list(d["founder"]),
+        "fission": {
+            "operator": FISSION,
+            "size": ENSEMBLE_FISSION_SIZE,
+            "partition": {"rule": "exact_fraction", "fraction": 0.5},
+        },
+        "continuation": {
+            "operator": CONTINUATION,
+            "daughter": "first",
+            "empty": "extinct",
+            "sink": "discard",
+        },
+        "units": {"time": "nominal", "temperature_K": None},
+    }
+
+
 def beta0_ensemble(out):
     from cells.core.specs import parse_spec
     from cells.models.assembly_lineages import runner
+    from validation.assembly_lineages import worlds
 
     out = Path(out)
     out.mkdir()
-    specs = [parse_spec(lineage_definition(None, fissions=1, lineage=w)) for w in range(ENSEMBLE)]
-    members = {}
-    for start in range(0, ENSEMBLE, 50):
-        for i, run in zip(
-            range(start, start + 50), runner.run_lanes(specs[start : start + 50]), strict=True
-        ):
+    runs, t_end = ENSEMBLE_DESIGN["runs"], ENSEMBLE_DESIGN["t_end"]
+    specs = []
+    for w in range(runs):
+        data = worlds.definition(ensemble_world(), None, fissions=1, seed=STREAM_SEED, lineage=w)
+        data["experiment"]["growth_event_limit"] = ENSEMBLE_GUARD
+        specs.append(parse_spec(data))
+    members, stopped = {}, {}
+    for start in range(0, runs, 50):
+        batch = specs[start : start + 50]
+        for i, run in zip(range(start, start + len(batch)), runner.run_lanes(batch), strict=True):
             members[str(i)] = write_bundle(out / f"w{i:03d}", run, {"operation": "probe"})
+            stopped[str(i)] = bool(run.rows["row_time"][-1] <= t_end)
+    if any(stopped.values()):
+        raise RuntimeError("A lineage of the ensemble stopped before t_end")
     _json(
         out / "beta0_ensemble.json",
         {
             "format": PROBE_FORMAT,
             "role": "beta0_ensemble",
             "members": members,
-            "lineage_words": [0, ENSEMBLE - 1],
-            "law": "the exchange law alone (no rate factor: beta = 0)",
-            "horizon": "each lineage to its first fission (experiment.fissions = 1)",
+            "lineage_words": [0, runs - 1],
+            "design": {
+                k: list(v) if isinstance(v, tuple) else v for k, v in ENSEMBLE_DESIGN.items()
+            },
+            "law": "the exchange law alone (no rate factor: beta = 0); transfer constant "
+            "K = k_join / k_leave, leave constant k_leave",
+            "horizon": f"each lineage to its first fission at size {ENSEMBLE_FISSION_SIZE} "
+            f"(world.json fission.size), under an event guard of {ENSEMBLE_GUARD} "
+            "(resolved_config.json experiment.growth_event_limit): every trace extends past "
+            f"t_end = {t_end}, and each run.json's end.time is later than it",
+            "stopped_before_t_end": stopped,
+            "ends": "by design every run ends at the event guard (status event_limit, its life "
+            "censored by event_limit, near t = 8), before it could reach the fission size: an "
+            "honest record of why it ended, not a failure; the design reads only t <= t_end",
         },
     )
     return str(out)
@@ -632,7 +696,8 @@ manifest.json (every file's SHA-256, written last).
 
 ## A probe (kernel_probe, closed_world/<world>, partition_probe/<rule>, observer_probe)
 probe.json (cells.assembly_lineages.probe@1): format, role, source, inputs {file, sha256, arrays},
-arrays_sha256 (the SHA-256 of the file probe.npz beside it), the engine definitions used, and
+arrays_sha256 (the SHA-256 of the bytes of probe.npz beside it, as written), the engine
+definitions used, and
 `says`: what each array of probe.npz is. probe.npz holds the outputs and the registered inputs
 unmodified, prefixed input_. Arrays of both forms are named <form>.<array>, form pair_consistent
 or single_event. observer_probe's `inherited` holds each pair's mark, H > 0.9 strictly, decided in
@@ -645,6 +710,11 @@ exact integers (H = 0.9 is a break); its `similarity` is the kernel's floating-p
 - A run without a rate-factor law has `law.id` and `law.form` null in run.json (form "none").
 - The event guard of a run is resolved_config.json's `experiment.growth_event_limit`.
 - A form's factor formulas, the last molecule's leave included, are run.json's `law.formulas`.
+
+## The beta0_ensemble role
+Every run ends at the event guard by design (status event_limit, its life censored by
+event_limit, near t = 8), before it could reach the fission size: not a failure. The design reads
+only t <= 2, and beta0_ensemble.json's stopped_before_t_end shows that no run stopped earlier.
 
 ## Groups
 batched/batched.json, restart/restart.json, branches/branches.json, beta0_ensemble/
@@ -696,7 +766,9 @@ def run(inputs, out):
                 "branch_landmark": BRANCH_LANDMARK,
                 "branch_words": list(BRANCH_WORDS),
                 "branch_fissions": BRANCH_FISSIONS,
-                "beta0_ensemble": ENSEMBLE,
+                "beta0_ensemble": {
+                    k: list(v) if isinstance(v, tuple) else v for k, v in ENSEMBLE_DESIGN.items()
+                },
                 "rescale_c": RESCALE_C,
                 "rescale_fissions": RESCALE_FISSIONS,
                 "approved": "the lead, 17 November 2026",
