@@ -6159,7 +6159,9 @@ review. The user: "1. agreed all four" and "2. as you suggest".
 reached modules that import a moved one (R3 of `docs/SOURCE_LAYOUT_MOVES_DESIGN.md`), not the 42.
 The 102 families' registrations become legacy, but the shared modules that the four kept families
 build on stay in the core: `surface_tissue`, `surface_kinetic`, their specs, and the reached kernel
-of `kinetic_finite_extracellular`. The held tier-3 files are reviewed again after R3.
+of `kinetic_finite_extracellular`. R3's keep rule also keeps `calcium_gates`, `kinetic_finite_bounds`
+and `rate_junction_spec` in the core (the moves note §18). The held tier-3 files are reviewed again
+after R3.
 
 **Done on 17 November** (test-audit a676930b):
 - **Retired:** 11 tier-3 and 40 tier-1/2 files, plus 23 and 788 cases. Collection fell by exactly the

@@ -786,3 +786,51 @@ On §15's eight items, after the dry run (§16):
 - **The planner takes a reverse closure,** and a package's `__init__` moves with its last module
   (§16.6).
 
+## 18. R1–R4 landed; the deviations accepted (17 November 2026)
+
+R1 landed at d61d4618 and R2–R4 at the merge of d188-r2r4 8c41d7ec. The evidence is in
+`/mnt/workspaces/Cells/d188-r1-20261117/` and `/mnt/workspaces/Cells/d188-r2r4-20261117/`.
+
+**Deviations, accepted by the lead:**
+- **R1:**
+  - control_values crosses the active and legacy line, so its chain runs in three parts. First
+    matches are unchanged.
+  - Active worlds still load the legacy registration through misses. This is accepted until the
+    core-seams registration tables.
+  - Two type-only annotations naming legacy types are dropped.
+- **R3:**
+  - An eighth extraction, `voltage_gated_spec`'s `fraction`.
+  - No extraction for `cav_channels`.
+  - **The planner's keep rule:** a non-family module that a reached core module imports stays
+    in the core. That keeps `calcium_gates`, `kinetic_finite_bounds` and the new
+    `rate_junction_spec`, beyond D189's amended list.
+  - Dispatch points count as couplings.
+- **`output_bound`** goes through a legacy hook (`_CELL.working_size`), not a lift.
+- **Move 1's map holds 334 modules,** not 318. calcium_gates stays (−1). R3's six old modules (+6),
+  R2's two unreached preparations (+2), the reverse closure (+7) and two package `__init__`s (+2)
+  move.
+
+**Before move 1** (its owner):
+- **R5:** the detached assembly worker takes its root from the package.
+  - Today `assembly_cell/cli.py`:219 copies `Path(__file__).parents[1]`, and `io.py`:44 roots
+    `source_identity` there.
+  - After the move both would name `src/cells/legacy`, so the worker would launch from a copy
+    holding only `legacy/`. No green test sees this.
+  - R5 adds a test with a planted case.
+- **The map,** committed in `scripts/moves/` in the commit before the move, since the AST test and
+  `verify` need it.
+- **A docs commit** with the move, for the user-facing commands and import paths (§17 item 1).
+- **M1's gates:**
+  - collected IDs through the map;
+  - crossrev;
+  - G1 at 113 of 113;
+  - tiers 1+2 with 0 changed;
+  - the red files unchanged;
+  - a continuity resume across the move.
+
+  G1 and continuity were not run on the dry run's moved tree.
+- **Before tier 3's final run:** the tier-3 diff through the maps must also translate moved files
+  inside absolute paths (§17 item 5).
+- **Lint:** the move adds 12 line-length findings. They are fixed in a separate commit, never in
+  the move commit.
+
