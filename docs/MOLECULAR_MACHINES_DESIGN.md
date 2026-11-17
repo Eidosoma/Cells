@@ -97,8 +97,8 @@ anticipate (§7; the options and the recommendation are in §8):
 - **One check serves all three (S):** local detailed balance per edge.
   - Each edge's k⁺/k⁻ must equal e^{−ΔG_e/RT}, with ΔG_e from the registry's potentials and the
     declared state free energies.
-  - It implies Wegscheider's condition for every cycle (§16). It is also the stochastic kernel check
-    of GARD_DESIGN §2.4.
+  - It implies Wegscheider's condition for every cycle (§16), and the converse holds (§10.2). It is
+    also the stochastic kernel check of GARD_DESIGN §2.4.
 - **Run-time guards follow the level:** lumped, Σ J·ΔG ≤ 0 per population (§16); occupancy, heat
   booked from the edges' affinities and closing against the free-energy state function; individual,
   event heat declared non-monotone and closing the same way (GARD_DESIGN §2.4).
@@ -256,14 +256,14 @@ rates set by the free concentrations c and the voltage V it sees.
   viewer's species files (`visualizer/data/species/*.json`, `cap.machines`). They record no machines
   for the eukaryotes, so that column is general biology (**S**).
 - **The data column** was checked for access by web search on 17 November 2026, at the level of
-  abstracts and PMC records, not full texts.
+  abstracts and PMC records. Three were then read in full through a page-reading tool (§10.3).
 
 | Machine | Substrates in the modular engine | Free-to-read data for a judged check | Targets that need it | Verdict |
 | --- | --- | --- | --- | --- |
 | **ATP synthase** | **Yes:** ATP, ADP and Pi rows (D176's F2; `core/species_registry.py`:5–6), H⁺ with buffering (FR-4), patch voltage [main]. Moving them through a synthesis cycle needs seam A [designed]: `proton_coupled_atp_synthesis_cycle@1` (MITOCHONDRIA_DESIGN §1.2, §4). FR-4's proton law already reverses past its static head, on held fuel | Thermodynamic H⁺/ATP of about 4.0 for the *E. coli* and chloroplast enzymes (Steigmiller et al. 2008, PNAS, PMC2268821). Yeast mitochondria 2.9 ± 0.2, against 3.3 from its 10-subunit ring (Petersen et al. 2012, PNAS, PMC3396544). The bovine ring has 8 c subunits (Watt et al. 2010, PNAS, PMC2947889) | 4 of 4: Syn3A, where its reconstruction runs it in the hydrolysis direction (viewer `syn3a.json`); mitochondria in the three animals | **First** |
 | **Ribosome** | **No:** no amino-acid, tRNA, GTP or mRNA rows, no polymers (F10), 16 species | In-cell structures: 101,696 ribosomes from 356 tomograms of *M. pneumoniae*, sorted into 13 ribosome classes (Xue et al. 2022, *Nature*, PMC9534751, open access). About 500 per Syn3A cell, from cryo-electron tomograms (viewer `syn3a.json`; PAPER_REVIEW_WHOLE_CELL §2.6) | 4 of 4 | Needed everywhere, but blocked by F8, F10 and F11; crosses D145's hold |
 | **RNA polymerase** | **No:** NTPs, the DNA template and transcripts are absent | Not searched | 4 of 4 | With the ribosome |
-| **Proteasome** | **Partly:** ATP yes; protein substrates and peptides as rows, no | Degradation tracks ATP hydrolysis: tens of ATP per substrate, 50–80 for a stabilised one (Peth, Nathan and Goldberg 2013, *JBC*, PMC3790020; abstract level). Assembly kinetics not searched | 3 of 4: not Syn3A, whose annotation lists the proteases FtsH and Lon (viewer `syn3a.json`) | **Second:** D140's named case, a node machine and an assembly case |
+| **Proteasome** | **Partly:** ATP yes; protein substrates and peptides as rows, no | Mouse 26S proteasomes: 50–80 ATP per ubiquitinated DHFR, 90–140 when folate stabilises it, 100–160 per ubiquitinated Sic1 (Peth, Nathan and Goldberg 2013, *JBC*, PMC3790020, Table 1; read, §10.3). Assembly kinetics not searched | 3 of 4: not Syn3A, whose annotation lists the proteases FtsH and Lon (viewer `syn3a.json`) | **Second:** D140's named case, a node machine and an assembly case |
 | **Translocon (Sec)** | **Partly:** ATP and the proton-motive force yes; nascent chains no | Not searched | 4 of 4: Syn3A's Sec translocon and YidC (viewer); Sec61 in the three animals | After the ribosome, whose products it moves |
 | **Flagellar motor** | **Partly:** H⁺ and voltage yes; no torque or momentum ledger | Torque–speed data exist (Berg's group; from memory, access not checked) | 0 of 4 (*E. coli*) | Defer. The viewer already draws it, as illustration |
 | **Chemoreceptor arrays** | **Partly:** ligands as neutral rows; no phosphorylation relay | Not searched | 0 of 4 (*E. coli*) | Defer |
@@ -383,7 +383,8 @@ its @2 is designed, not built). The viewer's Machines tab binds to it once it ex
 
 **Recommended: M0 now, then M1,** with N7's vocabulary reserved by the lead (§9, L1).
 - **Why ATP synthase:** its substrates are on the inventory once the pass lands; free-to-read
-  numbers give it a sharp check; all four targets need it.
+  numbers give it a sharp check, though §10.3 narrows what that check tests; all four targets need
+  it.
 - **Why general pieces:** the proteasome is the second consumer of N1 and N3, which keeps D144.
 - **Why (a) with tagged individuals:** it answers "individually and in aggregate" with no change to
   any run.
@@ -418,6 +419,246 @@ its @2 is designed, not built). The viewer's Machines tab binds to it once it ex
   `cells.cycle_law@1` is provisional (CORE_SEAMS §15)?
 - **L3.** The manifest's `machine` piece: in @2, before the viewer binds, or in a later major?
 
+## 10. Build plan for M1
+
+*Added 17 November 2026, after the user chose M0 now and then M1 (U1, U3 and U5). U2 is recorded
+as the standing opt-in default. U4 and U6 stay open. L1 and L3 wait for later versions of their
+formats. Read-only: nothing here is built.*
+
+### 10.1 One ATP synthesis law, one owner
+
+- **M1's law is D193's law.** D193 sets one law set, with one cycle form, for mitochondria and
+  bacteria, *E. coli* and JCVI-syn3A included. Its synthesis cycle is
+  `proton_coupled_atp_synthesis_cycle@1` [designed] (MITOCHONDRIA_DESIGN §1.2, §4).
+- **Its owner is the mitochondria lane,** in that note's M3, "the laws and their references",
+  checked by a fresh agent's component references (MITOCHONDRIA_DESIGN §5.1, §8). The core-seams
+  pass took that note's P1 and M1 (CORE_SEAMS §13).
+- **FR-13 writes no synthesis law.** It consumes D193's law and adds the machine's pieces around
+  it. The legacy energy and mitochondria code is D193's reference to learn from (D196); FR-13 reads
+  none of it.
+- **The law's kinetics need a ruling first.** Beard's printed F1F0 law (Eq. 11) fails the cycle
+  screen: it omits the matrix proton that its own reaction consumes (CORE_SEAMS_STEP0 §1.4, §7).
+  The consistent form is seam A's, with Beard's forward term as S. It is a departure, which the user
+  rules on with the mitochondria lane (CORE_SEAMS §16).
+- **A diagram law would be a second law for the same mechanism.** N1's diagram, with rotary
+  substeps, has a steady-state flux of its own, which matches D193's only where fitted. Without
+  B8's `represents` key, nothing refuses both as the aggregate on one population. So N1 waits for a
+  minimal B8 (§10.5), and M1 starts with tags on D193's law (§10.4).
+- **The order:** the core-seams pass (A, B, C, E); then D193's M3, the law and its references;
+  then M1a; then a minimal B8; then M1b.
+  - D193's M3 follows that note's M1 (now the pass) and, on its branch I, its M2.
+  - P1's result (CORE_SEAMS_STEP0 §8) leaves branch X unbuilt. It names a seam C gap that caps
+    explicit steps where a route draws protons from a buffered outside node.
+  - Whether the mitochondria note's M2 must run first was not settled in what was read here.
+    FR-13 can ask that lane to build the synthesis law first within its M3.
+- **Engine models (AGENTS.md).**
+  - M1a runs `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with the generalised
+    `cells.transporter@1` hosting D193's law and `cells.rapid_proton_buffer@1` as seam C's closure;
+  - `isopotential_partition@1` handles N3's division;
+  - N3's assembly route is `local_species_reactions@1` or the kind itself, settled in N3's design;
+  - M1b adds the diagram law.
+
+### 10.2 Seam A: the per-edge check against CORE_SEAMS §16, and what M1 needs
+
+**The claim, made precise (S).** A diagram law declares one free energy G_s per state s. For each
+edge e from s to s′, it declares the free ligands the edge binds or releases, ν_{l,e}; on a patch
+these are ν_{l,x,e}, at end x (N or P). Per-edge detailed balance is k⁺_e/k⁻_e = e^{−ΔG_e/RT}, with
+ΔG_e = G_{s′} − G_s + Σ ν μ̃, each μ̃ the registry's potential at its end and stage.
+
+**It implies §16.** Take any cycle C of the diagram, dependent cycles included:
+ln(Π⁺/Π⁻) = Σ_e ln(k⁺_e/k⁻_e) = −[Σ_e (G_{s′} − G_s) + Σ_l ν_{l,C} μ̃_l]/RT.
+- The first sum telescopes to zero around a closed path.
+- ν_{l,C} = Σ_e ν_{l,e} is the cycle's net stoichiometry, so the second term is the mode's ΔG as
+  the kind computes it.
+- Hence ln(Π⁺/Π⁻) + ΔG_C/RT = 0, which is §16's condition.
+
+**By host:**
+- **On a node host,** every species and state sits at one potential φ. If each edge conserves
+  charge (z_{s′} − z_s + Σ_l ν_{l,e} z_l = 0, checked at parse), the electrical terms cancel edge by
+  edge, and the voltage drops out.
+- **On a patch,** each ligand's μ̃ is taken at the end it binds from, and each G_s carries its
+  state's displaced charge times F V. These terms telescope as well, so the proof holds with
+  voltage-dependent edges.
+
+**The converse holds only in part.** If every cycle meets §16 at every stage, free energies built
+along a spanning tree are path-independent at that stage. Nothing makes them constant across
+activities and voltages.
+- So with one declared constant G_s per state, the per-edge check is stricter than §16. It also
+  refuses a law in which an edge's ratio depends on a ligand that the edge does not bind, even when
+  that dependence cancels around every cycle.
+- Requirement 7 therefore adds a refusal beyond §16: the physical rule for elementary steps.
+- In return, the per-edge check gives the state free energies that the occupancy and individual
+  levels need for their heat.
+
+**The claim fails without single-valued state free energies.** If a law declares only per-edge
+constants K_e, a per-edge test is vacuous. Take a three-state hydrolysis cycle E → E·ATP →
+E·ADP·Pi → E with every K_e = 1, activity factors aside. Their product is 1, but §16 needs
+e^{−ΔG°/RT}, far from 1 for ATP hydrolysis. §16 refuses it; an edge test without G_s would not.
+
+**What seam A must provide for M1** (requirements on its design):
+1. A population on a patch, with a declared N end and integer roles per cycle beyond today's 1 to 4
+   (`transporter.py`:164). That means c H⁺ per 3 ATP (c from 8 to 15) for a structural ratio, or n
+   H⁺ per ATP for a measured one.
+2. Fuel rows moved, not held, at the N end, which may be the patch's outside node. In Steigmiller's
+   proteoliposomes ATP is measured in the medium, so N is outside (**S**). Today fuel is held and
+   fixed to the inside cell (`transporter.py`:193, :243).
+3. Several populations per patch: the synthase beside a K⁺ route and a proton leak.
+4. Each mode's one-way cycles kept as cumulative state, beside the net cycles that §3.1 keeps
+   (`docs/CORE_SEAMS_DESIGN.md`:180). They must be booked by a non-negative quadrature, such as
+   seam D's trapezoid, or the step refused.
+   - The step's applied rate uses the tableau's weights (`models/surface_pump_v3.py`:1157–1160).
+     With ARS(2,2,2) one weight is negative (CORE_SEAMS §6.1), so a one-way flux that falls sharply
+     within a step would give a negative increment.
+   - `book` sees those increments (`core/kind_registry.py`:253–255). They are each tag's hazard.
+5. The capacity read from an extensive state that N3 writes and seam B splits at division, not
+   only a layout value.
+6. A test that plants a law with a shifted zero, which must be caught. The judged check (§10.3)
+   rests on J = 0 exactly at ΔG = 0, whatever S is.
+7. For M1b: S per Hill cycle supplied by a law from its diagram, with all its Hill cycles
+   enumerated (CORE_SEAMS §16) and the per-edge check at parse.
+
+A node host is M2's requirement, not M1's.
+
+### 10.3 Sources read, and what the judged check can test
+
+**Read on PMC through a page-reading tool,** a model's extraction of the full text, not read by eye.
+Peth et al.'s Table 1 was checked by a second, table-only query, which agrees. Each number gets a
+direct read before any registration. Numbers only (D186, D201):
+- **Watt et al. 2010** (PNAS 107:16823): the bovine c-ring has 8 subunits, from X-ray
+  crystallography at 3.5 Å, so 8/3 ≈ 2.7 H⁺ per ATP. Other vertebrates are inferred to share it
+  from identical c-subunit sequences. Fungal, bacterial and chloroplast rings have 10 to 15.
+- **Peth, Nathan and Goldberg 2013** (*J. Biol. Chem.* 288:29215, Table 1), mouse 26S
+  proteasomes: 50–80 ATP per ubiquitinated DHFR in 13 s; 90–140 ATP in 23 s when folate stabilises
+  it; 100–160 ATP per ubiquitinated Sic1 in 26 s. The times are 1/Vmax. Substrates raise ATP
+  hydrolysis two- to threefold. **§4 is revised to match:** a search summary had given 50–80 for
+  the stabilised substrate. The abstract states the unstabilised values, then says both doubled.
+- **Steigmiller, Turina and Gräber 2008** (PNAS 105:3745): purified enzymes in phosphatidylcholine
+  and phosphatidic-acid liposomes.
+  - The conditions: ΔpH by an acid–base jump to pH 8.47 outside; Δφ = 0, with 50 mM K⁺ on both
+    sides and valinomycin; 1.25 mM Pi; about 4.5 mM MgCl₂; 23 °C.
+  - The zero-rate ΔpH at fixed Q = [ATP]/([ADP][Pi]) gives H⁺/ATP of 4.0 ± 0.2 for the chloroplast
+    enzyme, with ΔG°p′ = 38 ± 3 kJ/mol, and 4.0 ± 0.3 for *E. coli*'s, using the chloroplast ΔG°p′.
+    The authors report both ratios disagree with the rings' 14/3 and 10/3, for reasons unknown.
+
+**Syn3A's direction.** Neither Syn3A note states it.
+- The viewer's species file (the 2019 reconstruction) and MITOCHONDRIA_DESIGN §4 have the enzyme
+  hydrolysing ATP to pump protons out. That is a model's reading, not a measurement.
+- In Cells the direction follows from ΔG_cyc. Syn3A has no measured ratio, ATP potential or
+  proton-motive force; only relatives' values exist (SYN3A_MINIMAL_CELL_TRACK §4.2).
+- So Syn3A is not where M1 is judged.
+
+**What a stoichiometry mismatch would mean.** The zero-rate line plots 2.3RT·lg Q against
+2.3RT·ΔpH at the zero. Its slope is the enzyme's coupling ratio. Its intercept, −ΔG°p′, is the
+chemistry of ATP synthesis at the conditions, the same for any enzyme. The engine's zero is exact
+and needs no kinetic parameter, so a mismatch is never a numerical error.
+- **A ratio declared from structure** (c/3) makes the slope a test of integer coupling. The
+  measurements already disagree: 4.0 ± 0.3 against 3.3 for *E. coli*, 4.0 ± 0.2 against 4.7 for
+  chloroplasts, 2.9 ± 0.2 against 3.3 for yeast (Petersen et al. 2012).
+- **A ratio declared from these data** makes the slope circular.
+
+**A proposed change for the user (U7, §10.6).** U3 was approved with the zero-flux check, and that
+form stands until the user rules. The proposal, before any registration:
+1. The ratio is an input, with its source named.
+2. The intercept, at the paper's conditions, is judged. It tests the registry's ATP, ADP and Pi
+   potentials and seam C's Mg²⁺ and H⁺ closure: chemistry shared with D193, not the machine. Its
+   potentials and binding constants need a cited source, not yet chosen.
+3. The structural ratio is a reported finding with both outcomes stated in advance, not an
+   acceptance.
+4. N3's and N5's claims are carried by their own registered judged run (D187, rule 6): a numerical
+   qualification against independent references, with planted errors. The first machine-specific
+   biological check is then M2's ATP per substrate, from a target organism (mouse).
+
+**Who runs the zero-rate line (L5, §10.6).** It tests D193's law and seam C's closure, beside the
+component references that already check each cycle's zero and static head (MITOCHONDRIA_DESIGN
+§5.1). So it is proposed for the mitochondria lane. Until the lead rules, §10.5 books it to M1a.
+Its world runs the cycle in both directions, so it meets P1's buffered-node cap (CORE_SEAMS_STEP0
+§8) until seam C's fix lands.
+
+This weakens the "sharp check" reason for ATP synthase first (§8). Its other reasons stand:
+substrates on the inventory, and need in all four targets.
+
+### 10.4 Integer state for tagged individuals
+
+**Kinds do not accept integer state fields today** (found by reading; no run was made).
+- Kinds use integer arrays only as layout (`transporter.py`:404–405); their state is float
+  (:436–441). No test in `tests/unit/test_kind_rules.py` exercises an integer state field.
+- The kind record declares no types (`core/kind_registry.py`:281–317).
+- @3 gives every kind field a derivative, zero where the kind gives none
+  (`models/surface_pump_v3.py`:500–512).
+- Every stage adds (w·dt)·d to every field (`models/surface_pump.py`:235–240), which makes an int64
+  field float64 inside the stages. `book` writes at the step's end (`models/surface_pump_v3.py`:
+  1197–1199), so the field's type at the end depends on what `book` returns.
+
+**Operators do.** `STATE_DTYPES` names non-float fields (`models/operators/contract.py`:11–12,
+:214). Replacement@2 uses it (`models/operators/cell_replacement_v2.py`:349). The composite
+collects it (`models/pump_composite.py`:759) and refuses it only under coupled RK4 (:1146–1158).
+
+**Options for N5:**
+- **(i), recommended:** a kind declares integer fields, which the core keeps out of the stage
+  combination and lets only `book` write. A small core change, with a planted test. Whether
+  observations and checkpoints keep the type was not checked.
+- **(ii):** tags as an operator, which may hold integer state today, if an operator can read the
+  cycle kind's one-way cycles (not checked). A separate kind cannot: no kind reads another kind's
+  fields (`core/kind_registry.py`:182).
+- **(iii):** whole-number float64 fields, exact below 2⁵³. A stopgap that hides the type.
+
+**M1a's tags are whole-cycle tags,** inside the cycle kind (S).
+- **Events:** each tag completes forward and backward cycles as Poisson events. Their means over a
+  step are its share (1/N) of the step's one-way cycle increments, booked non-negative
+  (requirement 4).
+- **The mean** equals the aggregate's one-way cycles as that same booking integrates them. It is not
+  the tableau's net cycles; the two differ by the quadrature's error.
+- **Draws** are counter-based, keyed by the tag and its draw index, one per step. A key on the cycle
+  count would reuse a draw after a step with no event. No random-number state is checkpointed, so
+  `io.py`:158–159 stands.
+- **Unchecked:** whether `book` draws identically on host and device.
+- **Counting:** Poisson counting is the lumped law's own assumption, which N1 refines in M1b.
+
+### 10.5 Cost and order
+
+Agent-days are rough (**S**). "After" names what must be on main first.
+
+| Piece | What | Days | After |
+| --- | --- | --- | --- |
+| The law | D193's synthesis law and its component references, by the mitochondria lane | 0 for FR-13 (its M3: laws 2–4, references 3–4) | The pass |
+| Data | Two worlds: the proteoliposome (its parameter set, and cited potentials and binding constants at its conditions); and a cell whose synthase copies are made from subunit modules, with one division and tags | 1–1.5 | The pass |
+| N3 | Copies from subunit rows (lumped modules while the cap holds); capacity from the count | 2–4 | Seams B and E |
+| Integer state | Option (i) | 0.5–1 | The pass |
+| N5 | Whole-cycle tags: keyed draws, the non-negative booking, a consistency check with a planted error | 2–3 | Integer state; the law |
+| References | Independent, by a fresh agent: N3, N5 and the zero-rate prediction | 1.5–2 | — |
+| Protocols | Two, registered and rehearsed, criteria first: the zero-rate line (as approved, pending U7 and L5), and N3's and N5's numerical qualification (D187, rule 6) | 1.5–2 | Data; references |
+| Judged runs | The two protocols' runs, with their analyses | 1–1.5 | All of M1a; seam C's fix, for the zero-rate world |
+| **M1a** | | **9.5–15** | |
+| B8, minimal | `represents` with its admission, `supports`, the envelope of `qualified`; their manifest keys | 2–3 | The pass; L4 |
+| N1 | The diagram law with rotary substeps; the per-edge check; its reduction to D193's law within a declared envelope | 4–6 | B8 |
+| References | For N1's reduction | 0.5–1 | — |
+| **M1b** | | **6.5–10** | |
+| N8 | The `machine` piece, in the manifest's next major (L3) | 1–1.5 | That major |
+
+**Total: 17–26.5 agent-days,** of which 9.5–15 come before B8.
+- This replaces §8's 14–23 plus B8: the law is D193's, and B8's minimal part is now estimated.
+- If L5 gives the zero-rate run to the mitochondria lane, M1a falls by about 1–1.5.
+
+**When seam A lands, desk work starts:** the data search, both protocols' drafts with their
+criteria, and N3's design against seams B and E. **Code starts after the pass lands:** integer
+state, N3, N5 and B8's minimal part. The pass's files have one owner each (D195). The judged runs
+wait for D193's law.
+
+**The second consumer, named before any code:** the proteasome core (M2).
+- It is the second consumer of N3 and N5: a 20S core is made of α and β subunits.
+- Peth et al.'s 13–26 s per substrate is a per-machine time for whole-cycle tags, from mouse.
+- It is also N2's first consumer, and N1's second once B8 exists.
+
+### 10.6 Questions this plan adds
+
+- **U7, for the user.** Change U3's zero-flux check as §10.3 proposes? That means the ratio as an
+  input, the intercept judged, the structural ratio as a finding, and N3 and N5 carried by their
+  own numerical protocol. Until the user rules, the approved form stands.
+- **L4, for the lead.** ARCHITECTURE names D174's fuel case as the first consumer of B8's fields.
+  Should M1b's minimal B8 come first instead?
+- **L5, for the lead.** Does the zero-rate line belong to the mitochondria lane (proposed) or to
+  FR-13's M1a?
+
 ## Sources
 
 - **Engine documents read:** AGENTS.md; DECISIONS.md (D135, D136, D140, D142–D145, D147, D148,
@@ -428,7 +669,8 @@ its @2 is designed, not built). The viewer's Machines tab binds to it once it ex
   LAW_DOCUMENTATION_DESIGN.md (§7, §8); CAPSID_ASSEMBLY.md; GARD_DESIGN.md (§1, §2.4, §4.6, §7);
   PROTEIN_CATALOGUE_PLAN.md; PROTEIN_ASSEMBLY_IDEAS.md (§6, §7); SYN3A_MINIMAL_CELL_TRACK.md (§4.3,
   §4.4, §9–§11); SOTA_SYN3A.md; PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL.md (§2, §4, §5);
-  MITOCHONDRIA_DESIGN.md (§1.1, §1.2, §1.4, §3.2, §4); `visualizer/docs/CELL_STRUCTURES.md`.
+  MITOCHONDRIA_DESIGN.md (§1.1, §1.2, §1.4, §3.2, §4–§8); CORE_SEAMS_STEP0.md (§1.4, §7);
+  `visualizer/docs/CELL_STRUCTURES.md`.
 - **Code read at e5edba97:** the files cited above, under `src/cells/` (`registry/`, `core/`,
   `models/`, `assembly/`, `processes/plasma_calcium.py`, `io.py`), and
   `tests/unit/test_continuity_bypass.py`.
@@ -436,13 +678,17 @@ its @2 is designed, not built). The viewer's Machines tab binds to it once it ex
   lead's rulings in its RELATIONSHIPS_DESIGN.md); the `visualizer` branch's species list.
 - **Viewer data read on main:** `visualizer/data/machines/ecoli.flagellar-motor.json`;
   `visualizer/data/species/{syn3a,mpneumoniae,ecoli,human,planarian}.json`.
-- **External sources, checked for access on 17 November 2026 by five web lookups** (four searches
-  and one PMC page; abstracts, records and search summaries, not full texts; numbers only, each
-  cited, D186 and D201; no text, figure or data file copied): Steigmiller, Turina and Gräber 2008,
-  PNAS 105:3745 (PMC2268821); Petersen, Förster, Turina and Gräber 2012, PNAS 109:11150
-  (PMC3396544, its PMC page's ratios and ring sizes); Watt et al. 2010, PNAS 107:16823
-  (PMC2947889); Xue et al. 2022, *Nature* 610:205 (PMC9534751); Peth, Nathan and Goldberg 2013,
-  *J. Biol. Chem.* 288:29215 (PMC3790020).
+- **External sources, 17 November 2026,** by nine web lookups: four searches and five queries of
+  PMC pages through a page-reading tool. Two direct downloads were refused: PMC served a reCAPTCHA
+  page, and Europe PMC's full-text service returned an error. Numbers only, each cited (D186, D201);
+  no text, figure or data file copied.
+  - **Read through the tool, full text** (§10.3; a direct read is owed before registration): Watt
+    et al. 2010, PNAS 107:16823 (PMC2947889); Peth, Nathan and Goldberg 2013, *J. Biol. Chem.*
+    288:29215 (PMC3790020; Table 1 queried twice); Steigmiller, Turina and Gräber 2008, PNAS
+    105:3745 (PMC2268821);
+  - **read on its PMC page, its ratios and ring sizes:** Petersen, Förster, Turina and Gräber 2012,
+    PNAS 109:11150 (PMC3396544);
+  - **search summary only:** Xue et al. 2022, *Nature* 610:205 (PMC9534751).
 - **Cited from memory, not read for this note:** Hill's diagram method and King and Altman's, for
   steady-state cycle fluxes; linearity of expectation for independent Markov chains, and van
   Kampen's system-size expansion, for the mean-field error; Gillespie's direct method, and
