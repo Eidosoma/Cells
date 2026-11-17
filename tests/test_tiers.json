@@ -116,7 +116,8 @@
   "/mnt/workspaces/Cells/d188-m1-20261117/measure-c2bebaea/measured.json",
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-1f26058a/measured.json",
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-0154604f/measured.json",
-  "/mnt/workspaces/Cells/relations-writer-20261117/measure-9a4654ee/measured.json"
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-9a4654ee/measured.json",
+  "/mnt/workspaces/Cells/relations-writer-20261117/measure-776dcf01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -964,6 +965,13 @@
    "root": ".claude/worktrees/relations-writer",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T14:36:22+00:00"
+  },
+  {
+   "git_revision": "776dcf01cccbcc4ed885a7265a814e75b8507fd8",
+   "dirty": false,
+   "root": ".claude/worktrees/relations-writer",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T15:08:27+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2910,12 +2918,12 @@
     "seconds": 2.92,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 19
     }
    },
    {
     "file": "tests/unit/test_relations_lineage_summaries.py",
-    "seconds": 4.57,
+    "seconds": 4.63,
     "exit_code": 0,
     "counts": {
      "passed": 6
