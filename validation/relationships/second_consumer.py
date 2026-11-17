@@ -145,7 +145,11 @@ def replacement_checks(definition, tables, directory):
     model, experiment = definition["model"], definition["experiment"]
     cells = [c["id"] for c in model["cells"]]
     species = [s["id"] for s in model["species"]]
-    templates = {t["id"]: t for t in model["replacement"]["templates"]}
+    if "replacement" in model:  # resolved_pump_replacement@1's own block, or the operator's.
+        declared = model["replacement"]
+    else:
+        (declared,) = [op for op in model["operators"] if op["law"] in adapter.REPLACEMENTS]
+    templates = {t["id"]: t for t in declared["templates"]}
     lives = _by(tables["lives"])
     order = {name: i for i, name in enumerate(cells)}
     held = {name: name for name in cells}
