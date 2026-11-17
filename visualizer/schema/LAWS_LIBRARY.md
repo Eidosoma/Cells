@@ -279,3 +279,22 @@ colours are the page's own tokens: its neutral (`--ghost`) for the pieces, its p
 for the room, and its accent for what is chosen. No status token (`--st-*`) is used. The accent
 is near the blue of the landed status, and the neutral near the grey of the established status;
 the legend names both, and a status is said only in the panel, with its source.
+
+## On the map's page
+
+The page carries this file in its scene as `laws` (`tools/lib/build_page.mjs`), and the viewer
+offers the Laws library as its fifth view only when it does.
+
+- **The address.** `lens=laws` (or `#laws`) opens it. `select=laws:<id>` opens it on a piece or
+  a frame, from any view.
+- **The door from the Engine view.** An Engine view box that holds the files of pieces of this
+  list (a piece's `box`) has a door, "Show its N pieces in the Laws library", with N counted
+  from this file. It opens the library with those pieces picked out; the card says so, and its
+  Close lets them go.
+- **The way back.** A piece's panel links its box, and a frame's panel its boxes, under "On the
+  Engine view". The link opens the Engine view on the box.
+- **The card** has the search field, the Family control and "Where it stands" (only where a
+  piece stands today). The keys `]` and Page Down step to the next piece, `[` and Page Up to the
+  one before; the arrow keys turn the camera, as on every view.
+- **The room** is kept clear of the cards on the left on a wide window (a left inset), and the
+  names written on it come back with a lost context or a lost graphics process.

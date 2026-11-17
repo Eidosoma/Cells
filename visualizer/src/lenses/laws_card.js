@@ -2,7 +2,7 @@
 // "What the view may say"). The shapes are the ones every view hands to <cells-panel> and
 // <cells-index>; nothing here is new to the page.
 
-import { PREFIX, WHERE, APART, pageId, engineId } from "./laws_data.js";
+import { Library, PREFIX, WHERE, APART, pageId, engineId } from "./laws_data.js";
 
 /** A piece's swatch in the list and the panel: the mark it is drawn with on the wall (laws.js MARKS, laws_styles.js). */
 export function swatchOf(piece) {
@@ -14,7 +14,8 @@ export function swatchOf(piece) {
 
 const whereWords = (piece) => WHERE.find((item) => item.id === piece.where)?.label || piece.where;
 const list = (value) => (Array.isArray(value) ? value.join(", ") : String(value));
-const ref = (read) => (read?.ref ? `${read.ref} ${read.revision}` : read?.revision || "");
+// "origin/main 8e255d45"; a list read at a revision by its own name says it once ("fa19d80c").
+const ref = (read) => (read?.ref && read.ref !== read.revision ? `${read.ref} ${read.revision}` : read?.revision || "");
 /** A revision on main can be linked; one on a working branch is said in words only (schema, "Sources and links"). */
 const onMain = (library, read) => read && read.revision === library.stamp.main.revision;
 
@@ -129,6 +130,8 @@ function describePiece(library, piece) {
     facts,
     sections,
     opens: declared.length ? [{ title: "Declared by", items: declared, count: declared.length }] : [{ title: "Declared by", items: [], count: 0 }],
+    // The way back to the Engine view: the box that holds the piece's file (the panel links it where the page's scene has it).
+    related: piece.box ? [{ title: "On the Engine view", ids: [piece.box.id] }] : [],
     sources,
   };
 }
@@ -158,8 +161,21 @@ function describeFrame(library, frame) {
     plain: frame.kind === "older family" ? library.raw.older_words : frame.plain || null,
     facts,
     opens,
+    related: frame.boxes?.length ? [{ title: "On the Engine view", ids: frame.boxes.map((box) => box.id) }] : [],
     sources,
   };
+}
+
+/**
+ * The doors this view offers on another view's parts (the viewer asks every view it offers): on an
+ * Engine view box that holds the files of pieces of the list, one into the library with those
+ * pieces picked out. The words say what the door does; the count is the list's.
+ */
+export function doorsFor(entity, scene) {
+  if (!entity?.id || !scene?.laws?.pieces) return [];
+  const count = scene.laws.pieces.filter((piece) => piece.box?.id === entity.id).length;
+  if (!count) return [];
+  return [{ label: `Show its ${count} piece${count === 1 ? "" : "s"} in the Laws library`, lens: "laws", value: entity.id }];
 }
 
 /** The list that stands in where 3D cannot be drawn, and the keyboard's way in: every piece by family, then the frames. */
@@ -177,5 +193,15 @@ export function sections(library) {
   out.push({ label: "Older families", limit: 12, entities: library.older.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-older-family", keywords: `older family ${frame.read.path}` })) });
   return out.filter((section) => section.entities.length);
 }
+
+/** The list and the panel where no 3D can be drawn (the viewer's text fallback): from the scene's `laws`. */
+const libraries = new WeakMap();
+const libraryOf = (raw) => {
+  if (!raw?.pieces) return null;
+  if (!libraries.has(raw)) libraries.set(raw, new Library(raw));
+  return libraries.get(raw);
+};
+export const textSections = (scene) => (libraryOf(scene?.laws) ? sections(libraryOf(scene.laws)) : []);
+export const textDescribe = (scene, id) => (libraryOf(scene?.laws) ? describe(libraryOf(scene.laws), id) : null);
 
 export { PREFIX };

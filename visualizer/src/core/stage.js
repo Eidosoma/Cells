@@ -262,16 +262,20 @@ export class Stage {
     this.invalidate();
   }
 
-  /** Pixels covered by panels on the right and bottom; the view shifts to stay centred beside them. */
-  setInsets({ right = 0, bottom = 0 } = {}) {
-    this.insets = { right, bottom };
+  /**
+   * Pixels covered by panels on the right and bottom, and by cards on the left (asked for by a
+   * view that wants its room clear of them: the Laws library); the view shifts to stay centred
+   * in what they leave.
+   */
+  setInsets({ right = 0, bottom = 0, left = 0 } = {}) {
+    this.insets = left ? { right, bottom, left } : { right, bottom };
     this.applyInsets();
     this.invalidate();
   }
 
   applyInsets() {
-    const { right = 0, bottom = 0 } = this.insets || {};
-    if (right || bottom) this.camera.setViewOffset(this.width, this.height, right / 2, bottom / 2, this.width, this.height);
+    const { right = 0, bottom = 0, left = 0 } = this.insets || {};
+    if (right || bottom || left) this.camera.setViewOffset(this.width, this.height, (right - left) / 2, bottom / 2, this.width, this.height);
     else this.camera.clearViewOffset();
     this.camera.updateProjectionMatrix();
   }

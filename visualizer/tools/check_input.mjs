@@ -192,7 +192,7 @@ try {
     await open("lens=proteins");
     await open(`lens=proteins&atlas=${await ownAtlas()}`);
     const tabs = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".switch button")].map((button) => button.getAttribute("aria-label")).join(" | ")`);
-    check("atlas: the views are in the order asked for, with Engine last", /^Cell and scales \| Protein atlas \|( Experiments \|)? Engine$/.test(tabs), tabs);
+    check("atlas: the views are in the order asked for, with Engine last of the four and the Laws library after it", /^Cell and scales \| Protein atlas \|( Experiments \|)? Engine( \| Laws library)?$/.test(tabs), tabs);
     // A unit whose top is in plain view, with no label lying over the point clicked.
     const unit = await evaluate(`(() => {
       const viewer = ${VIEWER}, lens = viewer.current;

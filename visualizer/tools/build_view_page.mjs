@@ -21,11 +21,10 @@
 // pinned version; everything else is inline. --standalone writes a whole document for a look
 // on this machine.
 
-import { build } from "esbuild";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { ROOT, THREE_CDN, wrap } from "./lib/build_page.mjs";
+import { ROOT, THREE_CDN, bundle, wrap } from "./lib/build_page.mjs";
 
 export const STANDALONE = path.join(ROOT, "src", "standalone");
 /** What the page says on itself, always (src/standalone/shell.js holds the same words). */
@@ -64,18 +63,8 @@ export async function buildViewPage(view, { three = THREE_CDN } = {}) {
   for (const key of ["title", "description", "scene"]) if (!page[key]) throw new Error(`src/standalone/${view}.page.json has no ${key}`);
   const words = page.title.trim().split(/\s+/).length;
   if (words < 2 || words > 4) throw new Error(`the title "${page.title}" is not two to four words`);
-  const bundle = await build({
-    entryPoints: [path.join(STANDALONE, `${view}.js`)],
-    bundle: true,
-    format: "esm",
-    target: "es2022",
-    write: false,
-    minify: false,
-    legalComments: "none",
-    // As the map's build does (tools/lib/build_page.mjs): "three" is the pinned file on cdnjs.
-    plugins: [{ name: "three-from-url", setup: (api) => api.onResolve({ filter: /^three$/ }, () => ({ path: three, external: true })) }],
-  });
-  const script = bundle.outputFiles[0].text.replaceAll("</script", "<\\/script");
+  // As the map's build does (tools/lib/build_page.mjs bundle): "three" is the pinned file on cdnjs.
+  const script = await bundle(path.join(STANDALONE, `${view}.js`), { three });
   // The scene the panel reads, kept to the keys the page file names; the parts and relations a
   // view standing alone does not draw are left empty, so the scene stays one the model accepts.
   const whole = JSON.parse(await readFile(path.join(ROOT, page.scene.from), "utf8"));

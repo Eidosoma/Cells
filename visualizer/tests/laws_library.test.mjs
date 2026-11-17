@@ -48,9 +48,16 @@ test("what counts as a piece follows the lead's provisional answers of 16 Novemb
   assert.match(contract, /the lead's provisional answers of 16 November 2026/);
   // A kernel in the code that no kind imports is not a piece yet: apart, and never counted.
   const apart = new Set(raw.unregistered.map((item) => item.id));
-  for (const id of ["bounding_patch_damage@1", "ph_conditioned_factor@1", "bounding_patch_constant_field@1"]) {
+  for (const id of ["bounding_patch_constant_field@1"]) {
     assert.ok(apart.has(id), `${id} is kept apart as not registered`);
     assert.ok(!byId.has(id), `${id} is not a piece yet`);
+  }
+  // "It becomes one when registered": since fa19d80c two kinds import these two kernels, and they are pieces through them.
+  for (const [id, kind] of [["bounding_patch_damage@1", "cells.patch_damage@1"], ["ph_conditioned_factor@1", "cells.ph_condition@1"]]) {
+    if (!byId.has(kind)) continue; // a list read before the kinds were registered
+    assert.ok(!apart.has(id), `${id} is registered through ${kind}, and no longer kept apart`);
+    assert.equal(byId.get(id)?.registry, "a registered kind", id);
+    assert.equal(byId.get(id)?.registered_in?.kind, kind, id);
   }
   for (const item of raw.unregistered) assert.match(item.words, /not a piece yet/, item.id);
   assert.equal(raw.counts.unregistered, raw.unregistered.length);
@@ -681,4 +688,58 @@ test("the Library refuses a list that breaks its contract", () => {
   assert.ok(problems.some((line) => /no_such_model@1/.test(line)));
   assert.ok(problems.some((line) => /a status with no source/.test(line)));
   assert.throws(() => new Library(broken), /not valid/);
+});
+
+// ------------------------------------------------------------ on the map's page
+
+test("on the map's page: the Engine view's box opens the library on its pieces, and each piece links back to its box", async () => {
+  const { doorsFor, describe } = await import("../src/lenses/laws_card.js");
+  const scene = { laws: raw };
+  const inBox = (id) => raw.pieces.filter((piece) => piece.box?.id === id);
+  for (const id of new Set(raw.pieces.map((piece) => piece.box?.id).filter(Boolean))) {
+    const [door] = doorsFor({ id }, scene);
+    assert.equal(door.lens, "laws", id);
+    assert.equal(door.value, id);
+    assert.match(door.label, new RegExp(`^Show its ${inBox(id).length} pieces? in the Laws library$`), id);
+  }
+  assert.deepEqual(doorsFor({ id: "laws.nothing" }, scene), [], "a box that holds no piece of the list has no door");
+  assert.deepEqual(doorsFor({ id: "laws.pumps" }, {}), [], "nor any box where the page carries no list");
+  const library = new Library(raw);
+  for (const piece of raw.pieces) {
+    const entity = describe(library, `laws:${piece.id}`);
+    assert.deepEqual(entity.related, piece.box ? [{ title: "On the Engine view", ids: [piece.box.id] }] : [], piece.id);
+  }
+  for (const frame of raw.frames.filter((item) => item.boxes?.length)) assert.deepEqual(describe(library, `laws:${frame.id}`).related[0].ids, frame.boxes.map((box) => box.id), frame.id);
+  // The door's value picks out the box's pieces; the card says so and offers the way back.
+  const { lens } = lensFor();
+  lens.setFinding("laws.pumps");
+  assert.deepEqual(lens.order(), inBox("laws.pumps").map((piece) => `laws:${piece.id}`));
+  assert.match(lens.chrome().card.open.label, /The pieces of the Engine view's Pumps/);
+  assert.equal(lens.chrome().card.open.count, inBox("laws.pumps").length);
+  assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-found"), "what the door picks out is named in the legend");
+  assert.equal(lens.back(), true);
+  assert.equal(lens.filter.box, null);
+  assert.equal(lens.back(), false, "nothing left to go back from");
+  assert.equal(lens.chrome().card.find.label, "Find a piece", "the card offers a search field");
+});
+
+test("the page carries the list in its scene, and the viewer offers the view with its swatches, its ids and its doors", async () => {
+  const { buildPage, bundle } = await import("../tools/lib/build_page.mjs");
+  assert.equal(typeof bundle, "function", "one bundling for the map's page and a view standing alone");
+  const page = await buildPage();
+  const scene = JSON.parse(/<script type="application\/json">(.*?)<\/script>/s.exec(page)[1]);
+  assert.deepEqual(scene.laws, raw, "the list, whole");
+  const viewer = readFileSync(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
+  const entry = viewer.split("\n").find((line) => line.includes('id: "laws"'));
+  for (const word of ['short: "Laws"', "needs: (scene) => scene.laws?.pieces?.length", 'owns: (id) => id.startsWith("laws:")', "doorsFor: lawsDoors", "styles: LAWS_CSS"]) assert.ok(entry?.includes(word), word);
+});
+
+test("where no 3D can be drawn, the list and the panel come from the scene's list", async () => {
+  const { textSections, textDescribe, sections, describe } = await import("../src/lenses/laws_card.js");
+  const scene = { laws: raw };
+  const library = new Library(raw);
+  assert.deepEqual(textSections(scene), sections(library));
+  assert.deepEqual(textDescribe(scene, "laws:kir2p1_mh2@1"), describe(library, "laws:kir2p1_mh2@1"));
+  assert.deepEqual(textSections({}), [], "a page that carries no list lists nothing");
+  assert.equal(textDescribe({}, "laws:kir2p1_mh2@1"), null);
 });

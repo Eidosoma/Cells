@@ -60,12 +60,19 @@ export function plaquesOf(library, layout) {
   return out;
 }
 
-/** The plaques as one mesh over one texture: a draw for all of them. Null where no canvas can be made (a test). */
+/**
+ * The plaques as one mesh over one texture: a draw for all of them. Null where no canvas can be
+ * made (a test). The names are kept as words, not only as a picture: when the graphics card is
+ * lost and comes back, a canvas held on the card comes back blank, and three.js would send the
+ * blank one again. So the canvas is asked to stay off the card (willReadFrequently), and
+ * `mesh.userData.repaint()` writes the names again into it and has it sent again; the lens calls
+ * it when the WebGL context comes back, and the canvas calls it when its own does.
+ */
 export function plaqueMesh(plaques, palette) {
   if (typeof document === "undefined" || !plaques.length) return null;
   const size = 64, pad = 12, width = 4096;
   const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext("2d", { willReadFrequently: true });
   if (!context) return null;
   const font = (tone) => `${tone === "strong" ? 650 : 520} ${size}px Inter, "Segoe UI", system-ui, sans-serif`;
   // Pack the texts in rows of the texture; a text too long for a row is drawn smaller, keeping its size in the room.
@@ -82,13 +89,17 @@ export function plaqueMesh(plaques, palette) {
   });
   canvas.width = width;
   canvas.height = THREE.MathUtils.ceilPowerOfTwo(y + size + pad * 2);
-  context.textBaseline = "middle";
-  plaques.forEach((plaque, index) => {
-    const place = places[index];
-    context.font = font(plaque.tone).replace(`${size}px`, `${place.fit}px`);
-    context.fillStyle = plaque.tone === "strong" ? palette.fg || "#12283a" : palette.muted || palette.edge || "#566878";
-    context.fillText(plaque.text, place.x + pad, place.y + place.h / 2 + 2);
-  });
+  const paint = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.textBaseline = "middle";
+    plaques.forEach((plaque, index) => {
+      const place = places[index];
+      context.font = font(plaque.tone).replace(`${size}px`, `${place.fit}px`);
+      context.fillStyle = plaque.tone === "strong" ? palette.fg || "#12283a" : palette.muted || palette.edge || "#566878";
+      context.fillText(plaque.text, place.x + pad, place.y + place.h / 2 + 2);
+    });
+  };
+  paint();
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;
@@ -114,6 +125,11 @@ export function plaqueMesh(plaques, palette) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.userData.unpickable = true;
   mesh.renderOrder = 3;
+  mesh.userData.repaint = () => {
+    paint();
+    texture.needsUpdate = true;
+  };
+  canvas.addEventListener?.("contextrestored", mesh.userData.repaint);
   return mesh;
 }
 

@@ -66,6 +66,11 @@ const SUITE = [
   { name: "input-engine", tool: "check_input.mjs", env: { CHECK_ONLY: "engine" }, minutes: 2 },
   { name: "look-switch", tool: "check_look.mjs", args: ["switch"], minutes: 2 },
   { name: "look-views", tool: "check_look.mjs", args: ["views"], minutes: 2 },
+  // The Laws library (tools/check_laws.mjs): presses, keys, the card's search and Family, the Engine view's door and the way back, a lost context; the address, and what it leaves behind; a 360 px phone; no 3D.
+  { name: "laws-main", tool: "check_laws.mjs", args: [pictures], env: { CASE: "main", NAME: "laws-main" }, minutes: 3 },
+  { name: "laws-address", tool: "check_laws.mjs", args: [pictures], env: { CASE: "address", NAME: "laws-address" }, minutes: 1 },
+  { name: "laws-phone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "phone", NAME: "laws-phone" }, minutes: 1 },
+  { name: "laws-text", tool: "check_laws.mjs", args: [pictures], env: { CASE: "text", NAME: "laws-text" }, minutes: 1 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

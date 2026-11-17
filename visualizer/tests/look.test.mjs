@@ -318,11 +318,15 @@ test("the cell's parts ask for the look where the user chose it, and for nothing
   }
 });
 
-test("only the Cell view asks for the look; the page says what is scenery and what is given up", () => {
+test("the Cell view and the Laws library ask for the look; the page says what is scenery and what is given up", () => {
   const asking = ["proteins.js", "shelves_view.js", "stack.js", "replay.js"].filter((name) => /\.dress\(|enrich\(|jostle\(|makeStudio\(/.test(read(path.join("src", "lenses", name))));
   assert.deepEqual(asking, [], "the other views keep the look they had");
   const lens = read("src/lenses/cell.js");
   assert.match(lens, /this\.stage\.dress\(\{ rich: false \}\)/, "and the Cell view hands the stage back as it found it");
+  // The Laws library asks too (src/lenses/laws.js, LAWS_LOOK), and hands the stage back as it found it.
+  const laws = read("src/lenses/laws.js");
+  assert.match(laws, /stage\.dress\?\.\(LAWS_LOOK\)/);
+  assert.match(laws, /stage\.dress\?\.\(\{ rich: false \}\)/, "and the Laws library hands the stage back as it found it");
   assert.match(lens, /filmic: this\.colourBy === "biology"/, "filmic light is for natural colours: status colours stay as the legend shows them");
   assert.match(lens, /material\.toneMapped = !data\.sketch && !\(data\.emissive > 0\);/, "a sketch's grey says planned: it stays out too, and so does what gives off its own light");
   const viewer = read("src/ui/viewer.js");

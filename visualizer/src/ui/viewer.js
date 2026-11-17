@@ -19,6 +19,9 @@ import { StackLens } from "../lenses/stack.js";
 import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { ReplayLens } from "../lenses/replay.js";
+import { LawsLens } from "../lenses/laws.js";
+import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
+import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
 
 // The views, in the order of the switch. "short" is the name on a narrow screen.
@@ -31,6 +34,10 @@ const LENSES = [
   { id: "proteins", label: "Protein atlas", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
   { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
+  // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
+  // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
+  // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
+  { id: "laws", label: "Laws library", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {
@@ -125,7 +132,7 @@ class CellsViewer extends HTMLElement {
       this.panel,
       this.fallback
     );
-    root.append(h("style", {}, css), this.frame);
+    root.append(h("style", {}, css + LENSES.map((lens) => lens.styles || "").join("")), this.frame);
     root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
@@ -346,6 +353,9 @@ class CellsViewer extends HTMLElement {
   shownEntities() {
     if (this.current) return this.current.entities();
     if (this.state.lens === "experiments") return this.replays.entities();
+    // A view that makes its own parts gives them as text where no 3D can be drawn (the Laws library).
+    const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
+    if (text) return text(this.model.raw).flatMap((section) => section.entities);
     return this.model.inLens(this.state.lens);
   }
 
@@ -358,7 +368,10 @@ class CellsViewer extends HTMLElement {
   /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
   lookup(id) {
     if (!id) return null;
-    const entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
+    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id) : null) || null;
+    // A door another view offers on this part (the Laws library on an Engine view box that holds its pieces).
+    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw)) : [];
+    if (offered.length) entity = { ...entity, doors: [...(entity.doors || []), ...offered] };
     // A part is shown as the chosen species has it: a unit with that species' side of the atlas,
     // a level under the species' name for it.
     if (this.state.lens === "proteins") return this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species);
@@ -368,6 +381,8 @@ class CellsViewer extends HTMLElement {
   sections() {
     if (this.current) return this.current.sections();
     if (this.state.lens === "experiments") return this.replays.sections();
+    const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
+    if (text) return text(this.model.raw);
     const groups = new Map();
     for (const part of this.shownEntities()) {
       const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.species) : part;
@@ -416,6 +431,9 @@ class CellsViewer extends HTMLElement {
   // ------------------------------------------------------------ state changes
 
   select(id, { fly = false } = {}) {
+    // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
+    const owner = id && this.views?.find((view) => view.owns?.(id));
+    if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true);
     if (id && !this.lookup(id)) return;
     if (id && !this.shows(id)) {
       if (!this.model.get(id)) return; // a part of a view that is not the one shown
@@ -872,14 +890,67 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A view's own summary: headline numbers, what the data is, and where it came from. */
-  card({ heading, species, organism, modes, notice, open, stats, text, check, marks, method, extra, extraOpen, sources, notCopied }) {
+  card({ heading, species, organism, modes, find, notice, open, stats, text, check, marks, method, extra, extraOpen, sources, notCopied }) {
     const outside = (url) => /^https:\/\//.test(url || "");
     const read = (date) => (/^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date) : date);
     const lens = this.current;
     // Pressing a button of the card redraws the card, so the focus is put back on the button's successor.
     const again = (selector) => this.viewCard.querySelector(selector)?.focus({ preventScroll: true });
+    const choice = marks
+      ? h(
+          "label",
+          { class: "card-marks" },
+          h("span", { class: "seg-label" }, marks.label),
+          (() => {
+            const select = h("select", { id: "cells-mark", class: "run-select", onchange: () => (lens.setMark(select.value), again("#cells-mark")) }, marks.options.map(([value, label]) => h("option", { value, selected: value === marks.active }, label)));
+            return select;
+          })()
+        )
+      : null;
+    const opened = open
+      ? h(
+          "p",
+          { class: "card-open" },
+          h("span", { class: "card-open-name" }, h("span", { class: "seg-label" }, "Open"), ` ${open.label} · ${open.count}`),
+          h(
+            "button",
+            {
+              class: "pill-button pill-small",
+              type: "button",
+              dataset: { close: "open" },
+              onclick: () => {
+                lens.back();
+                if (this.state.selected) this.select(null);
+              },
+            },
+            "Close"
+          )
+        )
+      : null;
     return [
       h("p", { class: "card-title" }, heading),
+      // A search of what the view draws (the Laws library). Typing may redraw the card: the new field keeps the focus and the caret.
+      find
+        ? h("input", {
+            id: "cells-find",
+            class: "run-select card-find",
+            type: "search",
+            value: find.value || "",
+            placeholder: find.placeholder || find.label,
+            "aria-label": find.label,
+            oninput: (event) => {
+              const { value, selectionStart } = event.target;
+              lens.setQuery(value);
+              const field = this.viewCard.querySelector("#cells-find");
+              if (field && field !== event.target) {
+                field.focus({ preventScroll: true });
+                field.setSelectionRange(selectionStart, selectionStart);
+              }
+            },
+          })
+        : null,
+      find ? choice : null,
+      find ? opened : null,
       // Which species is shown: the page's one switch, here on a narrow window (on a wide one it stands in the bar).
       species && !this.speciesInBar ? this.speciesRow(species) : null,
       organism ? h("p", { class: "card-organism" }, organism) : null,
@@ -907,42 +978,13 @@ class CellsViewer extends HTMLElement {
         : null,
       // What the view is waiting for, could not read, or does not have.
       notice ? h("p", { class: "card-notice", role: "status" }, notice) : null,
-      // What stands open (a family of proteins), and the way back.
-      open
-        ? h(
-            "p",
-            { class: "card-open" },
-            h("span", { class: "card-open-name" }, h("span", { class: "seg-label" }, "Open"), ` ${open.label} · ${open.count}`),
-            h(
-              "button",
-              {
-                class: "pill-button pill-small",
-                type: "button",
-                dataset: { close: "open" },
-                onclick: () => {
-                  lens.back();
-                  if (this.state.selected) this.select(null);
-                },
-              },
-              "Close"
-            )
-          )
-        : null,
+      // What stands open (a family of proteins), and the way back (a view with a search has it under the search, above).
+      find ? null : opened,
       h("div", { class: "stats" }, stats.map(([value, label]) => h("div", { class: "stat" }, h("b", {}, String(value)), h("span", {}, label)))),
       text ? h("p", { class: "card-text" }, text) : null,
       check ? h("p", { class: "card-text" }, check) : null,
-      // Which of the proteins' marks the legend's last block lists.
-      marks
-        ? h(
-            "label",
-            { class: "card-marks" },
-            h("span", { class: "seg-label" }, marks.label),
-            (() => {
-              const select = h("select", { id: "cells-mark", class: "run-select", onchange: () => (lens.setMark(select.value), again("#cells-mark")) }, marks.options.map(([value, label]) => h("option", { value, selected: value === marks.active }, label)));
-              return select;
-            })()
-          )
-        : null,
+      // Which of the proteins' marks the legend's last block lists (a view with a search has it beside the search, above).
+      find ? null : choice,
       method?.length ? h("details", {}, h("summary", {}, "How it was made"), h("ul", {}, method.map((line) => h("li", {}, line)))) : null,
       // Proteins of the species that bear on the picture but make none of the units drawn.
       extra?.length
@@ -1235,7 +1277,9 @@ class CellsViewer extends HTMLElement {
         if (shown(this.legend)) floors.push(this.legend.getBoundingClientRect().bottom - origin - Math.min(this.legend.offsetHeight, 56)); // its title, open or not
         bottom = Math.max(0, this.clientHeight - top - Math.min(...floors));
       }
-      this.stage.setInsets(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : {});
+      // A view that asks for its room clear of the cards on the left (the Laws library) has it on a wide window.
+      const left = !narrow && this.current?.wantsLeftRoom ? Math.max(0, ...[this.viewCard, this.legend].filter((element) => element && !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect().right - this.getBoundingClientRect().left + 12)) : 0;
+      this.stage.setInsets({ ...(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : {}), ...(left ? { left } : {}) });
     }
   }
 
@@ -1290,7 +1334,12 @@ class CellsViewer extends HTMLElement {
       if (event.target.closest("[data-label]") && !event.buttons) this.current?.setHover(null);
     });
     canvas.addEventListener("keydown", (event) => {
-      if (this.stage.rig.nudge(event.key)) event.preventDefault();
+      // A view that steps through its parts (the Laws library): ] or Page Down to the next, [ or Page Up to the one before.
+      const step = { "]": 1, PageDown: 1, "[": -1, PageUp: -1 }[event.key];
+      if (step && this.current?.step) {
+        this.select(this.current.step(step), { fly: true });
+        event.preventDefault();
+      } else if (this.stage.rig.nudge(event.key)) event.preventDefault();
       else if (event.key === " " && this.current?.player?.run) {
         // In a replay, the space bar plays and pauses.
         this.current.player.toggle();

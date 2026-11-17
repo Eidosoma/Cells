@@ -140,10 +140,14 @@ const SKELETON_HEAD =
   "html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}" +
   "img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>";
 
-/** The page content, as published: no doctype, html, head or body tags of its own. */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES } = {}) {
-  const bundle = await build({
-    entryPoints: [path.join(ROOT, "src", "main.js")],
+/**
+ * One script for a page, bundled from `entry` with everything it imports, as the page carries
+ * it inline; "three" is `three` (the pinned file on cdnjs, or the local copy). The map's page
+ * and a view standing alone (tools/build_view_page.mjs) are both made by it.
+ */
+export async function bundle(entry, { three = THREE_CDN } = {}) {
+  const made = await build({
+    entryPoints: [entry],
     bundle: true,
     format: "esm",
     target: "es2022",
@@ -159,8 +163,17 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
       },
     ],
   });
-  const script = bundle.outputFiles[0].text.replaceAll("</script", "<\\/script");
+  return made.outputFiles[0].text.replaceAll("</script", "<\\/script");
+}
+
+/** The Laws library's list (schema/LAWS_LIBRARY.md), carried in the scene as `laws`: the view is offered only with it. */
+export const DEFAULT_LAWS = path.join(ROOT, "data", "laws", "pieces.json");
+
+/** The page content, as published: no doctype, html, head or body tags of its own. */
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS } = {}) {
+  const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
+  if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
   const replays = await readReplays(runsDir);
   if (replays) data.replays = replays;
   const scene = JSON.stringify(data).replaceAll("<", "\\u003c");

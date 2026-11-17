@@ -91,8 +91,14 @@ export class Library {
   }
 
   /** Whether a piece passes the view's filters: a family, where it stands, and a search. */
-  passes(piece, { family = null, where = null, query = "" } = {}) {
-    return (!family || piece.family === family) && (!where || piece.where === where) && this.matches(piece, query);
+  /** `box`: the pieces whose file an Engine view box holds (the door from that box; schema, "box"). */
+  passes(piece, { family = null, where = null, query = "", box = null } = {}) {
+    return (!family || piece.family === family) && (!where || piece.where === where) && (!box || piece.box?.id === box) && this.matches(piece, query);
+  }
+
+  /** The pieces an Engine view box holds, by the list's `box`: what the door from that box opens on. */
+  inBox(id) {
+    return this.pieces.filter((piece) => piece.box?.id === id);
   }
 
   /**

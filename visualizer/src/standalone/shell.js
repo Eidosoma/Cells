@@ -155,8 +155,13 @@ export function mountView({ make, styles = "" }) {
         this.select(hit?.id || null);
       });
       this.canvas.addEventListener("pointermove", (event) => this.lens.setHover?.(this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots)?.id || null));
+      // As the viewer gives keys to a view (src/ui/viewer.js): ] or Page Down to the next part, [ or Page Up to the one before; the arrows turn the camera.
       this.canvas.addEventListener("keydown", (event) => {
-        if ((event.key === "ArrowRight" || event.key === "ArrowLeft") && this.lens.step) this.select(this.lens.step(event.key === "ArrowRight" ? 1 : -1));
+        const step = { "]": 1, PageDown: 1, "[": -1, PageUp: -1 }[event.key];
+        if (step && this.lens.step) {
+          this.select(this.lens.step(step));
+          event.preventDefault();
+        } else if (this.stage.rig.nudge?.(event.key)) event.preventDefault();
         if (event.key === "Escape") this.select(null);
         if (event.key === " " && chrome().timeline) { chrome().timeline.player.toggle(); event.preventDefault(); }
       });

@@ -42,19 +42,19 @@ const now = () => (typeof performance !== "undefined" ? performance.now() : Date
  * `when` says when a mark is drawn at all; the legend lists only what is drawn.
  */
 export const MARKS = [
-  { id: "laws-main", label: "Solid slate: a piece on main", description: "A solid slate bar on the wall, or a slate card in a rack: a piece read on main.", when: (lens) => lens.library.counts().where.main > 0 },
-  { id: "laws-candidate", label: "Dark band: on the landing candidate, not on main yet", description: "A dark band across a bar or card: the piece is read on the landing candidate and is not on main yet.", when: (lens) => lens.library.counts().where.candidate > 0 },
-  { id: "laws-design", label: "Glass outline: named in a design note; no code", description: "A bar of clear glass with an outline: a design note names the piece; there is no code for it.", when: (lens) => lens.library.counts().where.design > 0 },
-  { id: "laws-older", label: "Narrower, higher on its shelf: an older family's law, or a law in no registry", description: "A narrower bar on the upper part of its column, above a gap: a law of an older model family's tables, or a named law in no registry. Neither is a piece of the one model.", when: (lens) => lens.layout.bars.some((bar) => bar.id && bar.older) },
-  { id: "laws-height", label: "A column's height: how many pieces the family has", description: "Each column holds one bar for each piece of its family, so its height is the family's count.", when: () => true },
-  { id: "laws-rack", label: "A rack in front: a model, by its MODEL_ID", description: "Each rack in front of the wall is a model the engine names by its MODEL_ID; its rows are the kinds of piece it declares.", when: (lens) => lens.layout.frames.length > 0 },
-  { id: "laws-slot", label: "A card in a rack: a piece that model declares", description: "A card seated in a rack's slot: a piece the model declares there, drawn in the piece's own form.", when: (lens) => lens.cardList.length > 0 },
-  { id: "laws-block", label: "A block across a rack's head: the inner model it holds", description: "A long block across the head of a rack: the inner model that model holds whole.", when: (lens) => lens.blocks.mesh.count > 0 },
-  { id: "laws-next", label: "An empty socket marked 'free': that row's next registry code; no piece", description: "An empty socket at the end of a row, marked with a number and 'free': the row's next free registry code, as read from the code. No piece stands there.", when: (lens) => lens.nextCount > 0 },
-  { id: "laws-older-family", label: "A small box on the plinth: an older model family", description: "Each small box on the plinth's front is an older model family; its laws are tables inside it.", when: (lens) => lens.older.mesh.count > 0 },
-  { id: "laws-found", label: "Forward: found by the search, filter or legend; faint: not found", description: "While a search, a filter or a mark of the legend is chosen, what it picks out stands forward in its own form, and the rest fades.", when: (lens) => Boolean(lens.filter.family || lens.filter.where || lens.filter.query || lens.isolate) },
-  { id: "laws-empty", label: "A faint bar: an empty place, a test of size only", description: "A faint bar is no piece: an empty place added to test the wall at a larger size.", when: (lens) => lens.size > 0 },
-  { id: "laws-chosen", label: "Blue light: what you chose, the slots that declare it, and the route between", description: "Blue light marks what you chose, every slot that declares it and a route from the piece to each slot; after a choice the light runs along each route from the piece to its slot, then holds.", when: () => true },
+  { id: "laws-main", label: "Solid slate: on main", description: "A solid slate bar on the wall, or a slate card in a rack: a piece read on main.", when: (lens) => lens.library.counts().where.main > 0 },
+  { id: "laws-candidate", label: "Dark band: on the landing candidate, not main", description: "A dark band across a bar or card: the piece is read on the landing candidate and is not on main yet.", when: (lens) => lens.library.counts().where.candidate > 0 },
+  { id: "laws-design", label: "Glass outline: a design note's; no code", description: "A bar of clear glass with an outline: a design note names the piece; there is no code for it.", when: (lens) => lens.library.counts().where.design > 0 },
+  { id: "laws-older", label: "Narrower, higher: an older family's, or no registry", description: "A narrower bar on the upper part of its column, above a gap: a law of an older model family's tables, or a named law in no registry. Neither is a piece of the one model.", when: (lens) => lens.layout.bars.some((bar) => bar.id && bar.older) },
+  { id: "laws-height", label: "Column height: the family's count", description: "Each column holds one bar for each piece of its family, so its height is the family's count.", when: () => true },
+  { id: "laws-rack", label: "Rack: a model, by its MODEL_ID", description: "Each rack in front of the wall is a model the engine names by its MODEL_ID; its rows are the kinds of piece it declares.", when: (lens) => lens.layout.frames.length > 0 },
+  { id: "laws-slot", label: "Card: a piece the model declares", description: "A card seated in a rack's slot: a piece the model declares there, drawn in the piece's own form.", when: (lens) => lens.cardList.length > 0 },
+  { id: "laws-block", label: "Block: the inner model a rack holds", description: "A long block across the head of a rack: the inner model that model holds whole.", when: (lens) => lens.blocks.mesh.count > 0 },
+  { id: "laws-next", label: "Empty socket, 'free': a next code; no piece", description: "An empty socket at the end of a row, marked with a number and 'free': the row's next free registry code, as read from the code. No piece stands there.", when: (lens) => lens.nextCount > 0 },
+  { id: "laws-older-family", label: "Box on the plinth: an older model family", description: "Each small box on the plinth's front is an older model family; its laws are tables inside it.", when: (lens) => lens.older.mesh.count > 0 },
+  { id: "laws-found", label: "Forward: found; faint: not found", description: "While a search, a filter or a mark of the legend is chosen, what it picks out stands forward in its own form, and the rest fades.", when: (lens) => Boolean(lens.filter.family || lens.filter.where || lens.filter.query || lens.filter.box || lens.isolate) },
+  { id: "laws-empty", label: "Faint bar: an empty place (size test)", description: "A faint bar is no piece: an empty place added to test the wall at a larger size.", when: (lens) => lens.size > 0 },
+  { id: "laws-chosen", label: "Blue light: your choice, its slots and routes", description: "Blue light marks what you chose, every slot that declares it and a route from the piece to each slot; after a choice the light runs along each route from the piece to its slot, then holds.", when: () => true },
 ];
 /** The legend's marks that pick out pieces, for its own choice (setIsolate). */
 const OLDER = new Set(["an older family", "no registry"]);
@@ -139,7 +139,8 @@ export class LawsLens {
     this.shine = new THREE.Group(); // what the bloom shines from: the chosen bar, the lit slots and the routes
     this.selected = null; // a page id: a piece or a frame
     this.hovered = null;
-    this.filter = { family: null, where: null, query: "" };
+    this.filter = { family: null, where: null, query: "", box: null };
+    this.wantsLeftRoom = true; // the viewer leaves the room clear of its cards on the left (stage.setInsets left)
     this.size = 0; // a test of size only: empty slots on the wall
     this.narrow = false;
     this.active = false;
@@ -418,7 +419,10 @@ export class LawsLens {
     return {
       card: {
         heading: "Laws library",
-        modes: { label: "Where it stands", options: [["all", "All"], ...WHERE.map((item) => [item.id, item.short])], active: this.filter.where || "all" },
+        find: { label: "Find a piece", placeholder: "Find a piece", value: this.filter.query },
+        open: this.filter.box ? { label: `The pieces of the Engine view's ${this.library.inBox(this.filter.box)[0]?.box?.label || this.filter.box}`, count: this.library.inBox(this.filter.box).length } : null,
+        // Only where a piece stands today: a choice that would show nothing is not offered.
+        modes: { label: "Where it stands", options: [["all", "All"], ...WHERE.filter((item) => counts.where[item.id] > 0 || this.filter.where === item.id).map((item) => [item.id, item.short])], active: this.filter.where || "all" },
         marks: { label: "Family", options: [["all", "All families"], ...this.library.families.map((family) => [family.id, family.label])], active: this.filter.family || "all" },
         stats: [[counts.pieces, "pieces"], [counts.frames, "frames"], ...(counts.where.candidate ? [[counts.where.candidate, "on the landing candidate"]] : []), [counts.where.design, "named in a design note"]],
         text: `Read from the engine's code at main ${stamp.main.revision}${stamp.candidate ? ` and the landing candidate ${stamp.candidate.ref} ${stamp.candidate.revision}, not on main yet` : ""}. No level is shown that a record does not state.`,
@@ -450,9 +454,20 @@ export class LawsLens {
     stage.glow?.(this.shine, true);
     this.light();
     this.stopLook ??= stage.look?.onChange?.(() => this.active && this.light());
+    // A lost context that comes back: the names are written again and sent again (laws_marks.js plaqueMesh).
+    if (!this.stopRestore && stage.canvas?.addEventListener) {
+      const restored = () => {
+        this.plaqueMesh?.userData.repaint?.();
+        stage.invalidate?.();
+      };
+      stage.canvas.addEventListener("webglcontextrestored", restored);
+      this.stopRestore = () => stage.canvas.removeEventListener("webglcontextrestored", restored);
+    }
     if (stage.rig) {
       stage.rig.limits = { minDistance: 3, maxDistance: 260, minPolar: 0.35, maxPolar: Math.PI / 2 - 0.02 };
       stage.rig.setView(this.homeView());
+      // The viewer gives the room its insets after the view opens: the opening view is fitted again to them (see update).
+      this.homeHeld = { insets: JSON.stringify(stage.insets || {}), until: now() + 2500 };
     }
     this.writePlaques();
     this.buildLabels();
@@ -491,12 +506,23 @@ export class LawsLens {
    * stand below it, and the camera goes to them when one is chosen.
    */
   homeView() {
-    const { stage } = this;
     const { bounds, wall } = this.layout;
     const box = this.narrow
       ? new THREE.Box3(new THREE.Vector3(wall.x - wall.w / 2, wall.y - 0.3, wall.z), new THREE.Vector3(wall.x + wall.w / 2, wall.y + wall.h, wall.z + 0.7))
       : new THREE.Box3(new THREE.Vector3(bounds.minX - PLINTH.x / 2, PLINTH.y, bounds.minZ), new THREE.Vector3(bounds.maxX + PLINTH.x / 2, wall.y + wall.h, bounds.maxZ + PLINTH.z));
-    return fitView(box, { fov: stage.camera?.fov || 34, aspect: stage.camera?.aspect || stage.width / stage.height || 1.6, ...VIEW, margin: 0.04 });
+    return this.fitOnScreen(box, 0.04);
+  }
+
+  /**
+   * A view that frames `box` in what the page's panels and cards leave of the screen
+   * (stage.setInsets: right, bottom and left), as the stage centres the picture in it.
+   */
+  fitOnScreen(box, margin) {
+    const { stage } = this, { right = 0, bottom = 0, left = 0 } = stage.insets || {};
+    const width = stage.width || 1600, height = stage.height || 1000, fov = stage.camera?.fov || 34;
+    const seen = Math.max(0.2, (height - bottom) / height);
+    const narrowed = (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * seen) * 180) / Math.PI;
+    return fitView(box, { fov: narrowed, aspect: Math.max(0.3, (width - right - left) / Math.max(1, height - bottom)), ...VIEW, margin });
   }
 
   /** Rebuild for a tall or a wide screen when the stage turns from one to the other. */
@@ -529,7 +555,8 @@ export class LawsLens {
   setSelection(id) {
     const next = id && this.has(id) ? id : null;
     if (next !== this.selected) {
-      this.focused = null; // a move asked for the last choice is not fitted again for this one
+      this.focused = null;
+      if (next) this.homeHeld = null; // a choice ends the opening view's hold // a move asked for the last choice is not fitted again for this one
       const still = this.stage.reducedMotion;
       this.growth = still ? 1 : 0;
       this.running = still || !next ? 0 : RUNS * RUN;
@@ -569,6 +596,31 @@ export class LawsLens {
     // The camera goes to the family chosen, and back to the whole library when the choice is let go.
     if (this.active && this.filter.family && this.filter.family !== before) this.focusFamily(this.filter.family);
     else if (this.active && before && !this.filter.family && !this.selected) this.stage.rig?.flyTo?.(this.homeView(), 900);
+  }
+
+  /**
+   * The door from an Engine view box (the viewer's openDoor, `value`): the pieces whose file that
+   * box holds stand forward, and the camera goes to them. setFinding(null) lets them go.
+   */
+  setFinding(box) {
+    const pieces = box ? this.library.inBox(box) : [];
+    this.filter.box = pieces.length ? box : null;
+    this.refresh();
+    this.onChrome?.();
+    if (!this.active || !pieces.length) return;
+    const around = new THREE.Box3();
+    for (const piece of pieces) {
+      const point = this.barPoint(piece.id);
+      if (point) around.expandByPoint(point.clone().addScalar(0.9)).expandByPoint(point.clone().addScalar(-0.9));
+    }
+    this.flyToBox(around, `box:${box}`);
+  }
+
+  /** The way back from what a door opened (the card's Close, Escape): true if there was one. */
+  back() {
+    if (!this.filter.box) return false;
+    this.setFinding(null);
+    return true;
   }
 
   /** A search of the wall: the pieces whose id, unit, file or family holds the words. */
@@ -626,7 +678,7 @@ export class LawsLens {
     const lit = this.lights();
     this.lit = lit;
     const isolate = ISOLATES[this.isolate];
-    const quiet = this.filter.family || this.filter.where || this.filter.query || isolate;
+    const quiet = this.filter.family || this.filter.where || this.filter.query || this.filter.box || isolate;
     const passes = (id) => !id || (this.library.passes(this.library.piece(id), this.filter) && (!isolate || isolate(this.library.piece(id))));
     const base = this.colours || {};
     // The wall: what is chosen slides out (its lit copy glows over it), what is found comes forward, the rest dims.
@@ -786,7 +838,7 @@ export class LawsLens {
     const older = this.older.items.find((item) => item.id === name);
     // The whole of what is lit, and the chosen thing alone for when the whole cannot be seen beside the panel.
     const box = new THREE.Box3(), core = new THREE.Box3();
-    let approach = false; // a rack is come up to: its own box, when the whole would not bring the camera clearly nearer
+    let approach = false; // a rack is come up to: its own box
     const add = (point, pad = 0.6, into = box) => point && into.expandByPoint(point.clone().addScalar(pad)).expandByPoint(point.clone().addScalar(-pad));
     if (frame) {
       for (const into of [box, core]) {
@@ -852,15 +904,13 @@ export class LawsLens {
   flyToBox(box, key, core = null, approach = false) {
     const { stage } = this, rig = stage.rig;
     if (!rig?.flyTo || box.isEmpty()) return;
-    const { right = 0, bottom = 0 } = stage.insets || {};
-    const width = stage.width || 1600, height = stage.height || 1000, fov = stage.camera?.fov || 34;
-    const seen = Math.max(0.2, (height - bottom) / height);
-    const narrowed = (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * seen) * 180) / Math.PI;
-    const fit = (which) => fitView(which, { fov: narrowed, aspect: Math.max(0.3, (width - right) / Math.max(1, height - bottom)), ...VIEW, margin: 0.08 });
+    this.homeHeld = null; // a move asked for (a door, a family, a choice) ends the opening view's hold
+    const fit = (which) => this.fitOnScreen(which, 0.08);
     const home = this.homeView(), far = home.distance * 1.15;
     // Where the whole cannot be seen beside the panel (a phone, a piece declared far apart), the chosen thing itself is.
     let view = fit(box);
-    if (core && (view.distance > far || (approach && view.distance > home.distance * 0.85))) view = fit(core);
+    // A rack is come up to: its own box. A piece whose slots cannot all be seen beside the panel is seen among its neighbours.
+    if (core && (approach || view.distance > far)) view = fit(core);
     // Never closer than a third of the opening view, never much farther: the room stays in view.
     view.distance = Math.min(far, Math.max(home.distance * 0.33, view.distance));
     rig.flyTo(view, 1100);
@@ -870,6 +920,11 @@ export class LawsLens {
   update(dt = 16) {
     if (this.stage.width && this.stage.height && this.fitScreen()) return true;
     // The panel opened, closed or changed its size while the camera was on its way: fit the move to what it leaves.
+    const held = this.homeHeld, insets = JSON.stringify(this.stage.insets || {});
+    if (held && !this.selected && now() < held.until && held.insets !== insets) {
+      held.insets = insets;
+      this.stage.rig?.setView?.(this.homeView());
+    }
     const focused = this.focused;
     if (focused && now() < focused.until && focused.insets !== JSON.stringify(this.stage.insets || {})) this.flyToBox(focused.box, focused.key, focused.core, focused.approach);
     const still = this.stage.reducedMotion;
@@ -942,6 +997,7 @@ export class LawsLens {
 
   dispose() {
     this.stopLook?.();
+    this.stopRestore?.();
     this.stage.glow?.(this.shine, false);
     disposeTree(this.root);
     this.environment?.dispose?.();
