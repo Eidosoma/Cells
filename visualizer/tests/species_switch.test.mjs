@@ -135,6 +135,8 @@ const unflagged = { map: structuredClone(map), atlas: structuredClone(overlay) }
 for (const capability of unflagged.map.capabilities) delete capability.left_out;
 // A species held back from the picture is flagged in the map's overlay too: with the flag off it is a species again.
 delete unflagged.map.species_held;
+// The map's legacy folder is a flag too (the user, 17 November 2026: "no legacy code, it will be removed"): with it off, its files are drawn in their parts again.
+delete unflagged.map.legacy;
 for (const unit of Object.values(unflagged.atlas.units)) delete unit.left_out;
 const UNFLAGGED_OVERLAY = path.join(aside, "proteins", "overlay.json");
 await mkdir(path.join(aside, "proteins"));

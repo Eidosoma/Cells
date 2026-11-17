@@ -4,22 +4,24 @@
  "title": "Cells architecture",
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
-  "as_of": "2026-11-16",
-  "generated_at": "2026-11-17T02:01:31Z",
-  "revision": "1d86a192",
-  "revision_date": "2026-11-16",
+  "as_of": "2026-11-17",
+  "generated_at": "2026-11-17T11:06:02Z",
+  "revision": "6a5d509f",
+  "revision_date": "2026-11-17",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/1d86a192a86301efc8c013f33f6452cf33462622/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/6a5d509f49a07a682fd33ba2675dbbdd0ff84075/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "counts": {
-   "engine_files": 526,
-   "engine_files_placed": 526,
-   "parts": 254,
-   "relations": 1014,
+   "engine_files": 198,
+   "engine_files_placed": 198,
+   "engine_files_read": 539,
+   "engine_files_legacy": 341,
+   "parts": 247,
+   "relations": 878,
    "by_kind": {
     "operator": 19,
-    "component": 145,
+    "component": 138,
     "state": 6,
     "gate": 8,
     "capability": 23,
@@ -28,9 +30,9 @@
    },
    "by_status": {
     "qualified": 40,
-    "landed": 33,
-    "established": 58,
-    "planned": 31,
+    "landed": 34,
+    "established": 51,
+    "planned": 30,
     "designed": 22,
     "failed": 1,
     "external": 4,
@@ -350,6 +352,87 @@
      "to": "emt_mirna_pair@1"
     }
    ],
+   "moved": [
+    {
+     "from": "src/cells/core/physical_ionic_graph_spec.py",
+     "to": "src/cells/legacy/core/physical_ionic_graph_spec.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/core/surface_redistribution_spec.py",
+     "to": "src/cells/legacy/core/surface_redistribution_spec.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/cell_zone_transport.py",
+     "to": "src/cells/legacy/processes/cell_zone_transport.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/cotransport.py",
+     "to": "src/cells/legacy/processes/cotransport.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/finite_calcium_pumps.py",
+     "to": "src/cells/legacy/processes/finite_calcium_pumps.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/ip3_release.py",
+     "to": "src/cells/legacy/processes/ip3_release.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/mitochondrial_passive.py",
+     "to": "src/cells/legacy/processes/mitochondrial_passive.py",
+     "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/source_electrochemistry.py",
+     "to": "src/cells/legacy/processes/source_electrochemistry.py",
+     "move": "d188-move-1"
+    }
+   ],
+   "in_legacy": {
+    "U34": [
+     "neutral_mobile_leak@1"
+    ],
+    "U36": [
+     "symmetric_opposing_relaxation@1"
+    ],
+    "U37": [
+     "junction_flux() in the nominal profile of model emt_mirna_pair@1 (no *_ID consta"
+    ],
+    "U38": [
+     "junction_flux() in the nominal profile of model emt_mirna_pair@1 (no *_ID consta"
+    ],
+    "U39": [
+     "membrane_flux() pump term in the nominal profile of model emt_mirna_pair@1 (no *"
+    ],
+    "U40": [
+     "finite_atp_pmca_positive@1"
+    ],
+    "U41": [
+     "finite_atp_er_1ca_positive@1"
+    ],
+    "U43": [
+     "ip3_er_release@1"
+    ],
+    "U44": [
+     "kcc_reversible_tanh@1"
+    ],
+    "U45": [
+     "nkcc_reversible_tanh@1"
+    ],
+    "U46": [
+     "electroneutral_symport_reversible_tanh@1",
+     "cell_zone_transporter@1"
+    ],
+    "U47": [
+     "mitochondrial_passive_continuous_si@1"
+    ]
+   },
    "gained": {
     "added": 52,
     "removed": 2,
@@ -363,7 +446,7 @@
       10
      ],
      [
-      "models",
+      "processes",
       5
      ]
     ],
@@ -376,7 +459,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "1d86a192"
+   "checked_at": "6a5d509f"
   },
   "counts": {
    "units": 48,
@@ -17453,6 +17536,76 @@
  },
  "left_out": [
   {
+   "id": "exec.excision",
+   "kind": "component",
+   "label": "Cell removal",
+   "layer": "execution",
+   "files": 11,
+   "since": "2026-11-17",
+   "says": "Cell removal",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "num.redistribution",
+   "kind": "component",
+   "label": "Membrane redistribution",
+   "layer": "numerics",
+   "files": 1,
+   "since": "2026-11-17",
+   "says": "Membrane redistribution",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "laws.energy",
+   "kind": "component",
+   "label": "Fuel and mitochondria",
+   "layer": "laws",
+   "files": 2,
+   "since": "2026-11-17",
+   "says": "Fuel and mitochondria",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "laws.injury",
+   "kind": "component",
+   "label": "Injury and resealing",
+   "layer": "laws",
+   "files": 1,
+   "since": "2026-11-17",
+   "says": "Injury and resealing",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "laws.charged_surface",
+   "kind": "component",
+   "label": "Charged-surface backend",
+   "layer": "laws",
+   "files": 7,
+   "since": "2026-11-17",
+   "says": "Charged-surface backend",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "models.exterior",
+   "kind": "component",
+   "label": "Finite and spatial exterior",
+   "layer": "models",
+   "files": 8,
+   "since": "2026-11-17",
+   "says": "Finite and spatial exterior",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
+   "id": "models.calcium",
+   "kind": "component",
+   "label": "Calcium and chemistry",
+   "layer": "models",
+   "files": 12,
+   "since": "2026-11-17",
+   "says": "Calcium and chemistry",
+   "reason": "no legacy code, it will be removed"
+  },
+  {
    "id": "cap.assembly",
    "kind": "capability",
    "label": "Protein assembly",
@@ -18807,11 +18960,11 @@
    "facts": [
     [
      "Files",
-     "10"
+     "8"
     ],
     [
      "Lines of Python",
-     "2,182"
+     "1,731"
     ]
    ],
    "sources": [
@@ -18823,15 +18976,13 @@
     "src/cells/ensemble/__init__.py",
     "src/cells/ensemble/__main__.py",
     "src/cells/ensemble/cli.py",
-    "src/cells/ensemble/cluster.py",
-    "src/cells/ensemble/coupled.py",
     "src/cells/ensemble/families.py",
     "src/cells/ensemble/ionic.py",
     "src/cells/ensemble/plan.py",
     "src/cells/ensemble/telemetry.py",
     "src/cells/ensemble/worker.py"
    ],
-   "weight": 2182
+   "weight": 1731
   },
   {
    "id": "compute.gh200",
@@ -18881,7 +19032,7 @@
     ],
     [
      "Lines of Python",
-     "334"
+     "306"
     ]
    ],
    "sources": [
@@ -18893,7 +19044,7 @@
     "src/cells/__init__.py",
     "src/cells/__main__.py"
    ],
-   "weight": 334
+   "weight": 306
   },
   {
    "id": "exec.specs",
@@ -18901,24 +19052,32 @@
    "kind": "component",
    "group": "execution",
    "status": "established",
-   "plain": "Each run is declared as data: the model, the experiment and how to execute it. Definitions are checked before anything runs.",
+   "plain": "Each run is declared as data: the model, the experiment and how to execute it. Definitions are checked before anything runs. On 17 November 2026 the value parsers and two declarations that the active families share were moved verbatim into the core (D188's R3).",
    "facts": [
     [
      "Files",
-     "113"
+     "18"
     ],
     [
      "Lines of Python",
-     "22,200"
+     "5,660"
     ]
    ],
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
      "where": "System shape"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's R2–R4 merged into main (17 November 2026), with the moves' tools"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "18. R1–R4 landed; the deviations accepted"
     }
    ],
-   "weight": 22200
+   "weight": 5660
   },
   {
    "id": "exec.registry",
@@ -18931,11 +19090,11 @@
    "facts": [
     [
      "Files",
-     "2"
+     "3"
     ],
     [
      "Lines of Python",
-     "780"
+     "85"
     ]
    ],
    "sources": [
@@ -18952,10 +19111,11 @@
     }
    ],
    "files": [
+    "src/cells/core/legacy_entry.py",
     "src/cells/models/__init__.py",
     "src/cells/models/registry.py"
    ],
-   "weight": 780
+   "weight": 85
   },
   {
    "id": "exec.registry_decl",
@@ -19024,17 +19184,17 @@
    "kind": "component",
    "group": "execution",
    "status": "planned",
-   "as_of": "2026-11-16",
-   "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its probe follows. The moves are the first step of the order the user set the same evening (D194), once the retire list (D189) and the single-thread pin of the linear algebra (D190) have landed; the lanes built on the round have all merged. Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned; no file has moved yet.",
+   "as_of": "2026-11-17",
+   "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its design note, proposed, and the two scripts that plan, make and check the moves have been on main since 17 November 2026. The note's probe ran the whole cycle on a scratch copy of the tree, never merged: a family moved, a coupled kernel taken out and moved, and every check came out identical. Five refactors came first, on 17 November 2026: the legacy entry point (R1), computed module paths named in full (R2), the parts of seven older modules that active code reaches taken verbatim into the core (R3), and two roots taken from the package instead of from a file's depth (R4, R5). The first move then landed on main the same day: the older families' 334 modules went into src/cells/legacy/ by its committed map, with no hand edits, keeping their sub-packages and their names, with no law, kind, operator or model identifier changed, and every gate held, a continuity resume across the move among them. Move 2, which puts the modular parts into the folders by role, is next; it waits for the user's answer on whether a checkpoint must cross it. The moves are the first step of the order the user set (D194). Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned: the first move is made, and the second is not.",
    "detail": "D188 step 0's legacy inventory, built with D187's test audit: each registered model family's consumers, and what the modular path imports from older modules.",
    "facts": [
     [
      "Files",
-     "1"
+     "3"
     ],
     [
      "Lines of Python",
-     "683"
+     "2,928"
     ]
    ],
    "sources": [
@@ -19077,12 +19237,58 @@
     {
      "path": "PROGRESS.md",
      "where": "The test audit (D187) merged into main (16 November 2026, late evening)"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "proposed, 17 November 2026: D188's step 0, the design note and its probe"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "1. The plan"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "11. Identifiers, the registries' new homes, and what keys on a path"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D189's test retire merged into main (17 November 2026, early)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC)"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "Step 0 done, 17 November"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "18. R1–R4 landed; the deviations accepted"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's R1 merged into main (17 November 2026): the legacy registration entry point"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's R2–R4 merged into main (17 November 2026), with the moves' tools"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 1 landed on main (17 November 2026)"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "19. Move 1 landed (17 November 2026)"
     }
    ],
    "files": [
-    "scripts/legacy_inventory.py"
+    "scripts/legacy_inventory.py",
+    "scripts/source_moves.py",
+    "scripts/source_moves_plan.py"
    ],
-   "weight": 683
+   "weight": 2928
   },
   {
    "id": "exec.state",
@@ -19132,7 +19338,7 @@
     ],
     [
      "Lines of Python",
-     "701"
+     "237"
     ]
    ],
    "sources": [
@@ -19144,7 +19350,7 @@
    "files": [
     "src/cells/core/schedule.py"
    ],
-   "weight": 701
+   "weight": 237
   },
   {
    "id": "exec.phase_markers",
@@ -19195,7 +19401,7 @@
     ],
     [
      "Lines of Python",
-     "916"
+     "919"
     ]
    ],
    "sources": [
@@ -19212,7 +19418,7 @@
     "src/cells/core/runner.py",
     "src/cells/core/windows.py"
    ],
-   "weight": 916
+   "weight": 919
   },
   {
    "id": "exec.batch",
@@ -19229,7 +19435,7 @@
     ],
     [
      "Lines of Python",
-     "545"
+     "546"
     ]
    ],
    "sources": [
@@ -19240,7 +19446,7 @@
    "files": [
     "src/cells/core/batch.py"
    ],
-   "weight": 545
+   "weight": 546
   },
   {
    "id": "exec.batch_windows",
@@ -19257,7 +19463,7 @@
     ],
     [
      "Lines of Python",
-     "433"
+     "435"
     ]
    ],
    "sources": [
@@ -19268,7 +19474,7 @@
    "files": [
     "src/cells/core/batch_windows.py"
    ],
-   "weight": 433
+   "weight": 435
   },
   {
    "id": "exec.vector_windows",
@@ -19285,7 +19491,7 @@
     ],
     [
      "Lines of Python",
-     "1,137"
+     "1,139"
     ]
    ],
    "sources": [
@@ -19305,7 +19511,7 @@
    "files": [
     "src/cells/core/vector_windows.py"
    ],
-   "weight": 1137
+   "weight": 1139
   },
   {
    "id": "exec.one_path",
@@ -19681,11 +19887,11 @@
    "facts": [
     [
      "Files",
-     "5"
+     "4"
     ],
     [
      "Lines of Python",
-     "1,132"
+     "975"
     ]
    ],
    "sources": [
@@ -19697,11 +19903,10 @@
    "files": [
     "src/cells/batch_io.py",
     "src/cells/batch_window_io.py",
-    "src/cells/excision_io.py",
     "src/cells/io.py",
     "src/cells/window_io.py"
    ],
-   "weight": 1132
+   "weight": 975
   },
   {
    "id": "exec.continuity",
@@ -19783,11 +19988,11 @@
    "facts": [
     [
      "Files",
-     "36"
+     "1"
     ],
     [
      "Lines of Python",
-     "10,157"
+     "144"
     ]
    ],
    "sources": [
@@ -19798,45 +20003,10 @@
      "path": "docs/TISSUE_GEOMETRY.md"
     }
    ],
-   "weight": 10157
-  },
-  {
-   "id": "exec.excision",
-   "label": "Cell removal",
-   "kind": "component",
-   "group": "execution",
-   "status": "established",
-   "plain": "Cuts cells out of a tissue and continues the run, keeping the surviving material and its history.",
-   "facts": [
-    [
-     "Files",
-     "11"
-    ],
-    [
-     "Lines of Python",
-     "6,668"
-    ]
-   ],
-   "sources": [
-    {
-     "path": "docs/TISSUE_RETURN_CURRENT.md",
-     "where": "Cell removal and absolute-time continuation"
-    }
-   ],
    "files": [
-    "src/cells/core/active_tissue_excision.py",
-    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py",
-    "src/cells/core/calcium_energy_irreversible_transport_tissue_excision.py",
-    "src/cells/core/calcium_energy_mitochondria_tissue_excision.py",
-    "src/cells/core/calcium_energy_regulated_v2_tissue_excision.py",
-    "src/cells/core/calcium_energy_tissue_excision.py",
-    "src/cells/core/calcium_energy_transport_tissue_excision.py",
-    "src/cells/core/calcium_energy_water_tissue_excision.py",
-    "src/cells/core/calcium_tissue_excision.py",
-    "src/cells/core/excision.py",
-    "src/cells/core/tissue_excision.py"
+    "src/cells/core/vertex_preparation.py"
    ],
-   "weight": 6668
+   "weight": 144
   },
   {
    "id": "num.rk4",
@@ -19932,9 +20102,20 @@
    "label": "One thread for linear algebra",
    "kind": "component",
    "group": "numerics",
-   "status": "planned",
-   "as_of": "2026-11-16",
-   "plain": "So that a run on ordinary processors gives the same bits however many processors it is given. The core found on 16 November 2026 that a run's bits follow the number of threads its linear-algebra libraries use, which follows the processors a run is given. The user decided the same evening (D190) that the engine sets those libraries to one thread when it is imported and again when a run starts, refuses a run if any is found at more, and records each library's version and thread count in the run's manifest. Runs of large worlds on several processors give up the threaded part of the step's factorization, 21 ms of the 825-node world's 91 ms step on one processor; one-processor and GPU runs are unchanged. It lands before D188's first move. Planned; not on main.",
+   "status": "landed",
+   "as_of": "2026-11-17",
+   "plain": "So that a run on ordinary processors gives the same bits however many processors it is given. The core found on 16 November 2026 that a run's bits followed the number of threads its linear-algebra libraries use, which follows the processors a run is given, and the user decided the same evening (D190) to run them on one thread. It merged into main just after midnight on 17 November 2026: every such library runs on one thread from the first import of the engine's core, and again at each of the eight places a run starts; the counts are read back, and a run is refused if any is not at one. Run manifests record each library's version, kernel and thread count, and checkpoints written before the pin still restore. With it, the 825-node world gives the same bits on 1, 2 and 4 processors. Runs of large worlds on several processors give up the threaded part of the step's factorization, 21 ms of the 825-node world's 91 ms step on one processor; one-processor and GPU runs are unchanged. Implemented and guarded.",
+   "detail": "One BLAS thread for every run, so a CPU run's bits do not follow its allocation (D190).",
+   "facts": [
+    [
+     "Files",
+     "1"
+    ],
+    [
+     "Lines of Python",
+     "81"
+    ]
+   ],
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -19942,14 +20123,20 @@
     },
     {
      "path": "docs/ARCHITECTURE.md",
-     "where": "Allocation-independent linear algebra (proposed, 16 November 2026)"
+     "where": "Allocation-independent linear algebra (D190, built 16 November 2026)"
     },
     {
-     "path": "docs/CURRENT_PLAN.md",
-     "where": "D194's order"
+     "path": "PROGRESS.md",
+     "where": "The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC)"
+    },
+    {
+     "path": "tests/unit/test_blas_threads.py"
     }
    ],
-   "weight": 0
+   "files": [
+    "src/cells/core/blas_threads.py"
+   ],
+   "weight": 81
   },
   {
    "id": "num.field_interface",
@@ -20043,35 +20230,6 @@
     "src/cells/numerics/osmotic_water.py"
    ],
    "weight": 240
-  },
-  {
-   "id": "num.redistribution",
-   "label": "Membrane redistribution",
-   "kind": "component",
-   "group": "numerics",
-   "status": "established",
-   "plain": "Moves channels and pumps along the membrane while conserving their number.",
-   "detail": "Conservative lateral transport of membrane-bound populations on fixed patches.",
-   "facts": [
-    [
-     "Files",
-     "1"
-    ],
-    [
-     "Lines of Python",
-     "207"
-    ]
-   ],
-   "sources": [
-    {
-     "path": "docs/ROADMAP.md",
-     "where": "Membrane redistribution"
-    }
-   ],
-   "files": [
-    "src/cells/numerics/membrane_redistribution.py"
-   ],
-   "weight": 207
   },
   {
    "id": "num.projective",
@@ -20225,11 +20383,11 @@
    "facts": [
     [
      "Files",
-     "3"
+     "1"
     ],
     [
      "Lines of Python",
-     "866"
+     "51"
     ]
    ],
    "sources": [
@@ -20238,11 +20396,9 @@
     }
    ],
    "files": [
-    "src/cells/processes/electrochemistry.py",
-    "src/cells/processes/extracellular_face_transport.py",
-    "src/cells/processes/source_electrochemistry.py"
+    "src/cells/processes/electrochemistry.py"
    ],
-   "weight": 866
+   "weight": 51
   },
   {
    "id": "laws.channels",
@@ -20254,11 +20410,11 @@
    "facts": [
     [
      "Files",
-     "20"
+     "19"
     ],
     [
      "Lines of Python",
-     "1,776"
+     "1,706"
     ]
    ],
    "sources": [
@@ -20271,7 +20427,7 @@
      "where": "Parity P4b, the heredity carrier channels"
     }
    ],
-   "weight": 1776
+   "weight": 1706
   },
   {
    "id": "laws.pumps",
@@ -20279,7 +20435,7 @@
    "kind": "component",
    "group": "laws",
    "status": "established",
-   "plain": "The sodium–potassium pump and the calcium pumps, which spend ATP to move ions uphill.",
+   "plain": "The sodium–potassium pump and the calcium pumps, which spend ATP to move ions uphill. The pump law's binding, shared by the active pump families, was moved verbatim among the laws on 17 November 2026 (D188's R3).",
    "detail": "Positive-domain 3 Na out / 2 K in ATPase with maintained metabolic pools.",
    "facts": [
     [
@@ -20288,20 +20444,24 @@
     ],
     [
      "Lines of Python",
-     "559"
+     "353"
     ]
    ],
    "sources": [
     {
      "path": "docs/KINETIC_PUMP_PROCESS.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's R2–R4 merged into main (17 November 2026), with the moves' tools"
     }
    ],
    "files": [
     "src/cells/processes/calcium_atpase.py",
-    "src/cells/processes/finite_calcium_pumps.py",
-    "src/cells/processes/kinetic_pump.py"
+    "src/cells/processes/kinetic_pump.py",
+    "src/cells/processes/kinetic_pump_binding.py"
    ],
-   "weight": 559
+   "weight": 353
   },
   {
    "id": "laws.junctions",
@@ -20342,15 +20502,15 @@
    "group": "laws",
    "status": "established",
    "plain": "Carriers that move two kinds of ion together, including the potassium–anion symport cells use to regulate volume.",
-   "detail": "Manufactured reversible electroneutral symport, without geometry or stepping.",
+   "detail": "Electroneutral K+/anion symport by mass action, activated by cell volume (KCC-type).",
    "facts": [
     [
      "Files",
-     "3"
+     "1"
     ],
     [
      "Lines of Python",
-     "1,094"
+     "118"
     ]
    ],
    "sources": [
@@ -20359,11 +20519,9 @@
     }
    ],
    "files": [
-    "src/cells/processes/cell_zone_transport.py",
-    "src/cells/processes/cotransport.py",
     "src/cells/processes/k_anion_symport.py"
    ],
-   "weight": 1094
+   "weight": 118
   },
   {
    "id": "laws.reactions",
@@ -20376,11 +20534,11 @@
    "facts": [
     [
      "Files",
-     "3"
+     "2"
     ],
     [
      "Lines of Python",
-     "870"
+     "32"
     ]
    ],
    "sources": [
@@ -20390,10 +20548,9 @@
    ],
    "files": [
     "src/cells/processes/mass_action.py",
-    "src/cells/processes/network_reactions.py",
     "src/cells/processes/reactions.py"
    ],
-   "weight": 870
+   "weight": 32
   },
   {
    "id": "laws.calcium",
@@ -20406,11 +20563,11 @@
    "facts": [
     [
      "Files",
-     "3"
+     "2"
     ],
     [
      "Lines of Python",
-     "128"
+     "115"
     ]
    ],
    "sources": [
@@ -20423,39 +20580,9 @@
    ],
    "files": [
     "src/cells/processes/er_calcium.py",
-    "src/cells/processes/ip3_release.py",
     "src/cells/processes/plasma_calcium.py"
    ],
-   "weight": 128
-  },
-  {
-   "id": "laws.energy",
-   "label": "Fuel and mitochondria",
-   "kind": "component",
-   "group": "laws",
-   "status": "established",
-   "plain": "Finite pools of ATP that pumps draw on, and passive ion exchange with mitochondria. Respiration is not modelled.",
-   "detail": "Finite transformed ATP/ADP/Pi pools and an explicitly driven synthesis port.",
-   "facts": [
-    [
-     "Files",
-     "2"
-    ],
-    [
-     "Lines of Python",
-     "472"
-    ]
-   ],
-   "sources": [
-    {
-     "path": "docs/FINITE_ENERGY_POOLS.md"
-    }
-   ],
-   "files": [
-    "src/cells/processes/finite_energy.py",
-    "src/cells/processes/mitochondrial_passive.py"
-   ],
-   "weight": 472
+   "weight": 115
   },
   {
    "id": "laws.respiration",
@@ -20488,15 +20615,15 @@
    "group": "laws",
    "status": "established",
    "plain": "Rules that let ion levels and fuel regulate pumps, channels and junctions.",
-   "detail": "Local reaction-network control factors and ordered target writes, @1.",
+   "detail": "Prescribed global temperature/block/voltage setters, independent of tissue physics.",
    "facts": [
     [
      "Files",
-     "5"
+     "3"
     ],
     [
      "Lines of Python",
-     "2,406"
+     "820"
     ]
    ],
    "sources": [
@@ -20507,41 +20634,10 @@
    ],
    "files": [
     "src/cells/processes/global_controls.py",
-    "src/cells/processes/network_control.py",
     "src/cells/processes/spatial_modulation.py",
-    "src/cells/processes/time_modulation.py",
-    "src/cells/processes/tissue_target_selectors.py"
+    "src/cells/processes/time_modulation.py"
    ],
-   "weight": 2406
-  },
-  {
-   "id": "laws.injury",
-   "label": "Injury and resealing",
-   "kind": "component",
-   "group": "laws",
-   "status": "established",
-   "plain": "A membrane injury that leaks ions and reseals on a set schedule.",
-   "detail": "Prescribed, dimensionless patch damage; not an energy-supported repair law.",
-   "facts": [
-    [
-     "Files",
-     "1"
-    ],
-    [
-     "Lines of Python",
-     "15"
-    ]
-   ],
-   "sources": [
-    {
-     "path": "docs/ROADMAP.md",
-     "where": "Injury and repair"
-    }
-   ],
-   "files": [
-    "src/cells/processes/membrane_injury.py"
-   ],
-   "weight": 15
+   "weight": 820
   },
   {
    "id": "laws.noise",
@@ -20581,11 +20677,11 @@
    "facts": [
     [
      "Files",
-     "18"
+     "7"
     ],
     [
      "Lines of Python",
-     "10,990"
+     "3,595"
     ]
    ],
    "sources": [
@@ -20593,7 +20689,16 @@
      "path": "docs/TISSUE_GEOMETRY.md"
     }
    ],
-   "weight": 10990
+   "files": [
+    "src/cells/processes/conservative_polygon_geometry.py",
+    "src/cells/processes/fixed_polygon_removal.py",
+    "src/cells/processes/stable_geometry_primitives.py",
+    "src/cells/processes/stable_mesh_metric_reconstruction.py",
+    "src/cells/processes/stable_mesh_operator_reconstruction.py",
+    "src/cells/processes/stable_mesh_operator_reconstruction_algebra.py",
+    "src/cells/processes/stable_mesh_physical_reconstruction.py"
+   ],
+   "weight": 3595
   },
   {
    "id": "laws.environment",
@@ -20626,34 +20731,6 @@
     "src/cells/processes/rectangular_environment_stencil.py"
    ],
    "weight": 1433
-  },
-  {
-   "id": "laws.charged_surface",
-   "label": "Charged-surface backend",
-   "kind": "component",
-   "group": "laws",
-   "status": "established",
-   "plain": "Array kernels for charge-consistent membrane surfaces.",
-   "facts": [
-    [
-     "Files",
-     "7"
-    ],
-    [
-     "Lines of Python",
-     "2,559"
-    ]
-   ],
-   "files": [
-    "src/cells/processes/charged_surface_backend.py",
-    "src/cells/processes/charged_surface_backend_arrays.py",
-    "src/cells/processes/charged_surface_backend_equations.py",
-    "src/cells/processes/charged_surface_backend_gate.py",
-    "src/cells/processes/charged_surface_backend_kernel.py",
-    "src/cells/processes/charged_surface_backend_plan.py",
-    "src/cells/processes/charged_surface_work.py"
-   ],
-   "weight": 2559
   },
   {
    "id": "laws.mechanics",
@@ -21158,7 +21235,7 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-16",
-   "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. In the design, finite fuel is a transporter's default, and fuel held constant is the special case: a held row of that inventory, not a parameter of a pump. Since the rework landed on 16 November 2026, the species registry holds those standard potentials, and the transporters on main read their fuel as held rows of the inventory; finite fuel is refused there until a later step. The terms finite fuel needs in the kind interface's energy accounts landed the same evening, with the core's next lane; the transporter's own change is still to come. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery. Its independent reference landed on main on 15 November 2026: with regeneration stopped for 200 s, ATP falls almost to nothing and the pump to about 0.2% of its rate; two seconds after regeneration resumes the pump is back within 1%, and every account closes. The engine's own case, checked against it, is built in step 3 of the order the user set on 16 November 2026 (D194), after one pass over the core's shared seams. Where this meets explicit proton chemistry, the boundary is declared for fuel held constant: the fuel's free energy is taken at its node's reference pH, and a stage whose pH strays beyond a declared band is refused. For finite fuel at a node whose protons change it is still open, and refused. That work booked by a reaction is not fuel is still to be declared. Finite fuel runs today only in the earlier tissue families, and the tissue model's own pumps hold their fuel constant. Designed; not on main.",
+   "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. In the design, finite fuel is a transporter's default, and fuel held constant is the special case: a held row of that inventory, not a parameter of a pump. Since the rework landed on 16 November 2026, the species registry holds those standard potentials, and the transporters on main read their fuel as held rows of the inventory; finite fuel is refused there until a later step. The terms finite fuel needs in the kind interface's energy accounts landed the same evening, with the core's next lane; the transporter's own change is still to come. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery. Its independent reference landed on main on 15 November 2026: with regeneration stopped for 200 s, ATP falls almost to nothing and the pump to about 0.2% of its rate; two seconds after regeneration resumes the pump is back within 1%, and every account closes. Its design on the kind interface is accepted, ruled by the lead on 16 November 2026: the transporter gains a second kind of fuel that it moves, one ATP to ADP and phosphate per cycle, so fuel can run down and recover; the first world is the reference's pump of an uncharged molecule, with its store a compartment the cell owns, and the proton pump on finite fuel follows later. The engine's own case, checked against the reference, is built in step 3 of the order the user set on 16 November 2026 (D194), after one pass over the core's shared seams. Where this meets explicit proton chemistry, the boundary is declared for fuel held constant: the fuel's free energy is taken at its node's reference pH, and a stage whose pH strays beyond a declared band is refused. For finite fuel at a node whose protons change it is still open, and refused. That work booked by a reaction is not fuel is still to be declared. Finite fuel runs today only in the earlier tissue families, and the tissue model's own pumps hold their fuel constant. Designed; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -21198,6 +21275,10 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D194: The order after 16 November"
+    },
+    {
+     "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+     "where": "17. Finite fuel on the kind interface"
     }
    ],
    "weight": 0
@@ -21302,14 +21383,15 @@
    "group": "models",
    "status": "established",
    "plain": "The first small models: one cell, a pair, a regulatory circuit and small graphs of cells. Each was accepted in its own bounded scope.",
+   "detail": "Compose local reversible conversion and passive transport on shared amount state.",
    "facts": [
     [
      "Files",
-     "10"
+     "1"
     ],
     [
      "Lines of Python",
-     "3,354"
+     "273"
     ]
    ],
    "sources": [
@@ -21322,136 +21404,9 @@
     }
    ],
    "files": [
-    "src/cells/models/bioelectric_cell.py",
-    "src/cells/models/bioelectric_pair.py",
-    "src/cells/models/emt_mirna.py",
-    "src/cells/models/multispecies_membrane.py",
-    "src/cells/models/passive_pair.py",
-    "src/cells/models/physical_ionic_graph.py",
-    "src/cells/models/reaction_transport.py",
-    "src/cells/models/source_decay.py",
-    "src/cells/models/source_pair.py",
-    "src/cells/models/voltage_gated_membrane.py"
+    "src/cells/models/reaction_transport.py"
    ],
-   "weight": 3354
-  },
-  {
-   "id": "models.exterior",
-   "label": "Finite and spatial exterior",
-   "kind": "component",
-   "group": "models",
-   "status": "established",
-   "plain": "Models where the fluid outside cells is a finite, spatial inventory with its own ions and fields.",
-   "facts": [
-    [
-     "Files",
-     "8"
-    ],
-    [
-     "Lines of Python",
-     "3,357"
-    ],
-    [
-     "Model identifiers",
-     "2"
-    ]
-   ],
-   "members": [
-    {
-     "label": "resolved_extracellular_barriers@1",
-     "detail": "environment_barrier_interventions.py"
-    },
-    {
-     "label": "spatial_extracellular@3",
-     "detail": "tissue.py"
-    }
-   ],
-   "sources": [
-    {
-     "path": "docs/FINITE_EXTRACELLULAR.md"
-    },
-    {
-     "path": "docs/SPATIAL_EXTRACELLULAR.md"
-    }
-   ],
-   "files": [
-    "src/cells/models/environment_barrier_interventions.py",
-    "src/cells/models/finite_extracellular.py",
-    "src/cells/models/junction_finite_extracellular.py",
-    "src/cells/models/kinetic_finite_bounds.py",
-    "src/cells/models/kinetic_finite_extracellular.py",
-    "src/cells/models/spatial_extracellular.py",
-    "src/cells/models/spatial_junction.py",
-    "src/cells/models/tissue.py"
-   ],
-   "weight": 3357
-  },
-  {
-   "id": "models.calcium",
-   "label": "Calcium and chemistry",
-   "kind": "component",
-   "group": "models",
-   "status": "established",
-   "plain": "Models of calcium stores, IP3 signalling and compartment chemistry, tested on synthetic cases.",
-   "facts": [
-    [
-     "Files",
-     "12"
-    ],
-    [
-     "Lines of Python",
-     "3,372"
-    ],
-    [
-     "Model identifiers",
-     "5"
-    ]
-   ],
-   "members": [
-    {
-     "label": "spatial_calcium@3",
-     "detail": "gated_calcium.py"
-    },
-    {
-     "label": "spatial_calcium@4",
-     "detail": "ip3_calcium.py"
-    },
-    {
-     "label": "spatial_calcium@2",
-     "detail": "plasma_calcium.py"
-    },
-    {
-     "label": "spatial_calcium@1",
-     "detail": "spatial_calcium.py"
-    },
-    {
-     "label": "spatial_calcium@5",
-     "detail": "tissue_calcium.py"
-    }
-   ],
-   "sources": [
-    {
-     "path": "docs/SPATIAL_CALCIUM.md"
-    },
-    {
-     "path": "docs/COMPARTMENT_REACTIONS.md"
-    }
-   ],
-   "files": [
-    "src/cells/models/compartment_reactions.py",
-    "src/cells/models/er_calcium.py",
-    "src/cells/models/gated_calcium.py",
-    "src/cells/models/ip3_calcium.py",
-    "src/cells/models/open_calcium_admission.py",
-    "src/cells/models/open_calcium_bath_epoch.py",
-    "src/cells/models/open_calcium_bath_runtime.py",
-    "src/cells/models/open_calcium_reservoirs.py",
-    "src/cells/models/open_calcium_runtime.py",
-    "src/cells/models/plasma_calcium.py",
-    "src/cells/models/spatial_calcium.py",
-    "src/cells/models/tissue_calcium.py"
-   ],
-   "weight": 3372
+   "weight": 273
   },
   {
    "id": "models.pump_tissue",
@@ -21751,441 +21706,25 @@
    "facts": [
     [
      "Files",
-     "109"
+     "2"
     ],
     [
      "Lines of Python",
-     "25,125"
+     "1,629"
     ],
     [
      "Model identifiers",
-     "106"
+     "2"
     ]
    ],
    "members": [
-    {
-     "label": "resolved_active_extracellular_barrier_epoch@1",
-     "detail": "surface_active_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_active_extracellular_barriers@1",
-     "detail": "surface_active_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_active_bath_epoch@1",
-     "detail": "surface_active_bath_epoch.py"
-    },
-    {
-     "label": "resolved_active_bath_events@1",
-     "detail": "surface_active_bath_events.py"
-    },
-    {
-     "label": "resolved_tissue_active_excision@1",
-     "detail": "surface_active_excision.py"
-    },
-    {
-     "label": "resolved_active_profile_barrier_epoch@1",
-     "detail": "surface_active_profile_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_active_profile_barriers@1",
-     "detail": "surface_active_profile_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_active_membrane_profile_epoch@1",
-     "detail": "surface_active_profile_epoch.py"
-    },
-    {
-     "label": "resolved_active_membrane_profiles@1",
-     "detail": "surface_active_profile_interventions.py"
-    },
-    {
-     "label": "resolved_calcium@1",
-     "detail": "surface_calcium.py"
-    },
-    {
-     "label": "resolved_tissue@10",
-     "detail": "surface_calcium_activated.py"
-    },
-    {
-     "label": "resolved_calcium@9",
-     "detail": "surface_calcium_activated_catalog.py"
-    },
-    {
-     "label": "resolved_calcium_extracellular_barrier_epoch@1",
-     "detail": "surface_calcium_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_extracellular_barriers@1",
-     "detail": "surface_calcium_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium@7",
-     "detail": "surface_calcium_catalog.py"
-    },
-    {
-     "label": "resolved_calcium@8",
-     "detail": "surface_calcium_catalog_v2.py"
-    },
-    {
-     "label": "resolved_calcium@6",
-     "detail": "surface_calcium_cav.py"
-    },
-    {
-     "label": "resolved_calcium@2",
-     "detail": "surface_calcium_channels.py"
-    },
-    {
-     "label": "resolved_calcium_energy@3",
-     "detail": "surface_calcium_energy_activated.py"
-    },
-    {
-     "label": "resolved_calcium_energy_atp_transport@1",
-     "detail": "surface_calcium_energy_atp_transport.py"
-    },
-    {
-     "label": "resolved_calcium_energy_atp_transport_excision@1",
-     "detail": "surface_calcium_energy_atp_transport_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy_extracellular_barrier_epoch@1",
-     "detail": "surface_calcium_energy_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_extracellular_barriers@1",
-     "detail": "surface_calcium_energy_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy@2",
-     "detail": "surface_calcium_energy_catalog.py"
-    },
-    {
-     "label": "resolved_calcium_energy_excision@1",
-     "detail": "surface_calcium_energy_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy@5",
-     "detail": "surface_calcium_energy_hcn_extra.py"
-    },
-    {
-     "label": "resolved_calcium_energy_irreversible_transport@1",
-     "detail": "surface_calcium_energy_irreversible_transport.py"
-    },
-    {
-     "label": "resolved_calcium_energy_irreversible_transport_excision@1",
-     "detail": "surface_calcium_energy_irreversible_transport_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy_mitochondria@1",
-     "detail": "surface_calcium_energy_mitochondria.py"
-    },
-    {
-     "label": "resolved_calcium_energy_mitochondria_excision@1",
-     "detail": "surface_calcium_energy_mitochondria_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy@4",
-     "detail": "surface_calcium_energy_morris_lecar.py"
-    },
-    {
-     "label": "resolved_calcium_energy_profile_barrier_epoch@1",
-     "detail": "surface_calcium_energy_profile_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_profile_barriers@1",
-     "detail": "surface_calcium_energy_profile_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_membrane_profile_epoch@1",
-     "detail": "surface_calcium_energy_profile_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_membrane_profiles@1",
-     "detail": "surface_calcium_energy_profile_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_regulated@1",
-     "detail": "surface_calcium_energy_regulated.py"
-    },
-    {
-     "label": "resolved_calcium_energy_regulated@2",
-     "detail": "surface_calcium_energy_regulated_v2.py"
-    },
-    {
-     "label": "resolved_calcium_energy_regulated_excision@1",
-     "detail": "surface_calcium_energy_regulated_v2_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy_transport@1",
-     "detail": "surface_calcium_energy_transport.py"
-    },
-    {
-     "label": "resolved_calcium_energy_transport_excision@1",
-     "detail": "surface_calcium_energy_transport_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water@1",
-     "detail": "surface_calcium_energy_water.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
-     "detail": "surface_calcium_energy_water_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_extracellular_barriers@1",
-     "detail": "surface_calcium_energy_water_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_excision@1",
-     "detail": "surface_calcium_energy_water_excision.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water@2",
-     "detail": "surface_calcium_energy_water_hcn_extra.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_profile_barrier_epoch@1",
-     "detail": "surface_calcium_energy_water_profile_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_profile_barriers@1",
-     "detail": "surface_calcium_energy_water_profile_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_membrane_profile_epoch@1",
-     "detail": "surface_calcium_energy_water_profile_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_membrane_profiles@1",
-     "detail": "surface_calcium_energy_water_profile_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair@1",
-     "detail": "surface_calcium_energy_water_repair.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
-     "detail": "surface_calcium_energy_water_repair_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_extracellular_barriers@1",
-     "detail": "surface_calcium_energy_water_repair_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair@2",
-     "detail": "surface_calcium_energy_water_repair_hcn_extra.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
-     "detail": "surface_calcium_energy_water_repair_profile_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_profile_barriers@1",
-     "detail": "surface_calcium_energy_water_repair_profile_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
-     "detail": "surface_calcium_energy_water_repair_profile_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_energy_water_repair_membrane_profiles@1",
-     "detail": "surface_calcium_energy_water_repair_profile_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_excision@1",
-     "detail": "surface_calcium_excision.py"
-    },
-    {
-     "label": "resolved_calcium@4",
-     "detail": "surface_calcium_hcn.py"
-    },
-    {
-     "label": "resolved_calcium@11",
-     "detail": "surface_calcium_hcn_extra.py"
-    },
-    {
-     "label": "resolved_calcium@5",
-     "detail": "surface_calcium_kv1.py"
-    },
-    {
-     "label": "resolved_calcium@10",
-     "detail": "surface_calcium_morris_lecar.py"
-    },
-    {
-     "label": "resolved_calcium_profile_barrier_epoch@1",
-     "detail": "surface_calcium_profile_barrier_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_profile_barriers@1",
-     "detail": "surface_calcium_profile_barrier_interventions.py"
-    },
-    {
-     "label": "resolved_calcium_membrane_profile_epoch@1",
-     "detail": "surface_calcium_profile_epoch.py"
-    },
-    {
-     "label": "resolved_calcium_membrane_profiles@1",
-     "detail": "surface_calcium_profile_interventions.py"
-    },
-    {
-     "label": "resolved_calcium@3",
-     "detail": "surface_calcium_sodium.py"
-    },
-    {
-     "label": "resolved_calcium_water@1",
-     "detail": "surface_calcium_water.py"
-    },
-    {
-     "label": "resolved_tissue@8",
-     "detail": "surface_catalog.py"
-    },
-    {
-     "label": "resolved_tissue@9",
-     "detail": "surface_catalog_v2.py"
-    },
-    {
-     "label": "resolved_tissue@7",
-     "detail": "surface_cav.py"
-    },
-    {
-     "label": "resolved_tissue@3",
-     "detail": "surface_channels.py"
-    },
-    {
-     "label": "resolved_cotransport@1",
-     "detail": "surface_cotransport.py"
-    },
-    {
-     "label": "resolved_cotransport_water@1",
-     "detail": "surface_cotransport_water.py"
-    },
-    {
-     "label": "resolved_energy@1",
-     "detail": "surface_energy.py"
-    },
-    {
-     "label": "resolved_energy@2",
-     "detail": "surface_energy_morris_lecar.py"
-    },
-    {
-     "label": "resolved_energy_water@1",
-     "detail": "surface_energy_water.py"
-    },
-    {
-     "label": "resolved_energy_water@2",
-     "detail": "surface_energy_water_morris_lecar.py"
-    },
-    {
-     "label": "resolved_tissue_excision@1",
-     "detail": "surface_excision.py"
-    },
-    {
-     "label": "resolved_tissue@5",
-     "detail": "surface_hcn.py"
-    },
-    {
-     "label": "resolved_tissue@12",
-     "detail": "surface_hcn_extra.py"
-    },
     {
      "label": "resolved_tissue@2",
      "detail": "surface_kinetic.py"
     },
     {
-     "label": "resolved_tissue@6",
-     "detail": "surface_kv1.py"
-    },
-    {
-     "label": "resolved_redistribution@3",
-     "detail": "surface_mobile_channel.py"
-    },
-    {
-     "label": "resolved_redistribution@2",
-     "detail": "surface_mobile_pump.py"
-    },
-    {
-     "label": "resolved_repair@3",
-     "detail": "surface_mobile_pump_repair.py"
-    },
-    {
-     "label": "resolved_repair@2",
-     "detail": "surface_mobile_repair.py"
-    },
-    {
-     "label": "resolved_tissue@11",
-     "detail": "surface_morris_lecar.py"
-    },
-    {
-     "label": "resolved_open_calcium@1",
-     "detail": "surface_open_calcium.py"
-    },
-    {
-     "label": "resolved_open_calcium_bath_epoch@1",
-     "detail": "surface_open_calcium_bath_epoch.py"
-    },
-    {
-     "label": "resolved_open_calcium_bath_events@1",
-     "detail": "surface_open_calcium_bath_events.py"
-    },
-    {
-     "label": "resolved_open_calcium_energy@1",
-     "detail": "surface_open_calcium_energy.py"
-    },
-    {
-     "label": "resolved_open_calcium_energy_bath_epoch@1",
-     "detail": "surface_open_calcium_energy_bath_epoch.py"
-    },
-    {
-     "label": "resolved_open_calcium_energy_bath_events@1",
-     "detail": "surface_open_calcium_energy_bath_events.py"
-    },
-    {
-     "label": "resolved_passive_bath_epoch@1",
-     "detail": "surface_passive_bath_epoch.py"
-    },
-    {
-     "label": "resolved_passive_bath_events@1",
-     "detail": "surface_passive_bath_events.py"
-    },
-    {
-     "label": "resolved_membrane_profile_epoch@1",
-     "detail": "surface_profile_epoch.py"
-    },
-    {
-     "label": "resolved_membrane_profiles@1",
-     "detail": "surface_profile_interventions.py"
-    },
-    {
-     "label": "resolved_redistribution@1",
-     "detail": "surface_redistribution.py"
-    },
-    {
-     "label": "resolved_repair@1",
-     "detail": "surface_repair.py"
-    },
-    {
-     "label": "resolved_repair@4",
-     "detail": "surface_repair_morris_lecar.py"
-    },
-    {
-     "label": "resolved_tissue@4",
-     "detail": "surface_sodium.py"
-    },
-    {
      "label": "resolved_tissue@1",
      "detail": "surface_tissue.py"
-    },
-    {
-     "label": "resolved_water@1",
-     "detail": "surface_water.py"
-    },
-    {
-     "label": "resolved_water@2",
-     "detail": "surface_water_kinetic.py"
-    },
-    {
-     "label": "resolved_water@3",
-     "detail": "surface_water_morris_lecar.py"
     }
    ],
    "sources": [
@@ -22209,7 +21748,11 @@
      "where": "core-fixes merged into main (16 November 2026, late evening)"
     }
    ],
-   "weight": 25125
+   "files": [
+    "src/cells/models/surface_kinetic.py",
+    "src/cells/models/surface_tissue.py"
+   ],
+   "weight": 1629
   },
   {
    "id": "models.vertex",
@@ -22261,11 +21804,11 @@
    "facts": [
     [
      "Files",
-     "36"
+     "17"
     ],
     [
      "Lines of Python",
-     "4,417"
+     "2,140"
     ]
    ],
    "sources": [
@@ -22273,7 +21816,7 @@
      "path": "docs/CAPSID_ASSEMBLY.md"
     }
    ],
-   "weight": 4417
+   "weight": 2140
   },
   {
    "id": "models.gard",
@@ -22728,7 +22271,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-16",
-   "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Implemented and guarded; nothing is judged. Its protocol is proposed, and its registration, rehearsal and judged run come next.",
+   "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Its study of the time step passed its development reading late on 16 November 2026: every criterion holds on both arms, so the declared step of 0.5 ms stands. That is development evidence: its protocol, fr5-transfer-v1, stays proposed and is not judged. Implemented and guarded.",
    "detail": "Development evidence for FR-5's engine path (not a verdict): one arm of FR-5's world on the engine against R-transfer, from one start extract, over a short horizon with the damage window moved inside it, so the damage, the pores and the condition all act before the end.",
    "facts": [
     [
@@ -22794,6 +22337,10 @@
     {
      "path": "README.md",
      "where": "Engine restructure"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-5's dt study: the development reading passes (16 November 2026, late evening)"
     }
    ],
    "files": [
@@ -23366,7 +22913,7 @@
     ],
     [
      "Lines of Python",
-     "242,692"
+     "242,693"
     ]
    ],
    "sources": [
@@ -23374,7 +22921,7 @@
      "path": "validation/betse/README.md"
     }
    ],
-   "weight": 242692
+   "weight": 242693
   },
   {
    "id": "val.tissue",
@@ -23390,10 +22937,10 @@
     ],
     [
      "Lines of Python",
-     "84,739"
+     "84,747"
     ]
    ],
-   "weight": 84739
+   "weight": 84747
   },
   {
    "id": "val.division",
@@ -23689,7 +23236,7 @@
    "group": "references",
    "status": "landed",
    "as_of": "2026-11-15",
-   "plain": "The tool behind the rework's results gate. It saves what a defined set of worlds computes at a tagged version, on the CPU, and compares a later version with it, bit for bit or within a declared tolerance; a refused run must be refused in the same way. A second tool lists the engine models that each registered protocol names, so that the protocols a change affects can be run again. Validation code with its own tests in the routine gate, on main since 15 November 2026. On 16 November 2026 the 825-node world's bits at binding were found to depend on the number of processors a run uses, so the comparison now records that number and compares runs only at equal counts; the user decided the same evening to remove the dependence by running the linear algebra on one thread (D190).",
+   "plain": "The tool behind the rework's results gate. It saves what a defined set of worlds computes at a tagged version, on the CPU, and compares a later version with it, bit for bit or within a declared tolerance; a refused run must be refused in the same way. A second tool lists the engine models that each registered protocol names, so that the protocols a change affects can be run again. Validation code with its own tests in the routine gate, on main since 15 November 2026. On 16 November 2026 the 825-node world's bits at binding were found to depend on the number of processors a run uses, so the comparison now records that number and compares runs only at equal counts; the user decided the same evening to remove the dependence by running the linear algebra on one thread (D190). That pin merged on 17 November 2026, and the baseline's record of its environment now names each library's thread count.",
    "detail": "The results baseline at a tag, and the comparison integration commits are checked against.",
    "facts": [
     [
@@ -23698,7 +23245,7 @@
     ],
     [
      "Lines of Python",
-     "717"
+     "720"
     ]
    ],
    "sources": [
@@ -23713,13 +23260,21 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D190: BLAS is pinned to one thread, in a lean form"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC)"
+    },
+    {
+     "path": "docs/ARCHITECTURE.md",
+     "where": "Allocation-independent linear algebra (D190, built 16 November 2026)"
     }
    ],
    "files": [
     "validation/protocol_models.py",
     "validation/results_baseline.py"
    ],
-   "weight": 717
+   "weight": 720
   },
   {
    "id": "val.tiers",
@@ -23727,27 +23282,27 @@
    "kind": "component",
    "group": "references",
    "status": "established",
-   "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. The audit's tools merged on the evening of 16 November 2026. Tier 3's table is frozen test by test, 229 files and 7,736 tests, so that a later run of tier 3 is compared test by test instead of running old code again. The user approved the audit's firm list of tests to retire the same evening (D189), which saves about 7.5 of tier 3's 29.8 processor-hours per run; nothing is retired yet, two checks run first, and the tree is tagged before, so that every retired test stays recoverable.",
+   "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. The audit's tools merged on the evening of 16 November 2026: tier 3's table is frozen test by test, so that a later run of tier 3 is compared test by test instead of running old code again. The user approved the audit's firm list of tests to retire the same evening (D189), and the retire merged early on 17 November 2026: 11 whole files of tier 3 and 40 of tiers 1 and 2 were deleted, and 811 cases were removed from 42 more, while eight rows were held instead, each with its reason. The tiers now hold 327, 152 and 222 files, and tier 3's frozen record holds 218 files and 6,869 tests. The saving is 5.5 processor-hours per run of tier 3 and 2 minutes per gate of tiers 1 and 2. The tree before the retire is tagged, so that every retired test stays recoverable.",
    "facts": [
     [
      "Files",
-     "861"
+     "811"
     ],
     [
      "Lines of Python",
-     "250,509"
+     "220,835"
     ],
     [
      "Tier 1 test files",
-     "365"
+     "329"
     ],
     [
      "Tier 2 test files",
-     "153"
+     "152"
     ],
     [
      "Tier 3 test files",
-     "233"
+     "222"
     ]
    ],
    "sources": [
@@ -23780,9 +23335,21 @@
     },
     {
      "path": "docs/TEST_AUDIT_RETIRE_LIST.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D189's test retire merged into main (17 November 2026, early)"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "Done on 17 November"
+    },
+    {
+     "path": "docs/TEST_AUDIT_RETIRE_LIST.md",
+     "where": "approved by the user (D189), retired at 6ac27c38"
     }
    ],
-   "weight": 250509
+   "weight": 220835
   },
   {
    "id": "val.results_gate",
@@ -23791,7 +23358,7 @@
    "group": "references",
    "status": "landed",
    "as_of": "2026-11-16",
-   "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) is recorded at the landing. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
+   "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) ran at the landing and is not repeated for each lane: a lane whose comparison of saved worlds is bit for bit moves no registered result. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -23846,6 +23413,10 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D194: The order after 16 November"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "G2, the affected registered protocols, ran at the landing and is not repeated per lane"
     }
    ],
    "weight": 0
@@ -47313,9 +46884,6 @@
     },
     {
      "path": "src/cells/processes/leak_channels.py"
-    },
-    {
-     "path": "src/cells/core/surface_redistribution_spec.py"
     }
    ],
    "keywords": "naleak_always_open@1 kleak_always_open@1 caleak_always_open@1 clleak_always_open@1 catleak_na_k@1 catleak2_na_k_ca@1 neutral_mobile_leak@1",
@@ -47672,9 +47240,6 @@
     },
     {
      "path": "src/cells/processes/junction_gate.py"
-    },
-    {
-     "path": "src/cells/core/physical_ionic_graph_spec.py"
     },
     {
      "path": "src/cells/processes/junction_formation.py"
@@ -49502,9 +49067,6 @@
     },
     {
      "path": "docs/SOURCE_EMT_PAIR_SPEC.md"
-    },
-    {
-     "path": "src/cells/processes/source_electrochemistry.py"
     }
    ],
    "keywords": "GJC1",
@@ -51359,9 +50921,6 @@
     },
     {
      "path": "docs/SOURCE_EMT_PAIR_SPEC.md"
-    },
-    {
-     "path": "src/cells/processes/source_electrochemistry.py"
     }
    ],
    "keywords": "GJA5 GJA4",
@@ -53481,9 +53040,6 @@
     },
     {
      "path": "src/cells/processes/electrochemistry.py"
-    },
-    {
-     "path": "src/cells/processes/source_electrochemistry.py"
     }
    ],
    "keywords": "nak_atp_mass_action_positive@1 nak_atp_affinity_tanh@1 ATP1A1 ATP1A2 ATP1A3 ATP1A4 ATP1B1 ATP1B2 ATP1B3 FXYD1 FXYD2 7E1Z 4HYT",
@@ -54594,9 +54150,6 @@
     },
     {
      "path": "src/cells/processes/calcium_atpase.py"
-    },
-    {
-     "path": "src/cells/processes/finite_calcium_pumps.py"
     }
    ],
    "keywords": "plasma_calcium_pump_positive@1 ca_atp_mass_action_positive@1 finite_atp_pmca_positive@1 ATP2B1 ATP2B2 ATP2B3 ATP2B4 NPTN BSG 6A69",
@@ -55200,9 +54753,6 @@
     },
     {
      "path": "src/cells/processes/er_calcium.py"
-    },
-    {
-     "path": "src/cells/processes/finite_calcium_pumps.py"
     }
    ],
    "keywords": "er_calcium_pump_positive@1 finite_atp_er_1ca_positive@1 ATP2A1 ATP2A2 ATP2A3 1SU4",
@@ -56089,9 +55639,6 @@
     },
     {
      "path": "src/cells/processes/er_calcium.py"
-    },
-    {
-     "path": "src/cells/processes/ip3_release.py"
     }
    ],
    "keywords": "er_calcium_release@1 ip3_er_release@1 ITPR1 ITPR2 ITPR3 RYR1 RYR2 RYR3 6DQJ 3J8H",
@@ -56579,9 +56126,6 @@
     },
     {
      "path": "docs/PUMP_WATER_MODEL.md"
-    },
-    {
-     "path": "src/cells/processes/cotransport.py"
     },
     {
      "path": "src/cells/processes/k_anion_symport.py"
@@ -57077,9 +56621,6 @@
     },
     {
      "path": "docs/TISSUE_COTRANSPORT.md"
-    },
-    {
-     "path": "src/cells/processes/cotransport.py"
     }
    ],
    "keywords": "nkcc_reversible_tanh@1 SLC12A2 SLC12A1 6PZT",
@@ -57471,12 +57012,6 @@
     },
     {
      "path": "docs/TISSUE_RETURN_CURRENT.md"
-    },
-    {
-     "path": "src/cells/processes/cotransport.py"
-    },
-    {
-     "path": "src/cells/processes/cell_zone_transport.py"
     }
    ],
    "keywords": "electroneutral_symport_reversible_tanh@1 cell_zone_transporter@1",
@@ -57747,9 +57282,6 @@
     },
     {
      "path": "docs/TISSUE_RETURN_CURRENT.md"
-    },
-    {
-     "path": "src/cells/processes/mitochondrial_passive.py"
     }
    ],
    "keywords": "mitochondrial_passive_continuous_si@1 MCU SMDT1 MICU1 MICU2 6WDN",
@@ -59414,13 +58946,6 @@
   },
   {
    "from": "laws.fuel",
-   "to": "laws.energy",
-   "kind": "extends",
-   "weight": 1,
-   "label": "replaces separate fuel pools with species of the shared inventory"
-  },
-  {
-   "from": "laws.fuel",
    "to": "laws.pumps",
    "kind": "extends",
    "weight": 1,
@@ -59511,24 +59036,10 @@
   },
   {
    "from": "laws.respiration",
-   "to": "laws.energy",
-   "kind": "extends",
-   "weight": 1,
-   "label": "adds respiration and ATP synthesis to the earlier families' passive exchange"
-  },
-  {
-   "from": "laws.respiration",
    "to": "laws.human_cardiac",
    "kind": "extends",
    "weight": 1,
    "label": "then mitochondria in a heart cell (D183)"
-  },
-  {
-   "from": "laws.route_factors",
-   "to": "laws.injury",
-   "kind": "extends",
-   "weight": 1,
-   "label": "the older families' injury and resealing, re-expressed as a kind"
   },
   {
    "from": "laws.route_factors",
@@ -59752,12 +59263,6 @@
    "weight": 1
   },
   {
-   "from": "cap.calcium",
-   "to": "models.calcium",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
    "from": "cap.channels",
    "to": "laws.channels",
    "kind": "implements",
@@ -59818,20 +59323,8 @@
    "weight": 1
   },
   {
-   "from": "cap.energy",
-   "to": "laws.energy",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
    "from": "cap.extracellular",
    "to": "laws.environment",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
-   "from": "cap.extracellular",
-   "to": "models.exterior",
    "kind": "implements",
    "weight": 1
   },
@@ -59896,12 +59389,6 @@
    "weight": 1
   },
   {
-   "from": "cap.mitochondria",
-   "to": "laws.energy",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
    "from": "cap.pumps",
    "to": "laws.pumps",
    "kind": "implements",
@@ -59921,19 +59408,7 @@
   },
   {
    "from": "cap.reactions",
-   "to": "models.calcium",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
-   "from": "cap.reactions",
    "to": "op.local_species_reactions@1",
-   "kind": "implements",
-   "weight": 1
-  },
-  {
-   "from": "cap.repair",
-   "to": "laws.injury",
    "kind": "implements",
    "weight": 1
   },
@@ -60242,13 +59717,6 @@
   },
   {
    "from": "unit.U34",
-   "to": "exec.specs",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "neutral_mobile_leak@1"
-  },
-  {
-   "from": "unit.U34",
    "to": "laws.channels",
    "kind": "modelled_by",
    "weight": 6,
@@ -60263,38 +59731,17 @@
   },
   {
    "from": "unit.U36",
-   "to": "exec.specs",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "symmetric_opposing_relaxation@1"
-  },
-  {
-   "from": "unit.U36",
    "to": "laws.junctions",
    "kind": "modelled_by",
    "weight": 2,
    "label": "junction_voltage_relaxation@1, delayed_first_order_junction_formation@1"
   },
   {
-   "from": "unit.U37",
-   "to": "laws.electrodiffusion",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "a function without an identifier"
-  },
-  {
-   "from": "unit.U38",
-   "to": "laws.electrodiffusion",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "a function without an identifier"
-  },
-  {
    "from": "unit.U39",
    "to": "laws.electrodiffusion",
    "kind": "modelled_by",
-   "weight": 2,
-   "label": "nak_atp_affinity_tanh@1, a function without an identifier"
+   "weight": 1,
+   "label": "nak_atp_affinity_tanh@1"
   },
   {
    "from": "unit.U39",
@@ -60314,8 +59761,8 @@
    "from": "unit.U40",
    "to": "laws.pumps",
    "kind": "modelled_by",
-   "weight": 2,
-   "label": "ca_atp_mass_action_positive@1, finite_atp_pmca_positive@1"
+   "weight": 1,
+   "label": "ca_atp_mass_action_positive@1"
   },
   {
    "from": "unit.U41",
@@ -60323,13 +59770,6 @@
    "kind": "modelled_by",
    "weight": 1,
    "label": "er_calcium_pump_positive@1"
-  },
-  {
-   "from": "unit.U41",
-   "to": "laws.pumps",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "finite_atp_er_1ca_positive@1"
   },
   {
    "from": "unit.U42",
@@ -60342,36 +59782,15 @@
    "from": "unit.U43",
    "to": "laws.calcium",
    "kind": "modelled_by",
-   "weight": 2,
-   "label": "er_calcium_release@1, ip3_er_release@1"
+   "weight": 1,
+   "label": "er_calcium_release@1"
   },
   {
    "from": "unit.U44",
    "to": "laws.cotransport",
    "kind": "modelled_by",
-   "weight": 2,
-   "label": "kcc_reversible_tanh@1, k_anion_symport_mass_action@1"
-  },
-  {
-   "from": "unit.U45",
-   "to": "laws.cotransport",
-   "kind": "modelled_by",
    "weight": 1,
-   "label": "nkcc_reversible_tanh@1"
-  },
-  {
-   "from": "unit.U46",
-   "to": "laws.cotransport",
-   "kind": "modelled_by",
-   "weight": 2,
-   "label": "electroneutral_symport_reversible_tanh@1, cell_zone_transporter@1"
-  },
-  {
-   "from": "unit.U47",
-   "to": "laws.energy",
-   "kind": "modelled_by",
-   "weight": 1,
-   "label": "mitochondrial_passive_continuous_si@1"
+   "label": "k_anion_symport_mass_action@1"
   },
   {
    "from": "unit.U49",
@@ -61128,7 +60547,7 @@
    "from": "compute.ensemble",
    "to": "exec.registry",
    "kind": "uses",
-   "weight": 1
+   "weight": 3
   },
   {
    "from": "compute.ensemble",
@@ -61158,13 +60577,7 @@
    "from": "compute.ensemble",
    "to": "models.assembly",
    "kind": "uses",
-   "weight": 23
-  },
-  {
-   "from": "compute.ensemble",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 1
+   "weight": 9
   },
   {
    "from": "exec.batch",
@@ -61207,6 +60620,12 @@
    "to": "exec.state",
    "kind": "uses",
    "weight": 4
+  },
+  {
+   "from": "exec.batch",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "exec.batch",
@@ -61263,6 +60682,12 @@
    "weight": 3
   },
   {
+   "from": "exec.batch_windows",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "exec.cli",
    "to": "compute.ensemble",
    "kind": "uses",
@@ -61282,21 +60707,15 @@
   },
   {
    "from": "exec.cli",
-   "to": "exec.excision",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "exec.cli",
    "to": "exec.io",
    "kind": "uses",
-   "weight": 5
+   "weight": 4
   },
   {
    "from": "exec.cli",
-   "to": "exec.preparation",
+   "to": "exec.registry",
    "kind": "uses",
-   "weight": 3
+   "weight": 1
   },
   {
    "from": "exec.cli",
@@ -61314,7 +60733,7 @@
    "from": "exec.cli",
    "to": "models.assembly",
    "kind": "uses",
-   "weight": 4
+   "weight": 2
   },
   {
    "from": "exec.cli",
@@ -61333,72 +60752,6 @@
    "to": "exec.specs",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "exec.excision",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 19
-  },
-  {
-   "from": "exec.excision",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.excision",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 52
-  },
-  {
-   "from": "exec.excision",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 20
-  },
-  {
-   "from": "exec.excision",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.excision",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 7
-  },
-  {
-   "from": "exec.excision",
-   "to": "laws.geometry",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.excision",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.excision",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 25
-  },
-  {
-   "from": "exec.excision",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 7
-  },
-  {
-   "from": "exec.excision",
-   "to": "num.other",
-   "kind": "uses",
-   "weight": 7
   },
   {
    "from": "exec.gpu_native",
@@ -61456,12 +60809,6 @@
   },
   {
    "from": "exec.io",
-   "to": "exec.excision",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "exec.io",
    "to": "exec.registry",
    "kind": "uses",
    "weight": 3
@@ -61491,6 +60838,12 @@
    "weight": 3
   },
   {
+   "from": "exec.io",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "exec.observers",
    "to": "exec.state",
    "kind": "uses",
@@ -61498,87 +60851,15 @@
   },
   {
    "from": "exec.preparation",
-   "to": "exec.io",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "exec.preparation",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 21
-  },
-  {
-   "from": "exec.preparation",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 11
-  },
-  {
-   "from": "exec.preparation",
    "to": "exec.specs",
-   "kind": "uses",
-   "weight": 117
-  },
-  {
-   "from": "exec.preparation",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 23
-  },
-  {
-   "from": "exec.preparation",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "exec.preparation",
-   "to": "laws.geometry",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "exec.preparation",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 18
-  },
-  {
-   "from": "exec.preparation",
-   "to": "laws.regulation",
-   "kind": "uses",
-   "weight": 13
-  },
-  {
-   "from": "exec.preparation",
-   "to": "models.calcium",
    "kind": "uses",
    "weight": 2
   },
   {
-   "from": "exec.preparation",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "exec.preparation",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 52
-  },
-  {
    "from": "exec.registry",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 98
-  },
-  {
-   "from": "exec.registry",
-   "to": "models.calcium",
-   "kind": "uses",
-   "weight": 7
+   "weight": 9
   },
   {
    "from": "exec.registry",
@@ -61590,13 +60871,7 @@
    "from": "exec.registry",
    "to": "models.early",
    "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.registry",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 7
+   "weight": 1
   },
   {
    "from": "exec.registry",
@@ -61609,12 +60884,6 @@
    "to": "models.replacement",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "exec.registry",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 107
   },
   {
    "from": "exec.registry",
@@ -61714,6 +60983,12 @@
   },
   {
    "from": "exec.runner",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.runner",
    "to": "num.projective",
    "kind": "uses",
    "weight": 1
@@ -61726,81 +61001,45 @@
   },
   {
    "from": "exec.schedule",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.schedule",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 72
-  },
-  {
-   "from": "exec.specs",
-   "to": "exec.excision",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "exec.specs",
-   "to": "exec.preparation",
-   "kind": "uses",
-   "weight": 48
+   "weight": 11
   },
   {
    "from": "exec.specs",
    "to": "exec.registry",
    "kind": "uses",
-   "weight": 19
+   "weight": 4
   },
   {
    "from": "exec.specs",
    "to": "exec.schedule",
    "kind": "uses",
-   "weight": 3
+   "weight": 1
   },
   {
    "from": "exec.specs",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 12
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.calcium",
-   "kind": "uses",
-   "weight": 9
+   "weight": 1
   },
   {
    "from": "exec.specs",
    "to": "laws.channels",
    "kind": "uses",
-   "weight": 18
+   "weight": 12
   },
   {
    "from": "exec.specs",
    "to": "laws.cotransport",
    "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.geometry",
-   "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.injury",
-   "kind": "uses",
-   "weight": 3
   },
   {
    "from": "exec.specs",
@@ -61818,19 +61057,13 @@
    "from": "exec.specs",
    "to": "laws.other",
    "kind": "uses",
-   "weight": 17
+   "weight": 3
   },
   {
    "from": "exec.specs",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "exec.specs",
-   "to": "laws.regulation",
-   "kind": "uses",
-   "weight": 5
+   "weight": 3
   },
   {
    "from": "exec.specs",
@@ -61840,27 +61073,9 @@
   },
   {
    "from": "exec.specs",
-   "to": "models.calcium",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "exec.specs",
    "to": "models.composite",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "exec.specs",
-   "to": "models.early",
-   "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "exec.specs",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 7
   },
   {
    "from": "exec.specs",
@@ -61878,7 +61093,7 @@
    "from": "exec.specs",
    "to": "models.resolved",
    "kind": "uses",
-   "weight": 69
+   "weight": 2
   },
   {
    "from": "exec.specs",
@@ -61894,9 +61109,15 @@
   },
   {
    "from": "exec.specs",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.specs",
    "to": "num.field",
    "kind": "uses",
-   "weight": 3
+   "weight": 2
   },
   {
    "from": "exec.specs",
@@ -62007,6 +61228,12 @@
    "weight": 4
   },
   {
+   "from": "exec.vector_windows",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "fr.compartment_ph",
    "to": "laws.electrodiffusion",
    "kind": "uses",
@@ -62028,67 +61255,19 @@
    "from": "laws.channels",
    "to": "laws.electrodiffusion",
    "kind": "uses",
-   "weight": 6
+   "weight": 5
   },
   {
    "from": "laws.channels",
    "to": "laws.other",
    "kind": "uses",
-   "weight": 13
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "exec.devices",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "num.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "num.redistribution",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.charged_surface",
-   "to": "num.rk4",
-   "kind": "uses",
-   "weight": 1
+   "weight": 12
   },
   {
    "from": "laws.cotransport",
    "to": "laws.electrodiffusion",
    "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "laws.cotransport",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "laws.declarations",
@@ -62121,36 +61300,6 @@
    "weight": 2
   },
   {
-   "from": "laws.electrodiffusion",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.energy",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "laws.energy",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.energy",
-   "to": "laws.pumps",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.energy",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
    "from": "laws.environment",
    "to": "laws.other",
    "kind": "uses",
@@ -62158,75 +61307,9 @@
   },
   {
    "from": "laws.geometry",
-   "to": "exec.devices",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.io",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.preparation",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.runner",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "laws.geometry",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "laws.geometry",
    "to": "laws.other",
    "kind": "uses",
-   "weight": 13
-  },
-  {
-   "from": "laws.geometry",
-   "to": "models.resolved",
-   "kind": "uses",
    "weight": 4
-  },
-  {
-   "from": "laws.geometry",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.geometry",
-   "to": "num.rk4",
-   "kind": "uses",
-   "weight": 1
   },
   {
    "from": "laws.junctions",
@@ -62298,43 +61381,19 @@
    "from": "laws.pumps",
    "to": "laws.calcium",
    "kind": "uses",
-   "weight": 4
+   "weight": 2
   },
   {
    "from": "laws.pumps",
    "to": "laws.electrodiffusion",
    "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "laws.pumps",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "laws.pumps",
    "to": "laws.other",
    "kind": "uses",
    "weight": 2
-  },
-  {
-   "from": "laws.reactions",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.regulation",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.regulation",
-   "to": "laws.reactions",
-   "kind": "uses",
-   "weight": 1
   },
   {
    "from": "laws.route_factors",
@@ -62440,169 +61499,7 @@
   },
   {
    "from": "models.assembly",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "models.assembly",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "models.assembly",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 20
-  },
-  {
-   "from": "models.assembly",
    "to": "exec.state",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.assembly",
-   "to": "laws.channels",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.assembly",
-   "to": "laws.cotransport",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.assembly",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.assembly",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.assembly",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.assembly",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "models.assembly",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.assembly",
-   "to": "num.rk4",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.observers",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.preparation",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 12
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 17
-  },
-  {
-   "from": "models.calcium",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 8
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.calcium",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.channels",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 9
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "models.calcium",
-   "to": "laws.reactions",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.calcium",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "models.calcium",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 11
-  },
-  {
-   "from": "models.calcium",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.calcium",
-   "to": "num.other",
    "kind": "uses",
    "weight": 2
   },
@@ -62682,53 +61579,29 @@
    "from": "models.early",
    "to": "exec.observers",
    "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "models.early",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 4
+   "weight": 1
   },
   {
    "from": "models.early",
    "to": "exec.schedule",
    "kind": "uses",
-   "weight": 8
+   "weight": 1
   },
   {
    "from": "models.early",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 10
+   "weight": 1
   },
   {
    "from": "models.early",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 21
-  },
-  {
-   "from": "models.early",
-   "to": "laws.channels",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.early",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 6
+   "weight": 3
   },
   {
    "from": "models.early",
    "to": "laws.junctions",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "models.early",
-   "to": "laws.other",
    "kind": "uses",
    "weight": 1
   },
@@ -62737,96 +61610,6 @@
    "to": "laws.reactions",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "models.exterior",
-   "to": "exec.observers",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "models.exterior",
-   "to": "exec.registry",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "models.exterior",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 7
-  },
-  {
-   "from": "models.exterior",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 10
-  },
-  {
-   "from": "models.exterior",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 14
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.channels",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.junctions",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.pumps",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.exterior",
-   "to": "laws.regulation",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.exterior",
-   "to": "models.early",
-   "kind": "uses",
-   "weight": 4
-  },
-  {
-   "from": "models.exterior",
-   "to": "models.resolved",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.exterior",
-   "to": "num.field",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.exterior",
-   "to": "num.other",
-   "kind": "uses",
-   "weight": 3
   },
   {
    "from": "models.pump_tissue",
@@ -62892,19 +61675,13 @@
    "from": "models.pump_tissue",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 5
+   "weight": 8
   },
   {
    "from": "models.pump_tissue",
    "to": "laws.species_identity",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "models.pump_tissue",
-   "to": "models.exterior",
-   "kind": "uses",
-   "weight": 3
   },
   {
    "from": "models.pump_tissue",
@@ -62998,127 +61775,67 @@
   },
   {
    "from": "models.resolved",
-   "to": "exec.preparation",
-   "kind": "uses",
-   "weight": 35
-  },
-  {
-   "from": "models.resolved",
    "to": "exec.registry",
-   "kind": "uses",
-   "weight": 107
-  },
-  {
-   "from": "models.resolved",
-   "to": "exec.schedule",
-   "kind": "uses",
-   "weight": 58
-  },
-  {
-   "from": "models.resolved",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 210
-  },
-  {
-   "from": "models.resolved",
-   "to": "exec.state",
-   "kind": "uses",
-   "weight": 45
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.calcium",
    "kind": "uses",
    "weight": 1
   },
   {
    "from": "models.resolved",
-   "to": "laws.channels",
-   "kind": "uses",
-   "weight": 23
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.cotransport",
-   "kind": "uses",
-   "weight": 5
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 23
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.energy",
-   "kind": "uses",
-   "weight": 8
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.injury",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.junctions",
-   "kind": "uses",
-   "weight": 7
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 30
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.pumps",
-   "kind": "uses",
-   "weight": 6
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.reactions",
+   "to": "exec.schedule",
    "kind": "uses",
    "weight": 2
   },
   {
    "from": "models.resolved",
-   "to": "laws.regulation",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "models.resolved",
+   "to": "exec.state",
    "kind": "uses",
    "weight": 3
   },
   {
    "from": "models.resolved",
-   "to": "models.calcium",
+   "to": "laws.channels",
    "kind": "uses",
    "weight": 12
   },
   {
    "from": "models.resolved",
-   "to": "models.exterior",
+   "to": "laws.electrodiffusion",
    "kind": "uses",
-   "weight": 13
+   "weight": 2
+  },
+  {
+   "from": "models.resolved",
+   "to": "laws.junctions",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "models.resolved",
+   "to": "laws.other",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.resolved",
+   "to": "laws.pumps",
+   "kind": "uses",
+   "weight": 2
   },
   {
    "from": "models.resolved",
    "to": "num.field",
    "kind": "uses",
-   "weight": 38
+   "weight": 4
   },
   {
    "from": "models.resolved",
    "to": "num.other",
-   "kind": "uses",
-   "weight": 17
-  },
-  {
-   "from": "models.resolved",
-   "to": "num.redistribution",
    "kind": "uses",
    "weight": 2
   },
@@ -63127,12 +61844,6 @@
    "to": "num.transport",
    "kind": "uses",
    "weight": 1
-  },
-  {
-   "from": "models.resolved",
-   "to": "num.water",
-   "kind": "uses",
-   "weight": 6
   },
   {
    "from": "models.vertex",
@@ -63209,6 +61920,12 @@
   {
    "from": "models.water",
    "to": "op.k_anion_symport_mass_action@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "num.blas_pin",
+   "to": "exec.specs",
    "kind": "uses",
    "weight": 1
   },
@@ -63371,18 +62088,6 @@
   {
    "from": "num.projective",
    "to": "num.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "num.redistribution",
-   "to": "laws.electrodiffusion",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "num.redistribution",
-   "to": "num.field",
    "kind": "uses",
    "weight": 1
   },
@@ -64200,7 +62905,7 @@
    "from": "op.scheduled_membrane_insertion@1",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 6
+   "weight": 5
   },
   {
    "from": "op.scheduled_membrane_insertion@1",

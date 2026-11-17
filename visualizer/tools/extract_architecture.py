@@ -189,6 +189,47 @@ class Build:
         # Texts that stand in while something is left out: (where, id, field) -> the wording, or None for none.
         self.rewords = {}
         self.reworded = set()
+        # The engine's own path tables of its source moves (D188: scripts/moves/<move>-table.json, committed
+        # with each move): old path -> (new path, the move). Read so that a record made before a move, the
+        # protein inventory's, finds a file at its new place; the overlay itself is carried through the moves
+        # by tools/move_paths.py.
+        self.moves = self.read_moves()
+        # Held legacy code (the overlay's `legacy`): the files under its folder are left out of the picture.
+        # The user, 17 November 2026: "no legacy code, it will be removed". A part whose files all stand
+        # there is left out, with that reason; a part with active files as well shows those only.
+        self.legacy_rule = overlay.get("legacy")
+        if self.legacy_rule:
+            left_out_flag("legacy", {"says": "held legacy code", **self.legacy_rule})
+            if not str(self.legacy_rule.get("folder", "")).endswith("/"):
+                raise SystemExit("legacy: 'folder' must name a folder, ending in /")
+        self.legacy = {}  # a file under the legacy folder -> the part whose pattern held it, or None
+
+    def read_moves(self):
+        moved = {}
+        for path in sorted(item for item in self.files if re.fullmatch(r"scripts/moves/[^/]+-table\.json", item)):
+            try:
+                table = json.loads((self.repo / path).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                self.warnings.append(f"{path}: the move's path table cannot be read")
+                continue
+            if table.get("kind") != "cells.source_moves.path_table@1":
+                self.warnings.append(f"{path}: not a path table (kind {table.get('kind')!r})")
+                continue
+            for row in table.get("rows", []):
+                if row.get("kind") == "move":
+                    moved[row["old"]] = (row["new"], table.get("move") or path)
+        return moved
+
+    def is_legacy(self, path):
+        return bool(self.legacy_rule) and path.startswith(self.legacy_rule["folder"])
+
+    def current_path(self, path):
+        """Where a file named before a move of the engine's source stands now (the file itself if it never moved)."""
+        seen = set()
+        while path in self.moves and path not in seen:
+            seen.add(path)
+            path = self.moves[path][0]
+        return path
 
     # ------------------------------------------------------------ what is left out of the picture
 
@@ -383,17 +424,29 @@ class Build:
         for component in self.overlay["components"]:
             patterns = [glob_regex(pattern) for pattern in component.get("match", [])]
             compiled.append((component, patterns))
-        matched = defaultdict(list)
+        matched, held = defaultdict(list), defaultdict(list)
         for path in self.files:
             if path in self.owner:
                 continue
             for component, patterns in compiled:
                 if any(pattern.match(path) for pattern in patterns):
-                    self.owner[path] = component["id"]
-                    matched[component["id"]].append(path)
+                    if self.is_legacy(path):
+                        self.legacy[path] = component["id"]
+                        held[component["id"]].append(path)
+                    else:
+                        self.owner[path] = component["id"]
+                        matched[component["id"]].append(path)
                     break
+            else:
+                if self.is_legacy(path):
+                    self.legacy[path] = None
         for component, _ in compiled:
             paths = matched.get(component["id"], [])
+            if not paths and held.get(component["id"]):
+                # Every file of this part is held legacy code: the part is left out of the picture.
+                rule = self.legacy_rule
+                self.leave_out(component["id"], "component", component["label"], {"since": rule["since"], "says": component["label"], "reason": rule["reason"]}, layer=component["layer"], files=len(held[component["id"]]))
+                continue
             python = [path for path in paths if path.endswith(".py")]
             lines = sum(count_lines(self.repo / path) for path in python)
             facts = []
@@ -418,7 +471,7 @@ class Build:
             if models:
                 facts.append(["Model identifiers", f"{len(set(models))}"])
             patterns = component.get("match", [])
-            literal = [pattern for pattern in patterns if "*" not in pattern and "?" not in pattern]
+            literal = [pattern for pattern in patterns if "*" not in pattern and "?" not in pattern and pattern in paths]
             detail = None
             if literal and len(python) <= 6 and (self.repo / literal[0]).is_file():
                 detail = first_paragraph(self.repo / literal[0])
@@ -469,11 +522,14 @@ class Build:
                     self.link(owner, other, "uses")
 
     def coverage(self):
-        engine = [path for path in self.files if path.startswith("src/cells/") and path.endswith(".py")]
+        read = [path for path in self.files if path.startswith("src/cells/") and path.endswith(".py")]
+        legacy = [path for path in read if self.is_legacy(path)]
+        engine = [path for path in read if not self.is_legacy(path)]
         missing = [path for path in engine if path not in self.owner]
         if missing:
             self.warnings.append(f"{len(missing)} engine files belong to no part: {join_names(missing, 8)}")
-        return {"engine_files": len(engine), "engine_files_placed": len(engine) - len(missing)}
+        # `engine_files` counts the files the map draws from; those under the legacy folder are counted apart.
+        return {"engine_files": len(engine), "engine_files_placed": len(engine) - len(missing), "engine_files_read": len(read), "engine_files_legacy": len(legacy)}
 
     # ------------------------------------------------------------ plan document
 
@@ -813,7 +869,8 @@ def main():
     counts = scene["meta"]["counts"]
     print(f"read {repo.name} at {revision}{' (dirty)' if dirty else ''}")
     print(f"{counts['parts']} parts, {counts['relations']} relations; "
-          f"{counts['engine_files_placed']} of {counts['engine_files']} engine files placed")
+          f"{counts['engine_files_placed']} of {counts['engine_files']} engine files placed"
+          + (f", {counts['engine_files_legacy']} left out as legacy code ({counts['engine_files_read']} read)" if counts.get("engine_files_legacy") else ""))
     print("by kind:", counts["by_kind"])
     print("by status:", counts["by_status"])
     if build.proteins:
@@ -821,6 +878,12 @@ def main():
         print(f"protein inventory of {stamp['created']} (engine read at {stamp['read_at']}): {stamp['records']} law records, found {stamp['found']}")
         if stamp["renamed"]:
             print("  renamed since:", ", ".join(f"{item['from']} -> {item['to']}" for item in stamp["renamed"]))
+        if stamp.get("moved"):
+            moves = sorted({item["move"] for item in stamp["moved"]})
+            print(f"  found at their new place, through the engine's path tables ({', '.join(moves)}): {len(stamp['moved'])} files the inventory names")
+        if stamp.get("in_legacy"):
+            records = sum(len(items) for items in stamp["in_legacy"].values())
+            print(f"  law records whose files are held legacy code, left out with it: {records}, in units {', '.join(stamp['in_legacy'])}")
         if stamp["gained"]:
             print(f"  identifiers the engine gained since, not reviewed by the inventory: {stamp['gained']['added']} ({stamp['gained']['where']})")
         for atlas in build.proteins.get("atlases", []):

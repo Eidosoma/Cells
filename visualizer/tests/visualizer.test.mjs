@@ -109,7 +109,14 @@ test("what an overlay leaves out of the picture is named once in the scene, and 
   assert.ok(Array.isArray(listed), "the scene has no list of what is left out: rebuild it");
   // A species held back from the picture for now is named there too, and is nowhere else in the scene.
   const held = Object.keys(overlay.species_held || {});
-  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`)];
+  // A part whose files all stand in the map's legacy folder is left out by that rule, with its reason (the user, 17 November 2026).
+  const legacyParts = listed.filter((item) => item.kind === "component");
+  for (const item of legacyParts) {
+    assert.ok(overlay.legacy && overlay.components.some((part) => part.id === item.id), `${item.id} is left out as legacy code, yet the map has no such part or no legacy rule`);
+    assert.equal(item.reason, overlay.legacy.reason);
+    assert.equal(item.since, overlay.legacy.since);
+  }
+  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`), ...legacyParts.map((item) => item.id)];
   for (const id of held) {
     assert.ok(!scene.species.some((item) => item.id === id), `${id} is held back, yet the scene lists it as a species`);
     assert.ok(!scene.proteins.atlases.some((item) => item.id === id) && !scene.proteins.shelves.some((item) => item.id === id), `${id} is held back, yet the scene carries its atlas or its proteins`);
@@ -216,7 +223,9 @@ test("each protein unit is linked to the engine part that holds its law", () => 
   const ids = new Set(scene.entities.map((entity) => entity.id));
   for (const unit of units) {
     const links = scene.relations.filter((relation) => relation.from === unit.id && relation.kind === "modelled_by");
-    assert.ok(links.length, `${unit.id} is linked to no engine part`);
+    // A unit whose laws all stand in held legacy code, which the map leaves out, links to no part, and the stamp says so.
+    const inLegacy = (scene.proteins.stamp.in_legacy || {})[unit.id.replace("unit.", "")];
+    assert.ok(links.length || inLegacy?.length, `${unit.id} is linked to no engine part`);
     for (const link of links) assert.ok(ids.has(link.to) && !link.to.startsWith("unit."), `${unit.id} -> ${link.to}`);
   }
 });

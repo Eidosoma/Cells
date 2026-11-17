@@ -739,7 +739,14 @@ Each group of the scene belongs to one lens, so the scene says where a part is s
 which part uses which (imports), the registered operators with their contract declarations
 (requires, writes, provides, reads, conflicts), model identifiers, the plan's gates and the
 shared-state table. Every engine file belongs to exactly one part; the extractor warns if
-one does not.
+one does not. Code under `src/cells/legacy/` is left out of the map (the user, 17 November
+2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
+code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
+stand there is not drawn, a part with files of both kinds shows its active files, and the
+build counts them apart ("198 of 198 engine files placed, 341 left out as legacy code").
+The map's patterns are carried through the engine's source moves by `tools/move_paths.py`,
+from the engine's own path tables (`scripts/moves/*-table.json`), with a check that every
+file stands in the part it stood in before.
 
 **What is curated** in `overlay.json`: statuses, plain-language lines, planned parts and
 the capability map. When the record changes, edit the overlay, run `npm run extract` and
@@ -796,8 +803,9 @@ stay out of git (61 runs in 327 files, 96 MB).
    The map's statuses are reviewed by hand at one revision of main. Once main has moved
    past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
    statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
-   main 3b7f1cff on 16 November 2026, again that evening at 050aa741, and late that evening
-   at 1d86a192, which it states.
+   main 3b7f1cff on 16 November 2026, again that evening at 050aa741, late that evening at
+   1d86a192, on 17 November at df2b910b, and after D188's first move at 6a5d509f, which it
+   states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -933,6 +941,15 @@ Ideas kept for after the basics (the user, 14 November 2026):
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
+- With the engine's older code left out of the map, seven parts are no longer drawn in the
+  Engine view (cell removal, membrane redistribution, fuel and mitochondria, injury and
+  resealing, the charged-surface backend, the finite and spatial exterior, calcium and
+  chemistry). Three capabilities' only engine code stands there (energy and mitochondria,
+  calcium, the older families' injury law): the Cell view gives them the record's status
+  all the same, since that code is in use until its replacement lands (the user: "we will
+  replace all the legacy code with new code before removing those"). Thirteen of the
+  protein inventory's 81 law records point into that code, and five units (U37, U38, U45,
+  U46, U47) link to no engine part meanwhile.
 - A model system's stand-in card (shown while its run file is read, or where it fails to
   load) is no longer seen by a browser check, since GARD's own view is registered: its
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
