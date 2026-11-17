@@ -85,6 +85,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026,
+  11:20–14:31 UTC).** They ran from snapshot-e79b4232 on CPUs 6, 7, 22 and 23
+  ([evidence](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/run-e79b4232/)). The protocols themselves stay proposed.
+  - **FR-4 (`fr4-acidification-v1`):** 21 of 21 judged criteria pass. All 8 parts are bitwise
+    equal to its dt study's.
+  - **FR-5 (`fr5-transfer-v1`):** 51 of 51 judged criteria pass. Its 12 parts differ from the dt
+    study's only in the start's extract identity, which was recorded before the launch as
+    expected. The smallest margin is arm R's cargo ledger, at 0.147 of its allowance.
+  - **The energy criterion,** settled before the rehearsal: the residual is at most 2e-3 at both
+    1 ms and 0.5 ms, and must fall at second order. A dated disclosure records that the study's
+    values were already known.
+  - **Across seam F:** every check is bitwise, including a short run through the injury window.
+    G1's 113 worlds hold no FR world, and crossrev holds FR-5 only in reduced form, so these checks
+    are the evidence for FR-4's and FR-5's full worlds.
+  - **The buffered-node predictor** (core-seams step 0 §8): FR-5's arms sit 21–42 times below it.
+    FR-4's control K2 sits 1.8 times below it, at 1 ms.
+  - **Next:** the protocol text is redrafted with no criterion changed, the lead registers both, and
+    the judged runs follow from a fresh snapshot taken after seam F.
+
 - **GARD's G2, the independent component references, merged into main (17 November 2026).**
   `validation/gard/references/`, from gard-g2-references 193eaf0d. Its writer never read the engine's
   code.
