@@ -20,10 +20,14 @@ Each claim with a planted error it must catch (D187):
   only in a world declared `world_role: probe` (§0.2b rule 8: singular at N = r, +inf there);
   planted: the same step in a world without the role, and a role of another value;
 - one declaration, two executions: D152's species and passive reaction entries parse here with
-  `phase` in place of `sites` and their values carried unchanged.
+  `phase` in place of `sites` and their values carried unchanged;
+- world_role comes only from a registered world file: the reader passes it on, the probe driver adds
+  nothing to a world record, and a world the parser refuses is recorded (planted: a driver that adds
+  the role).
 """
 
 import copy
+import json
 
 import pytest
 
@@ -225,3 +229,69 @@ def test_one_declaration_d152_s_entries_parse_with_their_values_unchanged():
     for entry in entries:
         assert by_id[entry["id"]].mu_solution == entry["standard_mu_RT"]
         assert dict(by_id[entry["id"]].moieties) == entry["moieties"]
+
+
+def registered_world(*, role=None):
+    """A minimal registered world (the references' format, ool_references.world@1): a membrane of
+    A, B and C, with A + B + C -> C + C (C on both sides: rule 8's step under @1's measure)."""
+    species = [
+        {"id": n, "moieties": m, "standard_mu_RT": {"bilayer": {"float": mu}}}
+        for n, m, mu in (("A", {"a": 1}, 0.0), ("B", {"b": 1}, 0.0), ("C", {"a": 1, "b": 1}, -0.7))
+    ]
+    out = {
+        "format": "ool_references.world@1",
+        "units": {"time": "s"},
+        "temperature_K": 298.15,
+        "standard_concentration_mM": {"float": 1.0},
+        "phases": {"membrane": {"kind": "condensed"}},
+        "species": species,
+        "places": [{"species": n, "phase": "membrane"} for n in "ABC"],
+        "regular_mixing_chi": [],
+        "steps": [
+            {"id": "r", "law": MASS_ACTION, "locus": "membrane",
+             "reactants": {"A@membrane": 1, "B@membrane": 1, "C@membrane": 1},
+             "products": {"C@membrane": 2}, "forward_rate_per_s": {"float": 1.0},
+             "transition_state_factor": []}
+        ],
+        "initial_state": {"A@membrane": 2, "B@membrane": 2, "C@membrane": 1},
+    }  # fmt: skip
+    if role is not None:
+        out["world_role"] = role
+    return out
+
+
+def added_keys(registered, definition):
+    """World keys a definition carries that its registered file does not state (none may be)."""
+    world = definition["model"]["world"]
+    stated = {"units", "conventions", "species", "phases", "steps", "free_energy", "founder"}
+    stated |= (
+        {"rate_factor"} if any(s["transition_state_factor"] for s in registered["steps"]) else set()
+    )
+    stated |= {"world_role"} if "world_role" in registered else set()
+    return set(world) - stated
+
+
+def test_world_role_comes_only_from_the_registered_file(tmp_path):
+    """§0.2b rule 8: the role is the registered world's own declaration; the reader passes it on as
+    it is, and the probe driver adds nothing to a world record. A world the parser refuses is
+    recorded with the parser's message (planted: a driver that adds the role)."""
+    from validation.assembly_lineages_v2 import probes
+
+    pair = ("multinomial_less_one", "extinct")
+    for role in (None, "probe"):
+        source = registered_world(role=role)
+        made = probes._definition(source, pair, horizon=1.0, events=1, row_every=1)
+        assert added_keys(source, made) == set()
+        assert made["model"]["world"].get("world_role") == role
+    planted = probes._definition(registered_world(), pair, horizon=1.0, events=1, row_every=1)
+    planted["model"]["world"]["world_role"] = "probe"  # Planted: the driver adds the role.
+    assert added_keys(registered_world(), planted) == {"world_role"}
+    # Without the role, rule 8 refuses the world, and the refusal is recorded, not raised.
+    without = probes._definition(registered_world(), pair, horizon=1.0, events=1, row_every=1)
+    assert probes._parsed_or_refusal(tmp_path / "a", without, {"role": "test"}) is None
+    message = json.loads((tmp_path / "a" / "refused.json").read_text())["message"]
+    assert "§0.2b rule 8" in message
+    with_role = probes._definition(registered_world(role="probe"), pair, horizon=1.0, events=1,
+                                   row_every=1)  # fmt: skip
+    spec = probes._parsed_or_refusal(tmp_path / "b", with_role, {"role": "test"})
+    assert spec is not None and spec.model.world.role == "probe"

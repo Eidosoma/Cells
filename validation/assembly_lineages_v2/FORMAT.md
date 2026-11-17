@@ -25,8 +25,10 @@ the earlier wording, "a pair whose common state has an empty membrane has rate 0
 **`world_role`** (§0.2b rule 8), optional, its one value `probe`: a world declared to be probed.
 Under `condensed_measure: multinomial_less_one`, a step with a membrane place on both sides (its
 rate +inf where the membrane holds exactly its reactants) is admitted only in such a world, where a
-probe reports +inf; any other world declaring such a step is refused at parse. The rate-table roles
-(kernel_probe, boundary_probe, closed_world) declare it; the runs do not.
+probe reports +inf; any other world declaring such a step is refused at parse. A probe world may be
+run, and stops `stalled` at N = r. The role comes only from the registered world file, passed on as
+it is: the driver adds nothing to a world record. A role whose world the parser refuses has, in
+place of its probe or bundle, `refused.json` with the parser's message.
 
 Dilute phases (the pool, the lumen) take volume-scaled mass action: activity ff(n, a)/X^a and extent
 X = N_A V c0, with V in litres and c0 = `standard_concentration_mM` × 10⁻³ mol/L. A held pool

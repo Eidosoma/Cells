@@ -18,7 +18,8 @@ The mapping (registered -> engine):
   refuses any but the membrane);
 - regular_mixing_chi: the regular term's pairs, each chi an exact rational read as a float; none
   gives no regular term;
-- initial_state: the founder.
+- initial_state: the founder;
+- world_role (§0.2b rule 8): passed on as it is when the registered file declares it, never added.
 The registered `X` of a dilute phase is the exact value of N_A V c0; it is returned beside the
 definition, for the record (extents).
 """
@@ -47,9 +48,10 @@ def _float(value):
     return value
 
 
-def world(registered, conventions, role=None):
-    """(the engine's world dict, the registered extents {phase: X}) of a registered world; `role`
-    is the world_role the caller declares (probe for a rate table; none for a run)."""
+def world(registered, conventions):
+    """(the engine's world dict, the registered extents {phase: X}) of a registered world. Its
+    world_role, when the registered file declares one, is passed on as it is; the reader adds none
+    (§0.2b rule 8: the role is the registered world's own declaration)."""
     if registered.get("format") != FORMAT:
         raise ValueError(f"a registered world is {FORMAT}, not {registered.get('format')!r}")
     phases = registered["phases"]
@@ -127,15 +129,15 @@ def world(registered, conventions, role=None):
             "catalysing_phase": phase,
             "entries": entries,
         }
-    if role is not None:
-        out["world_role"] = role
+    if "world_role" in registered:
+        out["world_role"] = copy.deepcopy(registered["world_role"])
     extents = {p: Fraction(phases[p]["X"]) for p in phases if "X" in phases[p]}
     return out, extents
 
 
-def definition(registered, conventions, experiment, execution, role=None):
+def definition(registered, conventions, experiment, execution):
     """A complete definition: the registered world under the declared conventions."""
-    the_world, _ = world(registered, conventions, role)
+    the_world, _ = world(registered, conventions)
     return {
         "schema_version": 1,
         "model": {"id": MODEL_ID, "world": the_world},

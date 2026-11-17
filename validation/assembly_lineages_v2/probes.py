@@ -148,7 +148,7 @@ def _registered(inputs, name):
 
 
 def _definition(registered_world, pair, *, horizon, events, row_every, observations=(),
-                trace=True, uniforms=False, lineage=0, role=None):  # fmt: skip
+                trace=True, uniforms=False, lineage=0):  # fmt: skip
     from validation.assembly_lineages_v2 import registered
 
     experiment = {
@@ -167,7 +167,7 @@ def _definition(registered_world, pair, *, horizon, events, row_every, observati
         "molecule_capacity": MOLECULES,
         "chunk_events": CHUNK,
     }
-    return registered.definition(registered_world, tokens(pair), experiment, execution, role)
+    return registered.definition(registered_world, tokens(pair), experiment, execution)
 
 
 # ------------------------------------------------------------------ rate tables
@@ -205,15 +205,18 @@ def _step_work(spec):
 
 
 def _rate_probe(inputs, out, role, world_name, states_file):
-    from cells.core.specs import parse_spec
 
     data = json.loads((Path(inputs) / states_file).read_text())
     states = np.asarray(data["states"], dtype=np.int64)
     registered_world, path = _registered(inputs, world_name)
     for pair in PAIRS:
-        spec = parse_spec(
-            _definition(registered_world, pair, horizon=1.0, events=1, row_every=1, role="probe")
+        spec = _parsed_or_refusal(
+            Path(out) / role / pair_name(pair),
+            _definition(registered_world, pair, horizon=1.0, events=1, row_every=1),
+            {"role": role, "registered": path.name, "registered_sha256": _sha256(path)},
         )
+        if spec is None:
+            continue
         assert [s.id for s in spec.model.world.steps] == data["steps"]
         plus, minus, free = rate_table(spec, data["places"], states)
         write_probe(
@@ -235,17 +238,20 @@ def boundary_probe(inputs, out):
 
 
 def closed_world(inputs, out):
-    from cells.core.specs import parse_spec
 
     data = json.loads((Path(inputs) / "ol1_closed_world_states.json").read_text())
     states = np.asarray(data["states"], dtype=np.int64)
     for name in CLOSED_WORLDS:
         registered_world, path = _registered(inputs, name)
         for pair in PAIRS:
-            spec = parse_spec(
-                _definition(registered_world, pair, horizon=1.0, events=1, row_every=1,
-                            role="probe")
+            spec = _parsed_or_refusal(
+                Path(out) / "closed_world" / name / pair_name(pair),
+                _definition(registered_world, pair, horizon=1.0, events=1, row_every=1),
+                {"role": "closed_world", "registered": path.name,
+                 "registered_sha256": _sha256(path)},
             )  # fmt: skip
+            if spec is None:
+                continue
             assert [s.id for s in spec.model.world.steps] == data["steps"]
             plus, minus, free = rate_table(spec, data["places"], states)
             write_probe(
@@ -298,6 +304,25 @@ def _bundle(directory, spec, provenance):
     run = runner.run(spec).check()
     records.write_run(directory, run, provenance=provenance)
     return run
+
+
+def _parsed_or_refusal(directory, definition, provenance):
+    """The parsed definition, or None after writing refused.json with the engine parser's message
+    in `directory` (§0.2b rule 8, for one: the world's own declaration decides, never the
+    driver)."""
+    from cells.core.specs import ConfigError, parse_spec
+
+    try:
+        return parse_spec(definition)
+    except ConfigError as error:
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=False)
+        _json(directory / "refused.json",
+              {"format": PROBE_FORMAT, "refused": True, "message": str(error),
+               "conventions": definition["model"]["world"]["conventions"],
+               "rule": "the engine's parser (cells.assembly_lineages@2's spec)",
+               **provenance})  # fmt: skip
+        return None
 
 
 def _run_or_refusal(directory, definition, provenance):
