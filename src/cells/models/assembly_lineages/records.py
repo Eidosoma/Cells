@@ -39,6 +39,7 @@ from cells.models.assembly_lineages import (
     factors,
     fission,
     kernel,
+    keys,
     ledger,
     model,
 )
@@ -58,14 +59,23 @@ LAYERS = (
     {"id": "lineage", "label": "Fission and continuation", "representation": "prescribed"},
 )
 BASES = {
-    "row": "the lineage's saved rows: the founder (row_kind start); per fission the parent "
-    "before the split (parent) and the followed daughter after it (daughter), both at the "
-    "fission's time, so the row saved at a fission's time holds the state before it; and the "
-    "end state when the lineage stops between fissions (end). Times: row_time",
-    "fission": "one entry per fission, in order. Times: fission_time",
-    "event": "one entry per committed event, in order (the event trace). Times: event_time",
-    "growth": "one entry per growth, from a birth (the founder or a daughter) to the next parent "
-    "or to the end",
+    "row": "single lineage: the run's start (row_kind start: the founder, or the state a run from "
+    "a checkpoint continues); per fission the parent before the split (parent) and the followed "
+    "daughter after it (daughter), both at the fission's time, so the row saved at a fission's "
+    "time holds the state before it; and always a final row (end), the lineage's state when the "
+    "run ended. Every descendant: two rows per life in lives order, its birth (start for the "
+    "founder, daughter otherwise) and its end (parent if it divided, end otherwise). Each row's "
+    "assembly is `occupant`; cumulative records are its lineage path's, from the founder. "
+    "Times: row_time",
+    "fission": "one entry per fission: in order along the lineage (single lineage), or in lives "
+    "order of the parents (every descendant). Times: fission_time",
+    "event": "one entry per committed event, in order (the event trace): grouped by growth, "
+    "growth by growth. Times: event_time",
+    "growth": "one entry per life that ran in this run, from its birth (or the run's start) to "
+    "its end (or the run's end), in lives order: single lineage, the slot's occupants; every "
+    "descendant, every life (0 events for a life that never ran). growth_carrier names it",
+    "life": "one entry per life: a birth and its end, in the order (generation, parent key, "
+    "daughter index) (keys.py, the lives table)",
 }
 ROW_KINDS = {"0": "start", "1": "parent", "2": "daughter", "3": "end"}
 _M, _X, _C = MODEL_ID, EXCHANGE_LAW, continuation.CONTINUATION
@@ -224,6 +234,9 @@ RECORDS = {
         says="+(i+1): a molecule of type i joined; -(i+1): one left",
     ),
     "events_per_growth": _record("growth", ["growth"], "events", "assemblies", _M),
+    "growth_carrier": _record(
+        "growth", ["growth"], "carrier key", "lineage", _C, says="the life whose growth it is"
+    ),
     "event_uniforms": _record(
         "event",
         ["event", "draw"],
@@ -244,6 +257,53 @@ RECORDS = {
         "fission", ["fission"], "1", "lineage", _C, diagnostic="the continuation stream's draw"
     ),
 }
+_LIVES = {
+    "life_key": ("carrier key", "s * 2**32 + c, written s:c; its id is carrier:a<s>:<c>"),
+    "life_slot": (
+        "1",
+        "the slot it occupies at birth; -1: none (an unfollowed daughter, or "
+        "every-descendant mode, which has no slots)",
+    ),
+    "life_parent": (
+        "carrier key",
+        "the life it was split from; -1: none (a founder, or a life "
+        "continued from a checkpoint, whose parent is in that run)",
+    ),
+    "life_birth_kind": ("1", "founder, division or continued (run.json lives.birth_kinds)"),
+    "life_birth_time": (CLOCK, "the time of its birth (the run's start for a continued life)"),
+    "life_birth_event": ("events", "its lineage path's cumulative event count at its birth"),
+    "life_birth_fission": ("1", "the fission-table entry that made it; -1: none"),
+    "life_end_reason": (
+        "1",
+        "divided, extinct, not_followed or censored (run.json lives.end_reasons)",
+    ),
+    "life_censored_by": (
+        "1",
+        "for a censored life: horizon, event_limit, stalled, budget or "
+        "stop (run.json lives.censored_by); empty otherwise",
+    ),
+    "life_end_time": (CLOCK, "the time its record ends"),
+    "life_end_event": ("events", "its lineage path's cumulative event count at its end"),
+    "life_end_fission": (
+        "1",
+        "the fission-table entry that ended it (it divided, or it was "
+        "born ended: extinct or not followed); -1: none",
+    ),
+    "life_generation": ("fissions", "fissions since its founder"),
+    "life_root": ("carrier key", "its founder's key"),
+    "life_sublineage": (
+        "1",
+        "the sub-lineage its own daughters' keys come from; -1: it takes "
+        "none (it is extinct at birth, or not followed)",
+    ),
+    "life_size_at_birth": ("molecules", "its molecules at its birth (or at the run's start)"),
+}
+RECORDS.update(
+    {
+        name: _record("life", ["life"], unit, "lineage", _C, says=says)
+        for name, (unit, says) in _LIVES.items()
+    }
+)
 
 
 def world_record(world):
@@ -318,13 +378,16 @@ def run_record(run, world_id):
         if entry["unit"] == CLOCK:
             entry["unit"] = clock
         declared[name] = entry
-    return {
+    record = {
         "format": RUN_FORMAT,
         "world": world_id,
         "founder": "world",
         "model": MODEL_ID,
         "engine_models": model.components(spec),
         "definition_sha256": spec.fingerprint,
+        "run": {"qualifier": run.qualifier, "start": run.start},
+        "keys": keys.RULE,
+        "lives": keys.LIVES,
         "law": _law(run),
         "mode": spec.execution.mode,
         "stream": lineage_spec.stream_identity(spec),
@@ -345,6 +408,9 @@ def run_record(run, world_id):
         "records": declared,
         "diagnostics": {"uniforms": spec.experiment.uniforms},
     }
+    if run.bound is not None:
+        record["bound"] = run.bound
+    return record
 
 
 def _arrays(run):
@@ -352,6 +418,7 @@ def _arrays(run):
     out.update(run.fissions)
     out.update(run.trace)
     out.update(run.diagnostics)
+    out.update(run.lives)
     return out
 
 
@@ -377,6 +444,9 @@ def write_run(directory, run, *, provenance=None):
     _write_json(directory / "resolved_config.json", run.spec.to_dict())
     summary = {
         "status": run.status,
+        "qualifier": run.qualifier,
+        "start": run.start,
+        "lives": int(len(run.lives["life_key"])),
         "world": world["id"],
         "law": record["law"]["id"],
         "form": record["law"]["form"],
@@ -401,7 +471,12 @@ def write_run(directory, run, *, provenance=None):
         "blas": blas_threads.record(),
         "random_state": lineage_spec.stream_identity(run.spec),
         "timings": run.timings,
-        "provenance": provenance or {"operation": "fresh"},
+        "provenance": provenance
+        or (
+            {"operation": "fresh"}
+            if run.start == "fresh"
+            else {"operation": run.start["kind"], "checkpoint": run.start["checkpoint"]}
+        ),
         "files_sha256": {
             str(p.relative_to(directory)): _sha256(p)
             for p in sorted(directory.rglob("*"))

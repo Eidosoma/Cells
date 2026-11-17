@@ -100,21 +100,26 @@ def replay(spec, event_uniforms, partition_uniforms, continuation_uniform):
             out["status"] = "extinct"
             return out
         if join and size == world.fission.size:
-            k = len(out["splits"])
-            first = _split(counts, size, partition_uniforms[k], partition)
-            second = counts - first
-            pick = _choose(chooser, continuation_uniform[k], (int(first.sum()), int(second.sum())))
-            out["splits"].append(first)
-            out["followed"].append(pick)
-            out["similarity"].append((_cosine(counts, first), _cosine(counts, second)))
-            counts = (first if pick == 0 else second).copy()
-            age = 0
-            if counts.sum() == 0:
-                out["status"] = "extinct"
-                return out
-            if len(out["splits"]) >= spec.experiment.fissions:
-                out["status"] = "complete"
-                return out
+            while True:  # A daughter born at the fission size splits at once.
+                k = len(out["splits"])
+                first = _split(counts, size, partition_uniforms[k], partition)
+                second = counts - first
+                sizes = (int(first.sum()), int(second.sum()))
+                pick = _choose(chooser, continuation_uniform[k], sizes)
+                out["splits"].append(first)
+                out["followed"].append(pick)
+                out["similarity"].append((_cosine(counts, first), _cosine(counts, second)))
+                counts = (first if pick == 0 else second).copy()
+                size = sizes[pick]
+                age = 0
+                if size == 0:
+                    out["status"] = "extinct"
+                    return out
+                if len(out["splits"]) >= spec.experiment.fissions:
+                    out["status"] = "complete"
+                    return out
+                if size < world.fission.size:
+                    break
         elif age >= limit:
             out["status"] = "event_limit"
             return out

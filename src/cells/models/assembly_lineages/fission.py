@@ -2,8 +2,11 @@
 
 The trigger (GARD_DESIGN §1.5, 1). An assembly splits when a join brings its size N to the
 declared `size`. With single-molecule events the boundary is exact: there is no overshoot, and
-nothing is trimmed (the engine refuses, never repairs). Its read of N is `current`, a read of the
-exchange law's own counts within the family, so no cross-operator gap arises.
+nothing is trimmed (the engine refuses, never repairs). A daughter is never larger than its
+parent, but a binomial partition can give one daughter every molecule, so a daughter can be born
+with N = `size`; it splits at once, at its birth, before any event (unless it is at the run's
+fission limit). Its read of N is `current`, a read of the exchange law's own counts within the
+family, so no cross-operator gap arises.
 
 The split, a declared random partition of the parent's N molecules into two daughters:
 - `exact_fraction` (fraction f): floor(f N) molecules, a uniformly random subset of the N, go to
@@ -52,7 +55,10 @@ DECLARATION = {
     "writes": "the slot's composition: the followed daughter replaces the parent (continuation)",
     "energy_role": "work: the split's change in -k_BT ln pi, from an unmodelled agent (signed)",
     "rules": dict(RULES),
-    "trigger": "a join that brings the size N to `size` (exact: single-molecule events)",
+    "trigger": "a join that brings the size N to `size` (exact: single-molecule events); a "
+    "daughter born with N = `size` (a binomial partition can give one daughter every molecule) "
+    "splits at once, at its birth, before any event (the horizon first: a daughter at the "
+    "fission limit is not split)",
     "places": "M = execution.molecule_capacity molecule places, by type in declared order: places "
     "0 .. n_0 - 1 hold type 0, the next n_1 type 1, and so on; places N .. M - 1 are empty",
     "draw": "M uniforms u_0 .. u_(M-1), the partition stream's draw at counter 0, keyed by the "

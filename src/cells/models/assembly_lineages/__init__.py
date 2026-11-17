@@ -14,9 +14,12 @@ derived from physical chemistry. Its pieces, one module each:
 * balance: the kernel's local detailed-balance check, which classifies a law as passive;
 * fission, continuation: the size-triggered fission with its exact random partition, and the
   continuation of one daughter, with the lineage table;
+* keys: carrier keys (a counter per sub-lineage), lives with their end reasons, and the run
+  qualifier: the relationship keys, frozen (D202);
 * ledger: the stochastic thermodynamic ledger (event heat, declared non-monotone);
 * records: the run bundle (world record, run record, arrays and manifest);
-* runner, model: the family's own runner shape, and its entry in the model registry;
+* runner, model: the family's own runner shape (one lineage, every descendant, checkpoints and
+  branches), and its entry in the model registry;
 * reference: a host oracle that replays the kernel's events from supplied uniforms.
 
 A rate-factor law is optional. A world without one runs exchange alone, and its programs hold no
@@ -44,4 +47,6 @@ OPERATOR_INTERFACE = "assembly_lineages.operator@1"
 # the public call, as an outside package would; factors.load_homes imports them by name, once.
 LAW_HOMES = ("cells.models.assembly_lineages.exchange", "cells.models.assembly_lineages.gard")
 
-MODE = "single_lineage"
+MODE = "single_lineage"  # One continuing assembly per world: one daughter is followed.
+EVERY_DESCENDANT = "every_descendant"  # Every daughter lives (RELATIONSHIPS_DESIGN §1.4, P-a).
+MODES = (MODE, EVERY_DESCENDANT)
