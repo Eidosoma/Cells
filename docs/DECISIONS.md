@@ -6895,3 +6895,26 @@ adviser in on this". The lead reviewed it with the advisor.
   - the README's levels-of-detail paragraph was reworded as an aim;
   - the gate wording was made precise: "0 changed against the baseline".
 
+## D215: The core may change while the first experiments run; gates do not
+
+2026-11-17, evening. On the lead's rulings for OL1's design check, the user said: "Sounds good on the
+rulings, get adviser also on it - and as we are just doing the first experiments, find to change the
+core and even so we have to keep on upgfading". The lead reviewed it with the advisor.
+
+- **The lead's reading:** this is permission to change the core where that helps, not an instruction to
+  reverse the rulings.
+  - It relaxes source freezes kept for their own sake, and the bias toward duplicating code to avoid
+    touching a frozen file.
+  - It does not relax gates, registered results, D148, or guards such as FR-18.
+- **Applied to the origin-of-life engine:**
+  - **OL1 keeps Option A** (a separate `cells.assembly_lineages@2` package) for now.
+  - **At OL3, the default is one shared run loop** for `@1` and `@2` behind `@1`'s invariance gate,
+    not a copy. The probe-set comparison's exemptions are widened deliberately then, after the demo.
+  - **Ruling 3 is revisited:** `@1` gets the driven-law guard under its invariance gate, if a second
+    unsourced driven law is not already refused there.
+- **D199's U6(a) is amended.** The GARD limit is exact only under the declared measure that matches
+  G1: `condensed_measure: multinomial_less_one` with `last_molecule: extinct`. The physical measure,
+  `multinomial` with `kept`, reaches GARD to O(1/N).
+  - OL6 reports both.
+  - In OL9's ladder, the switch of measure is its own rung.
+
