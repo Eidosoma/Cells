@@ -6367,6 +6367,24 @@ refusal names the tag of the tree before the move, where it restores.
   worlds that refusal 4 per move would newly refuse, and one owner per file;
 - P1 and the booking probe, in scratch, once their criteria are committed.
 
+## D196: Older code is a reference until the modular engine has learned from it, then it is dropped
+
+2026-11-17. The user said to the visualizer session: "no legacy code, it will be removed - we're
+still building Cells so not really any legacy data". The user said to the lead: "when we have
+learned use the old code then we can drop it".
+
+- **`src/cells/legacy/` (D188's move 1) is a reference, not a supported surface.** No new work goes
+  into it, and it is kept only as far as the gates need.
+- **A capability's legacy code and its tests are dropped once the modular engine covers that
+  capability,** having learned from the old code. The capabilities that live only in `legacy/`
+  today:
+  - calcium handling, to be rebuilt with the human cardiac laws (D183, D184);
+  - energy and mitochondria, to be rebuilt with D193;
+  - the older families' injury law. FR-5's `patch_damage` kind already covers it.
+- **Dropping comes as one batch the user approves,** as D187 and D189 did. The tree is tagged first,
+  and a coverage check lists what each removal would lose.
+- **The viewer's map already leaves out `legacy/`.**
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
