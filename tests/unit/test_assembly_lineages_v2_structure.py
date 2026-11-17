@@ -131,7 +131,7 @@ def test_the_bundle_declares_every_array_the_runner_writes():
     }  # fmt: skip
     written = rows | {"event_time", "event_channel", "event_uniforms"}
     assert set(records.RECORDS) == written
-    for name, entry in records.RECORDS.items():
+    for entry in records.RECORDS.values():
         assert entry["base"] in records.BASES and entry["unit"]
     assert records.ROW_LEGEND == {"0": "start", "1": "periodic", "2": "end", "3": "observed"}
     assert runner.ROW_KINDS == ("start", "periodic", "end", "observed")

@@ -3,7 +3,8 @@
 **The law.** For a step with forward rate constant k_f (`forward_rate_per_s`, D152's key, in the
 activity form), one direction's rate at its firing state n is
 
-    a(n) = k × E(m) × Π_dilute ff(n_p, a_p)/X_p^a_p × Π_held (c_s/c0)^a_s × Π_mem ff(n_i, a_i)/ff(N − c, r)
+    a(n) = k × E(m) × Π_dilute ff(n_p, a_p)/X_p^a_p × Π_held (c_s/c0)^a_s
+                    × Π_mem ff(n_i, a_i)/ff(N − c, r)
 
 - k is k_f for the forward and k⁻ = k_f exp(Σ_p ν_p μ°_p) for the reverse. The reverse is this same
   law applied to the products: with the exact ideal F (ideal_mixing.py) it is identical to the pair
@@ -89,7 +90,8 @@ def membrane_factor(view, offset, xp):
     numerator = M - r_star + 1
     general = xp.where(
         defined,
-        safe_log(numerator.astype(np.float64), xp) - xp.where(defined, head - gather(lf, M - r, xp), 0.0),
+        safe_log(numerator.astype(np.float64), xp)
+        - xp.where(defined, head - gather(lf, M - r, xp), 0.0),
         xp.where(numerator > 0, xp.inf, -xp.inf),
     )
     return xp.where(r_star == r, cancelled, general)
@@ -115,9 +117,7 @@ def log_direction(view, locus_membrane, log_extent_dilute, offset, xp):
         + xp.where(view.held, kf * view.log_activity, 0.0)
     )
     activity = entry_sum(terms, xp)
-    extent = xp.where(
-        locus_membrane, membrane_factor(view, offset, xp), log_extent_dilute
-    )
+    extent = xp.where(locus_membrane, membrane_factor(view, offset, xp), log_extent_dilute)
     return xp.where(feasible, activity + extent, -xp.inf)
 
 

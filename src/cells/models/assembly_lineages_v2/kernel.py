@@ -297,9 +297,13 @@ def log_rates(counts, totals, factor_state, term_states, layout, structure, xp=j
 def totals_of(counts, layout, xp=jnp):
     """Each phase's count over its finite places."""
     finite = xp.where(layout.place_held, 0, counts)
-    return xp.zeros(3, dtype=counts.dtype).at[layout.place_phase].add(finite) if xp is jnp else (
-        np.bincount(np.asarray(layout.place_phase), weights=np.asarray(finite), minlength=3).astype(
-            np.int64
+    return (
+        xp.zeros(3, dtype=counts.dtype).at[layout.place_phase].add(finite)
+        if xp is jnp
+        else (
+            np.bincount(
+                np.asarray(layout.place_phase), weights=np.asarray(finite), minlength=3
+            ).astype(np.int64)
         )
     )
 

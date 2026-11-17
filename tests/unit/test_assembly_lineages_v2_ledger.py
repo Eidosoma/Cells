@@ -65,14 +65,16 @@ def test_the_ideal_term_is_exact_and_its_change_matches_its_value():
         totals = kernel.totals_of(counts, layout, np)
         for forward in (True, False):
             v = kernel.view(counts, totals, layout, structure.offset, forward, np)
-            change = (v.other - v.coeff)  # The direction's move at its entries.
+            change = v.other - v.coeff  # The direction's move at its entries.
             delta = ideal_mixing.delta((), (), v, change, np)
             count_change, _ = runner.changes(layout, structure)
             for r in range(R):
                 after = counts + count_change[r if forward else structure.steps + r]
                 if np.any(after < 0):
                     continue
-                exact = ideal_mixing.value(after, tables, ()) - ideal_mixing.value(counts, tables, ())
+                exact = ideal_mixing.value(after, tables, ()) - ideal_mixing.value(
+                    counts, tables, ()
+                )
                 assert delta[r] == pytest.approx(exact, abs=1e-11)
     # ln n! exactly: one membrane species' term at n molecules, against math.lgamma.
     n = np.zeros(structure.places, dtype=np.int64)

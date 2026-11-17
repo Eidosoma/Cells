@@ -38,6 +38,7 @@ import numpy as np
 from cells.core.specs import ConfigError
 from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import MODE, balance, kernel, ledger, model
+from cells.models.assembly_lineages_v2.spec import world_id
 
 ROW_KINDS = ("start", "periodic", "end", "observed")
 START, PERIODIC, END, OBSERVED = range(4)
@@ -188,7 +189,12 @@ def run_lanes(specs):
         raise ConfigError("Lanes share one backend")
     kernel.refuse_unknown(structure)
     verdict = balance.verdict()  # Refuses a kernel that fails the identity on its probe.
-    reports = [balance.world_report(s) for s in specs]
+    by_world = {}  # The world's own report, once per distinct world (lanes often share one).
+    for s in specs:
+        key = world_id(s.model.world)
+        if key not in by_world:
+            by_world[key] = balance.world_report(s)
+    reports = [by_world[world_id(s.model.world)] for s in specs]
     device = execution_device(specs[0].execution.backend)
     host_layouts = [model.layout(s) for s in specs]
     layout = jax.device_put(_stack(host_layouts), device)
@@ -243,7 +249,9 @@ def run_lanes(specs):
             "structure and lane count)",
         }
         results.append(
-            _assemble(spec, structure, host_layouts[i], verdict, reports[i], holders[i], final, timings)
+            _assemble(
+                spec, structure, host_layouts[i], verdict, reports[i], holders[i], final, timings
+            )
         )
     return results
 

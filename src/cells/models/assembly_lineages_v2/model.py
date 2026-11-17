@@ -144,7 +144,9 @@ def layout(spec):
     if world.rate_factor is not None:
         law_id, data = world.rate_factor
         factor = registry.lookup(law_id).layout(data, world, R, P)
-    terms = tuple(registry.lookup(law_id).layout(data, world, P) for law_id, data in world.terms[1:])
+    terms = tuple(
+        registry.lookup(law_id).layout(data, world, P) for law_id, data in world.terms[1:]
+    )
     return Layout(
         entry_place=place,
         entry_alpha=alpha,

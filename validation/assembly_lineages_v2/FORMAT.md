@@ -2,8 +2,8 @@
 
 The files describe themselves; this page says where to look. Nothing here needs the engine's code.
 The physical choices are the lead's rulings in `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` §0.2a (D215,
-amended 17 November 2026). The token names are those of the registered conventions,
-`ol1_conventions.json`.
+amended 17 November 2026, twice: "The last molecule" and "The empty common state") and §0.2b
+rule 8. The token names are those of the registered conventions, `ol1_conventions.json`.
 
 ## The declared conventions (every bundle and every probe states all six)
 
@@ -14,7 +14,19 @@ amended 17 November 2026). The token names are those of the registered conventio
 | `membrane_kinetics` | `count_on_m` | A membrane reactant's activity is drawn without replacement, Π ff(n_i, a_i)/ff(N − c, r) at the firing state; the membrane's extent is E(m) = N(m) − c + 1 on the common state m = min(n, n + ν) |
 | `lumen_volume` | `declared` | The lumen's volume_L is a constant (OL1's registered worlds have no lumen) |
 | `empty_catalyst_phase` | `uncatalysed` | g = 1 where the membrane (the only catalysing phase in OL1) is empty at m |
-| `last_molecule` | `kept`, `reversible`, `extinct` | `kept`: every pair one of whose states has an empty membrane has rate 0, so it never empties. `reversible` (c = 0 only): the empty membrane is an ordinary state. `extinct` (c = 1 only): a channel whose result empties the membrane, in either direction, fires at the pair rule's cancelled form, 1/ff(N − 1, r − 1) for E(m)/ff(N − 1, r) (k⁻·1 for the last molecule's leave), has no reverse, and ends the run (status `extinct`); its heat is booked against F_mem(empty) = 0 |
+| `last_molecule` | `kept`, `reversible`, `extinct` | `kept` "gives rate zero only to a pair one of whose end states has an empty membrane. That way the membrane never empties, and nothing else is frozen" (§0.2a). `reversible` (c = 0 only): the empty membrane is an ordinary state. `extinct` (c = 1 only): a channel whose result empties the membrane, in either direction, fires at the pair rule's cancelled form, 1/ff(N − 1, r − 1) for E(m)/ff(N − 1, r) (k⁻·1 for the last molecule's leave), has no reverse, and ends the run (status `extinct`); its heat is booked against F_mem(empty) = 0 |
+
+**The empty common state** (§0.2a, as ruled): "Wherever the membrane factor is 0/0, the cancelled
+form applies, under every `last_molecule` token. That is the case when a step's common state m has an
+empty membrane while neither end state does: a lone molecule changing form, or two joining. It is
+the factor's continuous extension, so detailed balance holds as for every other pair." It replaces
+the earlier wording, "a pair whose common state has an empty membrane has rate 0".
+
+**`world_role`** (§0.2b rule 8), optional, its one value `probe`: a world declared to be probed.
+Under `condensed_measure: multinomial_less_one`, a step with a membrane place on both sides (its
+rate +inf where the membrane holds exactly its reactants) is admitted only in such a world, where a
+probe reports +inf; any other world declaring such a step is refused at parse. The rate-table roles
+(kernel_probe, boundary_probe, closed_world) declare it; the runs do not.
 
 Dilute phases (the pool, the lumen) take volume-scaled mass action: activity ff(n, a)/X^a and extent
 X = N_A V c0, with V in litres and c0 = `standard_concentration_mM` × 10⁻³ mol/L. A held pool
@@ -30,9 +42,10 @@ w = −Σ ν μ_held, μ_held = μ°_sol + ln(c/c0).
 - **g(m)** = 1 + Σ_j β_rj m_j/N(m), with β = e^ΔΔG‡ − 1, over the membrane at m (1 if it is empty).
 - **The membrane factor** E(m)/ff(N − c, r) is (N − c − r* + 1)/ff(N − c, r), with r* the
   direction's net membrane consumption. It is evaluated cancelled, 1/ff(N − c, r − 1), wherever
-  r* = r ≥ 1. Where a membrane place is on both sides (r* < r), under c = 1 the factor is singular
-  at N = r: the rate is +inf there. A run that reaches such a state stops `stalled`; a probe
-  reports +inf.
+  r* = r ≥ 1, which is its value at a 0/0 (the empty common state, above). Where a membrane place is
+  on both sides (r* < r), under c = 1 the factor is singular at N = r: the rate is +inf there, in a
+  `world_role: probe` world only (§0.2b rule 8). A run that reaches such a state stops `stalled`;
+  a probe reports +inf.
 - k_f is applied after the exponential, so a rate constant scaled by a power of two scales every
   rate exactly.
 
@@ -46,6 +59,10 @@ w = −Σ ν μ_held, μ_held = μ°_sol + ln(c/c0).
 - An event whose time would pass the horizon is not committed.
 
 ## A run bundle (ledger_run, replay, other_stream, rescale_pair)
+
+A run whose world the engine's parser refuses (§0.2b rule 8) has, in place of a bundle,
+`refused.json`: {format, refused: true, message (the parser's), conventions, rule, and the
+provenance of the run it would have been}.
 
 A directory with world.json, run.json, records.npz, resolved_config.json, summary.json and
 manifest.json (each file's SHA-256, written last).

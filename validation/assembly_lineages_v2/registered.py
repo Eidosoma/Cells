@@ -26,7 +26,12 @@ definition, for the record (extents).
 import copy
 from fractions import Fraction
 
-from cells.models.assembly_lineages_v2 import IDEAL_MIXING, MODEL_ID, REGULAR_MIXING, TRANSITION_STATE
+from cells.models.assembly_lineages_v2 import (
+    IDEAL_MIXING,
+    MODEL_ID,
+    REGULAR_MIXING,
+    TRANSITION_STATE,
+)
 
 FORMAT = "ool_references.world@1"
 MAPPED_STEP_KEYS = {"id", "law", "locus", "reactants", "products", "forward_rate_per_s",
@@ -42,8 +47,9 @@ def _float(value):
     return value
 
 
-def world(registered, conventions):
-    """(the engine's world dict, the registered extents {phase: X}) of a registered world."""
+def world(registered, conventions, role=None):
+    """(the engine's world dict, the registered extents {phase: X}) of a registered world; `role`
+    is the world_role the caller declares (probe for a rate table; none for a run)."""
     if registered.get("format") != FORMAT:
         raise ValueError(f"a registered world is {FORMAT}, not {registered.get('format')!r}")
     phases = registered["phases"]
@@ -116,14 +122,20 @@ def world(registered, conventions):
     }
     if entries:
         phase = "membrane" if catalysing == {"membrane"} else sorted(catalysing - {"membrane"})[0]
-        out["rate_factor"] = {"law": TRANSITION_STATE, "catalysing_phase": phase, "entries": entries}
+        out["rate_factor"] = {
+            "law": TRANSITION_STATE,
+            "catalysing_phase": phase,
+            "entries": entries,
+        }
+    if role is not None:
+        out["world_role"] = role
     extents = {p: Fraction(phases[p]["X"]) for p in phases if "X" in phases[p]}
     return out, extents
 
 
-def definition(registered, conventions, experiment, execution):
+def definition(registered, conventions, experiment, execution, role=None):
     """A complete definition: the registered world under the declared conventions."""
-    the_world, _ = world(registered, conventions)
+    the_world, _ = world(registered, conventions, role)
     return {
         "schema_version": 1,
         "model": {"id": MODEL_ID, "world": the_world},

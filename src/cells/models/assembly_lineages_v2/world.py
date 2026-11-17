@@ -13,12 +13,14 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
      "steps": [{"id", "reactants", "products", "phase" | "locus", "law", "forward_rate_per_s"}],
      "free_energy": [{"law": "cells.ideal_mixing@1"}, {"law": "cells.regular_mixing@1", ...}],
      "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
-     "founder": {"A@membrane": 10, ...}}                       every finite place, explicitly
+     "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
+     "world_role": "probe"}                                    optional (§0.2b rule 8)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
 species_registry.parse_identity) and `standard_mu_RT`. Here the potential is given per phase kind,
-`{"solution": μ°/RT at c0, "bilayer": μ°/RT at mole fraction 1}`; D152's single number is accepted as
+`{"solution": μ°/RT at c0, "bilayer": μ°/RT at mole fraction 1}`; D152's single number is accepted
+as
 the solution potential. A species placed in a phase has that phase kind's potential. The world's
 table is the one authority for standard potentials until the registry has them per phase (R7): no
 step carries a ΔG° of its own.
@@ -62,8 +64,10 @@ WORLD_KEYS = {
     "free_energy",
     "rate_factor",
     "founder",
+    "world_role",
 }
-WORLD_REQUIRED = WORLD_KEYS - {"rate_factor"}
+WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role"}
+ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 
 
@@ -132,6 +136,7 @@ class World:
     terms: tuple  # ((law ID, parsed data), ...), in declared order.
     rate_factor: tuple | None  # (law ID, parsed data), or None.
     founder: tuple  # Counts per place (0 for a held place).
+    role: str | None = None  # "probe" (§0.2b rule 8), or None: a world to run.
 
     @property
     def place_names(self):
@@ -268,7 +273,9 @@ def parse_phases(raw, species):
             places += [Place(n, phase) for n in names]
             continue
         require_fields(block, {"volume_L", "species"}, f"world: phases: {phase}")
-        volume = finite_number(block["volume_L"], f"world: phases: {phase}: volume_L", positive=True)
+        volume = finite_number(
+            block["volume_L"], f"world: phases: {phase}: volume_L", positive=True
+        )
         volumes.append((phase, volume))
         if phase == LUMEN:
             names = _species_list(block["species"], phase, known)
@@ -293,7 +300,9 @@ def parse_phases(raw, species):
                 raise ConfigError(f"world: phases: pool names {name!r}, not a declared species")
             held = None
             if kind == "held":
-                held = finite_number(entry["held_mM"], f"pool species {name}: held_mM", positive=True)
+                held = finite_number(
+                    entry["held_mM"], f"pool species {name}: held_mM", positive=True
+                )
             places.append(Place(name, phase, held))
             listed.append(name)
         if len(set(listed)) != len(listed):
@@ -412,7 +421,9 @@ def parse_step(raw, world_places, species, laws):
         )
     if raw["law"] not in laws:
         raise ConfigError(f"world: step {step}'s law is one of {', '.join(sorted(laws))}")
-    rate = finite_number(raw["forward_rate_per_s"], f"step {step}: forward_rate_per_s", positive=True)
+    rate = finite_number(
+        raw["forward_rate_per_s"], f"step {step}: forward_rate_per_s", positive=True
+    )
     return Step(step, form, reactants, products, where, raw["law"], rate)
 
 

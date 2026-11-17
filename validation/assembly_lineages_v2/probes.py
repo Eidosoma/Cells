@@ -1,4 +1,4 @@
-"""The probe driver of cells.assembly_lineages@2: the engine on OL1's registered inputs (OL5's roles).
+"""The probe driver of cells.assembly_lineages@2: the engine on OL1's registered inputs (OL5).
 
 OL1's independent references register their inputs (format ool_references.*@1); their harness reads
 the engine's saved outputs by role. This driver runs the engine on those inputs and saves the
@@ -7,7 +7,8 @@ tables and ensembles. It reads only the inputs' files, never the references' cod
 
     python -m validation.assembly_lineages_v2.probes freeze OUT
         freezes the checkout's source (validation/source_snapshot.py) into OUT/source;
-    cd OUT/source && PYTHONPATH=src:. python -m validation.assembly_lineages_v2.probes run INPUTS OUT
+    cd OUT/source && PYTHONPATH=src:. \
+        python -m validation.assembly_lineages_v2.probes run INPUTS OUT
         runs from that snapshot (so every record names the revision) on the registered inputs'
         directory INPUTS, writing OUT/roles.json, OUT/FORMAT.md and one directory per role.
 
@@ -147,7 +148,7 @@ def _registered(inputs, name):
 
 
 def _definition(registered_world, pair, *, horizon, events, row_every, observations=(),
-                trace=True, uniforms=False, lineage=0):  # fmt: skip
+                trace=True, uniforms=False, lineage=0, role=None):  # fmt: skip
     from validation.assembly_lineages_v2 import registered
 
     experiment = {
@@ -166,7 +167,7 @@ def _definition(registered_world, pair, *, horizon, events, row_every, observati
         "molecule_capacity": MOLECULES,
         "chunk_events": CHUNK,
     }
-    return registered.definition(registered_world, tokens(pair), experiment, execution)
+    return registered.definition(registered_world, tokens(pair), experiment, execution, role)
 
 
 # ------------------------------------------------------------------ rate tables
@@ -210,7 +211,9 @@ def _rate_probe(inputs, out, role, world_name, states_file):
     states = np.asarray(data["states"], dtype=np.int64)
     registered_world, path = _registered(inputs, world_name)
     for pair in PAIRS:
-        spec = parse_spec(_definition(registered_world, pair, horizon=1.0, events=1, row_every=1))
+        spec = parse_spec(
+            _definition(registered_world, pair, horizon=1.0, events=1, row_every=1, role="probe")
+        )
         assert [s.id for s in spec.model.world.steps] == data["steps"]
         plus, minus, free = rate_table(spec, data["places"], states)
         write_probe(
@@ -239,7 +242,10 @@ def closed_world(inputs, out):
     for name in CLOSED_WORLDS:
         registered_world, path = _registered(inputs, name)
         for pair in PAIRS:
-            spec = parse_spec(_definition(registered_world, pair, horizon=1.0, events=1, row_every=1))
+            spec = parse_spec(
+                _definition(registered_world, pair, horizon=1.0, events=1, row_every=1,
+                            role="probe")
+            )  # fmt: skip
             assert [s.id for s in spec.model.world.steps] == data["steps"]
             plus, minus, free = rate_table(spec, data["places"], states)
             write_probe(
@@ -294,37 +300,47 @@ def _bundle(directory, spec, provenance):
     return run
 
 
-def rescale_pair(inputs, out):
-    from cells.core.specs import parse_spec
+def _run_or_refusal(directory, definition, provenance):
+    """A run's bundle, or, when the engine's parser refuses its world (§0.2b rule 8: a run world
+    under multinomial_less_one with a membrane place on both sides of a step), refused.json with
+    the parser's message in the role's folder."""
+    from cells.core.specs import ConfigError, parse_spec
 
+    try:
+        spec = parse_spec(definition)
+    except ConfigError as error:
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=False)
+        _json(directory / "refused.json",
+              {"format": PROBE_FORMAT, "refused": True, "message": str(error),
+               "conventions": definition["model"]["world"]["conventions"],
+               "rule": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2b rule 8",
+               **provenance})  # fmt: skip
+        return None
+    return _bundle(directory, spec, provenance)
+
+
+def rescale_pair(inputs, out):
     for pair in PAIRS:
         for name in RESCALE_WORLDS:
             registered_world, path = _registered(inputs, name)
-            spec = parse_spec(
-                _definition(registered_world, pair, horizon=1e9, events=RESCALE_EVENTS,
-                            row_every=100, uniforms=True)
-            )  # fmt: skip
-            _bundle(
+            _run_or_refusal(
                 Path(out) / "rescale_pair" / pair_name(pair) / name,
-                spec,
+                _definition(registered_world, pair, horizon=1e9, events=RESCALE_EVENTS,
+                            row_every=100, uniforms=True),
                 {"operation": "fresh", "role": "rescale_pair", "registered": path.name,
                  "registered_sha256": _sha256(path)},
             )  # fmt: skip
 
 
 def ledger_runs(inputs, out):
-    from cells.core.specs import parse_spec
-
     registered_world, path = _registered(inputs, KERNEL_WORLD)
     for pair in PAIRS:
         for role, lineage in (("ledger_run", 0), ("replay", 0), ("other_stream", 1)):
-            spec = parse_spec(
-                _definition(registered_world, pair, horizon=LEDGER_T_END, events=LEDGER_EVENTS,
-                            row_every=LEDGER_ROW_EVERY, uniforms=True, lineage=lineage)
-            )  # fmt: skip
-            _bundle(
+            _run_or_refusal(
                 Path(out) / role / pair_name(pair),
-                spec,
+                _definition(registered_world, pair, horizon=LEDGER_T_END, events=LEDGER_EVENTS,
+                            row_every=LEDGER_ROW_EVERY, uniforms=True, lineage=lineage),
                 {"operation": "fresh", "role": role, "registered": path.name,
                  "registered_sha256": _sha256(path)},
             )  # fmt: skip
@@ -374,7 +390,8 @@ def wb_ensemble(inputs, out):
                  "definition": spec.to_dict(),
                  "places": [p.name for p in world.places],
                  "observation_times_s": list(times),
-                 "streams": "one per run: seed 1, environment 0, branch 0, lineage word = the run's "
+                 "streams": "one per run: seed 1, environment 0, branch 0, lineage word = the "
+                 "run's "
                  "index (independent: none shared)",
                  "cut": "the state after the last event at or before each observation time",
                  "says": {"observed": "[run, time, place]: the counts at each observation time, "

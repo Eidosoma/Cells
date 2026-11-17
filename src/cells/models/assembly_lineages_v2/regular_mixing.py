@@ -98,8 +98,10 @@ def update(state, term_layout, places, change, xp):
     y, s = state
     d = change.astype(np.float64)
     gained = folds.total((chi[:, places] * d[None, :]).T, xp)
-    s_new = s + 2.0 * folds.total(d * y[places], xp) + folds.total(
-        d * folds.total((chi[places][:, places] * d[None, :]).T, xp), xp
+    s_new = (
+        s
+        + 2.0 * folds.total(d * y[places], xp)
+        + folds.total(d * folds.total((chi[places][:, places] * d[None, :]).T, xp), xp)
     )
     return y + gained, s_new
 
@@ -157,9 +159,7 @@ TERM = law_registry.BUILTIN.register(
             "§2.5 and probe E2",
             "the regular solution: an excess free energy quadratic in the composition",
             "no numbers taken",
-            (
-                "written in counts, (1/(2N)) sum chi n n, with a symmetric chi and a zero diagonal",
-            ),
+            ("written in counts, (1/(2N)) sum chi n n, with a symmetric chi and a zero diagonal",),
             (
                 CitedWork(
                     ("J. H. Hildebrand",),

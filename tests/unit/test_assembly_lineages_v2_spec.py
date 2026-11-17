@@ -16,8 +16,9 @@ Each claim with a planted error it must catch (D187):
 - the rate factor: catalysts of the condensed phase only (§0.2a), each pair once, ddG in its
   domain; a GARD law (hosted by @1) cannot be named (planted: each);
 - the founder lists every finite place, and holds a membrane molecule under kept and extinct;
-- a membrane place on both sides of a step parses under both measures (under @1's it is singular
-  at one state, N = r, which the kernel declares: a rate of +inf, a run that reaches it stalled);
+- a membrane place on both sides of a step parses under the multinomial measure, and under @1's
+  only in a world declared `world_role: probe` (§0.2b rule 8: singular at N = r, +inf there);
+  planted: the same step in a world without the role, and a role of another value;
 - one declaration, two executions: D152's species and passive reaction entries parse here with
   `phase` in place of `sites` and their values carried unchanged.
 """
@@ -77,8 +78,12 @@ def test_reserved_unknown_and_disallowed_tokens_are_refused():
     planted = world()
     planted["conventions"]["extra"] = "x"
     refused(planted, "unknown=\\['extra'\\]")
-    for measure, last in (("multinomial", "kept"), ("multinomial", "reversible"),
-                          ("multinomial_less_one", "kept"), ("multinomial_less_one", "extinct")):
+    for measure, last in (
+        ("multinomial", "kept"),
+        ("multinomial", "reversible"),
+        ("multinomial_less_one", "kept"),
+        ("multinomial_less_one", "extinct"),
+    ):
         spec = parsed(world(measure=measure, last=last, lumen=False, catalysis=False))
         assert spec.model.world.conventions.offset == conventions.OFFSET[measure]  # fmt: skip
 
@@ -165,7 +170,17 @@ def test_the_founder_and_the_measure_s_refusals():
     both = step("catalysed", {"P": 2, "L": 1}, {"D": 1, "P": 1}, 1.0, phase="membrane")
     assert parsed(_with_step(copy.deepcopy(both), world(lumen=False))).model.world.steps[-1]
     one = world(measure="multinomial_less_one", lumen=False, catalysis=False)
-    assert parsed(_with_step(both, one)).model.world.steps[-1].id == "catalysed"
+    refused(_with_step(copy.deepcopy(both), copy.deepcopy(one)), "§0.2b rule 8")  # Planted.
+    probe = _with_step(copy.deepcopy(both), copy.deepcopy(one))
+    probe["world_role"] = "probe"
+    spec = parsed(probe)
+    assert spec.model.world.role == "probe" and spec.model.world.steps[-1].id == "catalysed"
+    assert spec.to_dict()["model"]["world"]["world_role"] == "probe"  # It is part of the world.
+    plain = parsed(world(lumen=False))
+    assert "world_role" not in plain.to_dict()["model"]["world"]
+    other = copy.deepcopy(probe)
+    other["world_role"] = "run"  # Planted: a role of another value.
+    refused(other, "world_role is probe")
 
 
 def test_the_experiment_and_execution_are_refused_out_of_form():
@@ -185,7 +200,8 @@ def test_the_experiment_and_execution_are_refused_out_of_form():
 def test_one_declaration_d152_s_entries_parse_with_their_values_unchanged():
     """D152's species and passive reaction entries, as its own fixtures write them, parse here with
     `phase` in place of `sites` (and no `factors`): stoichiometry, rate constant, potential and
-    moieties are carried unchanged (SHARED_INVENTORY_REACTIONS_DESIGN §2.1; the design note §2.3)."""
+    moieties are carried unchanged (SHARED_INVENTORY_REACTIONS_DESIGN §2.1; the design note
+    §2.3)."""
     entries = [
         d152.species("A", moieties={"x": 1}, mu=-0.5),
         d152.species("B", moieties={"x": 1}, mu=0.25),

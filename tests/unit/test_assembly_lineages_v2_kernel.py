@@ -135,7 +135,10 @@ def test_planted_kinetics_fail_the_identity_by_far_more_than_rounding():
         planted = world()
         planted["rate_factor"]["law"] = "tests.at_state_factor@1"
         assert worst(spec_of(planted)) > 1e-3
-        assert worst(spec_of(with_law(paired(world(catalysis=False)), "tests.power_propensity@1"))) > 1e-3
+        assert (
+            worst(spec_of(with_law(paired(world(catalysis=False)), "tests.power_propensity@1")))
+            > 1e-3
+        )
         assert worst(spec_of(with_law(world(catalysis=False), "tests.one_sided@1"))) > 1e-3
 
 
@@ -189,7 +192,9 @@ def test_the_reverse_from_F_is_the_products_mass_action():
     plus, _ = rates_at(honest, state | {"Q@pool": 0})
     assert plus[r] == pytest.approx(0.7 * 7 * 6 / X_pool, rel=1e-13)  # ff: n (n − 1)
     with scoped(power):
-        planted, _ = rates_at(spec_of(with_law(two, "tests.power_propensity@1")), state | {"Q@pool": 0})
+        planted, _ = rates_at(
+            spec_of(with_law(two, "tests.power_propensity@1")), state | {"Q@pool": 0}
+        )
     assert planted[r] == pytest.approx(0.7 * 7 * 7 / X_pool, rel=1e-13)  # n²: caught
     assert planted[r] != pytest.approx(plus[r], rel=1e-3)
 
@@ -217,7 +222,8 @@ def closed_world(*, catalysis, law=None):
         "steps": [step("iso", {"A": 1}, {"B": 1}, 1.3, phase="membrane"),
                   step("bind", {"A": 1, "B": 1}, {"C": 1}, 0.8, phase="membrane")],
         "free_energy": [{"law": "cells.ideal_mixing@1"},
-                        {"law": "cells.regular_mixing@1", "chi_kT": [{"pair": ["A", "C"], "chi": 0.7}]}],
+                        {"law": "cells.regular_mixing@1",
+                         "chi_kT": [{"pair": ["A", "C"], "chi": 0.7}]}],
         "founder": {"A@membrane": 4, "B@membrane": 2, "C@membrane": 1},
     }  # fmt: skip
     if catalysis:
@@ -349,7 +355,8 @@ def test_the_kernel_replays_on_a_host_oracle_from_its_uniforms():
 
 def singular_world(measure, last):
     """A membrane of A, B, C and E with A + B + E -> C + E (E on both sides): under @1's measure
-    its rate is singular where the membrane holds exactly its reactants, A = B = E = 1, C = 0."""
+    its rate is singular where the membrane holds exactly its reactants, A = B = E = 1, C = 0, so
+    the world declares world_role: probe there (§0.2b rule 8)."""
     sp = [
         {"id": n, "moieties": m, "standard_mu_RT": {"bilayer": mu}, "catalogue": None,
          "evidence": None}
@@ -366,12 +373,13 @@ def singular_world(measure, last):
         "steps": [step("r4", {"A": 1, "B": 1, "E": 1}, {"C": 1, "E": 1}, 2.0, phase="membrane")],
         "free_energy": [{"law": "cells.ideal_mixing@1"}],
         "founder": {"A@membrane": 1, "B@membrane": 1, "C@membrane": 0, "E@membrane": 1},
-    }  # fmt: skip
+    } | ({"world_role": "probe"} if measure == "multinomial_less_one" else {})  # fmt: skip
 
 
 def test_a_singular_state_of_g1_s_measure_is_reported_inf_and_a_run_that_reaches_it_stalls():
-    """The declared convention (FORMAT.md; the lead rules on it in §0.2b): +inf in a probe's table,
-    and a run whose state is singular stops stalled (refused, nothing repaired)."""
+    """The declared convention (FORMAT.md; §0.2b rule 8): +inf in a probe world's table, and a run
+    whose state is singular stops stalled (refused, nothing repaired); without world_role: probe
+    the world is refused at parse (the spec tests)."""
     from validation.assembly_lineages_v2 import probes
 
     names = ["A@membrane", "B@membrane", "C@membrane", "E@membrane"]
@@ -387,4 +395,6 @@ def test_a_singular_state_of_g1_s_measure_is_reported_inf_and_a_run_that_reaches
     # Control: the multinomial measure has no singular state there; the run goes on.
     spec = spec_of(singular_world("multinomial", "kept"))
     assert np.isfinite(probes.rate_table(spec, names, singular)[0][0, 0])
-    assert runner.run(spec_of(singular_world("multinomial", "kept"), horizon=10.0)).status != "stalled"
+    assert (
+        runner.run(spec_of(singular_world("multinomial", "kept"), horizon=10.0)).status != "stalled"
+    )

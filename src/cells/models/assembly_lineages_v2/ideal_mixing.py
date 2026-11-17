@@ -118,7 +118,8 @@ TERM = law_registry.BUILTIN.register(
             (
                 "exact in the counts (ln n!), not Stirling's form: the discrete form in which the "
                 "reverse rate derived from F is the products' mass action",
-                "the condensed measure is declared: the multinomial, or @1's (multinomial plus ln N)",
+                "the condensed measure is declared: the multinomial, or @1's (multinomial plus "
+                "ln N)",
             ),
         ),
         test=TEST,

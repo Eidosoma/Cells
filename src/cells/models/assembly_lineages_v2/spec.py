@@ -16,16 +16,19 @@ exactly once, then the excess terms (`cells.regular_mixing@1`), each at most onc
 is optional, a `cells.rate_factor_law@2` of this family. A law of another family or interface is
 refused by name, so GARD's two forms (hosted by @1) cannot be named here.
 
-**A refusal that follows from the conventions** (conventions.py): under `last_molecule: kept` or
-`extinct`, the founder's membrane holds at least one molecule. (Under `condensed_measure:
-multinomial_less_one`, a step with a membrane place on both sides is singular at the one state
-where the membrane holds exactly its reactants: the rate there is +inf, a run that reaches it stops
-stalled, and a probe reports +inf (mass_action.py).)
+**Refusals that follow from the conventions** (conventions.py; §0.2b rule 8):
+- under `last_molecule: kept` or `extinct`, the founder's membrane holds at least one molecule;
+- under `condensed_measure: multinomial_less_one`, a step with a membrane place on both sides is
+  singular at the one state where the membrane holds exactly its reactants (its rate there is
+  +inf, mass_action.py). Such a step is admitted only in a world declared to be probed,
+  `world_role: probe`, where a probe reports +inf (and a run that reaches the state stops
+  stalled); any other world declaring one is refused (§0.2b rule 8).
 
 **The experiment.** The run ends at `time_horizon_s` (s), or at `event_limit` events (a guard), or
 when the lifecycle ends it (kernel.py). A row is saved at the start, after every
 `row_every_events` events, at each of `observation_times_s` (strictly increasing, within the
-horizon; possibly none): the state after the last event at or before that time, and at the end. `trace` saves every event's time and channel;
+horizon; possibly none): the state after the last event at or before that time, and at the end.
+`trace` saves every event's time and channel;
 `uniforms` (diagnostic) saves every event's two uniforms, so an independent oracle can replay the
 run exactly. Neither changes an event.
 
@@ -49,7 +52,6 @@ from cells.core.specs import (
 from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     IDEAL_MIXING,
-    MODE,
     MODEL_ID,
     MODES,
     RATE_FACTOR_INTERFACE,
@@ -190,7 +192,15 @@ def parse_world(raw):
     if len({s.id for s in steps}) != len(steps):
         raise ConfigError("world: step IDs are unique")
     founder = world_rules.parse_founder(raw["founder"], places)
-    world = world_rules.World(units, conventions, species, volumes, places, steps, (), None, founder)
+    role = raw.get("world_role")
+    if role is not None and role not in world_rules.ROLES:
+        raise ConfigError(
+            f"world: world_role is {', '.join(world_rules.ROLES)} when declared (§0.2b rule 8), "
+            f"not {role!r}"
+        )
+    world = world_rules.World(
+        units, conventions, species, volumes, places, steps, (), None, founder, role
+    )
     terms = parse_terms(raw["free_energy"], world)
     rate_factor = None
     if "rate_factor" in raw:
@@ -200,13 +210,24 @@ def parse_world(raw):
         law = _law(block["law"], RATE_FACTOR_INTERFACE, "rate factor")
         rate_factor = (law.law_id, law.parse_data(block, world))
     world = world_rules.World(
-        units, conventions, species, volumes, places, steps, terms, rate_factor, founder
+        units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
     _convention_refusals(world)
     return world
 
 
 def _convention_refusals(world):
+    if world.conventions.offset == 1 and world.role != "probe":
+        by_name = {p.name: p for p in world.places}
+        for step in world.steps:
+            both = {n for n, _ in step.reactants} & {n for n, _ in step.products}
+            if any(by_name[n].phase == world_rules.MEMBRANE for n in both):
+                raise ConfigError(
+                    f"world: step {step.id} has a membrane place on both sides; under "
+                    "condensed_measure multinomial_less_one its rate is singular (+inf) where the "
+                    "membrane holds exactly its reactants, so it is admitted only in a world "
+                    "declared world_role: probe (§0.2b rule 8)"
+                )
     if world.conventions.last_molecule in ("kept", "extinct"):
         membrane = sum(
             c for p, c in zip(world.places, world.founder, strict=True) if p.phase == "membrane"
@@ -244,6 +265,8 @@ def world_to_dict(world):
     if world.rate_factor is not None:
         law_id, data = world.rate_factor
         out["rate_factor"] = {"law": law_id, **registry.lookup(law_id).data_to_dict(data)}
+    if world.role is not None:
+        out["world_role"] = world.role
     return out
 
 

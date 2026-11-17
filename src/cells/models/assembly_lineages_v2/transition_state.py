@@ -1,4 +1,4 @@
-"""cells.transition_state_factor@1: catalysis as a factor on the common state (OL1; §2.4 (b), §0.2a).
+"""cells.transition_state_factor@1: catalysis as a factor on the common state (OL1; §2.4 b, §0.2a).
 
 A catalyst that stabilises a step's transition state by ΔΔG‡ (k_BT) multiplies both directions'
 rates by the same factor, so the equilibrium is unchanged (transition-state theory; IUPAC's
@@ -16,7 +16,8 @@ negative ΔΔG‡ (β in (−1, 0)); g stays positive.
   (GARD's single-event form) cannot be declared here.
 - **The catalysing phase** (§0.2a): the membrane only in OL1. A dilute catalysing phase is refused
   until a declared meaning exists, since its fraction would have to include the solvent.
-- **Boundary** (`empty_catalyst_phase: uncatalysed`): g = 1 where the catalysing phase is empty at m.
+- **Boundary** (`empty_catalyst_phase: uncatalysed`): g = 1 where the catalysing phase is empty at
+  m.
 
 Data, per world (`rate_factor`): `{"law": "cells.transition_state_factor@1", "catalysing_phase":
 "membrane", "entries": [{"catalyst": "B", "step": "join_A", "ddG_kT": 0.5}, ...]}`, a sparse list,
@@ -77,14 +78,17 @@ def parse_data(raw, world):
             raise ConfigError(f"world: rate_factor: ({catalyst}, {step}) is listed twice")
         seen.add((catalyst, step))
         value = entry["ddG_kT"]
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(
-            value
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
         ):
             raise ConfigError(f"world: rate_factor: ({catalyst}, {step})'s ddG_kT is finite")
         if not DDG_DOMAIN[0] <= float(value) <= DDG_DOMAIN[1]:
             raise ConfigError(
                 f"world: rate_factor: ({catalyst}, {step})'s ddG_kT is in [{DDG_DOMAIN[0]}, "
-                f"{DDG_DOMAIN[1]}]: the event domain's bound above (|dF/kT| <= 80, §2.1), and below "
+                f"{DDG_DOMAIN[1]}]: the event domain's bound above (|dF/kT| <= 80, §2.1), and "
+                "below "
                 "it an inhibition so strong that g would be lost in rounding (a factor g <= 0 is "
                 "refused, §2.4)"
             )

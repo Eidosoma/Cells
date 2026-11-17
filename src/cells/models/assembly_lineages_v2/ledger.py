@@ -29,7 +29,8 @@ from cells.registry import laws as law_registry
 
 CONVENTIONS = {
     "unit": "k_BT",
-    "state_function": "F(n) = the declared terms' sum (cells.free_energy_term@1): the ideal term and "
+    "state_function": "F(n) = the declared terms' sum (cells.free_energy_term@1): the ideal term "
+    "and "
     "the excess terms, exactly from the counts; held species have no term",
     "event_heat": "q = ln a(n->n') - ln a(n'->n) per committed event, from the kernel's rates; "
     "an extinction (no reverse) books q = -dF + w with F_mem(empty) = 0; declared non-monotone",

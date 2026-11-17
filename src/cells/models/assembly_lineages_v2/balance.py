@@ -185,7 +185,9 @@ def probe_world(rng, measure, last_molecule, *, regular, catalysis):
         "free_energy": terms,
         "founder": {},
     }  # fmt: skip
-    finite = [f"{s['id']}@pool" for s in world["phases"]["pool"]["species"] if s["kind"] == "finite"]
+    finite = [
+        f"{s['id']}@pool" for s in world["phases"]["pool"]["species"] if s["kind"] == "finite"
+    ]
     finite += [f"{s}@membrane" for s in world["phases"]["membrane"]["species"]]
     finite += [f"{s}@lumen" for s in world["phases"]["lumen"]["species"]]
     world["founder"] = {name: 1 for name in finite}
@@ -246,8 +248,13 @@ def verdict():
         "holds": True,
         "probe": {
             "worlds": [
-                {"condensed_measure": m, "last_molecule": l, "regular_mixing": g, "rate_factor": c}
-                for m, l, g, c in PROBES
+                {
+                    "condensed_measure": m,
+                    "last_molecule": last,
+                    "regular_mixing": g,
+                    "rate_factor": c,
+                }
+                for m, last, g, c in PROBES
             ],
             "states_per_world": STATES,
             "seed": PROBE_SEED,

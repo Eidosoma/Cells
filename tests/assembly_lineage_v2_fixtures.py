@@ -86,7 +86,13 @@ def world(
             step("dimerise", {"L": 1, "P": 1}, {"D": 1}, 1.0, phase="membrane"),
         ],
         "free_energy": [{"law": IDEAL_MIXING}],
-        "founder": {"L@pool": 50, "S@pool": 30, "L@membrane": 20, "P@membrane": 10, "D@membrane": 0},
+        "founder": {
+            "L@pool": 50,
+            "S@pool": 30,
+            "L@membrane": 20,
+            "P@membrane": 10,
+            "D@membrane": 0,
+        },
     }
     if lumen:
         out["phases"]["lumen"] = {"volume_L": 1e-22, "species": ["L", "S"]}
