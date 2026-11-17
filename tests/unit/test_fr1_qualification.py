@@ -397,6 +397,8 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, monkeypatch)
     unregistered.write_text(json.dumps(proposed()))
     with pytest.raises(SystemExit, match="not registered"):
         generator.main(["judged", str(unregistered), str(out), "C3_flux"])
+    # A source tree without SNAPSHOT.json (the test may itself run from a snapshot, as a gate's).
+    monkeypatch.setattr(generator, "ROOT", tmp_path / "checkout")
     with pytest.raises(SystemExit, match="clean execution snapshot"):
         generator.main(["judged", str(registered_copy(tmp_path)), str(out), "C3_flux"])
     snapshot = tmp_path / "snapshot"
