@@ -11,9 +11,9 @@ import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { LineageLens, LEVELS, ORIGIN_LOOK, ASSEMBLY_LOOK, CLUSTER_WHERE_SMALL_OR_STILL } from "../src/lenses/lineage.js";
 // The packing a phone and less motion get by themselves: the micelle, or the cluster where the one line says so.
-const SMALL_OR_STILL = CLUSTER_WHERE_SMALL_OR_STILL ? "cluster" : "micelle";
+const SMALL_OR_STILL = CLUSTER_WHERE_SMALL_OR_STILL ? "cluster" : "protocell";
 import { FINE, OPENING, LADDER } from "../src/lenses/lineage_clock.js";
-import { GLOW_CAP } from "../src/lenses/assembly_beads.js";
+import { STREAM_CAP, STREAM_FLIGHT_S, LIPID_FLIGHT_S, streamStride } from "../src/lenses/lipid_assembly.js";
 import { PARTS } from "../src/lenses/lineage_card.js";
 
 const text = readFileSync(path.join(ROOT, "data", "origin", "example-run.json"), "utf8");
@@ -103,7 +103,8 @@ test("a part is chosen by pointer: a ray at a post of the fence, the tape, the c
   assert.equal(pickAt(lens, new THREE.Vector3(x, tape.mesh.position.y, tape.mesh.position.z), new THREE.Vector3(x, tape.mesh.position.y, tape.mesh.position.z + 3)), "assembly:fission:lineage-a:20");
   const carpet = lens.carpet.mesh.position;
   assert.match(pickAt(lens, carpet.clone(), carpet.clone().add(new THREE.Vector3(0, 10, 0))) || "", /^assembly:pair:lineage-a:\d+:\d+$/);
-  const side = lens.sides[0], bead = side.layout.beads[0];
+  // A head of the protocell's outer face, from the water.
+  const side = lens.sides[0], bead = side.layout.beads.find((item) => item.leaflet === 0) || side.layout.beads[0];
   const at = new THREE.Vector3(...bead.pos).add(side.group.position);
   // A ray from the water to a lipid's head picks its type.
   assert.equal(pickAt(lens, at, at.clone().add(new THREE.Vector3(...bead.axis).multiplyScalar(6))), `assembly:type:${bead.type}`);
@@ -219,29 +220,57 @@ test("a composome is ringed and named only where the run's analysis names one", 
   assert.match(lens.describe("assembly:fission:lineage-a:61").facts.find(([label]) => label === "Composome")[1], /named by the run's analysis \(a test's own/);
 });
 
-test("motion at speed: molecules fly only molecule by molecule; at fission steps they glow in place, within a bound, and from two a second not at all", () => {
-  const bound = { flying: 0, glowing: 0 };
+test("the stream: at every speed the run's joins and leaves are seen coming and going, never more at once than the cap, one in N where the pace is high", () => {
   const watch = (speed, seconds = 6) => {
     const { lens } = lensFor();
     lens.player.seek(20.3);
     lens.player.setSpeed(speed);
     lens.player.play();
-    let worst = { flying: 0, glowing: 0 };
+    let worst = 0, seen = 0;
     for (let frame = 0; frame < seconds * 60; frame++) {
       lens.update(16, 0, 16);
-      const now = lens.sides[0].layout.inMotion();
-      worst = { flying: Math.max(worst.flying, now.flying), glowing: Math.max(worst.glowing, now.glowing) };
+      const now = lens.sides[0].layout.inMotion().flying;
+      worst = Math.max(worst, now);
+      seen += now > 0 ? 1 : 0;
     }
-    return worst;
+    return { worst, seen: seen / (seconds * 60), key: lens.streamWords() };
   };
   const fine = watch(FINE);
-  assert.ok(fine.flying >= 1 && fine.flying <= 4, `molecule by molecule, at most four in flight: ${JSON.stringify(fine)}`);
-  for (const speed of [0.25, 0.5, 1]) {
-    const seen = watch(speed);
-    assert.equal(seen.flying, 0, `${speed}: none flies`);
-    assert.ok(seen.glowing <= GLOW_CAP, `${speed}: at most ${GLOW_CAP} glow at once: ${JSON.stringify(seen)}`);
+  assert.ok(fine.worst >= 1 && fine.worst <= 4, `molecule by molecule, at most four in flight: ${JSON.stringify(fine)}`);
+  for (const speed of [0.25, 0.5, 1, 2, 8]) {
+    const at = watch(speed, 4);
+    assert.ok(at.worst >= 1 && at.worst <= STREAM_CAP.wide, `${speed}: seen, and no more than ${STREAM_CAP.wide} in flight: ${JSON.stringify(at)}`);
+    assert.ok(at.seen > 0.8, `${speed}: something comes or goes nearly all the time: ${JSON.stringify(at)}`);
+    if (speed >= 1) assert.match(at.key, /^in, out: 1 in \d+( to \d+)? joins, leaves$/, "where one is drawn for several, the key says how many");
   }
-  for (const speed of [2, 8]) assert.deepEqual(watch(speed, 3), bound, `${speed}: nothing flies or glows`);
+  // The stride keeps every growth within the cap, the longest (230 events) too, at every speed: the same function draws and keys.
+  const { lens } = lensFor();
+  const run = lens.mainRun;
+  for (const speed of [FINE, ...LADDER]) {
+    const flight = speed === FINE ? LIPID_FLIGHT_S : STREAM_FLIGHT_S;
+    for (let g = 0; g < run.fissionCount; g++) {
+      const rate = lens.eventRate(run, g, speed), n = streamStride({ eventsPerSecond: rate, cap: STREAM_CAP.wide, flight });
+      assert.ok((rate * flight) / n <= STREAM_CAP.wide + 1e-9, `${speed}, growth ${g}: ${rate} a second, 1 in ${n}`);
+    }
+  }
+});
+
+test("what the assembly holds is the run's at every moment, at every speed, with molecules in flight: a leaving one is no member, a joining one is", () => {
+  for (const speed of [0.5, 2, 8]) {
+    const { lens } = lensFor();
+    const run = lens.mainRun, layout = lens.sides[0].layout;
+    lens.player.seek(10.2);
+    lens.player.setSpeed(speed);
+    lens.player.play();
+    let checked = 0;
+    for (let frame = 0; frame < 6 * 60 && lens.player.playing; frame++) {
+      lens.update(16, 0, 16);
+      const held = Array.from(layout.members(run.n)), said = Array.from(run.compositionAt(lens.player.time));
+      assert.deepEqual(held, said, `${speed}, at ${lens.player.time}`);
+      checked++;
+    }
+    assert.ok(checked > 100 && lens.player.time > 12.5, `${speed}: through more than one fission (${lens.player.time})`);
+  }
 });
 
 test("less motion: the assembly stands; nothing gathers, flies or glows, nothing eases", () => {
@@ -308,13 +337,17 @@ test("what the scene costs to draw: one assembly, the lineage, and the pair (cei
   const { lens } = lensFor();
   lens.player.seek(120);
   lens.update(16, 0, 16);
-  // One assembly in water: four heads' meshes, the tails, the halos, the ring, and the water's dome, shafts and specks.
+  // One protocell in water: the lipids' meshes, solid and see-through, the halos, the ring, the shell's faces, the network, and the water's dome, shafts and specks.
   const assembly = lens.cost();
-  assert.ok(assembly.draws <= 10 && assembly.triangles <= 126000, `one assembly: ${JSON.stringify(assembly)}`);
+  assert.ok(assembly.draws <= 21 && assembly.triangles <= 142000, `one protocell: ${JSON.stringify(assembly)}`);
+  lens.setShape("micelle");
+  lens.update(16, 0, 16);
+  const micelle = lens.cost();
+  assert.ok(micelle.draws <= 10 && micelle.triangles <= 126000, `one micelle: ${JSON.stringify(micelle)}`);
   lens.setLevel("lineage");
   lens.update(16, 0, 16);
   const one = lens.cost();
-  assert.ok(one.draws <= 40 && one.triangles <= 104000, `the lineage, one run: ${JSON.stringify(one)}`);
+  assert.ok(one.draws <= 46 && one.triangles <= 116000, `the lineage, one run: ${JSON.stringify(one)}`);
   // The pair of forms, on the test's own two runs of a small world.
   const paired = lensFor({ file: JSON.parse(readFileSync(path.join(ROOT, "tests", "fixtures", "assembly-forms", "forms.json"), "utf8")) }).lens;
   paired.setPair(true);
@@ -322,7 +355,7 @@ test("what the scene costs to draw: one assembly, the lineage, and the pair (cei
   paired.player.seek(10);
   paired.update(16, 0, 16);
   const pair = paired.cost();
-  assert.ok(pair.draws <= 57 && pair.triangles <= 194000, `the lineage, the pair: ${JSON.stringify(pair)}`);
+  assert.ok(pair.draws <= 66 && pair.triangles <= 194000, `the lineage, the pair: ${JSON.stringify(pair)}`);
 });
 
 test("a run of another model than its entry's is refused; the threshold is a part only where the analysis states one", () => {

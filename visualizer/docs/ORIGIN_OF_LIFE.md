@@ -120,8 +120,58 @@ awaited.
 - **Contact shade is left to the Molecules level.** At the Lineages level it cost a frame about
   1.5 ms on the card, and kept the page just under 60 frames a second at 1400 by 900.
 
+## The protocell, 17 November 2026
+
+The user looked at the view on the map and sent two slides of their own public deck as the
+direction for its look (the deck of 10 November 2026, kept outside the repository,
+pages 12 and 13, "GARD Origin-of-Life Simulator" and "GARD Growth and Division"; nothing of the
+slides is in the repository):
+
+> I'm not asking for this level of Lipid simulation but still something that has the lipid
+> assembly then small molecules moving in and out
+
+and, on what moves:
+
+> yes, so the lipid [assembly] self assembles then the molicules move in and out of it, the 90 or
+> whatever we use in our GARD
+
+So:
+
+- **The view opens on a protocell**, a third packing beside the micelle and the cluster (the
+  picture's choice, as they are): a closed shell of the run's lipids, a molecule each, in two faces,
+  heads to the water outside and inside with the tails between. Its two faces are drawn as soft
+  glassy surfaces (the picture's own, no molecule), so that its 40 to 80 lipids read as one shell; a
+  bilayer of so few molecules could not otherwise close. Its near side is drawn see-through, so its
+  inside shows and every molecule stays on the picture.
+- **The molecules seen moving in and out are the run's own,** of its own types: each one drawn
+  coming in is a join of the run, each one going out a leave. They are seen at every speed, not only
+  molecule by molecule: no more than a cap fly at once, and where a growth's pace would put more in
+  flight, one in N is drawn in flight and the legend says N. The joins come in on one side and the
+  leaves go out on the other, as on the slide. First the founder gathers, then the exchange is seen,
+  in the user's order. No solute that is not a molecule of the run is drawn, and nothing carries a
+  chemical's name.
+- **The catalytic network inside** is read from the run's world: for the types the protocell holds,
+  the links are its table's factors (which type speeds which), the strongest drawn. It changes as the
+  types held change and never pulses with a join, since the run does not record what helped one.
+- **At a fission** the shell draws in at its waist into two protocells, each with the lipids the
+  run's split gives it and its own network; the daughter that carries on stays, the other drifts off
+  into the haze.
+- **What is the picture's own** is said on the picture and in the legend: "No law of Cells computes
+  how the lipids move and pack: the shell, the paths in and out, the water and every size are the
+  picture's own. Which molecule joins or leaves, and in what order, is the run's."
+- **`CLUSTER_WHERE_SMALL_OR_STILL`** now says whether a phone and less motion get the cluster (true)
+  or the protocell like everywhere else (false, as it stands).
+
 What follows is the note as it was handed over, unchanged but for these sections and the lines
 that state the engine's note's status.
+
+**The record, the same day.** GARD's build in the engine started on 17 November 2026
+(`docs/CURRENT_PLAN.md`); nothing of it is on main yet. By D197 GARD is one law set, kept only for
+comparison, and the origin-of-life engine is to be Cells' own, with laws from physical chemistry; its
+design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed, not decided. The entry's words and
+notes say so (`data/models/gard.json`). That note proposes vesicles, a bilayer round a lumen, as the
+engine's first assemblies, dividing at shear events into two or more: when such runs exist, this view
+will need a vesicle's picture for them.
 
 ## In short
 

@@ -9,8 +9,8 @@ of its own: an assembly growing molecule by molecule and splitting, its composit
 across each fission, the lineage, and the table of catalysis it grows by. This file is what that view
 reads: `cells.visualizer.assembly_run@1`. It is the viewer's own contract. **No GARD run of Cells'
 engine exists, and nothing of GARD is in the engine.** The engine's GARD design note is on main,
-decided on 16 November 2026 (`docs/GARD_DESIGN.md`, D192), and GARD is built in step 4 of D194's
-order; the table below says which of the records the note designs each field would be read from, and
+decided on 16 November 2026 (`docs/GARD_DESIGN.md`, D192); its build started on 17 November 2026
+(`docs/CURRENT_PLAN.md`), with nothing of it on main yet; the table below says which of the records the note designs each field would be read from, and
 an adapter is written when the engine's first run exists. No code of the viewer binds to those names.
 
 ## The file
@@ -112,25 +112,39 @@ an adapter is written when the engine's first run exists. No code of the viewer 
    choice and says so.
 3. **What is the picture's**: the assembly drawn as lipids in water (the user, 16 November 2026:
    "visuall for now but maybe law later"): how a lipid looks (a head whose form and colour say its
-   type, two tails the same for every type), how the lipids pack (a micelle, heads to the water and
-   tails in, or a loose cluster; the model gives an assembly no shape), how they move, how one seeps
-   in from the water and out into it, how the assembly lengthens, necks and parts, the water itself
+   type, two tails the same for every type), how the lipids pack (a protocell, a closed shell of two
+   faces with heads to the water outside and inside, the view's opening packing since 17 November
+   2026; a micelle, heads to the water and tails in; or a loose cluster; the model gives an assembly
+   no shape), the shell's glassy faces, how the lipids move, the paths by which one comes in from the
+   water and goes out into it, how the assembly lengthens, necks and parts, the water itself
    (its depth, haze, light, caustics and specks), the free molecules' number, places and drift (their
    mix of types is the supply the run states), every size, the map's axes (the directions in which
    the lineage's compositions differ most, worked out by the view), and the layout of the lineage.
    No law of Cells computes how the lipids move and pack. Each is said to be the picture's where it
    is drawn, in a line on the picture and in the legend.
-4. **Motion at speed.** Molecules seep in and out only molecule by molecule, at most four in flight
-   at once. At a step of fissions a second below two, a molecule that joins appears at its place with
-   a short glow, at most ten at once; from two fissions a second, nothing flies or glows. The clock
-   opens at half a fission a second. So the assembly reads as an assembly at every speed. **One
-   exception, said so on the picture:** at a run's start the founder's molecules gather from the
-   water all at once (about four seconds), while the clock stands at the start. The run starts with
-   the founder made, so the gathering is the picture's alone. With less motion asked for nothing
-   gathers, flies or glows: the assembly stands, and a join or a leave happens in place.
+4. **Motion at every speed: the run's joins and leaves are seen.** (Until 17 November 2026 a join
+   flew in only molecule by molecule; the user then asked for the molecules to be seen moving in and
+   out all the time the run plays.) A joining molecule comes in from the water to its place and is a
+   member from its event; a leaving one is no member from its event, and goes out into the water. The
+   run gives which type joins or leaves and in what order within a growth; the clock spaces a
+   growth's events evenly, and their paths are the picture's own. No more than a cap are in flight at
+   once (26 wide, 14 on a phone; molecule by molecule about four): where a growth's pace would put
+   more in flight, one in N of its joins and leaves is drawn in flight, N worked out from that
+   growth's pace (`streamStride`), the others taking or leaving their places at once, and the legend
+   says N ("1 in 2 to 8" across the run's growths at the speed shown). The clock opens at half a
+   fission a second. **One exception, said so on the picture:** at a run's start the founder's
+   molecules gather from the water all at once (about four seconds), while the clock stands at the
+   start. The run starts with the founder made, so the gathering is the picture's alone. With less
+   motion asked for nothing gathers, flies or glows: the assembly stands, and a join or a leave
+   happens in place.
 5. **What helped a join** (which member's catalysis) is drawn as a brief light between the two only
    where a run records it. No field of this contract records it today, and the example does not, so
-   the view draws no such light and says so in its legend.
+   the view draws no such light and says so on the assembly's panel. **The catalytic network inside a
+   protocell** is another thing, and the run's own: for the types the assembly holds, the links are
+   the factors of its world's table (`environments[].catalysis`, the column type speeding the row
+   type), the strongest drawn (at most 18, 10 on a phone, of factor 10^0.5 or more); the points'
+   places and the links' look are the picture's. It changes when the types held change, and never
+   pulses with a join.
 6. **An example** carries its mark on the picture and in the legend while it is shown.
 7. **No status** is said of the model in the engine beyond what the record states.
 

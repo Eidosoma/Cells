@@ -23,14 +23,15 @@ import { disposeTree } from "../core/stage.js";
 import { Player } from "../replay/player.js";
 import { AssemblySet, PREFIX, formWords } from "./assembly_run.js";
 import { arrivalMode, SHAPES, GLOW_S } from "./assembly_beads.js";
-import { LipidLayout, FreeCrowd } from "./lipid_assembly.js";
+import { LipidLayout, FreeCrowd, PROTOCELL, STREAM_CAP, STREAM_FLIGHT_S, LIPID_FLIGHT_S, streamStride } from "./lipid_assembly.js";
+import { CatalyticNetwork, ShellGlow, NETWORK } from "./protocell_marks.js";
 import { LipidMeshes, lipidMaterials, FORMS } from "./lipid_marks.js";
 import { Water, wetten, WATER_THEMES } from "./lipid_water.js";
 import { CompositionRing, CompositionStrip, CompositionTape } from "./composition_marks.js";
 import { SimilarityFence, SimilarityCarpet, COMPARE } from "./similarity_marks.js";
 import { LineageSpine, CompositionMap } from "./lineage_marks.js";
 import { CatalysisTable } from "./catalysis_table.js";
-import { clockOf, fissionsPerSecond, FINE } from "./lineage_clock.js";
+import { clockOf, fissionsPerSecond, FINE, MOLECULES_A_SECOND } from "./lineage_clock.js";
 import { describe as describePart, sections as listSections } from "./lineage_card.js";
 
 /** The look this view asks of the stage: studio light on the lipids, and contact shade where the lineage's parts meet the plate. */
@@ -38,8 +39,10 @@ export const ORIGIN_LOOK = { rich: true, filmic: true, exposure: 1.05, contact: 
 /** Round one assembly the water's own shade (the depth inside the assembly) stands in for contact shade, which would cost a frame more. */
 export const ASSEMBLY_LOOK = { ...ORIGIN_LOOK, contact: false };
 /**
- * Where the assembly is packed as a loose cluster rather than a micelle by itself: on a phone and with
- * less motion (true), or nowhere (false: the micelle everywhere). The user first decided "a micelle,
+ * Where the assembly is packed as a loose cluster by itself: on a phone and with less motion (true), or
+ * nowhere (false). Since 17 November 2026 the view opens on the protocell everywhere else (the user's
+ * slides, docs/ORIGIN_OF_LIFE.md); this line still turns a phone and less motion to the cluster. Before
+ * the protocell: the micelle everywhere (false). The user first decided "a micelle,
  * with the cluster on a phone and where less motion is asked for" (docs/ORIGIN_OF_LIFE.md, "Decided",
  * answer 2); asked again once the micelle was built to stand still, they left it to the coordinator
  * (17 November 2026: "You decide"), who chose the micelle everywhere: it is the picture the view was
@@ -50,9 +53,14 @@ export const ASSEMBLY_LOOK = { ...ORIGIN_LOOK, contact: false };
  */
 export const CLUSTER_WHERE_SMALL_OR_STILL = false;
 /** The words the picture says of itself, on the picture and in the legend. */
-export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: their look, their motion, the water and every size are the picture's own";
+export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: the shell, the paths in and out, the water and every size are the picture's own. Which molecule joins or leaves, and in what order, is the run's";
+/** The same for a micelle or a cluster, which have no shell. */
+export const OWN_WORDS_BARE = "No law of Cells computes how the lipids move and pack: their packing, the paths in and out, the water and every size are the picture's own. Which molecule joins or leaves, and in what order, is the run's";
+/** The same on a phone, in fewer words, so that it does not lie over the assembly. */
+export const OWN_WORDS_SHORT = "No law of Cells computes how the lipids move and pack: all but which molecule joins or leaves, and when, is the picture's own";
 /** The same, in fewer words, for the legend's note, which must stay in view on a short window. */
-export const NOTE_WORDS = "No law of Cells computes how the lipids move and pack: that, the water and the halo are the picture's own.";
+export const NOTE_WORDS = "No law of Cells computes how the lipids move and pack: the shell, its glow, the paths and the water are the picture's own.";
+export const NOTE_WORDS_BARE = "No law of Cells computes how the lipids move and pack: their packing, the paths and the water are the picture's own.";
 export const GATHER_WORDS = "The first assembly gathers from the water: the picture's own, since the run starts with it made";
 
 /** The levels an entry may give this view, in order; an entry names which it has (schema, "What the lens needs from an entry"). */
@@ -109,7 +117,7 @@ export class LineageLens {
     this.composition = "wheel";
     this.narrow = false;
     this.autoplay = Boolean(autoplay);
-    this.shape = CLUSTER_WHERE_SMALL_OR_STILL && stage.reducedMotion ? "cluster" : "micelle";
+    this.shape = CLUSTER_WHERE_SMALL_OR_STILL && stage.reducedMotion ? "cluster" : "protocell";
     this.selected = null;
     this.hovered = null;
     this.active = false;
@@ -192,6 +200,7 @@ export class LineageLens {
   }
 
   build() {
+    for (const side of this.sides || []) { side.network.dispose(); side.glow.dispose(); }
     this.root.traverse((object) => object.geometry?.dispose?.());
     for (const child of [...this.root.children]) this.root.remove(child);
     const places = this.places();
@@ -219,14 +228,17 @@ export class LineageLens {
       layout.shape = this.shape;
       layout.axis = this.narrow ? 1 : 0;
       const meshes = new LipidMeshes(group, this.lipid, { narrow: this.narrow, capacity: index === 0 ? 420 : 240 });
-      for (const mesh of meshes.heads) mesh.userData.pick = (hit) => { const lipid = meshes.lipidOf(hit); return lipid ? `${PREFIX}type:${lipid.type}` : `${PREFIX}assembly`; };
+      // A protocell's inside and its shell's glow (src/lenses/protocell_marks.js).
+      const network = new CatalyticNetwork(group, { narrow: this.narrow });
+      const glow = new ShellGlow(group, { narrow: this.narrow });
+      for (const mesh of meshes.layers.flatMap((layer) => layer.heads)) mesh.userData.pick = (hit) => { const lipid = meshes.lipidOf(hit); return lipid ? `${PREFIX}type:${lipid.type}` : `${PREFIX}assembly`; };
       const ring = new CompositionRing(group, this.materials.ring);
       const strip = new CompositionStrip(group, this.materials.strip);
       const z = places.lineage.z + index * 1.6;
       const xOf = xOfRun(run);
       const fence = new SimilarityFence(this.lineageGroup, run, { xOf, z: z - 0.45, y: 0.95, materials: this.materials });
       const spine = new LineageSpine(this.lineageGroup, run, { xOf, y: 0.42, z: z + 0.4, materials: this.materials });
-      return { run, group, layout, meshes, ring, strip, fence, spine, xOf, offset };
+      return { run, group, layout, meshes, network, glow, ring, strip, fence, spine, xOf, offset };
     });
     // The lineage's wall, carpet and map: of the first run.
     const main = this.sides[0];
@@ -309,6 +321,15 @@ export class LineageLens {
   /** A card of the page opened or closed (on a phone, the folded card, the rail, the legend): the example's mark finds its place again at the next frame, though nothing moves. */
   cardsMoved() {
     this.exampleSpot = null;
+    // A card may still be opening (its height eases): the mark looks again a few times as it settles, also with less motion, when no frame comes by itself.
+    clearTimeout(this.cardsSettle);
+    let left = 3;
+    const again = () => {
+      this.exampleSpot = null;
+      this.stage.invalidate?.();
+      if (--left > 0) this.cardsSettle = setTimeout(again, 220);
+    };
+    this.cardsSettle = setTimeout(again, 160);
   }
 
   /** The panel's sources: files of the repository, as every view gives them (the papers are named in words, in the facts). */
@@ -349,7 +370,7 @@ export class LineageLens {
     return {
       card: {
         heading: this.set.model.label,
-        modes: { label: "Packing (the picture's choice)", options: SHAPES.map((shape) => [shape, shape === "micelle" ? "Micelle" : "Cluster"]), active: this.shape },
+        modes: { label: "Packing (the picture's choice)", options: SHAPES.map((shape) => [shape, { protocell: "Protocell", micelle: "Micelle", cluster: "Cluster" }[shape]]), active: this.shape },
         marks: { label: "Composition", options: COMPOSITION, active: this.composition },
         compare: { label: "Similarity", options: COMPARE.map((item) => [item.id, item.label]), active: this.compare },
         pair: this.pairRuns ? { label: "The two forms of the law, under one clock", options: [["one", this.mainRun.label], ["pair", `${this.pairRuns[0].label} and ${this.pairRuns[1].label}`]], active: this.pair ? "pair" : "one" } : null,
@@ -364,24 +385,70 @@ export class LineageLens {
           // Each key on one line of the legend: a head's colour and form (its panel says more).
           ...this.leading.map((type, slot) => ({ id: `${PREFIX}type:${type}`, label: `${types[type]}: ${["blue", "orange", "green"][slot]} ${FORMS[slot].replace("soft ", "")}`, swatch: `origin-type-${slot + 1}` })),
           { label: `${others} others: round, grey`, swatch: "origin-type-other" },
-          ...(this.level === "assembly" ? [
+          ...(this.level === "assembly" && this.shape === "protocell" ? [
+            { label: this.streamWords(), swatch: "origin-halo" },
+            { label: "free: the run's supply", swatch: "origin-free" },
+            { label: "lit links: the run's table", swatch: "origin-link" },
+          ] : []),
+          ...(this.level === "assembly" && this.shape !== "protocell" ? [
             { label: "tails: alike, turned in", swatch: "origin-tail" },
             { label: "free: the run's supply", swatch: "origin-free" },
-            { label: "halo: a molecule in motion", swatch: "origin-halo" },
+            { label: this.streamWords(), swatch: "origin-halo" },
           ] : []),
           ...(this.level === "lineage" && this.mainRun.threshold ? [{ label: `${this.mainRun.threshold.value}: the analysis's threshold`, swatch: "origin-threshold" }] : []),
           ...(this.level === "lineage" ? [{ label: "bead: inherited · ring: a break", swatch: "origin-fission" }] : []),
         ],
-        note: { text: [example ? `${example}.` : null, NOTE_WORDS].filter(Boolean).join(" ") },
+        note: { text: [example ? `${example}.` : null, this.shape === "protocell" ? NOTE_WORDS : NOTE_WORDS_BARE].filter(Boolean).join(" ") },
       },
       timeline: { player: this.player, eventWord: "fission" },
       stamp: [example, this.shownRuns.map((run) => `${run.label}: ${formWords(run)}`).join(" · ")].filter(Boolean).join(" · "),
     };
   }
 
+  /** Where a side of a pair stands across: the protocell's two lineages stand further apart, by its size. */
+  sideX(side) {
+    return side.offset * (this.shape === "protocell" ? 1.3 : 1);
+  }
+
   /** What helped a join: shown as a brief light only where the run records it. */
   helpWords() {
-    return this.mainRun.raw.trace?.helpers ? null : "No light shows what helped a join: the run does not record it.";
+    return this.mainRun.raw.trace?.helpers ? null : "No light shows what helped any one join: the run does not record it. The links inside a protocell are the table's standing strengths among the types it holds.";
+  }
+
+  /** The events a second of one growth at the clock's speed: molecule by molecule, or as fast as the growth's events come. */
+  eventRate(run, g, speed = this.player.speed) {
+    if (speed === FINE) return MOLECULES_A_SECOND;
+    const from = g === 0 ? 0 : g + 0.15, to = g + 1 - 0.15;
+    return (fissionsPerSecond(speed) * run.growthLength(g)) / Math.max(1e-6, to - from);
+  }
+
+  /** In flight at once, at most: fewer on a phone. */
+  get flightCap() {
+    return this.narrow ? STREAM_CAP.narrow : STREAM_CAP.wide;
+  }
+
+  /** One in how many joins and leaves is drawn in flight, across the main run's growths at this speed: [least, most]. */
+  strideRange(speed = this.player.speed) {
+    const key = `${speed}:${this.flightCap}:${this.mainRun.id}`;
+    if (this.strides?.key === key) return this.strides.range;
+    const flight = speed === FINE ? LIPID_FLIGHT_S : STREAM_FLIGHT_S;
+    let least = Infinity, most = 1;
+    for (let g = 0; g < this.mainRun.fissionCount; g++) {
+      const n = streamStride({ eventsPerSecond: this.eventRate(this.mainRun, g, speed), cap: this.flightCap, flight });
+      least = Math.min(least, n);
+      most = Math.max(most, n);
+    }
+    this.strides = { key, range: [Number.isFinite(least) ? least : 1, most] };
+    return this.strides.range;
+  }
+
+  /** The stream's key: each join and leave drawn coming or going, or one in N of them (N by each growth's pace at this speed). */
+  streamWords() {
+    if (this.stage.reducedMotion) return "in, out: joins, leaves, in place";
+    const [least, most] = this.strideRange();
+    if (most <= 1) return "in, out: each join and leave";
+    if (least === most) return `in, out: 1 in ${most} joins, leaves`;
+    return least <= 1 ? `in, out: all, or 1 in up to ${most}` : `in, out: 1 in ${least} to ${most} joins, leaves`;
   }
 
   activate() {
@@ -469,7 +536,13 @@ export class LineageLens {
       case "lineage": return this.narrow
         ? { target: new THREE.Vector3(0, 5.15, -3.4), distance: 28.5, azimuth: 0.12, polar: 1.2 }
         : { target: new THREE.Vector3(0, 3.1, -4.8), distance: 30, azimuth: 0.1, polar: 1.2 };
-      default: return { target: ASSEMBLY.clone().add(new THREE.Vector3(this.narrow || this.pair ? 0 : 0.35, this.narrow ? 0.3 : -0.45, 0)), distance: (this.pair ? 12 : 6.6) * (this.narrow ? 1.3 : 1), azimuth: this.pair ? 0.12 : 0.3, polar: 1.36 };
+      default: {
+        // A protocell is larger than the micelle: the camera stands back by its size.
+        const size = this.shape === "protocell" ? 1.62 : 1;
+        // A pair's let-go daughters part to the right, so the pair of protocells is framed a little to the right of its middle.
+        const across = this.narrow ? 0 : this.pair ? (this.shape === "protocell" ? 1 : 0) : 0.35 * size;
+        return { target: ASSEMBLY.clone().add(new THREE.Vector3(across, this.narrow ? 0.3 * size : -0.45 * size, 0)), distance: (this.pair ? (this.shape === "protocell" ? 13.2 : 12) : 6.6) * size * (this.narrow ? 1.3 : 1), azimuth: this.pair ? 0.12 : 0.3, polar: 1.36 };
+      }
     }
   }
 
@@ -500,9 +573,10 @@ export class LineageLens {
     if (!SHAPES.includes(shape)) return;
     if (chosen) this.chosenShape = true;
     this.shape = shape;
-    for (const side of this.sides || []) { side.layout.shape = shape; side.layout.at = null; }
+    for (const side of this.sides || []) { side.layout.shape = shape; side.layout.at = null; side.network.key = ""; }
     this.keys = {};
     this.refreshLabels();
+    if (this.active && this.level === "assembly") this.stage.rig?.flyTo?.(this.homeView());
     this.stage.invalidate?.();
     this.onChrome?.();
   }
@@ -602,18 +676,27 @@ export class LineageLens {
       this.exampleSpot = null;
     }
     if (level === "assembly" || (level === "lineage" && !this.narrow)) {
-      const under = level === "assembly" ? (this.pair ? -2.05 : this.narrow ? -1.15 : -1.3) : this.pair || this.narrow ? -2.9 : -2.35;
+      // Under the assembly, by its size (the micelle's or the protocell's at the fission size).
+      const big = this.shape === "protocell" ? PROTOCELL.base + PROTOCELL.grow - 0.84 : 0;
+      const under = level === "assembly" ? (this.pair ? -2.05 - big : this.narrow ? -1.15 - big : -1.3 - big) : this.pair || this.narrow ? -2.9 : -2.35;
       this.tags.shape = add({ id: `${PREFIX}assembly`, text: level === "lineage" ? "The assembly now: the shape is the picture's choice" : this.shapeWords(), anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 520 });
       if (level === "assembly") {
         // The line on the picture that says what is the picture's own; while the founder gathers, the words for that in the shape's place.
-        this.tags.own = labels.add({ text: OWN_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.45 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
+        this.tags.own = labels.add({ text: this.narrow ? OWN_WORDS_SHORT : this.shape === "protocell" ? OWN_WORDS : OWN_WORDS_BARE, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under - (this.narrow ? 0.45 : 0.42), 0)), priority: 960, kind: "note label-region label-own", lift: 0 });
         this.tags.own.boost = 900;
         this.tags.gather = labels.add({ text: GATHER_WORDS, anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, under, 0)), priority: 940, kind: "part label-own", lift: 0 });
         this.tags.gather.hidden = true;
-        this.tags.free = add({ text: "free molecules: the run's supply, held fixed", anchor: ASSEMBLY.clone().add(this.narrow ? new THREE.Vector3(1.6, 3.4, -2.5) : new THREE.Vector3(4.6, 1.3, -2.4)), priority: 330, lift: 0 });
+        this.tags.free = add({ text: "free molecules: the run's supply, held fixed", anchor: ASSEMBLY.clone().add(this.narrow ? new THREE.Vector3(1.6, 3.4, -2.5) : new THREE.Vector3(4.6 + big * 1.6, 1.3, -2.4)), priority: 330, lift: 0 });
+        // Where the run's joins come in and its leaves go out (the picture's paths, the run's molecules), and what is lit inside a protocell.
+        if (!this.narrow && !this.pair) {
+          const r = this.shape === "protocell" ? PROTOCELL.base + PROTOCELL.grow : 0.84;
+          this.tags.in = add({ text: "in: the run's joins", anchor: ASSEMBLY.clone().add(new THREE.Vector3(-r - 1.1, -0.35, 0.9)), priority: 420, lift: 0 });
+          this.tags.out = add({ text: "out: the run's leaves", anchor: ASSEMBLY.clone().add(new THREE.Vector3(r + 1.1, -0.35, 0.9)), priority: 420, lift: 0 });
+          if (this.shape === "protocell") this.tags.network = add({ text: "lit inside: which type speeds which (the run's table)", anchor: ASSEMBLY.clone().add(new THREE.Vector3(0, r - PROTOCELL.thickness - 0.05, 0.3)), priority: 450, lift: 0 });
+        }
       }
       // Each run of a pair is labelled with its own law, beneath its assembly.
-      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(side.offset, 1.5, 0)), priority: 760, kind: "part label-wrap" });
+      if (this.pair) for (const side of this.sides) add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: ASSEMBLY.clone().add(new THREE.Vector3(this.sideX(side), 1.5 + big, 0)), priority: 760, kind: "part label-wrap" });
       // At the lineages, each lineage of the pair is named too, beside its own fence.
       if (this.pair && level === "lineage") this.sides.forEach((side, index) => add({ text: `${side.run.label}: ${formWords(side.run)}`, anchor: new THREE.Vector3(this.placeAt.lineage.x1 + 0.6, 0.6, this.placeAt.lineage.z + index * 1.6), priority: 750 }));
     }
@@ -646,6 +729,7 @@ export class LineageLens {
   }
 
   shapeWords() {
+    if (this.shape === "protocell") return "A protocell: a shell of two faces, heads to the water inside and out; the shape is the picture's choice";
     return this.shape === "micelle" ? "Lipids in a micelle, heads to the water and tails in: the shape is the picture's choice" : "Lipids in a loose cluster: the shape is the picture's choice";
   }
 
@@ -671,6 +755,9 @@ export class LineageLens {
     const still = Boolean(this.stage.reducedMotion);
     const speed = this.player.speed, fine = speed === FINE;
     const mode = arrivalMode({ fine, fissionsPerSecond: fissionsPerSecond(speed), still });
+    // The legend's key says the stream's N: a new speed asks for the card and the legend again.
+    if (this.speedSeen !== speed && this.speedSeen !== undefined) this.onChrome?.();
+    this.speedSeen = speed;
     const time = this.player.time;
     const style = { slotOf: (type) => this.leading.indexOf(type), colours: this.colours };
     let moving = false;
@@ -680,7 +767,11 @@ export class LineageLens {
     this.sides.forEach((side, index) => {
       const { run, layout } = side;
       const phase = run.phaseAt(time);
+      side.group.position.x = ASSEMBLY.x + this.sideX(side);
       layout.mode = mode;
+      layout.flightCap = this.flightCap;
+      layout.flightSpan = fine ? LIPID_FLIGHT_S : STREAM_FLIGHT_S;
+      layout.stride = phase.phase === "grow" ? streamStride({ eventsPerSecond: this.eventRate(run, phase.g, speed), cap: layout.flightCap, flight: layout.flightSpan }) : layout.stride;
       // Where the assembly is not shown (the molecules, the population) its lipids are left where they are: back in view, they follow the run again.
       if (side.group.visible) {
         const rebuilt = layout.follow(run, phase);
@@ -690,10 +781,22 @@ export class LineageLens {
         side.meshes.draw(this.lipidsOf(side, index, phase), { tailColour: this.colours.lipidTail, chosen: chosen === null ? null : (lipid) => lipid.type === chosen && !lipid.free });
       }
       // The composition round the assembly: two groups during a split.
+      // A protocell's ring stands just outside its shell (the ring is drawn at 1.5 times the radius it is given).
+      const ringAt = (count) => (this.shape === "protocell" ? (layout.radius(count) + 0.38) / 1.5 : layout.radius(count));
       const groups = phase.phase === "split"
-        ? [{ x: run.carried(phase.k), centre: layout.centres[0], radius: layout.radius(layout.counts[0] || 40), fade: 0 }, { x: run.other(phase.k), centre: layout.centres[1], radius: layout.radius(layout.counts[1] || 40), fade: 0.75 * layout.fade }]
-        : [{ x: run.compositionAt(time), centre: [0, 0, 0], radius: layout.radius(layout.counts[0] || 1), fade: 0 }];
+        ? [{ x: run.carried(phase.k), centre: layout.centres[0], radius: ringAt(layout.counts[0] || 40), fade: 0 }, { x: run.other(phase.k), centre: layout.centres[1], radius: ringAt(layout.counts[1] || 40), fade: 0.75 * layout.fade }]
+        : [{ x: run.compositionAt(time), centre: [0, 0, 0], radius: ringAt(layout.counts[0] || 1), fade: 0 }];
       const key = `${phase.phase}:${phase.k}:${phase.e ?? ""}:${phase.phase === "split" ? phase.part.toFixed(3) : ""}:${this.shape}:${this.colours.version}`;
+      // Inside a protocell: the catalytic network of the types each group holds, from the run's table; round it, the shell's glow.
+      const inside = this.shape === "protocell" && side.group.visible && this.level === "assembly" && !layout.gathering;
+      side.network.setVisible(inside);
+      side.glow.mesh.visible = this.shape === "protocell" && side.group.visible && !layout.gathering;
+      if (inside) {
+        const room = (count) => Math.max(0.2, layout.radius(count) - PROTOCELL.thickness - 0.22);
+        const nets = groups.map((group, i) => ({ x: group.x, centre: layout.centres[i] || [0, 0, 0], room: room(layout.counts[i] || 40), fade: group.fade }));
+        side.network.draw(nets, run.environment, (type) => this.lightOf(type), `${key}:${nets.map((net) => net.centre.map((v) => v.toFixed(2)).join(",")).join("|")}`);
+      }
+      if (side.glow.mesh.visible) side.glow.draw(groups.map((group, i) => ({ centre: layout.centres[i] || [0, 0, 0], outer: layout.radius(layout.counts[i] || 40) - 0.06, inner: layout.radius(layout.counts[i] || 40) - PROTOCELL.thickness + 0.06, fade: group.fade })));
       // While the founder gathers its composition waits for it: the ring and the strip stand once it has gathered.
       side.ring.mesh.visible = this.composition === "wheel" && !layout.gathering;
       side.strip.mesh.visible = this.composition === "strip" && !layout.gathering;
@@ -711,6 +814,9 @@ export class LineageLens {
     this.carpet.draw(main.done, this.colours.ramp);
     this.map.draw(main.done, this.mainRun.compositionAt(time), this.stage.camera);
     this.table.draw(this.colours.ramp, this.colours);
+    // While the founder gathers, the words of the exchange and of the inside wait for it (the user's order: it gathers, then the molecules come and go).
+    // With less motion nothing comes or goes on a path, so the paths' words stand down too (the legend's key says "in place").
+    for (const name of ["in", "out", "network"]) if (this.tags?.[name]) this.tags[name].hidden = main.layout.gathering || (name !== "network" && Boolean(this.stage.reducedMotion));
     if (this.tags?.gather) {
       this.tags.gather.hidden = !main.layout.gathering;
       if (this.tags.shape) this.tags.shape.hidden = main.layout.gathering;
@@ -773,6 +879,17 @@ export class LineageLens {
       const slot = this.leading.indexOf(type);
       return slot >= 0 ? this.colours.lead[slot] : type % 2 ? this.colours.otherAlt : this.colours.other;
     };
+    // The near side of a protocell is drawn see-through, so that its inside shows: every molecule stays on the picture.
+    const proto = this.shape === "protocell" && this.stage.camera;
+    const eyeAt = proto ? this.stage.camera.position.clone().sub(group.position) : null;
+    const see = (bead) => {
+      if (!proto || bead.flight < 1) return 0;
+      const c = layout.centres[bead.side] || layout.centres[0];
+      const tx = eyeAt.x - c[0], ty = eyeAt.y - c[1], tz = eyeAt.z - c[2], tl = Math.hypot(tx, ty, tz) || 1;
+      const r = layout.radius(layout.counts[bead.side] || 1);
+      const front = ((bead.pos[0] - c[0]) * tx + (bead.pos[1] - c[1]) * ty + (bead.pos[2] - c[2]) * tz) / (tl * r);
+      return Math.min(0.82, Math.max(0, (front - 0.05) / 0.4) * 0.82);
+    };
     const put = (bead, fade, free = false) => {
       const lipid = take();
       const slot = this.leading.indexOf(bead.type);
@@ -786,15 +903,17 @@ export class LineageLens {
       lipid.tail = bead.tailLength ?? 0.6;
       lipid.flex = bead.flex ?? 1;
       // A molecule that has just come glows where it is; one seeping in or out has a faint halo while it moves.
-      lipid.glow = bead.glow > 0 ? bead.glow / GLOW_S : bead.flight < 1 && !layout.gathering ? 0.25 + 0.5 * Math.sin(Math.PI * bead.flight) : 0;
+      lipid.glow = bead.glow > 0 ? bead.glow / GLOW_S : bead.flight < 1 && !layout.gathering && bead.wait <= 0 ? 0.25 + 0.5 * Math.sin(Math.PI * bead.flight) : 0;
       lipid.colour.copy(headOf(bead.type)).lerp(haze, fade);
       lipid.tint.copy(tail).lerp(haze, fade);
+      lipid.ghost = free ? 0 : see(bead);
       return lipid;
     };
     const out = this.drawn?.[index] || [];
     out.length = 0;
     for (const bead of layout.beads) if (bead.pos) out.push(put(bead, bead.side === 1 ? 0.7 * layout.fade : 0));
     for (const bead of layout.adrift) out.push(put(bead, bead.fade ?? 0.8));
+    for (const bead of layout.leavers) out.push(put(bead, 0));
     if (index === 0 && this.level === "assembly" && !this.pair) {
       const eye = this.stage.camera ? [this.stage.camera.position.x, this.stage.camera.position.y, this.stage.camera.position.z] : null;
       const centre = [group.position.x, group.position.y, group.position.z];
@@ -807,6 +926,12 @@ export class LineageLens {
     }
     (this.drawn ??= [])[index] = out;
     return out;
+  }
+
+  /** A type's light inside a protocell: its colour where it leads, a warm white otherwise. */
+  lightOf(type) {
+    const slot = this.leading.indexOf(type);
+    return slot >= 0 ? this.colours.lead[slot] : this.colours.light;
   }
 
   /** The shade deep inside each assembly shown (the water's own stand-in for contact shade). */
@@ -900,9 +1025,14 @@ export class LineageLens {
     this.water.setTheme(Boolean(palette.dark));
     this.colours = {
       lead: tokens.lead.map(tone), other: tone(tokens.other), otherAlt: tone(tokens.otherAlt), tail: tone(tokens.tail),
-      lipidTail: tone(tokens.lipidTail), haze: tone(water.mid),
+      lipidTail: tone(tokens.lipidTail), haze: tone(water.mid), light: tone(palette.dark ? "#ffe9c4" : "#fff4dc"),
       stage: tone(water.mid), chosen: tone(palette.accent), ramp, version: (this.colours?.version || 0) + 1,
     };
+    for (const side of this.sides || []) {
+      side.glow.setTint(tokens.lipidTail, Boolean(palette.dark));
+      side.network.setTheme(Boolean(palette.dark));
+      side.network.key = "";
+    }
     const set = (name, value) => value && this.materials[name].color.set(value);
     for (const name of ["lead", "other", "strip", "column", "cap", "node", "point"]) this.materials[name].color.set(0xffffff);
     set("plate", palette.plate);

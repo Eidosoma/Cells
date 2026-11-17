@@ -11,7 +11,8 @@
 
 import * as THREE from "../three.js";
 
-export const SHAPES = ["micelle", "cluster"];
+/** How the assembly may be packed, the picture's choice: a protocell (the view opens with it), a micelle, a loose cluster. BeadLayout draws the last two; the protocell is LipidLayout's (src/lenses/lipid_assembly.js). */
+export const SHAPES = ["protocell", "micelle", "cluster"];
 export const FLIGHT_S = 0.45; // seconds a molecule takes to fly in or out, molecule by molecule
 export const GLOW_S = 0.55;   // seconds a molecule's glow lasts where it appears
 export const GLOW_CAP = 10;   // glows shown at once, at most
@@ -203,11 +204,14 @@ export class BeadLayout {
   }
 }
 
-/** How a molecule that joins appears, at a speed of the clock: in flight only molecule by molecule. */
-export function arrivalMode({ fine, fissionsPerSecond, still }) {
-  if (still) return "still";
-  if (fine) return "flight";
-  return fissionsPerSecond >= FAST_GLOW ? "still" : "glow";
+/**
+ * How a molecule that joins or leaves is drawn, at a speed of the clock: with less motion, at its place
+ * at once ("still"); otherwise in flight at every speed, as many as the stride lets (src/lenses/
+ * lipid_assembly.js, `streamStride`; the user, 17 November 2026: the molecules seen moving in and out).
+ * BeadLayout's own glow at fission steps (`glow`) is kept for a caller that asks for it.
+ */
+export function arrivalMode({ still }) {
+  return still ? "still" : "flight";
 }
 
 /** The beads' meshes: one set of instances for each shape, and the tails as one set of lines. */

@@ -1,24 +1,46 @@
 // One assembly as lipids in water, and the free molecules round it (src/lenses/lineage.js). The run
-// says which type joins or leaves and when, the composition, each fission and how it divides the
-// molecules: those the picture follows exactly, one lipid for each molecule. Everything else is the
-// picture's own and no law of Cells computes it: how the lipids pack (heads to the water, tails
-// inward, on a ball, or loosely in a cluster), how they move, how a molecule seeps in from the water
-// and out into it, how the assembly lengthens, necks and parts, the gathering of the first assembly
+// says which type joins or leaves and in what order, the composition, each fission and how it divides
+// the molecules: those the picture follows exactly, one lipid for each molecule. Everything else is the
+// picture's own and no law of Cells computes it: how the lipids pack (a protocell, a closed shell of
+// two faces, heads to the water outside and inside, tails between; a micelle, heads out and tails in;
+// or loosely in a cluster), how they move, the paths by which a molecule comes in from the water and
+// goes out into it, how the assembly lengthens, necks and parts, the gathering of the first assembly
 // at a run's start, and the free molecules drifting in the water.
 //
 // What follows the run is BeadLayout's (src/lenses/assembly_beads.js): the same events, the same
-// parting type by type, the same rule of motion at speed (schema/ASSEMBLY_RUN.md, rule 4). Here only
-// where each lipid stands and which way it faces.
+// parting type by type. Here: where each lipid stands and which way it faces, and the stream of the
+// run's joins and leaves (schema/ASSEMBLY_RUN.md, rule 4). At every speed the joins and leaves are
+// seen: a joining molecule comes in from the water to its place, a leaving one goes out and away. So
+// that the frame keeps its pace, no more than a cap are in flight at once: where a growth's pace would
+// put more, one in N of its joins and leaves is drawn in flight (N from that growth's pace,
+// `streamStride`), the others taking or leaving their places at once; the legend says N. A leaving
+// molecule is no member from its event on: it goes on the leavers' list, never divided at a fission.
 //
 // Rule 4's one exception, said so on the picture: at a run's start the founder's molecules gather
 // from the water, all at once, while the clock stands at the start. The run starts with the founder
-// made, so the gathering is the picture's alone; with less motion asked for it stands gathered.
+// made, so the gathering is the picture's alone. With less motion asked for nothing gathers or flies.
 
 import { BeadLayout } from "./assembly_beads.js";
 import { HEAD, TAIL } from "./lipid_marks.js";
 
-export const LIPID_FLIGHT_S = 0.9; // seconds a molecule takes to seep in from the water, or out into it
+export const LIPID_FLIGHT_S = 0.9; // seconds a molecule takes to seep in from the water, or out into it, molecule by molecule
+export const STREAM_FLIGHT_S = 1.15; // the same, at a speed of fissions a second
 export const IN_FLIGHT_CAP = 4;    // molecules in flight at once, at most, molecule by molecule
+/** Molecules in flight at once, at most, at a speed of fissions a second, wide and on a phone. */
+export const STREAM_CAP = { wide: 26, narrow: 14 };
+/**
+ * The protocell's sizes, the picture's own (in the scene's units): a lipid's size against the
+ * micelle's, the two faces' distance apart, the tails' length, its outer radius at no molecules and
+ * what it gains up to the fission size (80), and the share of molecules in the outer face. Worked
+ * out at 40 molecules (a daughter) and at 80: about a fifth to a quarter of each face is heads, and
+ * the inside's clear radius is 0.4 to 0.8, where the catalytic network is drawn.
+ */
+export const PROTOCELL = { head: 1.2, thickness: 0.72, tail: 0.24, base: 1.05, grow: 0.75, outer: 0.76 };
+
+/** One in how many of a growth's joins and leaves is drawn in flight, so that no more than `cap` fly at once. */
+export function streamStride({ eventsPerSecond, cap, flight = STREAM_FLIGHT_S }) {
+  return Math.max(1, Math.ceil((Math.max(0, eventsPerSecond) * flight) / Math.max(1, cap)));
+}
 export const GATHER_S = 3.6;       // seconds the founder takes to gather, all told
 export const ADRIFT_S = 2.2;       // seconds the daughter let go takes to drift off into the haze
 /** Free molecules in the water, wide and on a phone: their number is the picture's, their mix the run's supply. */
@@ -71,6 +93,9 @@ export function surfaceAlong(from, dir, balls, k, reach) {
   return { point: at.slice(), normal: field.g.slice() };
 }
 const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+/** Where the run's joins come in from and its leaves go out to, by the parting's axis: across (0), or up and down (1). */
+const STREAM_IN = [[-1, 0.12, 0.3], [-0.45, -1, 0.15]];
+const STREAM_OUT = [[1, 0.12, 0.3], [0.45, -1, 0.15]];
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 export class LipidLayout extends BeadLayout {
@@ -78,7 +103,37 @@ export class LipidLayout extends BeadLayout {
     super(options);
     this.gathering = false;
     this.adrift = []; // the daughter let go, drifting off: lipids with their own clock
+    this.leavers = []; // molecules that have left, going out into the water: no members of the assembly
     this.drawn = [];
+    this.stride = 1; // one in so many joins and leaves is drawn in flight
+    this.flightCap = IN_FLIGHT_CAP;
+    this.flightSpan = LIPID_FLIGHT_S;
+    this.eventIndex = 0;
+  }
+
+  /**
+   * A molecule joins or leaves, as the run says. A join is a member at once, drawn coming in from the
+   * water where it is one of the stride's; a leave is no member from its event, drawn going out where
+   * it is one of the stride's.
+   */
+  apply(event) {
+    const type = Math.abs(event) - 1;
+    const shown = this.mode === "flight" && this.eventIndex++ % Math.max(1, this.stride) === 0;
+    if (event > 0) {
+      const bead = this.bead(type, shown);
+      bead.span = this.flightSpan;
+      this.beads.push(bead);
+      return;
+    }
+    let index = -1;
+    for (let i = this.beads.length - 1; i >= 0; i--) {
+      if (this.beads[i].type !== type) continue;
+      index = i;
+      if (this.beads[i].flight >= 1) break; // one in its place leaves first
+    }
+    if (index < 0) return;
+    const [bead] = this.beads.splice(index, 1);
+    if (shown && bead.pos) this.leavers.push({ ...bead, leaving: true, flight: 0, wait: 0, span: this.flightSpan, start: bead.pos.slice(), axis: (bead.axis || bead.dir).slice(), centre: this.centres[bead.side].slice(), r: this.radius(this.counts[bead.side] || 1) });
   }
 
   bead(type, arriving) {
@@ -89,12 +144,19 @@ export class LipidLayout extends BeadLayout {
     bead.wander = norm([this.random() * 2 - 1, this.random() * 1.2 - 0.5, this.random() * 2 - 1]);
     bead.wait = 0;
     bead.span = LIPID_FLIGHT_S;
+    bead.leaflet = this.random() < PROTOCELL.outer ? 0 : 1; // in a protocell, its face: the outer (0) or the inner (1)
     return bead;
   }
 
-  /** A ball whose surface holds as many heads as it has molecules, packed close (the picture's choice). */
+  /** A ball whose surface holds as many heads as it has molecules (the picture's choice): a protocell's outer face, a micelle packed close, a loose cluster. */
   radius(count) {
+    if (this.shape === "protocell") return PROTOCELL.base + PROTOCELL.grow * (count / 80);
     return this.shape === "cluster" ? 0.95 * Math.cbrt(count / 80) : 0.84 * Math.sqrt(count / 80);
+  }
+
+  /** How large a lipid in its place is drawn, against the micelle's. */
+  get lipidScale() {
+    return this.shape === "protocell" ? PROTOCELL.head : 1;
   }
 
   /** The founder's molecules, scattered in the water, gather into the first assembly. */
@@ -122,13 +184,14 @@ export class LipidLayout extends BeadLayout {
       this.adrift = [];
     }
     const rebuilt = super.follow(run, phase);
-    if (rebuilt) { this.adrift = []; this.gathering = false; }
+    if (rebuilt) { this.adrift = []; this.leavers = []; this.gathering = false; }
     // The daughters part more slowly than BeadLayout's (so the neck shows), and the one let go drifts back into the haze.
     if (phase.phase === "split") {
       const s = phase.part, d = this.radius(40) * 1.25, apart = smooth(0, 0.72, s), back = smooth(0.72, 1, s);
       const along = (amount) => (this.axis === 1 ? [0, amount, 0] : [amount, 0, 0]);
       const keep = along(-d * apart * (1 - back)), go = along(d * apart * (1 + 0.5 * back));
-      this.centres = [keep, [go[0], go[1] + 0.3 * back, go[2] - 3 * back]];
+      const deep = this.shape === "protocell" ? 6 : 3; // back into the haze, by the assembly's size
+      this.centres = [keep, [go[0], go[1] + 0.3 * back, go[2] - deep * back]];
       this.fade = back;
       this.split = s;
     }
@@ -175,6 +238,16 @@ export class LipidLayout extends BeadLayout {
    * where the two balls meet), and the smooth union of the two balls draws the neck between them.
    */
   place(bead, balls, k, splitting) {
+    // A protocell's inner face stands on the same shape drawn in by the faces' distance apart, its heads turned in.
+    const inner = this.shape === "protocell" && bead.leaflet === 1;
+    if (inner) balls = balls.map((ball) => ({ c: ball.c, r: Math.max(0.25, ball.r - PROTOCELL.thickness) }));
+    const placed = this.placeOn(bead, balls, k, splitting);
+    if (this.shape === "protocell") placed.tail = PROTOCELL.tail;
+    if (inner) placed.normal = placed.normal.map((x) => -x);
+    return placed;
+  }
+
+  placeOn(bead, balls, k, splitting) {
     const side = bead.side, own = balls[side] || balls[0];
     if (this.shape === "cluster") {
       const r = own.r * (0.35 + 0.65 * bead.depth);
@@ -223,11 +296,13 @@ export class LipidLayout extends BeadLayout {
     const balls = [0, 1].map((side) => ({ c: this.centres[side], r: this.radius(this.counts[side] || 1) }));
     const k = 0.42 * Math.max(balls[0].r, 0.5);
     let moving = false, glowing = 0, flying = 0;
+    const big = this.lipidScale;
     for (const bead of this.beads) {
-      const { point, normal, inner } = this.place(bead, balls, k, splitting);
-      // The head sits just out of the surface; the tails reach inward, as long as the assembly is deep.
-      const target = [0, 1, 2].map((a) => point[a] + normal[a] * HEAD * 0.15);
-      const tail = this.shape === "cluster" ? 0.5 : Math.min(TAIL.longest, TAIL.share * inner);
+      const placed = this.place(bead, balls, k, splitting);
+      const { point, normal, inner } = placed;
+      // The head sits just out of the surface; the tails reach inward, as long as the assembly is deep (a protocell's to the middle of its two faces).
+      const target = [0, 1, 2].map((a) => point[a] + normal[a] * HEAD * 0.15 * big);
+      const tail = placed.tail ?? (this.shape === "cluster" ? 0.5 : Math.min(TAIL.longest, TAIL.share * inner));
       if (still) { bead.flight = 1; bead.wait = 0; }
       if (bead.flight < 1) {
         if (bead.wait > 0) bead.wait = Math.max(0, bead.wait - seconds);
@@ -236,8 +311,9 @@ export class LipidLayout extends BeadLayout {
       }
       if (bead.flight < 1 && !bead.from) {
         // From the water round it, and from the far side more than the near (the camera first looks from the front).
+        // A join of the run comes in from one side (the left; from below on a tall screen), as the leaves go out on the other.
         const c = balls[bead.side].c, reach = bead.reach || 3.4;
-        const w = norm([0, 1, 2].map((a) => bead.dir[a] * 0.6 + bead.wander[a]));
+        const w = this.gathering ? norm([0, 1, 2].map((a) => bead.dir[a] * 0.6 + bead.wander[a])) : norm([0, 1, 2].map((a) => bead.dir[a] * 0.35 + STREAM_IN[this.axis][a] + bead.wander[a] * 0.4));
         w[2] = Math.min(w[2], 0.25);
         // On a tall screen (the daughters part up and down) the frame is narrow and the page's card stands above: a molecule comes from below, inside the frame.
         const spread = this.axis === 1 ? [0.38, 1.1, 0.7] : [1, 1, 1];
@@ -246,19 +322,7 @@ export class LipidLayout extends BeadLayout {
       }
       let pos = target, axis = normal, flex = 0.35;
       if (bead.flight < 1) {
-        if (bead.leaving) {
-          // Out into the water: it lets go, turns and drifts off.
-          const f = smooth(0, 1, bead.flight);
-          const c = balls[bead.side].c, out = norm([0, 1, 2].map((a) => bead.dir[a] + bead.wander[a] * 0.7));
-          const spread = this.axis === 1 ? [0.45, 1.1, 0.8] : [1, 1, 1];
-          if (this.axis === 1) out[1] = -0.35 - 0.65 * Math.abs(out[1]);
-          const far = [0, 1, 2].map((a) => c[a] + out[a] * (balls[bead.side].r + 4.2) * spread[a]);
-          const start = bead.start || (bead.start = bead.pos ? bead.pos.slice() : target);
-          pos = [0, 1, 2].map((a) => start[a] + (far[a] - start[a]) * f);
-          axis = norm([0, 1, 2].map((a) => normal[a] * (1 - f) + bead.loose[a] * f));
-          flex = 0.35 + 1.1 * f;
-          bead.scale = 1 - 0.35 * smooth(0.6, 1, bead.flight);
-        } else {
+        {
           // In from the water: a drift that slows as it comes near, then the lipid turns tails-in and settles.
           const f = smooth(0, 1, bead.flight), g = 1 - f;
           const ctrl = [0, 1, 2].map((a) => target[a] + normal[a] * 1.1 + bead.wander[a] * 0.8);
@@ -266,12 +330,12 @@ export class LipidLayout extends BeadLayout {
           const turn = smooth(0.55, 1, bead.flight);
           axis = norm([0, 1, 2].map((a) => bead.loose[a] * (1 - turn) + normal[a] * turn));
           flex = 1.45 - 1.1 * turn;
-          bead.scale = 1;
+          bead.scale = 1 + (big - 1) * turn;
         }
         flying++;
       } else {
         // In its place: it eases there, as the assembly grows, necks and parts.
-        bead.scale = 1;
+        bead.scale = big;
         const from = bead.pos || target;
         for (let a = 0; a < 3; a++) if (Math.abs(target[a] - from[a]) > 1e-4) moving = true;
         pos = [0, 1, 2].map((a) => from[a] + (target[a] - from[a]) * ease);
@@ -281,7 +345,6 @@ export class LipidLayout extends BeadLayout {
       bead.axis = axis;
       bead.tailLength = tail;
       bead.flex = flex;
-      if (bead.leaving && bead.flight >= 1) bead.gone = true;
       if (bead.glow > 0) {
         bead.glow = still ? 0 : Math.max(0, bead.glow - seconds);
         if (bead.glow > 0) { glowing++; moving = true; }
@@ -289,14 +352,26 @@ export class LipidLayout extends BeadLayout {
     }
     if (this.gathering && !this.beads.some((bead) => bead.flight < 1)) this.gathering = false;
     this.beads = this.beads.filter((bead) => !bead.gone);
-    // Molecule by molecule, no more than four in flight: the oldest arrive first (the gathering aside).
-    if (!this.gathering && flying > IN_FLIGHT_CAP) {
-      const flown = this.beads.filter((bead) => bead.flight < 1).sort((a, b) => b.flight - a.flight);
-      for (const bead of flown.slice(0, flying - IN_FLIGHT_CAP)) {
-        bead.flight = 1;
-        if (bead.leaving) bead.gone = true;
-      }
-      this.beads = this.beads.filter((bead) => !bead.gone);
+    // The molecules that left go out into the water, to the other side from the joins, and are gone.
+    for (const bead of this.leavers) {
+      if (still) bead.flight = 1;
+      else bead.flight = Math.min(1, bead.flight + seconds / (bead.span || LIPID_FLIGHT_S));
+      const f = smooth(0, 1, bead.flight);
+      const out = norm([0, 1, 2].map((a) => bead.dir[a] * 0.35 + STREAM_OUT[this.axis][a] + bead.wander[a] * 0.4));
+      const spread = this.axis === 1 ? [0.45, 1.1, 0.8] : [1, 1, 1];
+      const far = [0, 1, 2].map((a) => bead.centre[a] + out[a] * (bead.r + 4.2) * spread[a]);
+      bead.pos = [0, 1, 2].map((a) => bead.start[a] + (far[a] - bead.start[a]) * f);
+      bead.axis = norm([0, 1, 2].map((a) => bead.axis[a] * (1 - 0.15 * f) + bead.loose[a] * 0.15 * f));
+      bead.flex = 0.35 + 1.1 * f;
+      bead.scale = (1 + (big - 1) * (1 - smooth(0, 0.5, bead.flight))) * (1 - 0.35 * smooth(0.6, 1, bead.flight));
+      if (bead.flight < 1) { flying++; moving = true; }
+    }
+    this.leavers = this.leavers.filter((bead) => bead.flight < 1);
+    // No more in flight than the cap: the oldest arrive (or are gone) first (the gathering aside).
+    if (!this.gathering && flying > this.flightCap) {
+      const flown = [...this.beads.filter((bead) => bead.flight < 1), ...this.leavers].sort((a, b) => b.flight - a.flight);
+      for (const bead of flown.slice(0, flying - this.flightCap)) bead.flight = 1;
+      this.leavers = this.leavers.filter((bead) => bead.flight < 1);
     }
     if (glowing > 10) {
       const lit = this.beads.filter((bead) => bead.glow > 0).sort((a, b) => a.glow - b.glow);
@@ -306,7 +381,9 @@ export class LipidLayout extends BeadLayout {
     for (const bead of this.adrift) {
       bead.left = still ? 0 : Math.max(0, bead.left - seconds);
       const f = 1 - bead.left / ADRIFT_S;
-      const d = [this.axis === 1 ? 0 : 0.5, this.axis === 1 ? 0.8 : 0.5, -4.5];
+      // Off into the haze, by the assembly's size (a protocell is larger than the micelle).
+      const size = this.shape === "protocell" ? 2 : 1;
+      const d = [this.axis === 1 ? 0 : 0.5 * size, this.axis === 1 ? 0.8 * size : 0.5, -4.5 * size * size];
       bead.pos = [0, 1, 2].map((a) => bead.start[a] + d[a] * smooth(0, 1, f));
       bead.fade = 0.75 + 0.25 * f;
       if (bead.left > 0) moving = true;
@@ -315,14 +392,21 @@ export class LipidLayout extends BeadLayout {
     return moving;
   }
 
-  /** How many lipids are in flight, and how many glow (the gathering's included). */
+  /** How many lipids are in flight (coming in or going out), and how many glow (the gathering's included). */
   inMotion() {
-    let flying = 0, glowing = 0;
+    let flying = this.leavers.length, glowing = 0;
     for (const bead of this.beads) {
       if (bead.flight < 1) flying++;
       if (bead.glow > 0) glowing++;
     }
     return { flying, glowing };
+  }
+
+  /** The members, type by type (a molecule in flight to its place is a member; one that has left is not). */
+  members(n) {
+    const x = new Int32Array(n);
+    for (const bead of this.beads) if (!bead.gone) x[bead.type]++;
+    return x;
   }
 }
 

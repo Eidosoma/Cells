@@ -139,7 +139,7 @@ const runs = LINEAGES.map((spec) => {
 const file = {
   format: "cells.visualizer.assembly_run@1",
   example: { says: "Example: invented numbers · not a run of Cells' engine", made_by: "visualizer/tools/make_assembly_example.mjs" },
-  model: { id: "gard", label: "GARD assembly", plain: "A droplet of fat-like molecules that grows by taking molecules in, splits in two, and may pass its mix of molecules to its daughters: the Graded Autocatalysis Replication Domain model." },
+  model: { id: "gard", label: "GARD assembly", plain: "An assembly of fat-like molecules that grows by taking molecules in, splits in two, and may pass its mix of molecules to its daughters: the Graded Autocatalysis Replication Domain model." },
   time: { base: "fission", unit: "fission", plural: "fissions", nominal: "The rate constants carry no calibrated unit: the clock counts fissions, and a fission's nominal time is the model's own." },
   environments: [{
     id: "environment-1",

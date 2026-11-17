@@ -45,7 +45,10 @@ export const originCss = `
 .swatch-origin-part { border: 1.5px solid var(--ghost); }
 .swatch-origin-tail { width: 4px; height: 13px; margin-inline: 5px; border-radius: 2px; background: var(--origin-lipid-tail); box-shadow: 5px 0 0 var(--origin-lipid-tail), inset 0 0 0 1px color-mix(in srgb, var(--fg) 22%, transparent); }
 .swatch-origin-halo { border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--origin-glow) 75%, transparent) 0 35%, transparent 72%); }
+.swatch-origin-link { width: 16px; height: 4px; margin-top: 4px; border-radius: 2px; background: linear-gradient(90deg, color-mix(in srgb, #ffc875 35%, transparent), #ffc875); box-shadow: 0 0 4px #ffc875; }
 .swatch-origin-free { border-radius: 50%; background: color-mix(in srgb, var(--origin-type-other) 70%, transparent); box-shadow: 4px -3px 0 -1px color-mix(in srgb, var(--origin-type-other) 55%, transparent); transform: scale(0.8); }
+/* The view's packing has three choices (Protocell, Micelle, Cluster): one row of three, so that the card stays as short as with two. Only this view's choice is named "Packing". */
+.seg[aria-label^="Packing"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .label-wrap { white-space: normal; max-width: 156px; text-align: center; line-height: 1.25; }
 .label-own { white-space: normal; max-width: min(440px, 80vw); text-align: center; font-size: 11.5px; line-height: 1.3; padding: 3px 8px; border-radius: 6px; color: var(--fg); background: color-mix(in srgb, var(--bg) 82%, transparent); }
 .swatch-origin-ramp { width: 46px; background: linear-gradient(90deg, var(--origin-ramp-0), var(--origin-ramp-1), var(--origin-ramp-2), var(--origin-ramp-3), var(--origin-ramp-4), var(--origin-ramp-5)); }

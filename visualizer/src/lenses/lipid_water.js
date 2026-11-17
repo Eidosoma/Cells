@@ -323,7 +323,7 @@ export class Water {
  * by each instance's `aFlex` (its phase, and how much it bends). Marks the material wet, so the
  * view leaves it in the haze.
  */
-export function wetten(material, water, { caustics = 1, rim = 0.35, rimPower = 2.6, flex = false, cores = null, deep = 0.5 } = {}) {
+export function wetten(material, water, { caustics = 1, rim = 0.35, rimPower = 2.6, flex = false, cores = null, deep = 0.5, ghost = false } = {}) {
   const u = water.uniforms;
   const own = {
     uWetTime: u.time, uCausticColour: u.caustic, uCausticScale: u.causticScale, uCausticStrength: u.causticStrength, uRimColour: u.rim,
@@ -339,7 +339,7 @@ export function wetten(material, water, { caustics = 1, rim = 0.35, rimPower = 2
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, own);
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", `#include <common>\nvarying vec3 vWetPos;\nuniform float uWetTime;\n${flex ? "attribute vec2 aFlex;" : ""}`)
+      .replace("#include <common>", `#include <common>\nvarying vec3 vWetPos;\nuniform float uWetTime;\n${flex ? "attribute vec2 aFlex;" : ""}${ghost ? "\nattribute float aGhost;\nvarying float vGhost;" : ""}`)
       .replace(
         "#include <begin_vertex>",
         flex
@@ -350,6 +350,7 @@ export function wetten(material, water, { caustics = 1, rim = 0.35, rimPower = 2
   transformed.z += wetBend * 0.16 * cos(uWetTime * 1.25 + aFlex.x * 1.7 + wetU * 2.2);`
           : "#include <begin_vertex>"
       )
+      .replace("#include <begin_vertex>", ghost ? "#include <begin_vertex>\n  vGhost = aGhost;" : "#include <begin_vertex>")
       .replace(
         "#include <project_vertex>",
         `#include <project_vertex>
@@ -367,8 +368,10 @@ varying vec3 vWetPos;
 uniform float uWetTime, uCausticScale, uCausticStrength, uCaustics, uRim, uRimPower, uDeep, uHazeNear, uHazeDensity;
 uniform vec3 uCausticColour, uRimColour, uHazeColour;
 uniform vec4 uCores[4];
+${ghost ? "varying float vGhost;" : ""}
 ${CAUSTICS_GLSL}`
       )
+
       .replace(
         "#include <opaque_fragment>",
         `{
@@ -387,10 +390,11 @@ ${CAUSTICS_GLSL}`
   outgoingLight *= 1.0 - uDeep * wetDeep * wetDeep;
   float wetFar = max(0.0, length(vWetPos - cameraPosition) - uHazeNear) * uHazeDensity;
   outgoingLight = mix(outgoingLight, uHazeColour, 1.0 - exp(-wetFar * wetFar));
+  ${ghost ? "diffuseColor.a *= 1.0 - vGhost; // a see-through part (the near side of a protocell, so that its inside shows): its own share less opaque" : ""}
 }
 #include <opaque_fragment>`
       );
   };
-  material.customProgramCacheKey = () => `cells-wet-${flex ? 1 : 0}`;
+  material.customProgramCacheKey = () => `cells-wet-${flex ? 1 : 0}${ghost ? "-ghost" : ""}`;
   return material;
 }

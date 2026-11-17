@@ -220,6 +220,9 @@ try {
     check("at the run's start the founder gathers, and the clock stands", s.gathering && s.time === 0, JSON.stringify([s.gathering, s.time]));
     await shot(`${NAME}-gathering`);
     check("once gathered, the page plays the marked example by itself", await until(`${L}.player.playing && ${L}.player.time > 0.05`, 80), JSON.stringify(await state()));
+    // The protocell, playing: the run's joins and leaves are seen coming and going, and its inside is lit from the run's table.
+    const stream = await evaluate(`(async () => { const l = ${L}; let seen = 0; for (let i = 0; i < 20; i++) { await new Promise((r) => setTimeout(r, 100)); if (l.sides[0].layout.inMotion().flying > 0) seen++; } return { shape: l.shape, seen, links: l.sides[0].network.drawn[0]?.links.length ?? 0, key: l.streamWords() }; })()`);
+    check("playing, the protocell's joins and leaves are seen coming and going nearly all the time, its inside lit from the run's table", stream.shape === "protocell" && stream.seen >= 16 && stream.links > 0 && /^in, out: /.test(stream.key), JSON.stringify(stream));
     s = await state();
     check("the legend's note gives the example's mark and the picture's own words", s.legend.includes(EXAMPLE) && /No law of Cells computes how the lipids move and pack/.test(s.legend), s.legend.slice(0, 200));
     check("no choice offers the two forms of the law: the example is never one of a pair", !(await evaluate(`Boolean(${V}.shadowRoot.querySelector('[data-choice="pair"]'))`)));
@@ -277,14 +280,22 @@ try {
     await sleep(1200);
     s = await state();
     check("a drag on the timeline moves the clock (to about the middle of 120 fissions)", s.time > 45 && s.time < 75, String(s.time));
+    // A speed chosen in the timeline's own list: the legend's key says the stream's N at that speed.
+    const speedButton = await placeOf(`root.querySelector("cells-timeline .tl-speed")`);
+    if (speedButton) await click(speedButton.x, speedButton.y, 600);
+    const fast = await placeOf(`[...root.querySelectorAll("cells-timeline .tl-speed-step")].find((b) => b.querySelector("b")?.textContent.trim() === "2/s")`);
+    if (fast) await click(fast.x, fast.y, 900);
+    const keyed = await evaluate(`(() => { const l = ${L}; return { speed: l.player.speed, key: [...${V}.shadowRoot.querySelectorAll("cells-legend .legend-item")].map((el) => el.textContent).find((t) => /^in, out/.test(t)) || null, said: l.streamWords() }; })()`);
+    check("a speed chosen in the timeline's list (2 a second): the legend's key says how many of the joins and leaves are drawn in flight", Boolean(speedButton && fast) && keyed.speed === 2 && Boolean(keyed.key) && keyed.key.includes(keyed.said.replace(/^in, out: /, "")), JSON.stringify(keyed));
+    await evaluate(`${L}.player.setSpeed(0.5)`);
     await shot(`${NAME}-dragged`);
 
     // ---------------------------------------------------------- the card's choices (on a phone, in the card a press on its folded line opens)
     if (PHONE) {
       const line = await placeOf(`root.querySelector(".view-toggle")`);
       if (line) await click(line.x, line.y, 900);
-      const opened = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, card = root.querySelector("#cells-view"), r = card.getBoundingClientRect(); const big = (el) => shown(el) && Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height) >= 44; const buttons = [...card.querySelectorAll("button")]; const selects = [card.querySelector("#cells-mark"), card.querySelector('[data-choice="compare"]')]; return { open: shown(card) && r.top >= 0 && r.bottom <= innerHeight, pick: shown(card.querySelector(".species-pick")), word: [...card.querySelectorAll(".species-state")].filter(shown).map((b) => b.textContent)[0] ?? null, packing: ["Micelle", "Cluster"].map((w) => big(buttons.find((b) => b.textContent.trim() === w))), selects: selects.map(big), labels: selects.map((s) => s?.closest(".card-marks")?.querySelector(".seg-label")?.textContent ?? null) }; })()`);
-      check("on a phone one press on the folded line opens the card: the switch, the model system's word, Micelle and Cluster, and the Composition and Similarity selects, each at least 44 px", Boolean(line) && opened.open && opened.pick && opened.word === "Designed, not modelled" && opened.packing.every(Boolean) && opened.selects.every(Boolean) && opened.labels.join("|") === "Composition|Similarity", JSON.stringify(opened));
+      const opened = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, card = root.querySelector("#cells-view"), r = card.getBoundingClientRect(); const big = (el) => shown(el) && Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height) >= 44; const buttons = [...card.querySelectorAll("button")]; const selects = [card.querySelector("#cells-mark"), card.querySelector('[data-choice="compare"]')]; return { open: shown(card) && r.top >= 0 && r.bottom <= innerHeight, pick: shown(card.querySelector(".species-pick")), word: [...card.querySelectorAll(".species-state")].filter(shown).map((b) => b.textContent)[0] ?? null, packing: ["Protocell", "Micelle", "Cluster"].map((w) => big(buttons.find((b) => b.textContent.trim() === w))), selects: selects.map(big), labels: selects.map((s) => s?.closest(".card-marks")?.querySelector(".seg-label")?.textContent ?? null) }; })()`);
+      check("on a phone one press on the folded line opens the card: the switch, the model system's word, Protocell, Micelle and Cluster, and the Composition and Similarity selects, each at least 44 px", Boolean(line) && opened.open && opened.pick && opened.word === "Designed, not modelled" && opened.packing.every(Boolean) && opened.selects.every(Boolean) && opened.labels.join("|") === "Composition|Similarity", JSON.stringify(opened));
       await sleep(900);
       const m = await mark();
       check("and the example's mark keeps clear of the opened card", markShows(m), JSON.stringify(m));
@@ -316,7 +327,7 @@ try {
     check("a real press on Cluster packs the lipids loosely", (await evaluate(`${L}.shape`)) === "cluster");
     const micelle = await placeOf(`[...root.querySelectorAll("#cells-view button")].find((b) => b.textContent.trim() === "Micelle")`);
     if (micelle) await click(micelle.x, micelle.y, 900);
-    check("and Micelle back", (await evaluate(`${L}.shape`)) === "micelle");
+    check("and Micelle", (await evaluate(`${L}.shape`)) === "micelle");
     if (PHONE) {
       // Opening the legend folds the card again, as in the protein atlas; the legend is closed after.
       const legend = await placeOf(`root.querySelector("cells-legend .legend-toggle")`);
@@ -329,6 +340,16 @@ try {
       await sleep(900);
       const [b, m] = [await band(), await mark()];
       check("with the micelle packed, the card folded: the band under the bar holds and the example's mark stands uncovered", (await evaluate(`${L}.shape`)) === "micelle" && bandHolds(b) && markShows(m), JSON.stringify([b, m]));
+      const line = await placeOf(`root.querySelector(".view-toggle")`);
+      if (line) await click(line.x, line.y, 700);
+    }
+    // Back to the protocell, the packing the view opens with, by a real press.
+    const protocell = await placeOf(`[...root.querySelectorAll("#cells-view button")].find((b) => b.textContent.trim() === "Protocell")`);
+    if (protocell) await click(protocell.x, protocell.y, 900);
+    check("and Protocell back: the view's own packing", (await evaluate(`${L}.shape`)) === "protocell");
+    if (PHONE) {
+      const line = await placeOf(`root.querySelector(".view-toggle")`);
+      if (line && (await evaluate(`${V}.shadowRoot.querySelector("#cells-view")?.getClientRects().length > 0`))) await click(line.x, line.y, 700);
     }
 
     // ---------------------------------------------------------- a press on a head, and a key
@@ -337,7 +358,7 @@ try {
     const head = await evaluate(`(() => { const v = ${V}, l = v.current, side = l.sides[0]; const r = v.canvas.getBoundingClientRect(); const seen = side.layout.beads.filter((b) => b.pos && b.axis).map((b) => { const p = new v.stage.camera.position.constructor(...b.pos).add(side.group.position); const q = v.stage.project(p, p.clone()); return { x: r.left + q.x, y: r.top + q.y, z: q.z, type: b.type }; }).filter((b) => b.x > r.left + 20 && b.x < r.right - 20 && b.y > r.top + 80 && b.y < r.bottom - 80).sort((a, b) => a.z - b.z); return seen[0] || null; })()`);
     if (head) await click(head.x, head.y, 1200);
     s = await state();
-    check("a real press on a lipid's head chooses its type, and the panel says what it is", /^assembly:type:\d+$/.test(s.selected || "") && /A molecule type/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 80)]));
+    check("a real press on a lipid's head of the protocell (through its see-through near side) chooses its type, and the panel says what it is", (await evaluate(`${L}.shape`)) === "protocell" && /^assembly:type:\d+$/.test(s.selected || "") && /A molecule type/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 80)]));
     await shot(`${NAME}-type`);
     await key("Escape");
     await evaluate(`${V}.canvas.focus()`);
@@ -432,6 +453,8 @@ try {
       marks.push([id, markShows(await mark())]);
     }
     check("and the mark stands at every level", marks.every(([, ok]) => ok), JSON.stringify(marks));
+    const standing = await evaluate(`(() => { const l = ${L}; return { shape: l.shape, inWords: l.tags?.in ? !l.tags.in.hidden : null, outWords: l.tags?.out ? !l.tags.out.hidden : null, key: l.streamWords() }; })()`);
+    check("and nothing comes or goes on a path: the paths' words stand down and the key says in place", standing.inWords !== true && standing.outWords !== true && /in place/.test(standing.key), JSON.stringify(standing));
     await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
     check("lens=laws&entry=gard opens the library, with the view's name on the first tab", (await open("lens=laws&entry=gard", false)) && (await state()).lens === "laws" && /Origin of life/.test((await state()).tab?.words || ""), JSON.stringify(await state()));
     const first = await placeOf(`root.querySelector('.switch [data-lens="cell"]')`);
@@ -466,8 +489,22 @@ try {
     for (const theme of ["light", "dark"]) {
       await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: theme }] });
       await open("entry=gard");
-      await sleep(4500);
-      await shot(`wide-${theme}-gathering-then-playing`);
+      await sleep(1600);
+      await shot(`wide-${theme}-gathering`);
+      await sleep(2200);
+      await shot(`wide-${theme}-gathering-ends`);
+      // Playing, between two fissions: one protocell and the stream (fission 30's growth, at ½ a second).
+      await evaluate(`(async () => { const l = ${L}; l.player.pause(); l.player.seek(30.3); l.player.setSpeed(0.5); l.player.play(); })()`);
+      await sleep(1500);
+      await shot(`wide-${theme}-playing-the-stream`);
+      if (theme === "light") {
+        for (const packing of ["micelle", "cluster"]) {
+          await evaluate(`(async () => { const l = ${L}; l.setShape(${JSON.stringify(packing)}); l.player.pause(); l.player.seek(30.3); l.player.play(); })()`);
+          await sleep(1800);
+          await shot(`wide-${theme}-${packing}-playing`);
+        }
+        await evaluate(`${L}.setShape("protocell")`);
+      }
       await hold(`l.setLevel("assembly"); l.player.seek(30.55)`);
       await shot(`wide-${theme}-assembly-mid-run`);
       await hold(`l.player.seek(37 - 0.15 + 0.36 * 0.3)`);
@@ -511,7 +548,16 @@ try {
       }
       await hold(`l.setLevel("assembly"); l.player.setSpeed(0.001); l.player.seek(50.5); l.sync(0); const ev = l.mainRun.growthEvents(30); let j = 8; while (ev[j] < 0) j++; l.player.seek(l.mainRun.timeOf(30, j)); l.sync(0); l.player.seek(l.mainRun.timeOf(30, j + 1)); l.sync(0); l.advance(0.35, 6)`);
       await shot(`phone-${theme}-a-join-seeping-in`);
+      await hold(`l.setLevel("assembly"); l.player.seek(37 - 0.15 + 0.45 * 0.3)`);
+      await shot(`phone-${theme}-at-a-fission`);
     }
+    // With less motion asked for: the protocell stands, nothing gathers or streams.
+    await page("Emulation.setDeviceMetricsOverride", { width: 1400, height: 900, deviceScaleFactor: 1, mobile: false });
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }, { name: "prefers-reduced-motion", value: "reduce" }] });
+    await open("entry=gard");
+    await sleep(3000);
+    await shot("wide-light-less-motion");
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
   } else if (CASE === "eval") {
     // For looking into the page while the view is built: QUERY opens, EXPR is evaluated (with v the viewer, l its lens), and said.
     await open(process.env.QUERY || "entry=gard");
@@ -533,10 +579,17 @@ try {
       await new Promise((r) => setTimeout(r, 2500)); going = false; v.stage.frame = own;
       const q = (list, f) => { const a = list.slice().sort((x, y) => x - y); return +a[Math.min(a.length - 1, Math.floor(a.length * f))].toFixed(2); };
       return { frames: work.length, frameMs: q(work, 0.5), slowTenthMs: q(work, 0.9), gapMs: q(gaps, 0.5), calls: v.stage.renderer.info.render.calls, triangles: v.stage.renderer.info.render.triangles }; })()`);
-    const ways = process.env.WAYS === "contact"
+    const ways = process.env.WAYS === "packing"
+      ? [["the protocell, ½ a second", `l.setLevel("assembly"); l.setShape("protocell"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["the micelle, ½ a second", `l.setLevel("assembly"); l.setShape("micelle"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
+      : process.env.WAYS === "contact"
       ? [["Lineages with contact shade", `l.setLevel("lineage"); v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Lineages without contact shade", `v.stage.dress({ rich: true, filmic: true, exposure: 1.05, contact: false, reach: 0.5, shade: 0.5 }); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]]
       : [["playing ½ a second", `l.setLevel("assembly"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["molecule by molecule", `l.player.seek(30.2); l.player.setSpeed(0.001); l.player.play();`], ["Lineages, playing ½ a second", `l.setLevel("lineage"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`], ["Molecules, playing ½ a second", `l.setLevel("molecules"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play();`]];
-    if (process.env.WAYS === "molecules") {
+    if (process.env.WAYS === "packing") {
+      // The protocell against the micelle, by turns in one page, three turns each; with COLD unset, after one turn of each that is not counted.
+      if (!process.env.COLD) for (const [, setup] of ways) await measure(setup);
+      for (let turn = 0; turn < 3; turn++) for (const [what, setup] of ways) note(`frames ${WIDTH}x${HEIGHT}, ${what}: ${JSON.stringify(await measure(setup))}`);
+      note(`load average: ${(await import("node:os")).loadavg().map((x) => x.toFixed(1)).join(", ")}`);
+    } else if (process.env.WAYS === "molecules") {
       const base = `l.setLevel("molecules"); l.player.seek(30.2); l.player.setSpeed(0.5); l.player.play(); l.water.setTheme(l.palette.dark); l.plate.visible = true; l.table.group.visible = true; v.stage.dress(l.lookFor("molecules"));`;
       const turns = [["as drawn", base], ["no caustics", `${base} l.water.uniforms.causticStrength.value = 0;`], ["no contact shade", `${base} v.stage.dress(l.lookFor("lineage"));`], ["no plate", `${base} l.plate.visible = false;`], ["no table", `${base} l.table.group.visible = false;`]];
       for (let turn = 0; turn < 2; turn++) for (const [what, setup] of turns) note(`frames ${WIDTH}x${HEIGHT}, Molecules ${what}: ${JSON.stringify(await measure(setup))}`);

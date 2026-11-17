@@ -5,12 +5,12 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-17",
-  "generated_at": "2026-11-17T11:06:02Z",
-  "revision": "6a5d509f",
+  "generated_at": "2026-11-17T12:35:33Z",
+  "revision": "76846486",
   "revision_date": "2026-11-17",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/6a5d509f49a07a682fd33ba2675dbbdd0ff84075/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/76846486f21e87b7d53254b520b8591b327ba650/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "counts": {
    "engine_files": 198,
@@ -459,7 +459,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "6a5d509f"
+   "checked_at": "76846486"
   },
   "counts": {
    "units": 48,
@@ -7103,7 +7103,7 @@
    "made": "2026-11-16",
    "modelled": {
     "state": "designed",
-    "text": "Designed, not modelled. Its design note is on main, decided on 16 November 2026 (D192), and it is built in step 4 of D194's order: nothing of GARD is in the engine yet. The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”.",
+    "text": "Designed, not modelled. Its design note is on main, decided on 16 November 2026 (D192); its build started on 17 November, and nothing of GARD is in the engine on main yet. By D197 it is one law set, kept only for comparison with Cells' own origin-of-life engine, whose design is proposed.",
     "record": [
      {
       "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
@@ -7115,11 +7115,15 @@
      },
      {
       "path": "docs/DECISIONS.md",
-      "where": "D192, the design choices; D194, the order (GARD in step 4)"
+      "where": "D192, the design choices; D194, the order; D197, GARD is one law set, for comparison only"
      },
      {
-      "path": "docs/SCIENTIFIC_BASIS.md",
-      "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Also started on 17 November, at the user's request: GARD (D192), its G1 and G2 in parallel"
+     },
+     {
+      "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+      "where": "Status: proposed, 17 November 2026"
      }
     ],
     "design": "docs/GARD_DESIGN.md"
@@ -7203,6 +7207,32 @@
       {
        "path": "docs/DECISIONS.md",
        "where": "D192: the reversibility finding, as checked"
+      }
+     ]
+    },
+    {
+     "id": "own",
+     "label": "Cells' own origin-of-life engine (D197)",
+     "text": "D197 records the user's words of 17 November 2026: “and we will also do our own first principle engine, GARD is only for comparison”. GARD becomes one declared law set on general machinery: exact stochastic events, assemblies exchanging with a held phase, fission and lineage, a thermodynamic ledger and the run records. Cells' own engine takes its laws from physical chemistry: catalysis that is thermodynamically consistent, physical assemblies, and explicit sources of free energy. Its design note is proposed, with options for the user; nothing of it is built.",
+     "record": [
+      {
+       "path": "docs/DECISIONS.md",
+       "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+      },
+      {
+       "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+       "where": "Status: proposed, 17 November 2026; Docs only: nothing here is built"
+      }
+     ]
+    },
+    {
+     "id": "matrix",
+     "label": "GARD's matrix and reservoir, in the record",
+     "text": "The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”.",
+     "record": [
+      {
+       "path": "docs/SCIENTIFIC_BASIS.md",
+       "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
       }
      ]
     }

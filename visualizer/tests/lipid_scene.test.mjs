@@ -12,9 +12,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
-import { LineageLens, OWN_WORDS, GATHER_WORDS } from "../src/lenses/lineage.js";
+import { LineageLens, OWN_WORDS, GATHER_WORDS, CLUSTER_WHERE_SMALL_OR_STILL } from "../src/lenses/lineage.js";
 import { GATHER_S, CROWD, neckField, FreeCrowd } from "../src/lenses/lipid_assembly.js";
 import { HEAD, FORMS } from "../src/lenses/lipid_marks.js";
+import { PROTOCELL } from "../src/lenses/lipid_assembly.js";
+import { NETWORK, networkOf } from "../src/lenses/protocell_marks.js";
 import { MOTES } from "../src/lenses/lipid_water.js";
 
 const text = readFileSync(path.join(ROOT, "data", "origin", "example-run.json"), "utf8");
@@ -158,10 +160,10 @@ test("the picture says what is its own: on the picture, in the legend, and while
   const chrome = lens.chrome();
   assert.match(chrome.legend.note.text, /No law of Cells computes how the lipids move and pack/);
   assert.match(chrome.legend.note.text, /^Example: invented numbers · not a run of Cells' engine/);
-  assert.match(lens.describe("assembly:assembly").note, /No light shows what helped a join: the run does not record it/, "no catalysis light where the run records none, and the assembly's panel says so");
+  assert.match(lens.describe("assembly:assembly").note, /No light shows what helped any one join: the run does not record it/, "no light for what helped a join, where the run records none, and the assembly's panel says so");
   for (const [slot, form] of FORMS.slice(0, 3).entries()) assert.ok(chrome.legend.items[slot].label.includes(form.replace("soft ", "")), `the legend says the form of a leading type's head: ${form}`);
   assert.match(chrome.legend.items[3].label, /round, grey/);
-  assert.ok(chrome.legend.items.some((item) => /halo/.test(item.label)), "the halo is keyed as the picture's");
+  assert.ok(chrome.legend.items.some((item) => item.swatch === "origin-halo" && /^in, out: /.test(item.label)), "the haloed molecules coming and going are keyed: the run's joins and leaves");
   assert.ok(chrome.timeline && chrome.timeline.player === lens.player, "the page's one clock");
   // The entry's word, and the law's two forms in D192's words, on the card.
   assert.match(chrome.card.text, /Designed, not modelled\./);
@@ -179,4 +181,68 @@ test("the water is the view's while it is shown, and handed back", () => {
   assert.ok(!stage.scene.children.includes(lens.water.group), "the water goes with the view");
   assert.equal(stage.scene.fog, fog, "and the scene's own fog is left as it was");
   for (const material of [lens.lipid.heads, lens.lipid.tails, lens.materials.plate]) assert.equal(material.fog, false, "the view's haze, not three.js's fog, so what the camera looks at keeps its colours");
+});
+
+test("the protocell: a shell of two faces, heads to the water outside and inside, tails between, every molecule on the picture, the near side see-through", () => {
+  const { lens, stage } = lensFor({ moving: false });
+  if (!CLUSTER_WHERE_SMALL_OR_STILL) assert.equal(lens.shape, "protocell", "the view opens on the protocell");
+  lens.setShape("protocell");
+  lens.player.seek(40.5);
+  lens.update(16, 0, 16);
+  const layout = lens.sides[0].layout, R = layout.radius(layout.counts[0]), c = layout.centres[0];
+  let outer = 0, inner = 0;
+  for (const bead of layout.beads) {
+    const v = sub(bead.pos, c), r = length(v), out = dot(v, bead.axis) / r;
+    if (bead.leaflet === 0) {
+      outer++;
+      assert.ok(out > 0.9 && Math.abs(r - R) < HEAD * PROTOCELL.head, `an outer head faces the water outside, on the outer face (${r} against ${R})`);
+    } else {
+      inner++;
+      assert.ok(out < -0.9 && Math.abs(r - (R - PROTOCELL.thickness)) < HEAD * PROTOCELL.head, `an inner head faces the water inside, on the inner face (${r})`);
+    }
+    assert.equal(bead.tailLength, PROTOCELL.tail);
+  }
+  assert.ok(outer > inner && inner > 0, `both faces: ${outer} outside, ${inner} inside`);
+  assert.ok(R - PROTOCELL.thickness - HEAD * PROTOCELL.head > 0.35, "an inside that shows, at 40 molecules too");
+  // Every molecule is drawn; those on the camera's side see-through, so that the inside shows.
+  const drawn = lens.drawn[0].filter((lipid) => !lipid.free);
+  assert.equal(drawn.length, layout.beads.length + layout.adrift.length + layout.leavers.length);
+  const eye = stage.camera.position.clone().sub(lens.sides[0].group.position).toArray();
+  const toward = (lipid) => dot(sub(lipid.pos, c), sub(eye, c));
+  const seen = drawn.filter((lipid) => lipid.ghost > 0);
+  assert.ok(seen.length > 5 && seen.every((lipid) => toward(lipid) > 0), "the see-through ones are on the near side");
+  assert.ok(drawn.some((lipid) => lipid.ghost === 0 && toward(lipid) < 0), "the far side stands solid");
+});
+
+test("inside a protocell, the catalytic network is read from the run's own table, among the types it holds; nothing of it pulses with a join", () => {
+  const { lens } = lensFor({ moving: false });
+  lens.setShape("protocell");
+  lens.player.seek(30.55);
+  lens.update(16, 0, 16);
+  const x = lens.mainRun.compositionAt(30.55), environment = lens.mainEnvironment;
+  const [net] = lens.sides[0].network.drawn;
+  assert.equal(net.held, x.filter((count) => count > 0).length, "a point for each type held");
+  assert.ok(net.links.length > 0 && net.links.length <= NETWORK.wide);
+  for (const link of net.links) {
+    assert.ok(x[link.from] > 0 && x[link.to] > 0 && link.from !== link.to, "between two types it holds");
+    assert.equal(link.v, environment.catalysis(link.to, link.from), "the run's own factor: the column type speeds the row type");
+    assert.ok(link.v >= NETWORK.least);
+  }
+  for (let i = 1; i < net.links.length; i++) assert.ok(net.links[i - 1].v >= net.links[i].v, "the strongest drawn");
+  // The same composition gives the same network: a join of a type already held changes no link's strength.
+  const again = networkOf(x, environment, NETWORK.wide);
+  assert.deepEqual(again.links, net.links);
+  lens.setShape("micelle");
+  lens.update(16, 0, 16);
+  assert.equal(lens.sides[0].network.group.visible, false, "a micelle has no inside to draw");
+});
+
+test("with less motion the protocell stands: nothing gathers, streams or glows", () => {
+  const { lens } = lensFor({ moving: false });
+  lens.player.setSpeed(0.5);
+  lens.player.play();
+  for (let frame = 0; frame < 180; frame++) lens.update(16, 0, 16);
+  assert.deepEqual(lens.sides[0].layout.inMotion(), { flying: 0, glowing: 0 });
+  assert.equal(lens.sides[0].layout.leavers.length, 0);
+  assert.match(lens.streamWords(), /in place/);
 });
