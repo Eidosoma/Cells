@@ -232,7 +232,9 @@ cells-example-law/
 
 **After the landing:**
 - **New:** `src/cells/modules/`, with the registry types, the errors and the conformance kit. The
-  kit ships only from `src` (`pyproject.toml`:21–22).
+  kit ships only from `src` (`pyproject.toml`:21–22). The core-seams pass built it first, as a
+  provisional import surface with no stability promise until a first outside module arrives
+  (D195; CORE_SEAMS_DESIGN §8.5).
 - **CORE:** the channel table through the registry:
   - `inner_laws`' checks (integration-d172 :227–234);
   - the parser's `LAW_CODES`, `LAW_PERMEABILITIES` and `GATE_COUNTS` (`surface_pump_v3_spec.py`:53,

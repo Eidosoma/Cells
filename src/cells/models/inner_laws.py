@@ -15,6 +15,11 @@ declaration only points at a law's own kernel. Each opening keeps today's operat
 per-law dispatch needs to stay bitwise (probe P2 of the note): Kv1.5 m h, Kir2.1 (m h) h,
 NaV1.2 m^3 h.
 
+Each declaration is an instance of the law template (registry/laws.py; docs/CORE_SEAMS_DESIGN.md
+§8.1), hosted by @3 itself (HOST), and registers on the law registry's BUILTIN here, its home until
+each law moves to its own module (§8.2). The tables below keep today's names. @3 finds its laws in
+the active law registry by interface and host: InnerStructure validates against it (§8.3).
+
 InnerStructure is what one definition declares, as Python values with no parameter value in it:
 the inner model builds one implementation per structure (models/surface_pump_v3.implementation),
 which closes over the structure and never over a value (P5).
@@ -22,13 +27,14 @@ which closes over the structure and never over a value (P5).
 
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Callable
 
+from cells.core.kind_registry import qualified
 from cells.core.kinetic_pump_spec import METABOLISM_ID
 from cells.core.surface_pump_v3_spec import (
     KIR2P1_LAW_ID,
     KLEAK_LAW_ID,
     KV1P5_LAW_ID,
+    MODEL_ID,
     NALEAK_LAW_ID,
     NAV1P2_LAW_ID,
 )
@@ -40,7 +46,10 @@ from cells.processes import (
     sodium_channels,
     voltage_gates,
 )
+from cells.registry import laws as law_registry
+from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
 
+HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).
 MAINTAINED_FUEL_ID = METABOLISM_ID  # maintained_chemical_reservoirs@1, today's pumps' fuel kind.
 MEMBRANE_ROUTE_LAW_ID = "constant_field@1"  # The passive membrane and junction route law.
 FACE_ROUTE_LAW_ID = "logmean_electrodiffusion@1"
@@ -76,62 +85,10 @@ def _nav1p2_kinetics(voltage, *, xp):
     return sodium_channels.nav1p2_kinetics(voltage, xp=xp)
 
 
-@dataclass(frozen=True)
-class ChannelLaw:
-    """A channel law (§7.1): gates relax by the exponential stage update; leaks have none."""
-
-    law_id: str
-    code: int
-    gates: tuple[str, ...]
-    permeant: tuple[tuple[str, int, float], ...]  # (species, valence, relative permeability)
-    voltage_domain_V: tuple[float, float]
-    rk4_step_s: float | None  # The reference RK4 step bound; None for gate-free laws.
-    kinetics: Callable | None = None  # (voltage, *, xp) -> (target, tau), [..., gates, n].
-    opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
-    stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
-    reads: tuple = ()  # Stage reads (B4): none for today's laws.
-    loop_term: object = None
-    provenance: str = "parity"  # Moved from the catalogue; moving is not calibrating.
-    # The four optional fields of a law that stands in for something (D175, B8): reserved.
-    represents: object = None
-    preserves: object = None
-    supports: object = None
-    qualified: object = None
-
-    @property
-    def gated(self):
-        return bool(self.gates)
-
-
-@dataclass(frozen=True)
-class JunctionLaw:
-    """A junction conductance law; a gated one carries junction_gate state."""
-
-    law_id: str
-    gated: bool
-    kinetics: Callable  # (voltage, parameters, *, xp) -> junction_gate.Rates
-    rhs: Callable
-    domain_valid: Callable
-    max_abs_voltage_V: float
-    provenance: str = "parity"
-
-
-@dataclass(frozen=True)
-class PumpLaw:
-    """A pump law on a patch, its moved rows by role (inward-positive per cycle) and fuel."""
-
-    law_id: str
-    moves: tuple[tuple[str, int], ...]
-    fuel_kinds: tuple[str, ...]
-    kinetics: Callable
-    domain_valid: Callable
-    provenance: str = "parity"
-
-
 _DOMAIN = voltage_gates.VOLTAGE_DOMAIN_V
 CHANNEL_LAWS = MappingProxyType(
     {
-        law.law_id: law
+        law.law_id: law_registry.BUILTIN.register(law)
         for law in (
             ChannelLaw(
                 KV1P5_LAW_ID,
@@ -142,6 +99,7 @@ CHANNEL_LAWS = MappingProxyType(
                 RK4_POTASSIUM_STEP_S,
                 _kv1p5_kinetics,
                 _open_mh,
+                host=HOST,
             ),
             ChannelLaw(
                 KIR2P1_LAW_ID,
@@ -152,6 +110,7 @@ CHANNEL_LAWS = MappingProxyType(
                 RK4_POTASSIUM_STEP_S,
                 _kir2p1_kinetics,
                 _open_mh2,
+                host=HOST,
             ),
             ChannelLaw(
                 NAV1P2_LAW_ID,
@@ -162,55 +121,55 @@ CHANNEL_LAWS = MappingProxyType(
                 RK4_SODIUM_STEP_S,
                 _nav1p2_kinetics,
                 _open_m3h,
+                host=HOST,
             ),
-            ChannelLaw(KLEAK_LAW_ID, 3, (), (("K", 1, 1.0),), _DOMAIN, None),
-            ChannelLaw(NALEAK_LAW_ID, 4, (), (("Na", 1, 1.0),), _DOMAIN, None),
+            ChannelLaw(KLEAK_LAW_ID, 3, (), (("K", 1, 1.0),), _DOMAIN, None, host=HOST),
+            ChannelLaw(NALEAK_LAW_ID, 4, (), (("Na", 1, 1.0),), _DOMAIN, None, host=HOST),
         )
     }
 )
 JUNCTION_LAWS = MappingProxyType(
     {
-        junction_gate.LAW_ID: JunctionLaw(
-            junction_gate.LAW_ID,
-            True,
-            junction_gate.kinetics,
-            junction_gate.rhs,
-            junction_gate.domain_valid,
-            junction_gate.MAX_ABS_VOLTAGE_V,
+        junction_gate.LAW_ID: law_registry.BUILTIN.register(
+            JunctionLaw(
+                junction_gate.LAW_ID,
+                True,
+                junction_gate.kinetics,
+                junction_gate.rhs,
+                junction_gate.domain_valid,
+                junction_gate.MAX_ABS_VOLTAGE_V,
+                host=HOST,
+            )
         )
     }
 )
 PUMP_LAWS = MappingProxyType(
     {
-        kinetic_pump.LAW_ID: PumpLaw(
-            kinetic_pump.LAW_ID,
-            (
-                ("sodium", kinetic_pump.SODIUM_PER_CYCLE),
-                ("potassium", kinetic_pump.POTASSIUM_PER_CYCLE),
-            ),
-            (MAINTAINED_FUEL_ID,),
-            kinetic_pump.kinetics,
-            kinetic_pump.domain_valid,
+        kinetic_pump.LAW_ID: law_registry.BUILTIN.register(
+            PumpLaw(
+                kinetic_pump.LAW_ID,
+                (
+                    ("sodium", kinetic_pump.SODIUM_PER_CYCLE),
+                    ("potassium", kinetic_pump.POTASSIUM_PER_CYCLE),
+                ),
+                (MAINTAINED_FUEL_ID,),
+                kinetic_pump.kinetics,
+                kinetic_pump.domain_valid,
+                host=HOST,
+            )
         ),
-        calcium_atpase.LAW_ID: PumpLaw(
-            calcium_atpase.LAW_ID,
-            (("calcium", calcium_atpase.CALCIUM_PER_CYCLE),),
-            (MAINTAINED_FUEL_ID,),
-            calcium_atpase.kinetics,
-            calcium_atpase.domain_valid,
+        calcium_atpase.LAW_ID: law_registry.BUILTIN.register(
+            PumpLaw(
+                calcium_atpase.LAW_ID,
+                (("calcium", calcium_atpase.CALCIUM_PER_CYCLE),),
+                (MAINTAINED_FUEL_ID,),
+                calcium_atpase.kinetics,
+                calcium_atpase.domain_valid,
+                host=HOST,
+            )
         ),
     }
 )
-
-
-@dataclass(frozen=True)
-class RouteLaw:
-    """A passive route law: the hosts it serves, what it is, and its provenance (§7.1)."""
-
-    law_id: str
-    hosts: tuple[str, ...]
-    basis: str
-    provenance: str = "parity"
 
 
 # The passive route laws every membrane, junction and face declares (provenance for the run view,
@@ -218,26 +177,37 @@ class RouteLaw:
 # each is, in its own sources' words.
 ROUTE_LAWS = MappingProxyType(
     {
-        MEMBRANE_ROUTE_LAW_ID: RouteLaw(
-            MEMBRANE_ROUTE_LAW_ID,
-            ("membrane", "junction"),
-            "the Goldman-Hodgkin-Katz constant-field flux of each permeant species "
-            "(coupling/selective.selective_flux)",
+        MEMBRANE_ROUTE_LAW_ID: law_registry.BUILTIN.register(
+            RouteLaw(
+                MEMBRANE_ROUTE_LAW_ID,
+                ("membrane", "junction"),
+                "the Goldman-Hodgkin-Katz constant-field flux of each permeant species "
+                "(coupling/selective.selective_flux)",
+                host=HOST,
+            )
         ),
-        FACE_ROUTE_LAW_ID: RouteLaw(
-            FACE_ROUTE_LAW_ID,
-            ("face",),
-            "Cells' own discrete electrodiffusion between two well-mixed outside nodes: the "
-            "Nernst-Planck flux at the species' logarithmic-mean concentration "
-            "(docs/SPATIAL_EXTRACELLULAR_SPEC.md: a design, not a reproduction of a paper)",
+        FACE_ROUTE_LAW_ID: law_registry.BUILTIN.register(
+            RouteLaw(
+                FACE_ROUTE_LAW_ID,
+                ("face",),
+                "Cells' own discrete electrodiffusion between two well-mixed outside nodes: the "
+                "Nernst-Planck flux at the species' logarithmic-mean concentration "
+                "(docs/SPATIAL_EXTRACELLULAR_SPEC.md: a design, not a reproduction of a paper)",
+                host=HOST,
+            )
         ),
     }
 )
 
 
 def channel_codes():
-    """{law ID: registry code} of every registered channel law."""
-    return {law_id: law.code for law_id, law in CHANNEL_LAWS.items()}
+    """{law ID: registry code} of every channel law @3 runs, in the active law registry."""
+    return {law.law_id: law.code for law in _hosted(law_registry.CHANNEL_LAW)}
+
+
+def _hosted(interface):
+    """The active law registry's laws of `interface` that @3 runs (§8.3)."""
+    return law_registry.active().laws(interface, HOST)
 
 
 @dataclass(frozen=True)
@@ -271,19 +241,28 @@ class InnerStructure:
         ids = [kind_id for kind_id, _ in self.kinds]
         if ids != sorted(set(ids)):
             raise ValueError("Declared kinds must be distinct and in canonical (sorted ID) order")
-        unknown = [law for law in self.declared_channel_laws if law not in CHANNEL_LAWS]
-        unknown += [law for law in self.junction_laws if law not in JUNCTION_LAWS]
-        unknown += [law for law in self.pump_laws if law not in PUMP_LAWS]
+        # Validated against the active law registry (§8.3): each declared law is one @3 runs.
+        unknown = []
+        for interface, declared in (
+            (law_registry.CHANNEL_LAW, self.declared_channel_laws),
+            (law_registry.JUNCTION_LAW, self.junction_laws),
+            (law_registry.CYCLE_LAW, self.pump_laws),
+        ):
+            hosted = {qualified(law.law_id) for law in _hosted(interface)}
+            unknown += [law for law in declared if qualified(law) not in hosted]
         if unknown:
             raise ValueError("Undeclared laws in an inner structure: " + ", ".join(unknown))
-        order = tuple(sorted(self.declared_channel_laws, key=lambda law: CHANNEL_LAWS[law].code))
+        codes = {qualified(law.law_id): law.code for law in _hosted(law_registry.CHANNEL_LAW)}
+        order = tuple(sorted(self.declared_channel_laws, key=lambda law: codes[qualified(law)]))
         if order != self.declared_channel_laws or len(set(order)) != len(order):
             raise ValueError("Declared channel laws must be distinct and in registry-code order")
 
     @property
     def channel_laws(self):
-        """The declarations of the declared channel laws, in code order."""
-        return tuple(CHANNEL_LAWS[law] for law in self.declared_channel_laws)
+        """The declarations of the declared channel laws, in code order, from the active law
+        registry (one object per cells law ID, so the same in every registry)."""
+        registry = law_registry.active()
+        return tuple(registry.lookup(law) for law in self.declared_channel_laws)
 
     @property
     def gate_rows(self):

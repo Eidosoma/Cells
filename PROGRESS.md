@@ -85,6 +85,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Seam F of the core-seams pass merged into main (17 November 2026, afternoon).** Branch
+  core-seams-f 10a6bb19 ([evidence](/mnt/workspaces/Cells/core-seams-f-20261117/)).
+  - **What it adds, all structure:**
+    - **The law template:** `ChannelLaw`, `CycleLaw` (the same type as `PumpLaw`), `RouteLaw`,
+      `BindingLaw` and `JunctionLaw`. Each carries its `host`, its provenance and a `Citation`,
+      with units and signs declared. @3's ten laws now use it.
+    - **A build-scoped law registry,** in which kinds find their laws by interface and host.
+    - **Operators as a registry section.** `OPERATORS` is a view of the active section.
+    - **`cells.modules`,** marked PROVISIONAL (D195).
+    - **D185's declarations manifest,** FR-12: `python -m cells declarations --out FILE` writes
+      `cells.declarations@1`. It covers 14 laws, 5 kinds and 19 operators, with legacy model IDs
+      flagged.
+  - **The gate:**
+    - crossrev identical;
+    - G1 113 of 113;
+    - tiers 1+2: 485 files, none changed;
+    - 16 planted errors caught.
+  - **Still to come in F:** the per-law extractions and the built-ins' import guard, after move 2
+    and the retire batch.
+
 - **D188's move 1 landed on main (17 November 2026).** Merge 7bb8bf23, tagged
   `d188-move1-landed-2026-11-17`; the tree before it is tagged `pre-d188-move1-2026-11-17`
   ([evidence](/mnt/workspaces/Cells/d188-m1-20261117/gate-9b20034a/summary.txt)).

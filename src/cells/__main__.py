@@ -44,6 +44,9 @@ def _parser() -> argparse.ArgumentParser:
         "stationary", help="opt-in stationary states, stability and continuation (read-only)"
     )
     commands.add_parser(
+        "declarations", help="write the declarations manifest (cells.declarations@1)"
+    )
+    commands.add_parser(
         "tissue-geometry", help="prepare and replay initial passive tissue geometry"
     )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
@@ -196,6 +199,10 @@ def main(argv=None) -> int:
         from cells.analysis.cli import main as stationary_main
 
         return stationary_main(args[1:])
+    if args and args[0] == "declarations":
+        from cells.registry.declarations import main as declarations_main
+
+        return declarations_main(args[1:])
     if args and args[0] in LEGACY_COMMANDS:
         return legacy().cli(args[0])(args[1:])
     if args and args[0] == "assembly-pool":
