@@ -286,7 +286,10 @@ def write() -> None:
 
 ROUNDING_NOISE = ("floor", "rk4", "decimal_vs_primary", "relaxation_left", "K_without_B",
                   "W2_rest_V", "W2_V0")
-"""Paths whose numbers are rounding-level diagnostics: equal to within a factor of 2, or 1e-15."""
+"""Paths whose numbers are rounding-level diagnostics. They depend on the BLAS thread count
+(``cells`` pins one thread, D190), so they agree when both lie below ``NOISE_CEILING`` or within
+a factor of 2."""
+NOISE_CEILING = 1e-12
 
 
 def _same(a, b, path="", rtol=1e-12) -> list:
@@ -304,7 +307,8 @@ def _same(a, b, path="", rtol=1e-12) -> list:
         if a == b:
             return []
         if any(tag in path for tag in ROUNDING_NOISE):
-            ok = abs(a - b) <= max(1e-15, 0.5 * max(abs(a), abs(b)))
+            ok = max(abs(a), abs(b)) <= NOISE_CEILING or \
+                abs(a - b) <= 0.5 * max(abs(a), abs(b))
         else:
             ok = abs(a - b) <= rtol * max(abs(a), abs(b))
         return [] if ok else [f"{path}: {a!r} != {b!r}"]

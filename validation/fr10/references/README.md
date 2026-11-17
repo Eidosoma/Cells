@@ -1,6 +1,7 @@
 # FR-10's independent references: R-faces, R-ion and R-records
 
-**Registered 17 November 2026, before any engine output exists.** These are the independent
+**Registered 17 November 2026, before any engine output exists** (the registering commit is
+7aba937b; the amendments below follow it, also before any engine output). These are the independent
 references for FR-10, the scheduled bath composition (`scheduled_bath_composition@1`; D166, D169,
 D216). They implement Appendix A of `docs/BATH_SCHEDULE_DESIGN.md` on the FR lane's registered
 worlds, W1 to W3, for the qualification items B1 (R-faces), B2 (R-ion) and B4 (R-records). The
@@ -61,7 +62,8 @@ F = 96485.33 C/mol. Inputs are the exact values of the file's doubles.
 - **The second method:** SciPy's `expm` of the augmented generator, chained independently.
 - **The truth for both** (tests): a 50-digit Sylvester form.
 - **Agreement:** the primary meets it to 3.5e-18 fmol and `expm` to 4.9e-17 fmol.
-- **The floor,** |primary − expm|, is at most 4.8e-17 fmol.
+- **The floor,** |primary − expm| plus 16 ulps of the largest amount in play, is at most
+  7.5e-17 fmol.
 - **The supply** is S(t) = Σ_i (n_i(t) − n_i(0)).
 
 **R-ion** (`ion.py`, A.3, item B2).
@@ -163,7 +165,40 @@ Numbers are used under D186 and D201. No text, figures or data are copied.
   ARS(2,2,2) tableau of the stand-ins (from memory).
 - The SI's 2019 defining constants, as the inputs file states them.
 
-## What follows on this branch
+## Amendment, 17 November 2026: the faces floor and the design check
 
-The tests with their planted controls, the harness skeleton and its stand-in, and the tier rows.
-The engine adapter waits for the engine's declared bundle format, whose path the lead will give.
+After the registering commit 7aba937b, and before any engine output:
+- **The faces floor gains a rounding allowance.** It is now |primary − expm| plus 16 ulps of the
+  largest amount in play. Where the two methods happened to agree, the bare difference could
+  understate the primary's own rounding against the 50-digit truth (a few ulps). The test that
+  holds the primary within its floor at every record found it.
+- **The design check compares rounding-level diagnostics by a noise ceiling.** The floors and the
+  RK4 stand-in's errors depend on the BLAS thread count, and importing `cells` pins it to one
+  thread (D190). So they agree when both lie below 1e-12 or within a factor of 2. The committed
+  files are generated with `OPENBLAS_NUM_THREADS=1`, the engine's setting.
+- **The constant-field Bernoulli function guards e^x's range** (x > 700), which no registered
+  world reaches.
+- **What changed in the files:** floors only, 1,041 entries of the values file and one of the
+  design file. Every reference value and every control deviation is bitwise unchanged.
+
+## Tests, harness and stand-in (17 November 2026)
+
+| Test file | What it holds | Planted controls |
+| --- | --- | --- |
+| `test_fr10_references_faces.py` | W1's κ and rates; the primary within its floor of the 50-digit truth; the law integrated face by face (DOP853); right-continuity; second order for the honest stand-in; the supply; the long-time limit; refusals | A conductance 1% off; a late event (first order); a supply of the wrong sign; n for c on unequal volumes (and its zero power on W1); a node cut off from the bath |
+| `test_fr10_references_ion.py` | The start at rest; the flux's identities; the methods' agreement and floor; charge on the invariant; both zero-current readings and the limit; a world with Na and Cl leaks | A capacitor of the wrong sign; a capacitor without its 1e-15; Appendix A's rounded constants; late events (first order); K's Nernst potential where Na and Cl leak |
+| `test_fr10_references_records.py` | Exact doses; zero charge for neutral steps; dG_b against hand and endpoint forms; K's two forms; K's refusals; the constants check | Every dG_b control against 1e-12 (and the registered zero-power pair in W2); a step without its counter-ion; K without B (W1 has power, W2 none); a dose in mM on a 25 pL bath; a constant that is not exact SI |
+| `test_fr10_references_design.py` | The committed files equal their generator; the design is powered at every dt; nothing imports the engine | A changed number in the values |
+| `test_fr10_references_harness.py` | The honest stand-in passes every row (exit 0) | Late events, a first-order engine, the view absent, dG_b's sign, K without B and a dropped counter-ion each fail their rows (exit 1); a tolerance above the ceiling, a missing manifest and a missing role give exit 2 |
+
+**The harness** (`harness.py`, a skeleton):
+- `python -m validation.fr10.references.harness run --roles ROLES.json [--tolerances TOL.json]`
+  reads canonical bundles (`bundles.py`: `run.json`, `records.npz` and `manifest.json`, the last
+  written last);
+- the rows are `faces`, `ion`, `records` and `K`;
+- tolerances default to the registered ceilings, and a tolerance above a ceiling is refused;
+- exit status 0 means every row passed, 1 a failure, 2 a missing or malformed input.
+
+`standin.build_standin(dir, variant)` writes the honest stand-in and the planted variants. The
+engine adapter (`engine_layout.py`) waits for the engine's declared bundle format, whose path
+the lead will give.

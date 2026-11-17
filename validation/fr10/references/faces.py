@@ -208,8 +208,11 @@ def solve(world: FaceWorld, epochs=None, times=None) -> dict:
         cx = prop_expm(c_start_x[e], tau, epochs[e][1])
         amount_x[k] = V * cx
         supply_x[k] = float(np.sum(V * (cx - c0)))
-    floor = np.abs(amount - amount_x) + 0.5 * np.spacing(np.abs(amount))
-    supply_floor = np.abs(supply - supply_x) + 0.5 * np.spacing(np.abs(supply))
+    # The floor: the two methods' difference plus 16 ulps of the largest amount in play (the
+    # primary's own rounding, a few ulps of each term, is not seen by the difference alone).
+    scale = np.maximum(np.abs(amount), np.max(V) * max(float(c) for _, c in epochs))
+    floor = np.abs(amount - amount_x) + 16 * np.spacing(scale)
+    supply_floor = np.abs(supply - supply_x) + 16 * np.spacing(np.max(scale, axis=1) * N)
     rates = np.sort(np.linalg.eigvals(M).real)
     return {
         "species": world.species,

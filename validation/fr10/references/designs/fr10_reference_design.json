@@ -28,7 +28,7 @@
    "quantity": "S amount (fmol) at each finite node at each record time; the supply S(t)",
    "reference": "exact per epoch: symmetrised eigendecomposition of the deviation from the epoch's steady state c_b",
    "second_method": "scipy expm of the augmented generator, chained independently; a 50-digit Sylvester form for two nodes (tests)",
-   "floor_max_fmol": 4.7921736023859296e-17,
+   "floor_max_fmol": 7.546047120499111e-17,
    "decimal_vs_primary_max_fmol": 3.469446951953614e-18,
    "tolerance_basis": "pinned by the protocol from its dt study, with power at a dt only when tau(dt) <= ceiling(dt) (the smallest control deviation / min_margin) and tau(dt) >= min_margin x floor; an honest second-order engine is expected near the stand-ins' bracket (power.W1)",
    "order": "an honest second-order engine's error falls about 4x per halving of dt; the late, early and half-step controls and implicit Euler fall 2x"

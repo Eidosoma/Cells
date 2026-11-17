@@ -149,8 +149,11 @@ class Fluxes:
 
 
 def _bern(x: float) -> float:
+    """B(x) = x/(e^x - 1): a series near 0, and x e^{-x} beyond e^x's range."""
     if abs(x) < 1e-5:
         return 1.0 - x / 2.0 + x * x / 12.0
+    if x > 700.0:
+        return x * math.exp(-x)
     return x / math.expm1(x)
 
 

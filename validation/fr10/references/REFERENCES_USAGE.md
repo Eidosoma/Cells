@@ -57,7 +57,7 @@ the nodes' `<species>_mM` keys.
 | `nodes` | [N] | The finite nodes, in the block's order (`["ecs_0", "ecs_1"]`) |
 | `species` | str | The face species (`"S"`) |
 | `amount_fmol` | [T, N] | Each node's amount (fmol): the exact solution, per epoch |
-| `floor_fmol` | [T, N] | |primary − SciPy `expm`| + ½ ulp: the reference's own error bound |
+| `floor_fmol` | [T, N] | |primary − SciPy `expm`| + 16 ulps of the largest amount in play: the reference's own error bound |
 | `amount_expm_fmol` | [T, N] | The second method's values |
 | `supply_fmol` | [T] | S(t) = Σ_i (n_i(t) − n_i(0)), the bath's cumulative supply (fmol, out of the bath) |
 | `supply_floor_fmol` | [T] | Its floor |
