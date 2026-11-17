@@ -170,6 +170,46 @@ Other conventions:
 - Events after the last fission are covered by no saved row. Their heat is checked only
   if an end row is saved.
 
+### The engine's layout
+
+`engine_layout.py` and `records.adapt_engine_world`/`adapt_engine_run` read the engine's
+role set as its FORMAT.md describes it (`cells.assembly_lineages@1`).
+
+**World and run records:**
+- **World:** `{format, id, world, derived}`.
+  - β is `world.law_data.catalysis_matrix`; without it, β = 0.
+  - ρ is `world.supply`; k_join and k_leave come from `derived`; K is
+    `world.types.transfer_constant` and must equal k_join/k_leave.
+  - The event guard is `experiment.growth_event_limit` in `resolved_config.json`, and the
+    lineage stops at it.
+- **Run:** the verdict is `law.check.admitted_as`, and `law.form` is the form. A run with
+  no rate-factor law is read as form `none`, the exchange law alone.
+- **SSA:** the prose in `run.json` `ssa` and `stream.uniform` maps onto the oracle's tokens
+  (`records.ENGINE_SSA`). Any other wording is refused.
+
+**Records and groups:**
+- **Row base:** start, (parent, daughter) per fission, then a final end row (`row_kind`
+  0/1/2/3). The end row lets conservation and the ledger check the last growth too.
+- **Groups:**
+  - `batched/batched.json`: lane 0 is the lineage's definition;
+  - `restart/restart.json`: each case is a stopped run and its continued run, compared
+    bitwise with the uninterrupted run;
+  - `branches/branches.json`: the branch runs;
+  - `beta0_ensemble/beta0_ensemble.json`: the ensemble's members.
+
+**Probes:** each is `probe.json` + `probe.npz`, with arrays `<form>.<array>` and the
+registered inputs echoed as `input_*`. Each echo must match the inputs this package
+regenerates.
+- The kernel probe's verdicts come from the lineage runs.
+- The observer probe gives H only; the per-pair inheritance marks are reported missing.
+- The F12 table's explicit `sequences` and `certified_at` are checked against both
+  predicates.
+
+**Ensembles off the registered design:** a β = 0 ensemble that does not follow the registered
+design is judged at the registered times. It fails as underpowered if it cannot catch its
+planted control. Its agreement with the closed form at world-scale times (10, 20, 30, 40) is
+reported beside the verdict and never decides it.
+
 ## What could not be confirmed from the sources
 
 - **The pair-consistent form is the design's correction, not a source's kernel.** The

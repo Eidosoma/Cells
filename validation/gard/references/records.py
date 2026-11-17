@@ -168,8 +168,15 @@ class RunView:
         return {k: getattr(self, k) for k in IDENTITY_FIELDS}
 
 
-def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
+def is_engine_world(raw: dict) -> bool:
+    """The engine's layout (FORMAT.md): {format, id, world, derived}."""
+    return isinstance(raw.get("world"), dict) and isinstance(raw.get("derived"), dict)
+
+
+def adapt_world(raw: dict, source: str = "world.json", config: dict | None = None) -> WorldView:
     """Map a raw world record onto the canonical view; list every missing field at once."""
+    if is_engine_world(raw):
+        return adapt_engine_world(raw, source, config)
     values, missing = {}, []
     for name, dotted in WORLD_FIELDS.items():
         try:
@@ -232,6 +239,8 @@ def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
 
 
 def adapt_run(raw: dict, source: str = "run.json") -> RunView:
+    if is_engine_run(raw):
+        return adapt_engine_run(raw, source)
     values, missing = {}, []
     for name, dotted in RUN_FIELDS.items():
         try:
@@ -246,6 +255,122 @@ def adapt_run(raw: dict, source: str = "run.json") -> RunView:
     return RunView(raw=raw, **values)
 
 
+# ------------------------------------------------------------- the engine's layout
+#
+# FORMAT.md of the engine's probe set (17 November 2026; cells.assembly_lineages@1). Only
+# the interface ID strings change at the engine's freeze; they are not read here.
+
+ENGINE_SSA = {
+    "tau": {"tau = -ln(u1) / a0": "neg_log_u1_over_a0"},
+    "select": {"the first j with c_j > min(u2 * a0, nextafter(a0, 0))": "first_prefix_gt_u2_a0"},
+    "uniform_prefix": ("u = (m + 1/2) * 2**-52, m the low 52 bits", "low52_plus_half_times_2^-52"),
+    "prefix": "serial left fold in channel order",
+}
+"""The engine's declared SSA prose, mapped onto the oracle's tokens. Any other wording
+leaves the token out, and the oracle then refuses the run."""
+
+VERDICTS = {"passive": "passive", "driven": "refused_as_passive"}
+
+
+def _need(obj, dotted: str, source: str, missing: list):
+    try:
+        return _dig(obj, dotted)
+    except KeyError:
+        missing.append(f"{source}:{dotted}")
+        return None
+
+
+def adapt_engine_world(raw: dict, source: str, config: dict | None) -> WorldView:
+    missing: list = []
+    w = raw["world"]
+    d = raw["derived"]
+    types = _need(d, "types", source, missing)
+    k_join = _need(d, "join_rate", source, missing)
+    k_leave = _need(d, "leave_rate", source, missing)
+    rho = _need(w, "supply", source, missing)
+    founder = _need(w, "founder", source, missing)
+    size = _need(w, "fission.size", source, missing)
+    rule = _need(w, "fission.partition.rule", source, missing)
+    daughter = _need(w, "continuation.daughter", source, missing)
+    K = _need(w, "types.transfer_constant", source, missing)
+    if missing:
+        raise MissingRecord(f"world record lacks {missing}")
+    G = len(types)
+    beta = np.asarray(w["law_data"]["catalysis_matrix"], dtype=np.float64) if "law_data" in w \
+        else np.zeros((G, G))  # no rate factor: the exchange law alone (beta = 0)
+    if beta.shape != (G, G):
+        raise RecordFormatError(f"{source}: catalysis_matrix is {beta.shape}, {G} types declared")
+    def per_type(v, name):
+        a = np.asarray(v, dtype=np.float64)
+        a = np.full(G, float(a)) if a.ndim == 0 else a
+        if a.shape != (G,):
+            raise RecordFormatError(f"{source}: {name} has shape {a.shape}, expected ({G},)")
+        return a
+    kj, kl, Kv = per_type(k_join, "join_rate"), per_type(k_leave, "leave_rate"), per_type(K, "transfer_constant")
+    if np.any(np.abs(Kv - kj / kl) > 1e-12 * np.abs(kj / kl)):
+        raise RecordFormatError(f"{source}: the types' transfer constants K disagree with k_join/k_leave")
+    founder = np.asarray(founder)
+    if founder.shape != (G,) or not np.issubdtype(founder.dtype, np.integer):
+        raise RecordFormatError(f"{source}: founder must be {G} integer counts")
+    if rule not in ("binomial", "exact_fraction"):
+        raise RecordFormatError(f"{source}: unknown partition {rule!r}")
+    part = w["fission"]["partition"]
+    fraction = part.get("fraction")
+    p = part.get("probability", part.get("p"))
+    if rule == "exact_fraction" and fraction is None:
+        raise MissingRecord(f"{source}: exact_fraction partition without its fraction")
+    if rule == "binomial" and p is None:
+        raise MissingRecord(f"{source}: binomial partition without its probability")
+    guard = None
+    if config is not None:
+        try:
+            guard = int(_dig(config, "experiment.growth_event_limit"))
+        except KeyError:
+            guard = None
+    return WorldView(
+        world_id=str(raw.get("id", "")), types=list(types), beta=beta, rho=per_type(rho, "supply"), k_join=kj,
+        k_leave=kl, founder=founder.astype(np.int64), fission_mass=int(size), partition=str(rule),
+        partition_fraction=None if fraction is None else float(fraction), partition_p=None if p is None else float(p),
+        continuation=str(daughter), event_guard=guard, boundary=ENGINE_BOUNDARY, units=w.get("units"),
+        boundary_declared=False, guard_rule="stop", raw=raw)
+
+
+def is_engine_run(raw: dict) -> bool:
+    return isinstance(raw.get("ssa"), dict) and isinstance(raw.get("ledger"), dict) and "world" in raw
+
+
+def adapt_engine_run(raw: dict, source: str) -> RunView:
+    missing: list = []
+    for key in ("world", "founder", "law", "mode", "stream", "ssa", "channels", "end"):
+        if key not in raw:
+            missing.append(f"{source}:{key}")
+    if missing:
+        raise MissingRecord(f"run record lacks {missing}")
+    law = raw["law"] or {}
+    form = law.get("form") or "none"  # "none": the exchange law alone (beta = 0, both forms agree)
+    check = law.get("check") or {}
+    ssa = raw["ssa"]
+    conv = {}
+    if ENGINE_SSA["tau"].get(ssa.get("tau")):
+        conv["tau"] = ENGINE_SSA["tau"][ssa["tau"]]
+    if ENGINE_SSA["select"].get(ssa.get("channel")):
+        conv["select"] = ENGINE_SSA["select"][ssa["channel"]]
+    uni = str(raw["stream"].get("uniform", ""))
+    if uni.startswith(ENGINE_SSA["uniform_prefix"][0]):
+        conv["uniform"] = ENGINE_SSA["uniform_prefix"][1]
+    if not str(ssa.get("prefix", "")).startswith(ENGINE_SSA["prefix"]):
+        conv.pop("select", None)  # an unknown fold order: refuse rather than assume
+    verdict = check.get("admitted_as")
+    end = raw["end"] or {}
+    return RunView(
+        world_id=str(raw["world"]), founder=str(raw["founder"]), form=form,
+        law_id=str(law.get("id") or (law.get("exchange") or {}).get("id")), mode=str(raw["mode"]),
+        stream=raw["stream"], ssa_convention=conv, energy_role=law.get("energy_role"),
+        check_verdict=VERDICTS.get(verdict, verdict), ledger_conventions=raw.get("ledger"),
+        revision=(raw.get("source") or {}).get("revision"), end_status=end.get("status"),
+        channels=raw["channels"], time=raw.get("time"), restart=None, t_end=end.get("time"), raw=raw)
+
+
 @dataclass
 class Bundle:
     """One run's saved records."""
@@ -254,13 +379,14 @@ class Bundle:
     world_raw: dict
     run_raw: dict
     arrays: dict
+    config_raw: dict | None = None
     _world: WorldView | None = field(default=None, repr=False)
     _run: RunView | None = field(default=None, repr=False)
 
     @property
     def world(self) -> WorldView:
         if self._world is None:
-            self._world = adapt_world(self.world_raw, f"{self.path}/world.json")
+            self._world = adapt_world(self.world_raw, f"{self.path}/world.json", self.config_raw)
         return self._world
 
     @property
@@ -297,16 +423,23 @@ def load_bundle(path: str | os.PathLike) -> Bundle:
     run = json.loads((p / "run.json").read_text())
     with np.load(p / "records.npz", allow_pickle=False) as npz:
         arrays = {k: npz[k] for k in npz.files}
-    table = run.get("arrays")
+    table = run.get("arrays") if isinstance(run.get("arrays"), dict) else run.get("records")
     if isinstance(table, dict):
-        absent = [k for k in table if k not in arrays]
+        def in_npz(spec):
+            return not isinstance(spec, dict) or spec.get("file", "records.npz") == "records.npz"
+        absent = [k for k, spec in table.items()
+                  if in_npz(spec) and (spec.get("array", k) if isinstance(spec, dict) else k) not in arrays]
         if absent:
             raise MissingRecord(f"{p}/run.json declares arrays absent from records.npz: {absent}")
         for k, spec in table.items():
+            if not in_npz(spec):
+                continue
             axes = spec.get("axes") if isinstance(spec, dict) else None
-            if axes is not None and len(axes) != np.ndim(arrays[k]):
-                raise RecordFormatError(f"{p}: {k} has {np.ndim(arrays[k])} axes, declared {axes}")
-    return Bundle(str(p), world, run, arrays)
+            name = spec.get("array", k) if isinstance(spec, dict) else k
+            if axes is not None and len(axes) != np.ndim(arrays[name]):
+                raise RecordFormatError(f"{p}: {name} has {np.ndim(arrays[name])} axes, declared {axes}")
+    config = json.loads((p / "resolved_config.json").read_text()) if (p / "resolved_config.json").is_file() else None
+    return Bundle(str(p), world, run, arrays, config)
 
 
 def canonical_digest(obj: dict) -> str:
