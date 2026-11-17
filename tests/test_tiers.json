@@ -128,7 +128,8 @@
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-bd696fec/measured.json",
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-f7b3940b/measured.json",
   "/mnt/workspaces/Cells/law-library-20261117/measure-96256ba2/measured.json",
-  "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json"
+  "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json",
+  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1060,6 +1061,13 @@
    "root": ".claude/worktrees/law-library",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T15:08:44+00:00"
+  },
+  {
+   "git_revision": "c5f41796065fa3a12f5a5cadbf7e502f00f27ddd",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g1-merge",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T16:33:07+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1366,23 +1374,39 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_balance.py",
-    "seconds": 1.52,
+    "seconds": 1.87,
     "exit_code": 0,
     "counts": {
      "passed": 6
     }
    },
    {
-    "file": "tests/unit/test_assembly_lineages_fission.py",
-    "seconds": 8.33,
+    "file": "tests/unit/test_assembly_lineages_checkpoints.py",
+    "seconds": 19.19,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_inheritance.py",
+    "seconds": 5.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_keys.py",
+    "seconds": 16.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_ledger.py",
-    "seconds": 10.29,
+    "seconds": 11.26,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -1390,7 +1414,15 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_records.py",
-    "seconds": 11.74,
+    "seconds": 12.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_registration.py",
+    "seconds": 14.13,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -1398,7 +1430,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_spec.py",
-    "seconds": 1.57,
+    "seconds": 1.82,
     "exit_code": 0,
     "counts": {
      "passed": 25
@@ -1406,7 +1438,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_streams.py",
-    "seconds": 16.76,
+    "seconds": 17.33,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -1797,7 +1829,7 @@
    },
    {
     "file": "tests/unit/test_cli_own_runner.py",
-    "seconds": 2.17,
+    "seconds": 3.13,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -1958,7 +1990,7 @@
    },
    {
     "file": "tests/unit/test_declarations.py",
-    "seconds": 2.27,
+    "seconds": 2.97,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -2624,6 +2656,14 @@
     }
    },
    {
+    "file": "tests/unit/test_model_table.py",
+    "seconds": 7.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_modules_surface.py",
     "seconds": 1.32,
     "exit_code": 0,
@@ -3119,6 +3159,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 27
+    }
+   },
+   {
+    "file": "tests/unit/test_relations.py",
+    "seconds": 2.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
+    "file": "tests/unit/test_relations_lineage_summaries.py",
+    "seconds": 5.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
@@ -3870,30 +3926,6 @@
     "counts": {
      "passed": 2
     }
-   },
-   {
-    "file": "tests/unit/test_relations.py",
-    "seconds": 2.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 19
-    }
-   },
-   {
-    "file": "tests/unit/test_relations_lineage_summaries.py",
-    "seconds": 5.48,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_model_table.py",
-    "seconds": 7.44,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
    }
   ],
   "2": [
@@ -4114,11 +4146,51 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_arms.py",
+    "seconds": 29.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_fission.py",
+    "seconds": 22.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_freeze.py",
+    "seconds": 25.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 34.25,
+    "seconds": 30.83,
     "exit_code": 0,
     "counts": {
      "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_population.py",
+    "seconds": 35.36,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_relations.py",
+    "seconds": 23.0,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
