@@ -85,6 +85,33 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **GARD's G1, part 1, merged into main (17 November 2026, afternoon).** Branch gard-g1-merge
+  96643762 ([evidence](/mnt/workspaces/Cells/gard-g1-20261117/), README inside).
+  - **What it adds:** `cells.assembly_lineages@1`, a general stochastic assembly family (D197). It
+    has:
+    - the exact direct-method kernel with keyed streams, vmapped over lanes;
+    - reservoir exchange;
+    - size-threshold fission and daughter continuation;
+    - a stochastic ledger that refuses a passive run whose books don't close;
+    - self-describing run bundles, with a declared channel table and units.
+  - **GARD itself is one comparison law set on it** (D192):
+    - the preprint's single-event form, declared driven;
+    - the pair-consistent form, passive and the default.
+
+    The kernel's detailed-balance check admits only the second as passive.
+  - **The gate:**
+    - tiers 1+2: 489 files, none changed;
+    - the results gate: 113 of 113 identical;
+    - crossrev: all nine sets identical;
+    - 8 new test files, 67 tests, each catching a planted error.
+  - **Development run:** one lineage of 100 fissions on one CPU.
+    - The pair-consistent ledger closes to within 2.9e-11 k_BT.
+    - The single-event form reports 55.6 k_BT of cycle work with no source, as declared, about
+      0.55 k_BT per fission.
+    - Speed: 2.2×10⁴ events per second per lane, and up to 5.8×10⁴ with 16 lanes on one CPU.
+  - **Next:** part 2 (keys, end reasons, the probe driver, checkpoints, branching, every descendant)
+    and the general relationship tables (D202).
+
 - **Seam F of the core-seams pass merged into main (17 November 2026, afternoon).** Branch
   core-seams-f 10a6bb19 ([evidence](/mnt/workspaces/Cells/core-seams-f-20261117/)).
   - **What it adds, all structure:**
