@@ -94,7 +94,9 @@ def run(out, *, fissions, matrix_seed, founder_seed, seed):
         "pair": entries,
         "rate": rate,
         "rate_scope": "one lane on one CPU, wall time of the runner's host loop and device "
-        "calls, compile excluded; the median of the repeats",
+        "calls (the event steps, fission passes and per-chunk transfers), compile excluded; the "
+        "median of the repeats. Not in it: the host-side checks before the loop (the law's "
+        "verdict, cached, and a driven law's report on the world's data, run each time)",
         "cpu_affinity": sorted(os.sched_getaffinity(0)),
         "cells": cells.__file__,
         "python": sys.version,
