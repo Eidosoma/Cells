@@ -6918,3 +6918,22 @@ core and even so we have to keep on upgfading". The lead reviewed it with the ad
   - OL6 reports both.
   - In OL9's ladder, the switch of measure is its own rung.
 
+## D216: An FR completion lane for FR-1 to FR-10, beside origin of life and the core pass
+
+2026-11-17, evening. The user said: "the start of origin of life is good but we also have other
+priorities like finishing fr-1 to fr10, status on that". The lead gave the status (FR-4, FR-5 and
+FR-9 done; FR-1, FR-3, FR-6 and FR-10 partly done; FR-2, FR-7 and FR-8 logged) and proposed a lane.
+The user: "sounds good yes".
+
+- **An FR lane,** owned by the agent that qualified FR-4 and FR-5, starts when a slot frees within the
+  cap of seven. It takes the fast judged acceptances first:
+  1. FR-10's protocol and judged run;
+  2. FR-1's judged acceptance, exchange's first;
+  3. FR-3's independent references, then its protocol;
+  4. FR-6's channel target qualified with the coupling operator (A5).
+- **Design notes for FR-2, FR-7 and FR-8 follow.** FR-7 needs the user's choice of the closed loop's
+  unit, framed by its note.
+- **Overlaps go to the core pass,** so no file has two owners: FR-3's binding with seam C, FR-6's
+  routing door with seam B1, and FR-1's later doors (creation, division, fission and fusion,
+  retirement) with seam B and the mitochondria work (D210).
+
