@@ -36,8 +36,8 @@ Criteria, fixed before any run (CRITERIA):
   P1 the closed forms against the preprint's printed or read values, within the reading
      tolerances paper.REPORTED states (a check of the reading, not of the engine; the
      tolerances were set after the closed forms were evaluated);
-  P2 Figure 8: the engine's G_eq,n against the recursion Figure 8 plots and against its read
-     values (reported: the expected outcome is agreement at n <= 2 and disagreement from n = 3);
+  P2 Figure 8: the engine's G_eq,n against the appendix's printed recursion taken as a
+     conductance, and against Figure 8's read values (reported, not a pass/fail of the engine);
   K1 the planted control fails E1 (by more than 1e-6);
   A1 the engine's own run checks pass (material balance and every step check: a run that fails
      one raises, and that arm is recorded as failed while the others go on).
@@ -568,13 +568,13 @@ def part_figure5(out, save):
 def part_figure8(out, save):
     rep = paper.REPORTED["figure8"]
     physical = paper.chain_physical(1.0, 1.0, max(FIGURE8_N))
-    plotted = paper.chain_paper(1.0, 1.0, max(FIGURE8_N))
+    printed = paper.chain_paper(1.0, 1.0, max(FIGURE8_N))
     out.update(
         physical_limit_ratio=paper.chain_limit(1.0, 1.0), recursion_note=paper.RECURSION_NOTE
     )
     out["chains"] = []
     for n in FIGURE8_N:
-        entry = dict(n=n, physical_ratio=physical[n - 1], plotted_ratio=plotted[n - 1], loads=[])
+        entry = dict(n=n, physical_ratio=physical[n - 1], printed_ratio=printed[n - 1], loads=[])
         out["chains"].append(entry)
         for held in FIGURE8_LOADS:
             entry["loads"].append(
@@ -598,14 +598,14 @@ def part_figure8(out, save):
                 abs(ratio - physical[n - 1]) / physical[n - 1]
                 <= CRITERIA["E4_norton_vs_physical_rtol"]
             ),
-            vs_plotted_rel=float(abs(ratio - plotted[n - 1]) / plotted[n - 1]),
+            vs_printed_rel=float(abs(ratio - printed[n - 1]) / printed[n - 1]),
         )
         if n <= len(rep["at_minus_half"]):
             # In Figure 8's units: G_eq,1 = 0.1 m^3/s, [mR]_UL0 = 1 mol/m^3, Iexit = -0.5 mol/s.
             g_fig = ratio * rep["g_eq1"]
             entry.update(
                 engine_at_minus_half=rep["unloaded"] + 0.5 / g_fig,
-                plotted_at_minus_half=rep["unloaded"] + 0.5 / (plotted[n - 1] * rep["g_eq1"]),
+                printed_at_minus_half=rep["unloaded"] + 0.5 / (printed[n - 1] * rep["g_eq1"]),
                 read_at_minus_half=rep["at_minus_half"][n - 1],
                 engine_intercept=g_fig * rep["unloaded"],
                 read_intercept=rep["intercepts"][n - 1],
@@ -613,8 +613,8 @@ def part_figure8(out, save):
             entry["P2_engine_matches_read"] = bool(
                 abs(entry["engine_at_minus_half"] - entry["read_at_minus_half"]) <= rep["tolerance"]
             )
-            entry["P1_plotted_matches_read"] = bool(
-                abs(entry["plotted_at_minus_half"] - entry["read_at_minus_half"])
+            entry["P1_printed_matches_read"] = bool(
+                abs(entry["printed_at_minus_half"] - entry["read_at_minus_half"])
                 <= rep["tolerance"]
             )
         save()

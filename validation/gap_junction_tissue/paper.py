@@ -6,12 +6,12 @@ version 1, posted 3 September 2026, CC-BY 4.0. Only numbers are taken (D186, D20
 names where the preprint prints it. A value read off a plotted curve is marked as read, with the
 reading tolerance used to compare it; the tolerances were set after the closed forms below were
 evaluated, so they check the reading, not the engine. One exception to "from the preprint": the
-Cx45 gate constants (CX45), which the preprint does not print (see there).
+Cx45 gate constants (CX45), which the preprint does not print: from BITSEY's code (see there).
 
 Independent references, written from the preprint's equations alone:
 * `eq2`: the steady state of two linear cells joined by one junction (the preprint's equation 2);
-* `chain_paper`: the chain recursion as Figure 8 applies it (the appendix's printed definition
-  without its outer reciprocal, which is dimensionally inconsistent; see RECURSION_NOTE);
+* `chain_paper`: the appendix's printed chain recursion, taken as a conductance (without its
+  outer reciprocal, with which it is a resistance; see RECURSION_NOTE);
 * `chain_physical`: the Norton conductance of a physical straight chain, by recursion;
 * `linear_steady_state`: the steady state of any network of linear cells by a dense solve, the
   check on both recursions and the reference for the engine runs;
@@ -106,11 +106,11 @@ REPORTED = {
 }
 
 RECURSION_NOTE = (
-    "The appendix prints G_eq,n+1 = 1 / [ (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n ]: the outer "
-    "reciprocal makes it a resistance, and the second term is the whole chain's G_eq,n where the "
-    "derivation adds one cell, whose own decay conductance is G_eq,1. Figure 8 plots "
-    "G_eq,n+1 = (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n (no outer reciprocal). A physical straight "
-    "chain has G_eq,n+1 = (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,1, which saturates."
+    "The appendix prints G_eq,n+1 = 1 / [ (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n ]. With its outer "
+    "reciprocal the right side is a resistance; taken as a conductance it gives "
+    "(G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n, whose second term is the whole chain's G_eq,n. A straight "
+    "chain whose added cell brings its own decay conductance G_eq,1 has "
+    "G_eq,n+1 = (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,1."
 )
 
 # --- Independent references --------------------------------------------------------------------
@@ -128,7 +128,8 @@ def eq2(unloaded_a, unloaded_b, x, y):
 
 
 def chain_paper(g1, gj, n):
-    """[G_eq,1 .. G_eq,n] by the recursion Figure 8 plots (RECURSION_NOTE)."""
+    """[G_eq,1 .. G_eq,n] by the appendix's printed recursion taken as a conductance
+    (RECURSION_NOTE)."""
     values = [g1]
     while len(values) < n:
         values.append(1.0 / (1.0 / values[-1] + 1.0 / gj) + values[-1])
@@ -179,11 +180,12 @@ def norton_from_two_loads(points):
 
 # The two-state gate of Figure 1. The preprint prints the equation, not its constants. These
 # values reproduce Figure 1 (peak 0.97 and floor 0.06 for small ions, peak 0.945 and floor 0 for
-# miRNA), in the preprint's sign convention. Their source is the Cx45/45 row of the authors'
-# public code (GJ_lib.py, BITSEY revision b2cb370, which has no licence), attributed there to
-# Chen-Izu, Moreno and Spangler (2001), Am J Physiol Cell Physiol 281:C1604, the preprint's
-# ref. 52. Not checked against that paper (its publisher refused the request); their use here
-# awaits the lead's ruling (docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 2).
+# miRNA), in the preprint's sign convention. Their source: the Cx45/45 row of BITSEY's GJ_lib.py
+# (gitlab.com/grodstein/bitsey, revision b2cb370aaecbc8299f259bc4251d5396c81f19a6), attributed
+# there to Chen-Izu, Moreno and Spangler (2001), Am J Physiol Cell Physiol 281:C1604, the
+# preprint's ref. 52 (not checked against that paper: its publisher refused the request). Used
+# under the user's ruling of 17 November 2026 (relayed by the lead): numbers from BITSEY's code
+# and logs may be used, each cited to the repository and revision; its code is never copied.
 CX45 = {"A1_per_V": 110.0, "V01_V": -0.0102, "A2_per_V": 110.0, "V02_V": -0.0102, "Gmax": 1.56}
 CX45_SMALL_ION_GMIN = 0.06
 
