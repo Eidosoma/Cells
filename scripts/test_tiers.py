@@ -65,6 +65,28 @@ def _git(*args):
     ).stdout.strip()
 
 
+def _repository():
+    """The repository the tool's tree belongs to (its common Git directory's parent: the main
+    checkout, also for a worktree inside it), or None for an immutable snapshot without .git."""
+    try:
+        common = Path(_git("rev-parse", "--path-format=absolute", "--git-common-dir"))
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return common.parent
+
+
+def recorded_root(root, repository):
+    """A run's tree as its record names it: relative to the repository when the tree is the
+    repository or a worktree inside it ("." for the repository), so a record kept in the public
+    repository carries no home path; a tree outside it (a snapshot) keeps its absolute path."""
+    if repository is not None:
+        try:
+            return str(Path(root).resolve().relative_to(Path(repository).resolve()))
+        except ValueError:
+            pass
+    return str(root)
+
+
 def _provenance():
     extra = {}
     try:
@@ -82,7 +104,7 @@ def _provenance():
         "git_revision": revision,
         "dirty": dirty,
         **extra,
-        "root": str(ROOT),
+        "root": recorded_root(ROOT, _repository()),
         "python": sys.executable,
         "utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
@@ -534,6 +556,8 @@ def _run_doc(run_dir):
     doc = json.loads((Path(run_dir) / "run.json").read_text())
     provenance = doc.get("provenance") or {}
     root = provenance.get("root") or doc.get("target")
+    if root and not Path(root).is_absolute():  # Recorded relative to the repository.
+        root = str((_repository() or ROOT) / root)
     python = provenance.get("python") or doc.get("python")
     return doc, root, python
 

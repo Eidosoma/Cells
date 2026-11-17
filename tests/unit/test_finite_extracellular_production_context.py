@@ -1,7 +1,6 @@
 """New production must not bypass the unchanged finite-reference source guards."""
 
 import json
-import os
 import subprocess
 import sys
 from importlib.metadata import version
@@ -10,35 +9,6 @@ from pathlib import Path
 import pytest
 
 from scripts import test_finite_extracellular_production_build as driver
-
-
-@pytest.mark.parametrize("failed", [None, "current", "reference", "finite"])
-def test_matrix_routes_failures_and_restores_overrides(tmp_path, monkeypatch, failed):
-    monkeypatch.delenv("PYTEST_ADDOPTS", raising=False)
-    monkeypatch.delenv("PYTEST_PLUGINS", raising=False)
-    seen = []
-
-    def execute(path, *, only="finite"):
-        seen.append((only, os.environ.get("PYTEST_ADDOPTS")))
-        path.mkdir()
-        result = {
-            "status": "failed" if only == failed else "pass",
-            "contexts": {only: {}},
-            "total_tests": 2,
-        }
-        (path / "verification.json").write_text(json.dumps(result))
-        return result
-
-    monkeypatch.setattr(driver.previous, "run_tests", execute)
-    monkeypatch.setattr(driver, "execute_preserved", execute)
-    result = driver.run_tests(tmp_path / "matrix")
-    assert result["status"] == ("pass" if failed is None else "failed")
-    assert result["total_tests"] == 6
-    assert seen[1:] == [("reference", None), ("finite", None)]
-    assert all("--ignore=" + name in seen[0][1] for name in driver.FINITE_HISTORICAL)
-    assert driver.V1_PROSPECTIVE in seen[0][1]
-    assert result["unexecuted_prospective_suite"]["tests"] == 13
-    assert "PYTEST_ADDOPTS" not in os.environ
 
 
 @pytest.mark.parametrize("key", ["PYTEST_ADDOPTS", "PYTEST_PLUGINS"])

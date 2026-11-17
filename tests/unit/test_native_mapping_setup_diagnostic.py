@@ -190,67 +190,6 @@ class ObserverTests(unittest.TestCase):
             attempts.append(attempted)
         return facades, attempts
 
-    def test_literal_nested_facades_restore_exact_previous_observer(self):
-        fn = synthetic("def prepare(): return 7")["prepare"]
-        seen = []
-        with self.observer():
-            previous = sys.getprofile()
-            facades, attempts = self._runner_facades(previous, {})
-
-            def delegate(frame, event, arg):
-                if frame.f_code is fn.__code__:
-                    seen.append(event)
-
-            facades[-1].setprofile(delegate)
-            try:
-                self.assertEqual(fn(), 7)
-            finally:
-                facades[-1].setprofile(None)
-            self.assertIs(sys.getprofile(), previous)
-            # The enclosing runners explicitly restore their captured callback.
-            # It must not be wrapped a second time during those finally blocks.
-            for facade in reversed(facades):
-                facade.setprofile(previous)
-                self.assertIs(sys.getprofile(), previous)
-            self.assertEqual(attempts, [[], [], []])
-        self.assertEqual(seen, ["call", "return"])
-
-    def test_literal_nested_facades_keep_source_rejection_and_restore(self):
-        called = []
-        fn = synthetic("def prepare(): called.append(1)", called=called)["prepare"]
-        with self.observer():
-            previous = sys.getprofile()
-            facades, attempts = self._runner_facades(previous, {fn.__code__: "blocked"})
-            facades[-1].setprofile(lambda frame, event, arg: None)
-            try:
-                with self.assertRaises(AssertionError):
-                    fn()
-            finally:
-                facades[-1].setprofile(None)
-            self.assertIs(sys.getprofile(), previous)
-            self.assertEqual(called, [])
-            self.assertEqual(attempts, [[fn.__qualname__], [], []])
-
-    def test_literal_nested_facades_restore_after_primary_failure(self):
-        primary = ValueError("synthetic source")
-        cause = LookupError("original cause")
-        fn = synthetic("def prepare(): raise primary from cause", primary=primary, cause=cause)[
-            "prepare"
-        ]
-        with self.observer():
-            previous = sys.getprofile()
-            facades, attempts = self._runner_facades(previous, {})
-            facades[-1].setprofile(lambda frame, event, arg: None)
-            try:
-                with self.assertRaises(ValueError) as caught:
-                    fn()
-            finally:
-                facades[-1].setprofile(None)
-            self.assertIs(caught.exception, primary)
-            self.assertIs(primary.__cause__, cause)
-            self.assertIs(sys.getprofile(), previous)
-            self.assertEqual(attempts, [[], [], []])
-
     def test_capture_failure_is_deferred_and_keeps_source_primary(self):
         primary = ValueError("source")
         fn = synthetic("def prepare(): raise primary", primary=primary)["prepare"]

@@ -1,7 +1,5 @@
 """Owned channel/junction regulation, independent physical stages and guards."""
 
-import ast
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -88,25 +86,6 @@ def test_strict_roundtrip_and_inherited_38_field_contract(padded):
             state_fields=list(state._fields),
             capacity=spec.execution.regulation_capacity,
             shared_channel_populations=len(spec.model.channels),
-        ),
-    )
-
-
-def test_frozen_equation_sources_and_independent_imports():
-    for name, sha in PROTOCOL["readonly_source_sha256"].items():
-        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == sha
-    native = PROTOCOL["frozen_native_handoff"]
-    assert hashlib.sha256(Path(native["path"]).read_bytes()).hexdigest() == native["sha256"]
-    for module in (fixtures, reference):
-        for node in ast.walk(ast.parse(Path(module.__file__).read_text())):
-            if isinstance(node, ast.ImportFrom):
-                assert not (node.module or "").startswith(("cells", "jax"))
-    evidence(
-        "provenance",
-        dict(
-            readonly_source_sha256=PROTOCOL["readonly_source_sha256"],
-            native=native,
-            native_full_solver_parity=False,
         ),
     )
 

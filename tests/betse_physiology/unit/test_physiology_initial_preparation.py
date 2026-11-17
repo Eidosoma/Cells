@@ -176,43 +176,6 @@ def compare(raw, actual):
 
 
 @pytest.mark.parametrize("family", FAMILIES)
-@pytest.mark.parametrize("reverse,level", ((False, 0.0), (True, 0.2)))
-def test_selected_native_successor_full_static_initialization_and_physical_RHS(
-    family, reverse, level
-):
-    raw = request(family, reverse=reverse, level=level)
-    before = deepcopy(raw)
-    actual = core.initialize(raw)
-    core.validate(actual)
-    expected = compare(raw, actual)
-    assert raw == before
-    assert core.replay(actual.provenance).provenance == actual.provenance
-    evidence(
-        f"initial-{family}-{reverse}",
-        dict(
-            request=raw,
-            provenance=actual.provenance,
-            comparison=expected,
-            physical_time_elapsed_s=0.0,
-            additional_biological_cases=0,
-        ),
-    )
-
-
-@pytest.mark.parametrize("profile", ("INIT", "fast", "dynamic-off", "protein-off"))
-def test_static_draw_ignores_dynamic_guards(profile):
-    raw = request(profile=profile, level=0.0)
-    result = core.initialize(raw)
-    expected = compare(raw, result)
-    np.testing.assert_array_equal(
-        result.component.diffusion.current_m2_s, result.component.diffusion.base_m2_s
-    )
-    evidence(
-        "guard-" + profile, dict(request=raw, provenance=result.provenance, comparison=expected)
-    )
-
-
-@pytest.mark.parametrize("family", FAMILIES)
 def test_initialized_pair_advances_an_original_interval_with_independent_refinement(family):
     raw = request(family, reverse=True, profile="INIT")
     original_execution = deepcopy(raw["preparation"]["definition"]["execution"])

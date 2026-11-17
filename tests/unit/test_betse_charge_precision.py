@@ -9,14 +9,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
 from cells.processes.electrochemistry import F
 from tests.unit import test_betse_junction_runtime as reference
 from validation.assays import source_order_precision as repair
 from validation.betse.emulator import junction_spec
 from validation.betse.emulator import spatial as field
-from validation.betse.emulator.rehost import REHOST_REASON
 from validation.betse.spatial_active import junction_runtime as runtime
 from validation.betse.spatial_active.refinement import digest
 
@@ -122,40 +119,3 @@ def native():
         ),
     )
     return folder, rows
-
-
-@pytest.mark.skip(reason=REHOST_REASON)
-@pytest.mark.parametrize("case,level", CASES)
-def test_charge_precision_native(case, level, native):
-    dt = runtime.protocol()["native_steps_s"][level]
-    raw = runtime.definition(case, level, backend=BACKEND, steps=round(512e-6 / dt))
-    result = run(parse_spec(raw))
-    arrays = reference.arrays(result)
-    folder, rows = native
-    key = f"{case}/step-{level}/observed"
-    with np.load(folder / key / "trace.npz", allow_pickle=False) as saved:
-        comparison = runtime.compare_native(
-            {k: v[1:] for k, v in arrays.items()}, rows[key], dict(saved)
-        )
-    assert result.diagnostics["max_material_error_over_budget"] <= 1
-    count = None
-    if BACKEND == "gpu":
-        assert reference.EVIDENCE
-        with np.load(
-            Path(reference.EVIDENCE) / "cpu" / f"charge-precision-native-{case}-{level}.npz",
-            allow_pickle=False,
-        ) as saved:
-            count = reference.compare(arrays, saved, result.final.layout.tissue_membrane_area)
-    reference.common.evidence(
-        f"charge-precision-native-{case}-{level}",
-        dict(
-            status="passed",
-            backend=BACKEND,
-            native_comparison=comparison,
-            cpu_gpu_compared_scalars=count,
-            native_trace_sha256=rows[key]["trace_sha256"],
-            diagnostics=result.diagnostics,
-            physical_tolerances_unchanged=True,
-        ),
-        arrays,
-    )

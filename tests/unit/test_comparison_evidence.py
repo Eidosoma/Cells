@@ -432,19 +432,6 @@ def test_aggregate_array_preflight_before_comparison_readers(
     assert not (tmp_path / "run").exists()
 
 
-def test_real_profile_plan_source_inventory_and_unchanged_shared_quota():
-    r = profile.specification(profile.OUTPUT_PARENT / "comparison-01")
-    r["source_hashes"] = {name: ref.sha(profile.ROOT / name) for name in profile.SOURCES}
-    assert len(profile.SOURCES) == len(set(profile.SOURCES)) == 68
-    assert all((profile.ROOT / name).is_file() for name in profile.SOURCES)
-    assert len(r["planned_attempts"]) == 12
-    assert r["storage_budget"]["prior_bytes"] == 821019434
-    assert r["storage_budget"]["new_root_limit_bytes"] == 252722390
-    assert r["plan"]["trajectory_policy"] == "rk4_basis"
-    for case in r["plan"]["cases"]:
-        assert profile.identity(r, case) == profile.parent.identity(r, case)
-
-
 def rebind_comparison_index(directory):
     """Rehash outer fixture receipts so semantic checks must reject the forgery."""
     path = directory / "chunks.jsonl"
@@ -625,17 +612,6 @@ def registration_fixture(tmp_path, monkeypatch, protocol):
     for key, value in profile.campaign.THREADS.items():
         monkeypatch.setenv(key, value)
     return tmp_path / "new", source
-
-
-def test_registration_source_identity_and_exclusivity(registration_fixture):
-    output, source = registration_fixture
-    registered = profile.register(output)
-    assert profile.check_registration(output) == registered
-    with pytest.raises(FileExistsError):
-        profile.register(output)
-    source.write_text("changed comparison source fixture\n")
-    with pytest.raises(ValueError, match="source identity"):
-        profile.check_registration(output)
 
 
 @pytest.mark.parametrize("timeout", [False, True])

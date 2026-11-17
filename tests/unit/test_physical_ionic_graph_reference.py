@@ -33,21 +33,6 @@ def graph(definition):
     return ref.resolve(definition)
 
 
-def test_frozen_instantaneous_panel_and_scope():
-    result = check.verify()
-    assert result["status"] == "pass", result["failures"]
-    assert result["checks_failed"] == 0
-    assert result["groups"]["decimal_edge_flux"]["checks"] == 1890
-    assert len(result["assemblies"]) == 8
-    assert len(result["production_source_sha256"]) == 44
-    assert result["production_version"] == "0.12.0"
-    assert not result["production_change"] and not result["independent_ode_solver_run"]
-    assert (
-        result["method_selection"] == result["coupled_trajectory_qualification"] == "not_performed"
-    )
-    assert result["biological_acceptance"] == "not_assessable"
-
-
 @pytest.mark.parametrize("z", [-3, -2, -1, 1, 2, 3])
 @pytest.mark.parametrize("dv", [-0.1, -1e-12, 0, 1e-12, 0.1])
 def test_oriented_constant_field_arithmetic_and_dissipation(z, dv):

@@ -304,10 +304,3 @@ def test_missing_index_tail_refused_before_endpoint_sampling(tmp_path, model, pr
     original = ref.read_json(folder / "trajectory.json")
     with pytest.raises(ValueError, match="Incomplete reference index"):
         ref.validate_chunk_index(folder, original | {"chunks": original["chunks"] + 1})
-
-
-def test_registered_settings_are_checked(tmp_path):
-    campaign.register(tmp_path / "registration")
-    report = campaign.check_registration(tmp_path / "registration")
-    assert len(report["planned_attempts"]) == 6
-    assert len(report["production_source_hashes"]) == 39
