@@ -4,6 +4,7 @@ import math
 from dataclasses import asdict, fields
 
 from cells.core import multispecies_spec as ionic
+from cells.core.spec_values import fraction
 from cells.core.specs import (
     MULTISPECIES_ID,
     VOLTAGE_GATED_ID,
@@ -22,13 +23,6 @@ from cells.core.specs import (
     _number,
 )
 from cells.processes.voltage_gates import LAW_ID, TEMPERATURE_K, VOLTAGE_DOMAIN_V
-
-
-def fraction(value, name):
-    value = _number(value, name)
-    if value > 1:
-        raise ConfigError(f"{name} must lie in [0, 1]")
-    return value
 
 
 def project(value, target):

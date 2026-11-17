@@ -74,7 +74,6 @@ from cells.core.surface_pump_v3_spec import (
 )
 from cells.coupling.selective import selective_flux
 from cells.models import inner_laws
-from cells.models import kinetic_finite_extracellular as pumps
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second
@@ -88,6 +87,7 @@ from cells.numerics.fixed_step import rk4_checked_step
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import calcium_atpase, junction_gate, sodium_channels, voltage_gates
 from cells.processes import kinetic_pump as pump
+from cells.processes import kinetic_pump_binding as pumps
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = kinetic.OBSERVER_ID

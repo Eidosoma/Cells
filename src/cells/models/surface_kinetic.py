@@ -29,7 +29,6 @@ from cells.core.surface_kinetic_spec import (
     model_id,
 )
 from cells.coupling.selective import selective_flux
-from cells.models import kinetic_finite_extracellular as kinetic
 from cells.models import surface_tissue as base
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import ordered_scatter, scatter
@@ -49,6 +48,7 @@ from cells.processes import (
     voltage_gates,
 )
 from cells.processes import kinetic_pump as pump
+from cells.processes import kinetic_pump_binding as kinetic
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = "resolved_kinetic_accepted_grid_readouts@1"

@@ -66,7 +66,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from cells.core import species_registry
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator

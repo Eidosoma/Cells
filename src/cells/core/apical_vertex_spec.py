@@ -22,8 +22,7 @@ from dataclasses import asdict, dataclass, fields
 
 import numpy as np
 
-from cells.core.bioelectric_spec import positive, signed_number
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier, positive, signed_number
 from cells.core.specs import ConfigError, ExecutionSpec, SimulationSpec, _fields, _integer, _number
 
 MODEL_ID = "apical_vertex_mechanics@1"

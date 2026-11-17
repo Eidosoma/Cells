@@ -139,7 +139,9 @@ class Vector(NamedTuple):
 
 def _pins():
     require(bool(SOURCE_PINS), "unchanged_kernel_pins_required")
-    root = Path(__file__).resolve().parents[3]
+    import cells  # The checkout root from the package, whatever this module's depth.
+
+    root = Path(cells.__file__).resolve().parents[2]
     for rel, expected in SOURCE_PINS.items():
         path = root / rel
         with path.open("rb") as stream:

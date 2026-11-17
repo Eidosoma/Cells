@@ -258,6 +258,16 @@ def test_portable_active_profile_example_replays_through_public_parser():
     exact(after.layout, before.layout)
 
 
+# The model module each existing family dispatches to, named in full (D188 R2).
+FAMILY_MODELS = {
+    "surface_hcn_extra": "cells.models.surface_hcn_extra",
+    "surface_calcium_energy_hcn_extra": "cells.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_transport": "cells.models.surface_calcium_energy_transport",
+    "surface_calcium_energy_mitochondria": "cells.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_water": "cells.models.surface_calcium_energy_water",
+}
+
+
 @pytest.mark.parametrize(
     "filename,module",
     [
@@ -271,6 +281,6 @@ def test_portable_active_profile_example_replays_through_public_parser():
 def test_active_profile_registration_preserves_parent_and_composed_dispatch(filename, module):
     raw = json.loads((Path(__file__).resolve().parents[2] / "configs" / filename).read_text())
     spec = parse_spec(raw)
-    assert get_model(spec.model) is importlib.import_module("cells.models." + module)
+    assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == raw["model"]["id"]

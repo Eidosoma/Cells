@@ -53,7 +53,7 @@ import numpy as np
 from cells.core import cell_replacement_spec as replacement_spec
 from cells.core import pump_composite_spec as composite_spec
 from cells.core import surface_pump_v3_spec as ionic_spec
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second

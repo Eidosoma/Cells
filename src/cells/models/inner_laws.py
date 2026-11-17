@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Callable
 
-from cells.core.kinetic_finite_spec import METABOLISM_ID
+from cells.core.kinetic_pump_spec import METABOLISM_ID
 from cells.core.surface_pump_v3_spec import (
     KIR2P1_LAW_ID,
     KLEAK_LAW_ID,

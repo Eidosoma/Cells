@@ -53,7 +53,7 @@ def population(spec):
 
 def output_bound(spec):
     if model_id(spec) == "assembly_regulated_cell@1":
-        from cells.models.kinetic_finite_extracellular import working_size
+        working_size = _older("assembly_regulated_cell@1").working_size()
 
         return spec.pool.output_bound + spec.pool.worlds * (32 * working_size(spec.ionic) + 4096)
     return spec.output_bound

@@ -5,9 +5,9 @@ from bisect import bisect_right
 from dataclasses import asdict, dataclass, replace
 
 from cells.core import surface_tissue_spec as base
-from cells.core.junction_finite_spec import parse_junction
-from cells.core.kinetic_finite_spec import parse_pump, pump_to_dict
-from cells.core.multispecies_spec import identifier
+from cells.core.kinetic_pump_spec import parse_pump, pump_to_dict
+from cells.core.rate_junction_spec import parse_junction
+from cells.core.spec_values import fraction, identifier
 from cells.core.specs import (
     ChannelChange,
     ChannelSpec,
@@ -18,7 +18,6 @@ from cells.core.specs import (
     _integer,
     _number,
 )
-from cells.core.voltage_gated_spec import fraction
 from cells.processes import (
     calcium_activated_catalog,
     calcium_activated_potassium,

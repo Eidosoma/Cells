@@ -18,16 +18,24 @@ from cells.tissue_phase import prepare_request
 from tests.joint_water_barrier_dispatch_fixtures import DT, OWNERS, definition
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
 
+# Each family's definition and model modules, named in full (D188 R2).
+COMPONENTS = {
+    "water": (
+        "cells.core.surface_calcium_energy_water_barrier_epoch_spec",
+        "cells.models.surface_calcium_energy_water_barrier_epoch",
+    ),
+    "repair": (
+        "cells.core.surface_calcium_energy_water_repair_barrier_epoch_spec",
+        "cells.models.surface_calcium_energy_water_repair_barrier_epoch",
+    ),
+}
+
 
 def components(family):
     if family not in OWNERS:
         raise ValueError(family)
-    name = "surface_calcium_energy_water" + ("_repair" if family == "repair" else "")
-    name += "_barrier_epoch"
-    return (
-        importlib.import_module("cells.core." + name + "_spec"),
-        importlib.import_module("cells.models." + name),
-    )
+    spec, model = COMPONENTS[family]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 @lru_cache

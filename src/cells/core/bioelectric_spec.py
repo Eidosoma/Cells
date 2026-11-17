@@ -6,6 +6,7 @@ No model name or assay outcome selects numerical behaviour.
 
 from dataclasses import asdict
 
+from cells.core.spec_values import positive, signed_number
 from cells.core.specs import (
     BIOELECTRIC_ID,
     BathSpec,
@@ -37,17 +38,6 @@ UNITS = {
     "chemical_drive": "J/mol_cycles",
     "pump_capacity": "fmol_cycles/s",
 }
-
-
-def signed_number(value, name):
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ConfigError(f"{name} must be a finite signed number")
-    result = _number(abs(value), name)
-    return -result if value < 0 else result
-
-
-def positive(value, name):
-    return _number(value, name, positive=True)
 
 
 def to_dict(spec):

@@ -31,15 +31,33 @@ from validation.transport import owned_calcium_profile_barrier_reference as refe
 FAMILIES = [pytest.param("calcium", id="chemical_owner"), pytest.param("energy", id="fuel_owner")]
 
 
+# Each family's definition and model modules, named in full (D188 R2): its profile barrier
+# family, and the barrier-only family it reduces to.
+MODULES = {
+    "calcium": (
+        "cells.core.surface_calcium_profile_barrier_interventions_spec",
+        "cells.models.surface_calcium_profile_barrier_interventions",
+    ),
+    "energy": (
+        "cells.core.surface_calcium_energy_profile_barrier_interventions_spec",
+        "cells.models.surface_calcium_energy_profile_barrier_interventions",
+    ),
+}
+BARRIER_MODULES = {
+    "calcium": (
+        "cells.core.surface_calcium_barrier_interventions_spec",
+        "cells.models.surface_calcium_barrier_interventions",
+    ),
+    "energy": (
+        "cells.core.surface_calcium_energy_barrier_interventions_spec",
+        "cells.models.surface_calcium_energy_barrier_interventions",
+    ),
+}
+
+
 def modules(family):
-    stem = (
-        "surface_calcium"
-        + ("_energy" if family == "energy" else "")
-        + "_profile_barrier_interventions"
-    )
-    return importlib.import_module("cells.core." + stem + "_spec"), importlib.import_module(
-        "cells.models." + stem
-    )
+    spec, model = MODULES["energy" if family == "energy" else "calcium"]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def evidence(name, record, arrays=None):
@@ -270,13 +288,9 @@ def test_exact_single_schedule_reductions_keep_full_owner(family, case):
             <= 1
         )
         if case == "barrier-only":
-            stem = (
-                "surface_calcium"
-                + ("_energy" if family == "energy" else "")
-                + "_barrier_interventions"
-            )
-            bs = importlib.import_module("cells.core." + stem + "_spec")
-            bm = importlib.import_module("cells.models." + stem)
+            spec_name, model_name = BARRIER_MODULES["energy" if family == "energy" else "calcium"]
+            bs = importlib.import_module(spec_name)
+            bm = importlib.import_module(model_name)
             alone = deepcopy(raw)
             for key in (
                 "coupled_preparation",

@@ -57,7 +57,7 @@ reactions inside are D152's at the node.
 from dataclasses import dataclass
 
 from cells.core import pump_composite_spec as composite_spec
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.specs import ConfigError, _fields
 from cells.models.operators.contract import Operator
 

@@ -20,16 +20,27 @@ from cells.models.registry import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact
 
+# Each version's definition and model modules, named in full (D188 R2).
+REGULATED = {
+    1: (
+        "cells.core.surface_calcium_energy_regulated_spec",
+        "cells.models.surface_calcium_energy_regulated",
+    ),
+    2: (
+        "cells.core.surface_calcium_energy_regulated_v2_spec",
+        "cells.models.surface_calcium_energy_regulated_v2",
+    ),
+}
+
 
 def family(version):
     suffix = "" if version == 1 else "_v2"
     fixtures = importlib.import_module(
         "validation.regulation.integrated_network_regulation" + suffix + "_fixtures"
     )
-    schema = importlib.import_module(
-        "cells.core.surface_calcium_energy_regulated" + suffix + "_spec"
-    )
-    model = importlib.import_module("cells.models.surface_calcium_energy_regulated" + suffix)
+    schema_name, model_name = REGULATED[1 if version == 1 else 2]
+    schema = importlib.import_module(schema_name)
+    model = importlib.import_module(model_name)
     return fixtures, schema, model
 
 
@@ -92,6 +103,15 @@ def test_distinct_regulation_versions_cannot_share_one_compiled_cohort():
         parse_batch(cohort.to_dict())
 
 
+# The model module each existing family dispatches to, named in full (D188 R2).
+FAMILY_MODELS = {
+    "surface_calcium_energy_hcn_extra": "cells.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_transport": "cells.models.surface_calcium_energy_transport",
+    "surface_calcium_energy_mitochondria": "cells.models.surface_calcium_energy_mitochondria",
+    "surface_calcium_energy_water": "cells.models.surface_calcium_energy_water",
+}
+
+
 @pytest.mark.parametrize(
     "filename,module",
     [
@@ -105,7 +125,7 @@ def test_regulation_registration_keeps_existing_physical_dispatch(filename, modu
     path = Path(__file__).resolve().parents[2] / "configs" / filename
     raw = json.loads(path.read_text())
     spec = parse_spec(raw)
-    assert get_model(spec.model) is importlib.import_module("cells.models." + module)
+    assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == raw["model"]["id"]
     controls = control_values(spec, [0.0, spec.experiment.end_time])

@@ -19,9 +19,8 @@ import numpy as np
 
 from cells.core import surface_kinetic_spec as kinetic
 from cells.core import surface_pump_spec as first
-from cells.core.bioelectric_spec import positive, signed_number
-from cells.core.kinetic_finite_spec import METABOLISM_ID
-from cells.core.multispecies_spec import identifier
+from cells.core.kinetic_pump_spec import METABOLISM_ID
+from cells.core.spec_values import identifier, positive, signed_number
 from cells.core.specs import ChannelChange, ConfigError, MaintainedMetabolismSpec, _fields, _number
 from cells.processes import calcium_atpase
 

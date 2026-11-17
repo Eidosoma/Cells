@@ -5,6 +5,7 @@ from dataclasses import asdict, replace
 from cells.core import multispecies_spec as ionic
 from cells.core import voltage_gated_spec as gated
 from cells.core.bioelectric_spec import positive
+from cells.core.spec_values import _tuple
 from cells.core.specs import (
     MULTISPECIES_ID,
     PHYSICAL_IONIC_GRAPH_ID,
@@ -36,13 +37,6 @@ COMMON = (
     "bath_mM",
     "bath_background_charge_mM",
 )
-
-
-def _tuple(value, kind, name, *, size=None):
-    if type(value) is not tuple or any(type(v) is not kind for v in value):
-        raise ConfigError(f"{name} must be an immutable tuple of {kind.__name__}")
-    if size is not None and len(value) != size:
-        raise ConfigError(f"{name} has an incompatible length")
 
 
 def to_dict(spec):

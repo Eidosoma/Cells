@@ -3,6 +3,7 @@
 import ast
 import copy
 import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -203,6 +204,47 @@ def test_open_decode_retains_existing_cross_owner_constraints(family, fault):
         OWNERS[family][0].parse(raw)
 
 
+def _moved_back(node, root):
+    """node with the module names that committed source moves (scripts/moves/*.json, D188) gave
+    its imports translated back to their names before the moves: the hash below pins the
+    parser's text, not where the modules it imports live. With no committed map it is unchanged.
+    A from-import that a move split in two cannot be put back, and fails here."""
+    back = {}
+    for path in sorted((root / "scripts" / "moves").glob("*.json")):
+        doc = json.loads(path.read_text())
+        if doc.get("kind") == "cells.source_moves.map@1":
+            back.update({new: old for old, new in doc["modules"]})
+
+    def old_name(dotted):
+        parts = dotted.split(".")
+        for k in range(len(parts), 1, -1):
+            if ".".join(parts[:k]) in back:
+                return ".".join([back[".".join(parts[:k])], *parts[k:]])
+        return dotted
+
+    for _ in range(len(back) + 1):  # Later moves first, whatever order the maps are listed in.
+        before = ast.dump(node)
+        for n in ast.walk(node):
+            if isinstance(n, ast.Import):
+                for a in n.names:
+                    a.name = old_name(a.name)
+            elif isinstance(n, ast.ImportFrom) and not n.level:
+                parents = set()
+                for a in n.names:
+                    if f"{n.module}.{a.name}" in back:  # A moved module, from its package.
+                        parent, _, leaf = back[f"{n.module}.{a.name}"].rpartition(".")
+                        a.asname = None if a.asname == leaf else a.asname
+                        a.name = leaf
+                    else:
+                        parent = old_name(n.module)
+                    parents.add(parent)
+                assert len(parents) == 1, ast.unparse(n)
+                n.module = parents.pop()
+        if ast.dump(node) == before:
+            return node
+    raise AssertionError("the committed source moves do not compose")
+
+
 @pytest.mark.parametrize(
     "path,expected",
     (
@@ -254,6 +296,7 @@ def test_mechanically_reversing_private_extraction_retains_the_complete_closed_p
         decoder.body.pop()
         assert "calcium_decoder=prior.parse" in ast.unparse(functions["parse"])
     decoder.body += copy.deepcopy(functions["parse"].body[2:])
+    decoder = _moved_back(decoder, root)
     assert (
         hashlib.sha256(ast.dump(decoder, include_attributes=False).encode()).hexdigest() == expected
     )
