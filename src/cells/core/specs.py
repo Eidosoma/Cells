@@ -13,8 +13,6 @@ from typing import TYPE_CHECKING, Any
 from cells.core.legacy_entry import legacy
 
 if TYPE_CHECKING:
-    from cells.core.er_spec import ERExperiment, ERModel
-    from cells.core.reaction_spec import ReactionExperiment, ReactionNetworkSpec
     from cells.core.surface_tissue_spec import SurfaceExperiment, SurfaceTissueModel
 
 MODEL_ID = "source_decay@1"
@@ -758,8 +756,6 @@ class SimulationSpec:
         | JunctionFiniteExtracellularSpec
         | SpatialExtracellularSpec
         | SpatialJunctionSpec
-        | ReactionNetworkSpec
-        | ERModel
         | SurfaceTissueModel
     )
     experiment: (
@@ -769,8 +765,6 @@ class SimulationSpec:
         | VoltageGatedExperimentSpec
         | PhysicalIonicGraphExperimentSpec
         | SpatialExperimentSpec
-        | ReactionExperiment
-        | ERExperiment
         | SurfaceExperiment
     )
     execution: ExecutionSpec
