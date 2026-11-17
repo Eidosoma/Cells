@@ -1,0 +1,551 @@
+"""The "neither" comparison (decision (b)): development work, not a judged comparison (D138).
+
+A comparison with BITSEY's log at b2cb370 (D208), not with the preprint. Its two conditions are
+written in docs/GAP_JUNCTION_CANCER_REPLICATION.md section 7 before the search:
+1. In BITSEY's "no tricks" run every junction's dV is 0, so the miRNA's valence -1 drift vanishes
+   and its junction transport is Fick's: a neutral miRNA is the same model there.
+2. The world, criterion, bracket and tolerance are BITSEY's (cancer_GJ_sims/zombie.py at b2cb370):
+   a line of 25 cells with a 6-cell tumor at one end; seeds miR200/Zeb mRNA/ZEB 0/100/100
+   (tumor) and 100/0/0 (healthy, scaled coordinates); 500 time units uncoupled, then 20,000
+   coupled; normalized when every cell ends with miR200 > Zeb mRNA + 2; the junction diffusion
+   constant D searched in [0, 1e-13] m^2/s until x2 <= 1.001 x0, reporting x2; G_GJ = D x 4 pi
+   (5 um)^2 / 100 nm. Agreement is called if Cells' x2 / 7.18e-15 lies in [0.95, 1.05].
+
+The protocol has BITSEY's two stages (find_min_Kd_tumorFix): the uncoupled 500 s are run once,
+from the seeds, in a world of one tumor cell and one healthy cell with no junctions (every tumor
+cell, and every healthy cell, is the same while uncoupled); their end state seeds every coupled
+run, as cc_discon does. The switch is autonomous, so each coupled run starts its clock at 0.
+
+The model, on today's engine (nothing here adds physics):
+* resolved_pump_composite@1 over resolved_pump_tissue@3, the species-only world of the
+  secreted-species fixtures (ions at the bath's composition, zero permeability, so nothing but the
+  switch's species moves);
+* the EMT switch as local_species_reactions@1 reactions per cell (worlds.emt_switch_probe's
+  structure) with GRN_miRNA.py's constants at b2cb370 as docs/EMT_REFERENCE.md states them, Snail
+  72 folded into the rates, one scaled unit = 1 uM, BITSEY's time unit taken as 1 s;
+* in the coupled stage, miR200 (u) alone on a cells.passive_routes@1 route
+  (passive_neutral_permeation@1) on each junction, P A = G_GJ, junction gates pinned open; no
+  routes at D = 0.
+Seeds BITSEY sets to 0 start at the fixtures' trace, 1e-9 mM (1e-6 units): @3 needs positive
+amounts.
+
+The search runs one point per CPU of --cpus at a time, each in its own process pinned to one CPU:
+first the bracket's ends and its bisection points 1e-13 / 2^k (k = 1..); then, whenever a point
+finishes, its worker takes a new point inside the current bracket (search, place). Outcomes are
+assumed monotone in D; a non-monotone set is reported, not repaired. After convergence, the final
+bracket's two ends are rerun at half their step: reported, not used to move the threshold. Each
+run is windowed (cells.core.windows, recording observations, device row checks; every engine
+check still runs). Every point's result is appended to OUTDIR/points.jsonl (the half-step reruns
+to OUTDIR/half_step.jsonl) and the search state written to OUTDIR/search.json as points finish.
+
+Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
+    python -B validation/gap_junction_tissue/neither.py OUTDIR --cpus 0,1,2,3,16,17,18,19
+    python -B validation/gap_junction_tissue/neither.py OUTDIR --points 1e-14 --end 600  (a probe)
+"""
+
+import argparse
+import json
+import math
+import multiprocessing
+import os
+import resource
+import time
+import traceback
+from pathlib import Path
+
+N_CELLS = 25
+TUMOR = 6
+R_CELL_M = 5e-6
+V_CELL_PL = 4.0 / 3.0 * math.pi * R_CELL_M**3 * 1e15
+A_CELL_M2 = 4.0 * math.pi * R_CELL_M**2
+L_GJ_M = 100e-9
+UNIT_mM = 1e-3  # One scaled unit is 1 uM.
+TRACE_UNITS = 1e-6  # The fixtures' trace, 1e-9 mM: where BITSEY seeds 0.
+SEEDS = {"tumor": {"u": 0.0, "m": 100.0, "z": 100.0}, "healthy": {"u": 100.0, "m": 0.0, "z": 0.0}}
+UNCOUPLED_S = 500.0
+COUPLED_S = 20000.0
+BRACKET = (0.0, 1e-13)
+RTOL = 1e-3
+MARGIN_UNITS = 2.0
+BITSEY_LOGGED = 7.18e-15  # results_miRNA/tumor_isolate_1D_V1M at b2cb370: the 1D no-tricks value.
+AGREEMENT = (0.95, 1.05)
+OBSERVE_EVERY_S = 1000.0
+WINDOW_STEPS = 1024
+STEP_BOUND_MARGIN = 0.04  # dt x @3's explicit rate, the driver's rule (worlds.STEP_BOUND_MARGIN).
+# The largest step. Every D up to 0.04 / (0.125 s x 2.4e13 m^-2) = 1.33e-14 m^2/s runs at 1/8 s, so
+# the points that decide a threshold in (1.6e-15, 1.3e-14) share one step; above, the bound halves
+# it (1/16 s to 2.7e-14, 1/32 s to 5.3e-14, 1/64 s at the bracket's upper end).
+BASE_DT_S = 0.125
+# GRN_miRNA.py at b2cb370 (docs/EMT_REFERENCE.md), Snail 72 folded in: synthesis g H(s) with
+# H(s; 72, 2, lambda) = (1 + lambda)/2 at s = 72.
+U_SYNTHESIS = 6.0 * (1.0 + 0.4) / 2.0  # 4.2 units/s, times H(z; 100/9, 3, 0.1)
+M_SYNTHESIS = (5.0 / 12.0) * (1.0 + 10.0) / 2.0  # 55/24 units/s, times H(z; 25/9, 2, 15)
+U_HILL = (100.0 / 9.0, 3.0, 0.1)  # (K units, n, lambda) of ZEB on miR200
+M_HILL = (25.0 / 9.0, 2.0, 15.0)  # (K units, n, lambda) of ZEB on Zeb mRNA
+X0_UNITS = 40.0  # miR200's binding constant to Zeb mRNA
+Z_TRANSLATION = 1.0 / 6.0  # per unit Zeb mRNA per s
+L_SITES = (1.0, 0.5, 0.2, 0.02, 0.02, 0.02, 0.02)
+DECAY = {"u": 0.05, "m": 0.5, "z": 0.1}
+BINOMIAL6 = (1, 6, 15, 20, 15, 6, 1)
+NAMES = ("u", "m", "z")
+
+
+def conductance(d):
+    """G_GJ (m^3/s) of BITSEY's junction at diffusion constant d: d x cell area / its length."""
+    return d * A_CELL_M2 / L_GJ_M
+
+
+def junction_rate(d):
+    """@3's explicit rate for the coupled world (1/s): 2 x the largest sum of G_GJ / V over a
+    cell's junction routes (an interior cell has two)."""
+    return 2.0 * 2.0 * conductance(d) / (V_CELL_PL * 1e-15)
+
+
+def step(d):
+    dt = BASE_DT_S
+    while dt * junction_rate(d) > STEP_BOUND_MARGIN:
+        dt /= 2.0
+    return dt
+
+
+def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
+    """The switch in each of `cells` ((cell id, kind)), started at start[kind][species] (units),
+    with miR200 on a passive route on each junction at diffusion constant d."""
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    profile = {
+        name: {cell_id: max(start[kind][name], TRACE_UNITS) * UNIT_mM for cell_id, kind in cells}
+        for name in NAMES
+    }
+    raw = rfx.species_world(
+        extra=NAMES,
+        faces=False,
+        cells=tuple((cell_id, V_CELL_PL) for cell_id, _ in cells),
+        nodes=(),
+        contacts=(),
+        junctions=junctions,
+        dt=dt,
+        end=end,
+        observation_times=observe,
+        profile=profile,
+    )
+    m = raw["model"]
+    for junction in m["junctions"]:
+        junction["gate"].update(
+            threshold_voltage_V=0.0, minimum_open_fraction=1.0, initial_gate=1.0
+        )
+    if d > 0.0:
+        m["passive_routes"] = [
+            dict(
+                id=f"{j['id']}_mir200",
+                junction=j["id"],
+                law="passive_neutral_permeation@1",
+                species="u",
+                permeability_m_per_s=conductance(d) / j["area_m2"],
+            )
+            for j in m["junctions"]
+        ]
+    sites = {"cells": "all"}
+    k_u, n_u, lam_u = U_HILL
+    k_m, n_m, lam_m = M_HILL
+    reactions = [
+        rfx.mass_action(
+            "u_inhibited",
+            sites,
+            {},
+            {"u": 1},
+            U_SYNTHESIS * UNIT_mM,
+            [rfx.hill("hill_inhibition", "z", k_u * UNIT_mM, n_u)],
+        ),
+        rfx.mass_action(
+            "u_activated",
+            sites,
+            {},
+            {"u": 1},
+            U_SYNTHESIS * lam_u * UNIT_mM,
+            [rfx.hill("hill_activation", "z", k_u * UNIT_mM, n_u)],
+        ),
+        rfx.mass_action(
+            "m_inhibited",
+            sites,
+            {},
+            {"m": 1},
+            M_SYNTHESIS * UNIT_mM,
+            [rfx.hill("hill_inhibition", "z", k_m * UNIT_mM, n_m)],
+        ),
+        rfx.mass_action(
+            "m_activated",
+            sites,
+            {},
+            {"m": 1},
+            M_SYNTHESIS * lam_m * UNIT_mM,
+            [rfx.hill("hill_activation", "z", k_m * UNIT_mM, n_m)],
+        ),
+    ]
+    for i in range(7):
+        factors = [rfx.hill("hill_activation", "u", X0_UNITS * UNIT_mM, 1.0)] * i
+        factors += [rfx.hill("hill_inhibition", "u", X0_UNITS * UNIT_mM, 1.0)] * (6 - i)
+        rate = Z_TRANSLATION * BINOMIAL6[i] * L_SITES[i]
+        reactions.append(
+            rfx.mass_action(f"z_site{i}", sites, {"m": 1}, {"m": 1, "z": 1}, rate, factors)
+        )
+    for name, k in DECAY.items():
+        reactions.append(rfx.mass_action(f"{name}_decay", sites, {name: 1}, {}, k))
+    controls = [(r["id"], None, [(0.0, 1.0)]) for r in reactions]
+    return rfx.with_reactions(raw, [rfx.species(n) for n in NAMES], reactions, controls)
+
+
+def uncoupled_world(*, end=UNCOUPLED_S, dt=None):
+    """Stage 1: one tumor cell and one healthy cell, no junctions, from BITSEY's seeds. Its dt is
+    the finest coupled step (the bracket's upper end), so stage 1 is never the coarser stage."""
+    dt = step(BRACKET[1]) if dt is None else dt
+    observe = sorted(
+        {0.0, *(k * 100.0 for k in range(int(end // 100.0) + 1) if k * 100.0 < end), end}
+    )
+    cells = (("tumor", "tumor"), ("healthy", "healthy"))
+    return switch_world(cells, SEEDS, end=end, dt=dt, observe=observe)
+
+
+def coupled_world(d, start, *, end=COUPLED_S, dt=None):
+    """Stage 2: the line of 25 cells, the first TUMOR of them tumor, from stage 1's end state."""
+    dt = step(d) if dt is None else dt
+    cells = tuple((f"c{k}", "tumor" if k < TUMOR else "healthy") for k in range(N_CELLS))
+    junctions = tuple((f"j{k}", f"c{k}", f"c{k + 1}") for k in range(N_CELLS - 1))
+    observe = sorted(
+        {0.0, *(k * OBSERVE_EVERY_S for k in range(int(end // OBSERVE_EVERY_S) + 1)), end}
+    )
+    observe = [t for t in observe if t <= end]
+    return switch_world(cells, start, junctions=junctions, d=d, end=end, dt=dt, observe=observe)
+
+
+def execute(raw, n_cells):
+    """Run a world windowed with device row checks; the end state in units per cell, the observed
+    rows of u and m, the steps, diagnostics and timings."""
+    import numpy as np
+
+    from cells.core.specs import parse_spec
+    from cells.core.windows import WindowPolicy, iter_windows
+
+    spec = parse_spec(raw)
+    ids = list(spec.model.species_ids)
+    rows = {name: ids.index(name) for name in NAMES}
+    last, diagnostics, observed = None, {}, dict(times=[], u=[], m=[])
+    policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
+    for window in iter_windows(spec, policy):
+        last = window.final
+        for k, v in window.diagnostics.items():
+            diagnostics[k] = max(diagnostics.get(k, 0.0), float(v))
+        obs = window.observations
+        if obs is not None and hasattr(obs, "amount_increment"):
+            reference = np.asarray(window.final.layout.amount_reference)
+            volume = np.asarray(window.final.layout.volume)[:n_cells]
+            for row, when in enumerate(np.asarray(obs.times)):
+                if observed["times"] and when <= observed["times"][-1]:
+                    continue
+                amount = reference + np.asarray(obs.amount_increment)[row]
+                observed["times"].append(float(when))
+                for name in ("u", "m"):
+                    units = amount[rows[name], :n_cells] / volume / UNIT_mM
+                    observed[name].append(units.tolist())
+    amount = np.asarray(last.layout.amount_reference) + np.asarray(last.state.amount_increment)
+    volume = np.asarray(last.layout.volume)[:n_cells]
+    final = {name: (amount[rows[name], :n_cells] / volume / UNIT_mM).tolist() for name in NAMES}
+    return dict(
+        definition_sha256=spec.fingerprint,
+        dt_s=spec.execution.dt,
+        final_time_s=float(last.time),
+        steps=int(last.step_index),
+        final_units=final,
+        observed=observed,
+        diagnostics=diagnostics,
+    )
+
+
+def uncoupled():
+    """Stage 1, once: the tumor and healthy cells' state after UNCOUPLED_S."""
+    started = time.perf_counter()
+    out = dict(stage="uncoupled", end_s=UNCOUPLED_S, seeds_units=SEEDS)
+    try:
+        run = execute(uncoupled_world(), 2)
+        start = {
+            kind: {name: run["final_units"][name][k] for name in NAMES}
+            for k, kind in enumerate(("tumor", "healthy"))
+        }
+        out.update(status="done", start_units=start, **run)
+    except Exception as error:  # Recorded as evidence, never retried.
+        out.update(status="failed", error=repr(error), traceback=traceback.format_exc())
+    out.update(seconds=time.perf_counter() - started, max_rss_kib=_rss())
+    return out
+
+
+def evaluate(d, start, *, end=COUPLED_S, dt=None):
+    """One point: the coupled stage at diffusion constant d (at step dt, default step(d)); the
+    criterion at its end."""
+    started = time.perf_counter()
+    out = dict(
+        d=d,
+        end_s=end,
+        g_gj_m3_s=conductance(d),
+        pid=os.getpid(),
+        cpus=sorted(os.sched_getaffinity(0)),
+    )
+    try:
+        run = execute(coupled_world(d, start, end=end, dt=dt), N_CELLS)
+        u, m = run["final_units"]["u"], run["final_units"]["m"]
+        margins = [a - b - MARGIN_UNITS for a, b in zip(u, m, strict=True)]
+        out.update(
+            status="done",
+            normalized=all(x > 0.0 for x in margins),
+            epithelial_cells=sum(x > 0.0 for x in margins),
+            min_margin_units=min(margins),
+            **run,
+        )
+    except Exception as error:  # Recorded as evidence, never retried.
+        out.update(status="failed", error=repr(error), traceback=traceback.format_exc())
+    out.update(seconds=time.perf_counter() - started, max_rss_kib=_rss())
+    return out
+
+
+def _rss():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+
+def _start_engine():
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    import cells  # noqa: F401  (pins the BLAS at import, D190)
+
+
+def _pin(queue):
+    os.sched_setaffinity(0, {queue.get()})
+
+
+def _uncoupled_work(_):
+    _start_engine()
+    return uncoupled()
+
+
+def _work(args):
+    d, start, end, dt = args
+    _start_engine()
+    return evaluate(d, start, end=end, dt=dt)
+
+
+def place(lo, hi, running, free):
+    """New points for `free` workers: equally spaced inside (lo, hi) when no running point lies
+    there, otherwise each the midpoint of the widest gap among lo, the running points and hi."""
+    inside = sorted(x for x in running if lo < x < hi)
+    if not inside:
+        return [lo + (hi - lo) * j / (free + 1) for j in range(1, free + 1)]
+    edges, new = [lo, *inside, hi], []
+    for _ in range(free):
+        a, b = max(zip(edges[:-1], edges[1:], strict=True), key=lambda gap: gap[1] - gap[0])
+        new.append(0.5 * (a + b))
+        edges = sorted([*edges, new[-1]])
+    return new
+
+
+def bracket(evaluated):
+    """lo, hi (the largest persisting D below the smallest normalizing one), monotone, failed."""
+    done = sorted((d, r["normalized"]) for d, r in evaluated.items() if r["status"] == "done")
+    failed = sorted(d for d, r in evaluated.items() if r["status"] != "done")
+    outcomes = [ok for _, ok in done]
+    normalizing = [d for d, ok in done if ok]
+    hi = min(normalizing) if normalizing else None
+    lo = max((d for d, ok in done if not ok and (hi is None or d < hi)), default=None)
+    return lo, hi, outcomes == sorted(outcomes), failed
+
+
+def search(out_dir, cpus, end):
+    """BITSEY's bisection, run in parallel: a worker that finishes takes a new point inside the
+    current bracket at once (place), so the slow points near the bracket's upper end never hold
+    the narrowing back. Stops submitting when converged (hi <= (1 + RTOL) lo) or when a stop
+    condition holds; waits for the points still running (the upper end's result is required);
+    then reruns the final bracket's two ends at half their step (reported, not used)."""
+    from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    ctx = multiprocessing.get_context("spawn")
+    queue = ctx.Queue()
+    for cpu in cpus:
+        queue.put(cpu)
+    workers = len(cpus)
+    first = [BRACKET[0], BRACKET[1], *(BRACKET[1] / 2.0**k for k in range(1, workers - 1))]
+    state = dict(
+        bracket=BRACKET,
+        rtol=RTOL,
+        bitsey_logged=BITSEY_LOGGED,
+        agreement=AGREEMENT,
+        started_utc=_utc(),
+        events=[],
+    )
+
+    def save():
+        (out_dir / "search.json").write_text(json.dumps(state, indent=1))
+
+    with ProcessPoolExecutor(workers, mp_context=ctx, initializer=_pin, initargs=(queue,)) as pool:
+        stage1 = pool.submit(_uncoupled_work, None).result()
+        (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
+        if stage1["status"] != "done":
+            state.update(stopped="the uncoupled stage failed")
+            save()
+            return state
+        start = stage1["start_units"]
+        evaluated, running = {}, {}
+
+        def submit(d):
+            running[pool.submit(_work, (d, start, end, None))] = d
+            state["events"].append(dict(utc=_utc(), submitted=d))
+
+        for d in first[: max(2, workers)]:
+            submit(d)
+        save()
+        submitting = True
+        while running:
+            finished, _ = wait(running, return_when=FIRST_COMPLETED)
+            with (out_dir / "points.jsonl").open("a") as stream:
+                for future in finished:
+                    d = running.pop(future)
+                    result = future.result()
+                    evaluated[d] = result
+                    stream.write(json.dumps(result) + "\n")
+                    state["events"].append(
+                        dict(
+                            utc=_utc(),
+                            finished=d,
+                            normalized=result.get("normalized"),
+                            status=result["status"],
+                        )
+                    )
+            lo, hi, monotone, failed = bracket(evaluated)
+            state.update(lo=lo, hi=hi, monotone=monotone, failed=failed, evaluated=len(evaluated))
+            upper = evaluated.get(BRACKET[1])
+            lower = evaluated.get(BRACKET[0])
+            if failed:
+                state["stopped"] = "a point failed"
+            elif not monotone:
+                state["stopped"] = "the outcomes are not monotone in D"
+            elif upper is not None and not upper["normalized"]:
+                state["stopped"] = "the bracket's upper end does not normalize"
+            elif lower is not None and lower["normalized"]:
+                state["stopped"] = "the bracket's lower end normalizes"
+            converged = lo is not None and hi is not None and hi <= (1.0 + RTOL) * lo
+            if converged or "stopped" in state:
+                submitting = False
+            if submitting and lo is not None and hi is not None:
+                free = workers - len(running)
+                for d in place(lo, hi, list(running.values()), free):
+                    submit(d)
+            save()
+        lo, hi, monotone, failed = bracket(evaluated)
+        converged = lo is not None and hi is not None and hi <= (1.0 + RTOL) * lo
+        if converged and "stopped" not in state:
+            ratio = hi / BITSEY_LOGGED
+            state.update(
+                threshold=hi,
+                ratio_to_bitsey_log=ratio,
+                agreement_called=AGREEMENT[0] <= ratio <= AGREEMENT[1],
+            )
+            save()
+            halves = {d: pool.submit(_work, (d, start, end, step(d) / 2.0)) for d in (lo, hi)}
+            check = {}
+            for d, future in halves.items():
+                result = future.result()
+                with (out_dir / "half_step.jsonl").open("a") as stream:
+                    stream.write(json.dumps(result) + "\n")
+                check[str(d)] = dict(
+                    dt_s=result.get("dt_s"),
+                    status=result["status"],
+                    normalized=result.get("normalized"),
+                    min_margin_units=result.get("min_margin_units"),
+                    same_as_step=result.get("normalized") == evaluated[d]["normalized"],
+                )
+            state["half_step_check"] = check
+    state["finished_utc"] = _utc()
+    save()
+    return state
+
+
+def _utc():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("out_dir")
+    parser.add_argument("--cpus", default="")
+    parser.add_argument("--points", default="")
+    parser.add_argument("--end", type=float, default=COUPLED_S)
+    args = parser.parse_args()
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    snapshot = Path("SNAPSHOT.json")
+    plan = dict(
+        module=__doc__,
+        n_cells=N_CELLS,
+        tumor=TUMOR,
+        seeds_units=SEEDS,
+        trace_units=TRACE_UNITS,
+        uncoupled_s=UNCOUPLED_S,
+        coupled_s=args.end,
+        bracket=BRACKET,
+        rtol=RTOL,
+        margin_units=MARGIN_UNITS,
+        bitsey_logged=BITSEY_LOGGED,
+        agreement=AGREEMENT,
+        step_bound_margin=STEP_BOUND_MARGIN,
+        window_steps=WINDOW_STEPS,
+        constants=dict(
+            u_synthesis=U_SYNTHESIS,
+            m_synthesis=M_SYNTHESIS,
+            u_hill=U_HILL,
+            m_hill=M_HILL,
+            x0=X0_UNITS,
+            z_translation=Z_TRANSLATION,
+            l=L_SITES,
+            decay=DECAY,
+            unit_mM=UNIT_mM,
+        ),
+        snapshot=json.loads(snapshot.read_text()).get("git_revision")
+        if snapshot.is_file()
+        else None,
+        points=args.points or None,
+        cpus=args.cpus or None,
+    )
+    (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
+    if args.points:  # A probe: stage 1, then the given points in this process; no search.
+        _start_engine()
+        stage1 = uncoupled()
+        (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
+        keys = ("status", "dt_s", "steps", "seconds", "start_units", "error")
+        print(json.dumps({k: stage1.get(k) for k in keys}), flush=True)
+        if stage1["status"] != "done":
+            return 1
+        for d in (float(x) for x in args.points.split(",")):
+            result = evaluate(d, stage1["start_units"], end=args.end)
+            with (out_dir / "probe.jsonl").open("a") as stream:
+                stream.write(json.dumps(result) + "\n")
+            keys = (
+                "d",
+                "status",
+                "dt_s",
+                "steps",
+                "normalized",
+                "epithelial_cells",
+                "min_margin_units",
+                "seconds",
+                "max_rss_kib",
+                "error",
+            )
+            print(json.dumps({k: result.get(k) for k in keys}), flush=True)
+        return 0
+    cpus = [int(c) for c in args.cpus.split(",") if c]
+    state = search(out_dir, cpus, args.end)
+    keys = ("lo", "hi", "threshold", "ratio_to_bitsey_log", "agreement_called", "stopped")
+    print(json.dumps({k: state.get(k) for k in keys}), flush=True)
+    return 0 if "threshold" in state else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

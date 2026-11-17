@@ -500,17 +500,25 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
 - **Every cell is the same.**
   - Each has the same membrane coefficients (`sim.py`'s `init_big_arrays`) and the same ion seeds:
     `disconnected_sim` resets Na 10, K 125 and Cl 55 in every cell (lines 1476-1478).
-  - The switch's species carry no charge in the voltage sum (`GRN_miRNA.py`, line 384 and
-    following).
+  - The switch's species have valence 0 in the voltage sum (`GRN_miRNA.py`, lines 384-390).
+    miR200's valence -1 is set only inside `EMT_GJ_gate.func`, while its own junction flux is
+    computed, and is reset to 0 before the function returns (lines 294-318: set at 304, reset at
+    315).
   - So every cell has the same voltage, and every junction's dV is exactly 0.
 - **The drift vanishes.** The junction flux is `GJ_Ith + deltaV_GJ*GJ_Gth` (`sim.py`, line 375),
   with drift `GJ_Gth` proportional to the valence (line 623). At dV = 0 the miRNA's valence -1
   (`GRN_miRNA.py`, line 304) contributes nothing, and the flux is Fick's, `-D dc/L` (line 624).
+- **One miR200, not free and total.** In the mode used (`ITERATE = False`, line 31), the
+  free-miR200 proxy is set equal to the total (`compute_bound_complex_concs_simple`, lines
+  191-200), and the junction flux computed from it is applied to the total
+  (`out_ion=miR200_total`, line 298). So the junction moves the total down its own gradient, as it
+  moves the one species u in Cells.
 - **What remains different.**
   - BITSEY also integrates the ions, which neither drive the switch nor move the miRNA in this
     condition.
   - It steps with explicit adaptive Euler.
-  - Cells needs positive amounts, so seeds at 0 start at a trace.
+  - Cells needs positive amounts, so seeds at 0 start at the fixtures' trace, 1e-9 mM (1e-6
+    units).
 
 **2. The criterion, the bracket and the tolerance** (BITSEY's own, `zombie.py`):
 - **World.** A line of 25 cells (the log's "Field=1x1x25"). The first 6 cells form the tumor at the
@@ -518,16 +526,25 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
 - **Seeds and protocol.** Tumor cells start at miR200 0, Zeb mRNA 100, ZEB 100; healthy cells at
   100, 0, 0 (scaled coordinates). Then 500 time units uncoupled (line 1060), then coupled for
   20,000 (line 1056).
+  - BITSEY computes the uncoupled state once and starts every coupled run from it (`cc_discon`,
+    lines 1059-1060).
+  - Cells does the same in one tumor cell and one healthy cell: while uncoupled, every tumor cell
+    is the same, and so is every healthy cell.
+  - The switch is autonomous, so each coupled run starts its clock at 0.
 - **Coupling.** Junction conductance G_GJ = D x 4 pi (5 um)² / 100 nm (`RThev_GJ`). Only miR200
   crosses.
 - **Criterion: normalized.** At the end, every cell has miR200 > Zeb mRNA + 2
   (`healthy_snapped_rows`, line 519). Its row-spread condition is empty on a line of one-cell rows.
-- **Bracket: D in [0, 1e-13] m²/s**, BITSEY's. The upper end is run first; if it does not
-  normalize, the search stops and is reported, not widened.
+- **Bracket: D in [0, 1e-13] m²/s**, BITSEY's. Both ends are run first, as `binSearch` does
+  (lines 89-95). If the upper end does not normalize, or the lower end does, the search stops and
+  is reported, not widened.
 - **Tolerance.** Narrow until x2 <= 1.001 x0 (`binSearch`, line 97) and report x2, the smallest
   normalizing D found.
-  - The bracket may be narrowed by evaluating several points per round in parallel.
+  - Several points run in parallel, one per CPU. Whenever one finishes, its worker takes a new
+    point inside the current bracket.
   - The criterion and the stopping rule are unchanged.
+  - After convergence, the final bracket's two ends are rerun at half their step. This is reported,
+    not used to move the threshold.
 - **The switch's constants** are `GRN_miRNA.py`'s at b2cb370, as in [EMT_REFERENCE.md](EMT_REFERENCE.md):
   - Snail 72;
   - du/dt = 4.2 H(z; 100/9, 3, 0.1) - 0.05 u;
@@ -535,7 +552,13 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
   - dz/dt = (1/6) m sum_i C(6,i) l_i (u/40)^i/(1 + u/40)^6 - 0.1 z, with l = 1, 0.5, 0.2 and 0.02
     four times.
   - Rates are per BITSEY time unit, taken as 1 s. One scaled unit is 1 uM.
-- **Step.** Each run keeps the driver's dt x rate <= 0.04 (§4).
+- **Step.** Each coupled run keeps the driver's dt x rate <= 0.04 (§4), with a largest step of
+  1/8 s.
+  - Every D up to 1.33e-14 m²/s runs at 1/8 s. So the points that decide a threshold near
+    BITSEY's share one step; the bound halves it only above that D.
+  - The uncoupled stage uses the finest coupled step, the upper end's (1/64 s).
+- **Before the search.** Cost probes ran with 2,000 s coupled, not the criterion's 20,000 s. They
+  are not search points.
 - **Reported.** Cells' threshold and its ratio to BITSEY's logged 7.18e-15 m²/s. Agreement is called
   if the ratio lies within 0.95-1.05. Two engines integrating the same equations with different
   schemes can differ near the switch's separatrix, so the band is set before the run.
