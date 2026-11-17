@@ -57,7 +57,7 @@ export const OWN_WORDS = "No law of Cells computes how the lipids move and pack:
 /** The same for a micelle or a cluster, which have no shell. */
 export const OWN_WORDS_BARE = "No law of Cells computes how the lipids move and pack: their packing, the paths in and out, the water and every size are the picture's own. Which molecule joins or leaves, and in what order, is the run's";
 /** The same on a phone, in fewer words, so that it does not lie over the assembly. */
-export const OWN_WORDS_SHORT = "No law of Cells computes how the lipids move and pack: all but which molecule joins or leaves, and when, is the picture's own";
+export const OWN_WORDS_SHORT = "No law of Cells computes how the lipids move and pack: all but which molecule joins or leaves, and in what order, is the picture's own";
 /** The same, in fewer words, for the legend's note, which must stay in view on a short window. */
 export const NOTE_WORDS = "No law of Cells computes how the lipids move and pack: the shell, its glow, the paths and the water are the picture's own.";
 export const NOTE_WORDS_BARE = "No law of Cells computes how the lipids move and pack: their packing, the paths and the water are the picture's own.";

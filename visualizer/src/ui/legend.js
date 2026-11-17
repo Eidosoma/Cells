@@ -328,12 +328,12 @@ CellsLegend.prototype.speedSlider = function (time) {
   const tick = (mark, k) => (k === 0 ? "left: 0" : k === last ? "right: 0" : mark.at > 2 / 3 ? "left: 12px" : "left: 50%");
   const marks = h(
     "div",
-    { class: "speed-marks", "aria-hidden": "true", style: "position: relative; height: 16px; margin: -10px 8px 0; font-size: 10.5px; line-height: 1.2; color: var(--muted)" },
+    { class: "speed-marks", "aria-hidden": "true", style: "position: relative; height: 22px; margin: -10px 8px 0; font-size: 10.5px; line-height: 1.2; color: var(--muted)" },
     time.marks.map((mark, k) =>
       h(
         "span",
-        { style: `position: absolute; top: 2px; left: ${(mark.at * 100).toFixed(2)}%; transform: translateX(${lean(mark, k)}); white-space: nowrap; padding: 0 1px; min-width: 1px; min-height: 1em` },
-        h("i", { style: `position: absolute; ${tick(mark, k)}; top: -2px; width: 1px; height: 3px; background: currentColor` }),
+        { style: `position: absolute; top: 8px; left: ${(mark.at * 100).toFixed(2)}%; transform: translateX(${lean(mark, k)}); white-space: nowrap; padding: 0 1px; min-width: 1px; min-height: 1em` },
+        h("i", { style: `position: absolute; ${tick(mark, k)}; top: -8px; width: 1px; height: 5px; background: currentColor` }), // clear above the words, so that no tick reads as an apostrophe
         k === last ? "" : mark.label
       )
     )
