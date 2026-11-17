@@ -404,8 +404,7 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, monkeypatch)
     (snapshot / "SNAPSHOT.json").write_text(json.dumps(dict(
         status="complete", patch_sha256=hashlib.sha256(b"").hexdigest())))
     monkeypatch.setattr(generator, "judged_run_refusal", lambda protocol, root=snapshot: None)
-    with pytest.raises(SystemExit, match="stand-in"):
-        generator.main(["judged", str(registered_copy(tmp_path)), str(out), "references"])
+    assert generator.STAND_INS == {}  # The references, C13's and K3's plants are all built.
     with pytest.raises(SystemExit, match="no quick horizon"):
         generator.main(["judged", str(registered_copy(tmp_path)), str(out), "C3_flux",
                         "--quick"])

@@ -27,7 +27,8 @@ Parts (the protocol's judged_parts):
 * C13_controls: the misbooked move and work; K3_planted: C9's planted controls; each plant in
   its own process (validation/tissue/compartment_acceptance_plants), with its identity and size
   in its bundle;
-* references: the FR references agent's (a stand-in until written).
+* references: the FR references agent's (validation/fr1/references, through its usage note's API
+  only, REFERENCES_USAGE.md), on the registered inputs.
 
 Each run part records, at every observation time: every node's S (and P) amount
 (amount_SPECIES_NODE, fmol); each exchange route's cumulative moved amount, work and energy
@@ -91,11 +92,14 @@ C12_CHANGE = (0.5, 4.0, 8.0)  # (time s, a 1/s, b 1/s): both of C4's rates fall 
 C12_WORLDS = ((0.05, 10.0, 20.0), (0.1, 5.0, 10.0), (0.2, 10.0, 5.0), (0.4, 2.0, 2.0))
 C9_END_S = {ARS: 0.1, RK4: 0.01}
 # What remains a stand-in, and the parts each blocks.
-STAND_INS = {
-    "references": "FR-1's references are not yet written (the FR references agent, code-blind, "
-                  "from Appendix A and validation/closed_compartment/reference_inputs.json)",
-}
-STAND_IN_PARTS = {"references": {"references"}}
+STAND_INS = {}
+STAND_IN_PARTS = {}
+REFERENCES_INPUTS = ROOT / "validation" / "fr1" / "references" / "reference_inputs.json"
+REGISTERED_INPUTS = ROOT / "validation" / "closed_compartment" / "reference_inputs.json"
+# R_energy's world names, by part: the eight from-trace runs and C6's declared rung.
+ENERGY_PARTS = {**{f"{law} {'ARS' if solver == ARS else 'RK4'}": part
+                   for part, (law, solver) in C11_PARTS.items()},
+                "C6_load_and_degrade": f"C6_rung_{dt_key(af.DECLARED_DT)}"}
 # The checks a refusal may name (C1's classes), by a phrase of their messages.
 CHECKS = (
     ("refusal 1 (the node: a face)", "has no face (it is closed)"),
@@ -800,6 +804,80 @@ def k3_planted(name, context):
                 wall_s=time.perf_counter() - started)
 
 
+def _series_of(amounts, floors=None):
+    """{node: [T]} or {node: {species: [T]}} as the judge's series amount_SPECIES_NODE, plus the
+    floor added when given (the floor world: the reference plus its own error bound)."""
+    out = {}
+    for node, value in amounts.items():
+        by_species = value if isinstance(value, dict) else {fx.SPECIES: value}
+        for species, series in by_species.items():
+            series = np.asarray(series, dtype=float)
+            if floors is not None:
+                bound = floors[node]
+                bound = bound[species] if isinstance(bound, dict) else bound
+                series = series + np.asarray(bound, dtype=float)
+            out[f"amount_{species}_{node}"] = series.tolist()
+    return out
+
+
+def references_part(name, context):
+    """The references through their usage note's API only (validation/fr1/references/
+    REFERENCES_USAGE.md: api.closed, api.step_map, api.linear and api.energy), on the references'
+    copy of the inputs, which must equal the registered inputs (refused otherwise). In the
+    judge's layout (compartment_acceptance_judge's docstring): worlds with their floor worlds,
+    step_map by C4 rung, and energy by part."""
+    from validation.fr1.references import api
+
+    del name, context
+    started = time.perf_counter()
+    inputs = json.loads(REFERENCES_INPUTS.read_text())
+    if inputs != json.loads(REGISTERED_INPUTS.read_text()):
+        raise SystemExit("Refused: the references' copy of the inputs differs from the "
+                         "registered inputs")
+    constants = inputs["constants"]
+    worlds = {}
+    closed = inputs["R_closed"]["worlds"]
+    for key, block in (("C3_flux", "C3_flux"), ("C3_first_order", "C3_first_order"),
+                       ("C4", "C4_two_way"), ("C5", "C5_saturable")):
+        r = api.closed(closed[block])
+        t = [float(x) for x in r["times_s"]]
+        worlds[key] = dict(record_s=t, series=_series_of(r["amount_fmol"]),
+                           x_eq=r.get("x_eq"))
+        worlds[key + "_floor"] = dict(record_s=t,
+                                      series=_series_of(r["amount_fmol"], r["floor_fmol"]))
+    linear = inputs["R_linear"]["worlds"]
+    for key, block in (("C6", "C6_load_and_degrade"), ("C7", "C7_load_and_react"),
+                       ("C8", "C8_uptake_path")):
+        r = api.linear(linear[block])
+        t = [float(x) for x in r["times_s"]]
+        series = _series_of(r["amount_fmol"])
+        if "cleared_fmol" in r:
+            series[f"cleared_{af.NODE}_fmol"] = [float(x) for x in r["cleared_fmol"]]
+        worlds[key] = dict(record_s=t, series=series,
+                           moiety_fmol=[float(x) for x in r.get("moiety_fmol") or []])
+        worlds[key + "_floor"] = dict(record_s=t,
+                                      series=_series_of(r["amount_fmol"], r["floor_fmol"]))
+    step_map = {}
+    for rung, block in inputs["R_step_map"]["worlds"].items():
+        r = api.step_map(block)
+        step_map[f"C4_rung_{dt_key(float(rung))}"] = dict(
+            record_s=[float(x) for x in r["times_s"]], series=_series_of(r["amount_fmol"]),
+            x_star=float(r["x_star"]), x_eq=float(r["x_eq"]),
+            rounding_allowance_fmol=float(r["rounding_allowance_fmol"]),
+            splitting={k: float(v) for k, v in r["splitting"].items()})
+    energy = {}
+    for world, block in inputs["R_energy"]["worlds"].items():
+        r = api.energy(block, constants)
+        energy[ENERGY_PARTS[world]] = dict(
+            record_s=[float(x) for x in r["times_s"]] if "times_s" in r else
+            [float(x) for x in block["record_times_s"]],
+            dG_pJ=[float(x) for x in r["dG_pJ"]],
+            series=_series_of(r["amount_fmol"]) if "amount_fmol" in r else {})
+    return dict(kind="reference", admitted=True, completed=True, worlds=worlds,
+                step_map=step_map, energy=energy, inputs_equal_registered=True,
+                wall_s=time.perf_counter() - started)
+
+
 def stand_in(name, context):
     del context
     raise SystemExit(f"{name} is a stand-in (STAND_INS)")
@@ -817,7 +895,7 @@ FUNCTIONS = {
     **{n: _c11(law, solver) for n, (law, solver) in C11_PARTS.items()},
     "C12_restart": c12_restart, "C12_batch": c12_batch,
     "K1_one_way": k1_one_way, "K2_no_clearance": k2_no_clearance,
-    "C13_controls": c13_controls, "K3_planted": k3_planted, "references": stand_in,
+    "C13_controls": c13_controls, "K3_planted": k3_planted, "references": references_part,
 }
 
 
