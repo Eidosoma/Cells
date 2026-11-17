@@ -82,8 +82,15 @@ references. Both sides cite this subsection.
   - Steps in a dilute phase (the pool or the lumen) are mass action scaled by physical volume (R1).
   - OL2 adds the membrane's geometry as new token values. Existing values keep their meaning.
 - **The last molecule.** `last_molecule: extinct` covers a step in either direction whose result
-  empties the assembly. Its rate is the pair rule evaluated at the boundary, the same rule as every
-  other step, with no separate formula. `kept` and `reversible` are as their tokens declare.
+  empties the assembly. Its rate is the pair rule at the boundary, in its **cancelled** form.
+  - Written through F, with F(empty) = 0, the factor E(m) is zero, so a literal product would give
+    zero and the last molecule would never leave.
+  - Written on the leaving side, the rule is 0/0. Cancelling E(m)/ff(N−1, r) to 1/ff(N−1, r−1)
+    gives exactly G1's k⁻ for the last leave. A forward step that empties the assembly takes the
+    same cancelled form.
+  - A zero last-leave rate is therefore an error. There is no separate boundary formula.
+  - `kept` and `reversible` are as their tokens declare.
+  - (Amended the same evening, after a reading showed the literal form gives zero.)
 - **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
   phase is refused until a declared meaning exists, since its fraction would have to include the
   solvent.
