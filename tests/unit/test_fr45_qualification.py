@@ -456,11 +456,74 @@ def test_the_checked_in_judge_sections_are_the_drafters():
             assert any(a.startswith(asked) and ruling in a
                        for a in protocol["questions_answered"])
             assert f"{drafter.RULED} {which.upper()}'s {ruling}" in protocol["disclosures"]
-        for path, text in drafter.PROSE[which].items():
-            leaf = protocol
-            for key in path:
-                leaf = leaf[key]
-            assert leaf == text
+        assert prose_mismatches(protocol, which) == []
+
+
+def registered(protocol):
+    """Registered in register's form: the status begins 'registered' and the registration record's
+    status equals it."""
+    status, record = protocol.get("status"), protocol.get("registration")
+    return (isinstance(status, str) and status.startswith("registered")
+            and isinstance(record, dict) and record.get("status") == status)
+
+
+def prose_mismatches(protocol, which):
+    """The drafter's PROSE leaves that the protocol does not hold. Once registered, the status leaf
+    is the record's (register replaces it), so it alone is exempt, and only then."""
+    out = []
+    for path, text in drafter.PROSE[which].items():
+        if path == ("status",) and registered(protocol):
+            continue
+        leaf = protocol
+        for key in path:
+            leaf = leaf[key]
+        if leaf != text:
+            out.append(path)
+    return out
+
+
+@pytest.mark.parametrize("which", ["fr4", "fr5"])
+def test_the_status_leaf_is_the_drafters_while_proposed_and_the_records_once_registered(
+        tmp_path, which):
+    """The checked-in protocol in either state: PROPOSED, every PROSE leaf the drafter's; registered
+    by register, its status the record's and every other leaf the drafter's. Planted: a changed
+    status while PROPOSED, a 'registered' status without its matching record, and a changed scope
+    once registered each fail."""
+    proposed = {k: v for k, v in PROTOCOLS[which].items() if k != "registration"}
+    proposed["status"] = drafter.PROSE[which][("status",)]
+    assert prose_mismatches(proposed, which) == []
+    assert prose_mismatches(dict(proposed, status="PROPOSED (another text)"), which) == [
+        ("status",)]
+    path, record = tmp_path / "protocol.json", tmp_path / "record.json"
+    path.write_text(json.dumps(proposed))
+    record.write_text(json.dumps(dict(status="registered by the lead (a test)")))
+    done = drafter.register(path, record)
+    assert registered(done) and prose_mismatches(done, which) == []
+    unmatched = dict(done, registration=dict(status="registered otherwise"))
+    assert not registered(unmatched)
+    assert prose_mismatches(unmatched, which) == [("status",)]
+    assert prose_mismatches(dict(done, scope="another scope"), which) == [("scope",)]
+
+
+@pytest.mark.parametrize("which", ["fr4", "fr5"])
+def test_draft_refuses_a_registered_protocol_and_leaves_it_as_registered(tmp_path, which):
+    """draft never overwrites a registered protocol's status or registration: it refuses before
+    writing, both for register's form and for a PROPOSED status carrying a registration record."""
+    proposed = {k: v for k, v in PROTOCOLS[which].items() if k != "registration"}
+    proposed["status"] = drafter.PROSE[which][("status",)]
+    path, record = tmp_path / "protocol.json", tmp_path / "record.json"
+    path.write_text(json.dumps(proposed))
+    record.write_text(json.dumps(dict(status="registered by the lead (a test)")))
+    drafter.register(path, record)
+    before = path.read_bytes()
+    with pytest.raises(SystemExit, match="only a PROPOSED protocol"):
+        drafter.draft(which, path)
+    assert path.read_bytes() == before
+    path.write_text(json.dumps(dict(proposed, registration=dict(status="registered (a test)"))))
+    before = path.read_bytes()
+    with pytest.raises(SystemExit, match="carries a registration record"):
+        drafter.draft(which, path)
+    assert path.read_bytes() == before
 
 
 # ------------------------------------------------------------------------ refusals
