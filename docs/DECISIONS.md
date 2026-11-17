@@ -6299,6 +6299,8 @@ found:
   - the display equations' MathML sits in XML comments;
   - Table 1's 35 parameters are text. The correction changes 9 of them;
   - the comment text was not checked against the typeset images.
+  - *Corrected the next day:* the PDF is the version of record. The web XML's Eq. 22 is stale, and
+    the independent check of the cycle laws (`docs/CORE_SEAMS_STEP0.md` §7) found it.
 - **Probe P1 comes first,** because the membrane-potential mode is stiff.
 - **Not put separately:** the note's questions 3 and 4 (the respiration drive and the
   intermembrane space). Its recommendations stand as working defaults. Host P or C remains the
@@ -6342,7 +6344,10 @@ core but in parallel". With the advisor, every default stands, with the conditio
 **1. The pass, at its scope.**
 - **The estimate is the design lane's own, not yet re-derived:** 20–31.5 agent-days plus 2–3 on
   branch X, and about 9–13 working days elapsed.
-- **The code starts after D188's move 2.**
+- **The code starts after D188's move 2.** *Amended the same day:* seam F's foundation started
+  earlier, on the user's "can we add one more agent on building core?". It landed before move 2
+  and before the owner table (75e925ea), gated identical on a tree that differed from main only in
+  docs. The rest of the pass still follows move 2.
 - **The cycle kind (A) and the binding closure (C) wait for step 0's cycle-law screen.** The
   screen asks whether O'Hara–Rudy's and Beard's cycles factor in A's form. A's contract rests on
   that, and the note lists it as unverified.
@@ -6389,6 +6394,10 @@ learned use the old code then we can drop it".
 - **Dropping comes as one batch the user approves,** as D187 and D189 did. The tree is tagged first,
   and a coverage check lists what each removal would lose.
 - **The viewer's map already leaves out `legacy/`.**
+- **Before any batch drops a legacy test that is a live law's only reference check, the check moves
+  beside the law and becomes its declared test.** The first known case is Kv1.5's 19
+  kernel-against-reference cases in `tests/unit/test_voltage_gated_membrane.py`, a tier-3 file that
+  imports `cells.legacy` (the documentation design's gap 10). It is not in D198's batch.
 
 ## D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only
 
@@ -6537,6 +6546,63 @@ the lead.
 - **Still asked case by case:** a paper whose own text limits use to academic or non-commercial
   purposes. Non-commercial material otherwise stays analysis-only.
 - **No full-text copy is saved.** The records are under `/mnt/datasets/Cells/ecoli/`.
+
+## D202: Relationship tracking: GARD first, then everywhere, as one general engine feature
+
+2026-11-17. On the relationships design (`docs/RELATIONSHIPS_DESIGN.md`), the user said: "sounds good
+and agree on 1. as you suggest then we make it work everywhere but we want it to be a general
+feature of the engine - also get adviser in on those choces then lets go".
+
+**The order:**
+- **First, GARD's runs.** GARD's G1 part 2 writes the relationship tables for GARD's lineages. The
+  first graphs show descent and supply. Who fed whom, founder material against rebuilt material,
+  needs the material labels, which belong in the core.
+- **Then everywhere,** after the core-seams pass: descent across tissue division and replacement,
+  named sources, material labels, and branches and transplants.
+
+**One general feature from the start.**
+- The tables' writer and its row interface live in their own engine module, outside the GARD
+  family, with their own owner. GARD only calls it.
+- **Before anyone binds to it,** a second consumer must use the same function with no edit to the
+  writer: an existing division world's and an existing replacement world's lineage. No operator
+  file is touched.
+- `cells.relations@1` is provisional until that passes.
+
+**The lead's choices, reviewed with the advisor:**
+- **Labels follow one-way flows.**
+  - Net-flow mode is declared per law.
+  - Any founder-fraction or renewal readout refuses a label that used it.
+  - A factored cycle law exposes both one-way fluxes (CORE_SEAMS_DESIGN §16).
+- **The format is NPZ plus a JSON descriptor, settled by a test.**
+  - The arrays load with `allow_pickle=False`, so string ids are fixed-width columns.
+  - A lineage tree and a supply graph are drawn from a GARD bundle by a short script that imports
+    no engine code.
+- **Written by default for GARD.** For existing worlds this is decided at RT1, from the results
+  gate's file comparison.
+- **Frozen before any bundle is shared:** the `s:c` key rule, end reasons (an unfollowed daughter
+  differs from an extinct one), the final row, and a reserved `label` stream domain. The run
+  qualifier appears only in ids, never in a stream fold.
+
+## D203: A library of human-readable pages for laws, kinds, operators and models (approved tooling)
+
+2026-11-17. On the documentation design (`docs/LAW_DOCUMENTATION_DESIGN.md`), the user said: "sounds good
+lets go". This approves the build, which AGENTS.md counts as tooling, and the design's recommended
+answers.
+
+- **The first landing comes first** (about 3.5–5.5 agent-days):
+  - `cells.declarations@2`: page links (`doc`), module paths and lines, structured citations, a
+    `models` section, an explicit `not_extracted` list, units and read modes;
+  - its format page, `docs/library/DECLARATIONS_FORMAT.md`;
+  - the page tool (`scripts/library_pages.py`) and its drift check (`tests/unit/test_library_pages.py`);
+  - the template, glossary and index;
+  - three pilot pages.
+- **Then the other pages,** in batches. The whole build is about 8.5–14.5 agent-days.
+- **One page per piece,** at `docs/library/<namespace>/<section>/<name>@<major>.md`, keyed by ID, not
+  by code location.
+- **The one plain sentence lives on the page, not in the code.** Wording fixes then change no source
+  fingerprint and strand no checkpoint.
+- **Links into the viewer wait for its public address.** Until then, pages name `select=laws:<ID>`.
+- **Status on a page** reads "Not stated" until a per-piece record exists, and is never invented.
 
 ## Implementation choices and remaining work
 

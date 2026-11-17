@@ -962,3 +962,43 @@ all committed before any run.
 - run `p1_probe.py` from a checkout at ef9fc1a8, with `PYTHONPATH=src:.:$W/probes`;
 - on CPUs that the lead assigns, under its lock;
 - unchanged, unless the note records an amendment before the run.
+
+## 7. The independent check of the screen (17 November 2026)
+
+**Who and how.** An agent that read neither this note nor its workspace, nor the cardiac and
+mitochondria notes, rederived the design-changing results from the primary sources. Its scripts and
+machine-readable outputs are in `/mnt/workspaces/Cells/screen-check-20261117/` (`scripts/`, `out/`). Its report file was refused by
+the harness, and it did not reroute; the report itself went to the lead.
+
+**What it confirms, as printed and in our reading:**
+- **O'Hara–Rudy's Na⁺/Ca²⁺ exchanger (INaCa).**
+  - The effective charge of each charge-carrying Hill cycle is 2q_Na + q_Ca = 1.2118 against a net
+    charge of 1. So the law does not factor at the registry's potentials.
+  - **In the print's own bookkeeping** (the ODEs book each unit of charge as 3 Na⁺ in and 1 Ca²⁺
+    out), the population's J·ΔG is positive over a band between the true 3:1 reversal and the
+    model's. That is free energy delivered with no source. The largest value over the myoplasmic
+    box is 5.81 nW/µF.
+  - **In the diagram's own species partition:** the myoplasm is never positive, because the leak
+    masks it. Cycle A still runs against its own ΔG at 4.5% of states and cycle C at 2.5%.
+  - **The paper's own Figure S1** anchors the reading. Its plotted charge flux is about 1.21 times
+    the species charge flux.
+- **Beard 2005's Eqs. 11, 16 and 24 do not factor:**
+  - Eq. 11 lacks the scalar matrix proton;
+  - Eq. 16 has [H⁺]x and [H⁺]e reversed relative to the stated 1:1 cotransport;
+  - Eq. 24 drops Eq. 7's +2RT ln([H⁺]x/10⁻⁷).
+
+  Repaired forms give a constant residual, and a planted sign flip is caught.
+- **Beard's two versions.** The PDF is the version of record. PLOS's web XML and its MathML carry a
+  stale Eq. 22, and the earlier extraction script read that version. The printed ΔG°_ATP has the
+  sign of hydrolysis but is used as synthesis in Eq. 11.
+
+**What it settles for seam A** (Hill's cycle-flux decomposition, with 200,000 random consistent rate
+sets and planted controls):
+- **A basis of modes cannot carry each mode's own sign at every state** when cycles share an edge.
+  The (3:1, Na⁺-leak) basis fails at 3.7% of a consistent exchanger's states.
+- **The full set of Hill cycles, dependent ones included, carries each mode's sign** exactly, and
+  each takes §3.2's form.
+- **The energy ledger needs only the population's total** Σ J·ΔG. That total is the same in every
+  basis.
+- **A parse-time Wegscheider check per Hill cycle** (ln(Π⁺/Π⁻) + ΔG/RT = 0) catches O'Hara–Rudy's
+  charge error exactly. A population-total check misses it.
