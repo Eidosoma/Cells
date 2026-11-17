@@ -633,10 +633,10 @@ The evidence is `$W/owners/owners.json`, from `$W/scripts/owner_check.py`.
       `numerics/{extracellular_field,fixed_step}.py`. The surface imports from them;
     - `operators/species_regulated_availability.py`, whose factors stay held (§4.3).
 - **Paths:** the moves note's draft (fa19d80c) and the move-2 owner's regeneration (ef9fc1a8) agree
-  on every path in the table.
-  - The drafts differ only elsewhere. The older one still moves five specs that move 1 has since
-    put in `legacy/`; the newer adds `blas_threads`, `kinetic_pump_spec`, `rate_junction_spec` and
-    `kinetic_pump_binding`.
+  on 43 of the table's 44 module paths, checked by script. The 44th, `laws/pumps/kinetic_pump_binding.py`,
+  is only in the newer draft, since R3 created the module after fa19d80c.
+  - Elsewhere, the older draft still moves five specs that move 1 has since put in `legacy/`. The
+    newer one adds `blas_threads`, `kinetic_pump_spec` and `rate_junction_spec`.
   - **Not decided by the regeneration as read:** the newer one counts `legacy/` among its unplaced
     modules (367).
 
