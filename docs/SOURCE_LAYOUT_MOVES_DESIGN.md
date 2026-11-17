@@ -855,3 +855,16 @@ tagged `pre-d188-move1-2026-11-17` (097f802e). Every gate of §18 held; the evid
   modules are placed against `docs/CORE_SEAMS_DESIGN.md` §8.2, so files move once, and
   `charged_surface_work`'s six pinned files keep their bytes.
 
+## 20. `processes/` dissolved, option (R) (17 November 2026, D198)
+
+The user chose (R): retire the pinning legacy laws and their tests, and move what the engine uses.
+- **Superseded:** §17 item 2, and §18's and §19's rulings on keeping the six files' bytes. Step
+  0's extraction exclusion rule (`docs/CORE_SEAMS_STEP0.md` §2) holds only until the retire batch
+  lands.
+- **The batch comes first.** The tree is tagged, and the exact list is taken from the dissolved
+  trial tree. A file an active entry point reaches moves; an unreached file retires.
+- **Move 2's map** is then regenerated without byte-keeping constraints.
+- **R6 is re-measured.** If `src/cells/__init__.py` is free, the BLAS pin returns to one home
+  (D190's first wording), on 2 CPUs, with a planted control.
+- **Handoff:** move 2's owner finishes through M2's landing. A fresh owner then takes tier 3, G3
+  and G4 on the final tree.

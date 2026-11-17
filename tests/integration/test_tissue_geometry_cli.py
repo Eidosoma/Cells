@@ -19,7 +19,7 @@ from cells.legacy.core import geometry_tissue_preparation as bridge
 from cells.models import surface_tissue as model
 
 ROOT = Path(__file__).resolve().parents[2]
-WORK = ROOT / "agent-work/cells-worker-01/workfiles"
+WORK = ROOT / "tests/fixtures/tissue_geometry_cli"
 CONTRACT = json.loads((WORK / "tissue_geometry_cli_contract.json").read_text())
 EXAMPLE = ROOT / CONTRACT["repository_example"]["path"]
 

@@ -1,0 +1,797 @@
+"""Run records of assembly lineages: one bundle per run (GARD_DESIGN §5.1, §5.2, §5.4).
+
+A bundle is a new directory (never overwritten) holding:
+
+- world.json (WORLD_FORMAT): the world record, with its id, the SHA-256 of its canonical JSON.
+  Two runs of one world write the same bytes and name the same id;
+- run.json (RUN_FORMAT): the run record (below);
+- records.npz: the arrays, each declared in run.json's `records`;
+- resolved_config.json: the definition; summary.json: how the run ended;
+- relations.npz and relations.json: the relationship tables, cells.relations@1 (relation_tables):
+  the lives, the fission and extinction events, the slot, the reservoir and the unmodelled agent
+  as sources, and the material edges weighed by the bundle's own records;
+- manifest.json, written last: every file's SHA-256, the runtime and the source, as io.write_run
+  writes it (its helpers are used here, so the conventions are the engine's).
+
+The run record states, per GARD_DESIGN §5.4: the world's id and that the run uses the world's
+founder; the law (the rate factor's ID and `form`, single-event or pair-consistent, beside it; its
+energy role and the kernel's check; the exchange law); the engine's source revision (from the
+execution snapshot's record, or unstated with the reason); the registered model, law and operator
+IDs; the mode; the random streams' identity; the SSA convention; the ledger's conventions and its
+closure; the operators' rules; and each array's axes, unit, kind, monotonicity, layer and owner,
+in the run view's vocabulary (docs/RUN_VIEW_DESIGN.md §3; the view itself waits for its owner,
+GARD_DESIGN §5.3).
+
+A pair of law forms (write_pair) is a directory with pair.json and one bundle per form. It is
+refused unless the two runs share the world (so its founder), the experiment and the execution,
+streams included, and differ in the law alone.
+"""
+
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+
+from cells.core.specs import ConfigError, digest
+from cells.models.assembly_lineages import (
+    EXCHANGE_LAW,
+    MODEL_ID,
+    continuation,
+    factors,
+    fission,
+    kernel,
+    keys,
+    ledger,
+    model,
+)
+from cells.models.assembly_lineages import exchange as exchange_law
+from cells.models.assembly_lineages import spec as lineage_spec
+
+WORLD_FORMAT = "cells.assembly_lineages.world@1"
+RUN_FORMAT = "cells.assembly_lineages.run@1"
+PAIR_FORMAT = "cells.assembly_lineages.pair@1"
+ARRAYS = "records.npz"
+# The clock's unit is the world's (spec.Units: "nominal", GARD's, or "s"); RECORDS names it CLOCK,
+# and run_record writes the world's unit in its place.
+CLOCK = "clock"
+
+LAYERS = (
+    {"id": "assemblies", "label": "Assemblies and their exchange", "representation": "simulated"},
+    {"id": "lineage", "label": "Fission and continuation", "representation": "prescribed"},
+)
+BASES = {
+    "row": "single lineage: the run's start (row_kind start: the founder, or the state a run from "
+    "a checkpoint continues); per fission the parent before the split (parent) and the followed "
+    "daughter after it (daughter), both at the fission's time, so the row saved at a fission's "
+    "time holds the state before it; and always a final row (end), the lineage's state when the "
+    "run ended. Every descendant: two rows per life in lives order, its birth (start for the "
+    "founder, daughter otherwise) and its end (parent if it divided, end otherwise). Each row's "
+    "assembly is `occupant`; cumulative records are its lineage path's, from the founder. "
+    "Times: row_time",
+    "fission": "one entry per fission: in order along the lineage (single lineage), or in lives "
+    "order of the parents (every descendant). Times: fission_time",
+    "event": "one entry per committed event, in order (the event trace): grouped by growth, "
+    "growth by growth. Times: event_time",
+    "growth": "one entry per life that ran in this run, from its birth (or the run's start) to "
+    "its end (or the run's end), in lives order: single lineage, the slot's occupants; every "
+    "descendant, every life (0 events for a life that never ran). growth_carrier names it",
+    "life": "one entry per life: a birth and its end, in the order (generation, parent key, "
+    "daughter index) (keys.py, the lives table)",
+}
+ROW_KINDS = {"0": "start", "1": "parent", "2": "daughter", "3": "end"}
+_M, _X, _C = MODEL_ID, EXCHANGE_LAW, continuation.CONTINUATION
+_F = fission.FISSION
+
+
+def _record(base, axes, unit, layer, owner, kind=None, **extra):
+    entry = {"base": base, "axes": list(axes), "unit": unit, "layer": layer, "owner": owner}
+    if kind is not None:
+        entry["kind"] = kind
+    entry.update(extra)
+    return entry
+
+
+ROW, TYPE, SLOT = "row", "type", "assembly"
+RECORDS = {
+    "row_time": _record("row", [ROW], CLOCK, "assemblies", _M, "level"),
+    "row_event": _record("row", [ROW], "events", "assemblies", _M, "cumulative", monotone=True),
+    "row_kind": _record("row", [ROW], "1", "lineage", _M, "level", legend=ROW_KINDS),
+    "row_fission": _record(
+        "row",
+        [ROW],
+        "1",
+        "lineage",
+        _F,
+        "level",
+        says="the fission (from 1) a parent or daughter row belongs to; 0 else",
+    ),
+    "assembly_count": _record("row", [ROW, TYPE, SLOT], "molecules", "assemblies", _M, "amount"),
+    "joined_total": _record(
+        "row",
+        [ROW, TYPE, SLOT],
+        "molecules",
+        "assemblies",
+        _X,
+        "cumulative",
+        monotone=True,
+        says="since the lineage's start",
+    ),
+    "left_total": _record(
+        "row",
+        [ROW, TYPE, SLOT],
+        "molecules",
+        "assemblies",
+        _X,
+        "cumulative",
+        monotone=True,
+        says="since the lineage's start",
+    ),
+    "discarded_total": _record(
+        "row",
+        [ROW, TYPE, SLOT],
+        "molecules",
+        "lineage",
+        _C,
+        "cumulative",
+        monotone=True,
+        says="material leaving with unfollowed daughters; count = founder + joined - left - "
+        "discarded, exactly, at every row",
+    ),
+    "exchange_heat_kT": _record(
+        "row",
+        [ROW, SLOT],
+        "k_BT",
+        "assemblies",
+        _X,
+        "cumulative",
+        monotone=False,
+        says=ledger.CONVENTIONS["event_heat"],
+    ),
+    "fission_work_kT": _record(
+        "row",
+        [ROW, SLOT],
+        "k_BT",
+        "lineage",
+        _F,
+        "cumulative",
+        monotone=False,
+        says=ledger.CONVENTIONS["fission_work"],
+    ),
+    "discarded_free_energy_kT": _record(
+        "row",
+        [ROW, SLOT],
+        "k_BT",
+        "lineage",
+        _C,
+        "cumulative",
+        monotone=False,
+        says=ledger.CONVENTIONS["sink"],
+    ),
+    "log_weight": _record(
+        "row",
+        [ROW, SLOT],
+        "k_BT",
+        "assemblies",
+        _X,
+        "level",
+        says=ledger.CONVENTIONS["state_function"],
+    ),
+    "ledger_residual_kT": _record(
+        "row", [ROW, SLOT], "k_BT", "assemblies", _M, diagnostic=ledger.CONVENTIONS["closure"]
+    ),
+    "occupant": _record("row", [ROW, SLOT], "carrier key", "lineage", _C, "level"),
+    "generation": _record("row", [ROW, SLOT], "fissions", "lineage", _C, "level"),
+    "fission_time": _record("fission", ["fission"], CLOCK, "lineage", _F),
+    "fission_slot": _record("fission", ["fission"], "1", "lineage", _F),
+    "fission_parent": _record("fission", ["fission"], "carrier key", "lineage", _F),
+    "fission_daughters": _record(
+        "fission",
+        ["fission", "daughter"],
+        "carrier key",
+        "lineage",
+        _F,
+        says="the first and the second daughter",
+    ),
+    "fission_followed": _record(
+        "fission",
+        ["fission"],
+        "1",
+        "lineage",
+        _C,
+        says="0: the first daughter continues; 1: the second",
+    ),
+    "fission_split": _record(
+        "fission",
+        ["fission", TYPE],
+        "molecules",
+        "lineage",
+        _F,
+        says="the first daughter's counts; the second is the parent less these",
+    ),
+    "fission_similarity": _record(
+        "fission",
+        ["fission", "daughter"],
+        "1",
+        "lineage",
+        _F,
+        says="H: the cosine of the parent's counts with each "
+        "daughter's (NaN for an empty daughter)",
+    ),
+    "fission_partition_counter": _record(
+        "fission",
+        ["fission"],
+        "1",
+        "lineage",
+        _F,
+        says="the partition stream's counter (keyed by the parent's carrier key)",
+    ),
+    "event_time": _record("event", ["event"], CLOCK, "assemblies", _M),
+    "event_channel": _record(
+        "event",
+        ["event"],
+        "1",
+        "assemblies",
+        _M,
+        says="+(i+1): a molecule of type i joined; -(i+1): one left",
+    ),
+    "events_per_growth": _record("growth", ["growth"], "events", "assemblies", _M),
+    "growth_carrier": _record(
+        "growth", ["growth"], "carrier key", "lineage", _C, says="the life whose growth it is"
+    ),
+    "event_uniforms": _record(
+        "event",
+        ["event", "draw"],
+        "1",
+        "assemblies",
+        _M,
+        diagnostic="(u1, u2) of each committed event",
+    ),
+    "partition_uniforms": _record(
+        "fission",
+        ["fission", "place"],
+        "1",
+        "lineage",
+        _F,
+        diagnostic="the partition's uniform for each molecule place",
+    ),
+    "continuation_uniform": _record(
+        "fission", ["fission"], "1", "lineage", _C, diagnostic="the continuation stream's draw"
+    ),
+}
+_LIVES = {
+    "life_key": ("carrier key", "s * 2**32 + c, written s:c; its id is carrier:a<s>:<c>"),
+    "life_slot": (
+        "1",
+        "the slot it occupies at birth; -1: none (an unfollowed daughter, or "
+        "every-descendant mode, which has no slots)",
+    ),
+    "life_parent": (
+        "carrier key",
+        "the life it was split from; -1: none (a founder, or a life "
+        "continued from a checkpoint, whose parent is in that run)",
+    ),
+    "life_birth_kind": ("1", "founder, division or continued (run.json lives.birth_kinds)"),
+    "life_birth_time": (CLOCK, "the time of its birth (the run's start for a continued life)"),
+    "life_birth_event": ("events", "its lineage path's cumulative event count at its birth"),
+    "life_birth_fission": ("1", "the fission-table entry that made it; -1: none"),
+    "life_end_reason": (
+        "1",
+        "divided, extinct, not_followed or censored (run.json lives.end_reasons)",
+    ),
+    "life_censored_by": (
+        "1",
+        "for a censored life: horizon, event_limit, stalled, budget or "
+        "stop (run.json lives.censored_by); empty otherwise",
+    ),
+    "life_end_time": (CLOCK, "the time its record ends"),
+    "life_end_event": ("events", "its lineage path's cumulative event count at its end"),
+    "life_end_fission": (
+        "1",
+        "the fission-table entry that ended it (it divided, or it was "
+        "born ended: extinct or not followed); -1: none",
+    ),
+    "life_generation": ("fissions", "fissions since its founder"),
+    "life_root": ("carrier key", "its founder's key"),
+    "life_sublineage": (
+        "1",
+        "the sub-lineage its own daughters' keys come from; -1: it takes "
+        "none (it is extinct at birth, or not followed)",
+    ),
+    "life_size_at_birth": ("molecules", "its molecules at its birth (or at the run's start)"),
+}
+RECORDS.update(
+    {
+        name: _record("life", ["life"], unit, "lineage", _C, says=says)
+        for name, (unit, says) in _LIVES.items()
+    }
+)
+
+
+def world_record(world):
+    body = lineage_spec.world_to_dict(world)
+    return {
+        "format": WORLD_FORMAT,
+        "id": digest(body),
+        "world": body,
+        "derived": {
+            "types": list(world.types.ids),
+            "identity": "label_only: no catalogue entry and no valence",
+            "standard_transfer_mu_RT": list(world.types.standard_transfer_mu_RT),
+            "join_rate": list(world.join_rate),
+            "leave_rate": list(world.leave_rate),
+            "founder_size": sum(world.founder),
+        },
+    }
+
+
+def _law(run):
+    m = run.spec.model
+    exchange = {
+        "id": EXCHANGE_LAW,
+        "energy_role": exchange_law.LAW.energy_role,
+        "formulas": exchange_law.LAW.formulas,
+        "provenance": exchange_law.provenance(exchange_law.LAW),
+        "interface": exchange_law.LAW.interface,
+    }
+    if m.rate_factor is None:
+        return {"id": None, "form": None, "exchange": exchange, "check": run.verdict}
+    law = factors.resolve(m.rate_factor)
+    return {
+        "id": law.law_id,
+        "form": law.form,
+        "energy_role": law.energy_role,
+        "law_set": law.law_set,
+        "comparison_only": law.comparison_only,
+        "note": law.note,
+        "formulas": law.formulas,
+        "provenance": exchange_law.provenance(law),
+        "interface": law.interface,
+        "check": run.verdict,
+        "world_report": run.world_report,
+        "exchange": exchange,
+    }
+
+
+def _source():
+    from cells.run_view import _engine_source
+
+    source = _engine_source()
+    if source is None:
+        return {"unstated": "the engine ran from a checkout, not an execution snapshot"}
+    return source
+
+
+def run_record(run, world_id):
+    spec = run.spec
+    rows = run.rows
+    end = {
+        "status": run.status,
+        "fissions": int(len(run.fissions["fission_time"])),
+        "events": int(rows["row_event"][-1]),
+        "time": float(rows["row_time"][-1]),
+    }
+    if run.bound is not None:  # Every descendant: the population's end, over every life.
+        end = {
+            "status": run.status,
+            "fissions": end["fissions"],
+            "events": int(run.timings["events"]),
+            "time": float(np.max(run.lives["life_end_time"])),
+            "lives": int(len(run.lives["life_key"])),
+            "says": "every descendant: fissions and events over every life; time, the latest "
+            "life's end",
+        }
+    arrays = sorted(_arrays(run))
+    world = spec.model.world
+    clock = world.units.time
+    declared = {}
+    for name in arrays:
+        entry = {"file": ARRAYS, "array": name, **RECORDS[name]}
+        if entry["unit"] == CLOCK:
+            entry["unit"] = clock
+        declared[name] = entry
+    record = {
+        "format": RUN_FORMAT,
+        "world": world_id,
+        "founder": "world",
+        "model": MODEL_ID,
+        "engine_models": model.components(spec),
+        "definition_sha256": spec.fingerprint,
+        "run": {"qualifier": run.qualifier, "start": run.start},
+        "keys": keys.RULE,
+        "lives": keys.LIVES,
+        "law": _law(run),
+        "mode": spec.execution.mode,
+        "stream": lineage_spec.stream_identity(spec),
+        "ssa": kernel.SSA_CONVENTION,
+        "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
+        "operators": {"fission": fission.DECLARATION, "continuation": continuation.DECLARATION},
+        "lifecycle": kernel.LIFECYCLE,
+        "source": _source(),
+        "end": end,
+        "time": {
+            "unit": clock,
+            "temperature_K": world.units.temperature_K,
+            "rates": f"per {clock} time unit",
+            "bases": BASES,
+        },
+        "channels": kernel.channel_table(world.types.ids),
+        "layers": list(LAYERS),
+        "records": declared,
+        "diagnostics": {"uniforms": spec.experiment.uniforms},
+    }
+    if run.bound is not None:
+        record["bound"] = run.bound
+    return record
+
+
+def _fission_event(row):
+    return f"event:fission/{int(row)}"
+
+
+def descent(arrays):
+    """The lives as cells.relations@1's Life rows (RELATIONSHIPS_DESIGN §1.2), for its writer
+    unchanged: one dict per life, in the lives table's order, with exactly the writer's Life
+    fields. `arrays` holds a run's lives (life_*), as run.lives or a bundle's records.npz.
+
+    - id and root: `carrier:a<key>` (keys.py); the founder is its own root, and a continued life
+      carries its lineage's founder as its root;
+    - lineage: life_sublineage; share: its molecules at birth over its parent's (division only);
+    - events: a division's birth, and the end of a life that divided or was not followed, are its
+      fission's event; an extinction at birth is its fission's event, and one by a last leave
+      `event:extinction/<key>/<count>`; a censored life's end has none (where observation
+      stopped, not something that happened to it);
+    - declared_by: the model for a founder or a continued life, the fission operator for a
+      daughter;
+    - no value is "", and NaN for a share that does not apply."""
+    from cells.models.assembly_lineages import FISSION
+
+    keys_, parents = arrays["life_key"].tolist(), arrays["life_parent"].tolist()
+    sizes = arrays["life_size_at_birth"].tolist()
+    brood = {}  # A parent's daughters' molecules at their birth, summed.
+    for parent, size in zip(parents, sizes, strict=True):
+        if parent >= 0:
+            brood[parent] = brood.get(parent, 0) + size
+    rows = []
+    for i, key in enumerate(keys_):
+        kind = str(arrays["life_birth_kind"][i])
+        reason = str(arrays["life_end_reason"][i])
+        parent = parents[i]
+        birth_fission = int(arrays["life_birth_fission"][i])
+        end_fission = int(arrays["life_end_fission"][i])
+        slot = int(arrays["life_slot"][i])
+        if reason == "censored":
+            end_event = ""
+        elif end_fission >= 0:
+            end_event = _fission_event(end_fission)
+        elif reason == "extinct":
+            end_event = f"event:extinction/{key}/{int(arrays['life_end_event'][i])}"
+        else:
+            raise ValueError(f"{keys.carrier_id(key)} ended {reason} at no event")
+        share = float("nan")
+        if kind == "division":
+            share = sizes[i] / brood[parent] if brood[parent] > 0 else 0.0
+        rows.append(
+            {
+                "id": keys.carrier_id(key),
+                "key": int(key),
+                "lineage": int(arrays["life_sublineage"][i]),
+                "birth_time": float(arrays["life_birth_time"][i]),
+                "birth_kind": kind,
+                "end_time": float(arrays["life_end_time"][i]),
+                "end_reason": reason,
+                "generation": int(arrays["life_generation"][i]),
+                "root": keys.carrier_id(int(arrays["life_root"][i])),
+                "declared_by": FISSION if kind == "division" else MODEL_ID,
+                "slot": "" if slot < 0 else f"slot:{slot}",
+                "parent": "" if parent < 0 else keys.carrier_id(parent),
+                "share": share,
+                "donor": "",
+                "predecessor": "",
+                "birth_event": _fission_event(birth_fission) if birth_fission >= 0 else "",
+                "end_event": end_event,
+            }
+        )
+    return rows
+
+
+def relation_events(arrays):
+    """cells.relations@1's Event rows: one per fission (kind fission, at its parent, made by the
+    fission operator; its payer, source:unmodelled_agent, is declared with the supply tables,
+    RT4) and one per extinction by a last leave (kind extinction, made by the exchange law)."""
+    from cells.models.assembly_lineages import FISSION
+
+    rows = [
+        {
+            "id": _fission_event(k),
+            "time": float(t),
+            "kind": "fission",
+            "by": FISSION,
+            "scheduled": False,
+            "step": -1,
+            "at": keys.carrier_id(int(parent)),
+            "source": "",
+        }
+        for k, (t, parent) in enumerate(
+            zip(arrays["fission_time"].tolist(), arrays["fission_parent"].tolist(), strict=True)
+        )
+    ]
+    for life in descent(arrays):
+        if life["end_event"].startswith("event:extinction/"):
+            rows.append(
+                {
+                    "id": life["end_event"],
+                    "time": life["end_time"],
+                    "kind": "extinction",
+                    "by": EXCHANGE_LAW,
+                    "scheduled": False,
+                    "step": -1,
+                    "at": life["id"],
+                    "source": "",
+                }
+            )
+    return rows
+
+
+def relation_nodes(arrays):
+    """The vertices cells.relations@1 does not derive: the slots lives occupy (slot:<n>)."""
+    slots = sorted({int(s) for s in arrays["life_slot"].tolist() if s >= 0})
+    return [{"id": f"slot:{s}", "kind": "slot", "declared_by": MODEL_ID} for s in slots]
+
+
+RESERVOIR = "source:reservoir"
+AGENT = "source:unmodelled_agent"
+SLOT = "slot:0"
+
+
+def relation_tables(directory, run):
+    """cells.relations@1's tables of a run whose bundle's records.npz is in `directory`, as the
+    writer's keyword arguments: lives, events (each fission paid by the unmodelled agent), nodes,
+    sources, edges and the records they point at.
+
+    - Sources: the held reservoir (`source:reservoir`, kind reservoir, class substrate), which
+      supplies every join and takes every leave, and the unmodelled agent of the fissions
+      (`source:unmodelled_agent`, kind unmodelled, class energy), the payer of fission_work_kT.
+    - Single lineage: material sits in the slot (`slot:0`). `supplies` edges run from the
+      reservoir to the slot and `removes_to` edges from the slot back to it, one per type that
+      moved, each weighed by the bundle's own cumulative record (joined_total, left_total; one
+      way). An unfollowed daughter's material goes from its carrier to the declared sink
+      (`sink:discard`, or the reservoir) at its fission's event, its own counts on the edge as
+      numbers (exact from the fission table; the record's event rows cannot tell two events at
+      one time apart).
+    - Every descendant: no slots, so material sits in each carrier, and its rows are per life
+      (their times are not one series), so each life's edges carry their weights as numbers over
+      its window (birth to end): the molecules of each type it took up and gave back."""
+    from cells.models.assembly_lineages import CONTINUATION, FISSION
+    from cells.records import relations as rel
+
+    arrays = {**run.lives, **run.fissions}
+    world = run.spec.model.world
+    types = list(world.types.ids)
+    single = run.bound is None
+    lives = [rel.Life(**row) for row in descent(arrays)]
+    events = [
+        rel.Event(**(row | {"source": AGENT} if row["kind"] == "fission" else row))
+        for row in relation_events(arrays)
+    ]
+    nodes = [rel.Node(**row) for row in relation_nodes(arrays)]
+    rows = run.rows
+    joined, left = rows["joined_total"][:, :, 0], rows["left_total"][:, :, 0]
+    supplied = sorted(types[i] for i in np.flatnonzero(joined.max(0) > joined[0]))
+    edges, records = [], {}
+    if single:
+        records = rel.records_in(
+            directory,
+            [ARRAYS],
+            {
+                "joined_total": "cumulative",
+                "left_total": "cumulative",
+                "discarded_total": "cumulative",
+                "fission_work_kT": "cumulative",
+            },
+            times="row_time",
+        )
+        for i in range(len(types)):
+            for relation, record, total, ends in (
+                ("supplies", "joined_total", joined, (RESERVOIR, SLOT)),
+                ("removes_to", "left_total", left, (SLOT, RESERVOIR)),
+            ):
+                if total[-1, i] > total[0, i]:
+                    edges.append(
+                        rel.Edge(relation, *ends, EXCHANGE_LAW, species=types[i],
+                                 weight_record=record, weight_index=f"{i},0", mode="one_way")
+                    )  # fmt: skip
+        sink = RESERVOIR if world.continuation.sink == "reservoir" else "sink:discard"
+        if sink != RESERVOIR:
+            nodes.append(rel.Node(sink, "sink", CONTINUATION))
+        # An unfollowed daughter's discard carries its own counts as numbers, exact from the
+        # fission table: the record's event rows cannot tell two events at one time apart (a run
+        # continued from a pending fission starts at its time; a daughter born at the fission
+        # size splits at its parent's).
+        parents = rows["assembly_count"][rows["row_kind"] == 1, :, 0]
+        first = arrays["fission_split"]
+        for life in lives:
+            if life.end_reason != "not_followed":
+                continue
+            k = int(life.end_event.rsplit("/", 1)[1])
+            followed = int(arrays["fission_followed"][k])
+            counts = parents[k] - first[k] if followed == 0 else first[k]  # The unfollowed one.
+            for i in np.flatnonzero(counts > 0):
+                edges.append(
+                    rel.Edge("removes_to", life.id, sink, CONTINUATION, event=life.end_event,
+                             species=types[i], weight=float(counts[i]), mode="event")
+                )  # fmt: skip
+    else:
+        for k, life in enumerate(lives):
+            born, ended = 2 * k, 2 * k + 1  # Every descendant: each life's birth and end rows.
+            for relation, total, ends in (
+                ("supplies", joined, (RESERVOIR, life.id)),
+                ("removes_to", left, (life.id, RESERVOIR)),
+            ):
+                moved = total[ended] - total[born]
+                for i in np.flatnonzero(moved > 0):
+                    edges.append(
+                        rel.Edge(relation, *ends, EXCHANGE_LAW, species=types[i],
+                                 time_from=life.birth_time, time_to=life.end_time,
+                                 weight=float(moved[i]), mode="one_way")
+                    )  # fmt: skip
+    sources = [
+        rel.Source(RESERVOIR, "reservoir", "substrate", EXCHANGE_LAW, carries=",".join(supplied),
+                   record="joined_total" if single else ""),
+        rel.Source(AGENT, "unmodelled", "energy", FISSION,
+                   payer_of="fission_work_kT" if single else ""),
+    ]  # fmt: skip
+    return {
+        "lives": lives,
+        "events": events,
+        "nodes": nodes,
+        "sources": sources,
+        "edges": edges,
+        "records": records,
+    }
+
+
+def write_relations(directory, run):
+    """Write cells.relations@1's tables (relations.npz, relations.json) beside the bundle in
+    `directory`, whose records.npz is already there; returns the writer's descriptor."""
+    from cells.records import relations as rel
+
+    return rel.write(directory, world=run.qualifier, **relation_tables(directory, run))
+
+
+def _arrays(run):
+    out = dict(run.rows)
+    out.update(run.fissions)
+    out.update(run.trace)
+    out.update(run.diagnostics)
+    out.update(run.lives)
+    return out
+
+
+def _write_json(path, value):
+    from cells.io import _write_json as write
+
+    write(Path(path), value)
+
+
+def write_run(directory, run, *, provenance=None):
+    """Write one run's bundle into a new directory; returns its summary."""
+    from cells.core import blas_threads
+    from cells.core.devices import execution_device
+    from cells.io import _sha256, runtime_identity, source_hashes
+
+    directory = Path(directory)
+    world = world_record(run.spec.model.world)
+    record = run_record(run, world["id"])
+    directory.mkdir(parents=True, exist_ok=False)
+    np.savez(directory / ARRAYS, **_arrays(run))
+    _write_json(directory / "world.json", world)
+    _write_json(directory / "run.json", record)
+    _write_json(directory / "resolved_config.json", run.spec.to_dict())
+    summary = {
+        "status": run.status,
+        "qualifier": run.qualifier,
+        "start": run.start,
+        "lives": int(len(run.lives["life_key"])),
+        "world": world["id"],
+        "law": record["law"]["id"],
+        "form": record["law"]["form"],
+        **record["end"],
+        "ledger_closes": run.closure["holds"],
+        "ledger_max_abs_residual_kT": run.closure["max_abs_residual_kT"],
+        "timings": run.timings,
+    }
+    _write_json(directory / "summary.json", summary)
+    write_relations(directory, run)  # Before the manifest, so its checksums cover them.
+    backend = run.spec.execution.backend
+    manifest = {
+        "schema_version": 1,
+        "status": run.status,
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "definition_sha256": run.spec.fingerprint,
+        "runtime": runtime_identity(backend),
+        "source_hashes": source_hashes(),
+        "device": str(execution_device(backend)),
+        "cpu_affinity": sorted(os.sched_getaffinity(0))
+        if hasattr(os, "sched_getaffinity")
+        else None,
+        "blas": blas_threads.record(),
+        "random_state": lineage_spec.stream_identity(run.spec),
+        "timings": run.timings,
+        "provenance": provenance
+        or (
+            {"operation": "fresh"}
+            if run.start == "fresh"
+            else {"operation": run.start["kind"], "checkpoint": run.start["checkpoint"]}
+        ),
+        "files_sha256": {
+            str(p.relative_to(directory)): _sha256(p)
+            for p in sorted(directory.rglob("*"))
+            if p.is_file()
+        },
+    }
+    _write_json(directory / "manifest.json", manifest)
+    return summary
+
+
+def _same_but_law(a, b):
+    da, db = a.spec.to_dict(), b.spec.to_dict()
+    da["model"].pop("rate_factor", None)
+    db["model"].pop("rate_factor", None)
+    return da == db
+
+
+def write_pair(directory, runs, *, provenance=None):
+    """A pair of law forms of one world: pair.json and one bundle per form."""
+    if len(runs) != 2:
+        raise ConfigError("A pair holds two runs")
+    forms = [r.spec.model.rate_factor for r in runs]
+    if forms[0] == forms[1] or not _same_but_law(*runs):
+        raise ConfigError(
+            "A pair's runs share the world (its founder), the experiment and the execution, "
+            "streams included, and differ in the law alone"
+        )
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=False)
+    entries = []
+    for run in runs:
+        law = factors.resolve(run.spec.model.rate_factor)
+        name = law.form
+        write_run(directory / name, run, provenance=provenance)
+        entries.append({"bundle": name, "law": law.law_id, "form": law.form})
+    world = world_record(runs[0].spec.model.world)
+    _write_json(
+        directory / "pair.json",
+        {
+            "format": PAIR_FORMAT,
+            "world": world["id"],
+            "founder": "world: one founder, shared by both runs",
+            "runs": entries,
+            "differs": ["law"],
+            "shared": ["world", "experiment", "execution", "stream"],
+            "clock": "one nominal clock and one fission count for both runs",
+            "stream": lineage_spec.stream_identity(runs[0].spec),
+        },
+    )
+    return entries
+
+
+def read(directory):
+    """(world record, run record, arrays) of a bundle, checking its manifest's checksums."""
+    from cells.io import _sha256
+
+    directory = Path(directory)
+    manifest = json.loads((directory / "manifest.json").read_text())
+    for name, expected in manifest["files_sha256"].items():
+        if _sha256(directory / name) != expected:
+            raise ConfigError(f"{directory / name}: its checksum differs from the manifest's")
+    world = json.loads((directory / "world.json").read_text())
+    record = json.loads((directory / "run.json").read_text())
+    if world["id"] != digest(world["world"]) or record["world"] != world["id"]:
+        raise ConfigError(f"{directory}: the world record's id does not match its content or run")
+    with np.load(directory / ARRAYS, allow_pickle=False) as saved:
+        arrays = {k: saved[k] for k in saved.files}
+    if set(arrays) != set(record["records"]):
+        raise ConfigError(f"{directory}: the arrays and the run record's records differ")
+    return world, record, arrays

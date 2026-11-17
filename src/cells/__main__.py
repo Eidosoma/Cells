@@ -15,6 +15,7 @@ from cells.core.runner import NumericalError, branch_checkpoint, run, timeline
 from cells.core.specs import ConfigError, load_spec
 from cells.core.windows import WindowPolicy, plan_windows
 from cells.io import load_snapshot, write_run
+from cells.models.registry import get_model
 from cells.window_io import write_windowed_run
 
 # The older families' subcommands, each with its own arguments (D188 R1: legacy().cli).
@@ -42,6 +43,9 @@ def _parser() -> argparse.ArgumentParser:
     commands.add_parser("tissue-phase", help="carry INIT history into a new SIM phase")
     commands.add_parser(
         "stationary", help="opt-in stationary states, stability and continuation (read-only)"
+    )
+    commands.add_parser(
+        "declarations", help="write the declarations manifest (cells.declarations@1)"
     )
     commands.add_parser(
         "tissue-geometry", help="prepare and replay initial passive tissue geometry"
@@ -190,12 +194,28 @@ def _batch_window_main(args):
     ) | {"output": str(args.output)}
 
 
+def _fixed_step(spec):
+    """spec, if its model runs on the fixed-step runner. A model that declares its own runner
+    (RUNNER: the entry's dotted name) is refused, naming it, before any time grid is built."""
+    runner = getattr(get_model(spec.model), "RUNNER", None)
+    if runner is not None:
+        raise ConfigError(
+            f"{type(spec.model).__name__} runs on its own runner, {runner}; "
+            "`cells validate` and `cells run` take fixed-step models only"
+        )
+    return spec
+
+
 def main(argv=None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if args and args[0] == "stationary":
         from cells.analysis.cli import main as stationary_main
 
         return stationary_main(args[1:])
+    if args and args[0] == "declarations":
+        from cells.registry.declarations import main as declarations_main
+
+        return declarations_main(args[1:])
     if args and args[0] in LEGACY_COMMANDS:
         return legacy().cli(args[0])(args[1:])
     if args and args[0] == "assembly-pool":
@@ -222,7 +242,7 @@ def main(argv=None) -> int:
             print(json.dumps(_batch_main(args), indent=2))
             return 0
         if args.command == "validate":
-            spec = load_spec(args.config)
+            spec = _fixed_step(load_spec(args.config))
             grid = timeline(spec)
             print(
                 json.dumps({"status": "valid", "steps": len(grid) - 1, "sha256": spec.fingerprint})
@@ -233,7 +253,7 @@ def main(argv=None) -> int:
         checkpoint = None
         provenance = {"operation": args.command}
         if args.command == "run":
-            spec = load_spec(args.config)
+            spec = _fixed_step(load_spec(args.config))
         else:
             snapshot = load_snapshot(args.snapshot)
             checkpoint = snapshot.checkpoint

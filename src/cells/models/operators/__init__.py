@@ -1,8 +1,11 @@
-"""Operators of the composite pump-tissue model: an explicit registry, no plugins.
+"""Operators of the composite pump-tissue model, the operator section's built-in package.
 
 Each operator implements the contract of models/operators/contract.py for one law
 (docs/CELL_DIVISION_DESIGN.md §3.3). New combinations are definitions
-(core/pump_composite_spec.py), not model families (D142, D143).
+(core/pump_composite_spec.py), not model families (D142, D143). The package registers its
+operators on the operator section's BUILTIN (registry/operators.py; docs/CORE_SEAMS_DESIGN.md
+§8.4) through the call an outside package uses, which runs check_declarations. OPERATORS is the
+active section as a mapping.
 """
 
 from cells.models.operators.bath_schedule import ScheduledBathComposition
@@ -10,7 +13,6 @@ from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.cell_replacement_v2 import ScheduledReplacementOverWater
 from cells.models.operators.compartments import CellOwnedCompartments
-from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
 from cells.models.operators.membrane_insertion import ScheduledMembraneInsertion
@@ -25,28 +27,28 @@ from cells.models.operators.species_exchange import ScheduledSpeciesExchange
 from cells.models.operators.species_reactions import LocalSpeciesReactions
 from cells.models.operators.species_regulated_availability import SpeciesRegulatedAvailability
 from cells.models.operators.species_turnover import ScheduledSpeciesTurnover
+from cells.registry.operators import BUILTIN, OPERATORS  # noqa: F401  (the active section)
 
-OPERATORS = {
-    op.LAW_ID: op
-    for op in (
-        check_declarations(OsmoticWater)(),
-        check_declarations(KAnionSymport)(),
-        check_declarations(ScheduledReplacement)(),
-        check_declarations(ScheduledReplacementOverWater)(),
-        check_declarations(ElectrodeCurrentInjection)(),
-        check_declarations(MembraneEntityState)(),
-        check_declarations(ScheduledMembraneInsertion)(),
-        check_declarations(RestrictedCleftLumen)(),
-        check_declarations(IsopotentialPartition)(),
-        check_declarations(CytoplasmicBridgeClosure)(),
-        check_declarations(ScheduledMembraneInsertionV2)(),
-        check_declarations(RestrictedCleftLumenV2)(),
-        check_declarations(ScheduledSpeciesTurnover)(),
-        check_declarations(ScheduledSpeciesExchange)(),
-        check_declarations(LocalSpeciesReactions)(),
-        check_declarations(SpeciesRegulatedAvailability)(),
-        check_declarations(ScheduledBathComposition)(),
-        check_declarations(CellOwnedCompartments)(),
-        check_declarations(SiteOccupancy)(),
-    )
-}
+for _operator in (  # Today's order: the section's registration order.
+    OsmoticWater,
+    KAnionSymport,
+    ScheduledReplacement,
+    ScheduledReplacementOverWater,
+    ElectrodeCurrentInjection,
+    MembraneEntityState,
+    ScheduledMembraneInsertion,
+    RestrictedCleftLumen,
+    IsopotentialPartition,
+    CytoplasmicBridgeClosure,
+    ScheduledMembraneInsertionV2,
+    RestrictedCleftLumenV2,
+    ScheduledSpeciesTurnover,
+    ScheduledSpeciesExchange,
+    LocalSpeciesReactions,
+    SpeciesRegulatedAvailability,
+    ScheduledBathComposition,
+    CellOwnedCompartments,
+    SiteOccupancy,
+):
+    BUILTIN.register(_operator)
+del _operator

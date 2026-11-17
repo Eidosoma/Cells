@@ -369,27 +369,7 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
     return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
 
 
-class KindRates(NamedTuple):
-    """A kind's rates at one stage (§7.4 (k), the rates hook): cell [S, n] and outside [S, o]
-    inward-positive node changes, which land in the shared inventory (rule (c)); its own state
-    fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role).
-    membrane_flux: what it carries across membrane patches, outward [S, membrane] (fmol/s), or
-    None; it joins the patches' total flux and membrane current (observations, not ledgers: its
-    moves are already in cell and outside). valid: its own domain at the stage's read and
-    potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
-    row or the step. stored_pJ_s (§7.4 (m), gap 2): the rate (pJ/s) of the free energy the kind
-    stores beyond the stored rows' own terms (its ledger_terms' stored_pJ), less the part its stage
-    read carries (the chemical rate is taken at the read's concentrations, so B4's closure term is
-    carried and B4 gives none), or None; it joins the stage energy-rate observation by role."""
-
-    cell: object
-    outside: object
-    derivatives: dict
-    heat_pJ_s: object
-    work_pJ_s: object
-    membrane_flux: object = None
-    valid: object = True
-    stored_pJ_s: object = None
+KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
 
 
 def _kinds(structure):
