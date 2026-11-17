@@ -30,8 +30,8 @@ import numpy as np
 from . import closed_world, conservation, detailed_balance, exchange_law, fission_partition, ledger
 from . import observers, ssa_oracle, streams, time_rescaling
 from .common import CheckResult, jsonable
-from .kernels import (PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT, canonical_form,
-                      gard_beta)
+from .kernels import (BOUNDARY_RULES, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
+                      canonical_form, gard_beta)
 from .records import ENGINE_BOUNDARY, Bundle, MissingRecord, RecordFormatError, load_bundle
 from .ssa_oracle import ChannelTable, ConventionMissing
 
@@ -274,7 +274,7 @@ def ensemble_counts(runs: list[Bundle]):
         ft = b.optional("fission_time")
         if ft is not None and ft.size and ft[0] <= times[-1]:
             raise RecordFormatError(f"{b.path}: a fission at t = {ft[0]} precedes the last registered time")
-        t_end = b.run_raw.get("t_end")
+        t_end = b.run.t_end
         reached = (et.size and et[-1] >= times[-1]) or (t_end is not None and float(t_end) >= times[-1])
         if not reached:
             raise RecordFormatError(f"{b.path}: cannot tell that the run reached t = {times[-1]} "
@@ -329,12 +329,28 @@ def row3(ctx: Context) -> list[CheckResult]:
         verdicts = meta.get("check_verdict")
         if not isinstance(verdicts, dict) or form not in verdicts:
             raise MissingRecord(f"kernel_probe/probe.json lacks check_verdict[{form!r}]")
-        law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form, meta.get("boundary", ENGINE_BOUNDARY))
+        boundary = meta.get("boundary", ENGINE_BOUNDARY)
+        if boundary not in BOUNDARY_RULES:
+            raise RecordFormatError(f"kernel_probe: unknown boundary rule {boundary!r}; known {BOUNDARY_RULES}")
+        law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form, boundary)
         out.append(detailed_balance.check_local_detailed_balance(
-            law, states, dict(join=join, leave=leave, leave_up=leave_up), verdicts[form]))
+            law, states, dict(join=join, leave=leave, leave_up=leave_up), verdict_token(verdicts[form])))
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
         out.append(detailed_balance.check_p1_square(form))
     return out
+
+
+PASSIVE_TOKENS = ("passive",)
+REFUSED_TOKENS = ("refused_as_passive", "refused", "driven", "not_passive")
+
+
+def verdict_token(value) -> str:
+    """Map a declared guard verdict onto the references' two; refuse any other word."""
+    if value in PASSIVE_TOKENS:
+        return detailed_balance.PASSIVE
+    if value in REFUSED_TOKENS:
+        return detailed_balance.REFUSED
+    raise RecordFormatError(f"unknown check_verdict {value!r}; accepted: {PASSIVE_TOKENS + REFUSED_TOKENS}")
 
 
 def row4(ctx: Context) -> list[CheckResult]:
@@ -440,17 +456,19 @@ def row8(ctx: Context) -> list[CheckResult]:
 
 def row9(ctx: Context) -> list[CheckResult]:
     a, rep, bat = ctx.bundle("lineage"), ctx.bundle("replay"), ctx.bundle("batched")
-    out = [streams.check_bitwise_replay(a.arrays, rep.arrays, a.run_raw, rep.run_raw),
-           streams.check_batch_invariance(a.arrays, bat.arrays, a.run_raw, bat.run_raw)]
+    out = [streams.check_bitwise_replay(a.arrays, rep.arrays, a.run.identity(), rep.run.identity(),
+                                        a.run_raw, rep.run_raw),
+           streams.check_batch_invariance(a.arrays, bat.arrays, a.run.identity(), bat.run.identity(),
+                                          a.run_raw, bat.run_raw)]
     for rb in ctx.bundles("restart"):
-        spec = rb.run_raw.get("restart")
+        spec = rb.run.restart
         if not isinstance(spec, dict) or not {"row", "event", "fission"} <= set(spec):
             raise MissingRecord(f"{rb.path}/run.json lacks restart.row, restart.event and restart.fission")
         out.append(streams.check_restart(a.arrays, rb.arrays, int(spec["row"]), int(spec["event"]),
                                          int(spec["fission"])))
     branches = ctx.bundles("branches")
     for br in branches:
-        br.require("event_channel")
+        br.require("event_channel", "event_uniforms", "partition_uniforms")
     out.append(streams.check_branch_independence([br.arrays for br in branches], [br.run.stream for br in branches]))
     return out
 
@@ -474,6 +492,8 @@ def row10(ctx: Context) -> list[CheckResult]:
     (table,) = require(arr, ("verdicts",), "f12_table")
     if "bit_order" not in meta:
         raise MissingRecord("f12_table/probe.json lacks bit_order")
+    if meta["bit_order"] not in ("lsb_first", "msb_first"):
+        raise RecordFormatError(f"f12_table: unknown bit_order {meta['bit_order']!r}; accepted lsb_first, msb_first")
     out.append(observers.check_f12_table(table, meta["bit_order"]))
     return out
 

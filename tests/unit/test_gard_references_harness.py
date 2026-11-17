@@ -179,7 +179,8 @@ def test_replay_identity_fields_decide_and_other_fields_are_listed(standin, tmp_
     report = harness.run_rows(dict(roles, replay=renamed), rows=[9])
     assert report["status"] == 0
     detail = report["rows"]["9"]["checks"][0]["detail"]
-    assert detail["other_run_fields_differ"] == ["finished", "run_id"]
+    assert detail["raw_run_fields_differ"] == ["finished", "run_id"]
+    assert detail["identity_fields_differ"] == []
     rekeyed = _edit_run(roles["replay"], tmp_path / "rekeyed", stream={"seed": 1, "branch": 0})
     report = harness.run_rows(dict(roles, replay=rekeyed), rows=[9])
     assert report["status"] == 1
@@ -224,3 +225,21 @@ def test_transfer_constants_must_agree_with_the_basal_constants(standin, tmp_pat
     (dst / "world.json").write_text(json.dumps(world))
     report = harness.run_rows(dict(roles, lineage=str(dst)), rows=[7])
     assert report["status"] == 2 and "transfer constants" in report["rows"]["7"]["error"]
+
+
+def test_unknown_vocabulary_is_refused_not_failed(standin, tmp_path):
+    _, roles = standin
+    dst = tmp_path / "verdict"
+    shutil.copytree(roles["kernel_probe"], dst)
+    meta = json.loads((dst / "probe.json").read_text())
+    meta["check_verdict"]["pair-consistent"] = "ok"
+    (dst / "probe.json").write_text(json.dumps(meta))
+    report = harness.run_rows(dict(roles, kernel_probe=str(dst)), rows=[3])
+    assert report["status"] == 2 and "check_verdict" in report["rows"]["3"]["error"]
+
+
+def test_branches_without_partition_uniforms_are_refused(standin, tmp_path):
+    _, roles = standin
+    stripped = [_without(p, tmp_path / f"b{k}", "partition_uniforms") for k, p in enumerate(roles["branches"])]
+    report = harness.run_rows(dict(roles, branches=stripped), rows=[9])
+    assert report["status"] == 2 and "partition_uniforms" in report["rows"]["9"]["error"]

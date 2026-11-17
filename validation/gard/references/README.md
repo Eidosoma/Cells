@@ -123,18 +123,19 @@ which is written last. A bundle without the manifest is refused.
   - in diagnostic mode, also `event_uniforms` [event, 2].
 
 `records.WORLD_FIELDS` and `records.RUN_FIELDS` are the only places that know the JSON key
-layout. When the engine's container is fixed, only these two tables change, plus the
+layout (the run's `restart` and `t_end` included). Replays compare the canonical
+`records.IDENTITY_FIELDS`; a field neither run declares is reported as absent. When the engine's container is fixed, only these two tables change, plus the
 `ssa_convention` value strings in `ssa_oracle.DECLARED_BY_ENGINE`.
 
 ### Roles
 
 | Role | Content | Rows |
 | --- | --- | --- |
-| `lineage`, `lineage_single_event` | One single lineage per form, from one world and one founder | 7, 8, 10 (and 5, 9) |
+| `lineage`, `lineage_single_event` | One single lineage per form, from one world and one founder | 7, 8, 10 (`lineage` also 5, 6 and 9) |
 | `lineage_diagnostic` | `lineage` rerun in diagnostic mode (events must be unchanged), with `event_uniforms` | 5 |
 | `rescale_beta0`, `rescale_betac` | beta = 0 and uniform beta = c, one founder, shared stream keys | 2 |
 | `beta0_ensemble` | A list of bundles of the registered design, without fission, reaching t = 2 (or declaring `t_end`) | 1, 5 |
-| `replay`, `batched`, `restart` (a list), `branches` (a list) | A replay of `lineage`; the same world run inside a batch; restarted runs declaring `restart.row`, `restart.event` and `restart.fission`; at least two branches from one landmark | 9 |
+| `replay`, `batched`, `restart` (a list), `branches` (a list) | A replay of `lineage`; the same world run inside a batch; restarted runs declaring `restart.row`, `restart.event` and `restart.fission`; at least two branches from one landmark, in diagnostic mode (`event_uniforms` and `partition_uniforms` required) | 9 |
 | `kernel_probe` | Probe: `join_*`, `leave_*` and `leave_up_*` (the leave of type i at x + e_i), for `*` = `pair_consistent` and `single_event`, on the registered 200 states, with the inputs echoed and `check_verdict` per form | 3 |
 | `closed_world` | Probe: `states_*`, `join_*` and `leave_*` with the held supply rho = 1, for `*` = `{p2_beta11, p2_beta12, three_types}_{form}`. The harness converts them to closed-world rates and drops the leaves at N = 1, because the claim concerns the chain on N >= 1 | 4 |
 | `partition_probe` | Probe: `parents_*` and `splits_*`, for `*` = `exact_fraction` and `binomial`, giving 400 splits of the registered parent | 6 |
@@ -148,8 +149,18 @@ NumPy's `Generator` (`inputs.json` records the NumPy version).
 the inputs in-process and requires each probe's echo of them to match bitwise. A different
 NumPy fails loudly; it never matches silently.
 
-A world that does not declare `rules.boundary` is read as `last_molecule_stays`. Every
-lineage row's detail reports the rule and whether it was declared.
+A world that does not declare `rules.boundary` is read as `extinction_uncatalysed`, the
+engine's declared convention. Every lineage row's detail reports the rule and whether it
+was declared.
+
+Accepted tokens (anything else is refused with status 2):
+- `law.check_verdict`: `passive`, or `refused_as_passive`, `refused`, `driven` or
+  `not_passive`;
+- the probe's `boundary` and `rules.boundary`: `last_molecule_stays`, `extinction` or
+  `extinction_uncatalysed`;
+- `rules.fission.guard_rule`: `stop` or `fission`;
+- `bit_order`: `lsb_first` or `msb_first`;
+- partitions: `binomial` or `exact_fraction`.
 
 Other conventions:
 - If the world's types carry transfer constants K, they must equal k_join/k_leave.

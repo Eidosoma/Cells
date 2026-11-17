@@ -71,6 +71,14 @@ def test_branches_are_independent_and_a_reused_key_is_caught(world):
     _, run_r, a_r = simulate_lineage(law, founder, n_fissions=2, seed=51, branch=200)
     reused = st.check_branch_independence(branches[:2] + [a_r], ids[:2] + [dict(run_r["stream"], branch=202)])
     assert not reused.passed and reused.detail["repeated_pairs"]
+    # planted: distinct event streams, but partitions keyed by the carrier key alone (shared across branches)
+    shared = []
+    for k in range(2):
+        _, run_s, a_s = simulate_lineage(law, founder, n_fissions=2, seed=51, branch=300 + k, partition_branch=7)
+        shared.append(a_s)
+    res = st.check_branch_independence(shared, [{"branch": 300}, {"branch": 301}])
+    assert res.detail["partition_stream_compared"] and not res.passed
+    assert res.detail["repeated_pairs"][0][4]  # the repeat is in the partition uniforms only
 
 
 def test_f12_reference_predicates_agree_on_all_4096_sequences():

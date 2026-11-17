@@ -20,8 +20,9 @@ counters. So:
 
 What the harness needs: a reference bundle and its replay; a solo bundle and a batched
 one; at least two branch bundles from one landmark; and restarted bundles, each declaring
-``restart.row``, ``restart.event`` and ``restart.fission`` in run.json.
-``IDENTITY_RUN_FIELDS`` lists the run.json fields replays must share.
+``restart.row``, ``restart.event`` and ``restart.fission`` in run.json. The identity
+fields replays must share are ``records.IDENTITY_FIELDS``. Branches must carry the
+diagnostic event and partition uniforms.
 
 Planted control: a reused key. Two branches that share a stream must be caught.
 """
@@ -33,10 +34,6 @@ import numpy as np
 from .common import CheckResult
 
 PREFIX = 50
-IDENTITY_RUN_FIELDS = ("world_id", "founder", "law", "mode", "stream", "ssa_convention", "channels",
-                       "ledger_conventions", "time")
-"""run.json fields that define what was run; replays must agree on them. Any other
-differing field (run ids, timestamps, hosts, batch placement) is listed, not failed."""
 ROW_AXIS_ARRAYS = ("row_time", "row_event", "assembly_count", "joined_total", "left_total", "discarded_total",
                    "exchange_heat_kT", "fission_work_kT", "discarded_free_energy_kT", "log_weight",
                    "ledger_residual_kT", "occupant", "generation")
@@ -60,22 +57,33 @@ def compare_arrays(a: dict, b: dict) -> dict:
     return dict(only_in_first=only_a, only_in_second=only_b, differ=differ)
 
 
-def check_bitwise_replay(arrays_a: dict, arrays_b: dict, run_a: dict, run_b: dict,
+def check_bitwise_replay(arrays_a: dict, arrays_b: dict, identity_a: dict, identity_b: dict,
+                         raw_a: dict | None = None, raw_b: dict | None = None,
                          name: str = "bitwise_replay") -> CheckResult:
-    """Arrays bitwise equal and the identity fields of run.json equal; other fields listed."""
+    """Arrays bitwise equal and the identity fields equal; other differing raw fields listed.
+
+    ``identity_*`` map canonical identity names to values (``RunView.identity()``). A field
+    declared by neither run cannot be compared; it is listed as absent rather than passed.
+    """
     cmp = compare_arrays(arrays_a, arrays_b)
-    identity_differs = [k for k in IDENTITY_RUN_FIELDS if run_a.get(k) != run_b.get(k)]
-    other_differs = sorted(k for k in set(run_a) | set(run_b)
-                           if k not in IDENTITY_RUN_FIELDS and run_a.get(k) != run_b.get(k))
+    names = sorted(set(identity_a) | set(identity_b))
+    absent = [k for k in names if identity_a.get(k) is None and identity_b.get(k) is None]
+    identity_differs = [k for k in names if k not in absent and identity_a.get(k) != identity_b.get(k)]
+    other_differs = []
+    if raw_a is not None and raw_b is not None:
+        other_differs = sorted(k for k in set(raw_a) | set(raw_b) if raw_a.get(k) != raw_b.get(k))
     passed = (not cmp["only_in_first"] and not cmp["only_in_second"] and not cmp["differ"]
               and not identity_differs)
     return CheckResult(name, bool(passed), dict(arrays=len(set(arrays_a) | set(arrays_b)),
                                                 identity_fields_differ=identity_differs,
-                                                other_run_fields_differ=other_differs, **cmp))
+                                                identity_fields_absent=absent,
+                                                raw_run_fields_differ=other_differs, **cmp))
 
 
-def check_batch_invariance(solo: dict, batched: dict, run_solo: dict, run_batched: dict) -> CheckResult:
-    return check_bitwise_replay(solo, batched, run_solo, run_batched, name="batch_partition_invariance")
+def check_batch_invariance(solo: dict, batched: dict, identity_solo: dict, identity_batched: dict,
+                           raw_solo: dict | None = None, raw_batched: dict | None = None) -> CheckResult:
+    return check_bitwise_replay(solo, batched, identity_solo, identity_batched, raw_solo, raw_batched,
+                                name="batch_partition_invariance")
 
 
 def check_restart(original: dict, restarted: dict, restart_row: int, restart_event: int,
@@ -141,5 +149,7 @@ def check_branch_independence(branches: list[dict], identities: list, prefix: in
                 same_p = m > 0 and np.array_equal(pa[:m], pb[:m])
             if same_events or same_u or same_p:
                 repeats.append((a, b, bool(same_events), bool(same_u), bool(same_p)))
+    partition_compared = all("partition_uniforms" in br for br in branches)
     return CheckResult("branch_independence", bool(distinct_ids and not repeats), dict(
-        branches=n, distinct_identities=distinct_ids, prefix=prefix, repeated_pairs=repeats[:10]))
+        branches=n, distinct_identities=distinct_ids, prefix=prefix, repeated_pairs=repeats[:10],
+        partition_stream_compared=partition_compared))

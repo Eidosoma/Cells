@@ -88,9 +88,14 @@ RUN_FIELDS = {
     "end_status": "end_status",
     "channels": "channels",
     "time": "time",
+    "restart": "restart",
+    "t_end": "t_end",
 }
 RUN_OPTIONAL = ("energy_role", "check_verdict", "ledger_conventions", "end_status", "revision",
-                "ssa_convention", "channels", "time")
+                "ssa_convention", "channels", "time", "restart", "t_end")
+IDENTITY_FIELDS = ("world_id", "founder", "form", "law_id", "mode", "stream", "ssa_convention", "channels",
+                   "ledger_conventions", "time")
+"""Canonical run fields that define what was run; replays must agree on them."""
 
 
 def _dig(obj: dict, dotted: str):
@@ -154,7 +159,13 @@ class RunView:
     end_status: object
     channels: dict | None = None
     time: dict | None = None
+    restart: dict | None = None
+    t_end: float | None = None
     raw: dict = field(repr=False, default_factory=dict)
+
+    def identity(self) -> dict:
+        """The identity fields, by canonical name (None when the run does not declare one)."""
+        return {k: getattr(self, k) for k in IDENTITY_FIELDS}
 
 
 def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
@@ -170,6 +181,11 @@ def adapt_world(raw: dict, source: str = "world.json") -> WorldView:
                 missing.append(f"{source}:{dotted}")
     if missing:
         raise MissingRecord(f"world record lacks {missing}")
+    if values["boundary"] is not None and values["boundary"] not in ("last_molecule_stays", "extinction",
+                                                                    "extinction_uncatalysed"):
+        raise RecordFormatError(f"{source}: unknown boundary rule {values['boundary']!r}")
+    if values["guard_rule"] is not None and values["guard_rule"] not in ("stop", "fission"):
+        raise RecordFormatError(f"{source}: unknown guard rule {values['guard_rule']!r}")
     if values["supply_kind"] != "held":
         raise RecordFormatError(f"{source}: supply kind {values['supply_kind']!r}; the lineage references "
                                 "need a held supply")

@@ -133,7 +133,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
                      diagnostics: bool = True, leave_weight: float = 1.0, join_factor: float = 1.0,
                      max_events: int | None = None, t_max: float | None = None,
                      world: dict | None = None, table: ChannelTable | None = None,
-                     guard_rule: str = "stop") -> tuple[dict, dict, dict]:
+                     guard_rule: str = "stop", partition_branch: int | None = None) -> tuple[dict, dict, dict]:
     """Run one lineage; return (world, run, arrays) in the canonical bundle layout.
 
     ``leave_weight`` and ``join_factor`` exist only to plant errors for the controls:
@@ -151,7 +151,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
     fis = {k: [] for k in ("fission_time", "fission_slot", "fission_parent", "fission_daughters",
                            "fission_followed", "fission_split", "fission_similarity",
                            "fission_partition_counter", "continuation_uniform")}
-    ev_time, ev_chan, ev_u, per_growth = [], [], [], []
+    ev_time, ev_chan, ev_u, per_growth, part_u = [], [], [], [], []
     joined = np.zeros(G, dtype=np.int64)
     left = np.zeros(G, dtype=np.int64)
     discarded = np.zeros(G, dtype=np.int64)
@@ -231,7 +231,9 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
             P = x.copy()
             N = int(P.sum())
             n_u = int(math.floor(fraction * N)) if partition == "exact_fraction" else N
-            pu = stream_uniforms(seed, DOMAIN_PARTITION, branch, occupant, max(n_u, 1))  # keyed by the parent
+            pb = branch if partition_branch is None else partition_branch  # a shared key is a planted error
+            pu = stream_uniforms(seed, DOMAIN_PARTITION, pb, occupant, max(n_u, 1))  # keyed by the parent
+            part_u.append(pu)
             d1 = _split(P, partition, fraction, p, pu)
             d2 = P - d1
             cu = float(stream_uniforms(seed, DOMAIN_CONTINUATION, branch, occupant, 1)[0])
@@ -296,6 +298,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
     if diagnostics:
         arrays["event_uniforms"] = np.asarray(ev_u, dtype=np.float64).reshape(-1, 2)
         arrays["continuation_uniform"] = np.asarray(fis["continuation_uniform"], dtype=np.float64)
+        arrays["partition_uniforms"] = (np.concatenate(part_u) if part_u else np.zeros(0)).astype(np.float64)
     run = {
         "schema": "cells.assembly_lineages.run@1",
         "world_id": world["id"],
