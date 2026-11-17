@@ -292,6 +292,25 @@ def _packages(pairs, existing=()):
     return dict(sorted(packages.items()))
 
 
+def _in_legacy(module):
+    return module == "cells.legacy" or module.startswith("cells.legacy.")
+
+
+def legacy_entries(edges):
+    """The core's entry point into the older families (D188 R1, core/legacy_entry): the module
+    outside the legacy package that names the legacy registration by its string constant, which
+    importlib loads on a miss. It never moves to legacy/. Its string names a legacy module, so on
+    a tree where move 1 is applied the classes count it among the modules importing legacy code
+    ("side"), and without this rule the planner would move it (17 November, move 2's step 1)."""
+    return {
+        u
+        for u, targets in edges.items()
+        if u.startswith("cells")
+        and not _in_legacy(u)
+        and targets.get(li.REGISTRATION, (None, None))[1] == "string"
+    }
+
+
 def move_set(c, reached, index, edges):
     """Move 1's modules and how each rule placed them. The rules:
       - older families' modules the active path does not reach (by name), and the modules
@@ -316,8 +335,8 @@ def move_set(c, reached, index, edges):
     stop = family | set(c.get("dispatched", ())) | set(li.TRANSIT)
     kept, _ = li.closure(sorted(reached - CHAINS), edges, stop=stop, leaves=CHAINS)
     kept = {m for m in kept if m.startswith("cells")} | (reached - CHAINS)
-    placed = {m for m in index if m == "cells.legacy" or m.startswith("cells.legacy.")}
-    fixed = kept | reached | CHAINS | placed
+    placed = {m for m in index if _in_legacy(m)}
+    fixed = kept | reached | CHAINS | placed | legacy_entries(edges)
     moved = (family | set(c["private"]) | set(c["side"])) - fixed
     importers = defaultdict(set)
     for u, targets in edges.items():
@@ -430,7 +449,27 @@ EXECUTION = {
 }
 REGISTRY = {"kind_registry", "species_registry", "inventory_species"}
 RECORDS = {"io", "window_io", "batch_io", "batch_window_io", "run_view", "observers"}
-STAY = ("numerics", "models", "analysis", "assays", "assembly", "assembly_pool", "ensemble", "laws")
+# Folders whose modules the rule table leaves where they are: D188's target folders (a module
+# already in one is at home: R6's execution and registry package files, or a branch's new module
+# there), cells.modules (D195's provisional surface, which no move touches) and the folders D188
+# does not name.
+STAY = (
+    "numerics",
+    "models",
+    "analysis",
+    "assays",
+    "assembly",
+    "assembly_pool",
+    "ensemble",
+    "laws",
+    "kinds",
+    "operators",
+    "execution",
+    "registry",
+    "definitions",
+    "records",
+    "modules",
+)
 
 
 def _target2(m):
@@ -461,25 +500,35 @@ def _target2(m):
     return None
 
 
-def move2(args):
-    """Move 2's draft: the modules move 1 leaves outside legacy/, by the rule table."""
-    m1 = _load(args.out, "move1-draft.json")
-    moved1 = {o for o, _ in m1["modules"]}
-    mods = sorted(m for m in li.module_index() if m.startswith("cells.") and m not in moved1)
+def move2_plan(modules, moved1):
+    """Move 2's pairs and unplaced modules: the modules outside legacy/ that move 1 (its draft, or
+    nothing once it is applied) does not move, by the rule table. A module already under
+    cells.legacy is move 1's, applied: it is neither moved nor listed as unplaced."""
     pairs, unplaced = [], []
-    for m in mods:
+    for m in sorted(modules):
+        if not m.startswith("cells.") or m in moved1 or _in_legacy(m):
+            continue
         new = _target2(m)
         if new and new != m:
             pairs.append([m, new])
         elif new is None and m.split(".")[1] not in STAY and m != "cells.__main__":
             unplaced.append(m)
+    return pairs, unplaced
+
+
+def move2(args):
+    """Move 2's draft: the modules move 1 leaves outside legacy/, by the rule table."""
+    m1 = _load(args.out, "move1-draft.json")
+    moved1 = {o for o, _ in m1["modules"]}
+    index = li.module_index()
+    pairs, unplaced = move2_plan(index, moved1)
     doc = dict(
         kind=MAP_KIND,
         move="d188-move-2-draft",
         description="DRAFT (D188 step 0), after move 1's draft; rule table in "
         "scripts/source_moves_plan.py",
         modules=pairs,
-        packages=_packages(pairs),
+        packages=_packages(pairs, existing=set(index)),  # R6's execution and registry exist
         keep=[],
         reviewed=[],
         draft_notes=dict(unplaced=unplaced),
@@ -759,6 +808,7 @@ def selftest(args):
         "a package's __init__ stays while one of its modules stays": "cells.pkg" not in moved
         and "cells.pkg.a" in moved,
     }
+    checks.update(_after_move1_checks())
     # The planted control: without the rule, the law moves and the core imports a moved module.
     unkept = dict(c, private=c["private"])
     moved_plain = (set(unkept["legacy"]) | set(unkept["private"])) - reached - CHAINS
@@ -769,6 +819,57 @@ def selftest(args):
     failed = [k for k, v in checks.items() if not v]
     print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
     return 1 if failed else 0
+
+
+def _after_move1_checks():
+    """A tree where move 1 is applied (17 November, move 2's step 1): the older families live under
+    cells.legacy, and R1's entry point, which names the legacy registration by a string and which
+    the dispatch points import only inside functions, is unreached and counts among the modules
+    importing legacy code. It must stay; move 1's plan is then empty, and move 2's lists no legacy
+    module, moved or unplaced."""
+    global legacy_entries
+    index, edges = _graph(
+        {
+            "cells/": [],
+            "cells.core/": [],
+            "cells.core.specs": [],  # A dispatch point.
+            "cells.core.legacy_entry": [],
+            "cells.core.runner": ["cells.core.specs"],
+            "cells.legacy/": [],
+            "cells.legacy.registration": ["cells.legacy.models.old_model"],
+            "cells.legacy.models/": [],
+            "cells.legacy.models.old_model": [],
+            "cells.processes/": [],
+            "cells.processes.mystery": [],
+        }
+    )
+    edges["cells.core.legacy_entry"][li.REGISTRATION] = ([], "string")
+    c = dict(
+        legacy=["cells.legacy.models.old_model"],
+        private=[],
+        side=["cells.core.legacy_entry"],  # As the classes read it after move 1.
+        dispatched=[],
+    )
+    reached = {"cells", "cells.core", "cells.core.specs", "cells.core.runner"}
+    moved, _ = move_set(c, reached, index, edges)
+    real = legacy_entries
+    try:
+        legacy_entries = lambda edges: set()  # noqa: E731  The planted control: the rule removed.
+        planted, _ = move_set(c, reached, index, edges)
+    finally:
+        legacy_entries = real
+    pairs, unplaced = move2_plan(index, moved1=set())
+    return {
+        "after move 1: R1's entry point stays, and move 1's plan is empty": moved == set(),
+        "after move 1, planted: without the entry rule the entry would move": planted
+        == {"cells.core.legacy_entry"},
+        "after move 1: move 2 lists no legacy module, moved or unplaced": not [
+            m for pair in pairs for m in pair if _in_legacy(m)
+        ]
+        and not [m for m in unplaced if _in_legacy(m)]
+        and ["cells.core.runner", "cells.execution.runner"] in pairs
+        and "cells.processes.mystery" in unplaced,
+    }
 
 
 def _reader_checks():
