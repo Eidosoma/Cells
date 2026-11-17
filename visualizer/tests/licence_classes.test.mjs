@@ -251,10 +251,12 @@ const NUMBERS_ONLY = { "ecoli.json": ["matias2003", "berry2010"] };
 
 // The Machines catalogue (schema/MACHINE_CATALOGUE.md): its sources are copied with their terms from the species files
 // it reads, and whatever it gives (the words that name a machine, a count, a size) rests on a permissive one.
-const catalogueFiles = await listed(path.join(DATA, "catalogue"), (entry) => isJson(entry) && entry.name !== "overlay.json");
+// The generated catalogue alone: its hand-kept overlay is read through it, and the gathered dossiers beside it (gather.json,
+// dossiers/) are held by their own test (tests/machine_gather.test.mjs), with the same classes.
+const catalogueFiles = await listed(path.join(DATA, "catalogue"), (entry) => isJson(entry) && entry.name === "catalogue.json");
 
 test("the Machines catalogue: every source has its class, and what names a machine, counts it or sizes it rests on a permissive source", async () => {
-  assert.equal(catalogueFiles.length, 1, "data/catalogue/ holds the catalogue and its overlay");
+  assert.equal(catalogueFiles.length, 1, "data/catalogue/ holds the generated catalogue");
   for (const file of catalogueFiles) {
     const catalogue = await json(file);
     const where = rel(file);
