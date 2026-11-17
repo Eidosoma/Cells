@@ -6,7 +6,7 @@ A definition is one run of one world:
      "model": {"id": "cells.assembly_lineages@1",
                "world": {...},                      the world record's content (below)
                "rate_factor": {"law": ID}},         optional: absent, exchange runs alone
-     "experiment": {"fissions", "growth_event_limit", "trace", "uniforms"},
+     "experiment": {"fissions", "growth_event_limit", "trace", "uniforms", "life_budget"},
      "execution": {"backend", "precision", "mode", "stream": {seed, environment, lineage, branch},
                    "type_capacity", "molecule_capacity", "chunk_events", "unroll"}}
 
@@ -34,8 +34,17 @@ Values (supply, constants, matrix, founder, fission size and fraction, horizons)
 a change of value reuses the compiled program. Structure (capacities, the laws, the partition
 and continuation rules, the chunk and the recording flags) selects the program.
 
-Execution: `mode` is single_lineage (one continuing assembly per world; population mode is
-later). The capacities are static buckets: `type_capacity` >= the number of types and
+Execution: `mode` is single_lineage (one continuing assembly per world: one daughter of each
+fission is followed) or every_descendant (every daughter lives, as its own lane: population mode
+P-a of docs/RELATIONSHIPS_DESIGN.md §1.4, exact under a held phase). In every_descendant mode
+`experiment.fissions` is the generation limit (lives of that generation are born and censored at
+the horizon, so the followed path is the single lineage of that many fissions), and
+`experiment.life_budget` is required: the most lives that run. Growth is 2**g lives at generation
+g, so a run holds at most min(2**(G + 1) - 1, 2 budget + 1) lives; when a generation's runnable
+lives exceed what is left of the budget, that whole generation is censored at its birth (never
+dropped) and the run ends. Single-lineage definitions omit life_budget, and their bytes and
+fingerprints are as before it existed. The capacities are static buckets: `type_capacity` >= the
+number of types and
 `molecule_capacity` >= the fission size; `chunk_events` events run per device call, and `unroll`
 sets the channel fold's loop unrolling. Neither changes a single value of a run.
 """
@@ -51,7 +60,15 @@ from cells.core.specs import (
     finite_number,
     require_fields,
 )
-from cells.models.assembly_lineages import EXCHANGE_LAW, MODE, MODEL_ID, factors, streams
+from cells.models.assembly_lineages import (
+    EVERY_DESCENDANT,
+    EXCHANGE_LAW,
+    MODE,
+    MODEL_ID,
+    MODES,
+    factors,
+    streams,
+)
 from cells.models.assembly_lineages import continuation as continuation_rules
 from cells.models.assembly_lineages import family as type_family
 from cells.models.assembly_lineages import fission as fission_rules
@@ -68,7 +85,7 @@ WORLD_KEYS = {
 }
 WORLD_REQUIRED = WORLD_KEYS - {"law_data", "units"}
 TIME_UNITS = ("nominal", "s")
-EXPERIMENT_KEYS = {"fissions", "growth_event_limit", "trace", "uniforms"}
+EXPERIMENT_KEYS = {"fissions", "growth_event_limit", "trace", "uniforms", "life_budget"}
 EXECUTION_KEYS = {
     "backend",
     "precision",
@@ -78,12 +95,16 @@ EXECUTION_KEYS = {
     "molecule_capacity",
     "chunk_events",
     "unroll",
+    "lanes",
 }
 EXECUTION_REQUIRED = {"backend", "precision", "mode", "stream"}
+DEFAULT_LANES = 64  # Every descendant: the lane batch's width (it changes no value).
 STREAM_KEYS = {"seed", "environment", "lineage", "branch"}
 DEFAULT_CHUNK = 32
 DEFAULT_UNROLL = 8
 MAX_FISSIONS = 10**7
+MAX_GENERATIONS = 62  # Every descendant: 2**g lives at generation g stay countable in int64.
+MAX_LIFE_BUDGET = 2**24
 
 
 @dataclass(frozen=True)
@@ -135,6 +156,7 @@ class Experiment:
     growth_event_limit: int  # Events of one growth (since a birth) before the run stops.
     trace: bool  # The event trace, saved by default for one lineage (§5.4).
     uniforms: bool  # Diagnostic: every draw's uniforms, saved for a replay.
+    life_budget: int | None = None  # Every descendant only: the most lives that run.
 
 
 @dataclass(frozen=True)
@@ -150,6 +172,7 @@ class Execution:
     molecule_capacity: int
     chunk_events: int
     unroll: int
+    lanes: int | None = None  # Every descendant only: the lane batch's width.
 
 
 def _keys(raw, allowed, required, name):
@@ -282,15 +305,31 @@ def parse_model(raw):
     return LineageModel(world, law_id)
 
 
-def parse_experiment(raw):
+def parse_experiment(raw, mode=MODE):
     _keys(raw, EXPERIMENT_KEYS, {"fissions", "growth_event_limit"}, "experiment")
+    budget = raw.get("life_budget")
+    if mode == EVERY_DESCENDANT:
+        if budget is None:
+            raise ConfigError(
+                "experiment: every_descendant mode states its bound: life_budget, the most lives "
+                "that run (growth is 2**g lives at generation g)"
+            )
+        budget = bounded_integer(
+            budget, "experiment: life_budget", minimum=1, maximum=MAX_LIFE_BUDGET
+        )
+        limit = MAX_GENERATIONS
+    else:
+        if budget is not None:
+            raise ConfigError("experiment: life_budget is every_descendant mode's")
+        limit = MAX_FISSIONS
     return Experiment(
-        fissions=bounded_integer(raw["fissions"], "experiment: fissions", maximum=MAX_FISSIONS),
+        fissions=bounded_integer(raw["fissions"], "experiment: fissions", maximum=limit),
         growth_event_limit=bounded_integer(
             raw["growth_event_limit"], "experiment: growth_event_limit", maximum=2**31 - 1
         ),
         trace=_boolean(raw.get("trace", True), "experiment: trace"),
         uniforms=_boolean(raw.get("uniforms", False), "experiment: uniforms"),
+        life_budget=budget,
     )
 
 
@@ -298,8 +337,8 @@ def parse_execution(raw, model):
     _keys(raw, EXECUTION_KEYS, EXECUTION_REQUIRED, "execution")
     if raw["backend"] not in ("cpu", "gpu") or raw["precision"] != "float64":
         raise ConfigError("execution: backend cpu or gpu, precision float64")
-    if raw["mode"] != MODE:
-        raise ConfigError(f"execution: mode is {MODE} (population mode is not built)")
+    if raw["mode"] not in MODES:
+        raise ConfigError(f"execution: mode is one of {', '.join(MODES)}")
     stream = raw["stream"]
     require_fields(stream, STREAM_KEYS, "execution: stream")
     words = {}
@@ -309,6 +348,13 @@ def parse_execution(raw, model):
         except ValueError as error:
             raise ConfigError(str(error)) from error
     world = model.world
+    lanes = raw.get("lanes")
+    if raw["mode"] == EVERY_DESCENDANT:
+        lanes = bounded_integer(
+            DEFAULT_LANES if lanes is None else lanes, "execution: lanes", maximum=4096
+        )
+    elif lanes is not None:
+        raise ConfigError("execution: lanes is every_descendant mode's")
     capacity = raw.get("type_capacity", type_family.bucket(world.types.count))
     molecules = raw.get("molecule_capacity", type_family.bucket(world.fission.size))
     return Execution(
@@ -325,6 +371,7 @@ def parse_execution(raw, model):
             raw.get("chunk_events", DEFAULT_CHUNK), "execution: chunk_events", maximum=4096
         ),
         unroll=bounded_integer(raw.get("unroll", DEFAULT_UNROLL), "execution: unroll", maximum=64),
+        lanes=lanes,
         **words,
     )
 
@@ -335,9 +382,8 @@ def parse(data):
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
     model = parse_model(raw["model"])
-    return SimulationSpec(
-        model, parse_experiment(raw["experiment"]), parse_execution(raw["execution"], model)
-    )
+    execution = parse_execution(raw["execution"], model)
+    return SimulationSpec(model, parse_experiment(raw["experiment"], execution.mode), execution)
 
 
 def to_dict(spec):
@@ -353,7 +399,8 @@ def to_dict(spec):
             "growth_event_limit": e.growth_event_limit,
             "trace": e.trace,
             "uniforms": e.uniforms,
-        },
+        }
+        | ({} if e.life_budget is None else {"life_budget": e.life_budget}),
         "execution": {
             "backend": x.backend,
             "precision": x.precision,
@@ -368,7 +415,8 @@ def to_dict(spec):
             "molecule_capacity": x.molecule_capacity,
             "chunk_events": x.chunk_events,
             "unroll": x.unroll,
-        },
+        }
+        | ({} if x.lanes is None else {"lanes": x.lanes}),
     }
 
 

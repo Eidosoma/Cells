@@ -415,6 +415,17 @@ is searched for any world the per-move check would newly refuse, as was done for
 7. **R5 with growing capacity.** The kind's `bound_rate` takes the schedule's largest capacity,
    since it sees the spec and so the schedule, as insertion's area bound does.
 
+### 4.6 Requirement collected: a merge verb (17 November 2026; D210)
+
+Mitochondrial fusion needs merge, the inverse of split, beside close, split, retire and open (§4.2;
+MITOCHONDRIA_DESIGN, addendum B.1). This is a requirement, not a design:
+- **Roles at a merge:** extensive fields summed; history moved to a record; structural fields equal,
+  or the merge refused; intensive fields weighted by a declared extensive field (a gate fraction by
+  capacity), or refused.
+- **Heat:** members merged at unequal voltages lose capacitor energy C₁C₂(V₁ − V₂)²/2(C₁ + C₂), and
+  at unequal contents mixing free energy. Both are booked as heat, so the energy ledger closes.
+- **Hosts:** compartments join the entity hierarchy through FR-1's door D.
+
 ## 5. Seam C: binding
 
 ### 5.1 One closure

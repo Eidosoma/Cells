@@ -6707,6 +6707,11 @@ viz". The work replicates, with the Cells engine, the experiment of the public b
   shares the highest priority with the replication.
   - On lane A, GARD's short gate runs first and the replication's tissue search follows.
   - On the light CPUs, both run at nice 0.
+- **Amended again, the same evening.** The user said: "lets get GARD and Levin finished as soon as
+  possibl even if we have to slow down other work, I want to replace the Experiments in viz with those
+  two for the next demo, which will be soon".
+  - The viewer's Experiments view shows GARD and the gap-junction replication in the next demo.
+  - Other work slows for them (D211).
 
 ## D208: Numbers from BITSEY's code and logs may be used, cited
 
@@ -6787,4 +6792,35 @@ later".
 - **The addendum is read-only and gives options.** It names the first research question that needs
   individuals, and the free-to-read data for it. Inheritance may belong to another target, since
   cardiac cells rarely divide.
+
+## D211: Tested legacy laws are ported to the active engine, below GARD and the replication
+
+2026-11-17, evening. The visualizer session found that 38 of the Protein atlas's 48 units rest on laws
+that no active model declares. It relayed the user's reply: "the lead so prioritize reimplementing
+those". The user then told the lead directly: "so yes for legacy laws that maybe have been tested we
+should port those with priority". The user added: "but not the highest priorty, lets get GARD and Levin
+finished as soon as possibl even if we have to slow down other work" (D207).
+
+- **Scope:** the 54 law IDs behind those 38 units, tested laws first.
+  - This amends D196: legacy laws are ported, not only rebuilt when a capability needs them.
+  - It amends D206: the retire batch's two laws join this program.
+  - The count of other legacy laws is reported to the user after the inventory.
+- **The method:**
+  1. A read-only inventory first. For each law it records where the kernel lives, whether the law is
+     tested, what it needs beyond voltage, and who owns the mechanism.
+  2. One pilot family, a voltage-only family that is tested and whose kernel is already live, ported
+     end to end.
+  3. Batches on disjoint files.
+- **Each ported law** declares its test and its source. Its reference check moves beside it, as D196's
+  safeguard requires, and no citation is written from memory. Adding channel codes to @3 must leave
+  existing worlds' programs and fingerprints unchanged.
+- **Mechanisms already owned are not ported as they stand:**
+  - calcium handling and NCX fold into the cardiac lane's planned laws (D183, D184);
+  - mitochondria fold into D193;
+  - the gap-junction flux belongs to FR-16.
+
+  D210 rules out a second law for one mechanism.
+- **A law that becomes declared is not thereby qualified.** Each unit keeps the status its record
+  states.
+- **Priority:** below GARD and the gap-junction replication.
 

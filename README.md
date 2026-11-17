@@ -37,10 +37,6 @@ agents help write and check its models, and its experiments are declared
 definitions with machine-readable records, so people and AI systems alike can
 design, run and read them.
 
-Cells and its viewer were inspired by [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V), a
-timeline of thirty-five years of making the inside of a cell visible, from
-hand-painted cross-sections to whole-cell simulations.
-
 Unlike a real microscope, it shows a model, not the cell itself, so it is only
 as true as what goes into it. That is why every law names its source, every
 quantity of matter, charge and energy is accounted for, every result traces back
@@ -90,9 +86,11 @@ the ideas hold, fail or need revision. See the
 
 Cells starts small on purpose. The first versions work with one cell up to a few
 hundred. The aim at that scale is to reproduce published models and experiments,
-run new ones, and see which mechanisms and equations produce each result. Larger
-tissues and whole organs come later, built from parts that have already held up
-at the smaller scale. The [roadmap](#roadmap) shows the order.
+run new ones, and see which mechanisms and equations produce each result. A
+replication is judged under a protocol registered before its run, against
+independent references and, where we can run them, the tools its authors used.
+Larger tissues and whole organs come later, built from parts that have already
+held up at the smaller scale. The [roadmap](#roadmap) shows the order.
 
 The simulator is modular. New mechanisms are added as separate, versioned models
 or options. Each is checked on its own and stays off unless an experiment selects
@@ -106,20 +104,45 @@ contracts as built-in models. Its open choices were settled on 16 November: new
 physics enters the engine as declared modules, and contributors will add a module
 by pull request, in its own namespace and checked by a conformance kit that Cells
 is to ship. The kit, the example module and the contributor guide are not built
-yet.
+yet. Every law, operator and model is to have its own
+[plain-language page](docs/library/README.md), which opens in words that a
+scientist from any field can follow before it reaches the equations.
+
+Different research needs different levels of detail, so the level is part of the
+setup. A mechanism can be modelled individually or in aggregate, and each run
+declares which. A cell's mitochondria can be one population or individual
+organelles that divide, fuse and are inherited. A molecular machine can be one
+copy stepping through its cycle, or a count with rates. The levels meet at their
+physical interfaces and keep the same accounting, and the finer one serves as the
+reference for the coarser.
 
 On the molecular side, the one level we skip is protein folding itself. Beneath
 it, we aim to simulate the gene regulation that sets how much of each protein is
 made. Above it, we aim to simulate the assembly of proteins into complexes and
-molecular machines, from protein cages today toward structures such as the
-proteasome and larger, and how those machines are used in cells and tissues.
+[molecular machines](docs/MOLECULAR_MACHINES_DESIGN.md), from protein cages today
+toward ATP synthase, the proteasome and larger, and how those machines are used
+in cells and tissues.
+
+Before the first cell, Cells is building its own
+[engine for the origin of life](docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md) from
+physical chemistry. It starts with assemblies of amphiphiles, the molecules that
+form membranes, which grow, split and pass on their composition, with every
+molecule and every unit of energy accounted for. The published GARD model of
+compositional inheritance is implemented beside it for comparison.
+
+Every run is also meant to be readable as a history: which cell or assembly came
+from which, where its material came from, and what each result depended on. These
+are written as plain [tables](docs/RELATIONSHIPS_DESIGN.md), so that graphs come
+straight from the raw data.
 
 Our goal is a complete and faithful simulation of a real cell, and in time of the
 tissues and organs it builds. Each qualified mechanism is a step toward it, and we
 believe progress in AI and in mathematics can bring that goal closer than it
 seems today. As a first whole cell we have taken up the minimal bacterium
 JCVI-syn3A as a [track](docs/SYN3A_MINIMAL_CELL_TRACK.md). So far it holds an
-evidence audit and capability probes, with no engine code written for it.
+evidence audit and capability probes, with no engine code written for it. Beyond
+it, the organisms in view are the mouse, the planarian and the human, beginning
+with the human heart's muscle cells and their mitochondria.
 
 ## Where things stand (16 November 2026)
 
@@ -189,7 +212,7 @@ views: **Cell and scales** (a cell opened by a cut, its sheet, and placeholder
 outlines of an organ and a body), the **Protein atlas** (the molecular machines
 the engine's laws act on, and each species' own proteins), **Experiments**
 (replays of saved runs) and **Engine** (the simulator's layers, mapped from the
-code). Its inspiration is [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V).
+code).
 
 ![A replay of the judged experiment E07-v1 in the viewer: a hexagonal sheet of cells, each standing as high as its membrane voltage, with the written disc outlined, a timeline at 19 min 30 s and the record's verdict, "the disc did not renew", beside it](visualizer/docs/screenshots/replay-e07v1-voltage-as-height.webp)
 
@@ -313,6 +336,15 @@ need saved run folders that stay outside it
 (`npm run adapt:runs -- --evidence PATH`). The real-click checks in headless
 Chrome (`npm run check:all`) and publishing are in the
 [visualizer's README](visualizer/README.md#run-it).
+
+### Inspiration
+
+Cells and its viewer were partly inspired by 3D visualizations of the cell over
+the years. We gathered some of them in [The Cell on Screen](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V), a timeline of
+thirty-five years of making the inside of a cell visible, from hand-painted
+cross-sections to whole-cell simulations.
+
+[![The opening of The Cell on Screen: its title in white and a rainbow gradient, a line on thirty-five years of making the inside of a cell visible, and its timeline of 18 landmarks from 1991 to 2026, drawn as glowing spots coloured by era](docs/assets/the-cell-on-screen.png)](https://claude.ai/artifact/GWmwiKrNfYcFnNCykoSN9V)
 
 ## Roadmap
 

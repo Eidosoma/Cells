@@ -106,6 +106,11 @@ def test_a_passive_run_that_does_not_close_is_refused(monkeypatch, runs):
         [dict(r) for r in _rows_of(run)],
         [],
         [],
+        [],
+        (np.zeros(0, dtype=np.int64), np.zeros(0, dtype=np.int64)),
+        run.qualifier,
+        "fresh",
+        {},
         {},
     )
     assert refused.status == "refused"

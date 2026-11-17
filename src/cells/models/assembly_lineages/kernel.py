@@ -68,7 +68,9 @@ SSA_CONVENTION = {
 LIFECYCLE = {
     "statuses": {
         "running": "drawing events",
-        "fission_due": "a join reached the fission size; the fission pass replaces the occupant",
+        "fission_due": "a join reached the fission size, or a daughter was born at it (a "
+        "binomial partition can give one daughter every molecule); the fission pass replaces the "
+        "occupant",
         "complete": "the lineage made its last fission (experiment.fissions)",
         "extinct": "the assembly emptied: its last molecule left, or an empty daughter was "
         "followed under the continuation's `extinct` rule",
@@ -410,7 +412,11 @@ def split(lane, layout, structure):
         status=jnp.where(
             keep_size == 0,
             EXTINCT,
-            jnp.where(fissions >= layout.fission_limit, COMPLETE, RUNNING),
+            jnp.where(
+                fissions >= layout.fission_limit,
+                COMPLETE,
+                jnp.where(keep_size >= layout.split_size, FISSION_DUE, RUNNING),
+            ),
         ).astype(jnp.int32),
     )
     result = _select(due, after, lane)
@@ -427,6 +433,76 @@ def split(lane, layout, structure):
         choice=choice if structure.uniforms else (),
     )
     return result, record
+
+
+def sibling(lane, layout, structure, first, followed):
+    """Every-descendant mode: the other daughter of the fission that the pass has just made, as a
+    lane at its birth (a no-op unless `lane` is FISSION_DUE).
+
+    `lane` is the parent before the split; `first` and `followed` are the fission pass's record
+    (split). The followed daughter's lane is the fission pass's own, so the followed path is the
+    single lineage's, bitwise. This lane exchanges the daughters' roles: it keeps the other
+    daughter, books the followed daughter's material and free energy as leaving its path (the
+    same ledger terms, with the roles exchanged), and takes the other key. Its sub-lineage counter
+    (next_carrier) is the host's to assign once its generation has ended (keys.py); it is -1 here.
+    The program is separate from the fission pass, which it leaves untouched."""
+    law = rate_factor(structure)
+    due = lane.status == FISSION_DUE
+    parent, size = lane.counts, lane.size
+    second = parent - first
+    sizes = (jnp.sum(first), jnp.sum(second))
+    other = 1 - followed
+    keep = jnp.where(other == 0, first, second)
+    drop = parent - keep
+    keep_size = jnp.where(other == 0, sizes[0], sizes[1])
+
+    def phi(counts, n):
+        return ledger.log_weight(counts, n, layout.log_theta, layout.log_factorial, jnp)
+
+    phi_parent, phi_first, phi_second = (
+        phi(parent, size),
+        phi(first, sizes[0]),
+        phi(second, sizes[1]),
+    )
+    work = phi_parent - phi_first - phi_second
+    sink = -jnp.where(other == 0, phi_second, phi_first)
+    daughters = jnp.stack((lane.next_carrier, lane.next_carrier + 1))
+    occupant = daughters[other]
+    fissions = lane.fissions + 1
+    state = factor_state(keep, layout, law, structure.unroll)
+    born = lane._replace(
+        counts=keep,
+        size=keep_size,
+        age=jnp.int64(0),
+        occupant=occupant,
+        generation=lane.generation + 1,
+        next_carrier=jnp.int64(-1),
+        fissions=fissions,
+        discarded=lane.discarded + drop,
+        work=lane.work + work,
+        work_magnitude=lane.work_magnitude + jnp.abs(work),
+        sink=lane.sink + sink,
+        sink_magnitude=lane.sink_magnitude + jnp.abs(sink),
+        rates=rates(keep, keep_size, layout, state, law),
+        factor_state=state,
+        exchange_stream=streams.stream_key_data(layout.base_key, occupant, "exchange"),
+        status=jnp.where(
+            keep_size == 0,
+            EXTINCT,
+            jnp.where(
+                fissions >= layout.fission_limit,
+                COMPLETE,
+                jnp.where(keep_size >= layout.split_size, FISSION_DUE, RUNNING),
+            ),
+        ).astype(jnp.int32),
+    )
+    return _select(due, born, lane)
+
+
+@functools.cache
+def sibling_program(structure):
+    """The compiled sibling pass of one structure (every-descendant mode), cached per structure."""
+    return jax.jit(jax.vmap(lambda la, lo, f, k: sibling(la, lo, structure, f, k)))
 
 
 class Program(NamedTuple):

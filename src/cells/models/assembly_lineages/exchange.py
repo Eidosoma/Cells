@@ -35,48 +35,74 @@ Appendix F (Zenodo 10.5281/zenodo.22143269, CC BY 4.0), which state this split o
 """
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from cells.models.assembly_lineages import EXCHANGE_INTERFACE, EXCHANGE_LAW
+from cells.models.assembly_lineages import EXCHANGE_INTERFACE, EXCHANGE_LAW, MODEL_ID
+from cells.modules import Citation, Law
+
+# The registration call is the registry's own (the surface exports it in module stage 1).
+from cells.registry import laws as law_registry
+
+TEST = "tests/unit/test_assembly_lineages_kernel.py::test_kernel_matches_the_oracle"
 
 
 @dataclass(frozen=True)
-class ExchangeLaw:
-    law_id: str
-    interface: str
+class ExchangeLaw(Law):
+    """The exchange-law interface (cells.exchange_law@1) on the law template: single molecules
+    exchanged between a held phase and an assembly; hosted by the family's model."""
+
     energy_role: str  # "passive": its affinity is a state-function difference (above).
     data: tuple[str, ...]
     reads: str
     changes: str
-    provenance: dict
     formulas: dict
 
+    interface: ClassVar[str] = EXCHANGE_INTERFACE
 
-LAW = ExchangeLaw(
-    law_id=EXCHANGE_LAW,
-    interface=EXCHANGE_INTERFACE,
-    energy_role="passive",
-    data=("supply", "leave_rate"),
-    reads="the assembly's counts n_i and size N; the held activities rho_i",
-    changes="one molecule of one type per event: +1 (join) or -1 (leave), from or to the held "
-    "phase",
-    formulas={
-        "join_i": "kf_i * rho_i * N, with kf_i = K_i * kb_i (the type family's transfer constant)",
-        "leave_i": "kb_i * n_i",
-        "affinity_i(n)": "ln theta_i + ln N - ln(n_i + 1), theta_i = K_i rho_i, for n <-> n + e_i",
-        "measure": "pi(n) ~ (N - 1)! prod_i theta_i^n_i / n_i!, N >= 1",
-        "without_a_rate_factor": "g_join_i = g_leave_i = 1",
-    },
-    provenance={
-        "kind": "cited",
-        "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint "
-        "v5.0, Appendix F (Zenodo 10.5281/zenodo.22143269)",
-        "place": "the join and leave propensities without the catalytic factor",
-        "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
-        "departures": [
-            "the join constant is derived from the type's transfer constant (one authority)",
-        ],
-    },
+
+LAW = law_registry.BUILTIN.register(
+    ExchangeLaw(
+        EXCHANGE_LAW,
+        host=MODEL_ID,
+        provenance="cited",
+        source=Citation(
+            "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, "
+            "Appendix F (Zenodo 10.5281/zenodo.22143269)",
+            "the join and leave propensities without the catalytic factor",
+            "CC BY 4.0 (the preprint); numbers cited under D186",
+            ("the join constant is derived from the type's transfer constant (one authority)",),
+        ),
+        test=TEST,
+        energy_role="passive",
+        data=("supply", "leave_rate"),
+        reads="the assembly's counts n_i and size N; the held activities rho_i",
+        changes="one molecule of one type per event: +1 (join) or -1 (leave), from or to the held "
+        "phase",
+        formulas={
+            "join_i": "kf_i * rho_i * N, with kf_i = K_i * kb_i (the type family's transfer "
+            "constant)",
+            "leave_i": "kb_i * n_i",
+            "affinity_i(n)": "ln theta_i + ln N - ln(n_i + 1), theta_i = K_i rho_i, for "
+            "n <-> n + e_i",
+            "measure": "pi(n) ~ (N - 1)! prod_i theta_i^n_i / n_i!, N >= 1",
+            "without_a_rate_factor": "g_join_i = g_leave_i = 1",
+        },
+    )
 )
+
+
+def provenance(law):
+    """A law's provenance as a run record states it: its tag and its citation."""
+    source = law.source
+    if not isinstance(source, Citation):
+        return {"kind": law.provenance, "source": source}
+    return {
+        "kind": law.provenance,
+        "source": source.source,
+        "place": source.place,
+        "licence": source.licence,
+        "departures": list(source.departures),
+    }
 
 
 def base_rates(counts, size, kf_rho, kb):

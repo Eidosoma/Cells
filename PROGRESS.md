@@ -85,6 +85,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **GARD's G1, part 2, on main (17 November 2026, evening).** The merge of gard-g1-merge at 23f82dd7.
+  - **What's on main:** `cells.assembly_lineages@1`'s three laws and two lineage operators, registered
+    under `cells.exchange_law@1`, `cells.rate_factor_law@1` and `cells.lineage_operator@1`, and frozen.
+    `cells.declarations@2` lists all five at main's head:
+    - the laws `cells.reservoir_exchange@1`, `cells.gard_catalysis_single_event@1` and
+      `cells.gard_catalysis_pair_consistent@1`;
+    - the operators `cells.size_threshold_fission@1` and `cells.daughter_continuation@1`.
+
+    Every bundle writes `cells.relations@1` tables.
+  - **The gate on 23f82dd7:** tiers 1+2, 512 files, 0 changed; G1 113 of 113; crossrev's nine sets
+    identical.
+  - **The final probe set:** `/mnt/workspaces/Cells/gard-g1-part2-20261117/probes-c6dd5956/probes/`.
+    Its roles.json is FINAL, with the standing "development run of the engine, not judged".
+  - **The independent references (G2)** pass all ten rows on that set, with nothing tuned (report-5).
+    They're on branch gard-g2-references at e2047928, not yet on main.
+  - **Standing (D192, D197):** these are development runs, not judged.
+    - The single-event form is the preprint's, kept for comparison and declared driven.
+    - The pair-consistent form is passive, and the default.
+
 - **Combined landing (17 November 2026, evening).** main is at 3891b802, a fast-forward of the gated
   landing branch. It brings the relations writer, seam F's registry fixes, the documentation library
   with `cells.declarations@2`, and the removal of `agent-work/`.

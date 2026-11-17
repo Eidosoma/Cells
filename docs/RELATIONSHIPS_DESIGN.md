@@ -967,3 +967,30 @@ The lead accepts these choices beyond §1.2 and §5.1 as the format:
 **Also accepted:** the run qualifier is `qualifier(fingerprint, start, stop=None)`. A run stopped
 before its end folds in its stop (GARD's `{events, fissions}`), and a run without a stop keeps the
 qualifier of `{fingerprint, start}` alone.
+
+## Requirements collected for cells.relations@2 (17 November 2026)
+
+Collected for one design (D209, L1). `@1` is bound, so each is a change for a new version. One line
+each, with its source; nothing here designs them.
+
+**Machines** (MOLECULAR_MACHINES_DESIGN §2 and §9, L1):
+- `assembled`: a birth by assembly.
+- `disassembled` and `degraded`: ends.
+- `assembled_from`: many parents, an edge weighted by stoichiometry, from pools or subunit lives.
+- `member_of`: from a tagged or promoted individual to its population node.
+
+**GARD** (the relations fix on `gard-g1-merge`, in c6dd5956's commit message):
+- An order between same-time events: the event-row rule cannot order two events at one time.
+- Case 1: a run continued from a pending-fission checkpoint, whose start row sits at the fission's
+  time.
+- Case 2: a daughter born at the fission size, whose own fission falls at its parent's time.
+
+**Mitochondria** (D210; MITOCHONDRIA_DESIGN, addendum B.4):
+- Two parents at fusion: `lives.parent` is one id, present exactly when born by division, with
+  generation and root from that one parent (`records/relations.py`:199, :675–676, :713–726).
+- Lives that are not cells: a life's id is `carrier:<name>` (:652); a mitochondrion needs a declared
+  entity kind, and an "inside" relation over time that moves at its owner's division.
+- Removal in a living owner: `degraded`, since `removed` is a declared bottleneck (:104).
+- An order between same-time events: one fixed step often holds a fission, a fusion and a removal.
+- Keys for a life with two parents: §1.3's sub-lineage rule assumes one.
+- Labels that mix at fusion and split at fission (RT3).
