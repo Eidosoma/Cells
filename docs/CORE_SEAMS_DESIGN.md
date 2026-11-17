@@ -1056,3 +1056,23 @@ The check is recorded in `docs/CORE_SEAMS_STEP0.md` §7. It lifts seam A's hold,
 - **One-way fluxes (D202).** Every admitted Hill cycle has J⁺ and J⁺·e^{ΔG/RT}, so a factored cycle
   law exposes both one-way fluxes. Material labels need them. Only fallback laws lack them, and
   those declare net-flow mode.
+
+## 17. Step 0 complete: P1, and a gap for seam C (17 November 2026)
+
+Every item of step 0 has reported (`docs/CORE_SEAMS_STEP0.md` §1–§8):
+- the cycle-law screen, independently checked;
+- the pin check;
+- the refusal-4 search;
+- the owner table;
+- the booking probe;
+- P1.
+
+**P1:** branch X is not built (a weak no); the trapezoid stays the plan.
+
+**A gap P1 found, for seam C and @3's owner.** At a buffered outside node, the IMEX step's
+positivity predictor compares the free proton amount with the derivative of the stored proton
+equivalents. It therefore refuses explicit steps far below the buffer's real capacity: here dt >
+3.37 µs. The predictor must read the same quantity it differentiates, either stored equivalents or
+the closure's free amount after equilibration. That fix belongs with C's multi-ligand closure, with
+a planted case. FR-4's and FR-5's declared worlds run at 0.5 ms without meeting it, so their margin
+is checked.
