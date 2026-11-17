@@ -1,0 +1,598 @@
+{
+ "kind": "fr3-references design@1",
+ "registered": "2026-11-17",
+ "status": "registered before any engine output; the references are code-blind",
+ "inputs": {
+  "path": "validation/fr3/references/reference_inputs.json",
+  "written_by": "validation/fr3/references/worlds.py",
+  "git_blob": "0d64b691528c3f59494c7b103f8db55aa3c094f4"
+ },
+ "min_margin": 10.0,
+ "claims": {
+  "Q1": "the engine against R-ode at each eps (node, cell, B, heat and work), third order where errors stand above the reference's floor; on the reference side R-ode against R-qss, order 1 in eps, measured on the uptake's relative error",
+  "Q2": "the long-time state against R-eq at the true V (large, small and shared node); the small node also against the depletion quadratic; the total heat against G(start) - G(eq)",
+  "Q3": "the engine against R-ode at every record, and against the Riccati form directly in the closed node; on the reference side R-ode against the fixed-c exponentials, with the depletion term stated",
+  "Q4": "theta(alpha)/theta(1) = alpha at c << K_d and c = 100 K_d (R-eq at the true V, depletion term <= 1.6e-7), saturation at alpha, a relaxation rate independent of alpha; the kinetic (K) and affinity (A) factors as negative controls",
+  "Q5": "the ledger d(G_node) + d(G_site) + H - W = 0 at the reference's rounding, heat >= 0 on every record, the controls (work x (1 + 1e-6), the site free energy dropped, the heat's sign), the closed relaxation's heat, and the background guard",
+  "tolerance_basis": "the protocol pins each judged tolerance from its dt study; a tolerance has power where it lies below a world's ceiling (the smallest control's deviation / 10) and above ten times the reference's floor; the honest SSPRK(3,3) stand-in shows where an honest engine lies (power.ceilings)"
+ },
+ "power": {
+  "ladder_stand_in": {
+   "q1_fast": {
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025
+    ],
+    "honest_error_fmol": [
+     2.9102063064891017e-13,
+     3.544314838908706e-14,
+     4.373151485576911e-15
+    ],
+    "observed_order": [
+     3.0375427621352027,
+     3.0187615339113907
+    ],
+    "reference_floor_fmol": 1.877872044062784e-18,
+    "planted_lower_orders": {
+     "ssprk22": {
+      "error_fmol": [
+       1.7822915418638698e-11,
+       4.346997672981462e-12,
+       1.0734953372190312e-12
+      ],
+      "observed_order": [
+       2.0356421194272047,
+       2.0177033985262396
+      ]
+     },
+     "euler": {
+      "error_fmol": [
+       3.632538406313587e-09,
+       1.816034231688987e-09,
+       9.079583858816653e-10
+      ],
+      "observed_order": [
+       1.0001866541041564,
+       1.0000933156048337
+      ]
+     }
+    }
+   },
+   "q1_eps_1e-1": {
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025
+    ],
+    "honest_error_fmol": [
+     1.1835421965394888e-16,
+     2.2955270496949343e-16,
+     4.599727716769753e-16
+    ],
+    "observed_order": [
+     -0.955714289326927,
+     -1.0027230302591765
+    ],
+    "reference_floor_fmol": 3.883646063160967e-18
+   },
+   "q2_closed": {
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025
+    ],
+    "honest_error_fmol": [
+     3.5338756660535653e-15,
+     4.435335562366638e-16,
+     2.0414171655186442e-16
+    ],
+    "observed_order": [
+     2.9941361186339552,
+     1.1194722294566763
+    ],
+    "reference_floor_fmol": 8.59569034873664e-18
+   },
+   "q3_internalisation": {
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025
+    ],
+    "honest_error_fmol": [
+     4.284073096272323e-14,
+     9.171829962184574e-14,
+     1.7975898547462066e-13
+    ],
+    "observed_order": [
+     -1.0982265128069146,
+     -0.9707823734004345
+    ],
+    "reference_floor_fmol": 2.5673907444456745e-16
+   },
+   "q5_washout": {
+    "dt_s": [
+     0.001,
+     0.0005,
+     0.00025
+    ],
+    "honest_error_fmol": [
+     2.6464019777655556e-16,
+     1.6016376593042114e-16,
+     3.1899938419954754e-16
+    ],
+    "observed_order": [
+     0.7244844160358634,
+     -0.9940058372240635
+    ],
+    "reference_floor_fmol": 3.823506723905912e-18
+   }
+  },
+  "controls_fmol": {
+   "q1_fast": {
+    "k_on_1pct": 1.9850366833123144e-07,
+    "k_off_1pct": 1.8102019332549054e-07,
+    "k_int_1pct": 1.577706563615025e-07,
+    "wrong_destination": 1.850471522141514e-05
+   },
+   "q1_eps_1e-1": {
+    "k_on_1pct": 1.9850366833173289e-07,
+    "k_off_1pct": 1.810201933242437e-07,
+    "k_int_1pct": 1.57770656361306e-07,
+    "wrong_destination": 1.8504715221415277e-05,
+    "cell_volume_dropped": 5.827586677109586e-19,
+    "cell_volume_dropped_work_pJ": 3.306006825302468e-05
+   },
+   "q1_eps_1e-1_alpha_half": {
+    "alpha_ignored": 8.901255155538833e-06
+   },
+   "q2_closed": {
+    "k_on_1pct": 2.4960548731703364e-07,
+    "k_off_1pct": 2.0314552198377717e-07
+   },
+   "q2_two_populations": {
+    "k_on_1pct": 3.3684713765533086e-07
+   },
+   "q3_association": {
+    "k_on_1pct": 1.3682488720777662e-07,
+    "k_off_1pct": 1.3242840436744618e-07
+   },
+   "q3_dissociation": {
+    "k_on_1pct": 1.3037877977110306e-10,
+    "k_off_1pct": 3.039001609932913e-07
+   },
+   "q3_internalisation": {
+    "k_int_1pct": 5.377985242245894e-08
+   },
+   "q3_binding_multiplier": {
+    "binding_multiplier_ignored": 1.5624227203735465e-06,
+    "binding_multiplier_squared": 1.5624227203773141e-06
+   },
+   "q5_washout": {
+    "k_int_1pct": 1.8467251571408058e-07,
+    "wrong_destination": 2.3005264998067886e-05
+   },
+   "q5_inward": {
+    "cell_volume_dropped": 3.1356483651962944e-07,
+    "cell_volume_dropped_work_pJ": 3.7387509857577774e-05
+   }
+  },
+  "ceilings": {
+   "q1_fast": {
+    "ceiling_fmol": 1.5777065636150252e-08,
+    "honest_margin_per_dt": [
+     54212.87693924298,
+     445137.2508715396,
+     3607710.7523452104
+    ]
+   },
+   "q1_eps_1e-1": {
+    "ceiling_fmol": 1.5777065636130598e-08,
+    "honest_margin_per_dt": [
+     133303786.56764856,
+     68729600.19454923,
+     34299999.05996685
+    ]
+   },
+   "q2_closed": {
+    "ceiling_fmol": 2.0314552198377717e-08,
+    "honest_margin_per_dt": [
+     5748519.223106644,
+     45801612.78155498,
+     99512008.33180308
+    ]
+   },
+   "q3_internalisation": {
+    "ceiling_fmol": 5.3779852422458945e-09,
+    "honest_margin_per_dt": [
+     125534.39498792426,
+     58635.902152779876,
+     29917.754753935165
+    ]
+   },
+   "q5_washout": {
+    "ceiling_fmol": 1.846725157140806e-08,
+    "honest_margin_per_dt": [
+     69782488.55074,
+     115302306.13727365,
+     57891182.51042145
+    ]
+   }
+  },
+  "accessibility": {
+   "low": {
+    "theta_ratio": {
+     "1.0": 1.0,
+     "0.5": 0.500000040695494,
+     "0.25": 0.25000003052162173
+    },
+    "relaxation_rate_per_s": {
+     "1.0": 1.0099999983559023,
+     "0.5": 1.0099999991779511,
+     "0.25": 1.0099999995889755
+    },
+    "controls_on_theta_ratio": {
+     "K_kinetic_factor@0.5": 0.499999959304506,
+     "A_affinity_factor@0.5": 0.002487521493560685,
+     "K_kinetic_factor@0.25": 0.7499999694783783,
+     "A_affinity_factor@0.25": 0.0018702936679044768
+    },
+    "depletion_term": 1.6440980863107395e-07
+   },
+   "high": {
+    "theta_ratio": {
+     "1.0": 1.0,
+     "0.5": 0.5000000000040695,
+     "0.25": 0.25000000000305217
+    },
+    "relaxation_rate_per_s": {
+     "1.0": 100.99999983559019,
+     "0.5": 100.9999999177951,
+     "0.25": 100.99999995889755
+    },
+    "controls_on_theta_ratio": {
+     "K_kinetic_factor@0.5": 0.4999999999959305,
+     "A_affinity_factor@0.5": 0.49019607842730295,
+     "K_kinetic_factor@0.25": 0.7499999999969478,
+     "A_affinity_factor@0.25": 0.7211538461507938
+    },
+    "depletion_term": 1.6440980863107394e-09
+   }
+  },
+  "qss_order": {
+   "epsilon": [
+    0.10000000000000002,
+    0.01,
+    0.001
+   ],
+   "relative_error_over_uptake": [
+    0.0747189013661693,
+    0.007996289023427777,
+    0.0008047047688038464
+   ],
+   "observed_order": [
+    0.9705419944227601,
+    0.997251908141087
+   ]
+  },
+  "energy": {
+   "q1_eps_1e-1": {
+    "max_ledger_residual_pJ": 4.3855977877038654e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 1.746148309037289e-08,
+    "heat_increment_allowance_pJ": 3.4160125271722686e-21,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.527168101611571e-10,
+     "site_free_energy_dropped": 3.673502805850255e-05,
+     "heat_sign": 7.692176372232987e-06
+    }
+   },
+   "q1_eps_1e-2": {
+    "max_ledger_residual_pJ": 2.5529573030244612e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 2.371379977755026e-09,
+    "heat_increment_allowance_pJ": 4.253996592250385e-22,
+    "controls": {
+     "work_times_1_plus_1e-6": 2.4619344189267646e-11,
+     "site_free_energy_dropped": 4.1545448225894426e-07,
+     "heat_sign": 9.579148733847097e-07
+    }
+   },
+   "q1_eps_1e-3": {
+    "max_ledger_residual_pJ": 1.389578725794361e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 2.4479178957887723e-10,
+    "heat_increment_allowance_pJ": 4.3526540050959335e-23,
+    "controls": {
+     "work_times_1_plus_1e-6": 3.666809474452955e-12,
+     "site_free_energy_dropped": 4.208049047653835e-09,
+     "heat_sign": 9.801305477711372e-08
+    }
+   },
+   "q1_fast": {
+    "max_ledger_residual_pJ": 3.5019730171281793e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 3.493849627339573e-08,
+    "heat_increment_allowance_pJ": 3.416012527172317e-21,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.1965678404287684e-10,
+     "site_free_energy_dropped": 3.673502805850385e-05,
+     "heat_sign": 7.692176372233096e-06
+    }
+   },
+   "q1_eps_1e-1_alpha_half": {
+    "max_ledger_residual_pJ": 2.541098841762901e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 1.0321673004105446e-08,
+    "heat_increment_allowance_pJ": 1.925161697709168e-21,
+    "controls": {
+     "work_times_1_plus_1e-6": 7.930917038368498e-11,
+     "site_free_energy_dropped": 9.822724169352565e-06,
+     "heat_sign": 4.33507875221548e-06
+    }
+   },
+   "q2_large": {
+    "max_ledger_residual_pJ": 1.4852268720444428e-14,
+    "energy_scale_pJ": 20.382108054786286,
+    "min_heat_increment_pJ": -5.421010862427522e-20,
+    "heat_increment_allowance_pJ": 2.6348606349116343e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.00177487018665867,
+     "heat_sign": 0.0005933178686780612
+    }
+   },
+   "q2_closed": {
+    "max_ledger_residual_pJ": 1.1194387430912833e-17,
+    "energy_scale_pJ": 0.0020382108054786286,
+    "min_heat_increment_pJ": -1.0842021724855044e-19,
+    "heat_increment_allowance_pJ": 1.9796771543420063e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0012127069613040676,
+     "heat_sign": 0.00044578366473042717
+    }
+   },
+   "q2_two_populations": {
+    "max_ledger_residual_pJ": 1.9325903724554117e-17,
+    "energy_scale_pJ": 0.011084341707247961,
+    "min_heat_increment_pJ": -1.3552527156068805e-19,
+    "heat_increment_allowance_pJ": 1.473770835032167e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0011806082542291855,
+     "heat_sign": 0.0003318636891740186
+    }
+   },
+   "q3_association": {
+    "max_ledger_residual_pJ": 5.855748828539897e-15,
+    "energy_scale_pJ": 2.6316982935839217,
+    "min_heat_increment_pJ": 2.02206073675955e-11,
+    "heat_increment_allowance_pJ": 3.6228421547754526e-20,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.00039764693314923576,
+     "heat_sign": 8.157915289134426e-05
+    }
+   },
+   "q3_dissociation": {
+    "max_ledger_residual_pJ": 1.487525380650112e-16,
+    "energy_scale_pJ": 7.379598198426264e-08,
+    "min_heat_increment_pJ": 1.3669998422919e-07,
+    "heat_increment_allowance_pJ": 1.7089389320982801e-18,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0017548994701780498,
+     "heat_sign": 0.003848188368898374
+    }
+   },
+   "q3_binding_multiplier": {
+    "max_ledger_residual_pJ": 9.974659986866641e-18,
+    "energy_scale_pJ": 0.0020382108054786286,
+    "min_heat_increment_pJ": -5.421010862427522e-20,
+    "heat_increment_allowance_pJ": 1.9796771543419268e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.001212706959758488,
+     "heat_sign": 0.0004457836647304093
+    }
+   },
+   "q3_internalisation": {
+    "max_ledger_residual_pJ": 5.834281625524684e-15,
+    "energy_scale_pJ": 2.6316982935839217,
+    "min_heat_increment_pJ": 8.981671592095874e-09,
+    "heat_increment_allowance_pJ": 3.9157189345123557e-20,
+    "controls": {
+     "work_times_1_plus_1e-6": 5.381851811318449e-11,
+     "site_free_energy_dropped": 0.00036826506789704427,
+     "heat_sign": 8.81741516717872e-05
+    }
+   },
+   "q4_alpha_1_low": {
+    "max_ledger_residual_pJ": 9.258330415184523e-13,
+    "energy_scale_pJ": 322.5185781689214,
+    "min_heat_increment_pJ": 3.8379316949976525e-16,
+    "heat_increment_allowance_pJ": 3.782532592996524e-21,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 5.304432350425079e-05,
+     "heat_sign": 8.517506188167952e-06
+    }
+   },
+   "q4_alpha_1_high": {
+    "max_ledger_residual_pJ": 1.2902550013647873e-09,
+    "energy_scale_pJ": 851235.8292680432,
+    "min_heat_increment_pJ": -4.336808689942018e-19,
+    "heat_increment_allowance_pJ": 1.754398469036571e-18,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.002951028714982257,
+     "heat_sign": 0.003950554145706235
+    }
+   },
+   "q4_alpha_1_2_low": {
+    "max_ledger_residual_pJ": 2.9885757514151777e-13,
+    "energy_scale_pJ": 322.5185781689214,
+    "min_heat_increment_pJ": 1.9191776057356398e-16,
+    "heat_increment_allowance_pJ": 1.891266373848451e-21,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 2.6522163736669064e-05,
+     "heat_sign": 4.258753268261117e-06
+    }
+   },
+   "q4_alpha_1_2_high": {
+    "max_ledger_residual_pJ": 1.5552629932611556e-09,
+    "energy_scale_pJ": 851235.8292680432,
+    "min_heat_increment_pJ": -2.168404344971009e-19,
+    "heat_increment_allowance_pJ": 8.771992345956354e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0014755143574950995,
+     "heat_sign": 0.001975277073027294
+    }
+   },
+   "q4_alpha_1_4_low": {
+    "max_ledger_residual_pJ": 5.089628656985252e-13,
+    "energy_scale_pJ": 322.5185781689214,
+    "min_heat_increment_pJ": 9.597899731927928e-17,
+    "heat_increment_allowance_pJ": 9.456332062617913e-22,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 1.3261082364470439e-05,
+     "heat_sign": 2.1293766776748852e-06
+    }
+   },
+   "q4_alpha_1_4_high": {
+    "max_ledger_residual_pJ": 6.760561842332827e-10,
+    "energy_scale_pJ": 851235.8292680432,
+    "min_heat_increment_pJ": -1.0842021724855044e-19,
+    "heat_increment_allowance_pJ": 4.385996173171544e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0007377571787485424,
+     "heat_sign": 0.0009876385365571894
+    }
+   },
+   "q5_passive_from_zero": {
+    "max_ledger_residual_pJ": 3.1848438816761693e-18,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 4.682398132421772e-17,
+    "heat_increment_allowance_pJ": 3.3831367510942613e-20,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0003551190750402437,
+     "heat_sign": 7.618146705785773e-05
+    }
+   },
+   "q5_passive_preformed": {
+    "max_ledger_residual_pJ": 2.1494308069525125e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 1.9404508382059316e-16,
+    "heat_increment_allowance_pJ": 1.7100621793492612e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 0.0,
+     "site_free_energy_dropped": 0.0011951175538656865,
+     "heat_sign": 0.00038507176968488556
+    }
+   },
+   "q5_washout": {
+    "max_ledger_residual_pJ": 6.351391851691646e-17,
+    "energy_scale_pJ": 7.379598198426263e-11,
+    "min_heat_increment_pJ": 5.669182804408576e-11,
+    "heat_increment_allowance_pJ": 4.0250110488430326e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.461695311203258e-10,
+     "site_free_energy_dropped": 0.001559296659110359,
+     "heat_sign": 0.0009063519129865806
+    }
+   },
+   "q5_class_switch": {
+    "max_ledger_residual_pJ": 8.077306185017008e-18,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 7.494124000832422e-19,
+    "heat_increment_allowance_pJ": 8.521001710971259e-22,
+    "controls": {
+     "work_times_1_plus_1e-6": 5.010583549562418e-11,
+     "site_free_energy_dropped": 8.97559195461601e-06,
+     "heat_sign": 1.918759006517676e-06
+    }
+   },
+   "q5_inward": {
+    "max_ledger_residual_pJ": 4.0440741033709315e-17,
+    "energy_scale_pJ": 0.0026316982935839215,
+    "min_heat_increment_pJ": 1.914737170192641e-08,
+    "heat_increment_allowance_pJ": 3.8989018348283696e-20,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.5883951376417813e-10,
+     "site_free_energy_dropped": 0.0002829392481020998,
+     "heat_sign": 8.779546425243594e-05
+    }
+   },
+   "q5_background_threshold": {
+    "max_ledger_residual_pJ": 4.6105697384946076e-17,
+    "energy_scale_pJ": 5.5991357341103853e-08,
+    "min_heat_increment_pJ": 5.6716407449437095e-11,
+    "heat_increment_allowance_pJ": 4.0247344416353006e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.4614217174376003e-10,
+     "site_free_energy_dropped": 0.0015592941748925517,
+     "heat_sign": 0.0009062896265806971
+    }
+   },
+   "q5_background_lowered": {
+    "max_ledger_residual_pJ": 6.351391851691646e-17,
+    "energy_scale_pJ": 7.379598198426263e-11,
+    "min_heat_increment_pJ": 5.669182804408576e-11,
+    "heat_increment_allowance_pJ": 4.0250110488430326e-19,
+    "controls": {
+     "work_times_1_plus_1e-6": 1.461695311203258e-10,
+     "site_free_energy_dropped": 0.001559296659110359,
+     "heat_sign": 0.0009063519129865806
+    }
+   }
+  }
+ },
+ "readings": [
+  "RT = 1e-3 R T pJ/fmol with the exact SI R (Appendix A takes RT as an input); dG0 = RT ln(K_d/1 mM).",
+  "R-ode carries the heat in a regular form, H = RT [Y - d(R ln(R/S) + B ln(B/S))] with dY/dt = sum J ln(c/K_d) + I ln(R/B), exact along the path and finite at B = 0 and R = 0.",
+  "The order in eps is measured on the uptake's relative error with S varied at fixed V, \u00a78.3's sweep; normalised by n0 with V varied, the same runs show order 2.",
+  "Every world is face-free, and none combines site occupancy with a bath schedule."
+ ],
+ "zero_power": [
+  {
+   "control": "Q1's third order in the slow worlds",
+   "why": "an honest engine's error is at rounding there at every rung",
+   "remedy": "q1_fast, where the order is 3.0 above the floor and the lower-order steppers (SSPRK(2,2), Euler) show orders 2 and 1"
+  },
+  {
+   "control": "the work's control in passive worlds",
+   "why": "binding alone books no work",
+   "remedy": "the internalising worlds (Q1, q3_internalisation, q5_*) carry it"
+  },
+  {
+   "control": "the receiving cell's volume on q1_eps_1e-1's state",
+   "why": "internalisation is driven, so the cell's concentration moves only the work (3.3e-5 pJ there)",
+   "remedy": "q5_inward, where an inward population binds from the cytosol and the state moves by 3.1e-7 fmol"
+  },
+  {
+   "control": "k_on in q3_dissociation",
+   "why": "rebinding into a near-empty 1e3 pL node is weak: 1.3e-10 fmol",
+   "remedy": "k_on has power in every binding world (Q2, Q3)"
+  },
+  {
+   "control": "the affinity factor (A) at c << K_d",
+   "why": "below saturation (A) and the capacity form nearly agree (2.5e-3)",
+   "remedy": "c = 100 K_d, where (A) departs by 0.49 (\u00a72.3)"
+  },
+  {
+   "control": "the background guard on heat and work",
+   "why": "the trace's logarithm enters the receiving cell's potential",
+   "remedy": "not a defect of the comparison: engine and references share the trace (notes)"
+  }
+ ],
+ "notes": [
+  "The background guard holds for the occupancy but not for the energy. Lowering the trace from the threshold 1e-6 K_d by 1e3 moves B by 1.4e-6 relative and n by 1.9e-5. It moves the heat by 6.9e-5 and the work by 1.9e-4, because the receiving cell starts at the trace and the work's RT ln(c_r) carries the trace's logarithm (q5_background_*). A tolerance on heat or work tighter than about 1e-3 relative will see the trace, so the guard's 'every compared quantity' needs that reading. The engine and the references are compared at the same trace, so the judged comparisons are not affected.",
+  "Ledger residuals scale with the nodes' free energy: about 1e-9 pJ in the 1e6 pL worlds, whose G_node is about 1e6 pJ, which is rounding."
+ ]
+}

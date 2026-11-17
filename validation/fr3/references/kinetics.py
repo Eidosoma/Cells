@@ -28,6 +28,7 @@ half an ulp.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from fractions import Fraction
 
@@ -104,24 +105,58 @@ def _rhs_factory(net: Network, nodes: list, m: np.ndarray):
     Kd = koff / kon
     N, K = len(nodes), len(net.populations)
 
+    Vl, facel, recvl = [float(x) for x in V], [int(x) for x in face], [int(x) for x in recv]
+    Sl, konl, koffl, kintl = ([float(x) for x in a] for a in (S, kon, koff, kint))
+    lnKd = [math.log(x) for x in Kd]
+    mb, mi = [float(x) for x in m[:, 0]], [float(x) for x in m[:, 1]]
+    RTf = float(net.RT)
+
     def rhs(_t, y):
+        """Pure-Python floats: the systems are small, and NumPy's per-call cost dominated."""
+        dn = [0.0] * N
+        dB, dU = [0.0] * K, [0.0] * K
+        dY = dW = 0.0
+        for k in range(K):
+            i = facel[k]
+            B = min(max(float(y[N + k]), 0.0), Sl[k])
+            R = Sl[k] - B
+            c = float(y[i]) / Vl[i]
+            J = mb[k] * (konl[k] * c * R - koffl[k] * B)
+            Ik = mi[k] * kintl[k] * B
+            dn[i] -= J
+            dB[k] = J - Ik
+            dU[k] = Ik
+            IlnRB = Ik * math.log(R / B) if B > 0 and R > 0 else 0.0
+            dY += J * (math.log(c) - lnKd[k]) + IlnRB
+            r = recvl[k]
+            if r >= 0:
+                dn[r] += Ik
+                if Ik:
+                    dW += RTf * (Ik * (math.log(float(y[r]) / Vl[r]) - lnKd[k]) + IlnRB)
+        return dn + dB + dU + [dY, dW]
+
+    def jac(_t, y):
+        """The exact Jacobian of the amounts and pools; the integral states Y and W feed nothing
+        back, so their rows are left zero (Radau's Newton iteration still converges)."""
         n = y[:N]
         B = np.clip(y[N:N + K], 0.0, S)
         R = S - B
         c = n / V
-        J = m[:, 0] * (kon * c[face] * R - koff * B)
-        Iflux = m[:, 1] * kint * B
-        dn = np.zeros(N)
-        np.add.at(dn, face, -J)
-        has = recv >= 0
-        np.add.at(dn, recv[has], Iflux[has])
-        with np.errstate(divide="ignore", invalid="ignore"):
-            lnRB = np.where(B > 0, np.log(np.where(R > 0, R, 1.0) / np.where(B > 0, B, 1.0)), 0.0)
-        IlnRB = np.where(B > 0, Iflux * lnRB, 0.0)
-        dY = np.sum(J * np.log(c[face] / Kd) + IlnRB)
-        cr = np.where(has, c[np.where(has, recv, 0)], 1.0)
-        dW = net.RT * np.sum(np.where(has, Iflux * np.log(cr / Kd), 0.0) + IlnRB)
-        return np.concatenate([dn, J - Iflux, Iflux, [dY, dW]])
+        Jm = np.zeros((y.size, y.size))
+        dJdn = m[:, 0] * kon * R / V[face]
+        dJdB = -m[:, 0] * (kon * c[face] + koff)
+        dIdB = m[:, 1] * kint
+        for k in range(K):
+            i, b = face[k], N + k
+            Jm[i, i] -= dJdn[k]
+            Jm[i, b] -= dJdB[k]
+            if recv[k] >= 0:
+                Jm[recv[k], b] += dIdB[k]
+            Jm[b, i] += dJdn[k]
+            Jm[b, b] += dJdB[k] - dIdB[k]
+            Jm[N + K + k, b] += dIdB[k]
+        return Jm
+    rhs.jac = jac
     return rhs, N, K, S
 
 
@@ -145,8 +180,9 @@ def _integrate(net: Network, times, method: str, rtol: float) -> dict:
         taus = [float(texact[k] - t0) for k in sel]
         span = float(t1 - t0)
         if span > 0:
+            extra = {"jac": rhs.jac} if method in ("Radau", "BDF", "LSODA") else {}
             sol = solve_ivp(rhs, (0.0, span), y, method=method, rtol=rtol,
-                            atol=rtol * 1e-6 * scale, t_eval=sorted(set(taus + [span])))
+                            atol=rtol * 1e-6 * scale, t_eval=sorted(set(taus + [span])), **extra)
             if not sol.success:
                 raise RuntimeError(f"{method} failed in epoch {e}: {sol.message}")
             at = {float(t): sol.y[:, i] for i, t in enumerate(sol.t)}
