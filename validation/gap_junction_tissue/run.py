@@ -80,7 +80,7 @@ CRITERIA = {
     "K1_planted_min_rel_error": 1e-6,
 }
 FIGURE3_G = (0.5, 1.0, 2.0, 5.0, 10.0, 50.0)
-FIGURE5_G = (1.0, 10.0, 100.0)
+FIGURE5_G = (1.0, 10.0, 50.0)  # Figure 5b runs to 100; 50 keeps the run short.
 FIGURE8_N = (1, 2, 3, 4, 5, 10)
 FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
 PLANTED_SCALE = 1.01
