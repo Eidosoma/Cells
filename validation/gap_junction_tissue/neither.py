@@ -401,7 +401,14 @@ def search(out_dir, cpus, end):
         for d in first[: max(2, workers)]:
             submit(d)
         save()
-        submitting = True
+        submitting, halves = True, None
+
+        def submit_halves(lo, hi):
+            """The final bracket's ends at half their step, once no search point runs inside it."""
+            state["half_step_bracket"] = [lo, hi]
+            state["events"].append(dict(utc=_utc(), half_step_submitted=[lo, hi]))
+            return {d: pool.submit(_work, (d, start, end, step(d) / 2.0)) for d in (lo, hi)}
+
         while running:
             finished, _ = wait(running, return_when=FIRST_COMPLETED)
             with (out_dir / "points.jsonl").open("a") as stream:
@@ -437,6 +444,9 @@ def search(out_dir, cpus, end):
                 free = workers - len(running)
                 for d in place(lo, hi, list(running.values()), free):
                     submit(d)
+            inside = any(lo < x < hi for x in running.values()) if converged else True
+            if converged and halves is None and "stopped" not in state and not inside:
+                halves = submit_halves(lo, hi)  # The slow points above the bracket still run.
             save()
         lo, hi, monotone, failed = bracket(evaluated)
         converged = lo is not None and hi is not None and hi <= (1.0 + RTOL) * lo
@@ -448,7 +458,9 @@ def search(out_dir, cpus, end):
                 agreement_called=AGREEMENT[0] <= ratio <= AGREEMENT[1],
             )
             save()
-            halves = {d: pool.submit(_work, (d, start, end, step(d) / 2.0)) for d in (lo, hi)}
+            if halves is None:
+                halves = submit_halves(lo, hi)
+        if halves is not None:
             check = {}
             for d, future in halves.items():
                 result = future.result()
