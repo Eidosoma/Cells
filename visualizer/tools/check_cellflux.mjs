@@ -203,6 +203,13 @@ try {
   await sleep(500);
 
   let s = await state();
+  // A species that names its own run: the page fetches the run after it opens. Nothing is judged until the run is
+  // read, or cannot be had: a plan read while the run was on its way was empty, and a scenario then left out its
+  // presses on a part without failing (17 November 2026: 18 checks where 32 were due).
+  if (s.named && process.env.LOOP !== "1") {
+    s = await until((now) => now.source === "run" || (now.source === "pending" && !/being fetched/.test(now.pending || "")));
+    check("the species' own run is read before its flux is judged, and it gives parts a flux", s.source === "run" && s.plan.length > 0, JSON.stringify([s.named, s.source, s.pending, s.plan]));
+  }
   if (process.env.LOOP === "1") {
     // ---------------------------------------------------------- the species' own looping run (rule 7)
     s = await until((now) => now.source === "run" || (now.source === "pending" && !/being fetched/.test(now.pending || "")));
