@@ -1,0 +1,486 @@
+"""The law template and the law registry (docs/CORE_SEAMS_DESIGN.md §8.1 and §8.3).
+
+Provisional, as cells.modules is (D195): the template may still change before a first outside
+module arrives.
+
+**The template (§8.1).** A law declares one frozen record of its interface's type. Every type is
+built on `Law`, which holds what every law declares:
+- `law_id`, namespaced (`namespace.name@major`; a bare ID is in `cells`), named for its mechanism
+  and its form, never for a protein; and its `interface`, a class constant of its type (an ID with
+  its major);
+- `host`, the namespaced ID of what runs it: a kind (`cells.transporter@1`), or the inner model
+  for its own populations (`cells.resolved_pump_tissue@3`). This is version 1's restriction: each
+  law's kernel is written against its host's arrays, so a host finds its laws by (interface, host),
+  never in a module tuple, and refuses by name any law of its own that its version-1 code has no
+  kernel path for. The cycle kind's general layout is meant to relax it for cycle laws (§3.5).
+  A route law's `hosts` are something else: the entities its routes sit on;
+- `provenance`: "parity" (moved from an older family; moving is not calibrating), "cited" or
+  "calibrated", with `source`, what it rests on. A cited law gives a `Citation` and a calibrated
+  law its data and method; both are required. A parity law may give §8.6's `moved_from` record;
+- `test`: the ID of the test that checks its kernel against its reference with a planted error
+  (D187), so a manifest can link the evidence;
+- B8's four optional fields (D175), reserved: a declaration that sets one is refused until their
+  first consumer lands.
+Each interface's type adds its own fields after `law_id`, so today's declarations keep their
+fields and their positional order. The template's own fields are keyword-only.
+
+**The interfaces:**
+- `cells.channel_law@1`, `ChannelLaw`: a channel population's law on @3
+  (docs/INNER_MODEL_V4_DESIGN.md §7.1). H1's channel-law fields join as optional fields (§8.1);
+- `cells.cycle_law@1`, `CycleLaw` (also named `PumpLaw`): a membrane cycle, such as @3's two pumps
+  and the transporter kind's two laws. Seam A adds its modes and its S or J as optional fields;
+- `cells.route_law@1`, `RouteLaw`: a passive route law;
+- `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C);
+- `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
+  state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
+  membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
+  its own.
+A family may declare an interface of its own in its own namespace, such as GARD's event laws, as a
+type built on `Law`. The `cells` interfaces are only those above.
+
+**The registry (§8.3)** is build-scoped, as the kinds' is (core/kind_registry.py):
+- one registration call, `registry.register(law)`. It checks the declaration against the
+  template and refuses a second law under one namespaced ID, whatever the spelling;
+- BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
+  are loaded by name (BUILTIN_PACKAGES), so the core imports no law module to find a law;
+- the active registry is BUILTIN, unless a caller builds inside `scope(registry)`;
+- a registered law that no definition declares changes nothing: the inner model and the kinds
+  read only the laws their declarations name;
+- each `cells` law ID names one object in every registry. Another registry holds a cells law only
+  as BUILTIN's own declaration, so caches keyed on law IDs (the inner model's implementation and
+  compile_window) never mix two declarations under one ID. An outside law takes its own namespace.
+  Module stage 1 stamps its structure entries with its declaration (MODULE_SYSTEM_DESIGN.md §2.5).
+"""
+
+import importlib
+import math
+import re
+from collections.abc import Callable
+from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import KW_ONLY, dataclass
+from types import MappingProxyType
+from typing import ClassVar, NamedTuple
+
+from cells.core.kind_registry import NAMESPACE, qualified
+
+__all__ = (
+    "BINDING_LAW",
+    "BUILTIN",
+    "BUILTIN_PACKAGES",
+    "CHANNEL_LAW",
+    "CYCLE_LAW",
+    "INTERFACES",
+    "JUNCTION_LAW",
+    "PROVENANCES",
+    "ROUTE_LAW",
+    "BindingLaw",
+    "ChannelLaw",
+    "Citation",
+    "CycleLaw",
+    "JunctionLaw",
+    "Law",
+    "LawRegistry",
+    "PumpLaw",
+    "RouteLaw",
+    "active",
+    "scope",
+)
+
+CHANNEL_LAW = "cells.channel_law@1"
+CYCLE_LAW = "cells.cycle_law@1"
+ROUTE_LAW = "cells.route_law@1"
+BINDING_LAW = "cells.binding_law@1"
+JUNCTION_LAW = "cells.junction_law@1"
+PROVENANCES = ("parity", "cited", "calibrated")
+_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*@[1-9][0-9]*")
+
+
+def _is_id(value, *, namespaced=False):
+    """A law, host or interface ID: [namespace.]name@major."""
+    if not isinstance(value, str) or _ID.fullmatch(value) is None:
+        return False
+    return not namespaced or "." in value.split("@", 1)[0]
+
+
+def _named(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+class Citation(NamedTuple):
+    """A cited law's source (§8.1): the work, the place in it, the licence of any numbers taken
+    from it (D186) and the law's departures from it, each in a few words."""
+
+    source: str
+    place: str
+    licence: str
+    departures: tuple = ()
+
+
+@dataclass(frozen=True)
+class Law:
+    """The law template (module docstring): what every law declares."""
+
+    law_id: str
+    _: KW_ONLY
+    host: str
+    provenance: str = "parity"
+    source: object = None
+    test: str | None = None
+    # The four optional fields of a law that stands in for something (D175, B8): reserved.
+    represents: object = None
+    preserves: object = None
+    supports: object = None
+    qualified: object = None
+
+    interface: ClassVar[str | None] = None
+
+    def errors(self):
+        """Why this declaration breaks the template (empty: it keeps it)."""
+        out = []
+        if not _is_id(self.law_id):
+            out.append("its law_id is [namespace.]name@major")
+        interface = type(self).interface
+        if not _is_id(interface, namespaced=True):
+            out.append("its type declares a namespaced interface ID with its major")
+        elif interface.split(".", 1)[0] == NAMESPACE and not isinstance(
+            self, INTERFACES.get(interface, ())
+        ):
+            out.append(
+                f"{interface} is not a cells interface of its type (cells' interfaces: "
+                + ", ".join(INTERFACES)
+                + ")"
+            )
+        if not _is_id(self.host):
+            out.append("its host is the ID of the kind or model that runs it")
+        if self.provenance not in PROVENANCES:
+            out.append(f"its provenance is one of {', '.join(PROVENANCES)}")
+        elif self.provenance == "cited" and not _cited(self.source):
+            out.append(
+                "a cited law gives its source as a Citation (source, place, licence and a tuple "
+                "of departures)"
+            )
+        elif self.provenance == "calibrated" and self.source is None:
+            out.append("a calibrated law gives its data and method as its source")
+        if self.test is not None and not _named(self.test):
+            out.append("its test is a test ID")
+        reserved = [
+            name
+            for name in ("represents", "preserves", "supports", "qualified")
+            if getattr(self, name) is not None
+        ]
+        if reserved:
+            out.append(
+                f"{', '.join(reserved)}: B8's fields are reserved until their first consumer (D175)"
+            )
+        return out
+
+
+def _cited(source):
+    return (
+        isinstance(source, Citation)
+        and all(_named(v) for v in (source.source, source.place, source.licence))
+        and isinstance(source.departures, tuple)
+        and all(_named(d) for d in source.departures)
+    )
+
+
+def _callables(law, *names):
+    return [f"its {name} is callable" for name in names if not callable(getattr(law, name))]
+
+
+@dataclass(frozen=True)
+class ChannelLaw(Law):
+    """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
+    update; leaks have none."""
+
+    code: int
+    gates: tuple[str, ...]
+    permeant: tuple[tuple[str, int, float], ...]  # (species, valence, relative permeability)
+    voltage_domain_V: tuple[float, float]
+    rk4_step_s: float | None  # The reference RK4 step bound; None for gate-free laws.
+    kinetics: Callable | None = None  # (voltage, *, xp) -> (target, tau), [..., gates, n].
+    opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
+    stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
+    reads: tuple = ()  # Stage reads (B4): none for today's laws.
+    loop_term: object = None
+
+    interface: ClassVar[str] = CHANNEL_LAW
+
+    @property
+    def gated(self):
+        return bool(self.gates)
+
+    def errors(self):
+        out = super().errors()
+        if not (isinstance(self.code, int) and not isinstance(self.code, bool) and self.code >= 0):
+            out.append("its code is a non-negative integer")
+        gates = self.gates
+        if not (isinstance(gates, tuple) and all(map(_named, gates))) or len(set(gates)) < len(
+            gates
+        ):
+            out.append("its gates are a tuple of distinct names")
+        permeant = self.permeant
+        if not (
+            isinstance(permeant, tuple)
+            and permeant
+            and all(
+                isinstance(p, tuple)
+                and len(p) == 3
+                and _named(p[0])
+                and isinstance(p[1], int)
+                and not isinstance(p[1], bool)
+                and _number(p[2])
+                for p in permeant
+            )
+        ):
+            out.append("its permeant ions are (species, valence, relative permeability) tuples")
+        domain = self.voltage_domain_V
+        if not (
+            isinstance(domain, tuple)
+            and len(domain) == 2
+            and all(map(_number, domain))
+            and domain[0] < domain[1]
+        ):
+            out.append("its voltage domain is a (low, high) interval")
+        if self.rk4_step_s is not None and not (_number(self.rk4_step_s) and self.rk4_step_s > 0):
+            out.append("its RK4 step bound is positive, or None")
+        kernels = (self.kinetics, self.opening)
+        if self.gated and not all(map(callable, kernels)):
+            out.append("a gated law gives its kinetics and opening")
+        if not self.gated and any(k is not None for k in kernels):
+            out.append("a gate-free law gives no kinetics or opening")
+        if not _named(self.stage_term) or not isinstance(self.reads, tuple):
+            out.append("its stage term is named and its reads are a tuple")
+        return out
+
+
+@dataclass(frozen=True)
+class CycleLaw(Law):
+    """A membrane cycle law: the rows it moves per cycle by role, its fuel kinds, its kernel and
+    its domain. moves: ((role, count), ...), inward-positive per cycle; a count is an integer, or
+    the name of the population's parameter that holds it, negated by a leading "-" (FR-4's form).
+    Seam A adds its stoichiometric modes and its S or J as optional fields (§3.2)."""
+
+    moves: tuple[tuple[str, object], ...]
+    fuel_kinds: tuple[str, ...]
+    kinetics: Callable
+    domain_valid: Callable
+    reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
+    stage_term: str | None = None  # Its slope in the stage rule, where its host takes one.
+    loop_term: str | None = None
+
+    interface: ClassVar[str] = CYCLE_LAW
+
+    def errors(self):
+        out = super().errors() + _callables(self, "kinetics", "domain_valid")
+        moves = self.moves
+        if not (
+            isinstance(moves, tuple)
+            and moves
+            and all(
+                isinstance(m, tuple)
+                and len(m) == 2
+                and _named(m[0])
+                and (_named(m[1]) or (isinstance(m[1], int) and not isinstance(m[1], bool)))
+                for m in moves
+            )
+        ):
+            out.append("its moves are (role, count) pairs")
+        if not (isinstance(self.fuel_kinds, tuple) and all(map(_named, self.fuel_kinds))):
+            out.append("its fuel kinds are a tuple of IDs")
+        if not isinstance(self.reads, tuple):
+            out.append("its reads are a tuple")
+        for name in ("stage_term", "loop_term"):
+            if getattr(self, name) is not None and not _named(getattr(self, name)):
+                out.append(f"its {name} is named, or None")
+        return out
+
+
+PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (§8.1).
+
+
+@dataclass(frozen=True)
+class RouteLaw(Law):
+    """A passive route law: the entities its routes sit on, and what it is (its basis)."""
+
+    hosts: tuple[str, ...]
+    basis: str
+
+    interface: ClassVar[str] = ROUTE_LAW
+
+    def errors(self):
+        out = super().errors()
+        if not (isinstance(self.hosts, tuple) and self.hosts and all(map(_named, self.hosts))):
+            out.append("its hosts name the entities its routes sit on")
+        if not _named(self.basis):
+            out.append("its basis says what it is")
+        return out
+
+
+@dataclass(frozen=True)
+class BindingLaw(Law):
+    """A rapid binding closure (seam C, docs/CORE_SEAMS_DESIGN.md §5): the ligands it binds, by
+    role, and its closure kernel (free forms from totals). Seam C adds its forms and envelope."""
+
+    ligands: tuple[str, ...]
+    closure: Callable
+    domain_valid: Callable | None = None
+
+    interface: ClassVar[str] = BINDING_LAW
+
+    def errors(self):
+        out = super().errors() + _callables(self, "closure")
+        if not (
+            isinstance(self.ligands, tuple) and self.ligands and all(map(_named, self.ligands))
+        ):
+            out.append("its ligands are a tuple of roles")
+        if self.domain_valid is not None and not callable(self.domain_valid):
+            out.append("its domain_valid is callable, or None")
+        return out
+
+
+@dataclass(frozen=True)
+class JunctionLaw(Law):
+    """A junction conductance law; a gated one carries junction_gate state."""
+
+    gated: bool
+    kinetics: Callable  # (voltage, parameters, *, xp) -> junction_gate.Rates
+    rhs: Callable
+    domain_valid: Callable
+    max_abs_voltage_V: float
+
+    interface: ClassVar[str] = JUNCTION_LAW
+
+    def errors(self):
+        out = super().errors() + _callables(self, "kinetics", "rhs", "domain_valid")
+        if not isinstance(self.gated, bool):
+            out.append("its gated flag is a bool")
+        if not (_number(self.max_abs_voltage_V) and self.max_abs_voltage_V > 0):
+            out.append("its voltage bound is positive")
+        return out
+
+
+INTERFACES = MappingProxyType(
+    {
+        CHANNEL_LAW: ChannelLaw,
+        CYCLE_LAW: CycleLaw,
+        ROUTE_LAW: RouteLaw,
+        BINDING_LAW: BindingLaw,
+        JUNCTION_LAW: JunctionLaw,
+    }
+)
+
+
+class LawRegistry:
+    """Registered laws by namespaced ID (module docstring). A registered law that a definition
+    does not declare changes nothing."""
+
+    def __init__(self):
+        self._laws = {}
+
+    def register(self, law):
+        """The one registration call: `law` checked against the template, then held under its
+        namespaced ID. Returns the law."""
+        if not isinstance(law, Law):
+            raise ValueError(f"A law's declaration is built on the template (Law), not {law!r}")
+        problems = law.errors()
+        if problems:
+            raise ValueError(f"Law {law.law_id!r}: " + "; ".join(problems))
+        key = qualified(law.law_id)
+        known = self._laws.get(key)
+        if known is law:
+            return law
+        if known is not None:
+            raise ValueError(f"Law {key} is already registered")
+        if self is not BUILTIN and key.split(".", 1)[0] == NAMESPACE:
+            _load_builtins()
+            if BUILTIN._laws.get(key) is not law:
+                raise ValueError(
+                    f"Law {key} is in the cells namespace: another registry holds a cells law "
+                    "only as BUILTIN's own declaration (one object per cells ID)"
+                )
+        if isinstance(law, ChannelLaw):
+            host = qualified(law.host)
+            for other_key, other in self._laws.items():
+                if (
+                    isinstance(other, ChannelLaw)
+                    and qualified(other.host) == host
+                    and other.code == law.code
+                ):
+                    raise ValueError(
+                        f"Law {key}'s code {law.code} is {other_key}'s (a host's channel codes "
+                        "are distinct)"
+                    )
+        self._laws[key] = law
+        return law
+
+    def lookup(self, law_id):
+        key = qualified(law_id)
+        if key not in self._laws:
+            raise KeyError(f"No registered law {key}")
+        return self._laws[key]
+
+    def __contains__(self, law_id):
+        return _named(law_id) and qualified(law_id) in self._laws
+
+    def laws(self, interface, host):
+        """The laws of `interface` that `host` runs, in canonical (sorted namespaced ID) order:
+        how the inner model and each kind find their laws."""
+        host = qualified(host)
+        return tuple(
+            law
+            for _, law in sorted(self._laws.items())
+            if type(law).interface == interface and qualified(law.host) == host
+        )
+
+    def extended(self, *laws):
+        """A new registry holding this one's laws, then `laws`; this one is unchanged."""
+        out = LawRegistry()
+        for law in (*self._laws.values(), *laws):
+            out.register(law)
+        return out
+
+
+BUILTIN = LawRegistry()
+_ACTIVE = ContextVar("cells_law_registry", default=None)
+# The built-in laws' homes, imported by name, so the core imports no law module. They are @3's own
+# declarations, and the kinds' package, whose modules declare their laws
+# (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)) until each law moves to its own module under laws/
+# (docs/CORE_SEAMS_DESIGN.md §8.2).
+BUILTIN_PACKAGES = ("cells.models.inner_laws", "cells.models.inner_kinds")
+_builtins_loaded = False
+
+
+def _load_builtins():
+    """Import the built-in laws' homes once, by name, so each registers on BUILTIN through the
+    call an outside package uses."""
+    global _builtins_loaded
+    if not _builtins_loaded:
+        for name in BUILTIN_PACKAGES:
+            importlib.import_module(name)
+        _builtins_loaded = True
+
+
+def active():
+    """The law registry of the model build in progress: BUILTIN, with the built-in laws loaded,
+    unless scope() says otherwise."""
+    registry = _ACTIVE.get()
+    if registry is not None:
+        return registry
+    _load_builtins()
+    return BUILTIN
+
+
+@contextmanager
+def scope(registry):
+    """Build (parse, bind, run) with `registry` as the law lookup, restored on exit."""
+    token = _ACTIVE.set(registry)
+    try:
+        yield registry
+    finally:
+        _ACTIVE.reset(token)

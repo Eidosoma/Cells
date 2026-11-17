@@ -38,6 +38,7 @@ __all__ = (
     "ConfigError",
     "Kind",
     "KindFields",
+    "KindRates",
     "KindView",
     "KindRegistry",
     "Schedule",
@@ -222,7 +223,7 @@ class Kind:
       solve keeps the stored rows' charges. It must declare `stage_rows(declaration)` ->
       ((species, node ID), ...), every row it reads or rewrites, and two kinds' stage reads on a
       shared row are refused at binding (they do not commute). `rates(state, potentials,
-      control, p, *, xp)` -> surface_pump_v3.KindRates: inward-positive node changes (cell
+      control, p, *, xp)` -> KindRates: inward-positive node changes (cell
       [species, cell], outside [species, outside node]) into the shared inventory, the kind's own
       state derivatives {field: array}, and heat and work rates (pJ/s), and optionally
       stored_pJ_s, the rate of its stored free energy (its stored_pJ's) less the part its read
@@ -328,6 +329,32 @@ class KindFields(NamedTuple):
     layout_fields: tuple
     control_fields: tuple
     readout_columns: tuple
+
+
+class KindRates(NamedTuple):
+    """A kind's rates at one stage (§7.4 (k), the rates hook): cell [S, n] and outside [S, o]
+    inward-positive node changes, which land in the shared inventory (rule (c)); its own state
+    fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role).
+    membrane_flux: what it carries across membrane patches, outward [S, membrane] (fmol/s), or
+    None; it joins the patches' total flux and membrane current (observations, not ledgers: its
+    moves are already in cell and outside). valid: its own domain at the stage's read and
+    potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
+    row or the step. stored_pJ_s (§7.4 (m), gap 2): the rate (pJ/s) of the free energy the kind
+    stores beyond the stored rows' own terms (its ledger_terms' stored_pJ), less the part its stage
+    read carries (the chemical rate is taken at the read's concentrations, so B4's closure term is
+    carried and B4 gives none), or None; it joins the stage energy-rate observation by role.
+
+    Part of the kind contract (docs/CORE_SEAMS_DESIGN.md §8.5): models/surface_pump_v3.py, where it
+    was defined, re-exports this object."""
+
+    cell: object
+    outside: object
+    derivatives: dict
+    heat_pJ_s: object
+    work_pJ_s: object
+    membrane_flux: object = None
+    valid: object = True
+    stored_pJ_s: object = None
 
 
 class KindView(NamedTuple):

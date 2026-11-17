@@ -640,7 +640,7 @@ with its citation in our own words. Its fields (**S**):
 
 | Field | Content |
 | --- | --- |
-| Identity | `law_id`, namespaced, naming the mechanism and its form, never a protein; `interface` (`cells.channel_law@1`, `cells.cycle_law@1`, `cells.route_law@1`, `cells.binding_law@1`, or a family's own, such as GARD's event laws) |
+| Identity | `law_id`, namespaced, naming the mechanism and its form, never a protein; `interface` (`cells.channel_law@1`, `cells.cycle_law@1`, `cells.route_law@1`, `cells.binding_law@1`, or a family's own, such as GARD's event laws). A fifth, `cells.junction_law@1`, is @3's junction conductance law's: its contract (a gated state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the membrane channel's (codes, named gates, permeant ions, an RK4 step). `host`: the namespaced ID of the kind or model that runs it, by which a host finds its laws (version 1's restriction, built in step 1; §8.3) |
 | What it reads and changes | Rows by role at named ends, with units and signs; its own state, if any |
 | Its math | Pure kernels in the `xp` style; for a cycle law, S ≥ 0 or J (§3.2) |
 | Energy role | Passive or driven (books work); the heat bookings it admits (§6.1) |
@@ -729,8 +729,10 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
 - **Built-ins import only the surface** (the D180 rule extended). An AST test over `kinds/` and
   `laws/` enforces it, with a planted violation that must fail. Internals never import the
   surface, so it adds no cycle.
-- **Stability:** a name in `__all__` changes meaning only with a new major of its interface.
-  Internals may move freely, since the surface re-exports them.
+- **Stability: provisional (D195).** There is no stability promise until a first outside module
+  arrives; then the promise goes back to the user. The word "provisional" stands in the
+  package's docstring and in MODULE_SYSTEM_DESIGN §2.6. Internals may move freely, since the
+  surface re-exports them.
 - **The surface is the stable import path that SOURCE_LAYOUT_MOVES_DESIGN §12 left to this
   pass,** in place of compatibility aliases.
 
