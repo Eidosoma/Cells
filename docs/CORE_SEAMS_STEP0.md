@@ -1,6 +1,8 @@
 # Core seams, step 0: the desk work and the two probes (D195)
 
-*Status: in progress, 17 November 2026, for the lead. Step 0 of the core-seams pass
+*Status: 17 November 2026, for the lead. Items 1–4 are done, and the booking probe is done
+(§6.1). P1 is handed off un-run, with its criterion committed (§5.2 and its two amendments): see
+§6.2. This is step 0 of the core-seams pass
 ([CORE_SEAMS_DESIGN.md](CORE_SEAMS_DESIGN.md), approved by D195 with conditions). Branch
 `core-seams-step0` from main ef9fc1a8. Docs only in the repository; scratch code, fetched sources
 and outputs are in `/mnt/workspaces/Cells/core-seams-step0-20261117/` (cited as `$W`). Each item's
@@ -930,4 +932,24 @@ The evidence is `$W/probes/out/booking.json` and `booking.log`, from `$W/probes/
   refuses "even a crossing a fraction of a millivolt wide". At 0.003 a 0.053 mV crossing was refused,
   by 8 times the tolerance. At 0.01 a 0.17 mV crossing was not.
 
-### 6.2 P1 (to follow)
+### 6.2 P1: handed off, not run
+
+At the lead's instruction, P1 goes to a fresh agent. Its criterion is §5.2 with its two amendments,
+all committed before any run.
+
+**What is ready:**
+- `$W/probes/p1_probe.py`, written to that criterion: host C's ladder against the reference, and
+  host P's ladder recording refusals only.
+- Host-side checks already made (parses only, nothing stepped):
+  - host C's declared world and host P's world parse at rungs 0.01, 0.1, 1 and 2;
+  - the reference integrates (V_b relaxes from −138.2 mV to the head, −133.3 mV);
+  - at the start, ΣG/C = 8.55e3/s, and 4.04e3/s at the head.
+
+**What is not done:** no rung was stepped.
+- The run was queued behind `locks/gate-cores-0-3.lock`, then held there by the F owner's gate.
+- It was cancelled before it started: `$W/probes/out/p1.log` is empty.
+
+**For the agent that runs it:**
+- run `p1_probe.py` from a checkout at ef9fc1a8, with `PYTHONPATH=src:.:$W/probes`;
+- on CPUs that the lead assigns, under its lock;
+- unchanged, unless the note records an amendment before the run.
