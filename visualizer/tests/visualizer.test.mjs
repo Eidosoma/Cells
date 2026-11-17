@@ -11,7 +11,7 @@ import path from "node:path";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import { buildPage, ROOT, THREE_CDN, DEFAULT_SCENE } from "../tools/lib/build_page.mjs";
-import { validate } from "../src/scene/model.js";
+import { validate, SceneModel } from "../src/scene/model.js";
 
 const scene = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
 const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
@@ -25,6 +25,20 @@ test("the generated scene is structurally valid", () => {
 test("the extractor placed every engine file and raised no warning", () => {
   assert.equal(scene.meta.counts.engine_files_placed, scene.meta.counts.engine_files);
   assert.deepEqual(scene.meta.warnings, []);
+});
+
+test("a source links to the engine at the revision the map was read at, and to the viewer's own files on its branch", () => {
+  // Files move on main (D188), and a published page must keep pointing at what it cited: so no link goes to a branch's tip
+  // of the engine. The scene states its revision in short; the link carries the whole of it.
+  assert.match(scene.meta.source_base_url, /\/blob\/[0-9a-f]{40}\/$/, "the engine's link base is not at a revision");
+  assert.ok(scene.meta.source_base_url.includes(`/blob/${scene.meta.revision}`), "the link's revision is not the one the map states");
+  assert.match(scene.meta.own_source_base_url, /\/blob\/visualizer\/$/, "the viewer's own link base is not its branch");
+  const model = new SceneModel(scene);
+  assert.equal(model.sourceUrl({ path: "docs/DECISIONS.md" }), scene.meta.source_base_url + "docs/DECISIONS.md");
+  assert.equal(model.sourceUrl({ path: "visualizer/docs/MOUSE.md" }), scene.meta.own_source_base_url + "visualizer/docs/MOUSE.md");
+  // An older scene, which gives one base only, links as it always did.
+  const older = new SceneModel({ ...scene, meta: { ...scene.meta, own_source_base_url: undefined } });
+  assert.equal(older.sourceUrl({ path: "visualizer/docs/MOUSE.md" }), scene.meta.source_base_url + "visualizer/docs/MOUSE.md");
 });
 
 test("a cited source that is the viewer's own is a file of this folder", () => {

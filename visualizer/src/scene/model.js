@@ -60,8 +60,14 @@ export class SceneModel {
     return status ? status.built : true;
   }
 
+  /**
+   * Where a source's path links to: an engine file at the revision the map was read at, and one of the
+   * viewer's own files (under visualizer/) on the viewer's branch, where the scene gives that base.
+   */
   sourceUrl(source) {
-    return this.meta.source_base_url ? this.meta.source_base_url + source.path : null;
+    const own = this.meta.own_source_base_url && String(source.path || "").startsWith("visualizer/");
+    const base = own ? this.meta.own_source_base_url : this.meta.source_base_url;
+    return base ? base + source.path : null;
   }
 }
 

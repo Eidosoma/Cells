@@ -78,6 +78,13 @@ def own_file(path):
     return home in target.parents and target.is_file()
 
 
+def pinned(base, name):
+    """A link base on a branch's tip (".../blob/main/") as the same base at `name`, a revision or another branch."""
+    if not base or not name or "/blob/main/" not in base:
+        return base
+    return base.replace("/blob/main/", f"/blob/{name}/")
+
+
 def find_repo(explicit):
     """The checkout to read: --repo, else the nearest tree that holds src/cells."""
     if explicit:
@@ -751,7 +758,12 @@ def main():
             "revision_date": git(repo, "log", "-1", "--format=%cs").strip(),
             "dirty": dirty,
             "generator": "visualizer/tools/extract_architecture.py",
-            "source_base_url": overlay.get("source_base_url"),
+            # Where a source's path links to. The engine's files are linked at the revision the map was read at, not at
+            # the branch's tip: files move (D188 relocates most of src/cells), and a page that was published must keep
+            # pointing at what it cited. The viewer's own files are linked on its branch, which is never rewritten and
+            # holds notes that main gets only at its next merge.
+            "source_base_url": pinned(overlay.get("source_base_url"), git(repo, "rev-parse", "HEAD").strip()),
+            "own_source_base_url": pinned(overlay.get("source_base_url"), "visualizer"),
             "counts": {
                 **coverage,
                 "parts": len(entities),

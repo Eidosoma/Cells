@@ -27,9 +27,9 @@ opens the engine part that holds its law, and that part lists the units it holds
 A part's id of a view's own (`laws:…`) opens that view from any other, so
 `select=laws:kir2p1_mh2@1` works without `lens=`.
 
-Two more views are built and stand on pages of their own until they are on this one
-(`node tools/build_view_page.mjs <view>`): the Laws library's preview, and the
-origin-of-life view below.
+A view can also stand on a page of its own (`node tools/build_view_page.mjs <view>`):
+the origin-of-life view below does, until it is on this page, and the Laws library has
+such a page beside its place here.
 
 Three things are encoded, and kept apart:
 

@@ -5,12 +5,13 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-17T00:46:47Z",
+  "generated_at": "2026-11-17T01:04:01Z",
   "revision": "1d86a192",
   "revision_date": "2026-11-16",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/1d86a192a86301efc8c013f33f6452cf33462622/",
+  "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "counts": {
    "engine_files": 526,
    "engine_files_placed": 526,
