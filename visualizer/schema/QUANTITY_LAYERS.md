@@ -168,12 +168,18 @@ the viewer changes.
    along it, which stand where nothing may move, so that a still picture, and a visitor
    who asks for less motion, are told the way; a stream too thin for one token shows its
    chevrons alone. Where nothing may move, the tokens stand, as many as would be on their
-   way at one moment, and the picture says that it is shown still.
+   way at one moment, and the picture says that it is shown still. Faster than true speed
+   the lanes are streams as at true speed, and the picture gives the rate at full width
+   both in the run's seconds and in the seconds of watching. However short a lane and
+   however busy, no token overlaps the next on it: a packet is drawn shorter, and a bead
+   smaller, never fewer; where lanes lie side by side a chevron is drawn no wider than
+   leaves room to the next. A chevron is one flat, see-through mark a little paler than
+   its lane, without a glow, so that it is not taken for a particle.
 
-   Not everywhere yet: the stream and the chevrons are drawn in the Cell view. A replay's
-   sheet and close-up draw beads at every speed, fewer and slower the more it is slowed,
-   with an arrowhead at each lane's end; an illustration (a species with no run) has no
-   speed, and keeps beads at one pace.
+   The same holds in the Cell view and in a replay's sheet and close-up, which draw
+   through one renderer. An illustration (a species with no run) has no rate and no
+   speed: it keeps beads at one pace, with chevrons for the way, and never draws a
+   stream, so that it cannot look like a measured one.
 4. **Always a legend:** the quantity, its unit and scale, what stands behind it (the
    record's owner and how it is represented), and for a derivation the rule and its
    inputs. Text wears the page's text colours, never the mark's colour. For a run

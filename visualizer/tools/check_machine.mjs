@@ -346,22 +346,46 @@ try {
     check("at real-life speed every turning part is drawn swept, no mark sharp, with the arrowhead", s.sets.length > 0 && s.sets.every((set) => set.swept && !set.marks) && s.arrow, JSON.stringify(s.sets));
     check("the picture says it is an illustration and no run, the way, where it is seen from and the speed, and nothing of being too fast", says(s, /Illustration: not a run · Cells has no model of this motor/) && says(s, /Turning as in a run: counter-clockwise, seen from outside the cell/) && says(s, /At real-life speed: about 150 turns a second/) && !says(s, /too fast|follow/i), JSON.stringify([whereSaid(s), s.said, s.statement]));
     check("the look's own motion is held while it turns", s.holds.includes("machine"), JSON.stringify(s.holds));
-    // The Speed row is a slider since 17 November 2026 (the flux's, shared): a row of the channel "time" with no buttons.
-    check("the legend offers the Speed row while it turns", s.rows.some((row) => /^time: (True\* \| 1\/1,000 \| 1\/1,000,000)?$/.test(row)), JSON.stringify(s.rows));
+    /** The Speed slider where a hand can reach it: its box, where it stands, and the row's words; null if it is not on the screen or something lies over it. */
+    const sliderAt = () =>
+      evaluate(`(() => { const root = ${V}.shadowRoot, input = root.querySelector("cells-legend .speed-slider"); if (!input) return null; input.scrollIntoView({ block: "nearest" }); const r = input.getBoundingClientRect(); if (!r.width) return null; const y = r.top + r.height / 2, top = root.elementFromPoint(r.left + r.width / 2, y); return top === input ? { left: r.left, right: r.right, y, height: Math.round(r.height), value: Number(input.value), now: root.querySelector("cells-legend .speed-now")?.textContent || null } : null; })()`);
+    /**
+     * Drag the slider by hand from one place to another (0 to 1): pressed on the thumb, moved in eight steps, let go. Its box
+     * is looked up first (the legend's words change with the speed, and its rows move). Returns where it stands then, the
+     * slow-down the page took, and the row's words; null if the slider cannot be reached (which the check reports).
+     */
+    const dragSlider = async (from, to) => {
+      const box = await sliderAt();
+      if (!box) return null;
+      // The thumb's middle runs from 8 px inside the track's start to 8 px inside its end: where a press at a place lands exactly there.
+      const xAt = (position) => box.left + 8 + position * (box.right - box.left - 16);
+      await mouse("mouseMoved", xAt(from), box.y, { button: "none", buttons: 0 });
+      await mouse("mousePressed", xAt(from), box.y);
+      for (let k = 1; k <= 8; k++) await mouse("mouseMoved", xAt(from + ((to - from) * k) / 8), box.y, { buttons: 1 });
+      await mouse("mouseReleased", xAt(to), box.y, { buttons: 0 });
+      await sleep(1500);
+      const after = await sliderAt();
+      return after && { value: after.value, now: after.now, slow: await evaluate(`${L}.flux.slow`) };
+    };
+    // The Speed row is a slider since 17 November 2026 (the flux's, shared): a row of the channel "time" with a range in it, at true speed.
+    let slider = await sliderAt(), unfolded = null;
+    if (!slider) {
+      // A phone's legend may stand folded: it is opened with a real press, as a visitor would, and folded again after.
+      unfolded = await placeOf(`root.querySelector("cells-legend .legend-toggle")`);
+      if (unfolded) await click(unfolded.x, unfolded.y, 800);
+      slider = await sliderAt();
+    }
+    check("the legend offers the Speed slider while it turns, at true speed, at least 44 px tall to the touch", s.rows.includes("time: ") && slider?.value === 0 && slider.now === "True" && slider.height >= 44, JSON.stringify([s.rows, slider]));
     const swept = await drawnNow();
     note(`drawn, the motor swept at real-life speed (level ${s.level}): ${swept.calls} draw calls, ${swept.triangles.toLocaleString("en-US")} triangles`);
     if (s.frames !== null) note(`frames readout: ${s.frames}`);
     await shot(`${NAME}-real`);
     // ---------------------------------------------------------- slowed a thousand times: sharp
-    const slower = await placeOf(`[...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].find((button) => button.textContent === "1/1,000")`);
-    if (slower) await click(slower.x, slower.y, 1500);
-    else {
-      note("the Speed row's 1/1,000 could not be pressed at this size: it is set through the page");
-      await evaluate(`${V}.current.setSlow(1000)`);
-      await sleep(1500);
-    }
+    // The slider dragged by hand from true speed to its middle mark: pressed on its thumb, moved along in steps, let go there.
+    const dragged = await dragSlider(0, 0.5);
+    check("the Speed slider dragged by hand to its middle mark slows the motor a thousand times, and the row says 1/1,000", Boolean(dragged) && Math.abs(dragged.value - 0.5) < 0.006 && Math.abs(Math.log10(dragged.slow) - 3) < 0.03 && dragged.now === "1/1,000", JSON.stringify(dragged));
     // The motor takes the slow-down up at its next frame, which this renderer may take more than a second to draw.
-    await until(`${M}.motion?.slow === 1000 && ${M}.motion.lastMs > 0`, 120);
+    await until(`Math.abs(Math.log10(${M}.motion?.slow || 1) - 3) < 0.03 && ${M}.motion.lastMs > 0`, 120);
     await someFrames(1);
     s = await state();
     // Whether a set is sharp at a thousand times slower depends on the frames drawn: the rule (machine_motion.js) is
@@ -370,25 +394,25 @@ try {
       const set = state.sets.find((item) => item.part === judged.part);
       return set && (judged.sharp > 0.001) === set.marks && (judged.sharp < 0.999) === set.swept;
     });
-    check("slowed a thousand times, each part is drawn sharp or swept as its step a frame asks, and the statement says the slow-down", s.slow === 1000 && byRule(s) && says(s, /Slowed 1,000 times: in life about 150 turns a second/), JSON.stringify([s.slow, s.sharpness, whereSaid(s), s.said]));
+    check("slowed a thousand times, each part is drawn sharp or swept as its step a frame asks, and the statement says the slow-down", Math.abs(Math.log10(s.slow) - 3) < 0.03 && byRule(s) && says(s, /Slowed 1,000 times: in life about 150 turns a second/), JSON.stringify([s.slow, s.sharpness, whereSaid(s), s.said]));
     const at60 = s.sharpness.sets.map((set) => `${set.part} ${set.period.toFixed(4)} of a turn between like marks: ${sharpnessAt(150 / 1000 / 60, set.period) > 0.999 ? "sharp" : sharpnessAt(150 / 1000 / 60, set.period) < 0.001 ? "swept" : "part sharp"}`);
     note(`slowed a thousand times at ${s.sharpness.frameMs} ms a frame here: ${s.sharpness.step.toFixed(4)} of a turn a frame; at 60 frames a second, 0.0025: ${at60.join("; ")}`);
     const slowedDrawn = await drawnNow();
     note(`drawn, the motor slowed a thousand times (level ${s.level}): ${slowedDrawn.calls} draw calls, ${slowedDrawn.triangles.toLocaleString("en-US")} triangles`);
     await shot(`${NAME}-slowed`);
-    const slowest = await placeOf(`[...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].find((button) => button.textContent === "1/1,000,000")`);
-    if (slowest) await click(slowest.x, slowest.y, 1500);
-    else {
-      await evaluate(`${V}.current.setSlow(1000000)`);
-      await sleep(1500);
-    }
-    await until(`${M}.motion?.slow === 1000000`, 120);
+    // On to the three-quarter mark, dragged again from where the thumb stands.
+    const further = await dragSlider(0.5, 0.75);
+    check("dragged on to the three-quarter mark, the motor is slowed a million times, and the row says 1/1,000,000", Boolean(further) && Math.abs(further.value - 0.75) < 0.006 && Math.abs(Math.log10(further.slow) - 6) < 0.03 && further.now === "1/1,000,000", JSON.stringify(further));
+    await until(`Math.abs(Math.log10(${M}.motion?.slow || 1) - 6) < 0.03`, 120);
     await someFrames(1);
     s = await state();
-    check("slowed a million times, every part's marks are sharp, and the statement says so", s.slow === 1000000 && s.sets.every((set) => set.marks && !set.swept) && says(s, /Slowed 1,000,000 times/), JSON.stringify([s.slow, s.sharpness, whereSaid(s), s.said]));
+    check("slowed a million times, every part's marks are sharp, and the statement says so", Math.abs(Math.log10(s.slow) - 6) < 0.03 && s.sets.every((set) => set.marks && !set.swept) && says(s, /Slowed 1,000,000 times/), JSON.stringify([s.slow, s.sharpness, whereSaid(s), s.said]));
     const sharp = await drawnNow();
     note(`drawn, the motor turning sharp, slowed a million times (level ${s.level}): ${sharp.calls} draw calls, ${sharp.triangles.toLocaleString("en-US")} triangles`);
     await shot(`${NAME}-slowed-million`);
+    // The legend opened for the slider is folded again, as the visitor found it.
+    const fold = unfolded && (await placeOf(`root.querySelector("cells-legend .legend-toggle")`));
+    if (fold) await click(fold.x, fold.y, 800);
     // ---------------------------------------------------------- a part's panel
     const ring = await placeOf(`root.querySelector('.label[data-label="machine:flagellar-motor:c-ring"]')`);
     if (ring) await click(ring.x, ring.y, 900);

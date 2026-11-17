@@ -217,7 +217,7 @@ const state = () =>
           speeds: [...root.querySelectorAll("cells-timeline .tl-speed-step")].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
           speedsOpen: (() => { const list = root.querySelector("cells-timeline .tl-speeds"); return Boolean(list && !list.hidden && list.getBoundingClientRect().height > 0); })(),
           legendExample: root.querySelector("cells-legend .layer-example")?.textContent ?? null,
-          lanes: stream ? { token: stream.token, what: stream.what, busiest: stream.busiest, beads: stream.lanes.map((lane) => lane.beads.length), drawn: stream.drawn, readings: stream.readings() } : null,
+          lanes: stream ? { token: stream.token, what: stream.what, busiest: stream.busiest, beads: stream.lanes.map((lane) => lane.beads.length), crossing: stream.lanes[0]?.crossing ?? null, drawn: stream.drawn, readings: stream.readings() } : null,
           glow: glow ? { full: glow.full, unit: glow.shown.unit, readings: glow.readings() } : null,
           amounts: fog ? { unit: fog.domain.shown.unit, high: fog.domain.high, cells: lens.cells.ids.map((_, n) => fog.record.at(lens.player.index, n)), outside: fog.outside && lens.surface.outside ? lens.surface.outside.set.ids.map((_, n) => fog.outside.at(lens.player.index, n)) : null } : null,
           keys: [...root.querySelectorAll("cells-legend .legend-layers .legend-key")].map((p) => p.textContent),
@@ -550,11 +550,11 @@ try {
     const through = s.flow.through, words = s.closeup?.words || [];
     const caption = words.find((text) => /Membrane of/.test(text)) || "";
     check(
-      "a press on a cell draws a form for each of its channel populations and one for its pump, with beads through each, and the bare membrane's own lanes beside them",
-      s.selected === `cell:${first.number}` && through?.forms.length === 4 && through.forms[2] === "pump" && through.forms[3] === "membrane itself" && through.readings.length === 6 && through.beads.slice(0, 4).every((count) => count >= 1) && through.drawn.heads === 6,
+      "a press on a cell draws a form for each of its channel populations and one for its pump, a lane through each, and the bare membrane's own lanes beside them: at true speed each a stream with its chevrons, no bead to count",
+      s.selected === `cell:${first.number}` && through?.forms.length === 4 && through.forms[2] === "pump" && through.forms[3] === "membrane itself" && through.readings.length === 6 && through.drawn.streams === 6 && through.drawn.beads === 0 && through.drawn.chevrons >= 6 && through.drawn.chevrons <= 18,
       JSON.stringify([s.selected, through?.forms, through?.beads, through?.drawn])
     );
-    check("the close-up says that it is an example, and states what one bead stands for, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /One bead is [\d,]+ ions · true speed, shown still\nmean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 220));
+    check("the close-up says that it is an example, and states what full width carries, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /Streams as wide as their rates: full width is [\d,]+ ions a second · true speed, shown still\nmean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 260));
     const ways = Object.fromEntries((through?.readings || []).map((reading) => [`${reading.kind} ${reading.species}`, reading.way]));
     check("potassium leaves through its channels and sodium enters through its own; the pump carries three sodium out and two potassium in for each cycle", ways["channel K"] === "out of the cell" && ways["channel Na"] === "into the cell" && ways["pump Na"] === "out of the cell" && ways["pump K"] === "into the cell" && through.readings.filter((reading) => reading.kind === "pump").map((reading) => reading.per).join() === "-3,2", JSON.stringify(ways));
     check("each stream's beads a second are its ions a second over the token", through.readings.every((reading) => Math.abs(reading.beads - (Math.abs(reading.mean) * 6.02214076e8) / through.token) <= 1e-6 * reading.beads), JSON.stringify(through.readings.map((reading) => [reading.name, reading.species, reading.mean, reading.beads])));
@@ -563,7 +563,7 @@ try {
     await press(option("motion", "transfers"));
     await fetched();
     s = await until((now) => now.on.includes("transfers") && now.closeup === null && now.flow.lanes && now.flow.statement.length === 1);
-    check("Transfers takes the motion channel from Ion traffic: the close-up goes, and beads cross the junctions between cells", s.on.includes("transfers") && !s.on.includes("ion-traffic") && s.closeup === null && s.flow.lanes?.readings.length > 0 && /^One bead is [\d,]+ ions · true speed, shown still/.test(s.flow.statement[0] || ""), JSON.stringify([s.on, s.flow.statement, s.flow.lanes?.readings.length]));
+    check("Transfers takes the motion channel from Ion traffic: the close-up goes, and streams cross the junctions between cells", s.on.includes("transfers") && !s.on.includes("ion-traffic") && s.closeup === null && s.flow.lanes?.readings.length > 0 && /^Streams as wide as their rates: full width is [\d,]+ ions a second · true speed, shown still/.test(s.flow.statement[0] || ""), JSON.stringify([s.on, s.flow.statement, s.flow.lanes?.readings.length]));
     note(`example: ${JSON.stringify({ run: s.run, on: s.on, statement: s.flow.statement, token: s.flow.lanes?.token, moving: s.flow.lanes?.readings.filter((reading) => reading.beads > 0.5).length, frame_ms: s.frame, legend: s.legendBox })}`);
     await shot("example-transfers");
   }
@@ -589,7 +589,7 @@ try {
     s = await until((now) => now.on.includes("transfers") && now.flow.lanes && now.flow.statement.length === 1);
     const lanes = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
     const trueToken = s.flow.lanes?.token;
-    check("pressing Transfers puts a lane of beads on each border a saved total crosses, and the picture states the token, the time and the interval", s.flow.lanes?.readings.length > 0 && /^One bead is [\d,]+ (molecule|ion)s? · true speed, shown still · mean of [\d.]+ s to [\d.]+ s$/.test(s.flow.statement[0] || ""), JSON.stringify([Object.keys(lanes), s.flow.statement]));
+    check("pressing Transfers puts a lane on each border a saved total crosses, a stream at true speed, and the picture states what full width carries, the time and the interval", s.flow.lanes?.readings.length > 0 && /^Streams as wide as their rates: full width is [\d,]+ (molecule|ion)s? a second · true speed, shown still · mean of [\d.]+ s to [\d.]+ s$/.test(s.flow.statement[0] || ""), JSON.stringify([Object.keys(lanes), s.flow.statement]));
     check("the legend keeps no clock of its own: the replay's speed is the timeline's, true speed as this short run opens", s.flow.time.length === 0 && s.flow.speed === 1 && s.flow.speedButton?.text === "1×" && /^True speed: one second here is one second of the run$/.test(s.flow.speedButton.title), JSON.stringify([s.flow.time, s.flow.speed, s.flow.speedButton]));
     // A real press on the timeline's speed: the steps the run is offered, slower and faster, each in words.
     await press("cells-timeline .tl-speed");
@@ -602,7 +602,8 @@ try {
     await shot("flow-speeds");
     await press("cells-timeline .tl-speed");
     s = await until((now) => !now.flow.speedsOpen);
-    check("where nothing may move (a still picture) the beads stand, as many as would be crossing at one moment, and each lane that carries something ends in an arrowhead", s.flow.lanes.beads.every((count, n) => count === Math.min(18, Math.round(s.flow.lanes.readings[n].beads * 1.6))) && s.flow.lanes.drawn.heads === s.flow.lanes.readings.filter((reading) => reading.mean).length, JSON.stringify([s.flow.lanes.beads, s.flow.lanes.drawn]));
+    const carrying = s.flow.lanes.readings.filter((reading) => reading.mean).length;
+    check("where nothing may move (a still picture) at true speed each lane that carries something is a stream, standing, with its chevrons for its way, and no bead to count", s.flow.lanes.beads.every((count) => count === 0) && s.flow.lanes.drawn.beads === 0 && s.flow.lanes.drawn.streams === carrying && s.flow.lanes.drawn.chevrons >= carrying && s.flow.lanes.drawn.chevrons <= 3 * carrying && s.flow.lanes.drawn.heads === 0, JSON.stringify([s.flow.lanes.beads, s.flow.lanes.drawn]));
     if (reference) {
       for (const [name, wanted] of Object.entries(reference.lanes)) {
         const got = lanes[name];
@@ -636,31 +637,32 @@ try {
     // Slowed, fewer beads pass and each crosses more slowly (17 November 2026): the arithmetic holds against the token.
     const fewer = Object.keys(lanes).every((name) => !lanes[name].beads || (slowed[name].beads < lanes[name].beads && close(slowed[name].beads * s.flow.lanes.token, slowed[name].particles * 0.001, 1e-6)));
     check(
-      "slowed a thousand times on the timeline, a bead stands for fewer and fewer beads pass, each crossing more slowly; the picture, the legend and the timeline say so",
-      s.flow.lanes.token < trueToken && s.flow.lanes.token >= 1 && /^[125]0*$/.test(String(s.flow.lanes.token)) && fewer && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond of the run") && /Slowed, fewer beads pass/.test(text)) && s.flow.speedButton?.text === "1/1,000×" && !s.flow.speedsOpen,
-      JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.speedButton])
+      "slowed a thousand times on the timeline, the stream resolves into packets: a packet stands for fewer and fewer pass, each crossing more slowly, standing as many as would be crossing; the picture, the legend and the timeline say so",
+      s.flow.lanes.token < trueToken && s.flow.lanes.token >= 1 && /^[125]0*$/.test(String(s.flow.lanes.token)) && fewer && /^One packet is [\d,]+ (molecule|ion)s? · slowed 1,000 times, shown still/.test(s.flow.statement[0] || "") && s.flow.lanes.drawn.streams === 0 && s.flow.lanes.beads.every((count, n) => count === Math.min(18, Math.round(s.flow.lanes.readings[n].beads * s.flow.lanes.crossing))) && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond of the run") && /Slowed, the stream resolves into packets/.test(text)) && s.flow.speedButton?.text === "1/1,000×" && !s.flow.speedsOpen,
+      JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.lanes.beads, s.flow.lanes.drawn, s.flow.speedButton])
     );
     await press("cells-timeline .tl-speed");
     await until((now) => now.flow.speedsOpen);
     await press(step("1"));
     s = await until((now) => now.flow.speed === 1 && !now.flow.speedsOpen);
 
-    // Where things may move, the beads keep the replay's clock. Every other step here looks at a still picture (the page
+    // Where things may move, what flows keeps the replay's clock. Every other step here looks at a still picture (the page
     // is opened with still=1, and paused at a time): this one lets the view move for a moment, first paused and then
-    // playing (slowed a thousand times, so that the playhead stays in this interval), and puts the stillness back.
+    // playing (slowed a thousand times, so that the playhead stays in this interval, and its packets can be followed), then
+    // at true speed (a stream), and puts the stillness back.
     const moving = await evaluate(`(async () => {
       const viewer = ${V}, lens = viewer.current, player = lens.player, mark = lens.drawn.get("transfers").mark;
       const lane = mark.lanes.reduce((most, item) => (item.perSecond > most.perSecond ? item : most), mark.lanes[0]);
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      player.setSpeed(0.001);
       viewer.stage.rig.instant = false;
       lens.draw();
       viewer.stage.invalidate();
       await wait(1200);
-      // Paused, nothing may be still on account of the view, yet the beads stand: the replay's clock does not run.
+      // Paused, nothing may be still on account of the view, yet the packets stand: the replay's clock does not run.
       const paused = { playing: player.playing, still: lens.still(), beads: lane.beads.slice(), statement: lens.tags.flow.text };
       await wait(1200);
       paused.later = lane.beads.slice();
-      player.setSpeed(0.001);
       // What the stage hands each frame while the replay plays: its step for what glides (at most a tenth of a
       // second) and the time that really passed. The playhead keeps the second, so that the speed stated holds.
       const handed = [], began = player.time;
@@ -682,20 +684,37 @@ try {
       unhook();
       const covered = player.time - time;
       const clock = { watched: (player.time - began) / player.speed, real: handed.reduce((sum, [, real]) => sum + real, 0) / 1000, steps: handed.reduce((sum, [dt]) => sum + dt, 0) / 1000, frames: handed.length, longest: Math.max(0, ...handed.map(([, real]) => real)), wall: (performance.now() - wall) / 1000, gaps: handed.map(([, real]) => Math.round(real)) };
-      player.setSpeed(1);
+      const rate = mark.readings()[mark.lanes.indexOf(lane)].beads, crossing = lane.crossing;
+      // Put back to a still picture, slowed: the packets stand again as many as would be crossing.
       viewer.stage.rig.instant = true;
       lens.draw();
       viewer.stage.invalidate();
-      return { paused, first, later, drawn, statement, covered, clock, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, crossing: lane.crossing, still: lens.still(), standing: lane.beads.length };
+      const standing = lane.beads.length;
+      // At true speed, played: a stream whose streaks run on with the replay's clock, and no bead to count.
+      player.setSpeed(1);
+      viewer.stage.rig.instant = false;
+      lens.draw();
+      const streaks = mark.tokens.flow.time;
+      player.play();
+      let stream = null;
+      for (let tries = 0; tries < 100 && !stream; tries++) {
+        await wait(200);
+        if (mark.tokens.flow.time !== streaks) stream = { ran: mark.tokens.flow.time - streaks, drawn: mark.drawn, mode: mark.tokens.mode, statement: lens.tags.flow.text };
+      }
+      player.pause();
+      viewer.stage.rig.instant = true;
+      lens.draw();
+      viewer.stage.invalidate();
+      return { paused, first, later, drawn, statement, covered, clock, rate, crossing, still: lens.still(), standing, stream };
     })()`);
     check(
-      "paused, the beads stand although the view may move, and the picture says it is paused",
-      moving.paused.playing === false && moving.paused.still === false && JSON.stringify(moving.paused.beads) === JSON.stringify(moving.paused.later) && moving.paused.beads.length === Math.min(18, Math.round(moving.rate * 1.6)) && /, paused · /.test(moving.paused.statement || ""),
+      "paused, the packets stand although the view may move, as many as would be crossing, and the picture says it is paused",
+      moving.paused.playing === false && moving.paused.still === false && JSON.stringify(moving.paused.beads) === JSON.stringify(moving.paused.later) && moving.paused.beads.length === Math.min(18, Math.round(moving.rate * moving.crossing)) && /, paused · /.test(moving.paused.statement || ""),
       JSON.stringify(moving.paused)
     );
     check(
-      "played, beads set out one after another and travel in the replay's time: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
-      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * moving.crossing) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1 && /slowed 1,000 times(: fewer beads, crossing more slowly)? · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
+      "played slowed, packets set out one after another and travel in the replay's time: a lane holds about its rate times the crossing time, and its packets have moved a moment later",
+      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * moving.crossing) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.chevrons >= 1 && moving.drawn.streams === 0 && /^One packet is [\d,]+ .* · slowed 1,000 times(: packets, crossing more slowly)? · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
       JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn, statement: moving.statement, covered: moving.covered })
     );
     // From the stage through the viewer to the playhead: a frame longer than a tenth of a second counts in full. Were
@@ -705,12 +724,13 @@ try {
       moving.clock.frames >= 2 && moving.clock.longest > 150 && moving.clock.real - moving.clock.steps > 0.05 && Math.abs(moving.clock.watched - moving.clock.real) < 1e-6,
       JSON.stringify(moving.clock)
     );
-    check("put back to a still picture, the beads stand again as many as would be crossing", moving.still === true && moving.standing === Math.min(18, Math.round(moving.rate * 1.6)), JSON.stringify([moving.still, moving.standing]));
+    check("put back to a still picture, the packets stand again as many as would be crossing", moving.still === true && moving.standing === Math.min(18, Math.round(moving.rate * moving.crossing)), JSON.stringify([moving.still, moving.standing]));
+    check("played at true speed, each lane is a stream whose streaks run on with the replay's clock, with no bead to count", Boolean(moving.stream) && moving.stream.ran > 0 && moving.stream.mode === "stream" && moving.stream.drawn.beads === 0 && moving.stream.drawn.streams >= 1 && /^Streams as wide as their rates/.test(moving.stream.statement || ""), JSON.stringify(moving.stream));
 
     // The panel: the numbers behind each bead and each glow, as the page gives them to be checked by hand.
     await press("cells-legend .layer-details");
     s = await until((now) => now.panel && /Transfers, a mean from/.test(now.panel.text) && /Energy dissipated, a mean from/.test(now.panel.text));
-    check("the panel gives, for each lane and each glow, the two saved totals, the time between and the mean rate", Boolean(s.panel) && /the difference over [\d.]+ s/.test(s.panel.text) && /beads a second pass/.test(s.panel.text) && /in a hundred of the brightest glow/.test(s.panel.text) && /Worked out by the viewer from the saved totals/.test(s.panel.text), s.panel ? s.panel.text.slice(0, 200) : "no panel");
+    check("the panel gives, for each lane and each glow, the two saved totals, the time between and the mean rate", Boolean(s.panel) && /the difference over [\d.]+ s/.test(s.panel.text) && /drawn as a stream: \d+ in a hundred of the rate at full width/.test(s.panel.text) && /in a hundred of the brightest glow/.test(s.panel.text) && /Worked out by the viewer from the saved totals/.test(s.panel.text), s.panel ? s.panel.text.slice(0, 200) : "no panel");
     note(`flow: ${JSON.stringify({ run: s.run, time: s.time, on: s.on, statement: s.flow.statement, token: s.flow.lanes?.token, lanes: s.flow.lanes?.readings.map((reading) => [reading.name, reading.mean, reading.beads, reading.from, reading.to]), glow: s.flow.glow?.readings.map((reading) => [reading.name, reading.mean, reading.share]), frame_ms: s.frame, legend: s.legendBox })}`);
     await shot("flow");
   }

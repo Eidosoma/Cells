@@ -63,6 +63,11 @@ const SUITE = [
   { name: "look-look", tool: "check_look.mjs", args: ["look"], minutes: 5 },
   flux("thalecress", { SPECIES: "thalecress" }, 5),
   flux("ecoli", { SPECIES: "ecoli" }, 5),
+  // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
+  flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
+  flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),
+  flux("syn3a-scale-cell", { SPECIES: "syn3a", SIZE: "real", SCALE: "cell" }, 5),
+  flux("syn3a-scale-molecule", { SPECIES: "syn3a", SIZE: "real", SCALE: "molecule" }, 5),
   flux("moving", { MOVING: "1" }, 5),
   flux("light", {}),
   flux("dark", { THEME: "dark" }),

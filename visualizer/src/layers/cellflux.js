@@ -34,7 +34,7 @@ import { readFlux, planFor, shownKinds, shownWithheld, illustrationWords, citati
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, intervalWords, statusWords, takenWords, takenShort, everMoves } from "./loop.js";
 import { Tokens } from "./marks/tokens.js";
 import { fitOnRow } from "./statement.js";
-import { SLOWS, SLIDER, SLOWEST, slowAt, positionOf, slowLabel, statementOf, tokenWords, timeWords, paceAt, paceKey, modeAt, resolveAt, flowWords, ionsASecond, CROSSING, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
+import { SLOWS, SLIDER, SLOWEST, slowAt, positionOf, slowLabel, statementOf, tokenWords, timeWords, paceAt, paceKey, modeAt, resolveAt, flowWords, ionsASecond, CROSSING, STILL_WORDS, HEAD_WORDS, WAY_WORDS, standWords } from "./marks/beads.js";
 import { STYLES } from "./marks/flow.js";
 import { ionColours } from "./ions.js";
 import { clock } from "../replay/format.js";
@@ -73,6 +73,21 @@ export const SIZES = {
 };
 
 /**
+ * The sizes of the mark for a cell in a size mode: SIZES, except in a cell whose molecules are drawn as themselves to
+ * scale (a bacterium: lenses/cell_layout.js, the layout's `fine`). There a lane drawn in the cell's own units would be a
+ * few pixels at the cell's stop and its beads specks (17 November 2026, E. coli and Syn3A to scale), so its marks are
+ * sized as the layout sizes its other marks that move or point, the picture's choice in pixels at the cell's stop:
+ * a bead 3.5 pixels in radius, lanes 11 pixels apart, reaching 16 pixels to each side of the membrane. They stand for
+ * no size, as the to-scale picture's dots for ions and small molecules stand for none.
+ */
+export function sizesFor(mode, cell) {
+  const scale = cell?.frame?.scale;
+  if (mode !== "real" || !scale?.fine) return SIZES[mode];
+  const mark = (pixels) => pixels * scale.pixel * scale.nm;
+  return { ...SIZES.real, bead: mark(3.5), pitch: mark(11), reach: mark(16), bridge: mark(11), fine: true };
+}
+
+/**
  * The pump of the membrane's close-up, drawn to scale (lenses/cell_parts.js, buildMolecules):
  * it stands `beside` nanometres along the membrane from the close-up's channel, its lobes up
  * to about 5 nm above the cut. Its lanes run `over` nanometres above the cut, clear of the
@@ -99,7 +114,7 @@ export function closePump(molecule, sideways, nm) {
  * a seat with `outward` has a path of its own for what leaves.
  */
 export function seatsOf(kind, cell, mode, { sides = 0 } = {}) {
-  const size = SIZES[mode], spots = cell?.spots, outline = cell?.frame?.outline;
+  const size = sizesFor(mode, cell), spots = cell?.spots, outline = cell?.frame?.outline;
   if (!size || !spots || !outline) return [];
   const cut = cell.frame.cut, reach = size.reach;
   const across = (angle, from, to, y) => ({ inward: (lateral = 0) => (share) => outline.walk(angle, lateral, from + (to - from) * share, y) });
@@ -454,6 +469,13 @@ export class CellFlux {
     this.lens.stage.invalidate?.();
   }
 
+  /** The legend's words for how a lane's way is drawn, in the style drawn (marks/flow.js, STYLES). */
+  wayWords() {
+    const style = STYLES.includes(this.style) ? this.style : DIRECTION;
+    if (style === "painted") return "Chevrons drawn in each lane's stream point the way it flows; they stand where they are when nothing may move";
+    return style === "chevrons" ? WAY_WORDS : style === "taper" ? "Each lane widens toward the end it flows to: its head leads the flow" : HEAD_WORDS;
+  }
+
   /**
    * The colour of a lane, as CSS text: an ion's own where it has one (sodium, potassium),
    * else the one neutral tone (data/layers/ions.json, rule 8). Only those colours were
@@ -488,7 +510,7 @@ export class CellFlux {
     for (const set of this.tokens) set.tokens.dispose();
     this.tokens = [];
     const zone = lens.zones.find((item) => item.name === "cell" && item.mode === lens.sizeMode);
-    const size = SIZES[lens.sizeMode];
+    const size = sizesFor(lens.sizeMode, this.cell);
     if (zone && size && showing.kinds.length) {
       const run = this.source.kind === "run";
       const ground = new THREE.Color(palette.bg || "#ffffff");
@@ -594,10 +616,21 @@ export class CellFlux {
       this.elapsed += seconds / this.slow;
       this.rates();
     }
-    let moving = false;
+    let moving = false, shown = 0;
     for (const set of this.tokens) {
       const fade = Math.max(0, set.zone.fade ?? 1) * (set.dust ? (this.lens.dustFade ?? 1) : 1);
-      if (set.tokens.setFade(fade)) moving = set.tokens.tick(seconds, still) || moving;
+      if (set.tokens.setFade(fade)) {
+        shown += 1;
+        moving = set.tokens.tick(seconds, still) || moving;
+      }
+    }
+    // Where none of what shows is in view (to scale, the camera close to the membrane and what is chosen has no lane in the
+    // close-up; or far out), the picture says where it is drawn, in place of drawing nothing without a word.
+    const unseen = this.tokens.length && !shown ? ((this.lens.dustFade ?? 1) < 0.5 ? "close" : "far") : null;
+    if (unseen !== this.unseen) {
+      this.unseen = unseen;
+      this.said = null;
+      this.words();
     }
     this.pin();
     return moving;
@@ -639,6 +672,16 @@ export class CellFlux {
     const machine = this.lens.machine?.statement?.();
     if (machine) return machine;
     if (!this.tokens.length) return null;
+    const said = this.statementOfFlux();
+    if (!said || !this.unseen) return said;
+    // None of it is in view where the camera stands: the picture says where it is drawn.
+    const where = this.unseen === "close" ? "Seen at the cell's stop: not drawn this close to the membrane" : "Seen closer in, at the cell's stop";
+    const short = this.unseen === "close" ? "Seen at the cell's stop" : "Seen closer in";
+    return { ...said, ways: said.ways.map((way, k) => `${way}\n${k === said.ways.length - 1 ? short : where}`) };
+  }
+
+  /** The statement of what flows, as drawn where the camera stands. */
+  statementOfFlux() {
     const still = this.still();
     if (this.source.kind === "illustration") {
       const [notice, form] = illustrationWords(this.flux, still);
@@ -647,7 +690,7 @@ export class CellFlux {
     const loop = this.loop, at = loopAt(loop, this.elapsed);
     const what = this.showing().kinds[0]?.token || "ion";
     // The interval: its place in the loop where it can be read at this speed, else its length (loop.js, intervalWords).
-    const bead = statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still, flow: true, widest: ionsASecond(loop.busiest) }).replace(/ · (mean of .*|no rate at .*)$/, ` · ${intervalWords(loop, at.interval, this.slow)}`);
+    const bead = statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still, widest: ionsASecond(loop.busiest) }).replace(/ · (mean of .*|no rate at .*)$/, ` · ${intervalWords(loop, at.interval, this.slow)}`);
     // On a phone the picture keeps two lines: what the run is (the notice) and its name; the token, the speed and what the
     // cell takes from the run stand in the legend and the panel (the coordinator's ruling, 16 November 2026).
     const name = loopWords(loop, this.species.label, clock);
@@ -772,9 +815,9 @@ export class CellFlux {
         // What is drawn follows the speed: a stream as wide as its rate at true speed; packets, then beads, slowed.
         const said = flowWords({ speed: this.speed, token: loopToken(loop.busiest, this.slow), what, widest: ionsASecond(loop.busiest) });
         keys.push({ key: "bead", text: modeAt(this.speed) === "stream" ? `${said}. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing` : `${said}. More of them a second means more ${what}s a second; how fast one travels stands for nothing. Where a lane passes less than one now and then, its chevrons alone show` });
-        keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start. ${paceKey(this.speed)}${still ? `. ${STILL_WORDS}` : ""}` });
+        keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start. ${paceKey(this.speed, what)}${still ? `. ${standWords(this.speed)}` : ""}` });
         keys.push({ key: "way", text: "A lane flows the way its total grew over the interval shown, by the run's own signs" });
-        keys.push({ key: "head", text: (this.style || DIRECTION) === "chevrons" ? "Chevrons along each lane point the way it flows; they stand where they are when nothing may move" : (this.style || DIRECTION) === "taper" ? "Each lane widens toward the end it flows to: its head leads the flow" : HEAD_WORDS });
+        keys.push({ key: "head", text: this.wayWords() });
         // What the cell drawn takes from the run, and how closely the run closes, in the run's own measure.
         keys.push({ key: "from", text: `${takenWords(loop)}. ${this.fromWords()}` });
         keys.push({ key: "closes", text: closesWords(loop) });
@@ -782,7 +825,7 @@ export class CellFlux {
         keys.push({ key: "bead", text: flux.illustration.forms["direction only"].says });
         if (groups.some((group) => group.claimed)) keys.push({ key: "way", text: "A lane that goes one way goes as a law of the engine declares for that part; the panel names the law" });
         if (groups.some((group) => !group.claimed)) keys.push({ key: "way", text: "Two lanes side by side, one each way: no direction is claimed. Which way more goes depends on the cell's state, which only a run knows" });
-        keys.push({ key: "head", text: "An arrowhead ends each lane and points the way its beads go" });
+        keys.push({ key: "head", text: this.wayWords() });
         if (still) keys.push({ key: "time", text: STILL_WORDS });
       }
       keys.push({ key: "pump", text: "Where a lane runs is the picture's choice: the engine has no place for a single channel or pump" });

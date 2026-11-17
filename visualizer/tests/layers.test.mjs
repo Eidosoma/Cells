@@ -32,7 +32,8 @@ import { heightOf, barStretch, riseOf, crossings, BOLD_RISE } from "../src/layer
 import { dropAt, fullDrop, FLOOR } from "../src/layers/marks/wedge.js";
 import { arrowOutline, lanes, BALANCE } from "../src/layers/marks/arrows.js";
 import { worthFor, marksFor, spots, MOST } from "../src/layers/marks/stipple.js";
-import { tokenFor, beadsASecond, ionsASecond, timeWords, tokenWords, statementOf, meanRate, standing, advance, headSize, streamsOf, PER_FMOL, BUSIEST, CROSSING, MOST as MOST_BEADS, SLOWS } from "../src/layers/marks/beads.js";
+import { tokenFor, beadsASecond, ionsASecond, timeWords, tokenWords, statementOf, meanRate, standing, advance, headSize, streamsOf, PER_FMOL, BUSIEST, CROSSING, MOST as MOST_BEADS, SLOWS, WAY_WORDS } from "../src/layers/marks/beads.js";
+import { chevronFit, widthOf, CHEVRONS } from "../src/layers/marks/flow.js";
 import { lanesOf, busiestOf } from "../src/layers/marks/stream.js";
 import { glowOf, elementsOf, brightestOf, FLOOR as GLOW_FLOOR } from "../src/layers/marks/glow.js";
 import { amountDomain } from "../src/layers/marks/fog.js";
@@ -1190,11 +1191,13 @@ test("the picture's own statement of a motion layer, and the units small amounts
   const at = (seconds) => clock(seconds, { precise: true });
   // A time of a few seconds keeps its tenth, as the timeline of a four-second run needs; a whole one and a longer one read as before.
   assert.deepEqual([clock(0.4), clock(4), clock(0), clock(9.96), clock(13.785), clock(59.4)], ["0.4 s", "4 s", "0 s", "10 s", "14 s", "59 s"]);
-  assert.equal(statementOf({ token: 10_000, what: "molecule", speed: 1, interval: [1, 2], clock: at }), "One bead is 10,000 molecules · true speed · mean of 1.0 s to 2.0 s");
-  assert.equal(statementOf({ token: 1, what: "ion", speed: 1e-6, interval: null, clock: at }), "One bead is one ion · slowed 1,000,000 times: fewer beads, crossing more slowly · no rate at the run's first record");
-  // The replay's speed, slower or faster, and why the beads stand: paused, or nothing may move (which wins where both hold).
-  assert.equal(statementOf({ token: 2e6, what: "molecule", speed: 60, interval: [1, 2], clock: at, paused: true }), "One bead is 2,000,000 molecules · 60 times faster, paused · mean of 1.0 s to 2.0 s");
-  assert.equal(statementOf({ token: 10, what: "ion", speed: 1e-3, interval: [1, 2], clock: at, paused: true, still: true }), "One bead is 10 ions · slowed 1,000 times, shown still · mean of 1.0 s to 2.0 s");
+  // One rule everywhere (17 November 2026): at true speed and faster a stream, with what full width carries; slowed, a packet's or a bead's number.
+  assert.equal(statementOf({ token: 10_000, what: "molecule", speed: 1, interval: [1, 2], clock: at, widest: 54_199 }), "Streams as wide as their rates: full width is 54,199 molecules a second · true speed · mean of 1.0 s to 2.0 s");
+  assert.equal(statementOf({ token: 1, what: "ion", speed: 1e-6, interval: null, clock: at }), "One bead is one ion · slowed 1,000,000 times: single beads, crossing slowly · no rate at the run's first record");
+  // The replay's speed, slower or faster, and why everything stands: paused, or nothing may move (which wins where both hold).
+  // Faster than life the rate is said in the run's seconds and in the seconds of watching.
+  assert.equal(statementOf({ token: 2e6, what: "molecule", speed: 60, interval: [1, 2], clock: at, paused: true, widest: 54_199 }), "Streams as wide as their rates: full width is 54,199 molecules a second of the run, 3,251,940 a second here · 60 times faster, paused · mean of 1.0 s to 2.0 s");
+  assert.equal(statementOf({ token: 10, what: "ion", speed: 1e-3, interval: [1, 2], clock: at, paused: true, still: true }), "One packet is 10 ions · slowed 1,000 times, shown still · mean of 1.0 s to 2.0 s");
   assert.equal(tokenWords(50_000, "molecule"), "One bead is 50,000 molecules");
   assert.equal(tokenWords(2, "ion or molecule"), "One bead is 2 ions or molecules");
   assert.deepEqual(SLOWS, [1, 1e3, 1e6]);
@@ -1406,13 +1409,16 @@ test("a run with a secreted species opens coloured by it: the cell and each spac
   assert.ok(lens.labels.shown.some((label) => label.text === "ecs_0"), "and the tile keeps its name");
 });
 
+/** The picture's statement of what flows: what full width, a packet or a bead stands for at the speed shown. */
+const FLOWING = /^(Streams as wide as their rates|One (bead|packet) is)/;
+
 test("the statement of what moves is cut by no card that lies over the picture", async (t) => {
   const { lens, restore, stage } = lensFor([packaged(WORLD)], CATALOGUE.experiments);
   t.after(restore);
   await lens.ready;
   lens.activate();
   await lens.setLayer("transfers", true);
-  const flow = lens.labels.shown.find((label) => /^One bead is/.test(label.text || ""));
+  const flow = lens.labels.shown.find((label) => FLOWING.test(label.text || ""));
   const at = (point) => stage.project(point, new THREE.Vector3());
   const natural = at(lens.flowHome);
   // The stand-in page has a card down its left side, 303 px wide (the legend's column). A short statement has room where it is.
@@ -1445,14 +1451,16 @@ test("beads cross the borders of the small world as its saved totals grew: how m
   // The busiest is the export route, 9e-5 fmol a second: 54,199 molecules a second, so a bead is 10,000.
   assert.ok(near(mark.busiest, 9e-5));
   assert.equal(mark.token, 10_000);
-  // At the first record there is no rate, and the picture says so.
+  // At the first record there is no rate, and the picture says so. At true speed a lane is a stream, as wide as its rate, and the
+  // picture says what full width carries: the busiest lane over the run, 54,199 molecules a second (one rule everywhere, 17 November 2026).
   assert.equal(lens.player.index, 0);
   assert.ok(mark.lanes.every((lane) => lane.mean === null && lane.beads.length === 0));
-  const flow = () => lens.labels.shown.find((label) => /^One bead is/.test(label.text || ""));
-  assert.equal(flow().text, "One bead is 10,000 molecules · true speed, shown still · no rate at the run's first record");
+  const flow = () => lens.labels.shown.find((label) => FLOWING.test(label.text || ""));
+  assert.equal(flow().text, "Streams as wide as their rates: full width is 54,199 molecules a second · true speed, shown still · no rate at the run's first record");
+  assert.deepEqual(mark.drawn, { beads: 0, heads: 0, chevrons: 0, streams: 0 }, "nothing passes: nothing is drawn");
   // At 2 s: the mean of 1 s to 2 s. Each lane's rate, its way, and its beads a second.
   lens.seek(2);
-  assert.equal(flow().text, "One bead is 10,000 molecules · true speed, shown still · mean of 1.0 s to 2.0 s");
+  assert.equal(flow().text, "Streams as wide as their rates: full width is 54,199 molecules a second · true speed, shown still · mean of 1.0 s to 2.0 s");
   const readings = Object.fromEntries(mark.readings().map((reading) => [reading.name, reading]));
   assert.ok(near(readings.face_0.mean, 6e-5) && near(readings.secrete.mean, 9e-5) && near(readings.sink.mean, -2e-6));
   assert.deepEqual([readings.face_0.from, readings.face_0.to], ["ecs_0", "bath"], "a positive face transfer leaves the sender for the receiver");
@@ -1460,45 +1468,59 @@ test("beads cross the borders of the small world as its saved totals grew: how m
   assert.deepEqual([readings.sink.from, readings.sink.to], ["ecs_0", "cell_0"], "the import's total fell: its beads go into the cell");
   assert.ok(near(readings.face_0.particles, 6e-5 * PER_FMOL) && near(readings.face_0.beads, (6e-5 * PER_FMOL) / 10_000) && near(readings.secrete.beads, 5.41993, 1e-4) && near(readings.sink.beads, 0.120443, 1e-4));
   assert.ok(near(readings.face_0.before, 6e-5) && near(readings.face_0.now, 12e-5) && readings.face_0.seconds === 1);
-  // Nothing may move here (the stand-in visitor asks for less motion): the beads stand, as many as would be crossing.
+  // A stream's width is its rate beside full width: the export route is the busiest of the run, the face two thirds of it.
+  assert.ok(near(readings.secrete.ofFull, 1) && near(readings.face_0.ofFull, 2 / 3) && near(readings.sink.ofFull, 2e-6 / 9e-5));
+  // Nothing may move here (the stand-in visitor asks for less motion): at true speed no bead stands; each lane that carries
+  // something is a stream with its chevrons, standing, the thin import too.
   const count = (name) => mark.lanes.find((lane) => lane.name === name).beads.length;
-  assert.deepEqual([count("face_0"), count("secrete"), count("sink")], [Math.round(3.61328 * CROSSING), Math.round(5.41993 * CROSSING), 0]);
-  // Each lane that carries something ends in an arrowhead that points its beads' way: the thin import shows that alone.
-  assert.deepEqual(mark.drawn, { beads: 6 + 9, heads: 3 });
+  assert.deepEqual([count("face_0"), count("secrete"), count("sink")], [0, 0, 0]);
+  const fitted = mark.tokens.lanes.reduce((sum, lane) => sum + chevronFit({ length: lane.length, gap: lane.gap, size: mark.tokens.flow.radius * 2.6 * widthOf(lane.share) }).count, 0);
+  assert.deepEqual(mark.drawn, { beads: 0, heads: 0, chevrons: fitted, streams: 3 });
+  assert.ok(fitted >= 3 && fitted <= 3 * CHEVRONS);
+  // Each stream runs the way the panel says: from its border's side a to side b, or reversed.
+  const sideA = (lane) => lens.run.sets.get(lane.place.border.a.set).ids[lane.place.border.a.index];
+  assert.deepEqual(mark.tokens.lanes.map((lane) => lane.reverse), mark.lanes.map((lane) => readings[lane.name].from !== sideA(lane)), "each stream runs from where the panel says to where it says");
+  assert.notDeepEqual(mark.tokens.lanes.map((lane) => lane.reverse), [false, false, false], "not every lane the same way");
   assert.equal(mark.tick(16), false, "and no frame is asked for");
-  // The legend: the token, the time, by whose word a bead goes its way, and the slow-down beside the true speed.
+  // The legend: what full width carries, the time, by whose word a lane goes its way, and the chevrons.
   const layers = lens.chrome().legend.layers;
   assert.deepEqual(layers.keys.map((item) => item.key), ["tile", "tile-held", "amount", "ions", "bead", "time", "way", "way", "head"]);
   assert.deepEqual([layers.keys[3].chips.map((chip) => chip.label), layers.keys[3].text], [["S"], "The colour of the species that crosses"]);
-  assert.equal(layers.keys[4].text, "One bead is 10,000 molecules. More beads a second means more molecules a second; how fast a bead travels stands for nothing");
-  assert.equal(layers.keys[5].text, "True speed: one second here is one second of the run. The beads keep the replay's own time: the timeline's speed is theirs. Shown still here: the beads stand, as many as would be on their way at one moment");
-  assert.match(layers.keys[6].text, /^A bead goes the way its total grew: a positive amount has left the sender for the receiver\. That is the engine's own convention for this family of models, confirmed by the owner of its core on 15 November 2026 and not yet declared in the run's view$/);
-  assert.match(layers.keys[7].text, /^A bead goes the way its total grew: a positive amount has left the route's cell for the outside its membrane faces\. That is the engine's own convention for this operator, confirmed by the engine's lead on 15 November 2026 and not yet declared in the run's view$/);
-  assert.equal(layers.keys[8].text, "An arrowhead ends each lane that carries something, and points the way its beads go. A small arrowhead alone: a lane that passes a bead only now and then");
-  assert.equal(layers.time, undefined, "the legend has no clock of its own: the beads keep the replay's, set on its timeline");
-  // Slowed a thousand times on the timeline, a bead stands for fewer molecules, and fewer pass, each crossing more slowly: the
-  // slow-down is seen (17 November 2026). The busiest lane passes 2.5 beads a second at most, where true speed has ten.
+  assert.equal(layers.keys[4].text, "Streams as wide as their rates: full width is 54,199 molecules a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing");
+  assert.equal(layers.keys[5].text, "True speed: one second here is one second of the run. What flows keeps the replay's own time: the timeline's speed is its speed. At true speed no single molecule can be followed: each lane is a stream, as wide and as bright as its rate, the busiest the fullest; its streaks run the way it flows, at a pace that stands for nothing. Shown still here: the streams' streaks and the chevrons stand where they are");
+  assert.match(layers.keys[6].text, /^A lane flows the way its total grew: a positive amount has left the sender for the receiver\. That is the engine's own convention for this family of models, confirmed by the owner of its core on 15 November 2026 and not yet declared in the run's view$/);
+  assert.match(layers.keys[7].text, /^A lane flows the way its total grew: a positive amount has left the route's cell for the outside its membrane faces\. That is the engine's own convention for this operator, confirmed by the engine's lead on 15 November 2026 and not yet declared in the run's view$/);
+  assert.equal(layers.keys[8].text, WAY_WORDS);
+  assert.equal(layers.time, undefined, "the legend has no clock of its own: what flows keeps the replay's, set on its timeline");
+  // Slowed a thousand times on the timeline, the stream resolves into packets: a packet stands for fewer molecules, and fewer pass,
+  // each crossing more slowly: the slow-down is seen (17 November 2026). The busiest lane passes 2.5 a second at most, where true speed has ten.
   lens.player.setSpeed(1e-3);
   assert.equal(mark.token, 50);
-  assert.ok(near(mark.readings()[1].beads, (9e-5 * PER_FMOL * 1e-3) / 50, 1e-4), "1.08 beads a second, where true speed has 5.42");
+  assert.ok(near(mark.readings()[1].beads, (9e-5 * PER_FMOL * 1e-3) / 50, 1e-4), "1.08 a second, where true speed has 5.42");
   assert.ok(mark.lanes.every((lane) => near(lane.crossing, 2.56, 1e-9)), "each crossing in 2.56 s");
-  assert.equal(flow().text, "One bead is 50 molecules · slowed 1,000 times, shown still · mean of 1.0 s to 2.0 s");
-  assert.equal(lens.chrome().legend.layers.keys[5].text, "Slowed 1,000 times: one second here is one millisecond of the run. The beads keep the replay's own time: the timeline's speed is theirs. Slowed, fewer beads pass (at most 2.5 a second on the busiest lane, where true speed has 10) and each takes 2.6 s to cross (1.6 s at true speed): a sign of the slow-down, standing for nothing measured. Shown still here: the beads stand, as many as would be on their way at one moment");
+  assert.deepEqual([mark.tokens.mode, count("secrete"), mark.drawn.streams], ["packets", Math.round(1.08399 * 2.56), 0], "packets stand, as many as would be crossing; no stream");
+  assert.equal(flow().text, "One packet is 50 molecules · slowed 1,000 times, shown still · mean of 1.0 s to 2.0 s");
+  assert.equal(lens.chrome().legend.layers.keys[5].text, "Slowed 1,000 times: one second here is one millisecond of the run. What flows keeps the replay's own time: the timeline's speed is its speed. Slowed, the stream resolves into packets: at most 2.5 a second on the busiest lane, each taking 2.6 s to cross, more slowly the more it is slowed: a sign of the slow-down, standing for nothing measured. Shown still here: the packets stand, as many as would be on their way at one moment at this speed, and the chevrons with them");
   lens.player.setSpeed(1e-6);
   assert.equal(mark.token, 1, "slowed a million times a bead is a molecule, and never less");
   assert.ok(near(mark.readings()[1].beads, (9e-5 * PER_FMOL) / 1e6, 1e-4), "0.054 beads a second");
-  // Made faster, a bead stands for more, and as many pass again.
+  assert.equal(mark.tokens.mode, "beads");
+  // Made faster, the lanes are streams again, and the statement gives full width's rate in the run's seconds and in the watcher's.
   lens.player.setSpeed(60);
   assert.equal(mark.token, 500_000);
-  assert.ok(near(mark.readings()[1].beads, (9e-5 * PER_FMOL * 60) / 500_000, 1e-4), "6.5 beads a second");
-  assert.equal(flow().text, "One bead is 500,000 molecules · 60 times faster, shown still · mean of 1.0 s to 2.0 s");
+  assert.ok(near(mark.readings()[1].beads, (9e-5 * PER_FMOL * 60) / 500_000, 1e-4), "6.5 a second");
+  assert.equal(flow().text, `Streams as wide as their rates: full width is 54,199 molecules a second of the run, ${Math.round(mark.widest * 60).toLocaleString("en-US")} a second here · 60 times faster, shown still · mean of 1.0 s to 2.0 s`);
+  assert.deepEqual([mark.tokens.mode, mark.drawn.beads, mark.drawn.streams], ["stream", 0, 3]);
   lens.player.setSpeed(1);
   // The panel: the numbers behind each lane, enough to check by hand.
   const panel = lens.describe("layers:shown");
   const section = panel.sections.find((item) => /^Transfers, a mean from 1\.0 s to 2\.0 s$/.test(item.title));
   assert.deepEqual(section.items.map((item) => item.label), ["face_0 · S", "secrete · S", "sink · S"]);
   assert.equal(section.items[0].detail, "0.060 amol a second from ecs_0 to bath", "in the unit of its two totals, so that the three check against each other");
-  assert.deepEqual(section.items[0].lines, ["0.0600 amol at 1.0 s, 0.1200 amol at 2.0 s: the difference over 1.000 s", "36,133 molecules a second of the run; one bead is 10,000, so 3.61 beads a second pass"]);
+  assert.deepEqual(section.items[0].lines, ["0.0600 amol at 1.0 s, 0.1200 amol at 2.0 s: the difference over 1.000 s", "36,133 molecules a second of the run; drawn as a stream: 67 in a hundred of the rate at full width"]);
+  lens.player.setSpeed(1e-3);
+  assert.equal(lens.describe("layers:shown").sections.find((item) => /^Transfers/.test(item.title)).items[0].lines[1], "36,133 molecules a second of the run; one packet is 50, so 0.72 packets a second pass, slowed 1,000 times");
+  lens.player.setSpeed(1);
   assert.equal(section.items[2].detail, "2.000 zmol a second from ecs_0 to cell_0");
   assert.match(section.note, /the saved total at one record less the total at the record before, divided by the time between/);
   // Where the amounts do not add up, the routes have no declared way: only the face is drawn.
@@ -1560,7 +1582,7 @@ test("a lens that is not shown leaves the stage alone: it asks for no bloom, swi
   // Shown, it marks what shines and asks for bloom; left again, it gives back what it took and nothing more.
   lens.activate();
   lens.player.pause();
-  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds].sort()], [0.6, 2, ["another lens", "layers"]]);
+  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds].sort()], [0.6, 3, ["another lens", "layers"]], "the lanes' beads and streams, and the glow");
   lens.deactivate();
   assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds]], [0, 0, ["another lens"]]);
   stage.bloom = 0.4;
@@ -1576,22 +1598,27 @@ test("where things may move, beads set out and cross, the look's own motion stan
   lens.player.pause();
   await lens.setLayer("transfers", true);
   assert.ok(stage.decoration.holds.has("layers"), "decoration stops while a layer on the motion channel shows (rule 12)");
-  const said = () => lens.labels.shown.find((label) => /^One bead is/.test(label.text || ""))?.text;
-  assert.equal(said(), "One bead is 10,000 molecules · true speed, paused · no rate at the run's first record", "where things may move, a paused replay is called paused, not still");
-  assert.equal(lens.chrome().legend.layers.keys.find((item) => item.key === "time").text, "True speed: one second here is one second of the run. The beads keep the replay's own time: the timeline's speed is theirs. Paused: the beads stand, as many as would be on their way at one moment at this speed");
-  assert.equal(stage.shining.size, 1, "the beads are marked to shine");
+  const said = () => lens.labels.shown.find((label) => FLOWING.test(label.text || ""))?.text;
+  assert.equal(said(), "Streams as wide as their rates: full width is 54,199 molecules a second · true speed, paused · no rate at the run's first record", "where things may move, a paused replay is called paused, not still");
+  assert.equal(lens.chrome().legend.layers.keys.find((item) => item.key === "time").text, "True speed: one second here is one second of the run. What flows keeps the replay's own time: the timeline's speed is its speed. At true speed no single molecule can be followed: each lane is a stream, as wide and as bright as its rate, the busiest the fullest; its streaks run the way it flows, at a pace that stands for nothing. Paused: the streams' streaks and the chevrons stand where they are");
+  assert.equal(stage.shining.size, 2, "the beads and the streams are marked to shine; the chevrons are signs over them");
   lens.seek(2);
   const mark = lens.drawn.get("transfers").mark;
   const secrete = mark.lanes.find((lane) => lane.name === "secrete");
-  // Paused, the beads stand, as many as would be on their way at one moment; frames move nothing and ask for none.
-  assert.equal(secrete.beads.length, Math.round(5.41993 * CROSSING));
-  const standing_ = secrete.beads.slice();
+  // Paused at true speed, the streams and their chevrons stand: frames move nothing and ask for none.
+  const streaks = mark.tokens.flow.time, chevrons = Array.from(mark.tokens.flow.chevrons.instanceMatrix.array.slice(0, 16 * mark.drawn.chevrons));
+  assert.ok(mark.drawn.streams === 3 && mark.drawn.chevrons >= 3);
   assert.equal(lens.update(1000 / 60), false, "paused, no frame is asked for");
-  assert.deepEqual(secrete.beads, standing_);
-  // Played, slowed a thousand times so that the playhead stays in this interval: the beads keep the replay's clock.
+  assert.ok(mark.tokens.flow.time === streaks && Array.from(mark.tokens.flow.chevrons.instanceMatrix.array.slice(0, 16 * mark.drawn.chevrons)).every((value, k) => value === chevrons[k]));
+  // Paused slowed a thousand times, the packets stand, as many as would be on their way at one moment.
   lens.player.setSpeed(1e-3);
+  assert.equal(secrete.beads.length, Math.round(1.08399 * 2.56));
+  const standing_ = secrete.beads.slice();
+  assert.equal(lens.update(1000 / 60), false);
+  assert.deepEqual(secrete.beads, standing_);
+  // Played, slowed a thousand times so that the playhead stays in this interval: the packets keep the replay's clock.
   lens.player.play();
-  assert.equal(said(), "One bead is 50 molecules · slowed 1,000 times: fewer beads, crossing more slowly · mean of 1.0 s to 2.0 s");
+  assert.equal(said(), "One packet is 50 molecules · slowed 1,000 times: packets, crossing more slowly · mean of 1.0 s to 2.0 s");
   // Two seconds of frames: the export route passes about 1.08 beads a second, each 2.56 s on its way.
   let asks = 0;
   for (let frame = 0; frame < 120; frame++) asks += lens.update(1000 / 60) ? 1 : 0;
@@ -1640,6 +1667,17 @@ test("where things may move, beads set out and cross, the look's own motion stan
   assert.deepEqual(frameTimes(2001), { dt: 100, real: 100 });
   assert.deepEqual(frameTimes(60000), { dt: 100, real: 100 });
   assert.deepEqual(frameTimes(-3), { dt: 0, real: 0 }, "a frame's timestamp can be a little earlier than the clock read when it was asked for");
+  // Played at true speed and faster, each lane is a stream whose streaks run on with the replay's clock: no bead to count.
+  for (const speed of [1, 60]) {
+    lens.player.pause();
+    lens.seek(2);
+    lens.player.setSpeed(speed);
+    lens.player.play();
+    const before = mark.tokens.flow.time;
+    assert.equal(lens.update(1000 / 60), true);
+    assert.ok(mark.tokens.flow.time > before && mark.drawn.beads === 0 && mark.drawn.streams === 3, `${speed} times: ${JSON.stringify(mark.drawn)}`);
+  }
+  lens.player.setSpeed(1e-3);
   // A jump of the playhead sets no bead out; back at the first record nothing sets out, and what was on its way is gone at once.
   lens.player.pause();
   lens.seek(0);
@@ -1693,7 +1731,7 @@ test("packaged from the engine's own view, beads go by the view's signs, and wha
   assert.ok(near(reading.mean, 6e-5) && reading.from === "ecs_0" && reading.to === "bath", "the view's own sign: from the face's sender to its receiver");
   const keys = lens.chrome().legend.layers.keys;
   const way = keys.find((item) => item.key === "way").text;
-  assert.equal(way, "A bead goes the way its total grew: a positive amount leaves the face's sender node for its receiver. Declared by the run's own view; confirmed by synthetic fixture: written with the rest");
+  assert.equal(way, "A lane flows the way its total grew: a positive amount leaves the face's sender node for its receiver. Declared by the run's own view; confirmed by synthetic fixture: written with the rest");
   const left = keys.filter((item) => item.key === "unplaced").map((item) => item.text);
   assert.deepEqual(left, ["Not drawn: moved by an exchange route. This run saved it, but not as a total since the run's start: no rate can be worked out from it. The run's view says: scheduled_species_exchange@1 declares no kind for it."]);
   // The panel says the same, and what stands behind the face's total with its representation.
@@ -1880,24 +1918,35 @@ test("with a cell of the example chosen, beads cross its membrane through each c
   const caption = lens.closeupCaption().split("\n");
   assert.equal(caption[0], "Example: invented numbers");
   assert.match(caption[1], new RegExp(`^Membrane of cell_${disc} at 1\\.0 s$`));
-  assert.ok(caption.includes("One bead is 1,000,000 ions · true speed, shown still") && caption.includes("mean of 0.5 s to 1.0 s"), caption.join(" | "));
+  assert.ok(caption.includes(`Streams as wide as their rates: full width is ${Math.round(most * PER_FMOL).toLocaleString("en-US")} ions a second · true speed, shown still`) && caption.includes("mean of 0.5 s to 1.0 s"), caption.join(" | "));
   assert.ok(caption.includes("Worked out by the viewer from the saved totals."));
   // The legend: the ions' colours, the token and the time, whose word the direction is, and what a pump's beads are.
   const keys = lens.chrome().legend.layers.keys;
   assert.deepEqual(keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "pump", "leak"]);
-  assert.deepEqual(mark.drawn.heads, 6, "an arrowhead for each of the six streams");
+  // At true speed each of the six lanes is a stream with its chevrons, standing here; drawn by the one renderer of flux, over the
+  // close-up's glass in its own order, and no wider than leaves room to the lane beside it.
+  assert.deepEqual([mark.drawn.streams, mark.drawn.beads, mark.drawn.heads], [6, 0, 0]);
+  assert.ok(mark.drawn.chevrons >= 6 && mark.drawn.chevrons <= 6 * CHEVRONS);
+  assert.ok(mark.tokens.group.renderOrder === 20 && [...mark.tokens.materials, ...mark.tokens.flow.materials].every((material) => material.depthTest === false));
+  assert.deepEqual(mark.tokens.lanes.map((lane) => lane.reverse), [false, true, false, true, false, false], "up is out of the cell: K out, Na in, the pump's Na out and K in, the leaks out");
+  // Slowed a million times, single beads cross, as many standing as would be on their way.
+  lens.player.setSpeed(1e-6);
+  assert.deepEqual([mark.tokens.mode, mark.drawn.streams], ["beads", 0]);
+  assert.ok(mark.streams.every((stream) => stream.beads.length === (stream.perSecond > 0 && stream.tokens !== null ? standing(stream.perSecond, stream.crossing).length : 0)));
+  lens.player.setSpeed(1);
   assert.equal(keys[6].text, "Through the membrane itself, with no form: what its own passive routes carried, beside its channel populations and its pump");
   assert.deepEqual(keys[0].chips.map((chip) => chip.label), ["K", "Na", "M"]);
-  assert.equal(keys[1].text, "One bead is 1,000,000 ions. More beads a second means more ions a second; how fast a bead travels stands for nothing");
-  assert.match(keys[2].text, /^True speed: one second here is one second of the run\. The beads keep the replay's own time: the timeline's speed is theirs\. Shown still here/);
-  assert.match(keys[3].text, /^A bead goes the way its total grew: a positive amount has left the channel's cell for its outside, as for its membrane; positive cycles carry their ions into the cell: .*; a positive amount has left the membrane's cell for its outside\. That is the engine's own convention/);
+  assert.equal(keys[1].text, `Streams as wide as their rates: full width is ${Math.round(most * PER_FMOL).toLocaleString("en-US")} ions a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing`);
+  assert.match(keys[2].text, /^True speed: one second here is one second of the run\. What flows keeps the replay's own time: the timeline's speed is its speed\. At true speed no single ion can be followed: .*\. Shown still here: the streams' streaks and the chevrons stand where they are$/);
+  assert.equal(keys[4].text, WAY_WORDS);
+  assert.match(keys[3].text, /^A lane flows the way its total grew: a positive amount has left the channel's cell for its outside, as for its membrane; positive cycles carry their ions into the cell: .*; a positive amount has left the membrane's cell for its outside\. That is the engine's own convention/);
   assert.equal(keys[5].text, "Through the pump: its cycles between two records, times the ions one cycle moves as the pump's declaration gives them");
   // The cell's panel gives each stream's numbers.
   const section = lens.describe(`cell:${disc}`).sections[0];
   assert.match(section.title, /^On its membrane at 1\.0 s$/);
   assert.deepEqual(section.items.map((item) => item.label), [`kir_${disc} · K`, `nal_${disc} · Na`, `pump of membrane_${disc} · Na`, `pump of membrane_${disc} · K`, `membrane_${disc} · K`, `membrane_${disc} · M`]);
   assert.match(section.items[2].detail, /amol a second out of the cell \(the pump's cycles times 3, what one cycle moves of it\)$/);
-  assert.match(section.items[0].lines[1], /ions a second of the run; one bead is 1,000,000, so [\d.]+ beads a second pass$/);
+  assert.match(section.items[0].lines[1], /ions a second of the run; drawn as a stream: \d+ in a hundred of the rate at full width$/);
   // A cell outside the disc at the same moment: its K channels pass fewer.
   const rest = run.sets.get("cell").ids.findIndex((_, cell) => run.records.get("vm").at(0, cell) < -0.05);
   lens.setSelection(`cell:${rest}`);
@@ -1916,7 +1965,7 @@ test("beads through a membrane need the totals carried through its channel popul
   const traffic = layer("ion-traffic");
   assert.deepEqual({ mark: traffic.mark, channels: traffic.channels, quantity: traffic.quantity }, { mark: "beads", channels: ["motion"], quantity: { derivation: "rate", any_of: ["channel_transferred"] } });
   assert.deepEqual({ channels: MARKS.beads.channels, lives_on: MARKS.beads.lives_on, surface: MARKS.beads.surface, built: MARKS.beads.built }, { channels: ["motion"], lives_on: ["channel population", "pump population", "membrane"], surface: "membrane", built: undefined });
-  assert.match(traffic.says, /A bead is a token of a rate, not an ion/);
+  assert.match(traffic.says, /A token stands for a rate, not an ion/);
   // A run that did not save what crossed its channels: said, as for any layer.
   const { run } = made({ membrane: true });
   assert.deepEqual([offer(run, "ion-traffic").ok, offer(run, "ion-traffic").why], [false, NOT_SAVED]);
@@ -1977,7 +2026,8 @@ test("a bead is a token of a rate: how many ions one stands for, how many pass a
   assert.equal(timeWords(1 / 250), "Slowed 250 times: one second here is 4 milliseconds of the run");
   assert.equal(timeWords(240), "240 times faster: one second here is 4 minutes of the run");
   assert.deepEqual(MARKS.beads.keys(1.8e7, 1).map((item) => [item.key, item.text]), [
-    ["bead", "One bead is 2,000,000 ions. More beads a second means more ions a second; how fast a bead travels stands for nothing"],
-    ["time", "True speed: one second here is one second of the run. The beads keep the replay's own time: the timeline's speed is theirs"],
+    ["bead", "Streams as wide as their rates: full width is 18,000,000 ions a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing"],
+    ["time", "True speed: one second here is one second of the run. What flows keeps the replay's own time: the timeline's speed is its speed. At true speed no single ion can be followed: each lane is a stream, as wide and as bright as its rate, the busiest the fullest; its streaks run the way it flows, at a pace that stands for nothing"],
   ]);
+  assert.deepEqual(MARKS.beads.keys(1.8e7, 1e-6).map((item) => item.text.split(". ")[0]), ["One bead is 50 ions", "Slowed 1,000,000 times: one second here is one microsecond of the run"]);
 });

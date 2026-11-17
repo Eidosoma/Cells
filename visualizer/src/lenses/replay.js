@@ -34,7 +34,7 @@ import "../replay/trace.js";
 import { MARKS } from "../layers/marks/index.js";
 import { paint } from "../layers/marks/tint.js";
 import { paintOutside } from "../layers/marks/fog.js";
-import { statementOf } from "../layers/marks/beads.js";
+import { statementOf, modeAt } from "../layers/marks/beads.js";
 import { worldOf } from "../layers/world.js";
 import { raise } from "../layers/marks/relief.js";
 import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
@@ -650,10 +650,10 @@ export class ReplayLens {
     return [...(run.example ? [run.example.says] : []), `${which} at ${clock(this.player.time, { precise: true })}`, this.catalogue.title(entry), ...flow, `Worked out by the viewer from ${from}.`, ...notes].join("\n");
   }
 
-  /** What a mark on the motion channel states on the picture: what one bead stands for, the replay's speed, the interval its rate is a mean over. */
+  /** What a mark on the motion channel states on the picture: what a stream at full width, a packet or a bead stands for at the replay's speed, the speed, the interval its rate is a mean over. */
   statement(mark) {
     if (!mark?.interval || mark.token === undefined) return null;
-    return statementOf({ token: mark.token, what: mark.what || "ion", speed: this.player.speed, interval: mark.interval(), clock: (seconds) => clock(seconds, { precise: true }), still: this.still(), paused: !this.player.playing });
+    return statementOf({ token: mark.token, what: mark.what || "ion", speed: this.player.speed, interval: mark.interval(), clock: (seconds) => clock(seconds, { precise: true }), still: this.still(), paused: !this.player.playing, widest: mark.widest ?? null });
   }
 
   /** Place the close-up for the frame about to be drawn: in the free part of the window, by its cell. */
@@ -744,7 +744,10 @@ export class ReplayLens {
     const way = reading.way || `from ${reading.from} to ${reading.to}`;
     const each = Math.round(reading.particles).toLocaleString("en-US");
     const pace = this.player.speed === 1 ? "" : `, ${speedWords(this.player.speed).phrase}`;
-    return { label, detail: `${number(Math.abs(reading.mean) * speed.factor, 3)} ${speed.unit} ${way}${per}`, lines: [totals, `${each} ${what}s a second of the run; one bead is ${token.toLocaleString("en-US")}, so ${number(reading.beads, 2)} beads a second pass${pace}`] };
+    // What it is on the picture at the speed in force: a stream as wide as its rate beside the full width, or so many packets or beads a second.
+    const mode = modeAt(this.player.speed), thing = mode === "packets" ? "packet" : "bead";
+    const drawn = mode === "stream" && reading.ofFull !== undefined && reading.ofFull !== null ? `drawn as a stream${pace}: ${number(reading.ofFull * 100, 0)} in a hundred of the rate at full width` : `one ${thing} is ${token.toLocaleString("en-US")}, so ${number(reading.beads, 2)} ${thing}s a second pass${pace}`;
+    return { label, detail: `${number(Math.abs(reading.mean) * speed.factor, 3)} ${speed.unit} ${way}${per}`, lines: [totals, `${each} ${what}s a second of the run; ${drawn}`] };
   }
 
   /**

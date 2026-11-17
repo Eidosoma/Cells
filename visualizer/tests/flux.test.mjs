@@ -19,10 +19,10 @@ import { openReplay, loadPart } from "../src/replay/source.js";
 import { readFlux, planFor, speaksFor, shownKinds, shownWithheld, illustrationWords, FLUX_FORMAT, PACE, FORMS } from "../src/layers/flux.js";
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, bordersOf, READ_WORDS } from "../src/layers/loop.js";
 import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT, REST_WORDS, CLOSE_PUMP } from "../src/layers/cellflux.js";
-import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
-import { Flow, CHEVRONS, STYLES, widthOf, STREAK_PACE } from "../src/layers/marks/flow.js";
+import { Tokens, swell, RIM, ROOM, packetOf } from "../src/layers/marks/tokens.js";
+import { Flow, CHEVRONS, STYLES, widthOf, STREAK_PACE, chevronFit, chevronShape, CHEVRON_WIDE, SEE_THROUGH, TINT } from "../src/layers/marks/flow.js";
 import { fitOnRow, clearOf } from "../src/layers/statement.js";
-import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, paceAt, paceKey, modeAt, blendAt, resolveAt, flowWords, headSize, advance, slowAt, positionOf, slowLabel, STILL_WORDS, SLOWS, SLOWEST, SLIDER, BUSIEST } from "../src/layers/marks/beads.js";
+import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, paceAt, paceKey, modeAt, blendAt, resolveAt, flowWords, headSize, advance, slowAt, positionOf, slowLabel, standWords, STILL_WORDS, SLOWS, SLOWEST, SLIDER, BUSIEST } from "../src/layers/marks/beads.js";
 import { CellLens } from "../src/lenses/cell.js";
 import { cellTypeOf } from "../src/scene/entries.js";
 import { buildCell, buildMolecules } from "../src/lenses/cell_parts.js";
@@ -402,7 +402,14 @@ test("the beads stay out of the look, cannot be chosen, and fade with the part o
     assert.equal(material.transparent, true, "drawn after what is solid, with what is see-through");
   }
   assert.equal(tokens.group.userData.unpickable, true);
-  assert.deepEqual(tokens.shines, [tokens.cores, tokens.heads, tokens.flow.chevrons], "the beads, the arrowheads and the chevrons are what the bloom shines from; their rims are not");
+  const shines = tokens.shines;
+  assert.ok(shines.length === 2 && shines[0] === tokens.cores && shines[1] === tokens.flow.streams, "the beads and the streams are what the bloom shines from; the beads' rims are not, nor arrowheads that are not drawn, nor the chevrons: a chevron is a sign laid over its lane, not one more bright thing (the user, 17 November 2026)");
+  // A chevron is drawn see-through, lighter than its lane's colour, after the beads, so that a bead behind it shows.
+  const chevron = tokens.flow.chevrons.material;
+  assert.ok(near(chevron.uniforms.uOpacity.value, SEE_THROUGH) && chevron.depthWrite === false && chevron.forceSinglePass && tokens.flow.chevrons.renderOrder > tokens.cores.renderOrder);
+  tokens.tick(0.1);
+  const tinted = new THREE.Color().fromArray(tokens.flow.chevrons.instanceColor.array, 0), lane = new THREE.Color("#2a78d6");
+  assert.ok(near(tinted.r, lane.r + (1 - lane.r) * TINT, 1e-6) && tinted.b > lane.b, "taken toward white");
   for (const material of tokens.flow.materials) assert.deepEqual([material.toneMapped, material.userData.noContact, material.depthWrite, material.transparent], [false, true, false, true], "the chevrons and the streams stay out of the look as the beads do");
   assert.equal(tokens.setFade(0.5), true);
   assert.equal(tokens.materials[0].opacity, 0.5);
@@ -671,7 +678,9 @@ test("for a visitor who asks for less motion the beads stand, and the picture an
   flux.setOn(true);
   const tokens = flux.tokens[0].tokens;
   assert.equal(flux.advance(2), false, "nothing moves");
-  assert.deepEqual(tokens.drawn, { beads: 50, heads: 0, chevrons: 75, streams: 0 }, "two beads stand on each lane, and each lane has its chevrons, which stand too and point its way");
+  const fitted = tokens.lanes.reduce((sum, lane) => sum + chevronFit({ length: lane.length, gap: lane.gap, size: tokens.flow.radius * 2.6 * widthOf(lane.share) }).count, 0);
+  assert.deepEqual(tokens.drawn, { beads: 50, heads: 0, chevrons: fitted, streams: 0 }, "two beads stand on each lane, and each lane has its chevrons, as many as its room holds, which stand too and point its way");
+  assert.ok(fitted >= tokens.lanes.length && fitted <= tokens.lanes.length * CHEVRONS);
   assert.equal(lens.labels.made[1].text, "Direction only: the number of beads and their pace stand for no number · shown still");
   assert.equal(flux.legend().keys.at(-2).text, STILL_WORDS);
   assert.deepEqual([...stage.decoration.holds], ["flux"], "the look's own motion is held all the same");
@@ -781,7 +790,7 @@ test("the beads move in the time that passed, fade with the cell, and leave with
   assert.deepEqual([stage.bloom, stage.shining.size, stage.decoration.holds.size], [0, 0, 0]);
   lens.active = true;
   flux.refresh();
-  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds]], [BLOOM, 3, ["flux"]], "the beads, the arrowheads and the chevrons shine");
+  assert.deepEqual([stage.bloom, stage.shining.size, [...stage.decoration.holds]], [BLOOM, 2, ["flux"]], "the beads and the streams shine; the chevrons, signs laid over their lanes, do not");
   // The colours follow the page's theme: the rims take the dark ground.
   stage.palette = { ...stage.palette, bg: "#0b151e", dark: true };
   flux.refresh();
@@ -825,7 +834,7 @@ test("every species goes through its own file: what its cell lacks is never offe
       const drawn = [...new Set(lanesOf(lens).map((item) => item.lane.key.split("/")[0]))].sort();
       assert.deepEqual(drawn, kindsOf(lens.flux.plan).sort(), `${id}, ${mode}`);
       for (const kind of drawn) assert.ok(lens.draws(lens.flux.plan.kinds.find((item) => item.id === kind).part), `${id}: ${kind}`);
-      for (const set of lens.flux.tokens) assert.ok(set.tokens.drawn.beads > 0 && set.tokens.drawn.chevrons === set.lanes.length * CHEVRONS, "every lane has its chevrons");
+      for (const set of lens.flux.tokens) assert.ok(set.tokens.drawn.beads > 0 && set.tokens.drawn.chevrons >= set.lanes.length && set.tokens.drawn.chevrons <= set.lanes.length * CHEVRONS, "every lane has its chevrons, one to three");
     }
   }
 });
@@ -1112,13 +1121,13 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   const cellId = run.sets.get("cell").ids[flux.loop.cell];
   // At true speed there is no single ion to follow: each lane is a stream, as wide as its rate; the picture says the widest's rate.
   const widest = Math.round(ionsASecond(flux.loop.busiest)).toLocaleString("en-US");
-  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nStreams as wide as their rates: the widest carries ${widest} ions a second · true speed · means over each 500 ms between records\nFrom the run's lumped cell ${cellId}\nNot a measurement of a living cell`);
+  assert.equal(lines.text, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time\nStreams as wide as their rates: full width is ${widest} ions a second · true speed · means over each 500 ms between records\nFrom the run's lumped cell ${cellId}\nNot a measurement of a living cell`);
   assert.deepEqual([tokens.mode, tokens.drawn.beads, tokens.drawn.streams > 0, tokens.drawn.chevrons > 0], ["stream", 0, true, true], "no bead to count: streams, and chevrons for their way");
   // The legend: the slow-down, what a bead stands for, the time with the loop's length, whose word the direction is.
   let legend = flux.legend();
   assert.deepEqual(legend.time.options.map((option) => [option.id, option.label, option.on]), [[1, "True", true], [1000, "1/1,000", false], [1000000, "1/1,000,000", false]]);
   assert.deepEqual(legend.keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "from", "closes", "pump"]);
-  assert.equal(legend.keys[1].text, `Streams as wide as their rates: the widest carries ${widest} ions a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing`);
+  assert.equal(legend.keys[1].text, `Streams as wide as their rates: full width is ${widest} ions a second. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing`);
   assert.equal(legend.keys[5].text, `From the run's cell ${cellId}: a lumped cell with the run's own laws. Not a measurement of a living cell. Drawn: channels from channel_transferred (kir_1, nal_1); pumps from pump_cycles (pump of membrane_1); neighbours from junction_transferred (6 junctions); membrane itself from membrane_transferred (membrane_1)`, "the whole cell's: which part takes a flux from which record");
   assert.equal(legend.keys[6].text, closesWords(flux.loop));
   assert.equal(legend.keys[2].text, `True speed: one second here is one second of the run. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start. ${paceKey(1)}`);
@@ -1365,7 +1374,7 @@ test("the planarian names its own looping run: the page fetches it from its cata
   flux.setOn(true);
   const [notice, lines] = lens.labels.made;
   assert.equal(notice.text, "Development run of the engine, not judged");
-  assert.equal(lines.text, "Planarian loop (development run) · a loop of 2 s of the cell's time\nStreams as wide as their rates: the widest carries 5,083,478 ions a second · true speed · means over each 20 ms between records\nFrom the run's lumped cell cell_3, with a prescribed electrode current injection (not drawn)\nNot a measurement of a living cell");
+  assert.equal(lines.text, "Planarian loop (development run) · a loop of 2 s of the cell's time\nStreams as wide as their rates: full width is 5,083,478 ions a second · true speed · means over each 20 ms between records\nFrom the run's lumped cell cell_3, with a prescribed electrode current injection (not drawn)\nNot a measurement of a living cell");
   assert.match(flux.legend().keys.find((item) => item.key === "from").text, /^From the run's cell cell_3: a lumped cell with the run's own laws, under the run's prescribed electrode current injection, which is not drawn\. Not a measurement of a living cell\. Drawn: /, "the legend says it in full");
   const legend = flux.legend();
   assert.equal(legend.example, "Development run of the engine, not judged", "the legend carries it too, for a narrow screen whose picture has no room");
@@ -1393,7 +1402,7 @@ test("the planarian names its own looping run: the page fetches it from its cata
   await settle(phone.lens.flux);
   phone.lens.flux.setOn(true);
   assert.deepEqual([phone.lens.labels.made[0].text, phone.lens.labels.made[1].text], ["Development run of the engine, not judged", "Planarian loop (development run)\nloops every 2 s"]);
-  assert.ok(phone.lens.flux.legend().keys.some((item) => /^Streams as wide as their rates: the widest carries 5,083,478 ions a second/.test(item.text)), "what is drawn, and the numbers, stand in the legend");
+  assert.ok(phone.lens.flux.legend().keys.some((item) => /^Streams as wide as their rates: full width is 5,083,478 ions a second/.test(item.text)), "what is drawn, and the numbers, stand in the legend");
   // Slowed a thousand times: the record's interval lasts twenty seconds of watching, long enough to read its place in the loop.
   flux.setOn(true);
   flux.setSlow(1000);
@@ -1471,12 +1480,18 @@ test("each step of the Speed row is seen: a stream at true speed, packets slowed
   assert.deepEqual([standing(5.08, 1.6).length, standing(1.02, 2.56).length, standing(0.51, 4.096).length], [8, 3, 2], "fewer stand when slowed");
   assert.deepEqual([headSize(5.08, 1.6), headSize(0.51, 4.096)], [1, 1], "the arrowhead follows the beads on the lane at one moment");
   // The words.
-  assert.equal(flowWords({ speed: 1, token: 1e6, widest: 5.083478e6 }), "Streams as wide as their rates: the widest carries 5,083,478 ions a second");
+  assert.equal(flowWords({ speed: 1, token: 1e6, widest: 5.083478e6 }), "Streams as wide as their rates: full width is 5,083,478 ions a second");
+  // Away from true speed, a stream's rate is said in the run's seconds and in the seconds of watching.
+  assert.equal(flowWords({ speed: 60, token: 1e6, widest: 5.083478e6 }), "Streams as wide as their rates: full width is 5,083,478 ions a second of the run, 305,008,680 a second here");
   assert.equal(flowWords({ speed: 1e-3, token: 5000 }), "One packet is 5,000 ions");
   assert.equal(flowWords({ speed: 1e-6, token: 10 }), "One bead is 10 ions");
   assert.match(paceKey(1e-3), /^Slowed, the stream resolves into packets: at most 2\.5 a second on the busiest lane, each taking 2\.6 s to cross/);
   assert.match(paceKey(1e-6), /single beads: at most 0\.63 a second on the busiest lane, each taking 4\.1 s to cross/);
-  assert.match(paceKey(1e-3, false), /^Slowed, fewer beads pass \(at most 2\.5 a second on the busiest lane, where true speed has 10\) and each takes 2\.6 s to cross/);
+  assert.match(paceKey(60, "molecule"), /^Faster than true speed no single molecule can be followed: each lane is a stream/);
+  assert.match(paceKey(0.25), /^Slowed this little no single ion can be followed/);
+  // What stands where nothing may move, or while a replay is paused: what is drawn at the speed.
+  assert.equal(standWords(1), "Shown still here: the streams' streaks and the chevrons stand where they are");
+  assert.equal(standWords(1e-3, "paused"), "Paused: the packets stand, as many as would be on their way at one moment at this speed, and the chevrons with them");
 });
 
 test("a stream is as wide as its rate, its streaks run its way, and chevrons tell the way when nothing moves", () => {
@@ -1523,7 +1538,21 @@ test("a stream is as wide as its rate, its streaks run its way, and chevrons tel
   assert.deepEqual([taper.drawn.chevrons, taper.flow.streams.material.uniforms.uTaper.value], [0, 1], "a tapered trail: the head leads the flow, still or moving");
   const arrow = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "beads", style: "arrow", full: 5 });
   assert.equal(arrow.drawn.heads, 2);
-  assert.deepEqual(STYLES, ["chevrons", "taper", "arrow"]);
+  // At true speed the beads give way to the stream, and the arrowheads still show.
+  const arrowStream = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "stream", style: "arrow", full: 5 });
+  arrowStream.tick(0.1);
+  assert.deepEqual([arrowStream.drawn.heads, arrowStream.heads.material.opacity, arrowStream.cores.material.opacity], [2, 1, 0]);
+  assert.deepEqual(STYLES, ["chevrons", "taper", "arrow", "painted"]);
+  // A fourth, to be compared: chevrons drawn in the lane's own stream, never past its width. No mesh of chevrons; the stream
+  // stays, faint, slowed, and its chevrons move as its streaks at true speed and as the beads slowed.
+  const painted = new Tokens({ lanes: lanes(), radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "stream", style: "painted", full: 5 });
+  assert.deepEqual([painted.flow.chevrons, painted.flow.streams.material.uniforms.uPaint.value, painted.drawn.streams], [undefined, 1, 2]);
+  painted.tick(0.5);
+  assert.ok(near(painted.flow.moved, 0.5 * STREAK_PACE, 1e-9), "at true speed as fast as the streaks");
+  painted.setResolve(3, { crossing: 2.56, full: 5 });
+  const moved = painted.flow.moved;
+  painted.tick(0.5);
+  assert.ok(near(painted.flow.moved - moved, 0.5 / 2.56, 1e-9) && painted.flow.streams.visible && near(painted.flow.streams.material.uniforms.uOpacity.value, 0.5), "slowed, with the packets, on a faint stream");
 });
 
 test("the Speed slider: true speed at its start, a thousandfold at its middle, a millionfold at three quarters, ten millionfold at its end, and nothing jumps between", () => {
@@ -1560,4 +1589,156 @@ test("the page's address may carry a slow-down (`slow=`): the Cell view opens sl
   } finally {
     globalThis.location = before;
   }
+});
+
+test("no packet overlaps the next, however short its lane and however busy, at any slow-down: the rule the renderer draws by", () => {
+  // Each bead's reach along its lane, rim and all, read back from what is drawn: an ellipsoid of the instance's scale, turned.
+  const reachOf = (mesh, index, along) => {
+    const matrix = new THREE.Matrix4().fromArray(mesh.instanceMatrix.array, index * 16), at = new THREE.Vector3(), turn = new THREE.Quaternion(), scale = new THREE.Vector3();
+    matrix.decompose(at, turn, scale);
+    const axes = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)].map((axis) => axis.applyQuaternion(turn));
+    const half = Math.sqrt(axes.reduce((sum, axis, k) => sum + (scale.getComponent(k) * axis.dot(along)) ** 2, 0));
+    return { at: at.dot(along), half };
+  };
+  const along = new THREE.Vector3(1, 0, 0);
+  let lanesSeen = 0, crowded = 0;
+  for (const length of [0.05, 0.3, 1, 4]) {
+    for (const perSecond of [0.3, 1, 2.5, 6, 10, 25]) {
+      for (const resolve of [0.6, 1.5, 3, 4.5, 6, 7]) {
+        const crossing = paceAt(Math.pow(10, -resolve)).crossing;
+        const lane = { key: "k", path: straight(new THREE.Vector3(), new THREE.Vector3(length, 0, 0)), colour: new THREE.Color("#2a78d6"), perSecond, reverse: false, crossing };
+        const tokens = new Tokens({ lanes: [lane], radius: 0.1, ground: new THREE.Color("#ffffff"), resolve, full: 25 });
+        for (const [seconds, still] of [[0, false], [0.37, false], [1.1, false], [0, true]]) {
+          tokens.stood = false;
+          tokens.tick(seconds, still);
+          const beads = Array.from({ length: tokens.rims.count }, (_, k) => reachOf(tokens.rims, k, along)).sort((a, b) => a.at - b.at);
+          if (beads.length > 1) lanesSeen++;
+          if (beads.length > 1 && 2 * 0.1 * blendAt(resolve).stretch * RIM > length / Math.ceil(perSecond * crossing)) crowded++;
+          for (let k = 1; k < beads.length; k++) {
+            const gap = beads[k].at - beads[k].half - (beads[k - 1].at + beads[k - 1].half);
+            assert.ok(gap >= -1e-9, `length ${length}, ${perSecond} a second, slowed by ${resolve} powers of ten${still ? ", still" : ""}: beads ${k - 1} and ${k} overlap by ${-gap}`);
+          }
+        }
+        tokens.dispose();
+      }
+    }
+  }
+  assert.ok(lanesSeen > 200 && crowded > 50, `the cases include many lanes where packets as long as they ask would overlap (${crowded} of ${lanesSeen})`);
+  // The rule itself: room for each with its rim, a fifth clear; a packet shortened, a bead made smaller only where even round it would touch.
+  assert.deepEqual(packetOf({ length: 4, count: 4, radius: 0.1, stretch: 3 }), { along: 0.30000000000000004, across: 0.11000000000000001 }, "room enough: as long as it asks");
+  const tight = packetOf({ length: 1, count: 10, radius: 0.1, stretch: 3 });
+  assert.ok(near(tight.along, (ROOM * 0.1) / (2 * RIM)) && near(tight.across, 0.11 > tight.along ? tight.along : 0.11), "short and busy: shortened to its room");
+  const crammed = packetOf({ length: 0.05, count: 16, radius: 0.1, stretch: 1 });
+  assert.ok(near(crammed.along, (ROOM * 0.05) / 16 / (2 * RIM)) && crammed.across === crammed.along, "so crammed that a bead would touch the next: a smaller round bead");
+  // The arithmetic is untouched: beads a second are what the rate and the token say, on any lane.
+  const lane = { key: "k", path: straight(new THREE.Vector3(), new THREE.Vector3(0.05, 0, 0)), colour: new THREE.Color("#2a78d6"), perSecond: 10, reverse: false, crossing: 1.6 };
+  const tokens = new Tokens({ lanes: [lane], radius: 0.1, ground: new THREE.Color("#ffffff"), mode: "beads" });
+  const sent = lane.sent;
+  tokens.tick(3);
+  assert.equal(lane.sent - sent, 30, "ten a second for three seconds, short lane or not");
+});
+
+test("the streams follow a replay in place: a slow-down taken back, a lane that turns round, the theme and the strength", () => {
+  const a = new THREE.Vector3(0, 0, 0), b = new THREE.Vector3(4, 0, 0);
+  const lanes = [{ key: "one", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: false }];
+  // Built slowed a million times: no stream shows; taken back to true speed, the stream is there without a new build.
+  const tokens = new Tokens({ lanes, radius: 0.1, ground: new THREE.Color("#ffffff"), resolve: 6, full: 5 });
+  const streams = tokens.flow.streams;
+  assert.ok(streams && streams.visible === false && tokens.drawn.streams === 0);
+  tokens.setResolve(0, { crossing: CROSSING, full: 5 });
+  tokens.tick(0.1);
+  assert.ok(tokens.flow.streams === streams && streams.visible && tokens.drawn.streams === 1 && tokens.drawn.beads === 0);
+  // A lane that turns round: its streaks run the other way at once, and its chevrons point the other way.
+  assert.equal(tokens.flow.ways.array[0], 0);
+  tokens.setRate("one", 5, true);
+  tokens.tick(0.1);
+  assert.ok(tokens.flow.ways.array.every((value) => value === 1) && tokens.flow.ways.needsUpdate !== false);
+  const turned = new THREE.Quaternion();
+  new THREE.Matrix4().fromArray(tokens.flow.chevrons.instanceMatrix.array, 0).decompose(new THREE.Vector3(), turned, new THREE.Vector3());
+  assert.ok(new THREE.Vector3(0, 1, 0).applyQuaternion(turned).distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6, "the chevrons point the new way");
+  // The theme: the lanes' colours and the rims' ground are taken in place, and what shines is what shone.
+  const shining = tokens.shines;
+  tokens.setColours(new THREE.Color("#0b1020"), () => new THREE.Color("#ff0000"));
+  tokens.tick(0.1);
+  assert.deepEqual(Array.from(tokens.flow.colours.array.slice(0, 3)), [1, 0, 0]);
+  assert.ok(tokens.shines.every((mesh, k) => mesh === shining[k]) && tokens.ground.getHexString() === "0b1020");
+  // The strength: the beads, the streams and the chevrons grow together.
+  tokens.setRadius(0.2);
+  assert.ok(near(tokens.flow.streams.material.uniforms.uRadius.value, 0.17) && tokens.radius === 0.2);
+  // Lanes that move (a replay's cells raised to a record): the tubes follow.
+  let lift = 0;
+  const moving = [{ key: "m", path: (share) => new THREE.Vector3(share * 4, lift, 0), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: false }];
+  const raised = new Tokens({ lanes: moving, radius: 0.1, ground: new THREE.Color("#ffffff"), resolve: 0, full: 5 });
+  lift = 2;
+  raised.reshape();
+  assert.equal(raised.flow.centres.array[1], 2);
+  // Drawn over what lies in front, in the order given: as a replay's sheet and its close-up draw their signs.
+  const over = new Tokens({ lanes: [{ key: "o", path: straight(a, b), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff"), resolve: 0, full: 5, overlay: true, groupOrder: 20 });
+  assert.ok([...over.materials, ...over.flow.materials].every((material) => material.depthTest === false) && over.group.renderOrder === 20 && over.flow.group.renderOrder === 20);
+  assert.ok([...tokens.materials, ...tokens.flow.materials].every((material) => material.depthTest === true), "in the Cell view they keep the depth of the cell's parts");
+});
+
+test("where lanes crowd, a chevron is no wider than leaves room to the next lane, and a short lane carries fewer", () => {
+  const radius = 0.1, size = radius * 0.85 * 2.6;
+  // A lone long lane: three chevrons at their full size.
+  assert.deepEqual(chevronFit({ length: 4, gap: Infinity, size }), { size, count: CHEVRONS });
+  // Five lanes side by side, 0.2 apart: each chevron leaves a fifth of the gap clear of its neighbour's.
+  const lanes = Array.from({ length: 5 }, (_, k) => ({ key: `l${k}`, path: straight(new THREE.Vector3(0, 0, k * 0.2), new THREE.Vector3(1, 0, k * 0.2)), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: k % 2 === 1 }));
+  const tokens = new Tokens({ lanes, radius, ground: new THREE.Color("#ffffff"), resolve: 3, full: 5 });
+  tokens.tick(0.2);
+  for (const lane of tokens.lanes) {
+    assert.ok(near(lane.gap, 0.2, 1e-9));
+    const fit = chevronFit({ length: lane.length, gap: lane.gap, size });
+    assert.ok((fit.size * CHEVRON_WIDE) / 2 <= 0.4 * lane.gap + 1e-12 && fit.size < size, "narrower than the room to the next lane");
+  }
+  // Their scale as drawn is the fitted size.
+  const scale = new THREE.Vector3();
+  new THREE.Matrix4().fromArray(tokens.flow.chevrons.instanceMatrix.array, 0).decompose(new THREE.Vector3(), new THREE.Quaternion(), scale);
+  assert.ok(near(scale.x, (0.8 * 0.2) / CHEVRON_WIDE, 1e-6));
+  // A short lane carries fewer: as many as stand three of their own lengths apart, never none.
+  assert.equal(chevronFit({ length: 0.2, gap: Infinity, size }).count, 1);
+  assert.equal(chevronFit({ length: 0.001, gap: 0, size }).count, 1);
+  assert.ok(near(chevronFit({ length: 4, gap: 0, size }).size, size / 4), "lanes laid on one another still show their way, small");
+});
+
+test("where none of what flows is in view where the camera stands, the picture says where it is drawn", () => {
+  const lens = lensFor(ILLUSTRATED, { stage: stageOf({ moving: false }) });
+  const { flux } = lens;
+  flux.setOn(true);
+  const before = lens.labels.made[1].text;
+  assert.doesNotMatch(before, /Seen/);
+  // To scale, close to the membrane: the cell's own lanes have given way, and the close-up has none of what is shown.
+  for (const set of flux.tokens) set.zone.fade = 0;
+  lens.dustFade = 0;
+  flux.advance(0.1);
+  assert.match(lens.labels.made[1].text, /\nSeen at the cell's stop: not drawn this close to the membrane$/);
+  // Far out, beyond the cell's stop.
+  lens.dustFade = 1;
+  flux.advance(0.1);
+  assert.match(lens.labels.made[1].text, /\nSeen closer in, at the cell's stop$/);
+  // Back in view: the words are as they were.
+  for (const set of flux.tokens) set.zone.fade = 1;
+  flux.advance(0.1);
+  assert.equal(lens.labels.made[1].text, before);
+});
+
+test("a chevron is one mark: its two arms meet at the point in a mitre, with no notch, no seam and no piece over another", () => {
+  const { outline, wide, long } = chevronShape();
+  assert.equal(outline.length, 6);
+  // The outer edges of the two arms meet on the middle line, and so do the inner: the point is whole.
+  assert.deepEqual([outline[1][0], outline[4][0]], [0, 0]);
+  const onLine = (p, a, b) => Math.abs((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) < 1e-12;
+  // The outer point lies on the line of the left arm's outer edge, parallel to the arm, and on the right's.
+  const dir = [0.9, 1];
+  const along = (p) => [p[0] + dir[0], p[1] + dir[1]];
+  assert.ok(onLine(outline[1], outline[0], along(outline[0])) && onLine(outline[4], outline[5], along(outline[5])));
+  // The two arms' pieces share one edge and do not overlap: their areas add up to the outline's.
+  const area = (points) => Math.abs(points.reduce((sum, p, k) => sum + p[0] * points[(k + 1) % points.length][1] - points[(k + 1) % points.length][0] * p[1], 0)) / 2;
+  assert.ok(near(area([outline[0], outline[1], outline[4], outline[5]]) + area([outline[1], outline[2], outline[3], outline[4]]), area(outline), 1e-12));
+  assert.ok(near(wide, 2.246, 1e-3) && near(long, 1.649, 1e-3), JSON.stringify([wide, long]));
+  // Built so in the renderer: one flat piece of six corners and four triangles, turned to the camera in its shader.
+  const tokens = new Tokens({ lanes: [{ key: "k", path: straight(new THREE.Vector3(), new THREE.Vector3(4, 0, 0)), colour: new THREE.Color("#2a78d6"), perSecond: 5, reverse: false }], radius: 0.1, ground: new THREE.Color("#ffffff"), resolve: 0, full: 5 });
+  const geometry = tokens.flow.chevrons.geometry;
+  assert.deepEqual([geometry.attributes.position.count, geometry.index.count / 3], [6, 4]);
+  assert.match(tokens.flow.chevrons.material.vertexShader, /cross\(along, eye\)/);
 });

@@ -9,24 +9,28 @@
 //
 //   beads a second on the screen = particles a second of the run x the speed / particles in one bead
 //
-// The speed is the replay's own: the beads keep its one clock (src/replay/player.js). Paused,
-// they stand; played, as much of the run passes for them as for the playhead.
+// The speed is the replay's own: what flows keeps its one clock (src/replay/player.js). Paused,
+// it stands; played, as much of the run passes for it as for the playhead.
 //
-// The rate sets how many beads pass, never how fast one travels: every bead takes the same
-// time to cross, which stands for nothing. The rate is a mean over the interval that ends at
+// The rate sets how wide a lane's stream is (at true speed and faster) and how many beads pass
+// (slowed), never how fast one travels: every bead takes the same time to cross, which stands
+// for nothing. The rate is a mean over the interval that ends at
 // the record shown (the `rate` rule), so at a run's first record there is none.
 //
 // A bead goes the way its total grew: from the end the record's declared sign calls the
 // source to the other when the mean rate is positive, back when it is negative. A total with
 // no declared direction is not drawn.
 //
-// Beads are plain discs of colour with a rim of the page's ground, so they read on a tile of
-// any colour without any finishing pass; the lens may mark them to shine (`shines`). An
-// arrowhead beyond the far end of each lane that carries something points the way its beads
-// go, so that a still picture, and a visitor who asks for less motion, are told the way too.
+// The lanes are drawn by the one renderer of flux (./tokens.js, ./flow.js), as in the Cell view:
+// at true speed and faster each lane is a stream as wide as its rate, with no bead to count;
+// slowed, the stream resolves into packets and then single beads; chevrons along each lane
+// point its way, and stand with everything else where nothing may move or the replay is paused.
+// They are drawn over the sheet, after its other see-through signs (a glow lies under them);
+// the lens may mark them to shine (`shines`).
 
 import * as THREE from "../../three.js";
-import { tokenFor, beadsASecond, ionsASecond, tokenWords, meanRate, restarted, standing, advance, headSize, timeKey, paceAt, MOST, HEAD_WORDS } from "./beads.js";
+import { tokenFor, beadsASecond, ionsASecond, flowWords, meanRate, restarted, standing, timeKey, paceAt, resolveAt, modeAt, WAY_WORDS } from "./beads.js";
+import { Tokens } from "./tokens.js";
 import { fromFirst, signedByShort } from "../records.js";
 
 const SIZE = { quiet: 1, bold: 1.35 };
@@ -117,104 +121,54 @@ export const stream = {
       shared.set(lane.place.border, list);
     }
     for (const [border, list] of shared) list.forEach((lane, k) => (lane.offset = ((k + 0.5) / list.length - 0.5) * 0.66 * border.length));
-    for (const lane of lanes) Object.assign(lane, { beads: [], due: 0, perSecond: 0, mean: null, way: 1 });
-
-    let size = SIZE[strength];
-    const capacity = Math.max(1, lanes.length * MOST);
-    const shape = new THREE.SphereGeometry(1, 12, 8);
-    // An arrowhead lying flat, pointing along +x; turned for each lane to the way its beads go.
-    const headShape = new THREE.BufferGeometry();
-    headShape.setAttribute("position", new THREE.Float32BufferAttribute([1, 0, 0, -0.7, 0, 0.85, -0.7, 0, -0.85], 3));
-    // Unlit and out of the scene's look: a bead's colour is exactly its species' colour. Drawn with the sheet's
-    // other see-through signs, after them (a glow lies under the beads that cross it).
-    const coreMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-    const rimMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-    const make = (material, order, geometry = shape, count = capacity) => {
-      const mesh = new THREE.InstancedMesh(geometry, material, count);
-      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      mesh.setColorAt(0, colours.ink);
-      mesh.frustumCulled = false;
-      mesh.renderOrder = order;
-      mesh.userData.unpickable = true;
-      mesh.userData.noContact = true;
-      mesh.count = 0;
-      return mesh;
-    };
-    const rims = make(rimMaterial, 6), cores = make(coreMaterial, 7);
-    const headRims = make(rimMaterial, 6, headShape, Math.max(1, lanes.length)), heads = make(coreMaterial, 7, headShape, Math.max(1, lanes.length));
-    const group = new THREE.Group();
-    group.userData.unpickable = true;
-    group.add(rims, cores, headRims, heads);
-    surface.root.add(group);
     let tones = colours;
-    const matrix = new THREE.Matrix4(), position = new THREE.Vector3(), quaternion = new THREE.Quaternion(), scale = new THREE.Vector3();
-    const turn = new THREE.Quaternion(), upwards = new THREE.Vector3(0, 1, 0);
+    const colourOf = (lane) => (lane.species ? tones.ion(lane.species) : tones.ink).clone();
     const heightOf = (tile) => (tile.set === "cell" ? surface.cells[tile.index].height : surface.outside?.level ?? 0);
-    /** Where a bead stands, a share `u` of its way across its lane's border. */
-    const place = (lane, u, out) => {
+    /** A point of a lane, a share `t` of its way across its border from side a to side b: a new vector each time. */
+    const pathOf = (lane) => (t) => {
       const { border } = lane.place;
-      const t = lane.way > 0 ? u : 1 - u; // from side a to side b, or back
       const reach = surface.pitch * 0.62;
       const x = border.mid[0] + border.along[0] * lane.offset + border.across[0] * (t - 0.5) * reach;
       const z = border.mid[1] + border.along[1] * lane.offset + border.across[1] * (t - 0.5) * reach;
       const y = heightOf(border.a) + (heightOf(border.b) - heightOf(border.a)) * smooth(t);
-      return out.set(x, y + surface.pitch * 0.07, z);
+      return new THREE.Vector3(x, y + surface.pitch * 0.07, z);
     };
-    const drawBeads = () => {
-      let at = 0;
-      const radius = surface.pitch * 0.034 * size;
-      for (const lane of lanes) {
-        const colour = lane.species ? tones.ion(lane.species) : tones.ink;
-        for (const u of lane.beads) {
-          if (at >= capacity) break;
-          place(lane, u, position);
-          // A bead grows in as it sets out and shrinks away as it arrives.
-          const grown = 0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, Math.max(0, u)));
-          cores.setMatrixAt(at, matrix.compose(position, quaternion, scale.setScalar(radius * grown)));
-          rims.setMatrixAt(at, matrix.compose(position, quaternion, scale.setScalar(radius * grown * 1.5)));
-          cores.setColorAt(at, colour);
-          rims.setColorAt(at, tones.ground);
-          at += 1;
-        }
-      }
-      cores.count = rims.count = at;
-      // The arrowheads: one a little beyond the far end of each lane that carries something, pointing the way its beads go.
-      let ends = 0;
-      for (const lane of lanes) {
-        if (!(lane.perSecond > 0)) continue;
-        const { border } = lane.place;
-        place(lane, 1, position);
-        position.x += border.across[0] * lane.way * surface.pitch * 0.075;
-        position.z += border.across[1] * lane.way * surface.pitch * 0.075;
-        turn.setFromAxisAngle(upwards, -Math.atan2(border.across[1] * lane.way, border.across[0] * lane.way));
-        const grown = headSize(lane.perSecond, lane.crossing);
-        heads.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 1.5 * grown)));
-        headRims.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 2.1 * grown)));
-        heads.setColorAt(ends, lane.species ? tones.ion(lane.species) : tones.ink);
-        headRims.setColorAt(ends, tones.ground);
-        ends += 1;
-      }
-      heads.count = headRims.count = ends;
-      for (const mesh of [cores, rims, heads, headRims]) {
-        mesh.instanceMatrix.needsUpdate = true;
-        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      }
-    };
+    lanes.forEach((lane, k) => Object.assign(lane, { key: k, path: pathOf(lane), colour: colourOf(lane), perSecond: 0, reverse: false, mean: null, way: 1 }));
+
+    const radiusAt = (value) => surface.pitch * 0.034 * SIZE[value];
     const token = () => tokenFor(ionsASecond(busiest), speed());
+    /** The beads a second of a stream at full width at the speed shown: the run's busiest lane over any interval. */
+    const full = () => beadsASecond(ionsASecond(busiest), token(), speed());
     const stands = () => still() || paused();
+    // Drawn over the sheet, after its other see-through signs, in the sheet's own order of things.
+    const tokens = new Tokens({ lanes, radius: radiusAt(strength), ground: tones.ground, order: 6, resolve: resolveAt(speed()), full: full(), overlay: true });
+    surface.root.add(tokens.group);
     let shown = { step: 0, valid: false };
+    // The heights the lanes were laid on: a layer on the height channel raises the cells to each record (it is drawn first), and the streams follow.
+    const ends = lanes.flatMap((lane) => [lane.place.border.a, lane.place.border.b]);
+    let laid = ends.map(heightOf), shaped = 0;
     const settle = () => {
+      // The tubes are laid again when the heights change: at once where everything stands, and at most ten times a second
+      // while the replay plays (faster than life a record may pass every frame; the beads follow the heights at once).
+      const now = ends.map(heightOf), clock = globalThis.performance?.now?.() ?? Date.now();
+      if (now.some((height, k) => height !== laid[k]) && (stands() || clock - shaped >= 100)) {
+        laid = now;
+        shaped = clock;
+        tokens.reshape();
+      }
       const one = token(), fast = speed(), crossing = paceAt(fast).crossing;
+      tokens.setResolve(resolveAt(fast), { crossing, full: full() });
       for (const lane of lanes) {
         lane.mean = shown.valid ? meanRate(run, lane.record, lane.entity, shown.step) : null;
-        lane.perSecond = lane.mean ? beadsASecond(ionsASecond(lane.mean), one, fast) : 0;
-        lane.crossing = crossing; // slowed, a bead crosses more slowly: a sign of the slow-down
         if (lane.mean) lane.way = (lane.mean > 0) === lane.forward ? 1 : -1;
-        // With nothing passing, the lane empties; where nothing may move or the replay is paused, the beads stand as many as would be crossing.
-        if (!lane.perSecond) lane.beads = [];
+        tokens.setRate(lane.key, lane.mean ? beadsASecond(ionsASecond(lane.mean), one, fast) : 0, lane.way < 0);
+        // With nothing passing, the lane empties; where nothing may move or the replay is paused, the beads stand as many as
+        // would be crossing (where beads are drawn at this speed: a stream keeps none).
+        if (!lane.perSecond || !(tokens.blend.beads > 0)) lane.beads = [];
         else if (stands()) lane.beads = standing(lane.perSecond, crossing);
       }
-      drawBeads();
+      // Placed at once: a paused replay ticks no frame, and its streams, beads and chevrons stand where they are put now.
+      tokens.tick(0, stands());
     };
 
     return {
@@ -223,28 +177,31 @@ export const stream = {
       undirected,
       busiest,
       what,
-      shines: [cores],
+      tokens,
+      get shines() {
+        return tokens.shines;
+      },
       get token() {
         return token();
       },
-      /** How many beads and how many arrowheads are drawn now. */
+      /** The ions a second of the run a stream at full width carries: the run's busiest lane over any interval. */
+      get widest() {
+        return ionsASecond(busiest);
+      },
+      /** How many beads, chevrons and streams are drawn now (./tokens.js). */
       get drawn() {
-        return { beads: cores.count, heads: heads.count };
+        return tokens.drawn;
       },
       update(step, valid) {
         shown = { step, valid };
         settle();
       },
-      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether a bead is on its way. */
+      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether anything is on its way. */
       tick(milliseconds) {
         if (stands()) return false;
-        const seconds = milliseconds / 1000;
-        let moving = false;
-        for (const lane of lanes) moving = advance(lane, seconds) || moving;
-        drawBeads();
-        return moving;
+        return tokens.tick(milliseconds / 1000, false);
       },
-      /** The replay's clock changed (its speed, or whether it plays): a bead stands for another number, as many pass as before for the busiest lane, and the beads stand or set out. */
+      /** The replay's clock changed (its speed, or whether it plays): the drawing follows the speed (a stream, packets, beads), a bead stands for another number, and everything stands or sets out. */
       retime() {
         for (const lane of lanes) lane.due = 0;
         settle();
@@ -274,50 +231,49 @@ export const stream = {
             reset: restarted(run, lane.record, lane.entity, step),
             particles: lane.mean === null ? null : Math.abs(ionsASecond(lane.mean)),
             beads: lane.mean === null ? null : beadsASecond(ionsASecond(lane.mean), one, fast),
+            ofFull: lane.mean === null ? null : Math.min(1, beadsASecond(ionsASecond(lane.mean), one, fast) / full()),
             from: lane.mean ? ends[0] : null,
             to: lane.mean ? ends[1] : null,
           };
         });
       },
-      /** The legend's lines: what one bead stands for, what time the picture keeps, and by whose word a bead goes the way it does. */
+      /** The legend's lines: what the lanes are drawn as at the speed shown, what time the picture keeps, and by whose word a lane goes the way it does. */
       keys() {
-        const one = token();
+        const one = token(), fast = speed(), mode = modeAt(fast);
         const species = [...new Set(lanes.map((lane) => lane.species).filter(Boolean))];
+        const many = what === "ion" ? "ions" : what === "molecule" ? "molecules" : "of them";
+        const said = flowWords({ speed: fast, token: one, what, widest: ionsASecond(busiest) });
         const lines = [
           ...(species.length ? [{ key: "ions", chips: species.map((id) => ({ colour: tones.ionCss(id), label: id })), text: species.length > 1 ? "Each species that crosses has its own colour" : "The colour of the species that crosses" }] : []),
-          { key: "bead", text: `${tokenWords(one, what)}. More beads a second means more ${what === "ion" ? "ions" : what === "molecule" ? "molecules" : "of them"} a second; how fast a bead travels stands for nothing` },
-          { key: "time", text: timeKey(speed(), still(), paused()) },
+          { key: "bead", text: mode === "stream" ? `${said}. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing` : `${said}. More of them a second means more ${many} a second; how fast one travels stands for nothing. Where a lane passes less than one now and then, its chevrons alone show` },
+          { key: "time", text: timeKey(fast, still(), paused(), what) },
         ];
         // Whose word the direction is: each source says it, and the sources that share a word are named together.
         const by = new Map();
         for (const lane of lanes) {
           const sign = lane.source.sign, whose = signedByShort(sign);
-          const said = by.get(whose) || new Set();
-          said.add(sign.says);
-          by.set(whose, said);
+          const said_ = by.get(whose) || new Set();
+          said_.add(sign.says);
+          by.set(whose, said_);
         }
-        for (const [whose, said] of by) lines.push({ key: "way", text: `A bead goes the way its total grew: ${[...said].join("; or ")}. ${whose.replace(/\.$/, "")}` });
+        for (const [whose, said_] of by) lines.push({ key: "way", text: `A lane flows the way its total grew: ${[...said_].join("; or ")}. ${whose.replace(/\.$/, "")}` });
         // A saved total the layer cannot draw is named, with the reason the run's view gives.
         for (const item of fed.left || []) lines.push({ key: "unplaced", text: `Not drawn: ${(item.record.field ? item.record.label.replace(/: [^:]*$/, "") : item.record.label).toLowerCase()}. ${item.why}` });
-        if (lanes.length) lines.push({ key: "head", text: HEAD_WORDS });
-        if (unplaced.length) lines.push({ key: "unplaced", text: `${unplaced.length} saved total${unplaced.length > 1 ? "s cross borders" : " crosses a border"} this picture does not draw (a cell and a space outside it that has no tile here): no beads for ${unplaced.length > 1 ? "them" : "it"}` });
+        if (lanes.length) lines.push({ key: "head", text: WAY_WORDS });
+        if (unplaced.length) lines.push({ key: "unplaced", text: `${unplaced.length} saved total${unplaced.length > 1 ? "s cross borders" : " crosses a border"} this picture does not draw (a cell and a space outside it that has no tile here): no lane for ${unplaced.length > 1 ? "them" : "it"}` });
         return lines;
       },
       setStrength(next) {
-        size = SIZE[next];
-        drawBeads();
+        tokens.setRadius(radiusAt(next));
+        tokens.tick(0, stands());
       },
       setColours(next) {
         tones = next;
-        drawBeads();
+        tokens.setColours(next.ground, colourOf);
+        tokens.tick(0, stands());
       },
       dispose() {
-        surface.root.remove(group);
-        shape.dispose();
-        headShape.dispose();
-        coreMaterial.dispose();
-        rimMaterial.dispose();
-        for (const mesh of [cores, rims, heads, headRims]) mesh.dispose();
+        tokens.dispose();
       },
     };
   },

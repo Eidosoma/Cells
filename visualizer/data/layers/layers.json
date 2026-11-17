@@ -172,7 +172,7 @@
       "channels": [
         "motion"
       ],
-      "says": "Beads cross from one place to the next (between two cells through their junction, between a cell and the space outside it, between two spaces outside), as many a second as the run's saved totals grew between two records. A bead is a token of a rate, not a particle: the legend says how much one stands for and what time the picture keeps."
+      "says": "What crossed from one place to the next (between two cells through their junction, between a cell and the space outside it, between two spaces outside), worked out from how the run's saved totals grew between two records: at true speed and faster a stream as wide as its rate, slowed packets and then beads. A token stands for a rate, not a particle: the legend says how much one stands for and what time the picture keeps."
     },
     {
       "id": "ion-traffic",
@@ -202,7 +202,7 @@
       "channels": [
         "motion"
       ],
-      "says": "Beads cross the chosen cell's membrane through each of its channel populations, through its pump and through the membrane itself, as many a second as the run's saved totals grew between two records. A bead is a token of a rate, not an ion: the legend says how many ions one stands for and what time the picture keeps."
+      "says": "What crossed the chosen cell's membrane through each of its channel populations, through its pump and through the membrane itself, worked out from how the run's saved totals grew between two records: at true speed and faster a stream as wide as its rate, slowed packets and then beads. A token stands for a rate, not an ion: the legend says how many ions one stands for and what time the picture keeps."
     },
     {
       "id": "energy-glow",
