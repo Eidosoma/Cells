@@ -112,7 +112,8 @@
   "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-9c5b34e2/measured.json",
   "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-restore/measured.json",
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-cda5dc82/measured.json",
-  "/mnt/workspaces/Cells/d188-r1-20261117/measure-ba2b6e2b/measured.json"
+  "/mnt/workspaces/Cells/d188-r1-20261117/measure-ba2b6e2b/measured.json",
+  "/mnt/workspaces/Cells/d188-m1-20261117/measure-c2bebaea/measured.json"
  ],
  "measured_provenance": [
   {
@@ -932,6 +933,13 @@
    "root": ".claude/worktrees/d188-r1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T02:04:44+00:00"
+  },
+  {
+   "git_revision": "c2bebaea42bf91770ffb97ef86d31be0b0686cda",
+   "dirty": false,
+   "root": ".claude/worktrees/d188-m1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T04:51:32+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1234,6 +1242,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_worker_source.py",
+    "seconds": 2.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
