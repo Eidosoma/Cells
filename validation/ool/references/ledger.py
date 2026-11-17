@@ -50,7 +50,6 @@ def rebook(law: Law, table: ChannelTable, n0, event_channel) -> dict:
     for code in event_channel:
         j = code_to_row[int(code)]
         r, s = table.step[j], table.sign[j]
-        st = law.world.steps[r]
         if s > 0:
             a_f = rates.forward(r, n)
             p = n + rates.nu[r]

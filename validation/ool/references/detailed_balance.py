@@ -188,9 +188,11 @@ def compare_rates(law: Law, states, a_plus, a_minus, which: str = "forward", ref
                             conventions=law.conv.as_dict(), examples=examples))
 
 
-def check_kernel_table(law: Law, states, a_plus, a_minus) -> dict:
-    """All row OL1-1 and OL1-4a checks on one kernel table; returns {name: CheckResult}."""
-    ref = reference_table(law, states)
+def check_kernel_table(law: Law, states, a_plus, a_minus, ref: dict | None = None) -> dict:
+    """All row OL1-1 and OL1-4a checks on one kernel table; returns {name: CheckResult}.
+
+    ``ref`` is the reference's table for ``law`` on ``states`` (computed when not given)."""
+    ref = reference_table(law, states) if ref is None else ref
     return {
         "kolmogorov": kolmogorov(law.world, states, a_plus, a_minus),
         "identity": identity(law, states, a_plus, a_minus, ref),

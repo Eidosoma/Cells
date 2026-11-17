@@ -18,8 +18,17 @@ engine's saved records.
   - `designs/ol1_closed_world_states.json` (387 states of `ol1_wa_closed`).
 - The design file, `designs/ol1_design.json`, and the reference modules.
 
-The tests, the harness and the stand-in follow on this branch. This README is amended when they
-land.
+The registering commit is 08870ef6. The tests, the harness and the stand-in followed on this branch
+the same day:
+
+| Test file | What it holds | Planted controls |
+| --- | --- | --- |
+| `test_ool_references_registration.py` | Every committed design file equals its generator; every world parses; every registered refusal is refused; the menu refuses missing, unknown and refused tokens | A changed byte; a float that is not its exact value; each registered defect |
+| `test_ool_references_laws.py` | Exact Kolmogorov, the products' rule against F, and the edge identity, on a slice of the probe under all four token pairs; the extinct boundary's k⁻; the float rates against the exact law; E1 and E2 | Every row OL1-1 and OL1-4a form, each by its named check, under both probed pairs |
+| `test_ool_references_closed_world.py` | 1,312 exact edges; stationary laws within 10⁻¹³; catalysts that leave the law unchanged | Five planted laws and the other measure depart; a rate leading outside is caught |
+| `test_ool_references_mass_action.py` | The Riccati form against SciPy's Radau; the master equation's O(1/X) approach; the registered null means and powers; the test on exact samples | Wrong sign, S → T, and biased selection fail; an underpowered design is refused |
+| `test_ool_references_runs.py` | Replay, ledger closure, moieties, the bitwise time rescaling, and streams on host runs | Biased selection, a heat sign error, dropped work, an update off by one, a forward-only factor, a reused key |
+| `test_ool_references_harness.py` | Every row passes end to end on the stand-in (exit 0) | A planted form fails its row (exit 1); a missing role, manifest or token, or a changed echo, exits 2 |
 
 ## Independence, sources and a disclosure
 
@@ -134,8 +143,7 @@ marked.
 | `replay`, `other_stream` | `ledger_run` repeated under its identity, and under another identity | 6 |
 | `rescale_pair` | `ol1_wa_closed` and `ol1_wa_closed_x2` under one stream identity, 500 events each: `event_time` and `event_channel` | 3b |
 
-**The harness** (`python -m validation.ool.references.harness`, which follows the registering
-commit):
+**The harness** (`python -m validation.ool.references.harness`):
 - `make-probes OUT_DIR` writes the registered inputs: the probe states, the closed-world states, and
   copies of the design and world files;
 - `run --roles ROLES.json` runs the rows.
