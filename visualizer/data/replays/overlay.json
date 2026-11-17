@@ -1,7 +1,59 @@
 {
   "format": "cells.visualizer.replay_overlay@1",
-  "note": "Labels and plain lines for replays, curated from the experiments' own documents. The adapter copies an experiment's entry into the catalogue and copies from a run only the parameters and readouts named here. A replay shows what the run recorded and never computes a verdict of its own.",
+  "note": "Labels and plain lines for replays, curated from the experiments' own documents. The adapter copies an experiment's entry into the catalogue and copies from a run only the parameters and readouts named here. A replay shows what the run recorded and never computes a verdict of its own. Only the experiments whose entry says listed stand in the page's list (decided on 17 November 2026: the replication and GARD, which `doors` names and which opens its own view); the others are packaged for the checks and never exported, and the runs a species names (the planarian's looping run) are published unlisted.",
   "experiments": {
+    "gap-junction-linear-network": {
+      "adapter": "standard-history",
+      "development": true,
+      "listed": true,
+      "summary": "summary.json",
+      "opens": {
+        "record": [
+          "stated.concentration",
+          "amount.mR"
+        ],
+        "layers": [
+          "junction-coupling"
+        ]
+      },
+      "units": "The two forms state [mR] in their own units: the Norton form's runs in mM, the as-written runs in µM (in each, the preprint's scaled unit is one of them). The page never converts one to the other.",
+      "label": "Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026)",
+      "plain": "How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state, and how do the tumor's membrane voltage and connexin expression change that? The preprint's linear model of cells joined by gap junctions (its equations 1-2 and Figures 3, 5 and 8) run on Cells' engine: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, 2026, doi:10.64898/2026.09.02.748840 (v1, CC BY 4.0). Each arm is one network of the figures: two cells, Figure 5a's seven, or a chain, at one coupling.",
+      "sources": [
+        {
+          "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+          "where": "In short",
+          "revision": "537787e35a423abd2a020ba82c3317798b38ee52"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The gap-junction replication's first stage, on main (17 November 2026, evening; D207)",
+          "revision": "537787e35a423abd2a020ba82c3317798b38ee52"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development work, not judged; 17 November 2026",
+        "answer": null,
+        "text": "The preprint's linear model (\"intuitive model\": equations 1-2, appendix, Figures 3, 5 and 8) runs on the engine in two forms: as written, and as its exact Norton equivalent on @3's own routes, which is the check on the as-written runs. The preprint's tissue simulations (Tables 1-3) are not run here: they need four engine features, which the lead filed as FR-15 to FR-17. One tissue condition runs on today's engine: the \"neither\" condition on the 1D line.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "In short",
+            "revision": "537787e35a423abd2a020ba82c3317798b38ee52"
+          }
+        ]
+      },
+      "engine_entities": [
+        "models.pump_tissue",
+        "cap.junctions"
+      ],
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
     "e07-v1": {
       "label": "E07-v1: renewal",
       "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Cells are then replaced one at a time by a copy of a neighbour, and each run is compared with plain copying on the same schedule.",
@@ -690,5 +742,10 @@
         }
       }
     }
-  }
+  },
+  "doors": [
+    {
+      "entry": "gard"
+    }
+  ]
 }

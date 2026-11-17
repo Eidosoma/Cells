@@ -210,11 +210,15 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .run-row + .run-row { margin-top: 3px; }
 .run-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
 /* A sweep's chart in the experiment's card (replay/sweep.js): each arm a column of points, a button over it. */
-.sweep { display: grid; gap: 4px; margin-top: 8px; }
+.sweep { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-top: 8px; min-width: 0; }
+.sweep-numbers { overflow-x: auto; }
+.view.run-card { grid-template-columns: minmax(0, 1fr); }
+.sweep-choose { display: grid; gap: 2px; min-width: 0; }
+.sweep-choose select { max-width: 100%; }
 .sweep-card { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 104px; width: 280px; padding: 4px 12px 10px; max-height: calc(100% - 104px - 150px); overflow-y: auto; }
 .has-panel .sweep-card { display: none; }
-.sweep-chart { position: relative; }
-.sweep-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sweep-chart { position: relative; min-width: 0; width: 100%; }
+.sweep-svg { display: block; width: 100%; max-width: 100%; height: auto; overflow: visible; }
 .sweep-axis { stroke: var(--line); stroke-width: 1; }
 .sweep-tick { font-size: 8.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
 .sweep-axis-label { font-size: 9px; fill: var(--muted); }
@@ -264,6 +268,10 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .found { display: grid; gap: 4px; }
 .found-facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .run-ended { display: flex; align-items: center; gap: 6px; }
+/* Under a scale, whose its quantity is (one an experiment states beside its run); and the line that says an experiment's runs
+   state one quantity in other units (two forms of a model): by the runs, and by the sweep's chart. */
+.legend-scale-said { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.run-units { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 .legend-keys { padding: 2px 8px 4px; font-size: 12px; }
 .legend-keys summary { color: var(--muted); padding: 2px 0; }
 .legend-key-note { color: var(--muted); }

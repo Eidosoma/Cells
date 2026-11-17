@@ -676,6 +676,48 @@ state these, with the reason. The catalogue's entry then holds:
 
 A made-up summary of this shape is tracked for the tests (`tests/engine-views/sweep-made-up/`).
 
+**A quantity the experiment states.** An experiment's driver may work out a quantity over
+the cells itself (each cell's concentration from the run's own arrays; a criterion's
+quantity) and write it beside a package. The run folder's `index.json` names the file in
+the package's entry (`packages[].sidecar`: a JSON file's plain name, or a list of them);
+the adapter reads it only there, for a run with the engine's own view, and refuses it, with
+the reason, where it does not fit:
+
+```json
+{
+  "format": "cells.experiment_quantity@1",
+  "quantity": { "id": "concentration", "label": "the driver's own label, with its unit's line", "unit": "mM" },
+  "times_s": [0.0, 2.0],
+  "cells": ["A", "B"],
+  "values": [[5.0, 10.0], [5.43, 9.57]]
+}
+```
+
+- Every time the replay steps through must be one of `times_s` (within the time bases'
+  tolerance), and `cells` must name the view's cells, each once: the adapter matches by
+  name and time, and never resamples, matches by position or fills in. Every value is a
+  finite number.
+- The record is `stated.<quantity.id>`, over the cells, with the file's label and unit as
+  given and `stated: { file, format, quantity }`. The page offers it as a Colour layer,
+  writes its unit in its own sign (uM as µM) and never converts it, and says under the scale
+  that it is the experiment's own quantity, stated by its driver beside the run and copied as
+  stated, not a field of the engine. An experiment's overlay entry may open its runs on it
+  (`opens.record`: one record, or several in the order wanted; the first the run has).
+- `cells.experiment_criterion@1` is the same file with a criterion: `criterion: {
+  threshold, above, below, words, source }`, or, for two thresholds, `criterion: {
+  threshold, above, lower: { threshold, below }, between, words, source }` (the lower
+  threshold under the upper). The scale ticks the threshold in the criterion's own words
+  (one tick with "above" and "below"; or two ticks and the three words as given), reaching
+  the thresholds though the values do not, and gives its `words` and `source` as given. Its
+  optional `states` (one word per cell at each of its times) become the record
+  `stated.<id>.state` (`words`, and a whole number per cell naming one): a chosen cell's
+  panel gives the state as the driver states it, and nothing is coloured by the states.
+
+Where an experiment's runs state one quantity in different units (two forms of one model),
+its overlay entry says so in a line of its own (`units`), which the page shows by the runs
+and by the sweep's chart. Made-up files of these shapes are written by
+`tests/stated_quantity.test.mjs` and `tools/check_junctions.mjs`.
+
 ### A run written by the engine's shared output path
 
 The adapter `standard-history` reads a run folder that the engine's own writers made

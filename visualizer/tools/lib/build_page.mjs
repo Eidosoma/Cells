@@ -235,11 +235,26 @@ export async function bundle(entry, { three = THREE_CDN } = {}) {
 export const DEFAULT_LAWS = path.join(ROOT, "data", "laws", "pieces.json");
 
 /** The page content, as published: no doctype, html, head or body tags of its own. */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS } = {}) {
+/**
+ * The replays a published page carries: where the catalogue says which experiments are listed (an entry's `listed`),
+ * those experiments and their runs, and the runs the scene itself names (a species' looping run, which its flux reads),
+ * with their experiments' entries, unlisted. Everything else the folder holds is packaged for the checks and never
+ * exported. A catalogue that says nothing of listing is carried whole.
+ */
+export function publishedReplays(index, scene) {
+  if (!index || !index.experiments?.some((item) => "listed" in item)) return index;
+  const text = JSON.stringify(scene);
+  const listed = new Set(index.experiments.filter((item) => item.listed === true).map((item) => item.id));
+  const runs = index.runs.filter((run) => listed.has(run.experiment) || text.includes(`"${run.id}"`));
+  const kept = new Set(runs.map((run) => run.experiment));
+  return { ...index, experiments: index.experiments.filter((item) => listed.has(item.id) || kept.has(item.id)), runs };
+}
+
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
-  const replays = await readReplays(runsDir);
+  const replays = published ? publishedReplays(await readReplays(runsDir), data) : await readReplays(runsDir);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
   // finds a species' looping run among them.
   if (replays) data.replays = hideExperiments ? { ...replays, hidden: true } : replays;

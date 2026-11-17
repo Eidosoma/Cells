@@ -14,7 +14,7 @@
 
 import { mkdir, readFile, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, modelFiles, readReplays, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS } from "./lib/build_page.mjs";
+import { buildPage, proteinFiles, machineFiles, modelFiles, readReplays, publishedReplays, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS } from "./lib/build_page.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -24,7 +24,7 @@ const runsDir = path.resolve(value("--runs", DEFAULT_RUNS));
 const out = path.resolve(value("--out", path.join(ROOT, "out", standalone ? "cells-architecture.standalone.html" : "cells-architecture.html")));
 const scenePath = path.resolve(value("--scene", DEFAULT_SCENE));
 const hideExperiments = args.includes("--hide-experiments");
-const content = await buildPage({ scenePath, runsDir, inlineRuns, hideExperiments });
+const content = await buildPage({ scenePath, runsDir, inlineRuns, published: true, hideExperiments });
 await mkdir(path.dirname(out), { recursive: true });
 await writeFile(out, standalone ? wrap(content) : content);
 const size = (bytes) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(2)} MB` : `${(bytes / 1024).toFixed(0)} KB`);
@@ -39,7 +39,8 @@ const beside = async (name, source) => {
   bytes += length;
   console.log(`  beside the page: ${name}  (${size(length)})`);
 };
-const replays = await readReplays(runsDir);
+// Only the listed experiments' runs and the runs the scene names are published (lib/build_page.mjs, publishedReplays).
+const replays = publishedReplays(await readReplays(runsDir), JSON.parse(await readFile(scenePath, "utf8")));
 if (!replays) {
   console.log("no replays: the Experiments view is left out (run tools/adapt_run.py to make them)");
 } else if (inlineRuns) {

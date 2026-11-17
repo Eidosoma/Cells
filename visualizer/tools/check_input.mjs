@@ -462,10 +462,10 @@ try {
       }
 
       // Another experiment, when there is one: the selector switches, and what it found follows.
-      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row")].length`);
+      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row:not([data-door])")].length`);
       if (experiments > 1) {
         const before = await evaluate(`({ run: ${VIEWER}.current.runId, experiment: ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId).experiment })`);
-        const row = await spot('.exp-row[aria-pressed="false"]');
+        const row = await spot('.exp-row:not([data-door])[aria-pressed="false"]');
         await click(row.x, row.y);
         await loaded(before.run);
         const after = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId), outcome = lens.catalogue.outcomeOf(lens.catalogue.experimentOf(entry)); return { experiment: entry.experiment, loaded: lens.run?.view.run.experiment, facts: [...${VIEWER}.shadowRoot.querySelectorAll(".found-facts .fact")].map((item) => item.textContent).join(" | "), expected: [outcome?.judgedLabel, outcome?.answer ? outcome.label : null].filter(Boolean).join(" | ") }; })()`);

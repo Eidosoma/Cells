@@ -154,6 +154,7 @@ export function validateReplay(file) {
       }
     }
     if (record.owner !== undefined && typeof record.owner !== "string") problems.push(`${name}: its owner must be a name`);
+    if (record.words !== undefined && !(Array.isArray(record.words) && record.words.length && record.words.every((word) => typeof word === "string" && word) && !record.dtype.startsWith("float") && record.range?.[1] < record.words.length)) problems.push(`${name}: a record of states gives a word for each whole number it holds`);
     if (record.scale !== undefined && !record.quantised) problems.push(`${name}: a scaled record must be marked quantised`);
     if (record.axes[0] !== "time") problems.push(`${name}: the first axis must be time`);
     if (record.id === "t") times = record;
@@ -235,6 +236,8 @@ export class Run {
     this.info = view.run;
     this.id = view.run.id;
     this.derived = Boolean(view.derived);
+    // The cells stand where the run's view prescribes them (a small network, not a sheet): each junction is drawn between its two cells.
+    this.prescribed = view.space?.placed === "prescribed";
     // An example run (schema/QUANTITY_LAYERS.md, rule 6): its numbers are invented; { says, made_by }, or null.
     this.example = view.example || null;
     this.derivation = view.derivation || [];

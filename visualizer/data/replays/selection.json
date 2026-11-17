@@ -84,5 +84,15 @@
     "runs": [
       "planarian-b08af640"
     ]
+  },
+  "gap-junction-linear-network": {
+    "note": "The engine side's run folder for the viewer: its index.json chooses the arms (runs: index), so arms added there later are data alone. The folder is named folder by folder (within), never as a path; move the run folder by changing within. It names dev-06, the run that packages every arm that fits the engine side's layer limit (17 November 2026).",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "dev-06",
+      "viewer"
+    ],
+    "runs": "index"
   }
 }

@@ -999,7 +999,8 @@ def assemble(run, layers, stated, sheet, records, regions, events, derivation, p
         "derivation": derivation,
         "run": run,
         "time": {"unit": "s", "record": "t"},
-        "space": {"unit": "um", "dimensions": 2},
+        # `placed`: the cells stand where the run's view prescribes them (a small network, not a sheet): the page draws each junction between its two cells.
+        "space": {"unit": "um", "dimensions": 2, **({"placed": "prescribed"} if getattr(sheet, "prescribed", False) else {})},
         "layers": [{"id": layer, "label": stated.get(layer, {}).get("label", fallback), "representation": stated.get(layer, {}).get("representation")} for layer, fallback in layers],
         "sets": [
             {"id": "cell", "scale": "cell", "ids": sheet.cells, "geometry": {"kind": "polygons", "vertices": sheet.vertices, "faces": sheet.faces}},
@@ -1746,6 +1747,33 @@ def builder_polygons(geometry, space, kept):
     return {"vertices": kept_points, "faces": [[index[v] for v in faces[k]] for k in kept], "given": len(vertices), "moved": moved}
 
 
+SPHERE_SIDES = 24  # a prescribed sphere's section drawn as a polygon of this many sides
+
+
+def builder_spheres(geometry, space, kept):
+    """The cells as the run's view prescribes them where it gives spheres in a plane (`centres` and `radius`, in a unit
+    it names): each cell drawn as its section, a polygon of SPHERE_SIDES sides about its centre with the sphere's radius,
+    in um, its corners its own. {vertices, faces, radius}; or None where the view gives no such geometry. Cells so placed
+    need not touch: the page draws their junctions between them as the view joins them, not by shared edges."""
+    if not (isinstance(geometry, dict) and geometry.get("kind") == "spheres" and isinstance(space, dict) and space.get("dimensions") == 2 and space.get("unit") in IN_UM):
+        return None
+    centres, radius = geometry.get("centres"), geometry.get("radius")
+    if not (isinstance(centres, list) and isinstance(radius, list) and len(centres) == len(radius) and len(centres) >= max(kept, default=-1) + 1):
+        return None
+    if not all(isinstance(c, list) and len(c) == 2 and all(finite(x) for x in c) for c in centres) or not all(finite(r) and r > 0 for r in radius):
+        return None
+    factor = IN_UM[space["unit"]]
+    vertices, faces = [], []
+    for k in kept:
+        (x, y), r = centres[k], radius[k]
+        start = len(vertices)
+        for side in range(SPHERE_SIDES):
+            angle = 2.0 * math.pi * side / SPHERE_SIDES
+            vertices.append([(x + r * math.cos(angle)) * factor, (y + r * math.sin(angle)) * factor])
+        faces.append(list(range(start, start + SPHERE_SIDES)))
+    return {"vertices": vertices, "faces": faces, "radius": [radius[k] * factor for k in kept]}
+
+
 def looped(name, loop, cells, times, record_ids=()):
     """A view's loop block (FR-11; schema/RUN_VIEW.md, view.loop), checked against the run, in the shape the page reads:
     {species, cell, period, closes: {within, tolerance, says, zero?}, not_measured?, follows?}. `cells` are the view's
@@ -1789,6 +1817,96 @@ def looped(name, loop, cells, times, record_ids=()):
             raise Refused(f"{where} follows a cell the run does not have, or from a time outside its records")
         out["follows"] = [{"time": step["time"], "from": step["from"], "to": step["to"]} for step in steps]
     return out
+
+
+# ---------------------------------------------------------------- a quantity the experiment states beside a run
+# The experiment's driver may write, beside a package, a quantity over the cells that it works out itself (each cell's
+# concentration, a criterion's quantity): schema/RUN_VIEW.md, "A quantity the experiment states". The run folder's
+# index.json names the file (`packages[].sidecar`). It is copied as stated, at the replay's own times, and said on the
+# page to be the experiment's quantity, never a field of the engine; the viewer works nothing out of it.
+STATED_FORMATS = ("cells.experiment_quantity@1", "cells.experiment_criterion@1")
+STATED_FILE = re.compile(r"^[a-z0-9_-]+\.json$")
+STATED_ID = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
+STATED_PREFIX = "stated."
+
+
+def stated_files(root, name):
+    """The files the run folder's index says stand beside a package (`packages[].sidecar`, one name or a list); none where it says none."""
+    index = read_json(root / "index.json") if (root / "index.json").is_file() else None
+    packages = index.get("packages") if isinstance(index, dict) else None
+    package = next((item for item in packages if isinstance(item, dict) and item.get("arm") == name), None) if isinstance(packages, list) else None
+    said = (package or {}).get("sidecar")
+    if said is None:
+        return []
+    names = [said] if isinstance(said, str) else said
+    if not (isinstance(names, list) and all(isinstance(item, str) and STATED_FILE.match(item) for item in names)):
+        raise Refused(f"{name}: its folder's index names a file beside it that is not a JSON file's plain name (packages[].sidecar)")
+    return names
+
+
+def stated_quantity(name, folder, file, cells, times):
+    """One stated quantity over the kept cells at the replay's times, as {"record": its fields, "values": array, "states": (words, codes) or None}.
+
+    Every replay time must be one of the file's own times and every cell one of its cells: nothing is resampled, matched
+    by order or filled in. A criterion gives the scale its ticks in its own words (one threshold, or two with the word for
+    between them); `states`, where given, are carried as the driver states them, and the colour is never worked out from them."""
+    where = f"{name}: its {file}"
+    if not (folder / file).is_file():
+        raise Refused(f"{where}, which its folder's index names, is not there")
+    data = read_json(folder / file)
+    if not isinstance(data, dict) or data.get("format") not in STATED_FORMATS:
+        raise Refused(f"{where} is not a stated quantity ({' or '.join(STATED_FORMATS)})")
+    quantity = data.get("quantity")
+    if not (isinstance(quantity, dict) and isinstance(quantity.get("id"), str) and STATED_ID.match(quantity["id"]) and isinstance(quantity.get("label"), str) and quantity["label"].strip() and isinstance(quantity.get("unit"), str)):
+        raise Refused(f"{where} does not name its quantity (quantity: id, label, unit)")
+    named, stated_times, values = data.get("cells"), data.get("times_s"), data.get("values")
+    if not (isinstance(named, list) and named and all(isinstance(cell, str) and cell for cell in named) and len(set(named)) == len(named)):
+        raise Refused(f"{where} does not name each of its cells once (cells)")
+    if set(named) != set(cells):
+        missing, unknown = [cell for cell in cells if cell not in named], [cell for cell in named if cell not in cells]
+        raise Refused(f"{where} names other cells than the run's view: {'missing ' + ', '.join(missing[:4]) if missing else ''}{'; ' if missing and unknown else ''}{'not in the view ' + ', '.join(unknown[:4]) if unknown else ''}")
+    if not (isinstance(stated_times, list) and stated_times and all(is_number(time) for time in stated_times) and isinstance(values, list) and len(values) == len(stated_times) and all(isinstance(row, list) and len(row) == len(named) and all(is_number(value) for value in row) for row in values)):
+        raise Refused(f"{where} does not give one finite number for each of its cells at each of its times (times_s, values)")
+    rows, at = [], 0
+    for time in times:
+        while at < len(stated_times) and stated_times[at] < time and not math.isclose(stated_times[at], time, **TIME_CLOSE):
+            at += 1
+        if not (at < len(stated_times) and math.isclose(stated_times[at], time, **TIME_CLOSE)):
+            raise Refused(f"{where} has no row at the replay's time {plain_number(time)} s: a stated quantity is never resampled")
+        rows.append(at)
+    columns = [named.index(cell) for cell in cells]
+    record = {
+        "id": STATED_PREFIX + quantity["id"],
+        "label": quantity["label"],
+        "unit": quantity["unit"],
+        "stated": {"file": file, "format": data["format"], "quantity": quantity["id"]},
+    }
+    states = None
+    if data["format"] == "cells.experiment_criterion@1":
+        said = data.get("criterion")
+        worded = lambda holder, key: isinstance(holder.get(key), str) and bool(holder[key].strip())  # noqa: E731
+        if not (isinstance(said, dict) and is_number(said.get("threshold")) and all(worded(said, key) for key in ("above", "words", "source"))):
+            raise Refused(f"{where} does not state its criterion (criterion: threshold, above, words, source)")
+        lower = said.get("lower")
+        if lower is None:
+            if not worded(said, "below"):
+                raise Refused(f"{where}: its criterion's one threshold has no word for what lies below it (criterion.below)")
+            record["marks"] = [{"value": said["threshold"], "label": f"{said['above']} above, {said['below']} below"}]
+        else:
+            if not (isinstance(lower, dict) and is_number(lower.get("threshold")) and lower["threshold"] < said["threshold"] and worded(lower, "below") and worded(said, "between")):
+                raise Refused(f"{where}: its criterion's lower threshold needs a value under the upper one, its word below it, and the word for between the two (criterion.lower, criterion.between)")
+            record["marks"] = [{"value": lower["threshold"], "label": f"{lower['below']} below, {said['between']} between"}, {"value": said["threshold"], "label": f"{said['above']} above"}]
+        record["criterion"] = {"words": said["words"], "source": said["source"]}
+        if "states" in data:
+            given = data["states"]
+            if not (isinstance(given, list) and len(given) == len(stated_times) and all(isinstance(row, list) and len(row) == len(named) and all(isinstance(state, str) and state for state in row) for row in given)):
+                raise Refused(f"{where}: its states do not give one word for each of its cells at each of its times (states)")
+            words = sorted({given[row][k] for row in rows for k in columns})
+            if len(words) > 255:
+                raise Refused(f"{where}: its states hold more than 255 words")
+            states = (words, array("B", (words.index(given[row][k]) for row in rows for k in columns)))
+    flat = array("f", (values[row][k] for row in rows for k in columns))
+    return {"record": record, "values": flat, "states": states}
 
 
 def adapt_engine_view(root, name, experiment, entry):
@@ -1910,7 +2028,19 @@ def adapt_engine_view(root, name, experiment, entry):
     # Where the run gives its cells' polygons (a builder's geometry, in a plane), the picture stands them where the run
     # does; the adapter's own layout is the fallback where the view gives none, or gives a geometry the page cannot draw.
     built = builder_polygons(sets["cell"].get("geometry"), view.get("space"), keep["cell"])
-    if built is not None:
+    spheres = builder_spheres(sets["cell"].get("geometry"), view.get("space"), keep["cell"]) if built is None else None
+    if spheres is not None:
+        # Prescribed places: each cell where the view puts it, drawn as its section; a small network, not a sheet.
+        sheet = lay_out(name, like, [], row=True)
+        sheet.vertices, sheet.faces = spheres["vertices"], spheres["faces"]
+        space = view["space"]
+        sheet.prescribed = True
+        derivation.append(
+            f"Cell positions as the run's view prescribes them ({space['representation']}, from {space['source']}): each cell a sphere at its centre, "
+            f"drawn as its section through the centre, a circle of its radius ({min(spheres['radius']):.3g} to {max(spheres['radius']):.3g} um). "
+            "The cells need not touch: each junction is drawn between the two cells the view joins, not where they share an edge."
+        )
+    elif built is not None:
         sheet = lay_out(name, like, [], row=True)
         sheet.vertices, sheet.faces = built["vertices"], built["faces"]
         space = view["space"]
@@ -2140,6 +2270,25 @@ def adapt_engine_view(root, name, experiment, entry):
                     parts.append({"id": part, "label": f"{labels[field]}: {species_id}", "payload": own})
             if together or None in split:
                 parts.append({"id": slug, "label": labels[field], "payload": own})
+    # A quantity the experiment's driver states beside the run, where the folder's index names one: copied as stated.
+    for file in stated_files(root, name):
+        stated = stated_quantity(name, folder, file, cells, times)
+        record = stated["record"]
+        if any(item["id"] == record["id"] for item in records):
+            raise Refused(f"{name}: its {file} states a quantity ({record['id']}) another file beside it already states")
+        extra = {key: record[key] for key in ("stated", "marks", "criterion") if key in record}
+        if stated["states"]:
+            extra["states"] = record["id"] + ".state"
+        records.append(describe(payload, record["id"], record["label"], record["unit"], ["time", "cell"], "float32", (count, len(cells)), stated["values"], set="cell", **extra))
+        if stated["states"]:
+            words, codes = stated["states"]
+            records.append(describe(payload, record["id"] + ".state", "The state, as the experiment's driver states it", "", ["time", "cell"], "uint8", (count, len(cells)), codes, set="cell", words=words, stated=record["stated"]))
+        derivation.append(
+            f"Beside the run, the experiment's driver states {record['label']} ({file}, {record['stated']['format']}): copied as stated at the replay's {count} times, "
+            "the experiment's own quantity and not a field of the engine; the viewer works nothing out of it."
+            + (" Its criterion gives the scale's ticks in its own words." if "marks" in record else "")
+            + (" The state of each cell is carried as the driver states it; the colour is the quantity's, never worked out from the states." if stated["states"] else "")
+        )
     unnamed = sorted({record["field"] for record in listed if record["base"] == timeline and record["field"] not in FIELD_LABELS and not merged(record)})
     unread_views = sorted({record["field"] for record in listed if merged(record) and record["field"] not in VIEW_FIELD_LABELS})
     if not any(record.get("set") == "cell" for record in records):
@@ -2838,6 +2987,19 @@ def experiments_of(selection):
     return {key: value for key, value in selection.items() if isinstance(value, dict)}
 
 
+def runs_in_index(folder):
+    """The runs a run folder's own index.json chooses (`selected`, else every package whose view was written): so that
+    arms added to the folder later are data alone."""
+    path = folder / "index.json"
+    if not path.is_file():
+        raise Refused(f"the selection reads its runs from {folder.name}/index.json, which is not there")
+    index = read_json(path)
+    names = index.get("selected") if isinstance(index.get("selected"), list) else [package.get("arm") for package in index.get("packages") or [] if isinstance(package, dict) and package.get("view") == "written"]
+    if not (names and all(isinstance(name, str) and ARM_NAME.match(name) for name in names)):
+        raise Refused(f"{folder.name}/index.json chooses no run by its folder's name")
+    return names
+
+
 def jobs_of(arguments, curated):
     """What this call adapts, as [(experiment, evidence folder, run names)]."""
     if arguments.root:
@@ -2849,7 +3011,7 @@ def jobs_of(arguments, curated):
         names = list(arguments.run)
         if not names:
             chosen = experiments_of(read_json(arguments.selection)).get(arguments.experiment) or {}
-            names = list(chosen.get("runs") or [])
+            names = runs_in_index(root) if chosen.get("runs") == "index" else list(chosen.get("runs") or [])
             if chosen.get("evidence_folder") and chosen["evidence_folder"] != root.name:
                 print(f"note: the selection names the evidence folder {chosen['evidence_folder']}; reading {root.name}", file=sys.stderr)
         jobs = [(arguments.experiment, root, names)]
@@ -2871,7 +3033,17 @@ def jobs_of(arguments, curated):
                 raise Refused(f"the selection gives {experiment} no evidence folder's name")
             if not (parent / folder).is_dir():
                 raise Refused(f"the evidence folder {folder} is not in the folder given with --evidence")
-            jobs.append((experiment, parent / folder, list(arguments.run) or list(item.get("runs") or [])))
+            # The runs may stand in a run folder nested inside the evidence folder: named folder by folder (`within`), never a path.
+            within = item.get("within") or []
+            if not (isinstance(within, list) and all(isinstance(name, str) and ARM_NAME.match(name) for name in within)):
+                raise Refused(f"the selection's run folder for {experiment} is named folder by folder (within), never as a path")
+            root = parent / folder
+            for name in within:
+                root = root / name
+            if not root.is_dir():
+                raise Refused(f"the run folder {'/'.join([folder, *within])} is not there")
+            listed = item.get("runs")
+            jobs.append((experiment, root, list(arguments.run) or (runs_in_index(root) if listed == "index" else list(listed or []))))
     else:
         raise Refused("give --evidence, or --experiment with --root")
     for experiment, _, names in jobs:
@@ -3005,6 +3177,15 @@ def main(argv=None):
         adapted[experiment] = (written_entry, listed)
 
     index, kept = merged_catalogue(out, existing, list(curated), adapted)
+    # The page's other examples, which open a view of their own (a model system's entry, e.g. GARD): named by the overlay, listed with
+    # the experiments. An overlay that says nothing of them (a fixture's, adapting one more experiment) keeps those the catalogue had.
+    said = read_json(arguments.overlay)
+    before = json.loads((out / "index.json").read_text(encoding="utf-8")) if "doors" not in said and (out / "index.json").is_file() else {}
+    doors = said["doors"] if "doors" in said else before.get("doors") or []
+    if not (isinstance(doors, list) and all(isinstance(door, dict) and isinstance(door.get("entry"), str) and door["entry"] for door in doors)):
+        raise Refused("the overlay's doors each name an entry")
+    if doors:
+        index["doors"] = [{"entry": door["entry"]} for door in doors]
     check_clean("index.json", json.dumps(index, ensure_ascii=False))
     (out / "index.json").write_bytes((json.dumps(index, ensure_ascii=False, indent=1) + "\n").encode("utf-8"))
     known = {f"{row['id']}.json" for row in index["runs"]} | {Path(part["file"]).name for row in index["runs"] for part in row.get("parts") or []} | {"index.json"}

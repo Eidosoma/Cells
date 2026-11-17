@@ -6,6 +6,11 @@
 // viewer computes nothing from the numbers and says nothing of how they compare: it places
 // them, and the table gives them as the summary states them.
 
+import { unitSign } from "./format.js";
+
+// A unit as the page writes it (uM as µM), never converted: the chart's key uses it too.
+export { unitSign };
+
 /** Whether a parameter's values ask for a logarithmic scale: all above nought, the largest ten times the smallest or more. */
 export function logScaleFor(values) {
   const finite = values.filter((value) => Number.isFinite(value));
@@ -82,7 +87,7 @@ export function chartOf(sweep, { width = 240, height = 150, pad = { left: 38, ri
 
 /** A sweep as a table: a row for each arm, its parameter, its readouts and, where stated, the reference. */
 export function tableOf(sweep, write = String) {
-  const unit = (item) => (item.unit && item.unit !== "1" ? ` (${item.unit})` : "");
+  const unit = (item) => (item.unit && item.unit !== "1" ? ` (${unitSign(item.unit)})` : "");
   const references = sweep.reference ? sweep.readouts.filter((readout) => sweep.arms.some((arm) => Number.isFinite(arm.reference?.[readout.id]))) : [];
   const head = [`${sweep.parameter.label}${unit(sweep.parameter)}`, ...sweep.readouts.map((readout) => `${readout.label}${unit(readout)}`), ...references.map((readout) => `${readout.label}, ${sweep.reference.label}${unit(readout)}`)];
   const rows = [...sweep.arms]
@@ -93,7 +98,7 @@ export function tableOf(sweep, write = String) {
 
 /** What a point says to a screen reader and in its title: the arm, its parameter and its readouts, whether it is shown, and whether it has a run. */
 export function armWords(sweep, arm, write = String) {
-  const unit = (item) => (item.unit && item.unit !== "1" ? ` ${item.unit}` : "");
+  const unit = (item) => (item.unit && item.unit !== "1" ? ` ${unitSign(item.unit)}` : "");
   const readouts = sweep.readouts.filter((readout) => Number.isFinite(arm.readouts?.[readout.id])).map((readout) => `${readout.label} ${write(arm.readouts[readout.id])}${unit(readout)}`);
   const reference = sweep.reference ? sweep.readouts.filter((readout) => Number.isFinite(arm.reference?.[readout.id])).map((readout) => `${sweep.reference.label}: ${write(arm.reference[readout.id])}${unit(readout)}`) : [];
   const state = arm.active ? "shown now" : arm.run ? "press to show it" : "no run of it is packaged here";

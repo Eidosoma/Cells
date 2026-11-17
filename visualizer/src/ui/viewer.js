@@ -23,7 +23,7 @@ import { LawsLens } from "../lenses/laws.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
-import { chartOf, tableOf, armWords } from "../replay/sweep.js";
+import { chartOf, tableOf, armWords, unitSign } from "../replay/sweep.js";
 import { renderAtlasNav } from "./atlas_nav.js";
 import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
@@ -59,7 +59,7 @@ class CellsViewer extends HTMLElement {
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null };
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null };
     this.lenses = new Map();
   }
 
@@ -251,6 +251,8 @@ class CellsViewer extends HTMLElement {
     // "frames=1": a small readout at the foot of the picture of the frames the device really draws (core/stage.js).
     if (this.stage && query.get("frames")) this.stage.showFrames(this.frame);
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
+    // A model system's view in the Experiments tab's place, from its list (`example=gard`; showExample).
+    if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the machines Cells has laws for ("units") or the species' own proteins ("own").
@@ -321,7 +323,8 @@ class CellsViewer extends HTMLElement {
     this.state.isolate = null;
     if (this.stage) {
       // A model system shown in the switch takes the Cell view's place (src/ui/entry_views.js): its card at once, its own view once its runs are read.
-      const entry = id === "cell" ? modelSystemOf(this.model.raw, this.state.model) : null;
+      // So does one the Experiments tab's list opens (showExample): the same view, in that tab's place.
+      const entry = id === "cell" ? modelSystemOf(this.model.raw, this.state.model) : id === "experiments" && this.state.example ? modelSystemOf(this.model.raw, this.state.example) : null;
       const key = entry ? `model:${entry.id}` : id;
       if (!this.lenses.has(key)) {
         const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still") }) : null;
@@ -526,6 +529,22 @@ class CellsViewer extends HTMLElement {
     this.setSpecies(id);
   }
 
+  /**
+   * The Experiments tab shows a model system's own view in its place (`id`, the entry's: GARD's pair, its levels, its clock,
+   * its panels), opened from the tab's list, which stands at the head of its card; null shows the tab's runs again, and `run`
+   * one of them where the run shown is of another experiment. The species switch, the first tab and the address's `entry=`
+   * are the switch's, and stay as they are.
+   */
+  showExample(id, { run = null } = {}) {
+    const example = (id && this.replays.doors.some((item) => item.entry === id) && modelSystemOf(this.model?.raw, id)?.id) || null;
+    if (example !== this.state.example) {
+      this.state.example = example;
+      if (this.state.lens === "experiments") this.setLens("experiments");
+    }
+    const lens = this.current, shown = lens?.catalogue?.byId.get(lens.runId);
+    if (!example && run && lens?.show && shown?.experiment !== lens.catalogue.byId.get(run)?.experiment) lens.show(run);
+  }
+
   // ------------------------------------------------------------ the switch's entries (schema/ENTRIES.md)
 
   /**
@@ -671,7 +690,8 @@ class CellsViewer extends HTMLElement {
     // library's, a model system's in the Cell view's place. The Cell view's card and a replay's keep their own phone layouts.
     this.frame.classList.toggle("card-folds", this.clientWidth < 760 && Boolean(chrome.card) && !chrome.run && !chrome.view);
     // A model system's card in the first tab's place (its own view's, or the card that stands in for it): on a phone it shows its choices.
-    const modelCard = this.state.lens === "cell" && Boolean(chrome.card?.species?.model);
+    const example = this.state.lens === "experiments" && Boolean(this.state.example) && Boolean(chrome.card);
+    const modelCard = (this.state.lens === "cell" && Boolean(chrome.card?.species?.model)) || example;
     this.frame.classList.toggle("model-card", modelCard);
     // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).
     this.frame.classList.toggle("bar-ground", Boolean(this.current?.drawsUnderBar));
@@ -687,13 +707,15 @@ class CellsViewer extends HTMLElement {
     // may cover the mark on the picture, so the card carries the words itself there (styles.js .view-notice; rule 11 of
     // schema/QUANTITY_LAYERS.md, as the Cell view's card does for an illustrated flux).
     const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
-    if (chrome.card) this.viewCard.replaceChildren(...marked, ...this.card(chrome.card));
+    // A model system's view in the Experiments tab's place (showExample): the tab's list at the head of its card, the way back to the runs.
+    const listed = example ? this.runCard({ heading: chrome.card.heading, experiments: this.replays.listRows(), doors: this.replays.doors.map((item) => item.entry), listOnly: true }) : [];
+    if (chrome.card) this.viewCard.replaceChildren(...marked, ...listed, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
     // A sweep's chart beside the picture on a wide window, out of the experiment's card, which the legend leaves little room.
     const sweeps = chrome.run?.sweeps || [], wide = this.clientWidth >= 760;
     this.sweepCard.hidden = !(sweeps.length && wide);
     this.frame.classList.toggle("has-sweep", !this.sweepCard.hidden);
-    if (!this.sweepCard.hidden) this.sweepCard.replaceChildren(...sweeps.map((sweep) => this.sweepChart(sweep, (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : this.current.show(id)))));
+    if (!this.sweepCard.hidden) this.sweepCard.replaceChildren(...this.sweepsShown(sweeps, (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : this.current.show(id)), chrome.run.units));
     // A replay brings its playhead.
     this.timeline.hidden = !chrome.timeline;
     this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
@@ -1270,7 +1292,7 @@ class CellsViewer extends HTMLElement {
     const write = (value) => (Math.abs(value) >= 1e4 || (Math.abs(value) < 1e-3 && value !== 0) ? value.toExponential(2) : String(Number(value.toPrecision(4))));
     const chart = chartOf(sweep, { width: 240, height: 140 });
     const { inner } = chart;
-    const unit = (item) => (item.unit && item.unit !== "1" ? ` (${item.unit})` : "");
+    const unit = (item) => (item.unit && item.unit !== "1" ? ` (${unitSign(item.unit)})` : "");
     const lines = sweep.readouts.map((readout, line) => {
       const points = chart.points.filter((point) => point.line === line).sort((p, q) => p.x - q.x);
       return svg("g", { class: `sweep-line sweep-line-${line % 4}` }, points.length > 1 ? svg("polyline", { points: points.map((point) => `${point.x},${point.y}`).join(" "), fill: "none" }) : null, points.map((point) => svg("circle", { cx: point.x, cy: point.y, r: sweep.arms[point.arm].active ? 4.6 : 3.2, class: sweep.arms[point.arm].active ? "sweep-point is-shown" : "sweep-point" })));
@@ -1310,10 +1332,37 @@ class CellsViewer extends HTMLElement {
     );
   }
 
-  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details, sweeps = [] }) {
+  /**
+   * An experiment's sweeps: the one that holds the run shown is drawn (or the one the visitor chose, until another run is
+   * shown); the others are one press away, a row of their names. With one sweep, its chart alone.
+   */
+  sweepsShown(sweeps, pick, units = null) {
+    if (!sweeps.length) return [];
+    const holding = sweeps.find((sweep) => sweep.arms.some((arm) => arm.active)) || sweeps[0];
+    const runShown = sweeps.flatMap((sweep) => sweep.arms).find((arm) => arm.active)?.run || null;
+    if (this.sweepPicked && this.sweepPicked.run !== runShown) this.sweepPicked = null;
+    const shown = sweeps.find((sweep) => sweep.id === this.sweepPicked?.id) || holding;
+    // The other sweeps are one press away: a list to choose from, their labels being long.
+    const choose = sweeps.length > 1
+      ? h("label", { class: "sweep-choose" }, h("span", { class: "seg-label" }, `Sweeps · ${sweeps.length}`), (() => {
+          const select = h("select", { class: "run-select", "aria-label": "Sweep", onchange: () => {
+            this.sweepPicked = { id: select.value, run: runShown };
+            this.renderChrome();
+          } }, sweeps.map((sweep) => h("option", { value: sweep.id, selected: sweep.id === shown.id }, `${sweep.label}${sweep === holding && runShown ? " (the run shown)" : ""}`)));
+          return select;
+        })())
+      : null;
+    // Where the experiment's runs state one quantity in other units (two forms of a model), the line that says so stands by the chart.
+    return [choose, this.sweepChart(shown, pick), units ? h("p", { class: "card-text run-units" }, units) : null].filter(Boolean);
+  }
+
+  runCard({ heading, text, outcome, experiments: listed = [], runs, klass, ended, colour, details, sweeps = [], doors = [], units = null, listOnly = false }) {
+    // The page's other examples (a model system's entry, e.g. GARD) stand in the list beside the experiments, in their entry's own words; a press opens their view.
+    const experiments = [...listed, ...doors.map((id) => modelSystemOf(this.model?.raw, id)).filter(Boolean).map((entry) => ({ id: entry.id, label: entry.label, door: true, plain: entry.plain, active: entry.id === this.state.example, first: `door:${entry.id}` }))];
     const lens = this.current;
     // With a run's details open, the details follow the run picked.
-    const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
+    // A door (`door:<entry>`) shows that entry's own view in this tab's place (showExample); from it, a run is shown here again.
+    const pick = (id) => (id?.startsWith("door:") ? this.showExample(id.slice("door:".length)) : this.state.example ? this.showExample(null, { run: id }) : this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
     const chooser = (id, label, options, active) => {
       const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
       return select;
@@ -1329,27 +1378,31 @@ class CellsViewer extends HTMLElement {
             item.answer ? h("span", { class: "fact" }, mark(item.answerMark), item.label) : null,
           ]
         : [];
-    return [
-      // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
-      // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
-      ...(() => {
+    // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
+    // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
+    const listPart = (() => {
         const row = (item) =>
           h(
             "button",
-            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
+            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.door ? item.plain || "" : item.outcome?.spoken || ""}`, title: item.door ? item.plain || "" : null, dataset: item.door ? { door: item.id } : {}, onclick: () => pick(item.first) },
             h("span", { class: "exp-name" }, item.label),
             h("span", { class: "exp-found" }, found(item.outcome))
           );
-        const judged = experiments.filter((item) => !item.development && !item.example), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example);
-        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label }, list.map(row))];
+        const judged = experiments.filter((item) => !item.development && !item.example && !item.door), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example), opened = experiments.filter((item) => item.door);
+        const page = experiments.every((item) => item.door || item.listed);
+        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label, dataset: page ? { examples: "page" } : {} }, list.map(row))];
         // Many, or more than one on a phone, where rows would cover the picture: a list to choose from, with a development run and an example named as such.
-        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : item.door ? "Model system: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
         // One: its name. Several: a row each, with what the record says it found.
         if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
-        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : [])];
-      })(),
+        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : []), ...(opened.length ? group(opened, opened.length > 1 ? "Model systems" : "Model system") : [])];
+      })();
+    // A model system's view in the tab's place (showExample) has a card of its own: the list stands at its head.
+    if (listOnly) return listPart;
+    return [
+      ...listPart,
       // An experiment whose summary lists arms with a parameter and readouts: its chart first, where the card opens.
-      ...(this.clientWidth < 760 ? sweeps.map((sweep) => this.sweepChart(sweep, pick)) : []),
+      ...(this.clientWidth < 760 ? this.sweepsShown(sweeps, pick) : []),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {
         const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");
@@ -1382,6 +1435,7 @@ class CellsViewer extends HTMLElement {
               )
             )
       ),
+      units ? h("p", { class: "card-text run-units" }, units) : null,
       klass
         ? h(
             "div",
@@ -1404,7 +1458,11 @@ class CellsViewer extends HTMLElement {
    * page's own font did not arrive and its words run longer, the legend scrolls within what is left.
    */
   fitCard() {
-    const card = this.viewCard, least = 150;
+    const card = this.viewCard;
+    // The Experiments tab's card keeps the page's list of examples (the listed experiments and the model systems) in view above
+    // the legend; a card whose list also holds a run opened by its address keeps its least height, as before.
+    const list = [...card.querySelectorAll('.experiments[data-examples="page"]')].pop();
+    const least = Math.max(150, list ? list.getBoundingClientRect().bottom - card.getBoundingClientRect().top + card.scrollTop + 14 : 0);
     this.placeFoot();
     if (this.clientWidth < 760) {
       // On a phone the cards keep their own heights (styles.js); the legend opens upward from where it stands, as far as the bar.
@@ -1573,9 +1631,12 @@ class CellsViewer extends HTMLElement {
         if (shown(this.legend)) floors.push(this.legend.getBoundingClientRect().bottom - origin - Math.min(this.legend.offsetHeight, 56)); // its title, open or not
         bottom = Math.max(0, this.clientHeight - top - Math.min(...floors));
       }
+      // A replay's sweeps' card at the right of a wide window: the picture has the room between it and the cards on the left (the replay frames its sheet there).
+      const sweep = !narrow && !open && !this.sweepCard.hidden && this.sweepCard.getClientRects().length ? this.getBoundingClientRect().right - this.sweepCard.getBoundingClientRect().left + 12 : 0;
       // A view that asks for its room clear of the cards on the left (the Laws library) has it on a wide window.
-      const left = !narrow && this.current?.wantsLeftRoom ? Math.max(0, ...[this.viewCard, this.legend].filter((element) => element && !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect().right - this.getBoundingClientRect().left + 12)) : 0;
-      this.stage.setInsets({ ...(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : {}), ...(left ? { left } : {}) });
+      const left = !narrow && (this.current?.wantsLeftRoom || sweep) ? Math.max(0, ...[this.viewCard, this.legend].filter((element) => element && !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect().right - this.getBoundingClientRect().left + 12)) : 0;
+      this.stage.setInsets({ ...(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : sweep ? { right: sweep } : {}), ...(left ? { left } : {}) });
+      this.current?.roomChanged?.();
     }
   }
 

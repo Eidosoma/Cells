@@ -16,6 +16,33 @@ export class Catalogue {
     this.experiments = new Map((this.raw.experiments || []).map((experiment) => [experiment.id, experiment]));
     this.runs = this.raw.runs || [];
     this.byId = new Map(this.runs.map((run) => [run.id, run]));
+    // The page's other examples, each a view of its own (a model system's entry): listed with the experiments, opened by their entry.
+    this.doors = Array.isArray(this.raw.doors) ? this.raw.doors.filter((door) => typeof door?.entry === "string") : [];
+  }
+
+  /**
+   * Whether the page lists an experiment: where any entry of the catalogue says `listed`, only those that say it is
+   * true; a catalogue that says nothing of it lists every experiment. An unlisted run still opens by its address.
+   */
+  isListed(id) {
+    const entries = [...this.experiments.values()];
+    return entries.some((item) => "listed" in item) ? this.experiments.get(id)?.listed === true : true;
+  }
+
+  /** The run the view opens on where none is asked for: the first of a listed experiment. */
+  firstListed() {
+    return (this.runs.find((run) => this.isListed(run.experiment)) || this.runs[0])?.id || null;
+  }
+
+  /**
+   * The page's list of experiments, one row each: those listed that have runs, and the experiment of the run shown
+   * (`shown`, a run's id) though it is not listed. A row opens the experiment's first run (`first`).
+   */
+  listRows(shown = null) {
+    const active = this.byId.get(shown)?.experiment;
+    return [...this.experiments.values()]
+      .filter((item) => this.runs.some((one) => one.experiment === item.id) && (this.isListed(item.id) || item.id === active))
+      .map((item) => ({ id: item.id, label: item.label, listed: this.isListed(item.id), active: item.id === active, first: this.runs.find((one) => one.experiment === item.id).id, outcome: this.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) }));
   }
 
   experimentOf(run) {
@@ -71,6 +98,7 @@ export class Catalogue {
   sections() {
     const groups = new Map();
     for (const run of this.runs) {
+      if (!this.isListed(run.experiment)) continue;
       if (!groups.has(run.experiment)) groups.set(run.experiment, []);
       groups.get(run.experiment).push(this.describe(run.id));
     }

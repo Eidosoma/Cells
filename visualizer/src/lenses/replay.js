@@ -65,7 +65,7 @@ export class ReplayLens {
     this.root = new THREE.Group();
     this.loaded = new Map(); // run id -> Run
     this.run = null;
-    this.runId = this.catalogue.runs[0]?.id || null;
+    this.runId = this.catalogue.firstListed();
     this.recordId = "vm";
     this.selected = null; // a cell index of the run shown
     this.hovered = null;
@@ -168,10 +168,13 @@ export class ReplayLens {
     this.run = run;
     this.setIons();
     this.cells = run.sets.get("cell");
-    const choices = this.cells ? run.recordsOn("cell").filter((record) => !record.quantised) : [];
+    const choices = this.cells ? run.recordsOn("cell").filter((record) => !record.quantised && !record.words) : [];
     this.record = choices.find((record) => record.id === this.recordId) || choices.find((record) => record.id === "vm") || choices[0] || null;
     this.recordId = this.record?.id || this.recordId;
-    if (this.cells?.geometry?.kind === "polygons" && this.record) this.buildSheet();
+    // A run whose cells' records all come in files of their own (a chain whose cells carry only the experiment's amount)
+    // is drawn at once all the same, its cells of one tone, and coloured as the record it opens on arrives.
+    const later = !this.record && Boolean(this.opensOf()?.record) && (run.view.parts || []).length > 0;
+    if (this.cells?.geometry?.kind === "polygons" && (this.record || later)) this.buildSheet();
     else this.error = "This run has no sheet of cells the replay can draw.";
     if (this.selected !== null && !(this.selected < (this.cells?.ids.length || 0))) this.selected = null;
     this.player.load(run);
@@ -289,8 +292,20 @@ export class ReplayLens {
     let seams = null;
     if (junctions?.geometry?.kind === "links" && junctions.geometry.between === "cell") {
       const quads = [];
+      // The strip between two cells that do not touch: from one rim to the other along the line joining their middles, a third of a cell wide.
+      const between = (one, other) => {
+        let dx = other.centre[0] - one.centre[0], dy = other.centre[1] - one.centre[1];
+        const apart = Math.hypot(dx, dy) || 1;
+        dx /= apart;
+        dy /= apart;
+        const half = Math.min(one.radius, other.radius) * 0.3, nx = -dy * half, ny = dx * half;
+        const a = [one.centre[0] + dx * one.radius, one.centre[1] + dy * one.radius], b = [other.centre[0] - dx * other.radius, other.centre[1] - dy * other.radius];
+        return [[a[0] + nx, a[1] + ny], [a[0] - nx, a[1] - ny], [b[0] - nx, b[1] - ny], [b[0] + nx, b[1] + ny]];
+      };
       junctions.geometry.ends.forEach(([a, b], link) => {
         const shared = cells[a].face.filter((vertex) => cells[b].face.includes(vertex));
+        // Cells placed where the run's view prescribes them need not touch: the strip runs between their rims, on the line joining them.
+        if (shared.length !== 2 && this.run.prescribed) return quads.push({ a, b, link, points: between(cells[a], cells[b]) });
         if (shared.length !== 2) return; // not neighbours in the drawing: nothing to draw between them
         const corner = (cell, vertex) => cell.inset[cell.face.indexOf(vertex)];
         quads.push({ a, b, link, points: [corner(cells[a], shared[0]), corner(cells[a], shared[1]), corner(cells[b], shared[1]), corner(cells[b], shared[0])] });
@@ -319,7 +334,7 @@ export class ReplayLens {
     this.softMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.55, side: THREE.DoubleSide });
     // The spaces outside the cells, where the run's view gives them tiles, and the borders between all the tiles.
     const outside = this.buildOutside(vertices, point, pitch);
-    const world = worldOf(this.run, [...cells.map((cell, number_) => ({ set: "cell", index: number_, face: cell.face, ring: cell.ring, centre: cell.centre })), ...(outside ? outside.tiles : [])]);
+    const world = worldOf(this.run, [...cells.map((cell, number_) => ({ set: "cell", index: number_, face: cell.face, ring: cell.ring, centre: cell.centre, radius: cell.radius })), ...(outside ? outside.tiles : [])]);
     const frames = [];
     for (const region of this.run.regions) {
       if (region.set !== "cell" || !region.indices.length) continue;
@@ -433,7 +448,7 @@ export class ReplayLens {
   }
 
   offerOf(mark, recordId) {
-    return this.offers.find((item) => item.ok && item.layer.mark === mark && !item.quantity.derivation && item.source.id === recordId) || null;
+    return this.offers.find((item) => item.ok && item.layer.mark === mark && !item.quantity?.derivation && (item.source?.id ?? item.layer.quantity.record) === recordId) || null;
   }
 
   /** What is drawn on a channel now: { layer, fed, mark }, or null. */
@@ -446,22 +461,38 @@ export class ReplayLens {
    * visitor switched on stays on in the next run that can feed it; as it opens, the sheet
    * is coloured by the record chosen and its height repeats that colour.
    */
+  /**
+   * What the experiment of the run shown opens its runs on, as its catalogue entry names it: { record, layers }: the record
+   * the cells are coloured by (offered as a Colour layer even in a file of its own, the sheet then flat), and the layers
+   * switched on with it. Null where the entry names none.
+   */
+  opensOf() {
+    const opens = this.catalogue?.experimentOf(this.catalogue.byId.get(this.runId))?.opens;
+    if (!opens || typeof opens !== "object") return null;
+    // `record` names one record, or several in the order wanted: the first the run has (the quantity the experiment states, where its driver gives one; else the amount).
+    const wanted = [opens.record].flat().filter((id) => typeof id === "string");
+    return { ...opens, record: wanted.find((id) => (this.run?.view.records || []).some((item) => item.id === id)) ?? null };
+  }
+
   settleLayers() {
     const { run } = this;
-    this.offers = layersFor(run, this.declarations, MARKS);
+    this.offers = layersFor(run, this.declarations, MARKS, { offer: this.opensOf()?.record ? [this.opensOf().record] : [] });
     const ready = this.offers.filter((item) => item.ok && !item.parts.length).map((item) => item.layer.id);
     this.switch.keep(ready);
     // A layer that says it opens a run (the secreted species, where the run names one) takes the colour as the
     // run opens, and the sheet then stays flat. Otherwise the sheet is coloured by the record chosen, and its
     // height repeats that colour, as the replay always was.
-    const opening = !this.switch.holder("colour") && !this.off.has("colour") ? this.offers.find((item) => item.ok && item.layer.opens === true && item.layer.channels.includes("colour")) || null : null;
+    // The experiment may name what its runs open on: its record takes the colour, and the layers it names come on with it.
+    const opens = this.opensOf(), named = opens?.record ? this.offers.find((item) => item.ok && item.layer.mark === "tint" && (item.source?.id ?? item.layer.quantity.record) === opens.record) || null : null;
+    const opening = !this.switch.holder("colour") && !this.off.has("colour") ? named || this.offers.find((item) => item.ok && item.layer.opens === true && item.layer.channels.includes("colour")) || null : null;
     if (opening && !opening.parts.length) this.switch.switchOn(opening.layer);
     if (!opening && !this.switch.holder("colour") && !this.off.has("colour")) {
-      const tint = this.offerOf("tint", this.record.id);
+      const tint = this.record ? this.offerOf("tint", this.record.id) : null;
       if (tint) this.switch.switchOn(tint.layer);
     }
     if (!opening && !this.switch.holder("height") && !this.off.has("height")) {
-      const relief = this.offerOf("relief", (this.offer(this.switch.holder("colour"))?.source || this.record).id);
+      const lead = this.offer(this.switch.holder("colour"))?.source || this.record;
+      const relief = lead ? this.offerOf("relief", lead.id) : null;
       if (relief) this.switch.switchOn(relief.layer);
     }
     this.buildMarks();
@@ -469,6 +500,7 @@ export class ReplayLens {
     const fetches = [];
     if (opening?.parts.length) fetches.push(this.setLayer(opening.layer.id, true, { silent: true }));
     for (const id of this.wanted) if (!this.switch.isOn(id) && this.offer(id)?.ok) fetches.push(this.setLayer(id, true, { silent: true }));
+    for (const id of opens?.layers || []) if (!this.switch.isOn(id) && !this.off.has(this.offer(id)?.layer.channels[0]) && this.offer(id)?.ok) fetches.push(this.setLayer(id, true, { silent: true }));
     this.settling = Promise.all(fetches);
   }
 
@@ -844,7 +876,7 @@ export class ReplayLens {
       }
       this.fetching.delete(id);
       if (run !== this.run) return; // another run was opened meanwhile
-      this.offers = layersFor(run, this.declarations, MARKS);
+      this.offers = layersFor(run, this.declarations, MARKS, { offer: this.opensOf()?.record ? [this.opensOf().record] : [] });
     }
     const now = this.offer(id);
     if (!now?.ok || now.parts.length) return;
@@ -894,8 +926,10 @@ export class ReplayLens {
       const low = common[0] * shown.factor, high = common[1] * shown.factor;
       return { shown, low: common[0], high: common[1], nice: { low, high, step: (high - low) / 8 } };
     }
-    const low = common ? Math.min(common[0], record.range[0]) : record.range[0];
-    const high = common ? Math.max(common[1], record.range[1]) : record.range[1];
+    // A criterion the experiment states ticks its thresholds on the scale, which reaches them though the values do not.
+    const ticks = record.criterion ? (record.marks || []).map((mark) => mark.value) : [];
+    const low = Math.min(common ? Math.min(common[0], record.range[0]) : record.range[0], ...ticks);
+    const high = Math.max(common ? Math.max(common[1], record.range[1]) : record.range[1], ...ticks);
     const nice = niceDomain(low * shown.factor, high * shown.factor);
     return { shown, low: nice.low / shown.factor, high: nice.high / shown.factor, nice };
   }
@@ -1056,7 +1090,7 @@ export class ReplayLens {
     if (flow) labels.setText(this.tags.flow, this.stage.width < 620 ? flow.replace(/ · /g, "\n") : flow);
     const words = (number_) => {
       const name = this.cells.ids[number_];
-      return valid ? `${name} · ${this.record.text(step, number_)}` : `${name} · not a valid record`;
+      return valid && this.record ? `${name} · ${this.record.text(step, number_)}` : valid ? name : `${name} · not a valid record`;
     };
     const place = (label, number_) => {
       label.hidden = number_ === null || number_ === undefined;
@@ -1128,6 +1162,8 @@ export class ReplayLens {
     if (joined !== undefined) facts.push(["Cells it is joined to", String(joined)]);
     facts.push([`Times replaced in this run`, String(replaced.length)], ["Times copied into a neighbour", String(copied.length)]);
     const generation = run.records.get("generation");
+    // A cell's state as the experiment's driver states it beside the run (a stated criterion's states), where the record shown has one.
+    const state = this.record?.states ? run.records.get(this.record.states) || null : null;
     const item = (event, other, verb) => ({
       label: `At ${clock(event.time, { precise: true })}`,
       detail: other === undefined ? verb : `${verb} ${this.cells.ids[other]}`,
@@ -1155,7 +1191,7 @@ export class ReplayLens {
         judged: run.info.judged_s,
         levels: this.record.marks || [],
         events: replaced.map((event) => ({ time: event.time, label: `Replaced (${word} ${event.label || ""})`.replace(" )", ")") })),
-        extra: generation && generation !== this.record ? (step) => `generation ${generation.at(step, number_)}` : null,
+        extra: (generation && generation !== this.record) || state ? (step) => [generation && generation !== this.record ? `generation ${generation.at(step, number_)}` : null, state ? `state ${state.text(step, number_)}` : null].filter(Boolean).join(" · ") : null,
       },
       // With a layer on its membrane drawn, the numbers of the close-up at the record shown come first; then what the run's ledgers say of the cell.
       sections: [this.closeup?.cell === number_ ? this.membraneNumbers() : null, this.junctionNumbers(number_), this.ledgerOf("cell", number_), ...sections].filter(Boolean),
@@ -1175,6 +1211,7 @@ export class ReplayLens {
 
   /** The experiment's own name for a record, or the run's. */
   recordLabel(record) {
+    if (!record) return "value";
     const experiment = this.catalogue.experimentOf(this.catalogue.byId.get(this.runId));
     return experiment.records?.[record.id]?.label || record.label || record.id;
   }
@@ -1185,7 +1222,7 @@ export class ReplayLens {
     const klass = this.catalogue.classOf(entry);
     const run = this.run;
     // The records the sheet can be coloured by: one colouring layer each.
-    const records = run && this.sheet ? this.offers.filter((item) => item.ok && item.layer.mark === "tint").map((item) => run.records.get(item.source.id)) : [];
+    const records = run && this.sheet ? this.offers.filter((item) => item.ok && item.layer.mark === "tint").map((item) => run.records.get(item.source?.id ?? item.layer.quantity.record)).filter(Boolean) : [];
     const chrome = {
       quiet: true, // the timeline takes the place of the hint
       status: this.error ? `This run could not be shown: ${this.error}` : this.loading ? "Loading the run…" : null,
@@ -1197,14 +1234,16 @@ export class ReplayLens {
         // What the experiment found, in the record's words, so one run is not read as the whole result.
         outcome: this.catalogue.outcomeOf(experiment),
         // With runs of several experiments, the card also picks the experiment.
-        experiments: [...this.catalogue.experiments.values()]
-          .filter((item) => this.catalogue.runs.some((one) => one.experiment === item.id))
-          .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) })),
+        experiments: this.catalogue.listRows(this.runId),
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
+        // The page's other examples, listed with the experiments: each opens a view of its own (its entry's id).
+        doors: this.catalogue.doors.map((door) => door.entry),
         // Where the experiment's summary lists arms with a parameter and readouts: its sweeps, for a small chart (replay/sweep.js).
         sweeps: sweepsOf(experiment, this.catalogue.runs.map((item) => item.id), this.runId),
+        // Where its runs state one quantity in other units, the experiment's own line saying so.
+        units: typeof experiment.units === "string" ? experiment.units : null,
         ended: this.catalogue.endOf(entry),
         klass: klass ? { label: klass.label, description: klass.description, note: experiment.class_note || "" } : null,
         colour: records.length > 1 ? { options: records.map((record) => [record.id, this.recordLabel(record)]), active: this.markOn("colour")?.mark.record.id ?? null } : null,
@@ -1216,6 +1255,8 @@ export class ReplayLens {
       const colour = this.markOn("colour"), height = this.markOn("height");
       // The scale of what colours the sheet, as the layer's mark gives it.
       if (colour) chrome.legend.scale = colour.mark.scale(colour.mark.label || this.recordLabel(colour.mark.record), number);
+      const said = this.statedNote(colour?.mark.record);
+      if (said && chrome.legend.scale) chrome.legend.scale.said = said;
       const keys = [];
       if (this.sheet.seams?.record) keys.push({ key: "seam", text: "A seam fills in as the junctions between two cells form" });
       for (const frame of this.sheet.frames) keys.push({ key: "frame", text: `${experiment.regions?.[frame.region.id]?.label || frame.region.label}: ${lower(experiment.regions?.[frame.region.id]?.plain || "a region the run names")}` });
@@ -1227,6 +1268,16 @@ export class ReplayLens {
       if (chrome.legend.layers.keys.length) chrome.legend.folded = true;
     }
     return chrome;
+  }
+
+  /**
+   * What the legend says of a colour the experiment states beside the run (schema/RUN_VIEW.md, "A quantity the experiment
+   * states"): whose it is, and its criterion in its own words with its source, as given.
+   */
+  statedNote(record) {
+    if (!record?.stated) return null;
+    const criterion = record.criterion ? ` Its criterion, in its own words: “${record.criterion.words}” (${record.criterion.source}).` : "";
+    return `The colour is the experiment's own quantity, stated by its driver beside the run (${record.stated.file}) and copied as stated: not a field of the engine.${criterion}`;
   }
 
   /** What the legend says of the sheet's height, in one line. */
@@ -1325,7 +1376,7 @@ export class ReplayLens {
   scaleInfo() {
     if (!this.run || !this.sheet) return null;
     if (this.run.space.unit !== "um") return { note: `Lengths are in ${this.run.space.unit || "the run's own units"}` };
-    return { micronsPerUnit: 1, note: this.run.derived ? "cell positions derived" : null };
+    return { micronsPerUnit: 1, note: this.run.prescribed ? "cell positions as the run's view prescribes" : this.run.derived ? "cell positions derived" : null };
   }
 
   get pickRoots() {
@@ -1350,7 +1401,8 @@ export class ReplayLens {
   enter() {
     const { stage } = this;
     stage.rig.limits = { minDistance: this.pitch * 1.6, maxDistance: this.extent * 16, minPolar: 0.06, maxPolar: 1.46 };
-    stage.rig.setView(this.homeView());
+    this.home = this.homeView();
+    stage.rig.setView(this.home);
     this.tags = null;
     if (!this.autoplayed && !stage.reducedMotion && !stage.rig.instant && this.pendingTime === null && this.player.time === this.player.start) {
       this.autoplayed = true;
@@ -1368,14 +1420,35 @@ export class ReplayLens {
     this.tags = null;
   }
 
+  /**
+   * The room the page leaves the picture changed (src/ui/viewer.js: the sweeps' card came or went beside it): the sheet is
+   * framed again in it, unless the visitor has moved the camera since it was last framed.
+   */
+  roomChanged() {
+    const { rig } = this.stage;
+    if (!this.active || !this.sheet || !this.home || !rig) return;
+    const close = (a, b) => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b));
+    const same = (one, other) => close(one.distance, other.distance) && close(one.azimuth, other.azimuth) && close(one.polar, other.polar) && one.target.distanceTo(other.target) <= 1e-6 * Math.max(1, other.distance);
+    // Where the camera is, or where it is flying: only a camera at its framing, or on its way there, is framed again.
+    if (!same(rig.flight ? rig.flight.to : rig.view(), this.home)) return;
+    const next = this.homeView();
+    if (same(next, this.home)) return;
+    this.home = next;
+    if (rig.flight) rig.flyTo(next, 600);
+    else rig.setView(next);
+  }
+
   homeView() {
     const { stage } = this;
     const half = Math.tan((stage.camera.fov * Math.PI) / 360);
     const narrow = stage.width < stage.height * 0.9;
+    // Framed in the room the page's cards leave it on both sides (src/core/stage.js setInsets: the sweeps' card at the right, the cards at the left).
+    const { left = 0, right = 0 } = stage.insets || {};
+    const aspect = left ? Math.max(0.3, (stage.width - left - right) / stage.height) : stage.camera.aspect;
     const polar = narrow ? 0.62 : 0.88;
     const across = this.extent * 2.25;
     const up = this.extent * 2.25 * Math.cos(polar) + this.high * 3;
-    const distance = Math.max(up / (2 * half), across / (2 * half * stage.camera.aspect)) * (narrow ? 1.26 : 1.2);
+    const distance = Math.max(up / (2 * half), across / (2 * half * aspect)) * (narrow ? 1.26 : 1.2);
     // The timeline lies along the bottom, so on a wide screen the sheet sits a little above the
     // middle; on a narrow one the run's card covers the top, so it sits a little below.
     return { target: new THREE.Vector3(0, 0, this.extent * (narrow ? -0.3 : 0.16)), distance, azimuth: 0.38, polar };
@@ -1455,6 +1528,7 @@ export class ReplayLens {
       }
       rig.flyTo({ target, distance }, 900);
     } else {
+      this.home = home;
       rig.flyTo(home, 900);
     }
   }

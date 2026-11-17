@@ -200,7 +200,8 @@ CellsLegend.prototype.scale = function (scale) {
   const ramp = h("div", { class: "ramp", style: `background:${scale.gradient}` }, (scale.marks || []).map((mark) => h("i", { class: "ramp-mark", style: `left:${(mark.at * 100).toFixed(2)}%`, title: mark.text })));
   const ticks = h("div", { class: "ramp-ticks" }, scale.ticks.map((tick) => h("span", { style: `left:${(tick.at * 100).toFixed(2)}%` }, tick.text)));
   const marks = (scale.marks || []).map((mark) => h("p", { class: "legend-key" }, h("span", { class: "key key-mark", "aria-hidden": "true" }), mark.text));
-  return [head, ramp, ticks, marks];
+  // Whose the quantity is, where the view says (a quantity an experiment states beside its run, not a field of the engine).
+  return [head, ramp, ticks, marks, scale.said ? h("p", { class: "legend-scale-said" }, scale.said) : null].filter(Boolean);
 };
 
 /**

@@ -35,6 +35,10 @@ const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15);
 const out = path.resolve(value("--out", path.join(ROOT, "out", "check-all", stamp)));
 const pictures = path.join(out, "pictures");
 const DEV = "secreted-species-dev-run--secreted-species-dev-run", EXAMPLE = "example-sheet--invented-numbers";
+// A sheet of 127 cells with voltage, generations and junction gates: the layer checks of a sheet open it by name, since the
+// Experiments view opens on the first listed example (a small network since 17 November 2026). It is packaged for the checks
+// and not listed or published.
+const SHEET = "e07-v1--a-donor-fast-k1-d37-s1.0--seed5";
 const LIMIT_MS = Math.max(1000, (Number(value("--limit", 40)) || 40) * 60 * 1000);
 
 // The scenarios, the longest first. `minutes` is a rough length on one core, used only for the order.
@@ -71,6 +75,8 @@ const SUITE = [
   { name: "junctions-sweep", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "sweep", NAME: "junctions-sweep" }, minutes: 2 },
   { name: "junctions-phone", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "sweep", NAME: "junctions-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 2 },
   { name: "junctions-reduced", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "network", NAME: "junctions-reduced", REDUCED: "1", THEME: "dark" }, minutes: 2 },
+  { name: "junctions-levin", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin" }, minutes: 3 }, // the replication's real runs where they are on this machine, else skipped
+  { name: "junctions-levin-phone", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 3 }, // the same, and GARD in the tab, on a phone
   // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
   flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
   flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),
@@ -101,7 +107,7 @@ const SUITE = [
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)
   { name: "shelves-planarian", tool: "check_shelves.mjs", args: ["planarian"], minutes: 2 },
-  { name: "layers-closeup", tool: "check_layers.mjs", args: ["closeup"], minutes: 2 },
+  { name: "layers-closeup", tool: "check_layers.mjs", args: ["closeup"], env: { RUN: SHEET }, minutes: 2 },
   { name: "shelves-syn3a", tool: "check_shelves.mjs", args: ["syn3a"], minutes: 1 },
   { name: "shelves-nofiles", tool: "check_shelves.mjs", args: ["nofiles"], minutes: 1 },
   { name: "shelves-ecoli", tool: "check_shelves.mjs", args: ["ecoli"], minutes: 1 },
@@ -116,8 +122,8 @@ const SUITE = [
   { name: "shelves-frame", tool: "check_shelves.mjs", args: ["frame"], minutes: 2 },
   { name: "shelves-accessory-human", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "human" }, minutes: 2 },
   { name: "shelves-doors", tool: "check_shelves.mjs", args: ["doors"], minutes: 2 },
-  { name: "layers-zero", tool: "check_layers.mjs", args: ["zero"], minutes: 1 },
-  { name: "layers-switch", tool: "check_layers.mjs", args: ["switch"], minutes: 1 },
+  { name: "layers-zero", tool: "check_layers.mjs", args: ["zero"], env: { RUN: SHEET }, minutes: 1 },
+  { name: "layers-switch", tool: "check_layers.mjs", args: ["switch"], env: { RUN: SHEET }, minutes: 1 },
   { name: "layers-flow", tool: "check_layers.mjs", args: ["flow", DEFAULT_RUNS, pictures], env: { RUN: DEV, REFERENCE: path.join(ROOT, "tools", "references", "secreted-species-dev-run-0.4.json") }, minutes: 1 },
   { name: "layers-example", tool: "check_layers.mjs", args: ["example", DEFAULT_RUNS, pictures], env: { RUN: EXAMPLE }, minutes: 1 },
 ];
