@@ -923,3 +923,47 @@ note names remains.
 **Sequencing:**
 - No relationships code before the user's ruling, and none in files move 2 moves until it lands.
 - A GARD-only slice of the tables can go with GARD's G1 part 2, since its files are new.
+
+## The lead's rulings on the format (17 November 2026)
+
+`cells.relations@1` is built in `src/cells/records/relations.py`. Its second consumer was the
+partition's and replacement's lineages, from four real worlds (`validation/relationships/`).
+- The consumer forced one change, and it was in the format: records name their time base, kind and
+  files.
+- The provisional label is lifted (D202), so a change to the format is now a new version.
+
+The lead accepts these choices beyond §1.2 and §5.1 as the format:
+1. **`lives` gains four columns:**
+   - `lineage`: the sub-lineage whose counter the life's own daughters draw from, -1 for none. It
+     makes §1.3's rule checkable and records which life opened each sub-lineage;
+   - `share`: `parent_of`'s weight;
+   - `donor`: for `copied_from`;
+   - `declared_by`.
+2. **`labels` gain `declared_by`.**
+3. **Event ids are `event:<name>`,** unique within a world. A family may qualify the name by carrier
+   where that keeps it unique (`event:extinction/<carrier key>/<count>`).
+4. **Records are described as `{array, times, kind, shape, files}`:**
+   - the array;
+   - the array of its rows' times;
+   - `cumulative` or `amount`;
+   - its whole shape;
+   - the files that hold its rows in order, a windowed run's chunks included.
+5. **`weight_index`** gives one position on each of the record's axes after the first,
+   comma-separated.
+6. **The event-row rule.** An event at time t acts between a record's first row saved at a time no
+   earlier than t and the row after it. An edge with an event is weighed by that change. Tissue's
+   saved rows and GARD's bundles both meet it.
+7. **Nulls:** "" for text, NaN for floats, -1 for `lineage` and `step`.
+8. **`copied_from` points from the donor to the copy,** forward in time like the other descent
+   edges.
+9. **A copy has generation 0 and is its own root.** `copied_from` links it to its donor.
+10. **Source classes.** A replacement template's material, or a donor copy's, comes from a source of
+    class `intervention`. A route-only template is a source of class `machinery`.
+11. **A censored life has no end event.** Censoring is where observation stopped, not an event of
+    the carrier.
+12. **The reader compares the descriptor's machine fields only:** the format, world and arrays file,
+    each table's key, rows and columns, and the records. The prose may be reworded within a version.
+
+**Also accepted:** the run qualifier is `qualifier(fingerprint, start, stop=None)`. A run stopped
+before its end folds in its stop (GARD's `{events, fissions}`), and a run without a stop keeps the
+qualifier of `{fingerprint, start}` alone.
