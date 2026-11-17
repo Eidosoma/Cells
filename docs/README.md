@@ -36,6 +36,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Excitable tissue design](EXCITABLE_TISSUE_DESIGN.md) | Track E: conduction in excitable tissue (D155, D170) |
 | [Human cardiac laws design](HUMAN_CARDIAC_LAWS_DESIGN.md) | The human ventricular law set (D183, D184): proposed, nothing built |
 | [Syn3A minimal-cell track](SYN3A_MINIMAL_CELL_TRACK.md) | JCVI-syn3A as the first whole cell: evidence audit and probes, no engine code |
+| [Origin of life: state of the art](SOTA_ORIGIN_OF_LIFE.md) | Two reviews of a November 2026 overview of origin-of-life research, read for Cells: resemblance, function and renewal measured apart; every descendant tracked; founder material traced; SpudCell and Otto-type replicators as candidate benchmarks (D199) |
 | [Syn3A state of the art](SOTA_SYN3A.md) | Why JCVI-syn3A is the first whole-cell validation organism, and its public measurements |
 | [Operator composition design](OPERATOR_COMPOSITION_DESIGN.md) | Operators that read each other's current state: one general rule, option A (D191, 16 November 2026); built in D194's step 3 |
 | [GARD design](GARD_DESIGN.md) | Catalytic assemblies, exchange, fission and lineage for the origin-of-life track (D192); the kernel finding's scope is in §2.5 |

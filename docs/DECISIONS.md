@@ -6354,6 +6354,9 @@ core but in parallel". With the advisor, every default stands, with the conditio
   operator part comes first, and composition after. This follows D194's order (the core first), and
   it keeps composition's 12–15 days off the pass's critical path.
 - **An FR owner** runs FR-4 and FR-5 in parallel.
+- **The cap stays at seven** (the user, 17 November: "lets keep the 7 agent cap"). The pass's
+  owners count together with every other agent, GARD's included. The pass starts with the owners
+  that fit, and the rest join as other lanes finish.
 
 **3. `cells.modules` is built as provisional.** The word "provisional" stands where contributors
 read it: the module's docstring and its docs. There is no public stability promise until a first
