@@ -6394,6 +6394,10 @@ learned use the old code then we can drop it".
 - **Dropping comes as one batch the user approves,** as D187 and D189 did. The tree is tagged first,
   and a coverage check lists what each removal would lose.
 - **The viewer's map already leaves out `legacy/`.**
+- **Before any batch drops a legacy test that is a live law's only reference check, the check moves
+  beside the law and becomes its declared test.** The first known case is Kv1.5's 19
+  kernel-against-reference cases in `tests/unit/test_voltage_gated_membrane.py`, a tier-3 file that
+  imports `cells.legacy` (the documentation design's gap 10). It is not in D198's batch.
 
 ## D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only
 
