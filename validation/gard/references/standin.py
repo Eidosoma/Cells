@@ -41,24 +41,34 @@ def write_probe(path: Path, meta: dict, arrays: dict) -> Path:
     return path
 
 
-def ensemble_runs(out: Path, runs: int, *, kb_factor: float = 1.0, leave_weight: float = 1.0,
-                  seed: int = 11) -> list[str]:
+def ensemble_arrays(runs: int, *, kb_factor: float = 1.0, leave_weight: float = 1.0,
+                    seed: int = 11) -> list[tuple[dict, dict, dict]]:
+    """The registered beta = 0 ensemble in memory: (world, run, arrays) per run.
+
+    ``kb_factor`` != 1 plants a wrong k_b: the dynamics use it while the world record
+    declares the registered k_b. ``leave_weight`` != 1 plants a biased channel choice.
+    """
     d = exchange_law.REGISTERED_DESIGN
     G = len(d["rho"])
     law = ExchangeLaw(np.zeros((G, G)), d["k_join"], d["k_leave"] * kb_factor, HeldReservoir(np.asarray(d["rho"])),
                       PAIR_CONSISTENT)
     founder = np.asarray(d["founder"], dtype=np.int64)
-    paths = []
+    out = []
     world = None
     for r in range(runs):
         world, run, arrays = simulate_lineage(law, founder, fission_mass=10 ** 9, n_fissions=1, seed=seed, branch=r,
                                               t_max=float(d["times"][-1]), event_guard=None, diagnostics=False,
                                               leave_weight=leave_weight, world=world)
-        if kb_factor != 1.0:  # the planted control: records claim the registered k_b
+        if kb_factor != 1.0 and r == 0:
             world = json.loads(json.dumps(world))
             world["constants"]["k_leave"] = [float(d["k_leave"])] * G
-        paths.append(str(write_bundle(out / f"run{r:04d}", world, run, arrays)))
-    return paths
+        out.append((world, run, arrays))
+    return out
+
+
+def ensemble_runs(out: Path, runs: int, **kw) -> list[str]:
+    """The registered ensemble written as one bundle per run."""
+    return [str(write_bundle(out / f"run{r:04d}", w, rr, a)) for r, (w, rr, a) in enumerate(ensemble_arrays(runs, **kw))]
 
 
 def build_standin(out_dir: str | Path, *, seed: int = 5, n_fissions: int = 12, ensemble: int | None = None) -> dict:

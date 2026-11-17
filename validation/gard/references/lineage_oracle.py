@@ -43,6 +43,29 @@ def stream_uniforms(seed: int, domain: int, branch: int, counter: int, n: int) -
     return uniforms_from_words(stream_words(seed, domain, branch, counter, n))
 
 
+EVENT_BLOCK = 256
+
+
+class EventStream:
+    """Event k's pair (u1, u2): words 2(k mod B), 2(k mod B) + 1 of block floor(k / B).
+
+    A pure function of (seed, branch, k), so a run can be resumed at any event; blocks of
+    B = 256 events keep the cost per event small.
+    """
+
+    def __init__(self, seed: int, branch: int):
+        self.seed, self.branch = int(seed), int(branch)
+        self._block = -1
+        self._u = None
+
+    def pair(self, k: int) -> tuple[float, float]:
+        b, o = divmod(int(k), EVENT_BLOCK)
+        if b != self._block:
+            self._u = stream_uniforms(self.seed, DOMAIN_EVENTS, self.branch, b, 2 * EVENT_BLOCK)
+            self._block = b
+        return float(self._u[2 * o]), float(self._u[2 * o + 1])
+
+
 def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, partition: str = "exact_fraction",
                  fraction: float = 0.5, p: float = 0.5, continuation: str = "first",
                  event_guard: int | None = 40000) -> dict:
@@ -153,6 +176,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         rows["generation"].append([generation])
 
     save_row()
+    events = EventStream(seed, branch)
     a_plus, a_minus = propensities(law, x)
     f = 0
     in_growth = 0
@@ -166,7 +190,7 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         if not a0 > 0:
             status = "stuck"
             break
-        u1, u2 = stream_uniforms(seed, DOMAIN_EVENTS, branch, k, 2)
+        u1, u2 = events.pair(k)
         j, _ = select_channel(a, u2, leave_weight)
         i, sign = channel_event(j, G)
         tau = -math.log(u1) / a0

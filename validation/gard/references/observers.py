@@ -146,22 +146,16 @@ def check_fission_similarity(parents, splits, followed, daughters_rows, fission_
 
 
 def exact_point_nine_pairs(max_entry: int = 12, n_types: int = 4, limit: int = 200) -> list[tuple]:
-    """Small nonnegative integer pairs with H exactly 0.9, found by search."""
-    out = []
-    vecs = [v for v in itertools.product(range(max_entry + 1), repeat=n_types) if any(v)]
+    """Small nonnegative integer pairs with H exactly 0.9, found by an exact integer search."""
+    vecs = np.array([v for v in itertools.product(range(max_entry + 1), repeat=n_types) if any(v)],
+                    dtype=np.int64)
     rng = np.random.default_rng(9)
-    picks = rng.choice(len(vecs), size=min(len(vecs), 3000), replace=False)
-    cand = [vecs[k] for k in picks]
-    for x in cand:
-        nx = sum(v * v for v in x)
-        for y in cand:
-            ny = sum(v * v for v in y)
-            dot = sum(a * b for a, b in zip(x, y))
-            if dot > 0 and 100 * dot * dot == 81 * nx * ny:
-                out.append((x, y))
-                if len(out) >= limit:
-                    return out
-    return out
+    X = vecs[rng.choice(len(vecs), size=min(len(vecs), 3000), replace=False)]
+    dots = X @ X.T
+    norms = np.einsum("ij,ij->i", X, X)
+    hit = (dots > 0) & (100 * dots * dots == 81 * norms[:, None] * norms[None, :])
+    rows, cols = np.nonzero(hit)
+    return [(tuple(int(v) for v in X[a]), tuple(int(v) for v in X[b])) for a, b in zip(rows[:limit], cols[:limit])]
 
 
 def make_observer_probes(rng: np.random.Generator, n_types: int = 100, n_random: int = 200) -> dict:

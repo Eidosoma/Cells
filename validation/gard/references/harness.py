@@ -19,6 +19,7 @@ every role and record.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import math
 import sys
@@ -61,8 +62,9 @@ def three_type_beta() -> np.ndarray:
     return gard_beta(3, np.random.default_rng(KERNEL_PROBE_SEED + 3))
 
 
+@functools.lru_cache(maxsize=1)
 def probe_input_arrays() -> dict:
-    """The registered probe inputs, regenerated deterministically from their seeds."""
+    """The registered probe inputs, regenerated deterministically from their seeds (read-only)."""
     rng = np.random.default_rng(KERNEL_PROBE_SEED)
     G = PREPRINT["n_types"]
     beta = gard_beta(G, rng)
@@ -129,11 +131,14 @@ class Context:
         return self._cache[role]
 
     def bundles(self, role: str) -> list[Bundle]:
-        paths = self.path(role)
-        paths = [paths] if isinstance(paths, str) else list(paths)
-        if not paths:
-            raise MissingRecord(f"role {role!r} lists no bundles")
-        return [load_bundle(p) for p in paths]
+        key = ("many", role)
+        if key not in self._cache:
+            paths = self.path(role)
+            paths = [paths] if isinstance(paths, str) else list(paths)
+            if not paths:
+                raise MissingRecord(f"role {role!r} lists no bundles")
+            self._cache[key] = [load_bundle(p) for p in paths]
+        return self._cache[key]
 
     def probe(self, role: str) -> tuple[dict, dict]:
         return load_probe(self.path(role))
@@ -195,15 +200,20 @@ def ensemble_counts(runs: list[Bundle]):
         if not reached:
             raise RecordFormatError(f"{b.path}: cannot tell that the run reached t = {times[-1]} "
                                     "(no later event and no declared t_end)")
-        x = w.founder.copy()
-        k = 0
-        for ti, t in enumerate(times):
-            while k < et.size and et[k] <= t:
-                c = int(ch[k])
-                x[abs(c) - 1] += 1 if c > 0 else -1
-                k += 1
-            out[r, ti] = x
+        out[r] = counts_at_times(w.founder, et, ch, times)
     return times, out, w0
+
+
+def counts_at_times(founder, event_time, event_channel, times) -> np.ndarray:
+    """Composition [time, type] after every event with event_time <= t, from the trace."""
+    founder = np.asarray(founder, dtype=np.int64)
+    ch = np.asarray(event_channel, dtype=np.int64)
+    delta = np.zeros((ch.size + 1, founder.size), dtype=np.int64)
+    if ch.size:
+        delta[np.arange(1, ch.size + 1), np.abs(ch) - 1] = np.sign(ch)
+    path = founder[None, :] + np.cumsum(delta, axis=0)
+    idx = np.searchsorted(np.asarray(event_time), np.asarray(times), side="right")
+    return path[idx]
 
 
 def row2(ctx: Context) -> list[CheckResult]:
@@ -407,7 +417,7 @@ def run_rows(roles: dict, rows=None) -> dict:
             entry["passed"] = False
             entry["error"] = f"{type(exc).__name__}: {exc}"
             report["status"] = 2
-        report["rows"][n] = entry
+        report["rows"][str(n)] = entry
     return jsonable(report)
 
 
