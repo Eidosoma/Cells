@@ -287,7 +287,7 @@ def records_of(result):
                 ledgers=sorted(names), diagnostics=dict(result.diagnostics),
                 bath=outside[baths[0]] if baths else None, species=species, cells=cells,
                 outside=outside, patches=patches,
-                valences=dict(zip(species, (int(v) for v in m.cells[0].valence), strict=True)))
+                valences=dict(zip(species, (int(v) for v in m.valence), strict=True)))
 
 
 def engine_part(raw, context, *, label=None):
