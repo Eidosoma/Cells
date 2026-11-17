@@ -1,13 +1,16 @@
-"""Independent scalar polynomial/constant-field ODE and pinned native functions.
+"""Independent scalar polynomial/constant-field ODE, and the pinned source's own outputs.
 
 No Cells or JAX imports. Reference integrates increments to avoid loss of small
 charge changes on the large potassium pool; rates and scatter are scalar loops.
+The pinned source's functions run unmodified, out of process, in their own
+environment (native_capture), never inside this process (AGENTS.md).
 """
 
-import ast
-import hashlib
+import json
 import math
 import os
+import subprocess
+import tempfile
 from bisect import bisect_right
 from pathlib import Path
 
@@ -20,36 +23,46 @@ NATIVE_HASHES = {
     "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
     "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
 }
+NATIVE_SCRIPT = Path(__file__).resolve().parents[1] / "validation/betse/calcium_functions_native.py"
+NATIVE_PYTHON = "/mnt/workspaces/Cells/venv-betse/bin/python"
 
 
-def native_functions():
-    root = Path(
-        os.environ.get("CELLS_ER_NATIVE_SOURCE", "/mnt/workspaces/Cells/betse-v1.5.0/betse/science")
-    )
-    result = {}
-    for name, expected in NATIVE_HASHES.items():
-        path = root / name
-        if not path.exists() and name == "endo_retic.py":
-            path = root / "organelles" / name
-        source = path.read_bytes()
-        if hashlib.sha256(source).hexdigest() != expected:
-            raise ValueError("Pinned BETSE source changed: " + str(path))
-        tree = ast.parse(source)
-        if name == "sim_toolbox.py":
-            function = next(
-                n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "pumpCaER"
-            )
-        else:
-            owner = next(
-                n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "EndoRetic"
-            )
-            function = next(
-                n for n in owner.body if isinstance(n, ast.FunctionDef) and n.name == "channels"
-            )
-        namespace = {"np": np}
-        exec(compile(ast.Module(body=[function], type_ignores=[]), str(path), "exec"), namespace)
-        result[function.name] = namespace[function.name]
-    return result
+def native_capture(request, hashes=NATIVE_HASHES):
+    """The pinned source's outputs for `request`, saved by its own functions run unmodified in
+    the separate BETSE environment (validation/betse/calcium_functions_native.py, a child
+    process). The source files that run used must be the pinned ones (`hashes`)."""
+    environment = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"} | {"MPLBACKEND": "Agg"}
+    with tempfile.TemporaryDirectory() as folder:
+        request_path, capture_path = Path(folder) / "request.json", Path(folder) / "capture.json"
+        request_path.write_text(json.dumps(request, allow_nan=False))
+        child = subprocess.run(
+            [NATIVE_PYTHON, "-B", str(NATIVE_SCRIPT), str(request_path), str(capture_path)],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env=environment,
+        )
+        if child.returncode != 0:
+            raise RuntimeError("Native capture failed:\n" + child.stderr[-4000:])
+        capture = json.loads(capture_path.read_text())
+    if capture["version"] != "1.5.0":
+        raise ValueError("Pinned BETSE version changed: " + capture["version"])
+    for name, expected in hashes.items():
+        if capture["source_sha256"].get(name) != expected:
+            raise ValueError("Pinned BETSE source changed: " + name)
+    return capture
+
+
+def release_open_fraction(calcium_mM, activation_mM, activation_n, inhibition_mM, inhibition_n):
+    """The ER release gate's open fraction, a/(1 + a)/(1 + h) with a = (Ca/K_act)^n_act and
+    h = (Ca/K_inh)^n_inh: the form System.rhs below scales the release permeability by
+    (docs/ER_CALCIUM.md), as a direct scalar expression per element."""
+    out = []
+    for c in np.asarray(calcium_mM, dtype=float).ravel():
+        a = (c / activation_mM) ** activation_n
+        h = (c / inhibition_mM) ** inhibition_n
+        out.append(a / (1 + a) / (1 + h))
+    return np.asarray(out)
 
 
 class System:

@@ -7,7 +7,6 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
 
 import jax
 import numpy as np
@@ -31,11 +30,11 @@ from cells.legacy.core.plasma_calcium_spec import base_spec
 from cells.legacy.models import plasma_calcium as model
 from cells.processes import plasma_calcium as process
 from tests.batch_fixtures import definition
+from tests.reference_er_calcium import native_capture
 from tests.reference_plasma_calcium import (
     F,
     R,
     System,
-    native_pmca,
     physical_energy_derivative,
     reference,
     scalar_rates,
@@ -76,7 +75,7 @@ def test_native_pmca_positive_domain_and_explicit_blocker():
     co = np.array([0.2, 0.1, 0.2, 0.2, 0.01, 0.2])
     v = np.array([-0.12, -0.04, 0.0, 0.12, 0.04, 0.05])
     area = 1e-9
-    params = SimpleNamespace(
+    params = dict(
         deltaGATP=p.delta_g0_J_per_mol,
         cATP=p.atp_mM,
         cADP=p.adp_mM,
@@ -87,13 +86,21 @@ def test_native_pmca_positive_domain_and_explicit_blocker():
         KmCa_ATP=p.km_atp_mM,
         alpha_Ca=p.capacity_fmol_per_s * 1e-15 / area,
     )
-    native = native_pmca()
-    expected = -native(ci.copy(), co.copy(), v, 298.15, params, 1) * area / 1e-15
+    # The pinned PMCA, run unmodified out of process (AGENTS.md), at block 1 and block 0.
+    case = dict(cCai=ci.tolist(), cCao=co.tolist(), Vm=v.tolist(), T=298.15, parameters=params)
+    native = native_capture({"plasma_pump": [case | {"blocks": [1, 0]}]})["plasma_pump"][0]
+    expected = -np.asarray(native["flux"][0]) * area / 1e-15
     # Pinned BETSE ignores its block argument. Our control is an explicit extension.
-    np.testing.assert_array_equal(
-        -native(ci.copy(), co.copy(), v, 298.15, params, 0) * area / 1e-15, expected
+    np.testing.assert_array_equal(-np.asarray(native["flux"][1]) * area / 1e-15, expected)
+    # The same law's independent scalar form (scalar_rates' PMCA term).
+    independent = np.array(
+        [
+            scalar_rates(1.0, 1.0, a, b, x, 298.15, p._asdict(), None, (1.0, 1.0))[0]
+            for a, b, x in zip(ci, co, v, strict=True)
+        ]
     )
     actual, g, _ = process.pump_rates(ci, co, v, 298.15, p, 1.0, xp=np)
+    np.testing.assert_allclose(actual, independent, rtol=3e-12, atol=3e-14)
     np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-14)
     assert np.any(actual > 0) and np.any(actual < 0) and np.all(-actual * g >= 0)
     assert np.all(process.pump_rates(ci, co, v, 298.15, p, 0.0, xp=np)[0] == 0)
@@ -107,11 +114,13 @@ def test_native_pmca_positive_domain_and_explicit_blocker():
             "status": "passed",
             "pump_points": len(ci),
             "native_block_argument_unused": True,
+            "native_capture": "out of process: validation/betse/calcium_functions_native.py",
+            "independent_pump": "tests/reference_plasma_calcium.scalar_rates",
             "scope": (
                 "Pinned positive PMCA equation with harmonized constants; no native trajectories"
             ),
         },
-        {"pmca_native": expected, "pmca_cells": actual},
+        {"pmca_native": expected, "pmca_independent": independent, "pmca_cells": actual},
     )
 
 
