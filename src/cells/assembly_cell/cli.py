@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
+import cells
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import digest, runtime, write_json
 from cells.assembly.spec import AssemblyError
@@ -219,7 +220,7 @@ def main(argv=None, *, cluster=False):
             )
             source = output / "source"
             shutil.copytree(
-                Path(__file__).resolve().parents[1],
+                Path(cells.__file__).resolve().parent,  # The whole package, from any depth.
                 source / "cells",
                 ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
             )

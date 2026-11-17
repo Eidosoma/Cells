@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
+import cells
 from cells.assembly.io import digest, runtime, write_json
 from cells.assembly.spec import AssemblyError
 
@@ -41,7 +42,7 @@ def rng_identity(cluster):
 
 
 def source_identity():
-    root = Path(__file__).resolve().parents[1]
+    root = Path(cells.__file__).resolve().parent  # The whole package, whatever this module's depth.
     return {str(p.relative_to(root)): digest(p) for p in sorted(root.rglob("*.py"))}
 
 
