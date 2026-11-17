@@ -30,7 +30,7 @@ The immediate gap in Cells is concrete: the current
 [calcium pump laws](../src/cells/processes/er_calcium.py) use maintained
 ATP/ADP/Pi concentrations. Their work is recorded, but pump activity does not
 deplete a shared cellular energy supply. The
-[resolved calcium model](../src/cells/models/surface_calcium.py) already has
+[resolved calcium model](../src/cells/legacy/models/surface_calcium.py) already has
 owned chemical stores and separate plasma/ER charge accounting, providing a
 possible integration point. Qualification status stays in
 [PROGRESS.md](../PROGRESS.md).

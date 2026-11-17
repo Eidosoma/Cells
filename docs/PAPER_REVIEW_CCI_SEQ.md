@@ -25,9 +25,9 @@ Fig. 2, Discussion and Methods. [Source](https://www.nature.com/articles/s41592-
 
 | Priority | Proposed use | Connection to our implementation |
 | --- | --- | --- |
-| First | Import clump membership, cell annotation, sample/replicate identity and expression metadata as an observational dataset. Preserve each clump as a group, including uncertainty about its pairwise contacts. | Our [tissue model](../src/cells/models/tissue.py) requires explicit membrane/outside owners and physical junctions. Keep observational associations separate from those physical parameters. |
+| First | Import clump membership, cell annotation, sample/replicate identity and expression metadata as an observational dataset. Preserve each clump as a group, including uncertainty about its pairwise contacts. | Our [tissue model](../src/cells/legacy/models/tissue.py) requires explicit membrane/outside owners and physical junctions. Keep observational associations separate from those physical parameters. |
 | First | Compare the observed organisation with shuffled cell labels and alternative contact graphs. Stratify by biological sample and check sensitivity to clump size. | Add read-only observers and input fixtures before changing the dynamics. A frequency of association must not become a permeability or conductance. |
-| Next | Use kidney transport programs to choose which channel/buffer/exchanger mechanisms need development and independent calibration. | [Tissue calcium](../src/cells/models/tissue_calcium.py) already composes free/bound calcium, ER, PMCA/NCX and CaV1.2. Its synthetic buffers and CaV1.2 must not be relabelled as measured calbindin or TRPV5. Polarized epithelial surfaces and appropriate reservoirs also need separate modelling. |
+| Next | Use kidney transport programs to choose which channel/buffer/exchanger mechanisms need development and independent calibration. | [Tissue calcium](../src/cells/legacy/models/tissue_calcium.py) already composes free/bound calcium, ER, PMCA/NCX and CaV1.2. Its synthetic buffers and CaV1.2 must not be relabelled as measured calbindin or TRPV5. Polarized epithelial surfaces and appropriate reservoirs also need separate modelling. |
 | Later | Test whether an explicitly modelled neighbour signal changes a cell's transport machinery and persists after removal. | Requires a causal regulatory law, parameter evidence and a declared timescale. The present fast ionic solver does not infer these from RNA counts. |
 
 For Plastic Heredity and How Patterns Return, I would compare
@@ -37,7 +37,7 @@ persistent state and transmission to fresh recipients. This is a proposed assay;
 paper does not demonstrate renewable heredity.
 
 For assembly, retain the existing distinction between the protein-bond graph
-and the intercellular tissue graph. Our [assembly integration](../src/cells/assembly_cluster/kernel.py)
+and the intercellular tissue graph. Our [assembly integration](../src/cells/legacy/assembly_cluster/kernel.py)
 currently changes channel availability using cell-owned stochastic pools.
 Neighbour-dependent protein production or assembly rates would be additional
 hypotheses requiring their own material accounting and validation.

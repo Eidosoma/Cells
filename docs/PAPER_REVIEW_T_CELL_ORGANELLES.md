@@ -116,10 +116,10 @@ spatial CTL model:
   chemistry/charge ownership, independent stage rates, refinement and restart.
 - [Finite-energy tests](../tests/unit/test_surface_calcium_energy.py) cover owned
   fuel, pump coupling and explicit regeneration.
-- [Mitochondrial composition](../src/cells/models/surface_calcium_energy_mitochondria.py)
+- [Mitochondrial composition](../src/cells/legacy/models/surface_calcium_energy_mitochondria.py)
   and its [tests](../tests/unit/test_surface_calcium_energy_mitochondria.py) retain
   separate inventories, charge/countercharge, controls and checkpoints. The
-  [compartment definition](../src/cells/core/surface_calcium_energy_mitochondria_spec.py)
+  [compartment definition](../src/cells/legacy/core/surface_calcium_energy_mitochondria_spec.py)
   has amounts, area, volume and diffusivity, but no organelle position,
   centrosome or trafficking law. Passive transport is not a calibrated
   reproduction of these CTLs' calcium mechanism.

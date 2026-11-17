@@ -339,7 +339,7 @@ Calibration is the requester's to supply, with measurements.
 
 **The lead's mapping (for its design note to test, not settled).**
 - **The injury law lives only in an older family.** `resolved_repair@1` (`surface_repair_spec.py`;
-  the law in `processes/membrane_injury.py`) is fixed-geometry injury on owned calcium tissue. Its
+  the law in `legacy/processes/membrane_injury.py`) is fixed-geometry injury on owned calcium tissue. Its
   patches carry an initial damage, an injury rate, a resealing rate and per-species permeabilities.
   It is not a composite operator.
   - Applying it to a compartment's patch means re-expressing it in the composite, as an operator.
@@ -548,7 +548,7 @@ E07-v2's design wants an osmotic step as a post-release challenge, which is this
 - `resolved_open_calcium_energy_bath_events@1` programs an ideal reservoir's bath composition on
   the 56-law calcium/ER and finite-fuel owner.
   - The ion dose, the compensating electrode charge and the external work are kept explicit
-    (`core/surface_bath_events_binding.py`, policy
+    (`legacy/core/surface_bath_events_binding.py`, policy
     `explicit_ideal_reservoir_dose_voltage_compensation_work@1`).
   - So the law and its accounting already exist, in a frozen family.
 - Its status there is guarded, with full bath trajectories out of scope and evidence at ns–µs

@@ -71,7 +71,7 @@ Nothing here should start before the open branches have landed (see PROGRESS).
 | Combination suffixes | `_epoch` 22, `_interventions` 17, `_preparation` 14, `_phase_handoff` 11, `_excision` 20, `_binding` 8, `_catalog` 6, `_events` 5 |
 
 - **Example module:**
-  `models/surface_calcium_energy_water_repair_profile_barrier_interventions.py` (471
+  `legacy/models/surface_calcium_energy_water_repair_profile_barrier_interventions.py` (471
   lines). It wraps three other model modules (`base`, `water_owner`, `membranes`) and a
   scheduling module, and has its own spec module.
 - **The model protocol is a module, not a class.** Each model module supplies

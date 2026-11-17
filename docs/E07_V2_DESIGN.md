@@ -348,7 +348,7 @@ The electrode was in cell 63, the disc's centre, at −20 pA, with carriers {K, 
 
 | Need | For | Status |
 | --- | --- | --- |
-| A bath composition step in the pump family | 4.3, the osmotic step | None found. A search found bath steps only in the older surface families (`core/surface_bath_events_binding.py` and the `*_bath_events` models) |
+| A bath composition step in the pump family | 4.3, the osmotic step | None found. A search found bath steps only in the older surface families (`legacy/core/surface_bath_events_binding.py` and the `*_bath_events` models) |
 | Formation parameters per event or per template | a block at one τ beside donor copies at another | Absent. `with_replacement` declares one `junction_formation` block per definition, and neither templates nor events carry one. §6 uses one law per run |
 | Replacement over water qualified on the heredity sheet | 4.3 | `scheduled_cell_replacement@2` over `ideal_osmosis_linear_compliance_water@1` landed on 13 November; G2-Q1 covers @1 on held-bath worlds only |
 | Injection over water | an injected current with water | Refused: `[water, injection@1]` |

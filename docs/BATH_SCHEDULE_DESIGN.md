@@ -20,9 +20,9 @@ The decision reads:
 view. No model, solver, law or shared function changes.
 
 **Basis.**
-- **The older law, cited and not copied:** `models/surface_bath_events.py` (`signal_values`;
+- **The older law, cited and not copied:** `legacy/models/surface_bath_events.py` (`signal_values`;
   `Adapter.balances`, "Its held electrode supplies the opposite charge") and
-  `core/surface_bath_events_binding.py`, whose policy is
+  `legacy/core/surface_bath_events_binding.py`, whose policy is
   `explicit_ideal_reservoir_dose_voltage_compensation_work@1`. Its documentation is
   [TISSUE_GEOMETRY.md](TISSUE_GEOMETRY.md#schedule-ideal-reservoir-bath-composition).
 - **What is taken:** the accounting only, that is the dose and its work. Its compensating-charge rule
