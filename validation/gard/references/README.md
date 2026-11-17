@@ -246,6 +246,21 @@ reported beside the verdict and never decides it.
 - **Planted control.** A single-event kernel whose last molecule leaves uncatalysed must fail
   row 3 (`tests/unit/test_gard_references_row03_04.py`).
 
+## Amendment, 17 November 2026: the registered ensemble design's bytes
+
+- **What changed.** In `beta0_ensemble_design.json`, a registered input, one byte: the
+  trailing newline was removed. No value changed. This is a byte change to a registered
+  input.
+- **Why.** The committed copy then matches `make-probes`' copy byte for byte, so the two
+  SHA-256s agree. The engine side records the SHA-256 of `make-probes`' copy.
+- **When.** After report-3; the change is in commit b84abb17, before report-4.
+- **SHA-256 before (commit 94e3ca4b):**
+  `2fe56c84a1ec70d4106a0b8103f9f3dc55dd08c1b872f354e1b34f808fb48048`.
+- **SHA-256 after (commit b84abb17, and `make-probes`' copy):**
+  `04a30ac6938ab9debbec65e93773afebcff8f450444ba02536fbc787c0b17c3a`.
+- **Test.** `test_gard_references_ensemble_design.py` now holds the two copies equal byte
+  for byte.
+
 ## What could not be confirmed from the sources
 
 - **The pair-consistent form is the design's correction, not a source's kernel.** The
