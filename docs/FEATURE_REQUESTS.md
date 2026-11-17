@@ -24,7 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
-| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fix in progress: branch `passive-share-tolerance` | The fix's gate, including FR's bitwise set (FR-5's cargo routes use the same booking) |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged | Close the band near 1 mM by adding the potential's evaluation rounding to the floor's scale (a follow-up) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -804,9 +804,17 @@ explored.
   It is rounding, not a transfer against its gradient.
 - **Scope.** FR-5's cargo routes use the same booking, so FR-5 can meet the refusal near equilibrium.
   FR-4's proton leak does not.
-- **The fix, in progress:**
-  - the tolerance taken from the raw-sum check's own bound and scale;
-  - admitted shares booked as computed, so the ledger closes;
-  - a planted, genuinely negative share still refused;
-  - existing results bitwise unchanged, checked by crossrev, G1 and FR's bitwise set.
+- **Fixed on main** (merge 49494e49, of branch `passive-share-tolerance` at 3d8e7b3b):
+  - **The rule:** a share is refused only below `−RAW_SUM_FACTOR·eps` times its own terms, in the
+    share's units. Admitted shares are booked as computed, so the ledgers close exactly.
+  - **The gates:** G1 is 113 of 113; tiers 1+2 changed 0 of 514 files; FR's bitwise landing set
+    passed. In crossrev only the kinds set's three checked steps differ, in the predicate, by design.
+  - **The law keeps its ID** as an in-place fix (D148). Leaving qualified worlds on `@1` with a new
+    `@2` stays the user's alternative.
+  - **The replays:** the replication's previously refused points now run the full 20,000 s
+    (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/`).
+- **Follow-up, the lead's call:** near 1 mM the floor still closes, since its terms scale with |μ̄|
+  while the potential keeps the ulp of ln c + 1. The fix is to add the potential's evaluation
+  rounding, (|μ̄_in| + |μ̄_out| + 2)·|m|, to the floor's scale, with the same gates. The replication
+  never reaches the band, since its concentrations stay at or below 0.1 mM.
 

@@ -1900,8 +1900,8 @@ active), with check_onsets' refusal kept.
       - **Where it closes:** the floor's terms scale with |μ̄|, but the potential difference keeps
         the ulp of ln c + 1 (the kernel's divided difference adds and removes 1). So the floor
         closes as c → 1 mM (μ̄ → 0), and there a rounding-level negative share is still refused.
-        On the closed pair with a lead of 1–16 ulp, that band is about 0.9–1.1 mM, and up to
-        1.5 mM at 16 ulp (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/probes/
+        On the closed pair, a rounding-level share is refused within about 1% of 1 mM for a 1-ulp
+        lead, 5% for 4 ulp and at least 10% for 16 ulp (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/probes/
         band.json`). Steps admitted before are unchanged, and a share orders of magnitude below
         its floor is still refused (tests/unit/test_passive_share_floor.py);
     - **why a share can be negative at all:**

@@ -85,6 +85,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-19 fixed on main (17 November 2026, evening).** The merge of `passive-share-tolerance` at
+  3d8e7b3b.
+  - **The fix:** `passive_neutral_permeation@1`'s heat-share sign rule now has the raw-sum check's
+    rounding floor. Shares within it are booked as computed. Every previously admitted step is bitwise
+    unchanged.
+  - **The gates:**
+    - G1, 113 of 113;
+    - tiers 1+2, 514 files, 0 changed;
+    - FR's bitwise landing set, passed;
+    - crossrev identical except the kinds set's three checked steps, which differ in the predicate
+      only, by design. That record is to be renewed.
+  - **D148:** the law keeps its ID.
+  - **What it unblocks:** the gap-junction replication's previously refused tissue points complete,
+    so the threshold search can be rerun from main.
+  - **Evidence:** `/mnt/workspaces/Cells/passive-share-tolerance-20261117/`.
+
 - **The gap-junction replication's first stage, on main (17 November 2026, evening; D207).** The merge
   of gap-junction-replication at cc759bed. Development work, not judged.
   - **What it replicates:** the model of J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and
