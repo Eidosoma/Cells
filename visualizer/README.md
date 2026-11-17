@@ -227,8 +227,8 @@ must bve configurable as well based on our different species as we add them".
   (`species=` and `atlas=` still work), and `cell=<type>` names a cell type of a species, once a
   species has more than one.
 - **GARD has a view of its own here** (`src/lenses/lineage.js`, registered by
-  `src/lenses/lineage_entry.js`): lipids in water, playing a marked example. See "Origin of
-  life" below.
+  `src/lenses/lineage_entry.js`): a protocell of lipids in water, playing a marked example.
+  See "Origin of life" below.
   This is the viewer's switch; the engine has no organism switch.
 - **Each species' own proteins** stand on shelves in the protein atlas
   (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
@@ -315,8 +315,9 @@ must bve configurable as well based on our different species as we add them".
   the cell, as in a run. That rate is the picture's choice within the 100 to 200 a second
   one paper gives for a swimming cell, which names no species; the top speed, 300, is said
   beside it. At that speed its marks are drawn smeared round, as the eye would see them,
-  with an arrowhead for the way. The legend's Speed row slows it a thousand or a million
-  times, and then its marks turn. It stands when the address opens the view
+  with an arrowhead for the way. The legend's Speed slider slows it (a thousand times at
+  its middle, a million at three quarters), and then its marks turn. It stands when the
+  address opens the view
   (`machine=flagellar-motor`), on a page opened still, and for a visitor who asks for less
   motion.
 - **Licence classes.** Every source in a data file states its licence and its class:
@@ -461,14 +462,27 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   development run of the engine, not judged. The Cell view fetches it from the page's
   catalogue of runs and draws from it what the planarian's cell can show: its channels,
   its pump, its membrane itself and its six junctions, each from the run's own totals.
-  The picture says what the run is, that it loops every 2 s of the cell's time, what one
-  bead stands for (a million ions at true speed), and that the cell is the run's lumped
+  The picture says what the run is, that it loops every 2 s of the cell's time, what is
+  drawn (at true speed, streams as wide as their rates, with the widest's rate in ions a
+  second; slowed, what one packet or bead stands for), and that the cell is the run's lumped
   `cell_3` under a prescribed current: not a measurement of a living cell. Water, secreted
   signals and fuel are not drawn from it, each with its reason. No illustration stands in
   while the run is on its way or cannot be had.
-- **One Speed row** slows the flux a thousand or a million times; it is the same control,
-  with the same words, that slows the flagellar motor. A looping run and the motor stop
-  at true speed: nothing runs faster than life there.
+- **Speed is a slider, and slowing down is seen** (the user, 17 November 2026: "the speed
+  does not change the anymation of the beads and arrows in flux"; "nice visual effects to
+  show the speed at full speed, you wont see any individual ions"; "make the speed a slider
+  with those two points 1/1000 and 1/...at 2/4 and 3/4"). The slider in the Flux legend
+  slows what flows, from true speed to ten million times slower, marked at a thousandfold
+  (half way) and a millionfold (three quarters). At true speed each lane is a glowing
+  stream as wide as its rate, with no bead to count; slowed, it resolves into packets and
+  then into single beads, fewer and slower the more it is slowed, each standing for a
+  stated number of ions (1, 2 or 5 times a power of ten, never under one). Chevrons along
+  each lane show the way it flows, and stand where nothing may move. It is the same
+  control that slows the flagellar motor. A looping run and the motor stop at true speed:
+  nothing runs faster than life there. The address takes `slow=` (for example
+  `slow=1000`). On the planarian's busiest lane, measured in the page: 1.0 packet a second
+  crossing in 2.6 s at a thousandfold, 0.5 beads a second crossing in 4.1 s at a
+  millionfold; before, every speed showed about 5 beads a second crossing in 1.6 s.
 - **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
@@ -484,30 +498,39 @@ new 'species' type", and to make it "visually amazing": "lets simulate the self 
 of the lipids (visuall for now but maybe law later), and the different chemicals seeping
 in and out, and the split"; and of the example: "yes lets play the marked example".
 
-- **What is drawn.** One assembly as lipids in water, a lipid for each molecule, whose
-  head's form and colour say its type. At a run's start the first assembly gathers from
-  the water; then a molecule seeps in or out when the run says so, and at a fission the
-  assembly lengthens, necks and parts in two.
+- **What is drawn.** A protocell in water (the user, 17 November 2026, of two slides of
+  their own: "something that has the lipid assembly then small molecules moving in and
+  out"): a closed shell of the run's lipids, a lipid for each molecule, whose head's form
+  and colour say its type, heads to the water outside and inside, its near side
+  see-through. First the founder gathers from the water. Then the run's molecules are seen
+  moving in and out all the time it plays, at every speed: each one drawn coming in is a
+  join of the run, each one going out a leave (one in N where the pace is high, and the
+  legend says N). Inside, a lit network shows which of the types it holds speeds which,
+  from the run's own table. At a fission the shell draws in at its waist into two
+  protocells. Micelle and Cluster, the two earlier packings, stay on the card.
 - **What comes from the run, and what is the picture's own.** The run gives which type
-  joins or leaves and when, the composition, each fission and how it divides the
-  molecules. Everything else is the picture's own: how a lipid looks, moves and packs, the
-  water, the free molecules and every size. No law of Cells computes how the lipids move
-  and pack, and the picture says so.
+  joins or leaves and in what order, the composition, each fission and how it divides the
+  molecules, the table of catalysis behind the lit links, and the supply's mix. Everything
+  else is the picture's own: the shell and its glassy faces, how a lipid looks, moves and
+  packs, the paths in and out, how often a molecule is drawn in flight, where the
+  network's points stand, the water and every size. No law of Cells computes how the
+  lipids move and pack, and the picture says so. The network never pulses with a join:
+  the run does not record what helped one.
 - **One timeline** counts fissions, molecule by molecule at its slow end. The levels are
   Molecules (the table of catalysis), One assembly, Population (not drawn yet) and
   Lineages.
 - **It plays an example of invented numbers** once the first assembly has gathered,
   marked so at every level, on the picture, in the legend and in the bar: "Example:
   invented numbers · not a run of Cells' engine". It stands still for a visitor who asks
-  for less motion. The assembly is a micelle everywhere, on a phone and with less motion
-  too (the user first had the cluster there, then left the choice to the coordinator on
-  17 November 2026; the two cost the same to draw); either packing can be chosen on the
-  card. Of the example the
+  for less motion. The view opens on the protocell everywhere, on a phone and with less
+  motion too (the user first had the cluster there, then left the choice to the
+  coordinator on 17 November 2026); any of the three packings can be chosen on the card.
+  Of the example the
   form of its law is named and no more ("the preprint's single-event form"): what the
   engine's decision says a form is for is said only of a real run of the engine.
 - **On the page** its levels are on the rail, its clock is the page's timeline (counting
-  fissions; the space bar plays and pauses), and its card has Micelle or Cluster and the
-  Composition and Similarity selects (on a phone, in the card its folded line opens).
+  fissions; the space bar plays and pauses), and its card has the packing (Protocell,
+  Micelle or Cluster) and the Composition and Similarity selects (on a phone, in the card its folded line opens).
   While it is shown, the bar's words stand on a fade of the page's own ground, at every
   width (no blur; it costs no frame: 16.7 ms between frames with it and without, by
   turns, at 1400 by 900 and 400 by 800). `entry=gard&scale=lineage`
@@ -519,9 +542,16 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
 - **Frames** (the project's graphics card through Vulkan, 17 November 2026): every level
   holds 16.7 ms between frames at 1400 by 900 and at 400 by 800; a frame's own work is 2
   to 4 ms wide. Contact shade is used only at the Molecules level: at Lineages it cost
-  about 1.5 ms and dropped the page just under 60 frames a second.
+  about 1.5 ms and dropped the page just under 60 frames a second. The protocell, playing
+  at half a fission a second: 16.6 to 16.7 ms between frames at both sizes, a frame's own
+  work 3.8 to 4.2 ms (the micelle's 3.4 to 3.7 ms), 18 draw calls and 121,748 triangles
+  at 1400 by 900; a test holds one protocell to 21 draws and 142,000 triangles.
 - **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md` on
-  main, D192): nothing of it is in the engine. The engine will build two forms of
+  main, D192). Its build in the engine started on 17 November 2026
+  (`docs/CURRENT_PLAN.md`); nothing of it is on main yet. By D197 GARD is one law set,
+  kept only for comparison: the origin-of-life engine is to be Cells' own, with laws from
+  physical chemistry, and its design note is proposed, not decided
+  (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`). The engine will build two forms of GARD's
   catalysis, and the view shows them side by side only for two real runs of the engine of
   one world (`schema/ASSEMBLY_RUN.md`); the user: "yes we'll wait for the real runs but
   great to have everything ready".
@@ -892,6 +922,19 @@ Ideas kept for after the basics (the user, 14 November 2026):
 
 ## Known limits
 
+- **Flux speed.** The stream at true speed and the chevrons are drawn in the Cell view
+  only: a replay's sheet and close-up still draw beads at every speed (fewer and slower
+  the more it is slowed) with an arrowhead at each lane's end, and an illustration (a
+  species with no run) keeps beads at one pace. A packet can still overlap the next where
+  a lane is short and its rate high. The slider's end, ten million times slower, makes a
+  planarian bead two ions. `slow=` is read from the address and not written back to it.
+- **The protocell.** With 40 to 80 molecules, each drawn as one lipid, only about a fifth
+  to a quarter of each face is heads: the glassy faces, the picture's own, carry the
+  shell. The composition ring crosses the protocell's equator. See-through overlaps are
+  not sorted, and can look slightly uneven near the rim. The daughter that is let go
+  stays about 2 s, so at half a fission a second one is nearly always on screen. On a
+  phone at a fission the picture's line still touches the lower daughter. Its frame times
+  were measured on the project's graphics card in a phone-sized window, not on a phone.
 - The species' own proteins need the 3D stage: the no-WebGL list has the machines only.
 - The List lists a family's members once it is open; the search in the trail finds them
   before.
@@ -930,7 +973,7 @@ Ideas kept for after the basics (the user, 14 November 2026):
   sight, still read out); the Protein atlas's, the Laws library's and a model system's cards fold to one line that
   a press opens (a model system's line names it, with the rail's button beside it, or under
   it where the two would meet); opened, the origin-of-life view's card gives its switch,
-  its word, Micelle or Cluster and its Composition and Similarity selects, and opening the
+  its word, its packing and its Composition and Similarity selects, and opening the
   legend folds it again; the example's mark finds its place clear of an opened card or
   rail, playing or still; the hint gives way to a timeline; the atlas's caveat stands at
   the head of its legend; its trail never cuts a word (the steps in its middle, the count
