@@ -682,7 +682,8 @@ def sections(text):
 
 def render_index(doc, files):
     """The library's index (README.md): every page by section and interface, with its one sentence
-    and its status, and the pieces still without one."""
+    and its status. It lists written pages only, so registering a piece changes it only once the
+    piece's page is written."""
     render = Render(doc)
     lines = [
         "# The library: plain-language pages for the engine's pieces",
@@ -727,14 +728,6 @@ def render_index(doc, files):
             lines.append("")
         if lines[-1] == "":
             lines.pop()
-    todo = sorted(set(paged(doc).values()) - set(written))
-    lines += ["", "## Still to write", ""]
-    if todo:
-        lines.append(f"{len(todo)} pieces and models have no page yet:")
-        lines.append("")
-        lines += [f"- {p}: {_c(i)}" for p, i in todo]
-    else:
-        lines.append("None: every piece and model with declared structure has its page.")
     return "\n".join(lines) + "\n"
 
 
@@ -1096,7 +1089,8 @@ def main(argv=None):
     found = check(doc, files)
     for line in found:
         print(line)
-    print(f"{len(found)} findings over {len(pages(files))} pages")
+    todo = len(set(paged(doc)) - set(files))
+    print(f"{len(found)} findings over {len(pages(files))} pages; {todo} still to write")
     return 1 if found else 0
 
 
