@@ -43,6 +43,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Origin-of-life engine design](ORIGIN_OF_LIFE_ENGINE_DESIGN.md) | Cells' own first-principles engine (D197): laws as detailed-balanced event pairs from one free energy, physical assemblies, declared energy sources, division by geometry and shear, GARD as a declared limit. Proposed, options for the user |
 | [Mitochondria design](MITOCHONDRIA_DESIGN.md) | One law set for mitochondria and bacteria, Beard 2005 as the source (D193) |
 | [Core seams design](CORE_SEAMS_DESIGN.md) | D194 step 2's one pass: the cycle kind, populations, binding, heat booking, laws as modules and the run view's format items, with the order and the estimate. Proposed |
+| [Relationships design](RELATIONSHIPS_DESIGN.md) | D200: descent, material provenance (labels), dependence and history, written as plain node and edge tables so that lineage, flow, dependency and branch graphs are joins. Proposed, options for the user |
 | [Looping replay design](LOOPING_REPLAY_DESIGN.md) | FR-11's looping replay packages: the loop block and its closure measure (ruled 16 November 2026) |
 | [Device row checks design](WINDOW_DEVICE_CHECKS_DESIGN.md) | Device-resident row checks for scalar windows, opt-in on the CPU, and the vector path's seams |
 | [Test audit retire list](TEST_AUDIT_RETIRE_LIST.md) | D187's audit: the firm, held and candidate retirements, approved in D189 |
