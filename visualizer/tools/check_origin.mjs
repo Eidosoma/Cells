@@ -13,8 +13,13 @@
 //            Laws library and back: the view plays again as it was, and nothing of it stays on the
 //            library. The Cell view opened after it is as the Cell view opened alone.
 //   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
-//            example's mark stands clear of the card, a molecule seeping in starts inside the
-//            frame, and at the Lineages level the names that say what the parts are stand.
+//            card folds to one line that names the model system, apart from the rail's button, and
+//            one press on it opens the card with the switch, the word, the packing and both selects
+//            (opening the legend folds it again); the example's mark stands clear of the card,
+//            folded and open; a molecule seeping in starts inside the frame; at the Lineages level
+//            the names that say what the parts are stand; and at 360 px the band under the bar and
+//            the mark at three levels hold. The bar's words stand on a fade of the page's ground
+//            while the view is shown, at every width, and not on the Laws library.
 //   address  entry=gard&scale=<level> opens the view at that level; still=1 holds it still;
 //            select=assembly:fission:<run>:<k> opens on that fission with its panel; play=1;
 //            lens=laws&entry=gard and back.
@@ -183,6 +188,12 @@ try {
   const mark = () =>
     evaluate(`(() => { const v = ${V}, root = v.shadowRoot, labels = [...root.querySelectorAll(".labels .label")].filter((el) => el.textContent === ${JSON.stringify(EXAMPLE)}); const el = labels[0]; if (!el) return { count: 0 }; const r = el.getBoundingClientRect(), o = v.getBoundingClientRect(); const box = { left: r.left - o.left + 4, top: r.top - o.top + 2, right: r.right - o.left - 4, bottom: r.bottom - o.top - 2 }; const bar = root.querySelector(".bar").getBoundingClientRect(); const cards = v.blockedRects(); const over = cards.filter((c) => box.left < c.right && box.right > c.left && box.top < c.bottom && box.bottom > c.top); return { count: labels.length, off: el.classList.contains("is-off"), inside: r.left >= o.left && r.right <= o.right && r.top >= o.top && r.bottom <= o.bottom, uncovered: over.length === 0 && r.top >= bar.bottom - 2, box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], over: over.map((c) => [Math.round(c.left), Math.round(c.top), Math.round(c.right), Math.round(c.bottom)]), bar: Math.round(bar.bottom) }; })()`);
   const markShows = (m) => m.count === 1 && !m.off && m.inside && m.uncovered;
+  /** On a phone, the band under the bar: the card folded to its line (whole), the rail's button apart from it, both under the bar, and the bar on one row. */
+  const band = () =>
+    evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, t = root.querySelector(".view-toggle"), r = root.querySelector(".rail-toggle"), line = t?.firstChild, bar = root.querySelector(".bar"); const a = shown(t) ? t.getBoundingClientRect() : null, b = shown(r) ? r.getBoundingClientRect() : null, under = bar.getBoundingClientRect().bottom - 0.5; const kids = [...bar.children].filter(shown).map((el) => el.getBoundingClientRect()).filter((k) => k.width > 1); return { folded: Boolean(a) && !shown(root.querySelector("#cells-view")), words: line?.textContent ?? null, whole: Boolean(line) && line.scrollWidth <= line.clientWidth + 1, rail: Boolean(b), apart: !a || !b || a.right <= b.left - 0.5 || a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5, belowBar: (!a || a.top >= under) && (!b || b.top >= under), oneRow: kids.every((p) => kids.every((q) => p.top < q.bottom - 1 && q.top < p.bottom - 1)), first: root.querySelector('.switch [data-lens="cell"]')?.innerText.trim() ?? null, railUnder: root.querySelector(".frame").classList.contains("rail-under") }; })()`);
+  const bandHolds = (b) => b.folded && b.words === "GARD assembly" && b.whole && b.rail && b.apart && b.belowBar && b.oneRow;
+  /** The bar's words on a ground of the page's own colour, while the view is shown (a fade in the bar's own box, no blur). */
+  const ground = () => evaluate(`(() => { const s = getComputedStyle(${V}.shadowRoot.querySelector(".bar")); return { image: s.backgroundImage.slice(0, 40), blur: s.backdropFilter || "none" }; })()`);
   /** The legend's note: there, and in the legend's visible box (not below its fold, nor under the timeline). */
   const noteShows = () =>
     evaluate(`(() => { const root = ${V}.shadowRoot, legend = root.querySelector("cells-legend"), note = legend?.querySelector(".legend-note, .legend-key-note"); if (!legend || legend.hidden || !note) return { there: false }; const box = legend.getBoundingClientRect(), n = note.getBoundingClientRect(), t = root.querySelector("cells-timeline"); const tl = t && !t.hidden ? t.getBoundingClientRect() : null; let clip = box; for (let el = note.parentElement; el && el !== legend.parentElement; el = el.parentElement) { const s = getComputedStyle(el); if (/(auto|scroll|hidden)/.test(s.overflowY)) { const r = el.getBoundingClientRect(); clip = { top: Math.max(clip.top, r.top), bottom: Math.min(clip.bottom, r.bottom) }; } } const top = root.elementFromPoint(n.left + n.width / 2, n.top + Math.min(n.height - 2, 8)), bottom = root.elementFromPoint(n.left + n.width / 2, n.bottom - 4); const inView = n.top >= clip.top - 1 && n.bottom <= clip.bottom + 1 && n.height > 0 && [top, bottom].every((el) => el && (el === note || note.contains(el))); return { there: true, inView, words: note.textContent.slice(0, 60), note: [Math.round(n.top), Math.round(n.bottom)], clip: [Math.round(clip.top), Math.round(clip.bottom)] }; })()`);
@@ -215,7 +226,11 @@ try {
     if (PHONE) {
       const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, bar = root.querySelector(".bar") || root.querySelector("header"); const buttons = [...root.querySelectorAll(".switch button")]; const tops = buttons.map((b) => Math.round(b.getBoundingClientRect().top)); const list = root.querySelector(".index-button, [aria-controls='cells-index']"); return { tops, list: list ? Math.round(list.getBoundingClientRect().top) : null, height: Math.round((bar || root.querySelector(".switch")).getBoundingClientRect().height), words: buttons.map((b) => b.textContent) }; })()`);
       check("the first tab's short name keeps the bar to one row", new Set([...bar.tops, ...(bar.list === null ? [] : [bar.list])]).size <= 1 || Math.max(...bar.tops, bar.list ?? 0) - Math.min(...bar.tops, bar.list ?? 0) < 20, JSON.stringify(bar));
+      const b = await band();
+      check("on a phone the card folds to one line under the bar that names the model system, whole, and the rail's button stands apart from it", bandHolds(b), JSON.stringify(b));
     }
+    const g = await ground();
+    check("the bar's words stand on a fade of the page's ground while the view is shown, with no backdrop blur", /gradient/.test(g.image) && g.blur === "none", JSON.stringify(g));
 
     // ---------------------------------------------------------- the example's mark, at every level, playing and still
     for (const id of ["molecules", "population", "lineage", "assembly"]) {
@@ -264,10 +279,22 @@ try {
     check("a drag on the timeline moves the clock (to about the middle of 120 fissions)", s.time > 45 && s.time < 75, String(s.time));
     await shot(`${NAME}-dragged`);
 
-    // ---------------------------------------------------------- the card's choices (on a phone the page shows a card's packing, and keeps its other choices to a wide window)
-    const similarity = PHONE ? null : await placeOf(`root.querySelector('[data-choice="compare"]')`);
-    if (!PHONE) check("the card offers Similarity as a select", Boolean(similarity), JSON.stringify(similarity));
-    else check("on a phone the page keeps the card's other choices to a wide window (its marks are not shown there)", await evaluate(`(() => { const el = ${V}.shadowRoot.querySelector('[data-choice="compare"]'); return Boolean(el) && el.closest(".card-marks").getClientRects().length === 0; })()`));
+    // ---------------------------------------------------------- the card's choices (on a phone, in the card a press on its folded line opens)
+    if (PHONE) {
+      const line = await placeOf(`root.querySelector(".view-toggle")`);
+      if (line) await click(line.x, line.y, 900);
+      const opened = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, card = root.querySelector("#cells-view"), r = card.getBoundingClientRect(); const big = (el) => shown(el) && Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height) >= 44; const buttons = [...card.querySelectorAll("button")]; const selects = [card.querySelector("#cells-mark"), card.querySelector('[data-choice="compare"]')]; return { open: shown(card) && r.top >= 0 && r.bottom <= innerHeight, pick: shown(card.querySelector(".species-pick")), word: [...card.querySelectorAll(".species-state")].filter(shown).map((b) => b.textContent)[0] ?? null, packing: ["Micelle", "Cluster"].map((w) => big(buttons.find((b) => b.textContent.trim() === w))), selects: selects.map(big), labels: selects.map((s) => s?.closest(".card-marks")?.querySelector(".seg-label")?.textContent ?? null) }; })()`);
+      check("on a phone one press on the folded line opens the card: the switch, the model system's word, Micelle and Cluster, and the Composition and Similarity selects, each at least 44 px", Boolean(line) && opened.open && opened.pick && opened.word === "Designed, not modelled" && opened.packing.every(Boolean) && opened.selects.every(Boolean) && opened.labels.join("|") === "Composition|Similarity", JSON.stringify(opened));
+      await sleep(900);
+      const m = await mark();
+      check("and the example's mark keeps clear of the opened card", markShows(m), JSON.stringify(m));
+      // The opened card says the example's mark itself: at 390 px and under, the card leaves the mark on the picture no room beside it.
+      const inCard = await evaluate(`(() => { const el = ${V}.shadowRoot.querySelector("#cells-view .view-notice"); return el && el.getClientRects().length ? el.textContent : null; })()`);
+      check("and the opened card carries the example's mark itself", inCard === "Example: invented numbers · not a run of Cells' engine", String(inCard));
+      await shot(`${NAME}-card-open`);
+    }
+    const similarity = await placeOf(`root.querySelector('[data-choice="compare"]')`);
+    check("the card offers Similarity as a select", Boolean(similarity), JSON.stringify(similarity));
     // A select is chosen with its own keys, as a visitor does without the list open: focused, then the arrow down.
     const pick = async (selector) => {
       await evaluate(`${V}.shadowRoot.querySelector(${JSON.stringify(selector)}).focus()`);
@@ -290,6 +317,19 @@ try {
     const micelle = await placeOf(`[...root.querySelectorAll("#cells-view button")].find((b) => b.textContent.trim() === "Micelle")`);
     if (micelle) await click(micelle.x, micelle.y, 900);
     check("and Micelle back", (await evaluate(`${L}.shape`)) === "micelle");
+    if (PHONE) {
+      // Opening the legend folds the card again, as in the protein atlas; the legend is closed after.
+      const legend = await placeOf(`root.querySelector("cells-legend .legend-toggle")`);
+      if (legend) await click(legend.x, legend.y, 700);
+      const now = await evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0; return { legend: root.querySelector("cells-legend .legend-toggle")?.getAttribute("aria-expanded") ?? null, card: shown(root.querySelector("#cells-view")), line: shown(root.querySelector(".view-toggle")) }; })()`);
+      check("on a phone opening the legend folds the card to its line again", Boolean(legend) && now.legend === "true" && !now.card && now.line, JSON.stringify(now));
+      const again = await placeOf(`root.querySelector("cells-legend .legend-toggle")`);
+      if (again) await click(again.x, again.y, 600);
+      // The other packing: the micelle, chosen above (a phone opens with the cluster); the band and the mark hold with it too.
+      await sleep(900);
+      const [b, m] = [await band(), await mark()];
+      check("with the micelle packed, the card folded: the band under the bar holds and the example's mark stands uncovered", (await evaluate(`${L}.shape`)) === "micelle" && bandHolds(b) && markShows(m), JSON.stringify([b, m]));
+    }
 
     // ---------------------------------------------------------- a press on a head, and a key
     await evaluate(`(() => { const l = ${L}; l.player.pause(); l.player.seek(30.55); })()`);
@@ -314,6 +354,8 @@ try {
     s = await state();
     const left = await evaluate(`(() => { const v = ${V}, root = v.shadowRoot; return { timeline: !root.querySelector("cells-timeline").hidden, level: [...root.querySelectorAll(".rail")].some((r) => !r.hidden && /Level/.test(r.textContent)), water: v.stage.scene.children.some((c) => c === v.lenses.get("model:gard")?.water?.group), labels: [...root.querySelectorAll(".labels .label")].some((el) => el.textContent === ${JSON.stringify(EXAMPLE)}) }; })()`);
     check("on the Laws library nothing of the view stays: no timeline, no Level rail, no water, no mark", s.lens === "laws" && !left.timeline && !left.level && !left.water && !left.labels, JSON.stringify([s.lens, left]));
+    const bare = await ground();
+    check("nor the bar's ground: the library draws nothing under the bar", bare.image === "none", JSON.stringify(bare));
     const first = await placeOf(`root.querySelector('.switch [data-lens="cell"]')`);
     if (first) await click(first.x, first.y, 2500);
     s = await state();
@@ -340,6 +382,31 @@ try {
       const names = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent)`);
       check("at the Lineages level on a phone, the mark and the names of the tape, the fence and the threshold stand", names.includes(EXAMPLE) && names.some((t) => /^The tape/.test(t)) && names.some((t) => /^Similarity/.test(t)) && names.some((t) => /threshold of inheritance/.test(t)), JSON.stringify(names));
       await shot(`${NAME}-lineage-names`);
+
+      // ---------------------------------------------------------- the narrowest phone, 360 px: the band under the bar, and the mark at each level
+      await page("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 1, mobile: true });
+      check("at 360 px entry=gard opens the view", await open("entry=gard"));
+      const narrow = await band();
+      check(`at 360 px the bar keeps to one row with "Origin", the card folds to its line, whole, and the rail's button stands apart from it${narrow.railUnder ? " (under it)" : ""}`, narrow.first === "Origin" && bandHolds(narrow), JSON.stringify(narrow));
+      for (const id of ["assembly", "lineage", "molecules"]) {
+        const pressed = await level(id);
+        await sleep(600);
+        const m = await mark();
+        check(`at 360 px the example's mark stands on the picture, uncovered, at ${id}`, pressed && markShows(m), JSON.stringify([pressed, m]));
+      }
+      await shot(`${NAME}-360-molecules`);
+
+      // ---------------------------------------------------------- less motion asked for: the view stands still, and draws no frame of itself
+      // The mark still finds its place clear of the card and of the rail as they are opened (the viewer asks for a frame).
+      await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: process.env.THEME === "dark" ? "dark" : "light" }, { name: "prefers-reduced-motion", value: "reduce" }] });
+      check("with less motion asked for, entry=gard opens the view, standing still", (await open("entry=gard")) && !(await state()).playing);
+      for (const [what, toggle] of [["the card", ".view-toggle"], ["the rail", ".rail-toggle"]]) {
+        const at = await placeOf(`root.querySelector(${JSON.stringify(toggle)})`);
+        if (at) await click(at.x, at.y, 900);
+        const m = await mark();
+        check(`standing still, the example's mark finds its place clear of ${what} opened`, Boolean(at) && markShows(m), JSON.stringify([Boolean(at), m]));
+      }
+      await shot(`${NAME}-still-rail-open`);
     }
   } else if (CASE === "address") {
     check("entry=gard&scale=lineage opens the view at the Lineages level", (await open("entry=gard&scale=lineage")) && (await state()).level === "lineage", JSON.stringify(await state()));

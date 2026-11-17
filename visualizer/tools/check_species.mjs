@@ -513,15 +513,24 @@ if (process.env.CASE === "model") {
     await shot("model-list-open-dark");
     await key("Escape");
 
-    // A phone: the switch stands at the head of the card, the card names the model system.
+    // A phone: the card folds to one line that names the model system (the phone's third pass, 17 November 2026); one press
+    // opens it, with the switch at its head and the model system's word.
     await size(400, 800);
     await open(`lens=cell&entry=${gard.id}`);
     await settled();
+    // The folded line and the rail's button: the line names the model system, whole, and the two do not meet.
+    const band = () =>
+      evaluate(`(() => { const root = ${V}.shadowRoot, shown = (el) => Boolean(el) && el.getClientRects().length > 0, t = root.querySelector(".view-toggle"), r = root.querySelector(".rail-toggle"), line = t?.firstChild; const a = shown(t) ? t.getBoundingClientRect() : null, b = shown(r) ? r.getBoundingClientRect() : null; return { folded: shown(t) && !shown(root.querySelector("#cells-view")), words: line?.textContent ?? null, whole: Boolean(line) && line.scrollWidth <= line.clientWidth + 1, apart: !a || !b || a.right <= b.left - 0.5 || a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5, under: root.querySelector(".frame").classList.contains("rail-under") }; })()`);
+    let folded = await band();
+    check("on a phone its card folds to one line that names it, whole, and the line and the rail's button do not meet", folded.folded && folded.words === gard.label && folded.whole && folded.apart, JSON.stringify(folded));
+    await press(".view-toggle");
     s = await state();
     m = await more();
     // Nothing of the bar lies under the rail's button, however many rows the bar takes (a longer first tab may take two).
     const clear = await evaluate(`(() => { const root = ${V}.shadowRoot, rail = root.querySelector(".rail-toggle"), r = rail?.getBoundingClientRect(); if (!r || !r.width) return true; return [...root.querySelectorAll(".bar .switch button, .bar .bar-end > *")].filter((el) => el.offsetParent).every((el) => { const b = el.getBoundingClientRect(); return b.bottom <= r.top + 0.5 || b.top >= r.bottom - 0.5 || b.right <= r.left + 0.5 || b.left >= r.right - 0.5; }); })()`);
-    check("on a phone the switch stands in its card, which names it and gives its word, and nothing of the bar is under the rail's button", s.inBar === "" && s.inCard === `${gard.id}*` && (!card || s.heading === gard.label) && m.model === gard.id && s.state === WORDS[gard.state] && clear, JSON.stringify([s.inBar, s.inCard, s.heading, s.state, m.tab, clear]));
+    check("on a phone one press opens the card: the switch stands in it, it names the model system and gives its word, and nothing of the bar is under the rail's button", s.inBar === "" && s.inCard === `${gard.id}*` && (!card || s.heading === gard.label) && m.model === gard.id && s.state === WORDS[gard.state] && clear, JSON.stringify([s.inBar, s.inCard, s.heading, s.state, m.tab, clear]));
+    await shot("model-phone-card-open-light");
+    await press(".view-toggle");
     // Where the bar's parts stand on a phone, in the run's words, for reading a miss.
     console.log(`note  the bar on a phone: ${await evaluate(`(() => { const root = ${V}.shadowRoot, r = (el) => el ? [Math.round(el.getBoundingClientRect().left), Math.round(el.getBoundingClientRect().top), Math.round(el.getBoundingClientRect().right)].join(",") : "none"; return ["brand " + r(root.querySelector(".brand")), "switch " + r(root.querySelector(".switch")), ...[...root.querySelectorAll(".switch button")].map((b) => b.dataset.lens + " " + r(b)), "list " + r(root.querySelector(".bar-end")), "rail " + r(root.querySelector(".rail-toggle"))].join("; "); })()`)}`);
     await shot("model-phone-light");
@@ -549,6 +558,23 @@ if (process.env.CASE === "model") {
     barRow = await barNow();
     check("and so it does with the stand-in font, whose words run longer", barRow.row && barRow.least >= 44 && !barRow.sideways, JSON.stringify(barRow));
     await shot("model-phone-390-standin");
+    // The third pass: so it does at 360 px, the narrowest phone the page is laid out for, with both fonts; and the folded
+    // card's line, whole, and the rail's button keep apart there (the button steps under the line where they would meet).
+    await size(360, 780);
+    await open(`lens=cell&entry=${gard.id}`);
+    await settled();
+    // The page's own font is waited for (it may not come: then the note at the end says so, and both checks see the stand-in).
+    const lettered = `document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded"))`;
+    if (await until(lettered, 40)) await evaluate(`${V}.renderChrome()`);
+    for (const font of ["the page's own font", "the stand-in font"]) {
+      if (font === "the stand-in font") await evaluate(`(async () => { document.querySelector('link[href*="fonts.googleapis"]')?.remove(); await new Promise((resolve) => setTimeout(resolve, 400)); ${V}.renderChrome(); })()`);
+      else console.log(`note  at 360 px the page's own font has ${(await evaluate(lettered).catch(() => false)) ? "arrived" : "not arrived: the stand-in is shown"}`);
+      barRow = await barNow();
+      folded = await band();
+      const first = await evaluate(`(() => { const b = ${V}.shadowRoot.querySelector('.switch [data-lens="cell"]'); return b ? b.innerText.trim() : null; })()`);
+      check(`on a 360 px phone, with ${font}, the bar stands on one row with the model system's first tab (${tab.split("|")[1]}), each of its buttons at least 44 px; the card's line names it, whole, apart from the rail's button`, first === tab.split("|")[1] && barRow.row && barRow.least >= 44 && !barRow.sideways && folded.folded && folded.words === gard.label && folded.whole && folded.apart, JSON.stringify([first, barRow, folded]));
+    }
+    await shot("model-phone-360-standin");
     await size(WIDTH, 800);
   } catch (error) {
     check("the run completed", false, error.stack || error.message);

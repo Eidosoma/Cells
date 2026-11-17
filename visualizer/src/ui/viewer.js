@@ -153,6 +153,7 @@ class CellsViewer extends HTMLElement {
       // On a phone the legend's sheet and a view's card never lie over each other: opening the one folds the other.
       if (this.state.legendOpen && this.clientWidth < 760 && this.state.viewOpen) this.toggleViewCard(false);
       this.renderLegend();
+      this.cardsMoved();
     });
   }
 
@@ -543,7 +544,8 @@ class CellsViewer extends HTMLElement {
     }
     this.nameFirstTab();
     if (this.state.selected?.startsWith("model:") || (entry && this.state.selected?.startsWith("species:"))) this.state.selected = entry ? `model:${entry.id}` : null;
-    // Shown in the Cell view's place: the view follows the entry.
+    // Shown in the Cell view's place: the view follows the entry (a phone's folded card starts folded in it, as in the next view).
+    if ((entry || was) && this.state.lens === "cell" && this.state.viewOpen) this.toggleViewCard(false);
     if ((entry || was) && this.state.lens === "cell") this.setLens("cell");
     else {
       this.renderChrome();
@@ -658,17 +660,26 @@ class CellsViewer extends HTMLElement {
     this.viewToggle.hidden = this.viewCard.hidden;
     const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 && !chrome.view.machine ? "sizes" : null, chrome.view.machine ? "detail" : null].filter(Boolean) : [];
     // On a phone a view's card folds to one line saying what is shown (styles.js .card-folds): the protein atlas's, the Laws
-    // library's. The Cell view's card, a model system's in its place and a replay's keep their own phone layouts.
-    this.frame.classList.toggle("card-folds", this.clientWidth < 760 && Boolean(chrome.card) && !chrome.run && !chrome.view && this.state.lens !== "cell");
+    // library's, a model system's in the Cell view's place. The Cell view's card and a replay's keep their own phone layouts.
+    this.frame.classList.toggle("card-folds", this.clientWidth < 760 && Boolean(chrome.card) && !chrome.run && !chrome.view);
+    // A model system's card in the first tab's place (its own view's, or the card that stands in for it): on a phone it shows its choices.
+    const modelCard = this.state.lens === "cell" && Boolean(chrome.card?.species?.model);
+    this.frame.classList.toggle("model-card", modelCard);
+    // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).
+    this.frame.classList.toggle("bar-ground", Boolean(this.current?.drawsUnderBar));
     // The folded line says what is shown: the card's heading, and the drawing chosen where there is a choice ("Cells' 48 machines"; not "All").
-    const mode = this.clientWidth < 760 && chrome.card?.modes && !chrome.nav && chrome.card.modes.active !== "all" ? chrome.card.modes.options.find(([value]) => value === chrome.card.modes.active)?.[1] : null;
+    // A model system's line names it alone: its packing is the picture's choice, not what is shown.
+    const mode = this.clientWidth < 760 && chrome.card?.modes && !chrome.nav && !modelCard && chrome.card.modes.active !== "all" ? chrome.card.modes.options.find(([value]) => value === chrome.card.modes.active)?.[1] : null;
     const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : [chrome.card?.heading, mode].filter(Boolean).join(" · ");
     this.viewToggle.replaceChildren(h("span", {}, folded), h("span", { class: "chevron", "aria-hidden": "true" }));
     this.viewToggle.removeAttribute("aria-label"); // set again by fitFolded where the line had to be shortened
-    if (this.clientWidth < 760) this.fitFolded(chrome.card?.heading || "");
     this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
     this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
-    if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
+    // A view that plays an example says so in its legend (`legend.example`) and on its picture. Opened on a phone its card
+    // may cover the mark on the picture, so the card carries the words itself there (styles.js .view-notice; rule 11 of
+    // schema/QUANTITY_LAYERS.md, as the Cell view's card does for an illustrated flux).
+    const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
+    if (chrome.card) this.viewCard.replaceChildren(...marked, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
     // A replay brings its playhead.
     this.timeline.hidden = !chrome.timeline;
@@ -742,6 +753,9 @@ class CellsViewer extends HTMLElement {
       this.railToggle.replaceChildren(h("span", { class: "seg-label" }, chrome.railTitle || "Scale"), h("span", {}, active?.label || ""), h("span", { class: "chevron", "aria-hidden": "true" }));
       this.railToggle.setAttribute("aria-label", `${chrome.railTitle || "Scale"}: ${active?.label || ""}. Press for the other levels.`);
     }
+    // The folded line is fitted once the rail's button beside it has its words.
+    this.frame.classList.remove("rail-under");
+    if (this.clientWidth < 760) this.fitFolded(chrome.card?.heading || "");
     this.fitCard();
     this.fitBar();
   }
@@ -764,19 +778,27 @@ class CellsViewer extends HTMLElement {
     for (let step = 0; step < steps.length && !oneRow(); step++) bar.dataset.squeeze = steps[step];
   }
 
-  /** The folded card's line on a phone never cuts a word: where it does not fit it says the heading alone, then fewer of its words. */
+  /**
+   * The folded card's line on a phone never cuts a word: where it does not fit it says the heading alone, then fewer of its
+   * words. Beside the rail's button (a model system's levels) it keeps 8 px clear of it; where the heading alone would still
+   * meet the button, the button steps under the line (styles.js .rail-under), and the line keeps its words.
+   */
   fitFolded(heading) {
     const line = this.viewToggle.firstChild;
     if (!line || this.viewToggle.hidden || !this.viewToggle.getClientRects().length) return;
-    const over = () => line.scrollWidth > line.clientWidth + 1;
-    if (!over()) return;
-    this.viewToggle.setAttribute("aria-label", line.textContent);
+    const rail = !this.railToggle.hidden && this.railToggle.getClientRects().length ? this.railToggle : null;
+    const cut = () => line.scrollWidth > line.clientWidth + 1;
+    const meets = () => Boolean(rail) && !this.frame.classList.contains("rail-under") && this.viewToggle.getBoundingClientRect().right > rail.getBoundingClientRect().left - 8;
+    if (!cut() && !meets()) return;
+    const full = line.textContent;
     if (heading && line.textContent !== heading) line.textContent = heading;
+    if (meets()) this.frame.classList.add("rail-under");
     const words = line.textContent.split(" ");
-    while (over() && words.length > 1) {
+    while (cut() && words.length > 1) {
       words.pop();
       line.textContent = `${words.join(" ")}…`;
     }
+    if (line.textContent !== full) this.viewToggle.setAttribute("aria-label", full);
   }
 
   /** On a phone the protein atlas's caveat (not what a view is doing: loading, or why it could not) stands in the legend's sheet. */
@@ -786,24 +808,38 @@ class CellsViewer extends HTMLElement {
 
   /** Open or close the view's card, folded on a phone while a panel is open. */
   toggleViewCard(force) {
-    const open = force ?? !this.state.viewOpen;
+    const open = force ?? !this.state.viewOpen, was = this.state.viewOpen;
     this.state.viewOpen = open;
     if (open && this.state.legendOpen && this.clientWidth < 760) {
       this.state.legendOpen = false;
       this.renderLegend();
     }
+    // A phone's folded card and folded rail open under the same band: one opened closes the other.
+    if (open && this.state.railOpen && this.clientWidth < 760 && this.frame.classList.contains("card-folds")) this.toggleRail(false);
     this.frame.classList.toggle("view-open", open);
     this.viewToggle.classList.toggle("is-open", open);
     this.viewToggle.setAttribute("aria-expanded", String(open));
+    if (open !== Boolean(was)) this.cardsMoved();
   }
 
   /** Open or close the folded rail of a phone. */
   toggleRail(force) {
-    const open = force ?? !this.state.railOpen;
+    const open = force ?? !this.state.railOpen, was = this.state.railOpen;
+    if (open && this.state.viewOpen && this.clientWidth < 760 && this.frame.classList.contains("card-folds")) this.toggleViewCard(false);
     this.state.railOpen = open;
     this.frame.classList.toggle("rail-open", open);
     this.railToggle.classList.toggle("is-open", open);
     this.railToggle.setAttribute("aria-expanded", String(open));
+    if (open !== Boolean(was)) this.cardsMoved();
+  }
+
+  /**
+   * A card over the picture opened or closed (the folded card, the rail, the legend; only when one did): a view that keeps
+   * something clear of the cards (the origin view's example mark) places it again, and a frame is drawn for it though nothing moves.
+   */
+  cardsMoved() {
+    this.current?.cardsMoved?.();
+    this.stage?.invalidate();
   }
 
   /**

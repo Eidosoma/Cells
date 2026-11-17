@@ -500,7 +500,10 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   engine's decision says a form is for is said only of a real run of the engine.
 - **On the page** its levels are on the rail, its clock is the page's timeline (counting
   fissions; the space bar plays and pauses), and its card has Micelle or Cluster and the
-  Composition and Similarity selects (on a wide window). `entry=gard&scale=lineage`
+  Composition and Similarity selects (on a phone, in the card its folded line opens).
+  While it is shown, the bar's words stand on a fade of the page's own ground, at every
+  width (no blur; it costs no frame: 16.7 ms between frames with it and without, by
+  turns, at 1400 by 900 and 400 by 800). `entry=gard&scale=lineage`
   (the level, with no panel opened), `select=assembly:fission:<run>:<k>` and `play=1`
   work from the address; `time=` is not carried to it yet. The Cell view opened after it is the Cell view opened alone, and it
   comes back whole from a lost graphics process. Its checks are `tools/check_origin.mjs`
@@ -908,15 +911,19 @@ Ideas kept for after the basics (the user, 14 November 2026):
   on Syn3A only.
 - On a phone (a window under 760 px) the picture comes first: the bar keeps to one row
   (where its words would not fit, its switches tighten and the page's name is put out of
-  sight, still read out); the Protein atlas's and the Laws library's cards fold to one
-  line that a press opens; the atlas's caveat stands at the head of its legend; its trail
-  never cuts a word (the steps in its middle, the count and the words at a step's end give
-  way first); and the map of the stack says a shelf's name when its bar is pressed. Two
-  overlaps are meant: the open legend lies over the map, and the opened search over the
-  folded card's line. A model system's stand-in card does not fold, and at 360 px with
-  the stand-in font it overlaps the rail's button. Not a pixel of a window 760 px wide or
-  more changed (13 wide pictures compared before and after, the cards and words to the
-  pixel).
+  sight, still read out); the Protein atlas's, the Laws library's and a model system's cards fold to one line that
+  a press opens (a model system's line names it, with the rail's button beside it, or under
+  it where the two would meet); opened, the origin-of-life view's card gives its switch,
+  its word, Micelle or Cluster and its Composition and Similarity selects, and opening the
+  legend folds it again; the example's mark finds its place clear of an opened card or
+  rail, playing or still; the hint gives way to a timeline; the atlas's caveat stands at
+  the head of its legend; its trail never cuts a word (the steps in its middle, the count
+  and the words at a step's end give way first); and the map of the stack says a shelf's
+  name when its bar is pressed. Two overlaps are meant: the open legend lies over the map
+  (and over a timeline), and the opened search over the folded card's line. Not a pixel of
+  a window 760 px wide or more changed but the bar's band while the origin view is shown
+  (13 wide pictures of the other views compared before and after with the canvas hidden,
+  the cards and words to the pixel).
 - "To scale" sizes are generic textbook values, as the table above says. No capability's
   dots are counted from a model's actual abundances yet; that would be a good use of the
   run view once replays exist.

@@ -297,6 +297,16 @@ export class LineageLens {
     return true;
   }
 
+  /** Its water and free molecules reach the page's top edge, under the bar: the page gives the bar's words a ground there (src/ui/styles.js). */
+  get drawsUnderBar() {
+    return true;
+  }
+
+  /** A card of the page opened or closed (on a phone, the folded card, the rail, the legend): the example's mark finds its place again at the next frame, though nothing moves. */
+  cardsMoved() {
+    this.exampleSpot = null;
+  }
+
   /** The panel's sources: files of the repository, as every view gives them (the papers are named in words, in the facts). */
   sourcesOf() {
     return [{ path: "schema/ASSEMBLY_RUN.md", where: "what the view reads of a run" }, ...(this.set.example ? [{ path: "data/origin/example-run.json", where: "the example, written by tools/make_assembly_example.mjs" }] : [])];

@@ -724,6 +724,8 @@ cells-trace { display: grid; gap: 4px; }
   .card-folds .view-toggle > span:first-child { white-space: nowrap; overflow: hidden; }
   .card-folds.has-trail .view-toggle { top: max(116px, calc(var(--bar-height, 0px) + 56px)); }
   .card-folds.view-open .view { top: max(118px, calc(var(--bar-height, 0px) + 58px)); max-height: calc(100% - 118px - 96px); z-index: 4; }
+  /* An example's mark stands in the opened card too: the card may cover the mark on the picture. */
+  .card-folds.view-open .view-notice { display: block; margin: 0 0 6px; }
   .card-folds.has-trail.view-open .view { top: max(166px, calc(var(--bar-height, 0px) + 106px)); max-height: calc(100% - 166px - 96px); }
   .card-folds.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 126px); }
   .card-folds.has-trail.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 174px); }
@@ -748,4 +750,24 @@ cells-trace { display: grid; gap: 4px; }
 }
 /* The legend's opening words, where a view gives them (on a phone, the protein atlas's caveat). */
 .legend-lead { margin: 0 0 4px; padding: 4px 8px 8px; font-size: 12.5px; line-height: 1.4; color: var(--muted); border-bottom: 1px solid var(--line); }
+
+/* ---------------------------------------------------------------- the origin-of-life view, a phone's third pass (17 November 2026)
+   A view whose picture reaches the page's top edge (the origin view's water and free molecules: lineage.js drawsUnderBar) gives
+   the bar's words a ground at every width: a fade of the page's own ground inside the bar's box, solid behind the words and gone
+   at the bar's foot, so that nothing under the bar is veiled (the names on the picture keep below it). At 94 % the bar's muted
+   words stand at 4.5 : 1 or more over the view's darkest head in pale water, and over white in dark. A painted gradient costs
+   no frame; a backdrop blur halved the frame rate through Vulkan. */
+.bar-ground .bar { background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 94%, transparent) 0, color-mix(in srgb, var(--bg) 94%, transparent) 65%, transparent); }
+@media (max-width: 759px) {
+  /* A model system's card, opened, shows its choices (the composition's form, the similarity), which a phone keeps from other cards:
+     each its name over its select, which takes the card's width and so its words. */
+  .model-card .view .card-marks { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  /* A timeline stands where the hint (drag, pinch, tap) would be, and over it: the hint gives way. */
+  .has-timeline .hint { display: none; }
+  /* Where the folded line and the rail's button would meet, the button steps under the line, and its levels and the opened card
+     under it (viewer.js fitFolded). */
+  .card-folds.rail-under .rail-toggle { top: max(116px, calc(var(--bar-height, 0px) + 56px)); }
+  .card-folds.rail-under .rail, .card-folds.rail-under.view-open .view { top: max(166px, calc(var(--bar-height, 0px) + 106px)); }
+  .card-folds.rail-under.view-open .view { max-height: calc(100% - 166px - 96px); }
+}
 `;
