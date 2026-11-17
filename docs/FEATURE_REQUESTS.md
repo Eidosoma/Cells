@@ -24,6 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fix in progress: branch `passive-share-tolerance` | The fix's gate, including FR's bitwise set (FR-5's cargo routes use the same booking) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -731,14 +732,20 @@ explored.
 - **Where it came from.** The gap-junction replication (D207) found it on 17 November 2026. In the
   public preprint 10.64898/2026.09.02.748840, a microRNA is made in cells and crosses gap junctions.
 - **What refuses:**
-  - **F1:** `local_species_reactions@1`, turnover, exchange and site occupancy refuse any species
-    with a junction route (`species_common.check_impermeant`). Even the preprint's linear model as
-    written is refused, so the replication ran its exact Norton equivalent instead.
-  - **F2:** the same operators refuse charged species.
+  - **F1, narrower than first reported.** `species_common.check_impermeant` covers only @3's own
+    constant-field junction route, for a species an operator writes.
+    - A neutral species on the passive-routes kind (`cells.passive_routes@1`,
+      `passive_neutral_permeation@1` on a junction host), made and destroyed by
+      `local_species_reactions@1`, is admitted.
+    - So the preprint's linear model runs as written, unqualified, converging at second order
+      (dev-04). Its exact Norton equivalent serves as its check.
+    - The first report said the model as written is refused. That was corrected the same day.
+  - **F2:** the passive routes' neutral law carries valence 0 only, but the preprint's microRNA
+    drifts with valence −1. The species operators also refuse charged species on @3's own routes.
 - **Why it is general.** Any signalling species that cells make or use and that also crosses
   junctions needs it: second messengers, small RNAs, metabolites.
-- **First step:** find why `check_impermeant` refuses (its design reason and the decisions it
-  cites), and whether D191's composition rule is the intended way to lift it.
+- **First step, done:** the reason for `check_impermeant`'s refusal was found (F1 above). What remains
+  is F2.
 - **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
   features.
 
@@ -779,3 +786,27 @@ explored.
 - **What is asked of the core:** review whether the check's tolerance, or the step-size advice that
   goes with it, should change. It is not loosened for one experiment.
 - **Status:** reported to the core.
+
+## FR-19 — The passive routes' heat-share sign test at rounding level
+
+- **The finding.** `passive_neutral_permeation@1`'s exact heat booking
+  (`src/cells/models/inner_kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
+  exact route's heat share is negative, with no tolerance. The raw-sum check beside it does allow
+  `RAW_SUM_FACTOR` eps.
+- **Where it showed.** The gap-junction replication's 1D tissue line has healthy cells that start
+  identical, and its threshold search was refused at most coupling values.
+- **The measurement.** A refused step was replayed with the engine unchanged
+  (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-fail-01/`):
+  - share −2.1e-35 RT·fmol, about 40 times inside the raw-sum check's own bound for its terms;
+  - transfer 4.8e-20 fmol, below the amounts' resolution;
+  - potential difference 2 ulp of ln c.
+
+  It is rounding, not a transfer against its gradient.
+- **Scope.** FR-5's cargo routes use the same booking, so FR-5 can meet the refusal near equilibrium.
+  FR-4's proton leak does not.
+- **The fix, in progress:**
+  - the tolerance taken from the raw-sum check's own bound and scale;
+  - admitted shares booked as computed, so the ledger closes;
+  - a planted, genuinely negative share still refused;
+  - existing results bitwise unchanged, checked by crossrev, G1 and FR's bitwise set.
+

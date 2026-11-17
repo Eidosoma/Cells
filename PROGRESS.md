@@ -85,6 +85,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The gap-junction replication's first stage, on main (17 November 2026, evening; D207).** The merge
+  of gap-junction-replication at cc759bed. Development work, not judged.
+  - **What it replicates:** the model of J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and
+    connexin expression work together to enhance tumor growth and metastasis in cancer", bioRxiv,
+    doi:10.64898/2026.09.02.748840 (made with BITSEY).
+  - **On main:** the driver `validation/gap_junction_tissue/` and the note
+    `docs/GAP_JUNCTION_CANCER_REPLICATION.md`.
+  - **The linear model runs as written** (`local_species_reactions@1` with
+    `passive_neutral_permeation@1` on junction routes), unqualified.
+    - Against dense solves, the worst error is 1.0e-5 at dt and 2.5e-6 at dt/2: second order.
+    - Its exact Norton-equivalent network, on @3's own routes, agrees to about 1e-14 and is its check.
+  - **Figure 8:** the preprint's printed recursion departs from direct circuit analysis in two places.
+    The engine's solve agrees with direct analysis, whose limit is 1.618 at equal conductances. An
+    independent derivation checks this (`/mnt/workspaces/Cells/gap-junction-derivation-20261117/`).
+  - **The tissue Tables 1–3 are not replicated;** they need FR-15 to FR-17.
+    - A threshold search on the 1D line, against BITSEY's logged threshold, was stopped by an engine
+      check (FR-19).
+    - At the two coupling values that ran through, Cells' 25-cell end state equals BITSEY's saved log
+      character for character. That is descriptive, not judged
+      (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-compare-01/`).
+  - **Viewer packages** (dev-06, from 6729160b, on main through this merge):
+    `/mnt/workspaces/Cells/gap-junction-20261117/runs/dev-06/viewer/`. There are 30 packages, and its
+    `summary.json` holds 7 sweeps.
+  - **Gate:** tiers 1+2 on cc759bed, 505 files, 0 changed. Evidence:
+    `/mnt/workspaces/Cells/gap-junction-20261117/`.
+
 - **FR-4 and FR-5 judged: both passed (17 November 2026, 16:12–18:34 UTC).** The registered protocols
   `fr4-acidification-v1` and `fr5-transfer-v1` were judged once from the clean snapshot of their
   registration commit 32a1d439, on lane B. Tags: fr4-v1-qualified-2026-11-17 and
