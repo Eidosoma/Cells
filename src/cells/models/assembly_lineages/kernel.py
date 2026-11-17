@@ -65,6 +65,23 @@ SSA_CONVENTION = {
 }
 
 
+LIFECYCLE = {
+    "statuses": {
+        "running": "drawing events",
+        "fission_due": "a join reached the fission size; the fission pass replaces the occupant",
+        "complete": "the lineage made its last fission (experiment.fissions)",
+        "extinct": "the assembly emptied: its last molecule left, or an empty daughter was "
+        "followed under the continuation's `extinct` rule",
+        "event_limit": "one growth reached experiment.growth_event_limit events without a "
+        "fission: the lineage stops (no forced fission)",
+        "stalled": "the total rate was not a finite positive number: refused, nothing repaired",
+    },
+    "order": "after each committed event: fission_due if a join reached the fission size, else "
+    "extinct if the assembly is empty, else event_limit if the occupant's events since its birth "
+    "reached the guard, else running",
+}
+
+
 class Structure(NamedTuple):
     """Everything that selects a program: value-free and hashable (the compile key)."""
 

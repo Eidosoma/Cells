@@ -41,8 +41,9 @@ Phi(n_t) - Phi(n_0) = heat - work + sink over the lineage, which is the identity
 - For a passive law (the exchange law alone, or with a passive rate factor) the residual
   heat - [Phi(n_t) - Phi(n_0) + W - S], saved as ledger_residual_kT, is zero to rounding at every
   row, and the runner refuses a run where it is not.
-- For a driven law (GARD's single-event form) the same bookings leave a residual: the unsourced
-  cycle work, which is reported, never closed (GARD_DESIGN §2.4, 2).
+- For a driven law (the preprint's single-event form of GARD's catalysis, gard.py) the same
+  bookings leave a residual: the unsourced cycle work, which is reported, never closed
+  (GARD_DESIGN §2.4, 2).
 
 Ensemble inequalities are not used as checks: the entropy-production rate is non-negative for any
 positive rates, so it cannot fail (§2.4).
@@ -68,7 +69,8 @@ CONVENTIONS = {
 }
 # Of the ledger's scale (closure_tolerance): rounding only. A lineage of 10^4 events with
 # cumulative bookings near 10^4 k_BT can accumulate up to about 10^4 * 2^-53 * 10^4 = 1e-8 in the
-# worst case, against a scale near 3e4; GARD's single-event residuals are about 1 k_BT a fission.
+# worst case, against a scale near 3e4; the preprint's single-event form leaves residuals near
+# 1 k_BT a fission.
 RTOL = 1e-10
 
 

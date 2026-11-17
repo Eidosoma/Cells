@@ -2,9 +2,9 @@
 
 P1: on the two-type square from n = (1, 1), only beta_11 nonzero, the cycle
 +e1, +e2, -e1, -e2 has ln(forward / reverse rates) = 2 ln(1 + b/2) - ln(1 + b/3) - ln(1 + 2b/3)
-under GARD's single-event form (0.012, 0.080, 0.113, 0.117 for b = 1, 10, 100, 1000) and 0 under
-the pair-consistent form; the exchange constants cancel from any cycle. The rates are the
-kernel's own (kernel.rates on the host).
+under the preprint's single-event form of GARD's catalysis (0.012, 0.080, 0.113, 0.117 for
+b = 1, 10, 100, 1000) and 0 under the pair-consistent form; the exchange constants cancel from any
+cycle. The rates are the kernel's own (kernel.rates on the host).
 
 Planted errors it must catch: the single-event kernel declared passive is refused; the anchors
 fail for a factor that ignores the diagonal (both forms would then agree).

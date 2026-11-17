@@ -42,6 +42,7 @@ from cells.models.assembly_lineages import (
     ledger,
     model,
 )
+from cells.models.assembly_lineages import exchange as exchange_law
 from cells.models.assembly_lineages import spec as lineage_spec
 
 WORLD_FORMAT = "cells.assembly_lineages.world@1"
@@ -264,7 +265,12 @@ def world_record(world):
 
 def _law(run):
     m = run.spec.model
-    exchange = {"id": EXCHANGE_LAW, "energy_role": "passive"}
+    exchange = {
+        "id": EXCHANGE_LAW,
+        "energy_role": exchange_law.LAW.energy_role,
+        "formulas": exchange_law.LAW.formulas,
+        "provenance": exchange_law.LAW.provenance,
+    }
     if m.rate_factor is None:
         return {"id": None, "form": None, "exchange": exchange, "check": run.verdict}
     law = factors.resolve(m.rate_factor)
@@ -275,6 +281,7 @@ def _law(run):
         "law_set": law.law_set,
         "comparison_only": law.comparison_only,
         "note": law.note,
+        "formulas": law.formulas,
         "provenance": law.provenance,
         "interface": law.interface,
         "check": run.verdict,
@@ -323,6 +330,7 @@ def run_record(run, world_id):
         "ssa": kernel.SSA_CONVENTION,
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "operators": {"fission": fission.DECLARATION, "continuation": continuation.DECLARATION},
+        "lifecycle": kernel.LIFECYCLE,
         "source": _source(),
         "end": end,
         "time": {

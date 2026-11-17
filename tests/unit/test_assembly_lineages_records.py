@@ -52,6 +52,17 @@ def test_a_pair_bundle_states_its_world_law_and_streams(pair, tmp_path):
         assert run_record["stream"] == pair_record["stream"]
         assert {"tau", "channel", "channels", "prefix"} <= set(run_record["ssa"])
         assert {"fission_work", "sink", "closure"} <= set(run_record["ledger"])
+        # What a replay needs, declared in the record (G2 reads the bundle, never the code).
+        assert {"g_join_i(n)", "g_leave_i(n)", "state", "update"} <= set(
+            run_record["law"]["formulas"]
+        )
+        assert {"join_i", "leave_i", "affinity_i(n)"} <= set(
+            run_record["law"]["exchange"]["formulas"]
+        )
+        fission_rules = run_record["operators"]["fission"]
+        assert {"trigger", "places", "draw", "exact_fraction", "binomial"} <= set(fission_rules)
+        assert {"uniform", "empty", "carrier_keys"} <= set(run_record["operators"]["continuation"])
+        assert {"statuses", "order"} <= set(run_record["lifecycle"])
         assert run_record["end"]["fissions"] == 3
         assert run_record["time"]["unit"] == "nominal"
         assert run_record["records"]["event_time"]["unit"] == "nominal"

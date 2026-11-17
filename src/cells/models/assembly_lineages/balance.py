@@ -12,9 +12,10 @@ kernel's own (kernel.rates, the same code on the host), never a transcription.
 The verdict is a property of the law, not of a world: it is taken on the check's own generic
 probe (PROBE_*: a few types with random transfer constants, supplies and leave constants, the
 law's own probe data, and STATES random states), since special data can satisfy the identity by
-accident (with a uniform or zero catalysis matrix, GARD's single-event form passes). A law
-declared passive that fails is refused; a law declared driven is admitted, and its deviation on
-a world's own data (`world_report`) is reported as its unsourced cycle affinity, never closed.
+accident (with a uniform or zero catalysis matrix, the preprint's single-event form of GARD's
+catalysis passes). A law declared passive that fails is refused; a law declared driven is
+admitted, and its deviation on a world's own data (`world_report`) is reported as its unsourced
+cycle affinity, never closed.
 
 The check's draws come from its own NumPy generator (PROBE_SEED), never from a simulation stream.
 """

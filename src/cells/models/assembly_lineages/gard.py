@@ -145,6 +145,15 @@ def factors_pair_consistent(counts, size, x, data, xp):
     return join, leave
 
 
+STATE_FORMULAS = {
+    "state": "x = beta n, x_i = sum_j beta_ij n_j: a serial left fold over j in declared order, "
+    "computed exactly for the founder and for each followed daughter",
+    "update": "after an event of type i with sign s (+1 join, -1 leave): x <- x + s * beta[:, i]",
+    "replay": "a replay that recomputes x at every event agrees with the incremental x to "
+    "rounding: event sequences exactly (but for a threshold coincidence at rounding), times to a "
+    "relative 1e-15",
+}
+
 PROVENANCE = {
     "kind": "cited",
     "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, "
@@ -170,6 +179,12 @@ SINGLE_EVENT = RateFactorLaw(
     probe=probe,
     provenance=PROVENANCE,
     comparison_only=True,
+    formulas={
+        "g_join_i(n)": "1 + x_i / N, at the current state; 1 when N = 0",
+        "g_leave_i(n)": "1 + x_i / N, at the current state (the leaving molecule counted); 1 "
+        "when N = 0",
+        **STATE_FORMULAS,
+    },
     note=(
         SCOPE + ". The preprint's single-event form, kept for the reference comparison and "
         "declared driven: in a closed two-type world it generically fails Kolmogorov's cycle "
@@ -200,6 +215,13 @@ PAIR_CONSISTENT = RateFactorLaw(
         ],
     },
     comparison_only=True,
+    formulas={
+        "g_join_i(n)": "1 + x_i / N, on n (the state without the moving molecule); 1 when N = 0",
+        "g_leave_i(n)": "1 + (x_i - beta_ii) / (N - 1), on n - e_i (the state without the "
+        "leaving molecule), when N >= 2 and n_i >= 1; 1 otherwise (the last molecule leaves "
+        "uncatalysed; a type with n_i = 0 has no leave)",
+        **STATE_FORMULAS,
+    },
     note=(
         SCOPE + ". The pair-consistent form, passive: the leaving molecule does not catalyse "
         "its own leave, so the chain keeps the beta-independent equilibrium exactly."

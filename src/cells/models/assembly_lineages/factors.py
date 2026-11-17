@@ -15,7 +15,9 @@ computes from the assembly's state. It declares:
   - update(state, data, i, sign, xp): that state after one molecule of type i joins (+1) or
     leaves (-1);
   - factors(counts, size, state, data, xp): (join [C], leave [C]) at the current state;
-- `probe(rng, count)`: generic data on which the check classifies the law (not a world's data).
+- `probe(rng, count)`: generic data on which the check classifies the law (not a world's data);
+- `formulas`: its factors, state and update in words and symbols, including the empty-assembly
+  and last-molecule cases, which a run record states so that a replay needs no code.
 
 Without a rate-factor law the kernel's rates are the exchange law's, and its programs hold no
 factor code at all. Laws register here by ID, resolved when a definition is parsed.
@@ -48,6 +50,7 @@ class RateFactorLaw:
     provenance: dict
     comparison_only: bool
     note: str
+    formulas: dict  # g_join_i, g_leave_i, the state and its update, as a replay needs them.
 
 
 def registered():

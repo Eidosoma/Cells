@@ -45,6 +45,12 @@ DECLARATION = {
     "energy_role": "none of its own: the unfollowed daughter's -k_BT ln pi leaves to the sink",
     "rules": {"daughter": list(DAUGHTERS), "empty": list(EMPTY), "sink": list(SINKS)},
     "stream": "continuation: one uniform, from the parent's carrier key (rule uniform only)",
+    "uniform": "the continuation stream's draw u at counter 0: u < 1/2 picks the first daughter, "
+    "otherwise the second",
+    "empty": "extinct: an empty pick is followed and the lineage ends; other: an empty pick moves "
+    "to the other daughter when it holds a molecule",
+    "carrier_keys": "the founder holds 0; each fission gives its first daughter the lineage's next "
+    "key and its second the one after; the followed daughter's key becomes the slot's occupant",
 }
 
 

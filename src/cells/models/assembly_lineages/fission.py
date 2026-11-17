@@ -52,6 +52,15 @@ DECLARATION = {
     "writes": "the slot's composition: the followed daughter replaces the parent (continuation)",
     "energy_role": "work: the split's change in -k_BT ln pi, from an unmodelled agent (signed)",
     "rules": dict(RULES),
+    "trigger": "a join that brings the size N to `size` (exact: single-molecule events)",
+    "places": "M = execution.molecule_capacity molecule places, by type in declared order: places "
+    "0 .. n_0 - 1 hold type 0, the next n_1 type 1, and so on; places N .. M - 1 are empty",
+    "draw": "M uniforms u_0 .. u_(M-1), the partition stream's draw at counter 0, keyed by the "
+    "parent's carrier key (one per place; only the occupied places' are read)",
+    "exact_fraction": "take = floor(f * N) in float64; rank the occupied places by u_k ascending, "
+    "ties by place; the first `take` places go to the first daughter",
+    "binomial": "an occupied place k goes to the first daughter when u_k < p",
+    "second_daughter": "the parent less the first daughter",
     "stream": "partition: one uniform per molecule place, from the parent's carrier key",
     "provenance": {
         "kind": "cited",

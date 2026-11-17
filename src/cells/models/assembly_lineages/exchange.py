@@ -48,6 +48,7 @@ class ExchangeLaw:
     reads: str
     changes: str
     provenance: dict
+    formulas: dict
 
 
 LAW = ExchangeLaw(
@@ -58,6 +59,13 @@ LAW = ExchangeLaw(
     reads="the assembly's counts n_i and size N; the held activities rho_i",
     changes="one molecule of one type per event: +1 (join) or -1 (leave), from or to the held "
     "phase",
+    formulas={
+        "join_i": "kf_i * rho_i * N, with kf_i = K_i * kb_i (the type family's transfer constant)",
+        "leave_i": "kb_i * n_i",
+        "affinity_i(n)": "ln theta_i + ln N - ln(n_i + 1), theta_i = K_i rho_i, for n <-> n + e_i",
+        "measure": "pi(n) ~ (N - 1)! prod_i theta_i^n_i / n_i!, N >= 1",
+        "without_a_rate_factor": "g_join_i = g_leave_i = 1",
+    },
     provenance={
         "kind": "cited",
         "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint "
