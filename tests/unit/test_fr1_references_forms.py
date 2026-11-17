@@ -56,8 +56,8 @@ def test_A3_two_way_exchange_and_its_Fick_equilibrium():
 
 def test_A5_saturable_release_against_its_equation():
     A, Vmax, KM, Vo = 1e-10, 5e6, 2e-3, 0.1
-    r = forms.saturable_release(1e-3, 0.0, A, Vmax, KM, Vo, T)
     a, b = A * Vmax, KM * Vo
+    r = forms.saturable_release(1e-3, 0.0, a, b, T)
     y = _ode(lambda t, y: [-a * y[0] / (b + y[0])], [1e-3], T)
     assert np.abs(r["n_o_fmol"] - y[:, 0]).max() < 1e-15          # DOP853's own accuracy
     assert np.allclose(r["n_o_fmol"] + r["n_c_fmol"], 1e-3, rtol=1e-15, atol=0)

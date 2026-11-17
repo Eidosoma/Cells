@@ -31,13 +31,21 @@ import numpy as np
 
 from .exact import DIGITS, UNIT_ROUNDOFF, dec
 
+PLANS = {
+    "single": [("E", 0.5), ("I", 1.0), ("E", 0.5)],
+    "halves": [("E", 0.5), ("I", 0.5), ("I", 0.5), ("E", 0.5)],
+    # planted plans, for the controls only
+    "lie": [("E", 1.0), ("I", 1.0)],
+    "swapped": [("I", 0.5), ("E", 1.0), ("I", 0.5)],
+}
+"""The registered plans are ``single`` and ``halves``; ``lie`` (first order) and ``swapped`` (a
+palindrome with the roles exchanged) are planted controls."""
+
 
 def _stages(plan: str) -> list:
-    if plan == "single":
-        return [("E", 0.5), ("I", 1.0), ("E", 0.5)]
-    if plan == "halves":
-        return [("E", 0.5), ("I", 0.5), ("I", 0.5), ("E", 0.5)]
-    raise ValueError(f"unknown stage plan {plan!r}")
+    if plan not in PLANS:
+        raise ValueError(f"unknown stage plan {plan!r}")
+    return PLANS[plan]
 
 
 def iterate(n_c0, n_o0, a, b, dt, steps: int, plan: str = "single", every: int = 1) -> dict:

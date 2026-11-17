@@ -104,10 +104,10 @@ def two_way(n_c0, n_o0, a, b, times) -> dict:
             "floor_fmol": np.maximum(_floor(nc, sec[:, 0]), _floor(no, sec[:, 1]))}
 
 
-def saturable_release(n_o0, n_c0, area_m2, V_max, K_M_mM, V_o_pL, times) -> dict:
-    """A.5's implicit closed form: the compartment releases into the cytosol."""
-    a = exact(area_m2) * exact(V_max)
-    b = exact(K_M_mM) * exact(V_o_pL)
+def saturable_release(n_o0, n_c0, a_fmol_per_s, b_fmol, times) -> dict:
+    """A.5's implicit closed form: the compartment releases into the cytosol at
+    dn_o/dt = -a n_o/(b + n_o), with a = A V_max (fmol/s) and b = K_M V_o (fmol)."""
+    a, b = exact(a_fmol_per_s), exact(b_fmol)
     t = np.asarray(times, dtype=np.float64)
     bf, n0f = float(b), float(n_o0)
     no_w = bf * wrightomega(n0f / bf + np.log(n0f / bf) - float(a) * t / bf).real
@@ -130,17 +130,22 @@ def saturable_release(n_o0, n_c0, area_m2, V_max, K_M_mM, V_o_pL, times) -> dict
         no = np.array([float(v) for v in out])
         nc = np.array([float(dec(n_c0) + (n0 - v)) for v in out])
     return {"n_o_fmol": no, "n_c_fmol": nc, "a_fmol_per_s": float(a), "b_fmol": float(b),
-            "floor_fmol": _floor(no, no_w)}
+            "floor_fmol": np.maximum(_floor(no, no_w), _floor(nc, float(n_c0) + n0f - no_w))}
 
 
 def linear(G, g, y0, times) -> dict:
     """dy/dt = G y + g (constant), by the augmented matrix exponential: decimals and SciPy."""
     n = len(y0)
-    aug = [[exact(G[i][j]) for j in range(n)] + [exact(g[i])] for i in range(n)]
-    aug.append([Fraction(0)] * (n + 1))
+    forced = any(exact(x) != 0 for x in g)
+    if forced:
+        aug = [[exact(G[i][j]) for j in range(n)] + [exact(g[i])] for i in range(n)]
+        aug.append([Fraction(0)] * (n + 1))
+        v0 = [exact(x) for x in y0] + [Fraction(1)]
+    else:
+        aug = [[exact(G[i][j]) for j in range(n)] for i in range(n)]
+        v0 = [exact(x) for x in y0]
     t = np.asarray(times, dtype=np.float64)
     prim = np.empty((t.size, n))
-    v0 = [exact(x) for x in y0] + [Fraction(1)]
     for k, x in enumerate(t):
         E = expm_decimal(aug, exact(x))
         prim[k] = [float(v) for v in matvec_decimal(E, v0)[:n]]
