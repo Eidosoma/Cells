@@ -10,11 +10,21 @@ from cells.batch_io import load_batch_snapshot, write_batch_run
 from cells.batch_window_io import write_windowed_batch
 from cells.core.batch import branch_batch_checkpoints, load_batch, plan_batch, run_batch
 from cells.core.batch_windows import plan_batch_windows
+from cells.core.legacy_entry import legacy
 from cells.core.runner import NumericalError, branch_checkpoint, run, timeline
 from cells.core.specs import ConfigError, load_spec
 from cells.core.windows import WindowPolicy, plan_windows
 from cells.io import load_snapshot, write_run
 from cells.window_io import write_windowed_run
+
+# The older families' subcommands, each with its own arguments (D188 R1: legacy().cli).
+LEGACY_COMMANDS = (
+    "tissue-phase",
+    "tissue-geometry",
+    "tissue-profiles",
+    "assembly-cluster",
+    "assembly-cell",
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -186,26 +196,8 @@ def main(argv=None) -> int:
         from cells.analysis.cli import main as stationary_main
 
         return stationary_main(args[1:])
-    if args and args[0] == "tissue-phase":
-        from cells.tissue_phase import main as phase_main
-
-        return phase_main(args[1:])
-    if args and args[0] == "tissue-geometry":
-        from cells.tissue_geometry import main as geometry_main
-
-        return geometry_main(args[1:])
-    if args and args[0] == "tissue-profiles":
-        from cells.tissue_profiles import main as profiles_main
-
-        return profiles_main(args[1:])
-    if args and args[0] == "assembly-cluster":
-        from cells.assembly_cluster.cli import main as cluster_main
-
-        return cluster_main(args[1:])
-    if args and args[0] == "assembly-cell":
-        from cells.assembly_cell.cli import main as coupled_main
-
-        return coupled_main(args[1:])
+    if args and args[0] in LEGACY_COMMANDS:
+        return legacy().cli(args[0])(args[1:])
     if args and args[0] == "assembly-pool":
         from cells.assembly_pool.cli import main as pool_main
 
@@ -221,28 +213,8 @@ def main(argv=None) -> int:
         return assembly_main(argv[1:])
     args = _parser().parse_args(argv)
     try:
-        if args.command == "excise":
-            from cells.core.excision import excise
-            from cells.excision_io import write_excision
-
-            saved = load_snapshot(args.snapshot)
-            result = excise(saved.spec, saved.checkpoint, args.remove)
-            write_excision(args.output, result)
-            print(
-                json.dumps(
-                    dict(
-                        status="complete",
-                        output=str(args.output),
-                        terminal=result.report["terminal"],
-                        absolute_time_s=saved.checkpoint.time,
-                        continuation=str(args.output / "after")
-                        if result.spec is not None
-                        else None,
-                    ),
-                    indent=2,
-                )
-            )
-            return 0
+        if args.command == "excise":  # An older family's (D188 R1).
+            return legacy().cli("excise")(args)
         if args.command == "windowed":
             print(json.dumps(_window_main(args), indent=2))
             return 0
