@@ -841,7 +841,7 @@ On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`)
   LAPACK call and a limit reaches only loaded libraries. It then sets every loaded BLAS to 1
   thread through threadpoolctl (BSD, `threadpoolctl==3.8.0`).
 - The import pin is taken at the first import of `cells.core`, not in `cells/__init__.py`, whose
-  bytes a held legacy law pins (`processes/charged_surface_work`). Every engine path imports
+  bytes a held legacy law pins (`legacy/processes/charged_surface_work`). Every engine path imports
   `cells.core` before any linear algebra: parse, the models, the runs and the analysis tools.
   A BLAS that loads later starts at 1 thread, because OpenBLAS
   reads `OPENBLAS_NUM_THREADS` when it loads and both builds honour it. One already loaded, when

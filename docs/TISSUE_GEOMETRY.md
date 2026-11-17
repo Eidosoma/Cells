@@ -23,7 +23,7 @@ exit code 2 with an error on stderr. JSON must contain unique object fields and
 finite numbers, including nested metadata. `NaN`, infinities and overflowed
 literals such as `1e999` are refused.
 
-The same operations are also available through `python -m cells.tissue_geometry`.
+The same operations are also available through `python -m cells.legacy.tissue_geometry`.
 
 Each preparation contains:
 
