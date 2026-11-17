@@ -6583,6 +6583,27 @@ feature of the engine - also get adviser in on those choces then lets go".
   differs from an extinct one), the final row, and a reserved `label` stream domain. The run
   qualifier appears only in ids, never in a stream fold.
 
+## D203: A library of human-readable pages for laws, kinds, operators and models (approved tooling)
+
+2026-11-17. On the documentation design (`docs/LAW_DOCUMENTATION_DESIGN.md`), the user said: "sounds good
+lets go". This approves the build, which AGENTS.md counts as tooling, and the design's recommended
+answers.
+
+- **The first landing comes first** (about 3.5–5.5 agent-days):
+  - `cells.declarations@2`: page links (`doc`), module paths and lines, structured citations, a
+    `models` section, an explicit `not_extracted` list, units and read modes;
+  - its format page, `docs/library/DECLARATIONS_FORMAT.md`;
+  - the page tool (`scripts/library_pages.py`) and its drift check (`tests/unit/test_library_pages.py`);
+  - the template, glossary and index;
+  - three pilot pages.
+- **Then the other pages,** in batches. The whole build is about 8.5–14.5 agent-days.
+- **One page per piece,** at `docs/library/<namespace>/<section>/<name>@<major>.md`, keyed by ID, not
+  by code location.
+- **The one plain sentence lives on the page, not in the code.** Wording fixes then change no source
+  fingerprint and strand no checkpoint.
+- **Links into the viewer wait for its public address.** Until then, pages name `select=laws:<ID>`.
+- **Status on a page** reads "Not stated" until a per-piece record exists, and is never invented.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
