@@ -8,7 +8,7 @@ version = "0.16.0.dev0"
 description = "A modular, CPU-first foundation for multiscale cell simulation"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-dependencies = ["jax==0.11.1", "jaxlib==0.11.1", "numpy==2.5.3"]
+dependencies = ["jax==0.11.1", "jaxlib==0.11.1", "numpy==2.5.3", "scipy==1.18.1", "threadpoolctl==3.8.0"]
 
 [project.optional-dependencies]
 gpu = ["jax[cuda13]==0.11.1"]

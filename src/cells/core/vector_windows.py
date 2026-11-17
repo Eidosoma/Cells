@@ -48,7 +48,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import phases
+from cells.core import blas_threads, phases
 from cells.core.batch import (
     BatchSpec,
     MemoryRefusal,
@@ -1039,6 +1039,7 @@ def iter_vector_windows(
     no record and end the run in either mode.
     """
     _refusal_mode(spec, refusals, refused)
+    blas_threads.require_pinned("iter_vector_windows")  # D190.
     plan = plan_vector_windows(spec, policy, checkpoints)
     return _iter_vector_windows(plan, checkpoints, refusals, refused)
 
@@ -1055,6 +1056,7 @@ def run_vector_windowed(
     if sink is not None and not callable(sink):
         raise ConfigError("Vector window sink must be callable")
     _refusal_mode(spec, refusals, refused)
+    blas_threads.require_pinned("run_vector_windowed")  # D190.
     started = perf_counter()
     plan = plan_vector_windows(spec, policy, checkpoints)
     preflight = perf_counter() - started

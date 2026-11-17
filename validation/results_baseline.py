@@ -351,6 +351,8 @@ def save(directory, sets, worlds, max_steps, origin, append=False):
     baseline from the same source, recording the addition in its manifest."""
     import jax
 
+    from cells.core import blas_threads
+
     jax.config.update("jax_enable_x64", True)
     if append:
         manifest = json.loads((directory / "manifest.json").read_text())
@@ -377,6 +379,7 @@ def save(directory, sets, worlds, max_steps, origin, append=False):
             JAX_PLATFORMS=os.environ.get("JAX_PLATFORMS"),
             JAX_DISABLE_JIT=os.environ.get("JAX_DISABLE_JIT"),
             cpu_affinity=sorted(os.sched_getaffinity(0)),
+            blas=blas_threads.record(),  # D190: each BLAS library's version, kernels, threads.
         ),
         max_steps=max_steps,
         definitions_from=str(origin) if origin else "built by this source's validation builders",
