@@ -465,6 +465,18 @@
           "note": "Version 1 (version id 1794931711-eba4). Loaded before publishing on the card, wide in the light theme and at a phone's width in the dark theme: eight strips, none broken, no sideways scroll, no error (but the local server's missing favicon); both stills of the page opened and looked at, and five of its 384 frames (chevrons, the arrowhead and the taper at true speed; chevrons in the stream at true speed and at a thousandfold). Read back from the artifact service after the publish: the page as written stands whole inside the published index.html, byte for byte."
         }
       ]
+    },
+    "ribosome_options": {
+      "title": "Ribosome Size Options",
+      "url": "https://claude.ai/artifact/6wrCAPzZ56bTXzNagUuyZs",
+      "page": "out/publish-previews/ribosome-options.html",
+      "sharing": "private to its owner",
+      "versions": [
+        {
+          "date": "2026-11-17",
+          "note": "Version 1 (version id 1794952019-c59a). For the user's choice after Version 30: how a bacterium's ribosomes are drawn in the schematic picture now that they are measured. Eight stills of the page at 1440 by 900, each opened before it was published: E. coli and Syn3A before the fix (the version then live, a textbook 20 nm), under rule A, with the proteins (the page's default: 19 and 22 drawn, enlarged as the membrane's proteins are), under rule B, at their own size (all of those below the cut), and each to scale, where the rules are the same. The words say what each rule keeps true and what it gives up, and that the default is one value to switch. Made by a small script from the stills; nothing is drawn on the page itself."
+        }
+      ]
     }
   }
 }
