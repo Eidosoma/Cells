@@ -1,0 +1,141 @@
+{
+ "schema": "cells.closed_compartment_protocol@1",
+ "id": "fr1-closed-compartment-v1",
+ "title": "FR-1's first acceptance: a closed compartment (cell_owned_compartments@1) loaded and released by exchange@1's laws, exchange's first judged acceptance, against independent references, with silence, energy, restart, batch, refusals and planted controls",
+ "status": "PROPOSED (drafted 17 November 2026 by the FR owner on branch fr1-protocol, from docs/CLOSED_COMPARTMENT_DESIGN.md §6.3's items C1 to C13, against the declaration as built in milestone 1, §12). Not registered; registration is the lead's",
+ "registration_plan": {
+  "status": "not registered",
+  "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates and S1 to S5 as development checks (development_runs)",
+  "needs_first": [
+   "the independent references (R-closed, R-step-map, R-linear, R-capacitor, R-energy), written by the FR references agent from docs/CLOSED_COMPARTMENT_DESIGN.md's Appendix A and validation/closed_compartment/reference_inputs.json alone (the lead's ruling of 17 November 2026: after FR-10's references, before FR-3's)",
+   "the world builders of every part (validation/tissue/compartment_acceptance_fixtures.py; C9 and C2 use compartment_fixtures' W and W+)",
+   "the generator (records only), the judge (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only) and the drafter of the machine criteria, in FR-10's form"
+  ],
+  "path": "the references and the tools; the dt study (development); a rehearsal of every judged part on a registered dry-run copy; the lead's registration; one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's, FR-5's and FR-10's)",
+  "move_2": "registration and the judged run sit on the same side of D188's move 2 (the lead's rule of 17 November 2026)"
+ },
+ "rung": "FR-1, acceptance 1 (numerical verification, D174's first claim kind; no biological comparison, D151)",
+ "question": "Does cell_owned_compartments@1 hold a closed compartment as a declared node whose content exchange@1's laws load and release exactly (the flux and first-order exports and the saturable import at rounding against their closed forms), whose two-way first-order exchange converges at second order to its closed form and equals the palindrome's step map at rounding, whose compositions with turnover's clearance, D152's reaction and an uptake path follow their linear systems, which stays electrically silent beside a live owner, whose every law books its moved amounts' exact free-energy change (from a trace too), whose runs restart and batch bitwise, whose every refusal holds with its reason, whose declaration is pure identity, and whose planted misbookings are caught?",
+ "engine_models": [
+  "resolved_pump_composite@1 over resolved_pump_tissue@3 (the composite and its inner model)",
+  "cell_owned_compartments@1 (the declaration: identity, the topology refusals, the admitted list)",
+  "scheduled_species_exchange@1 with its step palindromic_exact_exchange_stages@1 (the laws judged: flux and first-order export, first-order and saturable import)",
+  "scheduled_species_turnover@1 (C6's first-order clearance at the node)",
+  "local_species_reactions@1 (C7's first-order S -> P at the node)",
+  "constant_field@1 (W+'s K leak on the owner's wall, C9)",
+  "imex_ars222_face_electromigration@1 and rk4 (the solvers)",
+  "the IDs the judged definitions print are checked against this list by the generator (pre-registration)"
+ ],
+ "scope": "The neutral first version (§3.3): no ion route and a zero charge anchor on the compartment, no face naming its node, a held-bath topology, one compartment per node, compositions on §4's admitted list. One neutral species S (C7 adds P). Every world synthetic and species-only (D150's quiescent worlds) except C9's W+, whose owner is live. Not claimed: version 1.1's charged routes and anchors (FR-4 and FR-5 judged those), the doors (T1, T2, V, R, D, C, F), any biological comparison, vesicles, stochastic loading, volume change (§6.4)",
+ "worlds": {
+  "builders": "validation/tissue/compartment_acceptance_fixtures.py (every part but C2's and C9's, which use validation/tissue/compartment_fixtures.py's W and W+). Every world: the owner cell_0 (1 pL) with its wall on the held bath, the compartment lys_0 at node ecs_0 (0.1 pL) behind its bounding patch contact_0 (1e-11 m^2), no face naming ecs_0, S neutral, records every 10 ms on the step grid unless stated",
+  "C3_loading": "flux_loading (J = 1e-4 fmol/s) and first_order_loading (k_e = 0.5/s): the cytosol's 1e-3 mM pool into the compartment at 1e-6 mM, 5 s, ARS at the declared 1 ms. Each law is one exact stage per half-step",
+  "C4_two_way": "two_way: a first-order export (a = 10/s) and a first-order import (b = kappa = 20/s, k_u = 2e-4 m/s) on the bounding patch, from the pool, 1 s (thirty relaxation times), ARS on the ladder 1, 0.5, 0.25 and 0.125 ms",
+  "C5_saturable": "saturable_release: the compartment at 1e-2 mM (1e-3 fmol) released into the cytosol by a saturable import, a = A V_max = 2e-4 fmol/s, K_M = 5e-3 mM (b = 5e-4 fmol), 5 s, ARS at 1 ms",
+  "C6_degradation": "load_and_degrade: first-order loading (k_e = 1/s) with turnover's first-order clearance at ecs_0 (k = 2/s), 3 s, ARS on the ladder",
+  "C7_reaction": "load_and_react: first-order loading (k_e = 1/s) with D152's mass-action S -> P at ecs_0 (k_r = 2/s; S and P one moiety; P at the trace elsewhere), 3 s, ARS on the ladder",
+  "C8_uptake": "uptake_path: ecs_e (1 pL, face-free, S at 1e-3 mM) -> the cytosol by a first-order import on contact_e (kappa_u = 2/s) -> the compartment by a first-order export (k_e = 1/s), a closed three-node chain, 5 s, ARS on the ladder",
+  "C9_silence": "W+ (compartment_fixtures.live_compartment: the owner at K 140, Na 10, Cl 20 mM with a K leak and -0.06 V through its anchor; the compartment loaded by exchange), in the scalar, windowed, vector-window and batch programs, under RK4 at 0.1 ms, and across a restart through a snapshot; S4 against live_without_compartment",
+  "C10_energy": "every C3, C4 and C5 world's route work against R-energy; the RK4 face-free world (C3's first-order loading at 0.1 ms, every row); the IMEX species-only worlds of C3 to C8",
+  "C11_from_trace": "from_trace: each of the four laws (flux and first-order export into a 1e-15 mM compartment; saturable and first-order import into a 1e-15 mM cytosol) under ARS at 1 ms (1 s) and RK4 at 0.1 ms (0.2 s), recorded at every step",
+  "C12_restart_batch": "two_way with a change of both rates at 0.5 s: restarts through the engine's checkpoint at 0.25, 0.5 and 0.75 s (before, at and after the change), in process and through a snapshot; a vector batch of four worlds with different compartment volumes and rates against each world's scalar run and against the reversed batch",
+  "C13_controls": "a misbooked move (the exchange stage's booked move into the compartment off by 1e-6 relative, its route accumulator unchanged) and a misbooked work (the stage's booked work off by 1e-6 relative), each planted in the generator's control part only (questions_for_the_lead 2)",
+  "C1_refusals": "a representative of each of §1.4's refusals 1 to 7 beside its admitted neighbour (FR-10's ruling 4), with the reason each must name",
+  "C2_identity": "S5's four traced pairs (W under ARS and RK4, W with clearance beside exchange, the declaration alone against no operators): program text, constants and bindings identical"
+ },
+ "references": {
+  "author": "the FR references agent (code-blind), from the design's Appendix A and the registered input file only (the lead's ruling of 17 November 2026)",
+  "inputs": "validation/closed_compartment/reference_inputs.json (a registered file written from the builders' declarations, pinned by tests/unit/test_fr1_reference_inputs.py)",
+  "R_closed": "A.2, A.3, A.5: the closed forms of C3's laws, C4's two-way relaxation and C5's implicit saturable release, each with a floor",
+  "R_step_map": "A.4: the palindrome's step map at each rung, iterated, its fixed point x* and the splitting term beside -a(a + 2b) dt^2/96, with a floor",
+  "R_linear": "A.6, A.7, A.8: C6's, C7's and C8's linear systems by their matrix exponentials, with C6's cleared amount and C7's moiety, each with a floor",
+  "R_capacitor": "A.9: V_b and V_pm from given charges by a dense solve of its own (C9)",
+  "R_energy": "A.10: G and each law's free-energy change along the reference trajectories (C10, C11)"
+ },
+ "budgets": {
+  "status": "declared before any protocol run (FR-10's rule, the lead's ruling of 17 November 2026: declared first; the dt study reports against them as development)",
+  "B_split": "C4's closed form, C6, C7 and C8 (the items with a splitting error): each node's S within 1e-3 of that node's largest change over the run (max_t |n(t) - n(0)|) of the reference at every record at the declared 1 ms",
+  "rounding": "C3, C5, C11's trajectories and C4's step map: within the classes rule's floor, N eps max|q| over the run's N steps (FR-4's), times 10; C5 also within its Newton tolerance, NEWTON_RTOL = 1e-12 of the solve's absolute terms per step",
+  "energy": "each law's cumulative work within 1e-12 relative (and N eps of its magnitude) of the free-energy change of its touched nodes along the engine's own trajectory; against R-energy's trajectory within B_split's budget carried through dG/dn where the item has a splitting error",
+  "silence": "S1 to S3 as §3.3 fixed them before milestone 1, unchanged",
+  "controls_margin": "each control differs from its arm by at least 10 x the arm's budget or bound on the same quantity"
+ },
+ "criteria": {
+  "C1_refusals": "each refusal class's representative refused by its own check with its reason, and its neighbour admitted and run",
+  "C2_identity": "S5: the four traced pairs identical in program text, constants and bindings",
+  "C3_loading": "both laws' node amounts at rounding of R-closed at every record; each route's moved accumulator equal to the node's gain at rounding (per-route reconciliation)",
+  "C4_two_way": "the observed order of each node's S on the three finest rungs by FR-4's classes rule; at the declared 1 ms, the Richardson error and the difference from R-closed within B_split; at every rung, the engine equal to R-step-map's iterated map at rounding; the engine's late-time x within rounding of A.4's x*; and the splitting term identified: at every rung the engine's x/x_eq - 1 at the last record within 1e-3 relative of -a(a + 2b) dt^2/96, the fixed point's relative displacement (its next term is O(dt^4): 5.3e-6 relative at 1 ms; questions_for_the_lead 6)",
+  "C5_saturable": "the node amounts within rounding and the Newton tolerance of R-closed's implicit solution at every record",
+  "C6_C7_C8_linear": "each node's S (C7's P too) at the declared 1 ms within B_split of R-linear at every record; orders on the ladder by the classes rule; C6's cleared amount and C7's moiety within B_split",
+  "C9_silence": "S1 bitwise, S2 and S3 within @3's charge tolerance at every row in every program and across the restart; the owner live (its K row moving, |phi| >= 0.05 V); S4 reported",
+  "C10_energy": "each route's cumulative work equal to its touched nodes' free-energy change at rounding on the engine's trajectory, and against R-energy within the energy budget; the RK4 world within the absolute 2e-8 pJ at every row; the IMEX worlds' energy residual over the integrated flows <= 2e-3 at every record",
+  "C11_from_trace": "every row of the eight runs: the energy ledger within its bound (RK4's absolute 2e-8 pJ; ARS's 2e-3 relative), and the onset step's residual at rounding of its own flows; the trajectory at rounding of R-energy's",
+  "C12_restart_batch": "every restart bitwise the straight run from its time; each batched world within 1e-12 relative of its scalar run and bitwise its place in the reversed batch",
+  "C13_controls": "the misbooked move fails the compartment's outside ledger while the cytosol's passes; the misbooked work fails the RK4 world's energy ledger"
+ },
+ "controls": {
+  "K1": "C4 at the declared rung against R-closed without its import (a one-way world's solution): at least 10 x B_split",
+  "K2": "C6 without its clearance against R-linear's C6: at least 10 x B_split",
+  "K3": "C9's planted controls (a) a K route of 1e-13 m/s and (b) a 1e-17 C anchor on the compartment, through the refusals' test-only bypass: each breaks S1 or S2",
+  "K4": "C12: a restart with the rate change moved one step is not bitwise the straight run",
+  "K5": "C13's two plants (the criteria's own controls)"
+ },
+ "dt_study_criteria_written_first": {
+  "ladder_s": [
+   0.001,
+   0.0005,
+   0.00025,
+   0.000125
+  ],
+  "declared_dt_s": 0.001,
+  "worlds": [
+   "C4_two_way",
+   "C6_degradation",
+   "C7_reaction",
+   "C8_uptake"
+  ],
+  "checks": [
+   "admission of every rung",
+   "orders as C4's and C6-C8's",
+   "the Richardson error at the declared 1 ms within B_split",
+   "the energy residual over flows <= 2e-3 at the declared 1 ms, falling at second order down the ladder"
+  ],
+  "verdict": "the declared 1 ms stands if every check holds; otherwise the arm declares the finest rung that passes, reported, not repaired"
+ },
+ "harness_limits": "a part ended by its runtime limit or memory cap is a harness failure, not a verdict: the judged run is void and is relaunched once, whole, from the same snapshot; a second harness failure goes to the lead. An engine refusal is a verdict",
+ "recording_rules": [
+  "the generator writes records only (results.json per unit); the judge reads records and never runs; parts from more than one source are refused",
+  "every record carries the snapshot's identity; a judged run comes from a clean snapshot",
+  "undefined values are None, never NaN; a None fails its criterion"
+ ],
+ "reported_not_judged": [
+  "S4 (the rest of the world against the world without the node)",
+  "each reference's floor",
+  "compile time, memory and cost per step",
+  "the splitting term's ratio to its leading form at each rung"
+ ],
+ "what_it_does_not_show": "no biological comparison (a measured trafficking or uptake dataset, registered on its own, D151); no charged content (FR-4 and FR-5); no vesicles, stochastic loading or volume change; integration grants no acceptance (D143)",
+ "judged_parts": "written by the drafter when the generator exists",
+ "outcome_rules": "a criterion passes or fails as written; a failed criterion is reported, not repaired; the protocol passes when every judged criterion passes",
+ "development_runs": {
+  "runs": [
+   {
+    "path": "/mnt/workspaces/Cells/closed-compartment-m1-20261114-01",
+    "status": "milestone 1's gates (§12): the tier-1 smoke, S5's four pairs, S1 to S3 in W+ with the planted controls in every program family, crossrev"
+   }
+  ],
+  "note": "development evidence only: no run of this protocol exists"
+ },
+ "questions_for_the_lead": [
+  "1. The budgets declared first in FR-10's form: B_split at 1e-3 of each node's largest change; rounding items at 10 x the classes rule's floor. Confirm, or name other fractions",
+  "2. C13's plants: a test-only change of the exchange stage's booked move and work, made in the generator's control part (as milestone 1's tests bypassed refusals 4 and 5 by monkeypatch). Confirm the mechanism for a judged control",
+  "3. C2 and C9 rerun milestone 1's S5 pairs and S1 to S3 from the judged snapshot, in every program family: about 6 minutes of CPU. Confirm the scope",
+  "4. C12's vector criterion as §6.3 wrote it: each batched world within 1e-12 of its scalar run, and bitwise against the reversed batch. Confirm",
+  "5. The worlds' synthetic values (V_O = 0.1 pL; the rates) are chosen to resolve each item above rounding at the declared 1 ms. Confirm, or name other values before the references agent starts FR-1",
+  "6. A reading to confirm: §6.3's splitting term -a(a + 2b) dt^2/96 is the fixed point's relative displacement, x*/x_eq - 1, not x* - x_eq. From A.4's x* = alpha(1 - beta)/(1 - alpha^2 beta) with h = dt/2, in 60-digit arithmetic at four rate pairs, (x* - x_eq) / (-a(a + 2b) dt^2/96) -> x_eq exactly, with an O(dt^2) correction (0.9999947 x_eq at a = 10/s, b = 20/s, dt = 1 ms). C4 judges it so; the design's line could say 'relative' (a docs clarification, the lead's call)"
+ ],
+ "disclosures": [
+  "Drafted on 17 November 2026 after milestone 1, whose gates and silence results are known (§12). No budget, threshold or ladder here has been run against: no generator exists, and the worlds were only admitted and run once to their horizons to check they are well posed",
+  "The reference input file was written before this draft, at the lead's request, from the same builders, and is pinned to them"
+ ]
+}
