@@ -26,6 +26,80 @@ the evidence that closes each gate.
 - The order of the ROADMAP's current priorities 7–9: division, the protein catalogue and
   Golgi/trafficking. Their content stays.
 
+## Status on 17 November 2026, and the core-completion lane (D214)
+
+**Landed on main, 17 November:**
+- **The law and operator registries,** the static model table and family operators (seam F).
+- **The declarations manifest `cells.declarations@2`** with its format page, and the first
+  plain-language library pages (D203).
+- **The run-view writer's reach,** with `local_species_reactions@1` declaring its view, and the
+  relationship tables `cells.relations@1` (D200, D202).
+- **FR-4's and FR-5's registered protocols,** judged and passed: 21 of 21 and 51 of 51 criteria,
+  tags fr4/fr5-v1-qualified-2026-11-17, qualified within their scope.
+- **GARD's G1** (D192, D197) and the gap-junction replication's first stage (D207): development work,
+  not judged.
+- **FR-19's fix:** the passive routes' heat-share floor.
+
+**Still incomplete, kept visible until their acceptance cases pass:**
+- **The module system's stage 1** (D185): one separately installed module that registers, builds,
+  runs, contributes checks and observations, and checkpoints and resumes, with Cells' source
+  unchanged.
+- **Executable levels of detail:** D175's four fields are refused at registration.
+
+**Gate wording.** A gate passes when it shows **0 changed against the recorded baseline**. That is
+not the same as all tests passing. In the baseline, 35 of tier 1's 353 rows and 5 of tier 2's 161
+rows have failing or erroring tests, and there are 5 collection errors.
+
+**The core-completion lane (D214).** An external adviser's architecture follow-up, reviewing main
+b661cd1a, was forwarded by the user. Their instruction: "two fixes then backlog".
+1. **Two extension-boundary fixes, now** (branch `core-boundary-checks`). They are an exception to
+   D195's "code follows move 2".
+   - **A kind writes only its own resolved, declared fields.** This applies to its initial values,
+     derivatives and control outputs, with planted foreign-write refusals at construction and
+     tracing boundaries.
+   - **More than 31 model checks are refused at admission.** The vector failure mask packs them into
+     an int32 from bit 1. The last supported and the first unsupported configurations are tested.
+2. **The shared physical interfaces through their consumers.** These are seams A (cycles), B
+   (populations), C (binding), D (heat booking) and E (finite fuel's core part; moieties), each
+   with one mechanism owner (`docs/CORE_SEAMS_DESIGN.md`).
+   - Seam C takes the buffered-state predictor correction (§17), with P1's convergence and ledger
+     checks rerun.
+   - **New acceptance case, unestimated:** the first finite-fuel acceptance shows depletion,
+     regeneration and recovery through shared ATP, ADP and Pi, with a consuming pump.
+3. **The module system's stage 1, with one installed external module** (D185,
+   `docs/MODULE_SYSTEM_DESIGN.md`). New to the lane, unestimated.
+   - The built model freezes the component resolution it used, as the AGENTS.md provenance rules
+     allow: no per-call or bytecode attestation, and no hash literals.
+   - Unused-module invariance extends to a world that uses a real kind.
+   - **Low priority** (the user, D214), and with it D195's question of a public stability promise.
+4. **The minimal static level-of-detail contract.** D175's four fields are designed together for
+   fuel, machines and mitochondrial hosts. Requirements are in ARCHITECTURE.md, "Levels of detail".
+   - Finite fuel is the first executable consumer: a reduced regeneration closure against a small
+     detailed network, with the envelope and error budgets declared first, and an out-of-envelope
+     refusal.
+   - Selection is fixed before a run.
+   - The executable comparison is new and unestimated.
+   - **The user agreed** that it comes before machines' M1a (D214).
+5. **General composition through D191's declared-read rule:** current volume, area, activity masks
+   and population capacity, proved with an independent additional operator. Explicit refusals stay.
+6. **The packed GPU qualification on the merged core** (§ "Status on 14 November", item 4;
+   `docs/PACKED_GPU_EXECUTION_DESIGN.md`).
+   - It reports packed repeatability, packed against lone agreement, and throughput, each
+     separately, with scales and limits frozen before held-out judgment.
+   - Ensemble throughput, coupled-world size and biological duration stay separate milestones.
+   - It needs the L4, so it is announced to the visualizer and kept off demo hours. New to the lane,
+     unestimated.
+7. **Precise reporting.** This section is the refresh. Owed at the final-tree checkpoint: the D172
+   restructure's G3 negative controls and G4 measurements (compile time, memory, end-to-end time),
+   as recorded above and in PROGRESS.
+
+**The order:**
+1. The two fixes.
+2. The retire (D198) and move 2.
+3. The pass, with about four owners (D213). Item 4 runs ahead of machines' M1a.
+4. Item 6, as the L4 allows.
+5. Item 3 last, at low priority.
+
 ## Status on 14 November 2026, and the working order (D156)
 
 Levels: *implemented* (on main), *guarded* (tests, crossrev and frozen-model guards),

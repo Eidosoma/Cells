@@ -85,6 +85,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D198's retire batch on main (17 November 2026, evening).** The merge of `retire-processes` at
+  292aa967.
+  - **Retired:**
+    - 33 unreached source modules: the held charged-surface work law and its backend, conservative
+      polygon geometry, fixed-polygon removal, stable mesh reconstruction, stable-seed control volumes,
+      explicit finite-ECM partitions and their dynamics, and the rectangular environment kernels;
+    - 64 validation modules;
+    - 951 test IDs.
+
+    Four BETSE-convention kernels moved to `validation/betse/`.
+  - **Recovery:** tag pre-d198-retire-2026-11-17 holds every removed path.
+  - **The two laws** (charged-surface work, and conduction J = σE) are to be rebuilt under D206 and
+    D211. Their reference outputs are saved in `/mnt/workspaces/Cells/d198-retire-20261117/references/`.
+  - **The gate on 292aa967:**
+    - tiers 1+2, 490 files, 0 changed;
+    - G1, 113 of 113;
+    - collected IDs, main minus exactly 951;
+    - FR's bitwise landing set, passed;
+    - crossrev identical except the kinds set's three FR-19 texts, which are byte-identical to the
+      superseded record.
+  - **Evidence:** `/mnt/workspaces/Cells/d198-retire-20261117/gate-292aa967/`.
+
 - **FR-19 fixed on main (17 November 2026, evening).** The merge of `passive-share-tolerance` at
   3d8e7b3b.
   - **The fix:** `passive_neutral_permeation@1`'s heat-share sign rule now has the raw-sum check's
@@ -164,7 +186,8 @@ machine-readable inputs, results, checks and failures.
   - **The final probe set:** `/mnt/workspaces/Cells/gard-g1-part2-20261117/probes-c6dd5956/probes/`.
     Its roles.json is FINAL, with the standing "development run of the engine, not judged".
   - **The independent references (G2)** pass all ten rows on that set, with nothing tuned (report-5).
-    They're on branch gard-g2-references at e2047928, not yet on main.
+    They are on main since merge b3677b72, of gard-g2-references at 7bf68c24 (tiers 1+2, 515 files,
+    0 changed).
   - **Standing (D192, D197):** these are development runs, not judged.
     - The single-event form is the preprint's, kept for comparison and declared driven.
     - The pair-consistent form is passive, and the default.

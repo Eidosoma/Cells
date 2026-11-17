@@ -243,3 +243,20 @@ def test_branches_without_partition_uniforms_are_refused(standin, tmp_path):
     stripped = [_without(p, tmp_path / f"b{k}", "partition_uniforms") for k, p in enumerate(roles["branches"])]
     report = harness.run_rows(dict(roles, branches=stripped), rows=[9])
     assert report["status"] == 2 and "partition_uniforms" in report["rows"]["9"]["error"]
+
+
+def test_an_uncatalysed_single_event_last_leave_fails_row_3(standin, tmp_path):
+    _, roles = standin
+    dst = tmp_path / "kp"
+    shutil.copytree(roles["kernel_probe"], dst)
+    with np.load(dst / "probe.npz") as npz:
+        arrays = {k: npz[k] for k in npz.files}
+    one = arrays["states"].sum(axis=1) == 1
+    leave = arrays["leave_single_event"].copy()
+    leave[one] = arrays["k_leave"][None, :] * arrays["states"][one]  # the last molecule leaves uncatalysed
+    arrays["leave_single_event"] = leave
+    np.savez(dst / "probe.npz", **arrays)
+    report = harness.run_rows(dict(roles, kernel_probe=str(dst)), rows=[3])
+    assert report["status"] == 1
+    failing = [c["detail"]["form"] for c in report["rows"]["3"]["checks"] if not c["passed"]]
+    assert failing == ["single-event"]

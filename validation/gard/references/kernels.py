@@ -25,11 +25,12 @@ leave of the last molecule would need b at the empty state, which is undefined. 
 rules are supported:
 - ``last_molecule_stays`` disables leaves at N = 1 in both forms. The closed world and
   the kernel identities use it.
-- ``extinction_uncatalysed`` is the engine's declared convention (17 November). The
-  last molecule leaves at the bare k_b,i in both forms, the empty state is absorbing,
-  Phi(empty) = ln pi(empty) = 0, and that leave books q = -ln(K_i rho_i).
-- ``extinction`` (single-event only) lets the last molecule leave at k_b b_i(x), as the
-  preprint's kernel would.
+- ``extinction_uncatalysed`` is the pair-consistent form's rule. The last molecule leaves
+  at the bare k_b,i, because its leave does not count itself. The empty state is
+  absorbing, Phi(empty) = ln pi(empty) = 0, and that leave books q = -ln(K_i rho_i).
+- ``extinction`` (single-event only) lets the last molecule leave at k_b b_i(x) =
+  k_b (1 + beta_ii). That is the preprint's kernel, which counts the leaving molecule.
+  Amended 17 November 2026: this is now the single-event form's rule.
 In the preprint's lineage regime (masses 40-80) no rule ever acts.
 """
 

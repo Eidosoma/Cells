@@ -71,6 +71,35 @@ is such a term.
 | 9 | Selection (§5.2) | Moran replacement; a finite shared pool; serial transfer | **A finite pool and serial transfer.** Moran only for comparisons |
 | 10 | Verification (§7) | Kernel and closed-world proofs; the GARD limit; experimental anchors | **All three.** A1 and A4 judged; A2 reported until §7.4's question is settled (D138, U6) |
 
+### 0.2a The lead's rulings for OL1 (17 November 2026; D215)
+
+Three physical choices, ruled from this note and D199, not settled between the builder and the
+references. Both sides cite this subsection.
+- **Kinetics by phase.**
+  - Steps inside an assembly (a condensed phase) use counts on m: activities drawn without replacement,
+    with the extent evaluated on m (`membrane_kinetics: count_on_m`). An assembly has no volume until
+    OL2.
+  - Steps in a dilute phase (the pool or the lumen) are mass action scaled by physical volume (R1).
+  - OL2 adds the membrane's geometry as new token values. Existing values keep their meaning.
+- **The last molecule.** `last_molecule: extinct` covers a step in either direction whose result
+  empties the assembly. Its rate is the pair rule at the boundary, in its **cancelled** form.
+  - Written through F, with F(empty) = 0, the factor E(m) is zero, so a literal product would give
+    zero and the last molecule would never leave.
+  - Written on the leaving side, the rule is 0/0. Cancelling E(m)/ff(N−1, r) to 1/ff(N−1, r−1)
+    gives exactly G1's k⁻ for the last leave. A forward step that empties the assembly takes the
+    same cancelled form.
+  - A zero last-leave rate is therefore an error. There is no separate boundary formula.
+  - `kept` and `reversible` are as their tokens declare.
+  - (Amended the same evening, after a reading showed the literal form gives zero.)
+- **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
+  phase is refused until a declared meaning exists, since its fraction would have to include the
+  solvent.
+- **The measure** (D215, which amends U6(a)):
+  - the GARD limit uses `multinomial_less_one` with `extinct`, which reproduces G1's rates exactly;
+  - physical worlds use `multinomial` with `kept`.
+
+  The line "G1's ideal-mixing exchange is its first instance" holds only with G1's ln N term.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.
