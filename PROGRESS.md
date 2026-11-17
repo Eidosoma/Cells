@@ -104,6 +104,12 @@ machine-readable inputs, results, checks and failures.
   - **Against the rehearsal** (`r2/run-ed2b8ee0`, on a registered dry-run copy): 18 parts are
     bitwise equal. The references part differs only in the path and sha256 of the W3 records it
     reads, which was expected and listed before launch.
+  - **Disclosure, the launcher:** before the run, the launcher's dry-run check refused the protocol
+    of record. That check is the run folder's `judge-run.sh`, run tooling outside the repo. It
+    matched the phrase "a registered dry-run copy" in the lead's registration status. It was
+    narrowed to the dry-run copy's own status prefix, "registered for the rehearsal only". Separately
+    checked: the snapshot's protocol is the one of record, with its matching registration record.
+    The judge and the engine were not touched.
   - **Scope:** `scheduled_bath_composition@1` as built at 407ba164. It covers neutral formula units
     only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms
     and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal
