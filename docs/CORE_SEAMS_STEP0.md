@@ -122,8 +122,11 @@ INaK's and IpCa's cycles, and no human cardiac registry exists yet.
 
 ### 1.3 Amendment, committed before the numerical run
 
-Reading Beard's typeset equations showed three things the criterion must say exactly. Nothing was
-run between the criterion's commit and this amendment.
+Reading Beard's typeset equations showed three things the criterion must say exactly.
+- No part of item 1's screen ran between the criterion's commit and this amendment. Items 2 and 3
+  ran in between.
+- Before this amendment fixed Beard's modes, his equation images had been read, and so had Text S1's
+  pages 13 and 15.
 
 - **Laws written per half reaction.** Beard's complexes III and IV (Eqs. 7, 24 and 9) write their
   exponent over 2RT, so ln(Π⁻/Π⁺) = κ·ΔG/RT with a printed κ = ½. Test (a) then reads
@@ -167,9 +170,20 @@ after the fit are 1e-14 to 4e-14. The evidence is `$W/screen/screen.json` and
 `$W/screen/screen-extra.json`, from `$W/scripts/cycle_screen.py` and `cycle_screen_extra.py`. Our
 own code was written from the printed equations; no model file or author code was read.
 
-**Departures from the criterion as committed.** mpmath is not installed in any project environment.
-The 50-digit checks use Python's `decimal` module instead (`$W/scripts/hp.py`); no package was
-installed.
+**Departures from the criterion as committed, and what was run late.**
+- **mpmath** is not installed in any project environment. The 50-digit checks use Python's `decimal`
+  module instead (`$W/scripts/hp.py`); no package was installed.
+- **The wider sweep for test (a)** was left out of the first run, which fixed the bath and INaK's held
+  rows. It ran afterwards (`$W/scripts/cycle_screen_wide.py`, `$W/screen/screen-wide.json`), with
+  Na_o 100–160, K_o 2–10, Ca_o 0.5–3 and Na_i 1–40 mM, and INaK's held rows varied:
+  - INaCa's cycles A and C keep the slope −0.2118 (residual 2e-14), and B still factors;
+  - INaK keeps −0.31 (residual 3e-14), so its held rows enter as mass action and only V moves d.
+- **The counts below come from a grid enriched around each mode's zero.** On the 20,000 uniform
+  states alone, which are fractions of the domain:
+  - cycle A is wrong-signed at 3.4% (bulk) and 2.9% (subspace) of the domain, and C at 1.9% and 1.8%;
+  - ORd's 3:1 booking is wrong-signed at 21% and 15%;
+  - the total dissipation is negative at 0 and 31 (0.16%) states.
+- **IpCa's page (p. 16)** was rendered and read after the run. It matches the screened form.
 
 **INaCa.** Text S1's exchanger is a four-state diagram. Between states 2 and 3 it has two parallel
 branches, (k₃′, k₄′) and (k₃″, k₄″), so it has three cycles:
@@ -196,16 +210,17 @@ standard potential can absorb that.
   against its free energy between E_NCX/1.2118 and E_NCX. At the published diastolic
   E_NCX ≈ −28.5 mV that window is about 5 mV wide, inside the domain.
 - Cycle C's window lies between E_Na/1.2118 and E_Na, about 43–52 mV at Na_i 20 mM, also inside.
-- 50,449 of 204,407 bulk grid states are wrong-signed for cycle A, with |ΔG_A| up to 0.8 RT.
+- On the grid enriched around the zeros, 50,449 of 204,407 bulk states are wrong-signed for cycle
+  A, with |ΔG_A| up to 0.8 RT. On the uniform domain, 3.4% are.
 - At 50 digits, at ±0.01 mV around cycle A's own zero (200 concentration sets), exactly half the
   states run against ΔG_A, as the algebra predicts.
 - **The population's total dissipation,** −Σ J_κΔG_κ, is negative at:
-  - 5,158 of 240,552 subspace grid states, at V from 42 to 60 mV, worst −0.049 of the one-way
-    flux;
-  - 1 bulk grid state, at 59.5 mV.
+  - 5,158 of 240,552 enriched subspace states, at V from 42 to 60 mV, worst −0.049 of the one-way
+    flux; 31 of the 20,000 uniform ones (0.16%);
+  - 1 enriched bulk state, at 59.5 mV.
 - **ORd's own booking.** Its concentration equations book 3·I_NaCa to Na⁺ and I_NaCa to Ca²⁺, so its
-  3:1 mode carries J = I = J_A + J_C. That J is wrong-signed at 20–27% of grid states, across the
-  whole domain, with |ΔG_A| up to 5.4 RT.
+  3:1 mode carries J = I = J_A + J_C. That J is wrong-signed at 15–21% of the uniform domain, across
+  all of V, with |ΔG_A| up to 5.4 RT.
 
 **Verdict: FAILS as printed.** For cycles A and C neither A's form nor the fallback holds, and not
 even the population's total is sign-definite on the domain.
@@ -263,6 +278,8 @@ and 2 K⁺ in, and turns MgATP into MgADP + P + H⁺.
 - **The printed x₁** has β₂·β₄·β₃ where King and Altman's spanning tree gives β₁·β₃·β₄. It moves the
   printed fluxes by at most 1.4e-9, since β₃ is negligible. The tree's four edge fluxes agree to
   3e-11.
+  - **For the cardiac lane:** its note records the reader comment's slip as "a β₂ that should be
+    β₃". This derivation finds β₂ in place of β₁. The references should settle which.
 - A's form, with S = Π⁺/Σ, would change the flux by −2.1% at the published diastolic state.
 
 **Verdict:** FALLBACK on the domain, conditional on the registry's ATP potential. It does not factor,
@@ -299,6 +316,9 @@ and C3 fires.
   - The source holds F1F0 at that zero ("X_F1 large enough"). So at any matrix pH but 7 it runs
     against ΔG next to its operating point. Only 7 random grid states land in that window, but it is
     where the source runs. It fails.
+  - **This verdict assumes the registry carries the matrix proton explicitly,** as mitochondria §1.3
+    proposes with its base-form rows. With FR-4's transformed rows at a reference pH, the missing
+    term would become part of the fuel's pH band instead.
 - **ANT (Eq. 14).**
   - J > 0 exactly when ([fADP]_i[fATP]_x/([fADP]_x[fATP]_i))·e^{(0.35 + 0.65)FΔΨ/RT} > 1, which is
     ΔG_ANT < 0, because the shares sum to 1.
@@ -426,9 +446,10 @@ keyed by path.
      `stable_mesh_{metric,operator}_reconstruction`.
    - **The pins are module pins, checked at call time.** `fixed_polygon_removal` compares the hashes
      of the modules it imports.
-   - **Green tier-1 tests sit behind them:** `test_fixed_polygon_removal.py` (2 passed),
+   - **Green tier-1 tests may sit behind them:** `test_fixed_polygon_removal.py` (2 passed),
      `test_stable_geometry_primitives.py` (84), `test_stable_mesh_metric_saved_domains.py` (22) and
-     `test_stable_mesh_physical_reconstruction.py` (33).
+     `test_stable_mesh_physical_reconstruction.py` (33), all green in the tier record. That a stale
+     pin would turn them red is inferred from one call site; it was not run.
    - **Any placement makes the pins stale.** The modules import each other by `cells.processes`
      paths, so any placement that moves them rewrites those imports. Placed under `laws/`, the guard
      would rewrite them too.
@@ -452,12 +473,14 @@ stable surface. **Proposed for the F owner:**
   import that is not from `cells.modules`;
 - the surface lists what kinds need from the core, such as the registry's potential readers.
 
-**Verdict:**
-- **Set G passes.**
-- **Set F passes with one exclusion rule:** nothing is extracted from `surface_transport.py`,
+**Verdict.**
+- **By its own criterion, item 2 does not pass:** findings 1, 4 and 5 hold. Set G alone is clean.
+- **Set F is clean under one exclusion rule:** nothing is extracted from `surface_transport.py`,
   `electrochemistry.py` or `extracellular_field.py`, and declarations name those kernels where they
-  are. With it, F's per-law extractions and the guard touch no live pin that has a green test behind
-  it.
+  are.
+  - The planner, rerun on set F+ without `surface_transport.py` (18 files, `run-set-Fexcl/`),
+    reports 0 touched pins.
+  - So under that rule, F's per-law extractions and the guard touch no live pin.
 - **On move 2:** the geometry cluster's placement is a condition.
 
 ## 3. The refusal-4 search
@@ -530,9 +553,31 @@ The composition matrix pairs operators, and the protocol module derives criteria
 | The leak and the damage pore | `proton_constant_field_leak@1` | H | yes | `stage_term` (`passive_routes.py`:480) |
 | The cargo route and the cargo pore | `passive_neutral_permeation@1` | X | no | `bound_rate` (`passive_routes.py`:499) |
 
-**Result: no world is newly refused,** with the terms as on main and with D4's term added. No saved
-or registered world puts the transporter's neutral law, the one law with no term, beside a
-compartment.
+**The worlds the FR drivers derive.** These were judged afterwards (`$W/scripts/refusal4_derived.py`,
+`$W/refusal4/derived-ef9fc1a8.json`): 34 definitions.
+- `dt_study`'s FR-4 rungs, and its rungs of FR-4's P_K = 0 control.
+- Its FR-5 rungs, for both arms under every control.
+- The delivery world. It holds a compartment and D152's reactions, and no kind.
+
+None is refused. Three other kinds of driver need no separate pass:
+- the other drivers (`refusal_paths`, `world_agreement`, `compartment_ph_qualification`, the window
+  probes) build from the same two builders with other steps, starts or controls;
+- the window probes use development worlds, which hold no compartment;
+- K2's planted control (`planted.py`) replaces the transporter's hooks under its own kind ID and
+  law ID, so its moves and laws are the declared world's.
+
+A grep of `validation/`, `configs/` and `examples/` for the transporter's law constants
+(`atp_transporter`, `neutral.LAW_ID`, `NEUTRAL_LAW`, `PUMP_LAW`, the `transporters` key) finds no
+other world: outside `definitions.py` the hits are the older families' `cotransporters` and BETSE's
+own names.
+
+**Result: no world is newly refused,** with the terms as on main and with D4's term added. That covers
+61 definitions. No saved or registered world puts the transporter's neutral law, the one law with no
+term, beside a compartment.
+- **A note for B1's design.** Version 1.3 reads each law's terms from the law registry, by law ID. A
+  planted variant such as K2's reuses a law ID, so it is admitted on the law's declaration, not on
+  its own hooks. K2's variant does supply its `stage_term`. The check should still confirm that the
+  kind has the hook the law declares.
 
 **Out of scope, reported:** `tests/unit/test_cell_owned_compartments.py` asserts version 1.2's lists
 at lines 463, 494–496, 525, 603 and 613–632, the last of these the test of the lists' premise.
@@ -571,6 +616,19 @@ table, at its post-move-2 path (§2's draft, with differences flagged).
 The evidence is `$W/owners/owners.json`, from `$W/scripts/owner_check.py`.
 - **The check:** 78 rows, files or named groups. No file has two owners, and no row repeats. There
   are 7 agents, and every file the design note names is in the table. A planted duplicate fails it.
+- **Coverage against the design note itself.** The 62 paths named in its §1–§13 were mapped through
+  move 2's draft and diffed against the table (`$W/scripts/owner_coverage.py`,
+  `$W/owners/coverage.json`).
+  - **49 are in the table.**
+  - **One bare name, `ph_condition.py`,** matches both the kind and the law. The note's use (:217) is
+    the kind's, which is in the table.
+  - **The other 12 are named, not edited by the pass:**
+    - the dispatch points that R1 changed in move 1: `__main__.py`, `execution/schedule.py`,
+      `definitions/specs.py`, `registry/models.py` and `legacy/registration.py`. §8.4 designs the
+      models table but does not build it;
+    - the byte-kept files: `processes/{electrochemistry,__init__}.py` and
+      `numerics/{extracellular_field,fixed_step}.py`. The surface imports from them;
+    - `operators/species_regulated_availability.py`, whose factors stay held (§4.3).
 - **Paths:** the moves note's draft (fa19d80c) and the move-2 owner's regeneration (ef9fc1a8) agree
   on every path in the table.
   - The drafts differ only elsewhere. The older one still moves five specs that move 1 has since
@@ -591,6 +649,13 @@ module they test):
 | **Operators owner** | `operators/{contract,partition,compartments,species_reactions,osmotic_water,species_turnover,membrane_insertion_v2,membrane_state}.py`, `models/pump_composite{,_adapter}.py`, `tests/unit/test_cell_owned_compartments.py`, `docs/OPERATOR_COMPOSITION_DESIGN.md`, `docs/CLOSED_COMPARTMENT_DESIGN.md` | Composition's M1–M5 first, then B1's operator part (lifecycle by roles, refusal 4 per move, the composite's refusal lifted for kinds with roles), D's declared energy roles and E's hook in `contract.py` |
 | **References agent** | `validation/core_seams/` (new), composition's references | A's and C's independent references, then composition's |
 | **FR owner** | `validation/compartment_ph_engine/` and the FR protocols: no file of the pass | FR-4 and FR-5. A3 keeps their programs |
+
+**Three readings of the lead's message are this note's own:**
+- **The F owner is counted inside the seven.** If the user's "one more agent building the core" means
+  an eighth, option (c) below reopens.
+- **"F's edits to the kinds' registry"** is read as owning `registry/kind_registry.py` whole.
+- **F's per-law extractions and the guard** are proposed for the F owner on item 2's result. They are
+  not given.
 
 **How the four known overlaps resolve:**
 1. **`models/surface_pump_v3.py`:** the @3 owner alone, for D, B1's @3 part, E's moiety ledgers and
