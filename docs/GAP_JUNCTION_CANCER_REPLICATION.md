@@ -24,27 +24,32 @@ Each comparison below says whether its number is:
   features (§5): a charged microRNA on junctions (F2), a two-state connexin gate (F3),
   species-selective closed gates (F4) and junction docking rules (F5). The 3D table also needs a
   larger field (F7), and Table 3's neighbor-depol column a mechanism the preprint does not give
-  (F8).
+  (F8). The lead filed these as FR-15 to FR-17.
+- **One tissue condition runs on today's engine:** the "neither" condition on the 1D line. Its
+  reference is BITSEY's log, not a printed number (§7).
 - **The preprint's linear model ("intuitive model": equations 1-2, appendix, Figures 3, 5 and 8)
-  runs on the engine in two forms.**
-  - **As written:** a source and a decay in each cell, plus a junction route. It runs through
-    `local_species_reactions@1` and the passive-routes kind's neutral junction law. That law is
-    not numerically qualified. A scratch probe converges to equation 2 at second order in dt (§4).
-  - **As its exact Norton equivalent** on @3's own routes, which is the driver's committed form.
-    It reproduces equation 2 and Figure 5 to 3e-14 or better, and computes straight chains' Norton
-    conductance (§4).
-- **Figure 8.** The appendix's printed recursion gives a chain's conductance growing without
-  bound. The engine's solve of a straight chain gives one that saturates at 1.618 G_eq,1 (§4).
+  runs on the engine in two forms**, both in the committed driver (§4).
+  - **As written:** a source and a decay in each cell (`local_species_reactions@1`) and a junction
+    route (the passive-routes kind's `passive_neutral_permeation@1`, not numerically qualified).
+    Its results are in §4 (`dev-04`).
+  - **As its exact Norton equivalent** on @3's own routes. It reproduces equation 2 and Figure 5
+    to 3e-14 or better and computes straight chains' Norton conductance. It is the check on the
+    as-written runs.
+- **Figure 8: what the printed equations give, against direct analysis and the engine's solve.**
+  The appendix's recursion, read as Figure 7's resistance form, gives a chain conductance that
+  grows without bound; taken literally, it is a resistance. Direct analysis and the engine's solve
+  of a straight chain give a conductance that saturates at 1.618 G_eq,1 (§4).
 - **The engine's energy check sets the step** for neutral species on membranes and junctions,
-  well below the stability bound. This is the known limit of the shared-inventory design's
-  finding 3 (§4).
+  well below the stability bound. This is consistent with the shared-inventory design's finding 3
+  (§4). The lead filed it as FR-18.
 
 **Engine models run.**
 - `resolved_pump_tissue@3`, with `constant_field@1` membranes and junctions for one neutral
-  species, held reservoirs and `junction_voltage_relaxation@1` pinned open.
+  species, held reservoirs and `junction_voltage_relaxation@1` pinned open: the Norton form.
+- `resolved_pump_composite@1` over @3, with `local_species_reactions@1` and the passive-routes
+  kind's `passive_neutral_permeation@1`: the linear model as written, and the "neither" search.
 - The `resolved_capacitor_components_current_continuity@1` closure and
   `imex_ars222_face_electromigration@1`.
-- Probes: `local_species_reactions@1` and `cells.passive_routes@1` in `resolved_pump_composite@1`.
 
 Driver: [`validation/gap_junction_tissue/`](../validation/gap_junction_tissue/). Evidence:
 `/mnt/workspaces/Cells/gap-junction-20261117/`.
@@ -168,8 +173,9 @@ the work began.
 **The reference is the preprint's printed numbers**, each cited in
 [`paper.py`](../validation/gap_junction_tissue/paper.py) (`REPORTED`):
 - Tables 1-3, printed;
-- Figure 1's peaks and floors, Figure 3b's values at G_GJ = G_eq, and Figure 8's line values and
-  intercepts, read with stated tolerances;
+- Figure 1's peaks and floors and Figure 3b's values at G_GJ = G_eq, read with stated
+  tolerances. The preprint gives no conductance values for Figure 8, and none of its plotted lines
+  is read;
 - Figure 5's 7.15 and ratio 1.33x, printed in the caption;
 - the voltages and the effective valence, printed.
 
@@ -178,7 +184,8 @@ not the engine.
 
 **Independent references, derived from the preprint's equations alone** (`paper.py`):
 - equation 2;
-- the printed recursion taken as a conductance, and the straight chain's recursion;
+- for Figure 8's chains, direct analysis and the printed recursion, taken literally and read as
+  Figure 7's resistance form, in the terms of an independent derivation (§4);
 - a dense linear solve of any network of linear cells;
 - the Chen-Izu gate, with the code's Cx45 constants. Those reproduce Figure 1: 0.968 and 0.945 at
   dV = 0, floor 0.06.
@@ -196,6 +203,12 @@ not the engine.
 - **Table 1** matches no saved output at that revision.
 - **The logged "no tricks" thresholds** (the "neither" condition) are 7.18e-15 m²/s on the 1D line
   and 1.89e-15 on the 2D field. The preprint prints only the 3D value, 1.1e-15.
+- **The 1D log comes from an earlier revision of the code than b2cb370's.**
+  - Its search is titled "lowest Kd that fixes a 1-spot", where `zombie.py` line 1068 has "...fixes
+    a tumor".
+  - It prints a junction dump that b2cb370's `sim_is_fixed` does not.
+  - The settings it prints are b2cb370's: the switch's scales, `ITERATE=False`, valence -1 through
+    junctions, Snail 72, and "no tricks".
 
 ## 3. Mapping onto Cells
 
@@ -205,13 +218,13 @@ not the engine.
 | GHK leak channels; held bath | `constant_field@1` membrane routes or `kleak_always_open@1`/`naleak_always_open@1` populations; held reservoirs | Covered |
 | BETSE's thermodynamic Na/K-ATPase | `nak_atp_mass_action_positive@1`, Cells' own thermodynamic pump | Different law, same role: not a gap. A replication would set leaks so that the voltages match the preprint's |
 | Ion electrodiffusion through junctions | `constant_field@1` junction routes | Covered |
-| A neutral species made and destroyed in each cell that crosses junctions | `local_species_reactions@1` with the passive-routes kind's `passive_neutral_permeation@1` on a junction host: admitted, and it runs (§4). @3's own constant-field junction route for such a species is refused | Available, not qualified (Q1) |
+| A neutral species made and destroyed in each cell that crosses junctions | `local_species_reactions@1` with the passive-routes kind's `passive_neutral_permeation@1` on a junction host: admitted, and it runs (§4). @3's own constant-field junction route for such a species is refused | Admitted and runs; not qualified (Q1) |
 | The miRNA's drift on junctions (valence -1) while it reacts | The species operators and the passive routes' neutral law carry valence 0 only | **F2** |
-| Chen-Izu two-state Cx45 gating | One junction law, `junction_voltage_relaxation@1`, BETSE's relaxation in abs(Vj). A passive route opens with its junction's gate | **F3** |
+| Chen-Izu two-state Cx45 gating | One junction law, `junction_voltage_relaxation@1`: a relaxation in abs(Vj), its rates cited from BETSE v1.5.0. A passive route opens with its junction's gate | **F3** |
 | Closed gate passes ions (floor 0.06) but not miRNA (floor 0) | One minimum open fraction per junction, shared by every route through it | **F4** |
 | Depolarization by state; connexin expression by state, with the border rules (minimum, and the mean of 1 and P) | `species_regulated_availability@1`: Hill factors of a route-free species in the same cell, on channel and junction availability. A junction's sides combine by product | Partly: **F5** |
 | Neighbor-depol: a tumor cell depolarizes its healthy neighbours | No mechanism in the preprint; the code gates a cell's K channel by its neighbours' state | **F8** |
-| The EMT switch (modified Hill rates, six-site miR200-Zeb binding) | `local_species_reactions@1`, written as sums of Hill-factored sources and translation terms. The legacy `emt_mirna@1` holds the equations (a reference, D196) | Admitted at the definition (§4), not run; **F6** optional |
+| The EMT switch (modified Hill rates, six-site miR200-Zeb binding) | `local_species_reactions@1`, written as sums of Hill-factored sources and translation terms. The legacy `emt_mirna@1` holds the equations (a reference, D196) | Runs in the "neither" search (§7); **F6** optional |
 | Lattices: 1D 25, 2D 25x25, 3D 25x25x25 | Factored field solve, at most 2048 nodes | 1D and 2D fit; 3D: **F7** |
 | Binary search on the diffusion constant or GJ_power | Driver level | Validation tooling |
 | The linear model | As written: reactions and a passive junction route, as above. As its Norton equivalent: @3's own routes | Both run (§4) |
@@ -235,11 +248,17 @@ for this work.
 - It is the linear model only, not the EMT switch.
 
 **Criteria, fixed in the driver before any run** (`run.py`):
-- E1: the engine against the dense solve of the same network, 1e-9 relative.
+- E1: the Norton form against the dense solve of the same network, 1e-9 relative.
 - E2: the steady state, under 1e-12 relative change over the last 10 s.
-- E3: the probe flux from the engine's own membrane ledger.
-- E4: chains' Norton conductance against the straight chain's recursion, 1e-8.
-- P1 and P2: the readings of the preprint.
+- E3: the probe flux from the engine's own ledger against G_probe (c - held), 1e-9.
+- E4: chains' Norton conductance against direct analysis, 1e-8.
+- W1-W3, for the as-written form at the step rule's dt and at half of it, fixed at 7cdd7dce before
+  any as-written run:
+  - W1: steady (E2) at both steps;
+  - W2: within 1e-4 of the dense solve at the half step;
+  - W3: an observed order log2(e(dt)/e(dt/2)) in [1.6, 2.4], where e(dt) > 1e-9.
+- P1: the readings of the preprint (Figures 3b and 5). Its tolerances were set after the closed
+  forms were evaluated; they check the reading, not the engine.
 - K1: a planted 1% junction error must fail E1.
 - A1: the engine's own run checks.
 
@@ -249,8 +268,11 @@ for this work.
 | --- | --- | --- |
 | `smoke-01` | e84e62e6 | Probes, the gate fit, and the first dt study |
 | `dev-01` | 36bc5f6c | dt x rate <= 0.1; one arm refused by the energy check |
-| `dev-02` | b177cfa2 | dt x rate <= 0.04; every arm complete (the numbers below) |
-| `dev-03` | eebd608a, clean | The same with the engine's run records and views, for the viewer |
+| `dev-02` | b177cfa2 | dt x rate <= 0.04; every Norton arm complete |
+| `dev-03` | eebd608a, clean | The same with the engine's run records and views; stopped, superseded by `dev-04` |
+| `fixture-02` | 7cdd7dce, clean | Two 60 s format fixtures for the viewer, Norton and as written |
+| `dev-04` | 7cdd7dce, clean | Every part: the Norton form, the as-written form with its dt study, records and views (the numbers below) |
+| `neither-01` | 52caf2dc, clean | The "neither" search (§7) |
 
 The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded in their
 `checkout.patch`. No run's code differed from its revision.
@@ -293,12 +315,16 @@ The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded
 
 - **The reading.** The residual is second order in dt, with a coefficient that depends on the
   world. The stability bound is dt x rate <= 1.
-- **Already known.** This is the limit recorded as finding 3 of
-  [SHARED_INVENTORY_REACTIONS_DESIGN.md](SHARED_INVENTORY_REACTIONS_DESIGN.md) (probe C4): in
-  species-only worlds the host energy ledger refuses once the per-step relaxation exponent reaches
-  0.1.
-- **What follows.** The check is not loosened. The driver keeps dt x rate <= 0.04, which covers
-  both worlds. The compared steady state is the scheme's fixed point and does not depend on dt.
+- **Consistent with finding 3** of
+  [SHARED_INVENTORY_REACTIONS_DESIGN.md](SHARED_INVENTORY_REACTIONS_DESIGN.md) (probe C4). There,
+  species-only worlds were refused by the host energy ledger from a per-step relaxation exponent
+  x = 0.1, with second-order errors below it.
+  - In C4's per-junction variable, x = dt G (1/V_a + 1/V_b), both worlds here pass at x = 0.039
+    and are refused at 0.078. Where the refusal starts depends on the world.
+- **What follows.** The check is not loosened; the lead filed it as FR-18. The driver keeps
+  dt x rate <= 0.04, which covers both worlds.
+  - The Norton form's compared steady state is the scheme's fixed point and does not depend on dt.
+  - The as-written form's fixed point moves by O(dt²), as measured below.
 
 **The Norton-equivalent network** (`dev-02`).
 - All 24 arms pass E1 (at most 2.7e-14), E2 (at most 9e-16) and E3 (at most 1.3e-12), and the
@@ -330,27 +356,40 @@ The earlier snapshots were dirty only in `docs/README.md`'s index line, recorded
 - **The backup cells** act as a 4/3-larger cell B only as G_GJ grows. At 50 G_eq the drawn network
   sits 0.06 mM from the lumped values.
 
-**Figure 8: chains' Norton conductance**, G_eq,n / G_eq,1, at G_GJ = G_eq,1.
-- G_GJ = G_eq,1 is derived from Figure 8's 1- and 2-cell lines (both 0.1 in its units).
-- The engine's column is from two loads at the port. The printed recursion is taken as a
-  conductance.
-- The [mR] values at Iexit = -0.5 mol/s are in Figure 8's units. Figure 8's values are read.
+**Figure 8: what the printed equations give, against direct analysis and the engine's solve.**
+G_eq,n / G_eq,1 of a straight chain of n linear cells, sealed at its far end, at
+G_GJ = V_cell K_dec = G_eq,1.
+- The preprint gives no conductance values for Figure 8: no G_GJ, V_cell or K_dec. The ratio
+  compared here is therefore a choice, and nothing is read from the figure's plotted lines.
+- The columns besides the engine's are those of an independent derivation from the preprint's
+  equations, `/mnt/workspaces/Cells/gap-junction-derivation-20261117/derivation.md`, checked by
+  its `chain_check.py`. `paper.py` computes them again:
+  - **D**, direct analysis: G_n+1 = g + (1/G_n + 1/G_GJ)⁻¹, with g = V_cell K_dec = G_eq,1;
+  - **P_lit**, the printed recursion taken literally. Its right side is a resistance, so its values
+    hold only in units of g;
+  - **P_res**, the printed right side read as 1/G_eq,n+1: Figure 7's resistance form with both
+    resistances indexed n, G_n+1 = (1/G_n + 1/G_GJ)⁻¹ + G_n.
+- The engine's column is the Norton conductance from two loads at the port (`dev-04`, E4).
 
-| n | Engine | Straight chain (derived) | Printed recursion (derived) | [mR] at Iexit = -0.5: engine / printed recursion / Figure 8 read |
+| n | Engine | D | P_lit (units of g) | P_res |
 | --- | --- | --- | --- | --- |
-| 1 | 1.000000 | 1 | 1 | 6.000 / 6.000 / 6.0 |
-| 2 | 1.500000 | 1.5 | 1.5 | 4.333 / 4.333 / 4.33 |
-| 3 | 1.600000 | 1.6 | 2.1 | 4.125 / 3.381 / 3.4 |
-| 4 | 1.615385 | 1.615385 | 2.777 | 4.095 / 2.800 / 2.8 |
-| 5 | 1.617647 | 1.617647 | 3.513 | 4.091 / 2.423 / 2.45 |
-| 10 | 1.618034 | 1.618034 | 7.666 | (not in Figure 8) |
+| 1 | 1.000000 | 1 | 1 | 1 |
+| 2 | 1.500000 | 1.5 | 0.666667 | 1.5 |
+| 3 | 1.600000 | 1.6 | 0.937500 | 2.1 |
+| 4 | 1.615385 | 1.615385 | 0.703546 | 2.777419 |
+| 5 | 1.617647 | 1.617647 | 0.895628 | 3.512688 |
+| 10 | 1.618034 | 1.618034 | 0.765540 | 7.665784 |
 
-- **The engine's chains** equal the straight chain's recursion to 1e-12. They saturate at the
-  golden ratio, (1 + sqrt 5)/2 G_eq,1, and return the unloaded value 1.000000.
-- **The printed recursion** gives values that grow without bound: 24%, 42% and 54% above the
-  engine's at n = 3, 4 and 5.
-- **What this rests on.** The comparison rests on the algebra and on the reading of Figure 8. The
-  engine checks only the straight chain.
+- **The engine's chains** equal D to 6e-13 (E4). They saturate at the golden ratio,
+  (1 + sqrt 5)/2 G_eq,1, and their intercept is the unloaded value, 1.000000, for every n.
+- **P_res** equals D at n = 1 and 2 and grows without bound from n = 3. It is 31%, 72% and 117%
+  above D at n = 3, 4 and 5; equivalently, D is 24%, 42% and 54% below P_res.
+  - The derivation traces the difference to the second term: the whole n-cell chain stands where
+    direct analysis adds one cell's own g.
+- **P_lit** equals D only at n = 1.
+- **The intercept**, mR_UL0, is the same in every form; only the slope, 1/G_eq,n, differs.
+- **Figure 7** reproduces D exactly when its un-indexed R_thev is read as one cell's (the
+  derivation).
 - **Scope.** The preprint's tissue simulations do not use this recursion. Table 2's own increments
   shrink with size: its 0.5 row rises by 2.4 from 1x1 to 2x2 and by 1 from 7x7 to 8x8, in units of
   1e-14.
@@ -368,25 +407,31 @@ eebd608a, not part of the committed driver):
 - **The reading.** That is second order: the split of reactions around @3's step moves the fixed
   point by O(dt²). The Norton form has no split and is exact at its fixed point.
 
-**Records for the viewer** (`dev-03`).
+**Records for the viewer** (`dev-04`).
 - Each arm is written by the engine's own writer, `cells.io.write_run`, under `worlds/<arm>`, with
   its run view (`cells.run_view@1`, `view.json`) and the driver's `run.json`. The run view carries
   a prescribed 2D layout after the preprint's drawings.
-- `run.json` holds the revision, the models, the definition's hash, what the run represents and
-  every arm's parameters and readouts.
+- `run.json` holds the revision, the models, the definition's hash, what the run represents (for
+  its form) and every arm's parameters and readouts.
 - Selected arms are written again as viewer packages, with a recording subset. Each layer's
   records stay under 1 MB (`viewer/index.json`).
-- A 60 s format fixture is at `runs/fixture-01`.
+- **The as-written arms have complete records but no run view.** The writer refuses them:
+  `local_species_reactions@1` declares no view layers, no set for its `reaction_route` axis and no
+  axes for its readout columns. Seam F's registry owner is adding those declarations. Views for
+  these arms will then be written from the saved records, or from a rerun.
+- `runs/fixture-01` and `runs/dev-03` are superseded and are not for the viewer.
 
 ## 5. Gaps, as general engine features
 
 None is specific to this paper (D136, D144). Each needs its own design note (D142) and
 qualification before a replication relies on it.
 
-- **Q1 (qualification, not a gap). A reacting neutral species on junctions.**
+- **Q1 (qualification, not a gap; FR-15). A reacting neutral species on junctions.**
   - The passive-routes kind's `passive_neutral_permeation@1` on a junction host, beside
-    `local_species_reactions@1`, is admitted and runs. The law is not numerically qualified, and
-    the split moves the fixed point by O(dt²) (§4).
+    `local_species_reactions@1`, is admitted and runs today. The law is not numerically
+    qualified, and the split moves the fixed point by O(dt²) (§4).
+  - Whether that admission is intended is the core's call. The reactions' parser does not ask
+    which species @3 or the passive routes move; only `species_regulated_availability@1` does.
 - **Why @3's own constant-field junction route stays refused.**
   - The code: `species_common.check_impermeant`, at `src/cells/models/operators/species_common.py`
     line 148. It is called by `parse_species` (line 94) for the operators that write species
@@ -403,23 +448,23 @@ qualification before a replication relies on it.
   - That term landed in 119ffb74 (`neutral_material_rate`;
     [INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §13.6, with its D148 record). The refusal
     and its message were not revisited.
-  - The intended lift is not D191's composition rule, which settles how an operator reads a field
-    that another operator changes. It is the declared passive-routes law: INNER_MODEL_V4_DESIGN.md
-    §11, "Its refusal lifts only for this law, declared".
-- **F2. Charged trace species in reactions and on junctions.**
+  - D191's composition rule, which settles how an operator reads a field that another operator
+    changes, does not lift this refusal. INNER_MODEL_V4_DESIGN.md §11 lifts it for the
+    passive-routes law alone: "Its refusal lifts only for this law, declared".
+- **F2. Charged trace species in reactions and on junctions (FR-15).**
   - The miRNA's drift with its effective valence -1, while it reacts, with its charge counted in
     the capacitor closure.
   - Today the species operators and the passive routes' neutral law take valence 0 only. The
     proton leak is charged, but on patches only. The code's convention of drift without charge is
     not carried into the engine.
-- **F3. A connexin gating catalogue.** A two-state junction law (Chen-Izu et al. 2001), algebraic
+- **F3. A connexin gating catalogue (FR-16).** A two-state junction law (Chen-Izu et al. 2001), algebraic
   or relaxing, with per-connexin constants, homotypic and heterotypic, beside
   `junction_voltage_relaxation@1`. The preprint's Discussion turns on heterotypic Cx43/Cx45 at the
   tumor border.
-- **F4. Size selectivity of the closed gate.** A per-species (per-route) residual permeability of
+- **F4. Size selectivity of the closed gate (FR-16).** A per-species (per-route) residual permeability of
   the closed state, so that large solutes (miRNA, dyes) pass only open channels while small ions
   keep a floor.
-- **F5. Expression-coupled junctions with declared docking rules.**
+- **F5. Expression-coupled junctions with declared docking rules (FR-16).**
   - `species_regulated_availability@1` sets channel and junction availability from a cell's
     species, and a junction's two sides combine by product only.
   - Missing: the minimum, for underexpression, and the mean, for overexpression's border.
@@ -427,7 +472,7 @@ qualification before a replication relies on it.
 - **F6. Regulatory laws as declared laws** (optional). The modified Hill (lambda) form and the
   microRNA-target binding partition as checked laws, with the regulatory coordinates' physical
   scale and time unit declared.
-- **F7. A field solve beyond 2048 nodes**, for the 3D field (15,626 nodes) and any tissue beyond
+- **F7. A field solve beyond 2048 nodes (FR-17)**, for the 3D field (15,626 nodes) and any tissue beyond
   about 2,000 cells.
 - **F8. A mechanism for neighbor depolarization.**
   - The preprint gives none. The code gates a cell's K channel directly by its neighbours' state.
@@ -436,18 +481,19 @@ qualification before a replication relies on it.
 
 **Which gaps block which result.**
 
-| Preprint result | Needs | Blocked by |
-| --- | --- | --- |
-| Figure 1 | the two-state Cx45 gate with per-species floors | F3, F4 |
-| Figures 3b, 5, 8 | linear cells and neutral junction transport | Nothing: run as written (Q1) and as the Norton equivalent |
-| Table 1, neither | EMT switch, neutral miRNA on junctions, 3D field | F7 (with Q1) |
-| Table 1, depol alone | adds state-set voltage, miRNA drift, the gate and its floors | F2, F3, F4, F7 |
-| Table 1, underexpression alone | adds state-set connexin, minimum docking | F5, F7 |
-| Table 1, both | all of the above | F2, F3, F4, F5, F7 |
-| Table 2 (2D, both) | as Table 1, both, on 626 nodes | F2, F3, F4, F5 |
-| Table 3, depol | overexpression (mean docking), depolarized tumor | F2, F3, F4, F5 |
-| Table 3, hypol | overexpression, every cell at one voltage | F5 (with Q1) |
-| Table 3, neighbor-depol | adds the neighbour mechanism | F2, F3, F4, F5, F8 |
+| Preprint result | Needs | Blocked by | Compared number printed in the preprint? |
+| --- | --- | --- | --- |
+| Figure 1 | the two-state Cx45 gate with per-species floors | F3, F4 | No: read off the plot; the gate's constants are the code's |
+| Figures 3b, 5, 8 | linear cells and neutral junction transport | Nothing: run as written (Q1) and as the Norton equivalent | Figure 5: yes (7.15 and 1.33x, in the caption). Figure 3b: read (6.67 / 8.33). Figure 8: none; derived only |
+| Table 1, neither | EMT switch, neutral miRNA on junctions, 3D field | F7 (with Q1) | Yes (1.1e-15, 3D) |
+| The neither condition on the 1D line or 2D field | as above, on 26 or 626 nodes | Nothing (with Q1) | No: BITSEY's log (§2, §7) |
+| Table 1, depol alone | adds state-set voltage, miRNA drift, the gate and its floors | F2, F3, F4, F7 | Yes |
+| Table 1, underexpression alone | adds state-set connexin, minimum docking | F5, F7 | Yes |
+| Table 1, both | all of the above | F2, F3, F4, F5, F7 | Yes |
+| Table 2 (2D, both) | as Table 1, both, on 626 nodes | F2, F3, F4, F5 | Yes |
+| Table 3, depol | overexpression (mean docking), depolarized tumor | F2, F3, F4, F5 | Yes; the log labels its columns and rows differently (§2) |
+| Table 3, hypol | overexpression, every cell at one voltage | F5 (with Q1) | Yes; as above |
+| Table 3, neighbor-depol | adds the neighbour mechanism | F2, F3, F4, F5, F8 | Yes; as above |
 
 **The minimum set per table:**
 - Table 1: F2, F3, F4, F5 and F7.
@@ -455,7 +501,9 @@ qualification before a replication relies on it.
 - Table 3: F2, F3, F4 and F5, and F8 for its third column. Its hypol column alone needs F5.
 
 The "neither" condition needs no new feature on the 1D line or the 2D field. Its references there
-are the code's logged thresholds (§2), not printed numbers.
+are the code's logged thresholds (§2), not printed numbers. The preprint's own "neither" number is
+3D (Table 1's 1.1e-15), so comparing that condition with a printed number needs F7 alone (with Q1),
+not F2: F7 may come before F2.
 
 ## 6. What a judged comparison would need: a D138 question for the user
 
@@ -466,12 +514,13 @@ user to decide:
     as the Norton equivalent.
   - It qualifies the passive-routes neutral law beside reactions, and @3's neutral permeant species,
     against analytic references.
-  - It runs in under an hour on four CPUs.
+  - `dev-04` ran it as development work (§4).
 - **(b) Next, with no new feature: the "neither" condition** on the 1D line, then the 2D field.
   - The EMT switch with a neutral miRNA on passive junction routes.
   - A comparison with BITSEY's log at b2cb370 (7.18e-15 m²/s on the line, 1.89e-15 on the field),
     not with the preprint, which prints only the 3D value.
-  - The lead approved it on 17 November, once the two conditions in §7 are written down.
+  - The lead approved the 1D search on 17 November, once the two conditions in §7 were written
+    down. It runs as `neither-01`, as development work.
 - **(c) After F2-F5: the tables, in the order the engine allows.**
   - Order: Table 3's line, then Table 2's field, then Table 1 with F7.
   - Cells' pump and junction laws differ from BITSEY's by design. The criteria would therefore be
@@ -531,6 +580,12 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
   - Cells does the same in one tumor cell and one healthy cell: while uncoupled, every tumor cell
     is the same, and so is every healthy cell.
   - The switch is autonomous, so each coupled run starts its clock at 0.
+  - A check of the switch's constants and scale before the search: the uncoupled stage's end
+    state in Cells (a cost probe) equals the log's dump after its uncoupled 500 s to the dump's
+    printed digits. As Zeb mRNA / ZEB : miR200, the log prints tumor 69/63:9 and healthy 6/0:84;
+    Cells gives 68.6/62.7:8.8 and 5.95/0.41:84.0.
+  - It does not test the time unit. Both cells are already at steady state: the log's dump at
+    D = 0, after 20,000 more, is the same.
 - **Coupling.** Junction conductance G_GJ = D x 4 pi (5 um)² / 100 nm (`RThev_GJ`). Only miR200
   crosses.
 - **Criterion: normalized.** At the end, every cell has miR200 > Zeb mRNA + 2
@@ -562,4 +617,9 @@ BITSEY's code below is cited at b2cb370 under D208; nothing is copied.
 - **Reported.** Cells' threshold and its ratio to BITSEY's logged 7.18e-15 m²/s. Agreement is called
   if the ratio lies within 0.95-1.05. Two engines integrating the same equations with different
   schemes can differ near the switch's separatrix, so the band is set before the run.
+  - The log was written by an earlier revision of the code than b2cb370's, with b2cb370's printed
+    settings (§2).
+  - Descriptive, not judged: Cells' first points (0 and 1e-13 / 2^k) include the first six of the
+    log's bisection (0, 1e-13, 5e-14, 2.5e-14, 1.25e-14 and 6.25e-15). Their outcomes, and the end
+    states the log dumps, compare point by point.
 
