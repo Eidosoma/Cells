@@ -134,7 +134,8 @@
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
-  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json"
+  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1109,6 +1110,13 @@
    "root": "/mnt/workspaces/Cells/d198-retire-20261117/snapshot-staged-e04fa95f",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T13:11:06+00:00"
+  },
+  {
+   "git_revision": "e8c45bcb6753c8feca32ad7a45698a5e625ae2d2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:24:30+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2198,6 +2206,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_qualification.py",
+    "seconds": 2.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 30
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_reference_inputs.py",
+    "seconds": 1.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
