@@ -12,8 +12,8 @@ engine is Cells' own: its laws come from physical chemistry, its catalysis keeps
 its assemblies are physical, and its free energy has explicit sources.
 
 **Engine models (AGENTS.md).** This note runs none. Its milestones (§8) run G1's family,
-`cells.assembly_lineages@1` as G1 builds it, with the laws, free-energy providers and operators
-proposed in §2–§4. Each milestone names the ones it runs.
+`cells.assembly_lineages@1` as G1 builds it (the ID proposed in GARD_DESIGN §1), with the laws,
+free-energy providers and operators proposed in §2–§4. Each milestone names the ones it runs.
 - **Names are mechanisms' (D144).** Nothing is named for the origin of life, protocells or GARD.
 - **The same pieces are general.** They are Syn3A's F11 (exact stochastic reactions) and F14
   (state-triggered division with a stochastic partition), and part of the endogenous lifecycle.
@@ -48,39 +48,15 @@ form: thermodynamics in the kernel, kinetics in the law (CORE_SEAMS_DESIGN §3.2
 
 | Probe | s on m, or rates from one F | The planted form |
 | --- | --- | --- |
-| **E1.** A closed three-type world: A ⇌ B and B ⇌ C, with B catalysing its own formation (GARD's kept diagonal). 28 states | 0 of 90 unit squares fail Kolmogorov's test, and the stationary law is the product form exactly. Writing the catalysts into the stoichiometry (A + B ⇌ 2B) is also exact | The factor at each direction's own state: 60 of 90 squares fail, with a cycle ratio up to 143/128 (\|ln\| 0.11). The stationary law is off by a total variation of 0.083 |
-| **E2.** An assembly exchanging two types with a finite reservoir, with a pairwise interaction (ω = 3/2 per contact). 36 states | Leave rates from one F: 0 of 148 squares fail, and the law is Boltzmann's exactly | Type 1's off rate slowed by type 2, with no reciprocal term: 100 of 148 fail, ratio 2/3, total variation 0.54 |
+| **E1.** A closed three-type world: A ⇌ B and B ⇌ C, with B catalysing its own formation (GARD's kept diagonal). 28 states, 15 unit squares | No square fails Kolmogorov's test, and the stationary law is the product form exactly. Writing the catalysts into the stoichiometry (A + B ⇌ 2B) is also exact | The factor at each direction's own state: all 15 squares fail, with cycle ratios up to 143/128 (\|ln\| 0.11). The stationary law is off by a total variation of 0.083 |
+| **E2.** An assembly exchanging two types with a finite reservoir, with a pairwise interaction (ω = 3/2 per contact). 36 states, 25 squares | Leave rates from one F: no square fails, and the law is Boltzmann's exactly | Type 1's off rate slowed by type 2, with no reciprocal term: all 25 fail, ratio up to 2/3, total variation 0.54 |
 
 **E2's lesson (S).** A composition-dependent off rate is admissible only as a derivative of one
 free energy. That is the Maxwell condition, ∂μ_i/∂n_j = ∂μ_j/∂n_i. So such a term moves the
 equilibrium: it is thermodynamics, not catalysis. Budin and Szostak's phospholipid effect (§7.4, A2)
 is such a term.
 
-### 0.2 The engine, in brief
-
-1. **Entities** (§1). Amphiphile assemblies, bilayer vesicles first. Each holds integer counts,
-   with its area and volume derived from them. Assemblies exchange with a held or a finite shared
-   monomer pool. Oligomers from activated monomers follow, as a declared sequence family.
-2. **Laws** (§2):
-   - stochastic mass action with registry potentials, at any stoichiometry up to three reactant
-     molecules;
-   - catalysis as transition-state stabilisation on m, written either as explicit steps or as an
-     effective factor;
-   - exchange between phases, from which the critical aggregation concentration (CAC), tension and
-     composition effects follow;
-   - templating later, if the user chooses it.
-3. **Energy** (§3). Only declared sources, each booked with a named payer: chemostats, activated
-   monomers and fuel, schedules, and shear. Driven laws without a source are refused.
-4. **Division** (§4). An assembly splits at a shear event once its reduced volume admits two or
-   more spheres. GARD's size threshold stays for comparisons.
-5. **Measures** (§5). GARD's H and composomes, plus heritability, selection and the cost of
-   heredity.
-6. **Verification** (§7):
-   - proofs at the kernel and in closed worlds;
-   - the GARD limit, as a declared comparison;
-   - anchors from fatty-acid vesicle experiments with numbers in open papers.
-
-### 0.3 Decisions
+### 0.2 Decisions
 
 | # | Decision | Options | Recommended |
 | --- | --- | --- | --- |
@@ -95,7 +71,7 @@ is such a term.
 | 9 | Selection (§5.2) | Moran replacement; a finite shared pool; serial transfer | **A finite pool and serial transfer.** Moran only for comparisons |
 | 10 | Verification (§7) | Kernel and closed-world proofs; the GARD limit; experimental anchors | **All three.** A1 and A4 judged; A2 reported until §7.4's question is settled (D138, U6) |
 
-### 0.4 Estimate, order and questions
+### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.
   - The first results come after about 17–27: the laws, the physical assemblies, division, the
@@ -180,8 +156,8 @@ numerical plan of its own (§6.3, R4).
 ### 2.1 The event-pair contract
 
 - **Mass-action θ.** For an elementary step with reactant coefficients α in volume V,
-  θ⁺ = k (N_A V)^(1−q) ∏_s n_s!/(n_s − α_s)!. Here q = Σα, and k is the macroscopic rate constant
-  (Gillespie 1977, from memory). θ⁻ then follows from F.
+  θ⁺ = k (N_A V)^(1−r) ∏_s n_s!/(n_s − α_s)!. Here r = Σα is the step's order, and k is the
+  macroscopic rate constant (Gillespie 1977, from memory). θ⁻ then follows from F.
   - For ideal dilute species, this recovers textbook reversible mass action, with
     k⁺/k⁻ = exp(−Σ ν μ°/k_BT) at the declared standard concentration (**S**, standard).
 - **The split.** By default s carries the barrier, θ⁺ the reactants' encounter, and θ⁻ the
@@ -300,28 +276,27 @@ grows.
 - An off rate that changes with composition, at an unchanged on rate, is a change in the
   potential.
 - Budin and Szostak 2011 measured 22% slower oleate desorption from membranes with 10 mol% DOPA
-  (A2). That is an excess potential of k_BT ln(1/0.78) ≈ 0.25 k_BT for oleate.
-- It is a regular-mixing term, so by E2 it must be reciprocal: DOPA's own potential changes with
-  the oleate content as well.
+  (A2). It has two readings, and the protocol must say which one the measurement supports:
+  - **per oleate molecule:** an excess potential of k_BT ln(1/0.78) ≈ 0.25 k_BT;
+  - **per area of membrane:** ideal dilution (x = 0.9) accounts for 10% of it, which leaves
+    k_BT ln(0.9/0.78) ≈ 0.14 k_BT of excess. The paper names the smaller releasing surface as a
+    separate effect.
+- Either way it is a regular-mixing term, so by E2 it must be reciprocal: DOPA's own potential
+  changes with the oleate content as well.
 
 ### 2.6 Templating: an option, after oligomers
 
-- **The form (S).** Template-directed ligation is written as explicit steps:
-  - substrates bind the template with a declared hybridisation free energy;
-  - ligation's transition state is stabilised while they are bound;
-  - the products then dissociate.
-
-  Every step keeps detailed balance.
-- **What theory predicts** (from memory):
-  - product inhibition through duplex stability gives parabolic, square-root growth, and so
-    coexistence (von Kiedrowski; Szathmáry and Gladkih 1989);
-  - exponential growth needs strand separation driven by a cycle, for example a temperature
-    schedule, booked as work.
-- **What it needs:** E3's sequences, and a hybridisation free-energy model with cited parameters.
-- **What it adds:** copying fidelity can be compared with its thermodynamic bound (Hopfield 1974,
-  from memory).
+- **The form (S).** Template-directed ligation as explicit steps, each keeping detailed balance:
+  substrates bind the template with a declared hybridisation free energy, ligation's transition
+  state is stabilised while they are bound, and the products dissociate.
+- **What theory predicts** (from memory). Product inhibition through duplex stability gives
+  parabolic, square-root growth, and so coexistence (von Kiedrowski; Szathmáry and Gladkih 1989).
+  Exponential growth needs strand separation driven by a cycle, such as a temperature schedule
+  booked as work.
+- **Needs and gains.** It needs E3's sequences and a hybridisation model with cited parameters.
+  Copying fidelity then meets its thermodynamic bound (Hopfield 1974, from memory).
 - **Data.** The open template-copying kinetics found (Li et al. 2017) is under a non-commercial
-  licence. So it is analysis only (D173), and no number is quoted here. A judged anchor needs a
+  licence, so it is analysis only (D173) and no number is quoted. A judged anchor needs a
   permissive source.
 
 ### 2.7 GARD as a limit, assumption by assumption
@@ -366,13 +341,9 @@ grows.
 
 ### 3.3 Ledgers
 
-- **Per lineage and per world:**
-  - event heat, declared non-monotone (seam D);
-  - reservoir work;
-  - stored energy, for finite fuel and activated species;
-  - schedule work;
-  - shear work;
-  - sinks: unfollowed daughters and assemblies transferred out.
+- **Per lineage and per world:** event heat, declared non-monotone (seam D); reservoir work;
+  stored energy, for finite fuel and activated species; schedule work; shear work; and sinks, for
+  unfollowed daughters and assemblies transferred out.
 - **Closure (S).** At every saved row, F(n_t) − F(n_0) equals the works minus the heat minus the
   sinks' free energy, to rounding. This is GARD_DESIGN §2.4's closure, with these terms added.
 
@@ -425,16 +396,13 @@ grows.
 
 ### 4.4 Partition and booking
 
-- **The split (S):**
-  - the membrane's composition at given daughter areas is multivariate hypergeometric;
-  - the lumen's contents are multinomial, with probabilities V_j/V;
-  - the pool is not touched.
-- **G1's stochastic partition kernel** does both: binomial and hypergeometric draws, with its
-  streams and fission table. It is extended to k daughters and to two compartments per assembly.
-- **The split's ΔF** is booked as shear work. It includes the closure cost of each new vesicle and
-  the lumen's terms.
-  - The admission gate (v and stress) is kinetic, not energetic (**S**).
-  - Each fission's work is reported.
+- **The split (S).** The membrane's composition at given daughter areas is multivariate
+  hypergeometric; the lumen's contents are multinomial, with probabilities V_j/V; the pool is not
+  touched. G1's stochastic partition kernel does both, with its streams and fission table,
+  extended to k daughters and two compartments per assembly.
+- **The split's ΔF** is booked as shear work and reported per fission. It includes the closure cost
+  of each new vesicle and the lumen's terms. The admission gate (v and stress) is kinetic, not
+  energetic (**S**).
 - **Continuation** is G1's `daughter_continuation@1` in single-lineage mode. In population mode
   every daughter lives, up to the slot capacity, and serial transfer is the bottleneck.
 - **Reused from the engine's division:**
@@ -461,13 +429,10 @@ grows.
 | **The cost of heredity** | Heat and work per generation and per inherited boundary, in k_BT | GARD_DESIGN §8, item 5 | The engine's ledgers, then `validation/` |
 | **Mechanism** | Whether the inherited composition holds an autocatalytic core: Blokhuis et al.'s stoichiometric criterion, and RAF sets | New | `validation/`, a static analysis of the realised network |
 
-**They map onto SCIENTIFIC_BASIS.md's operational distinctions:**
-- transmission is H;
-- retention is a run of inherited boundaries;
-- renewal is F12;
-- autonomous renewal is growth and division with no prepared carriers, which is this engine's
-  default;
-- adaptive benefit is selection under a changing feed, a later experiment.
+**They map onto SCIENTIFIC_BASIS.md's operational distinctions.** Transmission is H; retention, a
+run of inherited boundaries; renewal, F12; autonomous renewal, growth and division with no prepared
+carriers, which is this engine's default; and adaptive benefit, selection under a changing feed, a
+later experiment.
 
 ### 5.2 Selection needs a finite pool, and that has a cost
 
@@ -605,11 +570,16 @@ stated (D186).
     spheres;
   - the maximal sustainable tension is about 10 dyn/cm, and vesicles rupture at gradients of 0.7 M
     or more.
-- **What it tests:** the tension term. Calibrate the off rate on k, then predict the zero-tension
-  plateau.
-- **A built-in check (S).** The 35% loss exceeds the sphere limit, and a fixed lumen cannot reach
-  it. So the anchor also tests the lumen's permeability assumption.
-- **Role:** judged.
+- **What it tests:** the lumen and tension terms of F. Calibrate the off rate on k. Then predict,
+  with no kinetic parameter, two end states (**S**):
+  - the 1:1 end state, about 25% each way, where the two populations' tensions are equal;
+  - the isotonic vesicles' largest loss, about 35%, beyond the 27% that makes them spheres. F
+    reaches it only by water leaving tense vesicles against their osmotic gradient, so it is a
+    sharp test of the lumen term.
+- **What it does not test.** The swollen vesicles' 35% gain is the paper's own zero-tension
+  calculation, so it checks the implementation, not the physics.
+- **The protocol's osmotic conditions** are read from the paper when the protocol is registered.
+- **Role:** judged, on the two end states.
 
 **A2. Budin and Szostak 2011, *PNAS*.** PMC3069173; PNAS licence.
 - **Numbers:**
@@ -619,11 +589,13 @@ stated (D186).
     bilayer;
   - the paper calculates 14% from the 22%;
   - CAC 100 µM; 23 °C; 0.2 M bicine, pH 8.5.
-- **What it tests:** composition as an excess potential (§2.5).
-- **The open question (S).** Ideal mixing plus that excess, with pure-oleate donors, keeps the
-  acceptor's oleate potential below the donors' at every DOPA fraction. It so predicts continued
-  transfer, not a plateau. The plateau then needs a further limitation, for example exchange
-  confined to the outer leaflet on the experiment's time scale.
+- **What it tests:** composition as an excess potential (§2.5), under one of its two readings.
+- **The open question (S).** Under F, even ideal mixing alone (k_BT ln 0.9 ≈ −0.105 k_BT at
+  10 mol%) keeps the acceptor's oleate potential below the pure donors'. Any excess adds to that.
+  So every reading predicts continued transfer, not a plateau.
+  - The plateau then needs a further limitation, for example exchange confined to the outer
+    leaflet on the experiment's time scale.
+  - The paper's own 14% comes from a calculation this note did not read.
 - **Role:** reported until the representation is settled, then judged at the user's choice.
 
 **A4. Zhu and Szostak 2009, *JACS*.** NIH author manuscript, PMC2669828.
@@ -653,7 +625,7 @@ stated (D186).
 - They test the physics this engine adds and GARD lacks: tension, permeability and shear.
 - Their quantities are means over many vesicles (fractional area, first-order rates, shape class),
   so the deterministic representation reaches them at vesicle scale.
-- A1's plateau is a minimum of F, so it does not depend on the representation; its rate does.
+- A1's end states are minima of F, so they do not depend on the representation; its rate does.
 - Their buffer, 0.2 M bicine at pH 8.5, is shared, so one calibration of transfer potentials serves
   both.
 
@@ -674,16 +646,13 @@ stated (D186).
 | **Total** | | | | **33–51** (+3–5 for templating) |
 
 **The order:**
-- **Now:** OL0, which is desk work. The lead and G1's owner see R1–R8 while G1's channel layout is
-  still open.
+- **Now:** OL0, desk work. The lead and G1's owner see R1–R8 while G1's channel layout is open.
 - **After G1's kernel, ledger and fission land, and seam F's registry exists:** OL1, with OL5
-  starting alongside it.
-- **Then two builders on disjoint files:**
-  - one does OL2 and OL3: geometry, the pool and division;
-  - the other does OL4 and OL8: energy and oligomers.
-- **Then the rest:** OL6 after OL3; OL7 after OL6 and the user's D138 answer; OL9 last.
-- **Staffing:** at most three agents, two builders and the references agent, within seven (D171).
-  They work alongside GARD's G3 and G4, mitochondria and the core pass.
+  alongside. Then two builders on disjoint files: OL2 and OL3 (geometry, the pool, division), and
+  OL4 and OL8 (energy, oligomers). OL6 follows OL3; OL7 follows OL6 and the user's D138 answer;
+  OL9 is last.
+- **Staffing:** at most three agents (two builders and the references agent) within seven (D171),
+  alongside GARD's G3 and G4, mitochondria and the core pass.
 - **Elapsed:** about 23–35 working days after G1 lands (**S**). The critical path is OL1, OL2, OL3,
   OL6, OL7 and OL9; OL4 and OL8 finish beside it. No dates are given (D194).
 - **Compute:** CPU-hours. OL7 runs in the deterministic representation, in CPU minutes. OL9 is
@@ -716,7 +685,10 @@ stated (D186).
 
 1. **R1–R8 (§6.3).** Which does G1 build, and which come in OL1? Who owns the kernel's files after
    G1?
-2. **Names.** The laws and operators as named here, in G1's family namespace?
+2. **Names.** The laws and operators as named here, in G1's family namespace? G1's own IDs used
+   here (`cells.assembly_lineages@1`, `size_threshold_fission@1`, `daughter_continuation@1`,
+   `member_catalysis@1`, `population_replacement@1`) are as proposed in GARD_DESIGN §1, to be
+   confirmed against G1 as built.
 3. **The registry.** Standard potentials per phase and sequence families, with the registry's owner
    (seams C and E)?
 4. **The run view.** Geometry and works, with the view's owner?
