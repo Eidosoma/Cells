@@ -118,7 +118,8 @@
   "/mnt/workspaces/Cells/core-seams-f-20261117/measure-0154604f/measured.json",
   "/mnt/workspaces/Cells/gard-g1-20261117/measure-518d22e7/measured.json",
   "/mnt/workspaces/Cells/gard-g1-20261117/measure-99509d45/measured.json",
-  "/mnt/workspaces/Cells/gard-g2-land-20261117/measured.json/measured.json"
+  "/mnt/workspaces/Cells/gard-g2-land-20261117/measured.json/measured.json",
+  "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-bd696fec/measured.json"
  ],
  "measured_provenance": [
   {
@@ -980,6 +981,13 @@
    "root": "/mnt/workspaces/Cells/gard-g2-land-20261117/tree",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T13:59:47+00:00"
+  },
+  {
+   "git_revision": "bd696fec3ba748c166bde9257f9dcc7486e42551",
+   "dirty": false,
+   "root": ".claude/worktrees/seam-f-registry",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T14:32:54+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2528,8 +2536,16 @@
     }
    },
    {
+    "file": "tests/unit/test_model_table.py",
+    "seconds": 7.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 1.62,
+    "seconds": 1.37,
     "exit_code": 0,
     "counts": {
      "passed": 3
