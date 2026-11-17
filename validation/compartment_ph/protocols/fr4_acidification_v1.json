@@ -2,7 +2,15 @@
  "schema": "cells.compartment_ph_protocol@1",
  "id": "fr4-acidification-v1",
  "title": "FR-4's first acceptance: buffered acidification of an owned compartment against its gradient, with an explicit K+ counterion, maintained fuel and a rapid-buffer closure",
- "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics; its text brought level with the runs before registration on 17 November 2026, no criterion changed). Its dt study and its rehearsal have run on the integrated candidate (development_runs); registration is the lead's",
+ "status": "registered by the lead on main, 17 November 2026, before any judged run of fr4-acidification-v1",
+ "registration": {
+  "status": "registered by the lead on main, 17 November 2026, before any judged run of fr4-acidification-v1",
+  "by": "the lead, on main",
+  "date": "2026-11-17",
+  "basis": "D195 (FR-4 and FR-5 run in parallel with the core-seams pass) and the plan's FR-4/FR-5 path; rehearsed on registered dry-run copies as run-e79b4232 (FR-4 21 of 21, FR-5 51 of 51 judged criteria, bitwise against the dt studies and across seam F); the dated pre-registration disclosures ENERGY_SETTLED, TEXT_LEVELLED and HARNESS_LIMITS; judge.criteria and judge.derivation byte-identical to the rehearsed copies",
+  "judged_path": "option (a): judged once from a clean snapshot of main taken after this registration commit (after seam F), then every judged part compared against the rehearsal as the full-horizon check",
+  "scope": "cell_owned_compartments@1 as built at the judged snapshot (refusal 4 version 1.2, refusal 5 version 1.1)"
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No judged run yet. The engine path is wired and has run for development: the dt study (dev-3c10b833-dt) and the rehearsal on a registered dry-run copy (run-e79b4232: 21 of 21 judged criteria, every part's records bitwise the dt study's)",

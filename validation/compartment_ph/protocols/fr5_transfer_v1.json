@@ -2,7 +2,15 @@
  "schema": "cells.compartment_ph_protocol@1",
  "id": "fr5-transfer-v1",
  "title": "FR-5's first acceptance: pH-conditioned transfer, damage, leak and reseal on an owned compartment, in two arms on FR-4's steady state",
- "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics; its text brought level with the runs before registration on 17 November 2026, no criterion changed). Its world agreement, its dt study and its rehearsal have run on the integrated candidate (development_runs); registration is the lead's. The arm values and restated claims are confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly",
+ "status": "registered by the lead on main, 17 November 2026, before any judged run of fr5-transfer-v1",
+ "registration": {
+  "status": "registered by the lead on main, 17 November 2026, before any judged run of fr5-transfer-v1",
+  "by": "the lead, on main",
+  "date": "2026-11-17",
+  "basis": "D195 (FR-4 and FR-5 run in parallel with the core-seams pass) and the plan's FR-4/FR-5 path; rehearsed on registered dry-run copies as run-e79b4232 (FR-4 21 of 21, FR-5 51 of 51 judged criteria, bitwise against the dt studies and across seam F); the dated pre-registration disclosures ENERGY_SETTLED, TEXT_LEVELLED and HARNESS_LIMITS; judge.criteria and judge.derivation byte-identical to the rehearsed copies",
+  "judged_path": "option (a): judged once from a clean snapshot of main taken after this registration commit (after seam F), then every judged part compared against the rehearsal as the full-horizon check",
+  "scope": "cell_owned_compartments@1 as built at the judged snapshot (refusal 4 version 1.2, refusal 5 version 1.1)"
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No judged run yet. The engine path is wired and has run for development: the world agreement (worlds-d82e1935), the dt study (dt5-a6639e79) and the rehearsal on a registered dry-run copy (run-e79b4232: 51 of 51 judged criteria, every part's records bitwise the dt study's apart from the start extract's identity)",
