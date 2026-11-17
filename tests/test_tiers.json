@@ -135,7 +135,8 @@
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
   "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
-  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-7b54090c/measured.json"
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-7b54090c/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-af0d3ec3/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1117,6 +1118,13 @@
    "root": ".claude/worktrees/ool-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T21:50:10+00:00"
+  },
+  {
+   "git_revision": "af0d3ec317f858bfe514449f4d647006495f9b2b",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:56:58+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4630,10 +4638,10 @@
    },
    {
     "file": "tests/unit/test_ool_references_harness.py",
-    "seconds": 41.92,
+    "seconds": 41.56,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 7
     }
    },
    {
