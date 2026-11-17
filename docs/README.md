@@ -39,6 +39,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Syn3A state of the art](SOTA_SYN3A.md) | Why JCVI-syn3A is the first whole-cell validation organism, and its public measurements |
 | [Operator composition design](OPERATOR_COMPOSITION_DESIGN.md) | Operators that read each other's current state: one general rule, option A (D191, 16 November 2026); built in D194's step 3 |
 | [GARD design](GARD_DESIGN.md) | Catalytic assemblies, exchange, fission and lineage for the origin-of-life track (D192); the kernel finding's scope is in §2.5 |
+| [Origin-of-life engine design](ORIGIN_OF_LIFE_ENGINE_DESIGN.md) | Cells' own first-principles engine (D197): laws as detailed-balanced event pairs from one free energy, physical assemblies, declared energy sources, division by geometry and shear, GARD as a declared limit. Proposed, options for the user |
 | [Mitochondria design](MITOCHONDRIA_DESIGN.md) | One law set for mitochondria and bacteria, Beard 2005 as the source (D193) |
 | [Core seams design](CORE_SEAMS_DESIGN.md) | D194 step 2's one pass: the cycle kind, populations, binding, heat booking, laws as modules and the run view's format items, with the order and the estimate. Proposed |
 | [Looping replay design](LOOPING_REPLAY_DESIGN.md) | FR-11's looping replay packages: the loop block and its closure measure (ruled 16 November 2026) |
