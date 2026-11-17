@@ -90,21 +90,18 @@ def key_text(value):
 
 
 def lineage_order(lives):
-    """Lives depth first: each root by key, then its daughters by key, recursively."""
+    """Lives depth first: each root by key, then its daughters by key, and theirs. Iterative, so
+    a lineage of any depth (a followed lineage of thousands of fissions) is drawn."""
     daughters = {}
     for life in lives:
         daughters.setdefault(life["parent"], []).append(life)
     for group in daughters.values():
         group.sort(key=lambda x: x["key"])
-    out = []
-
-    def visit(life):
+    out, stack = [], list(reversed(daughters.get("", [])))
+    while stack:
+        life = stack.pop()
         out.append(life)
-        for child in daughters.get(life["id"], []):
-            visit(child)
-
-    for root in daughters.get("", []):
-        visit(root)
+        stack.extend(reversed(daughters.get(life["id"], [])))
     return out
 
 

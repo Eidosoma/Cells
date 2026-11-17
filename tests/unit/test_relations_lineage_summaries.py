@@ -15,8 +15,9 @@ planted error (D187):
    follows its slot's occupant, a copy names its donor's carrier, and every supply points at its
    species' and slot's column. Planted: a wrong predecessor.
 3. The graphs: draw_relations.py draws the tree and the supply graph from the tables, in a fresh
-   process where the engine is importable, and loads no cells or jax module. Planted: the same
-   script with an import of cells.
+   process where the engine is importable, and loads no cells or jax module; and it draws a
+   followed lineage of any depth (1,100 fissions, in GARD's ids and keys). Planted: the same script
+   with an import of cells; its tree walked by recursion.
 """
 
 import json
@@ -285,3 +286,130 @@ def test_the_graphs_are_drawn_from_the_tables_with_no_engine_code(tmp_path):
     planted.write_text("import cells  # noqa: F401\n" + DRAW.read_text())
     done = drawn(planted, run, tmp_path / "planted-graphs")
     assert done.returncode == 1 and "ENGINE MODULES ['cells'" in done.stdout, done.stdout
+
+
+RECURSIVE = """def lineage_order(lives):
+    daughters = {}
+    for life in lives:
+        daughters.setdefault(life["parent"], []).append(life)
+    for group in daughters.values():
+        group.sort(key=lambda x: x["key"])
+    out = []
+
+    def visit(life):
+        out.append(life)
+        for child in daughters.get(life["id"], []):
+            visit(child)
+
+    for root in daughters.get("", []):
+        visit(root)
+    return out
+"""
+
+
+def deep_lineage(directory, fissions):
+    """A followed lineage, as GARD's single-lineage rows give it (carrier:a<key>, event:fission/
+    <row>): each fission at time k makes a followed daughter and an unfollowed one."""
+    keys, lives, events = rel.Keys(), [], []
+    key, own = keys.open()
+    name, born, generation, parent = f"carrier:a{key}", 0.0, 0, ""
+    law, follow = "cells.assembly_lineages@1", "cells.daughter_continuation@1"
+    for k in range(fissions):
+        event, time = f"event:fission/{k}", float(k + 1)
+        (key_1, own_1), (key_2, _) = keys.split(own, [True, False], continues=0)
+        kind = (
+            dict(birth_kind="founder")
+            if k == 0
+            else dict(
+                birth_kind="division",
+                parent=parent,
+                share=0.5,
+                birth_event=f"event:fission/{k - 1}",
+            )
+        )
+        lives.append(
+            rel.Life(
+                name,
+                key,
+                own,
+                born,
+                end_time=time,
+                end_reason="divided",
+                generation=generation,
+                root="carrier:a0",
+                declared_by=law if k == 0 else follow,
+                slot="slot:0",
+                end_event=event,
+                **kind,
+            )
+        )
+        lives.append(
+            rel.Life(
+                f"carrier:a{key_2}",
+                key_2,
+                -1,
+                time,
+                "division",
+                time,
+                "not_followed",
+                generation + 1,
+                "carrier:a0",
+                follow,
+                parent=name,
+                share=0.5,
+                birth_event=event,
+                end_event=event,
+            )
+        )
+        events.append(
+            rel.Event(event, time, "fission", "cells.size_threshold_fission@1", False, at=name)
+        )
+        parent, name, key, own, born, generation = (
+            name,
+            f"carrier:a{key_1}",
+            key_1,
+            own_1,
+            time,
+            generation + 1,
+        )
+    lives.append(
+        rel.Life(
+            name,
+            key,
+            own,
+            born,
+            "division",
+            born,
+            "censored",
+            generation,
+            "carrier:a0",
+            follow,
+            slot="slot:0",
+            parent=parent,
+            share=0.5,
+            birth_event=f"event:fission/{fissions - 1}",
+        )
+    )
+    directory.mkdir()
+    rel.write(
+        directory,
+        world=rel.qualifier("deep"),
+        lives=lives,
+        events=events,
+        nodes=[rel.Node("slot:0", "slot", law)],
+    )
+    return name
+
+
+def test_a_lineage_of_any_depth_is_drawn(tmp_path):
+    last = deep_lineage(tmp_path / "run", 1100)
+    done = drawn(DRAW, tmp_path / "run", tmp_path / "graphs")
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert last in (tmp_path / "graphs" / "lineage.svg").read_text()
+    # Planted: the tree walked by recursion, one frame a generation.
+    text = DRAW.read_text()
+    start, stop = text.index("def lineage_order"), text.index("def lineage_svg")
+    planted = tmp_path / "recursive.py"
+    planted.write_text(text[:start] + RECURSIVE + "\n\n" + text[stop:])
+    done = drawn(planted, tmp_path / "run", tmp_path / "planted-graphs")
+    assert done.returncode != 0 and "RecursionError" in done.stderr, done.stderr[-500:]

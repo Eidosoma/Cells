@@ -1399,11 +1399,36 @@ def _check_arrays(descriptor, arrays, problems):
     problems.check(set(arrays) <= expected, f"no other arrays: {sorted(set(arrays) - expected)}")
 
 
+def _machine(descriptor):
+    """What a reader relies on in a descriptor: the format, world and arrays file, each table's
+    key, rows and columns (name, array, type, null), and the records. Its prose (says, ids, keys,
+    derived, weights, event_rows, sorted) and its vocabulary lists are the writer's account, which
+    may be reworded within a version; rows are checked against the reader's own vocabulary."""
+    columns = ("name", "array", "type", "null")
+    tables = descriptor.get("tables") or {}
+    return {
+        "format": descriptor.get("format"),
+        "world": descriptor.get("world"),
+        "arrays": descriptor.get("arrays"),
+        "tables": {
+            name: {
+                "key": entry.get("key"),
+                "rows": entry.get("rows"),
+                "columns": [{k: c.get(k) for k in columns} for c in entry.get("columns") or []],
+            }
+            for name, entry in tables.items()
+            if isinstance(entry, dict)
+        },
+        "records": descriptor.get("records"),
+    }
+
+
 def validate(descriptor, arrays, directory=None):
-    """The reader's check of saved tables (RelationsInvalid, every problem listed): the descriptor
-    is this format's for these arrays; the arrays are its columns; the rows pass the writer's
-    checks; the derived rows are exactly those the lives, sources and labels give; and, with the
-    run's folder, each record a weight points at is in its file with its declared shape."""
+    """The reader's check of saved tables (RelationsInvalid, every problem listed): the descriptor's
+    machine fields (_machine) are this format's for these arrays; the arrays are its columns; the
+    rows pass the writer's checks; the derived rows are exactly those the lives, sources and labels
+    give; and, with the run's folder, each record a weight points at is in its file with its
+    declared shape."""
     problems = _Problems()
     if not problems.check(
         isinstance(descriptor, dict) and descriptor.get("format") == FORMAT,
@@ -1434,8 +1459,8 @@ def validate(descriptor, arrays, directory=None):
             "the descent edges are those the lives give",
         )
         problems.check(
-            dumps(descriptor) == dumps(_descriptor(world, arrays, records)),
-            "the descriptor is the writer's for these tables",
+            _machine(descriptor) == _machine(_descriptor(world, arrays, records)),
+            "the descriptor's machine fields are the writer's for these tables",
         )
     if directory is not None and not problems:
         _check_files(directory, records, rows["edges"], rows["events"], problems)

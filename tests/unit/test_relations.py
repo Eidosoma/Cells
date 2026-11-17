@@ -517,6 +517,14 @@ def test_the_reader_refuses_tables_changed_after_writing(tmp_path):
         rel.validate(descriptor, dict(arrays, **{"lives.id": ids}))
     with pytest.raises(rel.RelationsInvalid, match="its format"):
         rel.validate(dict(descriptor, format="cells.relations@0"), arrays)
+    # The prose may be reworded within a version (and a file from before the label was lifted
+    # carries a status); a machine field may not change. Planted: a column's type.
+    rel.validate(dict(descriptor, status="provisional", ids="reworded", sorted="reworded"), arrays)
+    retyped = json.loads(json.dumps(descriptor))
+    (column,) = [c for c in retyped["tables"]["lives"]["columns"] if c["name"] == "share"]
+    column["type"] = "int64"
+    with pytest.raises(rel.RelationsInvalid, match="machine fields"):
+        rel.validate(retyped, arrays)
     tampered = tmp_path / "tampered"
     tampered.mkdir()
     record_files(tampered, gard_world())
