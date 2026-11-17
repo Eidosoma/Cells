@@ -6342,7 +6342,10 @@ core but in parallel". With the advisor, every default stands, with the conditio
 **1. The pass, at its scope.**
 - **The estimate is the design lane's own, not yet re-derived:** 20–31.5 agent-days plus 2–3 on
   branch X, and about 9–13 working days elapsed.
-- **The code starts after D188's move 2.**
+- **The code starts after D188's move 2.** *Amended the same day:* seam F's foundation started
+  earlier, on the user's "can we add one more agent on building core?". It landed before move 2
+  and before the owner table (75e925ea), gated identical on a tree that differed from main only in
+  docs. The rest of the pass still follows move 2.
 - **The cycle kind (A) and the binding closure (C) wait for step 0's cycle-law screen.** The
   screen asks whether O'Hara–Rudy's and Beard's cycles factor in A's form. A's contract rests on
   that, and the note lists it as unverified.

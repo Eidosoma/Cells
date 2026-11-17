@@ -980,3 +980,37 @@ provisional, and checkpoints across move 2. §12's items 10 and 12 are not decis
 **Decided, 17 November (D195):** all four as proposed. A and C wait for step 0's cycle-law screen,
 and §13's owner table is redone with one owner per file before the code starts.
 
+
+
+## 15. Seam F's foundation landed: the advisor's follow-ups (17 November 2026)
+
+Seam F's step 1 and D185's declarations manifest are on main (75e925ea). Its gate: crossrev
+identical, G1 113 of 113, and tiers 1+2 with none changed. The advisor's review asks for the
+following before work builds on it.
+- **The interfaces are provisional,** like `cells.modules` (D195).
+  - `cells.cycle_law@1` is PumpLaw's shape while seam A's contract waits for the blind check.
+  - `cells.binding_law@1`'s fields predate seam C.
+  - Both are labelled provisional until their seams land.
+- **F's claim is tested on GARD's family in G1's part 2.** A new piece joins with no edit to other
+  pieces: GARD's laws register under their own interface, importing only `cells.modules`. Any edit
+  to F's files is a finding. Until then GARD is absent from the manifest.
+- **The manifest `cells.declarations@1` is partly delivered (FR-12):**
+  - **IDs:** each piece carries `id` (namespaced) and `declared_id` (the spelling definitions use;
+    bare in the `cells` namespace). `host` is namespaced only (`cells.resolved_pump_tissue@3`),
+    while definitions name `resolved_pump_tissue@3`. A raw join needs D185's rule, that a bare ID
+    is the `cells` namespace. The format states it, or the manifest gives hosts in both spellings.
+  - **Nulls carry three meanings:** not stated by any record (`status`), not applicable, and not yet
+    extracted (the kinds' `ledgers` and `energy`, and every piece's `test`). The format
+    distinguishes them before the visualizer binds.
+  - **The format** is documented only in the module's docstring. A format page comes with the
+    documentation analysis.
+  - **Checked as right:** each of the 19 operators names its own declaring module.
+- **Citations.** Fick (1855), Goldman (1943) and Hodgkin and Katz (1949) were named from memory, not
+  read. They are marked unread, or read and confirmed, in step 2.
+- **Open branches.** core-fixes' four commits merge textually with F's files: `passive_routes`, the
+  kinds' registry and @3's step merge automatically, and only the tier record conflicts. They still
+  need their own gate after merging main. Move 2's carry-over proof starts from that merge.
+- **FR-4 and FR-5.** F changed how the transporter and the passive routes find their laws. The FR
+  rehearsals run from a snapshot older than F, so their bitwise checks are repeated from main at or
+  after 75e925ea before registration.
+
