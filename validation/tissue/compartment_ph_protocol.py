@@ -239,8 +239,21 @@ def criteria_fr5():
             criterion(f"J6_{arm}_protons", [f"{d}.protons.max_over_allowance"], "le", 1,
                       "H_eq at each node changes only by its routes' proton transfers (pump, leak, "
                       "proton pore), to H's material allowance, at every record (0.5 ms)"),
-            criterion(f"J7_{arm}_energy", [f"{d}.energy.over_flows_at_declared"], "le", 2e-3,
-                      "the energy identity at every record within FR-4's ledger tolerance"),
+            # F4's two clauses, settled before registration (ENERGY_SETTLED): the level on the
+            # coarsest rung (the ladder's first value, ladder_parts[0] = 1 ms) and on the
+            # declared rung, and the fall down the ladder.
+            criterion(f"J7_{arm}_energy", [f"{d}.energy.ladder.values.0",
+                                           f"{d}.energy.over_flows_at_declared"], "le", 2e-3,
+                      "the energy identity at every record within FR-4's ledger tolerance: the "
+                      "residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms "
+                      "(the dt study's F4, as written before any run and kept at 1 ms by the "
+                      "lead's Q1 ruling), and on the declared 0.5 ms (pre-registration "
+                      "correction, 17 November 2026)"),
+            criterion(f"J7_{arm}_energy_falls", [f"{d}.energy.ladder.passes"], "ge", 1,
+                      "the energy residual falls at second order down the ladder: every "
+                      "successive pair by the classes rule with no upper edge (resolved orders "
+                      ">= 1.8), F4's second clause, as FR-4's J6_energy_falls (pre-registration "
+                      "correction, 17 November 2026)"),
             criterion(f"J7_{arm}_route_heat",
                       [f"{d}.energy.smallest_judged_route_heat_increment_pJ"], "ge", -1e-12,
                       "the routes §7.5 does not book exactly (the proton leak, the proton pore, "
@@ -557,7 +570,10 @@ PROSE = {
         "each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to "
         "H's material allowance (FR-4's rules.ledgers), at every record",
         ("criteria", "J7_energy"): "the energy identity at every record: stored change + heat = "
-        "the maintenance's supplied work, within FR-4's ledger tolerance; each passive route's "
+        "the maintenance's supplied work, within FR-4's ledger tolerance (the residual over the "
+        "integrated flows <= 2e-3) on the coarsest rung, 1 ms, and on the declared 0.5 ms, "
+        "falling at second order down the ladder: the dt study's F4 (pre-registration "
+        "correction, 17 November 2026); each passive route's "
         "heat >= 0: the routes §7.5 books exactly (the cargo routes) are refused per step by the "
         "engine, and the rest (the proton leak, the proton pore, K+) are judged on their "
         "increments between records at >= -1e-12 pJ (record resolution), each route's smallest "
@@ -687,6 +703,25 @@ COST_FR5 = (
     "by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs "
     "the full horizon, not a shortened one"
 )
+ENERGY_SETTLED = (
+    "pre-registration correction, 17 November 2026, the energy criterion, settled by the FR owner "
+    "at the lead's order of 16 November (the dt study's F4 and the protocol's J7 to agree before "
+    "registration), its direction approved by the lead on 17 November: J7 now judges F4 as it was "
+    "written before any run (dt_study.FR5_CRITERIA and dt_study_criteria_written_first) and as "
+    "the lead's Q1 ruling kept it at 1 ms. J7_*_energy judges the energy residual over the "
+    "integrated flows <= 2e-3 on the coarsest rung, 1 ms (the ladder's first value), as well as "
+    "on the declared 0.5 ms, which it alone had read; J7_*_energy_falls judges its fall at second "
+    "order down the ladder (every successive pair by the classes rule, with no upper edge), as "
+    "FR-4's J6_energy_falls does, where it had been reported only. Why: the declared rung alone is "
+    "about four times looser than F4, since the residual falls at second order, which is what Q1 "
+    "ruled out; the choice adds and tightens, and loosens nothing. It was made after FR-5's "
+    "development dt study (dt5-a6639e79, 16 November 2026), whose values were known when the line "
+    "was settled: the residual over flows 1.32e-10 (T) and 8.21e-11 (R) at 1 ms, 3.30e-11 and "
+    "2.09e-11 at 0.5 ms, the ladder passing on both arms (T mixed, then at rounding; R at rounding "
+    "on every pair). That study's records, read again by the judge under these criteria, pass "
+    "both arms (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/"
+    "dt5-a6639e79-reread/)"
+)
 CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
     "fr4": [
         CHARGE_CHECK,
@@ -721,6 +756,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
         "lag estimate (gap 7) within 1e-3 pH at every buffered node",
+        ENERGY_SETTLED,
     ],
 }
 

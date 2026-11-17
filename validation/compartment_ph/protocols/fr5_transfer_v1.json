@@ -79,7 +79,7 @@
   "J4_reference": "the X and pH budgets above, against the reference started at tr.Start",
   "J5_envelope": "the closure's state-dependent envelope (rapid_proton_buffer.lag_estimate_ph <= 1e-3 pH) at every stage of every buffered node, including through the damage window",
   "J6_protons": "H_eq conserved except across routes: the change of H_eq at each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to H's material allowance (FR-4's rules.ledgers), at every record",
-  "J7_energy": "the energy identity at every record: stored change + heat = the maintenance's supplied work, within FR-4's ledger tolerance; each passive route's heat >= 0: the routes §7.5 books exactly (the cargo routes) are refused per step by the engine, and the rest (the proton leak, the proton pore, K+) are judged on their increments between records at >= -1e-12 pJ (record resolution), each route's smallest increment reported",
+  "J7_energy": "the energy identity at every record: stored change + heat = the maintenance's supplied work, within FR-4's ledger tolerance (the residual over the integrated flows <= 2e-3) on the coarsest rung, 1 ms, and on the declared 0.5 ms, falling at second order down the ladder: the dt study's F4 (pre-registration correction, 17 November 2026); each passive route's heat >= 0: the routes §7.5 books exactly (the cargo routes) are refused per step by the engine, and the rest (the proton leak, the proton pore, K+) are judged on their increments between records at >= -1e-12 pJ (record resolution), each route's smallest increment reported",
   "J8_cargo": "X conserved across lumen, cytosol and bath to its material allowance; whatever leaves the lumen arrives in the cytosol on the same route",
   "J9_bands": "the cytosol's pH within its fuel band (7.2 +- 0.05) at every stage; d within [0, 1]; f within [0, 1]",
   "J10_controls": "both controls caught with the 10x margin",
@@ -142,7 +142,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal, as FR-4's: on the vector path FR-5's units scale with FR-4's measured 0.95 ms per step (about 48 s of compile per unit; FR-5's world, with more routes and rows, at its own rate, measured by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs the full horizon, not a shortened one",
   "pre-run correction, 15 November 2026, the lead's ruling on J3's and J4_start's nodes: as J4's, the Richardson-estimated state error of the pH (J3) and the start check (J4_start, row 0 against the reference at rounding) judge the pH of every buffered node, the lumen and the cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold both nodes",
   "pre-run correction, 16 November 2026, the lead's ruling on the module paths (paths only): the lane's engine-facing modules moved from validation/compartment_ph/ to validation/compartment_ph_engine/ (parameters, definitions and dt_study; with them on fr45-transporter engine_records, planted, compare_reference, path_agreement and refusal_paths), so validation/compartment_ph/ holds the independent references' code-blind modules alone (their isolation tests: nothing there imports cells, jax or validation.tissue), with this protocol beside them. The driver and the world's builder name the new paths; earlier text naming the old ones (the execution path's correction, the questions as asked) reads with the new folder. Nothing else changes",
-  "pre-run correction, 16 November 2026, the lead's ruling on the judged world, as FR-4's: every engine part runs the declared world with FR-1's compartment operator (the composite, definitions.declared_world), in place of the development world without it; FR-4's world showed the two bitwise equal over 900 s (fr45-compartment-op e73e4afd, dev-e73e4afd-declared/), and FR-5's world is checked the same way once its kinds are wired"
+  "pre-run correction, 16 November 2026, the lead's ruling on the judged world, as FR-4's: every engine part runs the declared world with FR-1's compartment operator (the composite, definitions.declared_world), in place of the development world without it; FR-4's world showed the two bitwise equal over 900 s (fr45-compartment-op e73e4afd, dev-e73e4afd-declared/), and FR-5's world is checked the same way once its kinds are wired",
+  "pre-registration correction, 17 November 2026, the energy criterion, settled by the FR owner at the lead's order of 16 November (the dt study's F4 and the protocol's J7 to agree before registration), its direction approved by the lead on 17 November: J7 now judges F4 as it was written before any run (dt_study.FR5_CRITERIA and dt_study_criteria_written_first) and as the lead's Q1 ruling kept it at 1 ms. J7_*_energy judges the energy residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms (the ladder's first value), as well as on the declared 0.5 ms, which it alone had read; J7_*_energy_falls judges its fall at second order down the ladder (every successive pair by the classes rule, with no upper edge), as FR-4's J6_energy_falls does, where it had been reported only. Why: the declared rung alone is about four times looser than F4, since the residual falls at second order, which is what Q1 ruled out; the choice adds and tightens, and loosens nothing. It was made after FR-5's development dt study (dt5-a6639e79, 16 November 2026), whose values were known when the line was settled: the residual over flows 1.32e-10 (T) and 8.21e-11 (R) at 1 ms, 3.30e-11 and 2.09e-11 at 0.5 ms, the ladder passing on both arms (T mixed, then at rounding; R at rounding on every pair). That study's records, read again by the judge under these criteria, pass both arms (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/dt5-a6639e79-reread/)"
  ],
  "development_runs": {
   "runs": [],
@@ -471,11 +472,22 @@
    {
     "id": "J7_T_energy",
     "metrics": [
+     "derived.T.energy.ladder.values.0",
      "derived.T.energy.over_flows_at_declared"
     ],
     "comparison": "le",
     "threshold": 0.002,
-    "basis": "the energy identity at every record within FR-4's ledger tolerance",
+    "basis": "the energy identity at every record within FR-4's ledger tolerance: the residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms (the dt study's F4, as written before any run and kept at 1 ms by the lead's Q1 ruling), and on the declared 0.5 ms (pre-registration correction, 17 November 2026)",
+    "judged": true
+   },
+   {
+    "id": "J7_T_energy_falls",
+    "metrics": [
+     "derived.T.energy.ladder.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the energy residual falls at second order down the ladder: every successive pair by the classes rule with no upper edge (resolved orders >= 1.8), F4's second clause, as FR-4's J6_energy_falls (pre-registration correction, 17 November 2026)",
     "judged": true
    },
    {
@@ -768,11 +780,22 @@
    {
     "id": "J7_R_energy",
     "metrics": [
+     "derived.R.energy.ladder.values.0",
      "derived.R.energy.over_flows_at_declared"
     ],
     "comparison": "le",
     "threshold": 0.002,
-    "basis": "the energy identity at every record within FR-4's ledger tolerance",
+    "basis": "the energy identity at every record within FR-4's ledger tolerance: the residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms (the dt study's F4, as written before any run and kept at 1 ms by the lead's Q1 ruling), and on the declared 0.5 ms (pre-registration correction, 17 November 2026)",
+    "judged": true
+   },
+   {
+    "id": "J7_R_energy_falls",
+    "metrics": [
+     "derived.R.energy.ladder.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the energy residual falls at second order down the ladder: every successive pair by the classes rule with no upper edge (resolved orders >= 1.8), F4's second clause, as FR-4's J6_energy_falls (pre-registration correction, 17 November 2026)",
     "judged": true
    },
    {
