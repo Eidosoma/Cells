@@ -167,14 +167,17 @@ def compensation(part):
 def k_against_reference(part, reference):
     """W3: the operator's reconciliation term K (bath_reconciliation_pJ: the reservoir-work ledger
     without the term less with it) against R-records' K from W3's own supply series, over the
-    reservoir-work ledger's bound, the largest over the records; None without either side or when
-    their record times differ."""
+    reservoir-work ledger's bound, the largest over the records; None without either side, when
+    their record times differ, or when the supply R-records was given is not W3's recorded one."""
     if not isinstance(part, dict) or part.get("completed") is not True or not reference:
         return None
     s, t = part["series"], part["record_s"]
     k, bound = s.get("bath_reconciliation_pJ"), s.get("reservoir_work_bound_pJ")
     k_ref = (reference.get("series") or {}).get("K_pJ")
     if k is None or bound is None or k_ref is None or reference.get("record_s") != t:
+        return None
+    supply = reference.get("supply_fmol")  # K's input: W3's own recorded supply, unchanged.
+    if not supply or any(s.get(f"supplied_{sid}_fmol") != v for sid, v in supply.items()):
         return None
     ratios = [abs(a - b) / c if c > 0 else None for a, b, c in zip(k, k_ref, bound, strict=True)]
     return max_or_none(ratios)

@@ -20,7 +20,10 @@ Parts (the protocol's judged_parts):
   dose from the trace;
 * refusals: every refusal class (refusal_classes) refused at the definition, its reason
   classified from the message, and its neighbour admitted and run;
-* references: R-faces, R-ion and R-records, the FR references agent's (a stand-in until written).
+* references: R-faces, R-ion and R-records, the FR references agent's (validation/fr10/references,
+  through its usage note's API only, REFERENCES_USAGE.md), on the registered inputs; it reads
+  W3_rk4's records (--w3 OUT/W3_rk4/results.json) for R-records' K from W3's own supply, so it runs
+  after W3_rk4.
 
 Each run part records, at every observation time: every node's amount of every species
 (amount_SPECIES_NODE, fmol), every patch's voltage (V_PATCH, V), the energy residual and the
@@ -74,14 +77,12 @@ PARTS = (
     "W5_batch", "W6_water", "W7_staircase_ars", "W7_staircase_rk4", "refusals", "references",
 )
 RESTART_TIMES_S = (0.5, 1.0, 1.5)
-# What remains a stand-in, and the parts each blocks: the references wait for the FR references
-# agent (the lead's ruling of 17 November 2026: a code-blind agent, from Appendix A and
-# validation/bath_schedule/reference_inputs.json).
-STAND_INS = {
-    "references": "R-faces, R-ion and R-records are not yet written (the FR references agent, "
-                  "code-blind, from Appendix A and validation/bath_schedule/reference_inputs.json)"
-}
-STAND_IN_PARTS = {"references": {"references"}}
+# What remains a stand-in, and the parts each blocks: none since the FR references agent's
+# references landed (branch fr10-references, 23b8ff58, merged 17 November 2026).
+STAND_INS = {}
+STAND_IN_PARTS = {}
+REFERENCES_INPUTS = ROOT / "validation" / "fr10" / "references" / "reference_inputs.json"
+REGISTERED_INPUTS = ROOT / "validation" / "bath_schedule" / "reference_inputs.json"
 # The checks a refusal may name (refusal_classes' `check`), by a phrase of their messages.
 CHECKS = (
     ("the step rule (solver and dt)", "dose steps are measured only under"),
@@ -518,7 +519,65 @@ def refusals_part(name, context):
 
 
 def references_part(name, context):
-    raise SystemExit("the references are a stand-in (STAND_INS)")
+    """The references through their usage note's API only (validation/fr10/references/
+    REFERENCES_USAGE.md): faces.reference, ion.reference, records.event_records and
+    records.reconciliation_K, on the references' copy of the inputs, which must equal the
+    registered inputs (refused otherwise). In the judge's layout (bath_schedule_judge's
+    docstring): W1 and W2 at every record, each with a floor world (the reference plus its own
+    error bound, so the judge's floor difference is that bound); the event records; and K_W3 from
+    W3_rk4's own recorded supply (context["w3_results"]), with that supply kept beside it so the
+    judge can check it is W3's."""
+    from validation.fr10.references import faces, ion, records
+
+    del name
+    started = time.perf_counter()
+    inputs = json.loads(REFERENCES_INPUTS.read_text())
+    if inputs != json.loads(REGISTERED_INPUTS.read_text()):
+        raise SystemExit("Refused: the references' copy of the inputs differs from the "
+                         "registered inputs")
+    constants = inputs["constants"]
+    f = faces.reference(inputs["R_faces"])
+    t1 = [float(t) for t in f["times_s"]]
+    amounts, bound = np.asarray(f["amount_fmol"]), np.asarray(f["floor_fmol"])
+    nodes = list(f["nodes"])
+    w1 = {f"amount_S_{n}": amounts[:, k].tolist() for k, n in enumerate(nodes)}
+    w1_floor = {f"amount_S_{n}": (amounts[:, k] + bound[:, k]).tolist()
+                for k, n in enumerate(nodes)}
+    i = ion.reference(inputs["R_ion"], constants)
+    t2 = [float(t) for t in i["times_s"]]
+    v, v_floor = np.asarray(i["V_m_V"]), np.asarray(i["floor"]["V_m_V"])
+    w2 = {"V_wall_cell_0": v.tolist()}
+    w2_floor = {"V_wall_cell_0": (v + v_floor).tolist()}
+    for species, series in i["amount_fmol"].items():
+        w2[f"amount_{species}_cell_0"] = [float(x) for x in series]
+        extra = np.asarray(i["floor"]["amount_fmol"][species])
+        w2_floor[f"amount_{species}_cell_0"] = (np.asarray(series) + extra).tolist()
+    event_records = {}
+    for world in ("W1", "W2", "W3"):
+        event_records[world] = [
+            dict(time_s=float(e["time_s"]), dose_fmol={k: float(x) for k, x in
+                                                        e["dose_fmol"].items()},
+                 free_energy_pJ=float(e["dG_b_pJ"]), charge_C=float(e["charge_C"]))
+            for e in records.event_records(inputs["R_records"]["worlds"][world], constants)]
+    w3 = json.loads(Path(context["w3_results"]).read_text())["parts"]["W3_rk4"]
+    if w3.get("completed") is not True:
+        raise SystemExit("Refused: W3_rk4's records are incomplete")
+    supply = {sid: w3["series"][f"supplied_{sid}_fmol"] for sid in w3["species"]}
+    k = records.reconciliation_K(inputs["R_records"]["worlds"]["W3"], w3["record_s"], supply,
+                                 constants)
+    return dict(
+        kind="reference", admitted=True, completed=True,
+        worlds=dict(W1=dict(record_s=t1, series=w1), W1_floor=dict(record_s=t1, series=w1_floor),
+                    W2=dict(record_s=t2, series=w2), W2_floor=dict(record_s=t2, series=w2_floor)),
+        records=event_records,
+        K_W3=dict(record_s=[float(t) for t in k["times_s"]],
+                  series=dict(K_pJ=[float(x) for x in k["K_pJ"]]),
+                  floor_pJ=[float(x) for x in k["floor_pJ"]], supply_fmol=supply),
+        reported=dict(zero_current_V=[float(x) for x in i["zero_current_V"]],
+                      W1_supply_fmol=[float(x) for x in f["supply_fmol"]]),
+        inputs_equal_registered=True, w3_results=str(context["w3_results"]),
+        w3_results_sha256=hashlib.sha256(Path(context["w3_results"]).read_bytes()).hexdigest(),
+        wall_s=time.perf_counter() - started)
 
 
 # ------------------------------------------------------------------ the parts
@@ -549,13 +608,13 @@ FUNCTIONS = {
 }
 
 
-def run_parts(requested, out_dir, *, status, quick_horizon=False):
+def run_parts(requested, out_dir, *, status, quick_horizon=False, w3_results=None):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True)
     results = dict(status=status, protocol_id=PROTOCOL_ID, source=snapshot_identity(),
                    requested_parts=list(requested), complete=False, quick=quick_horizon,
                    stand_ins=blocking_stand_ins(PARTS), parts={})
-    context = dict(quick=quick_horizon, out_dir=out_dir)
+    context = dict(quick=quick_horizon, out_dir=out_dir, w3_results=w3_results)
     for name in [p for p in PARTS if p in requested]:
         started = time.perf_counter()
         value = FUNCTIONS[name](name, context)
@@ -572,6 +631,7 @@ def main(argv=None):
     parser.add_argument("mode", choices=("dev", "judged"))
     parser.add_argument("rest", nargs="+")
     parser.add_argument("--quick", action="store_true")
+    parser.add_argument("--w3", help="W3_rk4's results.json, for the references part's K")
     args = parser.parse_args(argv)
     if args.mode == "judged":
         protocol = json.loads(Path(args.rest[0]).read_text())
@@ -584,9 +644,12 @@ def main(argv=None):
     if why is None:
         why = refusal_before_writing(parts, out_dir, judged=args.mode == "judged",
                                      quick=args.quick)
+    if why is None and "references" in parts and not (args.w3 and Path(args.w3).exists()):
+        why = ("the references part reads W3_rk4's records for K: pass --w3 "
+               "OUT/W3_rk4/results.json, from the same source")
     if why:
         raise SystemExit("Refused: " + why)
-    run_parts(parts, out_dir, status=status, quick_horizon=args.quick)
+    run_parts(parts, out_dir, status=status, quick_horizon=args.quick, w3_results=args.w3)
     return 0
 
 

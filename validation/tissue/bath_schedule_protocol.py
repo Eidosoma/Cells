@@ -224,6 +224,8 @@ def resources():
               "RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env "
               "JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env "
               f"PYTHONDONTWRITEBYTECODE=1 -- {entry}"),
+        references_unit="the references part adds --w3 OUT/W3_rk4/results.json and runs after "
+                        "W3_rk4's unit has ended (R-records' K reads W3's own supply)",
         judge=(f"{PYTHON} -B -m validation.tissue.bath_schedule_judge judged "
                "SNAPSHOT/validation/tissue/bath_schedule_protocol.json OUT/verdict "
                "OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)"),
@@ -240,7 +242,10 @@ def judge_section():
         judge="validation/tissue/bath_schedule_judge.py (reads records, never runs; FR-4's and "
               "FR-5's arithmetic imported read-only from validation/tissue/"
               "compartment_ph_judge.py)",
-        references="the FR references agent's R-faces, R-ion and R-records, from Appendix A and "
+        references="the FR references agent's R-faces, R-ion and R-records "
+                   "(validation/fr10/references, branch fr10-references at 23b8ff58: its "
+                   "registered design README.md and designs/), used through its usage note's API "
+                   "only (REFERENCES_USAGE.md), from Appendix A and the registered inputs "
                    "validation/bath_schedule/reference_inputs.json",
         derivation=derivation(),
         criteria=criteria(),

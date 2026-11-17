@@ -105,6 +105,10 @@ def w3_k():
     return [0.0 if s <= 0.002 + 1e-12 else 2e4 for s in w3_times()]
 
 
+def w3_supply():
+    return [1e-7 * s for s in w3_times()]
+
+
 def w3_part():
     t = w3_times()
     own = [1e-3 if s <= 0.002 + 1e-12 else 2e4 for s in t]
@@ -113,7 +117,7 @@ def w3_part():
     part["series"] = {k: [v[0]] * len(t) for k, v in part["series"].items()}
     part["series"].update(
         reservoir_work_own_pJ=own, reservoir_work_bound_pJ=[1.0] * len(t),
-        bath_reconciliation_pJ=w3_k(),
+        bath_reconciliation_pJ=w3_k(), supplied_S_fmol=w3_supply(),
         bath_dose_S_fmol=[5e-4 if after(s, 0.002) else 0.0 for s in t],
         bath_dose_free_energy_pJ=[1e-3 if after(s, 0.002) else 0.0 for s in t])
     return part
@@ -130,7 +134,8 @@ def references():
             W2=[dict(time_s=0.5, dose_fmol={"Na": -45.0, "K": 45.0, "Cl": 0.0},
                      free_energy_pJ=-5.0)],
             W3=[dict(time_s=0.002, dose_fmol={"S": 5e-4}, free_energy_pJ=1e-3)]),
-        K_W3=dict(record_s=w3_times(), series=dict(K_pJ=w3_k())))
+        K_W3=dict(record_s=w3_times(), series=dict(K_pJ=w3_k()),
+                  supply_fmol=dict(S=w3_supply())))
 
 
 def comparison(**fields):
@@ -196,6 +201,7 @@ def test_a_complete_run_passes_every_criterion():
     ("compensation", {"J6_compensation"}),
     ("charge_from_nothing", {"J6_compensation"}),
     ("k_reference", {"J5_K_reference"}),
+    ("k_supply", {"J5_K_reference"}),  # K computed from a supply that is not W3's.
     ("late_dose", {"J6_records_reference", "J6_free_energy_reference"}),
     # The cytosol K 1.4 x its budget C B2 / F at 1 ms (and off R-ion by as much).
     ("k_budget", {"J3_state_error", "J4_reference"}),
@@ -237,6 +243,8 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
         p["W1_control"]["series"]["bath_compensation_charge_C"][5] = 1e-30
     elif plant == "k_reference":
         p["references"]["K_W3"]["series"]["K_pJ"][40] += 2.0
+    elif plant == "k_supply":
+        p["references"]["K_W3"]["supply_fmol"]["S"][30] *= 1 + 1e-12
     elif plant == "k_budget":
         for name, dt in generator.W2_RUNGS.items():
             p[name] = rung("W2", dt, k_scale=1e-6)
@@ -362,7 +370,7 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, monkeypatch)
     monkeypatch.setattr(generator, "ROOT", snapshot)
     monkeypatch.setattr(generator, "judged_run_refusal",
                         lambda protocol, root=snapshot: None)
-    with pytest.raises(SystemExit, match="stand-in"):
+    with pytest.raises(SystemExit, match="pass --w3"):
         generator.main(["judged", str(registered_copy(tmp_path)), str(out), "references"])
     with pytest.raises(SystemExit, match="no quick horizon"):
         generator.main(["judged", str(registered_copy(tmp_path)), str(out), "W6_water",
