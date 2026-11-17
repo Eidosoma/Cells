@@ -2,7 +2,7 @@
 // Checks the Laws library on the map's page (schema/LAWS_LIBRARY.md) with real pointer and key
 // input, through the DevTools protocol, in the manner of tools/check_machine.mjs:
 //
-//   main     lens=laws opens the fifth view, its room clear of the cards on the left, the nine
+//   main     lens=laws opens the fifth view, its room clear of the cards on the left, the seven
 //            model families standing as cases; a real press on a piece's bar chooses it, and the
 //            panel says "No level recorded for this piece"; ] steps to the next piece and Escape
 //            lets go; a press on a model family's case chooses it, the List's search finds the
@@ -179,7 +179,7 @@ try {
     check("and the room stands right of the card, nothing cut", corners.min >= card.right - 4 && corners.max <= WIDTH + 2, JSON.stringify([corners, card.right]));
     check("the names are written on the room", (await inked()) > 1000);
     const cases = await evaluate(`({ drawn: ${L}.cases.mesh.count, listed: ${L}.library.cases.length, legend: [...${V}.shadowRoot.querySelectorAll("cells-legend .legend-label")].map((label) => label.textContent) })`);
-    check("the nine model families stand as closed cases, named in the legend; nothing shown says older", cases.drawn === 9 && cases.listed === 9 && cases.legend.some((text) => /^A closed case: a model family/.test(text)) && !cases.legend.some((text) => /older|legacy/i.test(text)), JSON.stringify(cases));
+    check("the seven model families stand as closed cases, named in the legend; nothing shown says older", cases.drawn === 7 && cases.listed === 7 && cases.legend.some((text) => /^A closed case: a model family/.test(text)) && !cases.legend.some((text) => /older|legacy/i.test(text)), JSON.stringify(cases));
     const rest = s;
     await shot(`${NAME}-rest`);
 
@@ -202,7 +202,7 @@ try {
     check("Escape lets go", !s.selected, String(s.selected));
 
     // ---------------------------------------------------------- a model family: chosen by a press, found in the List; no word says older
-    const family = "resolved_tissue@2";
+    const family = "resolved_pump_tissue@2";
     const caseAt = await evaluate(`(() => { const v = ${V}, item = v.current.layout.cases.find((c) => c.id === ${JSON.stringify(family)}); const p = new v.stage.camera.position.constructor(item.x, item.y, item.z + item.d / 2); v.stage.project(p, p); const r = v.canvas.getBoundingClientRect(); return { x: r.left + p.x, y: r.top + p.y }; })()`);
     await click(caseAt.x, caseAt.y, 1500);
     s = await state();
@@ -210,8 +210,8 @@ try {
     await shot(`${NAME}-family`);
     await evaluate(`${V}.toggleIndex(true)`);
     await sleep(400);
-    const listed = await evaluate(`(() => { const root = ${V}.shadowRoot, search = root.querySelector("#cells-index-search"); search.value = "resolved_tissue"; search.dispatchEvent(new Event("input")); return [...root.querySelectorAll("cells-index section")].map((section) => [section.querySelector("h3").textContent, [...section.querySelectorAll(".index-name")].map((name) => name.textContent)]); })()`);
-    check("the List's search finds the model families by name, under Model families", JSON.stringify(listed.find(([label]) => label === "Model families")?.[1]) === JSON.stringify(["resolved_tissue@1", "resolved_tissue@2"]), JSON.stringify(listed));
+    const listed = await evaluate(`(() => { const root = ${V}.shadowRoot, search = root.querySelector("#cells-index-search"); search.value = "resolved_pump_tissue"; search.dispatchEvent(new Event("input")); return [...root.querySelectorAll("cells-index section")].map((section) => [section.querySelector("h3").textContent, [...section.querySelectorAll(".index-name")].map((name) => name.textContent)]); })()`);
+    check("the List's search finds the model families by name, under Model families", JSON.stringify(listed.find(([label]) => label === "Model families")?.[1]) === JSON.stringify(["resolved_pump_tissue@1", "resolved_pump_tissue@2"]), JSON.stringify(listed));
     await evaluate(`(() => { const search = ${V}.shadowRoot.querySelector("#cells-index-search"); search.value = ""; search.dispatchEvent(new Event("input")); })()`);
     if (!(await evaluate(`${V}.state.legendOpen`))) await evaluate(`${V}.shadowRoot.dispatchEvent(new CustomEvent("cells-legend-toggle"))`);
     await sleep(400);
@@ -322,6 +322,8 @@ try {
     // An address naming what the map no longer shows: the library opens and says so plainly.
     const said = {
       "assembly_regulated_cell@1": (text) => /The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//.test(text),
+      // A model family the engine's legacy registration registers, whose own module stays in the core.
+      "resolved_tissue@1": (text) => /this model family is legacy code now\. The engine's legacy code registers it\. Its own module stays in src\/cells\/core\/, where active code still reads it\./.test(text),
       "neutral_mobile_leak@1": (text) => /The map no longer shows this piece: no model declares it/.test(text),
     };
     for (const [id, says] of Object.entries(said)) {
@@ -358,7 +360,7 @@ try {
     const said = await evaluate(`${V}.shadowRoot.querySelector(".fallback")?.textContent || ""`);
     check("it says that 3D is not available", /3D drawing is not available/.test(said), said);
     const listed = await evaluate(`${V}.sections().map((section) => [section.label, section.entities.length])`);
-    check("the list holds the library's families, frames and model families", listed.length >= 15 && listed.some(([label, n]) => label === "Frames" && n === 5) && listed.some(([label, n]) => label === "Model families" && n === 9), JSON.stringify(listed.slice(-3)));
+    check("the list holds the library's families, frames and model families", listed.length >= 15 && listed.some(([label, n]) => label === "Frames" && n === 5) && listed.some(([label, n]) => label === "Model families" && n === 7), JSON.stringify(listed.slice(-3)));
     await evaluate(`${V}.select("laws:kir2p1_mh2@1")`);
     await sleep(800);
     const s = await state().catch(() => null);

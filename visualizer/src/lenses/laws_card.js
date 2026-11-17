@@ -80,13 +80,19 @@ export function describe(library, id, { drawn = null, map = null } = {}) {
 
 /**
  * What the map no longer shows, named by an address (laws:<id>): legacy code, said plainly, with
- * nothing of what it was. Only what moved into src/cells/legacy/ is called legacy code.
+ * nothing of what it was. Legacy code is what moved into src/cells/legacy/, and a model family the
+ * engine's legacy registration registers, whose own module may stay where active code reads it.
  */
 function describeNotShown(gone) {
   const moved = gone.now ? " Its module moved into the engine's legacy code, src/cells/legacy/, in D188's first move." : "";
+  const folder = String(gone.path || "").replace(/[^/]+$/, "");
+  const registered =
+    gone.as === "frame" && !gone.now && gone.registered
+      ? ` The engine's legacy code registers it. Its own module stays in ${folder}${gone.read_by?.length ? ", where active code still reads it" : ""}.`
+      : "";
   const plain =
     gone.as === "frame"
-      ? `The map does not show legacy code, and this model family is legacy code now.${moved}`
+      ? `The map does not show legacy code, and this model family is legacy code now.${moved}${registered}`
       : `The map no longer shows this piece: no model declares it, and nothing outside the engine's legacy code names it.${moved}`;
   return { id: pageId(gone.id), label: gone.id, kind: "not shown", eyebrow: "Laws library · not shown", status: null, chips: [{ label: "Not shown on the map" }], plain, facts: [], sources: [] };
 }

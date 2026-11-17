@@ -746,11 +746,17 @@ test("where no 3D can be drawn, the list and the panel come from the scene's lis
 
 // ------------------------------------------------------------ no legacy code on the map
 
-test("the map shows no legacy code: what moved into src/cells/legacy/ is left out, whatever the list holds, and the model families that stayed are shown", async () => {
+test("the map shows no legacy code: what moved into src/cells/legacy/, and the model families the legacy registration registers, are left out; the other model families are shown", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
   // The list the page carries says what it left out, and by which table; none of it is drawn or listed.
   assert.ok(raw.left_out && /move1-table\.json at main [0-9a-f]{7,}/.test(raw.left_out.table), "the file says what it left out, and by which table");
-  assert.ok(raw.left_out.frames.every((frame) => frame.now?.startsWith("src/cells/legacy/")), "every model family left out moved into legacy code");
+  assert.match(raw.left_out.registration, /^src\/cells\/legacy\/registration\.py at main [0-9a-f]{7,}: parse, the model dispatch$/, "and by which registration");
+  // Every model family left out moved into legacy code, or the legacy registration dispatches its model ID, or both.
+  for (const frame of raw.left_out.frames) assert.ok(frame.now?.startsWith("src/cells/legacy/") || frame.registered?.path === "src/cells/legacy/registration.py", frame.id);
+  // Two stayed in the core, registered by legacy code: resolved_tissue@1 and @2 (main 76846486), their modules read by active code.
+  const registeredOnly = raw.left_out.frames.filter((frame) => !frame.now);
+  assert.deepEqual(registeredOnly.map((frame) => frame.id), ["resolved_tissue@1", "resolved_tissue@2"]);
+  for (const frame of registeredOnly) assert.ok(frame.path.startsWith("src/cells/core/") && Number.isInteger(frame.registered.line) && frame.read_by.length > 0, frame.id);
   const library = new Library(raw);
   const listed = new Set(listSections(library).flatMap((section) => section.entities.map((entity) => entity.id)));
   for (const gone of [...raw.left_out.frames.map((item) => ({ ...item, as: "frame" })), ...raw.left_out.pieces.map((item) => ({ ...item, as: "piece" }))]) {
@@ -760,12 +766,14 @@ test("the map shows no legacy code: what moved into src/cells/legacy/ is left ou
     const said = describe(library, `laws:${gone.id}`);
     assert.equal(said.status, null, gone.id);
     assert.deepEqual([said.facts, said.sources], [[], []], `${gone.id}: no facts and no source`);
-    assert.match(said.plain, gone.as === "frame" ? /^The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//
-      : /^The map no longer shows this piece/, gone.id);
+    const plain = gone.as === "piece" ? /^The map no longer shows this piece/
+      : gone.now ? /^The map does not show legacy code, and this model family is legacy code now\. Its module moved into the engine's legacy code, src\/cells\/legacy\//
+      : /^The map does not show legacy code, and this model family is legacy code now\. The engine's legacy code registers it\. Its own module stays in src\/cells\/core\/, where active code still reads it\.$/;
+    assert.match(said.plain, plain, gone.id);
   }
-  // The model families whose module stayed are not legacy code: drawn as cases, listed, found, and with their own panel.
+  // The other model families are not legacy code: drawn as cases, listed, found, and with their own panel.
   const families = raw.frames.filter((frame) => frame.kind === "older family");
-  assert.deepEqual(families.map((frame) => frame.id).sort(), ["apical_vertex_mechanics@1", "capsid_graph@1", "finite_bond_assembly@1", "ionic_worlds@1", "resolved_pump_tissue@1", "resolved_pump_tissue@2", "resolved_tissue@1", "resolved_tissue@2", "source_decay@1"]);
+  assert.deepEqual(families.map((frame) => frame.id).sort(), ["apical_vertex_mechanics@1", "capsid_graph@1", "finite_bond_assembly@1", "ionic_worlds@1", "resolved_pump_tissue@1", "resolved_pump_tissue@2", "source_decay@1"]);
   assert.deepEqual(library.cases.map((frame) => frame.id), families.map((frame) => frame.id));
   for (const frame of families) {
     assert.ok(listed.has(`laws:${frame.id}`), `${frame.id} is in the list`);

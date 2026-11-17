@@ -170,7 +170,7 @@
    "inner model": 1,
    "composite": 1,
    "composition": 3,
-   "older family": 9
+   "older family": 7
   },
   "by_registry": {
    "inner_laws.py": 11,
@@ -185,7 +185,7 @@
   },
   "unregistered": 2,
   "left_out": {
-   "frames": 88,
+   "frames": 90,
    "pieces": 36
   }
  },
@@ -8043,28 +8043,6 @@
    "rows": []
   },
   {
-   "id": "resolved_tissue@1",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_tissue_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
-   "id": "resolved_tissue@2",
-   "kind": "older family",
-   "read": {
-    "ref": "fa19d80c",
-    "revision": "fa19d80c",
-    "path": "src/cells/core/surface_kinetic_spec.py",
-    "found_by": "MODEL_ID"
-   },
-   "rows": []
-  },
-  {
    "id": "source_decay@1",
    "kind": "older family",
    "read": {
@@ -8079,7 +8057,8 @@
  "older_words": "A model family: one module for each combination of features. Its laws are a table inside its own module; each becomes a declared piece only as it moves into the one model, when a use needs it (D167).",
  "left_out": {
   "why": "No legacy code on the map (the user, 17 November 2026: \"no legacy code, it will be removed - we're still building Cells so not really any legacy data\").",
-  "table": "scripts/moves/move1-table.json at main 6a5d509f (D188's move 1)",
+  "table": "scripts/moves/move1-table.json at main 76846486 (D188's move 1)",
+  "registration": "src/cells/legacy/registration.py at main 76846486: parse, the model dispatch",
   "frames": [
    {
     "id": "assembly_regulated_cell@1",
@@ -8097,517 +8076,983 @@
     "id": "compartment_reactions@1",
     "kind": "older family",
     "path": "src/cells/core/reaction_spec.py",
-    "now": "src/cells/legacy/core/reaction_spec.py"
+    "now": "src/cells/legacy/core/reaction_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1476,
+     "revision": "76846486"
+    }
    },
    {
     "id": "er_calcium@1",
     "kind": "older family",
     "path": "src/cells/core/er_spec.py",
-    "now": "src/cells/legacy/core/er_spec.py"
+    "now": "src/cells/legacy/core/er_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1472,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_bath_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_bath_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_active_bath_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_active_bath_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 933,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_bath_events@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_bath_events_spec.py",
-    "now": "src/cells/legacy/core/surface_active_bath_events_spec.py"
+    "now": "src/cells/legacy/core/surface_active_bath_events_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 947,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_extracellular_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_active_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_active_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1397,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_active_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_active_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1418,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_active_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_active_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1013,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_active_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_active_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1020,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_profile_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_profile_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_active_profile_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_active_profile_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1335,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_active_profile_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_profile_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_active_profile_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_active_profile_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1358,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1181,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1132,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_atp_transport@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1098,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_atp_transport_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_atp_transport_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1091,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1250,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_extracellular_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1411,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1432,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_irreversible_transport@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1084,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_irreversible_transport_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1075,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 992,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1006,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_mitochondria@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_mitochondria_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1061,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_mitochondria_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_mitochondria_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_mitochondria_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1054,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_profile_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1328,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_profile_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1349,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_regulated@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_regulated_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1112,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_regulated@2",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_regulated_v2_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1126,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_regulated_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_regulated_v2_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1119,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_transport@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_transport_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_transport_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_transport_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1105,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_transport_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_transport_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_transport_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_transport_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1068,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1171,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water@2",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_hcn_extra_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_hcn_extra_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_hcn_extra_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1150,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1164,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1365,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1380,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 954,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 978,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_profile_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1286,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_profile_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1303,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1157,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair@2",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_hcn_extra_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1143,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1373,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1388,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 962,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 969,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1294,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_energy_water_repair_profile_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1312,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1255,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_extracellular_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1404,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1425,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 985,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 999,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_profile_barrier_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_profile_barrier_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1321,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_profile_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_profile_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_profile_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1342,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_calcium_water@1",
     "kind": "older family",
     "path": "src/cells/core/surface_calcium_water_spec.py",
-    "now": "src/cells/legacy/core/surface_calcium_water_spec.py"
+    "now": "src/cells/legacy/core/surface_calcium_water_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1176,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_cotransport@1",
     "kind": "older family",
     "path": "src/cells/core/surface_cotransport_spec.py",
-    "now": "src/cells/legacy/core/surface_cotransport_spec.py"
+    "now": "src/cells/legacy/core/surface_cotransport_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1226,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_cotransport_water@1",
     "kind": "older family",
     "path": "src/cells/core/surface_cotransport_water_spec.py",
-    "now": "src/cells/legacy/core/surface_cotransport_water_spec.py"
+    "now": "src/cells/legacy/core/surface_cotransport_water_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1221,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_energy@1",
     "kind": "older family",
     "path": "src/cells/core/surface_energy_spec.py",
-    "now": "src/cells/legacy/core/surface_energy_spec.py"
+    "now": "src/cells/legacy/core/surface_energy_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1238,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_energy_water@1",
     "kind": "older family",
     "path": "src/cells/core/surface_energy_water_spec.py",
-    "now": "src/cells/legacy/core/surface_energy_water_spec.py"
+    "now": "src/cells/legacy/core/surface_energy_water_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1231,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_extracellular_barriers@1",
     "kind": "older family",
     "path": "src/cells/core/environment_barrier_interventions_spec.py",
-    "now": "src/cells/legacy/core/environment_barrier_interventions_spec.py"
+    "now": "src/cells/legacy/core/environment_barrier_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1439,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_membrane_profile_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_profile_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_profile_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_profile_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1272,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_membrane_profiles@1",
     "kind": "older family",
     "path": "src/cells/core/surface_profile_interventions_spec.py",
-    "now": "src/cells/legacy/core/surface_profile_interventions_spec.py"
+    "now": "src/cells/legacy/core/surface_profile_interventions_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1279,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 913,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium_bath_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_bath_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_bath_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_bath_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 887,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium_bath_events@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_bath_events_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_bath_events_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_bath_events_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 901,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium_energy@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_energy_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_energy_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 919,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium_energy_bath_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 894,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_open_calcium_energy_bath_events@1",
     "kind": "older family",
     "path": "src/cells/core/surface_open_calcium_energy_bath_events_spec.py",
-    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_events_spec.py"
+    "now": "src/cells/legacy/core/surface_open_calcium_energy_bath_events_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 908,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_passive_bath_epoch@1",
     "kind": "older family",
     "path": "src/cells/core/surface_passive_bath_epoch_spec.py",
-    "now": "src/cells/legacy/core/surface_passive_bath_epoch_spec.py"
+    "now": "src/cells/legacy/core/surface_passive_bath_epoch_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 926,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_passive_bath_events@1",
     "kind": "older family",
     "path": "src/cells/core/surface_passive_bath_events_spec.py",
-    "now": "src/cells/legacy/core/surface_passive_bath_events_spec.py"
+    "now": "src/cells/legacy/core/surface_passive_bath_events_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 940,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_redistribution@1",
     "kind": "older family",
     "path": "src/cells/core/surface_redistribution_spec.py",
-    "now": "src/cells/legacy/core/surface_redistribution_spec.py"
+    "now": "src/cells/legacy/core/surface_redistribution_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1033,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_redistribution@2",
     "kind": "older family",
     "path": "src/cells/core/surface_mobile_pump_spec.py",
-    "now": "src/cells/legacy/core/surface_mobile_pump_spec.py"
+    "now": "src/cells/legacy/core/surface_mobile_pump_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1029,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_redistribution@3",
     "kind": "older family",
     "path": "src/cells/core/surface_mobile_channel_spec.py",
-    "now": "src/cells/legacy/core/surface_mobile_channel_spec.py"
+    "now": "src/cells/legacy/core/surface_mobile_channel_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1025,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_repair@1",
     "kind": "older family",
     "path": "src/cells/core/surface_repair_spec.py",
-    "now": "src/cells/legacy/core/surface_repair_spec.py"
+    "now": "src/cells/legacy/core/surface_repair_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1046,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_repair@2",
     "kind": "older family",
     "path": "src/cells/core/surface_mobile_repair_spec.py",
-    "now": "src/cells/legacy/core/surface_mobile_repair_spec.py"
+    "now": "src/cells/legacy/core/surface_mobile_repair_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1041,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_repair@3",
     "kind": "older family",
     "path": "src/cells/core/surface_mobile_pump_repair_spec.py",
-    "now": "src/cells/legacy/core/surface_mobile_pump_repair_spec.py"
+    "now": "src/cells/legacy/core/surface_mobile_pump_repair_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1037,
+     "revision": "76846486"
+    }
+   },
+   {
+    "id": "resolved_tissue@1",
+    "kind": "older family",
+    "path": "src/cells/core/surface_tissue_spec.py",
+    "now": null,
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1444,
+     "revision": "76846486"
+    },
+    "read_by": [
+     "src/cells/core/schedule.py",
+     "src/cells/core/specs.py",
+     "src/cells/core/surface_kinetic_spec.py",
+     "src/cells/core/surface_pump_spec.py",
+     "src/cells/models/surface_tissue.py"
+    ]
+   },
+   {
+    "id": "resolved_tissue@2",
+    "kind": "older family",
+    "path": "src/cells/core/surface_kinetic_spec.py",
+    "now": null,
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1197,
+     "revision": "76846486"
+    },
+    "read_by": [
+     "src/cells/core/schedule.py",
+     "src/cells/core/surface_pump_spec.py",
+     "src/cells/core/surface_pump_v2_spec.py",
+     "src/cells/core/surface_pump_v3_spec.py",
+     "src/cells/models/surface_kinetic.py"
+    ]
    },
    {
     "id": "resolved_tissue_active_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_active_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_active_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_active_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1261,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_tissue_excision@1",
     "kind": "older family",
     "path": "src/cells/core/surface_excision_spec.py",
-    "now": "src/cells/legacy/core/surface_excision_spec.py"
+    "now": "src/cells/legacy/core/surface_excision_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1266,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_water@1",
     "kind": "older family",
     "path": "src/cells/core/surface_water_spec.py",
-    "now": "src/cells/legacy/core/surface_water_spec.py"
+    "now": "src/cells/legacy/core/surface_water_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1244,
+     "revision": "76846486"
+    }
    },
    {
     "id": "resolved_water@2",
     "kind": "older family",
     "path": "src/cells/core/surface_water_kinetic_spec.py",
-    "now": "src/cells/legacy/core/surface_water_kinetic_spec.py"
+    "now": "src/cells/legacy/core/surface_water_kinetic_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1213,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_calcium@1",
     "kind": "older family",
     "path": "src/cells/core/spatial_calcium_spec.py",
-    "now": "src/cells/legacy/core/spatial_calcium_spec.py"
+    "now": "src/cells/legacy/core/spatial_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1468,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_calcium@2",
     "kind": "older family",
     "path": "src/cells/core/plasma_calcium_spec.py",
-    "now": "src/cells/legacy/core/plasma_calcium_spec.py"
+    "now": "src/cells/legacy/core/plasma_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1464,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_calcium@3",
     "kind": "older family",
     "path": "src/cells/core/gated_calcium_spec.py",
-    "now": "src/cells/legacy/core/gated_calcium_spec.py"
+    "now": "src/cells/legacy/core/gated_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1460,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_calcium@4",
     "kind": "older family",
     "path": "src/cells/core/ip3_calcium_spec.py",
-    "now": "src/cells/legacy/core/ip3_calcium_spec.py"
+    "now": "src/cells/legacy/core/ip3_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1456,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_calcium@5",
     "kind": "older family",
     "path": "src/cells/core/tissue_calcium_spec.py",
-    "now": "src/cells/legacy/core/tissue_calcium_spec.py"
+    "now": "src/cells/legacy/core/tissue_calcium_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1448,
+     "revision": "76846486"
+    }
    },
    {
     "id": "spatial_extracellular@3",
     "kind": "older family",
     "path": "src/cells/core/tissue_spec.py",
-    "now": "src/cells/legacy/core/tissue_spec.py"
+    "now": "src/cells/legacy/core/tissue_spec.py",
+    "registered": {
+     "path": "src/cells/legacy/registration.py",
+     "line": 1452,
+     "revision": "76846486"
+    }
    }
   ],
   "pieces": [

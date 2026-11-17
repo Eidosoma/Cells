@@ -54,9 +54,11 @@ export const LEGACY = "src/cells/legacy/";
 /**
  * What the map no longer shows (the user, 17 November 2026: "no legacy code, it will be removed - we're
  * still building Cells so not really any legacy data"): legacy code is what stands under
- * src/cells/legacy/ after the engine's first move. So: every model family and piece the file says it
- * left out (`left_out`), and any read from a file under src/cells/legacy/. A model family whose module
- * stayed is shown. The view and the panel ask the Library, so a list read with them shows none of them.
+ * src/cells/legacy/ after the engine's first move, and a model family the engine's legacy registration
+ * registers, even where its own module stayed. So: every model family and piece the file says it left
+ * out (`left_out`, which names that registration), and any read from a file under src/cells/legacy/.
+ * Any other model family is shown. The view and the panel ask the Library, so a list read with them
+ * shows none of them.
  */
 export function leftOutOf(raw) {
   const out = new Map();

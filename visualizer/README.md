@@ -20,7 +20,7 @@ One data file, the scene, drawn through five lenses, in this order:
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
-| **Laws library** | Every declared piece of the engine on a wall of shelves, by family, read from the engine's code (`data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model and its pieces seated in it. Choosing a piece lights the slots that declare it. A status is said only where the record states one ("No level recorded for this piece" elsewhere). An Engine view box that holds pieces opens the library on them, and each piece links back to its box. It shows no legacy code: what moved into the engine's `src/cells/legacy/` is not drawn, and an address naming it says so. The model families whose laws are tables inside them stand as closed cases in front of the racks. A piece's own source links at the revision the list was read at, which its panel says where that is not the map's |
+| **Laws library** | Every declared piece of the engine on a wall of shelves, by family, read from the engine's code (`data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model and its pieces seated in it. Choosing a piece lights the slots that declare it. A status is said only where the record states one ("No level recorded for this piece" elsewhere). An Engine view box that holds pieces opens the library on them, and each piece links back to its box. It shows no legacy code: what moved into the engine's `src/cells/legacy/`, and a model family the engine's legacy registration registers, is not drawn, and an address naming it says so. The other model families, whose laws are tables inside them, stand as closed cases in front of the racks. A piece's own source links at the revision the list was read at, which its panel says where that is not the map's |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
 opens the engine part that holds its law, and that part lists the units it holds laws for.
@@ -779,6 +779,7 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/build_*_atlas.py`, `data/proteins/<species>/` | Each species' own proteins, rebuilt from saved public downloads that stay outside git |
 | `src/core/look.js`, `passes.js`, `environment.js` | The Cell view's resting look and the finishing passes |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
+| `tools/lib/npy_reader.py` | Reads a run's `.npz` and `.npy` without numpy: little-endian numbers and booleans, and since 17 November 2026 little-endian fixed-width text (`<U`), which the engine's relationship tables use for their ids; text in another byte order is refused, never misread (`tests/npy_reader.test.mjs`; the patch came from the engine's side, at the lead's offer) |
 | `tools/build_view_page.mjs`, `src/standalone/` | A page that holds one view standing alone (the Laws library, the origin-of-life view): `node tools/build_view_page.mjs <view> --out FILE`. A view needs a mount module and a page file there; the page says on itself that it is a preview |
 | `src/core/` | Stage (renderer, camera, picking), camera control, labels, theme, status materials |
 | `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales), `proteins.js` and `protein_parts.js` (protein atlas) |
@@ -1034,11 +1035,17 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
 - The Laws library's list was read at main fa19d80c, before the engine's first source
-  move, and thinned by that move's table: the nine model families shown are those whose
-  modules did not move, and a piece's own source links to that revision. It is read again
-  once the second move and the law registry have landed, from the declarations file the
-  engine will write (FR-12) in place of its source text. At rest on a wide screen the
-  model families' names are small, about 7 px; they read once a case is chosen.
+  move, and thinned by that move's table and by the engine's legacy registration: the
+  seven model families shown are those whose modules did not move and that
+  `src/cells/legacy/registration.py` does not register (read at main 76846486), and a
+  piece's own source links to the list's revision. Two families shown until Version 20,
+  `resolved_tissue@1` and `@2`, are registered there, though their modules stay in the
+  core; they are left out since. Of the 76 narrow bars, the 51 catalogue laws are chosen
+  only by legacy families. They and the other narrow bars stand until the list is read
+  from the declarations file the engine writes since seam F (FR-12), which is to be the
+  whole of what the wall shows; that waits for the file's format page. At rest on a wide
+  screen the model families' names are small, about 7 px; they read once a case is
+  chosen.
 - The Laws library's card scrolls beside its legend on a wide window under about 1000 px
   tall. The room it keeps clear on
   the left is worked out when a panel opens or closes, so it goes stale when a window is

@@ -224,7 +224,8 @@ no piece of Cells. Quoted docstrings may name one as the source of a law's coeff
 - **A model family** (kind `older family`) has no rows: one module for each combination of
   features, whose laws are a table inside it. It declares no piece, and the map draws it as a
   closed case on the plinth, in front of the racks. One whose module moved into
-  `src/cells/legacy/` is legacy code and is not shown (below).
+  `src/cells/legacy/`, or that the engine's legacy registration registers, is legacy code and is
+  not shown (below).
 - **`boxes`** are the Engine view's boxes for the model, with their levels and sources. A
   frame's status never comes from its parts: "integration grants no acceptance"
   (`development_status`, read from `core/pump_composite_spec.py`).
@@ -316,27 +317,45 @@ offers the Laws library as its fifth view only when it does.
 
 The user, 17 November 2026: "no legacy code, it will be removed - we're still building Cells so not
 really any legacy data". Legacy code is what stands under `src/cells/legacy/` after the engine's
-first move (D188's move 1, main 7bb8bf23, with its table `scripts/moves/move1-table.json`), which
-moved 88 model families' modules there. The view does not show:
+first move (D188's move 1, main 7bb8bf23, with its table `scripts/moves/move1-table.json`), and
+what the engine's legacy registration registers (`src/cells/legacy/registration.py`, its model
+dispatch `parse`). The view does not show:
 
-- **a model family whose module moved into `src/cells/legacy/`**;
+- **a model family whose module moved into `src/cells/legacy/`** (88 at main 76846486);
+- **a model family the legacy registration dispatches by its model ID,** though its own module
+  stays where active code still reads it (`resolved_tissue@1` and `@2`, whose modules stay in
+  `src/cells/core/`, at main 76846486). Its model ID is read from the dispatch as the engine's own
+  `legacy_entries` reads it (`src/cells/registry/declarations.py`): each comparison of
+  `data['model'].get('id')` with a literal, a tuple of literals, or a name from an active module.
+  Nothing of the engine is imported;
 - **a piece read from a file under `src/cells/legacy/`**;
 - **a piece the file leaves out (`left_out`)**: one whose file moved to legacy code, that no model
   declares and that no file outside `src/cells/legacy/` names.
 
-`left_out` records what was left out of a list read before the move, and by which table:
+`left_out` records what was left out of a list read before the move, and by which table and
+registration:
 
 ```json
 "left_out": {
   "why": "No legacy code on the map (the user, 17 November 2026: …)",
-  "table": "scripts/moves/move1-table.json at main 6a5d509f (D188's move 1)",
-  "frames": [{ "id": "assembly_regulated_cell@1", "kind": "older family", "path": "src/cells/assembly_cell/spec.py", "now": "src/cells/legacy/assembly_cell/spec.py" }],
+  "table": "scripts/moves/move1-table.json at main 76846486 (D188's move 1)",
+  "registration": "src/cells/legacy/registration.py at main 76846486: parse, the model dispatch",
+  "frames": [
+    { "id": "assembly_regulated_cell@1", "kind": "older family", "path": "src/cells/assembly_cell/spec.py", "now": "src/cells/legacy/assembly_cell/spec.py" },
+    { "id": "resolved_tissue@1", "kind": "older family", "path": "src/cells/core/surface_tissue_spec.py", "now": null,
+      "registered": { "path": "src/cells/legacy/registration.py", "line": 1444, "revision": "76846486" },
+      "read_by": ["src/cells/core/schedule.py", "…"] }
+  ],
   "pieces": [{ "id": "neutral_mobile_leak@1", "registry": "no registry", "path": "…", "now": "src/cells/legacy/…" }]
 }
 ```
 
-A model family whose module stayed (nine at main 6a5d509f) is not legacy code and is shown, as a
-model family. The
+- **`now`** is where a moved module stands, or null for one that stayed.
+- **`registered`** is where the legacy registration dispatches the family's model ID.
+- **`read_by`** is given for a module that stayed: the active files that import it.
+
+A model family whose module stayed and that no legacy registration registers (seven at main
+76846486) is not legacy code and is shown, as a model family. The
 `Library` (`src/lenses/laws_data.js`) is the one gate: it leaves all of these out whatever the
 list holds, and a piece keeps only what declares it on the map. An address naming one
 (`select=laws:<id>`) opens the library and says plainly that the map does not show it, with
