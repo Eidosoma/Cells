@@ -52,7 +52,7 @@ PACKAGE = "cells"
 SCOPE_DIRS = ("src/", "tests/", "validation/", "scripts/", "examples/")
 SCOPE_FILES = ("pyproject.toml",)
 TEXT_SUFFIXES = (".sh", ".toml", ".cfg", ".ini")
-SELF = ("scripts/source_moves.py", "scripts/moves/")
+SELF = ("scripts/source_moves.py", "scripts/source_moves_plan.py", "scripts/moves/")
 RUFF = Path(sys.executable).with_name("ruff")
 # First-party packages named explicitly: ruff otherwise decides by what exists on disk, and a
 # moved package (src/cells/legacy) does not exist yet when the rewriter sorts.

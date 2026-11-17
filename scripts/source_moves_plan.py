@@ -526,7 +526,9 @@ def pins(args):
                         key=key,
                         pinned=pinned,
                         live=bool(pinned),
-                        kind="path" if isinstance(key, str) and key.endswith(".py") else "module",
+                        kind="path"
+                        if isinstance(key, str) and "/" in key and key.endswith(".py")
+                        else "module",
                         module_touched=sorted(touched.get(f, ())),
                         pinned_touched=sorted({t for p in pinned for t in touched.get(p, ())}),
                     )

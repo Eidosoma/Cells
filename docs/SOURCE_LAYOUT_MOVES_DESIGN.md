@@ -19,11 +19,12 @@ Each move has three parts:
 
 | | Refactors first | The move commit (draft at main fa19d80c) |
 | --- | --- | --- |
-| Move 1 | R1 dispatch, R2 computed module paths, R3 seven couplings, R4 file-relative roots (§5, §7.3) | 318 modules into `src/cells/legacy/`, 647 files rewritten |
+| Move 1 | R1 dispatch, R2 computed module paths, R3 seven couplings, R4 file-relative roots (§5, §7.3) | 318 modules into `src/cells/legacy/`, 649 files rewritten |
 | Move 2 | the continuity probe's names if a checkpoint must cross it; three more pinned files (§5); the visualizer's tools (their owner) | 109 modules into the target folders, 35 left for the lead to place (§9) |
 
 **The probe** ran the cycle on a scratch tree: a family moved, a coupled kernel extracted and
-moved, and a file pinned by path moved. Every check came out identical (§12).
+moved, and a file pinned by path moved. Every check came out identical: test IDs, crossrev's
+nine sets, G1 on six worlds, a continuity resume, and tiers 1+2 with 0 changed (§12).
 
 ## 2. The move map
 
@@ -94,7 +95,7 @@ Counts are from the draft move 1 (`$E/scan-move1-draft.json`).
 | --- | --- |
 | Frozen evidence under `/mnt/workspaces` | Never edited (AGENTS.md) |
 | JSON anywhere in the checkout: 32 files in `validation/` with 2069 references, and `tests/tier3_record.json` with 8 | Records and registered protocols. They describe the code as it was when they were registered: path-to-hash maps (`protected_sha256`, `owned_sha256`, `source_sha256` and others, in 288 files) and module paths such as `public_parser` in `validation/geometry/*_protocol.json`. No test compares a run's module path with them (grep) |
-| `docs/` (11 files), `reports/` (55), `agent-work/` (262), Markdown anywhere | History, and agents' frozen work files. The live docs, ARCHITECTURE.md's "where it lives" column and the module-system design, get one docs-only commit after each move |
+| `docs/` (12 files, this note included), `reports/` (55), `agent-work/` (262), Markdown anywhere | History, and agents' frozen work files. The live docs, ARCHITECTURE.md's "where it lives" column and the module-system design, get one docs-only commit after each move |
 | `visualizer/` (5 files) | The visualizer agent's. Its data are extractions at a revision, and its tools read engine paths at a revision (§10) |
 | Model, kind and format IDs (`cells.transporter@1`, `cells.visualizer.scene@1`) | Not module paths: the token rule skips names followed by `@` |
 | `source_hashes()` keys in run manifests and checkpoints | Written at run time. A checkpoint from before a move carries the old keys, and continuity admission handles that, as the probe showed (§12) |
@@ -168,8 +169,7 @@ geometry laws, and none is on the active path.
 | `processes/stable_seed_partition_trajectory.py` | `core/resources.py`; it also records its own source hash | path: `parents[3]` |
 | `processes/stable_seed_control_volume_environment.py` | `processes/{stable_seed_control_volume_physical_bridge,finite_ecm_polygon_geometry}.py` | path: `parents[1]`; recorded |
 | `processes/stable_seed_control_volume_physical_bridge.py` | `core/conservative_polygon_tissue_preparation.py`, `processes/{conservative_polygon_geometry,stable_seed_control_volumes}.py` | path: `parents[1]` |
-| `processes/stable_seed_explicit_ecm_partition.py` | three geometry modules | path; recorded |
-| 6 geometry modules (`conservative_polygon_geometry`, `finite_ecm_polygon_geometry`, `fixed_polygon_removal`, `stable_mesh_{metric,operator}_reconstruction`, `stable_seed_control_volumes`) | the geometry primitives they import | module: the hash of `module.__file__`, so only its bytes count |
+| `processes/stable_seed_explicit_ecm_partition.py` and 6 geometry modules (`conservative_polygon_geometry`, `finite_ecm_polygon_geometry`, `fixed_polygon_removal`, `stable_mesh_{metric,operator}_reconstruction`, `stable_seed_control_volumes`) | the geometry modules they import | module: the hash of `module.__file__`, so only its bytes count; the first records its pins |
 
 Some pins form chains: a pinning module is itself pinned by another, for example the physical
 bridge by the environment. 15 modules compute paths from their own `__file__`.
@@ -210,15 +210,26 @@ bridge by the environment. 15 modules compute paths from their own `__file__`.
   chains: R4 would make the outer pins stale.
   - After move 1 these laws refuse at their pin checks.
   - Their gate tests already fail today: 6 tier-1 files with exit code 1
-    (`$E/pinned-cluster-tests.json`). On D189's list, 2 are firm (`test_stable_seed_control_volume_{environment,physical_bridge}.py`)
-    and 3 are held (`test_stable_seed_partition_{advance,advance_refinement,trajectory}.py`).
-    The held list is reviewed again once D188 has cut the couplings.
-    The sixth, `test_conservative_polygon_tissue_preparation.py`, is on neither. It has to be
-    retired, or shown to keep its counts, before move 1.
+    (`$E/pinned-cluster-tests.json`). On D189's list:
+    - 2 are firm: `test_stable_seed_control_volume_{environment,physical_bridge}.py`;
+    - 3 are held: `test_stable_seed_partition_{advance,advance_refinement,trajectory}.py`. The
+      held list is reviewed again once D188 has cut the couplings;
+    - the sixth, `test_conservative_polygon_tissue_preparation.py`, is on neither. It has to be
+      retired, or shown to keep its counts, before move 1.
   - The frozen evidence stays reproducible from its frozen snapshots.
 - **Move 2** touches 3 more path pins: `core/{state,devices,resources}.py` move into
   `execution/`, and `state.py` is rewritten. Those laws are in the same cluster, so the same
   rule applies.
+
+**Data-file pins:**
+- 8878 hex literals in the checkout's JSON and Python files outside src (outside `agent-work/`
+  and `visualizer/`) equal a current src file's hash.
+- The draft move 1 breaks 5125 of them, in 116 files. Nearly all are records and protocols
+  under `reports/` and `validation/`, which are left alone (§3.2). Evidence:
+  `$T/pins.py`, `$E/json-pins-move1-draft.json`.
+- Which tests read them live is measured by the tier gate on each commit, not predicted. A
+  static search for their readers is too coarse, because file names such as `result.json`
+  are generic. The probe's tiers are in §12.
 
 ## 6. The registry's legacy entry point
 
@@ -263,7 +274,7 @@ The registration tables of D185 stay the core-seams pass's design.
 
 ## 7. Move 1
 
-### 7.1 What moves (draft at fa19d80c: `source_moves_plan.py move1`, `$E/plan-fa19d80c/move1-draft.json`)
+### 7.1 What moves (draft at fa19d80c: `source_moves_plan.py move1`)
 
 **The rule:**
 - A module moves when it is an older family's module, is reached only from older families, or
@@ -271,8 +282,8 @@ The registration tables of D185 stay the core-seams pass's design.
 - Then every module that imports a moved module moves too, except the dispatch points.
 
 **The active path** is a name-level reachability analysis from the entry points with D189's nine
-families (`source_moves_plan.py reach`). It follows imported names through each module's top-level definitions,
-not whole modules.
+families (`source_moves_plan.py reach`). It follows imported names through each module's
+top-level definitions, not whole modules.
 
 **The result: 318 modules.**
 
@@ -325,7 +336,7 @@ that move 1 must cut is different.
 | R2 | refactor | The 17 computed-module-path sites name full modules |
 | R3 | refactor | The 7 extractions |
 | R4 | refactor | Depth-independent roots of `charged_surface_work` and `charged_surface_backend_gate` (§5) |
-| M1 | move | 318 modules; the rewriter changes about 647 files, nearly all import lines (`$E/scan-move1-draft.json`) |
+| M1 | move | 318 modules; the rewriter changes 649 files with 2661 edits: 2598 import statements, 54 strings, 7 programs in strings, 2 comments (`$E/scan-move1-draft.json`) |
 
 The map is regenerated on the head that holds the pin and the retire, and after R1–R4. The probe
 shows that its commits verify.
@@ -344,8 +355,9 @@ Every refactor and move commit passes:
 - **tiers 1 and 2 with 0 changed.**
 
 Tier 3 runs once on the final tree against `tests/tier3_record.json`, together with G3 and G4
-(D194). That record's error lines hold 8 references to modules that move 1 moves, so the tier-3 diff
-should read the record through the committed maps (a reading rule; the record is never edited).
+(D194). That record's error lines hold 8 references to modules that move 1 moves, so the tier-3
+diff should read the record through the committed maps (a reading rule; the record is never
+edited).
 
 **Wall time per commit, with 8 free CPUs:** about 40–50 minutes. That is collection 3, crossrev
 4, G1 about 17 on 8 shards, and tiers 1+2 about 20–25.
@@ -437,14 +449,14 @@ Moved modules leave no aliases:
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| verify P1, P3, P4 | holds; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P3-planted.json` |
+| verify P1, P3, P4 (the final tool; selftest 28 of 28) | holds: 0 problems each; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P3-planted.json`, `$E/selftest-final.json` |
 | P2's extraction | moved text identical; other code identical; only imports changed | `$E/extraction-P2-check.txt` |
-| Collected test IDs (P3 against main) | identical: 20792 IDs and the same 13 collection errors | `$E/collect-*.ids`, `.log` |
+| Collected test IDs (P3 and P4, each against main) | identical: 20792 IDs and the same 13 collection errors | `$E/collect-*.ids`, `.log` |
 | crossrev's nine sets (P3), on CPUs 8,24 against `record-a83d8f15` (made on 6,22) | identical in all nine; file listings identical | `$E/crossrev-db8086ea/` |
 | G1, six worlds (one per model: @3, composite ×2, water@1, water@2, replacement), one CPU each | identical: 6 of 6, all 688 arrays bitwise | `$E/g1-db8086ea/compare-vs-a83d8f15.json` |
 | Continuity resume: checkpoint under main, admitted for P3 by `admit.py`, resumed, compared | proposed (P, B, H, O identical; 31 changed files) and finalised; bitwise at every round; `verify_run` verified | `$E/continuity-db8086ea/` |
-| Pinned law (P4) | `_pins()` holds; pin-table digest changes; 5 tier-1/2 files, 89 passed 2 skipped in both | `$E/p4-check/` |
-| Tiers 1+2 (P3) | see `$E/tiers-1+2-db8086ea/summary.json` | |
+| Pinned law (P4) | `_pins()` holds; pin-table digest changes; 5 tier-1/2 files, 89 passed 2 skipped in both. P4 changes only older-family code, so the active-path checks above stand on P3 | `$E/p4-check/` |
+| Tiers 1+2 (P3), 6 CPUs | 518 files, 0 changed against `tests/test_tiers.json`. One count increase, `test_cell_owned_compartments.py` at 148 passed against 140, the same as at a83d8f15 | `$E/tiers-1+2-db8086ea/summary.json` |
 
 ## 13. Estimates
 
