@@ -39,12 +39,16 @@ export const ORIGIN_LOOK = { rich: true, filmic: true, exposure: 1.05, contact: 
 export const ASSEMBLY_LOOK = { ...ORIGIN_LOOK, contact: false };
 /**
  * Where the assembly is packed as a loose cluster rather than a micelle by itself: on a phone and with
- * less motion, as the user decided (docs/ORIGIN_OF_LIFE.md, "Decided", answer 2: "a micelle, with the
- * cluster on a phone and where less motion is asked for"). The micelle everywhere (false) was built on
- * the brief of 16 November and has been put to the user; until they say so, their answer stands. The
- * choice is this one line; either packing can be chosen on the card.
+ * less motion (true), or nowhere (false: the micelle everywhere). The user first decided "a micelle,
+ * with the cluster on a phone and where less motion is asked for" (docs/ORIGIN_OF_LIFE.md, "Decided",
+ * answer 2); asked again once the micelle was built to stand still, they left it to the coordinator
+ * (17 November 2026: "You decide"), who chose the micelle everywhere: it is the picture the view was
+ * built for, it stands with less motion, and it costs the same to draw as the cluster (measured by
+ * turns in one page on the project's graphics card: the same draw calls and triangles, 60 frames a
+ * second either way at 400 by 800 and at 1400 by 900; no phone was measured). Either packing can be
+ * chosen on the card. The choice is this one line.
  */
-export const CLUSTER_WHERE_SMALL_OR_STILL = true;
+export const CLUSTER_WHERE_SMALL_OR_STILL = false;
 /** The words the picture says of itself, on the picture and in the legend. */
 export const OWN_WORDS = "No law of Cells computes how the lipids move and pack: their look, their motion, the water and every size are the picture's own";
 /** The same, in fewer words, for the legend's note, which must stay in view on a short window. */

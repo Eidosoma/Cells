@@ -109,11 +109,14 @@ awaited.
   check-only scene with a test's own two made-up runs holds it (`tools/check_origin.mjs`, `CASE=pair`).
 - **On a phone at the Lineages level**, the lineage is shorter and seen from the front, under the
   page's card, and the assembly leaves it the picture.
-- **On a phone and with less motion the cluster stands**, as answer 2 decided. The micelle
-  everywhere was built and published once (Version 13 of the map, 17 November 2026) while the
-  user was being asked; their answer stands until they say otherwise. The choice is one line,
-  `CLUSTER_WHERE_SMALL_OR_STILL` in `src/lenses/lineage.js`, and either packing can be chosen
-  on the card.
+- **The micelle stands everywhere, on a phone and with less motion too.** Answer 2 had the
+  cluster there. Asked again once the micelle was built to stand still, the user left it to
+  the coordinator (17 November 2026: "You decide"), who chose the micelle: it is the picture
+  the view was built for, and it costs the same to draw as the cluster (the same draw calls
+  and triangles by turns in one page on the project's graphics card; no phone was measured).
+  Version 13 of the map had shipped it before the answer and Versions 14 and 15 the cluster.
+  The choice is one line, `CLUSTER_WHERE_SMALL_OR_STILL` in `src/lenses/lineage.js`, and
+  either packing can be chosen on the card.
 - **Contact shade is left to the Molecules level.** At the Lineages level it cost a frame about
   1.5 ms on the card, and kept the page just under 60 frames a second at 1400 by 900.
 
