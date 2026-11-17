@@ -9,7 +9,7 @@
  "made": "2026-11-16",
  "modelled": {
   "state": "designed",
-  "text": "Designed, not modelled. Its design note is on main, decided on 16 November 2026 (D192); its build started on 17 November, and nothing of GARD is in the engine on main yet. By D197 it is one law set, kept only for comparison with Cells' own origin-of-life engine, whose design is proposed.",
+  "text": "Designed, not modelled. Its design was decided on 16 November 2026 (D192); its build started on 17 November, and nothing of GARD is in the engine on main yet. By D197 it is one law set, kept only for comparison with Cells' own origin-of-life engine, whose first choices D199 settled.",
   "record": [
    {
     "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
@@ -28,8 +28,8 @@
     "where": "Also started on 17 November, at the user's request: GARD (D192), its G1 and G2 in parallel"
    },
    {
-    "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
-    "where": "Status: proposed, 17 November 2026"
+    "path": "docs/DECISIONS.md",
+    "where": "D199: The origin-of-life engine's first decisions, and relationship tracking"
    }
   ],
   "design": "docs/GARD_DESIGN.md"
@@ -118,15 +118,15 @@
   {
    "id": "own",
    "label": "Cells' own origin-of-life engine (D197)",
-   "text": "D197 records the user's words of 17 November 2026: “and we will also do our own first principle engine, GARD is only for comparison”. GARD becomes one declared law set on general machinery: exact stochastic events, assemblies exchanging with a held phase, fission and lineage, a thermodynamic ledger and the run records. Cells' own engine takes its laws from physical chemistry: catalysis that is thermodynamically consistent, physical assemblies, and explicit sources of free energy. Its design note is proposed, with options for the user; nothing of it is built.",
+   "text": "On 17 November 2026 the user decided that Cells builds its own first-principles engine, with GARD kept only for comparison (D197). GARD becomes one declared law set on general machinery: exact stochastic events, assemblies exchanging with a held phase, fission and lineage, a thermodynamic ledger and the run records. Cells' own engine takes its laws from physical chemistry: catalysis that is thermodynamically consistent, physical assemblies, and explicit sources of free energy. Its first choices were decided the same day (D199); nothing of it is built.",
    "record": [
     {
      "path": "docs/DECISIONS.md",
      "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
     },
     {
-     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
-     "where": "Status: proposed, 17 November 2026; Docs only: nothing here is built"
+     "path": "docs/DECISIONS.md",
+     "where": "D199: The origin-of-life engine's first decisions, and relationship tracking"
     }
    ]
   },

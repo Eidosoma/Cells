@@ -166,6 +166,40 @@ def join_names(names, limit=6):
     return shown + (f" and {len(names) - limit} more" if len(names) > limit else "")
 
 
+def registered_operators(module):
+    """The operator classes the built-in package registers, in its order, in either form it has had.
+
+    Up to main 76846486: OPERATORS as a dictionary literal, each value check_declarations(Class)().
+    Since seam F (main 75e925ea, 17 November 2026): a module-level loop over a tuple of classes,
+    `for _operator in (A, B, ...): BUILTIN.register(_operator)`, with OPERATORS imported from
+    cells/registry/operators.py as the registry's active section (docs/CORE_SEAMS_DESIGN.md §8.4).
+    """
+    literal = module.env.get("OPERATORS")
+    if literal is not None:
+        return [
+            node.func.args[0].id
+            for node in ast.walk(literal)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Call)
+            and getattr(node.func.func, "id", "") == "check_declarations"
+        ]
+    for node in module.tree.body:
+        if not (isinstance(node, ast.For) and isinstance(node.target, ast.Name) and isinstance(node.iter, (ast.Tuple, ast.List))):
+            continue
+        name = node.target.id
+        registers = any(
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Attribute)
+            and call.func.attr == "register"
+            and [getattr(argument, "id", None) for argument in call.args] == [name]
+            for statement in node.body
+            for call in ast.walk(statement)
+        )
+        if registers:
+            return [element.id for element in node.iter.elts if isinstance(element, ast.Name)]
+    return []
+
+
 # ---------------------------------------------------------------- the build
 
 
@@ -197,7 +231,7 @@ class Build:
         # by tools/move_paths.py.
         self.moves = self.read_moves()
         # Held legacy code (the overlay's `legacy`): the files under its folder are left out of the picture.
-        # The user, 17 November 2026: "no legacy code, it will be removed". A part whose files all stand
+        # On 17 November 2026 the user decided that the map shows no legacy code (D196). A part whose files all stand
         # there is left out, with that reason; a part with active files as well shows those only.
         self.legacy_rule = overlay.get("legacy")
         if self.legacy_rule:
@@ -288,13 +322,9 @@ class Build:
         module = self.package.module("cells.models.operators")
         config = self.overlay["operators"]
         found = {}
-        registered = [
-            node.func.args[0].id
-            for node in ast.walk(module.env["OPERATORS"])
-            if isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Call)
-            and getattr(node.func.func, "id", "") == "check_declarations"
-        ]
+        registered = registered_operators(module)
+        if not registered:
+            raise SystemExit("cells.models.operators: no operator registration found (neither OPERATORS as a literal nor a registration loop)")
         for class_name in registered:
             _, dotted, attribute = module.imports[class_name]
             source = self.package.module(dotted)

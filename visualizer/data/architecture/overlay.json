@@ -341,8 +341,8 @@
       "label": "External modules",
       "layer": "execution",
       "status": "designed",
-      "as_of": "2026-11-16",
-      "plain": "Packages maintained outside Cells could add laws and mechanisms that meet the same checks, accounting and execution contracts as the engine's own. Cells stays under the MIT licence, aiming at broad use (the user's direction, D180, 15 November 2026). Each part would be registered explicitly for one model build, then checked, assembled, compiled and run; registering a module that a model does not use changes nothing. The design note is still marked proposed. On 16 November 2026 the user, asking that others can easily add modules and laws by pull request, confirmed its five open decisions (D185). Contributed modules come first inside Cells, each in its own folder and namespace, under the MIT licence and with a named owner. A conformance kit shipped in Cells checks a module before its pull request; passing it means the kit's checks passed, not that the science is qualified. New physics still goes into the engine's source, as modules of its structure. The example module lives in this repository and is the template contributors copy. Development runs record an outside module's identity, and registered and judged runs also freeze its files. Two additions: the engine will write a declarations manifest, a list of every registered law, operator and kind with what it reads, writes and conserves, so that new modules appear in the documents and in this viewer's laws library without hand edits; and a contributor guide with a pull-request template. The four openings the design asked of the rework landed with it on 16 November 2026: kinds of piece are registered for one model build, exactly as an outside package would register them. Laws and operators are still closed tables inside Cells. Its first stage, one law from a separately installed package, is fifth in the plan's order after the landing, with the manifest and the guide. None of it is built yet: the kit, the example module, the manifest and the guide come with that stage. Still open: whether the project lists the modules that pass, and automatic checks on GitHub for outside pull requests.",
+      "as_of": "2026-11-17",
+      "plain": "Packages maintained outside Cells could add laws and mechanisms that meet the same checks, accounting and execution contracts as the engine's own. Cells stays under the MIT licence, aiming at broad use (the user's direction, D180, 15 November 2026). Each part would be registered explicitly for one model build, then checked, assembled, compiled and run; registering a module that a model does not use changes nothing. The design note is still marked proposed. On 16 November 2026 the user, asking that others can easily add modules and laws by pull request, confirmed its five open decisions (D185). Contributed modules come first inside Cells, each in its own folder and namespace, under the MIT licence and with a named owner. A conformance kit shipped in Cells checks a module before its pull request; passing it means the kit's checks passed, not that the science is qualified. New physics still goes into the engine's source, as modules of its structure. The example module lives in this repository and is the template contributors copy. Development runs record an outside module's identity, and registered and judged runs also freeze its files. Two additions: the engine will write a declarations manifest, a list of every registered law, operator and kind with what it reads, writes and conserves, so that new modules appear in the documents and in this viewer's laws library without hand edits; and a contributor guide with a pull-request template. The four openings the design asked of the rework landed with it on 16 November 2026: kinds of piece are registered for one model build, exactly as an outside package would register them. Since 17 November 2026 laws and operators register the same way. Its first stage, one law from a separately installed package, is fifth in the plan's order after the landing, with the manifest and the guide. Since 17 November 2026 the import surface a module uses is on main, provisional, with no promise of stability until a first outside module arrives (D195), and the manifest is written (FR-12); the kit, the example module and the guide come with the first stage. Still open: whether the project lists the modules that pass, and automatic checks on GitHub for outside pull requests.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -373,6 +373,53 @@
         {
           "path": "README.md",
           "where": "Ambition"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "8.5 The stable import surface: `cells.modules`"
+        }
+      ],
+      "match": [
+        "src/cells/modules/__init__.py"
+      ]
+    },
+    {
+      "id": "exec.declarations",
+      "label": "Declarations manifest (FR-12)",
+      "layer": "execution",
+      "status": "landed",
+      "as_of": "2026-11-17",
+      "match": [
+        "src/cells/registry/declarations.py"
+      ],
+      "plain": "One command writes a versioned list of every registered law, kind and operator: what each reads, writes and provides, what runs it, and its units and signs, with the older families' model identifiers flagged, so that documents and this viewer can list the engine's pieces without hand edits (D185, feature request FR-12). It merged on 17 November 2026 and lists 14 laws, 5 kinds and 19 operators. Its format is still being settled, how identifiers are spelled and what an empty value means, and some of its fields are not filled yet; this map does not read it yet. Implemented and guarded.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-12"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D185: The module system's five decisions, and contributions by pull request"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "15. Seam F's foundation landed: the advisor's follow-ups (17 November 2026)"
+        },
+        {
+          "path": "tests/unit/test_declarations.py"
         }
       ]
     },
@@ -382,7 +429,7 @@
       "layer": "execution",
       "status": "planned",
       "as_of": "2026-11-17",
-      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its design note, proposed, and the two scripts that plan, make and check the moves have been on main since 17 November 2026. The note's probe ran the whole cycle on a scratch copy of the tree, never merged: a family moved, a coupled kernel taken out and moved, and every check came out identical. Five refactors came first, on 17 November 2026: the legacy entry point (R1), computed module paths named in full (R2), the parts of seven older modules that active code reaches taken verbatim into the core (R3), and two roots taken from the package instead of from a file's depth (R4, R5). The first move then landed on main the same day: the older families' 334 modules went into src/cells/legacy/ by its committed map, with no hand edits, keeping their sub-packages and their names, with no law, kind, operator or model identifier changed, and every gate held, a continuity resume across the move among them. Move 2, which puts the modular parts into the folders by role, is next; it waits for the user's answer on whether a checkpoint must cross it. The moves are the first step of the order the user set (D194). Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned: the first move is made, and the second is not.",
+      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its design note, proposed, and the two scripts that plan, make and check the moves have been on main since 17 November 2026. The note's probe ran the whole cycle on a scratch copy of the tree, never merged: a family moved, a coupled kernel taken out and moved, and every check came out identical. Five refactors came first, on 17 November 2026: the legacy entry point (R1), computed module paths named in full (R2), the parts of seven older modules that active code reaches taken verbatim into the core (R3), and two roots taken from the package instead of from a file's depth (R4, R5). The first move then landed on main the same day: the older families' 334 modules went into src/cells/legacy/ by its committed map, with no hand edits, keeping their sub-packages and their names, with no law, kind, operator or model identifier changed, and every gate held, a continuity resume across the move among them. Move 2, which puts the modular parts into the folders by role, is next, and no checkpoint crosses it (D195). First, as decided on 17 November 2026 (D198), the processes folder is dissolved as the first batch of removals: what an active entry point reaches moves, and the rest retires with its tests. Not yet done. The moves are the first step of the order the user set (D194). Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned: the first move is made, and the second is not.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -467,6 +514,22 @@
         {
           "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
           "where": "19. Move 1 landed (17 November 2026)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D198: `processes/` is dissolved: its pinning legacy laws retire, and what the engine uses moves"
+        },
+        {
+          "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+          "where": "20. `processes/` dissolved, option (R) (17 November 2026, D198)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D196: Older code is a reference until the modular engine has learned from it, then it is dropped"
         }
       ],
       "match": [
@@ -666,6 +729,31 @@
       "as_of": "2026-11-16",
       "match": [
         "src/cells/run_view.py"
+      ]
+    },
+    {
+      "id": "exec.relations",
+      "label": "Relationship tracking",
+      "layer": "execution",
+      "status": "designed",
+      "as_of": "2026-11-17",
+      "plain": "Records of who descends from whom, whose material is whose, who depends on whom and what history a state carries, written as plain tables of nodes and edges, so that a lineage tree or a flow of material is drawn from the raw data by a join (D200, 17 November 2026). One general feature of the engine, with its writer in a module of its own: GARD's runs use it first, then tissue division and replacement, after the core-seams pass (D202). A world that tracks nothing keeps its programs, and tracking changes no event or result. Its design note is proposed; nothing is built.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D200: Relationships are tracked in general, so that graphs come easily from the raw data"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D202: Relationship tracking: GARD first, then everywhere, as one general engine feature"
+        },
+        {
+          "path": "docs/RELATIONSHIPS_DESIGN.md"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Relationship tracking (D200)"
+        }
       ]
     },
     {
@@ -1703,7 +1791,7 @@
       "layer": "laws",
       "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "Before the rework, the tissue model's channel laws were a closed table: every law was computed for every channel population and the right one selected afterwards, even in a world with no channels. Since the rework landed on 16 November 2026, each of its five channel laws, its junction law and its two pump laws is declared once, under a fixed code, and a world's program is built from the laws that world declares: a law that is not declared is absent from the program. A probe had found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. New kinds of piece join through the kind interface, and the operators declare what they read, change and book through the operator contract. Implemented and guarded.",
+      "plain": "Before the rework, the tissue model's channel laws were a closed table: every law was computed for every channel population and the right one selected afterwards, even in a world with no channels. Since the rework landed on 16 November 2026, each of its five channel laws, its junction law and its two pump laws is declared once, under a fixed code, and a world's program is built from the laws that world declares: a law that is not declared is absent from the program. A probe had found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. Since 17 November 2026 each is declared on the law template. New kinds of piece join through the kind interface, and the operators declare what they read, change and book through the operator contract. Implemented and guarded.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -1732,6 +1820,10 @@
         {
           "path": "docs/INNER_MODEL_V4_DESIGN.md",
           "where": "(b) The law declarations"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
         }
       ],
       "match": [
@@ -1779,6 +1871,43 @@
         {
           "path": "PROGRESS.md",
           "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        }
+      ]
+    },
+    {
+      "id": "laws.template",
+      "label": "Law template and registry",
+      "layer": "laws",
+      "status": "landed",
+      "as_of": "2026-11-17",
+      "match": [
+        "src/cells/registry/laws.py",
+        "src/cells/registry/__init__.py"
+      ],
+      "plain": "How a law is declared and found. Since 17 November 2026 every law declares one record of its interface's type, a channel, membrane cycle, passive route, binding or junction law, with what runs it, where it comes from, a citation where one is cited, and the units and signs of its fields. Laws register on a registry that belongs to one model build, and a kind finds its laws by interface and host; a law that no definition declares changes nothing. The tissue model's ten laws use it. The template stays provisional until a first outside module arrives (D195), and the cycle and binding interfaces until their seams land. Implemented and guarded.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "8.1 The law template"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "8.3 The law registry"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "15. Seam F's foundation landed: the advisor's follow-ups (17 November 2026)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2"
+        },
+        {
+          "path": "tests/unit/test_law_registry.py"
         }
       ]
     },
@@ -2285,6 +2414,32 @@
       ]
     },
     {
+      "id": "models.core_seams",
+      "label": "Core-seams pass",
+      "layer": "models",
+      "status": "designed",
+      "as_of": "2026-11-17",
+      "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass follows the second source move.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D195: The core-seams pass approved at its scope, within seven agents; `cells.modules` provisional; no checkpoint crosses move 2"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "0. The plan"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "D195 (17 November)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        }
+      ]
+    },
+    {
       "id": "models.resolved",
       "label": "Resolved tissue families",
       "layer": "models",
@@ -2356,8 +2511,8 @@
       "label": "Catalytic assemblies (GARD)",
       "layer": "models",
       "status": "designed",
-      "as_of": "2026-11-16",
-      "plain": "The engine's first model family for the origin of life: assemblies that hold counts of many kinds of molecule, exchange them with a held reservoir, catalyse one another's joining and leaving through a fixed matrix, grow, split at random, and leave lineages, after the GARD model. The design was decided on 16 November 2026 (D192). Events are simulated exactly, one molecule at a time. Assemblies are abstract at first. The catalysis matrix is per-world data with about 100 kinds of molecule. Catalysis comes in two forms: the single-event form of a preprint's reconstruction of GARD, for the comparison, and a pair-consistent form, in which every transfer and its reverse see the same catalysts, as the engine's law. An independent check found that in a closed world of two kinds of molecule the preprint's single-event form generically fails a test of reversibility (a catalysis matrix of rank one is the exception), and that the pair-consistent form is exactly reversible. The original authors' own event rates are not established either way, and the preprint's driven runs are not affected (D192). The first experiment measures the difference between the two forms. The first comparison is with that preprint's reconstruction, three ways, approved by the user: an independent reference, that work's own test code run unchanged outside the engine, and a comparison of distributions on 40 fresh matrices at tolerances set in advance. It is a stochastic family, registered as modules, CPU only, about 20 to 29 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code.",
+      "as_of": "2026-11-17",
+      "plain": "A model family for the origin of life after the GARD model, kept only for comparison (D197): assemblies that hold counts of many kinds of molecule, exchange them with a held reservoir, catalyse one another's joining and leaving through a fixed matrix, grow, split at random, and leave lineages. The design was decided on 16 November 2026 (D192). Events are simulated exactly, one molecule at a time. Assemblies are abstract at first. The catalysis matrix is per-world data with about 100 kinds of molecule. Catalysis comes in two forms: the single-event form of a preprint's reconstruction of GARD, for the comparison, and a pair-consistent form, in which every transfer and its reverse see the same catalysts, as the engine's law. An independent check found that in a closed world of two kinds of molecule the preprint's single-event form generically fails a test of reversibility (a catalysis matrix of rank one is the exception), and that the pair-consistent form is exactly reversible. The original authors' own event rates are not established either way, and the preprint's driven runs are not affected (D192). The first experiment measures the difference between the two forms. The first comparison is with that preprint's reconstruction, three ways, approved by the user: an independent reference, that work's own test code run unchanged outside the engine, and a comparison of distributions on 40 fresh matrices at tolerances set in advance. It is a stochastic family, registered as modules, CPU only. Its build started on 17 November 2026, at the user's request; nothing of it is on main yet. Designed.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -2370,6 +2525,40 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D194: The order after 16 November"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Also started on 17 November, at the user's request"
+        }
+      ]
+    },
+    {
+      "id": "models.origin_engine",
+      "label": "Origin-of-life engine",
+      "layer": "models",
+      "status": "designed",
+      "as_of": "2026-11-17",
+      "plain": "Cells' own engine for the origin of life, with laws from physical chemistry: catalysis that keeps detailed balance, physical assemblies and explicit sources of free energy, on the general machinery built for GARD (D197). Its first choices were decided on 17 November 2026 (D199): amphiphile assemblies first, then oligomers, then templating; selection through a finite shared pool and serial transfer; one free-energy function for every law; and two experimental anchors to be judged. The whole programme, milestones OL0 to OL9, is built in order once GARD's first part and seam F land. Its design note is proposed; nothing of it is built.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D199: The origin-of-life engine's first decisions, and relationship tracking"
+        },
+        {
+          "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+          "where": "10. The lead's review and the user's decisions (17 November 2026)"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Origin of life (D197, D199)"
         }
       ]
     },
@@ -2433,9 +2622,10 @@
       "as_of": "2026-11-13",
       "match": [
         "src/cells/models/operators/contract.py",
-        "src/cells/models/operators/__init__.py"
+        "src/cells/models/operators/__init__.py",
+        "src/cells/registry/operators.py"
       ],
-      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 19 operators can run together is regenerated from these declarations by a test (15 November 2026). Since the rework landed on 16 November 2026 it also carries door S's declarations: the places an operator reads and changes, how its change combines and at which stage. Through it each operator declares what a run's view shows of it: its units, axes, kinds of record and their direction, layers and events. The run-view writer, on main since the evening of 16 November 2026, reads those declarations and keeps no table of its own.",
+      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 19 operators can run together is regenerated from these declarations by a test (15 November 2026). Since the rework landed on 16 November 2026 it also carries door S's declarations: the places an operator reads and changes, how its change combines and at which stage. Through it each operator declares what a run's view shows of it: its units, axes, kinds of record and their direction, layers and events. The run-view writer, on main since the evening of 16 November 2026, reads those declarations and keeps no table of its own. Since 17 November 2026 the operators register on a section of the build's registry, through the same call an outside package uses, which runs this check.",
       "sources": [
         {
           "path": "docs/PUMP_COMPOSITE_V2_DESIGN.md"
@@ -2463,6 +2653,14 @@
         {
           "path": "PROGRESS.md",
           "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Seam F of the core-seams pass merged into main (17 November 2026, afternoon)"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "8.4 The registration tables"
         }
       ]
     },
@@ -5995,6 +6193,48 @@
       "to": "num.field",
       "kind": "extends",
       "label": "the field's factorization and solves run on one thread"
+    },
+    {
+      "from": "models.core_seams",
+      "to": "laws.template",
+      "kind": "delivers",
+      "label": "landed first, as seam F's foundation"
+    },
+    {
+      "from": "models.core_seams",
+      "to": "exec.declarations",
+      "kind": "delivers",
+      "label": "landed with seam F (FR-12)"
+    },
+    {
+      "from": "models.core_seams",
+      "to": "laws.fuel",
+      "kind": "delivers",
+      "label": "seam E, finite fuel's core part"
+    },
+    {
+      "from": "laws.template",
+      "to": "laws.kinds",
+      "kind": "extends",
+      "label": "a kind finds its laws by interface and host"
+    },
+    {
+      "from": "exec.declarations",
+      "to": "exec.modules",
+      "kind": "extends",
+      "label": "the manifest the module system asked for (D185)"
+    },
+    {
+      "from": "models.origin_engine",
+      "to": "models.gard",
+      "kind": "extends",
+      "label": "runs on the machinery built for GARD, which is kept for comparison"
+    },
+    {
+      "from": "exec.relations",
+      "to": "models.gard",
+      "kind": "extends",
+      "label": "GARD's runs write the first tables (D202)"
     }
   ],
   "relation_kinds": [
@@ -6101,7 +6341,7 @@
   "legacy": {
     "folder": "src/cells/legacy/",
     "since": "2026-11-17",
-    "reason": "no legacy code, it will be removed",
-    "why": "The user, 17 November 2026, asked how the map should show the engine's legacy code: \"no legacy code, it will be removed - we're still building Cells so not really any legacy data\". While this entry stands, the scene builder leaves every file under this folder out of the picture: a part whose files all stand here is left out, named once with this reason, with every link to it; a part with active files as well shows those only; and the build counts the files it leaves out apart from those it places. Statuses stay as the record states them. The user, the same day, of the capabilities whose only code stands there: \"we will replace all the legacy code with new code before removing those\"; and the engine's record has since said the same (D196, decided after the revision this map was read at: older code is a reference until the modular engine has learned from it, then it is dropped). Remove this entry and the folder's files come back into their parts."
+    "reason": "older code, kept only as a reference until it is dropped (D196)",
+    "why": "On 17 November 2026 the user decided that the map shows no legacy code, since that code is to be removed while Cells is still being built. D196 records the same day that older code is a reference until the modular engine has learned from it, and is then dropped in one batch the user approves. While this entry stands, the scene builder leaves every file under this folder out of the picture: a part whose files all stand here is left out, named once with this reason, with every link to it; a part with active files as well shows those only; and the build counts the files it leaves out apart from those it places. Statuses stay as the record states them. Remove this entry and the folder's files come back into their parts."
   }
 }

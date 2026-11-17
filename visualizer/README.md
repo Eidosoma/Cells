@@ -763,7 +763,7 @@ run outputs ──adapters (next)── run view ──────────�
 
 | Path | Holds |
 | --- | --- |
-| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells` |
+| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells`. It reads the operators' registration in either form the engine has had: a dictionary literal, and since seam F a registration loop. It does not read the engine's declarations file yet: that waits for the file's format page |
 | `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map. Each part names the engine files it holds by pattern; the first part whose pattern matches a file takes it, so the catch-all parts stand last. It was last reviewed entry by entry against the record on 16 November 2026, after the landing of the engine's rework, at main 3b7f1cff |
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
@@ -859,7 +859,8 @@ stay out of git (61 runs in 327 files, 96 MB).
    past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
    statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
    main 3b7f1cff on 16 November 2026, again that evening at 050aa741, late that evening at
-   1d86a192, on 17 November at df2b910b, and after D188's first move at 6a5d509f, which it
+   1d86a192, on 17 November at df2b910b, after D188's first move at 6a5d509f, at 76846486
+   the same day (main's changes were docs only), and after seam F at f3b3f526, which it
    states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,

@@ -168,7 +168,8 @@ that state the engine's note's status.
 **The record, the same day.** GARD's build in the engine started on 17 November 2026
 (`docs/CURRENT_PLAN.md`); nothing of it is on main yet. By D197 GARD is one law set, kept only for
 comparison, and the origin-of-life engine is to be Cells' own, with laws from physical chemistry; its
-design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed, not decided. The entry's words and
+design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed; its first choices were decided on
+17 November (D199). The entry's words and
 notes say so (`data/models/gard.json`). That note proposes vesicles, a bilayer round a lumen, as the
 engine's first assemblies, dividing at shear events into two or more: when such runs exist, this view
 will need a vesicle's picture for them.
