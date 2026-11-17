@@ -228,7 +228,7 @@ def main(argv=None):
     jax.config.update("jax_enable_x64", True)
     out = Path(argv[0])
     out.mkdir(parents=True, exist_ok=False)
-    report = {"status": STATUS, "writer": rel.FORMAT, "writer_status": rel.STATUS, "worlds": {}}
+    report = {"status": STATUS, "writer": rel.FORMAT, "worlds": {}}
     for name, raw in worlds().items():
         start = time.perf_counter()
         spec = parse_spec(copy.deepcopy(raw))

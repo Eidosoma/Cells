@@ -1,4 +1,4 @@
-"""The relationship tables' writer, cells.relations@1 (src/cells/records/relations.py; PROVISIONAL).
+"""The relationship tables' writer, cells.relations@1 (src/cells/records/relations.py).
 
 D200 and D202; docs/RELATIONSHIPS_DESIGN.md §1.2, §1.3 and §5. Host only: no world runs here. Each
 claim is tested once, with a planted error it must catch (D187):
@@ -20,6 +20,7 @@ claim is tested once, with a planted error it must catch (D187):
 
 import ast
 import dataclasses
+import hashlib
 import json
 import math
 import time
@@ -305,7 +306,7 @@ PLANTED_DESCENT = {
 def test_the_design_worlds_are_accepted_as_they_stand():
     for world in (gard_world(), tissue_world()):
         descriptor, arrays = rel.tables(**world)
-        assert descriptor["status"] == "provisional"
+        assert descriptor["format"] == rel.FORMAT and "status" not in descriptor
         assert descriptor["tables"]["lives"]["rows"] == 5
 
 
@@ -524,12 +525,31 @@ def test_the_reader_refuses_tables_changed_after_writing(tmp_path):
 
 
 def test_the_world_is_a_run_qualifier():
-    assert rel.qualifier("ab") == rel.qualifier("ab")
-    branch = rel.qualifier("ab", {"checkpoint": "cd", "time": 1.5})
-    assert len({rel.qualifier("ab"), rel.qualifier("ac"), branch}) == 3
+    """The qualifier of {fingerprint, start}, and of a stop when a run stopped early: the same
+    canonical JSON every family digests (GARD's records name it), and an unstopped run's stays the
+    qualifier of {fingerprint, start} alone."""
+
+    def digest(body):
+        return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+    branch = {"checkpoint": "cd", "time": 1.5}
+    stop = {"events": 12, "fissions": 3}
+    assert rel.qualifier("ab") == rel.qualifier("ab", stop=None)
+    assert rel.qualifier("ab") == digest({"definition": "ab", "start": "fresh"})
+    assert rel.qualifier("ab", branch, stop) == digest(
+        {"definition": "ab", "start": branch, "stop": stop}
+    )
+    named = {rel.qualifier("ab"), rel.qualifier("ac"), rel.qualifier("ab", branch)}
+    named |= {rel.qualifier("ab", stop=stop), rel.qualifier("ab", stop=dict(stop, events=13))}
+    assert len(named) == 5
     refused(dict(tissue_world(), world="w"), "run qualifier")
-    with pytest.raises(rel.RelationsRefused):
-        rel.qualifier("ab", {"checkpoint": "cd"})
+    for start, stopped in (
+        ({"checkpoint": "cd"}, None),
+        ("fresh", {}),
+        ("fresh", {"events": "12"}),
+    ):
+        with pytest.raises(rel.RelationsRefused):
+            rel.qualifier("ab", start, stopped)
 
 
 # ------------------------------------------------------------------ 7. no engine imports

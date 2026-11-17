@@ -1,8 +1,8 @@
 """Relationship tables, ``cells.relations@1``: descent, events, sources and edges as plain columns.
 
-**PROVISIONAL** (D202). The format may change until a second consumer has used this writer with no
-edit to it and the lead has lifted the label; nothing should bind to it before then. The files say
-so too (``status`` in relations.json).
+**Bound** (D202). A second consumer has used this writer: the partition's and replacement's
+lineages, from four real worlds (validation/relationships/). The one gap it found was fixed in the
+format, and the provisional label was lifted with it. A change to the format is now a new version.
 
 D200 asks that relationships come as plain node and edge tables with stable string ids, so that a
 lineage tree, a supply graph or a dependency graph is a join, not a reconstruction
@@ -47,8 +47,10 @@ its files at its shape, that its times never fall, and that an event's two rows 
 
 **Ids** are ``<kind>:<name>``. A vertex's kind is its node kind (``carrier:c1``, ``slot:cell_0``,
 ``source:template/T1``), an event's is ``event`` (``event:division/first``). A name is ASCII
-segments of letters, digits and ``_ . @ + -`` joined by ``/``. Ids are unique within a world;
-across runs, the ``world`` column tells them apart.
+segments of letters, digits and ``_ . @ + -`` joined by ``/``. Ids are unique within a world, event
+ids included; a family may qualify an event's name by the carrier it belongs to where that is what
+makes it unique (``event:extinction/<carrier key>/<count>``). Across runs, the ``world`` column (the
+run qualifier) tells ids apart; no id carries the qualifier itself.
 
 **Keys** (§1.3), int64: ``s * 2**32 + c``, written ``s:c``, a count c in sub-lineage s. A life
 without a parent opens a sub-lineage s and holds ``s:0``, founders first, in declared order. A
@@ -72,7 +74,6 @@ from pathlib import Path, PurePosixPath
 import numpy as np
 
 FORMAT = "cells.relations@1"
-STATUS = "provisional"
 ARRAYS = "relations.npz"
 DESCRIPTOR = "relations.json"
 
@@ -450,9 +451,12 @@ class Keys:
         return out
 
 
-def qualifier(fingerprint, start="fresh"):
-    """A run's qualifier (§1.3): the SHA-256 of {definition fingerprint, start} as canonical JSON.
-    start: "fresh", or {"checkpoint": its digest, "time": t} for a run that starts from one."""
+def qualifier(fingerprint, start="fresh", stop=None):
+    """A run's qualifier (§1.3): the SHA-256 of {definition fingerprint, start}, and its stop if it
+    stopped before its end, as canonical JSON (sorted keys). start: "fresh", or {"checkpoint": its
+    digest, "time": t} for a run that starts from one. stop: None, or where the run was stopped
+    in the family's own measure (GARD's {"events": e, "fissions": k}), whose last lives end there,
+    censored; a run without one keeps the qualifier of {fingerprint, start} alone."""
     if not isinstance(fingerprint, str) or not fingerprint:
         raise RelationsRefused("a qualifier needs the definition's fingerprint")
     if start != "fresh" and not (
@@ -463,8 +467,16 @@ def qualifier(fingerprint, start="fresh"):
         and _finite(start["time"])
     ):
         raise RelationsRefused('a start is "fresh" or {"checkpoint": digest, "time": t}')
-    body = json.dumps({"definition": fingerprint, "start": start}, sort_keys=True)
-    return hashlib.sha256(body.encode()).hexdigest()
+    body = {"definition": fingerprint, "start": start}
+    if stop is not None:
+        if not (
+            isinstance(stop, dict)
+            and stop
+            and all(isinstance(k, str) and k and _finite(v) for k, v in stop.items())
+        ):
+            raise RelationsRefused("a stop is a mapping of names to finite numbers")
+        body["stop"] = stop
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
 
 
 def entity_id(kind, name):
@@ -1097,7 +1109,6 @@ def _descriptor(world, arrays, records):
         }
     return {
         "format": FORMAT,
-        "status": STATUS,
         "world": world,
         "arrays": ARRAYS,
         "tables": out_tables,
@@ -1124,8 +1135,9 @@ def _descriptor(world, arrays, records):
             "chemistry": list(CHEMISTRY),
         },
         "ids": "<kind>:<name>: a vertex's kind is its node kind, an event's is event; a name is "
-        "ASCII segments of letters, digits and _ . @ + - joined by /. Unique within a world; the "
-        "world column qualifies them across runs",
+        "ASCII segments of letters, digits and _ . @ + - joined by /. Unique within a world, "
+        "event ids included (a family may qualify an event's name by its carrier); the world "
+        "column, the run qualifier, tells them apart across runs, and no id carries it",
         "keys": {
             "form": "s:c, stored as s * 2**32 + c (int64)",
             "rule": "a life without a parent holds s:0 and opens sub-lineage s, the founders "
@@ -1155,8 +1167,8 @@ def _descriptor(world, arrays, records):
 def tables(*, world, lives=(), events=(), nodes=(), sources=(), labels=(), edges=(), records=None):
     """(descriptor, arrays) of a world's tables, checked: refused (RelationsRefused, every problem
     listed) before anything is built. Callers give lives, events, sources and labels, and the nodes
-    and edges that are not derived (module docstring). records: {name: {"file", "array",
-    "shape"}}, the run's records that edges and sources point at."""
+    and edges that are not derived (module docstring). records: {name: {"array", "times", "kind",
+    "shape", "files"}} (records_in), the run's records that edges and sources point at."""
     given = dict(
         lives=list(lives),
         events=list(events),

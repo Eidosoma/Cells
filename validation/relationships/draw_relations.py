@@ -242,7 +242,6 @@ def draw(directory, out):
     (out / "supply.svg").write_text(supply_svg(shown, f"Supply, world {world}"))
     report = {
         "world": descriptor["world"],
-        "status": descriptor["status"],
         "lives": len(lives),
         "descent": sorted(tree, key=lambda e: (e["relation"], e["from"], e["to"])),
         "supply": [{"from": a, "to": b, "relation": r, "weight": w} for a, b, r, w in drawn],
