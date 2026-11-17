@@ -2,7 +2,20 @@
  "schema": "cells.bath_schedule_protocol@1",
  "id": "fr10-dose-schedule-v1",
  "title": "FR-10's first acceptance: a held bath's composition scheduled on the dt grid in the composite (scheduled_bath_composition@1), against independent references, with its records, ledgers, idleness, restart, batch and refusals",
- "status": "PROPOSED (drafted 17 November 2026 by the FR owner on branch fr10-protocol, from docs/BATH_SCHEDULE_DESIGN.md §4 restated against the operator as built in milestones 1 and 2, §7-§8). Not registered; registration is the lead's",
+ "status": "registered by the lead (registrar), 17 November 2026, after the full rehearsal with the references on a registered dry-run copy and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 17 November 2026, after the full rehearsal with the references on a registered dry-run copy and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-17",
+  "basis": [
+   "rehearsal r2: /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0 (snapshot ed2b8ee0; the dt phase and all 19 judged parts, then the judge's judged entry on a registered dry-run copy: 31 of 31, a dry-run verdict and not a judgement)",
+   "the dt study: the declared 1 ms stands (orders 2.003-2.011, Richardson errors under 0.92% of each budget, the energy residual falling at order 2)",
+   "the references: branch fr10-references at 23b8ff58, written code-blind and registered before any engine output, with the dated sign amendment 012a3e7e; the protocol reads them only through validation/fr10/references/REFERENCES_USAGE.md",
+   "the landing gate: /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/gate-258d2be7/out (tier 1, 343 files, 0 changed; the two tier-2 bath-schedule files, 0 changed; collected IDs, additions only, 68)",
+   "the disclosures in the protocol, each dated before any judged run"
+  ],
+  "judged_runs_before_registration": 0
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestones 1 and 2 ran development checks and probes only (development_runs)",
