@@ -72,7 +72,8 @@ def test_every_registered_piece_has_its_entry_and_every_entry_is_registered():
     assert counts == {
         "law": len(law_registry.active()._laws),
         "kind": len(kind_registry.active().model_keys()),
-        "operator": len(operator_registry.active().operators()),
+        "operator": len(operator_registry.active().operators())
+        + len(operator_registry.active().family_operators()),
     }
     laws_scope, kinds_scope, operators_scope = planted_scopes()
     with laws_scope, kinds_scope, operators_scope:
