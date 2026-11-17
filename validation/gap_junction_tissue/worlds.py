@@ -39,8 +39,10 @@ SPECIFIC_CAPACITANCE_F_M2 = 0.05
 SOLVER = "imex_ars222_face_electromigration@1"
 FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
 GATE_LAW = "junction_voltage_relaxation@1"
-STEP_BOUND_MARGIN = 0.5  # dt times @3's explicit rate stays below half the engine's bound of 1.
-BASE_DT_S = 0.05
+# dt times @3's explicit rate stays within 0.9 of the engine's own bound (EXPLICIT_STEP_BOUND, 1).
+# The compared quantity is the steady state, the scheme's fixed point, which does not depend on dt.
+STEP_BOUND_MARGIN = 0.9
+BASE_DT_S = 0.0625  # 1/16 s, exact in binary, so every observation time is an exact grid point.
 END_S = 800.0  # >= 40 slowest-mode time constants (1/K_dec = 20 s).
 SETTLE_S = 10.0  # The steady-state check compares end - SETTLE_S with end.
 
@@ -87,7 +89,7 @@ def explicit_rate(cells, edges, probes):
 
 
 def step(cells, edges, probes):
-    """BASE_DT_S halved until dt * rate <= STEP_BOUND_MARGIN (so END_S stays on the grid)."""
+    """BASE_DT_S halved until dt * rate <= STEP_BOUND_MARGIN (END_S stays an exact grid point)."""
     dt, rate = BASE_DT_S, explicit_rate(cells, edges, probes)
     while dt * rate > STEP_BOUND_MARGIN:
         dt /= 2.0
@@ -131,7 +133,7 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
         for edge_id, i, j, g in edges
     ]
     always = [dict(time=0.0, availability=1.0)]
-    observe = [0.0, end - SETTLE_S, end]
+    observe = [0.0, end - SETTLE_S, end] if end > SETTLE_S else [0.0, end]
     return dict(
         schema_version=1,
         model=dict(
@@ -166,7 +168,7 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
             capacity=len(model_cells),
             extracellular_capacity=len(outside),
             membrane_capacity=len(membranes),
-            edge_capacity=max(1, len(junctions)),
+            edge_capacity=len(junctions),
             face_capacity=0,
             channel_capacity=0,
             backend="cpu",
@@ -242,14 +244,60 @@ def junction_route_reaction(junction_permeability_m_s):
     )
 
 
+def emt_switch_probe():
+    """One cell with the preprint's EMT switch written as local_species_reactions@1 reactions:
+    the structure of its Figure 2 and Methods with synthetic values (the preprint prints none).
+
+    miR200 (u) and Zeb mRNA (m) are made at rate g (1 + lambda x^n/K^n) / (1 + x^n/K^n) of ZEB (z),
+    the modified Hill form: an inhibition source plus lambda times an activation source. ZEB is
+    translated from m through six miR200 binding sites at fast equilibrium: with r = u/x0, the
+    rate g3 m sum_i C(6,i) l_i r^i/(1 + r)^6, each term the reaction m -> m + z with i Hill
+    activations and 6 - i Hill inhibitions of u (n = 1, K = x0). Each species decays at first
+    order. Snail is a fixed input folded into the rate constants. No species has a route."""
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    names = ("u", "m", "z")
+    raw = rfx.species_world(
+        extra=names,
+        faces=False,
+        cells=(("cell_0", 1.0),),
+        nodes=(),
+        contacts=(),
+        profile={name: {"cell_0": 1e-3} for name in names},
+    )
+    sites = {"cells": "all", "outside": []}
+    k_half, x0 = 1e-3, 1e-3  # mM, synthetic.
+    reactions = []
+    for name, n in (("u", 3), ("m", 2)):
+        reactions.append(
+            rfx.mass_action(f"{name}_low", sites, {}, {name: 1}, 1e-5,
+                            [rfx.hill("hill_inhibition", "z", k_half, n)])
+        )  # fmt: skip
+        reactions.append(
+            rfx.mass_action(f"{name}_high", sites, {}, {name: 1}, 2e-5,
+                            [rfx.hill("hill_activation", "z", k_half, n)])
+        )  # fmt: skip
+    for i in range(7):
+        factors = [rfx.hill("hill_activation", "u", x0, 1.0)] * i
+        factors += [rfx.hill("hill_inhibition", "u", x0, 1.0)] * (6 - i)
+        reactions.append(
+            rfx.mass_action(f"z_site{i}", sites, {"m": 1}, {"m": 1, "z": 1}, 1e-3, factors)
+        )
+    for name, k in (("u", 0.05), ("m", 0.5), ("z", 0.1)):
+        reactions.append(rfx.mass_action(f"{name}_decay", sites, {name: 1}, {}, k))
+    controls = [(r["id"], None, [(0.0, 1.0)]) for r in reactions]
+    return rfx.with_reactions(raw, [rfx.species(n) for n in names], reactions, controls)
+
+
 def lattice_nodes(shape):
     """Field nodes a lattice of cells on one shared bath needs (cells + 1)."""
     return math.prod(shape) + 1
 
 
 def shared_bath(n):
-    """n unconnected cells on one held bath: the node count of a tissue of n cells."""
-    raw = linear_network((("c0", 1.0, 1.0),))
+    """n unconnected cells on one held bath: the node count of a tissue of n cells. Two steps
+    long, so only the definition's own checks can refuse it."""
+    raw = linear_network((("c0", 1.0, 1.0),), end=2 * BASE_DT_S, dt=BASE_DT_S)
     m, x = raw["model"], raw["execution"]
     m["cells"] = [_node(f"c{k}", 1.0, V_CELL_PL, reservoir=False) for k in range(n)]
     m["extracellular"] = [_node("bath", 1.0, 1.0, reservoir=True)]

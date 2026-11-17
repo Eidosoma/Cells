@@ -6,11 +6,14 @@ driver runs in Cells what the engine can run today and records, from the engine 
 rest cannot run yet. It changes no engine source.
 
 Parts:
-* refusals: definition-time evidence for the gaps (no integration). A neutral species that is
-  made in each cell by local_species_reactions@1 and also crosses a junction (the preprint's
-  miRNA) against the same world without the junction route; the junction, channel and pump laws
-  @3 hosts; the field solver's node bound against the preprint's lattices (a shared-bath world
-  one node over the bound must be refused).
+* refusals: definition-time evidence (no integration).
+  - A neutral species made in each cell by local_species_reactions@1 that also crosses a junction
+    (the preprint's miRNA), against the same world without the junction route.
+  - The EMT switch written as local_species_reactions@1 reactions in one cell (synthetic values):
+    whether the declaration is admitted.
+  - The junction, channel and pump laws @3 hosts.
+  - The field solver's node bound against the preprint's lattices: a two-step shared-bath world
+    at the bound must be admitted, and one node over it refused for the bound.
 * gate: F3 and F4 measured. The engine's one junction law (its own kinetics, at steady state)
   fitted to Figure 1's Cx45 small-ion curve, and the same law against the miRNA curve.
 * figure3: two equal linear cells (unloaded 5 and 10) joined by G_GJ = g G_eq, g = 0.5 ... 50.
@@ -20,6 +23,10 @@ Parts:
 * control: figure3 at g = 1 with every junction permeability x1.01, judged against g = 1's
   reference: the comparison must catch it.
 
+The linear cells are the preprint's linear cell through its Norton equivalent (worlds.py): the
+model as the preprint writes it, a source and a decay in the cell plus a junction, is itself
+refused today (gap F1, the first refusal above).
+
 Criteria, fixed before any run (CRITERIA):
   E1 engine against the dense solve of the same network: relative error <= 1e-9 in every cell;
   E2 steady state: relative change over the last SETTLE_S seconds <= 1e-12 in every cell;
@@ -27,12 +34,13 @@ Criteria, fixed before any run (CRITERIA):
      error <= 1e-9;
   E4 Figure 8: the engine's G_eq,n against the physical chain's recursion: relative <= 1e-8;
   P1 the closed forms against the preprint's printed or read values, within the reading
-     tolerances paper.REPORTED states (a check of the reading, not of the engine);
+     tolerances paper.REPORTED states (a check of the reading, not of the engine; the
+     tolerances were set after the closed forms were evaluated);
   P2 Figure 8: the engine's G_eq,n against the recursion Figure 8 plots and against its read
      values (reported: the expected outcome is agreement at n <= 2 and disagreement from n = 3);
   K1 the planted control fails E1 (by more than 1e-6);
   A1 the engine's own run checks pass (material balance and every step check: a run that fails
-     one raises, and is recorded as failed).
+     one raises, and that arm is recorded as failed while the others go on).
 
 Engine models run: resolved_pump_tissue@3 with constant_field@1 membranes and junctions for one
 neutral species, held reservoirs, junction_voltage_relaxation@1 pinned open, closed by
@@ -42,6 +50,7 @@ resolved_pump_composite@1, and the law registry.
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
     python -B validation/gap_junction_tissue/run.py OUTDIR [part ...]
+results.json is rewritten after every arm.
 """
 
 import json
@@ -75,7 +84,23 @@ FIGURE5_G = (1.0, 10.0, 100.0)
 FIGURE8_N = (1, 2, 3, 4, 5, 10)
 FIGURE8_LOADS = (0.5, 2.0)  # Held concentrations at the port (mM); the unloaded value is 1.
 PLANTED_SCALE = 1.01
+TIME_MATCH_RTOL = 1e-12
 PARTS = ("refusals", "gate", "figure3", "figure5", "figure8", "control")
+
+
+class Recorder:
+    """results.json, rewritten after every arm so that a late failure loses nothing."""
+
+    def __init__(self, path, record):
+        self.path, self.data = path, dict(record=record, parts={})
+
+    def part(self, name):
+        self.data["parts"][name] = dict(status="running", result={})
+        self.save()
+        return self.data["parts"][name]["result"]
+
+    def save(self):
+        self.path.write_text(json.dumps(self.data, indent=1, default=str))
 
 
 def reference(cells_, edges, probes):
@@ -87,6 +112,13 @@ def reference(cells_, edges, probes):
     return paper.linear_steady_state(conductance, unloaded, dense_edges, dense_probes)
 
 
+def _row(times, t):
+    k = int(np.argmin(np.abs(times - t)))
+    if abs(times[k] - t) > TIME_MATCH_RTOL * max(1.0, abs(t)):
+        raise ValueError(f"No accepted time at {t}: nearest {times[k]!r}")
+    return k
+
+
 def run_network(cells_, edges, probes, *, junction_scale=1.0):
     """Run one linear network to steady state; return the engine's readouts and the reference."""
     raw = worlds.linear_network(cells_, edges, probes, junction_scale=junction_scale)
@@ -96,7 +128,7 @@ def run_network(cells_, edges, probes, *, junction_scale=1.0):
     seconds = time.perf_counter() - started
     times = np.asarray(result.times)
     end, before = spec.experiment.end_time, spec.experiment.end_time - worlds.SETTLE_S
-    rows = {t: int(np.flatnonzero(times == t)[0]) for t in (before, end)}
+    rows = {t: _row(times, t) for t in (before, end)}
     layout, history = result.final.layout, result.history
     volume = np.asarray(layout.volume)[: len(cells_)]
     reference_amount = np.asarray(layout.amount_reference)[0, : len(cells_)]
@@ -110,6 +142,7 @@ def run_network(cells_, edges, probes, *, junction_scale=1.0):
     out = dict(
         dt_s=spec.execution.dt,
         steps=int(round(end / spec.execution.dt)),
+        accepted_rows=int(times.size),
         seconds=seconds,
         concentration_mM=c_end.tolist(),
         reference_mM=c_ref.tolist(),
@@ -134,6 +167,20 @@ def run_network(cells_, edges, probes, *, junction_scale=1.0):
     return out
 
 
+def arm(cells_, edges, probes, **kwargs):
+    """run_network with its checks, or the failure (recorded as evidence, never retried)."""
+    try:
+        out = run_network(cells_, edges, probes, **kwargs)
+    except Exception as error:
+        return dict(status="failed", error=repr(error), traceback=traceback.format_exc())
+    out["status"] = "done"
+    out["E1"] = out["engine_rel_error"] <= CRITERIA["E1_engine_vs_dense_rtol"]
+    out["E2"] = out["steady_rel_change"] <= CRITERIA["E2_steady_rtol"]
+    if "ledger_rel_error" in out:
+        out["E3"] = out["ledger_rel_error"] <= CRITERIA["E3_ledger_flux_rtol"]
+    return out
+
+
 def _number(value):
     try:
         return math.isfinite(float(value))
@@ -141,25 +188,22 @@ def _number(value):
         return False
 
 
-def _checks(arm, criteria):
-    arm["E1"] = arm["engine_rel_error"] <= criteria["E1_engine_vs_dense_rtol"]
-    arm["E2"] = arm["steady_rel_change"] <= criteria["E2_steady_rtol"]
-    if "ledger_rel_error" in arm:
-        arm["E3"] = arm["ledger_rel_error"] <= criteria["E3_ledger_flux_rtol"]
-    return arm
+def _parse(raw):
+    try:
+        parse_spec(raw)
+        return dict(accepted=True)
+    except ConfigError as error:
+        return dict(accepted=False, refusal=str(error))
 
 
-def part_refusals():
+def part_refusals(out, save):
     from cells.models.inner_laws import HOST
     from cells.registry import laws as law_registry
 
-    out = {}
-    for name, permeability in (("with_junction_route", 1e-9), ("without_junction_route", 0.0)):
-        try:
-            parse_spec(worlds.junction_route_reaction(permeability))
-            out[name] = dict(accepted=True)
-        except ConfigError as error:
-            out[name] = dict(accepted=False, refusal=str(error))
+    out["with_junction_route"] = _parse(worlds.junction_route_reaction(1e-9))
+    out["without_junction_route"] = _parse(worlds.junction_route_reaction(0.0))
+    out["emt_switch_reactions"] = _parse(worlds.emt_switch_probe())
+    save()
     registry = law_registry.active()
     out["hosted_laws"] = {
         "junction": sorted(law.law_id for law in registry.laws(law_registry.JUNCTION_LAW, HOST)),
@@ -173,25 +217,26 @@ def part_refusals():
         k: dict(nodes=worlds.lattice_nodes(s), within=worlds.lattice_nodes(s) <= bound)
         for k, s in shapes.items()
     }
-    for name, n in (("at_bound", bound - 1), ("over_bound", bound)):
-        try:
-            parse_spec(worlds.shared_bath(n))
-            out[f"shared_bath_{name}"] = dict(cells=n, accepted=True)
-        except ConfigError as error:
-            out[f"shared_bath_{name}"] = dict(cells=n, accepted=False, refusal=str(error))
+    out["shared_bath_at_bound"] = dict(cells=bound - 1, **_parse(worlds.shared_bath(bound - 1)))
+    out["shared_bath_over_bound"] = dict(cells=bound, **_parse(worlds.shared_bath(bound)))
+    route = out["with_junction_route"]
+    over = out["shared_bath_over_bound"]
     out["verdict"] = dict(
-        junction_route_reaction_refused=not out["with_junction_route"]["accepted"]
+        junction_route_reaction_refused=not route["accepted"]
+        and "route through junction j_0" in route.get("refusal", "")
         and out["without_junction_route"]["accepted"],
+        emt_switch_expressible=out["emt_switch_reactions"]["accepted"],
         only_relaxation_junction_law=out["hosted_laws"]["junction"]
         == ["junction_voltage_relaxation@1"],
         three_d_lattice_over_bound=not out["preprint_lattices"]["3D_25x25x25"]["within"]
         and out["shared_bath_at_bound"]["accepted"]
-        and not out["shared_bath_over_bound"]["accepted"],
+        and not over["accepted"]
+        and "dense node bound" in over.get("refusal", ""),
     )
-    return out
+    save()
 
 
-def part_gate():
+def part_gate(out, save):
     """F3/F4 measured: the engine's one junction law (its own kinetics, steady target) fitted to
     Figure 1's Cx45 small-ion curve normalized at dV = 0, over the figure's -100..100 mV; then the
     same law, with the same single minimum, against the miRNA curve (floor 0)."""
@@ -209,7 +254,7 @@ def part_gate():
     error = np.max(np.abs(target - ions), axis=-1)
     k = np.unravel_index(np.argmin(error), error.shape)
     best = target[k]
-    return dict(
+    out.update(
         law=junction_gate.LAW_ID,
         cx45_small_ion_at_0=float(peak),
         cx45_mirna_at_0=float(paper.chen_izu(0.0, 0.0)),
@@ -222,25 +267,20 @@ def part_gate():
         cx45_small_ion_at_40mV=float(np.interp(0.04, dv, ions)),
         cx45_mirna_at_40mV=float(np.interp(0.04, dv, mirna)),
     )
+    save()
 
 
-def part_figure3():
+def part_figure3(out, save):
     rep = paper.REPORTED["figure3b"]
-    arms = []
+    out["arms"] = []
     for g in FIGURE3_G:
-        arm = run_network(*worlds.figure3(g, rep["unloaded"]))
-        a, b = paper.eq2(*rep["unloaded"], g, g)
-        arm.update(
-            g=g,
-            eq2=[a, b],
-            eq2_vs_dense=float(
-                max(abs(a - arm["reference_mM"][0]), abs(b - arm["reference_mM"][1]))
-            ),
-        )
-        arms.append(_checks(arm, CRITERIA))
+        result = arm(*worlds.figure3(g, rep["unloaded"]))
+        result.update(g=g, eq2=list(paper.eq2(*rep["unloaded"], g, g)))
+        out["arms"].append(result)
+        save()
     a1, b1 = paper.eq2(*rep["unloaded"], 1.0, 1.0)
     limit = 0.5 * sum(rep["unloaded"])
-    reading = dict(
+    out["reading"] = dict(
         at_g1_closed_form=[a1, b1],
         at_g1_read=list(rep["at_g1"]),
         P1_at_g1=bool(
@@ -249,47 +289,54 @@ def part_figure3():
         limit_closed_form=limit,
         P1_limit=bool(abs(limit - rep["limit"]) <= rep["tolerance"]),
     )
-    return dict(arms=arms, reading=reading)
+    save()
 
 
-def part_figure5():
+def part_figure5(out, save):
     rep = paper.REPORTED["figure5"]
     ua, ub = rep["unloaded"]["A"], rep["unloaded"]["B"]
-    lumped, network = [], []
+    out["lumped"], out["network"] = [], []
     for g in FIGURE5_G:
-        arm = run_network(*worlds.figure5_lumped(g, rep["size_ratio"], (ua, ub)))
-        arm.update(g=g, eq2=list(paper.eq2(ua, ub, g, g / rep["size_ratio"])))
-        lumped.append(_checks(arm, CRITERIA))
-        arm = run_network(*worlds.figure5_network(g, (ua, ub)))
-        arm.update(g=g)
-        network.append(_checks(arm, CRITERIA))
+        result = arm(*worlds.figure5_lumped(g, rep["size_ratio"], (ua, ub)))
+        result.update(g=g, eq2=list(paper.eq2(ua, ub, g, g / rep["size_ratio"])))
+        out["lumped"].append(result)
+        save()
+        result = arm(*worlds.figure5_network(g, (ua, ub)))
+        result.update(g=g)
+        out["network"].append(result)
+        save()
     limit = (ua + rep["size_ratio"] * ub) / (1.0 + rep["size_ratio"])
-    reading = dict(
+    out["reading"] = dict(
         limit_closed_form=limit,
         caption_final=rep["final"],
         P1_final=bool(abs(limit - rep["final"]) <= rep["tolerance"]),
         text_ratio_1p5_limit=(ua + 1.5 * ub) / 2.5,
     )
-    return dict(lumped=lumped, network=network, reading=reading)
+    save()
 
 
-def part_figure8():
+def part_figure8(out, save):
     rep = paper.REPORTED["figure8"]
     physical = paper.chain_physical(1.0, 1.0, max(FIGURE8_N))
     plotted = paper.chain_paper(1.0, 1.0, max(FIGURE8_N))
-    chains = []
+    out.update(
+        physical_limit_ratio=paper.chain_limit(1.0, 1.0), recursion_note=paper.RECURSION_NOTE
+    )
+    out["chains"] = []
     for n in FIGURE8_N:
-        loads = [run_network(*worlds.chain(n, held)) for held in FIGURE8_LOADS]
-        points = [(arm["exit_flux_mol_s"], arm["port_mM"]) for arm in loads]
+        entry = dict(n=n, physical_ratio=physical[n - 1], plotted_ratio=plotted[n - 1], loads=[])
+        out["chains"].append(entry)
+        for held in FIGURE8_LOADS:
+            entry["loads"].append(arm(*worlds.chain(n, held)))
+            save()
+        if any(load["status"] != "done" for load in entry["loads"]):
+            continue
+        points = [(load["exit_flux_mol_s"], load["port_mM"]) for load in entry["loads"]]
         g_m3_s, unloaded = paper.norton_from_two_loads(points)
         ratio = g_m3_s / worlds.G_EQ1_M3_S
-        entry = dict(
-            n=n,
-            loads=[_checks(arm, CRITERIA) for arm in loads],
+        entry.update(
             g_eq_ratio=ratio,
             unloaded_mM=unloaded,
-            physical_ratio=physical[n - 1],
-            plotted_ratio=plotted[n - 1],
             E4=bool(
                 abs(ratio - physical[n - 1]) / physical[n - 1]
                 <= CRITERIA["E4_norton_vs_physical_rtol"]
@@ -313,27 +360,26 @@ def part_figure8():
                 abs(entry["plotted_at_minus_half"] - entry["read_at_minus_half"])
                 <= rep["tolerance"]
             )
-        chains.append(entry)
-    return dict(
-        chains=chains,
-        physical_limit_ratio=paper.chain_limit(1.0, 1.0),
-        recursion_note=paper.RECURSION_NOTE,
-    )
+        save()
 
 
-def part_control():
-    arm = run_network(*worlds.figure3(1.0), junction_scale=PLANTED_SCALE)
-    arm["junction_scale"] = PLANTED_SCALE
-    # Judged against the unperturbed g = 1 network's dense solve.
-    unperturbed = reference(*worlds.figure3(1.0))[0]
-    error = float(
-        np.max(np.abs(np.asarray(arm["concentration_mM"]) - unperturbed) / np.abs(unperturbed))
-    )
-    arm.update(unperturbed_reference_mM=unperturbed.tolist(), planted_rel_error=error)
-    arm["K1"] = bool(
-        error > CRITERIA["K1_planted_min_rel_error"] and error > CRITERIA["E1_engine_vs_dense_rtol"]
-    )
-    return arm
+def part_control(out, save):
+    result = arm(*worlds.figure3(1.0), junction_scale=PLANTED_SCALE)
+    out.update(result, junction_scale=PLANTED_SCALE)
+    if result["status"] == "done":
+        # Judged against the unperturbed g = 1 network's dense solve.
+        unperturbed = reference(*worlds.figure3(1.0))[0]
+        concentration = np.asarray(result["concentration_mM"])
+        error = float(np.max(np.abs(concentration - unperturbed) / np.abs(unperturbed)))
+        out.update(
+            unperturbed_reference_mM=unperturbed.tolist(),
+            planted_rel_error=error,
+            K1=bool(
+                error > CRITERIA["K1_planted_min_rel_error"]
+                and error > CRITERIA["E1_engine_vs_dense_rtol"]
+            ),
+        )
+    save()
 
 
 FUNCTIONS = dict(
@@ -368,38 +414,38 @@ def main(argv):
             g_eq1_m3_s=worlds.G_EQ1_M3_S,
             end_s=worlds.END_S,
             settle_s=worlds.SETTLE_S,
+            base_dt_s=worlds.BASE_DT_S,
+            step_bound_margin=worlds.STEP_BOUND_MARGIN,
             solver=worlds.SOLVER,
         ),
         citation=paper.CITATION,
     )
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1, default=str))
-    record = dict(
-        python=sys.version,
-        platform=platform.platform(),
-        jax=jax.__version__,
-        blas=blas_threads.libraries(),
-        started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    recorder = Recorder(
+        out_dir / "results.json",
+        dict(
+            python=sys.version,
+            platform=platform.platform(),
+            jax=jax.__version__,
+            blas=blas_threads.libraries(),
+            started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        ),
     )
-    results = dict(record=record, parts={})
     for part in parts:
         started = time.perf_counter()
+        out = recorder.part(part)
+        entry = recorder.data["parts"][part]
         try:
-            results["parts"][part] = dict(status="done", result=FUNCTIONS[part]())
+            FUNCTIONS[part](out, recorder.save)
+            entry["status"] = "done"
         except Exception as error:  # Recorded as failed evidence, never retried silently.
-            results["parts"][part] = dict(
-                status="failed", error=repr(error), traceback=traceback.format_exc()
-            )
-        results["parts"][part]["seconds"] = time.perf_counter() - started
-        (out_dir / "results.json").write_text(json.dumps(results, indent=1, default=str))
-        print(
-            part,
-            results["parts"][part]["status"],
-            f"{results['parts'][part]['seconds']:.1f} s",
-            flush=True,
-        )
-    results["record"]["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    (out_dir / "results.json").write_text(json.dumps(results, indent=1, default=str))
-    failed = [p for p, r in results["parts"].items() if r["status"] != "done"]
+            entry.update(status="failed", error=repr(error), traceback=traceback.format_exc())
+        entry["seconds"] = time.perf_counter() - started
+        recorder.save()
+        print(part, entry["status"], f"{entry['seconds']:.1f} s", flush=True)
+    recorder.data["record"]["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    recorder.save()
+    failed = [p for p, r in recorder.data["parts"].items() if r["status"] != "done"]
     return 1 if failed else 0
 
 

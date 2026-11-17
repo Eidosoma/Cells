@@ -1,10 +1,12 @@
 """The preprint's experiment, its reported numbers and independent references (no engine code).
 
-Source (the only one cited in committed files): J. Grodstein, J. Mathews and M. Levin, "Membrane
-voltage and connexin expression work together to enhance tumor growth and metastasis in cancer",
-bioRxiv 10.64898/2026.09.02.748840, version 1, posted 3 September 2026, CC-BY 4.0. Only numbers
-are taken (D186, D201); each entry names where the preprint prints it. A value read off a plotted
-curve is marked as read, with the reading tolerance used to compare it.
+Source: J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and connexin expression work
+together to enhance tumor growth and metastasis in cancer", bioRxiv 10.64898/2026.09.02.748840,
+version 1, posted 3 September 2026, CC-BY 4.0. Only numbers are taken (D186, D201); each entry
+names where the preprint prints it. A value read off a plotted curve is marked as read, with the
+reading tolerance used to compare it; the tolerances were set after the closed forms below were
+evaluated, so they check the reading, not the engine. One exception to "from the preprint": the
+Cx45 gate constants (CX45), which the preprint does not print (see there).
 
 Independent references, written from the preprint's equations alone:
 * `eq2`: the steady state of two linear cells joined by one junction (the preprint's equation 2);
@@ -91,7 +93,8 @@ REPORTED = {
     },
     "figure8": {
         "where": "Figure 8: chains of 1-5 cells, [mR]_UL0 = 1 mol/m^3 (read at Iexit = -0.5 "
-        "mol/s, and the Iexit-axis intercepts); the appendix gives G_eq,1 = G_GJ (0.1 drawn)",
+        "mol/s, and the Iexit-axis intercepts). G_eq,1 = G_GJ = 0.1 is not printed: it is "
+        "inferred from the 1- and 2-cell lines (slope and intercept)",
         "unloaded": 1.0,
         "g_eq1": 0.1,
         "g_gj": 0.1,
@@ -174,11 +177,13 @@ def norton_from_two_loads(points):
     return g, c1 + i1 / g
 
 
-# The two-state gate of Figure 1. The preprint prints the equation, not its constants; these
-# are the values that reproduce Figure 1 (peak 0.97 and floor 0.06 for small ions, peak 0.945
-# and floor 0 for miRNA), in the preprint's sign convention, from Chen-Izu, Moreno and Spangler
-# (2001), Am J Physiol Cell Physiol 281:C1604 (the preprint's ref. 52) as tabulated in the
-# authors' public code (GJ_lib.py, BITSEY revision b2cb370).
+# The two-state gate of Figure 1. The preprint prints the equation, not its constants. These
+# values reproduce Figure 1 (peak 0.97 and floor 0.06 for small ions, peak 0.945 and floor 0 for
+# miRNA), in the preprint's sign convention. Their source is the Cx45/45 row of the authors'
+# public code (GJ_lib.py, BITSEY revision b2cb370, which has no licence), attributed there to
+# Chen-Izu, Moreno and Spangler (2001), Am J Physiol Cell Physiol 281:C1604, the preprint's
+# ref. 52. Not checked against that paper (its publisher refused the request); their use here
+# awaits the lead's ruling (docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 2).
 CX45 = {"A1_per_V": 110.0, "V01_V": -0.0102, "A2_per_V": 110.0, "V02_V": -0.0102, "Gmax": 1.56}
 CX45_SMALL_ION_GMIN = 0.06
 
