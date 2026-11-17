@@ -27,7 +27,9 @@
   "an event at t_e sets the bath's composition for t >= t_e (right-continuous)",
   "node amounts and V_m are continuous at an event; they are what the references return at the record times",
   "a face's conductance is kappa = 1e15 D A / L (pL/s), so its flux is kappa (c_a - c_b) in fmol/s with c in mM",
-  "the constant-field flux is outward positive; V_m is the cell less the bath"
+  "the constant-field flux is outward positive; V_m is the cell less the bath",
+  "the constants above are exact SI values (F = N_A e, R = N_A k_B, so RT/F = k_B T/e); Appendix A's printed RT = 2.577 pJ/fmol and F = 96485.33 C/mol are rounded for reading, and the references use the values here (delta_G_b is judged within 1e-12 relative)",
+  "S_s(t), the cumulative supply, is the amount the bath has supplied to the tissue since t = 0 (fmol, positive out of the bath)"
  ],
  "R_faces": {
   "world": "W1 (B1, Appendix A.2): the neutral species S on a face chain; its two cells are inert (S impermeant at every patch)",
@@ -672,6 +674,12 @@
   "worlds": {
    "W1": {
     "temperature_K": 310.0,
+    "valence": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "S": 0
+    },
     "baths": {
      "bath": {
       "volume_pL": 1.0,
@@ -706,6 +714,12 @@
    },
    "W2": {
     "temperature_K": 310.0,
+    "valence": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "S": 0
+    },
     "baths": {
      "bath": {
       "volume_pL": 1.0,
@@ -731,6 +745,12 @@
    },
    "W3": {
     "temperature_K": 310.0,
+    "valence": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "S": 0
+    },
     "baths": {
      "bath": {
       "volume_pL": 1.0,
@@ -755,6 +775,6 @@
     }
    }
   },
-  "returns": "at each event: the dose dn_s = V_b (c_after - c_before) (fmol) and dG_b, the free-energy change of the bath's content at its declared volume (pJ, design \u00a72.2's expression); and, given the engine's cumulative supply series S_s(t) at the bath as input, the reconciliation K(t) of A.5"
+  "returns": "at each event: the dose dn_s = V_b (c_after - c_before) (fmol), dG_b, the free-energy change of the bath's content at its declared volume (pJ, design \u00a72.2's expression), and the step's charge F sum_s z_s dn_s (C, zero in exact arithmetic); and the reconciliation K(t) of \u00a72.3 and A.5 (pJ) as a function of the record times and the cumulative supply S_s at them, an input at run time (the generator passes the engine's W3 supply series; the convention above)"
  }
 }

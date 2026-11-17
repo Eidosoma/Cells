@@ -118,14 +118,17 @@ def _records_inputs():
                              ("W2", bfx.ion_world(), bfx.SALTS),
                              ("W3", bfx.ledger_world(), bfx.CARGO)):
         worlds[name] = dict(temperature_K=raw["model"]["temperature_K"],
+                            valence={sp["id"]: sp["valence"] for sp in raw["model"]["species"]},
                             baths=_schedule(raw, units))
     return dict(
         world="every event of W1, W2 and W3 (B4, Appendix A.4 and A.5)",
         worlds=worlds,
-        returns="at each event: the dose dn_s = V_b (c_after - c_before) (fmol) and dG_b, the "
+        returns="at each event: the dose dn_s = V_b (c_after - c_before) (fmol), dG_b, the "
                 "free-energy change of the bath's content at its declared volume (pJ, design "
-                "§2.2's expression); and, given the engine's cumulative supply series S_s(t) at "
-                "the bath as input, the reconciliation K(t) of A.5",
+                "§2.2's expression), and the step's charge F sum_s z_s dn_s (C, zero in exact "
+                "arithmetic); and the reconciliation K(t) of §2.3 and A.5 (pJ) as a function of "
+                "the record times and the cumulative supply S_s at them, an input at run time "
+                "(the generator passes the engine's W3 supply series; the convention above)",
     )
 
 
@@ -143,6 +146,12 @@ def inputs():
             "a face's conductance is kappa = 1e15 D A / L (pL/s), so its flux is kappa (c_a - c_b) "
             "in fmol/s with c in mM",
             "the constant-field flux is outward positive; V_m is the cell less the bath",
+            "the constants above are exact SI values (F = N_A e, R = N_A k_B, so RT/F = k_B T/e); "
+            "Appendix A's printed RT = 2.577 pJ/fmol and F = 96485.33 C/mol are rounded for "
+            "reading, and the references use the values here (delta_G_b is judged within 1e-12 "
+            "relative)",
+            "S_s(t), the cumulative supply, is the amount the bath has supplied to the tissue "
+            "since t = 0 (fmol, positive out of the bath)",
         ],
         R_faces=_chain_inputs(),
         R_ion=_ion_inputs(),
