@@ -235,7 +235,7 @@ def junction_route_reaction(junction_permeability_m_s):
         concentrations_mM={"cell_0": 1e-3, "cell_1": 1e-3},
     )
     raw["model"]["junctions"][0]["permeability_m_per_s"][sfx.SPECIES] = junction_permeability_m_s
-    sites = {"cells": "all", "outside": []}
+    sites = {"cells": "all"}
     return rfx.with_reactions(
         raw,
         [rfx.species(sfx.SPECIES)],
@@ -265,7 +265,7 @@ def emt_switch_probe():
         contacts=(),
         profile={name: {"cell_0": 1e-3} for name in names},
     )
-    sites = {"cells": "all", "outside": []}
+    sites = {"cells": "all"}
     k_half, x0 = 1e-3, 1e-3  # mM, synthetic.
     reactions = []
     for name, n in (("u", 3), ("m", 2)):
