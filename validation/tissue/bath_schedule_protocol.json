@@ -71,7 +71,7 @@
    "source": "design §8.3: Na up and K down, never measured",
    "refused": "NaCl for KCl by 2.5 mM (Na up to 147.5 mM, K down to 2.5 mM)",
    "admitted": "KCl for NaCl by 2.5 mM (K up to 7.5 mM, Na down to 142.5 mM: probe I's points)",
-   "check": "the step rule (no step of that kind measured)"
+   "check": "the step rule (region): no step of that kind is measured"
   },
   "R7_a_faster_face": {
    "source": "design §8.3: a face of 11/s",
@@ -247,5 +247,578 @@
   "pre-run correction, 17 November 2026, the lead's ruling on the references: the FR references agent, code-blind, writes them from Appendix A and the registered input file (references.inputs)",
   "pre-run correction, 17 November 2026, the lead's ruling on the refusal set: one representative per refusal class of design §8.3, each beside its admitted neighbour, with the mapping in refusal_classes",
   "pre-run correction, 17 November 2026, the lead's ruling on the restart: through the engine's checkpoint, written and resumed within one run's snapshot"
- ]
+ ],
+ "judge": {
+  "written": "17 November 2026, by the FR owner, after the protocol's worlds and refusal classes were fixed and before any run of the protocol (development runs of the generator's parts on quick horizons, to test the tools, had run)",
+  "generator": "validation/tissue/bath_schedule_qualification.py (records only)",
+  "judge": "validation/tissue/bath_schedule_judge.py (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only from validation/tissue/compartment_ph_judge.py)",
+  "references": "the FR references agent's R-faces, R-ion and R-records, from Appendix A and validation/bath_schedule/reference_inputs.json",
+  "derivation": {
+   "run_parts": [
+    "W1_rung_1ms",
+    "W1_rung_0p5ms",
+    "W1_rung_0p25ms",
+    "W1_rung_0p125ms",
+    "W1_control",
+    "W2_rung_1ms",
+    "W2_rung_0p5ms",
+    "W2_rung_0p25ms",
+    "W2_rung_0p125ms",
+    "W2_control",
+    "W3_rk4",
+    "W4_idle",
+    "W5_restart",
+    "W5_batch",
+    "W6_water",
+    "W7_staircase_ars",
+    "W7_staircase_rk4",
+    "refusals"
+   ],
+   "band": [
+    1.8,
+    2.2
+   ],
+   "energy_order_low": 1.8,
+   "W1": {
+    "ladder_parts": [
+     "W1_rung_1ms",
+     "W1_rung_0p5ms",
+     "W1_rung_0p25ms",
+     "W1_rung_0p125ms"
+    ],
+    "declared_part": "W1_rung_1ms",
+    "half_part": "W1_rung_0p5ms",
+    "control_part": "W1_control",
+    "observables": [
+     "amount_S_ecs_0",
+     "amount_S_ecs_1"
+    ],
+    "budget_fmol": 9.000000000000002e-06
+   },
+   "W2": {
+    "ladder_parts": [
+     "W2_rung_1ms",
+     "W2_rung_0p5ms",
+     "W2_rung_0p25ms",
+     "W2_rung_0p125ms"
+    ],
+    "declared_part": "W2_rung_1ms",
+    "half_part": "W2_rung_0p5ms",
+    "control_part": "W2_control",
+    "observables": [
+     "V_wall_cell_0",
+     "amount_K_cell_0"
+    ],
+    "v_observable": "V_wall_cell_0",
+    "k_observable": "amount_K_cell_0",
+    "budget_V": 6.151064364340944e-05,
+    "k_budget_fraction": 0.001
+   },
+   "W3": {
+    "part": "W3_rk4",
+    "event_s": 0.002,
+    "ledgers": [
+     "local",
+     "outside",
+     "total",
+     "charge",
+     "electrode",
+     "global_charge",
+     "energy",
+     "reservoir_work",
+     "electrode_work",
+     "metabolic_work",
+     "bath_dose",
+     "bath_dose_free_energy",
+     "bath_neutrality"
+    ]
+   },
+   "record_ledgers": [
+    "bath_dose",
+    "bath_dose_free_energy",
+    "bath_neutrality"
+   ],
+   "charge_ledgers": [
+    "charge",
+    "electrode",
+    "global_charge"
+   ],
+   "records": {
+    "W1": {
+     "part": "W1_rung_1ms",
+     "event_s": [
+      1.0,
+      2.0
+     ],
+     "species": [
+      "S"
+     ]
+    },
+    "W2": {
+     "part": "W2_rung_1ms",
+     "event_s": [
+      0.5
+     ],
+     "species": [
+      "Na",
+      "K",
+      "Cl"
+     ]
+    },
+    "W3": {
+     "part": "W3_rk4",
+     "event_s": [
+      0.002
+     ],
+     "species": [
+      "S"
+     ]
+    }
+   },
+   "restart_times_s": [
+    0.5,
+    1.0,
+    1.5
+   ],
+   "batch_worlds": 3,
+   "refusal_checks": {
+    "R1_past_a_neutral_corner": "the step rule (region)",
+    "R2_a_measured_failure": "the step rule (region)",
+    "R3_a_dose_from_nothing": "the step rule (region)",
+    "R4_past_the_down_corner": "the step rule (region)",
+    "R5_past_the_K_corner": "the step rule (region)",
+    "R6_an_unmeasured_ion_direction": "the step rule (region)",
+    "R7_a_faster_face": "the step rule (face)",
+    "R8_outside_the_measured_steps": "the step rule (solver and dt)",
+    "R9_the_species_cap": "the species cap",
+    "R10_a_charged_unit": "the neutrality rule (integer charge)",
+    "R11_an_anisosmotic_step": "the isosmotic rule",
+    "R12_beyond_the_explicit_bound": "@3's explicit-rate bound",
+    "R13_not_a_held_bath": "the held-bath rule"
+   },
+   "W6_part": "W6_water",
+   "W7_parts": [
+    "W7_staircase_ars",
+    "W7_staircase_rk4"
+   ],
+   "record_unit_s": 0.01
+  },
+  "criteria": [
+   {
+    "id": "J1_admission",
+    "metrics": [
+     "derived.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every run part admitted and run to its end with every host check on every row (the runner)",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W1_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.W1_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W1's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W1_amount_S_ecs_1",
+    "metrics": [
+     "derived.orders.W1_amount_S_ecs_1.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W1's amount_S_ecs_1 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W2_V_wall_cell_0",
+    "metrics": [
+     "derived.orders.W2_V_wall_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W2's V_wall_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W2_amount_K_cell_0",
+    "metrics": [
+     "derived.orders.W2_amount_K_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W2's amount_K_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J3_state_error",
+    "metrics": [
+     "derived.state_error.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at the declared 1 ms, the Richardson-estimated error of every judged observable within its budget (B1, B2, and the cytosol K's)",
+    "judged": true
+   },
+   {
+    "id": "J4_reference",
+    "metrics": [
+     "derived.reference.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W1 against R-faces and W2 against R-ion within their budgets at every record at the declared 1 ms",
+    "judged": true
+   },
+   {
+    "id": "J4_row0",
+    "metrics": [
+     "derived.reference.row0_max"
+    ],
+    "comparison": "le",
+    "threshold": 1e-06,
+    "basis": "row 0 against the reference at rounding, in budgets",
+    "judged": true
+   },
+   {
+    "id": "J4_reported",
+    "metrics": [
+     "derived.reference.W1_amount_S_ecs_0_floor",
+     "derived.reference.W2_V_wall_cell_0_floor"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "each reference's floor, in budgets",
+    "judged": false
+   },
+   {
+    "id": "J5_W3_energy",
+    "metrics": [
+     "derived.W3.energy.before",
+     "derived.W3.energy.at",
+     "derived.W3.energy.after"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3 under RK4: the energy ledger within its absolute bound before, at and after the event",
+    "judged": true
+   },
+   {
+    "id": "J5_W3_reservoir_work",
+    "metrics": [
+     "derived.W3.reservoir_work.before",
+     "derived.W3.reservoir_work.at",
+     "derived.W3.reservoir_work.after"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3: the reservoir-work ledger, with the operator's term, within its bound before, at and after the event",
+    "judged": true
+   },
+   {
+    "id": "J5_energy",
+    "metrics": [
+     "derived.energy.W1.over_flows_at_declared",
+     "derived.energy.W2.over_flows_at_declared"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "W1 and W2 under ARS: the energy residual over the integrated flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, at every record",
+    "judged": true
+   },
+   {
+    "id": "J5_energy_falls",
+    "metrics": [
+     "derived.energy.W1.ladder.passes",
+     "derived.energy.W2.ladder.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the energy residual falls at second order down the ladder (the classes, no upper edge)",
+    "judged": true
+   },
+   {
+    "id": "J6_records",
+    "metrics": [
+     "derived.ledger_max.records"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the operator's own ledgers (the dose against the held content, the free-energy record against its endpoints, neutrality) within their bounds at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "J6_records_reference",
+    "metrics": [
+     "derived.records.dose_over_rounding_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "each event's dose equal to R-records' at rounding (N eps |dose|)",
+    "judged": true
+   },
+   {
+    "id": "J6_free_energy_reference",
+    "metrics": [
+     "derived.records.free_energy_relative_max"
+    ],
+    "comparison": "le",
+    "threshold": 1e-12,
+    "basis": "each event's delta_G_b within 1e-12 relative of R-records",
+    "judged": true
+   },
+   {
+    "id": "J6_charge",
+    "metrics": [
+     "derived.ledger_max.charge"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the charge, electrode and global-charge ledgers within their bounds at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "J7_idle",
+    "metrics": [
+     "derived.idle"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W4: the operator with no event bitwise the composition without it",
+    "judged": true
+   },
+   {
+    "id": "J8_restart",
+    "metrics": [
+     "derived.restart"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5: every restart bitwise the straight run from its restart time",
+    "judged": true
+   },
+   {
+    "id": "J8_batch",
+    "metrics": [
+     "derived.batch"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5: every batched world bitwise its batch of one",
+    "judged": true
+   },
+   {
+    "id": "J9_refusals",
+    "metrics": [
+     "derived.refusals.all"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every refusal class's representative refused by its own check, and its neighbour admitted and run; R12's declared composition alone admitted",
+    "judged": true
+   },
+   {
+    "id": "J9_reported",
+    "metrics": [
+     "derived.refusals.R1_past_a_neutral_corner",
+     "derived.refusals.R2_a_measured_failure",
+     "derived.refusals.R3_a_dose_from_nothing",
+     "derived.refusals.R4_past_the_down_corner",
+     "derived.refusals.R5_past_the_K_corner",
+     "derived.refusals.R6_an_unmeasured_ion_direction",
+     "derived.refusals.R7_a_faster_face",
+     "derived.refusals.R8_outside_the_measured_steps",
+     "derived.refusals.R9_the_species_cap",
+     "derived.refusals.R10_a_charged_unit",
+     "derived.refusals.R11_an_anisosmotic_step",
+     "derived.refusals.R12_beyond_the_explicit_bound",
+     "derived.refusals.R13_not_a_held_bath"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each refusal class, reported",
+    "judged": false
+   },
+   {
+    "id": "J10_staircase",
+    "metrics": [
+     "derived.staircase"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W7: the six-stair dose from the trace run under both solvers",
+    "judged": true
+   },
+   {
+    "id": "J11_water",
+    "metrics": [
+     "derived.water"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W6: the isosmotic step run",
+    "judged": true
+   },
+   {
+    "id": "J11_water_ledgers",
+    "metrics": [
+     "derived.ledger_max.water"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W6: every ledger, water's included, within its bound at every record",
+    "judged": true
+   },
+   {
+    "id": "J12_K1",
+    "metrics": [
+     "derived.controls.K1_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "W1 without its events against R-faces: at least 10 x B1",
+    "judged": true
+   },
+   {
+    "id": "J12_K2",
+    "metrics": [
+     "derived.controls.K2_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "W2 without its event against R-ion: at least 10 x B2",
+    "judged": true
+   },
+   {
+    "id": "J12_K3_before",
+    "metrics": [
+     "derived.controls.K3_before"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3's reservoir-work ledger without the operator's term within its bound before the event",
+    "judged": true
+   },
+   {
+    "id": "J12_K3_after",
+    "metrics": [
+     "derived.controls.K3_after_min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "and at least 10 x its bound at every record after it",
+    "judged": true
+   },
+   {
+    "id": "J12_K4",
+    "metrics": [
+     "derived.controls.K4_planted_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W4's pair with one ulp planted is not bitwise equal",
+    "judged": true
+   },
+   {
+    "id": "J12_K5",
+    "metrics": [
+     "derived.controls.K5_moved_event_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5's restart with the event moved one step is not bitwise the straight run",
+    "judged": true
+   }
+  ],
+  "units": {
+   "W1_rung_1ms": {
+    "steps": 3000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p5ms": {
+    "steps": 6000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p25ms": {
+    "steps": 12000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p125ms": {
+    "steps": 24000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_control": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_1ms": {
+    "steps": 2000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p5ms": {
+    "steps": 4000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p25ms": {
+    "steps": 8000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p125ms": {
+    "steps": 16000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_control": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W3_rk4": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W4_idle": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W5_restart": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W5_batch": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W6_water": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W7_staircase_ars": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W7_staircase_rk4": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "refusals": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "references": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr10-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.bath_schedule_qualification judged SNAPSHOT/validation/tissue/bath_schedule_protocol.json OUT/PART PART",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.bath_schedule_judge judged SNAPSHOT/validation/tissue/bath_schedule_protocol.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "D150's rule on the larger of a sizing rate and the rehearsal's wall (3 x estimate + 600 s, rounded up to the minute)",
+   "attempts": "harness_limits"
+  }
+ }
 }
