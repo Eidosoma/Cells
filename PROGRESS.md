@@ -85,6 +85,89 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged
+  run.** Registration commit 32a1d439. The protocols are `fr4-acidification-v1` and
+  `fr5-transfer-v1`.
+  - **The basis:**
+    - D195;
+    - the rehearsal, which passed 21 of 21 and 51 of 51;
+    - three dated pre-registration disclosures: the energy line settled while the study's values
+      were known, the text levelled, and the harness-limit rule.
+  - **The judged criteria and derivations are byte-identical to the rehearsed copies.**
+  - **The harness-limit rule:** a part ended by its runtime limit or memory cap voids the run, which
+    is relaunched once from the same snapshot. An engine refusal is a verdict.
+  - **The registered state is tested.** The drafter refuses to redraft a registered protocol, and
+    the lane's 45 tests pass in both states. The first attempt found and fixed this check.
+  - **Next:** the judged run, from a clean snapshot of 32a1d439. It runs on lane B (CPUs 8–11) for
+    about 3 h 10 min, and every judged part is compared against the rehearsal.
+
+- **FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026,
+  11:20–14:31 UTC).** They ran from snapshot-e79b4232 on CPUs 6, 7, 22 and 23
+  ([evidence](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/run-e79b4232/)). The protocols themselves stay proposed.
+  - **FR-4 (`fr4-acidification-v1`):** 21 of 21 judged criteria pass. All 8 parts are bitwise
+    equal to its dt study's.
+  - **FR-5 (`fr5-transfer-v1`):** 51 of 51 judged criteria pass. Its 12 parts differ from the dt
+    study's only in the start's extract identity, which was recorded before the launch as
+    expected. The smallest margin is arm R's cargo ledger, at 0.147 of its allowance.
+  - **The energy criterion,** settled before the rehearsal: the residual is at most 2e-3 at both
+    1 ms and 0.5 ms, and must fall at second order. A dated disclosure records that the study's
+    values were already known.
+  - **Across seam F:** every check is bitwise, including a short run through the injury window.
+    G1's 113 worlds hold no FR world, and crossrev holds FR-5 only in reduced form, so these checks
+    are the evidence for FR-4's and FR-5's full worlds.
+  - **The buffered-node predictor** (core-seams step 0 §8): FR-5's arms sit 21–42 times below it.
+    FR-4's control K2 sits 1.8 times below it, at 1 ms.
+  - **Next:** the protocol text is redrafted with no criterion changed, the lead registers both, and
+    the judged runs follow from a fresh snapshot taken after seam F.
+
+- **GARD's G2, the independent component references, merged into main (17 November 2026).**
+  `validation/gard/references/`, from gard-g2-references 193eaf0d. Its writer never read the engine's
+  code.
+  - **Ten references,** each derived from the preprint (Appendix F) and the three original papers,
+    each with a planted control it catches. Among them:
+    - the closed form at β = 0;
+    - time rescaling under uniform β;
+    - local detailed balance;
+    - the closed world's stationary law, which independently reproduces the design note's
+      0.5793 and 0.15;
+    - an exact SSA oracle;
+    - the fission partition;
+    - conservation;
+    - the ledger;
+    - streams;
+    - the observers, including F12 over all 4,096 sequences.
+  - **A harness** reads run bundles through one adapter function.
+  - **Tests:** six files, 112 tests, all tier 1, measured on the timed lane.
+  - **Not done yet:** the harness has not read a real engine bundle. Its reader adapts to G1's
+    frozen format once part 2 produces the probe bundles.
+
+- **GARD's G1, part 1, merged into main (17 November 2026, afternoon).** Branch gard-g1-merge
+  96643762 ([evidence](/mnt/workspaces/Cells/gard-g1-20261117/), README inside).
+  - **What it adds:** `cells.assembly_lineages@1`, a general stochastic assembly family (D197). It
+    has:
+    - the exact direct-method kernel with keyed streams, vmapped over lanes;
+    - reservoir exchange;
+    - size-threshold fission and daughter continuation;
+    - a stochastic ledger that refuses a passive run whose books don't close;
+    - self-describing run bundles, with a declared channel table and units.
+  - **GARD itself is one comparison law set on it** (D192):
+    - the preprint's single-event form, declared driven;
+    - the pair-consistent form, passive and the default.
+
+    The kernel's detailed-balance check admits only the second as passive.
+  - **The gate:**
+    - tiers 1+2: 489 files, none changed;
+    - the results gate: 113 of 113 identical;
+    - crossrev: all nine sets identical;
+    - 8 new test files, 67 tests, each catching a planted error.
+  - **Development run:** one lineage of 100 fissions on one CPU.
+    - The pair-consistent ledger closes to within 2.9e-11 k_BT.
+    - The single-event form reports 55.6 k_BT of cycle work with no source, as declared, about
+      0.55 k_BT per fission.
+    - Speed: 2.2×10⁴ events per second per lane, and up to 5.8×10⁴ with 16 lanes on one CPU.
+  - **Next:** part 2 (keys, end reasons, the probe driver, checkpoints, branching, every descendant)
+    and the general relationship tables (D202).
+
 - **Seam F of the core-seams pass merged into main (17 November 2026, afternoon).** Branch
   core-seams-f 10a6bb19 ([evidence](/mnt/workspaces/Cells/core-seams-f-20261117/)).
   - **What it adds, all structure:**
