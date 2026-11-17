@@ -374,7 +374,9 @@ def record(out_dir, d, start, *, end=COUPLED_S, label=""):
     )
     policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
     request = run_view.Request(
-        labels, geometry=geometry, recording=run_view.Recording(fields=RECORD_FIELDS)
+        labels,
+        geometry=geometry,
+        recording=run_view.Recording(fields=RECORD_FIELDS, elements={"species": list(NAMES)}),
     )
     started = time.perf_counter()
     out = dict(arm=arm_id, d=d, directory=str(directory), dt_s=spec.execution.dt)
@@ -448,12 +450,16 @@ def criterion_sidecar(directory, species_ids):
         volume = state["volume"][:N_CELLS]
         layout_ids = [str(i) for i in state["ids"][:N_CELLS]]
     view = directory / "view.json"
-    cells = (
-        next(s for s in json.loads(view.read_text())["sets"] if s["id"] == "cell")["ids"]
-        if view.is_file()
-        else layout_ids
-    )
-    u, m = species_ids.index("u"), species_ids.index("m")
+    sets = {s["id"]: s for s in json.loads(view.read_text())["sets"]} if view.is_file() else {}
+    cells = sets["cell"]["ids"] if "cell" in sets else layout_ids
+    recorded = sets.get("species", {}).get("recorded")  # The kept species, when a subset.
+
+    def kept(name):
+        full = species_ids.index(name)
+        return full if recorded is None else recorded.index(full)
+
+    u, m = kept("u"), kept("m")
+    ref_u, ref_m = species_ids.index("u"), species_ids.index("m")
     times, values = [], []
     for line in (directory / "windows.jsonl").read_text().splitlines():
         entry = json.loads(line)
@@ -463,14 +469,14 @@ def criterion_sidecar(directory, species_ids):
             if "observation_times" not in chunk.files:
                 continue
             rows = np.asarray(chunk["observation_times"], dtype=float)
-            amount = (
-                reference[None, :, :N_CELLS] + chunk["observed_amount_increment"][:, :, :N_CELLS]
-            )
+            increment = chunk["observed_amount_increment"][:, :, :N_CELLS]
         for k, when in enumerate(rows):
             if times and when <= times[-1]:
                 continue
             times.append(float(when))
-            values.append(((amount[k, u] - amount[k, m]) / volume / UNIT_mM).tolist())
+            mir200 = reference[ref_u, :N_CELLS] + increment[k, u]
+            zeb = reference[ref_m, :N_CELLS] + increment[k, m]
+            values.append(((mir200 - zeb) / volume / UNIT_mM).tolist())
     flat = [x for row in values for x in row]
     if not all(math.isfinite(x) for x in [*flat, *times]):
         raise ValueError(f"{directory}: a value or time is not finite")

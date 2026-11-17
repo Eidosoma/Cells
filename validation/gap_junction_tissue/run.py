@@ -271,7 +271,9 @@ def write_record(result, arm_id, label, kind):
     out = {}
     targets = [("record", RECORDS / arm_id, None)]
     if arm_id in VIEWER_ARMS:
-        recording = run_view.Recording(fields=VIEWER_FIELDS[kind])
+        species = worlds.SPECIES if kind == NORTON else worlds.AS_WRITTEN_SPECIES
+        # The linear species alone: the ions are a static background (package size).
+        recording = run_view.Recording(fields=VIEWER_FIELDS[kind], elements={"species": [species]})
         targets.append(("viewer", RECORDS.parent / "viewer" / arm_id, recording))
     for target, directory, recording in targets:
         request = run_view.Request(labels, geometry=geometry, recording=recording)
@@ -307,15 +309,18 @@ def concentration_sidecar(directory, kind):
     cell_ids = next(s for s in view["sets"] if s["id"] == "cell")["ids"]
     species = worlds.SPECIES if kind == NORTON else worlds.AS_WRITTEN_SPECIES
     unit, scale = ("mM", 1.0) if kind == NORTON else ("uM", worlds.AS_WRITTEN_SCALE_mM)
-    species_ids = json.loads((directory / "summary.json").read_text())["species_ids"]
+    species_set = next(s for s in view["sets"] if s["id"] == "species")
+    full = species_set["ids"].index(species)
+    recorded = species_set.get("recorded")  # The recording's species, when it keeps a subset.
+    kept = full if recorded is None else recorded.index(full)
     with np.load(directory / "trajectory.npz") as arrays:
         if len(arrays["cell_ids"]) < len(cell_ids) or arrays["volume"].shape[0] < len(cell_ids):
             raise ValueError(f"{directory}: the arrays hold fewer cells than the view")
-        row, n = species_ids.index(species), len(cell_ids)
+        n = len(cell_ids)
         times = np.asarray(arrays["observation_times"], dtype=float)
-        amount = (
-            arrays["amount_reference"][row, :n] + arrays["observed_amount_increment"][:, row, :n]
-        )
+        reference = arrays["amount_reference"]  # The layout's: every species.
+        ref_row = full if reference.shape[0] == len(species_set["ids"]) else kept
+        amount = reference[ref_row, :n] + arrays["observed_amount_increment"][:, kept, :n]
         values = amount / arrays["volume"][:n] / scale
     if not (np.all(np.isfinite(values)) and np.all(np.isfinite(times))):
         raise ValueError(f"{directory}: a concentration or time is not finite")
