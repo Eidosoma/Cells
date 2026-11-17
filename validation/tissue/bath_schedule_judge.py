@@ -24,8 +24,13 @@ The FR-10 derivations, fixed before any run:
 * **W3's segments:** each ledger's ratio (|balance| / bound, ratio_LEDGER) before the event
   (t < t_e), at it (the first record at or after t_e) and after it.
 * **Records against R-records:** at each event of W1, W2 and W3, the dose's change and the
-  free-energy record's change across the event against R-records' dose and delta_G_b, the dose in
-  units of N eps |dose| (rounding) and delta_G_b relative.
+  free-energy record's change across the event (from the last record before it to the first after
+  it) against R-records' dose and delta_G_b, the dose in units of N eps |dose| (rounding) and
+  delta_G_b relative.
+* **The compensation charge** at rounding of zero at every record of every engine part
+  (compensation).
+* **K against R-records:** W3's reconciliation term against R-records' K from W3's supply series,
+  within the reservoir-work ledger's bound at every record (k_against_reference).
 * **Comparisons** (W4, W5): the generator's bit-for-bit results, read as 1 (equal) or 0.
 * **Refusals:** a class passes (1) when every representative is refused with the check the
   protocol's refusal_classes names, and every neighbour is admitted and runs.
@@ -34,7 +39,8 @@ The FR-10 derivations, fixed before any run:
 The references part (parts["references"], the FR references agent's, through its adapter) holds
 worlds: W1 and W1_floor (record_s and series amount_S_ecs_0, amount_S_ecs_1), W2 and W2_floor
 (record_s and series V_wall_cell_0, amount_K_cell_0, amount_Na_cell_0, amount_Cl_cell_0), and
-records: {W1, W2, W3: [{time_s, dose_fmol: {species: value}, free_energy_pJ}]}.
+records: {W1, W2, W3: [{time_s, dose_fmol: {species: value}, free_energy_pJ}]}, and K_W3:
+{record_s (W3's), series: {K_pJ}}.
 
 Usage:
   python -m validation.tissue.bath_schedule_judge dev PROTOCOL OUT_DIR RESULTS [RESULTS ...]
@@ -51,6 +57,7 @@ from validation.tissue import compartment_ph_judge as base
 
 RECORD_UNIT_S = 0.01
 EPS = base.EPS
+FARADAY_C_PER_MOL = 6.02214076e23 * 1.602176634e-19  # N_A e, exact SI
 
 
 def on_record_grid(part):
@@ -94,21 +101,24 @@ def ledger_maxima(part):
 
 
 def event_changes(part, event_times, species):
-    """At each event: the change of the dose and of the free-energy record across it (the record
-    just before against the first at or after)."""
+    """At each event: the change of the dose and of the free-energy record across it, from the last
+    record before t_e to the first after it. The held content is constant between events, so this
+    holds whichever side of the event a record at t_e shows (the engine's shows the content before
+    it: the event applies at the start of the step that starts at t_e, after that record)."""
     if not isinstance(part, dict) or part.get("completed") is not True:
         return None
-    t, out = part["record_s"], []
+    t, s, out = part["record_s"], part["series"], []
     for te in event_times:
-        i = next((k for k, x in enumerate(t) if x >= te - 1e-12), None)
-        if i is None or i == 0:
+        before = [k for k, x in enumerate(t) if x < te - 1e-12]
+        after = [k for k, x in enumerate(t) if x > te + 1e-12]
+        if not before or not after:
             return None
-        s = part["series"]
+        h, i = before[-1], after[0]
         out.append(dict(
             time_s=te,
-            dose_fmol={sp: s[f"bath_dose_{sp}_fmol"][i] - s[f"bath_dose_{sp}_fmol"][i - 1]
+            dose_fmol={sp: s[f"bath_dose_{sp}_fmol"][i] - s[f"bath_dose_{sp}_fmol"][h]
                        for sp in species},
-            free_energy_pJ=s["bath_dose_free_energy_pJ"][i] - s["bath_dose_free_energy_pJ"][i - 1]))
+            free_energy_pJ=s["bath_dose_free_energy_pJ"][i] - s["bath_dose_free_energy_pJ"][h]))
     return out
 
 
@@ -126,6 +136,48 @@ def records_against(engine, reference, steps):
         free.append(abs(e["free_energy_pJ"] - g) / max(abs(g), 1e-300))
     return dict(dose_over_rounding=max(dose) if dose else None,
                 free_energy_relative=max(free) if free else None)
+
+
+def compensation(part):
+    """The compensation-charge record q = -F sum_s z_s dose_s against the rounding of that sum:
+    |q| over (n + 2) eps F 1e-15 times the dose's charge magnitude so far (the running sum over
+    records of sum_s |z_s| |change of dose_s|), n the species. 0 where q is 0; None where q is not 0
+    but no charged dose has moved (a charge from nothing fails), and for an incomplete part."""
+    if not isinstance(part, dict) or part.get("completed") is not True:
+        return None
+    s, z = part["series"], part.get("valences")
+    q = s.get("bath_compensation_charge_C")
+    if q is None or not z:
+        return None
+    worst, magnitude = 0.0, 0.0
+    for k, value in enumerate(q):
+        if k:
+            magnitude += sum(abs(v) * abs(s[f"bath_dose_{sp}_fmol"][k]
+                                          - s[f"bath_dose_{sp}_fmol"][k - 1])
+                             for sp, v in z.items())
+        if value == 0.0:
+            continue
+        scale = (len(z) + 2) * EPS * FARADAY_C_PER_MOL * 1e-15 * magnitude
+        if scale == 0.0:
+            return None
+        worst = max(worst, abs(value) / scale)
+    return worst
+
+
+def k_against_reference(part, reference):
+    """W3: the operator's reconciliation term K (bath_reconciliation_pJ: the reservoir-work ledger
+    without the term less with it) against R-records' K from W3's own supply series, over the
+    reservoir-work ledger's bound, the largest over the records; None without either side or when
+    their record times differ."""
+    if not isinstance(part, dict) or part.get("completed") is not True or not reference:
+        return None
+    s, t = part["series"], part["record_s"]
+    k, bound = s.get("bath_reconciliation_pJ"), s.get("reservoir_work_bound_pJ")
+    k_ref = (reference.get("series") or {}).get("K_pJ")
+    if k is None or bound is None or k_ref is None or reference.get("record_s") != t:
+        return None
+    ratios = [abs(a - b) / c if c > 0 else None for a, b, c in zip(k, k_ref, bound, strict=True)]
+    return max_or_none(ratios)
 
 
 def refusal_class(rows, expected):
@@ -218,6 +270,11 @@ def derive(parts, protocol):
         v["dose_over_rounding"] for k, v in out["records"].items() if isinstance(v, dict))
     out["records"]["free_energy_relative_max"] = max_or_none(
         v["free_energy_relative"] for k, v in out["records"].items() if isinstance(v, dict))
+    engine_parts = [name for name in d["run_parts"] if name in d["compensation_parts"]]
+    out["compensation"] = {name: compensation(parts.get(name)) for name in engine_parts}
+    out["compensation"]["max"] = max_or_none(out["compensation"][n] for n in engine_parts)
+    out["K_reference"] = dict(max_over_bound=k_against_reference(
+        parts.get(d["W3"]["part"]), (parts.get("references") or {}).get("K_W3")))
     w4, w5, wb = parts.get("W4_idle") or {}, parts.get("W5_restart") or {}, parts.get("W5_batch")
     out["idle"] = flag((w4.get("idle") or {}).get("equal")) if w4.get("completed") else None
     restarts = w5.get("restarts") or {}

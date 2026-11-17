@@ -92,6 +92,8 @@ def derivation():
         restart_times_s=list(generator.RESTART_TIMES_S),
         batch_worlds=len(bfx.BATCH_LEVELS_mM),
         refusal_checks=REFUSAL_CHECKS,
+        compensation_parts=[*w1, "W1_control", *w2, "W2_control", "W3_rk4", "W6_water",
+                            "W7_staircase_ars", "W7_staircase_rk4"],
         W6_part="W6_water",
         W7_parts=["W7_staircase_ars", "W7_staircase_rk4"],
         record_unit_s=0.01,
@@ -143,6 +145,12 @@ def criteria():
                   "the operator's own ledgers (the dose against the held content, the "
                   "free-energy record against its endpoints, neutrality) within their bounds at "
                   "every record of every run part"),
+        criterion("J5_K_reference", [f"{d}.K_reference.max_over_bound"], "le", 1,
+                  "W3: the operator's reconciliation term K equal to R-records' K from W3's "
+                  "supply series within the reservoir-work ledger's bound at every record"),
+        criterion("J6_compensation", [f"{d}.compensation.max"], "le", 1,
+                  "the compensation-charge record at rounding of zero at every record of every "
+                  "engine part: within (n + 2) eps F times the dose's charge magnitude so far"),
         criterion("J6_records_reference", [f"{d}.records.dose_over_rounding_max"], "le", 1,
                   "each event's dose equal to R-records' at rounding (N eps |dose|)"),
         criterion("J6_free_energy_reference", [f"{d}.records.free_energy_relative_max"], "le",

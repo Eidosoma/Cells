@@ -51,14 +51,24 @@ def ledgers(t, *, energy=0.01):
             for name in drafter.LEDGERS}
 
 
+VALENCES = {"Na": 1, "K": 1, "Cl": -1, "S": 0}
+
+
 def engine(dt, end, series, *, steps=None, extra=None):
     t = times(end)
+    quiet = {f"bath_dose_{sp}_fmol": [0.0] * len(t) for sp in VALENCES}
+    quiet["bath_compensation_charge_C"] = [0.0] * len(t)
     return dict(kind="engine", admitted=True, completed=True, refusal=None, dt_s=dt, end_s=end,
-                steps=steps or round(end / dt), record_s=t,
-                series={**series, **ledgers(t), **(extra or {})})
+                steps=steps or round(end / dt), record_s=t, valences=dict(VALENCES),
+                series={**quiet, **series, **ledgers(t), **(extra or {})})
 
 
-def rung(world, dt, *, order=2, control=False):
+def after(s, te, *, right=False):
+    """Past the event: the engine's record at t_e shows the bath before it (right=False)."""
+    return s >= te - 1e-12 if right else s > te + 1e-12
+
+
+def rung(world, dt, *, order=2, control=False, right=False, late=0.0):
     t = times(3.0 if world == "W1" else 2.0)
     exact = (w1_exact if world == "W1" else w2_exact)(t)
     e = (dt / 1e-3) ** order
@@ -71,26 +81,40 @@ def rung(world, dt, *, order=2, control=False):
     flows = [0.1 * s for s in t]
     energy = dict(energy_residual_pJ=[1e-5 * e * f for f in flows], energy_flows_pJ=flows)
     records = {}
-    if world == "W1":
-        dose = [0.0 if s < 1.0 else (9e-3 if s < 2.0 else 0.0) for s in t]
+    if control:
+        records = {}
+    elif world == "W1":
+        dose = [9e-3 if after(s, 1.0 + late, right=right) and not after(s, 2.0 + late, right=right)
+                else 0.0 for s in t]
         records = dict(bath_dose_S_fmol=dose, bath_dose_free_energy_pJ=[d * 2.0 for d in dose])
     else:
         dose = {"Na": -45.0, "K": 45.0, "Cl": 0.0}
-        records = {f"bath_dose_{sp}_fmol": [0.0 if s < 0.5 else v for s in t]
-                   for sp, v in dose.items()}
-        records["bath_dose_free_energy_pJ"] = [0.0 if s < 0.5 else -5.0 for s in t]
+        records = {f"bath_dose_{sp}_fmol": [v if after(s, 0.5 + late, right=right) else 0.0
+                                            for s in t] for sp, v in dose.items()}
+        records["bath_dose_free_energy_pJ"] = [-5.0 if after(s, 0.5 + late, right=right) else 0.0
+                                               for s in t]
     return engine(dt, t[-1], {**series, **energy, **records})
 
 
+def w3_times():
+    return [round(k * 1e-4, 10) for k in range(61)]
+
+
+def w3_k():
+    return [0.0 if s <= 0.002 + 1e-12 else 2e4 for s in w3_times()]
+
+
 def w3_part():
-    t = [round(k * 1e-4, 10) for k in range(61)]
+    t = w3_times()
     own = [1e-3 if s <= 0.002 + 1e-12 else 2e4 for s in t]
-    part = engine(1e-4, 0.006, dict(
-        reservoir_work_own_pJ=own, reservoir_work_bound_pJ=[1.0] * len(t),
-        bath_dose_S_fmol=[0.0 if s < 0.002 - 1e-12 else 5e-4 for s in t],
-        bath_dose_free_energy_pJ=[0.0 if s < 0.002 - 1e-12 else 1e-3 for s in t]), steps=60)
+    part = engine(1e-4, 0.006, {}, steps=60)
     part["record_s"] = t
-    part["series"].update({k: [v[0]] * len(t) for k, v in ledgers(t).items()})
+    part["series"] = {k: [v[0]] * len(t) for k, v in part["series"].items()}
+    part["series"].update(
+        reservoir_work_own_pJ=own, reservoir_work_bound_pJ=[1.0] * len(t),
+        bath_reconciliation_pJ=w3_k(),
+        bath_dose_S_fmol=[5e-4 if after(s, 0.002) else 0.0 for s in t],
+        bath_dose_free_energy_pJ=[1e-3 if after(s, 0.002) else 0.0 for s in t])
     return part
 
 
@@ -104,7 +128,8 @@ def references():
                 dict(time_s=2.0, dose_fmol={"S": -9e-3}, free_energy_pJ=-1.8e-2)],
             W2=[dict(time_s=0.5, dose_fmol={"Na": -45.0, "K": 45.0, "Cl": 0.0},
                      free_energy_pJ=-5.0)],
-            W3=[dict(time_s=0.002, dose_fmol={"S": 5e-4}, free_energy_pJ=1e-3)]))
+            W3=[dict(time_s=0.002, dose_fmol={"S": 5e-4}, free_energy_pJ=1e-3)]),
+        K_W3=dict(record_s=w3_times(), series=dict(K_pJ=w3_k())))
 
 
 def comparison(**fields):
@@ -165,7 +190,12 @@ def test_a_complete_run_passes_every_criterion():
     ("refusal_check", {"J9_refusals"}),
     ("neighbour", {"J9_refusals"}),
     # An incomplete run part has no records: its own criteria and the ledger maxima fail too.
-    ("not_admitted", {"J1_admission", "J10_staircase", "J6_records", "J6_charge"}),
+    ("not_admitted", {"J1_admission", "J10_staircase", "J6_records", "J6_charge",
+                      "J6_compensation"}),
+    ("compensation", {"J6_compensation"}),
+    ("charge_from_nothing", {"J6_compensation"}),
+    ("k_reference", {"J5_K_reference"}),
+    ("late_dose", {"J6_records_reference", "J6_free_energy_reference"}),
 ])
 def test_each_planted_error_fails_its_own_criterion(plant, expected):
     p = parts()
@@ -198,6 +228,14 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
         p["refusals"]["classes"]["R9_the_species_cap"]["admitted"][0]["ran"] = False
     elif plant == "not_admitted":
         p["W7_staircase_rk4"].update(completed=False, refusal="refused at run time")
+    elif plant == "compensation":  # 870 x the rounding of W2's 90 fmol of charged dose.
+        p["W2_rung_0p5ms"]["series"]["bath_compensation_charge_C"][100] = 1e-20
+    elif plant == "charge_from_nothing":
+        p["W1_control"]["series"]["bath_compensation_charge_C"][5] = 1e-30
+    elif plant == "k_reference":
+        p["references"]["K_W3"]["series"]["K_pJ"][40] += 2.0
+    elif plant == "late_dose":  # The dose one record late: the bracket sees nothing move.
+        p["W1_rung_1ms"] = rung("W1", 1e-3, late=0.01)
     found = set(failed(p))
     assert expected <= found and found <= expected | {"J1_admission"}, found
 
@@ -219,6 +257,15 @@ def test_records_on_the_10_ms_grid_are_compared_record_by_record():
     assert "J4_reference" in failed(p)
     derived = judge.derive(p, PROTOCOL)
     assert derived["reference"]["W1_amount_S_ecs_1"] == pytest.approx(5.0, abs=0.01)
+
+
+def test_the_records_are_read_across_the_event_whichever_side_a_record_at_it_shows():
+    p = parts()
+    p["W1_rung_1ms"] = rung("W1", 1e-3, right=True)
+    p["W2_rung_1ms"] = rung("W2", 1e-3, right=True)
+    assert failed(p) == []
+    p["W3_rk4"]["record_s"] = p["W3_rk4"]["record_s"][:-1] + [0.0061]
+    assert failed(p) == ["J5_K_reference"]  # K's record times must be W3's own.
 
 
 def test_undefined_values_fail_through_none():

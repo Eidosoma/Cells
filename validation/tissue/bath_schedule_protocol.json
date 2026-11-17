@@ -137,8 +137,8 @@
   "J2_orders": "the dt study's orders on the three finest rungs, for W1's two node amounts and W2's V_m and cytosol K, by FR-4's classes rule (resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails)",
   "J3_state_error": "at the declared 1 ms, the Richardson-estimated error of W1's node amounts within B1's budget and of W2's V_m within B2's",
   "J4_reference": "W1 against R-faces within B1's budget, and W2 against R-ion within B2's, at every record at the declared 1 ms; row 0 equal at rounding; each reference's floor reported",
-  "J5_ledgers": "W3 under RK4: the energy ledger within its absolute 2e-8 pJ bound at every row before, at and after the event, with the largest ratio of each segment reported; the reservoir-work ledger, with the operator's term, within its bound at every row. W1 and W2 under ARS: the energy residual over the integrated flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, at every record, falling at second order down the ladder (the classes, no upper edge)",
-  "J6_records": "at every event of W1, W2 and W3: the dose record within its ledger's tolerance of the held content less the declared content and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records; the compensation-charge record at rounding of zero; the electrode and global-charge ledgers within their bounds at every row",
+  "J5_ledgers": "W3 under RK4: the energy ledger within its absolute 2e-8 pJ bound at every row before, at and after the event, with the largest ratio of each segment reported; the reservoir-work ledger, with the operator's term, within its bound at every row, and that term K equal to R-records' K from W3's supply series within the same bound. W1 and W2 under ARS: the energy residual over the integrated flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, at every record, falling at second order down the ladder (the classes, no upper edge)",
+  "J6_records": "at every event of W1, W2 and W3, read across the event from the last record before it to the first after it (the engine's record at t_e shows the bath before the event, which applies at the start of the step that starts at t_e): the dose record within its ledger's tolerance of the held content less the declared content and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records; the compensation-charge record at rounding of zero; the electrode and global-charge ledgers within their bounds at every row",
   "J7_idle": "W4: every state field, observation and diagnostic of the world with the operator and no event bitwise equal to the world without it, at every record",
   "J8_restart_batch": "W5: each restarted run bitwise equal to the straight run at every record after its restart, the event at the restart time applied once; each batched world bitwise equal to its run alone",
   "J9_refusals": "each refusal class's representative refused at the definition with the reason of its own check (refusal_classes), recorded from the refusal; each admitted neighbour admitted and run",
@@ -396,6 +396,22 @@
     "R12_beyond_the_explicit_bound": "@3's explicit-rate bound",
     "R13_not_a_held_bath": "the held-bath rule"
    },
+   "compensation_parts": [
+    "W1_rung_1ms",
+    "W1_rung_0p5ms",
+    "W1_rung_0p25ms",
+    "W1_rung_0p125ms",
+    "W1_control",
+    "W2_rung_1ms",
+    "W2_rung_0p5ms",
+    "W2_rung_0p25ms",
+    "W2_rung_0p125ms",
+    "W2_control",
+    "W3_rk4",
+    "W6_water",
+    "W7_staircase_ars",
+    "W7_staircase_rk4"
+   ],
    "W6_part": "W6_water",
    "W7_parts": [
     "W7_staircase_ars",
@@ -549,6 +565,26 @@
     "comparison": "le",
     "threshold": 1,
     "basis": "the operator's own ledgers (the dose against the held content, the free-energy record against its endpoints, neutrality) within their bounds at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "J5_K_reference",
+    "metrics": [
+     "derived.K_reference.max_over_bound"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3: the operator's reconciliation term K equal to R-records' K from W3's supply series within the reservoir-work ledger's bound at every record",
+    "judged": true
+   },
+   {
+    "id": "J6_compensation",
+    "metrics": [
+     "derived.compensation.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the compensation-charge record at rounding of zero at every record of every engine part: within (n + 2) eps F times the dose's charge magnitude so far",
     "judged": true
    },
    {

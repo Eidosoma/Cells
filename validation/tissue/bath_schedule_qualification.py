@@ -272,6 +272,12 @@ def records_of(result):
             add("reservoir_work_pJ", np.asarray(balances["reservoir_work"])[b])
             add("reservoir_work_bound_pJ", (np.asarray(bounds[r]) * np.ones(len(outside)))[b])
             add("reservoir_work_own_pJ", np.asarray(own["reservoir_work"])[b])
+            # K, the operator's reconciliation term: its ledger term takes K from @3's balance.
+            add("bath_reconciliation_pJ", np.asarray(own["reservoir_work"])[b]
+                - np.asarray(balances["reservoir_work"])[b])
+            supplied = np.asarray(model.inner.inner_state(row).reservoir_supplied)
+            for s_, sid in enumerate(species):
+                add(f"supplied_{sid}_fmol", supplied[s_, b])  # @3's cumulative supply S_s.
             for s_, sid in enumerate(species):
                 add(f"bath_held_{sid}_fmol", np.asarray(obs.bath_held_amount_fmol)[j, s_, b])
                 add(f"bath_dose_{sid}_fmol", np.asarray(obs.bath_dose_fmol)[j, s_, b])
@@ -280,7 +286,8 @@ def records_of(result):
     return dict(record_s=[float(t) for t in obs_times], series=series,
                 ledgers=sorted(names), diagnostics=dict(result.diagnostics),
                 bath=outside[baths[0]] if baths else None, species=species, cells=cells,
-                outside=outside, patches=patches)
+                outside=outside, patches=patches,
+                valences=dict(zip(species, (int(v) for v in m.cells[0].valence), strict=True)))
 
 
 def engine_part(raw, context, *, label=None):
