@@ -11,10 +11,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.processes import physiological_noise as _noise
+from validation.betse import physiological_noise as _noise
 
 globals().update({k: v for k, v in vars(_noise).items() if not k.startswith("__")})
-from cells.processes.physiological_noise import (  # noqa: E402
+from validation.betse.physiological_noise import (  # noqa: E402
     _hash,
     _number,
     _uint,

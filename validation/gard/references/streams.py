@@ -153,3 +153,60 @@ def check_branch_independence(branches: list[dict], identities: list, prefix: in
     return CheckResult("branch_independence", bool(distinct_ids and not repeats), dict(
         branches=n, distinct_identities=distinct_ids, prefix=prefix, repeated_pairs=repeats[:10],
         partition_stream_compared=partition_compared))
+
+
+EVENT_ARRAYS_ALL = ("event_time", "event_channel", "event_uniforms")
+FISSION_ARRAYS_ALL = ("fission_time", "fission_slot", "fission_parent", "fission_daughters", "fission_followed",
+                      "fission_split", "fission_similarity", "fission_partition_counter")
+ROW_STATE_ARRAYS = ("row_time", "row_event", "assembly_count", "joined_total", "left_total", "discarded_total",
+                    "exchange_heat_kT", "fission_work_kT", "discarded_free_energy_kT", "log_weight",
+                    "ledger_residual_kT", "occupant", "generation")
+
+
+def check_restart_case(U: dict, S: dict, C: dict, stop_event: int, name: str) -> CheckResult:
+    """A run stopped at ``stop_event`` and continued from its checkpoint, against the
+    uninterrupted run, bitwise.
+
+    The row base of each run is: start, (parent, daughter) per fission, end.
+    - The stopped run's events are the uninterrupted run's first ``stop_event``; the
+      continued run's events are the rest.
+    - Fission tables split the same way.
+    - The stopped run's start and fission rows are the uninterrupted run's leading rows.
+    - The continued run's fission rows and end row are its trailing rows.
+    - The continued run's start row is the stopped run's end row.
+    """
+    differ = []
+    def same(a, b):
+        return _bitwise_equal(np.asarray(a), np.asarray(b))
+    for n in EVENT_ARRAYS_ALL:
+        if n in U:
+            if n not in S or n not in C:
+                differ.append(f"{n}: absent from the stopped or continued run")
+                continue
+            if not (same(S[n], np.asarray(U[n])[:stop_event]) and same(C[n], np.asarray(U[n])[stop_event:])):
+                differ.append(n)
+    Fs = int(np.asarray(S["fission_split"]).shape[0])
+    Fc = int(np.asarray(C["fission_split"]).shape[0])
+    if Fs + Fc != int(np.asarray(U["fission_split"]).shape[0]):
+        differ.append(f"fissions: {Fs} + {Fc} != {np.asarray(U['fission_split']).shape[0]}")
+    else:
+        for n in FISSION_ARRAYS_ALL:
+            if n in U and not (same(S[n], np.asarray(U[n])[:Fs]) and same(C[n], np.asarray(U[n])[Fs:])):
+                differ.append(n)
+    for n in ROW_STATE_ARRAYS:
+        if n not in U:
+            continue
+        u, s_, c = np.asarray(U[n]), np.asarray(S[n]), np.asarray(C[n])
+        lead = 1 + 2 * Fs
+        if not same(s_[:lead], u[:lead]):
+            differ.append(f"{n}: stopped rows")
+        if not same(c[1:], u[lead:]):
+            differ.append(f"{n}: continued rows")
+        if not same(c[0], s_[-1]):
+            differ.append(f"{n}: continued start differs from the stopped end")
+    eu, es, ec = (np.asarray(x["events_per_growth"]) for x in (U, S, C))
+    joined = np.concatenate([es[:-1], [es[-1] + ec[0]], ec[1:]]) if es.size and ec.size else np.concatenate([es, ec])
+    if not same(joined, eu):
+        differ.append("events_per_growth")
+    return CheckResult(name, not differ, dict(stop_event=int(stop_event), fissions_before=Fs, fissions_after=Fc,
+                                              differ=differ))

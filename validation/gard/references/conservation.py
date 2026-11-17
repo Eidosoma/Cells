@@ -36,8 +36,16 @@ def followed_and_unfollowed(P: np.ndarray, split: np.ndarray, followed: int) -> 
     return (d1, d2) if int(followed) == 0 else (d2, d1)
 
 
+def row_layout(R: int, F: int, end_row: bool) -> tuple[np.ndarray, np.ndarray, int | None]:
+    """Parent and daughter rows of the row base: start, (parent, daughter) per fission, and an
+    optional final end row."""
+    parents = 1 + 2 * np.arange(F)
+    return parents, parents + 1, (R - 1 if end_row else None)
+
+
 def check_conservation(founder, count, joined, left, discarded, fission_split, fission_followed,
-                       event_channel=None, events_per_growth=None, row_event=None) -> CheckResult:
+                       event_channel=None, events_per_growth=None, row_event=None,
+                       end_row: bool = False) -> CheckResult:
     founder = np.asarray(founder, dtype=np.int64)
     count = np.asarray(count)
     R, G, A = count.shape
@@ -45,10 +53,11 @@ def check_conservation(founder, count, joined, left, discarded, fission_split, f
     problems: list[str] = []
     if A != 1:
         problems.append(f"{A} assembly slots; only single-lineage mode (one slot) is covered")
-    if R != 1 + 2 * F:
-        problems.append(f"{R} rows for {F} fissions; the layout needs 1 + 2F = {1 + 2 * F}")
+    if R != 1 + 2 * F + int(end_row):
+        problems.append(f"{R} rows for {F} fissions; the layout needs 1 + 2F{' + 1' if end_row else ''}")
     if problems:
         return CheckResult("conservation", False, dict(problems=problems))
+    parent_rows, daughter_rows, last = row_layout(R, F, end_row)
     c = count[:, :, 0].astype(np.int64)
     j = np.asarray(joined)[:, :, 0].astype(np.int64)
     lv = np.asarray(left)[:, :, 0].astype(np.int64)
@@ -60,7 +69,7 @@ def check_conservation(founder, count, joined, left, discarded, fission_split, f
     nonneg = bool(np.all(c >= 0) and np.all(j >= 0) and np.all(lv >= 0) and np.all(dc >= 0))
     fission_bad = []
     for f in range(F):
-        pr, dr = 1 + 2 * f, 2 + 2 * f
+        pr, dr = int(parent_rows[f]), int(daughter_rows[f])
         P = c[pr]
         D, U = followed_and_unfollowed(P, np.asarray(fission_split)[f], np.asarray(fission_followed)[f])
         if np.any(D < 0) or np.any(U < 0) or not np.array_equal(c[dr], D) \
@@ -71,7 +80,8 @@ def check_conservation(founder, count, joined, left, discarded, fission_split, f
     if event_channel is not None:
         trace = _check_trace(founder, c, j, lv, np.asarray(event_channel, dtype=np.int64),
                              None if events_per_growth is None else np.asarray(events_per_growth, dtype=np.int64),
-                             None if row_event is None else np.asarray(row_event, dtype=np.int64), F)
+                             None if row_event is None else np.asarray(row_event, dtype=np.int64), F,
+                             parent_rows, daughter_rows, last)
     passed = bool(bad_rows.size == 0 and monotone and nonneg and not fission_bad
                   and (trace is None or trace["ok"]))
     return CheckResult("conservation", passed, dict(
@@ -81,7 +91,10 @@ def check_conservation(founder, count, joined, left, discarded, fission_split, f
         trace=trace))
 
 
-def _check_trace(founder, c, j, lv, chan, epg, row_event, F) -> dict:
+def _check_trace(founder, c, j, lv, chan, epg, row_event, F, parent_rows=None, daughter_rows=None,
+                 end_row=None) -> dict:
+    if parent_rows is None:
+        parent_rows, daughter_rows, _ = row_layout(c.shape[0], F, False)
     G = founder.size
     E = chan.size
     types = np.abs(chan) - 1
@@ -109,11 +122,16 @@ def _check_trace(founder, c, j, lv, chan, epg, row_event, F) -> dict:
         for f in range(F):
             seg = chan[start:ends[f]]
             np.add.at(x, np.abs(seg) - 1, np.sign(seg))
-            if not np.array_equal(x, c[1 + 2 * f]):
+            if not np.array_equal(x, c[parent_rows[f]]):
                 growth_ok = False
                 break
-            x = c[2 + 2 * f].copy()
+            x = c[daughter_rows[f]].copy()
             start = ends[f]
         out["growths_end_at_parents"] = growth_ok
         out["ok"] &= growth_ok
+        if end_row is not None and growth_ok:
+            seg = chan[start:]
+            np.add.at(x, np.abs(seg) - 1, np.sign(seg))
+            out["final_growth_reaches_end_row"] = bool(np.array_equal(x, c[end_row]))
+            out["ok"] &= out["final_growth_reaches_end_row"]
     return out

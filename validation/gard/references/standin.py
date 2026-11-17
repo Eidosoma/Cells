@@ -18,6 +18,7 @@ from . import closed_world, detailed_balance, exchange_law, fission_partition, o
 from .harness import CLOSED_WORLD_CONFIGS, probe_input_arrays
 from .kernels import (EXTINCTION_UNCATALYSED, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
                       gard_beta, gard_founder)
+from .records import ENGINE_BOUNDARY_BY_FORM
 from .lineage_oracle import DOMAIN_PARTITION, _split, simulate_lineage, stream_uniforms
 from .records import write_bundle
 
@@ -30,7 +31,7 @@ def preprint_law(seed: int, form: str, n_types: int = PREPRINT["n_types"],
     mass = min(PREPRINT["founder_mass"], n_types) if founder_mass is None else founder_mass
     founder = gard_founder(n_types, mass, rng)
     law = ExchangeLaw(beta, PREPRINT["k_join"], PREPRINT["k_leave"], HeldReservoir(np.full(n_types, PREPRINT["rho"])),
-                      form, EXTINCTION_UNCATALYSED)
+                      form, ENGINE_BOUNDARY_BY_FORM[form])
     return law, founder
 
 
@@ -78,7 +79,7 @@ def build_standin(out_dir: str | Path, *, seed: int = 5, n_fissions: int = 12, e
     out.mkdir(parents=True, exist_ok=False)
     roles: dict = {}
     pc, founder = preprint_law(seed, PAIR_CONSISTENT)
-    se = pc.with_form(SINGLE_EVENT)
+    se = ExchangeLaw(pc.beta, pc.k_join, pc.k_leave, pc.reservoir, SINGLE_EVENT, ENGINE_BOUNDARY_BY_FORM[SINGLE_EVENT])
     w, r, a = simulate_lineage(pc, founder, n_fissions=n_fissions, seed=seed, diagnostics=False)
     roles["lineage"] = str(write_bundle(out / "lineage", w, r, a))
     w2, r2, a2 = simulate_lineage(se, founder, n_fissions=n_fissions, seed=seed, diagnostics=False, world=w)
@@ -111,7 +112,7 @@ def build_standin(out_dir: str | Path, *, seed: int = 5, n_fissions: int = 12, e
     verdicts = {}
     for form in (PAIR_CONSISTENT, SINGLE_EVENT):
         law = ExchangeLaw(kin["beta"], kin["k_join"], kin["k_leave"], HeldReservoir(kin["rho"]), form,
-                          EXTINCTION_UNCATALYSED)
+                          ENGINE_BOUNDARY_BY_FORM[form])
         t = detailed_balance.kernel_table(law, kin["states"])
         tag = form.replace("-", "_")
         kp.update({f"join_{tag}": t["join"], f"leave_{tag}": t["leave"], f"leave_up_{tag}": t["leave_up"]})
@@ -119,13 +120,13 @@ def build_standin(out_dir: str | Path, *, seed: int = 5, n_fissions: int = 12, e
                                                                                t["affinity"]))))
         verdicts[form] = detailed_balance.classify(r_max)
     roles["kernel_probe"] = str(write_probe(out / "kernel_probe", {"check_verdict": verdicts,
-                                                                   "boundary": EXTINCTION_UNCATALYSED}, kp))
+                                                                   "boundary": dict(ENGINE_BOUNDARY_BY_FORM)}, kp))
     cw: dict = {}
     for cfg in CLOSED_WORLD_CONFIGS:
         cin = inputs[f"closed_world_{cfg['name']}_inputs"]
         for form in (PAIR_CONSISTENT, SINGLE_EVENT):
             law = ExchangeLaw(cin["beta"], cin["k_join"], cin["k_leave"], HeldReservoir(cin["rho"]), form,
-                              EXTINCTION_UNCATALYSED)
+                              ENGINE_BOUNDARY_BY_FORM[form])
             tag = f"{cfg['name']}_{form.replace('-', '_')}"
             j = np.zeros(cin["states"].shape)
             lv = np.zeros(cin["states"].shape)

@@ -143,3 +143,23 @@ def test_held_measure_is_normalisable_only_below_one():
         assert math.isclose(sum(s ** N / N for N in range(1, 4000)), -math.log(1 - s), rel_tol=1e-12)
     partial = [sum(1.0 / N for N in range(1, n)) for n in (10, 1000, 100000)]
     assert partial[2] > partial[1] > partial[0] + 4  # s = 1 diverges (harmonic series)
+
+
+def test_single_event_last_leave_is_catalysed_and_an_uncatalysed_one_fails_row_3(kernel_inputs):
+    """Amendment of 17 November 2026: the single-event form counts the leaving molecule."""
+    from validation.gard.references.kernels import EXTINCTION, EXTINCTION_UNCATALYSED
+    states = kernel_inputs["states"]
+    mass_one = np.flatnonzero(states.sum(axis=1) == 1)
+    assert mass_one.size >= 1
+    law = ExchangeLaw(kernel_inputs["beta"], kernel_inputs["k_join"], kernel_inputs["k_leave"],
+                      HeldReservoir(kernel_inputs["rho"]), SINGLE_EVENT, EXTINCTION)
+    x = states[mass_one[0]]
+    i = int(np.flatnonzero(x)[0])
+    assert np.isclose(propensities(law, x)[1][i], kernel_inputs["k_leave"][i] * (1 + kernel_inputs["beta"][i, i]),
+                      rtol=1e-15)
+    good = db.kernel_table(law, states)
+    assert db.check_local_detailed_balance(law, states, good, declared_verdict=db.REFUSED).passed
+    # planted: a single-event kernel that leaves the last molecule uncatalysed
+    wrong = ExchangeLaw(law.beta, law.k_join, law.k_leave, law.reservoir, SINGLE_EVENT, EXTINCTION_UNCATALYSED)
+    bad = db.check_local_detailed_balance(law, states, db.kernel_table(wrong, states), declared_verdict=db.REFUSED)
+    assert not bad.passed and not bad.detail["propensities_match_form"]
