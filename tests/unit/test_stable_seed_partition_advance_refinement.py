@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from cells.processes import stable_seed_partition_advance as first
-from cells.processes import stable_seed_partition_advance_refinement as common
+from cells.legacy.processes import stable_seed_partition_advance as first
+from cells.legacy.processes import stable_seed_partition_advance_refinement as common
 from validation.geometry import (
     stable_seed_partition_advance_refinement_declarations as declarations,
 )
@@ -50,10 +50,10 @@ def request_from_qualified_index(case, *, budget_control=None):
         acceptance,
     )
     common.gate(authority)
-    from cells.core import finite_ecm_polygon_preparation as physical
-    from cells.processes import finite_ecm_polygon_geometry as finite
-    from cells.processes import stable_seed_explicit_ecm_partition as constructor
-    from cells.processes import stable_seed_partition_physiology_bridge as initial
+    from cells.legacy.core import finite_ecm_polygon_preparation as physical
+    from cells.legacy.processes import finite_ecm_polygon_geometry as finite
+    from cells.legacy.processes import stable_seed_explicit_ecm_partition as constructor
+    from cells.legacy.processes import stable_seed_partition_physiology_bridge as initial
 
     ids = declarations.comparison_ids(case) if budget_control is None else (budget_control,)
     arms = []

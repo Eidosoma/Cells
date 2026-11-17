@@ -10,7 +10,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import environment_barrier_interventions_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
@@ -18,7 +17,8 @@ from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
 from cells.ensemble.ionic import parse_spec as parse_worlds
 from cells.io import load_snapshot, write_snapshot
-from cells.models import environment_barrier_interventions as model
+from cells.legacy.core import environment_barrier_interventions_spec as schema
+from cells.legacy.models import environment_barrier_interventions as model
 from cells.models import surface_tissue as parent
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
@@ -263,7 +263,7 @@ def zero_barrier_definition():
     raw = deepcopy(definition("reseal"))
     # A zero site modulator is an actually sealed species boundary; opening
     # cannot bypass it. Use a zero native tight factor to allow true reopening.
-    from cells.core import environment_barrier_preparation as preparation
+    from cells.legacy.core import environment_barrier_preparation as preparation
 
     request = deepcopy(raw["model"]["barrier_preparation"]["provenance"]["request"])
     request["tight_factor"] = 0.0

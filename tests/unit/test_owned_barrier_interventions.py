@@ -10,25 +10,36 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import environment_barrier_composition_preparation as bridge
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
+from cells.legacy.core import environment_barrier_composition_preparation as bridge
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from validation.transport import owned_barrier_interventions_fixtures as fixtures
 from validation.transport import owned_barrier_interventions_reference as reference
 
-MODULES = dict(ionic="active", calcium="calcium", energy="calcium_energy")
+# Each family's definition and model modules, named in full (D188 R2).
+MODULES = {
+    "ionic": (
+        "cells.legacy.core.surface_active_barrier_interventions_spec",
+        "cells.legacy.models.surface_active_barrier_interventions",
+    ),
+    "calcium": (
+        "cells.legacy.core.surface_calcium_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_barrier_interventions",
+    ),
+    "energy": (
+        "cells.legacy.core.surface_calcium_energy_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_barrier_interventions",
+    ),
+}
 
 
 def modules(family):
-    name = "surface_" + MODULES[family] + "_barrier_interventions"
-    return (
-        importlib.import_module("cells.core." + name + "_spec"),
-        importlib.import_module("cells.models." + name),
-    )
+    spec, model = MODULES[family]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def evidence(name, record, arrays=None):

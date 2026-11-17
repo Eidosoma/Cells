@@ -17,14 +17,14 @@ from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import parse_batch, run_batch
 from cells.core.batch_windows import run_batch_windowed
 from cells.core.devices import execution_device
-from cells.core.er_spec import chemistry_spec
 from cells.core.errors import NumericalError
 from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, run_windowed
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import er_calcium as model
+from cells.legacy.core.er_spec import chemistry_spec
+from cells.legacy.models import er_calcium as model
 from cells.processes import er_calcium as process
 from tests.batch_fixtures import definition
 from tests.reference_er_calcium import NATIVE_HASHES, F, R, System, native_functions, reference

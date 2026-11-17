@@ -298,5 +298,5 @@ phase lifecycle motivates the reset policy, while Cells evaluates membrane
 pulses at RK stages; full native solver-loop equivalence remains separate.
 The [passive component contract](../agent-work/cells-worker-01/workfiles/MEMBRANE_PROFILE_PHASE_HANDOFF.md)
 describes the original transition rules. The
-[active adapter](../src/cells/core/active_membrane_profile_phase_handoff.py)
+[active adapter](../src/cells/legacy/core/active_membrane_profile_phase_handoff.py)
 applies these rules to the complete active state and its four control families.

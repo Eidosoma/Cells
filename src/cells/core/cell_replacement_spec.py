@@ -58,10 +58,8 @@ from typing import NamedTuple
 import numpy as np
 
 from cells.core import surface_pump_v3_spec as ionic
-from cells.core.bioelectric_spec import positive, signed_number
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import fraction, identifier, positive, signed_number
 from cells.core.specs import ConfigError, _fields, _integer, _number
-from cells.core.voltage_gated_spec import fraction
 from cells.processes.junction_formation import LAW_ID as FORMATION_LAW_ID
 
 MODEL_ID = "resolved_pump_replacement@1"

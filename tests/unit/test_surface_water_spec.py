@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 from cells.core import surface_tissue_spec as prior
-from cells.core import surface_water_spec as water
 from cells.core.specs import ConfigError, SpatialExtracellularExecutionSpec
+from cells.legacy.core import surface_water_spec as water
 from validation.tissue import surface_dynamics_fixtures
 
 CONFIG = Path(__file__).resolve().parents[2] / "configs" / "resolved_water_tissue.json"

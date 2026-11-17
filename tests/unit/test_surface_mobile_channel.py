@@ -19,11 +19,11 @@ from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot
-from cells.models import surface_mobile_channel as model
-from cells.models import surface_mobile_pump as prior
+from cells.legacy.models import surface_mobile_channel as model
+from cells.legacy.models import surface_mobile_pump as prior
+from cells.legacy.processes import mobile_channel_gates as gates
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.processes import mobile_channel_gates as gates
 from cells.processes import voltage_gates
 from cells.processes.electrochemistry import R
 from validation.tissue import kv1_reference
@@ -237,7 +237,7 @@ def test_current_joint_distribution_changes_opening_at_fixed_gate_marginals():
 
 
 def test_empty_blocked_and_zero_permeability_reduce_to_pump_model():
-    from cells.core.surface_mobile_pump_spec import Control
+    from cells.legacy.core.surface_mobile_pump_spec import Control
 
     for arm in ("empty", "blocked", "zero_permeability"):
         _, state, p, c = initial(fixtures.definition(arm))

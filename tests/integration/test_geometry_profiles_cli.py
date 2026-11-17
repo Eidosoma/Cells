@@ -8,10 +8,10 @@ import numpy as np
 import pytest
 
 from cells.__main__ import main
-from cells.core import geometry_profile_preparation as geometric
 from cells.core.specs import digest, parse_spec
+from cells.legacy.core import geometry_profile_preparation as geometric
+from cells.legacy.tissue_profiles import prepare_request, read_preparation
 from cells.models.registry import get_model
-from cells.tissue_profiles import prepare_request, read_preparation
 from tests.integration.test_cli import cli
 from tests.integration.test_tissue_profiles_cli import request as direct_request
 from tests.integration.test_tissue_profiles_composed_cli import request as composed_request

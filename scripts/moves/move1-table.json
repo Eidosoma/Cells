@@ -1,0 +1,2798 @@
+{
+ "kind": "cells.source_moves.path_table@1",
+ "move": "d188-move-1",
+ "rows": [
+  {
+   "old": "src/cells/assembly_cell/__init__.py",
+   "new": "src/cells/legacy/assembly_cell/__init__.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell",
+   "new_module": "cells.legacy.assembly_cell"
+  },
+  {
+   "old": "src/cells/assembly_cell/__main__.py",
+   "new": "src/cells/legacy/assembly_cell/__main__.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.__main__",
+   "new_module": "cells.legacy.assembly_cell.__main__"
+  },
+  {
+   "old": "src/cells/assembly_cell/cli.py",
+   "new": "src/cells/legacy/assembly_cell/cli.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.cli",
+   "new_module": "cells.legacy.assembly_cell.cli"
+  },
+  {
+   "old": "src/cells/assembly_cell/engine.py",
+   "new": "src/cells/legacy/assembly_cell/engine.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.engine",
+   "new_module": "cells.legacy.assembly_cell.engine"
+  },
+  {
+   "old": "src/cells/assembly_cell/io.py",
+   "new": "src/cells/legacy/assembly_cell/io.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.io",
+   "new_module": "cells.legacy.assembly_cell.io"
+  },
+  {
+   "old": "src/cells/assembly_cell/kernel.py",
+   "new": "src/cells/legacy/assembly_cell/kernel.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.kernel",
+   "new_module": "cells.legacy.assembly_cell.kernel"
+  },
+  {
+   "old": "src/cells/assembly_cell/spec.py",
+   "new": "src/cells/legacy/assembly_cell/spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cell.spec",
+   "new_module": "cells.legacy.assembly_cell.spec"
+  },
+  {
+   "old": "src/cells/assembly_cluster/__init__.py",
+   "new": "src/cells/legacy/assembly_cluster/__init__.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster",
+   "new_module": "cells.legacy.assembly_cluster"
+  },
+  {
+   "old": "src/cells/assembly_cluster/__main__.py",
+   "new": "src/cells/legacy/assembly_cluster/__main__.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.__main__",
+   "new_module": "cells.legacy.assembly_cluster.__main__"
+  },
+  {
+   "old": "src/cells/assembly_cluster/cli.py",
+   "new": "src/cells/legacy/assembly_cluster/cli.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.cli",
+   "new_module": "cells.legacy.assembly_cluster.cli"
+  },
+  {
+   "old": "src/cells/assembly_cluster/controls.py",
+   "new": "src/cells/legacy/assembly_cluster/controls.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.controls",
+   "new_module": "cells.legacy.assembly_cluster.controls"
+  },
+  {
+   "old": "src/cells/assembly_cluster/engine.py",
+   "new": "src/cells/legacy/assembly_cluster/engine.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.engine",
+   "new_module": "cells.legacy.assembly_cluster.engine"
+  },
+  {
+   "old": "src/cells/assembly_cluster/finite_energy.py",
+   "new": "src/cells/legacy/assembly_cluster/finite_energy.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.finite_energy",
+   "new_module": "cells.legacy.assembly_cluster.finite_energy"
+  },
+  {
+   "old": "src/cells/assembly_cluster/kernel.py",
+   "new": "src/cells/legacy/assembly_cluster/kernel.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.kernel",
+   "new_module": "cells.legacy.assembly_cluster.kernel"
+  },
+  {
+   "old": "src/cells/assembly_cluster/mitochondria.py",
+   "new": "src/cells/legacy/assembly_cluster/mitochondria.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.mitochondria",
+   "new_module": "cells.legacy.assembly_cluster.mitochondria"
+  },
+  {
+   "old": "src/cells/assembly_cluster/mobile_channels.py",
+   "new": "src/cells/legacy/assembly_cluster/mobile_channels.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.mobile_channels",
+   "new_module": "cells.legacy.assembly_cluster.mobile_channels"
+  },
+  {
+   "old": "src/cells/assembly_cluster/mobile_pumps.py",
+   "new": "src/cells/legacy/assembly_cluster/mobile_pumps.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.mobile_pumps",
+   "new_module": "cells.legacy.assembly_cluster.mobile_pumps"
+  },
+  {
+   "old": "src/cells/assembly_cluster/network_transport.py",
+   "new": "src/cells/legacy/assembly_cluster/network_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.network_transport",
+   "new_module": "cells.legacy.assembly_cluster.network_transport"
+  },
+  {
+   "old": "src/cells/assembly_cluster/spec.py",
+   "new": "src/cells/legacy/assembly_cluster/spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.assembly_cluster.spec",
+   "new_module": "cells.legacy.assembly_cluster.spec"
+  },
+  {
+   "old": "src/cells/core/active_ecm_polygon_preparation.py",
+   "new": "src/cells/legacy/core/active_ecm_polygon_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_ecm_polygon_preparation",
+   "new_module": "cells.legacy.core.active_ecm_polygon_preparation"
+  },
+  {
+   "old": "src/cells/core/active_membrane_profile_phase_handoff.py",
+   "new": "src/cells/legacy/core/active_membrane_profile_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_membrane_profile_phase_handoff",
+   "new_module": "cells.legacy.core.active_membrane_profile_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/active_polygon_physiology_preparation.py",
+   "new": "src/cells/legacy/core/active_polygon_physiology_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_polygon_physiology_preparation",
+   "new_module": "cells.legacy.core.active_polygon_physiology_preparation"
+  },
+  {
+   "old": "src/cells/core/active_profile_barrier_phase_handoff.py",
+   "new": "src/cells/legacy/core/active_profile_barrier_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_profile_barrier_phase_handoff",
+   "new_module": "cells.legacy.core.active_profile_barrier_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/active_profile_barrier_preparation.py",
+   "new": "src/cells/legacy/core/active_profile_barrier_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_profile_barrier_preparation",
+   "new_module": "cells.legacy.core.active_profile_barrier_preparation"
+  },
+  {
+   "old": "src/cells/core/active_tissue_excision.py",
+   "new": "src/cells/legacy/core/active_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.active_tissue_excision",
+   "new_module": "cells.legacy.core.active_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/bioelectric_pair_spec.py",
+   "new": "src/cells/legacy/core/bioelectric_pair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.bioelectric_pair_spec",
+   "new_module": "cells.legacy.core.bioelectric_pair_spec"
+  },
+  {
+   "old": "src/cells/core/bioelectric_spec.py",
+   "new": "src/cells/legacy/core/bioelectric_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.bioelectric_spec",
+   "new_module": "cells.legacy.core.bioelectric_spec"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_atp_transport_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_atp_transport_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_atp_transport_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_atp_transport_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_irreversible_transport_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_irreversible_transport_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_irreversible_transport_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_irreversible_transport_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_mitochondria_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_mitochondria_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_mitochondria_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_mitochondria_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_regulated_v2_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_regulated_v2_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_regulated_v2_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_regulated_v2_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_transport_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_transport_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_transport_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_transport_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_energy_water_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_energy_water_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_energy_water_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_energy_water_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/calcium_tissue_excision.py",
+   "new": "src/cells/legacy/core/calcium_tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.calcium_tissue_excision",
+   "new_module": "cells.legacy.core.calcium_tissue_excision"
+  },
+  {
+   "old": "src/cells/core/conservative_polygon_tissue_preparation.py",
+   "new": "src/cells/legacy/core/conservative_polygon_tissue_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.conservative_polygon_tissue_preparation",
+   "new_module": "cells.legacy.core.conservative_polygon_tissue_preparation"
+  },
+  {
+   "old": "src/cells/core/environment_barrier_composition_preparation.py",
+   "new": "src/cells/legacy/core/environment_barrier_composition_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.environment_barrier_composition_preparation",
+   "new_module": "cells.legacy.core.environment_barrier_composition_preparation"
+  },
+  {
+   "old": "src/cells/core/environment_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/environment_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.environment_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.environment_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/environment_barrier_preparation.py",
+   "new": "src/cells/legacy/core/environment_barrier_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.environment_barrier_preparation",
+   "new_module": "cells.legacy.core.environment_barrier_preparation"
+  },
+  {
+   "old": "src/cells/core/er_spec.py",
+   "new": "src/cells/legacy/core/er_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.er_spec",
+   "new_module": "cells.legacy.core.er_spec"
+  },
+  {
+   "old": "src/cells/core/excision.py",
+   "new": "src/cells/legacy/core/excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.excision",
+   "new_module": "cells.legacy.core.excision"
+  },
+  {
+   "old": "src/cells/core/finite_ecm_polygon_preparation.py",
+   "new": "src/cells/legacy/core/finite_ecm_polygon_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.finite_ecm_polygon_preparation",
+   "new_module": "cells.legacy.core.finite_ecm_polygon_preparation"
+  },
+  {
+   "old": "src/cells/core/finite_extracellular_spec.py",
+   "new": "src/cells/legacy/core/finite_extracellular_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.finite_extracellular_spec",
+   "new_module": "cells.legacy.core.finite_extracellular_spec"
+  },
+  {
+   "old": "src/cells/core/gated_calcium_spec.py",
+   "new": "src/cells/legacy/core/gated_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.gated_calcium_spec",
+   "new_module": "cells.legacy.core.gated_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/geometry_profile_preparation.py",
+   "new": "src/cells/legacy/core/geometry_profile_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.geometry_profile_preparation",
+   "new_module": "cells.legacy.core.geometry_profile_preparation"
+  },
+  {
+   "old": "src/cells/core/geometry_tissue_preparation.py",
+   "new": "src/cells/legacy/core/geometry_tissue_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.geometry_tissue_preparation",
+   "new_module": "cells.legacy.core.geometry_tissue_preparation"
+  },
+  {
+   "old": "src/cells/core/ip3_calcium_spec.py",
+   "new": "src/cells/legacy/core/ip3_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.ip3_calcium_spec",
+   "new_module": "cells.legacy.core.ip3_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/joint_water_barrier_phase_handoff.py",
+   "new": "src/cells/legacy/core/joint_water_barrier_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_barrier_phase_handoff",
+   "new_module": "cells.legacy.core.joint_water_barrier_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/joint_water_profile_barrier_binding.py",
+   "new": "src/cells/legacy/core/joint_water_profile_barrier_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_profile_barrier_binding",
+   "new_module": "cells.legacy.core.joint_water_profile_barrier_binding"
+  },
+  {
+   "old": "src/cells/core/joint_water_profile_barrier_phase_handoff.py",
+   "new": "src/cells/legacy/core/joint_water_profile_barrier_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_profile_barrier_phase_handoff",
+   "new_module": "cells.legacy.core.joint_water_profile_barrier_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/joint_water_profile_barrier_preparation.py",
+   "new": "src/cells/legacy/core/joint_water_profile_barrier_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_profile_barrier_preparation",
+   "new_module": "cells.legacy.core.joint_water_profile_barrier_preparation"
+  },
+  {
+   "old": "src/cells/core/joint_water_profile_interventions_binding.py",
+   "new": "src/cells/legacy/core/joint_water_profile_interventions_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_profile_interventions_binding",
+   "new_module": "cells.legacy.core.joint_water_profile_interventions_binding"
+  },
+  {
+   "old": "src/cells/core/joint_water_profile_phase_handoff.py",
+   "new": "src/cells/legacy/core/joint_water_profile_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.joint_water_profile_phase_handoff",
+   "new_module": "cells.legacy.core.joint_water_profile_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/junction_finite_spec.py",
+   "new": "src/cells/legacy/core/junction_finite_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.junction_finite_spec",
+   "new_module": "cells.legacy.core.junction_finite_spec"
+  },
+  {
+   "old": "src/cells/core/kinetic_finite_spec.py",
+   "new": "src/cells/legacy/core/kinetic_finite_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.kinetic_finite_spec",
+   "new_module": "cells.legacy.core.kinetic_finite_spec"
+  },
+  {
+   "old": "src/cells/core/membrane_profile_phase_handoff.py",
+   "new": "src/cells/legacy/core/membrane_profile_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.membrane_profile_phase_handoff",
+   "new_module": "cells.legacy.core.membrane_profile_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/multispecies_spec.py",
+   "new": "src/cells/legacy/core/multispecies_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.multispecies_spec",
+   "new_module": "cells.legacy.core.multispecies_spec"
+  },
+  {
+   "old": "src/cells/core/open_calcium_bath_binding.py",
+   "new": "src/cells/legacy/core/open_calcium_bath_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.open_calcium_bath_binding",
+   "new_module": "cells.legacy.core.open_calcium_bath_binding"
+  },
+  {
+   "old": "src/cells/core/open_calcium_bath_phase_handoff.py",
+   "new": "src/cells/legacy/core/open_calcium_bath_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.open_calcium_bath_phase_handoff",
+   "new_module": "cells.legacy.core.open_calcium_bath_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/open_calcium_declarations.py",
+   "new": "src/cells/legacy/core/open_calcium_declarations.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.open_calcium_declarations",
+   "new_module": "cells.legacy.core.open_calcium_declarations"
+  },
+  {
+   "old": "src/cells/core/owned_barrier_phase_handoff.py",
+   "new": "src/cells/legacy/core/owned_barrier_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_barrier_phase_handoff",
+   "new_module": "cells.legacy.core.owned_barrier_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/owned_calcium_profile_barrier_binding.py",
+   "new": "src/cells/legacy/core/owned_calcium_profile_barrier_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_calcium_profile_barrier_binding",
+   "new_module": "cells.legacy.core.owned_calcium_profile_barrier_binding"
+  },
+  {
+   "old": "src/cells/core/owned_calcium_profile_barrier_phase_handoff.py",
+   "new": "src/cells/legacy/core/owned_calcium_profile_barrier_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_calcium_profile_barrier_phase_handoff",
+   "new_module": "cells.legacy.core.owned_calcium_profile_barrier_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/owned_calcium_profile_barrier_preparation.py",
+   "new": "src/cells/legacy/core/owned_calcium_profile_barrier_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_calcium_profile_barrier_preparation",
+   "new_module": "cells.legacy.core.owned_calcium_profile_barrier_preparation"
+  },
+  {
+   "old": "src/cells/core/owned_calcium_profile_binding.py",
+   "new": "src/cells/legacy/core/owned_calcium_profile_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_calcium_profile_binding",
+   "new_module": "cells.legacy.core.owned_calcium_profile_binding"
+  },
+  {
+   "old": "src/cells/core/owned_calcium_profile_phase_handoff.py",
+   "new": "src/cells/legacy/core/owned_calcium_profile_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.owned_calcium_profile_phase_handoff",
+   "new_module": "cells.legacy.core.owned_calcium_profile_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/physical_ionic_graph_spec.py",
+   "new": "src/cells/legacy/core/physical_ionic_graph_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.physical_ionic_graph_spec",
+   "new_module": "cells.legacy.core.physical_ionic_graph_spec"
+  },
+  {
+   "old": "src/cells/core/plasma_calcium_spec.py",
+   "new": "src/cells/legacy/core/plasma_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.plasma_calcium_spec",
+   "new_module": "cells.legacy.core.plasma_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/reaction_spec.py",
+   "new": "src/cells/legacy/core/reaction_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.reaction_spec",
+   "new_module": "cells.legacy.core.reaction_spec"
+  },
+  {
+   "old": "src/cells/core/source_pair_spec.py",
+   "new": "src/cells/legacy/core/source_pair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.source_pair_spec",
+   "new_module": "cells.legacy.core.source_pair_spec"
+  },
+  {
+   "old": "src/cells/core/spatial_calcium_spec.py",
+   "new": "src/cells/legacy/core/spatial_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.spatial_calcium_spec",
+   "new_module": "cells.legacy.core.spatial_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/spatial_extracellular_spec.py",
+   "new": "src/cells/legacy/core/spatial_extracellular_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.spatial_extracellular_spec",
+   "new_module": "cells.legacy.core.spatial_extracellular_spec"
+  },
+  {
+   "old": "src/cells/core/spatial_junction_spec.py",
+   "new": "src/cells/legacy/core/spatial_junction_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.spatial_junction_spec",
+   "new_module": "cells.legacy.core.spatial_junction_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_active_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_active_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_active_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_active_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_bath_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_active_bath_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_bath_epoch_spec",
+   "new_module": "cells.legacy.core.surface_active_bath_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_bath_events_spec.py",
+   "new": "src/cells/legacy/core/surface_active_bath_events_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_bath_events_spec",
+   "new_module": "cells.legacy.core.surface_active_bath_events_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_active_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_excision_spec",
+   "new_module": "cells.legacy.core.surface_active_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_profile_barrier_binding.py",
+   "new": "src/cells/legacy/core/surface_active_profile_barrier_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_profile_barrier_binding",
+   "new_module": "cells.legacy.core.surface_active_profile_barrier_binding"
+  },
+  {
+   "old": "src/cells/core/surface_active_profile_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_active_profile_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_profile_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_active_profile_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_profile_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_active_profile_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_profile_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_active_profile_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_active_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_active_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_active_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_active_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_active_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_active_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_barrier_interventions_binding.py",
+   "new": "src/cells/legacy/core/surface_barrier_interventions_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_barrier_interventions_binding",
+   "new_module": "cells.legacy.core.surface_barrier_interventions_binding"
+  },
+  {
+   "old": "src/cells/core/surface_bath_events_binding.py",
+   "new": "src/cells/legacy/core/surface_bath_events_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_bath_events_binding",
+   "new_module": "cells.legacy.core.surface_bath_events_binding"
+  },
+  {
+   "old": "src/cells/core/surface_bath_phase_handoff.py",
+   "new": "src/cells/legacy/core/surface_bath_phase_handoff.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_bath_phase_handoff",
+   "new_module": "cells.legacy.core.surface_bath_phase_handoff"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_atp_transport_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_atp_transport_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_atp_transport_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_atp_transport_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_atp_transport_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_atp_transport_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_irreversible_transport_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_irreversible_transport_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_irreversible_transport_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_irreversible_transport_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_irreversible_transport_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_mitochondria_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_mitochondria_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_mitochondria_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_mitochondria_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_mitochondria_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_mitochondria_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_mitochondria_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_mitochondria_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_profile_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_profile_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_profile_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_profile_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_profile_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_regulated_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_regulated_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_regulated_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_regulated_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_regulated_v2_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_regulated_v2_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_regulated_v2_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_regulated_v2_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_regulated_v2_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_regulated_v2_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_regulated_v2_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_transport_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_transport_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_transport_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_transport_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_transport_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_transport_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_transport_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_transport_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_hcn_extra_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_hcn_extra_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_hcn_extra_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_hcn_extra_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_profile_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_profile_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_profile_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_profile_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_hcn_extra_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_hcn_extra_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_hcn_extra_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_profile_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_profile_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_profile_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_repair_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_repair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_repair_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_repair_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_energy_water_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_energy_water_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_energy_water_spec",
+   "new_module": "cells.legacy.core.surface_calcium_energy_water_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_excision_spec",
+   "new_module": "cells.legacy.core.surface_calcium_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_profile_barrier_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_profile_barrier_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_profile_barrier_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_profile_barrier_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_profile_barrier_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_profile_barrier_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_profile_barrier_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_profile_barrier_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_calcium_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_calcium_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_spec",
+   "new_module": "cells.legacy.core.surface_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/surface_calcium_water_spec.py",
+   "new": "src/cells/legacy/core/surface_calcium_water_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_calcium_water_spec",
+   "new_module": "cells.legacy.core.surface_calcium_water_spec"
+  },
+  {
+   "old": "src/cells/core/surface_cotransport_spec.py",
+   "new": "src/cells/legacy/core/surface_cotransport_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_cotransport_spec",
+   "new_module": "cells.legacy.core.surface_cotransport_spec"
+  },
+  {
+   "old": "src/cells/core/surface_cotransport_water_spec.py",
+   "new": "src/cells/legacy/core/surface_cotransport_water_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_cotransport_water_spec",
+   "new_module": "cells.legacy.core.surface_cotransport_water_spec"
+  },
+  {
+   "old": "src/cells/core/surface_energy_spec.py",
+   "new": "src/cells/legacy/core/surface_energy_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_energy_spec",
+   "new_module": "cells.legacy.core.surface_energy_spec"
+  },
+  {
+   "old": "src/cells/core/surface_energy_water_spec.py",
+   "new": "src/cells/legacy/core/surface_energy_water_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_energy_water_spec",
+   "new_module": "cells.legacy.core.surface_energy_water_spec"
+  },
+  {
+   "old": "src/cells/core/surface_excision_spec.py",
+   "new": "src/cells/legacy/core/surface_excision_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_excision_spec",
+   "new_module": "cells.legacy.core.surface_excision_spec"
+  },
+  {
+   "old": "src/cells/core/surface_mobile_channel_spec.py",
+   "new": "src/cells/legacy/core/surface_mobile_channel_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_mobile_channel_spec",
+   "new_module": "cells.legacy.core.surface_mobile_channel_spec"
+  },
+  {
+   "old": "src/cells/core/surface_mobile_pump_repair_spec.py",
+   "new": "src/cells/legacy/core/surface_mobile_pump_repair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_mobile_pump_repair_spec",
+   "new_module": "cells.legacy.core.surface_mobile_pump_repair_spec"
+  },
+  {
+   "old": "src/cells/core/surface_mobile_pump_spec.py",
+   "new": "src/cells/legacy/core/surface_mobile_pump_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_mobile_pump_spec",
+   "new_module": "cells.legacy.core.surface_mobile_pump_spec"
+  },
+  {
+   "old": "src/cells/core/surface_mobile_repair_spec.py",
+   "new": "src/cells/legacy/core/surface_mobile_repair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_mobile_repair_spec",
+   "new_module": "cells.legacy.core.surface_mobile_repair_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_bath_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_bath_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_bath_epoch_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_bath_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_bath_events_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_bath_events_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_bath_events_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_bath_events_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_energy_bath_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_energy_bath_epoch_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_energy_bath_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_energy_bath_events_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_energy_bath_events_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_energy_bath_events_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_energy_bath_events_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_energy_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_energy_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_energy_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_energy_spec"
+  },
+  {
+   "old": "src/cells/core/surface_open_calcium_spec.py",
+   "new": "src/cells/legacy/core/surface_open_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_open_calcium_spec",
+   "new_module": "cells.legacy.core.surface_open_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/surface_passive_bath_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_passive_bath_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_passive_bath_epoch_spec",
+   "new_module": "cells.legacy.core.surface_passive_bath_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_passive_bath_events_spec.py",
+   "new": "src/cells/legacy/core/surface_passive_bath_events_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_passive_bath_events_spec",
+   "new_module": "cells.legacy.core.surface_passive_bath_events_spec"
+  },
+  {
+   "old": "src/cells/core/surface_profile_epoch_spec.py",
+   "new": "src/cells/legacy/core/surface_profile_epoch_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_profile_epoch_spec",
+   "new_module": "cells.legacy.core.surface_profile_epoch_spec"
+  },
+  {
+   "old": "src/cells/core/surface_profile_interventions_spec.py",
+   "new": "src/cells/legacy/core/surface_profile_interventions_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_profile_interventions_spec",
+   "new_module": "cells.legacy.core.surface_profile_interventions_spec"
+  },
+  {
+   "old": "src/cells/core/surface_redistribution_spec.py",
+   "new": "src/cells/legacy/core/surface_redistribution_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_redistribution_spec",
+   "new_module": "cells.legacy.core.surface_redistribution_spec"
+  },
+  {
+   "old": "src/cells/core/surface_repair_spec.py",
+   "new": "src/cells/legacy/core/surface_repair_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_repair_spec",
+   "new_module": "cells.legacy.core.surface_repair_spec"
+  },
+  {
+   "old": "src/cells/core/surface_water_kinetic_spec.py",
+   "new": "src/cells/legacy/core/surface_water_kinetic_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_water_kinetic_spec",
+   "new_module": "cells.legacy.core.surface_water_kinetic_spec"
+  },
+  {
+   "old": "src/cells/core/surface_water_spec.py",
+   "new": "src/cells/legacy/core/surface_water_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.surface_water_spec",
+   "new_module": "cells.legacy.core.surface_water_spec"
+  },
+  {
+   "old": "src/cells/core/tissue_calcium_spec.py",
+   "new": "src/cells/legacy/core/tissue_calcium_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.tissue_calcium_spec",
+   "new_module": "cells.legacy.core.tissue_calcium_spec"
+  },
+  {
+   "old": "src/cells/core/tissue_excision.py",
+   "new": "src/cells/legacy/core/tissue_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.tissue_excision",
+   "new_module": "cells.legacy.core.tissue_excision"
+  },
+  {
+   "old": "src/cells/core/tissue_profile_composition_preparation.py",
+   "new": "src/cells/legacy/core/tissue_profile_composition_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.tissue_profile_composition_preparation",
+   "new_module": "cells.legacy.core.tissue_profile_composition_preparation"
+  },
+  {
+   "old": "src/cells/core/tissue_profile_preparation.py",
+   "new": "src/cells/legacy/core/tissue_profile_preparation.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.tissue_profile_preparation",
+   "new_module": "cells.legacy.core.tissue_profile_preparation"
+  },
+  {
+   "old": "src/cells/core/tissue_spec.py",
+   "new": "src/cells/legacy/core/tissue_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.tissue_spec",
+   "new_module": "cells.legacy.core.tissue_spec"
+  },
+  {
+   "old": "src/cells/core/voltage_gated_spec.py",
+   "new": "src/cells/legacy/core/voltage_gated_spec.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.core.voltage_gated_spec",
+   "new_module": "cells.legacy.core.voltage_gated_spec"
+  },
+  {
+   "old": "src/cells/ensemble/cluster.py",
+   "new": "src/cells/legacy/ensemble/cluster.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.ensemble.cluster",
+   "new_module": "cells.legacy.ensemble.cluster"
+  },
+  {
+   "old": "src/cells/ensemble/coupled.py",
+   "new": "src/cells/legacy/ensemble/coupled.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.ensemble.coupled",
+   "new_module": "cells.legacy.ensemble.coupled"
+  },
+  {
+   "old": "src/cells/excision_io.py",
+   "new": "src/cells/legacy/excision_io.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.excision_io",
+   "new_module": "cells.legacy.excision_io"
+  },
+  {
+   "old": "src/cells/models/bioelectric_cell.py",
+   "new": "src/cells/legacy/models/bioelectric_cell.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.bioelectric_cell",
+   "new_module": "cells.legacy.models.bioelectric_cell"
+  },
+  {
+   "old": "src/cells/models/bioelectric_pair.py",
+   "new": "src/cells/legacy/models/bioelectric_pair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.bioelectric_pair",
+   "new_module": "cells.legacy.models.bioelectric_pair"
+  },
+  {
+   "old": "src/cells/models/compartment_reactions.py",
+   "new": "src/cells/legacy/models/compartment_reactions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.compartment_reactions",
+   "new_module": "cells.legacy.models.compartment_reactions"
+  },
+  {
+   "old": "src/cells/models/emt_mirna.py",
+   "new": "src/cells/legacy/models/emt_mirna.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.emt_mirna",
+   "new_module": "cells.legacy.models.emt_mirna"
+  },
+  {
+   "old": "src/cells/models/environment_barrier_interventions.py",
+   "new": "src/cells/legacy/models/environment_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.environment_barrier_interventions",
+   "new_module": "cells.legacy.models.environment_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/er_calcium.py",
+   "new": "src/cells/legacy/models/er_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.er_calcium",
+   "new_module": "cells.legacy.models.er_calcium"
+  },
+  {
+   "old": "src/cells/models/finite_extracellular.py",
+   "new": "src/cells/legacy/models/finite_extracellular.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.finite_extracellular",
+   "new_module": "cells.legacy.models.finite_extracellular"
+  },
+  {
+   "old": "src/cells/models/gated_calcium.py",
+   "new": "src/cells/legacy/models/gated_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.gated_calcium",
+   "new_module": "cells.legacy.models.gated_calcium"
+  },
+  {
+   "old": "src/cells/models/ip3_calcium.py",
+   "new": "src/cells/legacy/models/ip3_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.ip3_calcium",
+   "new_module": "cells.legacy.models.ip3_calcium"
+  },
+  {
+   "old": "src/cells/models/junction_finite_extracellular.py",
+   "new": "src/cells/legacy/models/junction_finite_extracellular.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.junction_finite_extracellular",
+   "new_module": "cells.legacy.models.junction_finite_extracellular"
+  },
+  {
+   "old": "src/cells/models/kinetic_finite_bounds.py",
+   "new": "src/cells/legacy/models/kinetic_finite_bounds.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.kinetic_finite_bounds",
+   "new_module": "cells.legacy.models.kinetic_finite_bounds"
+  },
+  {
+   "old": "src/cells/models/kinetic_finite_extracellular.py",
+   "new": "src/cells/legacy/models/kinetic_finite_extracellular.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.kinetic_finite_extracellular",
+   "new_module": "cells.legacy.models.kinetic_finite_extracellular"
+  },
+  {
+   "old": "src/cells/models/multispecies_membrane.py",
+   "new": "src/cells/legacy/models/multispecies_membrane.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.multispecies_membrane",
+   "new_module": "cells.legacy.models.multispecies_membrane"
+  },
+  {
+   "old": "src/cells/models/open_calcium_admission.py",
+   "new": "src/cells/legacy/models/open_calcium_admission.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.open_calcium_admission",
+   "new_module": "cells.legacy.models.open_calcium_admission"
+  },
+  {
+   "old": "src/cells/models/open_calcium_bath_epoch.py",
+   "new": "src/cells/legacy/models/open_calcium_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.open_calcium_bath_epoch",
+   "new_module": "cells.legacy.models.open_calcium_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/open_calcium_bath_runtime.py",
+   "new": "src/cells/legacy/models/open_calcium_bath_runtime.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.open_calcium_bath_runtime",
+   "new_module": "cells.legacy.models.open_calcium_bath_runtime"
+  },
+  {
+   "old": "src/cells/models/open_calcium_reservoirs.py",
+   "new": "src/cells/legacy/models/open_calcium_reservoirs.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.open_calcium_reservoirs",
+   "new_module": "cells.legacy.models.open_calcium_reservoirs"
+  },
+  {
+   "old": "src/cells/models/open_calcium_runtime.py",
+   "new": "src/cells/legacy/models/open_calcium_runtime.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.open_calcium_runtime",
+   "new_module": "cells.legacy.models.open_calcium_runtime"
+  },
+  {
+   "old": "src/cells/models/passive_pair.py",
+   "new": "src/cells/legacy/models/passive_pair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.passive_pair",
+   "new_module": "cells.legacy.models.passive_pair"
+  },
+  {
+   "old": "src/cells/models/physical_ionic_graph.py",
+   "new": "src/cells/legacy/models/physical_ionic_graph.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.physical_ionic_graph",
+   "new_module": "cells.legacy.models.physical_ionic_graph"
+  },
+  {
+   "old": "src/cells/models/plasma_calcium.py",
+   "new": "src/cells/legacy/models/plasma_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.plasma_calcium",
+   "new_module": "cells.legacy.models.plasma_calcium"
+  },
+  {
+   "old": "src/cells/models/source_decay.py",
+   "new": "src/cells/legacy/models/source_decay.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.source_decay",
+   "new_module": "cells.legacy.models.source_decay"
+  },
+  {
+   "old": "src/cells/models/source_pair.py",
+   "new": "src/cells/legacy/models/source_pair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.source_pair",
+   "new_module": "cells.legacy.models.source_pair"
+  },
+  {
+   "old": "src/cells/models/spatial_calcium.py",
+   "new": "src/cells/legacy/models/spatial_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.spatial_calcium",
+   "new_module": "cells.legacy.models.spatial_calcium"
+  },
+  {
+   "old": "src/cells/models/spatial_extracellular.py",
+   "new": "src/cells/legacy/models/spatial_extracellular.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.spatial_extracellular",
+   "new_module": "cells.legacy.models.spatial_extracellular"
+  },
+  {
+   "old": "src/cells/models/spatial_junction.py",
+   "new": "src/cells/legacy/models/spatial_junction.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.spatial_junction",
+   "new_module": "cells.legacy.models.spatial_junction"
+  },
+  {
+   "old": "src/cells/models/surface_active_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_active_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_active_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_active_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_active_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_active_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_active_bath_epoch.py",
+   "new": "src/cells/legacy/models/surface_active_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_bath_epoch",
+   "new_module": "cells.legacy.models.surface_active_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_active_bath_events.py",
+   "new": "src/cells/legacy/models/surface_active_bath_events.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_bath_events",
+   "new_module": "cells.legacy.models.surface_active_bath_events"
+  },
+  {
+   "old": "src/cells/models/surface_active_excision.py",
+   "new": "src/cells/legacy/models/surface_active_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_excision",
+   "new_module": "cells.legacy.models.surface_active_excision"
+  },
+  {
+   "old": "src/cells/models/surface_active_profile_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_active_profile_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_profile_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_active_profile_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_active_profile_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_active_profile_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_profile_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_active_profile_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_active_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_active_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_profile_epoch",
+   "new_module": "cells.legacy.models.surface_active_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_active_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_active_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_active_profile_interventions",
+   "new_module": "cells.legacy.models.surface_active_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_bath_epoch.py",
+   "new": "src/cells/legacy/models/surface_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_bath_epoch",
+   "new_module": "cells.legacy.models.surface_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_bath_events.py",
+   "new": "src/cells/legacy/models/surface_bath_events.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_bath_events",
+   "new_module": "cells.legacy.models.surface_bath_events"
+  },
+  {
+   "old": "src/cells/models/surface_calcium.py",
+   "new": "src/cells/legacy/models/surface_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium",
+   "new_module": "cells.legacy.models.surface_calcium"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_activated.py",
+   "new": "src/cells/legacy/models/surface_calcium_activated.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_activated",
+   "new_module": "cells.legacy.models.surface_calcium_activated"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_activated_catalog.py",
+   "new": "src/cells/legacy/models/surface_calcium_activated_catalog.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_activated_catalog",
+   "new_module": "cells.legacy.models.surface_calcium_activated_catalog"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_catalog.py",
+   "new": "src/cells/legacy/models/surface_calcium_catalog.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_catalog",
+   "new_module": "cells.legacy.models.surface_calcium_catalog"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_catalog_v2.py",
+   "new": "src/cells/legacy/models/surface_calcium_catalog_v2.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_catalog_v2",
+   "new_module": "cells.legacy.models.surface_calcium_catalog_v2"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_cav.py",
+   "new": "src/cells/legacy/models/surface_calcium_cav.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_cav",
+   "new_module": "cells.legacy.models.surface_calcium_cav"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_channels.py",
+   "new": "src/cells/legacy/models/surface_calcium_channels.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_channels",
+   "new_module": "cells.legacy.models.surface_calcium_channels"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy",
+   "new_module": "cells.legacy.models.surface_calcium_energy"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_activated.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_activated.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_activated",
+   "new_module": "cells.legacy.models.surface_calcium_energy_activated"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_atp_transport.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_atp_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_atp_transport",
+   "new_module": "cells.legacy.models.surface_calcium_energy_atp_transport"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_atp_transport_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_atp_transport_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_atp_transport_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_atp_transport_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_catalog.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_catalog.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_catalog",
+   "new_module": "cells.legacy.models.surface_calcium_energy_catalog"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_hcn_extra.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_hcn_extra.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_hcn_extra",
+   "new_module": "cells.legacy.models.surface_calcium_energy_hcn_extra"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_irreversible_transport.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_irreversible_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_irreversible_transport",
+   "new_module": "cells.legacy.models.surface_calcium_energy_irreversible_transport"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_irreversible_transport_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_irreversible_transport_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_irreversible_transport_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_irreversible_transport_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_mitochondria.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_mitochondria.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_mitochondria",
+   "new_module": "cells.legacy.models.surface_calcium_energy_mitochondria"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_mitochondria_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_mitochondria_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_mitochondria_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_mitochondria_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_morris_lecar",
+   "new_module": "cells.legacy.models.surface_calcium_energy_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_profile_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_profile_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_profile_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_profile_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_profile_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_profile_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_profile_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_profile_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_profile_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_profile_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_regulated.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_regulated.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_regulated",
+   "new_module": "cells.legacy.models.surface_calcium_energy_regulated"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_regulated_v2.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_regulated_v2.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_regulated_v2",
+   "new_module": "cells.legacy.models.surface_calcium_energy_regulated_v2"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_regulated_v2_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_regulated_v2_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_regulated_v2_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_regulated_v2_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_transport.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_transport",
+   "new_module": "cells.legacy.models.surface_calcium_energy_transport"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_transport_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_transport_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_transport_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_transport_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_excision",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_hcn_extra.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_hcn_extra.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_hcn_extra",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_hcn_extra"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_profile_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_profile_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_profile_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_profile_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_profile_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_profile_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_profile_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_profile_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_profile_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_profile_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_hcn_extra.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_hcn_extra.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_hcn_extra",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_hcn_extra"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_profile_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_profile_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_profile_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_profile_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_profile_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_profile_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_profile_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_energy_water_repair_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_energy_water_repair_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_energy_water_repair_profile_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_energy_water_repair_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_excision.py",
+   "new": "src/cells/legacy/models/surface_calcium_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_excision",
+   "new_module": "cells.legacy.models.surface_calcium_excision"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_hcn.py",
+   "new": "src/cells/legacy/models/surface_calcium_hcn.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_hcn",
+   "new_module": "cells.legacy.models.surface_calcium_hcn"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_hcn_extra.py",
+   "new": "src/cells/legacy/models/surface_calcium_hcn_extra.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_hcn_extra",
+   "new_module": "cells.legacy.models.surface_calcium_hcn_extra"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_kv1.py",
+   "new": "src/cells/legacy/models/surface_calcium_kv1.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_kv1",
+   "new_module": "cells.legacy.models.surface_calcium_kv1"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_calcium_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_morris_lecar",
+   "new_module": "cells.legacy.models.surface_calcium_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_profile_barrier_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_profile_barrier_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_profile_barrier_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_profile_barrier_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_profile_barrier_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_profile_barrier_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_profile_barrier_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_profile_barrier_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_calcium_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_profile_epoch",
+   "new_module": "cells.legacy.models.surface_calcium_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_calcium_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_profile_interventions",
+   "new_module": "cells.legacy.models.surface_calcium_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_sodium.py",
+   "new": "src/cells/legacy/models/surface_calcium_sodium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_sodium",
+   "new_module": "cells.legacy.models.surface_calcium_sodium"
+  },
+  {
+   "old": "src/cells/models/surface_calcium_water.py",
+   "new": "src/cells/legacy/models/surface_calcium_water.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_calcium_water",
+   "new_module": "cells.legacy.models.surface_calcium_water"
+  },
+  {
+   "old": "src/cells/models/surface_catalog.py",
+   "new": "src/cells/legacy/models/surface_catalog.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_catalog",
+   "new_module": "cells.legacy.models.surface_catalog"
+  },
+  {
+   "old": "src/cells/models/surface_catalog_v2.py",
+   "new": "src/cells/legacy/models/surface_catalog_v2.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_catalog_v2",
+   "new_module": "cells.legacy.models.surface_catalog_v2"
+  },
+  {
+   "old": "src/cells/models/surface_cav.py",
+   "new": "src/cells/legacy/models/surface_cav.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_cav",
+   "new_module": "cells.legacy.models.surface_cav"
+  },
+  {
+   "old": "src/cells/models/surface_channels.py",
+   "new": "src/cells/legacy/models/surface_channels.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_channels",
+   "new_module": "cells.legacy.models.surface_channels"
+  },
+  {
+   "old": "src/cells/models/surface_cotransport.py",
+   "new": "src/cells/legacy/models/surface_cotransport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_cotransport",
+   "new_module": "cells.legacy.models.surface_cotransport"
+  },
+  {
+   "old": "src/cells/models/surface_cotransport_water.py",
+   "new": "src/cells/legacy/models/surface_cotransport_water.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_cotransport_water",
+   "new_module": "cells.legacy.models.surface_cotransport_water"
+  },
+  {
+   "old": "src/cells/models/surface_energy.py",
+   "new": "src/cells/legacy/models/surface_energy.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_energy",
+   "new_module": "cells.legacy.models.surface_energy"
+  },
+  {
+   "old": "src/cells/models/surface_energy_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_energy_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_energy_morris_lecar",
+   "new_module": "cells.legacy.models.surface_energy_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_energy_water.py",
+   "new": "src/cells/legacy/models/surface_energy_water.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_energy_water",
+   "new_module": "cells.legacy.models.surface_energy_water"
+  },
+  {
+   "old": "src/cells/models/surface_energy_water_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_energy_water_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_energy_water_morris_lecar",
+   "new_module": "cells.legacy.models.surface_energy_water_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_excision.py",
+   "new": "src/cells/legacy/models/surface_excision.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_excision",
+   "new_module": "cells.legacy.models.surface_excision"
+  },
+  {
+   "old": "src/cells/models/surface_hcn.py",
+   "new": "src/cells/legacy/models/surface_hcn.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_hcn",
+   "new_module": "cells.legacy.models.surface_hcn"
+  },
+  {
+   "old": "src/cells/models/surface_hcn_extra.py",
+   "new": "src/cells/legacy/models/surface_hcn_extra.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_hcn_extra",
+   "new_module": "cells.legacy.models.surface_hcn_extra"
+  },
+  {
+   "old": "src/cells/models/surface_kv1.py",
+   "new": "src/cells/legacy/models/surface_kv1.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_kv1",
+   "new_module": "cells.legacy.models.surface_kv1"
+  },
+  {
+   "old": "src/cells/models/surface_mobile_channel.py",
+   "new": "src/cells/legacy/models/surface_mobile_channel.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_mobile_channel",
+   "new_module": "cells.legacy.models.surface_mobile_channel"
+  },
+  {
+   "old": "src/cells/models/surface_mobile_pump.py",
+   "new": "src/cells/legacy/models/surface_mobile_pump.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_mobile_pump",
+   "new_module": "cells.legacy.models.surface_mobile_pump"
+  },
+  {
+   "old": "src/cells/models/surface_mobile_pump_repair.py",
+   "new": "src/cells/legacy/models/surface_mobile_pump_repair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_mobile_pump_repair",
+   "new_module": "cells.legacy.models.surface_mobile_pump_repair"
+  },
+  {
+   "old": "src/cells/models/surface_mobile_repair.py",
+   "new": "src/cells/legacy/models/surface_mobile_repair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_mobile_repair",
+   "new_module": "cells.legacy.models.surface_mobile_repair"
+  },
+  {
+   "old": "src/cells/models/surface_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_morris_lecar",
+   "new_module": "cells.legacy.models.surface_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium.py",
+   "new": "src/cells/legacy/models/surface_open_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium",
+   "new_module": "cells.legacy.models.surface_open_calcium"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium_bath_epoch.py",
+   "new": "src/cells/legacy/models/surface_open_calcium_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium_bath_epoch",
+   "new_module": "cells.legacy.models.surface_open_calcium_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium_bath_events.py",
+   "new": "src/cells/legacy/models/surface_open_calcium_bath_events.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium_bath_events",
+   "new_module": "cells.legacy.models.surface_open_calcium_bath_events"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium_energy.py",
+   "new": "src/cells/legacy/models/surface_open_calcium_energy.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium_energy",
+   "new_module": "cells.legacy.models.surface_open_calcium_energy"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium_energy_bath_epoch.py",
+   "new": "src/cells/legacy/models/surface_open_calcium_energy_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium_energy_bath_epoch",
+   "new_module": "cells.legacy.models.surface_open_calcium_energy_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_open_calcium_energy_bath_events.py",
+   "new": "src/cells/legacy/models/surface_open_calcium_energy_bath_events.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_open_calcium_energy_bath_events",
+   "new_module": "cells.legacy.models.surface_open_calcium_energy_bath_events"
+  },
+  {
+   "old": "src/cells/models/surface_passive_bath_epoch.py",
+   "new": "src/cells/legacy/models/surface_passive_bath_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_passive_bath_epoch",
+   "new_module": "cells.legacy.models.surface_passive_bath_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_passive_bath_events.py",
+   "new": "src/cells/legacy/models/surface_passive_bath_events.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_passive_bath_events",
+   "new_module": "cells.legacy.models.surface_passive_bath_events"
+  },
+  {
+   "old": "src/cells/models/surface_profile_epoch.py",
+   "new": "src/cells/legacy/models/surface_profile_epoch.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_profile_epoch",
+   "new_module": "cells.legacy.models.surface_profile_epoch"
+  },
+  {
+   "old": "src/cells/models/surface_profile_interventions.py",
+   "new": "src/cells/legacy/models/surface_profile_interventions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_profile_interventions",
+   "new_module": "cells.legacy.models.surface_profile_interventions"
+  },
+  {
+   "old": "src/cells/models/surface_redistribution.py",
+   "new": "src/cells/legacy/models/surface_redistribution.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_redistribution",
+   "new_module": "cells.legacy.models.surface_redistribution"
+  },
+  {
+   "old": "src/cells/models/surface_repair.py",
+   "new": "src/cells/legacy/models/surface_repair.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_repair",
+   "new_module": "cells.legacy.models.surface_repair"
+  },
+  {
+   "old": "src/cells/models/surface_repair_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_repair_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_repair_morris_lecar",
+   "new_module": "cells.legacy.models.surface_repair_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/surface_sodium.py",
+   "new": "src/cells/legacy/models/surface_sodium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_sodium",
+   "new_module": "cells.legacy.models.surface_sodium"
+  },
+  {
+   "old": "src/cells/models/surface_water.py",
+   "new": "src/cells/legacy/models/surface_water.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_water",
+   "new_module": "cells.legacy.models.surface_water"
+  },
+  {
+   "old": "src/cells/models/surface_water_kinetic.py",
+   "new": "src/cells/legacy/models/surface_water_kinetic.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_water_kinetic",
+   "new_module": "cells.legacy.models.surface_water_kinetic"
+  },
+  {
+   "old": "src/cells/models/surface_water_morris_lecar.py",
+   "new": "src/cells/legacy/models/surface_water_morris_lecar.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.surface_water_morris_lecar",
+   "new_module": "cells.legacy.models.surface_water_morris_lecar"
+  },
+  {
+   "old": "src/cells/models/tissue.py",
+   "new": "src/cells/legacy/models/tissue.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.tissue",
+   "new_module": "cells.legacy.models.tissue"
+  },
+  {
+   "old": "src/cells/models/tissue_calcium.py",
+   "new": "src/cells/legacy/models/tissue_calcium.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.tissue_calcium",
+   "new_module": "cells.legacy.models.tissue_calcium"
+  },
+  {
+   "old": "src/cells/models/voltage_gated_membrane.py",
+   "new": "src/cells/legacy/models/voltage_gated_membrane.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.models.voltage_gated_membrane",
+   "new_module": "cells.legacy.models.voltage_gated_membrane"
+  },
+  {
+   "old": "src/cells/numerics/membrane_redistribution.py",
+   "new": "src/cells/legacy/numerics/membrane_redistribution.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.numerics.membrane_redistribution",
+   "new_module": "cells.legacy.numerics.membrane_redistribution"
+  },
+  {
+   "old": "src/cells/processes/cell_zone_transport.py",
+   "new": "src/cells/legacy/processes/cell_zone_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.cell_zone_transport",
+   "new_module": "cells.legacy.processes.cell_zone_transport"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend",
+   "new_module": "cells.legacy.processes.charged_surface_backend"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend_arrays.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend_arrays.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend_arrays",
+   "new_module": "cells.legacy.processes.charged_surface_backend_arrays"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend_equations.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend_equations.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend_equations",
+   "new_module": "cells.legacy.processes.charged_surface_backend_equations"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend_gate.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend_gate.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend_gate",
+   "new_module": "cells.legacy.processes.charged_surface_backend_gate"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend_kernel.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend_kernel.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend_kernel",
+   "new_module": "cells.legacy.processes.charged_surface_backend_kernel"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_backend_plan.py",
+   "new": "src/cells/legacy/processes/charged_surface_backend_plan.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_backend_plan",
+   "new_module": "cells.legacy.processes.charged_surface_backend_plan"
+  },
+  {
+   "old": "src/cells/processes/charged_surface_work.py",
+   "new": "src/cells/legacy/processes/charged_surface_work.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.charged_surface_work",
+   "new_module": "cells.legacy.processes.charged_surface_work"
+  },
+  {
+   "old": "src/cells/processes/cotransport.py",
+   "new": "src/cells/legacy/processes/cotransport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.cotransport",
+   "new_module": "cells.legacy.processes.cotransport"
+  },
+  {
+   "old": "src/cells/processes/extracellular_face_transport.py",
+   "new": "src/cells/legacy/processes/extracellular_face_transport.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.extracellular_face_transport",
+   "new_module": "cells.legacy.processes.extracellular_face_transport"
+  },
+  {
+   "old": "src/cells/processes/finite_calcium_pumps.py",
+   "new": "src/cells/legacy/processes/finite_calcium_pumps.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.finite_calcium_pumps",
+   "new_module": "cells.legacy.processes.finite_calcium_pumps"
+  },
+  {
+   "old": "src/cells/processes/finite_ecm_polygon_geometry.py",
+   "new": "src/cells/legacy/processes/finite_ecm_polygon_geometry.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.finite_ecm_polygon_geometry",
+   "new_module": "cells.legacy.processes.finite_ecm_polygon_geometry"
+  },
+  {
+   "old": "src/cells/processes/finite_energy.py",
+   "new": "src/cells/legacy/processes/finite_energy.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.finite_energy",
+   "new_module": "cells.legacy.processes.finite_energy"
+  },
+  {
+   "old": "src/cells/processes/geometry_operator_binding.py",
+   "new": "src/cells/legacy/processes/geometry_operator_binding.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.geometry_operator_binding",
+   "new_module": "cells.legacy.processes.geometry_operator_binding"
+  },
+  {
+   "old": "src/cells/processes/ip3_release.py",
+   "new": "src/cells/legacy/processes/ip3_release.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.ip3_release",
+   "new_module": "cells.legacy.processes.ip3_release"
+  },
+  {
+   "old": "src/cells/processes/membrane_injury.py",
+   "new": "src/cells/legacy/processes/membrane_injury.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.membrane_injury",
+   "new_module": "cells.legacy.processes.membrane_injury"
+  },
+  {
+   "old": "src/cells/processes/mitochondrial_passive.py",
+   "new": "src/cells/legacy/processes/mitochondrial_passive.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.mitochondrial_passive",
+   "new_module": "cells.legacy.processes.mitochondrial_passive"
+  },
+  {
+   "old": "src/cells/processes/mobile_channel_gates.py",
+   "new": "src/cells/legacy/processes/mobile_channel_gates.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.mobile_channel_gates",
+   "new_module": "cells.legacy.processes.mobile_channel_gates"
+  },
+  {
+   "old": "src/cells/processes/network_control.py",
+   "new": "src/cells/legacy/processes/network_control.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.network_control",
+   "new_module": "cells.legacy.processes.network_control"
+  },
+  {
+   "old": "src/cells/processes/network_reactions.py",
+   "new": "src/cells/legacy/processes/network_reactions.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.network_reactions",
+   "new_module": "cells.legacy.processes.network_reactions"
+  },
+  {
+   "old": "src/cells/processes/source_electrochemistry.py",
+   "new": "src/cells/legacy/processes/source_electrochemistry.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.source_electrochemistry",
+   "new_module": "cells.legacy.processes.source_electrochemistry"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_control_volume_environment.py",
+   "new": "src/cells/legacy/processes/stable_seed_control_volume_environment.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_control_volume_environment",
+   "new_module": "cells.legacy.processes.stable_seed_control_volume_environment"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_control_volume_physical_bridge.py",
+   "new": "src/cells/legacy/processes/stable_seed_control_volume_physical_bridge.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_control_volume_physical_bridge",
+   "new_module": "cells.legacy.processes.stable_seed_control_volume_physical_bridge"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_control_volumes.py",
+   "new": "src/cells/legacy/processes/stable_seed_control_volumes.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_control_volumes",
+   "new_module": "cells.legacy.processes.stable_seed_control_volumes"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_explicit_ecm_partition.py",
+   "new": "src/cells/legacy/processes/stable_seed_explicit_ecm_partition.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_explicit_ecm_partition",
+   "new_module": "cells.legacy.processes.stable_seed_explicit_ecm_partition"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_partition_advance.py",
+   "new": "src/cells/legacy/processes/stable_seed_partition_advance.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_partition_advance",
+   "new_module": "cells.legacy.processes.stable_seed_partition_advance"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_partition_advance_refinement.py",
+   "new": "src/cells/legacy/processes/stable_seed_partition_advance_refinement.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_partition_advance_refinement",
+   "new_module": "cells.legacy.processes.stable_seed_partition_advance_refinement"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_partition_physiology_bridge.py",
+   "new": "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_partition_physiology_bridge",
+   "new_module": "cells.legacy.processes.stable_seed_partition_physiology_bridge"
+  },
+  {
+   "old": "src/cells/processes/stable_seed_partition_trajectory.py",
+   "new": "src/cells/legacy/processes/stable_seed_partition_trajectory.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.stable_seed_partition_trajectory",
+   "new_module": "cells.legacy.processes.stable_seed_partition_trajectory"
+  },
+  {
+   "old": "src/cells/processes/tissue_removal.py",
+   "new": "src/cells/legacy/processes/tissue_removal.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.tissue_removal",
+   "new_module": "cells.legacy.processes.tissue_removal"
+  },
+  {
+   "old": "src/cells/processes/tissue_target_selectors.py",
+   "new": "src/cells/legacy/processes/tissue_target_selectors.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.processes.tissue_target_selectors",
+   "new_module": "cells.legacy.processes.tissue_target_selectors"
+  },
+  {
+   "old": "src/cells/tissue_geometry.py",
+   "new": "src/cells/legacy/tissue_geometry.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.tissue_geometry",
+   "new_module": "cells.legacy.tissue_geometry"
+  },
+  {
+   "old": "src/cells/tissue_phase.py",
+   "new": "src/cells/legacy/tissue_phase.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.tissue_phase",
+   "new_module": "cells.legacy.tissue_phase"
+  },
+  {
+   "old": "src/cells/tissue_profiles.py",
+   "new": "src/cells/legacy/tissue_profiles.py",
+   "kind": "move",
+   "to_legacy": true,
+   "old_module": "cells.tissue_profiles",
+   "new_module": "cells.legacy.tissue_profiles"
+  },
+  {
+   "old": null,
+   "new": "src/cells/legacy/core/__init__.py",
+   "kind": "created",
+   "to_legacy": true,
+   "old_module": null,
+   "new_module": "cells.legacy.core"
+  },
+  {
+   "old": null,
+   "new": "src/cells/legacy/ensemble/__init__.py",
+   "kind": "created",
+   "to_legacy": true,
+   "old_module": null,
+   "new_module": "cells.legacy.ensemble"
+  },
+  {
+   "old": null,
+   "new": "src/cells/legacy/models/__init__.py",
+   "kind": "created",
+   "to_legacy": true,
+   "old_module": null,
+   "new_module": "cells.legacy.models"
+  },
+  {
+   "old": null,
+   "new": "src/cells/legacy/numerics/__init__.py",
+   "kind": "created",
+   "to_legacy": true,
+   "old_module": null,
+   "new_module": "cells.legacy.numerics"
+  },
+  {
+   "old": null,
+   "new": "src/cells/legacy/processes/__init__.py",
+   "kind": "created",
+   "to_legacy": true,
+   "old_module": null,
+   "new_module": "cells.legacy.processes"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/bioelectric_spec.py",
+   "new": "src/cells/core/spec_values.py",
+   "names": [
+    "signed_number",
+    "positive"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/multispecies_spec.py",
+   "new": "src/cells/core/spec_values.py",
+   "names": [
+    "identifier",
+    "aligned"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/physical_ionic_graph_spec.py",
+   "new": "src/cells/core/spec_values.py",
+   "names": [
+    "_tuple"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/voltage_gated_spec.py",
+   "new": "src/cells/core/spec_values.py",
+   "names": [
+    "fraction"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/kinetic_finite_spec.py",
+   "new": "src/cells/core/kinetic_pump_spec.py",
+   "names": [
+    "METABOLISM_ID",
+    "parse_pump",
+    "pump_to_dict"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/core/junction_finite_spec.py",
+   "new": "src/cells/core/rate_junction_spec.py",
+   "names": [
+    "GATE_FIELDS",
+    "parse_junction"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  },
+  {
+   "kind": "split",
+   "commit": "c8b1e577",
+   "old": "src/cells/models/kinetic_finite_extracellular.py",
+   "new": "src/cells/processes/kinetic_pump_binding.py",
+   "names": [
+    "declared_parameters",
+    "bind_pumps",
+    "pump_parameters",
+    "role_inputs"
+   ],
+   "note": "R3, hand-written and moved verbatim; the old module re-imports the names"
+  }
+ ],
+ "already_moved": [],
+ "identifiers_changed": []
+}

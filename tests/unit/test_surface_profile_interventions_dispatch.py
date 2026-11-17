@@ -15,10 +15,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_profile_interventions_spec as schema
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.errors import NumericalError
-from cells.core.excision import excise
 from cells.core.grid import EventGrid
 from cells.core.runner import branch_checkpoint, validate_checkpoint
 from cells.core.schedule import control_values, event_index
@@ -26,10 +24,12 @@ from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
 from cells.ensemble.ionic import parse_spec as parse_ensemble
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_profile_interventions as model
+from cells.legacy.core import surface_profile_interventions_spec as schema
+from cells.legacy.core.excision import excise
+from cells.legacy.models import surface_profile_interventions as model
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
 from tests.integration.test_cli import cli
 from tests.unit.test_surface_catalog import evidence
 from validation.topology import surface_profile_interventions_fixtures as fixtures
@@ -223,6 +223,17 @@ def test_public_cli_validates_the_complete_scheduled_profile_model(tmp_path):
     assert path.read_bytes() == saved
 
 
+# The model module each existing family dispatches to, named in full (D188 R2).
+FAMILY_MODELS = {
+    "surface_calcium_energy_hcn_extra": "cells.legacy.models.surface_calcium_energy_hcn_extra",
+    "surface_calcium_energy_transport": "cells.legacy.models.surface_calcium_energy_transport",
+    "surface_calcium_energy_mitochondria": (
+        "cells.legacy.models.surface_calcium_energy_mitochondria"
+    ),
+    "surface_calcium_energy_water": "cells.legacy.models.surface_calcium_energy_water",
+}
+
+
 @pytest.mark.parametrize(
     "filename,module",
     [
@@ -235,6 +246,6 @@ def test_public_cli_validates_the_complete_scheduled_profile_model(tmp_path):
 def test_profile_registration_preserves_existing_physical_families(filename, module):
     raw = json.loads((Path(__file__).resolve().parents[2] / "configs" / filename).read_text())
     spec = parse_spec(raw)
-    assert get_model(spec.model) is importlib.import_module("cells.models." + module)
+    assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == raw["model"]["id"]

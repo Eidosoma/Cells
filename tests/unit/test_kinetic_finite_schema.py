@@ -10,8 +10,8 @@ from cells.core.resources import trace_bytes
 from cells.core.runner import timeline, validate_checkpoint
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import initialise
-from cells.models import finite_extracellular as old
-from cells.models import kinetic_finite_extracellular as model
+from cells.legacy.models import finite_extracellular as old
+from cells.legacy.models import kinetic_finite_extracellular as model
 from cells.models.registry import get_model
 from tests.kinetic_finite_fixtures import definition, evidence, spec_for
 

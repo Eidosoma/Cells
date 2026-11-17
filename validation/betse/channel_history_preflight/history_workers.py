@@ -76,7 +76,7 @@ def cells(data, plan, backends=None):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
     from cells.io import runtime_identity
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     c.require(
         jax.default_backend() == "cpu"
@@ -86,7 +86,8 @@ def cells(data, plan, backends=None):
     )
     c.require(runtime_identity() == data["cells_runtime"], "Accepted Cells runtime differs")
     c.require(
-        Path(model.__file__).resolve() == ctx.ROOT / "src/cells/models/finite_extracellular.py",
+        Path(model.__file__).resolve()
+        == ctx.ROOT / "src/cells/legacy/models/finite_extracellular.py",
         "Wrong Cells source origin",
     )
     array = ctx.prior.pilot.audit.preparation.array_record

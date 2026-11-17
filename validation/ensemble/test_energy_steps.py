@@ -7,10 +7,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.assembly_cluster import engine, kernel
 from cells.core.schedule import control_values
-from cells.models import finite_extracellular as finite
-from cells.models import multispecies_membrane as membrane
+from cells.legacy.assembly_cluster import engine, kernel
+from cells.legacy.models import finite_extracellular as finite
+from cells.legacy.models import multispecies_membrane as membrane
 from cells.models.registry import get_model
 from validation.ensemble import step_cluster as steps
 from validation.ensemble.test_parallel_cluster import physical_spec

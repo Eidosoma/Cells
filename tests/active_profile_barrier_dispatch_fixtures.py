@@ -3,9 +3,9 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import surface_active_profile_barrier_interventions_spec as schema
-from cells.models import surface_active_profile_barrier_interventions as model
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
+from cells.legacy.core import surface_active_profile_barrier_interventions_spec as schema
+from cells.legacy.models import surface_active_profile_barrier_interventions as model
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from validation.transport import active_profile_barrier_interventions_fixtures as fixtures
 
 DT = 1e-9

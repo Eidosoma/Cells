@@ -9,17 +9,17 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import open_calcium_bath_phase_handoff as bridge
-from cells.core import surface_open_calcium_bath_epoch_spec as calcium_schema
-from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_schema
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import Checkpoint
-from cells.models import surface_open_calcium_bath_epoch as calcium
-from cells.models import surface_open_calcium_energy_bath_epoch as energy
+from cells.legacy.core import open_calcium_bath_phase_handoff as bridge
+from cells.legacy.core import surface_open_calcium_bath_epoch_spec as calcium_schema
+from cells.legacy.core import surface_open_calcium_energy_bath_epoch_spec as energy_schema
+from cells.legacy.models import surface_open_calcium_bath_epoch as calcium
+from cells.legacy.models import surface_open_calcium_energy_bath_epoch as energy
+from cells.legacy.tissue_phase import prepare_request
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.tissue_phase import prepare_request
 from tests.surface_open_calcium_bath_fixtures import OWNERS as SCHEDULED
 from tests.surface_open_calcium_bath_fixtures import PREFIX_DT, definition
 

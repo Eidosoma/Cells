@@ -6,10 +6,10 @@ import os
 from copy import deepcopy
 from pathlib import Path
 
-from cells.core import conservative_polygon_tissue_preparation as physical
+from cells.legacy.core import conservative_polygon_tissue_preparation as physical
+from cells.legacy.processes import stable_seed_control_volume_physical_bridge as bridge
+from cells.legacy.processes import stable_seed_control_volumes as volumes
 from cells.processes import conservative_polygon_geometry as geometry
-from cells.processes import stable_seed_control_volume_physical_bridge as bridge
-from cells.processes import stable_seed_control_volumes as volumes
 from validation.geometry import stable_mesh_physical_reconstruction_saved as saved
 
 BASE = "manufactured-irregular-square"

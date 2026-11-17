@@ -46,7 +46,7 @@ def cells_probes(plan, backends=None):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
     from cells.io import runtime_identity
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     design.validate_plan(plan)
     c.require(

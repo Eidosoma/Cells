@@ -3,15 +3,19 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import surface_calcium_energy_water_profile_barrier_interventions_spec as water
-from cells.core import (
+from cells.legacy.core import (
+    surface_calcium_energy_water_profile_barrier_interventions_spec as water,
+)
+from cells.legacy.core import (
     surface_calcium_energy_water_repair_profile_barrier_interventions_spec as repair,
 )
-from cells.models import surface_calcium_energy_water_profile_barrier_interventions as water_model
-from cells.models import (
+from cells.legacy.models import (
+    surface_calcium_energy_water_profile_barrier_interventions as water_model,
+)
+from cells.legacy.models import (
     surface_calcium_energy_water_repair_profile_barrier_interventions as repair_model,
 )
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from validation.transport import joint_water_profile_barrier_interventions_fixtures as fixtures
 
 DT = 1e-9

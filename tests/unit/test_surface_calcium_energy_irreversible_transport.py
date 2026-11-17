@@ -8,13 +8,13 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_irreversible_transport_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError
-from cells.models import surface_calcium_energy_hcn_extra as parent
-from cells.models import surface_calcium_energy_irreversible_transport as model
-from cells.processes import cell_zone_transport as native
+from cells.legacy.core import surface_calcium_energy_irreversible_transport_spec as schema
+from cells.legacy.models import surface_calcium_energy_hcn_extra as parent
+from cells.legacy.models import surface_calcium_energy_irreversible_transport as model
+from cells.legacy.processes import cell_zone_transport as native
 from validation.tissue import calcium_energy_irreversible_transport_fixtures as fixtures
 
 

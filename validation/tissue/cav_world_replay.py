@@ -113,7 +113,7 @@ def replay(root):
     from cells.core.runner import run
     from cells.core.specs import parse_spec
     from cells.io import write_run
-    from cells.models import surface_calcium_cav as model
+    from cells.legacy.models import surface_calcium_cav as model
     from tests.unit import test_surface_calcium_cav_full as adapter
     from tests.unit import test_surface_calcium_hcn_full as inherited
     from validation.tissue import surface_calcium_cav_fixtures as fixtures

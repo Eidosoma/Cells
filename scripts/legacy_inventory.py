@@ -41,10 +41,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 REGISTRY = "cells.models.registry"
+# D188 R1: the older families' halves of the dispatch points live in the legacy registration;
+# the core's dispatch points reach it on a miss, through core/legacy_entry's one constant.
+REGISTRATION = "cells.legacy.registration"
+TRANSIT = (REGISTRY, REGISTRATION)  # The transit nodes that import every family they dispatch.
 # Dispatch chains: modules that import every family to dispatch on it (the model registry,
 # the definition parser, the control schedules). They are reached but not expanded, and each
 # one's per-family imports are listed apart: move 1 refactors them (D188).
-DISPATCH = (REGISTRY, "cells.core.specs", "cells.core.schedule")
+DISPATCH = (REGISTRY, "cells.core.specs", "cells.core.schedule", REGISTRATION)
 CLASSES = ("active", "decide", "legacy")
 ENTRIES = {
     "@3": ["cells.models.surface_pump_v3", "cells.core.surface_pump_v3_spec"],
@@ -247,20 +251,35 @@ def _class_ids(tree, consts):
     return {}
 
 
-def registry_dispatch(index):
-    """[(spec module, class, model module)] in get_model's order."""
-    tree = ast.parse(index[REGISTRY].read_text())
+def _dispatch_chain(path, function, index):
+    """[(spec module, class, model module)] of one dispatch function's isinstance chain, in its
+    order. Names resolve through the module's top-level imports and the function's own; other
+    functions are not read (the registration's control_values returns `module.call(...)`, which
+    is not a model dispatch)."""
+    tree = ast.parse(path.read_text())
+    body = next(
+        (n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == function), None
+    )
+    if body is None:
+        return []
     names = {}  # local name -> module (a model or spec module) or (spec module, class)
-    for node in ast.walk(tree):
+
+    def bind(node):
+        for a in node.names:
+            sub = f"{node.module}.{a.name}"
+            if sub in index:
+                names[a.asname or a.name] = sub
+            elif node.module in index:
+                names[a.asname or a.name] = (node.module, a.name)
+
+    for node in tree.body:
         if isinstance(node, ast.ImportFrom) and node.module:
-            for a in node.names:
-                sub = f"{node.module}.{a.name}"
-                if sub in index:
-                    names[a.asname or a.name] = sub
-                elif node.module in index:
-                    names[a.asname or a.name] = (node.module, a.name)
+            bind(node)
+    for node in ast.walk(body):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            bind(node)
     out = []
-    for node in ast.walk(tree):
+    for node in ast.walk(body):
         if not (isinstance(node, ast.If) and isinstance(node.test, ast.Call)):
             continue
         call = node.test
@@ -286,6 +305,42 @@ def registry_dispatch(index):
                     model = names.get(value.id)
         if isinstance(spec, tuple) and isinstance(model, str):
             out.append((spec[0], spec[1], model))
+    return out
+
+
+# The registration's dispatch functions (D188 R1): the legacy halves of get_model, parse_spec,
+# SimulationSpec._fine_dict and control_values.
+DISPATCH_FUNCTIONS = ("model_for", "parse", "to_dict", "control_values")
+
+
+def registration_imports(index):
+    """The cells modules that the legacy registration's dispatch functions import inside their
+    bodies: the older families' parse, serialization, schedule and model modules, which the
+    core's dispatch points imported before R1. Its module-level imports are not counted (they
+    include shared core modules such as core.schedule)."""
+    if REGISTRATION not in index:
+        return set()
+    tree = ast.parse(index[REGISTRATION].read_text())
+    out = set()
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name in DISPATCH_FUNCTIONS:
+            for n in ast.walk(node):
+                if isinstance(n, ast.ImportFrom) and n.module and not n.level:
+                    for a in n.names:
+                        sub = f"{n.module}.{a.name}"
+                        out.add(sub if sub in index else n.module)
+                elif isinstance(n, ast.Import):
+                    out |= {a.name for a in n.names}
+    return {m for m in out if m in index and m.startswith("cells")}
+
+
+def registry_dispatch(index):
+    """[(spec module, class, model module)] in get_model's order: the registry's get_model
+    (the active families), then, after D188 R1, the legacy registration's model_for, which
+    get_model calls on a miss (the older families)."""
+    out = _dispatch_chain(index[REGISTRY], "get_model", index)
+    if REGISTRATION in index:
+        out += _dispatch_chain(index[REGISTRATION], "model_for", index)
     return out
 
 
@@ -460,12 +515,12 @@ def inventory(args):
     }
     legacy -= active_family_modules  # A module shared by an active family stays active.
     starts = sorted((entry_modules | active_family_modules) - legacy)
-    active, cut = closure(starts, edges, stop=legacy | {REGISTRY}, leaves=DISPATCH)
-    legacy_reach, _ = closure(sorted(legacy), edges, stop=active | {REGISTRY}, leaves=DISPATCH)
+    active, cut = closure(starts, edges, stop=legacy | set(TRANSIT), leaves=DISPATCH)
+    legacy_reach, _ = closure(sorted(legacy), edges, stop=active | set(TRANSIT), leaves=DISPATCH)
     couplings = [
         {"from": u, "to": v, "names": n, "kind": k, "via": via}
         for u, v, n, k, via in cut
-        if v != REGISTRY and u not in DISPATCH
+        if v not in TRANSIT and u not in DISPATCH
     ]
     chains = {}
     for chain in DISPATCH:
@@ -498,7 +553,7 @@ def inventory(args):
     independent = sorted(rest - set(legacy_side))
     # The whole static reach of the active starts, dispatch chains and the registry expanded:
     # whatever a run loads must lie in it, or the static graph misses a dynamic import.
-    full, _ = closure(sorted(set(starts) | {REGISTRY}), edges, stop=set())
+    full, _ = closure(sorted(set(starts) | set(TRANSIT) & set(index)), edges, stop=set())
     legacy_all = legacy | set(private) | set(legacy_side)
     runtime = []
     for path in args.runtime or []:

@@ -20,7 +20,7 @@ from cells.core.state import Checkpoint
 from cells.ensemble.families import parse_definition, population
 from cells.ensemble.plan import jupiter_plan, plan
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_energy as model
+from cells.legacy.models import surface_energy as model
 from tests.unit.test_integrated_ensemble import experiment
 from validation.tissue import surface_energy_fixtures as fixtures
 from validation.tissue import surface_energy_replay as replay

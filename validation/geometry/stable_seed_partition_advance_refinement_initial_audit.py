@@ -411,13 +411,13 @@ def clock_dependencies(project):
             "check_values",
         ],
         "src/cells/numerics/fixed_step.py": ["rk4_checked_step"],
-        "src/cells/processes/stable_seed_partition_physiology_bridge.py": [
+        "src/cells/legacy/processes/stable_seed_partition_physiology_bridge.py": [
             "_declaration",
             "_materialize",
             "_initial_snapshot",
             "prepare",
         ],
-        "src/cells/core/finite_ecm_polygon_preparation.py": ["prepare"],
+        "src/cells/legacy/core/finite_ecm_polygon_preparation.py": ["prepare"],
     }
     origins, sites = {}, {}
     for rel, names in roster.items():

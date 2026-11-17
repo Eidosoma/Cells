@@ -259,7 +259,7 @@ def native(registration):
 def mapped(registration, native):
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
-    from cells.models import finite_extracellular as model
+    from cells.legacy.models import finite_extracellular as model
 
     p, definitions, results = registration["protocol"], {}, {}
     for variant in p["variants"]:

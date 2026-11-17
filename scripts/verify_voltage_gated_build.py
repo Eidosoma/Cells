@@ -37,7 +37,7 @@ from cells.io import (  # noqa: E402
     write_run,
     write_snapshot,
 )
-from cells.models import voltage_gated_membrane as model  # noqa: E402
+from cells.legacy.models import voltage_gated_membrane as model  # noqa: E402
 from cells.window_io import write_windowed_run  # noqa: E402
 from scripts.audit_preserved_voltage_gated_reference import (  # noqa: E402
     ARCHIVE_SHA,

@@ -173,9 +173,9 @@ def test_ionic_checkpoint_window_replay_and_scalar_parity(tmp_path):
 
 def test_coupled_adapter_complete_state_and_callbacks(tmp_path):
     from cells.assembly.engine import device_for
-    from cells.assembly_cell import engine
-    from cells.assembly_cell.io import flatten
-    from cells.ensemble import coupled
+    from cells.legacy.assembly_cell import engine
+    from cells.legacy.assembly_cell.io import flatten
+    from cells.legacy.ensemble import coupled
 
     raw = experiment("assembly_cell", backend=BACKEND)["arms"][0]["definition"]
     spec = parse_definition(bind_definition(raw, worlds=2, world_id_start=9, seed=123))

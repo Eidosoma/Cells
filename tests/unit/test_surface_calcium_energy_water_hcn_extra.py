@@ -6,11 +6,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_water_hcn_extra_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.models import surface_calcium_energy as energy
-from cells.models import surface_calcium_energy_water_hcn_extra as model
+from cells.legacy.core import surface_calcium_energy_water_hcn_extra_spec as schema
+from cells.legacy.models import surface_calcium_energy as energy
+from cells.legacy.models import surface_calcium_energy_water_hcn_extra as model
 from cells.processes import hcn_extra_catalog as catalog
 from tests.owned_joint_water_hcn_helpers import changed, evidence, initial, refinement, stage
 
@@ -158,8 +158,8 @@ def test_new_reference_does_not_import_production_or_jax():
 
 
 def test_legacy53_state_and_rates_match_the_unchanged_v1_family():
-    from cells.core import surface_calcium_energy_water_spec as legacy_schema
-    from cells.models import surface_calcium_energy_water as legacy
+    from cells.legacy.core import surface_calcium_energy_water_spec as legacy_schema
+    from cells.legacy.models import surface_calcium_energy_water as legacy
     from validation.tissue import calcium_energy_water_fixtures as legacy_inputs
 
     _, spec, state, p, u = initial("water", "legacy53")
@@ -181,7 +181,7 @@ def test_legacy53_state_and_rates_match_the_unchanged_v1_family():
 
 
 def test_v1_does_not_silently_admit_the_new_hcn_laws():
-    from cells.core import surface_calcium_energy_water_spec as legacy
+    from cells.legacy.core import surface_calcium_energy_water_spec as legacy
     from validation.tissue import calcium_energy_water_hcn_extra_fixtures as inputs
 
     raw = inputs.definition()

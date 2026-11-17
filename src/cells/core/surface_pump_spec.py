@@ -17,11 +17,9 @@ from dataclasses import asdict, dataclass, replace
 
 from cells.core import surface_kinetic_spec as kinetic
 from cells.core import surface_tissue_spec as base
-from cells.core.bioelectric_spec import positive
-from cells.core.kinetic_finite_spec import parse_pump, pump_to_dict
-from cells.core.multispecies_spec import identifier
+from cells.core.kinetic_pump_spec import parse_pump, pump_to_dict
+from cells.core.spec_values import fraction, identifier, positive
 from cells.core.specs import ChannelChange, ConfigError, _fields, _number
-from cells.core.voltage_gated_spec import fraction
 from cells.numerics import surface_imex as imex
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from cells.processes import junction_gate

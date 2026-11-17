@@ -5,12 +5,12 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from cells.core import surface_energy_spec as schema
 from cells.core import surface_kinetic_spec as prior
 from cells.core.runner import timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.models import surface_energy as model
+from cells.legacy.core import surface_energy_spec as schema
+from cells.legacy.models import surface_energy as model
 from cells.models.registry import get_model
 from validation.tissue import surface_energy_fixtures as fixtures
 

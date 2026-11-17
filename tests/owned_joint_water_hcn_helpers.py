@@ -7,12 +7,12 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core import surface_calcium_energy_water_hcn_extra_spec as water_spec
-from cells.core import surface_calcium_energy_water_repair_hcn_extra_spec as repair_spec
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
-from cells.models import surface_calcium_energy_water_hcn_extra as water
-from cells.models import surface_calcium_energy_water_repair_hcn_extra as repair
+from cells.legacy.core import surface_calcium_energy_water_hcn_extra_spec as water_spec
+from cells.legacy.core import surface_calcium_energy_water_repair_hcn_extra_spec as repair_spec
+from cells.legacy.models import surface_calcium_energy_water_hcn_extra as water
+from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as repair
 from cells.numerics.fixed_step import rk4_step
 from validation.tissue import calcium_energy_water_hcn_extra_fixtures as water_inputs
 from validation.tissue import calcium_energy_water_hcn_extra_reference as water_ref

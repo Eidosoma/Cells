@@ -1324,12 +1324,12 @@ outside this composition. Current status and results belong in
 ## Lateral membrane redistribution
 
 The independent component
-[`cells.numerics.membrane_redistribution`](../src/cells/numerics/membrane_redistribution.py)
+[`cells.legacy.numerics.membrane_redistribution`](../src/cells/legacy/numerics/membrane_redistribution.py)
 implements `fixed_surface_conservative_drift_diffusion@1`: movement of
 membrane-bound populations between patches of the **same cell**, on a fixed
 surface graph. The ordinary `resolved_redistribution@1` composition now connects
 neutral always-open channel populations to local ionic transport. The
-[`resolved_redistribution@2` extension](../src/cells/models/surface_mobile_pump.py)
+[`resolved_redistribution@2` extension](../src/cells/legacy/models/surface_mobile_pump.py)
 adds neutral mobile Na/K ATPase populations, as specified below. Voltage-gated
 populations remain separate work. Scheduled availability and physical movement
 remain distinct; current qualification evidence is recorded in
@@ -1388,7 +1388,7 @@ records inputs, loaded source and hashes. This conservative surface-edge law is
 independently specified and has not established native BETSE trajectory parity.
 No upstream code or missing helper was substituted into that probe.
 
-The [ordinary composition](../src/cells/models/surface_redistribution.py) adds
+The [ordinary composition](../src/cells/legacy/models/surface_redistribution.py) adds
 three complete state fields to the resolved passive tissue model:
 `surface_amount_increment[population, patch]`,
 `surface_transferred[population, surface_edge]`, and
@@ -2613,13 +2613,13 @@ are separate claims; this version does not establish whole-tissue BETSE parity.
 
 `resolved_calcium_energy_irreversible_transport@1` is a separate composition
 over the same 56-law calcium/ER and finite-fuel parent. The
-[schema](../src/cells/core/surface_calcium_energy_irreversible_transport_spec.py)
+[schema](../src/cells/legacy/core/surface_calcium_energy_irreversible_transport_spec.py)
 retains native `null` or string `"None"` standard-energy declarations and uses
 `irreversible_species_transport_explicit_physical_work@1` accounting. Every route
 still preserves its species/coefficient map, binds one physical membrane and
 updates its actual finite exterior and free cytosolic owners.
 
-The [model](../src/cells/models/surface_calcium_energy_irreversible_transport.py)
+The [model](../src/cells/legacy/models/surface_calcium_energy_irreversible_transport.py)
 uses the frozen native rate branch without its thermodynamic reversal term.
 Its native reaction-energy diagnostic is zero. Physical transfer energy and
 heat are computed separately from the actual concentrations and solved voltage.
@@ -2663,7 +2663,7 @@ their own integration and evidence.
 
 `resolved_calcium_energy_atp_transport@1` couples a restricted native
 transporter reaction directly to the membrane owner's finite ATP/ADP/phosphate
-pool. Its [schema](../src/cells/core/surface_calcium_energy_atp_transport_spec.py)
+pool. Its [schema](../src/cells/legacy/core/surface_calcium_energy_atp_transport_spec.py)
 requires exactly **ATP → ADP + Pi** for each forward cycle. Ionic reactant and
 product coefficient maps otherwise match; ions move across the specified
 membrane without conversion. The drive explicitly names the inside cell's
@@ -2679,7 +2679,7 @@ the native quotient's remaining `1e-3` factor gives the physical 1-M hydrolysis
 quotient. This correspondence does not generalize to arbitrary conversions or
 substrate powers without another derivation.
 
-The [model](../src/cells/models/surface_calcium_energy_atp_transport.py) uses the
+The [model](../src/cells/legacy/models/surface_calcium_energy_atp_transport.py) uses the
 actual total reaction energy:
 
 `Greaction = Gfuel_hydrolysis + Gionic_chemical + Gelectrical`.
@@ -2779,7 +2779,7 @@ GPU execution and wetlab calibration remain outside this version's claim.
 `resolved_tissue_excision@1` connects the conservative
 [cut/remap component](../agent-work/cells-worker-01/workfiles/BETSE_TISSUE_CUT_HANDOFF.md)
 to the twelve-field passive `resolved_tissue@1` solver. The public operation
-`cells.core.excision.excise(spec, checkpoint, removed_cell_ids)` removes
+`cells.legacy.core.excision.excise(spec, checkpoint, removed_cell_ids)` removes
 named cells, their membranes and incident junctions, then rebuilds the field
 operators for the surviving tissue. It supports finite extracellular owners
 and maintained baths under the existing field-solvability rules.
@@ -3046,7 +3046,7 @@ mitochondrial and water adapters below retain their additional owners.
 
 `resolved_calcium_energy_irreversible_transport_excision@1` extends the same
 explicit removal contract to the native `null`/`"None"` transport composition.
-Its [adapter](../src/cells/core/calcium_energy_irreversible_transport_tissue_excision.py)
+Its [adapter](../src/cells/legacy/core/calcium_energy_irreversible_transport_tissue_excision.py)
 retains every surviving route's membrane owner, substrate configuration,
 regulators, density and signed external work. It uses the irreversible rate and
 physical heat checks throughout source validation, rebuilding and continuation.
@@ -3076,7 +3076,7 @@ long-term recovery or GPU execution claim.
 
 `resolved_calcium_energy_atp_transport_excision@1` extends removal to configured
 routes that consume or synthesize ATP in their actual membrane owner's finite
-pool. The [adapter](../src/cells/core/calcium_energy_atp_transport_tissue_excision.py)
+pool. The [adapter](../src/cells/legacy/core/calcium_energy_atp_transport_tissue_excision.py)
 preserves every surviving route's membrane, fuel pool, kinetics and regulator
 definitions. Removal retains the ordinary one-ATP reaction and its internal
 fuel-work accounting; it adds no external transport-work supply.
@@ -3257,7 +3257,7 @@ The [direct component contract](../agent-work/cells-worker-01/workfiles/TISSUE_P
 defines the source correspondence. The
 [composition contract](../agent-work/cells-worker-01/workfiles/TISSUE_PROFILE_COMPOSITION_HANDOFF.md)
 and explicit `SCHEMAS` map in
-[the adapter](../src/cells/core/tissue_profile_composition_preparation.py) cover
+[the adapter](../src/cells/legacy/core/tissue_profile_composition_preparation.py) cover
 the intermediate `resolved_tissue@2` through `@11` models and 29 composed schemas.
 Versions `@1` and `@12` use the direct bridge, giving 41 supported model schemas.
 Their full initial physical state, organelle and

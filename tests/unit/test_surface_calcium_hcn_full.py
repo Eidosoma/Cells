@@ -19,7 +19,7 @@ from cells.core.resources import trace_bytes
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.specs import ConfigError, parse_spec
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_calcium_hcn as model
+from cells.legacy.models import surface_calcium_hcn as model
 from tests.unit import test_surface_calcium as shared
 from tests.unit import test_surface_calcium_hcn as wiring
 from tests.unit.test_surface_kinetic import assert_states, exact

@@ -13,7 +13,7 @@ from cells.assembly.engine import device_for
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
-from cells.models import surface_energy as model
+from cells.legacy.models import surface_energy as model
 from cells.models import surface_tissue as passive
 from cells.numerics.fixed_step import rk4_checked_step
 from tests.unit.test_surface_repair_full import compare_backend

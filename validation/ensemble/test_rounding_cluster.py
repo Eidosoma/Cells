@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from cells.assembly_cell.io import flatten
-from cells.assembly_cluster import engine
+from cells.legacy.assembly_cell.io import flatten
+from cells.legacy.assembly_cluster import engine
 from validation.ensemble import rounding_cluster as trace
 from validation.ensemble.test_parallel_cluster import physical_spec
 

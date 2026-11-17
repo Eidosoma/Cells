@@ -17,16 +17,16 @@ LAW = "cells_fixed_seed_environment_prerequisite_correspondence@1"
 INPUT_KIND = "cells.fixed_seed_environment_correspondence_declaration@1"
 BRIDGE_REFERENCE_SHA256 = "be1b7781c6b343ace7938042d36ce62212534f0feb10d5fe600f70593bb3a2d1"
 SOURCE_PINS = {
-    "processes/stable_seed_control_volume_physical_bridge.py": (
+    "legacy/processes/stable_seed_control_volume_physical_bridge.py": (
         "177935df202c941b7f89379de48cdcea915296029e7fecaa4ca8e538e9c28a09"
     ),
-    "processes/finite_ecm_polygon_geometry.py": (
+    "legacy/processes/finite_ecm_polygon_geometry.py": (
         "79a5341ab81e68405de0be936ecba6649fd6af577809ce36291d22c59f28dc66"
     ),
-    "core/finite_ecm_polygon_preparation.py": (
+    "legacy/core/finite_ecm_polygon_preparation.py": (
         "b9f10b6947b92a9b8667610da00376b757c1b1ec78c1b62f590c6d98a77c9e82"
     ),
-    "core/active_ecm_polygon_preparation.py": (
+    "legacy/core/active_ecm_polygon_preparation.py": (
         "ae021dae4aacf82e32e6255c1c567d37667c976b6b151c29647287721281bddc"
     ),
 }

@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 PREFIX = "validation/geometry/stable_seed_partition_trajectory_"
-CORE = "src/cells/processes/stable_seed_partition_trajectory.py"
+CORE = "src/cells/legacy/processes/stable_seed_partition_trajectory.py"
 TEST = "tests/unit/test_stable_seed_partition_trajectory.py"
 PARENT = "validation/geometry/stable_seed_partition_advance_refinement_"
 WORK = Path("/mnt/workspaces/Cells")
@@ -123,7 +123,7 @@ def preserved(project):
     for rel, pin in old.items():
         assert sha(project / rel) == pin == sha(FIRST / "original-source-capture" / rel), rel
     old_pins = literal(
-        tree(project / "src/cells/processes/stable_seed_partition_advance.py"), "SOURCE_PINS"
+        tree(project / "src/cells/legacy/processes/stable_seed_partition_advance.py"), "SOURCE_PINS"
     )
     for rel, pin in old_pins.items():
         assert sha(project / rel) == pin, rel

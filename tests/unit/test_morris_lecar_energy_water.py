@@ -9,14 +9,14 @@ import pytest
 from cells.core.runner import run, timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_energy_spec import initial_ionic_spec
-from cells.core.surface_energy_water_spec import energy_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_energy as old_energy
-from cells.models import surface_energy_morris_lecar as energy
-from cells.models import surface_energy_water as old_water
-from cells.models import surface_energy_water_morris_lecar as water
+from cells.legacy.core.surface_energy_spec import initial_ionic_spec
+from cells.legacy.core.surface_energy_water_spec import energy_spec
+from cells.legacy.models import surface_energy as old_energy
+from cells.legacy.models import surface_energy_morris_lecar as energy
+from cells.legacy.models import surface_energy_water as old_water
+from cells.legacy.models import surface_energy_water_morris_lecar as water
 from cells.models.registry import get_model
 from cells.processes import morris_lecar_catalog as catalog
 from cells.processes.electrochemistry import R

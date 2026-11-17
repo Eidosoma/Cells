@@ -24,12 +24,32 @@ def stem(family):
     return "surface_calcium_energy_water" + ("_repair" if family == "repair" else "")
 
 
+# Each family's definition and model modules at version 1, and at version 2 (hcn_extra), named in
+# full (D188 R2).
+COMPONENTS = {
+    ("water", 1): (
+        "cells.legacy.core.surface_calcium_energy_water_spec",
+        "cells.legacy.models.surface_calcium_energy_water",
+    ),
+    ("water", 2): (
+        "cells.legacy.core.surface_calcium_energy_water_hcn_extra_spec",
+        "cells.legacy.models.surface_calcium_energy_water_hcn_extra",
+    ),
+    ("repair", 1): (
+        "cells.legacy.core.surface_calcium_energy_water_repair_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair",
+    ),
+    ("repair", 2): (
+        "cells.legacy.core.surface_calcium_energy_water_repair_hcn_extra_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_hcn_extra",
+    ),
+}
+
+
 def components(family, *, version=2):
-    name = stem(family) + ("_hcn_extra" if version == 2 else "")
-    return (
-        importlib.import_module("cells.core." + name + "_spec"),
-        importlib.import_module("cells.models." + name),
-    )
+    stem(family)  # Refuses an unknown family.
+    spec, model = COMPONENTS[family, 2 if version == 2 else 1]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def definition(family, *, backend="cpu", jit=False, version=2):

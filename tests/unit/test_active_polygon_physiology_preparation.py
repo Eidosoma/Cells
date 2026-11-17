@@ -15,8 +15,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import active_polygon_physiology_preparation as active
 from cells.core.schedule import control_values
+from cells.legacy.core import active_polygon_physiology_preparation as active
 from cells.processes import conservative_polygon_geometry as geometry
 from validation.geometry import active_polygon_physiology_fixtures as fixtures
 from validation.geometry import active_polygon_physiology_reference as reference
@@ -89,8 +89,8 @@ def prepared(name, case):
 def initial_packet(name, packet):
     raw = packet["definition"]
     target = raw["model"]["id"]
-    parser = importlib.import_module("cells.core." + active.FAMILIES[target][0])
-    model = importlib.import_module("cells.models." + active.FAMILIES[target][1])
+    parser = importlib.import_module(active.FAMILIES[target][0])
+    model = importlib.import_module(active.FAMILIES[target][1])
     try:
         spec = parser.parse(raw)
         state, p = model.initial_values(spec)

@@ -1,6 +1,6 @@
 # Finite ATP, ADP and phosphate pools
 
-`cells.processes.finite_energy` implements a standalone finite-energy component
+`cells.legacy.processes.finite_energy` implements a standalone finite-energy component
 for the declared transformed law `finite_atp_adp_pi_transformed@1`. It supplies
 current metabolic concentrations to the existing Na/K process without changing
 that process or its maintained-reservoir configurations. Model, schema,

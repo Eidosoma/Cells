@@ -18,7 +18,7 @@ from cells.core.schedule import PhysicalIonicGraphControl, control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
-from cells.models import junction_finite_extracellular as model
+from cells.legacy.models import junction_finite_extracellular as model
 from cells.models.registry import get_model
 from cells.processes import junction_gate as gate
 from cells.processes.electrochemistry import CHARGE_PER_FMOL

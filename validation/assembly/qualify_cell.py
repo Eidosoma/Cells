@@ -2150,7 +2150,7 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
         write_json(output / "cluster-protocol.json", cluster_protocol)
-        from cells.assembly_cluster.spec import load_spec
+        from cells.legacy.assembly_cluster.spec import load_spec
 
         load_spec(source / "configs/assembly_regulated_cluster.json")
         cluster_counts = {}

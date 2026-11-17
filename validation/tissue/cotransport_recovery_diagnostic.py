@@ -84,9 +84,9 @@ def production(root):
     from cells.core.grid import EventGrid
     from cells.core.schedule import control_values
     from cells.core.specs import parse_spec
-    from cells.models import surface_cotransport_water as model
+    from cells.legacy.models import surface_cotransport_water as model
+    from cells.legacy.processes import finite_energy as fuel
     from cells.numerics.fixed_step import rk4_step
-    from cells.processes import finite_energy as fuel
 
     inputs, off, raw = load(root)
     spec, off_spec = parse_spec(raw), parse_spec(off)

@@ -2,8 +2,8 @@
 
 from copy import deepcopy
 
-from cells.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.ensemble.families import parse_definition, population
+from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from tests.unit.test_assembly_cluster import ensemble_definition
 from tests.unit.test_integrated_ensemble import experiment
 from tests.unit.test_morris_lecar_catalog_planning import verify

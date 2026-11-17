@@ -7,11 +7,12 @@ import pytest
 from cells.core.runner import run, timeline
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_water_kinetic_spec import prior_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_kinetic, surface_water_kinetic
-from cells.models import surface_water_morris_lecar as model
+from cells.legacy.core.surface_water_kinetic_spec import prior_spec
+from cells.legacy.models import surface_water_kinetic
+from cells.legacy.models import surface_water_morris_lecar as model
+from cells.models import surface_kinetic
 from cells.models.registry import get_model
 from cells.processes import morris_lecar_catalog as catalog
 from tests.unit.test_surface_kinetic import exact

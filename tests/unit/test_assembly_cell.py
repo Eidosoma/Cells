@@ -13,13 +13,13 @@ from cells.assembly.engine import device_for
 from cells.assembly.graph import OPEN_CHAIN
 from cells.assembly.kernel import random_pair
 from cells.assembly.spec import AssemblyError
-from cells.assembly_cell import engine
-from cells.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.assembly_cell.spec import parse_spec
 from cells.assembly_pool import reference
 from cells.core.errors import NumericalError
 from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.models import kinetic_finite_extracellular as ionic
+from cells.legacy.assembly_cell import engine
+from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
+from cells.legacy.assembly_cell.spec import parse_spec
+from cells.legacy.models import kinetic_finite_extracellular as ionic
 
 BACKEND = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
 CONFIG = Path(__file__).resolve().parents[2] / "configs/assembly_regulated_cell.json"

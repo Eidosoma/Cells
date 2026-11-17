@@ -7,27 +7,35 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import joint_water_barrier_phase_handoff as handoff
 from cells.core.grid import EventGrid
 from cells.core.runner import validate_checkpoint
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import initialise
+from cells.legacy.core import joint_water_barrier_phase_handoff as handoff
+from cells.legacy.tissue_phase import prepare_request
 from cells.numerics.fixed_step import rk4_step
-from cells.tissue_phase import prepare_request
 from tests.joint_water_barrier_dispatch_fixtures import DT, OWNERS, definition
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
+
+# Each family's definition and model modules, named in full (D188 R2).
+COMPONENTS = {
+    "water": (
+        "cells.legacy.core.surface_calcium_energy_water_barrier_epoch_spec",
+        "cells.legacy.models.surface_calcium_energy_water_barrier_epoch",
+    ),
+    "repair": (
+        "cells.legacy.core.surface_calcium_energy_water_repair_barrier_epoch_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_barrier_epoch",
+    ),
+}
 
 
 def components(family):
     if family not in OWNERS:
         raise ValueError(family)
-    name = "surface_calcium_energy_water" + ("_repair" if family == "repair" else "")
-    name += "_barrier_epoch"
-    return (
-        importlib.import_module("cells.core." + name + "_spec"),
-        importlib.import_module("cells.models." + name),
-    )
+    spec, model = COMPONENTS[family]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 @lru_cache

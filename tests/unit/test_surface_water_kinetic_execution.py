@@ -16,7 +16,7 @@ from cells.core.specs import parse_spec
 from cells.ensemble.families import parse_definition, population
 from cells.ensemble.plan import jupiter_plan, plan
 from cells.io import load_snapshot
-from cells.models import surface_water_kinetic as model
+from cells.legacy.models import surface_water_kinetic as model
 from tests.unit.test_integrated_ensemble import experiment
 from validation.tissue import surface_water_kinetic_fixtures as fixtures
 from validation.tissue import surface_water_kinetic_replay as replay

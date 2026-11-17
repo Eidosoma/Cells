@@ -12,7 +12,7 @@ from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, InputChange, LeakChange, PumpChange, load_spec, parse_spec
 from cells.core.state import BioelectricState, initialise
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import bioelectric_cell as model
+from cells.legacy.models import bioelectric_cell as model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
 from cells.observers import sample_hermite_history, sample_history
 from cells.processes.electrochemistry import (

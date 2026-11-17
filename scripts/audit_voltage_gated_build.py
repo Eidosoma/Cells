@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT))
 from cells.core.specs import load_spec  # noqa: E402
 from cells.io import _sha256 as sha  # noqa: E402
 from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.models import voltage_gated_membrane as model  # noqa: E402
+from cells.legacy.models import voltage_gated_membrane as model  # noqa: E402
 from scripts.audit_multispecies_build import canonical as ionic_canonical  # noqa: E402
 from scripts.audit_multispecies_build import held_controls  # noqa: E402
 from scripts.audit_voltage_gated_reference import replay  # noqa: E402

@@ -5,8 +5,13 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.spatial_extracellular_spec import CLOSURE, FACE_LAW, FIELD_SOLVER, MEMBRANE_LAW
 from cells.core.specs import SPATIAL_EXTRACELLULAR_ID, parse_spec
+from cells.legacy.core.spatial_extracellular_spec import (
+    CLOSURE,
+    FACE_LAW,
+    FIELD_SOLVER,
+    MEMBRANE_LAW,
+)
 from tests import spatial_extracellular_numerical_data as data
 
 ROOT = Path(__file__).resolve().parents[1]

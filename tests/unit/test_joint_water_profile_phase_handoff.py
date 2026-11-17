@@ -10,16 +10,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import joint_water_profile_phase_handoff as bridge
-from cells.core import surface_calcium_energy_water_profile_epoch_spec as water_spec
-from cells.core import surface_calcium_energy_water_repair_profile_epoch_spec as repair_spec
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint, initialise
-from cells.models import surface_calcium_energy_water_profile_epoch as water
-from cells.models import surface_calcium_energy_water_repair_profile_epoch as repair
+from cells.legacy.core import joint_water_profile_phase_handoff as bridge
+from cells.legacy.core import surface_calcium_energy_water_profile_epoch_spec as water_spec
+from cells.legacy.core import surface_calcium_energy_water_repair_profile_epoch_spec as repair_spec
+from cells.legacy.models import surface_calcium_energy_water_profile_epoch as water
+from cells.legacy.models import surface_calcium_energy_water_repair_profile_epoch as repair
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_joint_water_profile_interventions import OWNERS as PROFILES
 from tests.unit.test_joint_water_profile_interventions import build

@@ -7,12 +7,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import surface_cotransport_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
-from cells.models import surface_cotransport as model
-from cells.models import surface_energy as energy
+from cells.legacy.core import surface_cotransport_spec as schema
+from cells.legacy.models import surface_cotransport as model
+from cells.legacy.models import surface_energy as energy
 from validation.tissue import surface_cotransport_fixtures as fixtures
 from validation.tissue import surface_cotransport_reference as reference
 from validation.transport import cotransport_reference as chemistry

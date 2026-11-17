@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError, parse_spec
-from cells.tissue_phase import prepare_request
+from cells.legacy.tissue_phase import prepare_request
 from tests import owned_barrier_phase_fixtures as fixtures
 from tests.unit.test_owned_barrier_phase_reference import evidence, setup
 from validation.topology import owned_barrier_phase_handoff_reference as reference

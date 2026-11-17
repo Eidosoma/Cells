@@ -17,10 +17,10 @@ from cells.core.batch import BatchSpec, WorldSpec, run_batch
 from cells.core.batch_windows import iter_batch_windows
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.specs import parse_spec
-from cells.core.surface_energy_spec import initial_ionic_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_energy as model
+from cells.legacy.core.surface_energy_spec import initial_ionic_spec
+from cells.legacy.models import surface_energy as model
 from validation.tissue import surface_energy_fixtures as fixtures
 
 CHECKPOINT_TIME = fixtures.CHECKPOINT_TIME

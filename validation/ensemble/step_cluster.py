@@ -18,12 +18,12 @@ import jax.numpy as jnp
 import numpy as np
 from jax.custom_batching import sequential_vmap
 
-from cells.assembly_cell.io import flatten
-from cells.assembly_cluster import engine, kernel
-from cells.assembly_cluster.spec import parse_spec
 from cells.ensemble import cli
-from cells.models import finite_extracellular as finite
-from cells.models import multispecies_membrane as membrane
+from cells.legacy.assembly_cell.io import flatten
+from cells.legacy.assembly_cluster import engine, kernel
+from cells.legacy.assembly_cluster.spec import parse_spec
+from cells.legacy.models import finite_extracellular as finite
+from cells.legacy.models import multispecies_membrane as membrane
 from cells.numerics import extracellular_field as field
 
 if __package__:

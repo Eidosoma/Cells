@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+CORE = "src/cells/legacy/processes/stable_seed_control_volume_physical_bridge.py"
 REFERENCE = "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
 FIXTURES = "validation/geometry/stable_seed_control_volume_physical_bridge_fixtures.py"
 TEST = "tests/unit/test_stable_seed_control_volume_physical_bridge.py"
@@ -257,7 +257,7 @@ def audit(project):
         reference, "CONSTRUCTOR_SOURCE_REVIEW_SHA256"
     )
     physical_source = ast.parse(
-        (project / "src/cells/core/conservative_polygon_tissue_preparation.py").read_bytes()
+        (project / "src/cells/legacy/core/conservative_polygon_tissue_preparation.py").read_bytes()
     )
     assert literal(physical_source, "ADMISSION_SOURCE_SHA256") == literal(
         reference, "PHYSICAL_PINS"

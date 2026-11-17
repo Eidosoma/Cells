@@ -7,7 +7,7 @@ from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
 from cells.io import load_snapshot, write_run
-from cells.models import surface_repair_morris_lecar as model
+from cells.legacy.models import surface_repair_morris_lecar as model
 from cells.processes import morris_lecar_catalog as catalog
 from tests.unit.test_morris_lecar_catalog import perturb_free_calcium
 from tests.unit.test_surface_catalog import evidence

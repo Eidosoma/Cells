@@ -14,8 +14,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import surface_active_profile_interventions_spec as definition
-from cells.core import tissue_profile_preparation as static
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.runner import branch_checkpoint, run, validate_checkpoint
@@ -23,11 +21,13 @@ from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_active_profile_interventions as model
-from cells.models import surface_hcn_extra as parent
+from cells.legacy.core import surface_active_profile_interventions_spec as definition
+from cells.legacy.core import tissue_profile_preparation as static
+from cells.legacy.models import surface_active_profile_interventions as model
+from cells.legacy.models import surface_hcn_extra as parent
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
 from cells.processes import hcn_extra_catalog
-from cells.processes import tissue_target_selectors as native
 from validation.topology import surface_active_profile_interventions_fixtures as fixtures
 from validation.topology import surface_active_profile_interventions_reference as reference
 

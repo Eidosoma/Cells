@@ -3,11 +3,11 @@
 from copy import deepcopy
 from functools import lru_cache
 
-from cells.core import owned_calcium_profile_phase_handoff as handoff
-from cells.core import surface_calcium_energy_profile_epoch_spec as fuel_schema
-from cells.core import surface_calcium_profile_epoch_spec as calcium_schema
-from cells.models import surface_calcium_energy_profile_epoch as fuel
-from cells.models import surface_calcium_profile_epoch as calcium
+from cells.legacy.core import owned_calcium_profile_phase_handoff as handoff
+from cells.legacy.core import surface_calcium_energy_profile_epoch_spec as fuel_schema
+from cells.legacy.core import surface_calcium_profile_epoch_spec as calcium_schema
+from cells.legacy.models import surface_calcium_energy_profile_epoch as fuel
+from cells.legacy.models import surface_calcium_profile_epoch as calcium
 from tests.unit.test_owned_calcium_profile_interventions_dispatch import (
     definition,
     evolved_checkpoint,

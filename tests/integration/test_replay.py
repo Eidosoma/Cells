@@ -105,7 +105,7 @@ def test_incompatible_snapshot_is_refused(spec, tmp_path, mode):
         if mode == "schema":
             manifest["schema_version"] = 99
         elif mode == "source":
-            manifest["source_hashes"]["models/source_decay.py"] = "wrong"
+            manifest["source_hashes"]["legacy/models/source_decay.py"] = "wrong"
         elif mode == "runtime":
             manifest["runtime"]["python"] = "0.0.0"
         elif mode == "clock":
@@ -167,4 +167,4 @@ def test_outputs_and_snapshots_never_overwrite(spec, tmp_path):
     with np.load(output / "trajectory.npz", allow_pickle=False) as data:
         np.testing.assert_array_equal(data["amount"], result.amount)
     assert manifest["runtime"]["packages"]["jax"]
-    assert manifest["source_hashes"]["models/source_decay.py"]
+    assert manifest["source_hashes"]["legacy/models/source_decay.py"]

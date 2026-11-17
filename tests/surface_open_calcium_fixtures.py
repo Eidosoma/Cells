@@ -8,13 +8,13 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core import surface_open_calcium_energy_spec as energy_schema
-from cells.core import surface_open_calcium_spec as calcium_schema
 from cells.core.schedule import control_values, event_index
 from cells.core.specs import parse_spec
 from cells.core.state import Checkpoint
-from cells.models import surface_open_calcium as calcium
-from cells.models import surface_open_calcium_energy as energy
+from cells.legacy.core import surface_open_calcium_energy_spec as energy_schema
+from cells.legacy.core import surface_open_calcium_spec as calcium_schema
+from cells.legacy.models import surface_open_calcium as calcium
+from cells.legacy.models import surface_open_calcium_energy as energy
 from cells.numerics.fixed_step import rk4_checked_step
 from validation.tissue import open_calcium_fixtures as fixtures
 

@@ -23,7 +23,7 @@ from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy, iter_windows, merge_diagnostics
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_cotransport_water as model
+from cells.legacy.models import surface_cotransport_water as model
 from cells.numerics.fixed_step import rk4_checked_step
 from validation.tissue import cotransport_material_coordinates as material
 from validation.tissue import surface_cotransport_water_reference as reference

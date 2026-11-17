@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-CORE = "src/cells/processes/stable_seed_partition_advance.py"
+CORE = "src/cells/legacy/processes/stable_seed_partition_advance.py"
 TEST = "tests/unit/test_stable_seed_partition_advance.py"
 INITIAL = Path("/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01")
 INITIAL_SHA256 = "92caecd20cba1973336f14a005492a144393740fae3d6cd3be32a2636a8fcf26"

@@ -43,7 +43,7 @@ CELLS_FILES = (
     "src/cells/core/schedule.py",
     "src/cells/core/grid.py",
     "src/cells/core/runner.py",
-    "src/cells/models/finite_extracellular.py",
+    "src/cells/legacy/models/finite_extracellular.py",
     "src/cells/numerics/fixed_step.py",
 )
 

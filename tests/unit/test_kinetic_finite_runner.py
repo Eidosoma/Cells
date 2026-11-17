@@ -15,7 +15,7 @@ from cells.core.schedule import PhysicalIonicGraphControl, control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import kinetic_finite_extracellular as model
+from cells.legacy.models import kinetic_finite_extracellular as model
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests.kinetic_finite_fixtures import ROOT, canonical, definition, evidence, spec_for
 

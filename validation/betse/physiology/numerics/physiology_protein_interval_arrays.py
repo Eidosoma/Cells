@@ -12,9 +12,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.models import compartment_reactions as chemistry
-from cells.models import surface_calcium as calcium
-from cells.models import surface_calcium_energy as fuel
+from cells.legacy.models import compartment_reactions as chemistry
+from cells.legacy.models import surface_calcium as calcium
+from cells.legacy.models import surface_calcium_energy as fuel
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field as field

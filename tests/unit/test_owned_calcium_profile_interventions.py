@@ -14,22 +14,22 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_profile_interventions_spec as fuel_spec
-from cells.core import surface_calcium_profile_interventions_spec as calcium_spec
-from cells.core import tissue_profile_composition_preparation as composed
-from cells.core import tissue_profile_preparation as direct
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_calcium_cav as calcium_parent
-from cells.models import surface_calcium_energy_hcn_extra as fuel_parent
-from cells.models import surface_calcium_energy_profile_interventions as fuel
-from cells.models import surface_calcium_profile_interventions as calcium
+from cells.legacy.core import surface_calcium_energy_profile_interventions_spec as fuel_spec
+from cells.legacy.core import surface_calcium_profile_interventions_spec as calcium_spec
+from cells.legacy.core import tissue_profile_composition_preparation as composed
+from cells.legacy.core import tissue_profile_preparation as direct
+from cells.legacy.models import surface_calcium_cav as calcium_parent
+from cells.legacy.models import surface_calcium_energy_hcn_extra as fuel_parent
+from cells.legacy.models import surface_calcium_energy_profile_interventions as fuel
+from cells.legacy.models import surface_calcium_profile_interventions as calcium
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import tissue_target_selectors as native
 from validation.topology import owned_calcium_profile_interventions_fixtures as fixtures
 from validation.topology import owned_calcium_profile_interventions_reference as reference
 
@@ -626,7 +626,7 @@ def test_critical_dependencies_and_owner_call_graph_are_pinned():
         ("spatial_calcium", "store_state"),
     ):
         assert flow(module, name) == dict(attributes=[], calls=["getattr"], other=[])
-    from cells.models import spatial_calcium
+    from cells.legacy.models import spatial_calcium
 
     assert "membrane_transferred" not in spatial_calcium.ER_FIELDS
     for module in (reference, fixtures):

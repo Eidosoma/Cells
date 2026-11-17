@@ -7,8 +7,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.models import surface_open_calcium as open_calcium
-from cells.models import surface_open_calcium_energy as open_fuel
+from cells.legacy.models import surface_open_calcium as open_calcium
+from cells.legacy.models import surface_open_calcium_energy as open_fuel
 from cells.processes.electrochemistry import R
 from validation.betse.physiology.core import physiology_temperature as temperature
 from validation.betse.physiology.models import physiology_permeability_view as ordinary

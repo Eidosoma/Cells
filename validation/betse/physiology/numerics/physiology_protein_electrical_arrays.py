@@ -9,7 +9,7 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
-from cells.models import surface_calcium as calcium
+from cells.legacy.models import surface_calcium as calcium
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field as field
 from cells.numerics import surface_transport as transport

@@ -3,7 +3,7 @@
 import importlib
 from copy import deepcopy
 
-from cells.tissue_profiles import REQUEST_KIND, prepare_request
+from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
 from validation.topology import joint_water_profile_interventions_fixtures as physical
 from validation.topology.owned_calcium_profile_interventions_fixtures import _scaled
 
@@ -12,15 +12,24 @@ FAMILIES = physical.FAMILIES
 FIELDS = {"water": 44, "repair": 49}
 
 
+# Each family's definition and model modules, named in full (D188 R2).
+COMPONENTS = {
+    "water": (
+        "cells.legacy.core.surface_calcium_energy_water_profile_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_profile_interventions",
+    ),
+    "repair": (
+        "cells.legacy.core.surface_calcium_energy_water_repair_profile_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_profile_interventions",
+    ),
+}
+
+
 def components(family):
     if family not in FAMILIES:
         raise ValueError(family)
-    name = "surface_calcium_energy_water" + ("_repair" if family == "repair" else "")
-    name += "_profile_interventions"
-    return (
-        importlib.import_module("cells.core." + name + "_spec"),
-        importlib.import_module("cells.models." + name),
-    )
+    spec, model = COMPONENTS[family]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def definition(family, phase="SIM", *, backend="cpu", jit=False):

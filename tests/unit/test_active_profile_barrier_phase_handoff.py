@@ -6,14 +6,14 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import active_profile_barrier_phase_handoff as bridge
-from cells.core import surface_active_profile_barrier_epoch_spec as schema
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
-from cells.models import surface_active_profile_barrier_epoch as model
-from cells.models import surface_active_profile_barrier_interventions as scheduled
-from cells.tissue_phase import prepare_request, replay
+from cells.legacy.core import active_profile_barrier_phase_handoff as bridge
+from cells.legacy.core import surface_active_profile_barrier_epoch_spec as schema
+from cells.legacy.models import surface_active_profile_barrier_epoch as model
+from cells.legacy.models import surface_active_profile_barrier_interventions as scheduled
+from cells.legacy.tissue_phase import prepare_request, replay
 from tests.active_profile_barrier_phase_fixtures import DT, prepared, request, source_checkpoint
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact

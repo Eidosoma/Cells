@@ -13,33 +13,51 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import owned_calcium_profile_barrier_preparation as preparation
-from cells.core import tissue_profile_composition_preparation as profiles
-from cells.core import tissue_profile_preparation as direct
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import initialise
 from cells.io import load_snapshot, write_snapshot
+from cells.legacy.core import owned_calcium_profile_barrier_preparation as preparation
+from cells.legacy.core import tissue_profile_composition_preparation as profiles
+from cells.legacy.core import tissue_profile_preparation as direct
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import tissue_target_selectors as native
 from validation.transport import owned_calcium_profile_barrier_fixtures as fixtures
 from validation.transport import owned_calcium_profile_barrier_reference as reference
 
 FAMILIES = [pytest.param("calcium", id="chemical_owner"), pytest.param("energy", id="fuel_owner")]
 
 
+# Each family's definition and model modules, named in full (D188 R2): its profile barrier
+# family, and the barrier-only family it reduces to.
+MODULES = {
+    "calcium": (
+        "cells.legacy.core.surface_calcium_profile_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_profile_barrier_interventions",
+    ),
+    "energy": (
+        "cells.legacy.core.surface_calcium_energy_profile_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_profile_barrier_interventions",
+    ),
+}
+BARRIER_MODULES = {
+    "calcium": (
+        "cells.legacy.core.surface_calcium_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_barrier_interventions",
+    ),
+    "energy": (
+        "cells.legacy.core.surface_calcium_energy_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_barrier_interventions",
+    ),
+}
+
+
 def modules(family):
-    stem = (
-        "surface_calcium"
-        + ("_energy" if family == "energy" else "")
-        + "_profile_barrier_interventions"
-    )
-    return importlib.import_module("cells.core." + stem + "_spec"), importlib.import_module(
-        "cells.models." + stem
-    )
+    spec, model = MODULES["energy" if family == "energy" else "calcium"]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def evidence(name, record, arrays=None):
@@ -270,13 +288,9 @@ def test_exact_single_schedule_reductions_keep_full_owner(family, case):
             <= 1
         )
         if case == "barrier-only":
-            stem = (
-                "surface_calcium"
-                + ("_energy" if family == "energy" else "")
-                + "_barrier_interventions"
-            )
-            bs = importlib.import_module("cells.core." + stem + "_spec")
-            bm = importlib.import_module("cells.models." + stem)
+            spec_name, model_name = BARRIER_MODULES["energy" if family == "energy" else "calcium"]
+            bs = importlib.import_module(spec_name)
+            bm = importlib.import_module(model_name)
             alone = deepcopy(raw)
             for key in (
                 "coupled_preparation",
@@ -350,7 +364,7 @@ def test_four_step_conservation_actual_pool_and_closed_history(family, case):
         if family == "energy":
             actual = model.parent_state(probe)
             layout = model.parent_layout(p)
-            from cells.models import surface_calcium_energy as fuel
+            from cells.legacy.models import surface_calcium_energy as fuel
 
             np.testing.assert_array_equal(
                 observed.energy_amount_fmol[0], fuel.energy_amounts(actual, layout)
@@ -419,7 +433,7 @@ def test_portable_snapshots_full_controls_and_recipe(family, case, tmp_path):
 
 @pytest.mark.parametrize("family", FAMILIES)
 def test_old_calcium_membrane_runtime_is_never_used(family, monkeypatch):
-    from cells.models import surface_calcium_profile_interventions as old
+    from cells.legacy.models import surface_calcium_profile_interventions as old
 
     def forbidden(*a, **k):
         raise AssertionError("Forbidden calcium@6 membrane runtime")
@@ -525,9 +539,9 @@ def test_closed_history_corruption_and_both_step_bounds_refuse(family, history_n
 
 @pytest.mark.parametrize("family", FAMILIES)
 def test_strong_background_sum_boundary_keeps_full_chemical_and_fuel_guards(family):
-    from cells.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
-    from cells.models import surface_calcium as calcium
-    from cells.models import surface_calcium_energy as fuel
+    from cells.legacy.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
+    from cells.legacy.models import surface_calcium as calcium
+    from cells.legacy.models import surface_calcium_energy as fuel
     from cells.processes import calcium_gates
 
     schema, model = modules(family)

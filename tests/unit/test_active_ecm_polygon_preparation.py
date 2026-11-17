@@ -13,9 +13,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import active_ecm_polygon_preparation as active
 from cells.core.schedule import control_values
-from cells.processes import finite_ecm_polygon_geometry as geometry
+from cells.legacy.core import active_ecm_polygon_preparation as active
+from cells.legacy.processes import finite_ecm_polygon_geometry as geometry
 from validation.geometry import active_ecm_polygon_fixtures as fixtures
 from validation.geometry import active_ecm_polygon_reference as reference
 from validation.geometry import active_ecm_polygon_runtime as runtime
@@ -112,8 +112,8 @@ def prepared(name, case):
 
 def field_packet(name, packet):
     target = packet["definition"]["model"]["id"]
-    parser = importlib.import_module("cells.core." + active.FAMILIES[target][0])
-    model = importlib.import_module("cells.models." + active.FAMILIES[target][1])
+    parser = importlib.import_module(active.FAMILIES[target][0])
+    model = importlib.import_module(active.FAMILIES[target][1])
     try:
         spec = parser.parse(packet["definition"])
         state, p = model.initial_values(spec)

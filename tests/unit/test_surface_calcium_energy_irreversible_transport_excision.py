@@ -8,11 +8,8 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core import calcium_energy_irreversible_transport_tissue_excision as cut_model
-from cells.core import surface_calcium_energy_irreversible_transport_excision_spec as schema
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.errors import NumericalError
-from cells.core.excision import excise
 from cells.core.grid import EventGrid
 from cells.core.runner import timeline
 from cells.core.schedule import control_values, event_index
@@ -20,14 +17,17 @@ from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import Checkpoint
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.excision_io import (
+from cells.io import load_snapshot, write_snapshot
+from cells.legacy.core import calcium_energy_irreversible_transport_tissue_excision as cut_model
+from cells.legacy.core import surface_calcium_energy_irreversible_transport_excision_spec as schema
+from cells.legacy.core.excision import excise
+from cells.legacy.excision_io import (
     CALCIUM_ENERGY_IRREVERSIBLE_TRANSPORT_KIND,
     load_excision,
     write_excision,
 )
-from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_calcium_energy_irreversible_transport as parent
-from cells.models import surface_calcium_energy_irreversible_transport_excision as model
+from cells.legacy.models import surface_calcium_energy_irreversible_transport as parent
+from cells.legacy.models import surface_calcium_energy_irreversible_transport_excision as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_surface_catalog import evidence

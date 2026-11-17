@@ -8,8 +8,8 @@ import runpy
 from pathlib import Path
 
 PREFIX = "validation/geometry/stable_seed_partition_advance_refinement_"
-CORE = "src/cells/processes/stable_seed_partition_advance_refinement.py"
-FIRST_CORE = "src/cells/processes/stable_seed_partition_advance.py"
+CORE = "src/cells/legacy/processes/stable_seed_partition_advance_refinement.py"
+FIRST_CORE = "src/cells/legacy/processes/stable_seed_partition_advance.py"
 REFERENCE = PREFIX + "reference.py"
 DYNAMICS = PREFIX + "dynamics.py"
 TEST = "tests/unit/test_stable_seed_partition_advance_refinement.py"

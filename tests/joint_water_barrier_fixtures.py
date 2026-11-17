@@ -3,19 +3,27 @@
 import importlib
 from copy import deepcopy
 
-from cells.core import environment_barrier_composition_preparation as static
+from cells.legacy.core import environment_barrier_composition_preparation as static
 from validation.transport import joint_water_barrier_interventions_fixtures as fixtures
+
+# Each family's definition and model modules, named in full (D188 R2).
+COMPONENTS = {
+    "water": (
+        "cells.legacy.core.surface_calcium_energy_water_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_barrier_interventions",
+    ),
+    "repair": (
+        "cells.legacy.core.surface_calcium_energy_water_repair_barrier_interventions_spec",
+        "cells.legacy.models.surface_calcium_energy_water_repair_barrier_interventions",
+    ),
+}
 
 
 def components(family):
     if family not in fixtures.FAMILIES:
         raise ValueError(family)
-    module = "surface_calcium_energy_water" + ("_repair" if family == "repair" else "")
-    module += "_barrier_interventions"
-    return (
-        importlib.import_module("cells.core." + module + "_spec"),
-        importlib.import_module("cells.models." + module),
-    )
+    spec, model = COMPONENTS[family]
+    return importlib.import_module(spec), importlib.import_module(model)
 
 
 def definition(family="water", case="partial", *, permuted=False, padded=True):

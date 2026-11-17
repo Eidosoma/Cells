@@ -70,7 +70,7 @@ def closure_terms(value, *, finite_fuel):
     """
     import numpy as np
 
-    from cells.processes import finite_energy as energy
+    from cells.legacy.processes import finite_energy as energy
 
     parent, field = value.parent, value.parent.field
     raw = parent.parent
@@ -120,11 +120,11 @@ def run(bundle, completed, output):
         for dataset in ("ordinary-calcium", "ordinary-energy"):
             finite = dataset.endswith("energy")
             if finite:
-                from cells.core import surface_open_calcium_energy_bath_events_spec as schema
-                from cells.models import surface_open_calcium_energy_bath_events as model
+                from cells.legacy.core import surface_open_calcium_energy_bath_events_spec as schema
+                from cells.legacy.models import surface_open_calcium_energy_bath_events as model
             else:
-                from cells.core import surface_open_calcium_bath_events_spec as schema
-                from cells.models import surface_open_calcium_bath_events as model
+                from cells.legacy.core import surface_open_calcium_bath_events_spec as schema
+                from cells.legacy.models import surface_open_calcium_bath_events as model
             ids = plan["datasets"][dataset]
             comparison_pin = summary["comparisons"][dataset + "-compare"]
             comparison = Path(comparison_pin["comparison_path"])

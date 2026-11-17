@@ -6,7 +6,6 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_atp_transport_spec as schema
 from cells.core.batch import BatchSpec, WorldSpec, parse_batch
 from cells.core.runner import timeline, validate_checkpoint
 from cells.core.schedule import control_values, event_index
@@ -15,8 +14,9 @@ from cells.core.state import Checkpoint
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.ensemble.ionic import parse_spec as parse_worlds
 from cells.io import load_snapshot, write_snapshot
-from cells.models import surface_calcium_energy_atp_transport as model
-from cells.models import surface_calcium_energy_transport as maintained
+from cells.legacy.core import surface_calcium_energy_atp_transport_spec as schema
+from cells.legacy.models import surface_calcium_energy_atp_transport as model
+from cells.legacy.models import surface_calcium_energy_transport as maintained
 from cells.models.registry import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact

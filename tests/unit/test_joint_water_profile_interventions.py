@@ -13,21 +13,23 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import surface_calcium_energy_water_profile_interventions_spec as water_spec
-from cells.core import surface_calcium_energy_water_repair_profile_interventions_spec as repair_spec
-from cells.core import tissue_profile_composition_preparation as composed
-from cells.core import tissue_profile_preparation as direct
 from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError
-from cells.models import surface_calcium_energy as fuel
-from cells.models import surface_calcium_energy_water_hcn_extra as water_parent
-from cells.models import surface_calcium_energy_water_profile_interventions as water
-from cells.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
-from cells.models import surface_calcium_energy_water_repair_profile_interventions as repair
+from cells.legacy.core import surface_calcium_energy_water_profile_interventions_spec as water_spec
+from cells.legacy.core import (
+    surface_calcium_energy_water_repair_profile_interventions_spec as repair_spec,
+)
+from cells.legacy.core import tissue_profile_composition_preparation as composed
+from cells.legacy.core import tissue_profile_preparation as direct
+from cells.legacy.models import surface_calcium_energy as fuel
+from cells.legacy.models import surface_calcium_energy_water_hcn_extra as water_parent
+from cells.legacy.models import surface_calcium_energy_water_profile_interventions as water
+from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent
+from cells.legacy.models import surface_calcium_energy_water_repair_profile_interventions as repair
+from cells.legacy.processes import tissue_target_selectors as native
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import tissue_target_selectors as native
 from tests.owned_joint_water_hcn_helpers import changed
 from validation.topology import joint_water_profile_interventions_fixtures as fixtures
 from validation.topology import joint_water_profile_interventions_reference as reference

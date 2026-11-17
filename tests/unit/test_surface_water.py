@@ -14,10 +14,10 @@ from cells.core.errors import NumericalError
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
-from cells.core.surface_water_spec import prior_spec
 from cells.ensemble import ionic
+from cells.legacy.core.surface_water_spec import prior_spec
+from cells.legacy.models import surface_water as model
 from cells.models import surface_tissue as prior
-from cells.models import surface_water as model
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
 from tests.unit.test_surface_repair_full import compare_backend

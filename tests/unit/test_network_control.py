@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import network_control as modulation
+from cells.legacy.processes import network_control as modulation
 from validation.regulation import betse_network_modulation_reference as reference
 from validation.regulation.betse_network_modulation_fixtures import (
     base,

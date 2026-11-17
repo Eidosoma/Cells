@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from cells.processes import stable_seed_control_volume_environment as environment
+from cells.legacy.processes import stable_seed_control_volume_environment as environment
 from validation.geometry import stable_seed_control_volume_physical_bridge_fixtures as upstream
 
 POSITIVE_CASES = (

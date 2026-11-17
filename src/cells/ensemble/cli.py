@@ -88,8 +88,9 @@ def aggregate(rows):
     if clusters:
         if len(clusters) != len(rows):
             raise ValueError("An ensemble cannot mix cluster and other result families")
-        from cells.ensemble.cluster import aggregate as aggregate_cluster
+        from cells.core.legacy_entry import legacy  # An older family's (D188 R1).
 
+        aggregate_cluster = legacy().ensemble("assembly_regulated_cluster@1").aggregate()
         return aggregate_cluster(clusters)
     ionic = [row for row in rows if row.get("model") == "ionic_worlds@1"]
     assembly = [row for row in rows if row.get("model") != "ionic_worlds@1"]

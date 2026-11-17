@@ -17,9 +17,9 @@ from cells.core.specs import ConfigError, ContactChange, parse_spec
 from cells.core.state import initialise
 from cells.core.windows import WindowPolicy, iter_windows
 from cells.io import load_snapshot, write_snapshot
-from cells.models import multispecies_membrane as ionic
-from cells.models import physical_ionic_graph as model
-from cells.models import voltage_gated_membrane as gated
+from cells.legacy.models import multispecies_membrane as ionic
+from cells.legacy.models import physical_ionic_graph as model
+from cells.legacy.models import voltage_gated_membrane as gated
 from cells.numerics.fixed_step import rk4_checked_step
 from tests import physical_ionic_graph_numerical_checks as checks
 from tests import physical_ionic_graph_numerical_data as graph_data

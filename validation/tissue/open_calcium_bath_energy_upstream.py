@@ -156,7 +156,7 @@ def product_record(name, source, factors, arrays):
 
 def expanded_terms(model, state, layout, value, *, finite, arrays):
     """Expose original chemical products, all heat arrays and fuel products."""
-    from cells.models import surface_calcium as calcium
+    from cells.legacy.models import surface_calcium as calcium
     from cells.processes.electrochemistry import R
 
     p = model.stage_layout(layout, value.signal)
@@ -227,7 +227,7 @@ def expanded_terms(model, state, layout, value, *, finite, arrays):
         )
     )
     if finite:
-        from cells.processes import finite_energy as energy
+        from cells.legacy.processes import finite_energy as energy
 
         rate, mu = raw.exchange.amount_fmol_s, raw.energy.chemical_potential_J_mol
         source = np.sum(energy.chemical_power_pJ_s(rate, raw.energy, xp=np))
@@ -268,7 +268,7 @@ def program_identity(signal):
 
 def field_power_record(model, state, layout, value, arrays, *, finite):
     """Exact decomposition using the production rate solve, never snapshot charge."""
-    from cells.models import surface_calcium as calcium
+    from cells.legacy.models import surface_calcium as calcium
     from cells.models import surface_tissue as passive
     from cells.numerics import surface_field as field
     from cells.processes.electrochemistry import CHARGE_PER_FMOL, F
@@ -458,11 +458,11 @@ def run(bundle, diagnostic, output):
         for family in ("ordinary-calcium", "ordinary-energy"):
             finite = family.endswith("energy")
             if finite:
-                from cells.core import surface_open_calcium_energy_bath_events_spec as schema
-                from cells.models import surface_open_calcium_energy_bath_events as model
+                from cells.legacy.core import surface_open_calcium_energy_bath_events_spec as schema
+                from cells.legacy.models import surface_open_calcium_energy_bath_events as model
             else:
-                from cells.core import surface_open_calcium_bath_events_spec as schema
-                from cells.models import surface_open_calcium_bath_events as model
+                from cells.legacy.core import surface_open_calcium_bath_events_spec as schema
+                from cells.legacy.models import surface_open_calcium_bath_events as model
             raw = artifact.read_json(bundle / plan["datasets"][family]["definition"])
             spec, context = schema.parse(raw), reference.bind(raw)
             zero, layout = model.initial_values(spec)

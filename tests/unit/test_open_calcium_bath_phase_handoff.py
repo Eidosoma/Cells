@@ -6,9 +6,9 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core import open_calcium_bath_phase_handoff as bridge
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError, digest
+from cells.legacy.core import open_calcium_bath_phase_handoff as bridge
 from validation.topology import open_calcium_bath_phase_fixtures as fixtures
 from validation.topology import open_calcium_bath_phase_handoff_reference as reference
 

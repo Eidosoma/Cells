@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from cells.core.active_polygon_physiology_preparation import _semantic
+from cells.legacy.core.active_polygon_physiology_preparation import _semantic
 from validation.geometry.active_polygon_physiology_reference import semantic
 
 

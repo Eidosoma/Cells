@@ -36,6 +36,13 @@ def model_id(spec):
     return spec.to_dict()["model"]
 
 
+def _older(model):
+    """An older assembly family's hooks (D188 R1), through the core's one legacy entry."""
+    from cells.core.legacy_entry import legacy
+
+    return legacy().ensemble(model)
+
+
 def population(spec):
     return (
         spec.pool
@@ -46,7 +53,7 @@ def population(spec):
 
 def output_bound(spec):
     if model_id(spec) == "assembly_regulated_cell@1":
-        from cells.models.kinetic_finite_extracellular import working_size
+        working_size = _older("assembly_regulated_cell@1").working_size()
 
         return spec.pool.output_bound + spec.pool.worlds * (32 * working_size(spec.ionic) + 4096)
     return spec.output_bound
@@ -54,9 +61,9 @@ def output_bound(spec):
 
 def parse_definition(data):
     if data.get("model") == "assembly_regulated_cluster@1":
-        from cells.assembly_cluster.spec import parse_spec
+        parse_spec = _older("assembly_regulated_cluster@1").parse_spec()
     elif data.get("model") == "assembly_regulated_cell@1":
-        from cells.assembly_cell.spec import parse_spec
+        parse_spec = _older("assembly_regulated_cell@1").parse_spec()
     elif data.get("model") == "ionic_worlds@1":
         from cells.ensemble.ionic import parse_spec
     elif data.get("model") == "finite_bond_assembly@1":
@@ -68,9 +75,9 @@ def parse_definition(data):
 
 def runtime_for(spec):
     if model_id(spec) == "assembly_regulated_cluster@1":
-        from cells.ensemble.cluster import load_checkpoint, run, write_checkpoint
+        run, load_checkpoint, write_checkpoint = _older("assembly_regulated_cluster@1").runtime()
     elif model_id(spec) == "assembly_regulated_cell@1":
-        from cells.ensemble.coupled import load_checkpoint, run, write_checkpoint
+        run, load_checkpoint, write_checkpoint = _older("assembly_regulated_cell@1").runtime()
     elif model_id(spec) == "ionic_worlds@1":
         from cells.ensemble.ionic import load_checkpoint, run, write_checkpoint
     elif model_id(spec) == "finite_bond_assembly@1":
@@ -115,7 +122,7 @@ def progress(spec, state):
 
 def failure_state(spec, state):
     if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1"):
-        from cells.assembly_cell.io import flatten
+        flatten = _older("assembly_regulated_cell@1").flatten()  # One flatten for both.
 
         return flatten(state)
     if model_id(spec) == "ionic_worlds@1":

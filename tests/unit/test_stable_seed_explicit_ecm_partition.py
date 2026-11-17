@@ -15,7 +15,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from cells.processes import stable_seed_explicit_ecm_partition as constructor
+from cells.legacy.processes import stable_seed_explicit_ecm_partition as constructor
 from validation.geometry import stable_seed_explicit_ecm_partition_fixtures as fixtures
 
 REFUSALS = (

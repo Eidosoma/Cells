@@ -14,7 +14,7 @@ def check_held(row, variant, index, compiled, ledger):
 
     from cells.core.schedule import PhysicalIonicGraphControl, control_values
     from cells.core.specs import parse_spec
-    from cells.models import kinetic_finite_extracellular as model
+    from cells.legacy.models import kinetic_finite_extracellular as model
 
     raw = row["trace"]["raw_steps"][index]
     case = ctx.case_for(row, variant, physical=raw["before"]["physical"])
@@ -104,7 +104,7 @@ def check_held(row, variant, index, compiled, ledger):
 def worker(r, output):
     import jax
 
-    from cells.models import kinetic_finite_extracellular as model
+    from cells.legacy.models import kinetic_finite_extracellular as model
 
     c.require(
         jax.default_backend() == "cpu"

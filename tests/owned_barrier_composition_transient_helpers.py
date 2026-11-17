@@ -48,8 +48,8 @@ def load(stem):
 
 
 def prepare_inputs(bundle):
-    from cells.core import environment_barrier_composition_preparation as bridge
     from cells.core.specs import parse_spec
+    from cells.legacy.core import environment_barrier_composition_preparation as bridge
     from validation.transport import environment_barrier_composition_fixtures as coefficients
 
     records = {}

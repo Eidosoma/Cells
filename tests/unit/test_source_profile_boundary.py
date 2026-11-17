@@ -1,8 +1,8 @@
 """D149: the source profile's numerical conventions stay confined to emt_mirna_pair@1.
 
-`cells.processes.source_electrochemistry` reproduces four implementation choices of the
+`cells.legacy.processes.source_electrochemistry` reproduces four implementation choices of the
 reference simulator for bitwise continuity of the recorded replication runs. D149 admits
-them only through `cells.models.source_pair`. This test fails if any other module in the
+them only through `cells.legacy.models.source_pair`. This test fails if any other module in the
 checkout imports it, or if the pair's spec stops pinning its parameter set.
 """
 
@@ -10,8 +10,8 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MODULE = "cells.processes.source_electrochemistry"
-ALLOWED = {"src/cells/models/source_pair.py"}
+MODULE = "cells.legacy.processes.source_electrochemistry"
+ALLOWED = {"src/cells/legacy/models/source_pair.py"}
 
 
 def _importers():
@@ -19,7 +19,7 @@ def _importers():
     for top in ("src", "validation", "scripts", "tests"):
         for path in (ROOT / top).rglob("*.py"):
             rel = path.relative_to(ROOT).as_posix()
-            if rel == "src/cells/processes/source_electrochemistry.py":
+            if rel == "src/cells/legacy/processes/source_electrochemistry.py":
                 continue
             tree = ast.parse(path.read_text(), filename=rel)
             for node in ast.walk(tree):
@@ -39,8 +39,8 @@ def test_only_the_pair_model_imports_the_source_profile():
 
 
 def test_the_pair_spec_pins_its_parameter_set():
-    from cells.core import source_pair_spec
+    from cells.legacy.core import source_pair_spec
 
     assert source_pair_spec.PARAMETER_SET == "emt-mirna-pair-scaled-simple"
-    text = (ROOT / "src/cells/core/source_pair_spec.py").read_text()
+    text = (ROOT / "src/cells/legacy/core/source_pair_spec.py").read_text()
     assert 'p["parameter_set"] != PARAMETER_SET' in text

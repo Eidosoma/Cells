@@ -32,7 +32,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.core.multispecies_spec import identifier
+from cells.core.spec_values import identifier
 from cells.core.species_registry import parse_catalogue  # Moved there (D176); kept here.
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models import surface_pump as first

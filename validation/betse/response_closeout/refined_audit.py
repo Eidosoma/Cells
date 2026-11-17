@@ -106,7 +106,7 @@ def inspect_metadata(r, output):
         and cells["x64_enabled"] is True
         and cells["jit_disabled"] is False
         and cells["trajectory_run"] is True
-        and cells["source_path"] == str(c.ROOT / "src/cells/models/finite_extracellular.py")
+        and cells["source_path"] == str(c.ROOT / "src/cells/legacy/models/finite_extracellular.py")
         and cells["source_sha256"] == c.sha(cells["source_path"])
         and cells["runtime_resource_probe_sha256"] == c.sha(output / "runtime-resource-probe.json")
         and cells["results"]

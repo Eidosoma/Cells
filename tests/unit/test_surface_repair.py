@@ -13,14 +13,14 @@ from cells.core.runner import branch_checkpoint, event_index, run, timeline, val
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
 from cells.core.state import Checkpoint
-from cells.core.surface_repair_spec import base_spec
 from cells.ensemble import ionic
 from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models import surface_calcium_cav as prior
-from cells.models import surface_repair as model
+from cells.legacy.core.surface_repair_spec import base_spec
+from cells.legacy.models import surface_calcium_cav as prior
+from cells.legacy.models import surface_repair as model
+from cells.legacy.processes import membrane_injury
 from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.processes import membrane_injury
 from tests.unit.test_surface_calcium import BACKEND, evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_repair_fixtures as fixtures
