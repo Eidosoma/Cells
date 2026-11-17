@@ -9,7 +9,7 @@ export const CATALOGUE_FORMAT = "cells.visualizer.machine_catalogue@1";
 export const PREFIX = "machine:";
 export const pageId = (kind) => `${PREFIX}${kind}`;
 export const kindOf = (id) => (typeof id === "string" && id.startsWith(PREFIX) ? id.slice(PREFIX.length).split(":")[0] : null);
-/** The group the membrane machines with laws stand in (the overlay's groups name it). */
+/** The group the units of the law inventory that are protein assemblies stand in (the overlay's groups name it). */
 export const IONS = "ions";
 /** A unit of the law inventory is a machine of a species where its atlas found its family there, or built from another. */
 const HAS_IT = new Set(["found", "different family"]);
@@ -24,7 +24,19 @@ export class Catalogue {
     this.units = (scene?.entities || []).filter((entity) => entity.group === "proteins" && entity.kind === "unit");
     this.reference = (scene?.proteins?.atlases || []).find((atlas) => atlas.reference)?.id || null;
     this.leftOut = new Map(Object.entries(this.raw.units_left_out?.units || {}));
+    this.unitSizes = this.raw.unit_sizes || null;
     this.cache = new Map();
+  }
+
+  /**
+   * A unit's size on a species' bench, where the catalogue gives one: by the species' atlas's finding (the inventory's
+   * own species counts as "found"), the measure of a structure of the unit's own kind, or of the family the species
+   * builds it from. Null where none is in hand: the unit is a card.
+   */
+  unitSize(unit, species) {
+    if (!this.unitSizes?.species?.includes(species)) return null;
+    const finding = species === this.reference ? "found" : unit.species?.[species]?.finding;
+    return this.unitSizes.units?.[unit.id]?.[finding] || null;
   }
 
   /** The species the catalogue holds machines for, in the order of its entries. */
@@ -43,7 +55,8 @@ export class Catalogue {
 
   /**
    * The machines of a species, in the order of the groups: each { id, label, group, kind, entry,
-   * unit, sized }. A kind's entry carries what the catalogue gives; a unit is the scene's own.
+   * unit, size, sized }. A kind's entry carries what the catalogue gives; a unit is the scene's own;
+   * `size` is the size it is drawn at, or null.
    */
   of(species) {
     if (this.cache.has(species)) return this.cache.get(species);
@@ -52,9 +65,13 @@ export class Catalogue {
       if (entry.species !== species) continue;
       const kind = this.kinds.get(entry.id);
       if (!kind) continue;
-      items.push({ id: pageId(entry.id), label: entry.label || kind.label, group: kind.group, kind, entry, unit: null, sized: Boolean(entry.size || entry.closer) });
+      items.push({ id: pageId(entry.id), label: entry.label || kind.label, group: kind.group, kind, entry, unit: null, size: entry.size || null, sized: Boolean(entry.size || entry.closer) });
     }
-    for (const unit of this.units) if (this.unitIn(unit, species)) items.push({ id: unit.id, label: unit.label, short: unit.short, group: IONS, kind: null, entry: null, unit, sized: false });
+    for (const unit of this.units) {
+      if (!this.unitIn(unit, species)) continue;
+      const size = this.unitSize(unit, species);
+      items.push({ id: unit.id, label: unit.label, short: unit.short, group: IONS, kind: null, entry: null, unit, size, sized: Boolean(size) });
+    }
     const rank = new Map(this.groups.map((group, index) => [group.id, index]));
     const ordered = items.map((item, index) => [item, index]).sort((a, b) => (rank.get(a[0].group) ?? 99) - (rank.get(b[0].group) ?? 99) || a[1] - b[1]).map(([item]) => item);
     this.cache.set(species, ordered);

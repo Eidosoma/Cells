@@ -4,6 +4,13 @@
  "made": {
   "generator": "visualizer/tools/build_catalogue.py",
   "from": [
+   "data/catalogue/measures/animals.connexin-channel.json",
+   "data/catalogue/measures/animals.innexin-channel.json",
+   "data/catalogue/measures/animals.ip3r.json",
+   "data/catalogue/measures/animals.kv1-2.json",
+   "data/catalogue/measures/animals.ribosome.json",
+   "data/catalogue/measures/animals.serca.json",
+   "data/catalogue/measures/animals.sodium-pump.json",
    "data/catalogue/measures/ecoli.atp-synthase.json",
    "data/catalogue/measures/ecoli.hslv.json",
    "data/catalogue/measures/ecoli.lon.json",
@@ -2983,6 +2990,10 @@
       9.3
      ]
     },
+    "membrane": {
+     "part": "ring",
+     "says": "Where its membrane lies: the entry holds no membrane, so a thin slab stands where the ring stands, an illustration, centred on the ring and as thick as the ring's farthest atoms reach along the machine's axis"
+    },
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part ring's centre to the part head's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb6oqr",
@@ -4508,6 +4519,109 @@
    "named": {
     "word": "every cell has ribosomes",
     "record": "cell-structures"
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "8YOP",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/animals.ribosome.json",
+    "whole": {
+     "across_nm": [
+      29.4,
+      23.0,
+      21.1
+     ],
+     "farthest_nm": [
+      30.4,
+      26.1,
+      26.8
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit (60S)",
+      "across_nm": [
+       25.0,
+       20.6,
+       17.0
+      ],
+      "centre_nm": [
+       0.0,
+       -3.83,
+       0.0
+      ],
+      "axes": [
+       [
+        0.8283,
+        0.361,
+        0.4284
+       ],
+       [
+        -0.2947,
+        -0.3697,
+        0.8812
+       ],
+       [
+        0.4765,
+        -0.8562,
+        -0.1998
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       30.0,
+       20.6
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit (40S)",
+      "across_nm": [
+       27.0,
+       16.2,
+       11.3
+      ],
+      "centre_nm": [
+       0.0,
+       7.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7943,
+        -0.0085,
+        -0.6074
+       ],
+       [
+        0.6062,
+        -0.053,
+        0.7935
+       ],
+       [
+        -0.0389,
+        -0.9986,
+        -0.0369
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       19.8,
+       13.4
+      ]
+     }
+    ],
+    "chains": [],
+    "between_nm": 11.3,
+    "kinds": null,
+    "modelled": null,
+    "beside": null,
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb8yop"
+    ]
    }
   },
   {
@@ -4517,6 +4631,109 @@
    "named": {
     "word": "every cell has ribosomes",
     "record": "cell-structures"
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "8YOP",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/animals.ribosome.json",
+    "whole": {
+     "across_nm": [
+      29.4,
+      23.0,
+      21.1
+     ],
+     "farthest_nm": [
+      30.4,
+      26.1,
+      26.8
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit (60S)",
+      "across_nm": [
+       25.0,
+       20.6,
+       17.0
+      ],
+      "centre_nm": [
+       0.0,
+       -3.83,
+       0.0
+      ],
+      "axes": [
+       [
+        0.8283,
+        0.361,
+        0.4284
+       ],
+       [
+        -0.2947,
+        -0.3697,
+        0.8812
+       ],
+       [
+        0.4765,
+        -0.8562,
+        -0.1998
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       30.0,
+       20.6
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit (40S)",
+      "across_nm": [
+       27.0,
+       16.2,
+       11.3
+      ],
+      "centre_nm": [
+       0.0,
+       7.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7943,
+        -0.0085,
+        -0.6074
+       ],
+       [
+        0.6062,
+        -0.053,
+        0.7935
+       ],
+       [
+        -0.0389,
+        -0.9986,
+        -0.0369
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       19.8,
+       13.4
+      ]
+     }
+    ],
+    "chains": [],
+    "between_nm": 11.3,
+    "kinds": null,
+    "modelled": null,
+    "beside": null,
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb8yop"
+    ]
    }
   },
   {
@@ -4526,6 +4743,109 @@
    "named": {
     "word": "every cell has ribosomes",
     "record": "cell-structures"
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "8YOP",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/animals.ribosome.json",
+    "whole": {
+     "across_nm": [
+      29.4,
+      23.0,
+      21.1
+     ],
+     "farthest_nm": [
+      30.4,
+      26.1,
+      26.8
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit (60S)",
+      "across_nm": [
+       25.0,
+       20.6,
+       17.0
+      ],
+      "centre_nm": [
+       0.0,
+       -3.83,
+       0.0
+      ],
+      "axes": [
+       [
+        0.8283,
+        0.361,
+        0.4284
+       ],
+       [
+        -0.2947,
+        -0.3697,
+        0.8812
+       ],
+       [
+        0.4765,
+        -0.8562,
+        -0.1998
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       30.0,
+       20.6
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit (40S)",
+      "across_nm": [
+       27.0,
+       16.2,
+       11.3
+      ],
+      "centre_nm": [
+       0.0,
+       7.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7943,
+        -0.0085,
+        -0.6074
+       ],
+       [
+        0.6062,
+        -0.053,
+        0.7935
+       ],
+       [
+        -0.0389,
+        -0.9986,
+        -0.0369
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       19.8,
+       13.4
+      ]
+     }
+    ],
+    "chains": [],
+    "between_nm": 11.3,
+    "kinds": null,
+    "modelled": null,
+    "beside": null,
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb8yop"
+    ]
    }
   },
   {
@@ -4535,6 +4855,109 @@
    "named": {
     "word": "every cell has ribosomes",
     "record": "cell-structures"
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "8YOP",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/animals.ribosome.json",
+    "whole": {
+     "across_nm": [
+      29.4,
+      23.0,
+      21.1
+     ],
+     "farthest_nm": [
+      30.4,
+      26.1,
+      26.8
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "large",
+      "label": "Large subunit (60S)",
+      "across_nm": [
+       25.0,
+       20.6,
+       17.0
+      ],
+      "centre_nm": [
+       0.0,
+       -3.83,
+       0.0
+      ],
+      "axes": [
+       [
+        0.8283,
+        0.361,
+        0.4284
+       ],
+       [
+        -0.2947,
+        -0.3697,
+        0.8812
+       ],
+       [
+        0.4765,
+        -0.8562,
+        -0.1998
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       30.0,
+       20.6
+      ]
+     },
+     {
+      "id": "small",
+      "label": "Small subunit (40S)",
+      "across_nm": [
+       27.0,
+       16.2,
+       11.3
+      ],
+      "centre_nm": [
+       0.0,
+       7.48,
+       0.0
+      ],
+      "axes": [
+       [
+        0.7943,
+        -0.0085,
+        -0.6074
+       ],
+       [
+        0.6062,
+        -0.053,
+        0.7935
+       ],
+       [
+        -0.0389,
+        -0.9986,
+        -0.0369
+       ]
+      ],
+      "farthest_nm": [
+       27.5,
+       19.8,
+       13.4
+      ]
+     }
+    ],
+    "chains": [],
+    "between_nm": 11.3,
+    "kinds": null,
+    "modelled": null,
+    "beside": null,
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb8yop"
+    ]
    }
   },
   {
@@ -4547,6 +4970,1994 @@
    }
   }
  ],
+ "unit_sizes": {
+  "note": "Decided 17 November 2026 (step C of the Machines tab): a unit of the law inventory takes a size only from a structure of its own kind, of any organism, and its panel names that organism; where a species' atlas finds the unit built from another family, from a structure of that family. A unit with no such structure stays a card. These sizes stand on the animals' benches; the units of the other species stay cards.",
+  "species": [
+   "human",
+   "mouse",
+   "planarian",
+   "fruitfly"
+  ],
+  "units": {
+   "unit.U39": {
+    "found": {
+     "shape": "measured",
+     "entry": "7E1Z",
+     "of": "Homo sapiens",
+     "from": "data/catalogue/measures/animals.sodium-pump.json",
+     "whole": {
+      "across_nm": [
+       19.7,
+       7.1,
+       5.0
+      ],
+      "farthest_nm": [
+       16.5,
+       8.7,
+       6.8
+      ],
+      "axes": [
+       [
+        0.0412,
+        0.9991,
+        0.0007
+       ],
+       [
+        0.9991,
+        -0.0412,
+        0.0
+       ],
+       [
+        0.0,
+        0.0007,
+        -1.0
+       ]
+      ]
+     },
+     "outline": "parts",
+     "parts": [
+      {
+       "id": "alpha",
+       "label": "α, the pump",
+       "across_nm": [
+        15.4,
+        7.3,
+        4.4
+       ],
+       "centre_nm": [
+        -0.01,
+        -1.81,
+        -0.05
+       ],
+       "axes": [
+        [
+         0.0353,
+         0.9981,
+         -0.0511
+        ],
+        [
+         0.9981,
+         -0.0378,
+         -0.0488
+        ],
+        [
+         -0.0506,
+         -0.0492,
+         -0.9975
+        ]
+       ],
+       "farthest_nm": [
+        13.9,
+        8.7,
+        5.7
+       ],
+       "entities": [
+        "1"
+       ],
+       "hue": "bioPump"
+      },
+      {
+       "id": "beta",
+       "label": "β, outside the cell",
+       "across_nm": [
+        10.8,
+        6.0,
+        4.1
+       ],
+       "centre_nm": [
+        -0.01,
+        5.47,
+        -0.05
+       ],
+       "axes": [
+        [
+         0.482,
+         0.8245,
+         0.2963
+        ],
+        [
+         -0.6518,
+         0.1115,
+         0.7501
+        ],
+        [
+         0.5855,
+         -0.5547,
+         0.5912
+        ]
+       ],
+       "farthest_nm": [
+        9.8,
+        6.0,
+        4.9
+       ],
+       "entities": [
+        "2"
+       ],
+       "hue": "bioIon"
+      },
+      {
+       "id": "gamma",
+       "label": "γ (FXYD)",
+       "across_nm": [
+        7.0,
+        1.3,
+        1.2
+       ],
+       "centre_nm": [
+        0.32,
+        2.37,
+        2.01
+       ],
+       "axes": [
+        [
+         -0.1074,
+         0.9942,
+         -0.0076
+        ],
+        [
+         0.8168,
+         0.0926,
+         0.5694
+        ],
+        [
+         0.5668,
+         0.055,
+         -0.822
+        ]
+       ],
+       "farthest_nm": [
+        5.6,
+        1.3,
+        1.4
+       ],
+       "entities": [
+        "3"
+       ],
+       "hue": "edge"
+      }
+     ],
+     "chains": [],
+     "between_nm": 7.3,
+     "kinds": 3,
+     "modelled": [
+      0.485,
+      0.97
+     ],
+     "beside": null,
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part alpha's centre to the part beta's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb7e1z"
+     ]
+    }
+   },
+   "unit.U41": {
+    "found": {
+     "shape": "measured",
+     "entry": "6LLE",
+     "of": "Homo sapiens",
+     "from": "data/catalogue/measures/animals.serca.json",
+     "whole": {
+      "across_nm": [
+       15.0,
+       6.5,
+       4.6
+      ],
+      "farthest_nm": [
+       13.4,
+       7.1,
+       5.4
+      ],
+      "axes": [
+       [
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "outline": "whole",
+     "parts": [],
+     "chains": [],
+     "between_nm": null,
+     "kinds": 1,
+     "modelled": [
+      0.953,
+      0.953
+     ],
+     "beside": null,
+     "note": "SERCA2b, one chain",
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb6lle"
+     ]
+    }
+   },
+   "unit.U43": {
+    "found": {
+     "shape": "measured",
+     "entry": "6DQJ",
+     "of": "Homo sapiens",
+     "from": "data/catalogue/measures/animals.ip3r.json",
+     "whole": {
+      "across_nm": [
+       21.6,
+       21.6,
+       17.4
+      ],
+      "farthest_nm": [
+       23.8,
+       23.8,
+       18.1
+      ],
+      "axes": [
+       [
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "outline": "whole",
+     "parts": [],
+     "chains": [
+      {
+       "id": "chain-A",
+       "label": "Inositol 1,4,5-trisphosphate receptor type 3, chain A",
+       "entity": "1",
+       "across_nm": [
+        18.9,
+        13.3,
+        10.3
+       ],
+       "centre_nm": [
+        0.16,
+        5.48,
+        0.0
+       ],
+       "axes": [
+        [
+         0.1929,
+         -0.4229,
+         0.8854
+        ],
+        [
+         0.8709,
+         0.4895,
+         0.0441
+        ],
+        [
+         -0.4521,
+         0.7626,
+         0.4627
+        ]
+       ]
+      },
+      {
+       "id": "chain-B",
+       "label": "Inositol 1,4,5-trisphosphate receptor type 3, chain B",
+       "entity": "1",
+       "across_nm": [
+        18.9,
+        13.3,
+        10.3
+       ],
+       "centre_nm": [
+        -5.48,
+        0.16,
+        0.0
+       ],
+       "axes": [
+        [
+         0.4225,
+         0.1926,
+         0.8857
+        ],
+        [
+         -0.4894,
+         0.8709,
+         0.0441
+        ],
+        [
+         -0.7629,
+         -0.4521,
+         0.4622
+        ]
+       ]
+      },
+      {
+       "id": "chain-C",
+       "label": "Inositol 1,4,5-trisphosphate receptor type 3, chain C",
+       "entity": "1",
+       "across_nm": [
+        18.9,
+        13.3,
+        10.3
+       ],
+       "centre_nm": [
+        -0.16,
+        -5.48,
+        0.0
+       ],
+       "axes": [
+        [
+         -0.1927,
+         0.4223,
+         0.8857
+        ],
+        [
+         0.8709,
+         0.4894,
+         -0.0439
+        ],
+        [
+         -0.452,
+         0.763,
+         -0.4621
+        ]
+       ]
+      },
+      {
+       "id": "chain-D",
+       "label": "Inositol 1,4,5-trisphosphate receptor type 3, chain D",
+       "entity": "1",
+       "across_nm": [
+        18.9,
+        13.3,
+        10.3
+       ],
+       "centre_nm": [
+        5.48,
+        -0.16,
+        0.0
+       ],
+       "axes": [
+        [
+         -0.4224,
+         -0.1929,
+         0.8856
+        ],
+        [
+         -0.4895,
+         0.8709,
+         -0.0438
+        ],
+        [
+         -0.7629,
+         -0.452,
+         -0.4623
+        ]
+       ]
+      }
+     ],
+     "between_nm": null,
+     "kinds": 1,
+     "modelled": [
+      0.817,
+      0.817
+     ],
+     "beside": null,
+     "note": "the type 3 receptor, a tetramer, with no ligand bound",
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb6dqj"
+     ]
+    }
+   },
+   "unit.U06": {
+    "found": {
+     "shape": "measured",
+     "entry": "3LUT-assembly1",
+     "of": "Rattus norvegicus",
+     "from": "data/catalogue/measures/animals.kv1-2.json",
+     "whole": {
+      "across_nm": [
+       20.2,
+       10.1,
+       10.1
+      ],
+      "farthest_nm": [
+       17.5,
+       11.9,
+       11.9
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        -1.0
+       ]
+      ]
+     },
+     "outline": "parts",
+     "parts": [
+      {
+       "id": "channel",
+       "label": "The channel (four Kv1.2 subunits)",
+       "across_nm": [
+        13.2,
+        9.1,
+        9.1
+       ],
+       "centre_nm": [
+        0.0,
+        3.51,
+        0.0
+       ],
+       "axes": [
+        [
+         0.0,
+         1.0,
+         0.0
+        ],
+        [
+         1.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         -1.0
+        ]
+       ],
+       "farthest_nm": [
+        13.3,
+        10.4,
+        10.4
+       ],
+       "entities": [
+        "2"
+       ],
+       "hue": "bioIon"
+      },
+      {
+       "id": "beta",
+       "label": "β2 subunits, inside the cell",
+       "across_nm": [
+        11.2,
+        11.2,
+        4.7
+       ],
+       "centre_nm": [
+        0.0,
+        -4.32,
+        0.0
+       ],
+       "axes": [
+        [
+         1.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         1.0
+        ],
+        [
+         0.0,
+         -1.0,
+         0.0
+        ]
+       ],
+       "farthest_nm": [
+        11.9,
+        11.9,
+        5.1
+       ],
+       "entities": [
+        "1"
+       ],
+       "hue": "edge"
+      }
+     ],
+     "chains": [
+      {
+       "id": "chain-A",
+       "label": "Voltage-gated potassium channel subunit beta-2, chain A",
+       "entity": "1",
+       "across_nm": [
+        6.2,
+        4.7,
+        4.0
+       ],
+       "centre_nm": [
+        -0.71,
+        -4.32,
+        3.06
+       ],
+       "axes": [
+        [
+         -0.4378,
+         0.0716,
+         0.8962
+        ],
+        [
+         -0.0274,
+         0.9953,
+         -0.0929
+        ],
+        [
+         -0.8986,
+         -0.0652,
+         -0.4338
+        ]
+       ]
+      },
+      {
+       "id": "chain-B",
+       "label": "Potassium voltage-gated channel subfamily A member 2, chain B",
+       "entity": "2",
+       "across_nm": [
+        13.2,
+        7.1,
+        3.6
+       ],
+       "centre_nm": [
+        -0.59,
+        3.51,
+        2.16
+       ],
+       "axes": [
+        [
+         0.0036,
+         0.997,
+         0.0767
+        ],
+        [
+         0.7117,
+         0.0513,
+         -0.7006
+        ],
+        [
+         -0.7025,
+         0.0571,
+         -0.7094
+        ]
+       ]
+      },
+      {
+       "id": "chain-A-2",
+       "label": "Voltage-gated potassium channel subunit beta-2, chain A-2",
+       "entity": "1",
+       "across_nm": [
+        6.2,
+        4.7,
+        4.0
+       ],
+       "centre_nm": [
+        0.71,
+        -4.32,
+        -3.06
+       ],
+       "axes": [
+        [
+         -0.4378,
+         -0.0716,
+         0.8962
+        ],
+        [
+         0.0274,
+         0.9953,
+         0.0929
+        ],
+        [
+         -0.8986,
+         0.0652,
+         -0.4338
+        ]
+       ]
+      },
+      {
+       "id": "chain-B-2",
+       "label": "Potassium voltage-gated channel subfamily A member 2, chain B-2",
+       "entity": "2",
+       "across_nm": [
+        13.2,
+        7.1,
+        3.6
+       ],
+       "centre_nm": [
+        0.59,
+        3.51,
+        -2.16
+       ],
+       "axes": [
+        [
+         -0.0036,
+         0.997,
+         -0.0767
+        ],
+        [
+         0.7117,
+         -0.0513,
+         -0.7006
+        ],
+        [
+         -0.7025,
+         -0.0571,
+         -0.7094
+        ]
+       ]
+      },
+      {
+       "id": "chain-A-3",
+       "label": "Voltage-gated potassium channel subunit beta-2, chain A-3",
+       "entity": "1",
+       "across_nm": [
+        6.2,
+        4.7,
+        4.0
+       ],
+       "centre_nm": [
+        -3.06,
+        -4.32,
+        -0.71
+       ],
+       "axes": [
+        [
+         0.8962,
+         -0.0716,
+         0.4378
+        ],
+        [
+         0.0929,
+         0.9953,
+         -0.0274
+        ],
+        [
+         -0.4338,
+         0.0652,
+         0.8986
+        ]
+       ]
+      },
+      {
+       "id": "chain-B-3",
+       "label": "Potassium voltage-gated channel subfamily A member 2, chain B-3",
+       "entity": "2",
+       "across_nm": [
+        13.2,
+        7.1,
+        3.6
+       ],
+       "centre_nm": [
+        -2.16,
+        3.51,
+        -0.59
+       ],
+       "axes": [
+        [
+         -0.0767,
+         0.997,
+         0.0036
+        ],
+        [
+         0.7006,
+         0.0513,
+         0.7117
+        ],
+        [
+         0.7094,
+         0.0571,
+         -0.7025
+        ]
+       ]
+      },
+      {
+       "id": "chain-A-4",
+       "label": "Voltage-gated potassium channel subunit beta-2, chain A-4",
+       "entity": "1",
+       "across_nm": [
+        6.2,
+        4.7,
+        4.0
+       ],
+       "centre_nm": [
+        3.06,
+        -4.32,
+        0.71
+       ],
+       "axes": [
+        [
+         0.8962,
+         0.0716,
+         0.4378
+        ],
+        [
+         -0.0929,
+         0.9953,
+         0.0274
+        ],
+        [
+         -0.4338,
+         -0.0652,
+         0.8986
+        ]
+       ]
+      },
+      {
+       "id": "chain-B-4",
+       "label": "Potassium voltage-gated channel subfamily A member 2, chain B-4",
+       "entity": "2",
+       "across_nm": [
+        13.2,
+        7.1,
+        3.6
+       ],
+       "centre_nm": [
+        2.16,
+        3.51,
+        0.59
+       ],
+       "axes": [
+        [
+         0.0767,
+         0.997,
+         -0.0036
+        ],
+        [
+         0.7006,
+         -0.0513,
+         0.7117
+        ],
+        [
+         0.7094,
+         -0.0571,
+         -0.7025
+        ]
+       ]
+      }
+     ],
+     "between_nm": 7.8,
+     "kinds": 2,
+     "modelled": [
+      0.782,
+      0.888
+     ],
+     "beside": null,
+     "note": "Kv1.2 with four β2 subunits, the crystal's biological assembly; by its own records, a re-refinement of the diffraction data of entry 2A79",
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part beta's centre to the part channel's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb3lut"
+     ]
+    }
+   },
+   "unit.U36": {
+    "found": {
+     "shape": "measured",
+     "entry": "7Z22",
+     "of": "Homo sapiens",
+     "from": "data/catalogue/measures/animals.connexin-channel.json",
+     "whole": {
+      "across_nm": [
+       18.5,
+       8.2,
+       8.2
+      ],
+      "farthest_nm": [
+       14.6,
+       9.0,
+       9.0
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        -1.0
+       ]
+      ]
+     },
+     "outline": "parts",
+     "parts": [
+      {
+       "id": "connexon-1",
+       "label": "A connexon, in one cell's membrane",
+       "across_nm": [
+        8.5,
+        8.2,
+        8.2
+       ],
+       "centre_nm": [
+        0.0,
+        -3.67,
+        0.0
+       ],
+       "axes": [
+        [
+         0.0,
+         1.0,
+         0.0
+        ],
+        [
+         0.9904,
+         0.0,
+         -0.1382
+        ],
+        [
+         -0.1382,
+         0.0,
+         -0.9904
+        ]
+       ],
+       "farthest_nm": [
+        7.7,
+        9.0,
+        8.4
+       ],
+       "chains": [
+        "chain-A",
+        "chain-B",
+        "chain-C",
+        "chain-D",
+        "chain-E",
+        "chain-F"
+       ]
+      },
+      {
+       "id": "connexon-2",
+       "label": "A connexon, in the other cell's membrane",
+       "across_nm": [
+        8.5,
+        8.2,
+        8.2
+       ],
+       "centre_nm": [
+        0.0,
+        3.67,
+        0.0
+       ],
+       "axes": [
+        [
+         0.0,
+         1.0,
+         0.0
+        ],
+        [
+         0.9921,
+         0.0,
+         0.1253
+        ],
+        [
+         0.1253,
+         0.0,
+         -0.9921
+        ]
+       ],
+       "farthest_nm": [
+        7.7,
+        8.4,
+        9.0
+       ],
+       "chains": [
+        "chain-G",
+        "chain-H",
+        "chain-I",
+        "chain-J",
+        "chain-K",
+        "chain-L"
+       ]
+      }
+     ],
+     "chains": [
+      {
+       "id": "chain-A",
+       "label": "Gap junction alpha-1 protein, chain A",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        2.32,
+        -3.67,
+        -0.58
+       ],
+       "axes": [
+        [
+         -0.1079,
+         0.9911,
+         0.0775
+        ],
+        [
+         0.994,
+         0.1062,
+         0.0254
+        ],
+        [
+         0.0169,
+         0.0798,
+         -0.9967
+        ]
+       ]
+      },
+      {
+       "id": "chain-B",
+       "label": "Gap junction alpha-1 protein, chain B",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        1.67,
+        -3.67,
+        1.72
+       ],
+       "axes": [
+        [
+         -0.1211,
+         0.9911,
+         -0.0547
+        ],
+        [
+         0.475,
+         0.1062,
+         0.8735
+        ],
+        [
+         0.8716,
+         0.0798,
+         -0.4837
+        ]
+       ]
+      },
+      {
+       "id": "chain-C",
+       "label": "Gap junction alpha-1 protein, chain C",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -0.65,
+        -3.67,
+        2.3
+       ],
+       "axes": [
+        [
+         -0.0132,
+         0.9911,
+         -0.1322
+        ],
+        [
+         -0.519,
+         0.1062,
+         0.8481
+        ],
+        [
+         0.8547,
+         0.0798,
+         0.513
+        ]
+       ]
+      },
+      {
+       "id": "chain-D",
+       "label": "Gap junction alpha-1 protein, chain D",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -2.32,
+        -3.67,
+        0.58
+       ],
+       "axes": [
+        [
+         0.1079,
+         0.9911,
+         -0.0775
+        ],
+        [
+         0.994,
+         -0.1062,
+         0.0254
+        ],
+        [
+         0.0169,
+         -0.0798,
+         -0.9967
+        ]
+       ]
+      },
+      {
+       "id": "chain-E",
+       "label": "Gap junction alpha-1 protein, chain E",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -1.67,
+        -3.67,
+        -1.72
+       ],
+       "axes": [
+        [
+         0.1211,
+         0.9911,
+         0.0547
+        ],
+        [
+         0.475,
+         -0.1062,
+         0.8735
+        ],
+        [
+         0.8716,
+         -0.0798,
+         -0.4837
+        ]
+       ]
+      },
+      {
+       "id": "chain-F",
+       "label": "Gap junction alpha-1 protein, chain F",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        0.65,
+        -3.67,
+        -2.3
+       ],
+       "axes": [
+        [
+         0.0132,
+         0.9911,
+         0.1322
+        ],
+        [
+         -0.519,
+         -0.1062,
+         0.8481
+        ],
+        [
+         0.8547,
+         -0.0798,
+         0.513
+        ]
+       ]
+      },
+      {
+       "id": "chain-G",
+       "label": "Gap junction alpha-1 protein, chain G",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        2.24,
+        3.67,
+        -0.84
+       ],
+       "axes": [
+        [
+         0.1328,
+         0.9911,
+         0.0025
+        ],
+        [
+         0.8035,
+         -0.1062,
+         -0.5858
+        ],
+        [
+         -0.5803,
+         0.0798,
+         -0.8105
+        ]
+       ]
+      },
+      {
+       "id": "chain-H",
+       "label": "Gap junction alpha-1 protein, chain H",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        0.39,
+        3.67,
+        -2.36
+       ],
+       "axes": [
+        [
+         0.0685,
+         0.9911,
+         -0.1138
+        ],
+        [
+         0.1055,
+         0.1062,
+         0.9887
+        ],
+        [
+         0.9921,
+         -0.0798,
+         -0.0973
+        ]
+       ]
+      },
+      {
+       "id": "chain-I",
+       "label": "Gap junction alpha-1 protein, chain I",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -1.85,
+        3.67,
+        -1.52
+       ],
+       "axes": [
+        [
+         -0.0643,
+         0.9911,
+         -0.1163
+        ],
+        [
+         0.909,
+         0.1062,
+         0.4029
+        ],
+        [
+         0.4117,
+         -0.0798,
+         -0.9078
+        ]
+       ]
+      },
+      {
+       "id": "chain-J",
+       "label": "Gap junction alpha-1 protein, chain J",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -2.24,
+        3.67,
+        0.84
+       ],
+       "axes": [
+        [
+         -0.1328,
+         0.9911,
+         -0.0025
+        ],
+        [
+         0.8035,
+         0.1062,
+         -0.5858
+        ],
+        [
+         -0.5803,
+         -0.0798,
+         -0.8105
+        ]
+       ]
+      },
+      {
+       "id": "chain-K",
+       "label": "Gap junction alpha-1 protein, chain K",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        -0.39,
+        3.67,
+        2.36
+       ],
+       "axes": [
+        [
+         -0.0686,
+         0.9911,
+         0.1138
+        ],
+        [
+         0.1055,
+         -0.1062,
+         0.9887
+        ],
+        [
+         0.992,
+         0.0798,
+         -0.0973
+        ]
+       ]
+      },
+      {
+       "id": "chain-L",
+       "label": "Gap junction alpha-1 protein, chain L",
+       "entity": "1",
+       "across_nm": [
+        8.6,
+        3.3,
+        3.0
+       ],
+       "centre_nm": [
+        1.85,
+        3.67,
+        1.52
+       ],
+       "axes": [
+        [
+         0.0643,
+         0.9911,
+         0.1163
+        ],
+        [
+         0.909,
+         -0.1062,
+         0.4029
+        ],
+        [
+         0.4117,
+         0.0798,
+         -0.9078
+        ]
+       ]
+      }
+     ],
+     "between_nm": 7.3,
+     "kinds": 1,
+     "modelled": [
+      0.495,
+      0.495
+     ],
+     "beside": null,
+     "note": "connexin 43, two docked connexons of six, in a nanodisc",
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part connexon-1's centre to the part connexon-2's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb7z22"
+     ]
+    },
+    "different family": {
+     "shape": "measured",
+     "entry": "5H1R",
+     "of": "Caenorhabditis elegans",
+     "from": "data/catalogue/measures/animals.innexin-channel.json",
+     "whole": {
+      "across_nm": [
+       25.1,
+       11.6,
+       11.6
+      ],
+      "farthest_nm": [
+       19.5,
+       11.2,
+       11.2
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        -1.0
+       ]
+      ]
+     },
+     "outline": "parts",
+     "parts": [
+      {
+       "id": "hemichannel-1",
+       "label": "A hemichannel, in one cell's membrane",
+       "across_nm": [
+        12.3,
+        11.6,
+        11.6
+       ],
+       "centre_nm": [
+        0.0,
+        -4.89,
+        0.0
+       ],
+       "axes": [
+        [
+         0.0001,
+         1.0,
+         0.0
+        ],
+        [
+         0.9967,
+         -0.0001,
+         0.0817
+        ],
+        [
+         0.0817,
+         0.0,
+         -0.9967
+        ]
+       ],
+       "farthest_nm": [
+        10.1,
+        11.4,
+        11.4
+       ],
+       "chains": [
+        "chain-A",
+        "chain-B",
+        "chain-C",
+        "chain-D",
+        "chain-E",
+        "chain-F",
+        "chain-G",
+        "chain-H"
+       ]
+      },
+      {
+       "id": "hemichannel-2",
+       "label": "A hemichannel, in the other cell's membrane",
+       "across_nm": [
+        12.3,
+        11.6,
+        11.6
+       ],
+       "centre_nm": [
+        0.0,
+        4.89,
+        0.0
+       ],
+       "axes": [
+        [
+         0.0009,
+         1.0,
+         -0.0005
+        ],
+        [
+         0.9992,
+         -0.001,
+         -0.0393
+        ],
+        [
+         -0.0393,
+         -0.0005,
+         -0.9992
+        ]
+       ],
+       "farthest_nm": [
+        10.1,
+        11.1,
+        11.1
+       ],
+       "chains": [
+        "chain-I",
+        "chain-J",
+        "chain-K",
+        "chain-L",
+        "chain-M",
+        "chain-N",
+        "chain-O",
+        "chain-P"
+       ]
+      }
+     ],
+     "chains": [
+      {
+       "id": "chain-A",
+       "label": "Innexin-6, chain A",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -1.8,
+        -4.89,
+        -2.93
+       ],
+       "axes": [
+        [
+         0.075,
+         0.9942,
+         0.0776
+        ],
+        [
+         0.4129,
+         -0.1018,
+         0.9051
+        ],
+        [
+         0.9077,
+         -0.0358,
+         -0.4182
+        ]
+       ]
+      },
+      {
+       "id": "chain-B",
+       "label": "Innexin-6, chain B",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -3.34,
+        -4.89,
+        -0.81
+       ],
+       "axes": [
+        [
+         0.108,
+         0.9942,
+         0.002
+        ],
+        [
+         0.932,
+         -0.1019,
+         0.3478
+        ],
+        [
+         0.346,
+         -0.0357,
+         -0.9376
+        ]
+       ]
+      },
+      {
+       "id": "chain-C",
+       "label": "Innexin-6, chain C",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -2.93,
+        -4.89,
+        1.8
+       ],
+       "axes": [
+        [
+         0.0777,
+         0.9942,
+         -0.075
+        ],
+        [
+         0.9051,
+         -0.1019,
+         -0.4129
+        ],
+        [
+         -0.4181,
+         -0.0358,
+         -0.9077
+        ]
+       ]
+      },
+      {
+       "id": "chain-D",
+       "label": "Innexin-6, chain D",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -0.81,
+        -4.89,
+        3.34
+       ],
+       "axes": [
+        [
+         0.002,
+         0.9942,
+         -0.108
+        ],
+        [
+         -0.3479,
+         0.1019,
+         0.932
+        ],
+        [
+         0.9375,
+         0.0357,
+         0.3461
+        ]
+       ]
+      },
+      {
+       "id": "chain-E",
+       "label": "Innexin-6, chain E",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        1.8,
+        -4.89,
+        2.93
+       ],
+       "axes": [
+        [
+         -0.0749,
+         0.9942,
+         -0.0777
+        ],
+        [
+         0.4129,
+         0.1019,
+         0.9051
+        ],
+        [
+         0.9077,
+         0.0357,
+         -0.4181
+        ]
+       ]
+      },
+      {
+       "id": "chain-F",
+       "label": "Innexin-6, chain F",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        3.34,
+        -4.89,
+        0.81
+       ],
+       "axes": [
+        [
+         -0.1079,
+         0.9942,
+         -0.0021
+        ],
+        [
+         0.932,
+         0.1019,
+         0.3479
+        ],
+        [
+         0.3461,
+         0.0356,
+         -0.9375
+        ]
+       ]
+      },
+      {
+       "id": "chain-G",
+       "label": "Innexin-6, chain G",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        2.93,
+        -4.89,
+        -1.8
+       ],
+       "axes": [
+        [
+         -0.0777,
+         0.9942,
+         0.0749
+        ],
+        [
+         0.9051,
+         0.1019,
+         -0.4129
+        ],
+        [
+         -0.4181,
+         0.0357,
+         -0.9077
+        ]
+       ]
+      },
+      {
+       "id": "chain-H",
+       "label": "Innexin-6, chain H",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        0.81,
+        -4.89,
+        -3.34
+       ],
+       "axes": [
+        [
+         -0.002,
+         0.9942,
+         0.1079
+        ],
+        [
+         -0.3479,
+         -0.1019,
+         0.932
+        ],
+        [
+         0.9375,
+         -0.0356,
+         0.3461
+        ]
+       ]
+      },
+      {
+       "id": "chain-I",
+       "label": "Innexin-6, chain I",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -3.07,
+        4.89,
+        -1.55
+       ],
+       "axes": [
+        [
+         -0.0835,
+         0.9942,
+         -0.0685
+        ],
+        [
+         0.9351,
+         0.1019,
+         0.3393
+        ],
+        [
+         0.3443,
+         -0.0357,
+         -0.9382
+        ]
+       ]
+      },
+      {
+       "id": "chain-J",
+       "label": "Innexin-6, chain J",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -1.07,
+        4.89,
+        -3.27
+       ],
+       "axes": [
+        [
+         -0.0106,
+         0.9941,
+         -0.1075
+        ],
+        [
+         0.421,
+         0.1019,
+         0.9013
+        ],
+        [
+         0.907,
+         -0.0357,
+         -0.4196
+        ]
+       ]
+      },
+      {
+       "id": "chain-K",
+       "label": "Innexin-6, chain K",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        1.56,
+        4.89,
+        -3.07
+       ],
+       "axes": [
+        [
+         0.0697,
+         0.994,
+         -0.0844
+        ],
+        [
+         -0.3394,
+         0.1032,
+         0.935
+        ],
+        [
+         0.9381,
+         -0.0365,
+         0.3445
+        ]
+       ]
+      },
+      {
+       "id": "chain-L",
+       "label": "Innexin-6, chain L",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        3.27,
+        4.89,
+        -1.07
+       ],
+       "axes": [
+        [
+         0.1075,
+         0.9941,
+         -0.0107
+        ],
+        [
+         0.9012,
+         -0.102,
+         -0.4212
+        ],
+        [
+         -0.4198,
+         0.0356,
+         -0.9069
+        ]
+       ]
+      },
+      {
+       "id": "chain-M",
+       "label": "Innexin-6, chain M",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        3.07,
+        4.89,
+        1.56
+       ],
+       "axes": [
+        [
+         0.0834,
+         0.9942,
+         0.0685
+        ],
+        [
+         0.9351,
+         -0.1019,
+         0.3394
+        ],
+        [
+         0.3444,
+         0.0357,
+         -0.9381
+        ]
+       ]
+      },
+      {
+       "id": "chain-N",
+       "label": "Innexin-6, chain N",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        1.07,
+        4.89,
+        3.27
+       ],
+       "axes": [
+        [
+         0.0106,
+         0.9942,
+         0.1074
+        ],
+        [
+         0.421,
+         -0.1019,
+         0.9013
+        ],
+        [
+         0.907,
+         0.0357,
+         -0.4197
+        ]
+       ]
+      },
+      {
+       "id": "chain-O",
+       "label": "Innexin-6, chain O",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -1.56,
+        4.89,
+        3.07
+       ],
+       "axes": [
+        [
+         -0.0685,
+         0.9942,
+         0.0834
+        ],
+        [
+         -0.3395,
+         -0.1018,
+         0.9351
+        ],
+        [
+         0.9381,
+         0.0358,
+         0.3444
+        ]
+       ]
+      },
+      {
+       "id": "chain-P",
+       "label": "Innexin-6, chain P",
+       "entity": "1",
+       "across_nm": [
+        12.3,
+        4.1,
+        3.5
+       ],
+       "centre_nm": [
+        -3.27,
+        4.89,
+        1.07
+       ],
+       "axes": [
+        [
+         -0.1075,
+         0.9942,
+         0.0106
+        ],
+        [
+         0.9013,
+         0.1019,
+         -0.4211
+        ],
+        [
+         -0.4197,
+         -0.0357,
+         -0.907
+        ]
+       ]
+      }
+     ],
+     "between_nm": 9.8,
+     "kinds": 1,
+     "modelled": [
+      0.925,
+      0.925
+     ],
+     "beside": null,
+     "note": "innexin-6, two docked hemichannels of eight",
+     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part hemichannel-1's centre to the part hemichannel-2's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+     "sources": [
+      "catalogue:pdb5h1r"
+     ]
+    }
+   }
+  }
+ },
  "sources": {
   "catalogue:pdb1g4a": {
    "text": "Protein Data Bank entry 1G4A: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 3.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.",
@@ -4563,6 +6974,38 @@
    "class": "permissive",
    "accessed": "2026-11-17",
    "saved": "ecoli/wwpdb-hslv/1G4B-assembly1.cif.gz"
+  },
+  "catalogue:pdb3lut": {
+   "text": "Protein Data Bank entry 3LUT: A Structural Model for the Full-length Shaker Potassium Channel Kv1.2. X-ray diffraction, 2.9 Å; its first biological assembly; Rattus norvegicus, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/3LUT",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-kv-channel/3LUT-assembly1.cif.gz"
+  },
+  "catalogue:pdb5h1r": {
+   "text": "Protein Data Bank entry 5H1R: C. elegans INX-6 gap junction channel. Electron microscopy, 3.6 Å; Caenorhabditis elegans, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/5H1R",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "planarian/wwpdb-innexin-channel/5H1R.cif.gz"
+  },
+  "catalogue:pdb6dqj": {
+   "text": "Protein Data Bank entry 6DQJ: Human type 3 1,4,5-inositol trisphosphate receptor in a ligand-free state. Electron microscopy, 3.49 Å; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6DQJ",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-ip3r/6DQJ.cif.gz"
+  },
+  "catalogue:pdb6lle": {
+   "text": "Protein Data Bank entry 6LLE: CryoEM structure of SERCA2b WT in E1-2Ca2+-AMPPCP state. Electron microscopy, 2.9 Å; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/6LLE",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-serca/6LLE.cif.gz"
   },
   "catalogue:pdb6oqr": {
    "text": "Protein Data Bank entry 6OQR: E. coli ATP Synthase ADP State 1a. Electron microscopy, 3.1 Å; Escherichia coli, by the entry's own source records.",
@@ -4595,6 +7038,30 @@
    "class": "permissive",
    "accessed": "2026-11-17",
    "saved": "ecoli/wwpdb-lon/6U5Z.cif.gz"
+  },
+  "catalogue:pdb7e1z": {
+   "text": "Protein Data Bank entry 7E1Z: Cryo EM structure of a Na+-bound Na+,K+-ATPase in the E1 state. Electron microscopy, 3.2 Å; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/7E1Z",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-sodium-pump/7E1Z.cif.gz"
+  },
+  "catalogue:pdb7z22": {
+   "text": "Protein Data Bank entry 7Z22: Connexin43 gap junction channel structure in nanodisc. Electron microscopy, 2.95 Å; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/7Z22",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-gap-junction-cx43/7Z22.cif.gz"
+  },
+  "catalogue:pdb8yop": {
+   "text": "Protein Data Bank entry 8YOP: Cryo-EM structure of the human 80S ribosome with 4 um Tigecycline. Electron microscopy, 2.2 Å; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/8YOP",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-17",
+   "saved": "human/wwpdb-ribosome-80s-b/8YOP.cif.gz"
   },
   "catalogue:pdb9rbf": {
    "text": "Protein Data Bank entry 9RBF: Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC. Electron microscopy, 2.44 Å; Escherichia coli, by the entry's own source records.",

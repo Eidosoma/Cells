@@ -1830,17 +1830,19 @@ STATED_ID = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 STATED_PREFIX = "stated."
 
 
-def stated_files(root, name):
-    """The files the run folder's index says stand beside a package (`packages[].sidecar`, one name or a list); none where it says none."""
+def stated_files(root, name, entry=None):
+    """The files the run folder's index says stand beside a package (`packages[].sidecar`, one name or a list); in a run
+    folder with no index, the file the experiment's overlay entry names beside every package (`sidecar`); none where neither says one."""
     index = read_json(root / "index.json") if (root / "index.json").is_file() else None
     packages = index.get("packages") if isinstance(index, dict) else None
     package = next((item for item in packages if isinstance(item, dict) and item.get("arm") == name), None) if isinstance(packages, list) else None
-    said = (package or {}).get("sidecar")
+    said = (package or {}).get("sidecar") if index is not None else (entry or {}).get("sidecar")
     if said is None:
         return []
     names = [said] if isinstance(said, str) else said
     if not (isinstance(names, list) and all(isinstance(item, str) and STATED_FILE.match(item) for item in names)):
-        raise Refused(f"{name}: its folder's index names a file beside it that is not a JSON file's plain name (packages[].sidecar)")
+        namer = "its folder's index" if index is not None else "its overlay entry"
+        raise Refused(f"{name}: {namer} names a file beside it that is not a JSON file's plain name (sidecar)")
     return names
 
 
@@ -2271,7 +2273,7 @@ def adapt_engine_view(root, name, experiment, entry):
             if together or None in split:
                 parts.append({"id": slug, "label": labels[field], "payload": own})
     # A quantity the experiment's driver states beside the run, where the folder's index names one: copied as stated.
-    for file in stated_files(root, name):
+    for file in stated_files(root, name, entry):
         stated = stated_quantity(name, folder, file, cells, times)
         record = stated["record"]
         if any(item["id"] == record["id"] for item in records):
@@ -2987,17 +2989,41 @@ def experiments_of(selection):
     return {key: value for key, value in selection.items() if isinstance(value, dict)}
 
 
+REFUSED_FILE = "REFUSED.json"  # a folder of a pick an engine check refused: its record up to the refusal, and no view
+
+
 def runs_in_index(folder):
     """The runs a run folder's own index.json chooses (`selected`, else every package whose view was written): so that
-    arms added to the folder later are data alone."""
+    arms added to the folder later are data alone. A run folder with no index: every package in it that holds the
+    engine's view (view.json), by name."""
     path = folder / "index.json"
     if not path.is_file():
-        raise Refused(f"the selection reads its runs from {folder.name}/index.json, which is not there")
+        names = sorted(item.name for item in folder.iterdir() if item.is_dir() and (item / VIEW_FILE).is_file() and ARM_NAME.match(item.name))
+        if not names:
+            raise Refused(f"the selection reads its runs from {folder.name}/, which has no index.json and no package with a view ({VIEW_FILE})")
+        return names
     index = read_json(path)
     names = index.get("selected") if isinstance(index.get("selected"), list) else [package.get("arm") for package in index.get("packages") or [] if isinstance(package, dict) and package.get("view") == "written"]
     if not (names and all(isinstance(name, str) and ARM_NAME.match(name) for name in names)):
         raise Refused(f"{folder.name}/index.json chooses no run by its folder's name")
     return names
+
+
+def refused_picks(root, sweeps):
+    """The arms of a run folder that an engine check refused (a folder holding REFUSED.json and no view), named and no
+    more: each by its arm and its value of the sweep's parameter, as the file states them. Nothing else of the file is
+    read: not its error, not when it was refused."""
+    found = []
+    for folder in sorted(root.iterdir()):
+        if not (folder.is_dir() and (folder / REFUSED_FILE).is_file()) or (folder / VIEW_FILE).is_file():
+            continue
+        if len(sweeps) != 1:
+            raise Refused(f"{folder.name}: a refused pick is named by its sweep's parameter, and the summary states {len(sweeps)} sweeps, not one")
+        said, parameter = read_json(folder / REFUSED_FILE), sweeps[0]["parameter"]["id"]
+        if not (isinstance(said, dict) and said.get("arm") == folder.name and said.get("status") == "refused" and finite(said.get(parameter))):
+            raise Refused(f"{folder.name}/{REFUSED_FILE} does not name its own arm as refused with its value of {parameter} (arm, status, {parameter})")
+        found.append({"arm": folder.name, "sweep": sweeps[0]["id"], "parameter": said[parameter], "file": REFUSED_FILE})
+    return found
 
 
 def jobs_of(arguments, curated):
@@ -3166,7 +3192,7 @@ def main(argv=None):
                 disc = "" if "first_equals_disc" not in notes else f" ({'exactly the disc' if notes['first_equals_disc'] else 'NOT the disc'})"
                 checked = f"; D counts equal the run's own at {notes['counts_checked']} records" if notes.get("counts_checked") else ""
                 print(f"  cells above the D mark: {notes['above_mark_first']} at the first record{disc}, {notes['above_mark_last']} at the last{checked}")
-        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary")}
+        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary", "sidecar")}
         # An experiment whose summary lists arms with a parameter and readouts: its sweeps, for the chart (a file's name in its evidence folder, never a path).
         if isinstance(entry.get("summary"), str):
             if "/" in entry["summary"] or entry["summary"].startswith("."):
@@ -3174,6 +3200,10 @@ def main(argv=None):
             written_entry["sweeps"] = sweeps_of(Path(root) / entry["summary"], listed)
             for sweep in written_entry["sweeps"]:
                 print(f"{experiment}: sweep {sweep['id']}: {len(sweep['arms'])} arms, {sum(1 for arm in sweep['arms'] if arm['run'])} with a run in this call")
+            # Picks an engine check refused, beside the packages: named, never hidden, and never drawn as a run.
+            if entry.get("refused_picks") is True:
+                written_entry["refused_picks"] = refused_picks(Path(root), written_entry["sweeps"])
+                print(f"{experiment}: {len(written_entry['refused_picks'])} pick(s) refused by an engine check, named from their {REFUSED_FILE}")
         adapted[experiment] = (written_entry, listed)
 
     index, kept = merged_catalogue(out, existing, list(curated), adapted)

@@ -79,7 +79,7 @@ FRAME_WORDS = "origin at the centre of both subunits' atoms; y from the large su
 
 def part_of(name, label, body):
     """One body of a measured machine, as the catalogue gives it: its widths, its centre and its own axes in the machine's frame."""
-    return {"id": name, "label": label, "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"], **({"farthest_nm": body["farthest_nm"]} if "farthest_nm" in body else {}), **({"entities": body["ids"]} if body.get("by") == "entities" else {})}
+    return {"id": name, "label": label, "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"], **({"farthest_nm": body["farthest_nm"]} if "farthest_nm" in body else {}), **({"entities": body["ids"]} if body.get("by") == "entities" else {}), **({"chains": [f"chain-{chain}" for chain in body["ids"]]} if body.get("by") == "chains" else {})}
 
 
 def measured_from_part(part, size, species, species_file, where, cite):
@@ -133,6 +133,7 @@ def measured_from_file(overlay, size, where, inputs, own_source):
         "kinds": len(entities) or None, "modelled": [min(shares), max(shares)] if shares else None,
         "beside": {"entry": beside["entry"], "across_nm": beside["whole"]["across_nm"]} if beside else None,
         **({"note": spec["note"]} if spec.get("note") else {}),
+        **({"membrane": spec["membrane"]} if spec.get("membrane") else {}),
         "says": f"The viewer's own measure from the entry's coordinates, by {record['tool']}: {record['definition']}. The frame: {record.get('frame') or FRAME_WORDS}. The Protein Data Bank states no size.",
         "sources": [own_source(key) for key in spec["sources"]],
     }
@@ -260,6 +261,19 @@ def build():
     for kind in kinds.values():
         if not kind.get("plain"):
             raise Breach(f"the kind {kind['id']} has no plain line")
+    # The units of the law inventory with a size: by the finding of each species' atlas (the inventory's own species
+    # counts as "found"), a measure of a structure of the unit's own kind, or of the family the species builds it from.
+    unit_sizes = overlay.get("unit_sizes")
+    if unit_sizes:
+        units = {}
+        for unit, by_finding in unit_sizes["units"].items():
+            if not re.fullmatch(r"unit\.U\d+", unit) or unit in overlay["units_left_out"]["units"]:
+                raise Breach(f"unit_sizes: {unit} is no unit of the law inventory that is a protein assembly")
+            for finding, key in by_finding.items():
+                if finding not in ("found", "different family"):
+                    raise Breach(f"unit_sizes: {unit}: {finding!r} is no finding of an atlas")
+                units.setdefault(unit, {})[finding] = measured_from_file(overlay, {"measure": key}, f"unit_sizes {unit}", inputs, own_source)
+        unit_sizes = {"note": unit_sizes["note"], "species": unit_sizes["species"], "units": units}
     for key, source in sources.items():
         if source.get("class") not in ("permissive", "non-commercial", "no stated terms"):
             raise Breach(f"{key} has no class")
@@ -273,6 +287,7 @@ def build():
         "units_left_out": overlay["units_left_out"],
         "kinds": list(kinds.values()),
         "entries": entries,
+        **({"unit_sizes": unit_sizes} if unit_sizes else {}),
         "sources": dict(sorted(sources.items())),
     }
 

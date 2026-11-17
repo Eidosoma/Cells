@@ -87,6 +87,40 @@ catalogue never says their count.
   group's colour), Parts (each named part, `machine:<kind>:<part>`) and Subunits (each chain,
   `machine:<kind>:chain-<id>`, in its part's hue), each where it has them; chosen, it goes to its
   first level past the outline. Each part and chain has its own panel with "Back to the machine".
+  A part may also be named by chains (`NAME=chains:A,B`, for an entry of one kind of chain: a
+  connexon of a gap-junction channel); it then keeps its chains' ids, and its chains wear its
+  shade. Where every chain of a machine is in a named part, a part is drawn as its chains, in the
+  part's one colour, and chosen and named as the part (its outline too, in the group's colour): a
+  part's own ellipsoid is its size, given in its panel, not its picture, since the ellipsoid of the
+  same spread of chains that lie apart (the ATP synthase's peripheral stalk, b2 and δ) is a slab
+  that hides the rest. The levels a machine offers come from its measure, and nothing assumes
+  three is the most.
+- **Whose structure.** A measure names the organism its entry is of (`of`). Where the species shown
+  is of another, the words say so and that none of the species' own is in hand: "a structure of
+  Homo sapiens (one of Schmidtea mediterranea: none in hand)"; where the species' file gives its
+  own words on it (`whose`), those stand instead. Until a dated search of the Protein
+  Data Bank by organism is written down for a machine, that is all they say of the species' own.
+  A measure that leaves something of its entry out says what, in its `note` (the human 80S: RACK1,
+  which the tool does not count among the subunits' chains). Where entries were compared, the
+  measure's `chosen` says which was taken and why, as a dated decision (the overlay's alone; the
+  page does not show it).
+- **Where its membrane lies.** A measure's spec may name its part in the membrane (`membrane`:
+  the ATP synthase's ring), where its frame runs along the machine's axis (from the ring to the
+  head). Chosen at its parts, the machine then stands in a thin, see-through slab, labelled an
+  illustration: centred on that part, as thick as that part's farthest atoms reach along the axis
+  (`membraneOf` in `src/lenses/machines_layout.js`; the panel gives the number), and across, the
+  room of its tray round it. No entry holds a membrane: the slab says where the ring stands, not a
+  membrane's measured thickness.
+- **A unit of the law inventory with a size** (`unit_sizes`). Decided 17 November 2026 (step C):
+  a unit takes a size only from a structure of its own kind, of any organism, or,
+  where a species' atlas finds it built from another family, from a structure of that family; the
+  page picks by the atlas's finding (the inventory's own species counts as "found"). The sizes
+  stand on the animals' benches (`unit_sizes.species`); the units of the other species stay cards.
+  A unit with none stays a card, and no unit takes another's size (Kv1.1 is not Kv1.2).
+  Where the atlas names reference structures for a unit, the measure is of one of them or of the
+  unit's own protein (`unit.U41`: human SERCA2, the unit's UniProt entry, where the atlas names
+  rabbit SERCA1a). The builder resolves each into the same measured size as a kind's, under
+  `unit_sizes.units.<unit>.<finding>`.
 - **A machine named by its own protein.** Where the species' file does not name a machine, a
   protein of the species' own catalogue (`data/proteins/<species>/proteins.tsv`) whose entry names
   it may (`named.protein`), with the catalogue's UniProt source.
@@ -109,16 +143,27 @@ catalogue never says their count.
   the law inventory's membrane units in one wide tray behind the others. A machine with a size is a
   simple shape at that size, every one at one scale (one unit of the scene is ten nanometres),
   with a scale bar of 100 nm on the bench; a machine with no size in hand is a card with its name,
-  the same size for all. The legend names each mark that is drawn and each group's colour.
+  the same size for all. A tray is as wide as its shapes, its cards (three across) or its name (in
+  one line or two) need; its cards lie at its back and its shapes stand in front of them. The
+  opening view frames the shapes drawn to scale (the whole bench where there are none). While a
+  machine is chosen, every other machine, card and name on the bench is faint, and only its name
+  is on the picture. The legend names each mark that is drawn and each group's colour.
 - **Drawing levels.** Among the others a machine is an outline. A machine with a file of its own
   (`schema/MACHINES.md`) is drawn from it: its outline (level 1) on the bench, its parts (level 2)
   when it is chosen, its subunits (level 3) by the card's Detail, as its closer view draws them.
-  Every level is an illustration.
+  A measured machine or unit is drawn from its measure the same way. Every level is an
+  illustration.
+- **Light on a phone.** The outlines of every measured machine on the bench are one instanced
+  mesh, the trays two, the cards two; a chosen measured machine's bodies are one more, picked by
+  their instance, however many chains it has. The tests hold each bench to 40 draws and 40,000
+  triangles.
 - **Its panel** gives what it is, what names it, how many and how big with their sources, its
   proteins, what Cells models of it (each record line), and its doors: the Protein atlas on its
   proteins where the species' own data can show the set, the place it sits in the Cell view (the
   ribosomes), or its closer view there ("Look closer in the cell"). A unit of the law inventory has the Protein
-  atlas's own panel of it, for the species shown, and a door into the atlas.
+  atlas's own panel of it, for the species shown, and a door into the atlas; a unit with a size adds
+  how big it is, whose structure it is measured from, and how it is drawn. Its parts and chains are
+  chosen under its own id (`unit.U39:alpha`).
 - **Addresses.** `lens=machines`, `select=machine:<id>` (the kind's id; with no lens it opens the
   catalogue). Under the Cell view the same id stays the closer view's: the view shown keeps an id
   it holds itself. A unit keeps its own id (`unit.U01`). A machine the species shown lacks says which

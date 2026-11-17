@@ -5,6 +5,7 @@
 // for the membrane units of the law inventory, the Protein atlas's own panel of the unit.
 
 import { Catalogue, IONS, PREFIX, kindOf, citeShort } from "./machines_data.js";
+import { membraneOf, partsByChains, partOfChain as partOfChainIn } from "./machines_layout.js";
 import { inSpecies } from "./proteins.js";
 
 /** A swatch for each kind of mark the view draws (machines_styles.js), and one for each group. */
@@ -23,24 +24,38 @@ export function catalogueOf(scene) {
   return catalogues.get(scene);
 }
 
+/** The organism a species' data is of, as the scene names it (its scientific name). */
+const organismOf = (scene, id) => (scene?.species || []).find((item) => item.id === id)?.organism || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.organism || null;
+/** Whether two organisms' names are of one species: their first two words (a strain's name after them does not count). */
+const sameOrganism = (a, b) => Boolean(a && b) && a.split(/\s+/).slice(0, 2).join(" ") === b.split(/\s+/).slice(0, 2).join(" ");
+/** "<the structure's organism>", and, where the species shown is of another, that none of its own is in hand. */
+const elsewhereWords = (organism, of) => (organism && !sameOrganism(organism, of) ? `${of} (one of ${organism}: none in hand)` : of);
+
 const speciesLabel = (scene, id) => (scene?.species || []).find((item) => item.id === id)?.label || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.label || id;
 
-/** What a size says, in words, with what it rests on. */
-export function sizeWords(catalogue, entry) {
-  const size = entry?.size;
+/**
+ * What a size says, in words, with what it rests on. `organism` is the organism of the species shown: where the
+ * structure measured is of another, the words say so, and that none of the species' own is in hand.
+ */
+export function sizeWords(catalogue, size, { organism = null } = {}) {
   if (!size) return null;
   const source = size.sources?.map((key) => citeShort(catalogue.source(key))).join(", ");
   if (size.shape === "measured") {
     const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
     return [
       `${by(size.whole.across_nm)} nm, the ellipsoid of the same spread as its atoms${size.whole.farthest_nm ? ` (its farthest atoms ${by(size.whole.farthest_nm)} nm)` : ""}.`,
-      `The viewer's own measure from Protein Data Bank entry ${size.entry}, a structure of ${size.of}, with tools/measure_particle.py; the database states no size.`,
+      `The viewer's own measure from Protein Data Bank entry ${size.entry}, a structure of ${size.whose ? size.of : elsewhereWords(organism, size.of)}, with tools/measure_particle.py; the database states no size.`,
       size.whose || "", // the species' file's own words where the structure is another organism's
       size.beside ? `Entry ${size.beside.entry} beside it: ${by(size.beside.across_nm)} nm.` : "",
       size.note ? `Of the entry: ${size.note}.` : "",
-      size.modelled ? `Of each of its ${size.kinds} kinds of chain, ${Math.round(size.modelled[0] * 100)} to ${Math.round(size.modelled[1] * 100)}% of the sequence stands in the entry's coordinates.` : "",
+      size.modelled ? shareWords(size) : "",
       size.between_nm && size.parts?.length === 2 && !size.chains?.length ? `Its two subunits' centres are ${Number(size.between_nm).toFixed(1)} nm apart.` : "",
-      size.outline === "whole" ? `Drawn as the whole's ellipsoid among the others; chosen, as each chain's. (${source})` : `Drawn as its parts' ellipsoids, each at its measured size, centre and axes: the parts, not the whole, are its outline. (${source})`,
+      size.membrane && membraneOf(size) ? `${size.membrane.says}: ${membraneOf(size).thick_nm.toFixed(1)} nm.` : "",
+      size.outline === "whole"
+        ? `Drawn as the whole's ellipsoid among the others; chosen, as each chain's. (${source})`
+        : partsByChains(size)
+          ? `Drawn as its chains' ellipsoids, each at its measured size, centre and axes, in the colour of the part that holds it: the chains, not the whole, are its outline, and each part's own ellipsoid is its size, in its panel. (${source})`
+          : `Drawn as its parts' ellipsoids, each at its measured size, centre and axes: the parts, not the whole, are its outline. (${source})`,
     ].filter(Boolean).join(" ");
   }
   if (size.shape === "ellipsoid") return `${size.across_nm.join(" by ")} nm, as its species' file states it (${size.part}${size.says ? `: ${size.says}` : ""}; ${source}). Drawn as an ellipsoid of those widths.`;
@@ -48,20 +63,28 @@ export function sizeWords(catalogue, entry) {
   return null;
 }
 
-/** The drawing levels a machine has: its closer view's file's, or, measured from a structure, an outline and its parts. */
-export function levelsOf(entry) {
-  if (entry?.closer?.levels) return entry.closer.levels;
-  const size = entry?.size;
+/** How much of each kind of chain stands in the entry's coordinates, in words. */
+function shareWords(size) {
+  const [low, high] = size.modelled.map((share) => Math.round(share * 100));
+  const range = low === high ? `${low}%` : `${low} to ${high}%`;
+  return size.kinds > 1 ? `Of each of its ${size.kinds} kinds of chain, ${range} of the sequence stands in the entry's coordinates.` : `Of its one kind of chain, ${range} of the sequence stands in the entry's coordinates.`;
+}
+
+/** The drawing levels a machine has (a catalogue item): its closer view's file's, or, measured from a structure, an outline and its parts. */
+export function levelsOf(item) {
+  if (item?.entry?.closer?.levels) return item.entry.closer.levels;
+  const size = item?.size;
   if (size?.shape !== "measured") return null;
-  const levels = [{ id: 1, label: "Outline", says: size.outline === "whole" ? "The whole's ellipsoid, as one outline among the other machines." : "Its measured parts as one outline among the other machines." }];
-  if (size.parts?.length > 1) levels.push({ id: 2, label: "Parts", says: "Each named part a body of its own, at its measured size, centre and axes." });
+  const chains = partsByChains(size);
+  const levels = [{ id: 1, label: "Outline", says: size.outline === "whole" ? "The whole's ellipsoid, as one outline among the other machines." : chains ? "Its chains, in its group's colour, as one outline among the other machines." : "Its measured parts as one outline among the other machines." }];
+  if (size.parts?.length > 1) levels.push({ id: 2, label: "Parts", says: chains ? "Each named part in a colour of its own, drawn as its chains, each at its measured size, centre and axes; a part's own ellipsoid is its size, in its panel." : "Each named part a body of its own, at its measured size, centre and axes." });
   if (size.chains?.length > 1) levels.push({ id: 3, label: "Subunits", says: "Each chain of the entry a body of its own, at its measured size, centre and axes, shaded by its kind." });
   return levels.length > 1 ? levels : null;
 }
 
 /** The panel of one measured part of a machine (`machine:<kind>:<part>`), with the way back to the machine. */
 export function describePart(catalogue, species, owner, partId, { scene = catalogue?.scene } = {}) {
-  const item = catalogue?.item(species, owner), size = item?.entry?.size;
+  const item = catalogue?.item(species, owner), size = item?.size;
   const part = size?.parts?.find((value) => value.id === partId) || size?.chains?.find((value) => value.id === partId);
   if (!part) return null;
   const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
@@ -75,7 +98,8 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
     facts: [
       ["How big", `${by(part.across_nm)} nm, the ellipsoid of the same spread as its atoms${part.farthest_nm ? ` (its farthest atoms ${by(part.farthest_nm)} nm)` : ""}`],
       ["Where", `Its centre at ${part.centre_nm.map((n) => Number(n).toFixed(1)).join(", ")} nm from the machine's, in the measure's frame`],
-      ["Measured from", `Protein Data Bank entry ${size.entry}, a structure of ${size.of}, by the viewer with tools/measure_particle.py`],
+      ...(partsByChains(size) && size.parts.includes(part) ? [["Drawn as", `Its ${size.chains.filter((chain) => partOfChainIn(size, chain) === part).length} chains' ellipsoids, in its colour; the size above is the part's own ellipsoid, of the same spread as all its atoms`]] : []),
+      ["Measured from", `Protein Data Bank entry ${size.entry}, a structure of ${size.whose ? size.of : elsewhereWords(organismOf(scene, species), size.of)}, by the viewer with tools/measure_particle.py`],
     ],
     sections: [],
     doors: [{ label: "Back to the machine", lens: "machines", value: owner }],
@@ -140,9 +164,28 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   const group = catalogue.groupById.get(item.group);
   const where = speciesLabel(scene, species);
   if (item.unit) {
-    // A membrane machine with laws: the Protein atlas's own panel of the unit, for this species, with the way into the atlas.
+    // A unit of the law inventory: the Protein atlas's own panel of the unit, for this species, with the way into the atlas.
     const shown = inSpecies(item.unit, scene?.proteins, species);
-    return { ...shown, eyebrow: `${group?.label || "Machines"} · ${item.unit.eyebrow || "unit"}`, swatch: SWATCH.card, doors: [...(shown.doors || []), ...doorsOf(item, scene, species)], note: "A unit of the law inventory, and a protein assembly. The panel says what the inventory states of its laws, as the Protein atlas does. No size of it is in hand, so it is a card, not a shape." };
+    const base = { ...shown, eyebrow: `${group?.label || "Machines"} · ${item.unit.eyebrow || "unit"}`, doors: [...(shown.doors || []), ...doorsOf(item, scene, species)] };
+    if (!item.size) return { ...base, swatch: SWATCH.card, note: "A unit of the law inventory, and a protein assembly. The panel says what the inventory states of its laws, as the Protein atlas does. No size of it is in hand, so it is a card, not a shape." };
+    // Measured from a structure: of its own kind, or, where the species' atlas finds it built from another family, of that family.
+    const other = species !== catalogue.reference && item.unit.species?.[species]?.finding === "different family";
+    const levels = levelsOf(item);
+    return {
+      ...base,
+      // The atlas's own line for such a species says the shape drawn is of the family the engine's law names: there it is. Here
+      // the shape is of the family this species has, so the line says that.
+      ...(other && base.finding?.more ? { finding: { ...base.finding, more: "The description above, the assembly and the reference structures belong to the family the engine's law names. The shape drawn here is of the family this species has." } } : {}),
+      swatch: SWATCH.sized,
+      chips: [...(base.chips || []), { label: "Drawn to scale", title: "An ellipsoid of each body at its measured size, from a structure: an illustration, not the structure" }],
+      note: `A unit of the law inventory, and a protein assembly. The panel says what the inventory states of its laws, as the Protein atlas does. It is drawn to scale from the viewer's own measure of a structure${other ? ` of the family ${where}'s atlas finds it built from` : " of its own kind"}: an illustration, not the structure.`,
+      facts: [...(shown.facts || []), ["How big", sizeWords(catalogue, item.size, { organism: organismOf(scene, species) })]],
+      sections: [
+        ...(shown.sections || []),
+        levels ? { title: "How it is drawn", items: levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
+        { title: "Its size's sources", items: item.size.sources.map((key) => catalogue.source(key)).filter(Boolean).map((source) => ({ label: citeShort(source), detail: `${source.licence}${source.class ? `, ${source.class}` : ""}`, links: source.url ? [{ text: source.url, url: source.url }] : [] })) },
+      ].filter((section) => section?.items?.length),
+    };
   }
   const entry = item.entry, kind = item.kind;
   const facts = [];
@@ -150,11 +193,11 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   else if (entry.named?.record) facts.push(["Named by", `${catalogue.record(entry.named.record)?.path.replace(/^visualizer\//, "") || entry.named.record}: ${entry.named.word}`]);
   if (entry.count) facts.push([entry.count.says ? `How many (${entry.count.says})` : "How many", entry.count.text]);
   else facts.push(["How many", "No count in hand for this species"]);
-  const size = sizeWords(catalogue, entry);
+  const size = sizeWords(catalogue, item.size, { organism: organismOf(scene, species) });
   if (size) facts.push(["How big", size]);
   else if (entry.closer) facts.push(["How big", "As its closer view draws it: each part's size is in its own panel, with its paper"]);
   else facts.push(["How big", "No size in hand: it stands as a card, not a shape"]);
-  const levels = levelsOf(entry);
+  const levels = levelsOf(item);
   if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
   else facts.push(["Its proteins", `${where}'s own data marks no set of proteins for it`]);
   const records = recordLines(catalogue, item, scene);
@@ -222,7 +265,7 @@ export function sections(catalogue, species) {
 
 /**
  * The doors this view offers on another view's parts (the viewer asks every view it offers): on a
- * protein unit with laws that the species shown has, on the ribosomes of the Cell view, and on a
+ * unit of the law inventory that the species shown has, on the ribosomes of the Cell view, and on a
  * machine's closer view, one into the catalogue on that machine.
  */
 export function doorsFor(entity, scene, { species = null } = {}) {
@@ -235,7 +278,7 @@ export function doorsFor(entity, scene, { species = null } = {}) {
   return kind && catalogue.item(species, `${PREFIX}${kind.id}`) ? open(`${PREFIX}${kind.id}`) : [];
 }
 
-/** A part as this view shows it: a unit with laws as the catalogue presents it (with or without a stage). */
+/** A part as this view shows it: a unit of the law inventory as the catalogue presents it (with or without a stage). */
 export function present(entity, scene, species) {
   const catalogue = catalogueOf(scene);
   if (!catalogue || !entity) return entity;

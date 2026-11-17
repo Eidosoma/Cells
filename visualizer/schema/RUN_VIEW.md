@@ -680,8 +680,9 @@ A made-up summary of this shape is tracked for the tests (`tests/engine-views/sw
 the cells itself (each cell's concentration from the run's own arrays; a criterion's
 quantity) and write it beside a package. The run folder's `index.json` names the file in
 the package's entry (`packages[].sidecar`: a JSON file's plain name, or a list of them);
-the adapter reads it only there, for a run with the engine's own view, and refuses it, with
-the reason, where it does not fit:
+in a run folder with no `index.json`, the experiment's overlay entry names it beside every
+package (`sidecar`). The adapter reads it only there, for a run with the engine's own view,
+and refuses it, with the reason, where it does not fit:
 
 ```json
 {
@@ -717,6 +718,31 @@ Where an experiment's runs state one quantity in different units (two forms of o
 its overlay entry says so in a line of its own (`units`), which the page shows by the runs
 and by the sweep's chart. Made-up files of these shapes are written by
 `tests/stated_quantity.test.mjs` and `tools/check_junctions.mjs`.
+
+**A part of an example.** An entry may name the listed example it belongs to
+(`"part_of": "<entry id>"`): it is not listed itself, its card's door stands in the
+example's card, and a published page carries its runs with the example's
+(`publishedReplays`). The tissue line of the gap-junction example is one
+(`src/lenses/tissue_line.js`, shown in the Experiments tab's place, `part=<entry id>` in
+the address). Its entry holds the record's words for the picture under `tissue`, each set
+with its source: `says` (the lines the page may say), `tumor` (`cells`, `label`, `source`),
+`ends` (each arm's end states, the record's table, by arm), `ends_label`, `ends_says` (whose
+words they are, for the card), `refused` (the
+words for a refused pick) and `sources`. Its runs come from the selection's run folder:
+its `index.json`, or where it has none, every package in it that holds a `view.json`, by
+name. They are shown under one clock only where they share their saved times.
+
+- **Refused picks.** With `"refused_picks": true` and a summary of one sweep, each folder
+  beside the packages that holds `REFUSED.json` and no view is named in the catalogue entry
+  (`refused_picks: [{ arm, sweep, parameter, file }]`): its arm, which must be its folder's
+  name, its status, which must be `refused`, and its value of the sweep's parameter (the
+  key the parameter's id names), and nothing else of the file. The page puts each in its
+  place in the parameter's order, named, with nothing drawn in it.
+- **The picture's choices**, said on the picture: the colour of a value on a scale broken
+  at the criterion's own thresholds (one hue below, a grey between, another above), and
+  time down each space–time picture on a logarithmic scale (a time t at log(1 + t / the
+  runs' first step)) or an even one; every saved record is a band from its time to the
+  next. No state is read from a colour; a cell's state is the driver's.
 
 ### A run written by the engine's shared output path
 

@@ -55,6 +55,85 @@
         }
       }
     },
+    "gap-junction-tissue-line": {
+      "adapter": "standard-history",
+      "development": true,
+      "part_of": "gap-junction-linear-network",
+      "summary": "summary.json",
+      "sidecar": "criterion.json",
+      "refused_picks": true,
+      "opens": {
+        "record": [
+          "stated.mir200_minus_zeb_mrna"
+        ]
+      },
+      "label": "The tissue line: 25 cells, the first six a tumor, at three strengths of coupling",
+      "short": "The tissue line",
+      "plain": "One tissue condition of the example runs on the engine: a line of 25 touching cells, the first six a tumor, where each cell runs the EMT switch (miR200, Zeb mRNA and ZEB) and only miR200 crosses the gap junctions, at one junction diffusion constant D for each run. Five values of D were picked before the runs; three ran to their end and two were refused by an engine check. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
+      "tissue": {
+        "says": [
+          "Development work, not judged.",
+          "Picks chosen before the run; most other coupling values were refused by an engine check (FR-19).",
+          "They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s."
+        ],
+        "tumor": {
+          "cells": [
+            "c0",
+            "c1",
+            "c2",
+            "c3",
+            "c4",
+            "c5"
+          ],
+          "label": "Tumor: the first six cells",
+          "source": "the runs' own view (space.source): a line of 25 touching cells, the tumor the first 6"
+        },
+        "ends": {
+          "neither-d0": "6 M, 19 E: the tumor holds",
+          "neither-d6.25e-15": "5 M, 20 E: partly converted, not normalized",
+          "neither-d1e-13": "25 E: normalized"
+        },
+        "ends_label": "End states (cells 1-25), in the note's words",
+        "ends_says": "Each run's end states are given in the note's own words (its section 7, linked under Sources), which describe them under the criterion as stated: development work, not judged.",
+        "refused": "Refused by an engine check: no run to show.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7, item 4 and \"The picks' results\"",
+            "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+          "where": "Section 7, item 4 and \"The picks' results\"",
+          "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development work, not judged; 17 November 2026",
+        "answer": null,
+        "text": "Of five picks of D fixed before they ran, three ran to the end (D = 0, 6.25e-15 and 1e-13 m²/s) and two were refused by an engine check. They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7, \"The picks' results\"",
+            "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+          }
+        ]
+      },
+      "engine_entities": [
+        "models.pump_tissue",
+        "cap.junctions"
+      ],
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
     "e07-v1": {
       "label": "E07-v1: renewal",
       "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Cells are then replaced one at a time by a copy of a neighbour, and each run is compared with plain copying on the same schedule.",

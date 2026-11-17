@@ -1,0 +1,109 @@
+{
+ "format": "cells.visualizer.particle@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "8YOP": {
+   "entry": "8YOP",
+   "title": "Cryo-EM structure of the human 80S ribosome with 4 um Tigecycline",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "2.2",
+   "left_out": [
+    "Receptor of activated protein C kinase 1"
+   ],
+   "whole": {
+    "atoms": 215800,
+    "across_nm": [
+     29.4,
+     23.0,
+     21.1
+    ],
+    "farthest_nm": [
+     30.4,
+     26.1,
+     26.8
+    ],
+    "middle_98_percent_nm": [
+     25.5,
+     21.1,
+     19.5
+    ],
+    "radius_of_gyration_nm": 9.59
+   },
+   "large": {
+    "atoms": 142711,
+    "centre_nm": [
+     0.0,
+     -3.83,
+     0.0
+    ],
+    "axes": [
+     [
+      0.8283,
+      0.361,
+      0.4284
+     ],
+     [
+      -0.2947,
+      -0.3697,
+      0.8812
+     ],
+     [
+      0.4765,
+      -0.8562,
+      -0.1998
+     ]
+    ],
+    "across_nm": [
+     25.0,
+     20.6,
+     17.0
+    ],
+    "farthest_nm": [
+     27.5,
+     30.0,
+     20.6
+    ],
+    "radius_of_gyration_nm": 8.19
+   },
+   "small": {
+    "atoms": 73089,
+    "centre_nm": [
+     0.0,
+     7.48,
+     0.0
+    ],
+    "axes": [
+     [
+      0.7943,
+      -0.0085,
+      -0.6074
+     ],
+     [
+      0.6062,
+      -0.053,
+      0.7935
+     ],
+     [
+      -0.0389,
+      -0.9986,
+      -0.0369
+     ]
+    ],
+    "across_nm": [
+     27.0,
+     16.2,
+     11.3
+    ],
+    "farthest_nm": [
+     27.5,
+     19.8,
+     13.4
+    ],
+    "radius_of_gyration_nm": 7.48
+   },
+   "between_centres_nm": 11.3
+  }
+ }
+}

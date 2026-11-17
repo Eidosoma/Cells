@@ -77,6 +77,10 @@ const SUITE = [
   { name: "junctions-reduced", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "network", NAME: "junctions-reduced", REDUCED: "1", THEME: "dark" }, minutes: 2 },
   { name: "junctions-levin", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin" }, minutes: 3 }, // the replication's real runs where they are on this machine, else skipped
   { name: "junctions-levin-phone", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 3 }, // the same, and GARD in the tab, on a phone
+  // The example's tissue line on its real runs (tools/check_tissue.mjs), skipped where they are not on this machine.
+  { name: "tissue-wide", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "wide", NAME: "tissue-wide" }, minutes: 3 },
+  { name: "tissue-phone", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "phone", NAME: "tissue-phone" }, minutes: 2 },
+  { name: "tissue-reduced", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "reduced", NAME: "tissue-reduced" }, minutes: 2 },
   // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
   flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
   flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),
@@ -110,6 +114,9 @@ const SUITE = [
   { name: "catalogue-address", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "address", NAME: "catalogue-address" }, minutes: 2 },
   { name: "catalogue-text", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "text", NAME: "catalogue-text" }, minutes: 1 },
   { name: "catalogue-tabs", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "tabs", NAME: "catalogue-tabs" }, minutes: 6 },
+  // The animals' benches: the planarian's, wide and on a phone (its outlines instanced, a unit's parts chosen by a real press).
+  { name: "catalogue-animals", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "animals", NAME: "catalogue-animals" }, minutes: 2 },
+  { name: "catalogue-animals-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "animals", NAME: "catalogue-animals-phone", WIDTH: "390", HEIGHT: "844" }, minutes: 2 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

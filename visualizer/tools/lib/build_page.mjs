@@ -247,6 +247,8 @@ export function publishedReplays(index, scene) {
   if (!index || !index.experiments?.some((item) => "listed" in item)) return index;
   const text = JSON.stringify(scene);
   const listed = new Set(index.experiments.filter((item) => item.listed === true).map((item) => item.id));
+  // A part of a listed example (its tissue line: `part_of`) is published with it, though it is not listed itself.
+  for (const item of index.experiments) if (listed.has(item.part_of)) listed.add(item.id);
   const runs = index.runs.filter((run) => listed.has(run.experiment) || text.includes(`"${run.id}"`));
   const kept = new Set(runs.map((run) => run.experiment));
   return { ...index, experiments: index.experiments.filter((item) => listed.has(item.id) || kept.has(item.id)), runs };

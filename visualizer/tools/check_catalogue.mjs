@@ -211,7 +211,7 @@ try {
     const sized = await evaluate(`Boolean(${L}.item("machine:ribosome")?.sized)`);
     check("a real press on the ribosome chooses it; its size is the viewer's own measure from a structure, with its entry", s.selected === "machine:ribosome" && sized && /The viewer's own measure from Protein Data Bank entry \w{4}/.test(s.panel), JSON.stringify([ribosome, s.selected, sized]));
     const parts = await evaluate(`[...(${L}.built.get("machine:ribosome")?.ids || [])]`);
-    const shades = await evaluate(`${L}.built.get("machine:ribosome")?.group.children.map((mesh) => mesh.material.color.getHexString()) ?? []`);
+    const shades = await evaluate(`${L}.bodyColours("machine:ribosome")`);
     check("chosen, the ribosome shows its two measured subunits, each a part that can be chosen, in shades of their own", parts.length === 2 && parts.every((id) => /^machine:ribosome:(large|small)$/.test(id)) && shades.length === 2 && shades[0] !== shades[1], JSON.stringify([parts, shades]));
     check("the ribosome's panel keeps the map's status of the Cell view's ribosomes and FR-13's line", /Planned/.test(s.panel) && /FR-13/.test(s.panel) && /CELL_STRUCTURES/.test(s.panel), s.panel.slice(0, 200));
     // Its door into the Protein atlas, pressed.
@@ -236,6 +236,8 @@ try {
     await sleep(2200);
     let atp = await evaluate(`(() => { const b = ${L}.built.get("machine:atp-synthase"); return { level: b?.level, ids: [...(b?.ids || [])] }; })()`);
     check("the ATP synthase chosen stands as its five measured parts: head, two stalks, the ring and the stator's foot", atp.level === 2 && ["head", "central-stalk", "peripheral-stalk", "ring", "stator-foot"].every((part) => atp.ids.includes(`machine:atp-synthase:${part}`)), JSON.stringify(atp));
+    const membrane = await evaluate(`(() => { const root = ${V}.shadowRoot, label = [...root.querySelectorAll(".label")].find((el) => /Its membrane/.test(el.textContent)); return { label: label?.textContent || null, button: label?.tagName === "BUTTON", slab: Boolean(${L}.built.get("machine:atp-synthase")?.group?.children.some((child) => child.userData.slab)) }; })()`);
+    check("where its membrane lies: a thin slab at the ring, named an illustration on the picture", membrane.slab && /illustration/.test(membrane.label || "") && !membrane.button, JSON.stringify(membrane));
     await shot(`${NAME}-atp-parts`);
     const chains = await placeOf(`root.querySelector('[data-show="3"]')`);
     if (chains) await click(chains.x, chains.y, 1500);
@@ -253,7 +255,7 @@ try {
     })()`);
     note(`${WIDTH} by ${HEIGHT}: ${JSON.stringify(cost)} (milliseconds, the median)`);
     check(`${WIDTH} by ${HEIGHT}: the view's work, its labels and the draw leave room at 60 frames a second`, cost.update + cost.labels + cost.draw < 16.7, JSON.stringify(cost));
-    check("a frame draws within the ceiling the tests hold (90 draws, 40,000 triangles)", cost.cost.draws <= 90 && cost.cost.triangles <= 40000, JSON.stringify(cost.cost));
+    check("a frame draws within the ceiling the tests hold (40 draws, 40,000 triangles)", cost.cost.draws <= 40 && cost.cost.triangles <= 40000, JSON.stringify(cost.cost));
     // While a card rises (with motion), each frame's update of the view, timed.
     const rising = await evaluate(`(() => {
       const v = ${V}, lens = v.current, still = v.stage.reducedMotion;
@@ -267,12 +269,83 @@ try {
     })()`);
     note(`while a card rises: ${JSON.stringify(rising)} (milliseconds of the view's update for each frame)`);
     check(`${WIDTH} by ${HEIGHT}: while a chosen card rises, the view's update on each frame leaves room at 60 frames a second`, rising.frames > 1 && rising.most < 8, JSON.stringify(rising));
-    // Another species: the planarian has no machine with a size in hand, and says so.
-    await evaluate(`${V}.setSpecies("planarian")`);
+    // Another species: the thale cress has no machine with a size in hand (the measures stand on the animals' benches), and says so.
+    await evaluate(`${V}.setSpecies("thalecress")`);
     await sleep(1500);
-    const planarian = await evaluate(`(() => { const lens = ${L}; return { cards: lens.layout.items.filter((i) => i.type === "card").length, shapes: lens.layout.items.filter((i) => i.type === "shape").length, notice: lens.chrome().card.notice }; })()`);
-    check("the planarian's bench is all cards, the law inventory's units among them, and the card says why", planarian.shapes === 0 && planarian.cards > 30 && /no size in hand|each is a card/i.test(planarian.notice || ""), JSON.stringify(planarian));
-    await shot(`${NAME}-planarian`);
+    const plant = await evaluate(`(() => { const lens = ${L}; return { cards: lens.layout.items.filter((i) => i.type === "card").length, shapes: lens.layout.items.filter((i) => i.type === "shape").length, notice: lens.chrome().card.notice }; })()`);
+    check("the thale cress's bench is all cards, the law inventory's units among them, and the card says why", plant.shapes === 0 && plant.cards >= 5 && /no size in hand|each is a card/i.test(plant.notice || ""), JSON.stringify(plant));
+    await shot(`${NAME}-thalecress`);
+    await errorsAtEnd();
+  } else if (CASE === "animals") {
+    // ---------------------------------------------------------- the planarian's bench: the machines the animals share
+    check("the page opens on lens=machines with the planarian", await open("lens=machines&entry=planarian", 3500));
+    const layout = await evaluate(`(() => { const lens = ${L}; return { shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id).sort(), sized: lens.counts.sized, scale: Boolean(lens.scaleBar), outlines: lens.outlineItems.length }; })()`);
+    check("the planarian's bench: the eukaryotic ribosome and five units of the law inventory drawn to scale, all their outlines one instanced mesh, and the scale bar", JSON.stringify(layout.shapes) === JSON.stringify(["machine:ribosome", "unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]) && layout.sized === 6 && layout.scale && layout.outlines >= 6, JSON.stringify(layout));
+    await shot(`${NAME}-bench`);
+    // A real press on a unit's outline, at the middle of its box: the bench's instanced outlines are picked by their instance.
+    const middleOf = (id) =>
+      evaluate(`(() => { const v = ${V}, item = v.current.layout.items.find((value) => value.id === ${JSON.stringify(id)}); if (!item) return null; const p = v.current.root.position.clone().set(item.x, item.y + item.h / 2, item.z); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; })()`);
+    await evaluate(`${V}.stage.rig.setView(${V}.current.homeView())`);
+    await sleep(800);
+    const pump = await middleOf("unit.U39");
+    if (pump) await click(pump.x, pump.y, 1800);
+    let s = await state();
+    check("a real press on the sodium pump's outline chooses it: its panel gives the measure, whose structure it is, and that the planarian's own is not in hand", s.selected === "unit.U39" && /7E1Z, a structure of Homo sapiens \(one of Schmidtea mediterranea: none in hand\)/.test(s.panel) && s.level === 2, JSON.stringify([pump, s.selected, s.level, s.panel.slice(0, 160)]));
+    check("its panel says nothing is modelled, qualified or judged", !/(?<!not )\bmodell?ed\b|qualified|judged/i.test(s.panel), s.panel.slice(0, 200));
+    // Seen close (as its panel's view of it is), a real press on one of its parts.
+    await evaluate(`${V}.current.focus("unit.U39")`);
+    await sleep(2200);
+    // A real press on one of its parts: at a point of the part, along its own axes, that the page shows uncovered and
+    // where the part is the nearest thing (its thin γ subunit lies against it, and may stand in front of its centre).
+    const part = await evaluate(`(() => { const v = ${V}, lens = v.current, built = lens.built.get("unit.U39"), size = lens.item("unit.U39").size, alpha = size.parts.find((value) => value.id === "alpha");
+      const r = v.canvas.getBoundingClientRect();
+      for (const t of [0, 0.3, -0.3, 0.6, -0.6]) for (let k = 0; k < 3; k++) {
+        const local = alpha.centre_nm.map((n, i) => (n + t * alpha.axes[k][i] * alpha.across_nm[k] / 2) / 10);
+        const p = built.group.localToWorld(built.group.position.clone().set(...local)); const q = v.stage.project(p, p.clone());
+        const x = r.left + q.x, y = r.top + q.y;
+        const top = v.shadowRoot.elementFromPoint(x, y);
+        if (top !== v.canvas && !(top && top.tagName === "CANVAS")) continue;
+        if (v.stage.pick(x, y, lens.pickRoots)?.id === "unit.U39:alpha") return { x, y };
+      }
+      return null; })()`);
+    if (part) await click(part.x, part.y, 1500);
+    s = await state();
+    check("a real press on its α subunit chooses that part, under the unit's id", s.selected === "unit.U39:alpha" && /α, the pump/.test(s.panel), JSON.stringify([part, s.selected, s.panel.slice(0, 120)]));
+    // The ribosome: the eukaryotic one, from the human structure.
+    await evaluate(`${V}.select("machine:ribosome", { fly: true })`);
+    await sleep(1800);
+    s = await state();
+    check("the planarian's ribosome is measured from the human 80S (8YOP); its panel names that organism, and what the measure leaves out", /8YOP, a structure of Homo sapiens \(one of Schmidtea mediterranea: none in hand\)/.test(s.panel) && /RACK1/.test(s.panel), s.panel.slice(0, 200));
+    // The gap-junction unit: an innexin channel, the family the planarian builds it from; its sixteen chains by the card's Detail.
+    await evaluate(`${V}.select("unit.U36", { fly: true })`);
+    await sleep(2200);
+    s = await state();
+    check("the planarian's gap-junction unit is measured from an innexin channel (5H1R), the family its atlas finds", /5H1R, a structure of Caenorhabditis elegans/.test(s.panel) && /family/.test(s.panel), s.panel.slice(0, 200));
+    // On a phone the card is folded to one line: unfold it to reach its Detail.
+    let chains = await placeOf(`root.querySelector('[data-show="3"]')`);
+    if (!chains) {
+      await press(".view-toggle", 900);
+      chains = await placeOf(`root.querySelector('[data-show="3"]')`);
+    }
+    if (chains) await click(chains.x, chains.y, 1500);
+    const channel = await evaluate(`(() => { const b = ${L}.built.get("unit.U36"); return { level: b?.level, ids: b?.ids.size, shades: new Set(${L}.bodyColours("unit.U36")).size, cost: ${L}.cost() }; })()`);
+    check("a real press on Subunits shows its sixteen chains, the two hemichannels told apart, in one more draw", channel.level === 3 && channel.ids === 16 && channel.shades >= 2 && channel.cost.draws <= 40, JSON.stringify([chains, channel]));
+    await shot(`${NAME}-innexin`);
+    await evaluate(`${V}.select(null); ${V}.stage.rig.setView(${V}.current.homeView())`);
+    await sleep(1200);
+    const cost = await evaluate(`(() => {
+      const v = ${V}, stage = v.stage, lens = v.current;
+      const time = (fn, n = 20) => { const times = []; for (let i = 0; i < n; i++) { const t = performance.now(); fn(); times.push(performance.now() - t); } times.sort((a, b) => a - b); return Math.round(times[Math.floor(n / 2)] * 100) / 100; };
+      return { update: time(() => lens.update(16)), labels: time(() => v.labels.layout()), draw: time(() => { stage.renderer.render(stage.scene, stage.camera); stage.renderer.getContext().finish(); }, 12), cost: lens.cost() };
+    })()`);
+    note(`${WIDTH} by ${HEIGHT}: ${JSON.stringify(cost)} (milliseconds, the median)`);
+    check(`${WIDTH} by ${HEIGHT}: the planarian's bench within the ceiling the tests hold (40 draws, 40,000 triangles), and a frame leaves room at 60 a second`, cost.cost.draws <= 40 && cost.cost.triangles <= 40000 && cost.update + cost.labels + cost.draw < 16.7, JSON.stringify(cost));
+    await shot(`${NAME}-rest`);
+    // By address: a part of a unit, before the unit is drawn with its parts, opens on Machines with its own panel.
+    check("the page opens on lens=machines&entry=planarian&select=unit.U39:alpha", await open("lens=machines&entry=planarian&select=unit.U39:alpha", 3500));
+    s = await state();
+    const addressed = await evaluate(`(() => { const lens = ${L}; return { selected: lens.selected, part: lens.selectedPart, level: lens.built.get("unit.U39")?.level ?? null }; })()`);
+    check("an address of a unit's part opens on Machines, its unit drawn with its parts and the part's panel shown", s.lens === "machines" && addressed.selected === "unit.U39" && addressed.part === "unit.U39:alpha" && addressed.level === 2 && /α, the pump/.test(s.panel), JSON.stringify([s.lens, s.selected, addressed, s.panel.slice(0, 100)]));
     await errorsAtEnd();
   } else if (CASE === "phone") {
     check("the page opens on lens=machines with E. coli, on a phone", await open("lens=machines&entry=ecoli", 3500));
@@ -362,6 +435,14 @@ try {
       const inTab = await barNow();
       const listShown = await evaluate(`(() => { const list = ${V}.shadowRoot.querySelector(".bar-end .pill-button"), end = list.parentElement.getBoundingClientRect(), box = list.getBoundingClientRect(); return box.left >= end.left - 0.5 && box.right <= end.right + 0.5 && box.right <= innerWidth; })()`);
       check(`${width} px, a model system shown in the Experiments tab: its tab is in sight, the bar on one row, every button at least 44 px, the List whole and not cut by the bar's end`, inTab.row && inTab.least >= 44 && inTab.seen && inTab.list && listShown && !inTab.sideways && inTab.tabs === 6, JSON.stringify({ ...inTab, listShown }));
+      // A part of an example shown in the tab's place (the gap-junction example's tissue line), where its runs are packaged: the same.
+      await open("lens=experiments&part=gap-junction-tissue-line", 2500);
+      if (await until(`${V}.state.part === "gap-junction-tissue-line" && Boolean(${V}.current)`, 30)) {
+        if (await until(lettered, 40)) await evaluate(`${V}.renderChrome()`);
+        const part = await barNow();
+        const partList = await evaluate(`(() => { const list = ${V}.shadowRoot.querySelector(".bar-end .pill-button"), end = list.parentElement.getBoundingClientRect(), box = list.getBoundingClientRect(); return box.left >= end.left - 0.5 && box.right <= end.right + 0.5 && box.right <= innerWidth; })()`);
+        check(`${width} px, a part of an example shown in the Experiments tab: its tab is in sight, the bar on one row, every button at least 44 px, the List whole and not cut by the bar's end`, part.row && part.least >= 44 && part.seen && part.list && partList && !part.sideways && part.tabs === 6, JSON.stringify({ ...part, partList }));
+      } else note(`${width} px: the tissue line's runs are not packaged here, so its bar is not checked`);
       for (const entry of ["planarian", "gard"]) {
         for (const font of ["the page's own font", "the stand-in font"]) {
           await open(`lens=cell&entry=${entry}`, 2500);
