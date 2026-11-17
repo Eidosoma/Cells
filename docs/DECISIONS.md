@@ -6523,6 +6523,21 @@ example so plug the gaps".
   - totals are conserved per label;
   - each claim is tested with a planted error (D187).
 
+## D201: Numbers from free-to-read papers may be used with a citation (extends D186)
+
+2026-11-17. The visualizer session put a question to the user in a dialog, and relayed the ruling to
+the lead.
+- **The case:** E. coli drawn to scale uses five envelope widths measured in two papers, Matias et
+  al. 2003 (J Bacteriol 185:6112) and Berry et al. 2010 (Protein Sci 19:1967). Both are free to read
+  at PubMed Central but not open access: publisher copyright, no licence stated, and no limit on use
+  in their text.
+- **The user:** "Yes, use them".
+- **The rule:** for free-to-read papers in general, numbers may be used, each with its citation.
+  Never their text, figures or data files.
+- **Still asked case by case:** a paper whose own text limits use to academic or non-commercial
+  purposes. Non-commercial material otherwise stays analysis-only.
+- **No full-text copy is saved.** The records are under `/mnt/datasets/Cells/ecoli/`.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
