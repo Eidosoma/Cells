@@ -164,7 +164,8 @@ machine-readable inputs, results, checks and failures.
   - **The final probe set:** `/mnt/workspaces/Cells/gard-g1-part2-20261117/probes-c6dd5956/probes/`.
     Its roles.json is FINAL, with the standing "development run of the engine, not judged".
   - **The independent references (G2)** pass all ten rows on that set, with nothing tuned (report-5).
-    They're on branch gard-g2-references at e2047928, not yet on main.
+    They are on main since merge b3677b72, of gard-g2-references at 7bf68c24 (tiers 1+2, 515 files,
+    0 changed).
   - **Standing (D192, D197):** these are development runs, not judged.
     - The single-event form is the preprint's, kept for comparison and declared driven.
     - The pair-consistent form is passive, and the default.
