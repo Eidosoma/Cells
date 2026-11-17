@@ -85,6 +85,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D189's test retire merged into main (17 November 2026, early).** test-audit a676930b; the
+  tree before it is tagged `pre-retire-2026-11-16` ([summary](/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/SUMMARY.json)).
+  - **Retired:**
+    - tier 3: 11 whole files (844 tests), and 23 cases in 4 files;
+    - tiers 1 and 2: 40 whole files, and 788 cases in 38 files.
+  - **The saving:** 5.5 core-hours per tier-3 run, and 2.0 minutes per tier 1+2 gate.
+  - **Held instead, 8 rows, each with its reason.** Four tier-3 files run a coupling target, three
+    files are needed by remaining tests, and three cases pass in a checkout with Git history. The
+    L4 block runs no tests, so check (b) found nothing.
+  - **Collection:** from 20,792 IDs to 18,482. That is exactly the 2,322 retired IDs fewer, plus 12
+    added since. In the 38 edited files, all 1,731 remaining tests keep their outcomes.
+  - **The records:**
+    - the tiers now hold 327, 152 and 222 files;
+    - tier 3's frozen record holds 218 files and 6,869 tests, naming D189 and the tag;
+    - the tier tool records roots relative to the repository.
+  - **The gate:** tier 1 with the BLAS pin merged, 327 files, none changed.
+  - **Found by the gate:** a path-based read by a kept test. The file it reads was restored
+    (351d7b6b).
+
 - **The BLAS pin (D190) merged into main (17 November 2026, just after midnight UTC).** core-pin
   52dd5816 ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/); probes in `/mnt/workspaces/Cells/core-pin-20261116/`).
   - **What it does:**

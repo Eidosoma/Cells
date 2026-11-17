@@ -6143,6 +6143,15 @@ review. The user: "1. agreed all four" and "2. as you suggest".
   reviewed again once D188 has cut the 42 couplings.
 - **The saving:** about 7.5 of tier 3's 29.8 core-hours per run, and 2.1 minutes per tier 1+2 gate.
 
+**Done on 17 November** (test-audit a676930b):
+- **Retired:** 11 tier-3 and 40 tier-1/2 files, plus 23 and 788 cases. Collection fell by exactly the
+  2,322 retired IDs.
+- **8 firm rows moved to held,** each with its reason:
+  - four tier-3 files that run a coupling target (check a);
+  - three files whose code the remaining tests need;
+  - three cases that pass in a checkout with Git history.
+- **The saving as done:** 5.5 core-hours per tier-3 run, and 2.0 minutes per tier 1+2 gate.
+
 ## D190: BLAS is pinned to one thread, in a lean form
 
 2026-11-16. The core found that a CPU run's bits follow its CPU allocation through OpenBLAS's thread
