@@ -748,7 +748,113 @@ module they test):
   if its files are disjoint from the operators owner's other files, which this note did not check
   file by file.
 
-## 5. The probes (criteria follow, before they run)
+## 5. The probes (CORE_SEAMS_DESIGN §6.4), in scratch
 
-The cardiac booking probe and mitochondria's P1 (CORE_SEAMS_DESIGN §6.4), in scratch only, after
-items 1–4.
+Both run on main ef9fc1a8's code, from this branch's worktree, with FR builders and fixtures imported
+read-only. Scratch code goes in `$W/probes/`.
+- **Where they run:** before 15:00 UTC only on CPUs 0–3 under `locks/gate-cores-0-3.lock`, and only if
+  short with JIT included; after it, on CPUs 6, 7, 22 and 23.
+- **Anything over a few minutes** goes through `scripts/run_detached.sh`.
+
+### 5.1 The booking probe: criterion
+
+**Engine models:** `resolved_pump_tissue@3` with `kleak_always_open@1` and `naleak_always_open@1`,
+under ARS(2,2,2) (`imex_ars222_face_electromigration@1`).
+
+**The world:** one heredity-sized cell facing its held bath, from
+`surface_pump_v3_fixtures.heredity_cells`, with its pump and its gated populations removed. Two leak
+populations sit on its one patch:
+- a K⁺ leak;
+- a Na⁺ leak.
+
+Their permeabilities put the rest potential about 20 mV above E_K.
+
+**The driving current is the Na⁺ leak's, not an injected one,** a declared departure from §6.4's
+wording. It keeps the probe on @3 alone; the composite's electrode would add its own routes and
+carriers. The mechanism tested is the same: a K⁺ population whose current crosses its reversal
+within a step.
+
+**Two arms:**
+- **The crossing arm:** V starts 15 mV below E_K and relaxes through E_K to rest.
+- **The control:** V starts between E_K and rest and relaxes to rest without crossing E_K, at the
+  same steps. The K⁺ power then falls by less than 59% per step.
+
+**The ladder:** dt·G/C of 0.003, 0.01, 0.03, 0.1, 0.3 and 0.6.
+- G is the cell's slope conductance at rest, and C its membrane capacitance.
+- Each run lasts five relaxation times, or until it is refused.
+
+**Recorded per run:**
+- admitted or refused;
+- the refusing check, by its message;
+- the step;
+- V at the step's start and end;
+- the K⁺ population's power at the step's start and end;
+- its booked increment of `channel_dissipated_energy_pJ`.
+
+A refusal of the step's validity flag (where the per-stage rule folds in, beside the domain and the
+field) is attributed by recomputing dt·`membrane_rate` at that step's start.
+
+**Confirmation needs all of these:**
+- the crossing arm is refused by the dissipation check ("Resolved pump dissipation cannot be negative
+  or decrease") at the step that crosses E_K, on at least one rung;
+- the control is admitted on that rung;
+- no other check refuses either arm on that rung.
+
+A refusal by any other check is reported and confirms nothing. The smallest refused rung is reported
+against the cardiac note's claim that the 1e-12 pJ tolerance refuses even a crossing a fraction of a
+millivolt wide.
+
+**What follows:**
+- **Confirmed:** D's trapezoid is needed for channels, as H1 assumes.
+- **Never refused by the dissipation check:** the trapezoid's need for channels is revisited before
+  H1 (§6.4).
+
+### 5.2 P1: criterion
+
+**Engine models:**
+- `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `cells.transporter@1`
+  (`proton_atp_mass_action_positive@1` on held fuel), `cells.rapid_proton_buffer@1` and
+  `cell_owned_compartments@1` (host C);
+- @3 with the transporter on a cell's plasma patch facing a faced finite node (host P).
+
+**Host C:** FR-4's world (`definitions.fr4_world`), changed in its parameters only:
+- n = 4;
+- capacity raised so that the ladder's steps stay above 1 µs;
+- the proton leak and the K⁺ counterion route set to zero, so the pump's mode is alone;
+- the lumen charged past the static head, at V_b* − 20 mV, so the pump runs in reverse back to the
+  head. V_b* is where ΔG_cyc = 0 at the start's concentrations.
+
+**ΣG/C** is taken at the static head: G = n²F²J₁/RT, with J₁ = k·S the one-way flux there, over
+C_b.
+
+**The ladder:** dt·ΣG/C of 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1 and 2. Each rung runs ten relaxation
+times, or until it is refused.
+
+**Recorded per rung:**
+- admitted or refused, and the refusing check: the per-stage rule (attributed as in §5.1), the energy
+  ledger ("Resolved pump accounting failed: energy"), or another, named;
+- the error: the largest |V_b(engine) − V_b(reference)| over the observations, relative to the
+  start's offset |V_b0 − V_b*|.
+
+**The reference** is this note's own integration of the same world. The ODE in the lumen's charge and
+the two nodes' proton equivalents is solved with Radau at rtol 1e-12, with the law's equations as
+`processes/proton_pump.py` and the buffers' equilibria give them.
+- Its author has read the engine, so it is not independent.
+- It checks the integration, not the law.
+
+**Host P:** the parse first.
+- **If it is refused,** the arm waits for A, and the refusal is reported.
+- **If it parses,** the same ladder runs, and records refusals only. Its error is not measured in
+  step 0, since its reference would need the faced node's field.
+
+**The decision rules,** stated before the run:
+- L_stage, L_ledger and L_err are the largest admitted rungs below the first refusal by each, and the
+  largest rung whose error is within 1e-3.
+- **Branch X is built** if, on host C, the energy ledger refuses first: L_ledger < L_stage.
+- **Mitochondria's branch E** holds if L_eff = min(L_stage, L_ledger, L_err) ≥ 0.05 on the host the
+  lead picks for M4; **branch I** otherwise.
+  - 0.05 is FR-4's measured booking limit, which mitochondria §2.3's cost for E assumes.
+  - L_eff is reported both with L_ledger and without it, since branch X would lift the ledger's
+    limit.
+
+## 6. Results of the probes (to follow)
