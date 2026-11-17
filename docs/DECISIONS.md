@@ -6683,6 +6683,8 @@ them into the new engine if necessary".
     citation.
 - **A classification table of the batch's 33 source modules is being made, read-only.** For each
   module it gives the class (law, method or machinery) and what the modular engine already covers.
+- **Landed (17 November, evening):** merge 742132db, once the two laws' reference outputs were saved.
+  The table's result: 2 laws, 16 methods and 15 machinery modules.
 - **The user agreed the split** the same day: "yes, the levin work has highest priority as we want to
   use that as an example in the viz, machinery can wait for sure".
   - The batch's laws go onto seam F's template, after the classification table, at a lower priority
