@@ -85,6 +85,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged
+  run.** Registration commit 32a1d439. The protocols are `fr4-acidification-v1` and
+  `fr5-transfer-v1`.
+  - **The basis:**
+    - D195;
+    - the rehearsal, which passed 21 of 21 and 51 of 51;
+    - three dated pre-registration disclosures: the energy line settled while the study's values
+      were known, the text levelled, and the harness-limit rule.
+  - **The judged criteria and derivations are byte-identical to the rehearsed copies.**
+  - **The harness-limit rule:** a part ended by its runtime limit or memory cap voids the run, which
+    is relaunched once from the same snapshot. An engine refusal is a verdict.
+  - **The registered state is tested.** The drafter refuses to redraft a registered protocol, and
+    the lane's 45 tests pass in both states. The first attempt found and fixed this check.
+  - **Next:** the judged run, from a clean snapshot of 32a1d439. It runs on lane B (CPUs 8–11) for
+    about 3 h 10 min, and every judged part is compared against the rehearsal.
+
 - **FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026,
   11:20–14:31 UTC).** They ran from snapshot-e79b4232 on CPUs 6, 7, 22 and 23
   ([evidence](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/run-e79b4232/)). The protocols themselves stay proposed.
