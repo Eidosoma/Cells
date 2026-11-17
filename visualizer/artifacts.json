@@ -316,7 +316,7 @@
         },
         {
           "date": "2026-11-17",
-          "note": "Version 3 (version id 1794888479-14ad), built from the same copy (516 KB). The page says on itself 'One view of the Cells map, standing alone'; a piece named in the address is framed on a phone. Looked at on the card, wide and at a phone's width: no error."
+          "note": "Version 3 (version id 1794888479-14ad), built from the same copy (516 KB). The page says on itself 'One view of the Cells map, standing alone'; a piece named in the address is framed on a phone. Looked at on the card, wide and at a phone's width: no error. Read back from the artifact service after the publish: the built page stands whole inside the published index.html. Not built again at 236d0e5c: the page would differ only by shared styles that it does not show."
         }
       ]
     },
@@ -333,7 +333,11 @@
         },
         {
           "date": "2026-11-17",
-          "note": "Version 2 (version id 1794888478-0c6e), built from a clean copy of 8d0aaa35 with the standalone pages' new notice (621 KB). The view as it now stands on the map's page (Version 13 of the map): the example's mark takes the first free place under the notice, 'the preprint's single-event form' replaces 'the published form' (D192's scoped words), a seeping molecule starts inside the frame on a phone. The page says on itself 'One view of the Cells map, standing alone' (it said the view was not on the map's page yet). Looked at on the card, wide and at a phone's width in the dark theme, never a fresh browser's first page: no error."
+          "note": "Version 2 (version id 1794888478-0c6e), built from a clean copy of 8d0aaa35 with the standalone pages' new notice (621 KB). The view as it now stands on the map's page (Version 13 of the map): the example's mark takes the first free place under the notice, 'the preprint's single-event form' replaces 'the published form' (D192's scoped words), a seeping molecule starts inside the frame on a phone. The page says on itself 'One view of the Cells map, standing alone' (it said the view was not on the map's page yet). Looked at on the card, wide and at a phone's width in the dark theme, never a fresh browser's first page: no error. Read back from the artifact service after the publish: the built page stands whole inside the published index.html."
+        },
+        {
+          "date": "2026-11-17",
+          "note": "Version 3 (version id 1794897080-f3ea), built from a clean copy of 236d0e5c (624 KB): on a phone and with less motion the assembly is the cluster, as the user decided (Version 2 packed the micelle there); of the example the form of its law is named and no more. Looked at on the card at a phone's width in the dark theme (opened) and loaded wide: no error. Read back from the artifact service after the publish: the built page stands whole inside the published index.html, byte for byte."
         }
       ]
     }
