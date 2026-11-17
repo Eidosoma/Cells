@@ -2,24 +2,26 @@
  "schema": "cells.compartment_ph_protocol@1",
  "id": "fr5-transfer-v1",
  "title": "FR-5's first acceptance: pH-conditioned transfer, damage, leak and reseal on an owned compartment, in two arms on FR-4's steady state",
- "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's, after the dt study and a rehearsal. The arm values and restated claims are confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly",
+ "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics; its text brought level with the runs before registration on 17 November 2026, no criterion changed). Its world agreement, its dt study and its rehearsal have run on the integrated candidate (development_runs); registration is the lead's. The arm values and restated claims are confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly",
  "registration_plan": {
   "status": "not registered",
-  "no_judged_run_yet": "No run of either arm exists: the core's insertion points and this branch's laws are not yet wired",
-  "path": "The lead registers it from a clean snapshot of the integrated candidate, after this protocol's dt study and a rehearsal (the D150/MG0c path); it travels with fr45-physics's merge into integration-d172",
-  "launch": "each judged unit through scripts/run_detached.sh, --oom-first, cap 2G unless a development run measures more"
+  "no_judged_run_yet": "No judged run yet. The engine path is wired and has run for development: the world agreement (worlds-d82e1935), the dt study (dt5-a6639e79) and the rehearsal on a registered dry-run copy (run-e79b4232: 51 of 51 judged criteria, every part's records bitwise the dt study's apart from the start extract's identity)",
+  "path": "The lead registers it on main, after its dt study and its rehearsal (the D150/MG0c path, both done). The judged run follows once, from a fresh clean snapshot of main taken after the registration commit, past seam F (the lead's ruling of 17 November 2026: option (a)), FR-5's start part first from the same snapshot; the judge's compare of every judged part against the rehearsal's (run-e79b4232) is its full-horizon check across F, expecting only the start extract's identity to differ",
+  "launch": "each judged unit through scripts/run_detached.sh as judge.resources has it: one unit per CPU, its cap and runtime limit from judge.units, --oom-first, no --wait-headroom; the judge in its own unit; FR-5's start part first"
  },
  "rung": "FR-5, acceptance 1 (numerical verification, D174's first claim kind; no living-cell claim)",
  "question": "On FR-4's steady state, does the engine move a neutral cargo across the bounding patch only while the compartment is in its declared condition (arm T), release it through a damage pore when the patch is injured and recover after resealing (arm R), with every book closed, agreement with the independent reference within X's budget, and controls that fail by at least ten times that budget?",
  "engine_models": [
-  "resolved_pump_tissue@3 with the core's stage-read, transporter, held-row and face-free-term insertion points",
-  "rapid_proton_buffer@1, proton_atp_mass_action_positive@1, proton_constant_field_leak@1 (FR-4's laws, unchanged)",
-  "passive_neutral_permeation@1 (the conditioned transfer and the cargo pore)",
-  "bounding_patch_damage@1 (the damage control state, exact per step)",
-  "ph_conditioned_factor@1 (the condition, through the routing door)",
-  "the coupling operator's routing door (the factors' multiply), and cell_owned_compartments@1"
+  "resolved_pump_composite@1, the declared world: the composite with resolved_pump_tissue@3 as its inner model and FR-1's compartment operator (validation/compartment_ph_engine/definitions.declared_world)",
+  "resolved_pump_tissue@3, the inner model, with its stage-read, transporter, held-row and face-free-term insertion points",
+  "FR-4's kinds and laws, unchanged: cells.rapid_proton_buffer@1, the kind of the stage read rapid_proton_buffer@1 (a declared reduced representation, D175); cells.transporter@1, the kind of the pump on the bounding patch: the law cells.proton_atp_mass_action_positive@1 on the fuel kind maintained_held_rows@1 (the held ATP, ADP and Pi rows at the cytosol); cells.passive_routes@1, the kind of the proton leak on the bounding patch: the law proton_constant_field_leak@1; constant_field@1, the bounding patch's own law: the K+ counterion route",
+  "cells.passive_routes@1 also carries FR-5's routes: passive_neutral_permeation@1 (the conditioned transfer and the cargo pore) and proton_constant_field_leak@1 (the proton pore)",
+  "cells.patch_damage@1, the kind of the damage control state: the law bounding_patch_damage@1, exact per step",
+  "cells.ph_condition@1, the kind of the condition: the law ph_conditioned_factor@1",
+  "the routing door, which multiplies the routes' openings by their factors",
+  "cell_owned_compartments@1, FR-1's operator: refusal 4 version 1.2 (its FACTOR_KINDS admit the two source kinds) and refusal 5 version 1.1 (it admits the charged 1800 s start)"
  ],
- "scope": "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 as declared, fixed volume, explicit ARS(2,2,2)), plus FR-5's damage, a proton pore and a neutral cargo pore. Ionic pores are refused in version 1 (they wait for the implicit patch). The single-compartment form is reported, not judged",
+ "scope": "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 as declared, fixed volume, explicit ARS(2,2,2)), plus FR-5's damage, a proton pore and a neutral cargo pore. Ionic pores are refused in version 1 (they wait for the implicit patch). The single-compartment form is reported, not judged. The verdict covers cell_owned_compartments@1 as built at the judged snapshot (refusal 4 version 1.2, refusal 5 version 1.1)",
  "driver": "validation/tissue/compartment_ph_qualification.py (the generator) and validation/tissue/compartment_ph_judge.py (the judge), on validation/compartment_ph_engine/definitions.py's worlds",
  "start": {
   "declared": "FR-4's engine checkpoint at t = 1800 s of fr4_world(World()), its steady state (pH_L about 5.0946 per the references); FR-5's t = 0 is that checkpoint, with X added at its declared start amounts",
@@ -143,11 +145,28 @@
   "pre-run correction, 15 November 2026, the lead's ruling on J3's and J4_start's nodes: as J4's, the Richardson-estimated state error of the pH (J3) and the start check (J4_start, row 0 against the reference at rounding) judge the pH of every buffered node, the lumen and the cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold both nodes",
   "pre-run correction, 16 November 2026, the lead's ruling on the module paths (paths only): the lane's engine-facing modules moved from validation/compartment_ph/ to validation/compartment_ph_engine/ (parameters, definitions and dt_study; with them on fr45-transporter engine_records, planted, compare_reference, path_agreement and refusal_paths), so validation/compartment_ph/ holds the independent references' code-blind modules alone (their isolation tests: nothing there imports cells, jax or validation.tissue), with this protocol beside them. The driver and the world's builder name the new paths; earlier text naming the old ones (the execution path's correction, the questions as asked) reads with the new folder. Nothing else changes",
   "pre-run correction, 16 November 2026, the lead's ruling on the judged world, as FR-4's: every engine part runs the declared world with FR-1's compartment operator (the composite, definitions.declared_world), in place of the development world without it; FR-4's world showed the two bitwise equal over 900 s (fr45-compartment-op e73e4afd, dev-e73e4afd-declared/), and FR-5's world is checked the same way once its kinds are wired",
-  "pre-registration correction, 17 November 2026, the energy criterion, settled by the FR owner at the lead's order of 16 November (the dt study's F4 and the protocol's J7 to agree before registration), its direction approved by the lead on 17 November: J7 now judges F4 as it was written before any run (dt_study.FR5_CRITERIA and dt_study_criteria_written_first) and as the lead's Q1 ruling kept it at 1 ms. J7_*_energy judges the energy residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms (the ladder's first value), as well as on the declared 0.5 ms, which it alone had read; J7_*_energy_falls judges its fall at second order down the ladder (every successive pair by the classes rule, with no upper edge), as FR-4's J6_energy_falls does, where it had been reported only. Why: the declared rung alone is about four times looser than F4, since the residual falls at second order, which is what Q1 ruled out; the choice adds and tightens, and loosens nothing. It was made after FR-5's development dt study (dt5-a6639e79, 16 November 2026), whose values were known when the line was settled: the residual over flows 1.32e-10 (T) and 8.21e-11 (R) at 1 ms, 3.30e-11 and 2.09e-11 at 0.5 ms, the ladder passing on both arms (T mixed, then at rounding; R at rounding on every pair). That study's records, read again by the judge under these criteria, pass both arms (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/dt5-a6639e79-reread/)"
+  "pre-registration correction, 17 November 2026, the energy criterion, settled by the FR owner at the lead's order of 16 November (the dt study's F4 and the protocol's J7 to agree before registration), its direction approved by the lead on 17 November: J7 now judges F4 as it was written before any run (dt_study.FR5_CRITERIA and dt_study_criteria_written_first) and as the lead's Q1 ruling kept it at 1 ms. J7_*_energy judges the energy residual over the integrated flows <= 2e-3 on the coarsest rung, 1 ms (the ladder's first value), as well as on the declared 0.5 ms, which it alone had read; J7_*_energy_falls judges its fall at second order down the ladder (every successive pair by the classes rule, with no upper edge), as FR-4's J6_energy_falls does, where it had been reported only. Why: the declared rung alone is about four times looser than F4, since the residual falls at second order, which is what Q1 ruled out; the choice adds and tightens, and loosens nothing. It was made after FR-5's development dt study (dt5-a6639e79, 16 November 2026), whose values were known when the line was settled: the residual over flows 1.32e-10 (T) and 8.21e-11 (R) at 1 ms, 3.30e-11 and 2.09e-11 at 0.5 ms, the ladder passing on both arms (T mixed, then at rounding; R at rounding on every pair). That study's records, read again by the judge under these criteria, pass both arms (/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/dt5-a6639e79-reread/)",
+  "pre-registration correction, 17 November 2026, the lead's ruling on the stale text (text only: no criterion, derivation or threshold changed, checked byte for byte when redrafted): the status prose, the registration plan ('not yet wired', its path and its launch), the development runs (now listed), engine_models (the landed IDs), the scope line (the verdict covers cell_owned_compartments@1 as built at the judged snapshot: refusal 4 version 1.2, refusal 5 version 1.1), and judge.units and judge.resources (the cost basis is the lead's sizing of 1.5 ms per step plus 90 s, with the rehearsal's measured walls and peaks beside each unit, and each runtime limit D150's rule on the larger of the sizing and the rehearsal's wall) were brought level with the runs"
  ],
  "development_runs": {
-  "runs": [],
-  "note": "no run of either arm; the charged-patch test's runs (fr45/charged_patch/) are development evidence for the explicit limit only"
+  "runs": [
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/worlds-d82e1935",
+    "status": "development: the world agreement over 400 s, both arms, from snapshot d82e1935; not judged",
+    "reading": "the declared world bitwise the development world on both arms, 800000 steps each (check.json)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79",
+    "status": "development: the dt study, from snapshot a6639e79 on the vector path and the declared world; not judged",
+    "reading": "J1-J11 pass on both arms in its development reading (reading/verdict.json), and again under the energy line settled on 17 November 2026 (rehearsal-20261117/dt5-a6639e79-reread/)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/run-e79b4232/fr5",
+    "status": "the rehearsal, on a registered dry-run copy from snapshot e79b4232; not a verdict",
+    "reading": "51 of 51 judged criteria pass (verdict/verdict.json); every part's records bitwise the dt study's, run times apart, except the start extract's identity (compare/)"
+   }
+  ],
+  "note": "the charged-patch test's runs (fr45/charged_patch/) are development evidence for the explicit limit only"
  },
  "outcome_rules": "PASS when J1-J11 hold for both arms; otherwise the failing criteria are reported with their values, without repair or retuning after the judged run",
  "step_bound": "The world's 0.05 (max-side dt x G/C_b) applies to the patch total, the sum over every route on the bounding patch, since those routes share one charge mode (V_b). The rerun measured the patch total at 0.048 at 1 ms at the stiffest state (the proton pore 0.029, the leak, K+). So FR-5 declares dt = 0.5 ms (patch total about 0.024, FR-4's factor-of-two margin). Price: 400 s is 8e5 steps per run instead of 4e5, about 0.8 CPU-hours per run at the charged-patch test's upper-bound cost.",
@@ -926,65 +945,137 @@
   "units": {
    "start": {
     "steps": 1800000,
-    "cpu_hours": 0.49
+    "cpu_hours": 0.78,
+    "runtime_max_s": 9000,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 2687.2,
+     "memory_peak": "1.3G"
+    }
    },
    "T_rung_1ms": {
     "steps": 400000,
-    "cpu_hours": 0.12
+    "cpu_hours": 0.19,
+    "runtime_max_s": 2700,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 687.7,
+     "memory_peak": "1.3G"
+    }
    },
    "T_rung_0p5ms": {
     "steps": 800000,
-    "cpu_hours": 0.22
+    "cpu_hours": 0.36,
+    "runtime_max_s": 5760,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 1716.6,
+     "memory_peak": "1.3G"
+    }
    },
    "T_rung_0p25ms": {
     "steps": 1600000,
-    "cpu_hours": 0.44
+    "cpu_hours": 0.69,
+    "runtime_max_s": 9900,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 3089.7,
+     "memory_peak": "1.4G"
+    }
    },
    "T_rung_0p125ms": {
     "steps": 3200000,
-    "cpu_hours": 0.86
+    "cpu_hours": 1.36,
+    "runtime_max_s": 20160,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 6507.0,
+     "memory_peak": "1.3G"
+    }
    },
    "T_control": {
     "steps": 800000,
-    "cpu_hours": 0.22
+    "cpu_hours": 0.36,
+    "runtime_max_s": 5580,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 1653.9,
+     "memory_peak": "1.3G"
+    }
    },
    "R_rung_1ms": {
     "steps": 400000,
-    "cpu_hours": 0.12
+    "cpu_hours": 0.19,
+    "runtime_max_s": 3120,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 825.5,
+     "memory_peak": "1.3G"
+    }
    },
    "R_rung_0p5ms": {
     "steps": 800000,
-    "cpu_hours": 0.22
+    "cpu_hours": 0.36,
+    "runtime_max_s": 5400,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 1580.9,
+     "memory_peak": "1.3G"
+    }
    },
    "R_rung_0p25ms": {
     "steps": 1600000,
-    "cpu_hours": 0.44
+    "cpu_hours": 0.69,
+    "runtime_max_s": 10680,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 3342.3,
+     "memory_peak": "1.3G"
+    }
    },
    "R_rung_0p125ms": {
     "steps": 3200000,
-    "cpu_hours": 0.86
+    "cpu_hours": 1.36,
+    "runtime_max_s": 16320,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 5230.5,
+     "memory_peak": "1.3G"
+    }
    },
    "R_control": {
     "steps": 800000,
-    "cpu_hours": 0.22
+    "cpu_hours": 0.36,
+    "runtime_max_s": 5040,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 1464.7,
+     "memory_peak": "1.3G"
+    }
    },
    "reference": {
     "steps": null,
     "cpu_hours": null,
+    "runtime_max_s": 1500,
+    "cap": "2G",
+    "rehearsal": {
+     "wall_s": 39.1,
+     "memory_peak": "57.9M"
+    },
     "note": "the references: minutes"
    }
   },
   "resources": {
-   "status": "a template until the rehearsal measures each unit: CPU, RUNTIME_MAX_S and the caps are placeholders, filled by the lead at the final check",
+   "status": "filled from the rehearsal (run-e79b4232, 17 November 2026): one unit per CPU, its runtime limit RUNTIME_MAX_S = judge.units[PART].runtime_max_s and its cap CAP = judge.units[PART].cap; the CPUs are the lead's at the launch",
    "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
    "unit": "scripts/run_detached.sh fr5-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_qualification judged SNAPSHOT/validation/compartment_ph/protocols/fr5_transfer_v1.json OUT/PART PART",
    "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_judge judged SNAPSHOT/validation/compartment_ph/protocols/fr5_transfer_v1.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
-   "runtime_max_rule": "3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the minute (D150's rule)",
-   "caps": "2G per unit (the runbook) until the rehearsal measures the peaks",
-   "cost_note": "the units' cpu_hours use the vector path's measured cost on FR-4's world, 0.95 ms per step plus about 48 s of compile per unit (fr45-transporter 427e4a05, CPU 1), in place of the charged-patch test's 3.6 ms upper bound (pre-run correction, the lead, 15 November 2026); the rehearsal runs the full horizon and measures each unit, a world with more routes and rows (FR-5's) at its own rate",
+   "runtime_max_rule": "the larger of D150's rule on the sizing, 3 x (steps x 1.5 ms + 90 s of compile) + 600 s (300 s as the estimate of a part without steps), and D150's rule on the rehearsal's wall time, 3 x wall + 600 s, each rounded up to the minute (the lead's ruling, 17 November 2026)",
+   "caps": "2G per unit: the rehearsal's peaks were 1.3-1.4G for every engine part, 0.11G for K3 and 0.06G for the references; the judge 1G",
+   "cost_note": "the rehearsal (run-e79b4232: snapshot e79b4232 on CPUs 6, 7, 22 and 23, two pairs of sibling hyperthreads, all four busy, so not a quiet-core rate) measured 1.43-2.21 ms per step of execution and 74-134 s of compile per engine unit; the units' cpu_hours use the lead's sizing, 1.5 ms per step plus 90 s. The earlier basis, 0.95 ms per step plus about 48 s, was FR-4's world on a quiet core (fr45-transporter 427e4a05, CPU 1; pre-run correction, the lead, 15 November 2026)",
    "no_wait_headroom": "judged units run without --wait-headroom: the wait would run inside the unit and count against its runtime limit; the lead checks the slice's room before each launch",
    "attempts": "an infrastructure ending (a runtime or memory kill, a signal, an incomplete results.json) is rerun once from the same snapshot into a new OUT/PART; a refusal by the engine is a verdict",
-   "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads these fields",
+   "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec, with the values above): neither the generator nor the judge reads these fields",
    "order": "the start unit first; when it has written OUT/start/start.json, every other unit with --start OUT/start/start.json appended (the references take minutes); the judge last"
   },
   "engine_readouts": {
