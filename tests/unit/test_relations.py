@@ -155,8 +155,8 @@ def gard_world():
         rel.Edge("removes_to", "carrier:a2", "sink:discard", CONTINUATION, event=f1,
                  species="t1", weight_record="discarded_total", weight_index="1,0", mode="event"),
     ]  # fmt: skip
-    shapes = {"joined_total": (3, 2, 1), "discarded_total": (3, 2, 1), "fission_work_kT": (3, 1)}
-    records = {n: {"file": "records.npz", "array": n, "shape": list(s)} for n, s in shapes.items()}
+    shapes = {"joined_total": (5, 2, 1), "discarded_total": (5, 2, 1), "fission_work_kT": (5, 1)}
+    records = one_file(shapes, times="row_time", file="records.npz")
     return dict(
         world=WORLD,
         lives=lives,
@@ -202,23 +202,47 @@ def tissue_world():
                  species="K", weight_record="replacement_supplied_fmol", weight_index="0,1",
                  mode="event"),
     ]  # fmt: skip
-    records = {
-        "replacement_supplied_fmol": {
-            "file": "trajectory.npz",
-            "array": "replacement_supplied_fmol",
-            "shape": [5, 1, 4],
-        }
-    }
+    records = one_file(
+        {"replacement_supplied_fmol": (5, 1, 4)}, times="accepted_times", file="trajectory.npz"
+    )
     return dict(world=WORLD, lives=lives, events=events, nodes=nodes, sources=sources,
                 edges=edges, records=records)  # fmt: skip
 
 
+# Each record file's rows' times: GARD's bundle saves its start, then each fission's parent and
+# daughter rows at the fission's time (fissions at 3 and 7.5); the tissue run saves every 1 ms step.
+TIMES = {
+    "row_time": np.array([0.0, 3.0, 3.0, 7.5, 7.5]),
+    "accepted_times": np.array([0.0, 0.001, 0.002, 0.003, 0.004]),
+}
+
+
+def one_file(shapes, *, times, file):
+    """Cumulative records saved in one file, {name: record}."""
+    return {
+        name: {
+            "array": name,
+            "times": times,
+            "kind": "cumulative",
+            "shape": list(shape),
+            "files": [{"file": file, "rows": [0, shape[0]]}],
+        }
+        for name, shape in shapes.items()
+    }
+
+
 def record_files(directory, world):
-    """The run's record files that a world's records name, zero-filled at their shapes."""
+    """The run's record files that a world's records name: each record zero-filled over each of
+    its files' rows, beside the rows' times."""
     by_file = {}
     for entry in world["records"].values():
-        by_file.setdefault(entry["file"], {})[entry["array"]] = np.zeros(entry["shape"])
+        for part in entry["files"]:
+            start, stop = part["rows"]
+            arrays = by_file.setdefault(part["file"], {})
+            arrays[entry["array"]] = np.zeros((stop - start, *entry["shape"][1:]))
+            arrays[entry["times"]] = TIMES[entry["times"]][start:stop]
     for name, arrays in by_file.items():
+        (directory / name).parent.mkdir(parents=True, exist_ok=True)
         np.savez(directory / name, **arrays)
 
 
@@ -401,27 +425,68 @@ def test_the_descent_edges_are_the_lives_own(tmp_path):
 
 def test_weights_point_at_declared_records_in_their_files(tmp_path):
     world = gard_world()
-    edge = world["edges"][0]
-    outside = dict(world, edges=[_replace(edge, weight_index="2,0"), *world["edges"][1:]])
-    refused(outside, "gives one position")
-    short = dict(world, edges=[_replace(edge, weight_index="1"), *world["edges"][1:]])
-    refused(short, "gives one position")
-    undeclared = dict(
-        world, edges=[_replace(edge, weight_record="left_total"), *world["edges"][1:]]
-    )
-    refused(undeclared, "left_total is declared")
-    both = dict(world, edges=[_replace(edge, weight=1.0), *world["edges"][1:]])
-    refused(both, "not both")
+    edge, other = world["edges"]
+    refused(dict(world, edges=[_replace(edge, weight_index="2,0"), other]), "gives one position")
+    refused(dict(world, edges=[_replace(edge, weight_index="1"), other]), "gives one position")
+    undeclared = _replace(edge, weight_record="left_total")
+    refused(dict(world, edges=[undeclared, other]), "left_total is declared")
+    refused(dict(world, edges=[_replace(edge, weight=1.0), other]), "not both")
+    amount = dict(world["records"], fission_work_kT=dict(world["records"]["fission_work_kT"]))
+    amount["fission_work_kT"]["kind"] = "amount"
+    refused(dict(world, records=amount), "fission_work_kT is a declared cumulative record")
+    gap = {k: dict(v) for k, v in world["records"].items()}
+    gap["joined_total"]["files"] = [{"file": "records.npz", "rows": [1, 5]}]
+    refused(dict(world, records=gap), "each from where the last stopped")
     directory = tmp_path / "run"
     directory.mkdir()
-    np.savez(directory / "records.npz", joined_total=np.zeros((3, 2, 1)))  # Two records missing.
+    np.savez(
+        directory / "records.npz", joined_total=np.zeros((5, 2, 1)), row_time=TIMES["row_time"]
+    )
     with pytest.raises(rel.RelationsRefused, match="holds discarded_total"):
-        rel.write(directory, **world)
+        rel.write(directory, **world)  # Two records are not in the file.
     assert sorted(p.name for p in directory.iterdir()) == ["records.npz"]
-    found = rel.records_in(directory, "records.npz", ["joined_total"])
-    assert found == {"joined_total": world["records"]["joined_total"]}
-    with pytest.raises(rel.RelationsRefused, match="holds no array"):
-        rel.records_in(directory, "records.npz", ["left_total"])
+
+
+def test_a_record_names_its_times_and_files_in_row_order(tmp_path):
+    """A windowed run's records lie in chunks: records_in reads them, the writer checks every
+    chunk, and an event's weight needs the record's rows on both sides of it (EVENT_ROWS)."""
+    world = gard_world()
+    chunks = ["chunks/window-0.npz", "chunks/window-1.npz"]
+    for entry in world["records"].values():
+        entry["files"] = [{"file": chunks[0], "rows": [0, 3]}, {"file": chunks[1], "rows": [3, 5]}]
+    directory = written(tmp_path, world)
+    kinds = dict.fromkeys(world["records"], "cumulative")
+    assert rel.records_in(directory, chunks, kinds, times="row_time") == world["records"]
+    _, rows = rel.read(directory)
+    assert len(rows["edges"]) == len(rel.tables(**world)[1]["edges.relation"])
+    # Planted: rows whose times fall.
+    falling = tmp_path / "falling"
+    falling.mkdir()
+    record_files(falling, world)
+    with np.load(falling / chunks[1]) as saved:
+        arrays = dict(saved)
+    arrays["row_time"] = np.array([7.5, 2.0])
+    np.savez(falling / chunks[1], **arrays)
+    with pytest.raises(rel.RelationsRefused, match="its times are finite and never fall"):
+        rel.write(falling, **world)
+    # Planted: an event after the record's last row.
+    late = tmp_path / "late"
+    late.mkdir()
+    record_files(late, world)
+    events = [
+        _replace(e, time=e.time + 10.0) if e.id == "event:fission/2" else e for e in world["events"]
+    ]
+    moved = dict(world, events=events)
+    moved["lives"] = [
+        _replace(x, **{f: getattr(x, f) + 10.0 for f in ("birth_time", "end_time")
+                       if getattr(x, f) == 7.5})
+        for x in world["lives"]
+    ]  # fmt: skip
+    removes = _replace(world["edges"][1], from_="carrier:a4", event="event:fission/2")
+    moved["edges"] = [world["edges"][0], removes]
+    rel.tables(**moved)
+    with pytest.raises(rel.RelationsRefused, match="has a row at or after its event's time"):
+        rel.write(late, **moved)
 
 
 # ------------------------------------------------------------------ 6. the reader's check
@@ -448,10 +513,7 @@ def test_the_reader_refuses_tables_changed_after_writing(tmp_path):
         rel.validate(dict(descriptor, format="cells.relations@0"), arrays)
     tampered = tmp_path / "tampered"
     tampered.mkdir()
-    np.savez(
-        tampered / "records.npz",
-        **{n: np.zeros(s["shape"]) for n, s in descriptor["records"].items()},
-    )
+    record_files(tampered, gard_world())
     (tampered / rel.DESCRIPTOR).write_text((directory / rel.DESCRIPTOR).read_text())
     with zipfile.ZipFile(tampered / rel.ARRAYS, "w") as archive:  # An object array, pickled.
         for name, array in dict(arrays, **{"lives.id": ids}).items():

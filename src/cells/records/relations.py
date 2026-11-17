@@ -20,6 +20,15 @@ law (numpy and the standard library only), and nothing reads the tables back int
   nulls and meanings, the vocabularies, the id and key rules, and the records that edge weights
   point at. Sorted keys, no host path, no time stamp.
 
+**Records.** A weight that is not a number on its edge points at a run record: ``weight_record``
+names it and ``weight_index`` gives one position on each of its axes after the first. The
+descriptor's ``records`` say where each lives: its array, the array of its rows' times, its kind
+(``cumulative``, weighing an interval by its change over it, or ``amount``) and its files, which
+hold its rows in order (one file, or a windowed run's chunks). An event at time t acts between a
+record's first row saved at a time no earlier than t and the row after it (EVENT_ROWS), so an edge
+with an event is weighed by the record's change there. The writer checks that every record is in
+its files at its shape, that its times never fall, and that an event's two rows exist.
+
 **The tables.** Every row also carries ``world``, the run qualifier (``qualifier``).
 - ``nodes``: every vertex by id and kind. Carrier, source and label nodes are derived from
   ``lives``, ``sources`` and ``labels``; a caller declares the rest (slots, held nodes, sinks,
@@ -118,6 +127,12 @@ SOURCE_KINDS = (
 )
 SOURCE_CLASSES = ("substrate", "energy", "machinery", "intervention")
 CHEMISTRY = ("species", "moiety")
+RECORD_KINDS = ("cumulative", "amount")  # What a weight may point at (§5.2).
+RECORD_KEYS = {"array", "times", "kind", "shape", "files"}
+EVENT_ROWS = (
+    "an event at time t acts between a record's first row saved at a time no earlier than t and "
+    "the row after it: an edge with an event and a record is weighed by that change"
+)
 
 PARENTLESS = ("founder", "template", "copy", "transplant")  # Each opens a sub-lineage, s:0.
 NEWCOMERS = ("template", "copy", "transplant")  # May replace a predecessor in its slot.
@@ -520,33 +535,59 @@ def _types(table, row, problems):
             problems.check(isinstance(value, bool), f"{where} is a flag")
 
 
+def _inside(file):
+    """A relative .npz path inside the run's folder."""
+    if not isinstance(file, str) or not file.endswith(".npz"):
+        return False
+    path = PurePosixPath(file)
+    return not path.is_absolute() and ".." not in path.parts
+
+
 def _check_records(records, problems):
-    """Each record an edge or source may point at: an .npz file inside the run's folder, an array
-    and its shape (rows first)."""
+    """Each record an edge or source may point at: its array and the array of its rows' times, in
+    each of its files (rows split across files in order, as windowed runs save them), its kind
+    and its whole shape (rows first)."""
     for name, entry in records.items():
         where = f"record {name}"
         if not problems.check(isinstance(name, str) and WORD.fullmatch(name), f"{where}: a word"):
             continue
         if not problems.check(
-            isinstance(entry, dict) and set(entry) == {"file", "array", "shape"},
-            f"{where}: its file, array and shape",
+            isinstance(entry, dict) and set(entry) == RECORD_KEYS,
+            f"{where}: its {', '.join(sorted(RECORD_KEYS))}",
         ):
             continue
-        file, array, shape = entry["file"], entry["array"], entry["shape"]
-        problems.check(
-            isinstance(file, str)
-            and not PurePosixPath(file).is_absolute()
-            and ".." not in PurePosixPath(file).parts
-            and file.endswith(".npz"),
-            f"{where}: its file is an .npz path inside the run's folder",
-        )
-        problems.check(isinstance(array, str) and WORD.fullmatch(array), f"{where}: an array name")
-        problems.check(
+        for key_name in ("array", "times"):
+            value = entry[key_name]
+            problems.check(isinstance(value, str) and WORD.fullmatch(value), f"{where}: {key_name}")
+        problems.check(entry["kind"] in RECORD_KINDS, f"{where}: its kind is one of {RECORD_KINDS}")
+        shape, files = entry["shape"], entry["files"]
+        if not problems.check(
             isinstance(shape, (list, tuple))
             and len(shape) >= 1
             and all(_integer(n) and n >= 0 for n in shape),
             f"{where}: its shape lists its axes' lengths, rows first",
-        )
+        ):
+            continue
+        end = 0
+        parts = files if isinstance(files, (list, tuple)) and files else [None]
+        for part in parts:
+            if not problems.check(
+                isinstance(part, dict)
+                and set(part) == {"file", "rows"}
+                and _inside(part["file"])
+                and isinstance(part["rows"], (list, tuple))
+                and len(part["rows"]) == 2
+                and all(_integer(n) for n in part["rows"]),
+                f"{where}: each part is an .npz file inside the run's folder and its rows",
+            ):
+                break
+            problems.check(
+                part["rows"][0] == end and part["rows"][1] >= end,
+                f"{where}: its files hold its rows in order, each from where the last stopped",
+            )
+            end = part["rows"][1]
+        else:
+            problems.check(end == shape[0], f"{where}: its files hold its {shape[0]} rows")
 
 
 def _check_pointer(where, record, index, records, problems):
@@ -865,7 +906,10 @@ def _check_sources(sources, vertices, records, problems):
         )
         problems.check("," not in source.record, f"{where}: one supply record")
         for name in (*_items(source.record), *_items(source.payer_of)):
-            problems.check(name in records, f"{where}: its record {name} is declared")
+            problems.check(
+                records.get(name, {}).get("kind") == "cumulative",
+                f"{where}: its record {name} is a declared cumulative record",
+            )
 
 
 def _check_labels(labels, problems):
@@ -1058,7 +1102,15 @@ def _descriptor(world, arrays, records):
         "arrays": ARRAYS,
         "tables": out_tables,
         "records": {
-            name: {"file": e["file"], "array": e["array"], "shape": [int(n) for n in e["shape"]]}
+            name: {
+                "array": e["array"],
+                "times": e["times"],
+                "kind": e["kind"],
+                "shape": [int(n) for n in e["shape"]],
+                "files": [
+                    {"file": f["file"], "rows": [int(n) for n in f["rows"]]} for f in e["files"]
+                ],
+            }
             for name, e in sorted(records.items())
         },
         "vocabulary": {
@@ -1090,7 +1142,11 @@ def _descriptor(world, arrays, records):
             "(carrier to slot, from its birth to its end)",
         },
         "weights": "weight_record names a record above; weight_index gives one position on each "
-        "of its axes after the first; that column of the record's rows weighs the edge",
+        "of its axes after the first; that column of the record's rows weighs the edge. A record "
+        "names the array of its rows' times (times) and its files, which hold its rows in order. "
+        "A cumulative record weighs an interval by its change over it, an amount by its value "
+        "at a row",
+        "event_rows": EVENT_ROWS,
         "sorted": "nodes, sources and labels by id; lives by key; events by time, then id; "
         "edges by every column",
     }
@@ -1160,30 +1216,88 @@ def _npz_shapes(path):
     return out
 
 
-def records_in(directory, file, arrays):
-    """{name: {"file", "array", "shape"}} for arrays of a run's record file (an .npz in
-    `directory`), read from their headers: the records that edges and sources may point at."""
-    shapes = _npz_shapes(Path(directory) / file)
-    missing = [name for name in arrays if name not in shapes]
-    if missing:
-        raise RelationsRefused(f"{file} holds no array {missing}")
-    return {name: {"file": file, "array": name, "shape": list(shapes[name])} for name in arrays}
+def records_in(directory, files, kinds, *, times):
+    """The records that edges and sources may point at, {name: record}, for arrays saved across
+    a run's record files (.npz files in `directory`, in row order), read from their headers.
+    kinds: {array: "cumulative" or "amount"}; times: the array of their rows' times, in each
+    file."""
+    out = {
+        name: {"array": name, "times": times, "kind": kind, "files": []}
+        for name, kind in kinds.items()
+    }
+    for file in files:
+        shapes = _npz_shapes(Path(directory) / file)
+        missing = [name for name in (times, *kinds) if name not in shapes]
+        if missing:
+            raise RelationsRefused(f"{file} holds no array {missing}")
+        rows = shapes[times][0]
+        for name, entry in out.items():
+            start = entry["files"][-1]["rows"][1] if entry["files"] else 0
+            if (
+                shapes[name][0] != rows
+                or entry.setdefault("axes", shapes[name][1:]) != shapes[name][1:]
+            ):
+                raise RelationsRefused(
+                    f"{file}: {name} has shape {shapes[name]} against {rows} rows"
+                )
+            entry["files"].append({"file": file, "rows": [start, start + rows]})
+    for entry in out.values():
+        axes = entry.pop("axes", ())
+        entry["shape"] = [entry["files"][-1]["rows"][1] if entry["files"] else 0, *axes]
+    return out
 
 
-def _check_files(directory, records, problems):
-    """Each declared record is in its file in `directory`, with its declared shape."""
-    shapes = {}
+def _record_times(directory, entry, name, problems, shapes):
+    """A record's rows' times, across its files, after checking each file holds the record and
+    its times at the declared shapes; None if one does not."""
+    times = []
+    for part in entry["files"]:
+        path = Path(directory) / part["file"]
+        if not problems.check(path.is_file(), f"record {name}: its file {part['file']} exists"):
+            return None
+        if part["file"] not in shapes:
+            shapes[part["file"]] = _npz_shapes(path)
+        rows = part["rows"][1] - part["rows"][0]
+        held = shapes[part["file"]]
+        for array, shape in (
+            (entry["array"], (rows, *entry["shape"][1:])),
+            (entry["times"], (rows,)),
+        ):
+            if not problems.check(
+                held.get(array) == shape,
+                f"record {name}: {part['file']} holds {array} with shape {list(shape)} "
+                f"(found {held.get(array)})",
+            ):
+                return None
+        with np.load(path, allow_pickle=False) as saved:
+            times.append(np.asarray(saved[entry["times"]], dtype=np.float64))
+    times = np.concatenate(times) if times else np.zeros(0)
+    if not problems.check(
+        bool(np.all(np.isfinite(times))) and bool(np.all(np.diff(times) >= 0.0)),
+        f"record {name}: its times are finite and never fall",
+    ):
+        return None
+    return times
+
+
+def _check_files(directory, records, edges, events, problems):
+    """Each declared record is in its files in `directory` at its declared shape, with finite
+    times that never fall; and each edge weighed by a record across an event has the record's
+    rows on both sides of it (EVENT_ROWS)."""
+    shapes, times = {}, {}
     for name, entry in sorted(records.items()):
-        path = Path(directory) / entry["file"]
-        if not problems.check(path.is_file(), f"record {name}: its file {entry['file']} exists"):
+        times[name] = _record_times(directory, entry, name, problems, shapes)
+    when = {event.id: event.time for event in events}
+    for edge in edges:
+        found = times.get(edge.weight_record)
+        if not edge.event or found is None or edge.event not in when:
             continue
-        if entry["file"] not in shapes:
-            shapes[entry["file"]] = _npz_shapes(path)
-        held = shapes[entry["file"]].get(entry["array"])
+        at = when[edge.event]
+        before = int(np.searchsorted(found, at, side="left"))
         problems.check(
-            held == tuple(entry["shape"]),
-            f"record {name}: {entry['file']} holds {entry['array']} with shape "
-            f"{list(entry['shape'])} (found {held})",
+            before + 1 < len(found),
+            f"edges {edge.relation} {edge.from_} -> {edge.to}: {edge.weight_record} has a row at "
+            f"or after its event's time {at!r} and the row after it",
         )
 
 
@@ -1218,6 +1332,8 @@ def write(
     shape. Returns the descriptor."""
     directory = Path(directory)
     records = {} if records is None else records
+    lives, events, nodes = list(lives), list(events), list(nodes)
+    sources, labels, edges = list(sources), list(labels), list(edges)
     descriptor, arrays = tables(
         world=world,
         lives=lives,
@@ -1231,7 +1347,7 @@ def write(
     problems = _Problems()
     for name in (ARRAYS, DESCRIPTOR):
         problems.check(not (directory / name).exists(), f"{directory / name} exists")
-    _check_files(directory, records, problems)
+    _check_files(directory, records, edges, events, problems)
     if problems:
         raise RelationsRefused("nothing is written: " + "; ".join(problems))
     _save(directory / ARRAYS, arrays)
@@ -1310,7 +1426,7 @@ def validate(descriptor, arrays, directory=None):
             "the descriptor is the writer's for these tables",
         )
     if directory is not None and not problems:
-        _check_files(directory, records, problems)
+        _check_files(directory, records, rows["edges"], rows["events"], problems)
     if problems:
         raise RelationsInvalid("; ".join(problems))
 
