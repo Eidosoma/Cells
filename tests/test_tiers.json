@@ -129,7 +129,8 @@
   "/mnt/workspaces/Cells/seam-f-registry-20261117/measure-f7b3940b/measured.json",
   "/mnt/workspaces/Cells/law-library-20261117/measure-96256ba2/measured.json",
   "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json",
-  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json"
+  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json",
+  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1068,6 +1069,13 @@
    "root": ".claude/worktrees/gard-g1-merge",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T16:33:07+00:00"
+  },
+  {
+   "git_revision": "c6dd5956a06f8382527de5a471ef02edecbcbde4",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g1-merge",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T17:10:48+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1381,14 +1389,6 @@
     }
    },
    {
-    "file": "tests/unit/test_assembly_lineages_checkpoints.py",
-    "seconds": 19.19,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
     "file": "tests/unit/test_assembly_lineages_inheritance.py",
     "seconds": 5.68,
     "exit_code": 0,
@@ -1398,7 +1398,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_keys.py",
-    "seconds": 16.58,
+    "seconds": 15.7,
     "exit_code": 0,
     "counts": {
      "passed": 7
@@ -1422,7 +1422,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_registration.py",
-    "seconds": 14.13,
+    "seconds": 13.49,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -4154,6 +4154,14 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_checkpoints.py",
+    "seconds": 20.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_fission.py",
     "seconds": 22.01,
     "exit_code": 0,
@@ -4163,7 +4171,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_freeze.py",
-    "seconds": 25.47,
+    "seconds": 22.37,
     "exit_code": 0,
     "counts": {
      "passed": 3
@@ -4179,7 +4187,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_population.py",
-    "seconds": 35.36,
+    "seconds": 34.65,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4187,10 +4195,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_relations.py",
-    "seconds": 23.0,
+    "seconds": 27.48,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 3
     }
    },
    {
