@@ -162,13 +162,14 @@ Then:
 - **No reference to an old module is left in scope.**
 
 **Planted cases,** in `selftest` rather than in `tests/` (new test files would change the
-collected IDs), 28 checks:
+collected IDs), 29 checks:
 - a hand edit, an extra file, a hash edit, an absent module and an unlisted module in a moved
   package are each refused;
 - a branch's own new reference is rewritten;
 - a relative import is made absolute when its file moves;
 - a program in a string is rewritten;
-- a kind ID and docs are left alone.
+- a kind ID and docs are left alone;
+- the path table marks a move to `legacy/` and the package files created.
 
 On the real probe, a planted one-line edit was refused (`$E/verify-P3-planted.json`).
 
@@ -552,7 +553,7 @@ code, which those checks' worlds do not load.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| verify P1, P3, P4 (the tool as committed at 910ebce0; selftest 28 of 28), P5b | holds: 0 problems each; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P5b.json`, `$E/verify-P3-planted.json`, `$E/selftest-final.json` |
+| verify P1, P3, P4 (the tool as committed at 910ebce0, whose selftest had 28 checks), P5b (the head's tool) | holds: 0 problems each; a planted edit refused | `$E/verify-P*-final.json`, `$E/verify-P5b.json`, `$E/verify-P3-planted.json`, `$E/selftest-final.json` |
 | P2's extraction | moved text identical; other code identical; only imports changed | `$E/extraction-P2-check.txt` |
 | Collected test IDs (P3, P4 and P5b, each against main) | identical: 20792 IDs and the same 13 collection errors | `$E/collect-*.ids`, `.log` |
 | crossrev's nine sets (P3), on CPUs 8,24 against `record-a83d8f15` (made on 6,22) | identical in all nine; file listings identical | `$E/crossrev-db8086ea/` |
@@ -561,7 +562,7 @@ code, which those checks' worlds do not load.
 | Pinned file moved (P4) | `_pins()` holds; pin-table digest changes; 5 tier-1/2 files, 89 passed 2 skipped in both | `$E/p4-check/` |
 | Pinning law moved after R4 (P5b against P4) | `_pins()` holds from `legacy/processes/`; 5 tier-1/2 files keep every outcome. Without R4: `FileNotFoundError` at `src/src/cells/__init__.py` | `$E/p5-check/`, `$E/p5-without-r4/` |
 | Tiers 1+2 (P3), 6 CPUs | 518 files, 0 changed against `tests/test_tiers.json`. One count increase, `test_cell_owned_compartments.py` at 148 passed against 140, the same as at a83d8f15. The 8 red files that read pins on moved files keep their failure lines | `$E/tiers-1+2-db8086ea/summary.json`, `$E/red-files-failure-lines.txt` |
-| Tiers 1+2 (P4), 6 CPUs | PENDING | `$E/tiers-1+2-cea0fa6c/summary.json` |
+| Tiers 1+2 (P4), 6 CPUs | 518 files, 0 changed, the same one count increase; the 8 red files keep their failure lines | `$E/tiers-1+2-cea0fa6c/summary.json`, `$E/red-files-failure-lines.txt` |
 
 ## 14. Estimates
 
