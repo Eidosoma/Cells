@@ -6683,6 +6683,8 @@ them into the new engine if necessary".
     citation.
 - **A classification table of the batch's 33 source modules is being made, read-only.** For each
   module it gives the class (law, method or machinery) and what the modular engine already covers.
+- **Landed (17 November, evening):** merge 742132db, once the two laws' reference outputs were saved.
+  The table's result: 2 laws, 16 methods and 15 machinery modules.
 - **The user agreed the split** the same day: "yes, the levin work has highest priority as we want to
   use that as an example in the viz, machinery can wait for sure".
   - The batch's laws go onto seam F's template, after the classification table, at a lower priority
@@ -6763,6 +6765,8 @@ advisor.
   - **L4:** D175's four fields are designed once, against fuel (D174), machines and mitochondria.
     D174's fuel case stays their first consumer.
   - **L5:** the zero-rate run belongs to the mitochondria lane, which owns the synthesis law.
+- **Amended by D214 (user, 17 November):** the static level-of-detail contract (D175's four fields,
+  with finite fuel as the first executable consumer) comes before M1a.
 
 ## D210: Mitochondria: the level of detail is chosen per research question; individuals sooner
 
@@ -6842,4 +6846,96 @@ chemcials going in and out fission".
   - OL3 delivers the fission: physical division, partition and serial transfer.
   - OL1's laws are the foundation.
 - **Priority** follows D207 and D211: this programme, beside the port pilot and the core-seams pass.
+
+## D213: The tissue search reruns now; the core pass restarts through retire, then move 2
+
+2026-11-17, evening. The lead asked two questions:
+- rerun the gap-junction tissue threshold search from main, now that FR-19's fix is there;
+- restart the core-seams pass through the chain retire, then move 2, then the pass with about four
+  owners, folding the Kv1 port pilot into it.
+
+The user: "yes on both as y9u suggest".
+
+- **The "neither" threshold search reruns** exactly as section 7 of the replication's note registered
+  it, from a clean snapshot of main, on lane A. It is labelled a comparison with BITSEY's log at
+  b2cb370, written by an earlier revision of its code. Its arms reach the viewer only from main, and
+  the page only if the user says so (D207).
+- **The chain:**
+  1. D198's retire batch lands once its merged-head gate passes. Its two laws' reference outputs are
+     saved, so they can be rebuilt under D211.
+  2. D188's move 2 follows.
+  3. The core-seams pass (D195) resumes at steps 1–3, with about four owners within the cap of seven.
+- **The Kv1 port pilot (D211) folds into the pass,** as seam F's step-2 per-law extractions, which own
+  the same files.
+
+## D214: An external adviser's architecture follow-up: two fixes now, the rest to the core backlog
+
+2026-11-17, evening. The user forwarded an external adviser's architecture follow-up, reviewing main
+b661cd1a. It found the modular direction sound and listed seven items for a bounded core-completion
+lane. The user's instructions: "two fixes then backlog", "external adviser", and "also get your
+adviser in on this". The lead reviewed it with the advisor.
+
+- **Now, item 1's two extension-boundary fixes,** on branch `core-boundary-checks`:
+  - kinds write only their own resolved, declared fields (initial values, derivatives and control
+    outputs);
+  - more than 31 model checks are refused at admission.
+
+  They land before move 2's map is regenerated, as an exception to D195's "code follows move 2".
+- **Items 2–7 are the core backlog,** mapped to their seams and records in CURRENT_PLAN's
+  17 November section. They are not new decisions.
+- **Two order questions were flagged for the user, not decided:**
+  - item 4 pulls D175's fields ahead of M1a in D209's order;
+  - item 3's first outside module brings back D195's question of a public stability promise.
+
+  **The user answered the same evening:** "1. sure, 2. but low priority".
+  - Item 4 comes before M1a: the static level-of-detail contract, with finite fuel as its first
+    consumer, precedes machines' M1a. This amends D209's order.
+  - Item 3 (the installed external module and the stability-promise question) is low priority.
+- **Item 7 was applied the same day:**
+  - CURRENT_PLAN was refreshed;
+  - the README's status was brought to 17 November;
+  - the README's levels-of-detail paragraph was reworded as an aim;
+  - the gate wording was made precise: "0 changed against the baseline".
+
+## D215: The core may change while the first experiments run; gates do not
+
+2026-11-17, evening. On the lead's rulings for OL1's design check, the user said: "Sounds good on the
+rulings, get adviser also on it - and as we are just doing the first experiments, find to change the
+core and even so we have to keep on upgfading". The lead reviewed it with the advisor.
+
+- **The lead's reading:** this is permission to change the core where that helps, not an instruction to
+  reverse the rulings.
+  - It relaxes source freezes kept for their own sake, and the bias toward duplicating code to avoid
+    touching a frozen file.
+  - It does not relax gates, registered results, D148, or guards such as FR-18.
+- **Applied to the origin-of-life engine:**
+  - **OL1 keeps Option A** (a separate `cells.assembly_lineages@2` package) for now.
+  - **At OL3, the default is one shared run loop** for `@1` and `@2` behind `@1`'s invariance gate,
+    not a copy. The probe-set comparison's exemptions are widened deliberately then, after the demo.
+  - **Ruling 3 is revisited:** `@1` gets the driven-law guard under its invariance gate, if a second
+    unsourced driven law is not already refused there.
+- **D199's U6(a) is amended.** The GARD limit is exact only under the declared measure that matches
+  G1: `condensed_measure: multinomial_less_one` with `last_molecule: extinct`. The physical measure,
+  `multinomial` with `kept`, reaches GARD to O(1/N).
+  - OL6 reports both.
+  - In OL9's ladder, the switch of measure is its own rung.
+
+## D216: An FR completion lane for FR-1 to FR-10, beside origin of life and the core pass
+
+2026-11-17, evening. The user said: "the start of origin of life is good but we also have other
+priorities like finishing fr-1 to fr10, status on that". The lead gave the status (FR-4, FR-5 and
+FR-9 done; FR-1, FR-3, FR-6 and FR-10 partly done; FR-2, FR-7 and FR-8 logged) and proposed a lane.
+The user: "sounds good yes".
+
+- **An FR lane,** owned by the agent that qualified FR-4 and FR-5, starts when a slot frees within the
+  cap of seven. It takes the fast judged acceptances first:
+  1. FR-10's protocol and judged run;
+  2. FR-1's judged acceptance, exchange's first;
+  3. FR-3's independent references, then its protocol;
+  4. FR-6's channel target qualified with the coupling operator (A5).
+- **Design notes for FR-2, FR-7 and FR-8 follow.** FR-7 needs the user's choice of the closed loop's
+  unit, framed by its note.
+- **Overlaps go to the core pass,** so no file has two owners: FR-3's binding with seam C, FR-6's
+  routing door with seam B1, and FR-1's later doors (creation, division, fission and fusion,
+  retirement) with seam B and the mitochondria work (D210).
 

@@ -20,7 +20,7 @@ from cells.legacy.core.surface_calcium_energy_spec import SurfaceCalciumEnergyHC
 from cells.legacy.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
 from cells.legacy.core.surface_open_calcium_energy_spec import SurfaceOpenCalciumEnergyModel
 from cells.legacy.core.surface_open_calcium_spec import SurfaceOpenCalciumModel
-from cells.processes import global_controls as source
+from validation.betse import global_controls as source
 from validation.betse.physiology.models import physiology_permeability_view as immutable
 
 KIND = "cells.physiology_temperature_binding@1"

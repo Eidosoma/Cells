@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from cells.core.specs import ConfigError, digest
-from cells.processes import global_controls as setters
 from tests.betse_physiology.integration.test_physiology_block_step import (
     fixture as ordinary_fixture,
 )
@@ -18,6 +17,7 @@ from tests.betse_physiology.integration.test_physiology_block_step import plain,
 from tests.betse_physiology.integration.test_physiology_checkpoint import assert_same_component
 from tests.betse_physiology.integration.test_physiology_tissue_step_checkpoint import hashes
 from tests.betse_physiology.unit.test_physiology_permeability_view import KINDS, exact_tree
+from validation.betse import global_controls as setters
 from validation.betse.physiology import physiology_block_calendar_io as io
 from validation.betse.physiology.core import physiology_block_calendar as calls
 from validation.betse.physiology.core import physiology_block_control_step as steps

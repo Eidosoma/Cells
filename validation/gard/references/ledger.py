@@ -51,10 +51,12 @@ def rounding_tol(n_events: int, magnitude: float, n_types: int) -> float:
 
 
 def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fission_split, fission_followed,
-                 row_event, event_channel=None, founder=None) -> CheckResult:
+                 row_event, event_channel=None, founder=None, end_row: bool = False) -> CheckResult:
     count = np.asarray(count)[:, :, 0].astype(np.int64)
     R, G = count.shape
-    F = (R - 1) // 2
+    F = int(np.asarray(fission_split).shape[0])
+    parents = 1 + 2 * np.arange(F)
+    daughters = parents + 1
     Q = np.asarray(heat, dtype=np.float64)[:, 0]
     W = np.asarray(work, dtype=np.float64)[:, 0]
     S = np.asarray(sink, dtype=np.float64)[:, 0]
@@ -64,7 +66,11 @@ def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fis
     lp = np.array([log_weight(law, count[r]) for r in range(R)])
     mag = float(max(np.max(np.abs(Q)), np.max(np.abs(lp)), np.max(np.abs(LW)), np.max(np.abs(W)),
                     np.max(np.abs(S)), 1.0))
-    segs = [(0, 1)] + [(2 + 2 * f, 3 + 2 * f) for f in range(F - 1)] if F >= 1 else [(0, R - 1)]
+    segs = ([(0, int(parents[0]))] + [(int(daughters[f]), int(parents[f + 1])) for f in range(F - 1)]) if F else []
+    if end_row:
+        segs.append((int(daughters[-1]) if F else 0, R - 1))  # the final growth, to the end row
+    elif not F:
+        segs = [(0, R - 1)]
     seg_err = []
     for a, b in segs:
         E = int(row_event[b] - row_event[a])
@@ -73,7 +79,7 @@ def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fis
     seg_abs = np.array([abs(e) for _, _, e, _ in seg_err])
     seg_tol = np.array([t for _, _, _, t in seg_err])
     closes = bool(np.all(seg_abs <= seg_tol))
-    pair_heat = [float(Q[2 + 2 * f] - Q[1 + 2 * f]) for f in range(F)]
+    pair_heat = [float(Q[daughters[f]] - Q[parents[f]]) for f in range(F)]
     no_fission_heat = all(v == 0.0 for v in pair_heat)
     # B. log_weight = ln pi~ + C
     C = LW - lp
@@ -83,7 +89,7 @@ def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fis
     # C. work and sink increments
     w_err, s_err = [], []
     for f in range(F):
-        pr, dr = 1 + 2 * f, 2 + 2 * f
+        pr, dr = int(parents[f]), int(daughters[f])
         P = count[pr]
         D, U = followed_and_unfollowed(P, np.asarray(fission_split)[f], np.asarray(fission_followed)[f])
         d1 = np.asarray(fission_split)[f]
@@ -104,7 +110,7 @@ def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fis
     booking = None
     if event_channel is not None and founder is not None:
         booking = _check_booking(law, np.asarray(founder, dtype=np.int64), count, Q,
-                                 np.asarray(event_channel, dtype=np.int64), row_event, F, mag)
+                                 np.asarray(event_channel, dtype=np.int64), row_event, F, mag, parents, daughters)
     if law.form == PAIR_CONSISTENT:
         passed = closes and no_fission_heat and lw_ok and ws_ok and resid_matches and max_resid <= total_tol
     else:
@@ -123,11 +129,13 @@ def check_ledger(law: ExchangeLaw, count, heat, work, sink, log_w, residual, fis
         closure_tol=total_tol, booking=booking))
 
 
-def _check_booking(law, founder, count, Q, chan, row_event, F, mag) -> dict:
+def _check_booking(law, founder, count, Q, chan, row_event, F, mag, parent_rows, daughter_rows) -> dict:
     G = founder.size
     x = founder.copy()
     q_cum = np.zeros(chan.size + 1)
-    parents = {int(row_event[1 + 2 * f]): f for f in range(F)}
+    parents: dict = {}
+    for f in range(F):
+        parents.setdefault(int(row_event[parent_rows[f]]), f)  # the first fission at that event count
     acc = 0.0
     ap, am = propensities(law, x)
     for k, code in enumerate(chan):
@@ -141,11 +149,14 @@ def _check_booking(law, founder, count, Q, chan, row_event, F, mag) -> dict:
         x = y
         ap, am = bp, bm
         f = parents.get(k + 1)
-        if f is not None:
-            if not np.array_equal(x, count[1 + 2 * f]):
+        while f is not None:
+            if not np.array_equal(x, count[parent_rows[f]]):
                 return dict(ok=False, error=f"trace does not reach the parent of fission {f}")
-            x = count[2 + 2 * f].copy()
+            x = count[daughter_rows[f]].copy()
             ap, am = propensities(law, x)
+            # a daughter born at the fission size splits at once, before any event
+            nxt = f + 1
+            f = nxt if nxt < F and int(row_event[parent_rows[nxt]]) == k + 1 else None
     want = q_cum[row_event]
     tol = rounding_tol(int(row_event[-1]), mag, G)
     err = np.abs(want - (Q - Q[0]))
