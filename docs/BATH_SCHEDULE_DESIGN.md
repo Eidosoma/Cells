@@ -1,5 +1,12 @@
 # A scheduled bath composition in the composite (design)
 
+**Qualified, 17 November 2026.** The registered protocol `fr10-dose-schedule-v1`
+(`validation/tissue/bath_schedule_protocol.json`, registered at 407ba164) was judged once from a
+clean snapshot of that commit: passed, 31 of 31 judged criteria, against the code-blind references
+R-faces, R-ion and R-records (`validation/fr10/references`). Its scope is the operator as built
+there: neutral formula units, held baths, steps inside the measured region, ARS at 1 ms and RK4 at
+0.1 ms.
+
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** A dose from nothing is a known limit (way (a), extending D150's resolved-start ruling). Version 1 is qualified on steps between resolved levels, and a staircase probe is requested.
 
 **Status: proposed, 14 November 2026; revised the same day after the lead's review with the

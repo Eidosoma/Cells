@@ -85,6 +85,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-10 judged: passed (17 November 2026, 23:45–23:50 UTC).** The registered protocol
+  `fr10-dose-schedule-v1` was judged once from the clean snapshot of its registration commit
+  407ba164, on lane A (CPUs 0-3, under its lock). Its references are the code-blind FR references
+  agent's R-faces, R-ion and R-records (`validation/fr10/references`).
+  - **31 of 31 judged criteria.** Examples:
+    - W1 against R-faces is at most 0.92% of B1, and W2 against R-ion 0.80% of B2; row 0 is exact.
+    - The orders are 2.003 to 2.011, and the energy residual over the flows is 5.8e-5 and 1.7e-5,
+      falling at order 2.
+    - The dose equals R-records' exactly at every event, and dG_b is within 4.5e-16 relative.
+    - The operator's reconciliation term K equals R-records' K to 1.4e-10 of the reservoir-work
+      bound. The compensation charge is 0.
+    - Controls: K1 is 973 x B1 and K2 is 1000 x B2. Without the operator's term, the reservoir-work
+      ledger is 2.1e4 x its bound after the event.
+    - Restart, batch, idleness and all 13 refusal classes hold.
+  - **No harness failure** (the harness-limit rule): all 19 parts are complete. Peak memory was
+    0.92 G of 2 G, and no part used more than 6.9% of its runtime limit.
+  - **Against the rehearsal** (`r2/run-ed2b8ee0`, on a registered dry-run copy): 18 parts are
+    bitwise equal. The references part differs only in the path and sha256 of the W3 records it
+    reads, which was expected and listed before launch.
+  - **Scope:** `scheduled_bath_composition@1` as built at 407ba164. It covers neutral formula units
+    only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms
+    and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal
+    found that the run-time energy guard holds there (R12's neighbour, disclosed).
+  - **Evidence:** `/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/run-407ba164/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
+
 - **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
   Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.
   - **The search** (`runs/neither-02`, clean snapshot of main 1f4c740a): 37 points, none refused,
