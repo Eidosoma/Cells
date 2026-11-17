@@ -27,11 +27,12 @@ The FR-1 derivations, fixed before any run:
   the splitting term identified: (x/x_eq - 1) over -a(a + 2b) dt^2 / 96, within 1e-3 of 1.
 * **Reconciliation (C3):** each loading route's cumulative moved amount against the
   compartment's gain, in the rounding budget.
-* **Energy (C10):** each exact world's summed route work (and C6's clearance work) against the
+* **Energy (C10):** each world's summed route work (and C6's clearance work) against the
   free-energy change of its nodes on the engine's own trajectory, G = RT sum n (ln(n/V) - 1)
-  (Appendix A.10, exact SI constants), in ROUNDING_FACTOR x N eps times the summed energy
-  magnitudes; C10's RK4 world and C11's rows through their energy ratio (|residual| / bound); the
-  IMEX worlds' energy residual over the integrated flows.
+  (Appendix A.10, exact SI constants), in ROUNDING_FACTOR x 2N eps times the largest size of G's
+  terms, RT sum |n (ln(n/V) - 1)| (each booked change is a difference of such terms); C10's RK4
+  world and C11's rows through their energy ratio (|residual| / bound); the IMEX worlds' energy
+  residual over the integrated flows.
 * **Silence (C9):** S1 bitwise, S2 and S3 at most 1, the owner live, in every program.
 * **Comparisons** (C2, C12): the generator's identity and bit-for-bit results, read as 1 or 0; the
   batch within 1e-12 relative of its scalar runs.
@@ -130,26 +131,39 @@ def free_energy(part, j):
     return RT_PJ_PER_FMOL * total
 
 
+def free_energy_terms(part, j):
+    """RT sum |n (ln(n/V) - 1)| at record j (pJ): the size of the terms G is made of, the scale
+    of each booked change's rounding (a change of G is a difference of such terms)."""
+    total = 0.0
+    for k, v in part["series"].items():
+        if k.startswith("amount_"):
+            n, volume = v[j], part["volumes_pL"][k.split("_", 2)[2]]
+            total += abs(n * (math.log(n / volume) - 1.0)) if n > 0 else 0.0
+    return RT_PJ_PER_FMOL * total
+
+
 def energy_closure(part, *, with_clearance=False):
-    """|summed route work (+ clearance work) - (G(t) - G(0))| over ROUNDING_FACTOR N eps times the
-    summed energy magnitudes, the largest over the records; None for an incomplete part."""
+    """|summed route work (+ clearance work) - (G(t) - G(0))| over ROUNDING_FACTOR x 2N eps times
+    the largest size of G's terms over the run (free_energy_terms: N steps of two half-steps, each
+    booking exact changes of those terms), the largest over the records; None for an incomplete
+    part."""
     if not completed(part):
         return None
     s, routes = part["series"], part.get("routes", [])
-    g0, steps, worst = free_energy(part, 0), max(1, part.get("steps") or 1), 0.0
+    g0, steps = free_energy(part, 0), max(1, part.get("steps") or 1)
     if g0 is None:
         return None
-    for j in range(len(part["record_s"])):
+    records = range(len(part["record_s"]))
+    bound = ROUNDING_FACTOR * 2 * steps * EPS * max(free_energy_terms(part, j) for j in records)
+    worst = 0.0
+    for j in records:
         work = sum(s[f"work_{r}_pJ"][j] for r in routes)
-        scale = sum(abs(s[f"magnitude_{r}_pJ"][j]) for r in routes)
         if with_clearance:
             work += sum(v[j] for k, v in s.items() if k.startswith("cleared_work_"))
-            scale += sum(abs(v[j]) for k, v in s.items() if k.startswith("cleared_work_"))
         g = free_energy(part, j)
         if g is None:
             return None
         error = abs(work - (g - g0))
-        bound = ROUNDING_FACTOR * steps * EPS * max(scale, abs(g - g0))
         if error == 0.0:
             continue
         if bound == 0.0:
