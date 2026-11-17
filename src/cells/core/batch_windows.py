@@ -9,7 +9,7 @@ from typing import Mapping
 import jax
 import numpy as np
 
-from cells.core import phases
+from cells.core import blas_threads, phases
 from cells.core.batch import (
     BatchSpec,
     MemoryRefusal,
@@ -334,6 +334,7 @@ def _batch_window_rounds(plan, checkpoints, record):
 
 def iter_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
     """Yield only wholly checked rounds. Retaining rounds is the caller's memory choice."""
+    blas_threads.require_pinned("iter_batch_windows")  # D190.
     return _iter_batch_windows(plan_batch_windows(spec, policy, checkpoints), checkpoints)
 
 
@@ -426,6 +427,7 @@ def _consume_batch_windows(plan, checkpoints, sink, *, started, preflight_second
 def run_batch_windowed(spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=None):
     if sink is not None and not callable(sink):
         raise ConfigError("Batch window sink must be callable")
+    blas_threads.require_pinned("run_batch_windowed")  # D190.
     started = perf_counter()
     plan = plan_batch_windows(spec, policy, checkpoints)
     return _consume_batch_windows(

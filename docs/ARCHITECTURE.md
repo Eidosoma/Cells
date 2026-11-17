@@ -817,7 +817,7 @@ backend. Cross-device verification uses specified numerical tolerances and, for
 stochastic models, distributional and endpoint comparisons; bitwise equality is
 not presumed.
 
-### Allocation-independent linear algebra (proposed, 16 November 2026)
+### Allocation-independent linear algebra (D190, built 16 November 2026)
 
 **The finding.** A CPU run's bits follow its CPU allocation through one channel: OpenBLAS's thread
 count, which defaults to the CPUs in the process's affinity and cannot exceed them. Two OpenBLAS
@@ -836,15 +836,35 @@ On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`)
   libraries matter.
 - A 1-CPU allocation cannot reach the multi-thread class.
 
-**Proposal: the engine sets both libraries to 1 thread.**
-- One small module sets every loaded BLAS to 1 thread through threadpoolctl. It loads scipy's
-  OpenBLAS first, since jaxlib loads it only at the first LAPACK call.
-- It runs once at `import cells` and again at each run entry point, so a later change cannot
-  leave a run multi-threaded.
-- Run manifests record each library's version, kernel architecture and thread count. Bits stay
-  machine-dependent: OpenBLAS picks kernels by CPU type.
+**As built (D190, the lean form the user ruled): the engine sets both libraries to 1 thread.**
+- `core/blas_threads.py` loads scipy's LAPACK first, since jaxlib loads it only at its first
+  LAPACK call and a limit reaches only loaded libraries. It then sets every loaded BLAS to 1
+  thread through threadpoolctl (BSD, `threadpoolctl==3.8.0`).
+- The import pin is taken at the first import of `cells.core`, not in `cells/__init__.py`, whose
+  bytes a held legacy law pins (`processes/charged_surface_work`). Every engine path imports
+  `cells.core` before any linear algebra: parse, the models, the runs and the analysis tools.
+  A BLAS that loads later starts at 1 thread, because OpenBLAS
+  reads `OPENBLAS_NUM_THREADS` when it loads and both builds honour it. One already loaded, when
+  numpy came first, is set at once. So a light module such as `cells.continuity`, imported
+  fresh, still loads neither numpy nor scipy (its own rule).
+- Each run entry point (run, run_windowed and iter_windows,
+  run_batch, run_batch_windowed and iter_batch_windows, run_vector_windowed and
+  iter_vector_windows) pins again, then reads the counts back. It refuses the run (ConfigError)
+  if any loaded BLAS is not at 1, or if none is found.
+- The run manifest (`io.write_run`) and the results baseline's environment record every loaded
+  library's API, prefix, version, kernel architecture and thread count, with threadpoolctl's
+  version.
+- The runtime identity that restores compare is unchanged, so a checkpoint written before the pin
+  is not refused for it.
+- Bits stay machine-dependent: OpenBLAS picks kernels by CPU type.
+- Not built, as ruled: a scoped pin that restores the caller's setting, its reference count and
+  lock, and a check at every window boundary. A change made inside a run, between its entry and
+  its end, is not seen.
+- Measured with the pin, without OPENBLAS_NUM_THREADS: the 825-node world's binding, jitted
+  factor and 20-step run are bitwise the same on 1, 2 and 4 CPUs, in the 1-thread class
+  (`/mnt/workspaces/Cells/core-pin-20261116/`).
 
-Alternatives:
+Alternatives (not taken):
 - A ctypes shim on the two builds' exported setters avoids a dependency but supports only these
   builds.
 - An `OPENBLAS_NUM_THREADS=1` launcher policy fails open when a launcher forgets it.

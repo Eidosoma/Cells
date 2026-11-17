@@ -6151,10 +6151,19 @@ answered: "lets not go overboard here but take your adviser". The form below was
 advisor.
 
 **What is built:** the proposal as committed in ARCHITECTURE.md.
-- One small module force-loads scipy's LAPACK, then sets every loaded BLAS to 1 thread through
-  threadpoolctl (BSD). It runs at `import cells` and again at each run entry point.
+- One small module, `core/blas_threads.py`, pins every BLAS to 1 thread. It runs at the first
+  import of `cells.core`, which every computing path passes through, and again at each of the eight
+  run entry points.
+  - At import it sets `OPENBLAS_NUM_THREADS=1`. If numpy is already loaded, it also force-loads
+    scipy's LAPACK and sets every loaded BLAS through threadpoolctl (BSD).
+  - **Amended at the landing (17 November):** "at `import cells`" became "at the first import of
+    `cells.core`". `src/cells/__init__.py` stays unchanged, because a held legacy law
+    (`processes/charged_surface_work`) pins that file's content, and D187 forbids updating a pin
+    by hand.
 - **The run is refused** if, at run entry, a read-back finds any loaded BLAS not at 1 thread.
-- **The run manifest records** each library's version, kernel architecture and thread count.
+- **The run manifest records** each library's version, kernel architecture and thread count, and
+  so does the results baseline's environment. The runtime identity that checkpoints compare is
+  unchanged, so checkpoints written before the pin still restore.
 - **Two tests,** each with a planted error.
 
 **What is dropped:**
@@ -6176,7 +6185,8 @@ advisor.
 - If a tier test with stored bit-exact values moves, it is attributed before anything is renewed.
 
 **When:** the pin lands before D188's move 1, so the moves' gates no longer depend on the CPU
-allocation.
+allocation. It landed on 17 November (core-pin 52dd5816). crossrev's renewed record is
+`record-cda5dc82`, and with the pin the 825-node world gives the same bits on 1, 2 and 4 CPUs.
 
 ## D191: Operator composition takes one general rule (option A)
 
