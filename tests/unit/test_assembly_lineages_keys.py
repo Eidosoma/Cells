@@ -150,3 +150,20 @@ def test_the_label_domain_is_numbered_and_never_drawn():
     with pytest.raises(ValueError, match="reserved"):
         streams.stream_key_data(base, np.int64(0), "label")
     assert streams.identity(1, 0, 0, 0)["reserved_domains"] == ["label"]
+
+
+def test_descent_rows_are_the_lives_with_string_ids(lineage):
+    """records.descent: RELATIONSHIPS_DESIGN §1.2's rows from the lives table, every parent an id
+    of a row and every end an event. Planted: a parent key that is no life's."""
+    from cells.models.assembly_lineages import records
+
+    rows = records.descent(lineage.lives)
+    ids = {r["id"] for r in rows}
+    assert rows[0]["id"] == "carrier:a0:0" and rows[0]["parent"] is None
+    assert rows[1] == rows[1] | {"parent": "carrier:a0:0", "birth_event": "fission:0"}
+    assert all(r["parent"] in ids for r in rows[1:]) and all(r["end_reason"] for r in rows)
+    qualified = records.descent(lineage.lives, lineage.qualifier)
+    assert qualified[2]["id"] == f"{lineage.qualifier}/carrier:a0:2"
+    planted = dict(lineage.lives, life_parent=lineage.lives["life_parent"].copy())
+    planted["life_parent"][4] = 99
+    assert not all(r["parent"] in ids for r in records.descent(planted)[1:])

@@ -74,9 +74,14 @@ def t2_02_like(matrix_seed, founder_seed):
 
 
 def definition(world, law=GARD_PAIR_CONSISTENT, *, fissions, seed, environment=0, lineage=0):
+    """A single-lineage definition of `world`; law None runs the exchange law alone (the world
+    then holds no law_data)."""
+    model = {"id": MODEL_ID, "world": world}
+    if law is not None:
+        model["rate_factor"] = {"law": law}
     return {
         "schema_version": 1,
-        "model": {"id": MODEL_ID, "world": world, "rate_factor": {"law": law}},
+        "model": model,
         "experiment": {
             "fissions": fissions,
             "growth_event_limit": GUARD,

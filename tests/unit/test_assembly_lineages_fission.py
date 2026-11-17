@@ -143,3 +143,19 @@ def test_a_daughter_born_at_the_fission_size_splits_at_once():
     planted = dict(rows, assembly_count=rows["assembly_count"].copy())
     planted["assembly_count"][-1, 0, 0] += 4  # A daughter that grew past the size.
     assert _oversize(planted, 4) == [len(rows["row_kind"]) - 1]
+
+
+def test_the_fission_pass_alone_splits_as_the_run_does():
+    """runner.fission_pass on a lineage's parent states, keyed by its lineage word, gives the
+    run's own splits at its first fission. Planted: the same parents keyed by another lineage
+    word split differently."""
+    spec = parse_spec(definition(world(), fissions=1, uniforms=True, lineage=6))
+    run = runner.run(spec)
+    parent = run.rows["assembly_count"][run.rows["row_kind"] == 1, :, 0]
+    count = spec.model.world.types.count
+    alone = runner.fission_pass(spec, parent[:, :count], [6])
+    assert np.array_equal(alone["first"], run.fissions["fission_split"])
+    assert np.array_equal(alone["followed"], run.fissions["fission_followed"])
+    assert np.array_equal(alone["partition_uniforms"], run.diagnostics["partition_uniforms"])
+    other = runner.fission_pass(spec, parent[:, :count], [7])
+    assert not np.array_equal(other["partition_uniforms"], alone["partition_uniforms"])

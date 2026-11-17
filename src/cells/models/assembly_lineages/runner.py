@@ -228,8 +228,12 @@ def run(spec, *, start=None, stop=None):
     return run_lanes([spec], starts=[start], stop=stop)[0]
 
 
-def run_lanes(specs, *, starts=None, stop=None):
-    """Several worlds of one structure, as lanes of one program; one LineageRun each."""
+def run_lanes(specs, *, starts=None, stop=None, calls=None):
+    """Several worlds of one structure, as lanes of one program; one LineageRun each.
+
+    `calls`, when given, pauses the batch after that many device calls (event chunks and fission
+    passes): each lane still running is then `stopped`, its state saved for a checkpoint
+    (LineageRun.checkpoint), from which a later batch resumes it bitwise."""
     import jax
 
     from cells.core.devices import execution_device
@@ -269,15 +273,20 @@ def run_lanes(specs, *, starts=None, stop=None):
             _Lineage(count[i], _lane(lanes, i), admitted[i][0] if admitted[i] else "fresh")
             for i in range(L)
         ]
-        chunks = 0
-        stopped = False
+        chunks = made = 0
+        held = np.zeros(L, dtype=bool)
         while True:
             status = np.asarray(lanes.status)
+            active = (status == kernel.RUNNING) | (status == kernel.FISSION_DUE)
             if stop is not None and int(np.asarray(lanes.events)[0]) >= stop:
-                stopped = True
+                held[0] = True
                 break
-            if not ((status == kernel.RUNNING) | (status == kernel.FISSION_DUE)).any():
+            if not active.any():
                 break
+            if calls is not None and made >= calls:
+                held = active
+                break
+            made += 1
             if (status == kernel.FISSION_DUE).any():
                 lanes, record = split(lanes, layout)
                 _record_splits(record, structure, holders, count)
@@ -295,7 +304,7 @@ def run_lanes(specs, *, starts=None, stop=None):
         final = _lane(lanes, i)
         holder = holders[i]
         holder.rows.append(_host_row(final, count[i]) | {"kind": END, "fission": 0})
-        status = _STOPPED if stopped else kernel.STATUS[int(final["status"])]
+        status = _STOPPED if held[i] else kernel.STATUS[int(final["status"])]
         events = sum(len(c) for c, _, _ in holder.steps)
         start = holder.start
         qualifier = keys.qualifier(
@@ -471,6 +480,67 @@ def _single_growths(holder):
     return np.asarray(growths, dtype=np.int64), np.asarray(
         [int(r["occupant"]) for r in occupants], dtype=np.int64
     )
+
+
+# ------------------------------------------------------------------ the fission pass alone
+
+
+def fission_pass(spec, parents, lineages):
+    """Diagnostic: the run's fission pass applied once to each supplied parent state.
+
+    Lane k holds parents[k] (counts of the declared types) with its fission due, as the founder
+    `0:0` of the world keyed by lineage word lineages[k] (the definition's seed, environment and
+    branch), and the compiled fission pass splits it exactly as a run would: the partition from
+    the parent's partition stream, the continuation from its continuation stream. Returns the
+    pass's records per lane: first daughters [k, types], followed [k], similarities [k, 2], and
+    the partition uniforms [k, places] when the definition records uniforms."""
+    import dataclasses
+
+    import jax
+
+    from cells.core.devices import execution_device
+
+    if spec.execution.mode != MODE:
+        raise ConfigError("The fission pass is run on single-lineage definitions")
+    parents = np.asarray(parents, dtype=np.int64)
+    words = [int(w) for w in lineages]
+    if parents.ndim != 2 or parents.shape[0] != len(words):
+        raise ConfigError("One parent state per lineage word")
+    count = spec.model.world.types.count
+    if parents.shape[1] != count or np.any(parents < 0):
+        raise ConfigError(f"Parents hold non-negative counts of the {count} types")
+    if np.any(parents.sum(1) < 2) or np.any(parents.sum(1) > spec.execution.molecule_capacity):
+        raise ConfigError("A parent holds from 2 molecules to the molecule capacity")
+    specs = [
+        dataclasses.replace(spec, execution=dataclasses.replace(spec.execution, lineage=w))
+        for w in words
+    ]
+    structure, _, _ = _prepare(specs)
+    device = execution_device(spec.execution.backend)
+    layout = jax.device_put(_stack([model.layout(s) for s in specs]), device)
+    founders = jax.device_put(np.stack([model.founder(s) for s in specs]), device)
+    with jax.default_device(device):
+        initial, _, split, _ = _compiled(structure, len(specs), layout)
+        lanes = [_lane(initial(founders, layout), k) for k in range(len(specs))]
+        for lane, parent in zip(lanes, parents, strict=True):
+            lane["counts"] = np.zeros(structure.capacity, dtype=np.int64)
+            lane["counts"][:count] = parent
+            lane["size"] = np.int64(parent.sum())
+            lane["status"] = np.int32(kernel.FISSION_DUE)
+        _, record = split(jax.device_put(_restack(lanes), device), layout)
+        host = jax.tree_util.tree_map(np.asarray, record)
+    if not np.all(host.fired):
+        raise AssertionError("Every supplied parent splits")
+    out = {
+        "first": host.first[:, :count],
+        "followed": host.followed,
+        "similarity": host.similarity,
+        "daughters": host.daughters,
+    }
+    if structure.uniforms:
+        out["partition_uniforms"] = host.places
+        out["continuation_uniform"] = host.choice
+    return out
 
 
 # ------------------------------------------------------------------ every descendant

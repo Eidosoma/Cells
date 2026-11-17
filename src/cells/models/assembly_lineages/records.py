@@ -413,6 +413,43 @@ def run_record(run, world_id):
     return record
 
 
+def descent(lives, qualifier=None):
+    """The lives table as RELATIONSHIPS_DESIGN §1.2's rows, for the relations writer: one dict
+    per life with string ids (keys.py), in the table's order. `lives` is a run's lives arrays
+    (run.lives, or a bundle's life_* arrays); `qualifier`, when given, qualifies every id."""
+
+    def ident(value):
+        if value < 0:
+            return None
+        return keys.carrier_id(value) if qualifier is None else keys.qualified_id(qualifier, value)
+
+    def event(fission):
+        return None if fission < 0 else f"fission:{int(fission)}"
+
+    rows = []
+    for i in range(len(lives["life_key"])):
+        slot = int(lives["life_slot"][i])
+        rows.append(
+            {
+                "id": ident(int(lives["life_key"][i])),
+                "key": keys.spelled(int(lives["life_key"][i])),
+                "slot": None if slot < 0 else f"slot:{slot}",
+                "parent": ident(int(lives["life_parent"][i])),
+                "predecessor": None,
+                "birth_time": float(lives["life_birth_time"][i]),
+                "birth_event": event(lives["life_birth_fission"][i]),
+                "birth_kind": str(lives["life_birth_kind"][i]),
+                "end_time": float(lives["life_end_time"][i]),
+                "end_event": event(lives["life_end_fission"][i]),
+                "end_reason": str(lives["life_end_reason"][i]),
+                "censored_by": str(lives["life_censored_by"][i]) or None,
+                "generation": int(lives["life_generation"][i]),
+                "root": ident(int(lives["life_root"][i])),
+            }
+        )
+    return rows
+
+
 def _arrays(run):
     out = dict(run.rows)
     out.update(run.fissions)
