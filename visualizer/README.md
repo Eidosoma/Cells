@@ -390,8 +390,9 @@ only when it is shown:
   run is offered slowed a million, a thousand or four times, true speed, and four times
   faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
   of watching. A run under two minutes opens at true speed; a longer one at 60 times, or
-  at 15 times where 60 is not offered. The beads of a layer that moves keep the replay's
-  clock: paused, they stand.
+  at 15 times where 60 is not offered. What flows keeps the replay's clock and is drawn by its speed as in the Cell view: at
+  true speed and faster a stream as wide as its rate, slowed packets and then single
+  beads, chevrons for the way; paused, everything stands.
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own: the engine's first run made for the viewer (one cell that secretes
   a species; no verdict), and an example sheet with invented numbers for the layers that
@@ -476,7 +477,10 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   stream as wide as its rate, with no bead to count; slowed, it resolves into packets and
   then into single beads, fewer and slower the more it is slowed, each standing for a
   stated number of ions (1, 2 or 5 times a power of ten, never under one). Chevrons along
-  each lane show the way it flows, and stand where nothing may move. It is the same
+  each lane show the way it flows: each one flat, see-through mark a little paler than
+  its lane, without a glow, so that it is not taken for an ion (the user, 17 November
+  2026, of the first chevrons: they had a gap in them and were mixed up with ions); they
+  stand where nothing may move. It is the same
   control that slows the flagellar motor. A looping run and the motor stop at true speed:
   nothing runs faster than life there. The address takes `slow=` (for example
   `slow=1000`). On the planarian's busiest lane, measured in the page: 1.0 packet a second
@@ -545,12 +549,15 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   at half a fission a second: 16.6 to 16.7 ms between frames at both sizes, a frame's own
   work 3.8 to 4.2 ms (the micelle's 3.4 to 3.7 ms), 18 draw calls and 121,748 triangles
   at 1400 by 900; a test holds one protocell to 21 draws and 142,000 triangles.
-- **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md` on
-  main, D192). Its build in the engine started on 17 November 2026
-  (`docs/CURRENT_PLAN.md`); nothing of it is on main yet. By D197 GARD is one law set,
-  kept only for comparison: the origin-of-life engine is to be Cells' own, with laws from
-  physical chemistry, and its design note is proposed, not decided
-  (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`). The engine will build two forms of GARD's
+- **GARD's status.** Its entry reads "Designed, not modelled" (`docs/GARD_DESIGN.md`,
+  D192). Since 17 November 2026 the first part of its build is on main, the stochastic
+  assembly family `cells.assembly_lineages@1` with GARD's two forms as one law set on it,
+  with its own tests and development runs that are not judged (`PROGRESS.md`); it is
+  not yet listed in the engine's declarations, and the entry's word moves to "Modelled"
+  when it is. The page still plays its marked example, and shows a real
+  run only from the engine's final set of runs. Cells' own origin-of-life engine, with
+  laws from physical chemistry, is designed, its first choices settled by D199
+  (`docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`). The engine builds both forms of GARD's
   catalysis, and the view shows them side by side only for two real runs of the engine of
   one world (`schema/ASSEMBLY_RUN.md`); the user: "yes we'll wait for the real runs but
   great to have everything ready".
@@ -860,8 +867,8 @@ stay out of git (61 runs in 327 files, 96 MB).
    statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
    main 3b7f1cff on 16 November 2026, again that evening at 050aa741, late that evening at
    1d86a192, on 17 November at df2b910b, after D188's first move at 6a5d509f, at 76846486
-   the same day (main's changes were docs only), and after seam F at f3b3f526, which it
-   states.
+   the same day (main's changes were docs only), after seam F at f3b3f526, and with GARD's
+   first part at 95de49de, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -941,18 +948,19 @@ Ideas kept for after the basics (the user, 14 November 2026):
 
 ## Known limits
 
-- **Flux speed.** The stream at true speed and the chevrons are drawn in the Cell view
-  only: a replay's sheet and close-up still draw beads at every speed (fewer and slower
-  the more it is slowed) with an arrowhead at each lane's end, and an illustration (a
-  species with no run) keeps beads at one pace. A packet can still overlap the next where
-  a lane is short and its rate high. The slider's end, ten million times slower, makes a
-  planarian bead two ions. `slow=` is read from the address and not written back to it.
-- **Flux in a bacterium drawn to scale** is not right yet. Its lanes are a few pixels
-  long at the cell's stop (a channel is 10 nm long there), so the marks are specks; and
-  the flux check fails one of its 30 checks in three of four to-scale cases (E. coli at
-  the cell's stop and at the molecule stop, Syn3A at the molecule stop): a lane stands
-  without its chevrons, or a zone that should show is hidden. The schematic picture's flux
-  passes. The suite does not run flux to scale yet.
+- **Flux speed.** An illustration (a species with no run) keeps beads at one pace. The
+  slider's end, ten million times slower, makes a planarian bead two ions. The slider
+  does not settle on its marks: let go one step (about a pixel) off its middle, it is
+  slowed 930 or 1,150 times, and says so. `slow=` is read from the address and not
+  written back to it. Where lanes crowd, the chevrons are drawn small to fit, and at a
+  thousandfold they are faint beside the packets. Which way of showing a lane's direction
+  the page keeps is the user's to choose from a comparison of four (chevrons along the
+  lane, a tapered trail, an arrowhead at the lane's end, chevrons drawn in the stream).
+- **Flux in a bacterium drawn to scale.** Its beads and lanes are sized in pixels at the
+  cell's stop, as that layout sizes its drops and signals, so that they can be seen; they
+  are not to scale there, and the picture's words say what is drawn. Close to the
+  membrane the cell's lanes are not drawn, and the picture says "Seen at the cell's stop:
+  not drawn this close to the membrane". The suite runs E. coli and Syn3A at both stops.
 - **The protocell.** With 40 to 80 molecules, each drawn as one lipid, only about a fifth
   to a quarter of each face is heads: the glassy faces, the picture's own, carry the
   shell. The composition ring crosses the protocell's equator. See-through overlaps are
