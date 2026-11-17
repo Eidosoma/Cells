@@ -37,6 +37,7 @@ import argparse
 import ast
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -86,7 +87,8 @@ def pinned(base, name):
 
 
 def find_repo(explicit):
-    """The checkout to read: --repo, else the nearest tree that holds src/cells."""
+    """The checkout to read: --repo, else the one CELLS_ENGINE_REPO names, else the nearest tree that holds src/cells."""
+    explicit = explicit or os.environ.get("CELLS_ENGINE_REPO")
     if explicit:
         return Path(explicit).resolve()
     candidates = [HERE.parent.parent]
@@ -705,7 +707,7 @@ class Build:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--repo", help="the Cells checkout to read (default: the main checkout)")
+    parser.add_argument("--repo", help="the Cells checkout to read (default: the one CELLS_ENGINE_REPO names, else the main checkout)")
     parser.add_argument("--overlay", default=str(HERE.parent / "data" / "architecture" / "overlay.json"))
     parser.add_argument("--out", default=str(HERE.parent / "data" / "architecture" / "architecture.scene.json"))
     parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
