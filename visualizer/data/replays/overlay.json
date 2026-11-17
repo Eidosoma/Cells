@@ -69,12 +69,13 @@
       },
       "label": "The tissue line: 25 cells, the first six a tumor, at three strengths of coupling",
       "short": "The tissue line",
-      "plain": "One tissue condition of the example runs on the engine: a line of 25 touching cells, the first six a tumor, where each cell runs the EMT switch (miR200, Zeb mRNA and ZEB) and only miR200 crosses the gap junctions, at one junction diffusion constant D for each run. Five values of D were picked before the runs; three ran to their end and two were refused by an engine check. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
+      "plain": "One tissue condition of the example runs on the engine: a line of 25 touching cells, the first six a tumor, where each cell runs the EMT switch (miR200, Zeb mRNA and ZEB) and only miR200 crosses the gap junctions, at one junction diffusion constant D for each run. Three values of D were fixed before they ran, at half, once and twice the threshold the search reported; all three ran to their end, none refused. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
       "tissue": {
         "says": [
           "Development work, not judged.",
-          "Picks chosen before the run; most other coupling values were refused by an engine check (FR-19).",
-          "They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s."
+          "Three runs, fixed before they ran, at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above); none was refused.",
+          "Its threshold, from the search rerun after an engine fix (FR-19): 7.1777e-15 m²/s. The search was a comparison with BITSEY's log saved at b2cb370, written by an earlier revision of its code: Cells' threshold is 0.99968 of the logged value, inside the band fixed before the run; development, not judged.",
+          "BITSEY is the preprint's authors' public code and logs: it was not run, and its code is never copied into Cells."
         ],
         "tumor": {
           "cells": [
@@ -89,9 +90,9 @@
           "source": "the runs' own view (space.source): a line of 25 touching cells, the tumor the first 6"
         },
         "ends": {
-          "neither-d0": "6 M, 19 E: the tumor holds",
-          "neither-d6.25e-15": "5 M, 20 E: partly converted, not normalized",
-          "neither-d1e-13": "25 E: normalized"
+          "neither-d3.58887e-15": "6 M, 19 E: the tumor holds",
+          "neither-d7.17773e-15": "25 E: normalized",
+          "neither-d1.43555e-14": "25 E: normalized"
         },
         "ends_label": "End states (cells 1-25), in the note's words",
         "ends_says": "Each run's end states are given in the note's own words (its section 7, linked under Sources), which describe them under the criterion as stated: development work, not judged.",
@@ -99,28 +100,38 @@
         "sources": [
           {
             "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-            "where": "Section 7, item 4 and \"The picks' results\"",
-            "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+            "where": "In short; section 7.5, \"The rerun after FR-19's fix\" and the tissue line's three arms",
+            "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
+            "revision": "295b3333240e4b5f0417684dcfd30dff450c7f0b"
           }
         ]
       },
       "sources": [
         {
           "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-          "where": "Section 7, item 4 and \"The picks' results\"",
-          "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+          "where": "In short; section 7.5, \"The rerun after FR-19's fix\" and the tissue line's three arms",
+          "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
+          "revision": "295b3333240e4b5f0417684dcfd30dff450c7f0b"
         }
       ],
       "outcome": {
         "judged": false,
         "status": "Development work, not judged; 17 November 2026",
         "answer": null,
-        "text": "Of five picks of D fixed before they ran, three ran to the end (D = 0, 6.25e-15 and 1e-13 m²/s) and two were refused by an engine check. They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s.",
+        "text": "The threshold search, rerun after an engine fix (FR-19), reported 7.1777e-15 m²/s with none of its points refused. Three runs fixed before they ran, at half, once and twice that threshold, ran to 20,000 s. The note's table (section 7.5) describes their end states under the criterion as stated: at x2/2 \"6 M, 19 E: the tumor holds\"; at x2 and at 2 x2 \"25 E: normalized\". Development work, not judged.",
         "sources": [
           {
             "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-            "where": "Section 7, \"The picks' results\"",
-            "revision": "e2388e262be41cc75bd35227761ae78b3bc5e46a"
+            "where": "Section 7.5, the tissue line's three arms",
+            "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
           }
         ]
       },

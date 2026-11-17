@@ -166,10 +166,10 @@ try {
     check("the page opens on lens=machines with E. coli", await open("lens=machines&entry=ecoli", 3500));
     let s = await state();
     check("the switch offers six views, Machines second and pressed", s.views.length === 6 && s.views[1]?.id === "machines" && s.views[1].pressed === "true", JSON.stringify(s.views));
-    const layout = await evaluate(`(() => { const lens = ${L}; return { trays: lens.layout.trays.map((t) => t.group), shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id), cards: lens.layout.items.filter((i) => i.type === "card").length, sized: lens.counts.sized, machines: lens.counts.machines, scale: Boolean(lens.scaleBar), measured: Object.keys(lens.measured) }; })()`);
-    check("E. coli's bench: six trays; its machines measured from structures and the flagellar motor from its own file drawn to scale, the rest cards; the scale bar", layout.trays.length === 6 && layout.shapes.includes("machine:flagellar-motor") && layout.shapes.length === layout.sized && layout.shapes.length + layout.cards === layout.machines && layout.shapes.length >= 7 && layout.scale && layout.measured.includes("machine:flagellar-motor"), JSON.stringify(layout));
+    const layout = await evaluate(`(() => { const lens = ${L}; return { trays: lens.layout.trays.map((t) => t.group), shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id), cards: lens.layout.items.filter((i) => i.type === "card").length, sized: lens.counts.sized, machines: lens.counts.machines, scale: Boolean(lens.scaleBar), measured: Object.keys(lens.measured), groups: lens.catalogue.counts("ecoli").groups }; })()`);
+    check("E. coli's bench: a tray for each of its groups; its machines measured from structures and the flagellar motor from its own file drawn to scale, the rest cards; the scale bar", layout.trays.length === layout.groups && layout.groups >= 8 && layout.shapes.includes("machine:flagellar-motor") && layout.shapes.length === layout.sized && layout.shapes.length + layout.cards === layout.machines && layout.shapes.length >= 7 && layout.scale && layout.measured.includes("machine:flagellar-motor"), JSON.stringify(layout));
     const legend = await evaluate(`${L}.chrome().legend.items.map((item) => item.id)`);
-    check("the legend names the shape, the card and the choice, and each group", ["mach-sized", "mach-card", "mach-chosen"].every((id) => legend.includes(id)) && legend.filter((id) => id.startsWith("mach-g-")).length === 6, legend.join(" "));
+    check("the legend names the shape, the card and the choice, and each group", ["mach-sized", "mach-card", "mach-chosen"].every((id) => legend.includes(id)) && legend.filter((id) => id.startsWith("mach-g-")).length === (await evaluate(`${L}.catalogue.counts("ecoli").groups`)), legend.join(" "));
     await shot(`${NAME}-bench`);
     // A real press on a card.
     const card = await itemAt("machine:rna-polymerase");
@@ -269,11 +269,11 @@ try {
     })()`);
     note(`while a card rises: ${JSON.stringify(rising)} (milliseconds of the view's update for each frame)`);
     check(`${WIDTH} by ${HEIGHT}: while a chosen card rises, the view's update on each frame leaves room at 60 frames a second`, rising.frames > 1 && rising.most < 8, JSON.stringify(rising));
-    // Another species: the thale cress has no machine with a size in hand (the measures stand on the animals' benches), and says so.
+    // Another species: the thale cress, its 80S drawn at the human's measure and its ER calcium pump at the human SERCA2b's.
     await evaluate(`${V}.setSpecies("thalecress")`);
     await sleep(1500);
-    const plant = await evaluate(`(() => { const lens = ${L}; return { cards: lens.layout.items.filter((i) => i.type === "card").length, shapes: lens.layout.items.filter((i) => i.type === "shape").length, notice: lens.chrome().card.notice }; })()`);
-    check("the thale cress's bench is all cards, the law inventory's units among them, and the card says why", plant.shapes === 0 && plant.cards >= 5 && /no size in hand|each is a card/i.test(plant.notice || ""), JSON.stringify(plant));
+    const plant = await evaluate(`(() => { const lens = ${L}; return { cards: lens.layout.items.filter((i) => i.type === "card").length, shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id).sort(), notice: lens.chrome().card.notice }; })()`);
+    check("the thale cress's bench: its ribosome and its ER calcium pump drawn to scale, the rest cards", JSON.stringify(plant.shapes) === JSON.stringify(["machine:ribosome", "unit.U41"]) && plant.cards >= 3 && !plant.notice, JSON.stringify(plant));
     await shot(`${NAME}-thalecress`);
     await errorsAtEnd();
   } else if (CASE === "animals") {
@@ -347,6 +347,58 @@ try {
     const addressed = await evaluate(`(() => { const lens = ${L}; return { selected: lens.selected, part: lens.selectedPart, level: lens.built.get("unit.U39")?.level ?? null }; })()`);
     check("an address of a unit's part opens on Machines, its unit drawn with its parts and the part's panel shown", s.lens === "machines" && addressed.selected === "unit.U39" && addressed.part === "unit.U39:alpha" && addressed.level === 2 && /α, the pump/.test(s.panel), JSON.stringify([s.lens, s.selected, addressed, s.panel.slice(0, 100)]));
     await errorsAtEnd();
+  } else if (CASE === "human") {
+    // ---------------------------------------------------------- the human's bench: its dossier's machines, and the way to and from the atlas
+    check("the page opens on lens=machines with the human", await open("lens=machines&entry=human", 3500));
+    const bench = await evaluate(`(() => { const lens = ${L}, counts = lens.catalogue.counts("human"); return { trays: lens.layout.trays.length, groups: counts.groups, machines: counts.machines, sized: counts.sized, shapes: lens.layout.items.filter((i) => i.type === "shape").length, cost: lens.cost() }; })()`);
+    check("the human's bench: a tray for each group, every measured machine and unit drawn to scale, and the frame within the ceiling (40 draws, 40,000 triangles)", bench.trays === bench.groups && bench.shapes === bench.sized && bench.sized >= 13 && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
+    await shot(`${NAME}-bench`);
+    // A real press on the proteasome's outline, at the middle of its box.
+    const middleOf = (id) =>
+      evaluate(`(() => { const v = ${V}, item = v.current.layout.items.find((value) => value.id === ${JSON.stringify(id)}); if (!item) return null; const p = v.current.root.position.clone().set(item.x, item.y + item.h / 2, item.z); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; })()`);
+    await evaluate(`${V}.current.focus("machine:proteasome")`);
+    await sleep(2200);
+    const at = await middleOf("machine:proteasome");
+    if (at) await click(at.x, at.y, 1800);
+    let s = await state();
+    check("a real press on the proteasome chooses it: its parts are its core, base and lid; FR-13 names it; its proteins by tier", s.selected === "machine:proteasome" && s.level === 2 && /It names the proteasome among the machines the engine has no model of/.test(s.panel) && /Its parts, held by the structure/.test(s.panel) && !/(?<!not |no )\bmodell?ed\b|qualified|judged/i.test(s.panel.replace(/What Cells models of it/g, "")), JSON.stringify([at, s.selected, s.level, s.panel.slice(0, 160)]));
+    // Its subunits by the card's Detail (on a phone the card is unfolded first), then a real press on one chain.
+    let chains = await placeOf(`root.querySelector('[data-show="3"]')`);
+    if (!chains) {
+      await press(".view-toggle", 900);
+      chains = await placeOf(`root.querySelector('[data-show="3"]')`);
+    }
+    if (chains) await click(chains.x, chains.y, 1500);
+    await evaluate(`${V}.current.focus("machine:proteasome")`);
+    await sleep(2200);
+    const chainAt = await evaluate(`(() => { const v = ${V}, lens = v.current, built = lens.built.get("machine:proteasome"), size = lens.item("machine:proteasome").size, r = v.canvas.getBoundingClientRect();
+      for (const chain of size.chains) for (const t of [0, 0.3, -0.3]) for (let k = 0; k < 3; k++) {
+        const local = chain.centre_nm.map((n, i) => (n + t * chain.axes[k][i] * chain.across_nm[k] / 2) / 10);
+        const p = built.group.localToWorld(built.group.position.clone().set(...local)); const q = v.stage.project(p, p.clone());
+        const x = r.left + q.x, y = r.top + q.y, top = v.shadowRoot.elementFromPoint(x, y);
+        if (top !== v.canvas && !(top && top.tagName === "CANVAS")) continue;
+        const id = v.stage.pick(x, y, lens.pickRoots)?.id;
+        if (id === "machine:proteasome:" + chain.id) return { x, y, id };
+      }
+      return null; })()`);
+    if (chainAt) await click(chainAt.x, chainAt.y, 1500);
+    s = await state();
+    const door = s.doors.find((value) => /^Show \S+ in the Protein atlas\b/.test(value)) || null;
+    check("a real press on one of its chains shows that chain's panel: its protein, as the dossier reads the entry, and the door to it in the atlas", Boolean(chainAt) && s.selected === chainAt?.id && /Its protein/.test(s.panel) && Boolean(door), JSON.stringify([chainAt, s.selected, s.doors]));
+    // Through that door into the atlas, onto the protein; and from its panel back to the proteasome.
+    const accession = await evaluate(`${L}.item("machine:proteasome").size.chains.find((chain) => "machine:proteasome:" + chain.id === ${JSON.stringify(chainAt?.id || "")})?.protein || null`);
+    const into = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /in the Protein atlas/.test(button.textContent))`);
+    if (into) await click(into.x, into.y, 2500);
+    for (let tries = 0; tries < 80 && !String((await state()).selected || "").endsWith(":" + accession); tries++) await sleep(250);
+    s = await state();
+    check("the door opens the Protein atlas on that protein", s.lens === "proteins" && String(s.selected || "").startsWith("own:human:") && String(s.selected).endsWith(":" + accession), JSON.stringify([accession, s.lens, s.selected]));
+    const backDoor = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /It is a part of the proteasome: show it in Machines/.test(button.textContent))`);
+    check("the protein's panel in the atlas offers its machine", Boolean(backDoor), JSON.stringify(s.doors));
+    if (backDoor) await click(backDoor.x, backDoor.y, 2500);
+    s = await state();
+    check("a real press on it brings the proteasome back, chosen, in Machines", s.lens === "machines" && s.selected === "machine:proteasome", JSON.stringify([s.lens, s.selected]));
+    await shot(`${NAME}-back`);
+    await errorsAtEnd();
   } else if (CASE === "phone") {
     check("the page opens on lens=machines with E. coli, on a phone", await open("lens=machines&entry=ecoli", 3500));
     const bar = await evaluate(`(() => {
@@ -405,7 +457,8 @@ try {
     const said = await evaluate(`${V}.shadowRoot.querySelector(".fallback")?.textContent || ""`);
     check("it says that 3D is not available", /3D drawing is not available/.test(said), said);
     const listed = await evaluate(`${V}.sections().map((section) => [section.label, section.entities.length])`);
-    check("the List holds E. coli's machines by group", listed.length === 6 && listed.some(([label, n]) => label === "Moving, sensing and attaching" && n === 2), JSON.stringify(listed));
+    const groups = await evaluate(`${V}.views.find((view) => view.id === "machines")?.textSections?.(${V}.model.raw, "ecoli")?.length ?? null`);
+    check("the List holds E. coli's machines by group", listed.length === groups && listed.length >= 8 && listed.some(([label, n]) => label === "Moving, sensing and attaching" && n === 2), JSON.stringify(listed));
     await evaluate(`${V}.select("machine:ribosome")`);
     await sleep(600);
     const s = await state();

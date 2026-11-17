@@ -2,8 +2,9 @@
 """Builds the Machines catalogue (schema/MACHINE_CATALOGUE.md): data/catalogue/catalogue.json.
 
 Reads the hand-kept overlay (data/catalogue/overlay.json), the species files (data/species/),
-the species' own proteins (data/proteins/<species>/shelves.json) and the machine files
-(data/machines/), and writes one catalogue: the groups, the kinds of machine, and one entry for
+the species' own proteins (data/proteins/<species>/shelves.json), the machine files
+(data/machines/) and the gathered dossiers (data/catalogue/gather.json and
+data/catalogue/dossiers/<species>.json: schema/MACHINE_DOSSIERS.md), and writes one catalogue: the groups, the kinds of machine, and one entry for
 each machine a species' record names, with what the records give of it: the words that name it,
 a count, a size, the proteins its species' data marks with it, and its closer view where it has
 one. Every number is copied with its sources from a species file: a fact, or a size the file states
@@ -99,9 +100,11 @@ def measured_from_part(part, size, species, species_file, where, cite):
     }
 
 
-def measured_from_file(overlay, size, where, inputs, own_source):
+def measured_from_file(overlay, size, where, inputs, own_source, gathered=None):
     """A machine's measure from the tool's own output that the overlay names (tools/measure_particle.py, run by the viewer):
-    the whole, its named parts and, in the machine mode, each chain, all in the measure's own frame."""
+    the whole, its named parts and, in the machine mode, each chain, all in the measure's own frame. With the machine's
+    dossier (`gathered`): a part that names its genes carries their proteins, and where the measured entry is the dossier's
+    own, each chain carries the protein its entity is, by the dossier's reading of the entry (never by a name)."""
     spec = overlay["measures"][size["measure"]]
     path = ROOT / spec["file"]
     record = read(path)
@@ -121,6 +124,24 @@ def measured_from_file(overlay, size, where, inputs, own_source):
         return value if isinstance(value, str) else value["label"]
     parts = [{**part_of(name, label_of(name), named[name]), **({"hue": labels[name]["hue"]} if isinstance(labels[name], dict) and labels[name].get("hue") else {})} for name in labels]
     chains = [{"id": f"chain-{body['chain']}", "label": f"{body['description']}, chain {body['chain']}", "entity": body["entity"], "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"]} for body in first.get("chains") or []] if spec.get("chains") else []
+    if gathered:
+        rows = [dict(zip(gathered["proteins"]["columns"], row)) for row in gathered["proteins"]["rows"]]
+        by_gene = {}
+        for row in rows:
+            by_gene.setdefault(row["gene"], []).append(row["id"])
+        for part in parts:
+            genes = (labels.get(part["id"]) or {}).get("genes") if isinstance(labels.get(part["id"]), dict) else None
+            if genes:
+                missing = [gene for gene in genes if gene not in by_gene]
+                if missing:
+                    raise Breach(f"{where}: the part {part['id']} names genes its dossier does not: {missing}")
+                part["proteins"] = sorted({accession for gene in genes for accession in by_gene[gene]})
+        structure = gathered.get("structure") or {}
+        if structure.get("entry") and structure["entry"] == spec["entry"].split("-assembly")[0]:
+            proteins = {entity["id"]: entity["accessions"][0] for entity in structure.get("entities") or [] if entity.get("role") == "part" and len(entity.get("accessions") or []) == 1}
+            for chain in chains:
+                if chain["entity"] in proteins:
+                    chain["protein"] = proteins[chain["entity"]]
     entities = first.get("entities") or []
     shares = [entity["modelled_share"] for entity in entities if entity.get("modelled_share") is not None]
     frame = first.get("frame") or {}
@@ -145,8 +166,23 @@ def build():
     if overlay.get("format") != OVERLAY_FORMAT:
         raise Breach(f"{rel(overlay_path)} is not {OVERLAY_FORMAT}")
     groups = {group["id"]: group for group in overlay["groups"]}
+    # The gathered dossiers (schema/MACHINE_DOSSIERS.md): the kinds looked for, and for each species with a dossier file,
+    # its machines, their proteins by tier, counts per cell from open papers, and each protein's machines.
+    gather_path = ROOT / "data" / "catalogue" / "gather.json"
+    gather = read(gather_path) if gather_path.exists() else {"kinds": []}
+    gathered_kinds = {kind["id"]: kind for kind in gather.get("kinds") or []}
+    dossiers = {}
+    for path in sorted((ROOT / "data" / "catalogue" / "dossiers").glob("*.json")):
+        dossier = read(path)
+        if dossier.get("format") != "cells.visualizer.machine_dossiers@1":
+            raise Breach(f"{rel(path)} is not a file of dossiers")
+        dossiers[dossier["species"]] = dossier
     kinds = {}
     for kind in overlay["kinds"]:
+        # A kind of the overlay takes from gather.json only what it does not say itself.
+        for key in ("label", "group", "plain"):
+            if not kind.get(key) and gathered_kinds.get(kind["id"], {}).get(key):
+                kind = {**kind, key: gathered_kinds[kind["id"]][key]}
         if kind["group"] not in groups:
             raise Breach(f"the kind {kind['id']} names no group of the overlay: {kind['group']}")
         for line in kind.get("records") or []:
@@ -156,9 +192,27 @@ def build():
             if isinstance(line, dict) and not (line.get("status") and line.get("says")):
                 raise Breach(f"the kind {kind['id']}: a record line of its own gives both its status and what it says")
         kinds[kind["id"]] = dict(kind)
+    # A kind a dossier names that the overlay does not: gather.json's label, group and plain line, and FR-13's line.
+    for dossier in dossiers.values():
+        for machine in dossier["machines"]:
+            if machine["kind"] in kinds:
+                continue
+            kind = gathered_kinds.get(machine["kind"])
+            if not kind or kind.get("group") not in groups:
+                raise Breach(f"the dossiers' kind {machine['kind']} has no group of the overlay")
+            kinds[machine["kind"]] = {"id": kind["id"], "label": kind["label"], "group": kind["group"], **({"plain": kind["plain"]} if kind.get("plain") else {}), "records": ["fr13"], "from": "gather"}
     sources = {}
     entries = []
-    inputs = {rel(overlay_path)}
+    by_protein = {}
+    inputs = {rel(overlay_path), *([rel(gather_path)] if gather_path.exists() else []), *(f"data/catalogue/dossiers/{species}.json" for species in dossiers)}
+
+    def gathered_source(species, key):
+        source = dossiers[species]["sources"].get(key)
+        if not source:
+            raise Breach(f"the {species} dossiers cite {key}, which they do not hold")
+        name = f"gathered:{species}:{key}"
+        sources[name] = {field: source[field] for field in ("text", "doi", "url", "licence", "class", "standing", "accessed") if field in source}
+        return name
 
     def own_source(key):
         source = (overlay.get("sources") or {}).get(key)
@@ -182,6 +236,13 @@ def build():
         species_file = read(species_path)
         inputs.add(rel(species_path))
         seen = set()
+        dossier = dossiers.get(species)
+        gathered = {machine["kind"]: machine for machine in (dossier or {}).get("machines") or []}
+        listed = {item["kind"] for item in wanted}
+        # The machines a dossier names that the overlay does not list come after the overlay's own, in the dossier's order.
+        wanted = list(wanted) + [{"kind": kind} for kind in gathered if kind not in listed]
+        if dossier:
+            by_protein[species] = {accession: [[item["machine"], item["tier"]] for item in machines] for accession, machines in sorted(dossier["by_protein"].items())}
         for item in wanted:
             kind = kinds.get(item["kind"])
             where = f"{species}, {item['kind']}"
@@ -191,9 +252,18 @@ def build():
                 raise Breach(f"{where}: listed twice")
             seen.add(item["kind"])
             entry = {"id": kind["id"], "species": species, "label": item.get("label") or kind.get("label")}
-            # What names it: a capability's note of the species file, with that capability's sources, or a record of the viewer.
-            named = item["named"]
-            if "capability" in named:
+            # What names it: a capability's note of the species file, with that capability's sources, or a record of the viewer;
+            # where the overlay names nothing, the dossier's sentence on the Gene Ontology and UniProt, with their sources.
+            machine = gathered.get(item["kind"])
+            said = None
+            if machine:
+                said = {"text": machine["named"]["text"], "by": machine["named"]["by"], "sources": [gathered_source(species, key) for key in machine["named"]["sources"]]}
+            named = item.get("named")
+            if not named:
+                if not said:
+                    raise Breach(f"{where}: nothing names it")
+                entry["named"] = said
+            elif "capability" in named:
                 note = (species_file["cell"].get("capabilities") or {}).get(named["capability"])
                 words = (note or {}).get("note") or (note or {}).get("why") or ""
                 if named["word"] not in words:
@@ -217,12 +287,25 @@ def build():
                 if named["word"] not in said:
                     raise Breach(f"{where}: {record['path']} does not say {named['word']!r}")
                 entry["named"] = {"word": named["word"], "record": named["record"]}
+            if named and said:
+                entry["also_named"] = said
             # How many a cell has: a fact of the species file, whole, with its sources.
             if "count" in item:
                 found = fact(species_file, item["count"]["fact"], where)
                 entry["count"] = {"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where)}
                 if item["count"].get("says"):
                     entry["count"]["says"] = item["count"]["says"]
+            elif machine and machine.get("per_cell"):
+                # Else the dossier's: a fact of the species file it points to, or an open paper's number with where it stands.
+                counted = []
+                for number in machine["per_cell"]:
+                    if "fact" in number:
+                        found = fact(species_file, number["fact"], where)
+                        entry["count"] = {"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where)}
+                    else:
+                        counted.append({"value": number["value"], "unit": number["unit"], "counts": number["counts"], "cell": number["cell"], "where": number["where"], "source": gathered_source(species, number["source"])})
+                if counted:
+                    entry["per_cell"] = counted
             # How big: the overlay's sentence from a paper, checked against the saved text, or a fact of the species file.
             size = item.get("size")
             if isinstance(size, dict) and "part" in size:
@@ -234,13 +317,26 @@ def build():
                 elif size.get("measure"):
                     entry["size"] = measured_from_file(overlay, size, where, inputs, own_source)
             elif isinstance(size, dict) and "measure" in size:
-                entry["size"] = measured_from_file(overlay, size, where, inputs, own_source)
+                entry["size"] = measured_from_file(overlay, size, where, inputs, own_source, machine)
             elif isinstance(size, dict) and "fact" in size:
                 found = fact(species_file, size["fact"], where)
                 numbers = [str(n) for n in size["long_nm"]]
                 if not all(re.search(rf"(^|\D){n}(\D|$)", found["value"]) for n in numbers):
                     raise Breach(f"{where}: the fact {size['fact']!r} does not give {numbers}")
                 entry["size"] = {"shape": size["shape"], "long_nm": size["long_nm"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), "width": "the picture's choice: no source in hand gives it"}
+            if item.get("no_size"):
+                entry["no_size"] = item["no_size"]
+            # Its proteins as the dossier gives them, by tier (schema/MACHINE_DOSSIERS.md), and the entry the gathering would
+            # measure it from, where that is not the entry its size is measured from.
+            if machine:
+                columns = machine["proteins"]["columns"]
+                rows = [dict(zip(columns, row)) for row in machine["proteins"]["rows"]]
+                entry["gathered"] = {"proteins": [[row["id"], row["gene"], row["label"], row["tier"]] for row in rows], "in_atlas": all(row["in_atlas"] for row in rows)}
+                structure = machine.get("structure") or {}
+                measured = (entry.get("size") or {}).get("entry")
+                if structure.get("entry") and (not measured or measured.split("-assembly")[0] != structure["entry"]):
+                    whole = structure.get("whole") or {}
+                    entry["gathered"]["pick"] = {"entry": structure["entry"], "resolution_A": structure.get("resolution_A"), "present": whole.get("present"), "wanted": whole.get("proteins_wanted"), "measurable": structure.get("measurable"), "source": gathered_source(species, f"pdb{structure['entry'].lower()}") if f"pdb{structure['entry'].lower()}" in dossier["sources"] else None}
             # The proteins the species' own data marks with it.
             if "proteins" in item:
                 entry["proteins"] = marked_proteins(species, item["proteins"]["mark"], item["proteins"]["value"])
@@ -287,6 +383,7 @@ def build():
         "units_left_out": overlay["units_left_out"],
         "kinds": list(kinds.values()),
         "entries": entries,
+        "by_protein": by_protein,
         **({"unit_sizes": unit_sizes} if unit_sizes else {}),
         "sources": dict(sorted(sources.items())),
     }

@@ -113,6 +113,11 @@ export class Catalogue {
     return this.raw.sources?.[key] || null;
   }
 
+  /** The machines a protein of a species is a part of, by its dossier (`by_protein`): [[kind, tier], …]. */
+  machinesOf(species, accession) {
+    return this.raw.by_protein?.[species]?.[accession] || [];
+  }
+
   record(key) {
     return this.raw.records?.[key] || null;
   }
@@ -120,7 +125,7 @@ export class Catalogue {
 
 /** The words a search finds a machine by. */
 export function keywords(item) {
-  const proteins = item.entry?.proteins?.items || [];
+  const proteins = [...(item.entry?.proteins?.items || []), ...(item.entry?.gathered?.proteins || [])];
   return [item.label, item.short, item.kind?.plain, item.unit?.eyebrow, item.unit?.keywords, ...proteins.map(([id, gene, label]) => [id, gene, label].filter(Boolean).join(" "))].filter(Boolean).join(" ");
 }
 

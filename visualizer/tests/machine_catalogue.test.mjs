@@ -25,6 +25,9 @@ const catalogue = new Catalogue(raw, scene);
 const SPECIES = [...new Set([...raw.entries.map((entry) => entry.species), ...(scene.proteins.atlases || []).map((atlas) => atlas.id)])];
 /** A word of a status the record has not given: none may stand on the page for a machine (D209). */
 const CLAIMED = /(?<!not |no )\b(modelled|modeled|qualified|judged|designed|simulated)\b/i;
+/** A catalogue in which the thale cress has no size in hand (no species has none since 17 November 2026): the all-cards case. */
+const bare = { ...raw, entries: raw.entries.map((entry) => (entry.species === "thalecress" ? { ...entry, size: undefined } : entry)), unit_sizes: { ...raw.unit_sizes, species: raw.unit_sizes.species.filter((value) => value !== "thalecress") } };
+const bareScene = { ...scene, catalogue: bare };
 
 test("the catalogue is what its tool writes, from the files it names", () => {
   const written = execFileSync("python3", [path.join(ROOT, "tools", "build_catalogue.py"), "--out", "-"], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
@@ -116,7 +119,8 @@ test("a species' machines: its own entries, and the law inventory's units its at
   assert.deepEqual(catalogue.of("human").filter((item) => item.unit).map((item) => item.id).sort(), withProducts.map((entity) => entity.id).sort());
   assert.deepEqual(catalogue.of("ecoli").filter((item) => item.sized).map((item) => item.id).sort(), ["machine:atp-synthase", "machine:flagellar-motor", "machine:hslv", "machine:lon", "machine:protein-translocon", "machine:ribosome", "machine:rna-polymerase"], "every E. coli machine but FtsH and the chemoreceptor array has a size: measured from a structure, or the motor's from its own file");
   assert.ok(!catalogue.item("ecoli", "machine:ftsh").sized, "no entry holds FtsH whole: a card");
-  assert.equal(catalogue.counts("thalecress").sized, 0, "the plant's machines and units stay cards: the measures stand on the animals' benches");
+  // The thale cress: its 80S drawn at the human's measure, and its ER calcium pump at the human's SERCA2b, the unit its atlas finds.
+  assert.deepEqual(catalogue.of("thalecress").filter((item) => item.sized).map((item) => item.id).sort(), ["machine:ribosome", "unit.U41"]);
   // The list and the text page: every machine once, by group.
   for (const species of SPECIES) {
     const listed = sections(catalogue, species).flatMap((section) => section.entities.map((entity) => entity.id));
@@ -198,17 +202,17 @@ test("the layout: one scale for every shape, a card's size the same for all, not
   }
   const proteinsTray = planarian.trays.find((tray) => tray.group === "proteins");
   assert.ok(proteinsTray.w * UNIT_NM <= 130, `the ribosome's tray: ${proteinsTray.w * UNIT_NM} nm wide`);
-  assert.equal(layoutOf(catalogue.of("thalecress"), raw.groups, { columns: 1 }).scale, null, "no scale bar where nothing is drawn to scale");
+  assert.equal(layoutOf(new Catalogue(bare, bareScene).of("thalecress"), raw.groups, { columns: 1 }).scale, null, "no scale bar where nothing is drawn to scale");
 });
 
 /** The view with stand-ins for the stage and the labels: no WebGL, the view only makes objects. */
-function lensFor(species, { width = 1400, height = 900 } = {}) {
+function lensFor(species, { width = 1400, height = 900, raw: model = scene } = {}) {
   const shown = [];
   const labels = { add: (spec) => (shown.push(spec), spec), clear: () => shown.splice(0), remove() {} };
   const palette = { ghost: "#77889a", fg: "#12283a", plate: "#e3eaf1", edge: "#566878", plateEdge: "#bccad7", accent: "#1f6fd0", bg: "#eef2f6", bioRibosome: "#4c4aa8", bioProtein: "#3f86e0", bioMito: "#f0874a", bioIon: "#37b58c", dark: false };
   const flights = [];
   const stage = { palette, scene: new THREE.Scene(), camera: new THREE.PerspectiveCamera(34, width / height, 0.1, 5000), width, height, reducedMotion: true, invalidate() {}, rig: { setView() {}, flyTo: (view) => flights.push(view) }, dress() {} };
-  const lens = new MachinesLens(stage, { raw: scene }, labels);
+  const lens = new MachinesLens(stage, { raw: model }, labels);
   lens.machines.set("machine:flagellar-motor", motor);
   lens.setSpecies(species);
   lens.activate();
@@ -259,7 +263,8 @@ test("the animals' benches: the machines they share, each measured from a struct
   const units = Object.keys(raw.unit_sizes.units).sort();
   assert.deepEqual(units, ["unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]);
   for (const species of SPECIES) for (const item of catalogue.of(species)) if (item.unit && item.size) assert.ok(units.includes(item.unit.id), `${species}: ${item.unit.id}`);
-  for (const species of ["thalecress", "ecoli", "syn3a", "mpneumoniae"]) assert.equal(catalogue.of(species).filter((item) => item.unit && item.size).length, 0, species);
+  for (const species of ["ecoli", "syn3a", "mpneumoniae"]) assert.equal(catalogue.of(species).filter((item) => item.unit && item.size).length, 0, species);
+  assert.deepEqual(catalogue.of("thalecress").filter((item) => item.unit && item.size).map((item) => item.id), ["unit.U41"], "the plant: its ER calcium pump alone, where its atlas finds it");
   // The gap-junction unit: a connexin channel where the species builds it of connexins, an innexin channel where of innexins.
   assert.equal(catalogue.item("human", "unit.U36").size.entry, "7Z22");
   assert.equal(catalogue.item("mouse", "unit.U36").size.entry, "7Z22");
@@ -389,9 +394,9 @@ test("the ATP synthase stands as its measured parts, ring below head, and shows 
 });
 
 test("the legend names every mark that is drawn, and the card says what is and is not in hand", () => {
-  const { lens } = lensFor("thalecress");
+  const { lens } = lensFor("thalecress", { raw: bareScene });
   const chrome = lens.chrome();
-  assert.ok(!chrome.legend.items.some((item) => item.id === "mach-sized"), "no shape is drawn for the thale cress");
+  assert.ok(!chrome.legend.items.some((item) => item.id === "mach-sized"), "no shape is drawn where no size is in hand");
   assert.match(chrome.card.notice, /^No machine of Thale cress has a size in hand/);
   assert.ok(chrome.card.species.options.length > 1);
   const { lens: ecoli } = lensFor("ecoli");
@@ -408,4 +413,62 @@ test("the page offers it second among the tabs, owning the ids it makes, and kee
   for (const word of ["needs: (scene) => scene.catalogue?.entries?.length", "owns: machinesOwn", "doorsFor: machinesDoors", "textSections: machinesSections", "present: machinesPresent", "styles: MACHINES_CSS"]) assert.ok(entry.includes(word), word);
   // The view shown keeps an id it holds itself: a closer view in the Cell view keeps machine:<id>.
   assert.match(viewer, /const owner = id && !this\.current\?\.has\?\.\(id\) && this\.views\?\.find/);
+});
+
+test("the dossiers on the benches: which machines, named by what, their proteins by tier, their counts, and the way to and from the atlas", () => {
+  const dossier = (species) => read(`data/catalogue/dossiers/${species}.json`);
+  // Every machine a dossier names is on its species' bench; the overlay's entry stands where both name one.
+  for (const species of ["ecoli", "human"]) {
+    const kinds = dossier(species).machines.map((machine) => `machine:${machine.kind}`);
+    for (const id of kinds) assert.ok(catalogue.item(species, id), `${species}: ${id}`);
+  }
+  assert.equal(catalogue.of("ecoli").filter((item) => !item.unit).length, 21);
+  assert.equal(catalogue.of("human").filter((item) => !item.unit).length, 32);
+  const words = (species, id) => describe(catalogue, species, id, { scene });
+  const fact = (panel, label) => panel.facts.find(([name]) => name === label)?.[1];
+  const rnap = words("ecoli", "machine:rna-polymerase");
+  assert.match(fact(rnap, "Named by"), /^E\. coli's file: “/, "the species' file names it, as decided");
+  assert.match(fact(rnap, "Also named by"), /reviewed UniProt entries carry the Gene Ontology's term/);
+  // A count from an open paper: the number, what it counts, in what cell, the paper and where in it.
+  assert.match(fact(rnap, "How many"), /^1,844 per cell: RNA polymerase: .*, in wild-type cells grown in M9 glucose medium \(.*2023.*, RESULTS > .*paragraph 1\)$/);
+  // Its proteins by tier, each said as such.
+  const proteasome = words("human", "machine:proteasome");
+  assert.deepEqual(proteasome.sections.map((section) => section.title).filter((title) => /^Its parts|^Named with/.test(title)), ["Its parts, held by the structure", "Its parts by UniProt's keyword, not held by the structure", "Named with it by the Gene Ontology alone"].filter((title) => proteasome.sections.some((section) => section.title === title)));
+  assert.match(fact(proteasome, "Its proteins"), /^\d+ parts and \d+ named with it alone, by the Gene Ontology and UniProt \(its dossier\)/);
+  // What Cells models of it: FR-13 names the proteasome among the machines with no model; a kind it does not name is said so.
+  assert.ok(proteasome.sections[0].items.some((line) => /It names the proteasome among the machines the engine has no model of/.test(line.lines[0])));
+  assert.ok(words("human", "machine:complex-i").sections[0].items.some((line) => /does not name this one: it is not on the engine's plan/.test(line.lines[0])));
+  // The mitochondrial ATP synthase reads D209's line as the kind's own, in its own words.
+  assert.ok(words("human", "machine:atp-synthase").chips.some((chip) => /Planned, first/.test(chip.label)));
+  // The gathering's pick, beside the entry measured where they differ.
+  assert.match(fact(words("ecoli", "machine:ribosome"), "The gathering's pick"), /^Protein Data Bank entry 6BU8 \(3\.5 Å\), which holds 53 of the 55 proteins its dossier seeks: not the entry this size is measured from$/);
+  // The nuclear pore stays a card, and says why in one line.
+  const pore = catalogue.item("human", "machine:nuclear-pore");
+  assert.ok(!pore.sized);
+  assert.match(fact(words("human", "machine:nuclear-pore"), "How big"), /^Decided 17 November 2026: the nuclear pore stays a card\. Its entry, 9AAV, is an integrative model that holds about a third of the proteins/);
+  // Parts are sub-assemblies, each the genes the overlay groups from the dossier's rows; subunits are chains, each its protein.
+  const size = catalogue.item("human", "machine:proteasome").size;
+  assert.deepEqual(size.parts.map((part) => part.id), ["core", "base", "lid"]);
+  assert.equal(size.parts.find((part) => part.id === "core").proteins.length, 14);
+  assert.ok(size.chains.length === 46 && size.chains.every((chain) => /^[OPQ]\d/.test(chain.protein || "")), "every chain joined to its protein by the dossier's reading of its entity");
+  assert.ok(size.membrane === undefined && catalogue.item("human", "machine:atp-synthase").size.membrane.part === "ring");
+  // E. coli's ATP synthase is measured from the dossier's own entry, so its chains are joined too; the ribosome's 7K00 is not the dossier's.
+  assert.ok(catalogue.item("ecoli", "machine:atp-synthase").size.chains.every((chain) => chain.protein));
+  assert.ok(!(catalogue.item("ecoli", "machine:ribosome").size.chains || []).some((chain) => chain.protein));
+  // From a chain to its protein in the atlas, and from a protein of the atlas back to its machine.
+  const { lens } = lensFor("human");
+  lens.setSelection("machine:proteasome");
+  lens.setMode("3");
+  const chain = [...lens.built.get("machine:proteasome").ids][0];
+  const panel = lens.describe(chain);
+  const door = panel.doors.find((value) => value.lens === "proteins");
+  assert.ok(door && door.show === "own" && /^[OPQ]\d/.test(door.find) && /^Show \S+ in the Protein atlas$/.test(door.label), JSON.stringify(panel.doors));
+  assert.match(fact(panel, "Its protein"), /as its dossier reads the entry's entity/);
+  const back = doorsFor({ id: `own:human:p@x:${door.find}` }, scene, { species: "human" });
+  assert.ok(back.some((value) => value.lens === "machines" && value.value === "machine:proteasome" && /^It is a part of the proteasome: show it in Machines$/.test(value.label)), JSON.stringify(back));
+  // The thale cress's ribosome: the human's structure, said plainly; the ER calcium pump's choice of entry, said in the overlay.
+  assert.match(fact(words("thalecress", "machine:ribosome"), "How big"), /a structure of Homo sapiens \(one of Arabidopsis thaliana: none in hand\)/);
+  assert.match(overlay.measures["animals-serca"].chosen, /1SU4/);
+  // Nothing on any panel of the two benches claims a model.
+  for (const species of ["ecoli", "human"]) for (const item of catalogue.of(species)) if (!item.unit) assert.doesNotMatch(JSON.stringify(words(species, item.id)), CLAIMED, `${species} ${item.id}`);
 });

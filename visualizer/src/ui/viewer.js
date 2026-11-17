@@ -444,7 +444,7 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select }) {
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find }) {
     // A closer view of a machine (Look closer), in the view shown or, from the Machines catalogue, in the Cell view; or back out of it.
     if (look === "closer") {
       if (lens && lens !== this.state.lens && this.views.some((view) => view.id === lens)) {
@@ -475,6 +475,12 @@ class CellsViewer extends HTMLElement {
       }
       // A part the door names in the view it opens (the Machines catalogue's door to a unit in the atlas, or to a part of the cell).
       if (select) this.select(select, { fly: true });
+      // A protein the door names (a machine's chain, by its accession): the view's own search finds it, and it opens on it.
+      if (find && view?.searchOwn && view?.reveal)
+        Promise.resolve(view.searchOwn(find)).then((found) => {
+          const hit = (found?.proteins || []).find((item) => String(item.id) === String(find));
+          if (hit && this.current === view) view.reveal(hit);
+        });
       this.renderChrome();
     });
   }

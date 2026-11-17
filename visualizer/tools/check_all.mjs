@@ -117,6 +117,9 @@ const SUITE = [
   // The animals' benches: the planarian's, wide and on a phone (its outlines instanced, a unit's parts chosen by a real press).
   { name: "catalogue-animals", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "animals", NAME: "catalogue-animals" }, minutes: 2 },
   { name: "catalogue-animals-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "animals", NAME: "catalogue-animals-phone", WIDTH: "390", HEIGHT: "844" }, minutes: 2 },
+  // The human's bench from its dossier, and the way from a chain to its protein in the atlas and back (wide and on a phone).
+  { name: "catalogue-human", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human" }, minutes: 2 },
+  { name: "catalogue-human-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-phone", WIDTH: "390", HEIGHT: "844" }, minutes: 2 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

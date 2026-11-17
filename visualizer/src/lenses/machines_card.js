@@ -87,6 +87,10 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
   const item = catalogue?.item(species, owner), size = item?.size;
   const part = size?.parts?.find((value) => value.id === partId) || size?.chains?.find((value) => value.id === partId);
   if (!part) return null;
+  // Its proteins by its dossier: a part's (the genes the overlay groups in it), a chain's (the protein its entity is).
+  const rows = new Map((item.entry?.gathered?.proteins || []).map((row) => [row[0], row]));
+  const proteins = (part.proteins || []).map((id) => rows.get(id)).filter(Boolean);
+  const protein = part.protein ? rows.get(part.protein) || [part.protein, null, ""] : null;
   const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
   return {
     id: `${owner}:${part.id}`,
@@ -96,13 +100,17 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
     chips: [{ label: "Illustration", title: "An ellipsoid at its measured size, centre and axes: not a structure" }],
     plain: size.parts.includes(part) ? `One of the ${item.label}'s ${size.parts.length} measured parts.` : `One of the ${size.chains.length} chains of the entry the ${item.label} is measured from.`,
     facts: [
+      ...(protein ? [["Its protein", `${protein[1] || protein[0]}, ${protein[2]} (UniProt ${protein[0]}), as its dossier reads the entry's entity ${part.entity}`]] : []),
       ["How big", `${by(part.across_nm)} nm, the ellipsoid of the same spread as its atoms${part.farthest_nm ? ` (its farthest atoms ${by(part.farthest_nm)} nm)` : ""}`],
       ["Where", `Its centre at ${part.centre_nm.map((n) => Number(n).toFixed(1)).join(", ")} nm from the machine's, in the measure's frame`],
       ...(partsByChains(size) && size.parts.includes(part) ? [["Drawn as", `Its ${size.chains.filter((chain) => partOfChainIn(size, chain) === part).length} chains' ellipsoids, in its colour; the size above is the part's own ellipsoid, of the same spread as all its atoms`]] : []),
       ["Measured from", `Protein Data Bank entry ${size.entry}, a structure of ${size.whose ? size.of : elsewhereWords(organismOf(scene, species), size.of)}, by the viewer with tools/measure_particle.py`],
     ],
-    sections: [],
-    doors: [{ label: "Back to the machine", lens: "machines", value: owner }],
+    sections: proteins.length ? [{ title: "Its proteins", items: proteins.map(gatheredItem) }] : [],
+    doors: [
+      ...(protein ? [{ label: `Show ${protein[1] || protein[0]} in the Protein atlas`, lens: "proteins", show: "own", find: protein[0] }] : []),
+      { label: "Back to the machine", lens: "machines", value: owner },
+    ],
   };
 }
 
@@ -156,6 +164,19 @@ function proteinItems(proteins) {
   return proteins.items.slice(0, SHOWN).map(([id, gene, label]) => ({ label: gene || id, detail: [label, gene ? id : null].filter(Boolean).join(" · "), links: ACCESSION.test(id) ? [{ text: `UniProt ${id}`, url: `https://www.uniprot.org/uniprotkb/${id}/entry` }] : [] }));
 }
 
+/** The tiers of a machine's proteins in its dossier (schema/MACHINE_DOSSIERS.md), each as its panel says it. */
+const TIERS = [
+  ["part", "Its parts, held by the structure"],
+  ["part by keyword", "Its parts by UniProt's keyword, not held by the structure"],
+  ["named", "Named with it by the Gene Ontology alone"],
+];
+
+/** A protein of a dossier's rows as a panel item: its gene, its name and accession, and its UniProt entry. */
+const gatheredItem = ([id, gene, label]) => ({ label: gene || id, detail: [label, id].filter(Boolean).join(" · "), links: ACCESSION.test(id) ? [{ text: `UniProt ${id}`, url: `https://www.uniprot.org/uniprotkb/${id}/entry` }] : [] });
+
+/** A number per cell from an open paper, with what it counts, in what cell, and where in the paper it stands. */
+const perCellWords = (catalogue, number) => `${Number(number.value).toLocaleString("en-US")} ${number.unit}: ${number.counts}, in ${number.cell} (${citeShort(catalogue.source(number.source))}, ${number.where})`;
+
 /** The panel of a machine of the species shown, by its page id; null for an id the catalogue does not hold. */
 export function describe(catalogue, species, id, { scene = catalogue?.scene, level = null } = {}) {
   if (!catalogue || !id) return null;
@@ -189,22 +210,34 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   }
   const entry = item.entry, kind = item.kind;
   const facts = [];
-  if (entry.named?.text) facts.push(["Named by", `${speciesLabel(scene, species)}'s file: “${entry.named.text}”`]);
+  // What names it: the species' file, a record of the viewer, or the machine's dossier (the Gene Ontology and UniProt).
+  if (entry.named?.by) facts.push(["Named by", entry.named.text]);
+  else if (entry.named?.text) facts.push(["Named by", `${speciesLabel(scene, species)}'s file: “${entry.named.text}”`]);
   else if (entry.named?.record) facts.push(["Named by", `${catalogue.record(entry.named.record)?.path.replace(/^visualizer\//, "") || entry.named.record}: ${entry.named.word}`]);
+  if (entry.also_named) facts.push(["Also named by", entry.also_named.text]);
   if (entry.count) facts.push([entry.count.says ? `How many (${entry.count.says})` : "How many", entry.count.text]);
+  else if (entry.per_cell?.length) facts.push(["How many", entry.per_cell.map((value) => perCellWords(catalogue, value)).join("; ")]);
   else facts.push(["How many", "No count in hand for this species"]);
   const size = sizeWords(catalogue, item.size, { organism: organismOf(scene, species) });
   if (size) facts.push(["How big", size]);
   else if (entry.closer) facts.push(["How big", "As its closer view draws it: each part's size is in its own panel, with its paper"]);
+  else if (entry.no_size) facts.push(["How big", entry.no_size]);
   else facts.push(["How big", "No size in hand: it stands as a card, not a shape"]);
+  // The entry the gathering would measure it from, where its size is not measured from that one.
+  const pick = entry.gathered?.pick;
+  if (pick) facts.push(["The gathering's pick", `Protein Data Bank entry ${pick.entry}${pick.resolution_A ? ` (${pick.resolution_A} Å)` : ""}, which holds ${pick.present} of the ${pick.wanted} proteins its dossier seeks${item.size?.shape === "measured" ? `: not the entry this size is measured from` : entry.no_size ? "" : ": not measured here yet"}`]);
   const levels = levelsOf(item);
+  const tiers = TIERS.map(([tier, title]) => ({ title, items: (entry.gathered?.proteins || []).filter((row) => row[3] === tier) }));
   if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
+  else if (entry.gathered) facts.push(["Its proteins", `${number(tiers[0].items.length + tiers[1].items.length)} parts and ${number(tiers[2].items.length)} named with it alone, by the Gene Ontology and UniProt (its dossier)${entry.gathered.in_atlas ? "; every one is in the Protein atlas" : ""}`]);
   else facts.push(["Its proteins", `${where}'s own data marks no set of proteins for it`]);
   const records = recordLines(catalogue, item, scene);
-  const sources = (entry.size?.sources || []).concat(entry.count?.sources || [], entry.named?.sources || []).filter((key, index, all) => all.indexOf(key) === index);
+  const sources = (entry.size?.sources || []).concat(entry.count?.sources || [], entry.named?.sources || [], entry.also_named?.sources || [], (entry.per_cell || []).map((value) => value.source), pick?.source ? [pick.source] : []).filter((key, index, all) => key && all.indexOf(key) === index);
   const sections = [
     { title: "What Cells models of it", note: "Only what a record says.", items: [...records.map(({ label, detail, lines }) => ({ label, detail, lines })), ...(entry.closer ? [{ label: "Its closer view", lines: [entry.closer.modelled] }] : [])] },
-    entry.proteins ? { title: `Its proteins in ${where}'s data`, note: entry.proteins.items.length > SHOWN ? `The first ${SHOWN} of ${number(entry.proteins.items.length)}; the Protein atlas shows them all.` : null, items: proteinItems(entry.proteins) } : null,
+    // Its proteins: by tier where a dossier gives them, else the set the species' own data marks.
+    ...(entry.gathered ? tiers.map(({ title, items }) => ({ title, items: items.map(gatheredItem) })) : []),
+    entry.proteins && !entry.gathered ? { title: `Its proteins in ${where}'s data`, note: entry.proteins.items.length > SHOWN ? `The first ${SHOWN} of ${number(entry.proteins.items.length)}; the Protein atlas shows them all.` : null, items: proteinItems(entry.proteins) } : null,
     levels ? { title: "How it is drawn", items: levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
     { title: "Sources and licences", items: sources.map((key) => catalogue.source(key)).filter(Boolean).map((source) => ({ label: citeShort(source), detail: `${source.licence}${source.class ? `, ${source.class}` : ""}`, links: source.doi ? [{ text: `doi:${source.doi}`, url: `https://doi.org/${source.doi}` }] : source.url ? [{ text: source.url, url: source.url }] : [] })) },
   ].filter((section) => section?.items?.length);
@@ -229,7 +262,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
       entry.named?.file ? { path: `visualizer/${entry.named.file}`, where: `cell.capabilities, ${entry.named.capability}` } : null,
       { path: "visualizer/data/catalogue/catalogue.json", where: "generated by visualizer/tools/build_catalogue.py" },
     ].filter(Boolean),
-    keywords: [kind.plain, ...(entry.proteins?.items || []).map(([pid, gene]) => `${pid} ${gene || ""}`)].join(" "),
+    keywords: [kind.plain, ...[...(entry.proteins?.items || []), ...(entry.gathered?.proteins || [])].map(([pid, gene]) => `${pid} ${gene || ""}`)].join(" "),
   };
 }
 
@@ -272,6 +305,17 @@ export function doorsFor(entity, scene, { species = null } = {}) {
   const catalogue = catalogueOf(scene);
   if (!catalogue || !entity?.id || !species) return [];
   const open = (id) => [{ label: "Show it in the Machines catalogue", lens: "machines", value: id }];
+  // A protein of the species' own in the Protein atlas: the machines its dossier makes it a part of, or names it with.
+  const own = /^own:([^:]+):p(?:@[^:]*)?:(.+)$/.exec(entity.id);
+  if (own) {
+    return catalogue.machinesOf(own[1], own[2]).flatMap(([kind, tier]) => {
+      const item = catalogue.item(own[1], `${PREFIX}${kind}`);
+      if (!item) return [];
+      const how = tier === "named" ? "named with" : tier === "part by keyword" ? "a part, by UniProt's keyword, of" : "a part of";
+      const name = /^[A-Z][a-z]/.test(item.label) ? `${item.label.charAt(0).toLowerCase()}${item.label.slice(1)}` : item.label;
+      return [{ label: `It is ${how} the ${name}: show it in Machines`, lens: "machines", value: item.id }];
+    });
+  }
   if (entity.kind === "unit" && entity.group === "proteins") return catalogue.item(species, entity.id) ? open(entity.id) : [];
   if (entity.id.startsWith(PREFIX) && !entity.id.slice(PREFIX.length).includes(":")) return catalogue.item(species, entity.id) ? open(entity.id) : [];
   const kind = [...catalogue.kinds.values()].find((value) => value.cell_part === entity.id);

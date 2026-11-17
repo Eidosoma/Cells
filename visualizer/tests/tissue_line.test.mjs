@@ -239,17 +239,25 @@ test("the page's overlay and selection hold the tissue line as a part of the exa
   assert.equal(entry.listed, undefined, "not a third example in the list: a part of the second");
   assert.equal(entry.part_of, "gap-junction-linear-network");
   assert.deepEqual([entry.summary, entry.sidecar, entry.refused_picks, entry.opens.record], ["summary.json", "criterion.json", true, ["stated.mir200_minus_zeb_mrna"]]);
+  // The lead's words for the rerun (17 November 2026, night): the arms, the threshold with its antecedent, and what BITSEY is.
   assert.deepEqual(entry.tissue.says, [
     "Development work, not judged.",
-    "Picks chosen before the run; most other coupling values were refused by an engine check (FR-19).",
-    "They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s.",
+    "Three runs, fixed before they ran, at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above); none was refused.",
+    "Its threshold, from the search rerun after an engine fix (FR-19): 7.1777e-15 m²/s. The search was a comparison with BITSEY's log saved at b2cb370, written by an earlier revision of its code: Cells' threshold is 0.99968 of the logged value, inside the band fixed before the run; development, not judged.",
+    "BITSEY is the preprint's authors' public code and logs: it was not run, and its code is never copied into Cells.",
   ]);
-  assert.deepEqual(Object.keys(entry.tissue.ends), ["neither-d0", "neither-d6.25e-15", "neither-d1e-13"], "the end states are the record's table, for the three runs");
+  assert.deepEqual(entry.tissue.ends, { "neither-d3.58887e-15": "6 M, 19 E: the tumor holds", "neither-d7.17773e-15": "25 E: normalized", "neither-d1.43555e-14": "25 E: normalized" }, "the end states are the note's table (section 7.5), for the three arms");
   for (const source of [...entry.sources, ...entry.tissue.sources, ...entry.outcome.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);
+  assert.ok(entry.tissue.sources.some((source) => source.path === "docs/GAP_JUNCTION_CANCER_REPLICATION.md" && source.revision.startsWith("17b7f9f8")) && entry.tissue.sources.some((source) => source.path === "PROGRESS.md" && source.revision.startsWith("295b3333")));
   // The page's own words (a source's path is the record's own name for its file, and is not checked here).
-  const words = JSON.stringify([entry.label, entry.short, entry.plain, { ...entry.tissue, sources: null }, entry.outcome.status, entry.outcome.text]);
-  assert.doesNotMatch(words, /replicat|reproduc|agree|\bmatch|modelled|qualified|BITSEY|Grodstein|preprint|7\.18/i, "no comparison with the preprint's or its authors' numbers, and no word that judges");
+  const words = JSON.stringify([entry.label, entry.short, entry.plain, { ...entry.tissue, says: entry.tissue.says.filter((_, index) => index !== 3), sources: null }, entry.outcome.status, entry.outcome.text]);
+  assert.doesNotMatch(words, /replicat|reproduc|agree|\bmatch|modelled|qualified|Grodstein|preprint|7\.18/i, "no comparison with the preprint's or its authors' numbers but the one sentence, and no word that judges");
+  // The sentence that says whose code BITSEY is names the preprint for that alone.
+  assert.doesNotMatch(entry.tissue.says[3], /replicat|reproduc|agree|\bmatch|modelled|qualified|Grodstein|7\.18|number|value|threshold/i, "what BITSEY is, with no comparison in it");
+  // The logged value is spoken of in one sentence of the card alone, and BITSEY is said once for what it is.
+  const logged = [entry.label, entry.short, entry.plain, ...entry.tissue.says, entry.outcome.text].filter((line) => /BITSEY|logged/.test(line));
+  assert.deepEqual(logged, [entry.tissue.says[2], entry.tissue.says[3]]);
   assert.doesNotMatch(words, /the user|“|"include/i, "no sentence of the user's in a data file");
-  assert.deepEqual(selection["gap-junction-tissue-line"].within, ["runs", "picks-01", "viewer"]);
+  assert.deepEqual(selection["gap-junction-tissue-line"].within, ["runs", "picks-02", "viewer"]);
   assert.equal(selection["gap-junction-tissue-line"].runs, "index");
 });

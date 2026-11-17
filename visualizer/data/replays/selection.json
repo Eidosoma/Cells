@@ -96,11 +96,11 @@
     "runs": "index"
   },
   "gap-junction-tissue-line": {
-    "note": "The example's tissue line (17 November 2026): the engine side's run folder of the five picks. It has no index.json, so its arms are its packages that hold a view.json; the two picks an engine check refused hold a REFUSED.json and no view, and are named from it.",
+    "note": "The example's tissue line: the engine side's run folder of the three arms fixed after the threshold search was rerun (17 November 2026, night), at half, once and twice its threshold. It has no index.json, so its arms are its packages that hold a view.json; none was refused (a pick an engine check refused would hold a REFUSED.json and no view, and be named from it).",
     "evidence_folder": "gap-junction-20261117",
     "within": [
       "runs",
-      "picks-01",
+      "picks-02",
       "viewer"
     ],
     "runs": "index"

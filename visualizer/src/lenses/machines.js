@@ -27,7 +27,8 @@ import { layoutOf, bodiesAt, membraneOf, partOfChain, CARD, TRAY, BENCH, UNIT_NM
 /** The look this view asks of the stage (core/look.js), as the Laws library's: natural colours under filmic light. */
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
 /** Each group's colour: a token of the page's palette (page.css), one for each thing the machines do. */
-export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", breaking: "bioSignal", moving: "bioMito" };
+// Each group's own colour, told apart in both themes: the three groups the dossiers brought take colours no other tray has.
+export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", traffic: "bioWound" };
 /** What each role of a machine file's part wears (as its closer view, machine_view.js, dresses it). */
 const ROLE_HUE = { membrane: ["bioMembrane", 0.32, true], wall: ["ghost", 0.36, true], rotor: ["bioProtein", 1], stator: ["bioMito", 1], bearing: ["edge", 1], export: ["bioIon", 1], mark: ["fg", 1], swept: ["fg", 0.3, true], arrow: ["fg", 1] };
 const VIEW = { azimuth: 0.12, polar: 0.98 };
@@ -298,8 +299,15 @@ export class MachinesLens {
     }
     this.outlineItems = items;
     if (this.outlines) this.root.remove(this.outlines);
-    // Coarser than a chosen machine's bodies: seen from the opening view, a few pixels across.
-    const ball = (this.outlineGeometry ??= new THREE.SphereGeometry(0.5, 16, 12));
+    // Coarser than a chosen machine's bodies: seen from the opening view, a few pixels across; and coarser still on a bench
+    // of many bodies, so that the outlines stay within about 30,000 triangles (a phone's share of the frame).
+    const detail = [[16, 12], [12, 9], [10, 8], [8, 6]].find(([across, down]) => items.length * across * down * 2 <= 30000) || [8, 6];
+    if (this.outlineDetail?.join() !== detail.join()) {
+      this.outlineGeometry?.dispose();
+      this.outlineGeometry = new THREE.SphereGeometry(0.5, ...detail);
+      this.outlineDetail = detail;
+    }
+    const ball = this.outlineGeometry;
     const mesh = new THREE.InstancedMesh(ball, this.materials.outline ??= new THREE.MeshStandardMaterial({ roughness: 0.38, metalness: 0.06, envMapIntensity: 1 }), Math.max(1, items.length));
     mesh.count = items.length;
     mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, items.length) * 3).fill(1), 3);

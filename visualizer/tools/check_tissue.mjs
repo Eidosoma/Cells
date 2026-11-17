@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Checks the gap-junction example's tissue line (src/lenses/tissue_line.js) with real pointer input, through the
-// DevTools protocol, on its real runs: the engine side's picks-01 run folder, packaged here by the page's own overlay
-// and selection, with one run of the example's networks. Where the runs' folder is not on this machine the check is
-// skipped, and says so.
+// DevTools protocol, on its real runs: the run folder the page's selection names, packaged here by the page's own overlay
+// and selection, with one run of the example's networks. What it expects (the arms, their names and ends, the card's
+// lines, a stated state to press on) is read from the packaged catalogue, the overlay and the driver's own criterion
+// files, so that a new run folder is data alone. Where the runs' folder is not on this machine the check is skipped,
+// and says so.
 //
 //   wide     1400 by 900, light: the example opens on its network; a real press on the door in its card shows the
-//            tissue line in the tab's place; the five picks in D's order, the two refused named with nothing drawn;
+//            tissue line in the tab's place; the picks in D's order, any refused named with nothing drawn;
 //            the record's words in the card; each picture's colours as drawn are the scale's colour of the saved value;
 //            a real press on a picture moves the clock to that record and opens the cell, with the driver's state;
 //            the even time scale; the way back to the networks; the address opens it.
@@ -19,12 +21,14 @@
 // names (tools/chrome_gpu.sh for the graphics card), in a place taken through tools/lib/browser_lock.mjs.
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { createServer } from "./serve.mjs";
+import { lineOf } from "../src/replay/tissue_line.js";
+import { clock } from "../src/replay/format.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CASE = process.env.CASE || "wide";
@@ -54,6 +58,7 @@ if (!existsSync(picks)) {
   process.exit(0);
 }
 const runs = path.join(OUT, `${NAME}-runs`);
+rmSync(runs, { recursive: true, force: true }); // packaged afresh each time: no run of an earlier selection stays beside them
 mkdirSync(runs, { recursive: true });
 const adapt = (args) => {
   const done = spawnSync("python3", [path.join(ROOT, "tools", "adapt_run.py"), "--evidence", EVIDENCE, "--out", runs, ...args], { encoding: "utf8" });
@@ -64,8 +69,26 @@ const adapt = (args) => {
 adapt(["--experiment", WHOLE, "--run", "figure5-network-g1"]);
 adapt(["--experiment", PART]);
 const index = JSON.parse(readFileSync(path.join(runs, "index.json"), "utf8"));
-// The criterion as the driver's file gives it, read here to hold the card to it.
-const criterion = JSON.parse(readFileSync(path.join(picks, "neither-d0", "criterion.json"), "utf8")).criterion;
+// What the page should show, from the data: the line's slots as the catalogue states them, the overlay's words, and each
+// arm's criterion as the driver's file gives it.
+const LINE = lineOf(index, PART);
+const ENTRY = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "overlay.json"), "utf8")).experiments[PART];
+const ARMS = LINE.runs.map((slot) => slot.arm);
+const STATED = Object.fromEntries(ARMS.map((arm) => [arm, JSON.parse(readFileSync(path.join(picks, arm, "criterion.json"), "utf8"))]));
+const criterion = STATED[ARMS[0]].criterion;
+const LAST = STATED[ARMS[0]].times_s.length - 1;
+// A record to press on: the first where a cell's stated state is neither M nor E (the criterion's between), else the first
+// stated change, else the first record of the first arm's first cell.
+const PRESS = (() => {
+  for (const arm of ARMS) for (const [row, states] of STATED[arm].states.entries()) { const cell = states.findIndex((word) => word !== "M" && word !== "E"); if (cell >= 0) return { arm, cell, record: row, state: states[cell] }; }
+  for (const arm of ARMS) for (let row = 1; row < STATED[arm].states.length; row++) { const cell = STATED[arm].states[row].findIndex((word, k) => word !== STATED[arm].states[row - 1][k]); if (cell >= 0) return { arm, cell, record: row, state: STATED[arm].states[row][cell] }; }
+  return { arm: ARMS[0], cell: 0, record: 0, state: STATED[ARMS[0]].states[0][0] };
+})();
+PRESS.time = STATED[PRESS.arm].times_s[PRESS.record];
+PRESS.name = STATED[PRESS.arm].cells[PRESS.cell];
+PRESS.end = LINE.runs.find((slot) => slot.arm === PRESS.arm).end;
+const SIDE = { M: "below", E: "above" }; // the criterion's words for a state, to hold a colour's side beside the driver's state
+note(`the line: ${LINE.slots.map((slot) => `${slot.kind} ${slot.arm}`).join(", ")}; a press at ${PRESS.arm} ${PRESS.name}, record ${PRESS.record} (${PRESS.state})`);
 
 // ---------------------------------------------------------------- the browser
 const release = await acquireBrowser({ wait: 60 * 60 * 1000 });
@@ -181,8 +204,8 @@ try {
   const close = (sample) => sample.drawn.every((c, k) => Math.abs(c - sample.wanted[k]) <= 3);
   /** Every band read is the scale's colour of its value, and enough of them were read. */
   const allClose = (colours, least = 6) => colours.length >= least && colours.every(close);
-  // Every sample: the tumor's first cell and a healthy cell of each run, early and late; the sixth cell of the middle run where it turns.
-  const SAMPLES = [["neither-d0", 0, 0], ["neither-d0", 0, 200], ["neither-d0", 10, 100], ["neither-d6.25e-15", 4, 200], ["neither-d6.25e-15", 5, 13], ["neither-d6.25e-15", 5, 200], ["neither-d1e-13", 0, 0], ["neither-d1e-13", 0, 1], ["neither-d1e-13", 0, 200], ["neither-d1e-13", 7, 1]];
+  // Every sample: the tumor's first cell of each run at its first and last record, a healthy cell midway, and the cell pressed.
+  const SAMPLES = [...ARMS.flatMap((arm) => [[arm, 0, 0], [arm, 0, LAST], [arm, 10, Math.round(LAST / 2)]]), [PRESS.arm, PRESS.cell, PRESS.record]];
   const forbidden = /replicat|reproduc|\bagree|\bmatch|modelled|qualified|simulated|Grodstein|preprint/i;
 
   // A fresh browser's first page on the card loses its context about five seconds in: it is a throwaway.
@@ -202,31 +225,37 @@ try {
     check("a real press on the door shows the tissue line in the tab's place, the tab still pressed", await until(shown, 240), "");
     await sleep(1500);
     let s = await state();
-    check("the five picks stand in D's order: the three runs and, between them, the two an engine check refused", JSON.stringify(s.slots) === JSON.stringify(["run:neither-d0", "run:neither-d6.25e-15", "refused:neither-d7.18e-15", "refused:neither-d1e-14", "run:neither-d1e-13"]) && s.tab === "experiments", JSON.stringify(s.slots));
+    check(`the ${LINE.slots.length} picks stand in D's order (${LINE.runs.length} runs, ${LINE.refused.length} refused)`, JSON.stringify(s.slots) === JSON.stringify(LINE.slots.map((slot) => `${slot.kind}:${slot.arm}`)) && s.tab === "experiments", JSON.stringify(s.slots));
     const heads = s.heads.map((tag) => tag.text);
-    check("each pick is named on the picture by its D, left to right in that order, inside the window", JSON.stringify(heads) === JSON.stringify(["D = 0 m²/s", "D = 6.25e-15 m²/s", "D = 7.18e-15 m²/s", "D = 1e-14 m²/s", "D = 1e-13 m²/s"]) && s.heads.every((tag, k) => tag.inside && (k === 0 || tag.x > s.heads[k - 1].x)), JSON.stringify(s.heads));
-    check("the two refused picks are said on the picture, with nothing drawn in them", s.refused.length === 2 && s.refused.every((tag) => tag.text === "Refused by an engine check: no run to show.") && s.pictures.length === 3, JSON.stringify([s.refused, s.pictures.map((p) => p.arm)]));
-    check("each run's end states stand under its picture, in the record's table's words", JSON.stringify(s.ends.map((tag) => tag.text)) === JSON.stringify(["6 M, 19 E: the tumor holds", "5 M, 20 E: partly converted, not normalized", "25 E: normalized"]), JSON.stringify(s.ends));
+    check("each pick is named on the picture by its D, left to right in that order, inside the window", JSON.stringify(heads) === JSON.stringify(LINE.slots.map((slot) => slot.label)) && s.heads.every((tag, k) => tag.inside && (k === 0 || tag.x > s.heads[k - 1].x)), JSON.stringify(s.heads));
+    check(LINE.refused.length ? "the refused picks are said on the picture, with nothing drawn in them" : "no pick was refused: none is said, and every run is drawn", s.refused.length === LINE.refused.length && s.refused.every((tag) => tag.text === LINE.refusedWords) && s.pictures.length === LINE.runs.length, JSON.stringify([s.refused, s.pictures.map((p) => p.arm)]));
+    check("each run's end states stand under its picture, in the note's words", JSON.stringify(s.ends.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.end)), JSON.stringify(s.ends));
     check("the runs stand side by side, each picture inside the room the cards leave it, clear of the timeline", s.columns === true && s.pictures.every((p) => p.left > 290 && p.right <= WIDTH - 4 && p.top > 56 && p.bottom < HEIGHT - 70), JSON.stringify(s.pictures));
-    check("the card says what the record lets it say, in its words", JSON.stringify(s.says) === JSON.stringify(["Development work, not judged.", "Picks chosen before the run; most other coupling values were refused by an engine check (FR-19).", "They place no threshold: one lies between 6.25e-15 and 1e-13 m²/s."]), JSON.stringify(s.says));
-    check("the card lists the five picks with each run's end and each refusal", s.slotsCard.length === 5 && s.slotsCard[2][1] === "Refused by an engine check: no run to show." && s.slotsCard[0][1] === "6 M, 19 E: the tumor holds", JSON.stringify(s.slotsCard));
+    check("the card says what the record lets it say, in its words", JSON.stringify(s.says) === JSON.stringify(ENTRY.tissue.says), JSON.stringify(s.says));
+    check("the card lists the picks with each run's end and each refusal", JSON.stringify(s.slotsCard) === JSON.stringify(LINE.slots.map((slot) => [slot.label, slot.kind === "refused" ? LINE.refusedWords : slot.end])), JSON.stringify(s.slotsCard));
     check("the criterion stands in the card in its own words, with its source, as the driver's file gives them", s.criterion.includes(`“${criterion.words}”`) && s.criterion.includes(criterion.source), s.criterion.slice(0, 120));
     // The tissue line's own words: its card (but the tab's list, which names the example as the page does, and the criterion in its own words), its legend and its names on the picture.
+    // Its one sentence on the logged value and its one on what BITSEY is are the lead's (the card's lines, checked above word for word).
     const own = [s.own, s.legend, ...[...s.heads, ...s.ends, ...s.refused, ...s.ticks].map((tag) => tag.text)].join(" ");
-    check("nothing the tissue line says (but the criterion's own words) names the preprint, its authors or their code, or says replicated, agrees or matches", !forbidden.test(own) && !/BITSEY|the authors/.test(own), (own.match(forbidden) || own.match(/BITSEY|the authors/) || [""])[0]);
+    const beyond = ENTRY.tissue.says.filter((line) => /BITSEY|logged/.test(line)).reduce((text, line) => text.replace(line, ""), own);
+    // The sentence on what BITSEY is names the preprint for whose code it is, and for that alone: the other forbidden words hold in it too.
+    const judging = /replicat|reproduc|\bagree|\bmatch|modelled|qualified|simulated|Grodstein/i;
+    check("nothing the tissue line says (but the criterion's own words, and the lead's one sentence on the logged value and one on BITSEY) names the preprint, its authors or their code, or says replicated, agrees or matches", !forbidden.test(beyond) && !judging.test(own) && !/BITSEY|authors|logged/.test(beyond), (beyond.match(forbidden) || own.match(judging) || beyond.match(/BITSEY|authors|logged/) || [""])[0]);
     check("the tab's list stands at the head of the card, the example's row pressed", s.list.length === 2 && s.list[0][1] === "true", JSON.stringify(s.list));
     // The colours as drawn: the scale's colour of the saved value, at each sample's band.
     const colours = await drawn(SAMPLES);
     check("each picture's colour as drawn is the scale's colour of the value the driver states there, record by record", allClose(colours, 8), `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)))}`);
-    check("the run at D = 1e-13: the tumor's first cell is below the lower threshold at the first record and above the upper at the last; at D = 0, below at the last", colours.find((c) => c.arm === "neither-d1e-13" && c.record === 0).side === "below" && colours.find((c) => c.arm === "neither-d1e-13" && c.record === 200).side === "above" && colours.find((c) => c.arm === "neither-d0" && c.record === 200).side === "below", "");
+    const sides = ARMS.flatMap((arm) => [0, LAST].map((record) => ({ arm, record, side: colours.find((c) => c.arm === arm && c.cell === 0 && c.record === record)?.side, stated: STATED[arm].states[record][0] })));
+    check("each run's first tumor cell, at its first and last record, is drawn on the side of the scale its stated state names", sides.every((item) => !SIDE[item.stated] || item.side === SIDE[item.stated]), JSON.stringify(sides));
     await shot("line");
-    // A real press on the middle run's picture, at its sixth cell, where its record at 1,300 s lies: the clock goes there, and the cell opens with the driver's state.
-    const target = await evaluate(`(() => { const v = ${V}, lens = v.current, { place, item } = lens.pieces.get("neither-d6.25e-15"), t = lens.clockRun.t, k = 13; const from = lens.axisNow.at(t[k]), to = lens.axisNow.at(t[k + 1]); const p = new lens.root.position.constructor(place.x0 + item.cells.x[5], place.top - ((from + to) / 2) * (place.top - place.bottom), 0).project(v.stage.camera); const box = v.getBoundingClientRect(); return { x: box.left + ((p.x + 1) / 2) * box.width, y: box.top + ((1 - p.y) / 2) * box.height, time: t[k] }; })()`);
+    // A real press on a picture, at a cell and record where the driver states a cell between its two states: the clock goes there, and the cell opens with the driver's state.
+    const target = await evaluate(`(() => { const v = ${V}, lens = v.current, { place, item } = lens.pieces.get(${JSON.stringify(PRESS.arm)}), t = lens.clockRun.t, k = ${PRESS.record}; const { from, to } = lens.bandsNow[k]; const p = new lens.root.position.constructor(place.x0 + item.cells.x[${PRESS.cell}], place.top - ((from + to) / 2) * (place.top - place.bottom), 0).project(v.stage.camera); const box = v.getBoundingClientRect(); return { x: box.left + ((p.x + 1) / 2) * box.width, y: box.top + ((1 - p.y) / 2) * box.height, time: t[k], tall: Math.abs(to - from) * (place.top - place.bottom) }; })()`);
     await click(target.x, target.y, 1600);
     s = await state();
-    check("a real press on a picture opens that cell and moves the clock to the record pressed", s.selected === `tissue:neither-d6.25e-15:5` && Math.abs(s.time - target.time) < 1e-6, JSON.stringify([s.selected, s.time, target.time]));
-    check("its panel gives its value and its state as the driver states it (X there), and the record's end line", /State there, as the driver states it\s*X/.test(s.panel) && /miR200 minus Zeb mRNA at 21 min 40 s/.test(s.panel) && /5 M, 20 E: partly converted, not normalized/.test(s.panel), s.panel.slice(0, 260));
-    check("the chosen cell is named on the picture with the driver's state", s.chosen.length === 1 && s.chosen[0].text === "c5 · X", JSON.stringify(s.chosen));
+    check(`a real press on a picture opens that cell and moves the clock to the record pressed (${PRESS.arm}, ${PRESS.name}, ${clock(PRESS.time)})`, s.selected === `tissue:${PRESS.arm}:${PRESS.cell}` && Math.abs(s.time - target.time) < 1e-6, JSON.stringify([s.selected, s.time, target.time]));
+    const said = new RegExp(`State there, as the driver states it\\s*${PRESS.state}`);
+    check(`its panel gives its value and its state as the driver states it (${PRESS.state} there), and the note's end line`, said.test(s.panel) && s.panel.includes(`miR200 minus Zeb mRNA at ${clock(PRESS.time)}`) && s.panel.includes(PRESS.end), s.panel.slice(0, 260));
+    check("the chosen cell is named on the picture with the driver's state", s.chosen.length === 1 && s.chosen[0].text === `${PRESS.name} · ${PRESS.state}`, JSON.stringify(s.chosen));
     await shot("pressed");
     // The even time scale, chosen on the card; the clock is moved off the bands read, and the cell let go.
     await evaluate(`${V}.select(null)`);
@@ -239,10 +268,10 @@ try {
     check("on the even scale too, the colours as drawn are the scale's colours of the saved values, where a band is four pixels or more, looked at close", allClose(evenColours, 4), `${evenColours.length} bands read; ${JSON.stringify(evenColours.filter((sample) => !close(sample)))}`);
     await shot("even");
     // A run's details, from its line in the card's picks: a real press on "Run details" opens the run's own panel.
-    const details = await placeOf(`[...root.querySelectorAll('.tissue-slot[data-arm="neither-d0"] .tissue-open')][0]`);
+    const details = await placeOf(`[...root.querySelectorAll('.tissue-slot[data-arm="${ARMS[0]}"] .tissue-open')][0]`);
     if (details) await click(details.x, details.y, 1200);
     s = await state();
-    check("a real press on a pick's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === "run:gap-junction-tissue-line--neither-d0" && /neither-d0/.test(s.panel) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
+    check("a real press on a pick's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === `run:${LINE.runs[0].id}` && s.panel.includes(ARMS[0]) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
     // The way back: a real press on the example's row in the list at the head of the card.
     await evaluate(`${V}.select(null)`);
     await sleep(600);
@@ -318,8 +347,8 @@ try {
     check("the address opens the tissue line on a phone", await until(shown, 240), "");
     await sleep(1500);
     let s = await state();
-    check("on a phone the runs stand one above the other, each picture inside the window's width", s.columns === false && s.pictures.length === 3 && s.pictures.every((p, k) => p.left >= 0 && p.right <= WIDTH && (k === 0 || p.top > s.pictures[k - 1].bottom)), JSON.stringify(s.pictures));
-    check("each run is named by its D and its end, and each refused pick by its D and its refusal, on the picture", JSON.stringify(s.heads.map((tag) => tag.text)) === JSON.stringify(["D = 0 m²/s", "D = 6.25e-15 m²/s", "D = 1e-13 m²/s"]) && s.refused.length === 2 && s.refused.every((tag) => /^D = (7\.18e-15|1e-14) m²\/s · refused by an engine check: no run to show\.$/.test(tag.text) && tag.inside) && s.ends.length === 3, JSON.stringify([s.heads, s.refused, s.ends.map((tag) => tag.text)]));
+    check("on a phone the runs stand one above the other, each picture inside the window's width", s.columns === false && s.pictures.length === LINE.runs.length && s.pictures.every((p, k) => p.left >= 0 && p.right <= WIDTH && (k === 0 || p.top > s.pictures[k - 1].bottom)), JSON.stringify(s.pictures));
+    check("each run is named by its D and its end, and each refused pick by its D and its refusal, on the picture", JSON.stringify(s.heads.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.label)) && s.refused.length === LINE.refused.length && s.refused.every((tag) => LINE.refused.some((slot) => tag.text.startsWith(`${slot.label} · `)) && tag.inside) && JSON.stringify(s.ends.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.end)), JSON.stringify([s.heads, s.refused, s.ends.map((tag) => tag.text)]));
     const colours = await drawn(SAMPLES);
     check("the colours as drawn are the scale's colours of the saved values, in the dark page's tokens", allClose(colours, 4) && colours[0].wanted.join() !== "161,74,12", `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)).slice(0, 3))}`);
     await shot("line");
@@ -327,7 +356,7 @@ try {
     const fold = await placeOf(`root.querySelector(".view-toggle")`);
     if (fold) await click(fold.x, fold.y, 1000);
     s = await state();
-    check("a real press opens the card: the record's lines and the five picks", s.says.length === 3 && s.says[0] === "Development work, not judged." && s.slotsCard.length === 5, JSON.stringify([s.says, s.slotsCard.length]));
+    check("a real press opens the card: the record's lines and the picks", JSON.stringify(s.says) === JSON.stringify(ENTRY.tissue.says) && s.slotsCard.length === LINE.slots.length, JSON.stringify([s.says, s.slotsCard.length]));
     await shot("card");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "reduced") {
@@ -337,7 +366,7 @@ try {
     const s = await state();
     check("with less motion nothing plays: the clock stands at the first record, and the camera did not fly", s.playing === false && s.time === 0 && !s.flight, JSON.stringify([s.playing, s.time, s.flight]));
     const colours = await drawn(SAMPLES);
-    check("the whole of each run is drawn at once, the last record as the first: no record waits for the clock", allClose(colours) && colours.some((c) => c.record === 200), `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)))}`);
+    check("the whole of each run is drawn at once, the last record as the first: no record waits for the clock", allClose(colours) && colours.some((c) => c.record === LAST), `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)))}`);
     await shot("line");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   }

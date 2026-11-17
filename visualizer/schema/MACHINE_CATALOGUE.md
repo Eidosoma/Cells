@@ -22,6 +22,7 @@ same in both views (`machine:<id>`).
 | --- | --- | --- |
 | `data/catalogue/measures/*.json` | `tools/measure_particle.py`, run by the viewer | The tool's own output for an entry, as written |
 | `data/catalogue/overlay.json` | Hand | The groups; the units of the law inventory left out, with why; the measures it reads and the entries they rest on; the kinds of machine (id, label, group, a plain line, the record lines of what Cells models of it); for each species, the kinds its records name and where each is named, counted and sized |
+| `data/catalogue/gather.json`, `data/catalogue/dossiers/<species>.json` | Hand, and `tools/gather_machines.py` (`schema/MACHINE_DOSSIERS.md`) | The kinds looked for, and for each species with a dossier file its machines, their proteins by tier, counts per cell from open papers, the entry the gathering would measure each from, and `by_protein`; read here, never written |
 | `data/catalogue/catalogue.json` | `tools/build_catalogue.py` (generated: do not edit) | The groups, the kinds and one entry for each machine of each species, with what its records give and their sources |
 
 ```bash
@@ -111,11 +112,45 @@ catalogue never says their count.
   (`membraneOf` in `src/lenses/machines_layout.js`; the panel gives the number), and across, the
   room of its tray round it. No entry holds a membrane: the slab says where the ring stands, not a
   membrane's measured thickness.
+- **The dossiers.** A machine a species' dossier names is on that species' bench, after the
+  overlay's own entries (E. coli 21, the human 32 beside its units). Where the overlay lists the
+  machine too, its entry stands as decided, and the dossier adds what the overlay does not say:
+  - *What names it*: the overlay's (a capability of the species' file, a record of the viewer)
+    is "Named by", the dossier's sentence on the Gene Ontology and UniProt "Also named by"; where
+    the overlay names nothing, the dossier's is "Named by".
+  - *Its proteins by tier*: the panel lists them in three lists, said as such: "Its parts, held by
+    the structure" (`part`), "Its parts by UniProt's keyword, not held by the structure" (`part by
+    keyword`) and "Named with it by the Gene Ontology alone" (`named`), each with its UniProt
+    link; they feed the search. A set the species' own data marks stays its door into the atlas.
+  - *Its count*: the species' file's fact where the overlay names one, else the dossier's: a fact
+    of the species' file it points to, or an open paper's number with what it counts, in what
+    cell, the paper and its section and paragraph.
+  - *The gathering's pick*: where the dossier would measure it from another entry than its size
+    is measured from, or where it has no size, the panel names that entry beside it.
+  - *Its kind*: a kind only the dossiers name takes gather.json's label, group and plain line, and
+    FR-13's line (it names the machine as absent where the overlay says so, `absent_as`; else it
+    does not name it). The groups `dna`, `folding` and `traffic` are the overlay's since 17
+    November 2026, each with a colour no other tray has.
+  - *The way to and from the atlas*: a measured part names the genes the overlay groups in it
+    (`genes`, from the dossier's rows), and carries their proteins; where the measured entry is the
+    dossier's own, each chain carries the protein its entity is, by the dossier's reading of the
+    entry. A chain's panel opens the Protein atlas on its protein (the door's `find`: the atlas's
+    own search, then its own reveal). The catalogue carries `by_protein` per species, and a protein
+    of the atlas offers the machines its dossier makes it a part of, or names it with.
+  - *A machine that stays a card* says why in one line (`no_size`, a dated decision): the human's
+    nuclear pore, whose entry is an integrative model holding about a third of its proteins.
+- **Parts are sub-assemblies, subunits are chains** (decided 17 November 2026). A measured
+  machine's Parts are the handful of sub-assemblies a textbook names, each the set of genes the
+  dossier's rows give it and in its own hue (the proteasome's core particle, base and lid, as the
+  Gene Ontology's terms on the rows group them; the ATP synthase's head, stalks, ring and foot, as
+  UniProt names its subunits); where the rows give none, the machine has no Parts: its whole, then
+  its chains. The measure's `chosen` says what the grouping follows.
 - **A unit of the law inventory with a size** (`unit_sizes`). Decided 17 November 2026 (step C):
   a unit takes a size only from a structure of its own kind, of any organism, or,
   where a species' atlas finds it built from another family, from a structure of that family; the
   page picks by the atlas's finding (the inventory's own species counts as "found"). The sizes
-  stand on the animals' benches (`unit_sizes.species`); the units of the other species stay cards.
+  stand on the animals' benches and the thale cress's (`unit_sizes.species`; the plant's since
+  17 November 2026, its ER calcium pump alone); the units of the other species stay cards.
   A unit with none stays a card, and no unit takes another's size (Kv1.1 is not Kv1.2).
   Where the atlas names reference structures for a unit, the measure is of one of them or of the
   unit's own protein (`unit.U41`: human SERCA2, the unit's UniProt entry, where the atlas names
