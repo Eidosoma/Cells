@@ -14,9 +14,12 @@ derived from physical chemistry. Its pieces, one module each:
 * balance: the kernel's local detailed-balance check, which classifies a law as passive;
 * fission, continuation: the size-triggered fission with its exact random partition, and the
   continuation of one daughter, with the lineage table;
+* keys: carrier keys (a counter per sub-lineage), lives with their end reasons, and the run
+  qualifier: the relationship keys, frozen (D202);
 * ledger: the stochastic thermodynamic ledger (event heat, declared non-monotone);
 * records: the run bundle (world record, run record, arrays and manifest);
-* runner, model: the family's own runner shape, and its entry in the model registry;
+* runner, model: the family's own runner shape (one lineage, every descendant, checkpoints and
+  branches), and its entry in the model registry;
 * reference: a host oracle that replays the kernel's events from supplied uniforms.
 
 A rate-factor law is optional. A world without one runs exchange alone, and its programs hold no
@@ -35,9 +38,15 @@ CONTINUATION = "cells.daughter_continuation@1"
 GARD_SINGLE_EVENT = "cells.gard_catalysis_single_event@1"
 GARD_PAIR_CONSISTENT = "cells.gard_catalysis_pair_consistent@1"
 
-# The family's own interfaces (GARD_DESIGN §1.4; CORE_SEAMS_DESIGN §8.1: "a family's own").
-EXCHANGE_INTERFACE = "cells.assembly_exchange_law@1"
-RATE_FACTOR_INTERFACE = "cells.assembly_rate_factor@1"
-OPERATOR_INTERFACE = "cells.assembly_operator@1"
+# The family's interfaces, declared in its row of the static model table
+# (registry/model_table.py). The `cells` namespace is Cells' own (MODULE_SYSTEM_DESIGN §2.3), and
+# the names are general: Cells' own origin-of-life laws implement the same interfaces (D197). The
+# table also lists the homes that register the family's laws (exchange.py, gard.py) and operators
+# (fission.py, continuation.py), which the registries import by name.
+EXCHANGE_INTERFACE = "cells.exchange_law@1"
+RATE_FACTOR_INTERFACE = "cells.rate_factor_law@1"
+OPERATOR_INTERFACE = "cells.lineage_operator@1"
 
-MODE = "single_lineage"
+MODE = "single_lineage"  # One continuing assembly per world: one daughter is followed.
+EVERY_DESCENDANT = "every_descendant"  # Every daughter lives (RELATIONSHIPS_DESIGN §1.4, P-a).
+MODES = (MODE, EVERY_DESCENDANT)

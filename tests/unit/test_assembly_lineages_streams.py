@@ -34,10 +34,9 @@ def test_carrier_keys_fold_as_two_words():
 
 
 def test_domains_and_counters_are_separate_streams():
-    keys = {
-        d: np.asarray(streams.stream_key_data(_base(), jnp.int64(0), d)) for d in streams.DOMAINS
-    }
-    assert len({k.tobytes() for k in keys.values()}) == len(streams.DOMAINS)
+    drawn = [d for d in streams.DOMAINS if d not in streams.RESERVED]
+    keys = {d: np.asarray(streams.stream_key_data(_base(), jnp.int64(0), d)) for d in drawn}
+    assert len({k.tobytes() for k in keys.values()}) == len(drawn) == 4
     first = np.asarray(streams.uniforms(jnp.asarray(keys["exchange"]), jnp.int64(0), 2))
     again = np.asarray(streams.uniforms(jnp.asarray(keys["exchange"]), jnp.int64(0), 2))
     later = np.asarray(streams.uniforms(jnp.asarray(keys["exchange"]), jnp.int64(1), 2))

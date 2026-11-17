@@ -85,6 +85,131 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The gap-junction replication's first stage, on main (17 November 2026, evening; D207).** The merge
+  of gap-junction-replication at cc759bed. Development work, not judged.
+  - **What it replicates:** the model of J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and
+    connexin expression work together to enhance tumor growth and metastasis in cancer", bioRxiv,
+    doi:10.64898/2026.09.02.748840 (made with BITSEY).
+  - **On main:** the driver `validation/gap_junction_tissue/` and the note
+    `docs/GAP_JUNCTION_CANCER_REPLICATION.md`.
+  - **The linear model runs as written** (`local_species_reactions@1` with
+    `passive_neutral_permeation@1` on junction routes), unqualified.
+    - Against dense solves, the worst error is 1.0e-5 at dt and 2.5e-6 at dt/2: second order.
+    - Its exact Norton-equivalent network, on @3's own routes, agrees to about 1e-14 and is its check.
+  - **Figure 8:** the preprint's printed recursion departs from direct circuit analysis in two places.
+    The engine's solve agrees with direct analysis, whose limit is 1.618 at equal conductances. An
+    independent derivation checks this (`/mnt/workspaces/Cells/gap-junction-derivation-20261117/`).
+  - **The tissue Tables 1–3 are not replicated;** they need FR-15 to FR-17.
+    - A threshold search on the 1D line, against BITSEY's logged threshold, was stopped by an engine
+      check (FR-19).
+    - At the two coupling values that ran through, Cells' 25-cell end state equals BITSEY's saved log
+      character for character. That is descriptive, not judged
+      (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-compare-01/`).
+  - **Viewer packages** (dev-06, from 6729160b, on main through this merge):
+    `/mnt/workspaces/Cells/gap-junction-20261117/runs/dev-06/viewer/`. There are 30 packages, and its
+    `summary.json` holds 7 sweeps.
+  - **Gate:** tiers 1+2 on cc759bed, 505 files, 0 changed. Evidence:
+    `/mnt/workspaces/Cells/gap-junction-20261117/`.
+
+- **FR-4 and FR-5 judged: both passed (17 November 2026, 16:12–18:34 UTC).** The registered protocols
+  `fr4-acidification-v1` and `fr5-transfer-v1` were judged once from the clean snapshot of their
+  registration commit 32a1d439, on lane B. Tags: fr4-v1-qualified-2026-11-17 and
+  fr5-v1-qualified-2026-11-17.
+  - **FR-4:** 21 of 21 judged criteria. Examples:
+    - pH to 1.31e-12;
+    - material 1.89e-6, charge 3.05e-5, energy 1.90e-8;
+    - K2 caught at 3.276;
+    - K3 refused at the definition with reason "envelope", as designed.
+  - **FR-5:** 51 of 51. Examples:
+    - arm T: X_L 2.77e-7 of its budget;
+    - arm R: cargo 0.147 of its allowance, its one visible margin;
+    - controls: 313.7 and 872 budgets.
+  - **No harness failure** (D195's harness-limit rule): all 20 results are complete, peak memory was
+    1.3–1.4G of 2G, and no unit used more than 29% of its runtime limit.
+  - **Against the rehearsal, the full-horizon check across seam F:** identical verdicts and values.
+    FR-4's 8 parts are bitwise equal. FR-5's 12 parts differ only in the start extract's identity, which
+    was expected and listed before launch.
+  - **Scope:** `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).
+  - **Evidence:** `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/judged-20261117/run-32a1d439/`
+    (`fr4/verdict/verdict.json`, `fr5/verdict/verdict.json`, `reading.json`, `fr4/compare/` and
+    `fr5/compare/`).
+
+- **GARD's G1, part 2, on main (17 November 2026, evening).** The merge of gard-g1-merge at 23f82dd7.
+  - **What's on main:** `cells.assembly_lineages@1`'s three laws and two lineage operators, registered
+    under `cells.exchange_law@1`, `cells.rate_factor_law@1` and `cells.lineage_operator@1`, and frozen.
+    `cells.declarations@2` lists all five at main's head:
+    - the laws `cells.reservoir_exchange@1`, `cells.gard_catalysis_single_event@1` and
+      `cells.gard_catalysis_pair_consistent@1`;
+    - the operators `cells.size_threshold_fission@1` and `cells.daughter_continuation@1`.
+
+    Every bundle writes `cells.relations@1` tables.
+  - **The gate on 23f82dd7:** tiers 1+2, 512 files, 0 changed; G1 113 of 113; crossrev's nine sets
+    identical.
+  - **The final probe set:** `/mnt/workspaces/Cells/gard-g1-part2-20261117/probes-c6dd5956/probes/`.
+    Its roles.json is FINAL, with the standing "development run of the engine, not judged".
+  - **The independent references (G2)** pass all ten rows on that set, with nothing tuned (report-5).
+    They're on branch gard-g2-references at e2047928, not yet on main.
+  - **Standing (D192, D197):** these are development runs, not judged.
+    - The single-event form is the preprint's, kept for comparison and declared driven.
+    - The pair-consistent form is passive, and the default.
+
+- **Combined landing (17 November 2026, evening).** main is at 3891b802, a fast-forward of the gated
+  landing branch. It brings the relations writer, seam F's registry fixes, the documentation library
+  with `cells.declarations@2`, and the removal of `agent-work/`.
+  - **What landed:**
+    - **`cells.relations@1`** (D200, D202): the general relationship tables, with a second consumer
+      over four real worlds and an engine-free drawing script.
+    - **Seam F's registry fixes:** the static model table and family operators.
+    - **The library (D203):** the format page, the page tool, the drift test, the template, the
+      glossary and three pilot pages.
+    - **`agent-work/` is out of the repository.** It is in history at tag
+      native-betse-frozen-2026-11-08.
+  - **The gate** ran on snapshot-3891b802, which is clean:
+    - crossrev's nine sets are identical;
+    - G1 is 113 of 113;
+    - tiers 1+2: 504 files, 0 changed;
+    - test IDs: 39 new, all in the five expected files, with none missing and the same 5 collection
+      errors as before.
+  - **FR's bitwise landing checks** show no unexpected difference.
+  - **Evidence:** `/mnt/workspaces/Cells/landing-20261117/` (`gate-3891b802/`, `fr-landing-3891b802/`).
+  - **Also on main:** the molecular machines design with M1's build plan (D209). D198's retire batch is
+    held (D206).
+
+- **FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged
+  run.** Registration commit 32a1d439. The protocols are `fr4-acidification-v1` and
+  `fr5-transfer-v1`.
+  - **The basis:**
+    - D195;
+    - the rehearsal, which passed 21 of 21 and 51 of 51;
+    - three dated pre-registration disclosures: the energy line settled while the study's values
+      were known, the text levelled, and the harness-limit rule.
+  - **The judged criteria and derivations are byte-identical to the rehearsed copies.**
+  - **The harness-limit rule:** a part ended by its runtime limit or memory cap voids the run, which
+    is relaunched once from the same snapshot. An engine refusal is a verdict.
+  - **The registered state is tested.** The drafter refuses to redraft a registered protocol, and
+    the lane's 45 tests pass in both states. The first attempt found and fixed this check.
+  - **Next:** the judged run, from a clean snapshot of 32a1d439. It runs on lane B (CPUs 8–11) for
+    about 3 h 10 min, and every judged part is compared against the rehearsal.
+
+- **FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026,
+  11:20–14:31 UTC).** They ran from snapshot-e79b4232 on CPUs 6, 7, 22 and 23
+  ([evidence](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/rehearsal-20261117/run-e79b4232/)). The protocols themselves stay proposed.
+  - **FR-4 (`fr4-acidification-v1`):** 21 of 21 judged criteria pass. All 8 parts are bitwise
+    equal to its dt study's.
+  - **FR-5 (`fr5-transfer-v1`):** 51 of 51 judged criteria pass. Its 12 parts differ from the dt
+    study's only in the start's extract identity, which was recorded before the launch as
+    expected. The smallest margin is arm R's cargo ledger, at 0.147 of its allowance.
+  - **The energy criterion,** settled before the rehearsal: the residual is at most 2e-3 at both
+    1 ms and 0.5 ms, and must fall at second order. A dated disclosure records that the study's
+    values were already known.
+  - **Across seam F:** every check is bitwise, including a short run through the injury window.
+    G1's 113 worlds hold no FR world, and crossrev holds FR-5 only in reduced form, so these checks
+    are the evidence for FR-4's and FR-5's full worlds.
+  - **The buffered-node predictor** (core-seams step 0 §8): FR-5's arms sit 21–42 times below it.
+    FR-4's control K2 sits 1.8 times below it, at 1 ms.
+  - **Next:** the protocol text is redrafted with no criterion changed, the lead registers both, and
+    the judged runs follow from a fresh snapshot taken after seam F.
+
 - **GARD's G2, the independent component references, merged into main (17 November 2026).**
   `validation/gard/references/`, from gard-g2-references 193eaf0d. Its writer never read the engine's
   code.

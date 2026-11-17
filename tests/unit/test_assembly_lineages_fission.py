@@ -101,3 +101,61 @@ def test_a_lineage_conserves_and_keys_its_carriers():
             expect = p[k] @ child / np.sqrt((p[k] @ p[k]) * (child @ child))
             assert sim[k, d] == pytest.approx(expect, rel=1e-15)
     assert run.trace["events_per_growth"].sum() == len(run.trace["event_channel"])
+
+
+def _oversize(rows, size):
+    """Rows whose assembly exceeds the fission size (empty: none)."""
+    return np.flatnonzero(rows["assembly_count"][:, :, 0].sum(1) > size).tolist()
+
+
+def test_a_daughter_born_at_the_fission_size_splits_at_once():
+    """A binomial partition can give one daughter every molecule (p = 0.25 at size 4): that
+    daughter splits at its birth, before any event, so no assembly ever exceeds the size; the
+    kernel and the host oracle agree on such lineages (common random variates). Planted: a
+    lineage whose daughter grew past the size (the trigger missed) is caught."""
+    from cells.models.assembly_lineages import reference
+
+    the_world = world(
+        count=3,
+        size=4,
+        founder_size=2,
+        daughter="uniform",
+        empty="other",
+        partition={"rule": "binomial", "probability": 0.25},
+    )
+    born_at_size = 0
+    for seed in range(1, 30):
+        run = runner.run(
+            parse_spec(definition(the_world, fissions=10, seed=seed, uniforms=True, limit=400))
+        )
+        rows = run.rows
+        assert _oversize(rows, 4) == [] and run.status in ("complete", "extinct")
+        daughters = rows["assembly_count"][rows["row_kind"] == 2, :, 0].sum(1)
+        born_at_size += int(np.sum(daughters == 4))
+        d = run.diagnostics
+        oracle = reference.replay(
+            run.spec, d["event_uniforms"], d["partition_uniforms"], d["continuation_uniform"]
+        )
+        assert oracle["channel"] == run.trace["event_channel"].tolist()
+        assert oracle["followed"] == run.fissions["fission_followed"].tolist()
+        assert oracle["status"] == run.status
+    assert born_at_size > 0  # The case occurred.
+    planted = dict(rows, assembly_count=rows["assembly_count"].copy())
+    planted["assembly_count"][-1, 0, 0] += 4  # A daughter that grew past the size.
+    assert _oversize(planted, 4) == [len(rows["row_kind"]) - 1]
+
+
+def test_the_fission_pass_alone_splits_as_the_run_does():
+    """runner.fission_pass on a lineage's parent states, keyed by its lineage word, gives the
+    run's own splits at its first fission. Planted: the same parents keyed by another lineage
+    word split differently."""
+    spec = parse_spec(definition(world(), fissions=1, uniforms=True, lineage=6))
+    run = runner.run(spec)
+    parent = run.rows["assembly_count"][run.rows["row_kind"] == 1, :, 0]
+    count = spec.model.world.types.count
+    alone = runner.fission_pass(spec, parent[:, :count], [6])
+    assert np.array_equal(alone["first"], run.fissions["fission_split"])
+    assert np.array_equal(alone["followed"], run.fissions["fission_followed"])
+    assert np.array_equal(alone["partition_uniforms"], run.diagnostics["partition_uniforms"])
+    other = runner.fission_pass(spec, parent[:, :count], [7])
+    assert not np.array_equal(other["partition_uniforms"], alone["partition_uniforms"])

@@ -79,8 +79,10 @@ def test_a_pair_bundle_states_its_world_law_and_streams(pair, tmp_path):
             declared = run_record["records"][name]
             assert {"base", "axes", "unit", "layer", "owner"} <= set(declared)
             assert len(declared["axes"]) == np.ndim(values)
-            original = {**run.rows, **run.fissions, **run.trace, **run.diagnostics}[name]
-            assert np.array_equal(values, original, equal_nan=True)
+            original = {**run.rows, **run.fissions, **run.trace, **run.diagnostics, **run.lives}[
+                name
+            ]
+            assert np.array_equal(values, original, equal_nan=values.dtype.kind == "f")
     assert len(ids) == 1 and worlds[0] == worlds[1]
     assert set(records.RECORDS) == set(arrays)  # Every declared record is saved here.
 
@@ -110,7 +112,7 @@ def test_a_pair_differing_in_more_than_the_law_is_refused(pair, tmp_path):
 
 def test_every_saved_array_is_declared(pair):
     run = pair[0]
-    saved = {**run.rows, **run.fissions, **run.trace, **run.diagnostics}
+    saved = {**run.rows, **run.fissions, **run.trace, **run.diagnostics, **run.lives}
     assert set(saved) <= set(records.RECORDS)
     record = records.run_record(run, "w")
     assert set(record["records"]) == set(saved)

@@ -42,9 +42,11 @@ the [project README](../README.md) gives the short feature overview.
 | [GARD design](GARD_DESIGN.md) | Catalytic assemblies, exchange, fission and lineage for the origin-of-life track (D192); the kernel finding's scope is in §2.5 |
 | [Origin-of-life engine design](ORIGIN_OF_LIFE_ENGINE_DESIGN.md) | Cells' own first-principles engine (D197): laws as detailed-balanced event pairs from one free energy, physical assemblies, declared energy sources, division by geometry and shear, GARD as a declared limit. Proposed, options for the user |
 | [Mitochondria design](MITOCHONDRIA_DESIGN.md) | One law set for mitochondria and bacteria, Beard 2005 as the source (D193) |
+| [Molecular machines design](MOLECULAR_MACHINES_DESIGN.md) | FR-13: machines individually and in aggregate, at a level declared per run; M0 now, then M1 (ATP synthase) with its build plan (D209) |
 | [Core seams design](CORE_SEAMS_DESIGN.md) | D194 step 2's one pass: the cycle kind, populations, binding, heat booking, laws as modules and the run view's format items, with the order and the estimate. Proposed |
 | [Relationships design](RELATIONSHIPS_DESIGN.md) | D200: descent, material provenance (labels), dependence and history, written as plain node and edge tables so that lineage, flow, dependency and branch graphs are joins. Proposed, options for the user |
 | [Law documentation design](LAW_DOCUMENTATION_DESIGN.md) | One plain-language Markdown page for each law, kind, operator and model, keyed by its ID, with a template that opens in words for every field, declared facts generated from the manifest, a glossary, the manifest's format page and the viewer's links; three pilot pages. Proposed |
+| [The library of pages](library/README.md) | The plain-language pages themselves: one per law, kind, operator and model, with [the template](library/TEMPLATE.md), [the glossary](library/GLOSSARY.md) and [the declarations manifest's format](library/DECLARATIONS_FORMAT.md) (`cells.declarations@2`). First landing (D203): three pilot pages; the rest follow in batches |
 | [Looping replay design](LOOPING_REPLAY_DESIGN.md) | FR-11's looping replay packages: the loop block and its closure measure (ruled 16 November 2026) |
 | [Device row checks design](WINDOW_DEVICE_CHECKS_DESIGN.md) | Device-resident row checks for scalar windows, opt-in on the CPU, and the vector path's seams |
 | [Test audit retire list](TEST_AUDIT_RETIRE_LIST.md) | D187's audit: the firm, held and candidate retirements, approved in D189 |
@@ -166,6 +168,10 @@ the [project README](../README.md) gives the short feature overview.
   FCS-calibrated counts as an abundance-evidence standard for the protein catalogue.
 - [Bone mechanosensing review](PAPER_REVIEW_BONE_MECHANOSENSING.md) reads Zhang et al.'s abstract
   for Cells: mechanically gated conductance and state-dependent secretion as deferred features.
+- [Gap-junction cancer replication](GAP_JUNCTION_CANCER_REPLICATION.md) specifies Grodstein,
+  Mathews and Levin's bioRxiv preprint, runs its linear model (as written and as its Norton
+  equivalent) and its 1D "neither" condition on the engine, and lists the engine features its
+  tissue simulations need (development, not judged).
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.
