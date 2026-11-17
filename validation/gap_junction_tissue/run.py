@@ -176,6 +176,18 @@ VIEWER_ARMS = (
 )
 VIEWER_LAYER_BYTES = 2**20
 VIEWER_MAX = 10
+# The sweeps' summary for the viewer's charts (cells.experiment_summary@1, the visualizer's
+# schema/RUN_VIEW.md, "A sweep's chart"): numbers only, copied as stated. The as-written sweeps join
+# once local_species_reactions@1 declares its run view (the lead, 17 November).
+SUMMARY_FORMAT = "cells.experiment_summary@1"
+SUMMARY_KINDS = (NORTON,)
+EQUATION_2 = dict(
+    label="Equation 2",
+    source=(
+        "the preprint's equation 2, the steady state of two linear cells; its second line as "
+        "corrected in docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 1, item 6"
+    ),
+)
 
 
 class Recorder:
@@ -424,6 +436,126 @@ def finish_records(data):
     path = RECORDS.parent / "viewer" / "index.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(index, indent=1, default=str))
+    summary = sweep_summary(data)
+    (path.parent / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False))
+
+
+def sweep_summary(data, kinds=SUMMARY_KINDS, note=None):
+    """The run's sweeps (cells.experiment_summary@1): per figure and form, the parameter, each
+    readout and, where the preprint states one, its reference (equation 2), for every arm that
+    ran; a sweep with fewer than two such arms is left out. Values are in the units named: the
+    Norton form's concentrations in mM; the as-written form's in uM (one of the preprint's units
+    is 1 uM there)."""
+    parts = data["parts"]
+
+    def result(name):
+        return parts.get(name, {}).get("result", {})
+
+    def done(results):
+        return [r for r in results if r.get("status") == "done"]
+
+    sweeps = []
+    for kind in kinds:
+        prefix, unit = ("", "mM") if kind == NORTON else ("aw-", "uM")
+        form = "Norton form" if kind == NORTON else "as written"
+        own = {
+            key: result("aswritten" if kind == AS_WRITTEN else name)
+            for key, name in (
+                ("figure3", "figure3"),
+                ("figure5", "figure5"),
+                ("figure8", "figure8"),
+            )
+        }
+        candidates = [
+            dict(
+                id=f"{prefix}figure3",
+                label=f"Figure 3b: two equal linear cells ({form})",
+                plain="The steady [mR] of two equal linear cells, unloaded at 5 and 10, as their "
+                "junction conductance grows.",
+                parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq"),
+                readouts=[
+                    dict(id="c_A", label="[mR] in cell A, unloaded at 5", unit=unit),
+                    dict(id="c_B", label="[mR] in cell B, unloaded at 10", unit=unit),
+                ],
+                reference=EQUATION_2,
+                arms=[
+                    dict(
+                        arm=r["arm_id"],
+                        parameter=r["g"],
+                        readouts=dict(c_A=r["concentration_mM"][0], c_B=r["concentration_mM"][1]),
+                        reference=dict(c_A=r["eq2"][0], c_B=r["eq2"][1]),
+                    )
+                    for r in done(own["figure3"].get("figure3", []))
+                ],
+            ),
+            dict(
+                id=f"{prefix}figure5b",
+                label=f"Figure 5b: cell B 4/3 of cell A ({form})",
+                plain="The steady [mR] of a linear cell A, unloaded at 10, and a cell B 4/3 its "
+                "size, unloaded at 5, as their junction conductance grows.",
+                parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq,A"),
+                readouts=[
+                    dict(id="c_A", label="[mR] in cell A", unit=unit),
+                    dict(id="c_B", label="[mR] in cell B", unit=unit),
+                ],
+                reference=dict(
+                    label="Equation 2, with G_eq,B = 4/3 G_eq,A",
+                    source="the preprint's equation 2 and Figure 5's caption",
+                ),
+                arms=[
+                    dict(
+                        arm=r["arm_id"],
+                        parameter=r["g"],
+                        readouts=dict(c_A=r["concentration_mM"][0], c_B=r["concentration_mM"][1]),
+                        reference=dict(c_A=r["eq2"][0], c_B=r["eq2"][1]),
+                    )
+                    for r in done(own["figure5"].get("figure5_lumped", []))
+                ],
+            ),
+            dict(
+                id=f"{prefix}figure5a",
+                label=f"Figure 5a: the drawn network ({form})",
+                plain="The steady [mR] of cells A and B as drawn in Figure 5a, A with two backup "
+                "cells at 10 and B with three at 5, as every junction's conductance grows.",
+                parameter=dict(id="g", label="Junction conductance G_GJ", unit="G_eq"),
+                readouts=[
+                    dict(id="c_A", label="[mR] in cell A", unit=unit),
+                    dict(id="c_B", label="[mR] in cell B", unit=unit),
+                ],
+                arms=[
+                    dict(
+                        arm=r["arm_id"],
+                        parameter=r["g"],
+                        readouts=dict(c_A=r["concentration_mM"][0], c_B=r["concentration_mM"][1]),
+                    )
+                    for r in done(own["figure5"].get("figure5_network", []))
+                ],
+            ),
+            dict(
+                id=f"{prefix}figure8",
+                label=f"Figure 8: straight chains of linear cells ({form})",
+                plain="The Norton conductance of a straight chain of n linear cells at "
+                "G_GJ = G_eq,1, from its runs with the port held at 0.5 and at 2.",
+                parameter=dict(id="n", label="Cells in the chain", unit="cells"),
+                readouts=[
+                    dict(id="g_eq", label="Norton conductance G_eq,n of the chain", unit="G_eq,1")
+                ],
+                arms=[
+                    dict(
+                        arm=c["loads"][0]["arm_id"],
+                        parameter=c["n"],
+                        readouts=dict(g_eq=c["g_eq_ratio"]),
+                    )
+                    for c in own["figure8"].get("chains", [])
+                    if isinstance(c.get("g_eq_ratio"), float) and math.isfinite(c["g_eq_ratio"])
+                ],
+            ),
+        ]
+        sweeps += [sweep for sweep in candidates if len(sweep["arms"]) >= 2]
+    summary = dict(format=SUMMARY_FORMAT, experiment=EXPERIMENT, sweeps=sweeps)
+    if note:
+        summary["note"] = note
+    return summary
 
 
 class Outcome(NamedTuple):

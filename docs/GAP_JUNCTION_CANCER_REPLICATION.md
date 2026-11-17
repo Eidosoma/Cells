@@ -31,7 +31,8 @@ Each comparison below says whether its number is:
   runs on the engine in two forms**, both in the committed driver (§4).
   - **As written:** a source and a decay in each cell (`local_species_reactions@1`) and a junction
     route (the passive-routes kind's `passive_neutral_permeation@1`, not numerically qualified).
-    Its results are in §4 (`dev-04`).
+    In `dev-04` it reaches the dense solve of every network it ran to 1.0e-5 at the step rule's dt
+    and 2.5e-6 at half of it, at second order in dt (§4).
   - **As its exact Norton equivalent** on @3's own routes. It reproduces equation 2 and Figure 5
     to 3e-14 or better and computes straight chains' Norton conductance. It is the check on the
     as-written runs.
@@ -397,15 +398,35 @@ G_GJ = V_cell K_dec = G_eq,1.
 **The planted control.** Every junction permeability x1.01 moves the g = 1 steady state by 8.3e-4
 of the unperturbed reference. E1 catches it (K1).
 
-**The linear model as written** (scratch probe, `probes/as-written-01`, from the checkout at
-eebd608a, not part of the committed driver):
-- Two cells of 1 pL, each with a zeroth-order source and a first-order decay (K 0.05 1/s,
-  unloaded 5 and 10 uM), through `local_species_reactions@1`.
-- One `passive_neutral_permeation@1` route on the junction between them (gate pinned open).
-- **The result.** It reaches equation 2's steady state to 1.7e-5 at G_GJ = G_eq. At 5 G_eq the
-  error is 1.2e-4, 3.0e-5 and 7.4e-6 at dt 0.25, 0.125 and 0.0625 s.
-- **The reading.** That is second order: the split of reactions around @3's step moves the fixed
-  point by O(dt²). The Norton form has no split and is exact at its fixed point.
+**The linear model as written** (`dev-04`, part `aswritten`).
+- **The world.**
+  - Each cell has a zeroth-order source K_dec mR_UL and a first-order decay K_dec
+    (`local_species_reactions@1`).
+  - Each junction has a `passive_neutral_permeation@1` route with P A = G_GJ, its gate pinned open.
+  - Each probe is the same law on a patch to its own held bath.
+  - Amounts are in uM, a trace beside the ions. Volumes, G_eq and the step rule are the Norton
+    form's.
+- **The runs.** Every arm ran at the step rule's dt (its run of record) and at half of it:
+  - Figure 3b at G_GJ = 0.5, 1, 2, 5 and 10 G_eq;
+  - Figure 5b at G_eq and 10 G_eq, and Figure 5a at G_eq;
+  - the chains of 1-5 and 10 cells, each with both loads.
+- **The result.** All 20 arms pass W1-W3 and the engine's own checks (derived references).
+  - Against the dense solve of the same network, the worst relative error is 1.0e-5 at the step
+    rule's dt and 2.5e-6 at half of it. The observed order is 2.00 to 2.01.
+  - The chains' Norton conductance follows D to 9.7e-6 at dt and 2.4e-6 at half of it, at every
+    n. At n = 10 it is 1.618050 and then 1.618038, against D's 1.618034.
+  - The probe flux from the route's own ledger matches G_probe (c - held) to 1.5e-5. That is the
+    same O(dt²); E3 is a Norton criterion, reported here and not judged.
+  - In `results.json` the as-written arms' E1 and E4 flags read false. They are Norton criteria
+    (1e-9 and 1e-8); W1-W3 are the as-written ones.
+- **Not run: Figure 5a at 10 G_eq as written.** The runner refused it before integration.
+  - At its step (1/128 s), the composite's full trace would take 2.6 GB against the 2 GB budget,
+    and 5.1 GB at the half step. The Norton form needs 0.2 GB and ran it.
+  - The windowed path, which keeps no whole trace, would run it, but the engine's record writer
+    needs the full trace.
+- **The reading.** The split of reactions around @3's step moves the fixed point by O(dt²). The
+  Norton form has no split and is exact at its fixed point. A scratch probe first showed this
+  (`probes/as-written-01`, from the checkout at eebd608a).
 
 **Records for the viewer** (`dev-04`).
 - Each arm is written by the engine's own writer, `cells.io.write_run`, under `worlds/<arm>`, with
@@ -415,6 +436,14 @@ eebd608a, not part of the committed driver):
   its form) and every arm's parameters and readouts.
 - Selected arms are written again as viewer packages, with a recording subset. Each layer's
   records stay under 1 MB (`viewer/index.json`).
+  - Six Norton packages are selected. Figure 5a's (G_eq) is left out: its membrane layer is
+    1.06 MB.
+  - All 32 written views pass the engine's reader check (`run_view.validate`, with each run's
+    files).
+- `viewer/summary.json` lists the sweeps for the viewer's charts (`cells.experiment_summary@1`):
+  Figures 3b, 5b, 5a and 8, each a parameter, its readouts and, where the preprint states one,
+  equation 2's values. Only the Norton sweeps are listed until the as-written arms have views.
+  `dev-04`'s was written after the run, from its `results.json`, by the driver's `sweep_summary`.
 - **The as-written arms have complete records but no run view.** The writer refuses them:
   `local_species_reactions@1` declares no view layers, no set for its `reaction_route` axis and no
   axes for its readout columns. Seam F's registry owner is adding those declarations. Views for
@@ -514,7 +543,8 @@ user to decide:
     as the Norton equivalent.
   - It qualifies the passive-routes neutral law beside reactions, and @3's neutral permeant species,
     against analytic references.
-  - `dev-04` ran it as development work (§4).
+  - `dev-04` ran it as development work (§4) in 46 minutes, the as-written part in 23. It ran on
+    CPUs 6 and 7, with 22 and 23 also for its first 20 minutes.
 - **(b) Next, with no new feature: the "neither" condition** on the 1D line, then the 2D field.
   - The EMT switch with a neutral miRNA on passive junction routes.
   - A comparison with BITSEY's log at b2cb370 (7.18e-15 m²/s on the line, 1.89e-15 on the field),
