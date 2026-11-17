@@ -32,7 +32,7 @@ from . import observers, ssa_oracle, streams, time_rescaling
 from .common import CheckResult, jsonable
 from .kernels import (BOUNDARY_RULES, PAIR_CONSISTENT, SINGLE_EVENT, ExchangeLaw, HeldReservoir, PREPRINT,
                       canonical_form, gard_beta)
-from .records import ENGINE_BOUNDARY, Bundle, MissingRecord, RecordFormatError, load_bundle
+from .records import ENGINE_BOUNDARY_BY_FORM, Bundle, MissingRecord, RecordFormatError, load_bundle
 from .ssa_oracle import ChannelTable, ConventionMissing
 
 KERNEL_PROBE_SEED = 20261117
@@ -159,10 +159,17 @@ class Context:
         return load_probe(self.path(role))
 
 
+def boundary_for(world, form: str) -> str:
+    """The edge rule a law uses: the world's, if it names one; otherwise the form's own."""
+    if world.boundary_declared:
+        return world.boundary
+    return ENGINE_BOUNDARY_BY_FORM[form if form in ENGINE_BOUNDARY_BY_FORM else canonical_form(form)]
+
+
 def law_of(bundle: Bundle) -> ExchangeLaw:
     w = bundle.world
-    return ExchangeLaw(w.beta, w.k_join, w.k_leave, HeldReservoir(w.rho), canonical_form(bundle.run.form),
-                       w.boundary)
+    form = canonical_form(bundle.run.form)
+    return ExchangeLaw(w.beta, w.k_join, w.k_leave, HeldReservoir(w.rho), form, boundary_for(w, form))
 
 
 def lineage_arrays(b: Bundle) -> dict:
@@ -216,8 +223,9 @@ def lineage_arrays(b: Bundle) -> dict:
 
 
 def note_world(res: CheckResult, b: Bundle) -> CheckResult:
-    """Surface the world's boundary rule, and whether it was declared or assumed."""
-    res.detail["boundary_rule"] = b.world.boundary
+    """Surface the boundary rule the law used, and whether the world declared it."""
+    form = b.run.form if b.run.form in ENGINE_BOUNDARY_BY_FORM else canonical_form(b.run.form)
+    res.detail["boundary_rule"] = boundary_for(b.world, form)
     res.detail["boundary_rule_declared"] = b.world.boundary_declared
     return res
 
@@ -380,7 +388,9 @@ def row3(ctx: Context) -> list[CheckResult]:
         if runs[form].check_verdict is not None and \
                 verdict_token(runs[form].check_verdict) != verdict_token(verdicts[form]):
             raise RecordFormatError(f"the probe's {form} verdict disagrees with its lineage run's")
-        boundary = meta.get("boundary", ENGINE_BOUNDARY)
+        declared = meta.get("boundary")
+        boundary = declared.get(form) if isinstance(declared, dict) else declared
+        boundary = ENGINE_BOUNDARY_BY_FORM[form] if boundary is None else boundary
         if boundary not in BOUNDARY_RULES:
             raise RecordFormatError(f"kernel_probe: unknown boundary rule {boundary!r}; known {BOUNDARY_RULES}")
         law = ExchangeLaw(beta, kj, kl, HeldReservoir(rho), form, boundary)
@@ -407,7 +417,7 @@ def row3_engine(ctx: Context) -> list[CheckResult]:
         if run.check_verdict is None:
             raise MissingRecord(f"run.json law.check.admitted_as is missing for the {form} law")
         law = ExchangeLaw(inputs["beta"], inputs["k_join"], inputs["k_leave"], HeldReservoir(inputs["rho"]), form,
-                          ENGINE_BOUNDARY)
+                          ENGINE_BOUNDARY_BY_FORM[form])
         res = detailed_balance.check_local_detailed_balance(law, inputs["states"], tables[form],
                                                             verdict_token(run.check_verdict))
         res.detail["verdict_source"] = "law.check.admitted_as of the lineage run"

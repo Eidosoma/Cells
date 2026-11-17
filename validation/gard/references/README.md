@@ -49,11 +49,14 @@ Numbers are cited under D186. No text, figures or data files are copied.
   pi(x) = (N - 1)! prod (K_i rho_i)^{x_i}/x_i!.
 - **Boundary rules.** N = 0 is absorbing, and b at the empty state is undefined.
   - The closed world and the kernel identities use `last_molecule_stays`.
-  - Engine runs use the engine's declared convention, `extinction_uncatalysed`. The last
-    molecule leaves at the bare k_b, Phi(empty) = ln pi(empty) = 0, and that leave books
-    q = -ln(K_i rho_i).
-  - A world that names no rule is read as `extinction_uncatalysed`. Every lineage row
-    reports which rule it used.
+  - In engine runs the rule depends on the form (see the amendment below).
+    - The pair-consistent form uses `extinction_uncatalysed`: the last molecule leaves at
+      the bare k_b.
+    - The single-event form uses `extinction`: the last molecule's leave carries
+      1 + beta_ii.
+    - In both forms Phi(empty) = ln pi(empty) = 0, and that leave books q = -ln(K_i rho_i).
+  - A world that names no rule is read per form. Every lineage row reports which rule it
+    used.
   - In the preprint's lineage regime (masses 40-80) no rule ever acts.
 - **The event guard** stops a lineage (the engine's rule; T2-02's guard would force a
   fission). The CRN replay follows the world's declared `guard_rule`.
@@ -209,6 +212,27 @@ regenerates.
 design is judged at the registered times. It fails as underpowered if it cannot catch its
 planted control. Its agreement with the closed form at world-scale times (10, 20, 30, 40) is
 reported beside the verdict and never decides it.
+
+## Amendment, 17 November 2026: the single-event form's last leave
+
+- **What changed.** In the single-event form, the leave at N = 1 now carries the factor
+  1 + beta_ii (rule `extinction`). That is the preprint's kernel, which counts the leaving
+  molecule. The pair-consistent rule is unchanged: its last molecule leaves uncatalysed.
+- **Why.** The earlier rule followed a relayed convention: "the last molecule leaves
+  uncatalysed, in both forms". The lead has since said that relay was wrong for the
+  single-event form. The rule now follows `docs/GARD_DESIGN.md`, written before any engine
+  run, at:
+  - line 43 (cited by the lead): the pair-consistent factor equals the published one to
+    O(1/N), except under strong self-catalysis;
+  - lines 260-262: the pair-consistent form retains strongly self-catalytic types a little
+    more, because their leaving is no longer self-catalysed;
+  - line 318: in the pair-consistent form, the leaving molecule does not catalyse its own
+    leave.
+- **When.** The change was made after report-2 (the provisional set 6af93a51) showed the
+  disagreement on the 4 mass-1 probe states. Read with the amended rule, the engine's
+  single-event table matches there exactly. report-2 is kept unchanged.
+- **Planted control.** A single-event kernel whose last molecule leaves uncatalysed must fail
+  row 3 (`tests/unit/test_gard_references_row03_04.py`).
 
 ## What could not be confirmed from the sources
 

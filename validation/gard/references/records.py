@@ -70,8 +70,14 @@ WORLD_FIELDS = {
 }
 WORLD_OPTIONAL = ("event_guard", "partition_fraction", "partition_p", "boundary", "guard_rule", "units")
 ENGINE_BOUNDARY = "extinction_uncatalysed"
-"""The engine's declared edge convention (17 November): the last molecule leaves
-uncatalysed and Phi(empty) = 0. A world that does not name its rule is read this way."""
+"""The pair-consistent form's edge rule: the last molecule leaves uncatalysed, Phi(empty) = 0."""
+
+ENGINE_BOUNDARY_BY_FORM = {"pair-consistent": "extinction_uncatalysed", "single-event": "extinction",
+                           "none": "extinction_uncatalysed"}
+"""The edge rule per form, for a world that does not name one (amended 17 November 2026).
+The pair-consistent leave does not count the leaving molecule, so the last molecule leaves
+uncatalysed. The single-event form is the preprint's kernel: it counts the leaving
+molecule, so the last molecule's leave carries 1 + beta_ii (GARD_DESIGN §2.3 and §2.5)."""
 
 RUN_FIELDS = {
     "world_id": "world_id",
