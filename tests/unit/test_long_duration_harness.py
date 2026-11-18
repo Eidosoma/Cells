@@ -1,0 +1,90 @@
+"""FR-8 stage 0's harness judge (validation/long_duration/harness_judge.py;
+validation/long_duration/REGISTRATION_20261118.md §5.3 and §8). Each claim with its plant, on
+synthetic rows (no engine run):
+
+- the budget judge passes rows at the budget and fails one entry at 1.01 x its budget, for each
+  class and for the histories;
+- the crossing locator finds a known linear crossing within 1e-9 s, with its direction;
+- the timing verdict passes a 0.4 ms difference and fails a planted 1 ms shift, and fails when one
+  run has a crossing the other has not;
+- the recovery time is the first row from which the trace stays inside, and a re-exit inside the
+  window moves it;
+- the observed order of a second-order sequence is 2.
+"""
+
+import numpy as np
+import pytest
+
+from validation.long_duration import harness_judge as hj
+
+TIMES = np.linspace(0.0, 10.0, 11)
+
+
+@pytest.mark.parametrize(
+    "kind,budget", [("voltage", 2e-6), ("concentration", 2e-5), ("gate", 1e-5)]
+)
+def test_each_class_fails_one_entry_just_over_its_budget(kind, budget):
+    ref = np.full((11, 2, 3), 5.0)
+    scale = 5.0 if kind == "concentration" else 1.0
+    at_budget = ref + 0.999 * budget * scale
+    assert hj.judge_class(at_budget, ref, kind, budget, TIMES)["passed"]
+    planted = at_budget.copy()
+    planted[7, 1, 2] = ref[7, 1, 2] + 1.01 * budget * scale
+    verdict = hj.judge_class(planted, ref, kind, budget, TIMES)
+    assert not verdict["passed"] and verdict["row_time_s"] == 7.0
+
+
+def test_the_response_window_ignores_rows_before_the_cue():
+    ref = np.zeros((11, 1))
+    test = ref.copy()
+    test[2, 0] = 1.0  # Before the cue at 5 s: outside the response window.
+    assert hj.judge_class(test, ref, "voltage", 1e-6, TIMES, after=5.0)["passed"]
+    test[6, 0] = 1.0
+    assert not hj.judge_class(test, ref, "voltage", 1e-6, TIMES, after=5.0)["passed"]
+
+
+def test_a_history_entry_just_over_its_relative_budget_fails():
+    floors = dict(amount_fmol=1e-10, energy_pJ=2e-8, charge_C=3e-25)
+    ref = {
+        "membrane_transferred": np.full((11, 4), 3.0),
+        "pump_dissipated_energy_pJ": np.ones((11, 2)),
+    }
+    test = {k: v * (1 + 0.999 * 2e-5) for k, v in ref.items()}
+    assert hj.judge_histories(test, ref, 2e-5, floors)["passed"]
+    test["pump_dissipated_energy_pJ"][4, 1] = 1 + 1.01 * 2e-5
+    verdict = hj.judge_histories(test, ref, 2e-5, floors)
+    assert not verdict["passed"]
+    assert not verdict["fields"]["pump_dissipated_energy_pJ"]["passed"]
+    assert hj.floor_of("electrode_charge_transferred_C", floors) == 3e-25
+
+
+def test_the_crossing_locator_finds_a_known_crossing():
+    t = np.linspace(1800.0, 1801.0, 1001)
+    v = -0.07 + 0.04 * (t - 1800.0)  # Crosses -0.05 V at 1800.5 s, upward.
+    found = hj.crossings(t, v, -0.05, 1800.0)
+    assert len(found) == 1 and found[0]["direction"] == "up"
+    assert abs(found[0]["time_s"] - 1800.5) < 1e-9
+
+
+def test_the_timing_verdict_fails_a_planted_shift_and_a_missing_crossing():
+    ref = [dict(time_s=1800.5, direction="up"), dict(time_s=1801.2, direction="down")]
+    close = [dict(time_s=1800.5004, direction="up"), dict(time_s=1801.2, direction="down")]
+    assert hj.timing_verdict(close, ref, 5e-4)["passed"]
+    shifted = [dict(time_s=1800.501, direction="up"), dict(time_s=1801.2, direction="down")]
+    assert not hj.timing_verdict(shifted, ref, 5e-4)["passed"]
+    assert not hj.timing_verdict(ref[:1], ref, 5e-4)["passed"]
+
+
+def test_the_recovery_time_and_a_re_exit():
+    t = np.arange(0.0, 31.0)
+    v = np.where(t < 10, 1.0, 0.0)
+    assert hj.recovery_time(t, v, 0.0, 0.1, 0.5, 30.0) == 10.0
+    v[20] = 1.0  # A re-exit inside the window moves the recovery to the row after it.
+    assert hj.recovery_time(t, v, 0.0, 0.1, 0.5, 30.0) == 21.0
+    v[30] = 1.0  # Outside at the window's last row: no recovery.
+    assert hj.recovery_time(t, v, 0.0, 0.1, 0.5, 30.0) is None
+
+
+def test_the_observed_order_of_a_second_order_sequence():
+    assert hj.observed_order(4e-6, 1e-6) == pytest.approx(2.0)
+    assert hj.observed_order(0.0, 1e-6) is None

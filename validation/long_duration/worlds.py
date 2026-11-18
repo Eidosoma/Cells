@@ -80,12 +80,15 @@ def harness_observation_times():
     return sorted(times)
 
 
-def h2(dt=1e-3):
+def h2(dt=1e-3, *, development_end=None):
     """The harness world at dt: case_cue3's builder at the registered horizon, its projective
-    block removed (as F1's fine reference), §5.2's observation times, and max_steps for dt."""
+    block removed (as F1's fine reference), §5.2's observation times, and max_steps for dt.
+
+    development_end (s), for smoke runs only and never a run of record: the builder's horizon
+    instead (so the cue at its half), observed every 0.1 s."""
     from validation.tissue import projective_study as study
 
-    end = registration()["harness"]["end_s"]
+    end = registration()["harness"]["end_s"] if development_end is None else development_end
     # The protocol's projective parameters (projective_c_qualification_v1); the block is built and
     # then removed, so they only make the builder's call the protocol's.
     args = SimpleNamespace(
@@ -102,7 +105,9 @@ def h2(dt=1e-3):
     )
     raw = study.case_cue3(args)
     del raw["execution"]["projective"]
-    raw["experiment"]["observation_times"] = harness_observation_times()
+    raw["experiment"]["observation_times"] = (
+        harness_observation_times() if development_end is None else grid(0.0, end, 0.1)
+    )
     raw["execution"]["dt"] = dt
     raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
     return raw
