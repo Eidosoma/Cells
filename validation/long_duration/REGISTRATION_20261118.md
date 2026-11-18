@@ -446,4 +446,17 @@ Each comes with its options and my recommendation. None blocks M1.
 
 ## 10. Amendments
 
-None.
+### Amendment 1, 20:40 UTC on 18 November 2026: the lead's rulings, before any run
+
+The lead answered §9's questions, all as recommended. No criterion, budget or world changes.
+- **Q1: (b).** The independent Radau/BDF reference comes with stage 1's protocol. Stage 0's
+  references are the fine engine's own runs at dt, dt/2 and dt/4. **Stage 0 makes no
+  qualification claim,** and every result says so.
+- **Q2.** The headline takes Z as removed by N2 and N as staying. Both readings are reported.
+- **Q3: (a).** W0 is used as registered. §5.1's gate-free-target world comes with FR-7's loop at
+  qualification.
+- **Q4: (a).** M5's eight arms run on the light CPUs at nice 10, through `run_detached.sh`, with
+  the FR-18 probe as a cross-check only.
+- **Q5: (a).** H2 is kept as registered.
+- **The lead also asks** that M1 confirm the junction-gate cap of §3's readings with the term's
+  numbers.
