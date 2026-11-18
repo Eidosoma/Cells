@@ -10,6 +10,9 @@
   it); a world with every rate constant doubled draws the same channels at exactly half the times.
 - The last molecule under `extinct` leaves at the cancelled form, k⁻·1; `kept` gives 0 and
   `reversible` a pair (planted: the literal form, which gives 0).
+- `kept` zeroes only a pair whose step changes the membrane's count and has an empty end state: at
+  an empty membrane a pool step and a permeation fire at their own rates (§0.2a as reworded on 18
+  November 2026; planted: the earlier wording, which froze them).
 - The kernel replays on a host oracle from its saved uniforms (planted: reverse channels drawn at
   0.9 of their weight).
 """
@@ -335,6 +338,43 @@ def test_the_last_molecule_leaves_at_the_cancelled_form_under_extinct():
     run = runner.run(spec_of(leaving, horizon=1e6, event_limit=10_000))
     assert run.status == "extinct" and run.closure["holds"]
     assert run.rows["place_count"][-1].sum() == 0
+
+
+def _earlier_kept(total, moves):
+    """Planted: §0.2a's earlier wording, rate 0 for any pair one of whose end states has an empty
+    membrane, whether or not its step changes the membrane's count."""
+    return (total == 0) | (total + moves == 0)
+
+
+def test_kept_zeroes_only_the_pairs_that_change_the_membrane_s_count(monkeypatch):
+    """At a probe state with an empty membrane, under `kept`: a pool step fires at the pool's mass
+    action and a permeation at its own rate (E(m) = N + 1 = 1 under c = 0); a join to the empty
+    membrane, and the last molecule's leave, have rate 0."""
+    spec = spec_of(world(regular=False, catalysis=False))  # multinomial, kept
+    w = spec.model.world
+    mu = {p.name: w.species_by_id(p.species).mu(p.phase) for p in w.places}
+    X_pool = math.exp(model.log_extent(w, "pool"))
+    X_lumen = math.exp(model.log_extent(w, "lumen"))
+    ids = [s.id for s in w.steps]
+    empty = {"L@pool": 7, "S@pool": 5, "L@membrane": 0, "P@membrane": 0, "D@membrane": 0,
+             "L@lumen": 2, "S@lumen": 1}  # fmt: skip
+    plus, minus = rates_at(spec, empty)
+    make, permeate = ids.index("make_L"), ids.index("permeate_S")
+    assert plus[make] == pytest.approx(0.1 * X_pool * HELD_MM / 1000.0, rel=1e-13)
+    assert minus[make] == pytest.approx(0.1 * math.exp(mu["L@pool"] - 2.0) * 7, rel=1e-13)
+    assert plus[permeate] == pytest.approx(1.0 * 1 * 5 / X_pool, rel=1e-13)
+    k_minus = math.exp(mu["S@lumen"] - mu["S@pool"])
+    assert minus[permeate] == pytest.approx(k_minus * 1 * 1 / X_lumen, rel=1e-13)
+    for joining in ("join_L", "inner_L"):  # Each changes the membrane's count from empty.
+        assert plus[ids.index(joining)] == 0.0
+    lone_state = empty | {"L@membrane": 1}
+    assert rates_at(spec, lone_state)[1][ids.index("join_L")] == 0.0  # the last molecule stays
+    released = rates_at(spec_of(world(regular=False, catalysis=False, last="reversible")), empty)
+    assert released[0][ids.index("join_L")] > 0.0  # what kept removes: a join to the empty one
+    monkeypatch.setattr(kernel, "kept_zero", _earlier_kept)
+    planted_plus, planted_minus = rates_at(spec, empty)
+    assert planted_plus[make] == planted_minus[make] == 0.0  # the pool step frozen: caught
+    assert planted_plus[permeate] == planted_minus[permeate] == 0.0
 
 
 # ------------------------------------------------------------------ replay

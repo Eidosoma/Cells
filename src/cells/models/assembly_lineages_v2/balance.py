@@ -9,7 +9,8 @@ the ledger's exact value (ledger.free_energy, from the terms' own values), and w
 reservoir work. The reverse is computed by the kernel as the products' mass action with
 k⁻ = k_f exp(Σ ν μ°), never as θ⁺ exp(ΔF), so the identity is a check of that derivation, not true
 by construction. A pair that touches the boundary under `last_molecule: extinct` has no reverse and
-is not a pair; under `kept` such pairs have both rates zero and are skipped.
+is not a pair; under `kept` such a pair (its step changes the membrane's count) has both rates zero
+and is skipped.
 
 **Where it is taken** (as @1's balance.py):
 - the verdict on the check's own generic probe worlds (probe_world: every order up to three on

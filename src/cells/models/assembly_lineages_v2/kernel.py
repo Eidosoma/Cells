@@ -273,12 +273,21 @@ def log_parts(counts, totals, factor_state, term_states, layout, structure, xp=j
             change = layout.entry_alpha - layout.entry_beta
             for term, state, term_layout in zip(terms, term_states, layout.terms, strict=True):
                 log_a = log_a - term.delta(state, term_layout, v, change, xp)
-        if structure.last_molecule == "kept":  # No pair touches an empty membrane.
+        if structure.last_molecule == "kept":
             moves = layout.step_moves if forward else -layout.step_moves
-            total = totals[MEMBRANE]
-            log_a = xp.where((total == 0) | (total + moves == 0), -xp.inf, log_a)
+            log_a = xp.where(kept_zero(totals[MEMBRANE], moves), -xp.inf, log_a)
         out.append(xp.where(layout.step_active, log_a, -xp.inf))
     return xp.concatenate(out)
+
+
+def kept_zero(total, moves):
+    """The channels `last_molecule: kept` gives rate zero (§0.2a, as worded 18 November 2026):
+    those of a pair whose step changes the membrane's count (moves ≠ 0, the direction's change)
+    and one of whose end states, the firing state (total) or the result (total + moves), has an
+    empty membrane. So the membrane never empties, and a step that leaves the membrane's count
+    alone fires at its own rate: a pool step at a state with an empty membrane fires at the pool's
+    mass action."""
+    return (moves != 0) & ((total == 0) | (total + moves == 0))
 
 
 def rates(counts, totals, factor_state, term_states, layout, structure, xp=jnp):

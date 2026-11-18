@@ -20,12 +20,13 @@ readers of one world (the engine and an independent reference) cannot differ sil
 - `empty_catalyst_phase`: `uncatalysed`: a rate factor is 1 where its catalysing phase is empty at
   m (the last-molecule factor of GARD's pair-consistent form).
 - `last_molecule` (§0.2a, "The last molecule" and "The empty common state"): `kept` (any measure)
-  gives rate zero only to a pair one of whose end states has an empty membrane, so the membrane
-  never empties and nothing else is frozen; `reversible` (c = 0 only) makes the empty membrane an
-  ordinary state, left by a join with E = 1; `extinct` (c = 1 only) is G1's boundary: a step in
-  either direction whose result empties the membrane fires at the pair rule's cancelled form, has
-  no reverse, and ends the assembly; its heat is booked against F_mem(empty) = 0. Wherever the
-  membrane factor is 0/0 (a common state with an empty membrane, neither end state empty: a lone
+  gives rate zero only to a pair whose step changes the membrane's count and one of whose end states
+  has an empty membrane, so the membrane never empties and nothing else is frozen (a pool step at an
+  empty membrane fires at the pool's mass action); `reversible` (c = 0 only) makes the empty
+  membrane an ordinary state, left by a join with E = 1; `extinct` (c = 1 only) is G1's boundary: a
+  step in either direction whose result empties the membrane fires at the pair rule's cancelled
+  form, has no reverse, and ends the assembly; its heat is booked against F_mem(empty) = 0. Wherever
+  the membrane factor is 0/0 (a common state with an empty membrane, neither end state empty: a lone
   molecule changing form, or two joining), the cancelled form applies under every token.
 """
 

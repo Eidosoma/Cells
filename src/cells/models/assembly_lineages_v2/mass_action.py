@@ -29,10 +29,12 @@ on both sides), the factor is (N − c − r* + 1)/ff(N − c, r); under c = 1 i
 where the declared measure gives the rate +inf: a run that reaches such a state stops, stalled
 (refused), and a probe reports +inf there.
 
-**The boundary tokens** (`last_molecule`): `kept` gives every pair one of whose states has an empty
-membrane the rate 0, in both directions, so the membrane never empties; `reversible` (c = 0) and
-`extinct` (c = 1) change no rate: the first makes the empty membrane a state, the second ends the
-assembly at the event that empties it (kernel.py).
+**The boundary tokens** (`last_molecule`): `kept` gives the rate 0, in both directions, only to a
+pair whose step changes the membrane's count and one of whose end states has an empty membrane, so
+the membrane never empties and a step that leaves the membrane's count alone fires at its own rate
+(a pool step at an empty membrane fires at the pool's mass action: kernel.kept_zero); `reversible`
+(c = 0) and `extinct` (c = 1) change no rate: the first makes the empty membrane a state, the
+second ends the assembly at the event that empties it (kernel.py).
 
 The direct kernel works on a View (kernel.py): every array is per step and per entry, an entry
 being one distinct place of the step ([R, K], K = 6), in the same xp arithmetic on the host (NumPy)
@@ -132,7 +134,8 @@ FORMULAS = {
     "membrane_factor": "E(m)/ff(N - c, r) = (N - c - r* + 1)/ff(N - c, r), cancelled to "
     "1/ff(N - c, r - 1) where r* = r >= 1 (sec. 0.2a): the last molecule's leave is k-.1 under "
     "last_molecule extinct",
-    "kept": "rate 0 for every pair one of whose states has an empty membrane",
+    "kept": "rate 0 only for a pair whose step changes the membrane's count and one of whose end "
+    "states has an empty membrane; every other step fires at its own rate",
     "units": "k_f in 1/s (the activity form, D152's forward_rate_per_s)",
 }
 
