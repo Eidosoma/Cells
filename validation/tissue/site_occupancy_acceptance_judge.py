@@ -60,6 +60,7 @@ from pathlib import Path
 
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
+from validation.tissue import judge_harness as harness
 
 EPS = base.EPS
 AMOUNT_PREFIXES = ("amount_", "B_", "R_", "internalised_")
@@ -596,6 +597,46 @@ def verdict(parts, protocol):
     return derived, evaluated
 
 
+def incomplete(parts, protocol):
+    """The harness's completeness check (judge_harness, the external review's finding 4):
+    - every world and ladder part, and its references world, holds the world's registered record
+      grid (the code-blind references' record_times_s, in the derivation's record units);
+    - every control run holds the grid of the references world it is judged against (its arm);
+    - every registered refusal class of Q6 has a refused and an admitted example."""
+    from validation.tissue import site_occupancy_acceptance_fixtures as fx  # Registered inputs.
+
+    d = protocol["judge"]["derivation"]
+    refs = (parts.get("references") or {}).get("worlds") or {}
+    problems, grids = [], {}
+    for name in d["engine_parts"]:
+        world = d["world_of"][name]
+        if world not in grids:
+            grids[world] = [int(round(t / d["record_unit_s"]))
+                            for t in fx.registered(world)["record_times_s"]]
+            found = (refs.get(world) or {}).get("record_ms")
+            problems += harness.grid(f"references/{world}", found, grids[world])
+        problems += harness.grid(name, (parts.get(name) or {}).get("record_ms"), grids[world])
+    for name, spec in d["controls"].items():
+        runs = (parts.get(name) or {}).get("runs") or {}
+        for variant in spec:
+            run = runs.get(variant) or {}
+            arm = (refs.get(run.get("arm")) or {}).get("record_ms")
+            problems += harness.grid(f"{name}/{variant}", run.get("record_ms"),
+                                     arm if arm is not None else [None])
+    classes = (parts.get("Q6_refusals") or {}).get("classes") or {}
+    return problems + harness.classes(classes, d["Q6"]["refusal_checks"])
+
+
+def harnessed(parts, protocol):
+    """verdict's derivation and evaluation with the harness's checks before scoring: refused,
+    as a harness failure, when the evidence is incomplete."""
+    harness.refuse(incomplete(parts, protocol))  # Before any derivation.
+    derived = derive(parts, protocol)
+    criteria = protocol["judge"]["criteria"]
+    harness.refuse(harness.metrics(criteria, dict(parts=parts, derived=derived)))
+    return derived, evaluate(dict(criteria=criteria), dict(parts=parts, derived=derived))
+
+
 def main(argv):
     if argv and argv[0] == "compare":
         return base.compare(*argv[1:])
@@ -614,7 +655,7 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = verdict(parts, protocol)
+    derived, evaluated = harnessed(parts, protocol)
     record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],

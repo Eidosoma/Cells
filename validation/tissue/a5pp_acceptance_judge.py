@@ -43,6 +43,7 @@ from pathlib import Path
 
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
+from validation.tissue import judge_harness as harness
 from validation.tissue import regulated_availability_judge as coupling
 
 SPECIES = ("Na", "K", "Cl")
@@ -208,6 +209,36 @@ def verdict(parts, protocol):
     return derived, evaluated
 
 
+def incomplete(parts, protocol):
+    """The harness's completeness check (judge_harness, the external review's finding 4). Every
+    rung part, every control's run at each rung and the references must hold the registered
+    world's full record grid: the code-blind references' record_times_s, in the derivation's
+    record units."""
+    from validation.tissue import a5pp_acceptance_fixtures as af  # The registered inputs only.
+
+    d = protocol["judge"]["derivation"]
+    registered = [int(round(t / d["record_unit_s"])) for t in af.registered()["record_times_s"]]
+    problems = []
+    for name in (*d["rung_parts"], "references"):
+        problems += harness.grid(name, (parts.get(name) or {}).get("record_ms"), registered)
+    for name in d["controls"]:
+        runs = (parts.get(name) or {}).get("runs") or {}
+        for key in d["rung_keys"]:
+            problems += harness.grid(f"{name}/{key}", (runs.get(key) or {}).get("record_ms"),
+                                     registered)
+    return problems
+
+
+def harnessed(parts, protocol):
+    """verdict's derivation and evaluation with the harness's checks before scoring: refused,
+    as a harness failure, when the evidence is incomplete."""
+    harness.refuse(incomplete(parts, protocol))  # Before any derivation.
+    derived = derive(parts, protocol)
+    criteria = protocol["judge"]["criteria"]
+    harness.refuse(harness.metrics(criteria, dict(parts=parts, derived=derived)))
+    return derived, evaluate(dict(criteria=criteria), dict(parts=parts, derived=derived))
+
+
 def main(argv):
     if argv and argv[0] == "compare":
         return base.compare(*argv[1:])
@@ -226,7 +257,7 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = verdict(parts, protocol)
+    derived, evaluated = harnessed(parts, protocol)
     record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
