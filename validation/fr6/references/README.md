@@ -101,7 +101,9 @@ branches.
 
 ## Tests
 
-`tests/unit/test_fr6_references_a5pp.py`:
+`tests/unit/test_fr6_references_a5pp.py` (5 tests): tier 1, 7.98 s on the timed lane (CPUs 4
+and 5, under its lock) at ee1d8915. The record is
+`/mnt/workspaces/Cells/fr6-references-20261118/measure-01/measured.json`. The tests cover:
 - the registered inputs equal their generator;
 - R-cell's run against its floor, and against an independent integration by LSODA;
 - the stand-in's second order;
