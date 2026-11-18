@@ -26,21 +26,24 @@ programs on identical inputs run identically on a CPU. Outputs written before co
 were recorded (13 November 2026) have no .consts.json files: compare says so, and its
 verdict then covers the texts and bindings only.
 
-Six world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+Seven world sets: base (small worlds of every structure: routes, sheets, RK4, events,
 donors, padding), qualification (the guarded qualification worlds themselves:
 W1's trajectories, W2's arms and G2-Q1's cases), injection (electrode injection
 without a field-input provider, the Rm1 egg included), volume (replacement@2 over
 water, v2 design §2; recorded from its first revision on, with constants), kinds
 (kind-declaring worlds, D187 rule 2: FR-4's development and declared worlds and FR-5's arm
-T; recorded from 16 November 2026, after D172's landing) and acceptances (quick worlds of the
+T; recorded from 16 November 2026, after D172's landing), acceptances (quick worlds of the
 judged acceptances of 17 and 18 November 2026, FR-1's, FR-3's, FR-10's and FR-6's A5'', from
-their protocols' own generators: docs/CORE_SEAMS_DESIGN.md §18; recorded from 18 November 2026).
+their protocols' own generators: docs/CORE_SEAMS_DESIGN.md §18; recorded from 18 November 2026) and
+replication (quick worlds of the gap-junction replication, from its driver's own generators: the
+linear model in both forms and the neither condition's line, sheet and a ladder point, D219;
+recorded from 18 November 2026).
 For the qualification set, bindings are also saved at every step size of the dt studies the
 guards did not repeat (W1's and Q5's), since dt enters the bound inputs (step counts,
 event steps) as well as the traced program.
 
 Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification,
-injection, volume, kinds or acceptances):
+injection, volume, kinds, acceptances or replication):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -313,6 +316,68 @@ def acceptances_worlds():
     }
 
 
+REPLICATION = (
+    "linear_norton",
+    "linear_as_written",
+    "neither_line",
+    "neither_sheet",
+    "neither_ladder",
+)
+REPLICATION_LADDER_D_M2_S = 5e-14  # The ladder's top point (gap-junction-20261117/runs/ladder-01).
+
+
+def replication_world(name, *, junction_scale=1.0, d=None):
+    """One world of the replication set (replication_worlds), built by its driver's own generator at
+    its registered horizon and cut to its first five steps. junction_scale multiplies every junction
+    permeability of the linear model (the driver's planted control, K1); d is a neither world's
+    junction diffusion constant (m^2/s), by default its registered one."""
+    from validation.gap_junction_tissue import neither
+    from validation.gap_junction_tissue import worlds as gj
+
+    if name in ("linear_norton", "linear_as_written"):
+        chain = gj.chain(3, 0.5)
+        if name == "linear_norton":
+            raw = gj.linear_network(
+                chain.cells, chain.edges, chain.probes, junction_scale=junction_scale
+            )
+        else:
+            raw = gj.as_written(chain, junction_scale=junction_scale)
+        return _first_steps(raw)
+    registered = {
+        "neither_line": (neither.X2_M2_S, "line"),
+        "neither_sheet": (neither.X2_M2_S, "sheet"),
+        "neither_ladder": (REPLICATION_LADDER_D_M2_S, "line"),
+    }
+    default, shape = registered[name]
+    d = default if d is None else d
+    return _first_steps(neither.coupled_world(d, neither.STAGE1_END_UNITS, shape=shape))
+
+
+def replication_worlds():
+    """Quick worlds of the gap-junction replication (docs/GAP_JUNCTION_CANCER_REPLICATION.md, D219),
+    each built by its driver's generator (validation/gap_junction_tissue/) and cut to its first five
+    steps. They carry the replication's two neutral transport laws: @3's neutral permeant species
+    and the passive routes' neutral law on a junction host.
+
+    * The linear model on Figure 8's chain of three cells, G_GJ = G_eq, its port loaded by a
+      reservoir held at 0.5 (the first of the two loads its Norton conductance is measured from),
+      in both of its forms:
+      - linear_norton: resolved_pump_tissue@3's own constant_field@1 membranes and junctions for
+        one neutral permeant species, with held reservoirs (worlds.linear_network);
+      - linear_as_written: resolved_pump_composite@1 over @3, local_species_reactions@1's source
+        and decay in each cell, and passive_neutral_permeation@1 routes on the junctions and on
+        the probe's patch (worlds.as_written).
+    * The neither condition's coupled stage (neither.coupled_world): the EMT switch as
+      local_species_reactions@1 reactions, with miR200 on passive_neutral_permeation@1 junction
+      routes. Each starts from stage 1's pinned end state (neither.STAGE1_END_UNITS), since
+      crossrev runs nothing:
+      - neither_line: BITSEY's 1x1x25 line at the 1D search's threshold x2 (step 1/8 s);
+      - neither_sheet: the 9x9 sheet of section 7.6 at x2 (1/16 s);
+      - neither_ladder: the line at the ladder's top point, 5e-14 m^2/s (1/32 s).
+    Every junction gate is junction_voltage_relaxation@1, pinned open."""
+    return {name: replication_world(name) for name in REPLICATION}
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
@@ -326,9 +391,11 @@ def _worlds(world_set, all_steps):
         return kinds_worlds()
     if world_set == "acceptances":
         return acceptances_worlds()
+    if world_set == "replication":
+        return replication_worlds()
     raise SystemExit(
         f"Unknown world set {world_set!r} "
-        "(base, qualification, injection, volume, kinds or acceptances)"
+        "(base, qualification, injection, volume, kinds, acceptances or replication)"
     )
 
 

@@ -394,6 +394,14 @@ SHEET_NOTE = (
 )
 # The 1D search's threshold (section 7.5), against which every arm's place is stated as data.
 X2_M2_S = 7.177734375e-15
+# Stage 1's end state (units), as neither-02 computed it (gap-junction-20261117/runs/neither-02/
+# uncoupled.json, from 1f4c740a). neither-01, picks-01 and -02, dense-01, sheet-01 and ladder-01
+# each computed it again: the same definition and the same numbers. Pinned for worlds built
+# without running stage 1 (crossrev's replication set); a run computes its own (uncoupled).
+STAGE1_END_UNITS = {
+    "tumor": {"u": 8.817966182826796, "m": 68.62439028595331, "z": 62.721311560141714},
+    "healthy": {"u": 83.99620026465712, "m": 5.951805842605415, "z": 0.41005485698284977},
+}
 X2_SOURCE = dict(
     line="the 1D search's threshold x2 (docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7.5)",
     sheet="the line's threshold x2 (section 7.5); the sheet's own lies between x2/8 and x2/4 at "
