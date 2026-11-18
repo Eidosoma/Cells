@@ -166,7 +166,11 @@
    },
    "q3_binding_multiplier": {
     "binding_multiplier_ignored": 1.5624227203735465e-06,
-    "binding_multiplier_squared": 1.5624227203773141e-06
+    "binding_multiplier_squared": 1.5624227203773141e-06,
+    "binding_multiplier_on_k_on_only": 2.6396690359367006e-05
+   },
+   "q5_class_switch": {
+    "internalisation_multiplier_ignored": 1.3520908646871792e-05
    },
    "q5_washout": {
     "k_int_1pct": 1.8467251571408058e-07,

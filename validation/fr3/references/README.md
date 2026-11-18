@@ -1,6 +1,7 @@
 # FR-3's independent references: site occupancy
 
-**Registered 17 November 2026, before any engine output exists.** These are the independent
+**Registered 17 November 2026, before any engine output exists** (registering commit 992ce385;
+amended the same day before any engine output, as recorded below). These are the independent
 references for FR-3's items Q1–Q5 (`docs/SITE_OCCUPANCY_DESIGN.md` §8.3). The worlds are
 registered here too: the lead ruled that this package designs and registers FR-3's worlds, and
 the FR lane builds its protocol on them, through paths (17 November 2026; D216 orders FR-3 as
@@ -73,7 +74,7 @@ trace is 1e-12 mM ≤ 1e-6 K_d.
 | Reference | Method | Second method or truth | Floor |
 | --- | --- | --- | --- |
 | R-ode (A.2, A.3) | Radau, rtol 1e-12, with an analytic Jacobian. The heat is carried as H = RT [Y − Δ(R ln(R/S) + B ln(B/S))] with dY/dt = Σ J ln(c/K_d) + I ln(R/B), exact along the path and finite at B = 0 and R = 0 | DOP853 at rtol 1e-13 | B: at most 4.8e-17 fmol. n: at most 2.5e-10 fmol, at the 1e5 fmol of the 1e6 pL nodes (2.5e-15 relative) |
-| The ledger | Δ(Σ G_node) + Δ(Σ G_site) + H − W from the states, in 50-digit decimals | — | at rounding of the nodes' free energy (at most 1.7e-14 relative) |
+| The ledger | Δ(Σ G_node) + Δ(Σ G_site) + H − W from the states, in 50-digit decimals | — | at rounding: at most 1.7e-14 of the nodes' free energy where the nodes hold resolved amounts; where a node starts at the trace (`q3_dissociation`, `q5_washout`, `q5_background_*`), at most 1.5e-16 pJ absolute, against heats near 1e-3 pJ |
 | R-closed (A.4) | The Riccati form and the depletion quadratic (exact for the closed node); the fixed-c forms on the reference side | R-ode | Riccati against R-ode at most 3.1e-17 fmol |
 | R-eq | Bisection in 50-digit decimals of c V + Σ S c/(K_d + c) = N; the heat G(start) − G(eq) | Riccati's r₋ (one population) | exact to its digits |
 | R-qss (A.5) | D150's saturable law with a = k_int S, b = K_M V | R-ode | — |
@@ -96,7 +97,10 @@ the reference's floor.
     k_on, at 1.3e-10, listed below.
   - The internalised cargo sent to the wrong node departs by 1.9e-5 to 2.3e-5 fmol.
   - α ignored departs by 8.9e-6 fmol.
-  - The binding multiplier ignored, or applied squared, departs by 1.6e-6 fmol (`q3_binding_multiplier`).
+  - The binding multiplier ignored, or applied squared, departs by 1.6e-6 fmol
+    (`q3_binding_multiplier`). These are one test counted twice: each is a ×4 time rescaling of
+    the same trajectory, and neither moves the equilibrium. The amendment adds the control that
+    does: m_b applied to k_on alone departs by 2.6e-5 fmol.
   - The receiving cell's volume taken as 1 pL departs by 3.1e-7 fmol in `q5_inward`, where an
     inward population binds from the cytosol. In `q1_eps_1e-1` it moves the work by 3.3e-5 pJ.
   - The ceilings of the ladder worlds are 5.4e-9 to 2.0e-8 fmol. Each lies at least 10⁴ times
@@ -110,9 +114,9 @@ the reference's floor.
   - The affinity factor (A) departs by 0.49 and 0.72 at saturation, but only by 2.5e-3 and 1.9e-3
     at c ≪ K_d, as §2.3 predicts: (A) is caught at saturation.
 - **Q5, energy.** The reference's ledger closes at rounding.
-  - The heat never falls between records by more than its rounding allowance, 8 ulps of its
-    largest value. That is the registered `min_heat_increment_pJ` against
-    `heat_increment_allowance_pJ`.
+  - The heat never falls between records by more than 8 ulps of its largest value. That is the
+    registered `min_heat_increment_pJ` against `heat_increment_allowance_pJ`. It is a property of
+    the reference's heat, not a tolerance for the engine.
   - The work scaled by 1 + 10⁻⁶ departs by 3.7e-12 to 1.6e-10 pJ wherever work is booked.
   - The site free energy dropped departs by at least 4.2e-9 pJ.
   - The heat's sign departs by at least 9.8e-8 pJ.
@@ -142,7 +146,27 @@ the reference's floor.
 - **The prototype's third order needs fast rates.** At this bracket's slow rates (about 1/s), an
   honest engine is at rounding at 1 ms. Hence `q1_fast`.
 
+## Amendment, 17 November 2026: two controls and exact statements
+
+After the registering commit 992ce385, before any engine output and before FR-3's protocol
+started, at the advisor's review:
+- **Two controls are added to the design.**
+  - **m_b applied to k_on alone** (k_off unscaled), on `q3_binding_multiplier`. It moves the
+    equilibrium while m_b ≠ 1 and departs by 2.6e-5 fmol. It gives power to the claim that the
+    binding multiplier scales k_on and k_off together.
+  - **m_i ignored** on `q5_class_switch`: internalisation running through the off epochs departs
+    by 1.4e-5 fmol. That world had no control margin on record.
+- **The README states two things exactly.** The ledger bound now gives an absolute bound for
+  worlds whose node starts at the trace. The heat-increment allowance is described as a property
+  of the reference.
+- **What changed in the files:** the design file's `power.controls_fmol` gains the two entries.
+  The values file, the inputs and every other registered number are unchanged.
+
 ## Tests
+
+Both files are tier 1 on the timed lane (CPUs 4 and 5, under its lock) at 992ce385: forms
+5.63 s, worlds 4.43 s. The record is
+`/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json`.
 
 - `tests/unit/test_fr3_references_forms.py`: the forms on their own, nine tests with planted
   controls.

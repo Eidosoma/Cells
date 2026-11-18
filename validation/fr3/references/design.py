@@ -108,7 +108,39 @@ def _perturbed(world: dict, which: str) -> dict:
     elif which == "binding_multiplier_squared":
         for e in w["site_controls"]:
             e["binding"] = {k: v * v for k, v in e["binding"].items()}
+    elif which == "internalisation_multiplier_ignored":
+        for e in w["site_controls"]:
+            e["internalisation"] = {k: 1.0 for k in e["internalisation"]}
     return w
+
+
+def _k_on_only(world: dict, times) -> dict:
+    """The binding multiplier applied to k_on alone (k_off unscaled), one population on one
+    node, binding only: J = m_b k_on c R - k_off B. A standalone integration (planted)."""
+    from scipy.integrate import solve_ivp
+    net = worlds.network(world)
+    p = net.populations[0]
+    V = float(net.volumes[p.node])
+    starts = [float(e[0]) for e in net.epochs] + [float(times[-1])]
+    y = [float(net.n0[p.node]), p.B0]
+    t_all = np.asarray(times, dtype=np.float64)
+    out_n, out_B = np.empty(t_all.size), np.empty(t_all.size)
+    for e in range(len(net.epochs)):
+        mb = (net.epochs[e][1] or {0: (1.0, 1.0)})[0][0]
+        t0, t1 = starts[e], starts[e + 1]
+        last = e == len(net.epochs) - 1
+        sel = [k for k, t in enumerate(t_all) if t0 <= t and (t < t1 or (last and t == t1))]
+
+        def rhs(_t, u, mb=mb):
+            J = mb * p.k_on * (u[0] / V) * (p.S - u[1]) - p.k_off * u[1]
+            return [-J, J]
+        sol = solve_ivp(rhs, (t0, t1), y, method="Radau", rtol=1e-12, atol=1e-24,
+                        t_eval=sorted(set([t_all[k] for k in sel] + [t1])))
+        at = {float(t): sol.y[:, i] for i, t in enumerate(sol.t)}
+        for k in sel:
+            out_n[k], out_B[k] = at[float(t_all[k])]
+        y = list(at[t1])
+    return {"n_fmol": out_n, "B_fmol": out_B}
 
 
 def _controls(inputs: dict, refs: dict) -> dict:
@@ -122,6 +154,7 @@ def _controls(inputs: dict, refs: dict) -> dict:
             "q3_internalisation": ["k_int_1pct"],
             "q3_binding_multiplier": ["binding_multiplier_ignored",
                                       "binding_multiplier_squared"],
+            "q5_class_switch": ["internalisation_multiplier_ignored"],
             "q5_washout": ["k_int_1pct", "wrong_destination"]}
     out = {}
     for name, ctrls in plan.items():
@@ -140,6 +173,15 @@ def _controls(inputs: dict, refs: dict) -> dict:
                 r = _radau(worlds.network(_perturbed(w, c)), t)
             row[c] = _dev(r, base)
         out[name] = row
+    # the binding multiplier applied to k_on alone: the equilibrium moves while m_b != 1
+    w = inputs["worlds"]["q3_binding_multiplier"]
+    t = np.asarray(w["record_times_s"], dtype=np.float64)
+    base = _radau(worlds.network(w), t)
+    bad = _k_on_only(w, t)
+    node = base["nodes"].index(w["populations"][0]["owner"]["faces_node"])
+    out["q3_binding_multiplier"]["binding_multiplier_on_k_on_only"] = float(max(
+        np.max(np.abs(bad["B_fmol"] - base["B_fmol"][:, 0])),
+        np.max(np.abs(bad["n_fmol"] - base["n_fmol"][:, node]))))
     # the receiving cell's volume taken as 1 pL: the state and the work it moves
     for name in ("q1_eps_1e-1", "q5_inward"):
         w = inputs["worlds"][name]
