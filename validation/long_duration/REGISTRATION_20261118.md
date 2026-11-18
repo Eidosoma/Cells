@@ -460,3 +460,18 @@ The lead answered §9's questions, all as recommended. No criterion, budget or w
 - **Q5: (a).** H2 is kept as registered.
 - **The lead also asks** that M1 confirm the junction-gate cap of §3's readings with the term's
   numbers.
+
+### Amendment 2, 21:04 UTC on 18 November 2026: M4's settling readouts on the composite, before M4 runs
+
+- **The gap.** Writing M4's driver showed that `models/surface_pump_projective.settling`, which
+  serves @1–@3, cannot read a composite's channel targets. The composite nests the inner
+  values under `ionic`, so on a composite `settling` silently omits the channel gates'
+  distances and reads only the junction gates. FR-8's fine windows (the note's §4.2) need a
+  composite settling readout. This is reported to the lead as an engine gap.
+- **What M4 does instead of stopping (§6).** It evaluates `settling` on the composite's inner
+  model, at the composite's own effective control and view (`model.inner`, `model.inner_state`,
+  `model.control_view`, `model.view`). Those are the same inner readouts that the composite's
+  own `readouts` computes, so no physics is re-derived. W0 declares no membrane-process
+  operator, so the composite adds no process term to them.
+- **The direct composite call** is recorded beside it, to show the gap.
+- Nothing else changes.
