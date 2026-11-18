@@ -72,8 +72,11 @@ kinetic model runs out of process, as a reference, only if its licence allows.
     MATLAB's way of passing parameters to the solver.
   - **The checks.** Both of the adapter's checks pass: bit-for-bit pass-through, and every
     concentration real and non-negative.
-  - **The criteria.** M0–M2 match the SI's figures within the registered tolerances: A₆/B₆ = 1,
-    1.554 and 1.245. M3–M4's grids are monotone, with their corners exact.
+  - **The criteria.** M0–M2 match the SI's figures within the registered tolerances: A₆/B₆ = 1.00,
+    1.55 and 1.24–1.25, to the three figures the solver supports. M3–M4's grids are monotone,
+    with their corners exact.
+  - **One disagreement.** On Supplementary Fig. 124's top row the run gives 2.0 where the figure
+    reads about 2.6. The 100 h horizon does not explain it.
   - **The earlier attempts** stopped short (§5.1, §5.4.2).
   - The model is not admissible in Cells' origin-of-life family (half orders, irreversible steps,
     no oxidant). So Cells' first model is its own: R0, three hexamer types in stacks under flow
@@ -788,7 +791,19 @@ R2–R5 need F6's ring family; R0 and R1 need only its minimal subset.
 **The result.** The authors' model ran, unmodified, through a disclosed calling-convention adapter
 (D221, U5), in conda-forge's GNU Octave 9.4.0. Both of the adapter's checks pass, and so does
 every criterion registered in §2.5. Its outputs are now the authors' reference, in place of §5.1's
-readings of the SI's plots.
+readings of the SI's plots, within three limits:
+- **What was matched.** M0–M2 match the published Supplementary Figs. 121–123. The grids match
+  only as registered: at their corners and in their monotonicity.
+- **Where the figure disagrees.** On Supplementary Fig. 124's top row (B₆ mutation 1.0) the run
+  disagrees with the figure: 1.995 at a cofactor of 1, against a colour that reads about 2.6.
+  - **The horizon does not account for it.** That case's tail is saturating, and its limit is about
+    2.02 (`runs/tail-check-01-M3-X1-Y1`).
+  - **The cause is not known.**
+- **Precision.** The code runs at the solver's default tolerances (relative 10⁻³), in Octave's
+  SUNDIALS-based `ode15s`, not MATLAB's. Octave's `ode15s` was off by 3.4 × 10⁻⁴ relative on
+  dy/dt = −y.
+  - So the values hold to about three significant figures: A₆/B₆ = 1.00, 1.55 and 1.24–1.25.
+  - The fourth digit is the run's, not the authors'.
 
 The first attempt, in Debian's Octave, stopped at the solver. It is kept below as history (§5.4.2).
 
@@ -799,7 +814,7 @@ The first attempt, in Debian's Octave, stopped at the solver. It is kept below a
     release's, into a folder of its own (`octave-conda/`, with `MANIFEST.txt` and the package
     list).
   - **The wrapper.** It runs only through that folder's wrapper, `octave-cli.sh` (sha256
-    741fcbc5…). The wrapper sets `OCTAVE_HOME` as the environment's activation does, and adds
+    741fcbc504c5194153d51bef7c807c419c9fb9423e7cd816f7063279d07a1c1b). The wrapper sets `OCTAVE_HOME` as the environment's activation does, and adds
     `--norc --no-history --quiet --no-window-system`.
   - **The build.** SUNDIALS_IDA is 1. Its own `ode15s` solves dy/dt = −y over [0, 1], giving
     0.3677546 against e⁻¹ = 0.3678794 at the default tolerances (`runs/interpreter-check-02-conda`).
@@ -833,7 +848,8 @@ The first attempt, in Debian's Octave, stopped at the solver. It is kept below a
   endfunction
   ```
 
-  (The file's header comment, omitted here, says the same as this paragraph.)
+  The file's header comment is omitted here; it says the same as this paragraph. The sha256 covers
+  the whole file, and a copy is at `runs/reference-01/adapter_ode15s.m`.
   - **What it does.** It binds the parameters after the options into a two-input handle, the
     MATLAB convention, and calls Octave's own `ode15s` with the options unchanged. Without such
     parameters it passes its arguments through.
@@ -854,8 +870,10 @@ The first attempt, in Debian's Octave, stopped at the solver. It is kept below a
   - **The result.**
     - Both equal the direct call bit for bit: the times, and all 303 values' 64 bits.
     - The adapter resolves ahead of Octave's `ode15s`, and the path is restored after each call.
-- **The driver,** `scripts/famonomers_reference.m` (sha256 1c5e68aa…; a copy is in the run folder),
-  was tested before the run, as the lead asked:
+- **The driver,** `scripts/famonomers_reference.m` (sha256
+  1c5e68aa5812b63f9282cae7a5baec3dc48849252f8ebc5c7389c7f87eda3663, with every input's hash in
+  `runs/reference-01/inputs.sha256`; a copy is in the run folder), was tested before the run, as
+  the lead asked:
   - **listing mode:** 250 cases (3, plus M3's 13 × 10, plus M4's 13 × 9), with M3's and M4's
     rows as registered (`runs/driver-test-01-list`);
   - **one case:** the default call, M1, with its readouts, check 2 and its CSV
@@ -923,8 +941,13 @@ The first attempt, in Debian's Octave, stopped at the solver. It is kept below a
     - **Fig. 124's top row** (B₆ mutation 1.0) reads higher than the run at low cofactor: about
       2.6 at X = 1, against 1.995. Its next row down roughly agrees: a colour of about 1.8,
       against the run's 1.738 at 0.9. The figure's row spacing is not read exactly.
-    - **Unresolved.** The figure says "at steady state", while the code stops at 100 h, where that
-      case still rises 0.66% per 10 h. The run does not resolve the difference.
+    - **The horizon does not account for it.** The figure says "at steady state", while the code
+      stops at 100 h, where that case still rises 0.66% per 10 h.
+      - Its run alone (`runs/tail-check-01-M3-X1-Y1`, through the tested single-case path) shows
+        the tail saturating. Each 10 h increment is 0.64–0.69 of the one before (0.100, 0.069,
+        0.046, 0.031, 0.020, 0.013 from 40 h).
+      - So the limit is about 2.02, against the figure's 2.6. The cause of the difference is not
+        known.
   - **T8a and T8b in the authors' model.** An activity ratio of 2 gives 1.554 (T8a's analogue). SI
     Table 6's fidelity loss alone gives 1.245. So T8b's ordering, s(T8b) < s(T8a), holds there.
 
