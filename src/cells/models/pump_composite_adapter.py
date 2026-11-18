@@ -853,7 +853,11 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     plate = dc * v[source]  # Each piece's inside plate charge; its outside one is its negative.
     capacitance = q.membrane_capacitance + scatter(dc, q.membrane_capacitance, (target,), xp=xp)
     capacitance = capacitance - scatter(dc, q.membrane_capacitance, (source,), xp=xp)
-    q1 = refresh_field(q._replace(membrane_capacitance=capacitance), bound, xp=xp)
+    # The new view's field arrays start from the declared layout's, as _view's do: refresh_field
+    # keeps its argument's arrays where no field input differs from the declared one, so a transfer
+    # that returns every capacitance to its declared value then reads the declared field.
+    derived = {k: getattr(bound, k) for k in DERIVED_FIELD_ARRAYS if hasattr(bound, k)}
+    q1 = refresh_field(q._replace(membrane_capacitance=capacitance, **derived), bound, xp=xp)
     nodes = xp.zeros(n + o)
     moved = (  # Each node: the plate charges arriving less those leaving.
         scatter(plate, nodes, (q.membrane_cell[target],), xp=xp)

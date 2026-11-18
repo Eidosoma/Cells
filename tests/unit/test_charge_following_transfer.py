@@ -237,13 +237,17 @@ def cases():
     yield "retrieval from a free node", "free_node", None
     yield "recycling into a held bath's patch", "held_bath", "reverse"
     yield "two transfers at once", "two_cells", None
+    yield "a transfer between two cells", "two_cells", "across"
 
 
 @pytest.mark.parametrize("name, world, direction", list(cases()), ids=[c[0] for c in cases()])
 def test_the_heat_closes_the_energy_ledger_against_the_dense_reference(
     name, world, direction, request
 ):
-    if world == "two_cells":
+    if world == "two_cells" and direction == "across":  # The inside plate moves between cells.
+        spec, state, q = two_cells()
+        source, target = [patch(spec, "contact_0")], [patch(spec, "contact_1")]
+    elif world == "two_cells":
         spec, state, q = two_cells()
         source = [patch(spec, "wall_cell_0"), patch(spec, "contact_1")]
         target = [patch(spec, "contact_0"), patch(spec, "wall_cell_1")]
@@ -308,6 +312,42 @@ def test_charge_is_conserved_exactly(world, request):
     else:
         wrong_charge[n + w] = outside
     assert not neutral(wrong_charge, wrong_supply, q, k, b, plate)
+
+
+def test_a_view_that_returns_to_the_declared_capacitances_refreshes_from_them(held_bath):
+    """The incoming view need not be the declared layout: FR-2 passes membrane state's view. A
+    retrieval from the declared layout, then the same capacitance recycled from the view it gave,
+    lands every capacitance back on the declared one bitwise; the second transfer's potentials must
+    then be the declared layout's field, not the first view's (refresh_field keeps its first
+    argument's arrays where nothing differs from the bound layout)."""
+    spec, state, q, k, b = held_bath
+    ck, cb = float(q.membrane_capacitance[k]), float(q.membrane_capacitance[b])
+    dc = next(  # A capacitance whose round trip returns both patches bitwise.
+        x for x in (ck * 2.0**-n for n in range(2, 20)) if (ck - x) + x == ck and (cb + x) - x == cb
+    )
+    first = transfer(q, state, [k], [b], [dc])
+    moved = first.view._replace(  # The first view with the charges it moved, as FR-2 books them.
+        initial_cell_charge_C=first.view.initial_cell_charge_C + first.charge_C[: q.active.size],
+        initial_outside_charge_C=first.view.initial_outside_charge_C
+        + first.charge_C[q.active.size :],
+    )
+    second = adapter.charge_following_transfer(
+        state, moved, np.asarray([b]), np.asarray([k]), np.asarray([dc]), q, xp=np
+    )
+    assert (
+        np.asarray(second.view.membrane_capacitance).tobytes()
+        == np.asarray(q.membrane_capacitance).tobytes()
+    )
+    r = reference(moved, state, [b], [k], np.array([dc]))
+    np.testing.assert_allclose(second.after_V, r["v1"], rtol=1e-11, atol=1e-15)
+    np.testing.assert_allclose(second.electrode_C, r["electrode"], rtol=1e-9, atol=1e-24)
+    assert second.heat_pJ == pytest.approx(r["heat"], rel=1e-9, abs=1e-15)
+    for name in adapter.DERIVED_FIELD_ARRAYS:
+        if hasattr(q, name):
+            assert (
+                np.asarray(getattr(second.view, name)).tobytes()
+                == np.asarray(getattr(q, name)).tobytes()
+            ), name
 
 
 def test_the_kernel_under_jit_matches_numpy(free_node):
