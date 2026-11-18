@@ -1245,3 +1245,50 @@ too.
 
 **Order.** Register in whichever order fits, before either builder's first output. The binding
 owner's seat comes after the kinds owner's or near it (§18), so C need not go first.
+
+**Amended the same day (the lead, about 17:15 UTC), on the operators and @3 owners' first
+hand-backs:**
+- **The operators owner's order follows D195 as amended:**
+  1. refusal 4 per move (version 1.3, built);
+  2. B1's operator part;
+  3. composition's M2–M5.
+
+  Composition's M1 may proceed while B1 waits for F's roles API and the @3 owner's field roles.
+  This corrects the order given above and in the brief. It keeps composition's 12–15 days off the
+  pass's critical path.
+- **The step terms that refusal 4 version 1.3 reads are added to the law registry by the F owner:**
+  - `stage_term`, `material_term`, `charge_bound` and `material_bound` on the cycle and route law
+    types, each a kernel's name or None. The bound is split into two now, while the fields are being
+    added;
+  - the two declarations in `kinds/passive_routes.py`, the leak's `stage_term` and the neutral law's
+    material bound.
+
+  The second is a recorded exception to the owner table, made while the kinds owner has not
+  started. Version 1.3 lands after these, gated with crossrev's kinds and acceptances sets
+  identical.
+- **A source kind's admission trusts that its `moved_rows` lists every move,** as @3's one-writer
+  rule and exact booking already do. The @3 owner adds a later guard that a kind's rates touch only
+  its declared rows.
+- **Composition's questions (its §13.4)** take the operators owner's recommendations, which are
+  §4.5's answers:
+  1. @3's pump rates are gated by the view's `membrane_active`, where a world declares a closer
+     beside a pump law. This is the @3 owner's work.
+  2. At retirement, history-role fields are added back through `adjust_inner`, by field roles.
+  3. @3's built-in pumps stay @3's in this pass.
+  4. Kinds beside closers are handled by declared field roles, with a hook only where no role fits.
+  5. Transporter populations become entities with units on their own axis, in seam A.
+  6. Held fuel at division is split by the anchor rule.
+  7. R5 with growing capacity takes the schedule's largest capacity, in M6.
+- **Ownership added to the operators owner:**
+  - `validation/tissue/composition_matrix.py`, `docs/PUMP_COMPOSITE.md` and
+    `tests/unit/test_composition_matrix.py`;
+  - the amendment or split of `tests/unit/test_secreted_species.py` at M3. Its qualified assertions
+    are kept, and any change is disclosed;
+  - the composition tests that go with its modules.
+- **Composition's program comparison (its §9)** uses the pass's base, e16e26bb, as its baseline.
+- **The composition design's probes** stay as evidence unless a milestone's test uses them.
+- **Composition's references** are the references agent's after A's and C's, as in its brief. If M2
+  gets ahead, a second references agent takes them when a seat frees.
+- **The @3 owner** may make the one-line law-ID fix in `kinds/ph_condition.py:217`. It lands in the
+  same merge window as G's "@" refusal in the run-view writer, a recorded exception while the kinds
+  owner has not started.
