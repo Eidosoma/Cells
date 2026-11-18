@@ -85,6 +85,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D214's two core boundary fixes on main (18 November 2026, early).** Merged from
+  `core-boundary-checks` at 13aaf72a.
+  - **Fix 1a:** kinds write only their own resolved, declared fields: initial values, derivatives
+    and control outputs, at the pump family's three merge points. `test_kind_foreign_writes.py` has
+    19 tests.
+  - **Fix 1b:** the vector windows' failure mask refuses, at admission, more checks than its dtype
+    and shift hold. `test_vector_failure_mask.py` has 34 tests.
+  - **The gate at 1aca2314:** crossrev 9 of 9 identical against the renewed record (the placement
+    proof), G1 113 of 113, tiers 1+2 with 0 of 495 changed, collected IDs with 53 new and none
+    missing, and FR's bitwise set passed.
+  - **The targeted check at 13aaf72a,** for FR-10's pump-family worlds landed after that gate: FR-10's
+    seven test files, the bath-schedule files, the door-S view and the continuity bypass, 0 changed.
+    IDs show additions only.
+  - Evidence: `/mnt/workspaces/Cells/core-boundary-checks-20261117/` (`gate-1aca2314/`,
+    `fr-landing-1aca2314/`, `targeted-13aaf72a/`).
+
 - **FR-10 judged: passed (17 November 2026, 23:45–23:50 UTC).** The registered protocol
   `fr10-dose-schedule-v1` was judged once from the clean snapshot of its registration commit
   407ba164, on lane A (CPUs 0-3, under its lock). Its references are the code-blind FR references
