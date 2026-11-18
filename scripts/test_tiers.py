@@ -6,6 +6,12 @@ files are timed individually and grouped into tiers:
   measure  run each test file once, with a per-file wall cap, recording duration,
            outcome and counts to a JSON file (written incrementally)
   tiers    group measured files: tier 1 (< 20 s), tier 2 (< cap), tier 3 (cap hit)
+  fold     a landing's measured rows onto the current record at landing time (D222): each
+           measured file's row replaces its row in place, or is inserted at its sorted place,
+           in the tier its time gives; every other row is kept as it stands, in its order;
+           the measurements' sources and provenance are appended. Refused, with nothing
+           written, when a row would be dropped (its file has left tests/), when a measured
+           file is not in tests/, or when a measured row failed (exit code, failures, errors)
   run      run every file of the given tiers and compare outcomes with the record:
            a file is changed when its exit code, failed or error count differs from
            its row, its passed count falls below the row's or its skipped count rises
@@ -35,6 +41,8 @@ addresses. The -q logs carry file wall times only, so time is compared per file.
 Example:
   python scripts/test_tiers.py measure --out RUN_DIR --cpus 4,5,6,7 --cap 90
   python scripts/test_tiers.py tiers --measured RUN_DIR/measured.json --out tests/test_tiers.json
+  python scripts/test_tiers.py fold --record tests/test_tiers.json \
+      --measured LANDING/measure/measured.json --out tests/test_tiers.json
   python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 \
       --out RUN_DIR --cpus 4,5,6,7
   python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 3 \
@@ -197,14 +205,24 @@ def _parallel(files, cpus, cap, out_dir, record_path, header):
     return results
 
 
+def only_files(doc, only_tiers, files):
+    """The files an only-list selects from `files`, in their order. A tier the list does not hold
+    selects nothing (D222: an only-list without a "2" key raised KeyError under the default
+    --only-tiers 1 2). A listed file that is not a test file is refused, since it would be measured
+    as nothing."""
+    chosen = {r["file"] for t in only_tiers for r in doc["tiers"].get(str(t), [])}
+    unknown = sorted(chosen - set(files))
+    if unknown:
+        raise SystemExit(f"--only lists files that are not test files under tests/: {unknown}")
+    return [f for f in files if f in chosen]
+
+
 def measure(args):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     files = _test_files()
     if args.only:
-        doc = json.loads(Path(args.only).read_text())
-        chosen = {r["file"] for t in args.only_tiers for r in doc["tiers"][str(t)]}
-        files = [f for f in files if f in chosen]
+        files = only_files(json.loads(Path(args.only).read_text()), args.only_tiers, files)
     header = {
         "kind": "cells.test_file_costs@1",
         "provenance": _provenance(),
@@ -266,6 +284,65 @@ def tiers(args):
     }
     Path(args.out).write_text(json.dumps(doc, indent=1) + "\n")
     print({k: len(v) for k, v in groups.items()})
+
+
+def tier_of(row, fast):
+    return "3" if row.get("timed_out") else ("1" if row["seconds"] < fast else "2")
+
+
+def fold_rows(record, measured_records, sources, files):
+    """The record with the measured rows folded in (module docstring: fold), or SystemExit.
+
+    record: the current tier record; measured_records: measure's records, later ones win per
+    file; sources: their paths; files: the test files under tests/ now."""
+    fast = record["fast_seconds"]
+    where = {r["file"]: t for t in record["tiers"] for r in record["tiers"][t]}
+    gone = sorted(f for f in where if f not in set(files))
+    if gone:
+        raise SystemExit(f"fold refused: the record's rows {gone} name files no longer under "
+                         "tests/, and fold never drops a row (resolve them by hand)")
+    latest = {}
+    for m in measured_records:
+        for row in m["files"]:
+            latest[row["file"]] = row
+    unknown = sorted(f for f in latest if f not in set(files))
+    if unknown:
+        raise SystemExit(f"fold refused: measured files {unknown} are not under tests/")
+    failing = sorted(f for f, r in latest.items() if r["exit_code"] != 0
+                     or r["counts"].get("failed") or r["counts"].get("error"))
+    if failing:
+        raise SystemExit(f"fold refused: measured rows {failing} did not pass")
+    out = json.loads(json.dumps(record))
+    for name, row in sorted(latest.items()):
+        new = {k: row[k] for k in ("file", "seconds", "exit_code", "counts")}
+        tier = tier_of(row, fast)
+        rows = out["tiers"][where[name]] if name in where else None
+        if rows is not None and where[name] == tier:
+            rows[next(i for i, r in enumerate(rows) if r["file"] == name)] = new
+            continue
+        if rows is not None:
+            rows[:] = [r for r in rows if r["file"] != name]
+        target = out["tiers"].setdefault(tier, [])
+        target.insert(next((i for i, r in enumerate(target) if r["file"] > name), len(target)),
+                      new)
+    for path, m in zip(sources, measured_records, strict=True):
+        if str(path) not in out["measured"]:
+            out["measured"].append(str(path))
+            out["measured_provenance"].append(m["provenance"])
+    kept = {r["file"] for t in out["tiers"] for r in out["tiers"][t]}
+    assert set(where) <= kept, "fold dropped a row"
+    for tier, rows in record["tiers"].items():  # Every unmeasured row as it stood, in its order.
+        assert [r for r in rows if r["file"] not in latest] == [
+            r for r in out["tiers"][tier] if r["file"] not in latest], tier
+    return out
+
+
+def fold(args):
+    record = json.loads(Path(args.record).read_text())
+    measured = [json.loads(Path(m).read_text()) for m in args.measured]
+    out = fold_rows(record, measured, args.measured, _test_files())
+    Path(args.out).write_text(json.dumps(out, indent=1) + "\n")
+    print({t: len(v) for t, v in out["tiers"].items()})
 
 
 def run(args):
@@ -873,6 +950,10 @@ def main(argv=None):
     t.add_argument("--base", help="existing tiers JSON to keep, overriding re-measured files")
     t.add_argument("--out", required=True)
     t.add_argument("--fast", type=float, default=20.0)
+    fo = sub.add_parser("fold", help="a landing's measured rows onto the current record (D222)")
+    fo.add_argument("--record", required=True, help="the current tier record (main's)")
+    fo.add_argument("--measured", required=True, nargs="+", help="measure's records, later win")
+    fo.add_argument("--out", required=True)
     r = sub.add_parser("run")
     r.add_argument("--tiers", required=True)
     r.add_argument("--tier", type=int, nargs="+", default=[1])
@@ -901,7 +982,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.command == "diff" and not args.collected:
         args.collected = [str(Path(r) / "collected.json") for r in args.run]
-    commands = {"measure": measure, "tiers": tiers, "run": run}
+    commands = {"measure": measure, "tiers": tiers, "fold": fold, "run": run}
     commands |= {"collect": collect, "freeze": freeze, "diff": diff}
     return commands[args.command](args) or 0
 
