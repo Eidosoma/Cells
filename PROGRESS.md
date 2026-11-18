@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-16 UTC.
+Last updated: 2026-11-18 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -24,6 +24,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
       `fr<n>-...-qualified-<date>`.
   - **Landed for development, not judged:** the phase start and failure records, Track E's M1
     development work, and independent references for the passive law.
+    On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
+    against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -39,6 +41,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     [FR-7's abundance to function and the closed loop's unit](docs/ABUNDANCE_TO_FUNCTION_DESIGN.md),
     [FR-2's membrane retrieval](docs/MEMBRANE_RETRIEVAL_DESIGN.md), and
     [FR-8's long-duration mode](docs/LONG_DURATION_MODE_DESIGN.md).
+    The [OL2/OL3 design check](docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md) (lipids in and out, and
+    fission; D212), with the lead's rulings in
+    [§0.2c](docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md#02c-the-leads-rulings-on-ol2s-and-ol3s-design-check-18-november-2026).
+    Code follows D188's move 2.
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
@@ -93,6 +99,55 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026).**
+  Merges 3e6410fe (ol1-laws 3e39bcc5) and b4522c77 (OL5's references, ool-references a9f40130),
+  tagged `ol1-landed-2026-11-18`. This is the foundation of D212's programme. It is the event-pair
+  contract over places (pool, membrane, lumen), with OL1's four laws:
+  - `cells.stochastic_mass_action@1`;
+  - `cells.transition_state_factor@1`;
+  - `cells.ideal_mixing@1`;
+  - `cells.regular_mixing@1`.
+
+  It follows the lead's rulings in ORIGIN_OF_LIFE_ENGINE_DESIGN §0.2a and §0.2b.
+  - **Verified against code-blind references.** OL5 wrote `validation/ool/references`, registered
+    before any engine output; its five amendments all came before it too. The references passed
+    6 of 6 rows on the probe set at 3e39bcc5, with inputs pinned at ab3dd700:
+    - local detailed balance: Kolmogorov 2.8e-14 over 483 cycles;
+    - the closed world's stationary law: total variation 1.0e-15;
+    - catalysis kinetic only: total variation 1.7e-15, and the rate-doubled pair bitwise rescaled;
+    - mass action: forward form 1.9e-14; 16 large-system z-tests at |z| ≤ 2.26 against 4.003; the
+      SSA replay exact; moieties conserved; 10 refusals;
+    - ledgers: closure 1.4e-12 over 2,000 events;
+    - streams: a bitwise replay.
+
+    Four planted errors applied to the engine's own records were all caught.
+  - **The first harness run failed one row on a record rule.** The ladder's stream identities
+    repeated across rungs, though the row's physics parts passed. The references were not amended.
+    Instead the driver was fixed, with a planted test (efb3c739), and the probe set regenerated.
+    Both verdicts are kept.
+  - **Rulings first.** Two of OL5's readings were ruled on the physics (bbcbec69) before the
+    builder was asked what its kernel did:
+    - `last_molecule: kept` zeroes only a step that changes the membrane's count. The kernel had
+      zeroed every channel with an empty end state, freezing pool steps at such probe states. It
+      was fixed in 622d87d4, with a planted test.
+    - Rule 8's singular step is one and the same membrane species on both sides. It matched.
+  - **The gates:**
+    - lane A at 7688e9f4, whose src/ is identical to 3e39bcc5's: crossrev identical, G1 113 of 113,
+      tiers 1+2 over 519 files with 0 changed, and IDs only OL1's new ones;
+    - GARD's @1 invariance: the freeze test, the 12 part-1 references, @1's 4,216 probe files with
+      arrays bitwise, and G2 10 of 10;
+    - FR's bitwise landing set;
+    - at the merged head b4522c77: OL1's and OL5's test files, 132 passed; test IDs 18,192 → 18,318,
+      none missing, the 126 new ones all in their files.
+  - **Scope:** the stochastic family with general stoichiometry over places, regular mixing,
+    catalysis on the common state and exact ledgers. Geometry, an osmotic lumen and division come in
+    OL2 and OL3. Nothing is judged under a registered protocol, and nothing is compared with
+    experiment.
+  - **Evidence:**
+    - `/mnt/workspaces/Cells/ol1-laws-20261117/README.md`;
+    - the verdicts in `/mnt/workspaces/Cells/ool-references-harness-20261118/` (`result/` and
+      `result-3e39bcc5/`);
+    - the merged-head check in `/mnt/workspaces/Cells/ol1-landing-20261118/`.
 - **FR-6's A5″ judged: passed (18 November 2026, 03:39–03:47 UTC).** The registered protocol
   `fr6-a5pp-v1` was judged once from the clean snapshot of its registration commit 555d8771, on
   lane B (CPUs 8-11 and 24-27, under its lock). It takes FR-6's items 1 and 3 together: two cells'
