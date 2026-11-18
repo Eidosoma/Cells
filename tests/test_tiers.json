@@ -166,7 +166,8 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-93e45f00/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-94395770/measured.json",
-  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json"
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json",
+  "/mnt/workspaces/Cells/crossrev-acceptances-20261118/tiers-770d66d3/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1365,6 +1366,13 @@
    "root": ".claude/worktrees/ool-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T14:32:53+00:00"
+  },
+  {
+   "git_revision": "770d66d3b0126763d6a45b4fbc1ad8fcb3a1c34a",
+   "dirty": false,
+   "root": ".claude/worktrees/crossrev-acceptances",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T15:50:17+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2242,6 +2250,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_crossrev_acceptances.py",
+    "seconds": 6.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
