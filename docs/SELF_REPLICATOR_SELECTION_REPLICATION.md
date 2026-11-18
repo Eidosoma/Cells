@@ -39,10 +39,12 @@ track, 18 November 2026.
 
 Nothing from the downloads is committed.
 
-**Numbers from a subscription article.** D186 and D201 allow cited numbers from open and
-free-to-read papers. This article is neither, though its SI and workbooks are free to download.
-The lead's brief directs numbers as read, with their locations. §7 asks the lead to confirm that
-(question L9).
+**The user's terms (D220).** The user asked for this replication. The article's text stays out of
+the repository: it is paraphrased and cited, and its numbers are given as read. The authors'
+kinetic model runs out of process, as a reference, only if its licence allows.
+- D186 and D201 cover open and free-to-read papers.
+- This article is a subscription one, though its SI and workbooks are free to download.
+- D220 settles its numbers.
 
 **In short.**
 - **The paper.** Two systems of synthetic self-replicating macrocycles run in a lit, stirred flow
@@ -72,7 +74,8 @@ The lead's brief directs numbers as read, with their locations. §7 asks the lea
     potential, continuous flow, stack breaks and a ring family.
   - 15–23.5 agent-days with their references. The whole replication is 23.5–36, after OL3
     (D212).
-- **Questions** (§7.3): ten for the lead (eight on physics) and four for the user.
+- **Questions** (§7.3): nine open for the lead, eight of them on physics (D220 answers a tenth),
+  and four for the user.
 
 **Engine models run: none.** Docs only. The milestones in §7 name the models they would run. The
 authors' model was not run (§5.1).
@@ -684,8 +687,10 @@ references agent to derive independently):
   - Nothing in it was executed.
   - As the brief requires, the refusal is reported and not routed round: no other installer or
     container was tried, and the code was not transcribed.
-- **Criteria M0–M6 stay registered** (§2.5, committed at 3c9572bf before any run), for a run the
-  lead or the user approves (§7.3, U3).
+- **Criteria M0–M6 stay registered** (§2.5, committed at 3c9572bf before any run).
+  - D220 approves the run itself.
+  - What it waits for is an environment that the user, or the session's permissions, allow
+    (§7.3, U3).
 - **Meanwhile the reference is the SI's own plotted model outputs,** read with §2.5's tolerances.
   These are readings, not a run:
 
@@ -783,7 +788,7 @@ user to decide:
 | Milestone | Content | Engine models it runs | Needs | Agent-days (**S**) |
 | --- | --- | --- | --- | --- |
 | **SR0** Desk | This note; the lead's rulings and the user's answers on §7.3's questions | None (design) | — | Done; 0.5 for the amendments |
-| **SR1** Reference | The authors' model run out of process against M0–M6, if approved | None. It is tooling: D138 makes running a paper's own code a matter for the user's approval per paper, and AGENTS.md makes a milestone that runs no engine model tooling | U3 | 0.5 |
+| **SR1** Reference | The authors' model run out of process against M0–M6 | None. It is tooling (D138; AGENTS.md), and D220 approves it as a reference since the licence allows | An environment (U3) | 0.5 |
 | **OL10** Stacks and flow (new) | F1, F2, F4 and F5, behind OL2's invariance gate; tests and tier rows | `cells.assembly_lineages@2` with `cells.linear_stack_geometry@1`, `cells.phase_exchange@1` (`end_capture`), the side-binding law, `cells.shear_fission@1` (stack breaks) and the flow operator | OL3 landed | 8–13 |
 | **OL4b** Light | F3 | The photon source, with `cells.stochastic_mass_action@1` | OL4 | 2–3 |
 | **Ring family** | F6 | `cells.stochastic_mass_action@1` over the family | OL8's family machinery | 2.5–4 |
@@ -902,8 +907,9 @@ this paper as a strong starting point. Against that idea:
 
 **For the lead** (process):
 
-9. **L9, numbers from a subscription article.** Its SI and workbooks are free to download.
-   Confirm that D186 and D201 cover them, or put the question to the user.
+9. **L9, numbers from a subscription article: answered by D220.** The user's terms give its numbers
+   as read, with their citations. This note keeps the question's number so that the references to
+   it stay valid.
 10. **L10, milestones and owners.**
     - **The proposal:** OL10 by the OL2/OL3 builder after OL3; OL4b with OL4's builder; F6 with
       OL8's builder and the binding owner; the replication's driver,
@@ -920,12 +926,12 @@ this paper as a strong starting point. Against that idea:
      features general (stacks, surfaces, light, flow)?
    - Or a first pass of R0 and R1 alone, about 16–25?
 3. **U3, the authors' MATLAB code.**
-   - **Two approvals.** Running it is tooling, which D138 leaves to the user for each paper, apart
-     from the install. It also needs a MATLAB-compatible interpreter.
+   - **The run is approved.** D220 approves it as an out-of-process reference, since its licence
+     (CC BY 4.0) allows. That is D138's approval for this paper. What remains is an interpreter.
    - **The install was refused.** The install of GNU Octave (GPL, run out of process only) under
      the downloads folder was refused by the session's permission system.
-   - **The choice:** approve the run and the install, or another route, or leave the model unrun,
-     with its plotted outputs as the reference?
+   - **The choice:** approve that install, or another route, or leave the model unrun, with its
+     plotted outputs as the reference?
 4. **U4, an extension beyond the replication.** Perturbation and recovery, as the reading
    summary's experiment (§7.2), registered on its own after the replication?
 
@@ -953,7 +959,8 @@ this paper as a strong starting point. Against that idea:
 - `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` (the whole note);
 - `docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md`, `docs/SOTA_ORIGIN_OF_LIFE.md`, `docs/GARD_DESIGN.md` and
   `docs/RELATIONSHIPS_DESIGN.md` (§2, and the lead's review and rulings);
-- `docs/DECISIONS.md`: D136–D138, D142, D144, D173, D186, D197–D201, D207, D208, D212 and D215;
+- `docs/DECISIONS.md`: D136–D138, D142, D144, D173, D186, D197–D201, D207, D208, D212, D215 and
+  D220;
 - `docs/GAP_JUNCTION_CANCER_REPLICATION.md`, this note's pattern;
 - `docs/CORE_SEAMS_STEP0.md` §4.2 and `docs/CORE_SEAMS_DESIGN.md` §18–§19;
 - `docs/originOfLifeIdeas/READ_SUMMARY_OOL.md`;
