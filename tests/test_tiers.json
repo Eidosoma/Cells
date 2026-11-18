@@ -148,7 +148,9 @@
   "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
   "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
-  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json"
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-references-20261118/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-a5pp-20261118/tiers-e8f70a44/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1221,6 +1223,20 @@
    "root": ".claude/worktrees/fr3-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T02:29:51+00:00"
+  },
+  {
+   "git_revision": "ee1d89157e277ca380d9799e626fdde721083aa6",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T00:07:25+00:00"
+  },
+  {
+   "git_revision": "e8f70a44be6e22e10b1bc4f797f609307000b84c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-a5pp-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T03:01:30+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2494,6 +2510,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_a5pp_qualification.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_references_a5pp.py",
+    "seconds": 7.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {

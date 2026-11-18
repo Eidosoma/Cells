@@ -1,0 +1,515 @@
+{
+ "kind": "fr6-a5pp design@1",
+ "registered": "2026-11-18",
+ "status": "registered before any engine output; the references are code-blind",
+ "inputs": {
+  "path": "validation/fr6/references/reference_inputs.json",
+  "written_by": "validation/fr6/references/worlds.py",
+  "git_blob": "683108b7aabb90e197d3d3de1db956ec6a5bf0d3"
+ },
+ "reuse": {
+  "validation/coupling/cells_reference.py (R-cell)": "unchanged: World, Cell, Patch, Population, Regulator, State, Input, Coupling, simulate (Radau, rtol 1e-10), floor and the model's right-hand side for the stand-in",
+  "validation/coupling/state_reference.py (R-state)": "unchanged: Turnover, D150's regulator in closed form",
+  "validation/coupling/piecewise_ode.py": "unchanged, through simulate",
+  "new": "the registered world, the controls that tell the two cells apart, the second-order stand-in, the design and values"
+ },
+ "claims": {
+  "A5''": "the engine's V and amounts in both cells against R-cell with the state integrated alongside, at second order on the ladder 1, 0.5, 0.25 and 0.125 ms, where the error stands at least 100 times above the reference's floor",
+  "the per-cell prior": "the two cells are told apart: a swapped, shared or ignored s0 departs by 2.9 to 6.1 mV, far above any honest error on the ladder",
+  "the state, not the instantaneous form": "A5's instantaneous Hill form in place of the state departs by 5.4 mV",
+  "tolerance_basis": "the protocol pins its tolerance from its dt study; a control has power at a dt where its deviation is at least 10 times the honest second-order stand-in's error there (margins_over_honest)"
+ },
+ "floor": {
+  "V": 3.26405569239796e-14,
+  "amounts": 1.4210854715202004e-12,
+  "mM": 7.105427357601002e-13,
+  "s": 2.070565940925917e-14,
+  "U": 1.2878587085651816e-14,
+  "F": 1.865174681370263e-14,
+  "a_eff": 1.865174681370263e-14,
+  "current": 1.739987343202365e-24,
+  "crossing": 0.0
+ },
+ "controls": {
+  "s0_swapped": {
+   "V_V": 0.005159827128379535,
+   "amounts_fmol": 0.0010946911529003955,
+   "s": 0.7000000000000001
+  },
+  "s0_shared_a": {
+   "V_V": 0.005159827128387924,
+   "amounts_fmol": 0.0010946911527867087,
+   "s": 0.7000000000000001
+  },
+  "s0_shared_b": {
+   "V_V": 0.005159827128383643,
+   "amounts_fmol": 0.0010946911519340574,
+   "s": 0.7000000000000001
+  },
+  "s0_shared_mean": {
+   "V_V": 0.0028617698771721822,
+   "amounts_fmol": 0.0005909280440050679,
+   "s": 0.35000000000000003
+  },
+  "s0_ignored": {
+   "V_V": 0.006111610238474993,
+   "amounts_fmol": 0.0012838272944009077,
+   "s": 0.8
+  },
+  "k_on_1pct": {
+   "V_V": 2.3988263721755332e-05,
+   "amounts_fmol": 1.6909616590510268e-05,
+   "s": 0.003185788648712662
+  },
+  "k_off_1pct": {
+   "V_V": 2.4946135071021724e-05,
+   "amounts_fmol": 1.7777099685645226e-05,
+   "s": 0.003053227830608185
+  },
+  "state_bypassed": {
+   "V_V": 0.005418803978487562,
+   "amounts_fmol": 0.003216286751523967,
+   "s": 1.712519015484304e-14
+  },
+  "basal_1e-3": {
+   "V_V": 9.99751183630715e-07,
+   "amounts_fmol": 5.036243919676053e-07,
+   "s": 5.551115123125783e-16
+  }
+ },
+ "ladder_stand_in": {
+  "per_dt": [
+   {
+    "dt_s": 0.001,
+    "honest_error": {
+     "V_V": 6.609321882011798e-07,
+     "amounts_fmol": 2.1307300812622998e-08,
+     "s": 2.9392354925494857e-06
+    }
+   },
+   {
+    "dt_s": 0.0005,
+    "honest_error": {
+     "V_V": 1.6212329269349457e-07,
+     "amounts_fmol": 5.228116606303956e-09,
+     "s": 7.347320843398286e-07
+    }
+   },
+   {
+    "dt_s": 0.00025,
+    "honest_error": {
+     "V_V": 4.015178514671369e-08,
+     "amounts_fmol": 1.2948930816492066e-09,
+     "s": 1.836747714478726e-07
+    }
+   },
+   {
+    "dt_s": 0.000125,
+    "honest_error": {
+     "V_V": 9.991153654409501e-09,
+     "amounts_fmol": 3.2230218494078144e-10,
+     "s": 4.591775787377017e-08
+    }
+   }
+  ],
+  "observed_order": {
+   "V_V": [
+    2.0274108768144425,
+    2.01355534521586,
+    2.006740954066005
+   ],
+   "amounts_fmol": [
+    2.02698462151173,
+    2.01345833833669,
+    2.006347106765883
+   ],
+   "s": [
+    2.000150772003935,
+    2.0000647962871887,
+    2.000029376197049
+   ]
+  }
+ },
+ "margins_over_honest": {
+  "s0_swapped": {
+   "V_V": [
+    7806.893385572175,
+    31826.562628076827,
+    128508.03792473102,
+    516439.57313200703
+   ],
+   "amounts_fmol": [
+    51376.341026352435,
+    209385.37437754148,
+    845391.151141352,
+    3396474.5014109346
+   ],
+   "s": [
+    238157.1676629496,
+    952728.2323991118,
+    3811084.094358936,
+    15244646.786202611
+   ]
+  },
+  "s0_shared_a": {
+   "V_V": [
+    7806.893385584868,
+    31826.56262812857,
+    128508.03792493996,
+    516439.5731328467
+   ],
+   "amounts_fmol": [
+    51376.34102101686,
+    209385.3743557962,
+    845391.1510535558,
+    3396474.501058201
+   ],
+   "s": [
+    238157.1676629496,
+    952728.2323991118,
+    3811084.094358936,
+    15244646.786202611
+   ]
+  },
+  "s0_shared_b": {
+   "V_V": [
+    7806.893385578391,
+    31826.562628102165,
+    128508.03792483333,
+    516439.57313241815
+   ],
+   "amounts_fmol": [
+    51376.340980999994,
+    209385.37419270663,
+    845391.1503950834,
+    3396474.4984126985
+   ],
+   "s": [
+    238157.1676629496,
+    952728.2323991118,
+    3811084.094358936,
+    15244646.786202611
+   ]
+  },
+  "s0_shared_mean": {
+   "V_V": [
+    4329.899387955204,
+    17651.811961298852,
+    71273.7893649147,
+    286430.3739247536
+   ],
+   "amounts_fmol": [
+    27733.594658549468,
+    113028.85694870289,
+    456352.7694907814,
+    1833459.6276895944
+   ],
+   "s": [
+    119078.5838314748,
+    476364.1161995559,
+    1905542.047179468,
+    7622323.393101306
+   ]
+  },
+  "s0_ignored": {
+   "V_V": [
+    9246.955054660906,
+    37697.29899348529,
+    152212.66541807074,
+    611702.1567151749
+   ],
+   "amounts_fmol": [
+    60252.92953297656,
+    245562.10028921216,
+    991454.2849868305,
+    3983303.1061728396
+   ],
+   "s": [
+    272179.6201862281,
+    1088832.265598985,
+    4355524.679267355,
+    17422453.46994584
+   ]
+  },
+  "k_on_1pct": {
+   "V_V": [
+    36.294591411931044,
+    147.96309230597,
+    597.4395318689511,
+    2400.9503358171596
+   ],
+   "amounts_fmol": [
+    793.6066956210883,
+    3234.361025942114,
+    13058.697146619841,
+    52465.100705467376
+   ],
+   "s": [
+    1083.8834305002613,
+    4335.98684012167,
+    17344.726352997248,
+    69380.31812159748
+   ]
+  },
+  "k_off_1pct": {
+   "V_V": [
+    37.74386467530981,
+    153.8713818142353,
+    621.2957899597521,
+    2496.8222823809724
+   ],
+   "amounts_fmol": [
+    834.3196466778003,
+    3400.287526909779,
+    13728.62357330992,
+    55156.62169312169
+   ],
+   "s": [
+    1038.7829890961962,
+    4155.566220238729,
+    16623.011459549845,
+    66493.39976489347
+   ]
+  },
+  "state_bypassed": {
+   "V_V": [
+    8198.729121115437,
+    33423.96942758984,
+    134957.9840270458,
+    542360.1884148808
+   ],
+   "amounts_fmol": [
+    150947.63901857316,
+    615190.3244938788,
+    2483824.183713784,
+    9979103.157848325
+   ],
+   "s": [
+    5.8264096899526385e-09,
+    2.330807449388897e-08,
+    9.32364854457065e-08,
+    3.729535357959093e-07
+   ]
+  },
+  "basal_1e-3": {
+   "V_V": [
+    1.5126380610266217,
+    6.166610405087284,
+    24.89929600832559,
+    100.06363811545268
+   ],
+   "amounts_fmol": [
+    23.63623606746309,
+    96.32998456085416,
+    388.93125548726954,
+    1562.584479717813
+   ],
+   "s": [
+    1.8886255072780028e-10,
+    7.555291570142292e-10,
+    3.0222523645285737e-09,
+    1.2089255617371452e-08
+   ]
+  }
+ },
+ "caught_at_margin_10": {
+  "s0_swapped": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "s0_shared_a": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "s0_shared_b": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "s0_shared_mean": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "s0_ignored": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "k_on_1pct": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "k_off_1pct": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "state_bypassed": {
+   "V_V": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  "basal_1e-3": {
+   "V_V": [
+    false,
+    false,
+    true,
+    true
+   ],
+   "amounts_fmol": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "s": [
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ },
+ "min_margin": 10.0,
+ "zero_power": [
+  {
+   "control": "a state reading the other cell's regulator",
+   "why": "both cells receive the same dose (the lead's ruling), so X is equal in both",
+   "remedy": "not shown; a dose that differs between the cells would give it power"
+  },
+  {
+   "control": "the basal level scaled by 1 + 1e-3, in V at 1 and 0.5 ms",
+   "why": "it departs by 1.0e-6 V, 2 and 6 times the honest stand-in's error there; in the amounts it is caught at every rung (margin 24 at 1 ms)",
+   "remedy": "the protocol picks its delta from its development run, as the coupling protocol did"
+  }
+ ],
+ "not_covered": [
+  "A5', a gated channel population under a factor: later, if a gated target is needed (the lead's ruling); R-cell holds the opening constant",
+  "the routing door (FR-6 item 2): the core pass's seam B1 (D216)",
+  "leak and pump targets: not built"
+ ]
+}
