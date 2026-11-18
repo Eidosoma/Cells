@@ -5,7 +5,8 @@ channel step, A2 the dose step, A3 the regulatory write), through the windowed r
 checks). At every accepted row in [t0 - 1 s, t0 + 120 s] the sink evaluates
 models/surface_pump_projective.settling on the composite's inner model at the composite's own
 effective control and view (amendment 2: settling on the composite itself omits the channel
-gates), and keeps that row's membrane voltages; the direct composite call is kept beside it.
+gates), and keeps that row's membrane voltages. The direct composite call is kept beside it
+at every DIRECT_EVERY-th kept row (it only shows the gap, and doubles the cost per row).
 
 judge OUTPUT.json M2_JSON ARM_DIR...: the settling time per registered threshold, the background
 check against A0, the budget rule's threshold from S7b's M2 spectrum, and each arm's peak |dVm|
@@ -20,6 +21,7 @@ from pathlib import Path
 import numpy as np
 
 ARMS = ("A0", "A1", "A2", "A3")
+DIRECT_EVERY = 100
 
 
 def timing(development=None):
@@ -69,10 +71,12 @@ class SettlingSink:
             inner_control = model.control_view(control, row, p, xp=np)
             view = model.view(p, row, xp=np)
             ok, rate, gate = projective.settling(model.inner, inner_state, inner_control, view)
-            try:  # Kept only to show the gap (amendment 2): the composite's own values.
-                direct = projective.settling(model, row, control, p)
-            except Exception:
-                direct = (False, np.nan, np.nan)
+            direct = (False, np.nan, np.nan)
+            if len(self.rows) % DIRECT_EVERY == 0:  # Only to show the gap (amendment 2).
+                try:
+                    direct = projective.settling(model, row, control, p)
+                except Exception:
+                    pass
             vm = projective.membrane_voltage(inner_state, view)
             self.rows[t] = (bool(ok), rate, gate, bool(direct[0]), direct[1], direct[2], vm)
 
@@ -206,8 +210,16 @@ def judge(output, m2_path, directories):
         entry["settling"] = settle
         if arm != "A0" and np.array_equal(data["times"], control["times"]):
             entry["peak_dVm_from_A0_V"] = float(np.max(np.abs(data["vm"] - control["vm"])))
-        entry["direct_composite_gate_distance_max"] = float(np.nanmax(data["direct_gate_distance"]))
-        entry["inner_gate_distance_max"] = float(np.max(data["gate_distance"]))
+        sampled = np.isfinite(data["direct_gate_distance"])
+        entry["gap"] = dict(  # Amendment 2: the direct composite call on the sampled rows.
+            sampled_rows=int(sampled.sum()),
+            direct_gate_distance_max=float(
+                np.max(data["direct_gate_distance"][sampled], initial=0)
+            ),
+            inner_gate_distance_max=float(np.max(data["gate_distance"][sampled], initial=0)),
+            direct_voltage_rate_max=float(np.max(data["direct_voltage_rate"][sampled], initial=0)),
+            inner_voltage_rate_max=float(np.max(data["voltage_rate"][sampled], initial=0)),
+        )
         entry["window_length_at_rule_threshold_s"] = (
             settle[f"{rule_threshold:g}"]["after_intervention_s"] if rule_threshold else None
         )
