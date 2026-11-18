@@ -8,8 +8,14 @@
   §1.3). None disagrees with a ruling.
 - **Scope.** Docs only until the lead says move 2 has landed. Branch `ol2-design-check` from main
   bbcbec69.
-- **OL1** was read at `ol1-laws` 06ee359e. Its engine package is unchanged since c685d821. OL1 has
-  not landed: once it does, §1.1, §1.4, §4 and claim X2 are diffed against the landed head.
+- **OL1** was read at `ol1-laws` 06ee359e, and landed on main at bb69abd4 (merge 3e6410fe of
+  3e39bcc5).
+  - **The diff against the landed head:** the engine is identical to what was read. That covers
+    `cells.assembly_lineages@2`'s package with its kernel fix 622d87d4, @1's package, the spec
+    dispatch, the model table and the relations writer.
+  - **The one change is validation's probe driver and FORMAT.md** (efb3c739): each `wb_ensemble`
+    run now takes a lineage word unique across the whole ladder.
+  - **§1.1, §1.4 and claim X2 stand unchanged.** §4 gains one line for the driver.
 - **OL5's references were not read.** While orienting, only the last three commit subjects of the
   `ool-references` branch were listed, and nothing else.
 
@@ -458,8 +464,11 @@ reading of how each event moves them (S):
   It excludes the revision field and timings.
 - **The gate:**
   - OL1's probe driver re-run from a snapshot of the OL2 head, on OL5's registered inputs;
-  - every role's outputs equal to OL1's landing run;
+  - every role's outputs equal to OL1's landing run (3e39bcc5);
   - one program per structure equal.
+  - OL2 adds its own roles to the same driver. OL1's roles, their settings and their stream words
+    stay as landed, the ladder's unique lineage words (efb3c739) included, so the gate compares
+    like with like.
   - **The plant:** a written default, which must fail the gate.
 
 ## 5. Claims for §7.1, kept consistent with §0.2b–c
