@@ -24,6 +24,7 @@ from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.models import inner_laws
 from cells.models import surface_pump_v3 as v3
+from cells.models.inner_kinds import passive_routes
 from cells.numerics.extracellular_field import scatter
 from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
@@ -170,6 +171,11 @@ def test_a_kind_worlds_declarations_cover_its_kinds_fields():
     routes = sets["passive_route"]
     assert routes["ids"] == [r["id"] for r in raw["model"]["passive_routes"]]
     assert set(routes["roles"]) == {"inside", "outside"}
+    laws = [r["law"] for r in raw["model"]["passive_routes"]]
+    assert [law["law_id"] for law in routes["laws"]] == laws  # Each route's law, under laws.
+    assert routes["kinds"] == [passive_routes.KIND_WORDS[law] for law in laws]  # Words.
+    assert set(passive_routes.KIND_WORDS) == set(passive_routes.LAWS)  # A word for every law.
+    assert not any("@" in word for word in passive_routes.KIND_WORDS.values())
     assert impl.ORIENTATION["passive_transferred"]["from"] == "outside"  # Inward-positive.
     axes = {a for name in names for a in (impl.STATE_AXES.get(name) or impl.OBSERVATION_AXES[name])}
     assert axes <= INNER_AXES | set(impl.VIEW_AXIS_SETS) | set(sets), axes - INNER_AXES
