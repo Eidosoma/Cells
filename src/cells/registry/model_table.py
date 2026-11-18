@@ -28,7 +28,11 @@ dispatches itself.
   its own type checks its own fields when it registers;
 - `runner`: the entry of a model that runs on its own runner ("module:function"), or None for the
   fixed-step runner;
-- `composition`: a composition's inner model and its operators, in order, or None.
+- `composition`: a composition's inner model and its operators, in order, or None;
+- `ensemble`: the family's ensemble adapter ("module:object", an ensemble/families.EnsembleAdapter)
+  through which `cells ensemble` plans and runs its arms, or None (CORE_SEAMS §15's follow-up; the
+  lead's ruling (a), 18 November 2026). A family joins the ensemble by its adapter and this entry,
+  with no edit to ensemble/*.
 
 Replacing the dispatch chains (models/registry.get_model, core/specs.parse_spec) with this table
 stays deferred (§8.4). This module imports nothing from Cells.
@@ -50,6 +54,7 @@ class Model(NamedTuple):
     interfaces: tuple = ()
     runner: str | None = None
     composition: tuple | None = None
+    ensemble: str | None = None
 
 
 MODELS = MappingProxyType(
