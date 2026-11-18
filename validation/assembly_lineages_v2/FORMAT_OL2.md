@@ -9,9 +9,10 @@ driver for OL5's registered OL2 inputs.
 ## The world (world.json `world`)
 
 - **`geometry`** (only when declared): `{law: cells.bilayer_geometry@1, area_quantum_m2: q,
-  area_per_leaflet: {species: {quanta: k, sourced_m2: a, source}}, vesicle_floor_quanta: {value,
+  area_per_leaflet: {species: {quanta: k, sourced_m2: a, source}}, vesicle_floor: {quanta,
   provenance}, closure_cost_kT: {value, provenance}}`.
-  - k is the nearest integer to a/q (§0.2c rule 4), and the parser refuses any other.
+  - The rounding is declared as the nearest quantum (§0.2c rule 4): k is an integer nearest to
+    a/q (at an exact tie, either), and the parser refuses any other.
   - The footprint is W(n) = Σ n_i k_i quanta, and the bilayer's area is A = q·W/2 (m²).
 - **`conventions.exchange_encounter`**: `insertion_area` or `diffusion_radius`, declared exactly
   when `geometry` is (§0.2c rule 1). Never written otherwise.

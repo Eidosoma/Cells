@@ -3,9 +3,9 @@
 Structural only for version 2 (no rate of its laws is computed). Each claim with a planted error it
 must catch (D187):
 - OL1's four laws, and OL2's three (the bilayer geometry, phase exchange and permeation), are
-  declarations of the family's interfaces, hosted by @2, cited with their works, registered from the
-  homes the static model table lists, each by one direct call with a literal ID that the declarations
-  manifest reads (planted: a manifest without them);
+  declarations of the family's interfaces, hosted by @2, cited with their works, registered from
+  the homes the static model table lists, each by one direct call with a literal ID that the
+  declarations manifest reads (planted: a manifest without them);
 - parse_spec and get_model dispatch @2 to its own spec and model, and @1 to @1's (planted: an
   unknown major is refused);
 - U2 (D199) holds structurally in @2: a declaration that is driven, or names a source, or claims a
@@ -88,7 +88,9 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
         works = [w.doi for w in law.source.works]
         assert works == ([] if doi is None else [doi])
     assert {law.law_id for law in registry.laws(REACTION_INTERFACE, MODEL_ID)} == {
-        MASS_ACTION, PHASE_EXCHANGE, MEMBRANE_PERMEATION
+        MASS_ACTION,
+        PHASE_EXCHANGE,
+        MEMBRANE_PERMEATION,
     }
     # @1's rate factors are unchanged by @2's registrations.
     assert set(factors.registered()) == {law.law_id for law in gard.LAWS}

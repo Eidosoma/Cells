@@ -9,6 +9,8 @@ Each claim with a planted error it must catch (D187):
 - §0.2c rule 5: below the floor an area-keeping step fires and an area-changing one is zero
   (planted: a molecule floor would zero the dimerisation);
 - the kernel identity on the geometry probe and on a run's own world, and the ledger closes;
+- a geometry run's bundle is written and read back with its geometry records, and the host oracle
+  replays its trace from the saved uniforms (planted: a reverse weight changes the replay);
 - OL1's worlds carry no geometry: no layout leaf, no key written, OL1's verdict;
 - every refusal of §0.2b-§0.2c that this version owns.
 """
@@ -29,6 +31,8 @@ from cells.models.assembly_lineages_v2 import (
     balance,
     kernel,
     model,
+    records,
+    reference,
     runner,
 )
 from cells.models.assembly_lineages_v2 import geometry as geometry_rules
@@ -63,9 +67,10 @@ def geometry_block(quanta, floor=60, closure=12.5):
     return {
         "law": BILAYER_GEOMETRY,
         "area_quantum_m2": Q,
-        "area_per_leaflet": {s: {"quanta": k, "sourced_m2": k * Q, "source": "test"}
-                             for s, k in quanta.items()},  # fmt: skip
-        "vesicle_floor_quanta": {"value": floor, "provenance": "unsourced"},
+        "area_per_leaflet": {
+            s: {"quanta": k, "sourced_m2": k * Q, "source": "test"} for s, k in quanta.items()
+        },  # fmt: skip
+        "vesicle_floor": {"quanta": floor, "provenance": "unsourced"},
         "closure_cost_kT": {"value": closure, "provenance": "unsourced"},
     }
 
@@ -81,13 +86,30 @@ def lipid_world(*, geometry=True, measure="multinomial", encounter="insertion_ar
     if geometry:
         key = "insertion_velocity_m_per_s" if encounter == "insertion_area" else (
             "diffusivity_m2_per_s")  # fmt: skip
-        steps.insert(0, {"id": "join", "locus": "membrane", "reactants": {"L@pool": 1},
-                         "products": {"L@membrane": 1}, "law": PHASE_EXCHANGE, key: k_join})
+        steps.insert(
+            0,
+            {
+                "id": "join",
+                "locus": "membrane",
+                "reactants": {"L@pool": 1},
+                "products": {"L@membrane": 1},
+                "law": PHASE_EXCHANGE,
+                key: k_join,
+            },
+        )
     else:  # OL1's count_on_m join, with insertion area's constant at equal quanta (X2).
         k = next(iter(quanta.values()))
-        steps.insert(0, {"id": "join", "locus": "membrane", "reactants": {"L@pool": 1},
-                         "products": {"L@membrane": 1}, "law": MASS_ACTION,
-                         "forward_rate_per_s": k_join * (Q * k / 2.0) * RHO0})
+        steps.insert(
+            0,
+            {
+                "id": "join",
+                "locus": "membrane",
+                "reactants": {"L@pool": 1},
+                "products": {"L@membrane": 1},
+                "law": MASS_ACTION,
+                "forward_rate_per_s": k_join * (Q * k / 2.0) * RHO0,
+            },
+        )
     phases = {
         "pool": {"volume_L": 1e-21, "species": [{"id": "L", "kind": "finite"}]},
         "membrane": {"species": ["L", "P"]},
@@ -103,9 +125,11 @@ def lipid_world(*, geometry=True, measure="multinomial", encounter="insertion_ar
     out = {
         "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": C0_MM},
         "conventions": tokens(measure, encounter if geometry else None),
-        "species": [species("L", {"l": 1}, solution=0.0, bilayer=-2.0),
-                    species("P", {"l": 1}, bilayer=-2.5),
-                    species("S", {"s": 1}, solution=0.0)],  # fmt: skip
+        "species": [
+            species("L", {"l": 1}, solution=0.0, bilayer=-2.0),
+            species("P", {"l": 1}, bilayer=-2.5),
+            species("S", {"s": 1}, solution=0.0),
+        ],  # fmt: skip
         "phases": phases,
         "steps": steps,
         "free_energy": [{"law": IDEAL_MIXING}],
@@ -134,7 +158,7 @@ def states(spec, rng, n=60):
     out = []
     for _ in range(n):
         c = np.zeros(len(world_.places), dtype=np.int64)
-        for i, p in enumerate(world_.places):
+        for i in range(len(world_.places)):
             c[i] = rng.integers(0, 9)
         membrane = [i for i, p in enumerate(world_.places) if p.phase == "membrane"]
         if c[membrane].sum() == 0:
@@ -186,16 +210,31 @@ def floor_world():
     return {
         "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": C0_MM},
         "conventions": tokens(),
-        "species": [species("A", {"a": 1}, solution=0.0, bilayer=-1.0),
-                    species("B", {"a": 2}, bilayer=-3.0)],  # fmt: skip
-        "phases": {"pool": {"volume_L": 1e-21, "species": [{"id": "A", "kind": "finite"}]},
-                   "membrane": {"species": ["A", "B"]}},  # fmt: skip
+        "species": [
+            species("A", {"a": 1}, solution=0.0, bilayer=-1.0),
+            species("B", {"a": 2}, bilayer=-3.0),
+        ],  # fmt: skip
+        "phases": {
+            "pool": {"volume_L": 1e-21, "species": [{"id": "A", "kind": "finite"}]},
+            "membrane": {"species": ["A", "B"]},
+        },  # fmt: skip
         "steps": [
-            {"id": "join", "locus": "membrane", "reactants": {"A@pool": 1},
-             "products": {"A@membrane": 1}, "law": PHASE_EXCHANGE,
-             "insertion_velocity_m_per_s": 1e-6},
-            {"id": "dimer", "phase": "membrane", "reactants": {"A": 2}, "products": {"B": 1},
-             "law": MASS_ACTION, "forward_rate_per_s": 0.5},
+            {
+                "id": "join",
+                "locus": "membrane",
+                "reactants": {"A@pool": 1},
+                "products": {"A@membrane": 1},
+                "law": PHASE_EXCHANGE,
+                "insertion_velocity_m_per_s": 1e-6,
+            },
+            {
+                "id": "dimer",
+                "phase": "membrane",
+                "reactants": {"A": 2},
+                "products": {"B": 1},
+                "law": MASS_ACTION,
+                "forward_rate_per_s": 0.5,
+            },
         ],  # fmt: skip
         "free_energy": [{"law": IDEAL_MIXING}],
         "founder": {"A@pool": 4, "A@membrane": 6, "B@membrane": 1},
@@ -239,6 +278,30 @@ def test_the_geometry_probe_keeps_the_identity_and_a_run_closes_its_ledger():
                                    model.layout(s).terms) + 12.5, abs=1e-12)  # fmt: skip
 
 
+def test_a_geometry_bundle_reads_back_and_the_host_oracle_replays_its_trace(tmp_path):
+    d = copy.deepcopy(definition(lipid_world(lumen=True), molecules=128, uniforms=True))
+    d["experiment"].update(time_horizon_s=20.0, event_limit=600, row_every_events=50)
+    s = parse_spec(d)
+    run = runner.run(s).check()
+    records.write_run(tmp_path / "bundle", run)
+    world_record, run_record, arrays = records.read(tmp_path / "bundle")
+    assert world_record["world"]["geometry"]["law"] == BILAYER_GEOMETRY
+    assert world_record["world"]["conventions"]["exchange_encounter"] == "insertion_area"
+    derived = world_record["derived"]["geometry"]
+    assert derived["floor_quanta"] == 60 and derived["closure_kT"] == 12.5
+    footprint = arrays["membrane_footprint_quanta"]
+    assert np.array_equal(footprint, run.rows["membrane_footprint_quanta"])
+    assert run_record["records"]["membrane_footprint_quanta"]["unit"] == "quanta"
+    assert BILAYER_GEOMETRY in run_record["engine_models"]["laws"]
+    # The host oracle (NumPy, from the saved uniforms) replays the device's trace exactly.
+    channels, times = reference.replay(s, arrays["event_uniforms"])
+    assert np.array_equal(channels, arrays["event_channel"])
+    np.testing.assert_allclose(times, arrays["event_time"], rtol=1e-12, atol=0)
+    # Planted: every reverse rate weighted before the draw, which the replay must not match.
+    planted, _ = reference.replay(s, arrays["event_uniforms"], reverse_weight=1.5)
+    assert not np.array_equal(planted, arrays["event_channel"])
+
+
 def test_ol1_worlds_carry_no_geometry():
     s = parse_spec(definition(world()))
     assert model.structure(s).geometry is None and model.layout(s).geometry == ()
@@ -262,15 +325,14 @@ REFUSALS = {
     "a floor with last_molecule reversible": (
         lambda w: w["conventions"].update(last_molecule="reversible"), "requires last_molecule"),
     "a founder below the floor": (
-        lambda w: w["geometry"].update(vesicle_floor_quanta={"value": 10**6,
-                                                             "provenance": "unsourced"}),
+        lambda w: w["geometry"].update(vesicle_floor={"quanta": 10**6, "provenance": "unsourced"}),
         "below the vesicle floor"),
     "sigma_max before the osmotic lumen": (
         lambda w: w["geometry"].update(sigma_max_N_per_m=0.01), "belongs to lumen_volume"),
     "a membrane species without its area": (
         lambda w: w["geometry"]["area_per_leaflet"].pop("P"), "every membrane species"),
     "quanta that are not the nearest": (
-        lambda w: w["geometry"]["area_per_leaflet"]["P"].update(quanta=61), "nearest quantum"),
+        lambda w: w["geometry"]["area_per_leaflet"]["P"].update(quanta=61), "a nearest quantum"),
 }  # fmt: skip
 
 

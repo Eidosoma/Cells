@@ -31,8 +31,8 @@ from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
-    PHASE_EXCHANGE,
     MODEL_ID,
+    PHASE_EXCHANGE,
     REGULAR_MIXING,
     TRANSITION_STATE,
     kernel,
@@ -356,7 +356,7 @@ def geometry_probe_world(rng, measure, encounter, *, regular, catalysis):
             "law": BILAYER_GEOMETRY, "area_quantum_m2": q,
             "area_per_leaflet": {s: {"quanta": n, "sourced_m2": n * q, "source": "probe"}
                                  for s, n in quanta.items()},
-            "vesicle_floor_quanta": {"value": 60, "provenance": "unsourced"},
+            "vesicle_floor": {"quanta": 60, "provenance": "unsourced"},
             "closure_cost_kT": {"value": float(abs(rng.normal(0, 10))), "provenance": "unsourced"},
         },
     }  # fmt: skip
@@ -410,8 +410,12 @@ def geometry_verdict():
         "holds": True,
         "probe": {
             "worlds": [
-                {"condensed_measure": m, "exchange_encounter": e, "regular_mixing": g,
-                 "rate_factor": c}
+                {
+                    "condensed_measure": m,
+                    "exchange_encounter": e,
+                    "regular_mixing": g,
+                    "rate_factor": c,
+                }
                 for m, e, g, c in GEOMETRY_PROBES
             ],  # fmt: skip
             "states_per_world": STATES,

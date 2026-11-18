@@ -97,7 +97,9 @@ def main(final, new, out, exempt_file=None):
     final, new, out = Path(final), Path(new), Path(out)
     patterns = [re.compile(p) for p in EXEMPT]
     if exempt_file:
-        patterns += [re.compile(re.escape(p) + "$") for p in json.loads(Path(exempt_file).read_text())]
+        patterns += [
+            re.compile(re.escape(p) + "$") for p in json.loads(Path(exempt_file).read_text())
+        ]
     files_a = {p.relative_to(final) for p in final.rglob("*") if p.is_file()}
     files_b = {p.relative_to(new) for p in new.rglob("*") if p.is_file()}
     report = {"only_final": sorted(map(str, files_a - files_b)),
@@ -110,8 +112,10 @@ def main(final, new, out, exempt_file=None):
             if found:
                 report["arrays"][str(rel)] = found
         elif rel.suffix == ".json":
-            found = compare_json(relocated(json.loads(a.read_text()), final),
-                                 relocated(json.loads(b.read_text()), new))
+            found = compare_json(
+                relocated(json.loads(a.read_text()), final),
+                relocated(json.loads(b.read_text()), new),
+            )
             if found:
                 report["json"][str(rel)] = found
         elif a.read_bytes() != b.read_bytes():
@@ -122,15 +126,24 @@ def main(final, new, out, exempt_file=None):
     }
     unexempt = {f: k for f, k in unexempt.items() if k}
     report["json_not_exempt"] = unexempt
-    exempted = sorted({re.sub(r"\[\d+\]", "[i]", k) for keys in report["json"].values() for k in keys
-                       if any(p.search(k) for p in patterns)})
+    exempted = sorted(
+        {
+            re.sub(r"\[\d+\]", "[i]", k)
+            for keys in report["json"].values()
+            for k in keys
+            if any(p.search(k) for p in patterns)
+        }
+    )
     report["exempted_paths"] = exempted
     report["exempt_patterns"] = [p.pattern for p in patterns]
     passed = not (report["only_final"] or report["only_new"] or report["arrays"] or unexempt
                   or report["other"])  # fmt: skip
     report["verdict"] = "identical but for provenance" if passed else "DIFFERS"
-    report["counts"] = {"files": len(files_a & files_b), "json_files_with_differences":
-                        len(report["json"]), "array_files_differing": len(report["arrays"])}  # fmt: skip
+    report["counts"] = {
+        "files": len(files_a & files_b),
+        "json_files_with_differences": len(report["json"]),
+        "array_files_differing": len(report["arrays"]),
+    }
     out.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n")
     print(json.dumps({"verdict": report["verdict"], **report["counts"]}))
     return 0 if passed else 1
