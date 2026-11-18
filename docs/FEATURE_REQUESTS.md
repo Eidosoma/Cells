@@ -443,6 +443,8 @@ use Cells' unit choice than ask for its own.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
 
+**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216).
+
 ## FR-8 — A qualified long-duration mode
 
 **Logged 14 November 2026, priority 2** (the request's label). The request below is the requesting
