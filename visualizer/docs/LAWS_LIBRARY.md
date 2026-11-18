@@ -1,8 +1,35 @@
 # The Laws shelf as a 3D library: what the engine declares, five options, and a recommendation
 
-Ideas and options for the user, 16 November 2026. **Nothing here is built.** The page beside this
-note, [`docs/ideas/laws-library.html`](ideas/laws-library.html), draws each option live from the
-list of pieces this note describes.
+Ideas and options for the user, 16 November 2026. The page beside this note,
+[`docs/ideas/laws-library.html`](ideas/laws-library.html), draws each option live from the list
+of pieces this note describes.
+
+**Since 17 November 2026 the racks are built, and read from the engine's declarations.** The
+engine's manifest (`cells.declarations@2`, its format the engine's page
+`docs/library/DECLARATIONS_FORMAT.md`) is the whole truth of what the engine declares, the lead
+ruled that day; what no active registry declares came off the wall. The list is made from that
+file alone (`tools/extract_laws.py`, `data/engine/declarations.json`), and its contract is
+`schema/LAWS_LIBRARY.md`. At main b5d3faf0 the wall holds 47 pieces (21 laws, 5 kinds, 21
+operators), seven racks and four model families with no rows, with the 13 laws design notes name
+apart; the 154 pieces of the code's reading at fa19d80c, the counts below, the engine's file
+paths below (read before the engine's two source moves of D188) and the sketches' lists are this
+note's record of 16 November, not the wall's. The wall is shelved by interface, the operators by
+their part of the step, and a model family's own laws and operators each on a shelf of their
+own, on one band (the stills weighed are kept with the hand-over of that round).
+
+**What a unit of the Protein atlas says of a law no active model declares (18 November 2026).**
+On 17 November 2026 the project decided to port tested older laws to the active engine (D211),
+and the engine's lead made a read-only inventory of the 54 law IDs behind the 38 units that open
+no declared piece (`cells.law_port_inventory@1`, made 17 November 2026 at `72409622`, kept at
+`/mnt/workspaces/Cells/law-port-20261117/`). Each of its rows carries one of three marks. The
+viewer's table of it, `data/laws/law_port.json`, is made from the inventory by
+`tools/extract_law_port.py` and holds for each row only the law, its units, its mark and its
+tests' class, with the inventory's kind, date and head. A unit's panel says, in one line for each
+mark and with no door, the mark's words after the laws' names (`src/lenses/law_port.js`): 47 laws
+are marked "port as is", 5 "fold into an owner's planned law" (all five the cardiac lane's), and 2
+"not a port", each of those two with words of its own. A door still opens only a declared piece. The 15 laws on the atlas's units
+that the inventory has no row for, all on the ten units that open a declared piece, keep the
+earlier words: the engine's declarations do not list them.
 
 The user, 15 November 2026: "one idea for the backlog not now: for the Engine shelfs maybe we need
 to make the Laws shelf clickable into a cool 3D library :)", because "there will be so many". And on

@@ -17,7 +17,8 @@ dispatches itself.
 - `module`: the module whose `parse` reads the model's definitions (parse_spec's dispatch);
 - `law_homes`: the modules that register its laws and kinds, imported by name, once, when the law
   registry loads (registry/laws.py). A home that is a package registers through the modules its
-  `__init__` imports;
+  `__init__` imports; an inert law module (§8.2) declares its one law as `LAW`, which the loader
+  registers;
 - `operator_homes`: the modules that register its operators, imported when the operator section
   loads (registry/operators.py), the composite's package first;
 - `interfaces`: the `cells` interfaces the family declares. The `cells` namespace is reserved
@@ -27,7 +28,11 @@ dispatches itself.
   its own type checks its own fields when it registers;
 - `runner`: the entry of a model that runs on its own runner ("module:function"), or None for the
   fixed-step runner;
-- `composition`: a composition's inner model and its operators, in order, or None.
+- `composition`: a composition's inner model and its operators, in order, or None;
+- `ensemble`: the family's ensemble adapter ("module:object", an ensemble/families.EnsembleAdapter)
+  through which `cells ensemble` plans and runs its arms, or None (CORE_SEAMS §15's follow-up; the
+  lead's ruling (a), 18 November 2026). A family joins the ensemble by its adapter and this entry,
+  with no edit to ensemble/*.
 
 Replacing the dispatch chains (models/registry.get_model, core/specs.parse_spec) with this table
 stays deferred (§8.4). This module imports nothing from Cells.
@@ -49,6 +54,7 @@ class Model(NamedTuple):
     interfaces: tuple = ()
     runner: str | None = None
     composition: tuple | None = None
+    ensemble: str | None = None
 
 
 MODELS = MappingProxyType(
@@ -56,8 +62,23 @@ MODELS = MappingProxyType(
         "resolved_pump_tissue@3": Model(
             type="inner",
             module="cells.definitions.surface_pump_v3_spec",
-            # Its own laws, and its kinds' package, whose modules declare theirs.
-            law_homes=("cells.models.inner_laws", "cells.kinds"),
+            # Its own laws, each an inert law module (CORE_SEAMS §8.2), its passive kind's two,
+            # and its kinds' package, whose modules declare the rest of theirs.
+            law_homes=(
+                "cells.laws.channels.kv1p5_mh",
+                "cells.laws.channels.kir2p1_mh2",
+                "cells.laws.channels.nav1p2_m3h_regularized",
+                "cells.laws.channels.kleak_always_open",
+                "cells.laws.channels.naleak_always_open",
+                "cells.laws.junctions.junction_voltage_relaxation",
+                "cells.laws.pumps.nak_atp_mass_action_positive",
+                "cells.laws.pumps.ca_atp_mass_action_positive",
+                "cells.laws.routes.constant_field",
+                "cells.laws.routes.logmean_electrodiffusion",
+                "cells.laws.routes.passive_permeation",
+                "cells.laws.transport.proton_leak",
+                "cells.kinds",
+            ),
         ),
         "resolved_pump_composite@1": Model(
             type="composite",

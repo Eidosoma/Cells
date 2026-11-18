@@ -232,7 +232,9 @@ def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_
     assert kv1p5["module_path"] == "src/" + kv1p5["module"].replace(".", "/") + ".py"
     lines = path.read_text().splitlines()
     snippet = "\n".join(lines[kv1p5["line"] - 1 : kv1p5["line"] + 2])
-    assert "ChannelLaw(" in snippet and "KV1P5_LAW_ID" in snippet
+    # The law's own module (CORE_SEAMS §8.2): its declaration names the module's LAW_ID.
+    assert kv1p5["module"] == "cells.laws.channels.kv1p5_mh"
+    assert "LAW = ChannelLaw(" in snippet and "LAW_ID" in snippet
     for record in kv1p5["kernels"].values():
         name = record["function"].rsplit(".", 1)[1]
         kernel_file = Path(cells.__file__).resolve().parents[1].parent / record["module_path"]

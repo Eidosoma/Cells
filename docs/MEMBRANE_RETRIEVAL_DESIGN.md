@@ -727,3 +727,28 @@ R1: dVk -7.0707e-04 V, dVb 1.8182e-03 V, dU 2.292929e-04 pJ, bath plate change -
 - FR-1's chloride rate, 4.8 × 10³ s⁻¹, is FR-1 §3.4's, from Ishida et al. (2013) as that note read
   it.
 - No web search was made, and no external file was fetched.
+
+## 12. The user's answers and the lead's rulings (18 November 2026; D217)
+
+- **Version 1** is membrane and channel retrieval and recycling.
+  - Retrieval follows the membrane's charge (R2), with one shared split-and-merge accounting.
+  - Its scope reads "no new explicit machinery fuel draw in v1".
+  - It still records carrier-ion chemical work, reservoir and electrode work, and merge heat.
+  - The machinery's cost is a declared limit, so the version claims no total trafficking energy and
+    no ATP-limited uptake.
+  - The later fuel coupling is designed once, in the common energy interface.
+- **The receiving pool.** There is one lumped, well-mixed receiving pool per cell, stated as an
+  assumption and indexed by compartment, owner and route. Cohorts or discrete vesicles follow when an
+  observable needs within-cell variation.
+- **Staging.** F1, fluid-phase uptake, comes in version 1.1, and P0 is first.
+- **Kept visible:** FR-3's receptor and cargo movement, exchange with a changing area, and FR-4 and
+  FR-5 on a growing compartment.
+- **The lead's rulings on questions 5–11:**
+  - R2, with R1 refused;
+  - the split-and-merge kernel is the operators owner's, inside B1's operator part, and FR-2 starts
+    when it lands;
+  - P0's record lives in the new operator's state;
+  - areas and capacitances are `reference` reads;
+  - the name is `scheduled_membrane_trafficking@1`;
+  - pumps are held on the plasma patch with aggregate capacity;
+  - refusal 5 gains version 1.2, with a planted case.

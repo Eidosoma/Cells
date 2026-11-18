@@ -13,10 +13,18 @@
 // Keys, with the slider in focus: Left and Right step one saved record, Page Up and
 // Page Down jump to the next event, Home and End go to the ends, Space plays or pauses,
 // < and > take the next slower or faster speed.
+//
+// A run may count its time in steps of its own (its time base, src/replay/player.js): the speeds,
+// their words and the read-out are then the base's, and a run that names none keeps seconds.
+//
+// A time base may also lay the track out itself (`place(time, speed)`, `timeAt(place, speed)`: the tissue's play,
+// src/replay/tissue_play.js, whose track is the play and not the run's even time), and a binding may ask for its events
+// as stops (`stops: true`): each event with a label becomes a mark that can be pressed to go there, with buttons
+// for the previous and the next one beside play.
 
 import { h, svg } from "./dom.js";
 import { clock, duration } from "../replay/format.js";
-import { SPEEDS, speedWords } from "../replay/player.js";
+import { SPEEDS, SECONDS, whereWords } from "../replay/player.js";
 
 const PLAY = "M7 4.5v15l12-7.5z", PAUSE = "M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z";
 
@@ -26,6 +34,11 @@ class CellsTimeline extends HTMLElement {
     this.built = true;
     this.icon = svg("path", { d: PLAY });
     this.playButton = h("button", { class: "tl-play", type: "button", onclick: () => this.player?.toggle() }, svg("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, this.icon));
+    // The previous and the next stop, where a binding asks for stops (drawn, not typed: no font is needed for them).
+    const stepButton = (direction) => h("button", { class: "tl-step", type: "button", hidden: true, dataset: { step: direction > 0 ? "next" : "previous" }, onclick: () => this.toEvent(direction) }, svg("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, svg("path", { d: direction > 0 ? "M6 5v14l9-7zM16 5h3v14h-3z" : "M18 5v14l-9-7zM5 5h3v14H5z" })));
+    this.previousButton = stepButton(-1);
+    this.nextButton = stepButton(1);
+    this.stops = h("div", { class: "tl-stops", hidden: true });
     this.marks = svg("svg", { class: "tl-marks", viewBox: "0 0 1000 24", preserveAspectRatio: "none", "aria-hidden": "true" });
     this.fill = h("div", { class: "tl-fill" });
     this.flag = h("span", { class: "tl-flag", hidden: true }, "judged");
@@ -36,7 +49,9 @@ class CellsTimeline extends HTMLElement {
     this.speedList = h("div", { id: "cells-timeline-speeds", class: "tl-speeds", role: "group", "aria-label": "Speed of the replay", hidden: true });
     this.append(
       this.playButton,
-      h("div", { class: "tl-body" }, h("div", { class: "tl-track" }, h("div", { class: "tl-rail" }, this.fill), this.marks, this.flag, this.range), h("p", { class: "tl-read" }, this.now, this.rest)),
+      this.previousButton,
+      this.nextButton,
+      h("div", { class: "tl-body" }, h("div", { class: "tl-track" }, h("div", { class: "tl-rail" }, this.fill), this.marks, this.flag, this.range, this.stops), h("p", { class: "tl-read" }, this.now, this.rest)),
       this.speedButton,
       this.speedList
     );
@@ -57,7 +72,7 @@ class CellsTimeline extends HTMLElement {
       resume = Boolean(this.player?.playing);
       this.player?.pause();
     });
-    this.range.addEventListener("input", () => this.player?.seek(Number(this.range.value)));
+    this.range.addEventListener("input", () => this.player?.seek(this.laid() ? this.player.base.timeAt(Number(this.range.value), this.player.speed) : Number(this.range.value)));
     this.range.addEventListener("change", () => {
       if (resume) this.player?.play();
       resume = false;
@@ -84,11 +99,13 @@ class CellsTimeline extends HTMLElement {
   }
 
   /** Follow a player. `words` names the run's events ("replacement"). */
-  bind(player, { eventWord = "event" } = {}) {
-    if (this.player === player && this.eventWord === eventWord && this.run === player.run) return;
+  bind(player, { eventWord = "event", stops = false } = {}) {
+    if (this.player === player && this.eventWord === eventWord && this.run === player.run && this.withStops === stops) return;
     this.unbind();
     this.player = player;
     this.eventWord = eventWord;
+    this.withStops = stops;
+    this.laidOut = null;
     this.onTime = () => this.place();
     this.onState = () => this.sync();
     player.addEventListener("time", this.onTime);
@@ -107,16 +124,26 @@ class CellsTimeline extends HTMLElement {
     const player = this.player;
     if (!player || !this.built) return;
     const run = player.run;
-    if (run !== this.run) {
+    // The track is laid out again when the run changes, or the speed changes how a time base lays it out.
+    const laid = `${this.laid() ? player.speed : "even"}|${this.withStops}`;
+    if (run !== this.run || laid !== this.laidOut) {
       this.run = run;
-      this.range.min = String(player.start);
-      this.range.max = String(player.end);
+      this.laidOut = laid;
+      this.range.min = this.laid() ? "0" : String(player.start);
+      this.range.max = this.laid() ? "1" : String(player.end);
       this.drawMarks();
+    }
+    this.classList.toggle("has-stops", Boolean(this.withStops && run?.events?.length));
+    for (const button of [this.previousButton, this.nextButton]) {
+      button.hidden = !(this.withStops && run?.events?.length);
+      const word = this.eventWord, which = button.dataset.step === "next" ? "next" : "previous";
+      button.setAttribute("aria-label", `Go to the ${which} ${word}`);
+      button.title = `The ${which} ${word}`;
     }
     this.icon.setAttribute("d", player.playing ? PAUSE : PLAY);
     this.playButton.setAttribute("aria-label", player.playing ? "Pause" : player.atEnd ? "Play again from the start" : "Play");
     this.playButton.title = this.playButton.getAttribute("aria-label");
-    const words = speedWords(player.speed);
+    const words = (player.base || SECONDS).words(player.speed);
     this.speedButton.textContent = words.short;
     this.speedButton.setAttribute("aria-label", `Speed: ${words.says}. Press to choose another.`);
     this.speedButton.title = words.says;
@@ -129,7 +156,7 @@ class CellsTimeline extends HTMLElement {
     const player = this.player;
     this.speedList.replaceChildren(
       ...SPEEDS.map((speed) => {
-        const words = speedWords(speed);
+        const words = (player.base || SECONDS).words(speed);
         return h(
           "button",
           { class: "tl-speed-step", type: "button", "aria-pressed": String(speed === player.speed), dataset: { speed: String(speed) }, onclick: () => (player.setSpeed(speed), this.showSpeeds(false), this.speedButton.focus()) },
@@ -162,8 +189,14 @@ class CellsTimeline extends HTMLElement {
     } else document.removeEventListener("pointerdown", this.closeSpeeds, true);
   }
 
+  /** Whether the run's time base lays the track out itself (the tissue's play). */
+  laid() {
+    return typeof this.player?.base?.place === "function";
+  }
+
   fraction(seconds) {
     const { start, end } = this.player;
+    if (this.laid()) return this.player.base.place(seconds, this.player.speed);
     return end > start ? (seconds - start) / (end - start) : 0;
   }
 
@@ -188,6 +221,13 @@ class CellsTimeline extends HTMLElement {
       }
     }
     for (const event of run.events) this.marks.append(svg("line", { class: "tl-tick", x1: x(event.time), x2: x(event.time), y1: 15, y2: 22 }));
+    // Stops: each event that has words becomes a mark to press, named by its words.
+    this.stops.hidden = !this.withStops;
+    this.stops.replaceChildren(
+      ...(this.withStops ? run.events.filter((event) => event.label) : []).map((event) =>
+        h("button", { class: "tl-stop", type: "button", dataset: { time: String(event.time) }, style: `left:${(this.fraction(event.time) * 100).toFixed(2)}%`, "aria-label": `Go to ${event.label}`, title: event.label, onclick: () => (this.player?.pause(), this.player?.seek(event.time)) })
+      )
+    );
     const judged = run.info.judged_s;
     if (Number.isFinite(judged)) {
       this.marks.append(svg("line", { class: "tl-judged", x1: x(judged), x2: x(judged), y1: 1, y2: 23 }));
@@ -202,20 +242,21 @@ class CellsTimeline extends HTMLElement {
     const player = this.player;
     if (!player || !this.built) return;
     const run = player.run;
-    this.range.value = String(player.time);
+    this.range.value = String(this.laid() ? this.fraction(player.time) : player.time);
     this.fill.style.width = `${(this.fraction(player.time) * 100).toFixed(2)}%`;
     if (!run) {
       this.now.textContent = "";
       this.rest.textContent = "";
       return;
     }
-    const total = duration(player.end - player.start);
-    this.now.textContent = clock(player.time);
-    const parts = [` of ${total}`];
+    // The run's own time, and what it lies in: its length, or, for a run whose records start later, its first and last record.
+    const { now, of } = whereWords({ time: player.time, start: player.start, end: player.end, base: player.base || SECONDS });
+    this.now.textContent = now;
+    const parts = [of];
     if (run.events.length) parts.push(`${this.eventWord} ${run.eventsBy(player.time)} of ${run.events.length}`);
     if (!run.isValid(player.index)) parts.push("this record is not valid in the run");
     this.rest.textContent = parts.join(" · ");
-    this.range.setAttribute("aria-valuetext", `${clock(player.time)} of ${total}`);
+    this.range.setAttribute("aria-valuetext", `${now}${of}`);
   }
 
   /** One step faster (1) or slower (-1) along the speeds the run is offered. */
@@ -230,9 +271,13 @@ class CellsTimeline extends HTMLElement {
   /** Jump to the next or the previous event of the run. */
   toEvent(direction) {
     const { player } = this;
+    if (!player?.run) return;
     const times = player.run.events.map((event) => event.time);
     const target = direction > 0 ? times.find((time) => time > player.time + 1e-3) : [...times].reverse().find((time) => time < player.time - 1e-3);
-    if (target !== undefined) player.seek(target);
+    if (target !== undefined) {
+      if (this.withStops) player.pause();
+      player.seek(target);
+    }
   }
 }
 

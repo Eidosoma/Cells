@@ -23,7 +23,33 @@
 REAL="${CELLS_CHROME_REAL:-google-chrome}"
 LOCK="${CELLS_GPU_LOCK:-/mnt/workspaces/Cells/locks/gpu.lock}"
 FLAG="${CELLS_GPU_RESERVED:-/mnt/workspaces/Cells/locks/gpu.reserved}"
-WAY="${CELLS_GPU_WAY:-egl}"   # vulkan or egl: which of ANGLE's back ends draws on the card
+# Which of ANGLE's back ends draws on the card: vulkan (the default) or egl. Through its
+# OpenGL back end (egl) this machine's card now and then drew a wrong picture of a still
+# page: after a frame with bloom, 18 of 40 pictures had holes where small solid parts are,
+# though what the frame draws on the way (the solids' facing, the shade) was the same to
+# the last count. Through Vulkan 40 of 40 were the picture at rest, as in software
+# (16 November 2026). So the fault is that back end's here, not the page's, and a check
+# that compares pictures is not run through it.
+WAY="${CELLS_GPU_WAY:-vulkan}"
+
+# The first process on the card that is not one of these browsers, as "pid, name"; nothing if
+# there is none. The card names a process that is just starting or ending "[No data]" (three
+# browsers of one suite took the software renderer for that on 16 November 2026), so where the
+# name says nothing the kernel is asked: a process that is gone, or is Chrome, is no other job.
+not_a_browser() {
+  local pid name cmd
+  while IFS=, read -r pid name; do
+    pid="${pid//[[:space:]]/}"
+    [ -n "$pid" ] || continue
+    case "$name" in *[Cc]hrome*) continue ;; esac
+    cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ')
+    [ -n "$cmd" ] || continue
+    case "$cmd" in *chrome*) continue ;; esac
+    printf '%s,%s' "$pid" "$name"
+    return 0
+  done <<< "$1"
+  return 0
+}
 
 mode=software
 why=""
@@ -33,8 +59,8 @@ elif [ -e "$FLAG" ]; then
   why="the card is reserved ($FLAG exists)"
 elif ! others=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>/dev/null); then
   why="the card could not be asked (nvidia-smi failed)"
-elif [ -n "$(printf '%s\n' "$others" | grep -v -i 'chrome' | grep .)" ]; then
-  why="another process is on the card: $(printf '%s' "$others" | grep -v -i 'chrome' | head -1)"
+elif foreign=$(not_a_browser "$others") && [ -n "$foreign" ]; then
+  why="another process is on the card: $foreign"
 elif ! exec 9<"$LOCK"; then
   why="the card's lock file cannot be opened ($LOCK)"
 elif ! flock -s -n 9; then

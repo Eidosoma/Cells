@@ -1,0 +1,3973 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; y from the part MT-ND1's centre to the part NDUFV1's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "9I4I": {
+   "entry": "9I4I",
+   "title": "High resolution Cryo-EM structure of human complex I in mitochondria",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "2.63",
+   "left_out": [],
+   "whole": {
+    "atoms": 132883,
+    "axes": [
+     [
+      0.6453,
+      0.7639,
+      0.0
+     ],
+     [
+      0.7194,
+      -0.6077,
+      -0.3363
+     ],
+     [
+      -0.2569,
+      0.217,
+      -0.9417
+     ]
+    ],
+    "across_nm": [
+     31.3,
+     15.8,
+     10.2
+    ],
+    "farthest_nm": [
+     29.3,
+     19.6,
+     12.8
+    ],
+    "middle_98_percent_nm": [
+     26.2,
+     15.7,
+     9.9
+    ],
+    "radius_of_gyration_nm": 8.17
+   },
+   "frame": {
+    "from": "MT-ND1",
+    "to": "NDUFV1",
+    "between_centres_nm": 11.9
+   },
+   "parts": {
+    "NDUFS2": {
+     "by": "entities",
+     "ids": [
+      "1"
+     ],
+     "atoms": 6869,
+     "centre_nm": [
+      3.03,
+      2.95,
+      -1.56
+     ],
+     "axes": [
+      [
+       0.6772,
+       0.72,
+       -0.1518
+      ],
+      [
+       -0.48,
+       0.5886,
+       0.6504
+      ],
+      [
+       0.5577,
+       -0.3676,
+       0.7442
+      ]
+     ],
+     "across_nm": [
+      12.4,
+      5.6,
+      3.8
+     ],
+     "farthest_nm": [
+      14.1,
+      6.1,
+      4.6
+     ],
+     "radius_of_gyration_nm": 3.15
+    },
+    "NDUFA1": {
+     "by": "entities",
+     "ids": [
+      "2"
+     ],
+     "atoms": 1138,
+     "centre_nm": [
+      6.46,
+      -2.94,
+      -1.34
+     ],
+     "axes": [
+      [
+       0.0112,
+       0.9968,
+       -0.0792
+      ],
+      [
+       0.9801,
+       0.0047,
+       0.1985
+      ],
+      [
+       0.1982,
+       -0.0798,
+       -0.9769
+      ]
+     ],
+     "across_nm": [
+      8.7,
+      2.8,
+      2.0
+     ],
+     "farthest_nm": [
+      7.6,
+      3.2,
+      2.5
+     ],
+     "radius_of_gyration_nm": 2.09
+    },
+    "NDUFA3": {
+     "by": "entities",
+     "ids": [
+      "3"
+     ],
+     "atoms": 1302,
+     "centre_nm": [
+      3.97,
+      -3.39,
+      -4.22
+     ],
+     "axes": [
+      [
+       -0.4201,
+       0.9001,
+       -0.1156
+      ],
+      [
+       -0.2515,
+       0.007,
+       0.9678
+      ],
+      [
+       0.8719,
+       0.4357,
+       0.2234
+      ]
+     ],
+     "across_nm": [
+      10.7,
+      2.6,
+      2.4
+     ],
+     "farthest_nm": [
+      8.0,
+      2.8,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.52
+    },
+    "NDUFA11": {
+     "by": "entities",
+     "ids": [
+      "4"
+     ],
+     "atoms": 2069,
+     "centre_nm": [
+      -0.81,
+      -4.73,
+      2.09
+     ],
+     "axes": [
+      [
+       0.2001,
+       0.9782,
+       0.0554
+      ],
+      [
+       -0.6498,
+       0.0902,
+       0.7548
+      ],
+      [
+       0.7333,
+       -0.187,
+       0.6537
+      ]
+     ],
+     "across_nm": [
+      5.8,
+      4.0,
+      3.2
+     ],
+     "farthest_nm": [
+      5.5,
+      5.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 1.74
+    },
+    "NDUFA13": {
+     "by": "entities",
+     "ids": [
+      "5"
+     ],
+     "atoms": 2304,
+     "centre_nm": [
+      4.94,
+      -3.18,
+      -1.93
+     ],
+     "axes": [
+      [
+       0.0408,
+       0.92,
+       -0.3897
+      ],
+      [
+       0.0125,
+       0.3895,
+       0.9209
+      ],
+      [
+       0.9991,
+       -0.0424,
+       0.0044
+      ]
+     ],
+     "across_nm": [
+      17.4,
+      5.8,
+      2.9
+     ],
+     "farthest_nm": [
+      14.3,
+      5.6,
+      3.5
+     ],
+     "radius_of_gyration_nm": 4.15
+    },
+    "NDUFAB1": {
+     "by": "entities",
+     "ids": [
+      "6"
+     ],
+     "atoms": 2755,
+     "centre_nm": [
+      -5.28,
+      -0.12,
+      2.3
+     ],
+     "axes": [
+      [
+       0.9536,
+       0.2849,
+       0.0975
+      ],
+      [
+       -0.2429,
+       0.5369,
+       0.8079
+      ],
+      [
+       0.1778,
+       -0.7941,
+       0.5812
+      ]
+     ],
+     "across_nm": [
+      20.7,
+      3.8,
+      2.8
+     ],
+     "farthest_nm": [
+      12.3,
+      4.0,
+      3.3
+     ],
+     "radius_of_gyration_nm": 4.75
+    },
+    "NDUFB2": {
+     "by": "entities",
+     "ids": [
+      "7"
+     ],
+     "atoms": 1035,
+     "centre_nm": [
+      -10.48,
+      -6.43,
+      2.26
+     ],
+     "axes": [
+      [
+       -0.2748,
+       0.8236,
+       -0.4961
+      ],
+      [
+       0.5206,
+       0.5612,
+       0.6434
+      ],
+      [
+       0.8084,
+       -0.0814,
+       -0.583
+      ]
+     ],
+     "across_nm": [
+      12.5,
+      3.2,
+      1.5
+     ],
+     "farthest_nm": [
+      9.8,
+      3.9,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.91
+    },
+    "NDUFB3": {
+     "by": "entities",
+     "ids": [
+      "8"
+     ],
+     "atoms": 1339,
+     "centre_nm": [
+      -11.13,
+      -4.01,
+      2.52
+     ],
+     "axes": [
+      [
+       0.2145,
+       0.9492,
+       0.2303
+      ],
+      [
+       0.1476,
+       -0.2646,
+       0.953
+      ],
+      [
+       0.9655,
+       -0.1704,
+       -0.1969
+      ]
+     ],
+     "across_nm": [
+      10.1,
+      4.4,
+      1.8
+     ],
+     "farthest_nm": [
+      8.3,
+      5.2,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.5
+    },
+    "NDUFB5": {
+     "by": "entities",
+     "ids": [
+      "9"
+     ],
+     "atoms": 2356,
+     "centre_nm": [
+      -3.86,
+      -6.26,
+      -2.31
+     ],
+     "axes": [
+      [
+       0.9907,
+       -0.1316,
+       0.0342
+      ],
+      [
+       0.1126,
+       0.9351,
+       0.3361
+      ],
+      [
+       -0.0762,
+       -0.3291,
+       0.9412
+      ]
+     ],
+     "across_nm": [
+      16.5,
+      7.5,
+      2.6
+     ],
+     "farthest_nm": [
+      15.1,
+      7.7,
+      3.1
+     ],
+     "radius_of_gyration_nm": 4.09
+    },
+    "NDUFB6": {
+     "by": "entities",
+     "ids": [
+      "10"
+     ],
+     "atoms": 2070,
+     "centre_nm": [
+      -8.97,
+      -5.35,
+      -1.06
+     ],
+     "axes": [
+      [
+       -0.0399,
+       0.9985,
+       0.0363
+      ],
+      [
+       0.402,
+       -0.0172,
+       0.9155
+      ],
+      [
+       0.9148,
+       0.0511,
+       -0.4007
+      ]
+     ],
+     "across_nm": [
+      14.4,
+      6.8,
+      3.9
+     ],
+     "farthest_nm": [
+      11.3,
+      6.5,
+      4.5
+     ],
+     "radius_of_gyration_nm": 3.67
+    },
+    "NDUFB8": {
+     "by": "entities",
+     "ids": [
+      "11"
+     ],
+     "atoms": 2453,
+     "centre_nm": [
+      -6.23,
+      -4.32,
+      2.39
+     ],
+     "axes": [
+      [
+       0.2882,
+       0.9476,
+       -0.1376
+      ],
+      [
+       -0.6095,
+       0.2923,
+       0.7369
+      ],
+      [
+       0.7386,
+       -0.1285,
+       0.6618
+      ]
+     ],
+     "across_nm": [
+      14.3,
+      4.3,
+      3.6
+     ],
+     "farthest_nm": [
+      10.7,
+      4.4,
+      4.1
+     ],
+     "radius_of_gyration_nm": 3.44
+    },
+    "NDUFB10": {
+     "by": "entities",
+     "ids": [
+      "12"
+     ],
+     "atoms": 2837,
+     "centre_nm": [
+      -5.73,
+      -8.6,
+      -0.84
+     ],
+     "axes": [
+      [
+       0.9671,
+       -0.0563,
+       0.2482
+      ],
+      [
+       -0.2534,
+       -0.3048,
+       0.9181
+      ],
+      [
+       0.024,
+       -0.9508,
+       -0.309
+      ]
+     ],
+     "across_nm": [
+      9.9,
+      5.8,
+      2.3
+     ],
+     "farthest_nm": [
+      8.1,
+      5.7,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.61
+    },
+    "NDUFB11": {
+     "by": "entities",
+     "ids": [
+      "13"
+     ],
+     "atoms": 1737,
+     "centre_nm": [
+      -5.2,
+      -5.43,
+      -1.6
+     ],
+     "axes": [
+      [
+       -0.0494,
+       0.9959,
+       -0.0752
+      ],
+      [
+       0.7504,
+       0.0867,
+       0.6553
+      ],
+      [
+       0.6591,
+       -0.024,
+       -0.7516
+      ]
+     ],
+     "across_nm": [
+      15.0,
+      6.4,
+      2.0
+     ],
+     "farthest_nm": [
+      11.8,
+      5.9,
+      2.5
+     ],
+     "radius_of_gyration_nm": 3.68
+    },
+    "NDUFC1": {
+     "by": "entities",
+     "ids": [
+      "14"
+     ],
+     "atoms": 844,
+     "centre_nm": [
+      -1.57,
+      -3.98,
+      -4.74
+     ],
+     "axes": [
+      [
+       -0.2906,
+       0.9565,
+       0.0251
+      ],
+      [
+       -0.5992,
+       -0.2024,
+       0.7746
+      ],
+      [
+       0.746,
+       0.2101,
+       0.632
+      ]
+     ],
+     "across_nm": [
+      9.4,
+      1.8,
+      1.5
+     ],
+     "farthest_nm": [
+      7.7,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 2.17
+    },
+    "NDUFC2": {
+     "by": "entities",
+     "ids": [
+      "15"
+     ],
+     "atoms": 2015,
+     "centre_nm": [
+      -1.45,
+      -5.67,
+      -2.77
+     ],
+     "axes": [
+      [
+       -0.1202,
+       0.826,
+       -0.5507
+      ],
+      [
+       0.8788,
+       -0.1695,
+       -0.446
+      ],
+      [
+       -0.4617,
+       -0.5376,
+       -0.7056
+      ]
+     ],
+     "across_nm": [
+      9.5,
+      5.6,
+      2.6
+     ],
+     "farthest_nm": [
+      8.1,
+      6.2,
+      3.3
+     ],
+     "radius_of_gyration_nm": 2.55
+    },
+    "NDUFS5": {
+     "by": "entities",
+     "ids": [
+      "16"
+     ],
+     "atoms": 1747,
+     "centre_nm": [
+      3.23,
+      -5.56,
+      -0.87
+     ],
+     "axes": [
+      [
+       0.7339,
+       -0.1168,
+       0.6692
+      ],
+      [
+       0.6291,
+       0.4886,
+       -0.6046
+      ],
+      [
+       -0.2563,
+       0.8647,
+       0.4321
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      4.1,
+      2.5
+     ],
+     "farthest_nm": [
+      7.9,
+      4.6,
+      2.9
+     ],
+     "radius_of_gyration_nm": 2.34
+    },
+    "MT-ND2": {
+     "by": "entities",
+     "ids": [
+      "17"
+     ],
+     "atoms": 5626,
+     "centre_nm": [
+      -0.66,
+      -3.44,
+      -1.29
+     ],
+     "axes": [
+      [
+       0.8014,
+       -0.5543,
+       0.2247
+      ],
+      [
+       0.5978,
+       0.7536,
+       -0.2733
+      ],
+      [
+       -0.0179,
+       0.3534,
+       0.9353
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      5.0,
+      3.7
+     ],
+     "farthest_nm": [
+      7.7,
+      5.8,
+      4.3
+     ],
+     "radius_of_gyration_nm": 2.1
+    },
+    "MT-ND3": {
+     "by": "entities",
+     "ids": [
+      "18"
+     ],
+     "atoms": 1890,
+     "centre_nm": [
+      3.26,
+      -1.33,
+      -1.13
+     ],
+     "axes": [
+      [
+       0.2712,
+       0.5106,
+       0.8159
+      ],
+      [
+       0.7666,
+       -0.6272,
+       0.1377
+      ],
+      [
+       0.5821,
+       0.5881,
+       -0.5615
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      6.3,
+      1.7
+     ],
+     "farthest_nm": [
+      7.9,
+      5.8,
+      2.2
+     ],
+     "radius_of_gyration_nm": 2.63
+    },
+    "MT-ND4L": {
+     "by": "entities",
+     "ids": [
+      "19"
+     ],
+     "atoms": 1530,
+     "centre_nm": [
+      1.96,
+      -2.73,
+      -0.44
+     ],
+     "axes": [
+      [
+       -0.6523,
+       0.7393,
+       0.1671
+      ],
+      [
+       -0.0292,
+       -0.2448,
+       0.9691
+      ],
+      [
+       0.7574,
+       0.6272,
+       0.1813
+      ]
+     ],
+     "across_nm": [
+      6.9,
+      3.4,
+      1.9
+     ],
+     "farthest_nm": [
+      6.0,
+      3.2,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.77
+    },
+    "MT-ND5": {
+     "by": "entities",
+     "ids": [
+      "20"
+     ],
+     "atoms": 9583,
+     "centre_nm": [
+      -7.59,
+      -5.61,
+      1.35
+     ],
+     "axes": [
+      [
+       0.9626,
+       0.2516,
+       -0.1004
+      ],
+      [
+       -0.1574,
+       0.8211,
+       0.5486
+      ],
+      [
+       0.2205,
+       -0.5123,
+       0.83
+      ]
+     ],
+     "across_nm": [
+      11.4,
+      6.5,
+      5.7
+     ],
+     "farthest_nm": [
+      12.6,
+      7.3,
+      7.5
+     ],
+     "radius_of_gyration_nm": 3.21
+    },
+    "MT-ND6": {
+     "by": "entities",
+     "ids": [
+      "21"
+     ],
+     "atoms": 2619,
+     "centre_nm": [
+      2.88,
+      -2.95,
+      -0.3
+     ],
+     "axes": [
+      [
+       0.3878,
+       -0.5959,
+       0.7032
+      ],
+      [
+       -0.3469,
+       0.6125,
+       0.7103
+      ],
+      [
+       -0.854,
+       -0.5194,
+       0.0308
+      ]
+     ],
+     "across_nm": [
+      6.8,
+      6.2,
+      3.0
+     ],
+     "farthest_nm": [
+      6.5,
+      6.5,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    "NDUFB1": {
+     "by": "entities",
+     "ids": [
+      "22"
+     ],
+     "atoms": 923,
+     "centre_nm": [
+      -3.91,
+      -6.39,
+      -3.63
+     ],
+     "axes": [
+      [
+       -0.2398,
+       0.9521,
+       -0.1897
+      ],
+      [
+       0.5713,
+       0.2964,
+       0.7653
+      ],
+      [
+       0.7849,
+       0.0752,
+       -0.6151
+      ]
+     ],
+     "across_nm": [
+      8.7,
+      2.5,
+      1.7
+     ],
+     "farthest_nm": [
+      6.7,
+      2.9,
+      2.1
+     ],
+     "radius_of_gyration_nm": 2.06
+    },
+    "NDUFB4": {
+     "by": "entities",
+     "ids": [
+      "23"
+     ],
+     "atoms": 2154,
+     "centre_nm": [
+      -5.36,
+      -3.55,
+      1.96
+     ],
+     "axes": [
+      [
+       -0.3528,
+       0.935,
+       0.0359
+      ],
+      [
+       -0.186,
+       -0.1077,
+       0.9766
+      ],
+      [
+       0.917,
+       0.3378,
+       0.2119
+      ]
+     ],
+     "across_nm": [
+      11.9,
+      5.9,
+      4.1
+     ],
+     "farthest_nm": [
+      8.9,
+      6.7,
+      4.6
+     ],
+     "radius_of_gyration_nm": 3.1
+    },
+    "NDUFB9": {
+     "by": "entities",
+     "ids": [
+      "24"
+     ],
+     "atoms": 2947,
+     "centre_nm": [
+      -8.11,
+      -1.73,
+      1.57
+     ],
+     "axes": [
+      [
+       -0.1788,
+       -0.1941,
+       0.9646
+      ],
+      [
+       0.3823,
+       0.8896,
+       0.2499
+      ],
+      [
+       -0.9066,
+       0.4134,
+       -0.0849
+      ]
+     ],
+     "across_nm": [
+      9.6,
+      5.5,
+      2.6
+     ],
+     "farthest_nm": [
+      7.2,
+      5.2,
+      3.1
+     ],
+     "radius_of_gyration_nm": 2.55
+    },
+    "MT-ND4": {
+     "by": "entities",
+     "ids": [
+      "25"
+     ],
+     "atoms": 7444,
+     "centre_nm": [
+      -4.52,
+      -4.9,
+      -0.71
+     ],
+     "axes": [
+      [
+       -0.6434,
+       0.7434,
+       -0.1827
+      ],
+      [
+       -0.3953,
+       -0.1183,
+       0.9109
+      ],
+      [
+       0.6556,
+       0.6583,
+       0.3699
+      ]
+     ],
+     "across_nm": [
+      6.9,
+      5.6,
+      4.2
+     ],
+     "farthest_nm": [
+      7.3,
+      6.2,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.2
+    },
+    "MT-ND1": {
+     "by": "entities",
+     "ids": [
+      "26"
+     ],
+     "atoms": 5091,
+     "centre_nm": [
+      4.65,
+      -0.93,
+      -1.49
+     ],
+     "axes": [
+      [
+       -0.0794,
+       0.6216,
+       0.7793
+      ],
+      [
+       0.9862,
+       -0.0652,
+       0.1525
+      ],
+      [
+       0.1456,
+       0.7806,
+       -0.6078
+      ]
+     ],
+     "across_nm": [
+      6.6,
+      5.0,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      5.3,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.07
+    },
+    "NDUFA8": {
+     "by": "entities",
+     "ids": [
+      "27"
+     ],
+     "atoms": 2791,
+     "centre_nm": [
+      5.04,
+      -5.78,
+      -2.47
+     ],
+     "axes": [
+      [
+       0.9693,
+       0.2374,
+       -0.0631
+      ],
+      [
+       -0.2258,
+       0.7596,
+       -0.6099
+      ],
+      [
+       -0.0968,
+       0.6054,
+       0.79
+      ]
+     ],
+     "across_nm": [
+      12.3,
+      4.9,
+      3.3
+     ],
+     "farthest_nm": [
+      11.1,
+      4.9,
+      4.1
+     ],
+     "radius_of_gyration_nm": 3.05
+    },
+    "NDUFB7": {
+     "by": "entities",
+     "ids": [
+      "28"
+     ],
+     "atoms": 2069,
+     "centre_nm": [
+      -8.55,
+      -9.22,
+      3.16
+     ],
+     "axes": [
+      [
+       0.3402,
+       -0.0761,
+       0.9373
+      ],
+      [
+       -0.2418,
+       0.9561,
+       0.1654
+      ],
+      [
+       -0.9087,
+       -0.2829,
+       0.3069
+      ]
+     ],
+     "across_nm": [
+      8.3,
+      3.5,
+      2.6
+     ],
+     "farthest_nm": [
+      7.8,
+      4.0,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.09
+    },
+    "NDUFA10": {
+     "by": "entities",
+     "ids": [
+      "29"
+     ],
+     "atoms": 5221,
+     "centre_nm": [
+      -2.06,
+      0.4,
+      -2.6
+     ],
+     "axes": [
+      [
+       -0.0116,
+       0.9439,
+       0.33
+      ],
+      [
+       0.8732,
+       0.1704,
+       -0.4566
+      ],
+      [
+       -0.4872,
+       0.2829,
+       -0.8262
+      ]
+     ],
+     "across_nm": [
+      6.4,
+      6.0,
+      4.0
+     ],
+     "farthest_nm": [
+      7.1,
+      6.0,
+      4.5
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    "NDUFV1": {
+     "by": "entities",
+     "ids": [
+      "30"
+     ],
+     "atoms": 6668,
+     "centre_nm": [
+      4.65,
+      11.01,
+      -1.49
+     ],
+     "axes": [
+      [
+       -0.443,
+       0.7831,
+       0.4364
+      ],
+      [
+       -0.2068,
+       -0.5629,
+       0.8002
+      ],
+      [
+       0.8723,
+       0.2642,
+       0.4114
+      ]
+     ],
+     "across_nm": [
+      8.1,
+      5.2,
+      3.8
+     ],
+     "farthest_nm": [
+      8.6,
+      5.1,
+      4.5
+     ],
+     "radius_of_gyration_nm": 2.32
+    },
+    "NDUFS8": {
+     "by": "entities",
+     "ids": [
+      "31"
+     ],
+     "atoms": 2787,
+     "centre_nm": [
+      5.29,
+      3.65,
+      -0.8
+     ],
+     "axes": [
+      [
+       0.2716,
+       0.6648,
+       0.6959
+      ],
+      [
+       0.7507,
+       -0.5989,
+       0.2791
+      ],
+      [
+       0.6023,
+       0.4466,
+       -0.6617
+      ]
+     ],
+     "across_nm": [
+      12.1,
+      4.2,
+      3.4
+     ],
+     "farthest_nm": [
+      10.4,
+      5.1,
+      4.3
+     ],
+     "radius_of_gyration_nm": 2.96
+    },
+    "NDUFS7": {
+     "by": "entities",
+     "ids": [
+      "32"
+     ],
+     "atoms": 2563,
+     "centre_nm": [
+      5.13,
+      1.89,
+      0.64
+     ],
+     "axes": [
+      [
+       0.7178,
+       -0.5885,
+       0.3721
+      ],
+      [
+       -0.4945,
+       -0.0547,
+       0.8675
+      ],
+      [
+       -0.4901,
+       -0.8067,
+       -0.3302
+      ]
+     ],
+     "across_nm": [
+      6.6,
+      3.8,
+      2.9
+     ],
+     "farthest_nm": [
+      6.9,
+      4.3,
+      3.6
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    "NDUFA6": {
+     "by": "entities",
+     "ids": [
+      "33"
+     ],
+     "atoms": 2016,
+     "centre_nm": [
+      1.13,
+      2.72,
+      1.8
+     ],
+     "axes": [
+      [
+       0.7865,
+       -0.06,
+       0.6147
+      ],
+      [
+       -0.1573,
+       0.943,
+       0.2932
+      ],
+      [
+       -0.5973,
+       -0.3273,
+       0.7322
+      ]
+     ],
+     "across_nm": [
+      6.1,
+      5.0,
+      2.7
+     ],
+     "farthest_nm": [
+      6.1,
+      5.0,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.86
+    },
+    "NDUFA2": {
+     "by": "entities",
+     "ids": [
+      "34"
+     ],
+     "atoms": 1380,
+     "centre_nm": [
+      0.29,
+      7.17,
+      4.84
+     ],
+     "axes": [
+      [
+       0.4063,
+       -0.482,
+       0.7763
+      ],
+      [
+       -0.12,
+       0.8141,
+       0.5682
+      ],
+      [
+       -0.9058,
+       -0.324,
+       0.2729
+      ]
+     ],
+     "across_nm": [
+      4.1,
+      3.0,
+      2.5
+     ],
+     "farthest_nm": [
+      4.3,
+      3.1,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.27
+    },
+    "NDUFA5": {
+     "by": "entities",
+     "ids": [
+      "35"
+     ],
+     "atoms": 1875,
+     "centre_nm": [
+      0.19,
+      3.77,
+      -3.19
+     ],
+     "axes": [
+      [
+       -0.1622,
+       0.5654,
+       0.8087
+      ],
+      [
+       0.9641,
+       -0.0838,
+       0.252
+      ],
+      [
+       0.2102,
+       0.8206,
+       -0.5315
+      ]
+     ],
+     "across_nm": [
+      7.1,
+      3.9,
+      2.7
+     ],
+     "farthest_nm": [
+      6.5,
+      4.3,
+      2.7
+     ],
+     "radius_of_gyration_nm": 1.91
+    },
+    "NDUFA9": {
+     "by": "entities",
+     "ids": [
+      "36"
+     ],
+     "atoms": 5547,
+     "centre_nm": [
+      4.26,
+      1.24,
+      3.71
+     ],
+     "axes": [
+      [
+       0.4558,
+       0.8895,
+       0.0321
+      ],
+      [
+       0.7713,
+       -0.4127,
+       0.4846
+      ],
+      [
+       0.4443,
+       -0.1961,
+       -0.8742
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      4.8,
+      4.1
+     ],
+     "farthest_nm": [
+      6.8,
+      5.2,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.1
+    },
+    "NDUFV3": {
+     "by": "entities",
+     "ids": [
+      "37"
+     ],
+     "atoms": 586,
+     "centre_nm": [
+      5.1,
+      12.26,
+      0.71
+     ],
+     "axes": [
+      [
+       0.6576,
+       0.4221,
+       -0.624
+      ],
+      [
+       0.7082,
+       -0.6289,
+       0.3209
+      ],
+      [
+       -0.2569,
+       -0.6529,
+       -0.7125
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      2.7,
+      2.1
+     ],
+     "farthest_nm": [
+      6.2,
+      2.8,
+      2.2
+     ],
+     "radius_of_gyration_nm": 1.76
+    },
+    "NDUFS4": {
+     "by": "entities",
+     "ids": [
+      "38"
+     ],
+     "atoms": 1954,
+     "centre_nm": [
+      2.39,
+      6.22,
+      1.48
+     ],
+     "axes": [
+      [
+       0.2136,
+       0.963,
+       -0.1642
+      ],
+      [
+       0.9638,
+       -0.1802,
+       0.1966
+      ],
+      [
+       0.1597,
+       -0.2002,
+       -0.9666
+      ]
+     ],
+     "across_nm": [
+      9.0,
+      4.7,
+      2.2
+     ],
+     "farthest_nm": [
+      8.0,
+      5.9,
+      3.0
+     ],
+     "radius_of_gyration_nm": 2.32
+    },
+    "NDUFS1": {
+     "by": "entities",
+     "ids": [
+      "39"
+     ],
+     "atoms": 10596,
+     "centre_nm": [
+      3.21,
+      7.62,
+      2.83
+     ],
+     "axes": [
+      [
+       -0.168,
+       -0.2971,
+       0.9399
+      ],
+      [
+       -0.529,
+       0.8318,
+       0.1684
+      ],
+      [
+       -0.8318,
+       -0.4689,
+       -0.2969
+      ]
+     ],
+     "across_nm": [
+      9.8,
+      6.6,
+      4.8
+     ],
+     "farthest_nm": [
+      9.4,
+      6.8,
+      5.5
+     ],
+     "radius_of_gyration_nm": 2.84
+    },
+    "NDUFA12": {
+     "by": "entities",
+     "ids": [
+      "40"
+     ],
+     "atoms": 2375,
+     "centre_nm": [
+      7.13,
+      3.13,
+      -0.08
+     ],
+     "axes": [
+      [
+       -0.3501,
+       0.5131,
+       0.7837
+      ],
+      [
+       -0.0305,
+       0.83,
+       -0.557
+      ],
+      [
+       -0.9362,
+       -0.2189,
+       -0.2749
+      ]
+     ],
+     "across_nm": [
+      10.5,
+      3.9,
+      2.6
+     ],
+     "farthest_nm": [
+      11.4,
+      4.1,
+      2.7
+     ],
+     "radius_of_gyration_nm": 2.57
+    },
+    "NDUFV2": {
+     "by": "entities",
+     "ids": [
+      "41"
+     ],
+     "atoms": 3291,
+     "centre_nm": [
+      6.32,
+      11.02,
+      0.09
+     ],
+     "axes": [
+      [
+       -0.183,
+       -0.4123,
+       0.8925
+      ],
+      [
+       0.8493,
+       -0.5236,
+       -0.0677
+      ],
+      [
+       0.4952,
+       0.7456,
+       0.446
+      ]
+     ],
+     "across_nm": [
+      7.2,
+      5.7,
+      3.1
+     ],
+     "farthest_nm": [
+      6.1,
+      7.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    "NDUFS3": {
+     "by": "entities",
+     "ids": [
+      "42"
+     ],
+     "atoms": 3421,
+     "centre_nm": [
+      1.71,
+      4.39,
+      -0.69
+     ],
+     "axes": [
+      [
+       0.3618,
+       -0.4068,
+       0.8388
+      ],
+      [
+       0.5827,
+       0.8011,
+       0.1372
+      ],
+      [
+       -0.7277,
+       0.4391,
+       0.5269
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.4,
+      3.4
+     ],
+     "farthest_nm": [
+      7.6,
+      5.8,
+      4.1
+     ],
+     "radius_of_gyration_nm": 2.23
+    },
+    "NDUFS6": {
+     "by": "entities",
+     "ids": [
+      "43"
+     ],
+     "atoms": 1484,
+     "centre_nm": [
+      6.6,
+      6.0,
+      1.36
+     ],
+     "axes": [
+      [
+       0.1917,
+       0.7928,
+       -0.5786
+      ],
+      [
+       0.3691,
+       0.488,
+       0.791
+      ],
+      [
+       0.9094,
+       -0.3652,
+       -0.1991
+      ]
+     ],
+     "across_nm": [
+      8.5,
+      3.0,
+      2.2
+     ],
+     "farthest_nm": [
+      6.5,
+      3.7,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.07
+    },
+    "NDUFA7": {
+     "by": "entities",
+     "ids": [
+      "44"
+     ],
+     "atoms": 1582,
+     "centre_nm": [
+      4.11,
+      4.25,
+      -2.8
+     ],
+     "axes": [
+      [
+       0.7311,
+       -0.6653,
+       -0.1512
+      ],
+      [
+       0.661,
+       0.6356,
+       0.3989
+      ],
+      [
+       -0.1693,
+       -0.3916,
+       0.9044
+      ]
+     ],
+     "across_nm": [
+      11.9,
+      7.4,
+      2.6
+     ],
+     "farthest_nm": [
+      9.5,
+      6.1,
+      3.3
+     ],
+     "radius_of_gyration_nm": 3.19
+    }
+   },
+   "chains": [
+    {
+     "chain": "Q",
+     "entity": "1",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 2, mitochondrial",
+     "atoms": 6869,
+     "centre_nm": [
+      3.03,
+      2.95,
+      -1.56
+     ],
+     "axes": [
+      [
+       0.6772,
+       0.72,
+       -0.1518
+      ],
+      [
+       -0.48,
+       0.5886,
+       0.6504
+      ],
+      [
+       0.5577,
+       -0.3676,
+       0.7442
+      ]
+     ],
+     "across_nm": [
+      12.4,
+      5.6,
+      3.8
+     ],
+     "farthest_nm": [
+      14.1,
+      6.1,
+      4.6
+     ],
+     "radius_of_gyration_nm": 3.15
+    },
+    {
+     "chain": "S",
+     "entity": "2",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 1",
+     "atoms": 1138,
+     "centre_nm": [
+      6.46,
+      -2.94,
+      -1.34
+     ],
+     "axes": [
+      [
+       0.0112,
+       0.9968,
+       -0.0792
+      ],
+      [
+       0.9801,
+       0.0047,
+       0.1985
+      ],
+      [
+       0.1982,
+       -0.0798,
+       -0.9769
+      ]
+     ],
+     "across_nm": [
+      8.7,
+      2.8,
+      2.0
+     ],
+     "farthest_nm": [
+      7.6,
+      3.2,
+      2.5
+     ],
+     "radius_of_gyration_nm": 2.09
+    },
+    {
+     "chain": "U",
+     "entity": "3",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 3",
+     "atoms": 1302,
+     "centre_nm": [
+      3.97,
+      -3.39,
+      -4.22
+     ],
+     "axes": [
+      [
+       -0.4201,
+       0.9001,
+       -0.1156
+      ],
+      [
+       -0.2515,
+       0.007,
+       0.9678
+      ],
+      [
+       0.8719,
+       0.4357,
+       0.2234
+      ]
+     ],
+     "across_nm": [
+      10.7,
+      2.6,
+      2.4
+     ],
+     "farthest_nm": [
+      8.0,
+      2.8,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.52
+    },
+    {
+     "chain": "V",
+     "entity": "4",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 11",
+     "atoms": 2069,
+     "centre_nm": [
+      -0.81,
+      -4.73,
+      2.09
+     ],
+     "axes": [
+      [
+       0.2001,
+       0.9782,
+       0.0554
+      ],
+      [
+       -0.6498,
+       0.0902,
+       0.7548
+      ],
+      [
+       0.7333,
+       -0.187,
+       0.6537
+      ]
+     ],
+     "across_nm": [
+      5.8,
+      4.0,
+      3.2
+     ],
+     "farthest_nm": [
+      5.5,
+      5.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 1.74
+    },
+    {
+     "chain": "W",
+     "entity": "5",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 13",
+     "atoms": 2304,
+     "centre_nm": [
+      4.94,
+      -3.18,
+      -1.93
+     ],
+     "axes": [
+      [
+       0.0408,
+       0.92,
+       -0.3897
+      ],
+      [
+       0.0125,
+       0.3895,
+       0.9209
+      ],
+      [
+       0.9991,
+       -0.0424,
+       0.0044
+      ]
+     ],
+     "across_nm": [
+      17.4,
+      5.8,
+      2.9
+     ],
+     "farthest_nm": [
+      14.3,
+      5.6,
+      3.5
+     ],
+     "radius_of_gyration_nm": 4.15
+    },
+    {
+     "chain": "X",
+     "entity": "6",
+     "description": "Acyl carrier protein, mitochondrial",
+     "atoms": 1386,
+     "centre_nm": [
+      -9.62,
+      -1.4,
+      1.88
+     ],
+     "axes": [
+      [
+       -0.1517,
+       0.4916,
+       0.8575
+      ],
+      [
+       0.9571,
+       -0.1436,
+       0.2516
+      ],
+      [
+       0.2469,
+       0.8589,
+       -0.4488
+      ]
+     ],
+     "across_nm": [
+      4.1,
+      3.1,
+      2.4
+     ],
+     "farthest_nm": [
+      4.0,
+      3.5,
+      2.5
+     ],
+     "radius_of_gyration_nm": 1.28
+    },
+    {
+     "chain": "Y",
+     "entity": "7",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 2, mitochondrial",
+     "atoms": 1035,
+     "centre_nm": [
+      -10.48,
+      -6.43,
+      2.26
+     ],
+     "axes": [
+      [
+       -0.2748,
+       0.8236,
+       -0.4961
+      ],
+      [
+       0.5206,
+       0.5612,
+       0.6434
+      ],
+      [
+       0.8084,
+       -0.0814,
+       -0.583
+      ]
+     ],
+     "across_nm": [
+      12.5,
+      3.2,
+      1.5
+     ],
+     "farthest_nm": [
+      9.8,
+      3.9,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.91
+    },
+    {
+     "chain": "Z",
+     "entity": "8",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 3",
+     "atoms": 1339,
+     "centre_nm": [
+      -11.13,
+      -4.01,
+      2.52
+     ],
+     "axes": [
+      [
+       0.2145,
+       0.9492,
+       0.2303
+      ],
+      [
+       0.1476,
+       -0.2646,
+       0.953
+      ],
+      [
+       0.9655,
+       -0.1704,
+       -0.1969
+      ]
+     ],
+     "across_nm": [
+      10.1,
+      4.4,
+      1.8
+     ],
+     "farthest_nm": [
+      8.3,
+      5.2,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.5
+    },
+    {
+     "chain": "a",
+     "entity": "9",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 5, mitochondrial",
+     "atoms": 2356,
+     "centre_nm": [
+      -3.86,
+      -6.26,
+      -2.31
+     ],
+     "axes": [
+      [
+       0.9907,
+       -0.1316,
+       0.0342
+      ],
+      [
+       0.1126,
+       0.9351,
+       0.3361
+      ],
+      [
+       -0.0762,
+       -0.3291,
+       0.9412
+      ]
+     ],
+     "across_nm": [
+      16.5,
+      7.5,
+      2.6
+     ],
+     "farthest_nm": [
+      15.1,
+      7.7,
+      3.1
+     ],
+     "radius_of_gyration_nm": 4.09
+    },
+    {
+     "chain": "b",
+     "entity": "10",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 6",
+     "atoms": 2070,
+     "centre_nm": [
+      -8.97,
+      -5.35,
+      -1.06
+     ],
+     "axes": [
+      [
+       -0.0399,
+       0.9985,
+       0.0363
+      ],
+      [
+       0.402,
+       -0.0172,
+       0.9155
+      ],
+      [
+       0.9148,
+       0.0511,
+       -0.4007
+      ]
+     ],
+     "across_nm": [
+      14.4,
+      6.8,
+      3.9
+     ],
+     "farthest_nm": [
+      11.3,
+      6.5,
+      4.5
+     ],
+     "radius_of_gyration_nm": 3.67
+    },
+    {
+     "chain": "c",
+     "entity": "11",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 8, mitochondrial",
+     "atoms": 2453,
+     "centre_nm": [
+      -6.23,
+      -4.32,
+      2.39
+     ],
+     "axes": [
+      [
+       0.2882,
+       0.9476,
+       -0.1376
+      ],
+      [
+       -0.6095,
+       0.2923,
+       0.7369
+      ],
+      [
+       0.7386,
+       -0.1285,
+       0.6618
+      ]
+     ],
+     "across_nm": [
+      14.3,
+      4.3,
+      3.6
+     ],
+     "farthest_nm": [
+      10.7,
+      4.4,
+      4.1
+     ],
+     "radius_of_gyration_nm": 3.44
+    },
+    {
+     "chain": "d",
+     "entity": "12",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 10",
+     "atoms": 2837,
+     "centre_nm": [
+      -5.73,
+      -8.6,
+      -0.84
+     ],
+     "axes": [
+      [
+       0.9671,
+       -0.0563,
+       0.2482
+      ],
+      [
+       -0.2534,
+       -0.3048,
+       0.9181
+      ],
+      [
+       0.024,
+       -0.9508,
+       -0.309
+      ]
+     ],
+     "across_nm": [
+      9.9,
+      5.8,
+      2.3
+     ],
+     "farthest_nm": [
+      8.1,
+      5.7,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.61
+    },
+    {
+     "chain": "e",
+     "entity": "13",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 11, mitochondrial",
+     "atoms": 1737,
+     "centre_nm": [
+      -5.2,
+      -5.43,
+      -1.6
+     ],
+     "axes": [
+      [
+       -0.0494,
+       0.9959,
+       -0.0752
+      ],
+      [
+       0.7504,
+       0.0867,
+       0.6553
+      ],
+      [
+       0.6591,
+       -0.024,
+       -0.7516
+      ]
+     ],
+     "across_nm": [
+      15.0,
+      6.4,
+      2.0
+     ],
+     "farthest_nm": [
+      11.8,
+      5.9,
+      2.5
+     ],
+     "radius_of_gyration_nm": 3.68
+    },
+    {
+     "chain": "f",
+     "entity": "14",
+     "description": "NADH dehydrogenase [ubiquinone] 1 subunit C1, mitochondrial",
+     "atoms": 844,
+     "centre_nm": [
+      -1.57,
+      -3.98,
+      -4.74
+     ],
+     "axes": [
+      [
+       -0.2906,
+       0.9565,
+       0.0251
+      ],
+      [
+       -0.5992,
+       -0.2024,
+       0.7746
+      ],
+      [
+       0.746,
+       0.2101,
+       0.632
+      ]
+     ],
+     "across_nm": [
+      9.4,
+      1.8,
+      1.5
+     ],
+     "farthest_nm": [
+      7.7,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 2.17
+    },
+    {
+     "chain": "g",
+     "entity": "15",
+     "description": "NADH dehydrogenase [ubiquinone] 1 subunit C2",
+     "atoms": 2015,
+     "centre_nm": [
+      -1.45,
+      -5.67,
+      -2.77
+     ],
+     "axes": [
+      [
+       -0.1202,
+       0.826,
+       -0.5507
+      ],
+      [
+       0.8788,
+       -0.1695,
+       -0.446
+      ],
+      [
+       -0.4617,
+       -0.5376,
+       -0.7056
+      ]
+     ],
+     "across_nm": [
+      9.5,
+      5.6,
+      2.6
+     ],
+     "farthest_nm": [
+      8.1,
+      6.2,
+      3.3
+     ],
+     "radius_of_gyration_nm": 2.55
+    },
+    {
+     "chain": "h",
+     "entity": "16",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 5",
+     "atoms": 1747,
+     "centre_nm": [
+      3.23,
+      -5.56,
+      -0.87
+     ],
+     "axes": [
+      [
+       0.7339,
+       -0.1168,
+       0.6692
+      ],
+      [
+       0.6291,
+       0.4886,
+       -0.6046
+      ],
+      [
+       -0.2563,
+       0.8647,
+       0.4321
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      4.1,
+      2.5
+     ],
+     "farthest_nm": [
+      7.9,
+      4.6,
+      2.9
+     ],
+     "radius_of_gyration_nm": 2.34
+    },
+    {
+     "chain": "i",
+     "entity": "17",
+     "description": "NADH-ubiquinone oxidoreductase chain 2",
+     "atoms": 5626,
+     "centre_nm": [
+      -0.66,
+      -3.44,
+      -1.29
+     ],
+     "axes": [
+      [
+       0.8014,
+       -0.5543,
+       0.2247
+      ],
+      [
+       0.5978,
+       0.7536,
+       -0.2733
+      ],
+      [
+       -0.0179,
+       0.3534,
+       0.9353
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      5.0,
+      3.7
+     ],
+     "farthest_nm": [
+      7.7,
+      5.8,
+      4.3
+     ],
+     "radius_of_gyration_nm": 2.1
+    },
+    {
+     "chain": "j",
+     "entity": "18",
+     "description": "NADH-ubiquinone oxidoreductase chain 3",
+     "atoms": 1890,
+     "centre_nm": [
+      3.26,
+      -1.33,
+      -1.13
+     ],
+     "axes": [
+      [
+       0.2712,
+       0.5106,
+       0.8159
+      ],
+      [
+       0.7666,
+       -0.6272,
+       0.1377
+      ],
+      [
+       0.5821,
+       0.5881,
+       -0.5615
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      6.3,
+      1.7
+     ],
+     "farthest_nm": [
+      7.9,
+      5.8,
+      2.2
+     ],
+     "radius_of_gyration_nm": 2.63
+    },
+    {
+     "chain": "k",
+     "entity": "19",
+     "description": "NADH-ubiquinone oxidoreductase chain 4L",
+     "atoms": 1530,
+     "centre_nm": [
+      1.96,
+      -2.73,
+      -0.44
+     ],
+     "axes": [
+      [
+       -0.6523,
+       0.7393,
+       0.1671
+      ],
+      [
+       -0.0292,
+       -0.2448,
+       0.9691
+      ],
+      [
+       0.7574,
+       0.6272,
+       0.1813
+      ]
+     ],
+     "across_nm": [
+      6.9,
+      3.4,
+      1.9
+     ],
+     "farthest_nm": [
+      6.0,
+      3.2,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.77
+    },
+    {
+     "chain": "l",
+     "entity": "20",
+     "description": "NADH-ubiquinone oxidoreductase chain 5",
+     "atoms": 9583,
+     "centre_nm": [
+      -7.59,
+      -5.61,
+      1.35
+     ],
+     "axes": [
+      [
+       0.9626,
+       0.2516,
+       -0.1004
+      ],
+      [
+       -0.1574,
+       0.8211,
+       0.5486
+      ],
+      [
+       0.2205,
+       -0.5123,
+       0.83
+      ]
+     ],
+     "across_nm": [
+      11.4,
+      6.5,
+      5.7
+     ],
+     "farthest_nm": [
+      12.6,
+      7.3,
+      7.5
+     ],
+     "radius_of_gyration_nm": 3.21
+    },
+    {
+     "chain": "m",
+     "entity": "21",
+     "description": "NADH-ubiquinone oxidoreductase chain 6",
+     "atoms": 2619,
+     "centre_nm": [
+      2.88,
+      -2.95,
+      -0.3
+     ],
+     "axes": [
+      [
+       0.3878,
+       -0.5959,
+       0.7032
+      ],
+      [
+       -0.3469,
+       0.6125,
+       0.7103
+      ],
+      [
+       -0.854,
+       -0.5194,
+       0.0308
+      ]
+     ],
+     "across_nm": [
+      6.8,
+      6.2,
+      3.0
+     ],
+     "farthest_nm": [
+      6.5,
+      6.5,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    {
+     "chain": "n",
+     "entity": "22",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 1",
+     "atoms": 923,
+     "centre_nm": [
+      -3.91,
+      -6.39,
+      -3.63
+     ],
+     "axes": [
+      [
+       -0.2398,
+       0.9521,
+       -0.1897
+      ],
+      [
+       0.5713,
+       0.2964,
+       0.7653
+      ],
+      [
+       0.7849,
+       0.0752,
+       -0.6151
+      ]
+     ],
+     "across_nm": [
+      8.7,
+      2.5,
+      1.7
+     ],
+     "farthest_nm": [
+      6.7,
+      2.9,
+      2.1
+     ],
+     "radius_of_gyration_nm": 2.06
+    },
+    {
+     "chain": "o",
+     "entity": "23",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 4",
+     "atoms": 2154,
+     "centre_nm": [
+      -5.36,
+      -3.55,
+      1.96
+     ],
+     "axes": [
+      [
+       -0.3528,
+       0.935,
+       0.0359
+      ],
+      [
+       -0.186,
+       -0.1077,
+       0.9766
+      ],
+      [
+       0.917,
+       0.3378,
+       0.2119
+      ]
+     ],
+     "across_nm": [
+      11.9,
+      5.9,
+      4.1
+     ],
+     "farthest_nm": [
+      8.9,
+      6.7,
+      4.6
+     ],
+     "radius_of_gyration_nm": 3.1
+    },
+    {
+     "chain": "p",
+     "entity": "24",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 9",
+     "atoms": 2947,
+     "centre_nm": [
+      -8.11,
+      -1.73,
+      1.57
+     ],
+     "axes": [
+      [
+       -0.1788,
+       -0.1941,
+       0.9646
+      ],
+      [
+       0.3823,
+       0.8896,
+       0.2499
+      ],
+      [
+       -0.9066,
+       0.4134,
+       -0.0849
+      ]
+     ],
+     "across_nm": [
+      9.6,
+      5.5,
+      2.6
+     ],
+     "farthest_nm": [
+      7.2,
+      5.2,
+      3.1
+     ],
+     "radius_of_gyration_nm": 2.55
+    },
+    {
+     "chain": "r",
+     "entity": "25",
+     "description": "NADH-ubiquinone oxidoreductase chain 4",
+     "atoms": 7444,
+     "centre_nm": [
+      -4.52,
+      -4.9,
+      -0.71
+     ],
+     "axes": [
+      [
+       -0.6434,
+       0.7434,
+       -0.1827
+      ],
+      [
+       -0.3953,
+       -0.1183,
+       0.9109
+      ],
+      [
+       0.6556,
+       0.6583,
+       0.3699
+      ]
+     ],
+     "across_nm": [
+      6.9,
+      5.6,
+      4.2
+     ],
+     "farthest_nm": [
+      7.3,
+      6.2,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.2
+    },
+    {
+     "chain": "s",
+     "entity": "26",
+     "description": "NADH-ubiquinone oxidoreductase chain 1",
+     "atoms": 5091,
+     "centre_nm": [
+      4.65,
+      -0.93,
+      -1.49
+     ],
+     "axes": [
+      [
+       -0.0794,
+       0.6216,
+       0.7793
+      ],
+      [
+       0.9862,
+       -0.0652,
+       0.1525
+      ],
+      [
+       0.1456,
+       0.7806,
+       -0.6078
+      ]
+     ],
+     "across_nm": [
+      6.6,
+      5.0,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      5.3,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.07
+    },
+    {
+     "chain": "u",
+     "entity": "27",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 8",
+     "atoms": 2791,
+     "centre_nm": [
+      5.04,
+      -5.78,
+      -2.47
+     ],
+     "axes": [
+      [
+       0.9693,
+       0.2374,
+       -0.0631
+      ],
+      [
+       -0.2258,
+       0.7596,
+       -0.6099
+      ],
+      [
+       -0.0968,
+       0.6054,
+       0.79
+      ]
+     ],
+     "across_nm": [
+      12.3,
+      4.9,
+      3.3
+     ],
+     "farthest_nm": [
+      11.1,
+      4.9,
+      4.1
+     ],
+     "radius_of_gyration_nm": 3.05
+    },
+    {
+     "chain": "v",
+     "entity": "28",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 7",
+     "atoms": 2069,
+     "centre_nm": [
+      -8.55,
+      -9.22,
+      3.16
+     ],
+     "axes": [
+      [
+       0.3402,
+       -0.0761,
+       0.9373
+      ],
+      [
+       -0.2418,
+       0.9561,
+       0.1654
+      ],
+      [
+       -0.9087,
+       -0.2829,
+       0.3069
+      ]
+     ],
+     "across_nm": [
+      8.3,
+      3.5,
+      2.6
+     ],
+     "farthest_nm": [
+      7.8,
+      4.0,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.09
+    },
+    {
+     "chain": "w",
+     "entity": "29",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 10, mitochondrial",
+     "atoms": 5221,
+     "centre_nm": [
+      -2.06,
+      0.4,
+      -2.6
+     ],
+     "axes": [
+      [
+       -0.0116,
+       0.9439,
+       0.33
+      ],
+      [
+       0.8732,
+       0.1704,
+       -0.4566
+      ],
+      [
+       -0.4872,
+       0.2829,
+       -0.8262
+      ]
+     ],
+     "across_nm": [
+      6.4,
+      6.0,
+      4.0
+     ],
+     "farthest_nm": [
+      7.1,
+      6.0,
+      4.5
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    {
+     "chain": "C",
+     "entity": "30",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 1, mitochondrial",
+     "atoms": 6668,
+     "centre_nm": [
+      4.65,
+      11.01,
+      -1.49
+     ],
+     "axes": [
+      [
+       -0.443,
+       0.7831,
+       0.4364
+      ],
+      [
+       -0.2068,
+       -0.5629,
+       0.8002
+      ],
+      [
+       0.8723,
+       0.2642,
+       0.4114
+      ]
+     ],
+     "across_nm": [
+      8.1,
+      5.2,
+      3.8
+     ],
+     "farthest_nm": [
+      8.6,
+      5.1,
+      4.5
+     ],
+     "radius_of_gyration_nm": 2.32
+    },
+    {
+     "chain": "D",
+     "entity": "31",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 8, mitochondrial",
+     "atoms": 2787,
+     "centre_nm": [
+      5.29,
+      3.65,
+      -0.8
+     ],
+     "axes": [
+      [
+       0.2716,
+       0.6648,
+       0.6959
+      ],
+      [
+       0.7507,
+       -0.5989,
+       0.2791
+      ],
+      [
+       0.6023,
+       0.4466,
+       -0.6617
+      ]
+     ],
+     "across_nm": [
+      12.1,
+      4.2,
+      3.4
+     ],
+     "farthest_nm": [
+      10.4,
+      5.1,
+      4.3
+     ],
+     "radius_of_gyration_nm": 2.96
+    },
+    {
+     "chain": "E",
+     "entity": "32",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 7, mitochondrial",
+     "atoms": 2563,
+     "centre_nm": [
+      5.13,
+      1.89,
+      0.64
+     ],
+     "axes": [
+      [
+       0.7178,
+       -0.5885,
+       0.3721
+      ],
+      [
+       -0.4945,
+       -0.0547,
+       0.8675
+      ],
+      [
+       -0.4901,
+       -0.8067,
+       -0.3302
+      ]
+     ],
+     "across_nm": [
+      6.6,
+      3.8,
+      2.9
+     ],
+     "farthest_nm": [
+      6.9,
+      4.3,
+      3.6
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "F",
+     "entity": "33",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 6",
+     "atoms": 2016,
+     "centre_nm": [
+      1.13,
+      2.72,
+      1.8
+     ],
+     "axes": [
+      [
+       0.7865,
+       -0.06,
+       0.6147
+      ],
+      [
+       -0.1573,
+       0.943,
+       0.2932
+      ],
+      [
+       -0.5973,
+       -0.3273,
+       0.7322
+      ]
+     ],
+     "across_nm": [
+      6.1,
+      5.0,
+      2.7
+     ],
+     "farthest_nm": [
+      6.1,
+      5.0,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.86
+    },
+    {
+     "chain": "G",
+     "entity": "34",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 2",
+     "atoms": 1380,
+     "centre_nm": [
+      0.29,
+      7.17,
+      4.84
+     ],
+     "axes": [
+      [
+       0.4063,
+       -0.482,
+       0.7763
+      ],
+      [
+       -0.12,
+       0.8141,
+       0.5682
+      ],
+      [
+       -0.9058,
+       -0.324,
+       0.2729
+      ]
+     ],
+     "across_nm": [
+      4.1,
+      3.0,
+      2.5
+     ],
+     "farthest_nm": [
+      4.3,
+      3.1,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.27
+    },
+    {
+     "chain": "H",
+     "entity": "6",
+     "description": "Acyl carrier protein, mitochondrial",
+     "atoms": 1369,
+     "centre_nm": [
+      -0.87,
+      1.17,
+      2.73
+     ],
+     "axes": [
+      [
+       0.4451,
+       0.7658,
+       0.464
+      ],
+      [
+       0.0343,
+       -0.5324,
+       0.8458
+      ],
+      [
+       0.8948,
+       -0.3606,
+       -0.2633
+      ]
+     ],
+     "across_nm": [
+      4.1,
+      3.0,
+      2.5
+     ],
+     "farthest_nm": [
+      3.7,
+      3.2,
+      2.7
+     ],
+     "radius_of_gyration_nm": 1.26
+    },
+    {
+     "chain": "I",
+     "entity": "35",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 5",
+     "atoms": 1875,
+     "centre_nm": [
+      0.19,
+      3.77,
+      -3.19
+     ],
+     "axes": [
+      [
+       -0.1622,
+       0.5654,
+       0.8087
+      ],
+      [
+       0.9641,
+       -0.0838,
+       0.252
+      ],
+      [
+       0.2102,
+       0.8206,
+       -0.5315
+      ]
+     ],
+     "across_nm": [
+      7.1,
+      3.9,
+      2.7
+     ],
+     "farthest_nm": [
+      6.5,
+      4.3,
+      2.7
+     ],
+     "radius_of_gyration_nm": 1.91
+    },
+    {
+     "chain": "J",
+     "entity": "36",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 9, mitochondrial",
+     "atoms": 5547,
+     "centre_nm": [
+      4.26,
+      1.24,
+      3.71
+     ],
+     "axes": [
+      [
+       0.4558,
+       0.8895,
+       0.0321
+      ],
+      [
+       0.7713,
+       -0.4127,
+       0.4846
+      ],
+      [
+       0.4443,
+       -0.1961,
+       -0.8742
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      4.8,
+      4.1
+     ],
+     "farthest_nm": [
+      6.8,
+      5.2,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.1
+    },
+    {
+     "chain": "K",
+     "entity": "37",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 3, mitochondrial",
+     "atoms": 586,
+     "centre_nm": [
+      5.1,
+      12.26,
+      0.71
+     ],
+     "axes": [
+      [
+       0.6576,
+       0.4221,
+       -0.624
+      ],
+      [
+       0.7082,
+       -0.6289,
+       0.3209
+      ],
+      [
+       -0.2569,
+       -0.6529,
+       -0.7125
+      ]
+     ],
+     "across_nm": [
+      7.0,
+      2.7,
+      2.1
+     ],
+     "farthest_nm": [
+      6.2,
+      2.8,
+      2.2
+     ],
+     "radius_of_gyration_nm": 1.76
+    },
+    {
+     "chain": "L",
+     "entity": "38",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 4, mitochondrial",
+     "atoms": 1954,
+     "centre_nm": [
+      2.39,
+      6.22,
+      1.48
+     ],
+     "axes": [
+      [
+       0.2136,
+       0.963,
+       -0.1642
+      ],
+      [
+       0.9638,
+       -0.1802,
+       0.1966
+      ],
+      [
+       0.1597,
+       -0.2002,
+       -0.9666
+      ]
+     ],
+     "across_nm": [
+      9.0,
+      4.7,
+      2.2
+     ],
+     "farthest_nm": [
+      8.0,
+      5.9,
+      3.0
+     ],
+     "radius_of_gyration_nm": 2.32
+    },
+    {
+     "chain": "M",
+     "entity": "39",
+     "description": "NADH-ubiquinone oxidoreductase 75 kDa subunit, mitochondrial",
+     "atoms": 10596,
+     "centre_nm": [
+      3.21,
+      7.62,
+      2.83
+     ],
+     "axes": [
+      [
+       -0.168,
+       -0.2971,
+       0.9399
+      ],
+      [
+       -0.529,
+       0.8318,
+       0.1684
+      ],
+      [
+       -0.8318,
+       -0.4689,
+       -0.2969
+      ]
+     ],
+     "across_nm": [
+      9.8,
+      6.6,
+      4.8
+     ],
+     "farthest_nm": [
+      9.4,
+      6.8,
+      5.5
+     ],
+     "radius_of_gyration_nm": 2.84
+    },
+    {
+     "chain": "N",
+     "entity": "40",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 12",
+     "atoms": 2375,
+     "centre_nm": [
+      7.13,
+      3.13,
+      -0.08
+     ],
+     "axes": [
+      [
+       -0.3501,
+       0.5131,
+       0.7837
+      ],
+      [
+       -0.0305,
+       0.83,
+       -0.557
+      ],
+      [
+       -0.9362,
+       -0.2189,
+       -0.2749
+      ]
+     ],
+     "across_nm": [
+      10.5,
+      3.9,
+      2.6
+     ],
+     "farthest_nm": [
+      11.4,
+      4.1,
+      2.7
+     ],
+     "radius_of_gyration_nm": 2.57
+    },
+    {
+     "chain": "O",
+     "entity": "41",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 2, mitochondrial",
+     "atoms": 3291,
+     "centre_nm": [
+      6.32,
+      11.02,
+      0.09
+     ],
+     "axes": [
+      [
+       -0.183,
+       -0.4123,
+       0.8925
+      ],
+      [
+       0.8493,
+       -0.5236,
+       -0.0677
+      ],
+      [
+       0.4952,
+       0.7456,
+       0.446
+      ]
+     ],
+     "across_nm": [
+      7.2,
+      5.7,
+      3.1
+     ],
+     "farthest_nm": [
+      6.1,
+      7.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 2.16
+    },
+    {
+     "chain": "P",
+     "entity": "42",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 3, mitochondrial",
+     "atoms": 3421,
+     "centre_nm": [
+      1.71,
+      4.39,
+      -0.69
+     ],
+     "axes": [
+      [
+       0.3618,
+       -0.4068,
+       0.8388
+      ],
+      [
+       0.5827,
+       0.8011,
+       0.1372
+      ],
+      [
+       -0.7277,
+       0.4391,
+       0.5269
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.4,
+      3.4
+     ],
+     "farthest_nm": [
+      7.6,
+      5.8,
+      4.1
+     ],
+     "radius_of_gyration_nm": 2.23
+    },
+    {
+     "chain": "T",
+     "entity": "43",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 6, mitochondrial",
+     "atoms": 1484,
+     "centre_nm": [
+      6.6,
+      6.0,
+      1.36
+     ],
+     "axes": [
+      [
+       0.1917,
+       0.7928,
+       -0.5786
+      ],
+      [
+       0.3691,
+       0.488,
+       0.791
+      ],
+      [
+       0.9094,
+       -0.3652,
+       -0.1991
+      ]
+     ],
+     "across_nm": [
+      8.5,
+      3.0,
+      2.2
+     ],
+     "farthest_nm": [
+      6.5,
+      3.7,
+      2.3
+     ],
+     "radius_of_gyration_nm": 2.07
+    },
+    {
+     "chain": "t",
+     "entity": "44",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 7",
+     "atoms": 1582,
+     "centre_nm": [
+      4.11,
+      4.25,
+      -2.8
+     ],
+     "axes": [
+      [
+       0.7311,
+       -0.6653,
+       -0.1512
+      ],
+      [
+       0.661,
+       0.6356,
+       0.3989
+      ],
+      [
+       -0.1693,
+       -0.3916,
+       0.9044
+      ]
+     ],
+     "across_nm": [
+      11.9,
+      7.4,
+      2.6
+     ],
+     "farthest_nm": [
+      9.5,
+      6.1,
+      3.3
+     ],
+     "radius_of_gyration_nm": 3.19
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 2, mitochondrial",
+     "copies": 1,
+     "sequence_length": 463,
+     "residues_modelled_per_copy": 429.0,
+     "modelled_share": 0.927,
+     "atoms_per_modelled_residue": 16.01
+    },
+    {
+     "entity": "2",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 1",
+     "copies": 1,
+     "sequence_length": 70,
+     "residues_modelled_per_copy": 70.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 16.26
+    },
+    {
+     "entity": "3",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 3",
+     "copies": 1,
+     "sequence_length": 84,
+     "residues_modelled_per_copy": 83.0,
+     "modelled_share": 0.988,
+     "atoms_per_modelled_residue": 15.69
+    },
+    {
+     "entity": "4",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 11",
+     "copies": 1,
+     "sequence_length": 141,
+     "residues_modelled_per_copy": 140.0,
+     "modelled_share": 0.993,
+     "atoms_per_modelled_residue": 14.78
+    },
+    {
+     "entity": "5",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 13",
+     "copies": 1,
+     "sequence_length": 144,
+     "residues_modelled_per_copy": 140.0,
+     "modelled_share": 0.972,
+     "atoms_per_modelled_residue": 16.46
+    },
+    {
+     "entity": "6",
+     "description": "Acyl carrier protein, mitochondrial",
+     "copies": 2,
+     "sequence_length": 156,
+     "residues_modelled_per_copy": 85.5,
+     "modelled_share": 0.548,
+     "atoms_per_modelled_residue": 16.11
+    },
+    {
+     "entity": "7",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 2, mitochondrial",
+     "copies": 1,
+     "sequence_length": 105,
+     "residues_modelled_per_copy": 61.0,
+     "modelled_share": 0.581,
+     "atoms_per_modelled_residue": 16.97
+    },
+    {
+     "entity": "8",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 3",
+     "copies": 1,
+     "sequence_length": 98,
+     "residues_modelled_per_copy": 83.0,
+     "modelled_share": 0.847,
+     "atoms_per_modelled_residue": 16.13
+    },
+    {
+     "entity": "9",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 5, mitochondrial",
+     "copies": 1,
+     "sequence_length": 189,
+     "residues_modelled_per_copy": 138.0,
+     "modelled_share": 0.73,
+     "atoms_per_modelled_residue": 17.07
+    },
+    {
+     "entity": "10",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 6",
+     "copies": 1,
+     "sequence_length": 128,
+     "residues_modelled_per_copy": 120.0,
+     "modelled_share": 0.938,
+     "atoms_per_modelled_residue": 17.25
+    },
+    {
+     "entity": "11",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 8, mitochondrial",
+     "copies": 1,
+     "sequence_length": 186,
+     "residues_modelled_per_copy": 152.0,
+     "modelled_share": 0.817,
+     "atoms_per_modelled_residue": 16.14
+    },
+    {
+     "entity": "12",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 10",
+     "copies": 1,
+     "sequence_length": 172,
+     "residues_modelled_per_copy": 169.0,
+     "modelled_share": 0.983,
+     "atoms_per_modelled_residue": 16.79
+    },
+    {
+     "entity": "13",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 11, mitochondrial",
+     "copies": 1,
+     "sequence_length": 153,
+     "residues_modelled_per_copy": 107.0,
+     "modelled_share": 0.699,
+     "atoms_per_modelled_residue": 16.23
+    },
+    {
+     "entity": "14",
+     "description": "NADH dehydrogenase [ubiquinone] 1 subunit C1, mitochondrial",
+     "copies": 1,
+     "sequence_length": 76,
+     "residues_modelled_per_copy": 49.0,
+     "modelled_share": 0.645,
+     "atoms_per_modelled_residue": 17.22
+    },
+    {
+     "entity": "15",
+     "description": "NADH dehydrogenase [ubiquinone] 1 subunit C2",
+     "copies": 1,
+     "sequence_length": 119,
+     "residues_modelled_per_copy": 119.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 16.93
+    },
+    {
+     "entity": "16",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 5",
+     "copies": 1,
+     "sequence_length": 106,
+     "residues_modelled_per_copy": 105.0,
+     "modelled_share": 0.991,
+     "atoms_per_modelled_residue": 16.64
+    },
+    {
+     "entity": "17",
+     "description": "NADH-ubiquinone oxidoreductase chain 2",
+     "copies": 1,
+     "sequence_length": 347,
+     "residues_modelled_per_copy": 347.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 16.21
+    },
+    {
+     "entity": "18",
+     "description": "NADH-ubiquinone oxidoreductase chain 3",
+     "copies": 1,
+     "sequence_length": 115,
+     "residues_modelled_per_copy": 115.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 16.43
+    },
+    {
+     "entity": "19",
+     "description": "NADH-ubiquinone oxidoreductase chain 4L",
+     "copies": 1,
+     "sequence_length": 98,
+     "residues_modelled_per_copy": 98.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 15.61
+    },
+    {
+     "entity": "20",
+     "description": "NADH-ubiquinone oxidoreductase chain 5",
+     "copies": 1,
+     "sequence_length": 603,
+     "residues_modelled_per_copy": 601.0,
+     "modelled_share": 0.997,
+     "atoms_per_modelled_residue": 15.95
+    },
+    {
+     "entity": "21",
+     "description": "NADH-ubiquinone oxidoreductase chain 6",
+     "copies": 1,
+     "sequence_length": 174,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.994,
+     "atoms_per_modelled_residue": 15.14
+    },
+    {
+     "entity": "22",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 1",
+     "copies": 1,
+     "sequence_length": 58,
+     "residues_modelled_per_copy": 54.0,
+     "modelled_share": 0.931,
+     "atoms_per_modelled_residue": 17.09
+    },
+    {
+     "entity": "23",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 4",
+     "copies": 1,
+     "sequence_length": 129,
+     "residues_modelled_per_copy": 128.0,
+     "modelled_share": 0.992,
+     "atoms_per_modelled_residue": 16.83
+    },
+    {
+     "entity": "24",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 9",
+     "copies": 1,
+     "sequence_length": 179,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.966,
+     "atoms_per_modelled_residue": 17.03
+    },
+    {
+     "entity": "25",
+     "description": "NADH-ubiquinone oxidoreductase chain 4",
+     "copies": 1,
+     "sequence_length": 459,
+     "residues_modelled_per_copy": 459.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 16.22
+    },
+    {
+     "entity": "26",
+     "description": "NADH-ubiquinone oxidoreductase chain 1",
+     "copies": 1,
+     "sequence_length": 318,
+     "residues_modelled_per_copy": 316.0,
+     "modelled_share": 0.994,
+     "atoms_per_modelled_residue": 16.11
+    },
+    {
+     "entity": "27",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 8",
+     "copies": 1,
+     "sequence_length": 172,
+     "residues_modelled_per_copy": 171.0,
+     "modelled_share": 0.994,
+     "atoms_per_modelled_residue": 16.32
+    },
+    {
+     "entity": "28",
+     "description": "NADH dehydrogenase [ubiquinone] 1 beta subcomplex subunit 7",
+     "copies": 1,
+     "sequence_length": 137,
+     "residues_modelled_per_copy": 121.0,
+     "modelled_share": 0.883,
+     "atoms_per_modelled_residue": 17.1
+    },
+    {
+     "entity": "29",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 10, mitochondrial",
+     "copies": 1,
+     "sequence_length": 355,
+     "residues_modelled_per_copy": 320.0,
+     "modelled_share": 0.901,
+     "atoms_per_modelled_residue": 16.32
+    },
+    {
+     "entity": "30",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 1, mitochondrial",
+     "copies": 1,
+     "sequence_length": 464,
+     "residues_modelled_per_copy": 434.0,
+     "modelled_share": 0.935,
+     "atoms_per_modelled_residue": 15.36
+    },
+    {
+     "entity": "31",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 8, mitochondrial",
+     "copies": 1,
+     "sequence_length": 210,
+     "residues_modelled_per_copy": 176.0,
+     "modelled_share": 0.838,
+     "atoms_per_modelled_residue": 15.84
+    },
+    {
+     "entity": "32",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 7, mitochondrial",
+     "copies": 1,
+     "sequence_length": 213,
+     "residues_modelled_per_copy": 160.0,
+     "modelled_share": 0.751,
+     "atoms_per_modelled_residue": 16.02
+    },
+    {
+     "entity": "33",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 6",
+     "copies": 1,
+     "sequence_length": 128,
+     "residues_modelled_per_copy": 118.0,
+     "modelled_share": 0.922,
+     "atoms_per_modelled_residue": 17.08
+    },
+    {
+     "entity": "34",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 2",
+     "copies": 1,
+     "sequence_length": 99,
+     "residues_modelled_per_copy": 85.0,
+     "modelled_share": 0.859,
+     "atoms_per_modelled_residue": 16.24
+    },
+    {
+     "entity": "35",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 5",
+     "copies": 1,
+     "sequence_length": 116,
+     "residues_modelled_per_copy": 112.0,
+     "modelled_share": 0.966,
+     "atoms_per_modelled_residue": 16.74
+    },
+    {
+     "entity": "36",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 9, mitochondrial",
+     "copies": 1,
+     "sequence_length": 377,
+     "residues_modelled_per_copy": 341.0,
+     "modelled_share": 0.905,
+     "atoms_per_modelled_residue": 16.27
+    },
+    {
+     "entity": "37",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 3, mitochondrial",
+     "copies": 1,
+     "sequence_length": 108,
+     "residues_modelled_per_copy": 39.0,
+     "modelled_share": 0.361,
+     "atoms_per_modelled_residue": 15.03
+    },
+    {
+     "entity": "38",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 4, mitochondrial",
+     "copies": 1,
+     "sequence_length": 175,
+     "residues_modelled_per_copy": 121.0,
+     "modelled_share": 0.691,
+     "atoms_per_modelled_residue": 16.15
+    },
+    {
+     "entity": "39",
+     "description": "NADH-ubiquinone oxidoreductase 75 kDa subunit, mitochondrial",
+     "copies": 1,
+     "sequence_length": 727,
+     "residues_modelled_per_copy": 687.0,
+     "modelled_share": 0.945,
+     "atoms_per_modelled_residue": 15.42
+    },
+    {
+     "entity": "40",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 12",
+     "copies": 1,
+     "sequence_length": 145,
+     "residues_modelled_per_copy": 144.0,
+     "modelled_share": 0.993,
+     "atoms_per_modelled_residue": 16.49
+    },
+    {
+     "entity": "41",
+     "description": "NADH dehydrogenase [ubiquinone] flavoprotein 2, mitochondrial",
+     "copies": 1,
+     "sequence_length": 249,
+     "residues_modelled_per_copy": 212.0,
+     "modelled_share": 0.851,
+     "atoms_per_modelled_residue": 15.52
+    },
+    {
+     "entity": "42",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 3, mitochondrial",
+     "copies": 1,
+     "sequence_length": 264,
+     "residues_modelled_per_copy": 208.0,
+     "modelled_share": 0.788,
+     "atoms_per_modelled_residue": 16.45
+    },
+    {
+     "entity": "43",
+     "description": "NADH dehydrogenase [ubiquinone] iron-sulfur protein 6, mitochondrial",
+     "copies": 1,
+     "sequence_length": 124,
+     "residues_modelled_per_copy": 96.0,
+     "modelled_share": 0.774,
+     "atoms_per_modelled_residue": 15.46
+    },
+    {
+     "entity": "44",
+     "description": "NADH dehydrogenase [ubiquinone] 1 alpha subcomplex subunit 7",
+     "copies": 1,
+     "sequence_length": 113,
+     "residues_modelled_per_copy": 97.0,
+     "modelled_share": 0.858,
+     "atoms_per_modelled_residue": 16.31
+    }
+   ]
+  }
+ }
+}

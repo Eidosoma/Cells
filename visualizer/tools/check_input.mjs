@@ -191,8 +191,11 @@ try {
   if (wants("atlas")) {
     await open("lens=proteins");
     await open(`lens=proteins&atlas=${await ownAtlas()}`);
-    const tabs = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".switch button")].map((button) => button.getAttribute("aria-label")).join(" | ")`);
-    check("atlas: the views are in the order asked for, with Engine last", /^Cell and scales \| Protein atlas \|( Experiments \|)? Engine$/.test(tabs), tabs);
+    // The order decided on 17 November 2026, by the views' ids (Machines, the Laws library and Experiments only where the scene holds them).
+    // The titles are the viewer's own list's (src/ui/viewer.js), read from the page: no check holds a title of its own.
+    const tabs = await evaluate(`(() => { const v = ${VIEWER}, buttons = [...v.shadowRoot.querySelectorAll(".switch button")]; return { ids: buttons.map((button) => button.dataset.lens), said: buttons.map((button) => button.getAttribute("aria-label")), titles: buttons.map((button) => v.views.find((view) => view.id === button.dataset.lens)?.label) }; })()`);
+    const ORDER = ["cell", "machines", "proteins", "engine", "laws", "experiments"];
+    check("atlas: the views are in the order decided, the Cell view first, each tab titled from the viewer's list of views", ["cell", "proteins", "engine"].every((id) => tabs.ids.includes(id)) && JSON.stringify(tabs.ids) === JSON.stringify(ORDER.filter((id) => tabs.ids.includes(id))) && tabs.titles.every(Boolean) && JSON.stringify(tabs.said) === JSON.stringify(tabs.titles), JSON.stringify(tabs));
     // A unit whose top is in plain view, with no label lying over the point clicked.
     const unit = await evaluate(`(() => {
       const viewer = ${VIEWER}, lens = viewer.current;
@@ -346,6 +349,21 @@ try {
     await open("lens=experiments");
     const shown = await evaluate(`${VIEWER}.state.lens`);
     check("experiments: the view is offered when replays have been made", shown === "experiments", `${shown}; make them with npm run adapt:runs`);
+    // The tab opens on the part its listed example names (the example's opens.part, the tumour tissue) where its runs are
+    // packaged: the networks are a real press away, on the card's own button.
+    const part = await evaluate(`${VIEWER}.state.part || null`);
+    if (shown === "experiments" && part) {
+      await evaluate(`Promise.resolve(${VIEWER}.current.ready).then(() => true)`);
+      await sleep(600);
+      const door = await evaluate(`(() => { const el = ${VIEWER}.shadowRoot.querySelector(".view .tissue-back:not(.tissue-sibling)"); if (!el) return null; el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (door) await click(door.x, door.y);
+      let back = false;
+      for (let tries = 0; tries < 240 && !back; tries++) {
+        await sleep(250);
+        back = await evaluate(`Boolean(!${VIEWER}.state.part && ${VIEWER}.current?.run && ${VIEWER}.current.sheet)`).catch(() => false);
+      }
+      check(`experiments: the tab opens on the example's part (${part}), and a real press on its card's button shows the example's networks`, Boolean(door) && back, JSON.stringify(door));
+    }
     if (shown === "experiments") {
       const spot = (selector) =>
         evaluate(`(() => {
@@ -459,10 +477,10 @@ try {
       }
 
       // Another experiment, when there is one: the selector switches, and what it found follows.
-      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row")].length`);
+      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row:not([data-door])")].length`);
       if (experiments > 1) {
         const before = await evaluate(`({ run: ${VIEWER}.current.runId, experiment: ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId).experiment })`);
-        const row = await spot('.exp-row[aria-pressed="false"]');
+        const row = await spot('.exp-row:not([data-door])[aria-pressed="false"]');
         await click(row.x, row.y);
         await loaded(before.run);
         const after = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId), outcome = lens.catalogue.outcomeOf(lens.catalogue.experimentOf(entry)); return { experiment: entry.experiment, loaded: lens.run?.view.run.experiment, facts: [...${VIEWER}.shadowRoot.querySelectorAll(".found-facts .fact")].map((item) => item.textContent).join(" | "), expected: [outcome?.judgedLabel, outcome?.answer ? outcome.label : null].filter(Boolean).join(" | ") }; })()`);
@@ -568,7 +586,7 @@ try {
   await press("Status");
   check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
   await press("Biology");
-  // A cell under two micrometres is drawn in one size mode: its card has no Sizes switch to press.
+  // Every cell is drawn in both size modes (a bacterium too, since 17 November 2026); a card without a Sizes switch is checked for none.
   if (await evaluate(`${VIEWER}.current.modes.length > 1`)) {
   await press("To scale");
   await until(`(() => { const lens = ${VIEWER}.current; return lens.sizeMode === "real" && lens.zones.some((zone) => zone.root.visible && zone.name === "cell" && zone.mode === "real"); })()`, 120);
@@ -577,7 +595,11 @@ try {
   check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
   const nucleusToScale = await screen(probe("nucleus"));
   await click(nucleusToScale.x, nucleusToScale.y);
-  check("switch: the to-scale nucleus can be clicked", (await selected()) === atNucleus, String(await selected()));
+  // A cell without a nucleus (a bacterium, to scale since 17 November 2026): as in the schematic picture, a click over
+  // its free chromosome meets the cytoplasm that lies over it, or the chromosome.
+  const toScale = await selected(), free = !(await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`));
+  if (free) check("switch: to scale, a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", atChromatin].includes(toScale), String(toScale));
+  else check("switch: the to-scale nucleus can be clicked", toScale === atNucleus, String(toScale));
   await clear();
   await press("Schematic");
   } else {

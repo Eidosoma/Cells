@@ -14,6 +14,7 @@
 // shape reaches (top, bottom, radius), so the lens can place rings and labels.
 
 import * as THREE from "../three.js";
+import { paintedTexture } from "../core/painted.js";
 
 const TAU = Math.PI * 2;
 export const SHEET = 4.2; // thickness of a membrane, in the lens's units (about a nanometre)
@@ -212,19 +213,17 @@ let beads = null;
 /** Rows of round heads, the way a membrane's surface is usually drawn. */
 function beadTexture() {
   if (beads) return beads;
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 111; // one cell of a hexagonal packing
-  const context = canvas.getContext("2d");
-  context.fillStyle = "#b4b4b4"; // between the heads the face is a little clearer
-  context.fillRect(0, 0, 64, 111);
-  context.fillStyle = "#ffffff";
-  for (const [x, y] of [[0, 0], [64, 0], [0, 111], [64, 111], [32, 55.5]]) {
-    context.beginPath();
-    context.arc(x, y, 23, 0, TAU);
-    context.fill();
-  }
-  beads = new THREE.CanvasTexture(canvas);
+  // 64 by 111: one cell of a hexagonal packing. Kept as pixels, so that it comes back whole (core/painted.js).
+  beads = paintedTexture(64, 111, (context) => {
+    context.fillStyle = "#b4b4b4"; // between the heads the face is a little clearer
+    context.fillRect(0, 0, 64, 111);
+    context.fillStyle = "#ffffff";
+    for (const [x, y] of [[0, 0], [64, 0], [0, 111], [64, 111], [32, 55.5]]) {
+      context.beginPath();
+      context.arc(x, y, 23, 0, TAU);
+      context.fill();
+    }
+  });
   beads.wrapS = beads.wrapT = THREE.RepeatWrapping;
   beads.repeat.set(1 / 1.15, 1 / 2.0);
   beads.colorSpace = THREE.NoColorSpace; // read as opacity, not colour

@@ -88,18 +88,35 @@ says the engine models an organism unless the project's record says so.
   the level's general name is used.
 - **`default`** is true on exactly one species: the one the page opens on. **`order`**
   places the species in the switch, ascending.
-- **`modelled.state`** is one of:
+- **`modelled.state`** is one word of the ladder every entry of the switch shares
+  (`ENTRIES.md`, "What Cells models of an entry"); each word asks of the record all that the
+  one before asks, and more, and is met by tracked files alone:
   - `generic`: Cells models a generic cell or tissue; this species lends it names or
     outlines. The text says which.
-  - `proposed`: a proposal to model this organism exists; nothing of it is in the engine.
-  - `modelled`: the project's record says a registered model of this organism exists.
-    The text cites the record. No species has this state today.
+  - `proposed`: a tracked record proposes modelling this organism, or asks for it to be
+    looked into; nothing of it is in the engine.
+  - `planned`: a tracked record decides that it will be modelled; it is not started, and no
+    design of it is a tracked file of main.
+  - `designed`: its design note is a tracked file of main (`modelled.design`, its path); its
+    code is not on main.
+  - `modelled`: the project's record says a registered model of this organism exists
+    (`modelled.model`, its id). The text cites the record. No species has this state today.
+
+  A file may state a lower word than its record allows, never a higher one; a file that
+  exists only on a development branch moves no word. **`modelled.record`** lists the
+  citations behind the word, each `{"path", "where"}`: a tracked file of main, or one of the
+  viewer's own prefixed `visualizer/`, with no other key (`ENTRIES.md`, "Citing the project's
+  record"). It is required for every word above `generic`. The page writes the words as
+  "Generic cell", "Proposed, not modelled", "Planned, not modelled", "Designed, not modelled"
+  and "Modelled".
 - **`cell.capabilities`** is keyed by the map's capability ids (`cap.…`). A capability
   that is left out has a place in this cell, unless the cell does not hold the structure
   it is drawn at, as `cell.parts` says: the nucleus (`nucleus`), the Golgi or the vesicles
   of trafficking (`golgi` among the `organelles`), the endoplasmic reticulum (`er`) or
   the mitochondria (`mitochondria`). It then has no place, and the page reads the reason
-  from `cell.parts` ("It has no nucleus: its chromosome lies free in the cytoplasm").
+  from `cell.parts` ("It has no nucleus: its chromosome lies free in the cytoplasm"). What
+  each structure needs and the reason given are one table, `data/parts/structures.json`, which
+  the species reader and the Cell view both read.
   `absent` needs `why`; `present` may carry a
   `note` where the place differs from an animal cell's. A capability has a place when the
   organism has the structure or the process it concerns. That says nothing about whether
@@ -113,6 +130,16 @@ says the engine models an organism unless the project's record says so.
   changed, so the place is there again when the flag is removed. The engine parts that
   implement the capability stay on the Engine view, which maps the code; the flag's
   `engine_note` is added to their text, so each says that it is not drawn elsewhere.
+- **A capability that one species keeps out of its own picture.** A capability that is
+  `present` may carry `left_out`, `{since, says, reason, why}`: `since` the day (as
+  `2026-11-17`), `says` how the page names what is not drawn, `reason` a short one for the
+  page, and `why` what was decided, by whom and when, in plain past tense (no quotation). The Cell view then does not
+  draw that capability's structure in this species' cell, in either size mode, and does not
+  count it, list it or let it be chosen there; the species' own panel lists it under "Left out
+  of the picture for now", with the day, the reason and the capability's `note`. The place and
+  its `note` stay in the file and in the scene, and the builder remarks on the flag; removing
+  the flag draws it again as it was. The bacteria's molecular machines are so flagged (at
+  the user's request, 17 November 2026).
 - **`cell.parts`** says what the cell holds, from a fixed list the viewer can draw:
   how many membranes, a wall or none, a nucleus or none, the organelles it holds (an
   animal cell's `er`, `golgi` and `mitochondria`; a plant cell's `chloroplasts` and
@@ -122,9 +149,21 @@ says the engine models an organism unless the project's record says so.
   (`share`), each a number or a range of two with the keys of its sources; `wall_nm` gives
   a wall's thickness. Each is a fact of the card as well. `SPECIES_SHAPES.md` gives the
   list. A part the viewer does not know is a warning.
-- **`cell.loop`** (optional; nothing reads it yet): the id of the species' looping run
-  among the packaged replays. The Cell view shows flux from that run; a species
-  without one may show illustration (`schema/QUANTITY_LAYERS.md`, rules 7 and 11).
+- **Other cell types** (optional): `cell_types` names the species' other cell types, each a
+  file `data/cells/<species>.<id>.json` (`CELL_TYPES.md`), and `default_cell_type` the one the
+  page opens on (left out: the species' own). Both stand at the top level of the file. A
+  species with one cell type shows no control for choosing one.
+- **A looping run belongs to a cell type**, not to the `cell` block: `cell.loop` gives way to
+  the top-level `cell_type.loop` (`ENTRIES.md`, `CELL_TYPES.md`), and the reader refuses `loop`
+  inside `cell`. `cell_type` is `{id, label, loop}`, each a text that is not empty; `loop` is
+  the id of the species' own type's looping run among the packaged replays (the page's
+  catalogue of runs). The scene is read through the entries reader (`tools/lib/entries.py`),
+  which gives every species its `cell_types`, its own type first, and its `default_cell_type`. The Cell view finds the run there, fetches it with the records it
+  reads, and shows flux from it, saying what the catalogue says it is; a type without one may
+  show illustration (`schema/QUANTITY_LAYERS.md`, rules 7 and 11). A type that names a run
+  never shows illustration in its place: while the run is on its way, or where the page does
+  not carry it or cannot read it, nothing is drawn and the reason is given. The planarian's own
+  type names `planarian-loop--planarian-b08af640`, a development run of the engine, not judged.
 - **Appendages are a general part** (the user, 15 November 2026: "lets draw flagella, pili
   as a general feature, and with the optoin later to soom into the motor").
   `cell.parts.appendages` is a list, and each entry describes one kind of thread or hair
@@ -152,13 +191,18 @@ says the engine models an organism unless the project's record says so.
     go out until the whole of them shows.
   - **It can be chosen.** Its panel gives the file's numbers with their sources, and what
     was drawn.
-  - **`base`** names the machine at the foot of the appendage (a flagellum's motor), so
-    that a closer view of it can be added later: its `id` and `label`, and the mark and
-    value under which the species' own proteins list its parts
-    (`schema/SPECIES_PROTEINS.md`, `highlights`). A base is drawn where the kind's drawing
-    gives the thread a foot. Until the closer view exists, choosing the foot opens a
-    panel that says what the machine is, with a door into the Protein atlas: the species'
-    own proteins, with that mark's value picked out.
+  - **`base`** names the machine at the foot of the appendage (a flagellum's motor): its
+    `id` and `label`, and the mark and value under which the species' own proteins list
+    its parts (`schema/SPECIES_PROTEINS.md`, `highlights`). A base is drawn where the
+    kind's drawing gives the thread a foot. Choosing the foot opens a panel that says what
+    the machine is, with a door into the Protein atlas: the species' own proteins, with
+    that mark's value picked out. **Where a machine file names this base**
+    (`data/machines/<species id>.<base id>.json`, `schema/MACHINES.md`), the panel also
+    offers "Look closer", which flies to the foot chosen and draws the machine from that
+    file in the cell's place, and the scale rail has the machine's stop below one cell.
+    The scene carries, in the species' entry, only each machine's `id`, `label`, `called`,
+    `at` and `file`; the file is published beside the page and fetched when the visitor
+    looks closer.
 - **A species may be held back from the picture.** Where the viewer cannot yet draw what
   a species' cell needs, its files are kept and checked like any other, and the map's
   overlay names it under `species_held` with since when, how the page names it and why.
@@ -190,5 +234,5 @@ says the engine models an organism unless the project's record says so.
 
 The builder reads every file in `data/species/` and puts them, ordered, into the scene's
 `species` list. A breach of this contract is a warning. The viewer keeps one species for
-the whole page: the levels of the Cell and scales view, the cell drawn, and the species'
+the whole page: the levels of the Cell view, the cell drawn, and the species'
 side of the protein atlas all follow it.

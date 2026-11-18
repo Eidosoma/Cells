@@ -100,6 +100,15 @@ the human's table has a line for every one.
 - **38 of the 49 units are found, 3 are built from another family, 2 are not found,**
   and 6 have nothing to look for. 54 proteins are listed, 28 with a reviewed entry and 26
   with an unreviewed one; each names its units on the shelves (`unit`).
+- **How they were found, apart from their entries** (since 16 November 2026): all 54 by
+  a family's signature on their own entries. 37 carry that of a family that makes the
+  machine, candidates by family; 17 carry only that of a family that goes with one (the
+  Kv-beta subunits, the calcium channels' beta and alpha-2/delta subunits, the pump's beta
+  subunit), no candidates for the machine's own work. Until then one word mixed the two,
+  and the page's card counted 26 of the 54 as found by signature: the unreviewed ones.
+  On the shelves (second round, 16 November 2026) the 17 are drawn as plain grey markers,
+  not in the unit's shape or the units' tone, and each one's panel says how the atlas found
+  it and that it goes with the machine (`found_by` in `shelves.json`).
 - **`found` asks for a family that makes the machine itself.** No unit here rests on an
   accessory family alone.
 - **Found, for example:** the sodium channel (`para`, `NaCP60E`), the Shaker-type

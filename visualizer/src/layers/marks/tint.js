@@ -40,7 +40,7 @@ export const tint = {
           scale.gradient = ramp.css();
           const decimals = nice.step * 1 < 1 ? 1 : 0;
           scale.ticks = [low, (low + high) / 2, high].map((value, k) => ({ at: k / 2, text: write(value * shown.factor, decimals) }));
-          scale.marks = (record.marks || []).filter((mark) => mark.value > low && mark.value < high).map((mark) => ({ at: (mark.value - low) / (high - low), text: `${write(mark.value * shown.factor, 1)} ${shown.unit}: ${mark.label}` }));
+          scale.marks = (record.marks || []).filter((mark) => mark.value >= low && mark.value <= high).map((mark) => ({ at: (mark.value - low) / (high - low), text: `${write(mark.value * shown.factor, 1)}${shown.unit ? ` ${shown.unit}` : ""}: ${mark.label}` }));
         }
         return scale;
       },

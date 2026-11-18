@@ -226,7 +226,7 @@ def build(datasets_folder, snapshot):
         "family_notes": {
             "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
             "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-            "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+            "units": P.UNITS_NOTE,
             "total": "The family's members on every shelf and on none.",
             "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'.",
         },
@@ -253,6 +253,8 @@ def build(datasets_folder, snapshot):
         "place_kinds": P.KINDS,
         "place_columns": P.PLACE_COLUMNS,
         "place_notes": "Every place the entries state, in UniProt's words, with the shelf and what the place names against its membrane (place_kinds), how the table's line was reached and which of the table's terms it rests on, and how many proteins it places as the statement that decided.",
+        # How the atlas found each protein listed with a unit, where it is not the default (schema/SPECIES_PROTEINS.md).
+        **({"found_by": found_by} if (found_by := P.found_by_block(units, P.line_families(lines))) else {}),
     }
     marks = {
         "reviewed": {"label": "Curated entry", "values": [True, False], "measured": False, "note": "Whether the protein's UniProtKB entry is reviewed, written by a curator, or unreviewed, annotated automatically.", "source": "UniProt"},
@@ -292,7 +294,7 @@ def build(datasets_folder, snapshot):
     findings = Counter(unit["finding"] for unit in units.values())
     species = {
         "format": "cells.visualizer.species@1", "id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON,
-        "plain": f"The fruit fly of the laboratory: {stated['genes']:,} genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps Cells has laws for have a counterpart of the same family in it.",
+        "plain": f"The fruit fly of the laboratory: {stated['genes']:,} genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps listed in Cells' law inventory have a counterpart of the same family in it.",
         "group": "Animals", "order": 25, "default": False, "made": made,  # after the other animals, before the bacteria
         "modelled": {"state": "generic", "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet is drawn on a wing for the scales only. The wings and the fly are placeholder outlines: nothing at those scales is simulated."},
         "levels": [
@@ -314,15 +316,15 @@ def build(datasets_folder, snapshot):
         "cell": {
             "facts": [
                 {"label": "Proteins", "value": f"{stated['genes']:,} genes in UniProt's reference proteome, with {stated['entries']:,} entries: {stated['reviewed']:,} reviewed by a curator and {stated['unreviewed']:,} annotated automatically. One protein is shown for each gene", "sources": ["uniprot"]},
-                {"label": "Cells' machines", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the fly and {findings['different family']} are built from another family; {findings['none found']} were not found", "sources": ["uniprot"]},
+                {"label": "Cells' units", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the fly and {findings['different family']} are built from another family; {findings['none found']} were not found", "sources": ["uniprot"]},
             ],
             "parts": {"membranes": 1, "wall": False, "nucleus": True, "organelles": ["er", "golgi", "mitochondria"]},
         },
         "sources": {"uniprot": {"text": f"UniProt Consortium, UniProt release {release}: the reference proteome {PROTEOME} (Drosophila melanogaster), its entries and its gene-by-gene set.", "url": f"https://www.uniprot.org/proteomes/{PROTEOME}", "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(KB, PLACES_FILE)}},
     }
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
-        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The fruit fly of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."},
+        "format": P.ATLAS_FORMAT,
+        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The fruit fly of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' units find among the one protein shown for each gene."},
         "made": made,
         "method": [
             f"The fly's proteins are the {len(entries):,} of UniProt's gene-by-gene set of the reference proteome {PROTEOME} (release {release}): one for each gene, {stated['shown_reviewed']:,} with a reviewed entry and {stated['shown_unreviewed']:,} with an unreviewed one.",
@@ -330,7 +332,8 @@ def build(datasets_folder, snapshot):
             "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
             "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
             "Where no protein carries the family the engine's law names and proteins carry another family asked for the same machine (innexins, for gap junctions), the finding is 'different family'.",
-            "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family: several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
+            P.TWO_FACTS,
+            "Several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
             "No similarity search was run, and nothing is called an ortholog.",
         ],
         "sources": [
@@ -389,7 +392,7 @@ def build_readme(report, header, closing):
         f"- {r['families']:,} InterPro families hold {r['in_families']:,} proteins: {r['family_sizes']['one']:,} of one, {r['family_sizes']['two to four']:,} of two to four, {r['family_sizes']['five or more']:,} of five or more. {r['no_family']:,} proteins have no family.",
         f"- {r['lines']:,} lines of {r['distinct']:,} families; the {r['lone']:,} only members of their families stand in {r['lone_parts']} parts; the proteins with no family in {r['part_lines']} lines.",
         "- The largest: " + "; ".join(f"{name} ({n})" for name, n in r["largest_families"]) + ".",
-        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' machines and name its units.",
+        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' units and name it.",
         "",
         "## What rests on tools and rule systems of other owners",
         "",

@@ -259,7 +259,7 @@ export function solidGeometry(outline, top, base, bevel) {
 
 // The reference cell the layout is drawn for: six-sided, this far from its centre to a
 // corner, so this far from one cell's centre to the next in a packed layer.
-export const REF = { radius: 10.6, cut: 1.6, pitch: 10.6 * 2 * Math.cos(Math.PI / 6), small: 2 };
+export const REF = { radius: 10.6, cut: 1.6, pitch: 10.6 * 2 * Math.cos(Math.PI / 6) };
 const LATTICE = REF.radius * Math.sqrt(3);
 
 /** The species' cell as a width in micrometres: between opposite sides, or across its short way. */

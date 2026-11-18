@@ -1,11 +1,11 @@
 {
- "format": "cells.visualizer.species_atlas@1",
+ "format": "cells.visualizer.species_atlas@2",
  "species": {
   "id": "thalecress",
   "label": "Thale cress",
   "organism": "Arabidopsis thaliana",
   "taxon": 3702,
-  "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene."
+  "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are channels, pumps and junctions of animal cells; this is what their family signatures find among the one protein shown for each gene."
  },
  "made": "2026-11-15",
  "method": [
@@ -14,7 +14,8 @@
   "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
   "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
   "A plant has channels and pumps of families of its own, which no unit of the inventory stands for. They are not listed here: the search asks only for the families of Cells' units. 'Different family' is given only where the inventory's table names another family for the same machine, and it names none that a plant has.",
-  "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family, and nothing here says which protein does which unit's work.",
+  "Each product says, apart, how it was found and what its entry is. Found: by the signature of a family that makes the machine itself, which makes it a candidate by family, or only by that of a family that goes with the machine (a regulator, or a subunit that makes no channel or pump by itself), which makes it no candidate for the machine's own work. Its entry: reviewed by a curator, or annotated automatically; that says how the entry was written, not that the protein does the unit's work.",
+  "Nothing here says which protein does which unit's work.",
   "No similarity search was run, and nothing is called an ortholog."
  ],
  "sources": [
@@ -251,7 +252,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -266,7 +268,8 @@
       }
      ],
      "length": 1014,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -281,7 +284,8 @@
       }
      ],
      "length": 1030,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -296,7 +300,8 @@
       }
      ],
      "length": 1015,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -311,7 +316,8 @@
       }
      ],
      "length": 1074,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -326,7 +332,8 @@
       }
      ],
      "length": 1086,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -341,7 +348,8 @@
       }
      ],
      "length": 1069,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -356,7 +364,8 @@
       }
      ],
      "length": 1025,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -371,7 +380,8 @@
       }
      ],
      "length": 1033,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -386,7 +396,8 @@
       }
      ],
      "length": 1017,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
      "citation": null
     }
@@ -407,7 +418,8 @@
       }
      ],
      "length": 998,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR005782 (P-type ATPase, subfamily IIA, SERCA-type). A signature says the family, not which member does the unit's work.",
      "citation": null
     }
@@ -438,7 +450,8 @@
       }
      ],
      "length": 975,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
      "citation": null
     }
@@ -459,7 +472,8 @@
       }
      ],
      "length": 975,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
      "citation": null
     }
@@ -472,7 +486,7 @@
   },
   "U47": {
    "finding": "found",
-   "note": "7 proteins of its 27,368 carry the signature of the mitochondrial calcium uniporter and its MICU regulators (IPR039055, IPR006769, IPR039800): MCU1, MCU2, MCU3, MCU4, MCU5, MCU6 and MICU. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "note": "6 proteins of its 27,368 carry the signature of the mitochondrial calcium uniporter (IPR039055, IPR006769): MCU1, MCU2, MCU3, MCU4, MCU5 and MCU6. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant. 1 more protein carries only the signature of its MICU regulators (IPR039800), which go with the machine and make none by themselves: MICU. It is listed with the unit and is no candidate for its own work.",
    "products": [
     {
      "name": "Calcium uniporter protein 1, mitochondrial",
@@ -485,7 +499,8 @@
       }
      ],
      "length": 292,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -500,7 +515,8 @@
       }
      ],
      "length": 293,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -515,7 +531,8 @@
       }
      ],
      "length": 336,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -530,7 +547,8 @@
       }
      ],
      "length": 338,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -545,7 +563,8 @@
       }
      ],
      "length": 293,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -560,7 +579,8 @@
       }
      ],
      "length": 321,
-     "evidence": "reviewed entry",
+     "found_by": "family signature",
+     "entry": "reviewed",
      "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
      "citation": null
     },
@@ -575,8 +595,9 @@
       }
      ],
      "length": 498,
-     "evidence": "reviewed entry",
-     "evidence_note": "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work.",
+     "found_by": "accessory signature",
+     "entry": "reviewed",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work.",
      "citation": null
     }
    ]

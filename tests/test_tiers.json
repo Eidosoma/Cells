@@ -170,8 +170,10 @@
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-9b0d8baa/measured.json",
   "/mnt/workspaces/Cells/core-fixes-landing-20261118/measure/measured.json",
   "/mnt/workspaces/Cells/crossrev-acceptances-20261118/tiers-770d66d3/measure-01/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-d5c44163/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-44550c4f/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-seams-references-20261118/gate-1b607df4/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/dd9758ef/measured-host-table.json",
+  "/mnt/workspaces/Cells/crossrev-replication-20261118/landing-34a7fe85/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-8e11638a/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1394,6 +1396,14 @@
    "utc": "2026-11-18T15:50:17+00:00"
   },
   {
+   "git_revision": "1b607df4b566a00f01296e3a87c2d8efa139dba6",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-seams-references-20261118/snapshot-1b607df4",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T19:33:45+00:00"
+  },
+  {
    "git_revision": "d5c441637daf7730f3f759a06ac3de6dcf753fac",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1402,12 +1412,20 @@
    "utc": "2026-11-18T19:32:36+00:00"
   },
   {
-   "git_revision": "44550c4f26cf5565836f95f0ffb8e7e947215e62",
+   "git_revision": "34a7fe85eb8b54ede7fccb76c3cc311702823d41",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-44550c4f",
+   "root": "/mnt/workspaces/Cells/crossrev-replication-20261118/snap-34a7fe85",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
-   "utc": "2026-11-18T19:33:49+00:00"
+   "utc": "2026-11-18T19:33:53+00:00"
+  },
+  {
+   "git_revision": "8e11638a267072d680f1ce4a1b9b786acddd017b",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-8e11638a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T19:34:06+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2272,6 +2290,30 @@
     }
    },
    {
+    "file": "tests/unit/test_core_seams_references_binding.py",
+    "seconds": 2.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_core_seams_references_cycles.py",
+    "seconds": 0.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_core_seams_references_registration.py",
+    "seconds": 0.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
     "file": "tests/unit/test_cotransport.py",
     "seconds": 5.98,
     "exit_code": 0,
@@ -2296,6 +2338,14 @@
     }
    },
    {
+    "file": "tests/unit/test_crossrev_replication.py",
+    "seconds": 13.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_cue_separation_diagnostic.py",
     "seconds": 4.33,
     "exit_code": 0,
@@ -2313,7 +2363,7 @@
    },
    {
     "file": "tests/unit/test_declarations.py",
-    "seconds": 2.97,
+    "seconds": 2.67,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -2389,6 +2439,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_ensemble_adapters.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -2930,6 +2988,14 @@
     }
    },
    {
+    "file": "tests/unit/test_inner_laws.py",
+    "seconds": 16.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
+    }
+   },
+   {
     "file": "tests/unit/test_inner_view_declarations.py",
     "seconds": 4.43,
     "exit_code": 0,
@@ -3010,6 +3076,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_contract_hooks.py",
+    "seconds": 2.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_kind_foreign_writes.py",
     "seconds": 4.73,
     "exit_code": 0,
@@ -3023,14 +3097,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_kind_moved_rows_guard.py",
-    "seconds": 3.22,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
     }
    },
    {
@@ -3087,6 +3153,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_kv1_channel_laws.py",
+    "seconds": 7.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_law_modules.py",
+    "seconds": 1.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -3163,18 +3245,18 @@
    },
    {
     "file": "tests/unit/test_model_table.py",
-    "seconds": 8.6,
+    "seconds": 13.85,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 7
     }
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 1.32,
+    "seconds": 2.67,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 5
     }
    },
    {
@@ -3436,10 +3518,10 @@
    },
    {
     "file": "tests/unit/test_operator_registry.py",
-    "seconds": 1.92,
+    "seconds": 2.12,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 5
     }
    },
    {
@@ -3741,10 +3823,10 @@
    },
    {
     "file": "tests/unit/test_run_view_door_s.py",
-    "seconds": 17.77,
+    "seconds": 17.68,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 5
     }
    },
    {
@@ -4290,22 +4372,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 17.11,
-    "exit_code": 0,
-    "counts": {
-     "passed": 14
-    }
-   },
-   {
-    "file": "tests/unit/test_surface_pump_v3_registry_laws.py",
-    "seconds": 3.98,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
     }
    },
    {
@@ -5056,14 +5122,6 @@
     }
    },
    {
-    "file": "tests/unit/test_inner_laws.py",
-    "seconds": 24.1,
-    "exit_code": 0,
-    "counts": {
-     "passed": 15
-    }
-   },
-   {
     "file": "tests/unit/test_junction_tension_inference.py",
     "seconds": 22.01,
     "exit_code": 0,
@@ -5121,10 +5179,10 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 22.7,
+    "seconds": 22.02,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 6
     }
    },
    {
@@ -5333,14 +5391,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_run_view_formats.py",
-    "seconds": 25.54,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
     }
    },
    {

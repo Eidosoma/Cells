@@ -94,6 +94,7 @@ protein identifiers to tie to.
 | Inside | A small prokaryote, among the smallest organisms that copy themselves; no nucleus | Li and others 2021; Gaspari and others 2020; the genome record's lineage |
 | Chromosome | One circle of 816,394 base pairs | GenBank |
 | Ribosomes | About 300 in a cell: the ribosomal proteins at a median of 300 copies, by mass spectrometry | Weber and others 2023, measured in strain M129 |
+| Ribosome's size | Drawn as E. coli's ribosome, as the viewer measured it from the PDB entry 7K00: the whole 26.1 by 21.1 by 17.3 nm | The viewer's own measure (`tools/measure_particle.py`; the PDB's entries are CC0). No paper its file rests on names an entry of its own ribosome (17 November 2026): until one is read, it is drawn at E. coli's measure |
 | Proteins | About 120,000 molecules in a cell, the sum over 528 kinds measured, three quarters of all | Weber and others 2023 |
 | Doubling time | About 8 hours in rich medium; 17.6 hours measured in a serum-free medium | Weber and others 2023; Gaspari and others 2020 |
 | Energy | ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle | Gaspari and others 2020; Awadh and others 2021; Li and others 2021 |
@@ -147,9 +148,10 @@ Each of the 43 notes gives the signatures asked, what the same search finds amon
 mollicutes, and that the unit's human candidates carry them. Under `extra` are nine of
 the organism's own membrane machines: four subunits of the ATP synthase, its one P-type
 ATPase, the two parts of a potassium uptake system, the glucose transporter and GlpF.
-All nine are listed as `reviewed entry`: each has a curated UniProtKB entry of this
-strain. Their notes say that the functions are assigned from sequence and were not
-measured in this organism.
+All nine are found by the family signature their sequence carries (`found_by`), and
+each has a curated UniProtKB entry of this strain (`entry`, `reviewed`); until 16 November
+2026 one word, `reviewed entry`, stood for both. Their notes say that the functions are
+assigned from sequence and were not measured in this organism.
 
 ## The catalogue
 

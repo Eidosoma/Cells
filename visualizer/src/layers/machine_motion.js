@@ -60,7 +60,8 @@ export function statementOf(machine, { turning = false, slow = 1, slowSaid = nul
   const seen = rotor.seen_from?.short, when = rotor.when;
   if (!seen || !when) throw new Error("the machine's file gives no short words for where its turn is seen from and when it turns that way");
   const count = (value) => Number(value).toLocaleString("en-US");
-  const speed = `about ${count(drawn)} turns a second${as ? `, as ${as}` : ""}${top ? `; up to ${count(top)}, its top speed` : ""}`;
+  // The file's own words for the rate drawn and the top rate, where it gives them, so the picture says no more than its sentences.
+  const speed = rotor.drawn?.words && rotor.rate?.words ? `${rotor.drawn.words}; ${rotor.rate.words}` : `about ${count(drawn)} turns a second${as ? `, as ${as}` : ""}${top ? `; up to ${count(top)}, its top speed` : ""}`;
   const upper = (words) => `${words[0].toUpperCase()}${words.slice(1)}`;
   if (!turning) return [`Illustration: Cells has no model of ${name}`, `${upper(when)} it turns ${rotor.way}, ${seen} · shown still`, `In life ${speed}`];
   // The words for a slow-down are the flux's: this module has none of its own.
@@ -76,10 +77,12 @@ export class MachineMotion {
     this.rate = ratesOf(this.machine).drawn;
     this.blur = { ...BLUR, ...(this.machine.motion?.rotor?.blur || {}) };
     this.angle = 0; // radians, positive about the outward axis: counter-clockwise to an eye outside the cell
+    this.turns = 0; // how many turns in all since it was built, not wrapped: what a check reads to see it turn
     this.turning = false;
     this.slow = 1;
     this.frameMs = 1000 / 60; // a frame's real time, smoothed
     this.lastMs = 0; // the real time of the frame last drawn
+    this.fade = 1; // how far the machine is faded in, as the lens fades its zone: every opacity here is a share of it
     this.sharp = new Map(); // set -> how sharply it is drawn now
     // Each set's objects get materials of their own, so that fading them touches nothing else.
     for (const set of built.sets) {
@@ -89,6 +92,13 @@ export class MachineMotion {
         object.material.userData = { ...object.material.userData, base: object.material.opacity ?? 1 };
       }
     }
+    this.apply();
+  }
+
+  /** The lens fades the machine in and out: the marks and the swept forms follow it. */
+  setFade(fade) {
+    if (Math.abs(fade - this.fade) < 0.002) return;
+    this.fade = fade;
     this.apply();
   }
 
@@ -113,7 +123,9 @@ export class MachineMotion {
     if (!this.turning) return false;
     this.lastMs = Math.max(0, real);
     if (real > 0) this.frameMs += (real - this.frameMs) * 0.25;
-    this.angle = (this.angle + (TURN * this.rate * Math.max(0, real)) / 1000 / this.slow) % TURN;
+    const turned = (this.rate * Math.max(0, real)) / 1000 / this.slow;
+    this.turns += turned;
+    this.angle = (this.angle + TURN * turned) % TURN;
     this.apply();
     return true;
   }
@@ -128,11 +140,11 @@ export class MachineMotion {
       const sharp = this.turning ? sharpness(this.step, set.period, this.blur) : 1;
       this.sharp.set(set, sharp);
       for (const object of set.objects) {
-        object.visible = sharp > 0.001;
-        object.material.opacity = object.material.userData.base * sharp;
+        object.visible = sharp > 0.001 && this.fade > 0.001;
+        object.material.opacity = object.material.userData.base * sharp * this.fade;
       }
-      set.blur.visible = sharp < 0.999;
-      set.blur.material.opacity = set.blur.material.userData.base * (1 - sharp);
+      set.blur.visible = sharp < 0.999 && this.fade > 0.001;
+      set.blur.material.opacity = set.blur.material.userData.base * (1 - sharp) * this.fade;
     }
   }
 

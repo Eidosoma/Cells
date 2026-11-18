@@ -4,7 +4,7 @@
 // from …". Nothing here computes a law again: no flux from a permeability, no gate, no
 // reaction rate. Pure functions, no state.
 
-// The engine's own constants (src/cells/processes/electrochemistry.py), written the same way.
+// The engine's own constants (src/cells/laws/electrochemistry.py), written the same way.
 export const ELEMENTARY = 1.602176634e-19; // C
 export const FARADAY = 6.02214076e23 * ELEMENTARY; // C/mol
 export const GAS = 6.02214076e23 * 1.380649e-23; // J/(mol K)

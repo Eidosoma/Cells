@@ -315,7 +315,7 @@ def build(datasets_folder, snapshot):
         "family_notes": {
             "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
             "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-            "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+            "units": P.UNITS_NOTE,
             "total": "The family's members on every shelf and on none.",
             "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'.",
         },
@@ -342,6 +342,8 @@ def build(datasets_folder, snapshot):
         "place_kinds": P.KINDS,
         "place_columns": P.PLACE_COLUMNS,
         "place_notes": "Every place the entries state, in UniProt's words, with the shelf and what the place names against its membrane (place_kinds), how the table's line was reached and which of the table's terms it rests on, and how many proteins it places as the statement that decided.",
+        # How the atlas found each protein listed with a unit, where it is not the default (schema/SPECIES_PROTEINS.md).
+        **({"found_by": found_by} if (found_by := P.found_by_block(units, P.line_families(lines))) else {}),
     }
     marks = {
         "reviewed": {"label": "Curated entry", "values": [True, False], "measured": False, "note": "Whether the protein's UniProtKB entry is reviewed, written by a curator, or unreviewed, annotated automatically.", "source": "UniProt"},
@@ -417,7 +419,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Wall", "value": "150 nm thick on average, for the leaf's skin cells and inner cells", "sources": ["tolleter2024"]},
                 {"label": "Leaf and rosette", "value": "the paper's reference leaf has a surface of 121 mm²; its three-week-old rosette has 29 leaves with 10,500 mm² of leaf in all", "sources": ["tolleter2024"]},
                 {"label": "What joins its cells", "value": f"plasmodesmata, channels lined by the cell membrane that cross the wall between two cells; {len(at_plasmodesma)} of its proteins are stated to be there", "sources": ["uniprot"]},
-                {"label": "Cells' machines", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the plant; {findings['none found']} were not found, the gap junctions and the sodium-potassium pump among them", "sources": ["uniprot"]},
+                {"label": "Cells' units", "value": f"of the 49 units of the law inventory, {findings['found']} have proteins of the same family in the plant; {findings['none found']} were not found, the gap junctions and the sodium-potassium pump among them", "sources": ["uniprot"]},
             ],
             "parts": {
                 "membranes": 1, "wall": True, "wall_nm": 150, "nucleus": True, "organelles": ["er", "golgi", "mitochondria", "chloroplasts", "vacuole"],
@@ -438,8 +440,8 @@ def build(datasets_folder, snapshot):
         },
     }
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
-        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A small flowering plant of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene."},
+        "format": P.ATLAS_FORMAT,
+        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A small flowering plant of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. The units of the law inventory are channels, pumps and junctions of animal cells; this is what their family signatures find among the one protein shown for each gene."},
         "made": made,
         "method": [
             f"The plant's proteins are the {len(entries):,} of UniProt's gene-by-gene set of the reference proteome {PROTEOME} (release {release}): one for each gene, {stated['shown_reviewed']:,} with a reviewed entry and {stated['shown_unreviewed']:,} with an unreviewed one.",
@@ -447,7 +449,8 @@ def build(datasets_folder, snapshot):
             "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
             "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
             "A plant has channels and pumps of families of its own, which no unit of the inventory stands for. They are not listed here: the search asks only for the families of Cells' units. 'Different family' is given only where the inventory's table names another family for the same machine, and it names none that a plant has.",
-            "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family, and nothing here says which protein does which unit's work.",
+            P.TWO_FACTS,
+            "Nothing here says which protein does which unit's work.",
             "No similarity search was run, and nothing is called an ortholog.",
         ],
         "sources": [
@@ -510,7 +513,7 @@ def build_readme(report, header, closing):
         f"- {r['families']:,} InterPro families hold {r['in_families']:,} proteins: {r['family_sizes']['one']:,} of one, {r['family_sizes']['two to four']:,} of two to four, {r['family_sizes']['five or more']:,} of five or more. {r['no_family']:,} proteins have no family.",
         f"- {r['lines']:,} lines of {r['distinct']:,} families; the {r['lone']:,} only members of their families stand in {r['lone_parts']} parts; the proteins with no family in {r['part_lines']} lines.",
         "- The largest: " + "; ".join(f"{name} ({n})" for name, n in r["largest_families"]) + ".",
-        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' machines and name its units.",
+        f"- {r['with_units']:,} proteins carry the family signature of one of Cells' units and name it.",
         "",
         "## What rests on tools and rule systems of other owners",
         "",

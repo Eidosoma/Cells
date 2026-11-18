@@ -13,10 +13,28 @@ export default {
   draws: ["cage", "machine"],
   build(env) {
     const { ctx, handles } = env;
-    const { real, has, random, scatter, seat, cagesAt, machineAt } = env.layout;
+    const { real, has, random, scatter, seat, cagesAt, machineAt, fine, nm } = env.layout;
     const assembly = has("cage") ? ctx.part("cage", cagesAt[0].clone().add(new THREE.Vector3(0, 1.25, 0))) : null;
     const machine = has("machine") ? ctx.part("machine", machineAt.clone().add(new THREE.Vector3(0, 1.2, 0))) : null;
-    if (!real) {
+    // To scale in a cell whose molecules are shapes at its stop, a machine is the schematic barrel at its own size, about
+    // 15 nm long (a proteasome's core; the size is the picture's choice). The cage is left out of the picture for now.
+    const barrelOf = (scale) => {
+      const subunits = [];
+      for (let index = 0; index < 4; index++) {
+        const radius = (index % 3 ? 0.5 : 0.4) * scale;
+        for (let one = 0; one < 7; one++) subunits.push({ position: machineAt.clone().add(new THREE.Vector3(0, (index - 1.5) * 0.36 * scale, 0)).addScaledVector(radial((one + index * 0.5) * (Math.PI * 2 / 7)), radius) });
+      }
+      machine.add(instanced(new THREE.SphereGeometry(0.2 * scale, 14, 10), machine.material({ hue: "bioProtein", shade: -0.12, roughness: 0.38, thin: 0.3 }), subunits));
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.62 * scale, 0.62 * scale, 1.4 * scale, 12), machine.proxyMaterial());
+      barrel.position.copy(machineAt);
+      machine.add(barrel);
+    };
+    if (fine) {
+      if (machine) {
+        barrelOf((15 * nm) / 1.48);
+        machine.anchor.copy(machineAt).y += 30 * nm;
+      }
+    } else if (!real) {
       if (assembly) {
       const corners = new THREE.DodecahedronGeometry(0.78).attributes.position, unique = new Map(), at = new THREE.Vector3();
       for (let index = 0; index < corners.count; index++) {

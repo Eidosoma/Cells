@@ -1,0 +1,536 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6P1K": {
+   "entry": "6P1K",
+   "title": "Cryo-EM structure of Escherichia coli sigma70 bound RNAP polymerase holoenzyme",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "4.05",
+   "left_out": [],
+   "whole": {
+    "atoms": 29008,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     16.3,
+     13.0,
+     11.6
+    ],
+    "farthest_nm": [
+     18.3,
+     15.3,
+     13.9
+    ],
+    "middle_98_percent_nm": [
+     16.1,
+     12.5,
+     10.3
+    ],
+    "radius_of_gyration_nm": 5.34
+   },
+   "parts": {
+    "beta": {
+     "by": "entities",
+     "ids": [
+      "2"
+     ],
+     "atoms": 10570,
+     "centre_nm": [
+      0.0,
+      -0.67,
+      -2.25
+     ],
+     "axes": [
+      [
+       0.5932,
+       0.7374,
+       -0.323
+      ],
+      [
+       0.7301,
+       -0.3237,
+       0.6019
+      ],
+      [
+       0.3393,
+       -0.5929,
+       -0.7304
+      ]
+     ],
+     "across_nm": [
+      13.8,
+      9.5,
+      8.7
+     ],
+     "farthest_nm": [
+      13.2,
+      9.9,
+      10.5
+     ],
+     "radius_of_gyration_nm": 4.22
+    },
+    "beta-prime": {
+     "by": "entities",
+     "ids": [
+      "3"
+     ],
+     "atoms": 10295,
+     "centre_nm": [
+      -0.04,
+      1.96,
+      1.22
+     ],
+     "axes": [
+      [
+       0.7832,
+       -0.5781,
+       0.2289
+      ],
+      [
+       0.6147,
+       0.7753,
+       -0.145
+      ],
+      [
+       -0.0936,
+       0.2542,
+       0.9626
+      ]
+     ],
+     "across_nm": [
+      13.4,
+      11.4,
+      6.7
+     ],
+     "farthest_nm": [
+      12.3,
+      11.5,
+      8.3
+     ],
+     "radius_of_gyration_nm": 4.21
+    },
+    "alpha": {
+     "by": "entities",
+     "ids": [
+      "1"
+     ],
+     "atoms": 3423,
+     "centre_nm": [
+      -5.34,
+      -1.45,
+      0.84
+     ],
+     "axes": [
+      [
+       -0.4934,
+       0.7152,
+       0.495
+      ],
+      [
+       0.6864,
+       -0.0294,
+       0.7267
+      ],
+      [
+       0.5342,
+       0.6983,
+       -0.4764
+      ]
+     ],
+     "across_nm": [
+      13.2,
+      4.8,
+      3.3
+     ],
+     "farthest_nm": [
+      12.3,
+      5.7,
+      4.1
+     ],
+     "radius_of_gyration_nm": 3.22
+    },
+    "omega": {
+     "by": "entities",
+     "ids": [
+      "4"
+     ],
+     "atoms": 627,
+     "centre_nm": [
+      -1.63,
+      -0.21,
+      4.55
+     ],
+     "axes": [
+      [
+       0.5053,
+       -0.33,
+       0.7973
+      ],
+      [
+       0.4206,
+       0.901,
+       0.1063
+      ],
+      [
+       -0.7535,
+       0.2816,
+       0.5941
+      ]
+     ],
+     "across_nm": [
+      5.2,
+      3.1,
+      2.1
+     ],
+     "farthest_nm": [
+      5.2,
+      3.5,
+      2.4
+     ],
+     "radius_of_gyration_nm": 1.43
+    },
+    "sigma": {
+     "by": "entities",
+     "ids": [
+      "5"
+     ],
+     "atoms": 4093,
+     "centre_nm": [
+      4.82,
+      -1.94,
+      1.34
+     ],
+     "axes": [
+      [
+       0.9417,
+       0.3234,
+       -0.0926
+      ],
+      [
+       0.2399,
+       -0.4528,
+       0.8587
+      ],
+      [
+       0.2358,
+       -0.8309,
+       -0.504
+      ]
+     ],
+     "across_nm": [
+      13.7,
+      9.9,
+      7.2
+     ],
+     "farthest_nm": [
+      11.7,
+      9.5,
+      7.7
+     ],
+     "radius_of_gyration_nm": 4.11
+    }
+   },
+   "chains": [
+    {
+     "chain": "G",
+     "entity": "1",
+     "description": "DNA-directed RNA polymerase subunit alpha",
+     "atoms": 1756,
+     "centre_nm": [
+      -4.52,
+      -3.0,
+      -0.5
+     ],
+     "axes": [
+      [
+       0.7504,
+       -0.5712,
+       -0.3326
+      ],
+      [
+       0.3844,
+       -0.0322,
+       0.9226
+      ],
+      [
+       -0.5377,
+       -0.8202,
+       0.1954
+      ]
+     ],
+     "across_nm": [
+      9.0,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      8.3,
+      5.0,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.3
+    },
+    {
+     "chain": "H",
+     "entity": "1",
+     "description": "DNA-directed RNA polymerase subunit alpha",
+     "atoms": 1667,
+     "centre_nm": [
+      -6.19,
+      0.18,
+      2.25
+     ],
+     "axes": [
+      [
+       -0.5547,
+       0.8044,
+       0.2128
+      ],
+      [
+       0.7598,
+       0.3854,
+       0.5236
+      ],
+      [
+       0.3392,
+       0.4521,
+       -0.8249
+      ]
+     ],
+     "across_nm": [
+      9.0,
+      3.8,
+      3.1
+     ],
+     "farthest_nm": [
+      8.3,
+      4.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 2.28
+    },
+    {
+     "chain": "I",
+     "entity": "2",
+     "description": "DNA-directed RNA polymerase subunit beta",
+     "atoms": 10570,
+     "centre_nm": [
+      0.0,
+      -0.67,
+      -2.25
+     ],
+     "axes": [
+      [
+       0.5932,
+       0.7374,
+       -0.323
+      ],
+      [
+       0.7301,
+       -0.3237,
+       0.6019
+      ],
+      [
+       0.3393,
+       -0.5929,
+       -0.7304
+      ]
+     ],
+     "across_nm": [
+      13.8,
+      9.5,
+      8.7
+     ],
+     "farthest_nm": [
+      13.2,
+      9.9,
+      10.5
+     ],
+     "radius_of_gyration_nm": 4.22
+    },
+    {
+     "chain": "J",
+     "entity": "3",
+     "description": "DNA-directed RNA polymerase subunit beta'",
+     "atoms": 10295,
+     "centre_nm": [
+      -0.04,
+      1.96,
+      1.22
+     ],
+     "axes": [
+      [
+       0.7832,
+       -0.5781,
+       0.2289
+      ],
+      [
+       0.6147,
+       0.7753,
+       -0.145
+      ],
+      [
+       -0.0936,
+       0.2542,
+       0.9626
+      ]
+     ],
+     "across_nm": [
+      13.4,
+      11.4,
+      6.7
+     ],
+     "farthest_nm": [
+      12.3,
+      11.5,
+      8.3
+     ],
+     "radius_of_gyration_nm": 4.21
+    },
+    {
+     "chain": "K",
+     "entity": "4",
+     "description": "DNA-directed RNA polymerase subunit omega",
+     "atoms": 627,
+     "centre_nm": [
+      -1.63,
+      -0.21,
+      4.55
+     ],
+     "axes": [
+      [
+       0.5053,
+       -0.33,
+       0.7973
+      ],
+      [
+       0.4206,
+       0.901,
+       0.1063
+      ],
+      [
+       -0.7535,
+       0.2816,
+       0.5941
+      ]
+     ],
+     "across_nm": [
+      5.2,
+      3.1,
+      2.1
+     ],
+     "farthest_nm": [
+      5.2,
+      3.5,
+      2.4
+     ],
+     "radius_of_gyration_nm": 1.43
+    },
+    {
+     "chain": "L",
+     "entity": "5",
+     "description": "RNA polymerase sigma factor RpoD",
+     "atoms": 4093,
+     "centre_nm": [
+      4.82,
+      -1.94,
+      1.34
+     ],
+     "axes": [
+      [
+       0.9417,
+       0.3234,
+       -0.0926
+      ],
+      [
+       0.2399,
+       -0.4528,
+       0.8587
+      ],
+      [
+       0.2358,
+       -0.8309,
+       -0.504
+      ]
+     ],
+     "across_nm": [
+      13.7,
+      9.9,
+      7.2
+     ],
+     "farthest_nm": [
+      11.7,
+      9.5,
+      7.7
+     ],
+     "radius_of_gyration_nm": 4.11
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "DNA-directed RNA polymerase subunit alpha",
+     "copies": 2,
+     "sequence_length": 329,
+     "residues_modelled_per_copy": 222.5,
+     "modelled_share": 0.676,
+     "atoms_per_modelled_residue": 7.69
+    },
+    {
+     "entity": "2",
+     "description": "DNA-directed RNA polymerase subunit beta",
+     "copies": 1,
+     "sequence_length": 1342,
+     "residues_modelled_per_copy": 1340.0,
+     "modelled_share": 0.999,
+     "atoms_per_modelled_residue": 7.89
+    },
+    {
+     "entity": "3",
+     "description": "DNA-directed RNA polymerase subunit beta'",
+     "copies": 1,
+     "sequence_length": 1430,
+     "residues_modelled_per_copy": 1325.0,
+     "modelled_share": 0.927,
+     "atoms_per_modelled_residue": 7.77
+    },
+    {
+     "entity": "4",
+     "description": "DNA-directed RNA polymerase subunit omega",
+     "copies": 1,
+     "sequence_length": 91,
+     "residues_modelled_per_copy": 79.0,
+     "modelled_share": 0.868,
+     "atoms_per_modelled_residue": 7.94
+    },
+    {
+     "entity": "5",
+     "description": "RNA polymerase sigma factor RpoD",
+     "copies": 1,
+     "sequence_length": 616,
+     "residues_modelled_per_copy": 504.0,
+     "modelled_share": 0.818,
+     "atoms_per_modelled_residue": 8.12
+    }
+   ]
+  }
+ }
+}

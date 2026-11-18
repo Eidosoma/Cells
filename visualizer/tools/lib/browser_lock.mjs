@@ -12,12 +12,21 @@
 // that died.
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, utimesSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, utimesSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { ROOT } from "./build_page.mjs";
 
-const LOCK = path.join(ROOT, "out", ".browser.lock"); // place n is this folder's name with ".n" after it
+// The places are one set for every checkout of the viewer on this machine. Since 16 November 2026 each agent
+// works in a checkout of its own, and places kept under each checkout's out/ were several sets over the same
+// processors: two checkouts' first places are the same core, two browsers then shared it, and a page took two
+// minutes to open (17 November 2026, the phone agent's finding). A check that reads the keyboard's focus had
+// missed once that day while other runs loaded the same processors; which load it was, was not measured.
+// So where the folder that holds the agents' checkouts stands, the places are kept there; elsewhere (another
+// machine, a copy with no such folder) under this checkout's out/. CELLS_BROWSER_PLACES names another folder.
+const SHARED = "/mnt/workspaces/Cells/visualizer-worktrees";
+export const PLACES_HOME = process.env.CELLS_BROWSER_PLACES || (existsSync(SHARED) ? path.join(SHARED, ".browser-places") : path.join(ROOT, "out"));
+const LOCK = path.join(PLACES_HOME, ".browser.lock"); // place n is this folder's name with ".n" after it
 const PROFILES = path.join(ROOT, "out", ".browser-profiles");
 const gone = (folder) => {
   try {

@@ -1,0 +1,1201 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6DRD": {
+   "entry": "6DRD",
+   "title": "RNA Pol II(G)",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.9",
+   "left_out": [],
+   "whole": {
+    "atoms": 26703,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     14.8,
+     13.7,
+     12.1
+    ],
+    "farthest_nm": [
+     15.0,
+     14.7,
+     14.1
+    ],
+    "middle_98_percent_nm": [
+     13.2,
+     12.2,
+     11.8
+    ],
+    "radius_of_gyration_nm": 5.26
+   },
+   "parts": {
+    "POLR2A": {
+     "by": "entities",
+     "ids": [
+      "1"
+     ],
+     "atoms": 7989,
+     "centre_nm": [
+      -0.48,
+      -1.09,
+      1.77
+     ],
+     "axes": [
+      [
+       0.802,
+       -0.5884,
+       0.1028
+      ],
+      [
+       -0.4689,
+       -0.5136,
+       0.7185
+      ],
+      [
+       -0.37,
+       -0.6245,
+       -0.6879
+      ]
+     ],
+     "across_nm": [
+      13.4,
+      8.3,
+      7.3
+     ],
+     "farthest_nm": [
+      13.2,
+      9.5,
+      7.8
+     ],
+     "radius_of_gyration_nm": 3.89
+    },
+    "POLR2B": {
+     "by": "entities",
+     "ids": [
+      "2"
+     ],
+     "atoms": 8079,
+     "centre_nm": [
+      2.63,
+      0.67,
+      -1.55
+     ],
+     "axes": [
+      [
+       -0.657,
+       0.7244,
+       0.209
+      ],
+      [
+       0.3082,
+       0.0051,
+       0.9513
+      ],
+      [
+       0.688,
+       0.6894,
+       -0.2266
+      ]
+     ],
+     "across_nm": [
+      11.5,
+      8.8,
+      5.4
+     ],
+     "farthest_nm": [
+      11.0,
+      9.4,
+      7.2
+     ],
+     "radius_of_gyration_nm": 3.45
+    },
+    "POLR2C": {
+     "by": "entities",
+     "ids": [
+      "3"
+     ],
+     "atoms": 2104,
+     "centre_nm": [
+      -0.71,
+      4.81,
+      0.07
+     ],
+     "axes": [
+      [
+       -0.2133,
+       -0.1217,
+       0.9694
+      ],
+      [
+       0.9763,
+       -0.0644,
+       0.2067
+      ],
+      [
+       0.0373,
+       0.9905,
+       0.1326
+      ]
+     ],
+     "across_nm": [
+      8.8,
+      5.6,
+      3.1
+     ],
+     "farthest_nm": [
+      7.8,
+      7.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 2.43
+    },
+    "POLR2D": {
+     "by": "entities",
+     "ids": [
+      "4"
+     ],
+     "atoms": 1005,
+     "centre_nm": [
+      -6.65,
+      -3.57,
+      -3.73
+     ],
+     "axes": [
+      [
+       -0.1217,
+       0.9453,
+       0.3025
+      ],
+      [
+       0.992,
+       0.1059,
+       0.0682
+      ],
+      [
+       0.0325,
+       0.3084,
+       -0.9507
+      ]
+     ],
+     "across_nm": [
+      6.0,
+      3.8,
+      2.6
+     ],
+     "farthest_nm": [
+      6.0,
+      4.3,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.69
+    },
+    "POLR2E": {
+     "by": "entities",
+     "ids": [
+      "5"
+     ],
+     "atoms": 1529,
+     "centre_nm": [
+      -0.89,
+      -5.11,
+      1.47
+     ],
+     "axes": [
+      [
+       -0.6682,
+       0.7195,
+       -0.1894
+      ],
+      [
+       0.2644,
+       0.4676,
+       0.8435
+      ],
+      [
+       0.6955,
+       0.5135,
+       -0.5026
+      ]
+     ],
+     "across_nm": [
+      6.3,
+      4.4,
+      3.1
+     ],
+     "farthest_nm": [
+      6.0,
+      4.6,
+      3.5
+     ],
+     "radius_of_gyration_nm": 1.86
+    },
+    "POLR2F": {
+     "by": "entities",
+     "ids": [
+      "6"
+     ],
+     "atoms": 549,
+     "centre_nm": [
+      -4.14,
+      -0.95,
+      0.12
+     ],
+     "axes": [
+      [
+       -0.2414,
+       0.9307,
+       -0.2749
+      ],
+      [
+       -0.0307,
+       0.2758,
+       0.9607
+      ],
+      [
+       0.9699,
+       0.2404,
+       -0.038
+      ]
+     ],
+     "across_nm": [
+      4.6,
+      2.7,
+      2.2
+     ],
+     "farthest_nm": [
+      4.0,
+      2.9,
+      2.7
+     ],
+     "radius_of_gyration_nm": 1.29
+    },
+    "POLR2G": {
+     "by": "entities",
+     "ids": [
+      "7"
+     ],
+     "atoms": 1307,
+     "centre_nm": [
+      -5.6,
+      -2.4,
+      -4.08
+     ],
+     "axes": [
+      [
+       0.2447,
+       0.3183,
+       0.9159
+      ],
+      [
+       0.0241,
+       0.9423,
+       -0.3339
+      ],
+      [
+       -0.9693,
+       0.1038,
+       0.2229
+      ]
+     ],
+     "across_nm": [
+      9.1,
+      3.0,
+      2.8
+     ],
+     "farthest_nm": [
+      7.4,
+      3.3,
+      3.1
+     ],
+     "radius_of_gyration_nm": 2.22
+    },
+    "POLR2H": {
+     "by": "entities",
+     "ids": [
+      "8"
+     ],
+     "atoms": 1176,
+     "centre_nm": [
+      -2.13,
+      2.0,
+      4.78
+     ],
+     "axes": [
+      [
+       -0.5546,
+       0.685,
+       -0.4725
+      ],
+      [
+       0.817,
+       0.5559,
+       -0.153
+      ],
+      [
+       0.1579,
+       -0.4709,
+       -0.8679
+      ]
+     ],
+     "across_nm": [
+      4.8,
+      4.2,
+      3.1
+     ],
+     "farthest_nm": [
+      5.0,
+      4.3,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.59
+    },
+    "POLR2I": {
+     "by": "entities",
+     "ids": [
+      "9"
+     ],
+     "atoms": 897,
+     "centre_nm": [
+      5.21,
+      -2.52,
+      0.92
+     ],
+     "axes": [
+      [
+       -0.1064,
+       0.8966,
+       0.4299
+      ],
+      [
+       0.7193,
+       0.3679,
+       -0.5892
+      ],
+      [
+       -0.6865,
+       0.2465,
+       -0.6841
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      3.3,
+      2.6
+     ],
+     "farthest_nm": [
+      7.3,
+      3.5,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.28
+    },
+    "POLR2L": {
+     "by": "entities",
+     "ids": [
+      "10"
+     ],
+     "atoms": 507,
+     "centre_nm": [
+      1.36,
+      4.3,
+      -0.47
+     ],
+     "axes": [
+      [
+       -0.1789,
+       0.2686,
+       0.9465
+      ],
+      [
+       0.9293,
+       0.3622,
+       0.0729
+      ],
+      [
+       -0.3232,
+       0.8926,
+       -0.3144
+      ]
+     ],
+     "across_nm": [
+      4.5,
+      3.2,
+      1.8
+     ],
+     "farthest_nm": [
+      4.7,
+      3.3,
+      2.0
+     ],
+     "radius_of_gyration_nm": 1.3
+    },
+    "POLR2J": {
+     "by": "entities",
+     "ids": [
+      "11"
+     ],
+     "atoms": 890,
+     "centre_nm": [
+      -2.74,
+      3.92,
+      1.09
+     ],
+     "axes": [
+      [
+       0.5002,
+       0.8594,
+       0.1059
+      ],
+      [
+       -0.4536,
+       0.1559,
+       0.8775
+      ],
+      [
+       0.7376,
+       -0.4869,
+       0.4678
+      ]
+     ],
+     "across_nm": [
+      5.5,
+      4.9,
+      2.3
+     ],
+     "farthest_nm": [
+      5.7,
+      5.6,
+      2.9
+     ],
+     "radius_of_gyration_nm": 1.73
+    },
+    "POLR2K": {
+     "by": "entities",
+     "ids": [
+      "12"
+     ],
+     "atoms": 312,
+     "centre_nm": [
+      0.54,
+      3.52,
+      -3.82
+     ],
+     "axes": [
+      [
+       0.6935,
+       -0.2044,
+       -0.6908
+      ],
+      [
+       0.6666,
+       -0.1815,
+       0.723
+      ],
+      [
+       -0.2732,
+       -0.9619,
+       0.0104
+      ]
+     ],
+     "across_nm": [
+      5.7,
+      2.4,
+      1.5
+     ],
+     "farthest_nm": [
+      5.0,
+      2.4,
+      1.6
+     ],
+     "radius_of_gyration_nm": 1.42
+    },
+    "POLR2M": {
+     "by": "entities",
+     "ids": [
+      "13"
+     ],
+     "atoms": 359,
+     "centre_nm": [
+      3.13,
+      3.64,
+      -2.7
+     ],
+     "axes": [
+      [
+       -0.1805,
+       0.6887,
+       0.7022
+      ],
+      [
+       0.82,
+       -0.2889,
+       0.4942
+      ],
+      [
+       0.5432,
+       0.665,
+       -0.5126
+      ]
+     ],
+     "across_nm": [
+      11.3,
+      2.9,
+      1.6
+     ],
+     "farthest_nm": [
+      8.2,
+      3.0,
+      2.0
+     ],
+     "radius_of_gyration_nm": 2.63
+    }
+   },
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "DNA-directed RNA polymerase II subunit RPB1",
+     "atoms": 7989,
+     "centre_nm": [
+      -0.48,
+      -1.09,
+      1.77
+     ],
+     "axes": [
+      [
+       0.802,
+       -0.5884,
+       0.1028
+      ],
+      [
+       -0.4689,
+       -0.5136,
+       0.7185
+      ],
+      [
+       -0.37,
+       -0.6245,
+       -0.6879
+      ]
+     ],
+     "across_nm": [
+      13.4,
+      8.3,
+      7.3
+     ],
+     "farthest_nm": [
+      13.2,
+      9.5,
+      7.8
+     ],
+     "radius_of_gyration_nm": 3.89
+    },
+    {
+     "chain": "B",
+     "entity": "2",
+     "description": "DNA-directed RNA polymerase II subunit RPB2",
+     "atoms": 8079,
+     "centre_nm": [
+      2.63,
+      0.67,
+      -1.55
+     ],
+     "axes": [
+      [
+       -0.657,
+       0.7244,
+       0.209
+      ],
+      [
+       0.3082,
+       0.0051,
+       0.9513
+      ],
+      [
+       0.688,
+       0.6894,
+       -0.2266
+      ]
+     ],
+     "across_nm": [
+      11.5,
+      8.8,
+      5.4
+     ],
+     "farthest_nm": [
+      11.0,
+      9.4,
+      7.2
+     ],
+     "radius_of_gyration_nm": 3.45
+    },
+    {
+     "chain": "C",
+     "entity": "3",
+     "description": "DNA-directed RNA polymerase II subunit RPB3",
+     "atoms": 2104,
+     "centre_nm": [
+      -0.71,
+      4.81,
+      0.07
+     ],
+     "axes": [
+      [
+       -0.2133,
+       -0.1217,
+       0.9694
+      ],
+      [
+       0.9763,
+       -0.0644,
+       0.2067
+      ],
+      [
+       0.0373,
+       0.9905,
+       0.1326
+      ]
+     ],
+     "across_nm": [
+      8.8,
+      5.6,
+      3.1
+     ],
+     "farthest_nm": [
+      7.8,
+      7.0,
+      3.7
+     ],
+     "radius_of_gyration_nm": 2.43
+    },
+    {
+     "chain": "D",
+     "entity": "4",
+     "description": "DNA-directed RNA polymerase II subunit RPB4",
+     "atoms": 1005,
+     "centre_nm": [
+      -6.65,
+      -3.57,
+      -3.73
+     ],
+     "axes": [
+      [
+       -0.1217,
+       0.9453,
+       0.3025
+      ],
+      [
+       0.992,
+       0.1059,
+       0.0682
+      ],
+      [
+       0.0325,
+       0.3084,
+       -0.9507
+      ]
+     ],
+     "across_nm": [
+      6.0,
+      3.8,
+      2.6
+     ],
+     "farthest_nm": [
+      6.0,
+      4.3,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.69
+    },
+    {
+     "chain": "E",
+     "entity": "5",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC1",
+     "atoms": 1529,
+     "centre_nm": [
+      -0.89,
+      -5.11,
+      1.47
+     ],
+     "axes": [
+      [
+       -0.6682,
+       0.7195,
+       -0.1894
+      ],
+      [
+       0.2644,
+       0.4676,
+       0.8435
+      ],
+      [
+       0.6955,
+       0.5135,
+       -0.5026
+      ]
+     ],
+     "across_nm": [
+      6.3,
+      4.4,
+      3.1
+     ],
+     "farthest_nm": [
+      6.0,
+      4.6,
+      3.5
+     ],
+     "radius_of_gyration_nm": 1.86
+    },
+    {
+     "chain": "F",
+     "entity": "6",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC2",
+     "atoms": 549,
+     "centre_nm": [
+      -4.14,
+      -0.95,
+      0.12
+     ],
+     "axes": [
+      [
+       -0.2414,
+       0.9307,
+       -0.2749
+      ],
+      [
+       -0.0307,
+       0.2758,
+       0.9607
+      ],
+      [
+       0.9699,
+       0.2404,
+       -0.038
+      ]
+     ],
+     "across_nm": [
+      4.6,
+      2.7,
+      2.2
+     ],
+     "farthest_nm": [
+      4.0,
+      2.9,
+      2.7
+     ],
+     "radius_of_gyration_nm": 1.29
+    },
+    {
+     "chain": "G",
+     "entity": "7",
+     "description": "DNA-directed RNA polymerase II subunit RPB7",
+     "atoms": 1307,
+     "centre_nm": [
+      -5.6,
+      -2.4,
+      -4.08
+     ],
+     "axes": [
+      [
+       0.2447,
+       0.3183,
+       0.9159
+      ],
+      [
+       0.0241,
+       0.9423,
+       -0.3339
+      ],
+      [
+       -0.9693,
+       0.1038,
+       0.2229
+      ]
+     ],
+     "across_nm": [
+      9.1,
+      3.0,
+      2.8
+     ],
+     "farthest_nm": [
+      7.4,
+      3.3,
+      3.1
+     ],
+     "radius_of_gyration_nm": 2.22
+    },
+    {
+     "chain": "H",
+     "entity": "8",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC3",
+     "atoms": 1176,
+     "centre_nm": [
+      -2.13,
+      2.0,
+      4.78
+     ],
+     "axes": [
+      [
+       -0.5546,
+       0.685,
+       -0.4725
+      ],
+      [
+       0.817,
+       0.5559,
+       -0.153
+      ],
+      [
+       0.1579,
+       -0.4709,
+       -0.8679
+      ]
+     ],
+     "across_nm": [
+      4.8,
+      4.2,
+      3.1
+     ],
+     "farthest_nm": [
+      5.0,
+      4.3,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.59
+    },
+    {
+     "chain": "I",
+     "entity": "9",
+     "description": "DNA-directed RNA polymerase II subunit RPB9",
+     "atoms": 897,
+     "centre_nm": [
+      5.21,
+      -2.52,
+      0.92
+     ],
+     "axes": [
+      [
+       -0.1064,
+       0.8966,
+       0.4299
+      ],
+      [
+       0.7193,
+       0.3679,
+       -0.5892
+      ],
+      [
+       -0.6865,
+       0.2465,
+       -0.6841
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      3.3,
+      2.6
+     ],
+     "farthest_nm": [
+      7.3,
+      3.5,
+      2.8
+     ],
+     "radius_of_gyration_nm": 2.28
+    },
+    {
+     "chain": "J",
+     "entity": "10",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC5",
+     "atoms": 507,
+     "centre_nm": [
+      1.36,
+      4.3,
+      -0.47
+     ],
+     "axes": [
+      [
+       -0.1789,
+       0.2686,
+       0.9465
+      ],
+      [
+       0.9293,
+       0.3622,
+       0.0729
+      ],
+      [
+       -0.3232,
+       0.8926,
+       -0.3144
+      ]
+     ],
+     "across_nm": [
+      4.5,
+      3.2,
+      1.8
+     ],
+     "farthest_nm": [
+      4.7,
+      3.3,
+      2.0
+     ],
+     "radius_of_gyration_nm": 1.3
+    },
+    {
+     "chain": "K",
+     "entity": "11",
+     "description": "DNA-directed RNA polymerase II subunit RPB11-a",
+     "atoms": 890,
+     "centre_nm": [
+      -2.74,
+      3.92,
+      1.09
+     ],
+     "axes": [
+      [
+       0.5002,
+       0.8594,
+       0.1059
+      ],
+      [
+       -0.4536,
+       0.1559,
+       0.8775
+      ],
+      [
+       0.7376,
+       -0.4869,
+       0.4678
+      ]
+     ],
+     "across_nm": [
+      5.5,
+      4.9,
+      2.3
+     ],
+     "farthest_nm": [
+      5.7,
+      5.6,
+      2.9
+     ],
+     "radius_of_gyration_nm": 1.73
+    },
+    {
+     "chain": "L",
+     "entity": "12",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC4",
+     "atoms": 312,
+     "centre_nm": [
+      0.54,
+      3.52,
+      -3.82
+     ],
+     "axes": [
+      [
+       0.6935,
+       -0.2044,
+       -0.6908
+      ],
+      [
+       0.6666,
+       -0.1815,
+       0.723
+      ],
+      [
+       -0.2732,
+       -0.9619,
+       0.0104
+      ]
+     ],
+     "across_nm": [
+      5.7,
+      2.4,
+      1.5
+     ],
+     "farthest_nm": [
+      5.0,
+      2.4,
+      1.6
+     ],
+     "radius_of_gyration_nm": 1.42
+    },
+    {
+     "chain": "M",
+     "entity": "13",
+     "description": "DNA-directed RNA polymerase II subunit GRINL1A",
+     "atoms": 359,
+     "centre_nm": [
+      3.13,
+      3.64,
+      -2.7
+     ],
+     "axes": [
+      [
+       -0.1805,
+       0.6887,
+       0.7022
+      ],
+      [
+       0.82,
+       -0.2889,
+       0.4942
+      ],
+      [
+       0.5432,
+       0.665,
+       -0.5126
+      ]
+     ],
+     "across_nm": [
+      11.3,
+      2.9,
+      1.6
+     ],
+     "farthest_nm": [
+      8.2,
+      3.0,
+      2.0
+     ],
+     "radius_of_gyration_nm": 2.63
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "DNA-directed RNA polymerase II subunit RPB1",
+     "copies": 1,
+     "sequence_length": 1970,
+     "residues_modelled_per_copy": 1000.0,
+     "modelled_share": 0.508,
+     "atoms_per_modelled_residue": 7.99
+    },
+    {
+     "entity": "2",
+     "description": "DNA-directed RNA polymerase II subunit RPB2",
+     "copies": 1,
+     "sequence_length": 1174,
+     "residues_modelled_per_copy": 1009.0,
+     "modelled_share": 0.859,
+     "atoms_per_modelled_residue": 8.01
+    },
+    {
+     "entity": "3",
+     "description": "DNA-directed RNA polymerase II subunit RPB3",
+     "copies": 1,
+     "sequence_length": 275,
+     "residues_modelled_per_copy": 262.0,
+     "modelled_share": 0.953,
+     "atoms_per_modelled_residue": 8.03
+    },
+    {
+     "entity": "4",
+     "description": "DNA-directed RNA polymerase II subunit RPB4",
+     "copies": 1,
+     "sequence_length": 142,
+     "residues_modelled_per_copy": 128.0,
+     "modelled_share": 0.901,
+     "atoms_per_modelled_residue": 7.85
+    },
+    {
+     "entity": "5",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC1",
+     "copies": 1,
+     "sequence_length": 210,
+     "residues_modelled_per_copy": 185.0,
+     "modelled_share": 0.881,
+     "atoms_per_modelled_residue": 8.26
+    },
+    {
+     "entity": "6",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC2",
+     "copies": 1,
+     "sequence_length": 127,
+     "residues_modelled_per_copy": 68.0,
+     "modelled_share": 0.535,
+     "atoms_per_modelled_residue": 8.07
+    },
+    {
+     "entity": "7",
+     "description": "DNA-directed RNA polymerase II subunit RPB7",
+     "copies": 1,
+     "sequence_length": 172,
+     "residues_modelled_per_copy": 167.0,
+     "modelled_share": 0.971,
+     "atoms_per_modelled_residue": 7.83
+    },
+    {
+     "entity": "8",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC3",
+     "copies": 1,
+     "sequence_length": 150,
+     "residues_modelled_per_copy": 146.0,
+     "modelled_share": 0.973,
+     "atoms_per_modelled_residue": 8.05
+    },
+    {
+     "entity": "9",
+     "description": "DNA-directed RNA polymerase II subunit RPB9",
+     "copies": 1,
+     "sequence_length": 125,
+     "residues_modelled_per_copy": 110.0,
+     "modelled_share": 0.88,
+     "atoms_per_modelled_residue": 8.15
+    },
+    {
+     "entity": "10",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC5",
+     "copies": 1,
+     "sequence_length": 67,
+     "residues_modelled_per_copy": 64.0,
+     "modelled_share": 0.955,
+     "atoms_per_modelled_residue": 7.92
+    },
+    {
+     "entity": "11",
+     "description": "DNA-directed RNA polymerase II subunit RPB11-a",
+     "copies": 1,
+     "sequence_length": 117,
+     "residues_modelled_per_copy": 111.0,
+     "modelled_share": 0.949,
+     "atoms_per_modelled_residue": 8.02
+    },
+    {
+     "entity": "12",
+     "description": "DNA-directed RNA polymerases I, II, and III subunit RPABC4",
+     "copies": 1,
+     "sequence_length": 58,
+     "residues_modelled_per_copy": 37.0,
+     "modelled_share": 0.638,
+     "atoms_per_modelled_residue": 8.43
+    },
+    {
+     "entity": "13",
+     "description": "DNA-directed RNA polymerase II subunit GRINL1A",
+     "copies": 1,
+     "sequence_length": 62,
+     "residues_modelled_per_copy": 62.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 5.79
+    }
+   ]
+  }
+ }
+}

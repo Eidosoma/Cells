@@ -112,7 +112,13 @@ Nine shelves: the animal cell's six, and three for membranes an animal cell lack
 ## Its side of the atlas
 
 - **5 of the 49 units are found, 38 are not, 6 have nothing to look for.** 19 proteins
-  are listed, all with reviewed entries.
+  are listed, all with reviewed entries. How they were found is said apart from that
+  (since 16 November 2026): 18 by the signature of a family that makes the machine,
+  candidates by family, and 1 only by that of a family that goes with one (a MICU
+  regulator of the uniporter), no candidate for the machine's own work. On the shelves
+  (second round, 16 November 2026) it is drawn as a plain grey marker, not in the unit's
+  shape or the units' tone, and its panel says how the atlas found it and that it goes
+  with the machine (`found_by` in `shelves.json`).
 - **Found:** the plasma-membrane calcium pumps' family (U40: ten ACA proteins), the
   store's calcium pump (U41: `ECA3`), the chloride cotransporters (U44, U45: `CCC1`), and
   the mitochondrial uniporter with its regulator (U47: `MCU1` to `MCU6`, `MICU`).
@@ -160,7 +166,7 @@ others 2024, Quantitative Plant Biology, CC BY), saved with its record and full 
   flower or root is drawn.
 - **`modelled` is `generic`,** the only state of the three that is not false: no model
   and no proposal to model the plant is on record (main names it only as a benchmark for
-  gene networks). Its text says that Cells' laws name the machines of animal cells and
+  gene networks). Its text says that Cells' laws name the channels and pumps of animal cells and
   that no plant cell is modelled. If a fourth state, "data only", is wanted for a species
   whose cell Cells' generic cell does not fit, that is a change to the contract.
 

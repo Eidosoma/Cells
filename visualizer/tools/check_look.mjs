@@ -17,6 +17,7 @@
 //   views     to scale, close to the membrane, the other views, a small species, a phone
 //   motion    decoration: its clock, held from outside, and reduced motion
 //   trial     the readout behind "fps=1"
+//   loss      a lost GPU process: every view pictured, the process lost once, every view pictured again
 //   pictures  for looking, not a check: one load, then one picture for each step that the
 //             file named by STEPS lists as JSON, [{ name, run, size: [width, height, pixel ratio], clip: [x, y, width, height] }];
 //             QUERY is the address's words, WIDTH and HEIGHT the window, MOTION=1 lets it move,
@@ -36,9 +37,9 @@ import { DEFAULT_SCENE } from "./lib/build_page.mjs";
 
 const scenarios = (process.argv[2] || "look").split(",");
 const outDir = process.argv[3] ? path.resolve(process.argv[3]) : null;
-const unknown = scenarios.find((name) => !["look", "switch", "views", "motion", "trial", "pictures"].includes(name));
+const unknown = scenarios.find((name) => !["look", "switch", "views", "motion", "trial", "loss", "pictures"].includes(name));
 if (unknown !== undefined) {
-  console.error(`unknown scenario "${unknown}": look, switch, views, motion, trial or pictures`);
+  console.error(`unknown scenario "${unknown}": look, switch, views, motion, trial, loss or pictures`);
   process.exit(2);
 }
 const looking = scenarios.includes("pictures");
@@ -134,7 +135,7 @@ const open = async (query) => {
     drawn = await evaluate(`Boolean(${V} && ${V}.current && ${S} && ${V}.current.active !== false)`).catch(() => false);
   }
   if (!drawn) throw new Error("the page did not draw its view within ten minutes");
-  await evaluate(`Promise.resolve(${V}.current.ready)`);
+  await evaluate(`Promise.resolve(${V}.current.ready).then(() => null)`); // a view's ready may resolve to the view itself, which is not a value to bring back
   // The page's letters come over the network. Until they are there a wider stand-in is shown, and
   // cards and labels have other sizes: a picture waits for them (up to a minute and a half).
   if (outDir) {
@@ -243,6 +244,32 @@ const timed = (prepare = "", count = 2) =>
     return Math.round((performance.now() - from) / ${count});
   })()`);
 const SEVEN = "reflections,filmic,translucency,contact,texture,drift,shimmer";
+/**
+ * Two pictures of a page that holds still, by the light added up over the canvas. The software
+ * renderer draws the same picture to the last count, and is held to that. A graphics card does
+ * not: the same still page drawn twice differed by 2 to 4 counts in 70 million there (an NVIDIA
+ * L4, 16 November 2026), so on a card two pictures are the same within one part in a million.
+ */
+let exact = true;
+const same = (a, b) => (exact ? a === b : Math.abs(a - b) <= Math.max(a, b) * 1e-6);
+/** How many pixels are covered: to the pixel in software, within two on a card. */
+const sameCount = (a, b) => (exact ? a === b : Math.abs(a - b) <= 2);
+/**
+ * The picture of a page that has come to rest: drawn again until two in a row are the same.
+ * The view's first fades and the camera's last move are over long before a software-drawn
+ * check gets here; on a graphics card the checks arrive while they are still under way
+ * (16 November 2026: the first picture then differed from the later ones by half a percent).
+ */
+const atRest = async () => {
+  let before = await picture();
+  for (let tries = 0; tries < 80; tries++) {
+    await sleep(250);
+    const now = await picture();
+    if (same(now.light, before.light) && same(now.cover, before.cover) && sameCount(now.lit, before.lit)) return now;
+    before = now;
+  }
+  return before;
+};
 const zero = (numbers) => Object.values(numbers).every((value) => value === 0);
 // Since 16 November 2026 every part is drawn whole where colour shows the kind of part (the user; docs/CELL_STRUCTURES.md).
 const HEAD_LEGEND = "Colour shows the kind of part, and every part is drawn whole. The dot beside each name is its status; Colour: Status shows what is not built as grey sketches. Clear glass shapes and grey outlines are scenery.";
@@ -255,6 +282,9 @@ try {
     // The page is asked for less motion before it loads: nothing in it moves, so pictures can be compared.
     await lessMotion(true);
     await open("lens=cell&look=full");
+    const drawnBy = await evaluate(`(() => { const gl = ${V}.stage.renderer.getContext(), info = gl.getExtension("WEBGL_debug_renderer_info"); return String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); })()`);
+    exact = /swiftshader/i.test(drawnBy);
+    note(`drawn by: ${drawnBy}; two pictures of the still page are compared ${exact ? "to the last count" : "within one part in a million"}`);
     let s = await state();
     check("the Cell view wears the seven effects", s.rich && s.drawn.join() === SEVEN, JSON.stringify(s.drawn));
     check("filmic light is on, with the studio to reflect", s.tone !== 0 && s.exposure > 1 && s.studio && !s.plainRoom, JSON.stringify([s.tone, s.exposure, s.studio]));
@@ -270,13 +300,13 @@ try {
     await shot("look-rich");
 
     // Contact shade: gentle, on the picture only, and gone when switched off.
-    const on = await picture();
+    const on = await atRest();
     const off = await picture(`s.finish.setContact(0);`);
     const again = await picture(`s.applyLook();`);
     const darker = 1 - on.light / off.light;
     check("contact shade darkens the picture, gently", darker > 0.0003 && darker < 0.05, `${(darker * 100).toFixed(2)}% less light with it than without`);
-    check("it leaves the canvas as covered as it was", on.cover === off.cover && on.lit === off.lit, JSON.stringify([on.cover, off.cover]));
-    check("switched on again it draws the same picture", again.light === on.light, JSON.stringify([again.light, on.light]));
+    check("it leaves the canvas as covered as it was", same(on.cover, off.cover) && sameCount(on.lit, off.lit), JSON.stringify([on.cover, off.cover]));
+    check("switched on again it draws the same picture", same(again.light, on.light), JSON.stringify([again.light, on.light]));
 
     // Bloom: off at rest; on, it shines only from what was marked.
     const marked = await evaluate(`(${V}.current.byEntity.get("cap.energy") || []).filter((part) => ${V}.current.shows(part.zone)).length`);
@@ -287,12 +317,30 @@ try {
     const unmarkedAgain = await picture(mark(false));
     await evaluate(`${S}.setBloom(0)`);
     s = await state();
-    check("switched on with nothing marked, nothing shines", unmarked.light === on.light, JSON.stringify([unmarked.light, on.light]));
+    check("switched on with nothing marked, nothing shines", same(unmarked.light, on.light), JSON.stringify([unmarked.light, on.light]));
     check("it shines from what was marked, and from nothing else", marked > 0 && shining.light > on.light && shining.light < on.light * 1.2, `${marked} part(s) marked; ${((shining.light / on.light - 1) * 100).toFixed(3)}% more light`);
-    check("and with the mark taken away the picture is as it was", unmarkedAgain.light === on.light && s.bloom === 0, JSON.stringify([unmarkedAgain.light, on.light, s.bloom]));
+    check("and with the mark taken away the picture is as it was", same(unmarkedAgain.light, on.light) && s.bloom === 0, JSON.stringify([unmarkedAgain.light, on.light, s.bloom]));
 
-    // What a frame costs here. This server draws in software, so the numbers say what the look
-    // costs a software-drawn check, and nothing of a graphics card.
+    // A lost context that comes back (a phone does it to a page that was put away; one of the graphics
+    // card's back ends does it once to a fresh browser's first page): three.js sends again what it holds a
+    // copy of, and the page makes its surroundings again, so the picture is as it was.
+    const restored = await evaluate(`(async () => {
+      const v = ${V}, s = v.stage, gl = s.renderer.getContext(), ext = gl.getExtension("WEBGL_lose_context");
+      if (!ext) return { asked: false };
+      const back = new Promise((done) => s.canvas.addEventListener("webglcontextrestored", () => done(true), { once: true }));
+      ext.loseContext();
+      await new Promise((r) => setTimeout(r, 300));
+      const lost = gl.isContextLost();
+      ext.restoreContext();
+      const came = await Promise.race([back, new Promise((r) => setTimeout(() => r(false), 10000))]);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return { asked: true, lost, came, lostNow: gl.isContextLost() };
+    })()`);
+    const afterLoss = restored.came ? await atRest() : null;
+    check("a lost context that comes back leaves the picture as it was: the surroundings are made again", restored.asked && restored.lost && restored.came && !restored.lostNow && afterLoss !== null && same(afterLoss.light, on.light) && same(afterLoss.cover, on.cover), JSON.stringify([restored, afterLoss?.light, on.light]));
+
+    // What a frame costs here, said with the renderer that drew it: in software the numbers say
+    // what the look costs a software-drawn check, and nothing of a graphics card.
     const cost = { rich: await timed(), none: await timed(`s.finish.setContact(0);`) };
     await evaluate(`${S}.applyLook()`);
 
@@ -302,7 +350,7 @@ try {
     check("the two looks are two pictures", plainPicture.light !== on.light, JSON.stringify([plainPicture.light, on.light]));
     check("the labels' columns hold as many names with either look", plain.callouts === richLabels && richLabels > 0, JSON.stringify([richLabels, plain.callouts]));
     cost.plain = await timed();
-    note(`one frame drawn in software here, at ${s.width} by ${s.height}: plain ${cost.plain} ms; rich ${cost.rich} ms; rich without contact shade ${cost.none} ms`);
+    note(`one frame drawn ${exact ? "in software" : "on this machine's graphics card"} here, at ${s.width} by ${s.height}: plain ${cost.plain} ms; rich ${cost.rich} ms; rich without contact shade ${cost.none} ms`);
     await evaluate(`${V}.current.setLook("full")`);
   }
 
@@ -450,7 +498,9 @@ try {
         const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
         const said = [...root.querySelectorAll(".label-example")].some((el) => !el.classList.contains("is-off"));
         return { toggle: box(root.querySelector(".view-toggle")), card: box(root.querySelector(".view.card")), panel: box(root.querySelector("cells-panel")), look: box(root.querySelector(".look-switch")), colour: ${V}.current.colourBy, selected: ${V}.state.selected,
-          flux: ${V}.current.flux?.tokens.length > 0, said, notice: box(root.querySelector(".view-notice")) ? root.querySelector(".view-notice").textContent : null };
+          flux: ${V}.current.flux?.tokens.length > 0, said, notice: box(root.querySelector(".view-notice")) ? root.querySelector(".view-notice").textContent : null,
+          // The notice the flux carries: illustration's, or, for a species that plays its own looping run, what the run is.
+          wanted: ${V}.current.flux?.source.kind === "run" ? ${V}.current.flux.loop?.status : "Illustration: not a run" };
       })()`);
     let fold = await folded();
     check("on a phone with a panel open the view's card folds behind a button at least 44 px tall under the bar, and the look's switch stands on the panel's edge", Boolean(fold.toggle) && fold.card === null && fold.toggle[3] - fold.toggle[1] >= 44 && Boolean(fold.look) && Boolean(fold.panel) && fold.look[3] <= fold.panel[1], JSON.stringify(fold));
@@ -459,7 +509,7 @@ try {
     fold = await folded();
     check("a real press opens the card over the picture, and a real press on Colour: Status takes it, the part still chosen", Boolean(fold.card) && fold.colour === "status" && fold.selected === "cap.pumps", JSON.stringify(fold));
     // The part's flux shows: where the opened card leaves the picture's statement no room, the card carries its notice (rule 11).
-    check("while the part's flux shows, the words \"Illustration: not a run\" stay in sight: on the picture, or in the opened card", !fold.flux || fold.said || fold.notice === "Illustration: not a run", JSON.stringify(fold));
+    check("while the part's flux shows, its notice (\"Illustration: not a run\", or what the species' own run is) stays in sight: on the picture, or in the opened card", !fold.flux || fold.said || fold.notice === fold.wanted, JSON.stringify(fold));
     await press(button("Colour", "Biology"), "Colour: Biology, over the panel");
     await press(button("Look", "Plain"), "Plain, on the panel's edge");
     s = await state();
@@ -568,6 +618,67 @@ try {
     await frame(); // the scale bar, and the look's switch over it, come back with the first frame drawn
     s = await state();
     check("back in the Cell view the look is back, and its switch with the scale bar", s.rich && s.tone !== 0 && s.box?.length === 1 && s.box[0].startsWith("Look: Rich"), JSON.stringify([s.rich, s.tone, s.box]));
+  }
+
+  if (scenario === "loss") {
+    // A lost GPU process. One of the graphics card's back ends does it once to a fresh browser's first page,
+    // and a driver's restart does it to any visitor: the WebGL context is lost and comes back, and every 2D
+    // canvas comes back blank (17 November 2026: the Protein atlas's membranes had lost their beads, the
+    // Engine view its shade and its signs; src/core/painted.js). Every view is made, then pictured on two
+    // walks, so that the walk itself is known to give the same pictures; then the process is lost once (a
+    // browser forgives few such losses), with every view still held, and every view is pictured again.
+    await lessMotion(true);
+    await open("lens=cell&look=full");
+    const drawnBy = await evaluate(`(() => { const gl = ${V}.stage.renderer.getContext(), info = gl.getExtension("WEBGL_debug_renderer_info"); return String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); })()`);
+    exact = /swiftshader/i.test(drawnBy);
+    note(`drawn by: ${drawnBy}; two pictures of the still page are compared ${exact ? "to the last count" : "within one part in a million"}`);
+    const atlas = (mode) => `(async () => { const v = ${V}; v.setLens("proteins"); await Promise.resolve(v.current.ready); await Promise.resolve(v.current.setMode?.(${JSON.stringify(mode)}, { user: true })); return v.current.mode ?? null; })()`;
+    const walk = [
+      ["the Cell view", `(() => { const v = ${V}; if (v.state.model) v.setEntry(v.state.species); v.setLens("cell"); })()`],
+      ["the Protein atlas with Cells' units", atlas("units")],
+      ["the Protein atlas with the species' own proteins", atlas("own")],
+      ["the Engine view", `${V}.setLens("engine")`],
+      ["the Experiments view", `${V}.setLens("experiments")`],
+      ["the Laws library", `${V}.setLens("laws")`],
+      ["the Machines catalogue", `${V}.setLens("machines")`],
+      // A model system's own view in the first tab's place (src/lenses/lineage_entry.js), once its run file is read.
+      ["the origin-of-life view", `(async () => { const v = ${V}; v.setEntry("gard"); v.setLens("cell"); await Promise.resolve(v.current.ready); for (let tries = 0; tries < 200 && v.current?.id !== "origin"; tries++) await new Promise((done) => setTimeout(done, 50)); })()`],
+    ];
+    const round = async (label) => {
+      const seen = [];
+      for (const [name, go] of walk) {
+        await evaluate(go);
+        await evaluate(`Promise.resolve(${V}.current.ready).then(() => null)`); // a view's ready may resolve to the view itself, which is not a value to bring back
+        await rest();
+        await sleep(400);
+        seen.push(await atRest());
+        if (label) await shot(`loss-${label}-${name.replace(/[^a-z]+/gi, "-").toLowerCase()}`);
+      }
+      return seen;
+    };
+    const alike = (a, b) => same(a.light, b.light) && same(a.cover, b.cover) && sameCount(a.lit, b.lit);
+    // The first walk makes each view, and a view just made is not to the last count what it is when come back to
+    // (the Cell view differed by six parts in a million): it is walked once for nothing.
+    await round(null);
+    const first = await round(null);
+    const second = await round("before");
+    check("every view draws", second.every((seen) => seen.lit > 0), JSON.stringify(second.map((seen) => seen.lit)));
+    const steady = walk.map((_, index) => alike(first[index], second[index]));
+    check("walking the views twice gives the same pictures, so a third walk can be compared", steady.every(Boolean), JSON.stringify(walk.map(([name], index) => [name, first[index].light, second[index].light])));
+    await send("Browser.crashGpuProcess", {});
+    await sleep(6000);
+    let back = false;
+    for (let tries = 0; tries < 60 && !back; tries++) {
+      back = await evaluate(`!${S}.renderer.getContext().isContextLost()`).catch(() => false);
+      if (!back) await sleep(500);
+    }
+    check("the GPU process is lost, and the page's context comes back", back);
+    await evaluate(`${S}.invalidate()`);
+    await sleep(1500);
+    const third = await round("after");
+    for (const [index, [name]] of walk.entries()) {
+      check(`${name} comes back from a lost GPU process as it was`, steady[index] && alike(second[index], third[index]), JSON.stringify([second[index], third[index]]));
+    }
   }
 
   if (scenario === "pictures") {

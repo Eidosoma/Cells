@@ -27,6 +27,7 @@ from typing import Any, NamedTuple
 import jax.numpy as jnp
 
 from cells.laws.electrochemistry import R, ghk_leak
+from cells.modules import Citation, RouteLaw
 
 LAW_ID = "passive_neutral_permeation@1"
 SERIES_BELOW = 1e-6  # |x| below which (1 + x) log1p(x) / x takes its series (as D152).
@@ -88,3 +89,22 @@ def route_heat_pJ(moved_in_fmol, mu_bar_in_RT, mu_bar_out_RT, temperature_K, *, 
 def start_admitted(amount_fmol, volume_pL, policy, *, xp=jnp):
     """The definition's trace check: a declared start at or above the policy's trace level."""
     return (amount_fmol >= 0) & (amount_fmol / volume_pL >= policy.trace_mM)
+
+
+# The law's declaration (CORE_SEAMS §8.2): a route law of the passive routes kind, registered by
+# the law registry's loader. Moved from kinds/passive_routes.py (the lead's recorded exception, 18
+# November 2026). The work it names was named from memory, not read (CORE_SEAMS §15).
+LAW = RouteLaw(
+    LAW_ID,
+    ("membrane", "junction"),
+    "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "
+    "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
+    material_bound="bound_rate_per_s",  # dt L <= 1 (the kind's bound_rate): CORE_SEAMS §18.
+    host="cells.passive_routes@1",
+    provenance="cited",
+    source=Citation(
+        "Fick's law of diffusion (A. Fick, 1855, named from memory and not read; standard theory)",
+        "docs/INNER_MODEL_V4_DESIGN.md §11",
+        "no numbers taken: the law is a form, its permeability a definition's value",
+    ),
+)

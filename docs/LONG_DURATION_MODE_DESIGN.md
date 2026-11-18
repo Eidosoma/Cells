@@ -524,3 +524,17 @@ cap of 1.2 × 10⁻³ mM. NUM-002's separation is 58,825.
   EXCITABLE_TISSUE_DESIGN §2.1) and Ascher, Ruuth and Spiteri's ARS(2,2,2) (as cited in
   `surface_imex.py`) were not read for this note.
 - No web search was made, and no external file was fetched.
+
+## 11. The user's answers (18 November 2026; D217)
+
+- **Approved: stage 0 only,** that is M1–M5 plus a small numerical harness. The harness is an existing
+  single-cell or two-cell case on today's fine engine, benchmarked under M3, with its trajectory and
+  reference outputs kept.
+- **Each measurement's criteria and tolerance budget** are declared before its comparison. They cover
+  cumulative trajectory error, intervention response, threshold timing, histories, conservation and
+  measured cost. The old parity caps stay as benchmarks.
+- **The method** (N2, or a reduction R1) is chosen after stage 0 and the core's FR-18 energy-check
+  probe. The full solver build and an exact charged booking are not approved in advance. Questions
+  5–7 for the lead wait for that choice.
+- **The first scientific consumer** is FR-7's loop at measured lifetimes. Stage 0 does not wait for
+  it.
