@@ -1,5 +1,12 @@
 # A closed compartment owned by a cell (design)
 
+**Qualified, 18 November 2026.** The registered protocol `fr1-closed-compartment-v1`
+(`validation/tissue/compartment_acceptance_protocol.json`, registered at 05a8d193) was judged once
+from a clean snapshot of that commit: passed, 44 of 44 judged criteria (C1 to C13 with their
+controls), against the code-blind references (`validation/fr1/references`). It is exchange's first
+judged acceptance. Its scope is the neutral first version as built there (§3.3): no ion route and
+a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientation is not shown.
+
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** The silence claims S1–S5 are pending milestone 1, with their criteria fixed. This protocol is exchange's first judged acceptance.
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
@@ -89,7 +96,8 @@ is an addition, not a change to existing behaviour.
    - Every move books the same amount on both sides, so retained and cytosolic material stay
      distinct and reconcile to rounding.
    - **Limits:**
-     - the pair is Strang-split, so its equilibrium carries a bias of −a(a + 2b) dt²/96 (**S**);
+     - the pair is Strang-split, so its equilibrium carries a relative bias, x*/x_eq − 1, of
+       −a(a + 2b) dt²/96 (**S**; §2.3);
      - its fall in free energy is booked as signed work, not heat;
      - saturable loading is refused.
    - **Doors:** a passive permeation law, door T1, with an exact two-way relaxation and heat
@@ -435,7 +443,7 @@ A.2). With release, the retained fraction follows the two-node closed form.
      x*/x_eq − 1 = −a(a + 2b) h²/24 + O(h³) (**S**; checked numerically to ratio 0.99995–0.999999,
      `arithmetic/split_bias.out`).
    - The composite applies two halves of h = dt/2 per step, and both have that fixed point, so the
-     bias is −a(a + 2b) dt²/96 (**S**). At a = b = 1 s⁻¹ and 1 ms it is 3 × 10⁻⁸: negligible at
+     relative bias x*/x_eq − 1 is −a(a + 2b) dt²/96 (**S**). At a = b = 1 s⁻¹ and 1 ms it is 3 × 10⁻⁸: negligible at
      physiological rates, and measured by acceptance C4.
    - Mismatched rates pump against the gradient, with that work booked too.
 2. **Exchange is a driven route: a fall in free energy is booked as work, not heat.** Exchange
@@ -940,7 +948,7 @@ snapshot.
 | C1. Identity and refusals | Each refusal of §1.4 fires with its reason; the summary's identity block; a label change moves no binding (S2's guard) | Definitions |
 | C2. The declaration is pure identity (pending milestone 1) | §3.3's S5: the same world with and without the declaration traces to identical program text and constants, and identical bindings; every existing crossrev set is identical | Constants-aware crossrev (D148) |
 | C3. Loading with retention | Export only, flux and first-order: the engine equals the closed form to rounding (one exact stage); per-route reconciliation to rounding | A.2 |
-| C4. Two-way first-order exchange | The engine against the closed form within the registered dt-study tolerance; the splitting term identified as −a(a + 2b) dt²/96 at the fixed point; the engine against the iterated step map to rounding. C4's world declares no saturable route, so its stage plan is A.4's | A.3, A.4 |
+| C4. Two-way first-order exchange | The engine against the closed form within the registered dt-study tolerance; the splitting term identified as the fixed point's relative displacement, x*/x_eq − 1 = −a(a + 2b) dt²/96 (§2.3); the engine against the iterated step map to rounding. C4's world declares no saturable route, so its stage plan is A.4's | A.3, A.4 |
 | C5. Saturable release | The engine against the implicit closed form | A.5 |
 | C6. Degradation with loading | Exchange loading plus turnover clearance at the node: the linear two-node system with decay | A.6 |
 | C7. Reactions inside | Loading of S plus D152's first-order S → P at the node: a linear three-state system; D152's dt·L rule holds | A.7 |

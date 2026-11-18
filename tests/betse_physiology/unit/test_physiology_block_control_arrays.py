@@ -12,10 +12,10 @@ import pytest
 
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, parse_spec
-from cells.processes import global_controls as setters
 from tests.betse_physiology.unit.test_physiology_block_control_view import fixture, plain
 from tests.betse_physiology.unit.test_physiology_permeability_view import KINDS, exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_binding import arguments
+from validation.betse import global_controls as setters
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.models import physiology_block_control_view as host
 from validation.betse.physiology.numerics import physiology_block_control_arrays as arrays

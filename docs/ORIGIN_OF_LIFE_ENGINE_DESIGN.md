@@ -71,6 +71,113 @@ is such a term.
 | 9 | Selection (§5.2) | Moran replacement; a finite shared pool; serial transfer | **A finite pool and serial transfer.** Moran only for comparisons |
 | 10 | Verification (§7) | Kernel and closed-world proofs; the GARD limit; experimental anchors | **All three.** A1 and A4 judged; A2 reported until §7.4's question is settled (D138, U6) |
 
+### 0.2a The lead's rulings for OL1 (17 November 2026; D215)
+
+Three physical choices, ruled from this note and D199, not settled between the builder and the
+references. Both sides cite this subsection.
+- **Kinetics by phase.**
+  - Steps inside an assembly (a condensed phase) use counts on m: activities drawn without replacement,
+    with the extent evaluated on m (`membrane_kinetics: count_on_m`). An assembly has no volume until
+    OL2.
+  - Steps in a dilute phase (the pool or the lumen) are mass action scaled by physical volume (R1).
+  - OL2 adds the membrane's geometry as new token values. Existing values keep their meaning.
+- **The last molecule.** `last_molecule: extinct` covers a step in either direction whose result
+  empties the assembly. Its rate is the pair rule at the boundary, in its **cancelled** form.
+  - Written through F, with F(empty) = 0, the factor E(m) is zero, so a literal product would give
+    zero and the last molecule would never leave.
+  - Written on the leaving side, the rule is 0/0. Cancelling E(m)/ff(N−1, r) to 1/ff(N−1, r−1)
+    gives exactly G1's k⁻ for the last leave. A forward step that empties the assembly takes the
+    same cancelled form.
+  - A zero last-leave rate is therefore an error. There is no separate boundary formula.
+  - `kept` and `reversible` are as their tokens declare.
+  - (Amended the same evening, after a reading showed the literal form gives zero.)
+- **The empty common state** (amended the same evening, before any engine output was handed over).
+  - **Wherever the membrane factor is 0/0,** the cancelled form applies, under every `last_molecule`
+    token. That is the case when a step's common state m has an empty membrane while neither end
+    state does: a lone molecule changing form, or two joining.
+  - **It is the factor's continuous extension,** so detailed balance holds as for every other pair.
+  - **`last_molecule: kept`** gives rate zero only to a pair one of whose end states has an empty
+    membrane. That way the membrane never empties, and nothing else is frozen.
+  - **This replaces the earlier wording,** "a pair whose common state has an empty membrane has rate
+    0", which froze a lone molecule's reactions for no physical reason.
+- **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
+  phase is refused until a declared meaning exists, since its fraction would have to include the
+  solvent.
+- **The measure** (D215, which amends U6(a)):
+  - the GARD limit uses `multinomial_less_one` with `extinct`, which reproduces G1's rates exactly;
+  - physical worlds use `multinomial` with `kept`.
+
+  The line "G1's ideal-mixing exchange is its first instance" holds only with G1's ln N term.
+
+### 0.2b The lead's rulings for OL2 and OL3 (17 November 2026; reviewed with the advisor)
+
+The lead names each key and value here, so that neither side's draft leads. These rulings follow §2.5,
+§4, §5.2 and D199.
+
+1. **The exchange encounter: `exchange_encounter`, with no default.**
+   - Its values:
+     - `insertion_area`: extent k_ins·A(m);
+     - `diffusion_radius`: extent 4πD_i·R(m).
+   - Each world declares one. An anchor's choice belongs to its OL7 protocol.
+   - **A(m)** = Σ_i n_i(m)·a_L,i/2 over every member of the membrane phase. A membrane species
+     without a declared a_L is refused at parse.
+   - **R(m)** = (A(m)/4π)^(1/2), the area-equivalent radius. For a floppy vesicle (v < 1) this is a
+     declared approximation.
+   - **Steps inside the membrane** keep `membrane_kinetics: count_on_m` in OL2's first worlds.
+2. **The lumen, a dilute phase.**
+   - **Kinetic factors** (extents, and the activity normalisations ff/X^α) are evaluated on the
+     pair's common state m, with V(m) = min(V_osm(m), V_sph(A(m))).
+   - **ΔF is exact** between the two end states.
+   - **Admissibility** (lysis, rule 3; the floor, rule 4) is tested on the two end states, never on
+     m.
+   - **An empty lumen at m** takes the cancelled form, as in §0.2a.
+   - **N_imp** counts the declared impermeant solutes in the lumen.
+   - **c_ext,** the outside osmolarity, is held (declared constant) in OL2's first worlds. A world
+     that makes it follow a finite pool recomputes it at every pool event, so every assembly's F
+     updates. That is declared and costed.
+   - **The claims the references check** are cycle closure and the exact-F identity
+     (a⁻/a⁺ = e^(ΔF − w)). "The reverse equals the products' rule" is not claimed, because V moves.
+3. **Lysis is an ending with a recorded reason,** not a silent zero rate.
+   - An event whose end state takes a vesicle beyond its declared maximal tension σ_max fires and
+     ends the life with reason `lysed`.
+   - Its lumen contents and its membrane molecules return to the pool, with the release booked as
+     heat. Resealing fragments come later.
+   - **A daughter born beyond σ_max** (the lumen's split can make one tense) lyses at birth, and that
+     is recorded.
+   - **Stationarity references** use worlds that cannot reach lysis.
+   - **The tension** is σ = max(0, Δp·R/2), which is continuous and zero at the kink V_osm = V_sph,
+     since Δp = 0 there.
+4. **The vesicle floor: `vesicle_floor`, declared per world.**
+   - The value of N_floor is unsourced and marked so. It is not in this note.
+   - A step whose end state is below the floor has rate zero. That is a declared truncation of the
+     state space, and it stays reversible.
+   - A division is admitted only if every daughter is at or above the floor.
+   - **The closure cost** 8πκ + 4πκ̄ is constant per vesicle, so it enters no exchange rate, only a
+     division's ΔF. Its value is declared per world and unsourced.
+   - No micelle or droplet term enters OL2's first worlds.
+5. **Selection order** is a numerical convention, ruled only as a requirement.
+   - Each bundle declares its fold order (the pool's reactions, the assemblies, the channels) and its
+     map from uniform numbers to events. The oracle replays from that declaration.
+   - §5.2's two-level selection (an assembly by its total rate, then a channel within it) is exact in
+     distribution.
+   - After a fission, slot order and key order differ, so the declaration says which one is used.
+6. **Permeation:** a step between the pool and the lumen, with locus `membrane`.
+   - Its encounter is `permeation_area`, with extent P_i·A(m).
+   - Its activities are the pool's, by the pool's volume, and the lumen's, by V(m) (rule 2).
+7. **The membrane split at unequal areas per molecule is held for OL3's design check.** Any rule
+   must:
+   - sum the daughters' areas exactly to the parent's;
+   - reduce exactly to the multivariate hypergeometric when every a_L is equal;
+   - treat the daughters as exchangeable, so that no daughter is favoured by filling order.
+
+   The lumen's split must conserve its contents and treat the daughters as exchangeable.
+8. **The singular rate** under `condensed_measure: multinomial_less_one` (a step with a membrane
+   place on both sides, which is +inf at N = r) is admitted only in a world whose declared role is a
+   probe (`world_role: probe`). There the probe reports +inf. Any other world declaring such a step is
+   refused at parse.
+   - `world_role` is optional, and `probe` is its only value. A world without it is an ordinary world.
+   - A probe world may still be run. A run that reaches N = r stops `stalled`.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.

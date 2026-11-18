@@ -168,6 +168,10 @@ the [project README](../README.md) gives the short feature overview.
   FCS-calibrated counts as an abundance-evidence standard for the protein catalogue.
 - [Bone mechanosensing review](PAPER_REVIEW_BONE_MECHANOSENSING.md) reads Zhang et al.'s abstract
   for Cells: mechanically gated conductance and state-dependent secretion as deferred features.
+- [Gap-junction cancer replication](GAP_JUNCTION_CANCER_REPLICATION.md) specifies Grodstein,
+  Mathews and Levin's bioRxiv preprint, runs its linear model (as written and as its Norton
+  equivalent) and its 1D "neither" condition on the engine, and lists the engine features its
+  tissue simulations need (development, not judged).
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

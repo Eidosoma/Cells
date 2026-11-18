@@ -26,6 +26,80 @@ the evidence that closes each gate.
 - The order of the ROADMAP's current priorities 7–9: division, the protein catalogue and
   Golgi/trafficking. Their content stays.
 
+## Status on 17 November 2026, and the core-completion lane (D214)
+
+**Landed on main, 17 November:**
+- **The law and operator registries,** the static model table and family operators (seam F).
+- **The declarations manifest `cells.declarations@2`** with its format page, and the first
+  plain-language library pages (D203).
+- **The run-view writer's reach,** with `local_species_reactions@1` declaring its view, and the
+  relationship tables `cells.relations@1` (D200, D202).
+- **FR-4's and FR-5's registered protocols,** judged and passed: 21 of 21 and 51 of 51 criteria,
+  tags fr4/fr5-v1-qualified-2026-11-17, qualified within their scope.
+- **GARD's G1** (D192, D197) and the gap-junction replication's first stage (D207): development work,
+  not judged.
+- **FR-19's fix:** the passive routes' heat-share floor.
+
+**Still incomplete, kept visible until their acceptance cases pass:**
+- **The module system's stage 1** (D185): one separately installed module that registers, builds,
+  runs, contributes checks and observations, and checkpoints and resumes, with Cells' source
+  unchanged.
+- **Executable levels of detail:** D175's four fields are refused at registration.
+
+**Gate wording.** A gate passes when it shows **0 changed against the recorded baseline**. That is
+not the same as all tests passing. In the baseline, 35 of tier 1's 353 rows and 5 of tier 2's 161
+rows have failing or erroring tests, and there are 5 collection errors.
+
+**The core-completion lane (D214).** An external adviser's architecture follow-up, reviewing main
+b661cd1a, was forwarded by the user. Their instruction: "two fixes then backlog".
+1. **Two extension-boundary fixes, now** (branch `core-boundary-checks`). They are an exception to
+   D195's "code follows move 2".
+   - **A kind writes only its own resolved, declared fields.** This applies to its initial values,
+     derivatives and control outputs, with planted foreign-write refusals at construction and
+     tracing boundaries.
+   - **More than 31 model checks are refused at admission.** The vector failure mask packs them into
+     an int32 from bit 1. The last supported and the first unsupported configurations are tested.
+2. **The shared physical interfaces through their consumers.** These are seams A (cycles), B
+   (populations), C (binding), D (heat booking) and E (finite fuel's core part; moieties), each
+   with one mechanism owner (`docs/CORE_SEAMS_DESIGN.md`).
+   - Seam C takes the buffered-state predictor correction (§17), with P1's convergence and ledger
+     checks rerun.
+   - **New acceptance case, unestimated:** the first finite-fuel acceptance shows depletion,
+     regeneration and recovery through shared ATP, ADP and Pi, with a consuming pump.
+3. **The module system's stage 1, with one installed external module** (D185,
+   `docs/MODULE_SYSTEM_DESIGN.md`). New to the lane, unestimated.
+   - The built model freezes the component resolution it used, as the AGENTS.md provenance rules
+     allow: no per-call or bytecode attestation, and no hash literals.
+   - Unused-module invariance extends to a world that uses a real kind.
+   - **Low priority** (the user, D214), and with it D195's question of a public stability promise.
+4. **The minimal static level-of-detail contract.** D175's four fields are designed together for
+   fuel, machines and mitochondrial hosts. Requirements are in ARCHITECTURE.md, "Levels of detail".
+   - Finite fuel is the first executable consumer: a reduced regeneration closure against a small
+     detailed network, with the envelope and error budgets declared first, and an out-of-envelope
+     refusal.
+   - Selection is fixed before a run.
+   - The executable comparison is new and unestimated.
+   - **The user agreed** that it comes before machines' M1a (D214).
+5. **General composition through D191's declared-read rule:** current volume, area, activity masks
+   and population capacity, proved with an independent additional operator. Explicit refusals stay.
+6. **The packed GPU qualification on the merged core** (§ "Status on 14 November", item 4;
+   `docs/PACKED_GPU_EXECUTION_DESIGN.md`).
+   - It reports packed repeatability, packed against lone agreement, and throughput, each
+     separately, with scales and limits frozen before held-out judgment.
+   - Ensemble throughput, coupled-world size and biological duration stay separate milestones.
+   - It needs the L4, so it is announced to the visualizer and kept off demo hours. New to the lane,
+     unestimated.
+7. **Precise reporting.** This section is the refresh. Owed at the final-tree checkpoint: the D172
+   restructure's G3 negative controls and G4 measurements (compile time, memory, end-to-end time),
+   as recorded above and in PROGRESS.
+
+**The order:**
+1. The two fixes.
+2. The retire (D198) and move 2.
+3. The pass, with about four owners (D213). Item 4 runs ahead of machines' M1a.
+4. Item 6, as the L4 allows.
+5. Item 3 last, at low priority.
+
 ## Status on 14 November 2026, and the working order (D156)
 
 Levels: *implemented* (on main), *guarded* (tests, crossrev and frozen-model guards),
@@ -44,7 +118,7 @@ experiment).
 | Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)). The operator contract's view interface landed with D172's round (16 November); the operators' declarations and the writer (`cells.run_view@1`) merged into main the same evening, with FR-11's first looping development run (PROGRESS) |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November). Its [design note](HUMAN_CARDIAC_LAWS_DESIGN.md) is proposed and on main since 16 November, and its choices are recorded in D184: O'Hara–Rudy 2011's endocardial cell, with the whole-cell comparison approved. Engine work starts after the landing |
-| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), and FR-5's source kinds, refusal 4 version 1.2 and refusal 5 version 1.1 merged with fr45-next the same evening, all for development, not judged. Their protocols, `fr4-acidification-v1` and `fr5-transfer-v1`, are registered (17 November 2026), not yet judged |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), and FR-5's source kinds, refusal 4 version 1.2 and refusal 5 version 1.1 merged with fr45-next the same evening, all for development, not judged. Their protocols, `fr4-acidification-v1` and `fr5-transfer-v1`, are registered and judged (17 November 2026): both passed, 21 of 21 and 51 of 51 judged criteria. FR-10's protocol, `fr10-dose-schedule-v1`, is registered and judged the same night: passed, 31 of 31. FR-1's, `fr1-closed-compartment-v1` (exchange's first judged acceptance), is registered and judged on 18 November: passed, 44 of 44. FR-3's, `fr3-site-occupancy-v1` (`site_occupancy@1`'s first judged acceptance), is registered and judged the same day: passed, 51 of 51. FR-6's A5″, `fr6-a5pp-v1` (the channel driven through the regulatory state from a per-cell prior), follows the same day: passed, 18 of 18 |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **Landed on 16 November** (tag `d172-landed-2026-11-16`, merge ab267c39 of candidate 3c10b833). It passed the results gate, crossrev, tiers 1–3 (every non-passing tier-3 file classified, none the round's), G2 and the L4 block; the records are in PROGRESS. The lanes built on it merged the same evening, each after its own gate: core-next, windows (the packed planner's seams and opt-in device row checks; the planner itself merges after its own gate), fr45-next, the run view and core-fixes. G1 has since run at core-next, at core-fixes and on main a83d8f15, 113 of 113 each. G2, the affected registered protocols, ran at the landing and is not repeated per lane: a lane whose G1 is bitwise moves no registered result. G3's negative controls and G4's measurements are owed, and run with tier 3 on D188's final tree (D194) |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | The kind and species registries landed with D172 (16 November). The model-level declarative registry and the one production path are not started. D147's policy for composite definitions landed on 14 November |

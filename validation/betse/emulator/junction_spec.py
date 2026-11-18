@@ -1,6 +1,6 @@
 """Emulator: portable inputs for the native per-moving-ion dynamic-junction law.
 
-Moved from the engine (cells.core.betse_junction_spec) on 8 November 2026 (D131).
+Moved from the engine's core package (its betse_junction_spec module) on 8 November 2026 (D131).
 """
 
 import copy

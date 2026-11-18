@@ -1,5 +1,16 @@
 # Site occupancy: binding sites as owned state (design)
 
+**Qualified, 18 November 2026.** The registered protocol `fr3-site-occupancy-v1`
+(`validation/tissue/site_occupancy_acceptance_protocol.json`, registered at 1b838d75) was judged
+once from a clean snapshot of that commit: passed, 51 of 51 judged criteria (Q1 to Q6 with their
+controls and plants), against the code-blind references (`validation/fr3/references`). It is
+`site_occupancy@1`'s first judged acceptance. Its scope is version 1's face-free first acceptance
+(§8.3) as built there: one neutral, impermeant ligand, patch populations outward and inward,
+site-conserving internalisation and a static α, ARS(2,2,2) at the declared 1 ms with q1_fast on
+1, 0.5 and 0.25 ms. Contact populations in a run, composition with D150's or D152's operators,
+faces, RK4 and site occupancy beside a bath schedule are not shown. The engine's own energy check
+does not refuse the planted work error; the judge's closure catches it (FR-18).
+
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** It uses D152's unsplit SSPRK(3,3) with the per-route hybrid; the palindrome was measured and rejected. α is static in version 1. The day-one guard is judged against an independent integration of the full kinetics.
 
 **Milestone 1 landed on main, 15 November 2026 (§12; tier 1 and 2 at the merge a917d72).** Stage A, the contract fit, and stage B, the half-step with its bookings and guards, landed with it. Every host check holds on every row of the face-free world, passive-only and mixed; three planted corruptions fail them; idle is bitwise; restart is bitwise; the stage condition refuses dt L > 1 at run time. The integrator duplicates D152's numerical block, a consolidation item for D172's round. The references, the protocol and its judged run are not part of it.

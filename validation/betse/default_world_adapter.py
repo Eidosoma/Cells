@@ -59,10 +59,8 @@ from validation.betse import betse_reference_run as reference_run  # noqa: E402
 from validation.betse import cells_betse_compare as compare  # noqa: E402
 
 PHASES = ("init", "sim")
-# Sources a run executes, frozen by ``snapshot`` (checkout path -> same snapshot path).
-EXECUTED = (
-    "src/cells/__init__.py",
-    "src/cells/processes/__init__.py",
+# The engine modules a run executes.
+ENGINE_MODULES = (
     "src/cells/processes/electrochemistry.py",
     "src/cells/processes/junction_gate.py",
     "src/cells/processes/kinetic_pump.py",
@@ -70,6 +68,25 @@ EXECUTED = (
     "src/cells/processes/plasma_calcium.py",
     "src/cells/processes/calcium_atpase.py",
     "src/cells/processes/voltage_gates.py",
+)
+
+
+def package_files(modules):
+    """The package files that importing `modules` executes, outermost first, each once."""
+    out = []
+    for module in modules:
+        parts = Path(module).parent.parts  # ("src", "cells", ...)
+        for depth in range(2, len(parts) + 1):
+            init = "/".join((*parts[:depth], "__init__.py"))
+            if init not in out:
+                out.append(init)
+    return tuple(out)
+
+
+# Sources a run executes, frozen by ``snapshot`` (checkout path -> same snapshot path).
+EXECUTED = (
+    *package_files(ENGINE_MODULES),
+    *ENGINE_MODULES,
     "validation/source_snapshot.py",
     "validation/betse/default_world_adapter.py",
     "validation/betse/cells_betse_compare.py",

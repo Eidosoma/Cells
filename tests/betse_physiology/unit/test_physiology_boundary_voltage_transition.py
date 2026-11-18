@@ -14,7 +14,6 @@ from cells.core.schedule import control_values, event_index
 from cells.core.specs import ConfigError, digest, parse_spec
 from cells.core.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import global_controls as setters
 from tests.betse_physiology.unit.test_physiology_boundary_voltage import (
     KINDS,
     SIDES,
@@ -22,6 +21,7 @@ from tests.betse_physiology.unit.test_physiology_boundary_voltage import (
     plain,
 )
 from tests.betse_physiology.unit.test_physiology_tissue_binding import definition
+from validation.betse import global_controls as setters
 from validation.betse.physiology import physiology_boundary_voltage_transition_io as storage
 from validation.betse.physiology.core import physiology_boundary_voltage as boundary
 from validation.betse.physiology.core import physiology_boundary_voltage_transition as ramps

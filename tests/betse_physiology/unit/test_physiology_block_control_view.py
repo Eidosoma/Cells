@@ -11,7 +11,6 @@ import pytest
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
 from cells.numerics.fixed_step import rk4_step
-from cells.processes import global_controls as setters
 from tests.betse_physiology.unit.test_physiology_permeability_view import (
     KINDS,
     case,
@@ -20,6 +19,7 @@ from tests.betse_physiology.unit.test_physiology_permeability_view import (
     readouts,
 )
 from tests.betse_physiology.unit.test_physiology_tissue_binding import arguments, definition
+from validation.betse import global_controls as setters
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.models import physiology_block_control_view as blocks

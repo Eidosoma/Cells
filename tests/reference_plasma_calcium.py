@@ -1,39 +1,17 @@
 """Independent scalar plasma rates/scatter on the spatial calcium reference.
 
-No Cells or JAX imports. Native PMCA extraction is bound to the pinned source;
-scalar NCX uses direct forward/reverse products, unlike production log kinetics.
+No Cells or JAX imports. The pinned PMCA runs out of process (reference_er_calcium.
+native_capture); scalar NCX uses direct forward/reverse products, unlike production
+log kinetics.
 """
 
-import ast
-import hashlib
 import math
-import os
 from bisect import bisect_right
-from pathlib import Path
 
 import numpy as np
 
 from tests import reference_spatial_calcium as base
-from tests.reference_er_calcium import NATIVE_HASHES, F, R
-
-
-def native_pmca():
-    root = Path(
-        os.environ.get("CELLS_ER_NATIVE_SOURCE", "/mnt/workspaces/Cells/betse-v1.5.0/betse/science")
-    )
-    path = root / "sim_toolbox.py"
-    data = path.read_bytes()
-    if hashlib.sha256(data).hexdigest() != NATIVE_HASHES[path.name]:
-        raise ValueError("Pinned PMCA source changed")
-    tree = ast.parse(data)
-    functions = [
-        n
-        for n in tree.body
-        if isinstance(n, ast.FunctionDef) and n.name in ("pumpCaATP", "no_negs")
-    ]
-    namespace = {"np": np, "BetseSimUnstableException": ValueError}
-    exec(compile(ast.Module(body=functions, type_ignores=[]), str(path), "exec"), namespace)
-    return namespace["pumpCaATP"]
+from tests.reference_er_calcium import F, R
 
 
 def scalar_rates(ni, no, ci, co, voltage, temperature, pump, exchanger, availability):

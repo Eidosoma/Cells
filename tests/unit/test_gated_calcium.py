@@ -7,7 +7,6 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
 
 import jax
 import numpy as np
@@ -35,7 +34,7 @@ from tests.reference_gated_calcium import (
     F,
     R,
     System,
-    native_channel,
+    native_cav1p2,
     physical_energy_derivative,
     reference,
     scalar_flux,
@@ -73,28 +72,37 @@ def evidence(name, record=None, arrays=None):
 
 def test_native_cav1p2_units_shift_powers_and_held_voltage():
     voltage = np.array([-0.12, -0.08, -0.06, -0.02, 0.0, 0.06])
-    native, update = native_channel()
-    native._init_state(1000 * voltage)
-    native._calculate_state(1000 * voltage)
-    expected = np.stack((native._mInf, native._hInf))
-    tau = np.stack((native._mTau, native._hTau)) / native.time_unit
+    steps = (0.001, 0.0005, 0.00025)
+    # The pinned Cav1p2 and its clock, run unmodified out of process (AGENTS.md).
+    native = native_cav1p2(voltage, 0.4, steps, 0.004)
+    expected = np.array((native["m_inf"], native["h_inf"]))
+    tau = np.array((native["m_tau"], native["h_tau"])) / native["time_unit"]
     actual, periods = process.kinetics(voltage, xp=np)
     np.testing.assert_allclose(actual, expected, rtol=3e-14, atol=3e-16)
     np.testing.assert_allclose(periods, tau, rtol=3e-14, atol=3e-16)
-    np.testing.assert_allclose(np.stack((native.m, native.h)), actual, rtol=3e-14, atol=3e-16)
-    assert (native._mpower, native._hpower) == (2, 1)
+    initial = np.array((native["initial"]["m"], native["initial"]["h"]))
+    np.testing.assert_allclose(initial, actual, rtol=3e-14, atol=3e-16)
+    # The same law's independent scalar form (the source's mV and ms expressions, direct).
+    independent = [scalar_kinetics(x) for x in voltage]
+    np.testing.assert_allclose(
+        actual, np.array([t for t, _ in independent]).T, rtol=3e-14, atol=3e-16
+    )
+    np.testing.assert_allclose(
+        periods, np.array([s for _, s in independent]).T, rtol=3e-14, atol=3e-16
+    )
+    m_power, h_power = native["powers"]
+    assert (m_power, h_power) == (2, 1)
     gate = np.full((2, len(voltage)), 0.4)
     np.testing.assert_array_equal(
-        process.open_probability(gate), gate[0] ** native._mpower * gate[1] ** native._hpower
+        process.open_probability(gate), gate[0] ** m_power * gate[1] ** h_power
     )
     # Native is semi-implicit; its refinement must approach the continuous law.
-    errors = []
-    for dt in (0.001, 0.0005, 0.00025):
-        native.m, native.h = gate.copy()
-        for _ in range(round(0.004 / dt)):
-            update(native, SimpleNamespace(dt=dt), time_unit=native.time_unit)
-        exact = expected + (gate - expected) * np.exp(-0.004 / tau)
-        errors.append(float(np.max(np.abs(np.stack((native.m, native.h)) - exact))))
+    assert tuple(clock["dt_s"] for clock in native["clocks"]) == steps
+    exact = expected + (gate - expected) * np.exp(-0.004 / tau)
+    errors = [
+        float(np.max(np.abs(np.array((clock["m"], clock["h"])) - exact)))
+        for clock in native["clocks"]
+    ]
     assert errors[0] / errors[1] > 1.8 and errors[1] / errors[2] > 1.8
     with jax.default_device(execution_device(BACKEND)):
         compiled = jax.jit(process.kinetics)(voltage)
@@ -112,6 +120,8 @@ def test_native_cav1p2_units_shift_powers_and_held_voltage():
             "voltage_shift_V": -0.010,
             "powers": [2, 1],
             "native_discrete_refinement_errors": errors,
+            "native_capture": "out of process: validation/betse/calcium_functions_native.py",
+            "independent_kinetics": "tests/reference_gated_calcium.scalar_kinetics",
             "scope": (
                 "Pinned targets/time constants and powers; "
                 "continuous Cells ODE differs from native discrete updater"

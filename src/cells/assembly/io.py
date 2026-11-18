@@ -24,10 +24,14 @@ def digest(path):
     return value.hexdigest()
 
 
+# The shared output-path policy, relative to the cells package. Its key in the identity is derived
+# from the same string as the file read, so a move of the policy changes both together.
+OUTPUT_POLICY = "core/output_paths.py"
+
+
 def source_identity():
     result = {p.name: digest(p) for p in sorted(Path(__file__).parent.glob("*.py"))}
-    policy = Path(__file__).parents[1] / "core/output_paths.py"
-    result["../core/output_paths.py"] = digest(policy)
+    result["../" + OUTPUT_POLICY] = digest(Path(__file__).parents[1] / OUTPUT_POLICY)
     return result
 
 

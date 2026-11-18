@@ -131,7 +131,26 @@
   "/mnt/workspaces/Cells/law-library-20261117/measure-08ce2f71/measured.json",
   "/mnt/workspaces/Cells/reactions-run-view-20261117/measure-9551d1ba/measured.json",
   "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c5f41796/measured.json",
-  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json"
+  "/mnt/workspaces/Cells/gard-g1-part2-20261117/measure-c6dd5956/measured.json",
+  "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
+  "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
+  "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
+  "/mnt/workspaces/Cells/fr10-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr10-references-20261117/measure-02/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-258d2be7/measured.json",
+  "/mnt/workspaces/Cells/core-boundary-checks-20261117/measure-0298b49f/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-02/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
+  "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
+  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
+  "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-references-20261118/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-a5pp-20261118/tiers-e8f70a44/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1084,6 +1103,140 @@
    "root": ".claude/worktrees/gard-g1-merge",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T17:10:48+00:00"
+  },
+  {
+   "git_revision": "ace7eb3ab2cb115612d642d9daacaf68e1d5f249",
+   "dirty": false,
+   "root": ".claude/worktrees/passive-share-tolerance",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T19:31:52+00:00"
+  },
+  {
+   "git_revision": "ea8a62a7400e0785368aecd47aa8f4b98457e91c",
+   "dirty": false,
+   "root": ".claude/worktrees/gard-g2-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:28:46+00:00"
+  },
+  {
+   "git_revision": "e04fa95fe1b6f2ef0b4cabd11034416269eb690c",
+   "dirty": true,
+   "patch_sha256": "774f4e7fde5665531350373eeee7fb2c8a1cd361abe2231032818f7a0b9a148e",
+   "root": "/mnt/workspaces/Cells/d198-retire-20261117/snapshot-staged-e04fa95f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T13:11:06+00:00"
+  },
+  {
+   "git_revision": "7e27b9e12de06531fcf15c25c2b1377a2ffcfef3",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:48:18+00:00"
+  },
+  {
+   "git_revision": "012a3e7edb66c7c673e8c8e0ed6e609b0d8ba26c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:52:45+00:00"
+  },
+  {
+   "git_revision": "e8c45bcb6753c8feca32ad7a45698a5e625ae2d2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:24:30+00:00"
+  },
+  {
+   "git_revision": "258d2be799e17df3abcc5474418c1f419234fcda",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:41:56+00:00"
+  },
+  {
+   "git_revision": "0298b49ff75c46496decae29ad22b7e0f6f16a60",
+   "dirty": false,
+   "root": ".claude/worktrees/core-boundary-checks",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:05:25+00:00"
+  },
+  {
+   "git_revision": "d83f5365751dd7ad40ca582877cbc59a95dc18ac",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:20:05+00:00"
+  },
+  {
+   "git_revision": "707bf3388d7272fa909a8002515c9575bfa56117",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:30:42+00:00"
+  },
+  {
+   "git_revision": "0cbb1acc84c53f14e464b8b8402585d56c3bcee5",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:53:40+00:00"
+  },
+  {
+   "git_revision": "09fa5daf94b5c783984e916522ce02c1c5d377f2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:39:25+00:00"
+  },
+  {
+   "git_revision": "7ec2d78cb8cfebeeffde88f1ae4bdc2bad8abc9b",
+   "dirty": false,
+   "root": ".claude/worktrees/passive-share-band",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:50:04+00:00"
+  },
+  {
+   "git_revision": "a085126b53f12ebad8b6264251c037500d8f0a68",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/d188-m2-prep-20261117/trees/head-a085126b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:33+00:00"
+  },
+  {
+   "git_revision": "992ce38510770949ffc162ce468ce3e0df2e707c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:21+00:00"
+  },
+  {
+   "git_revision": "bc287a20ab3b336d487a1bac145648b64748a72a",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:13:18+00:00"
+  },
+  {
+   "git_revision": "a06d46f015181246ec680026856cd6fcfd07f195",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:29:51+00:00"
+  },
+  {
+   "git_revision": "ee1d89157e277ca380d9799e626fdde721083aa6",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T00:07:25+00:00"
+  },
+  {
+   "git_revision": "e8f70a44be6e22e10b1bc4f797f609307000b84c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-a5pp-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T03:01:30+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1365,14 +1518,6 @@
     }
    },
    {
-    "file": "tests/unit/test_active_polygon_semantic_contract.py",
-    "seconds": 0.62,
-    "exit_code": 0,
-    "counts": {
-     "passed": 28
-    }
-   },
-   {
     "file": "tests/unit/test_apical_vertex.py",
     "seconds": 15.81,
     "exit_code": 0,
@@ -1397,6 +1542,22 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_inheritance.py",
+    "seconds": 5.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_keys.py",
+    "seconds": 15.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_ledger.py",
     "seconds": 11.26,
     "exit_code": 0,
@@ -1407,6 +1568,14 @@
    {
     "file": "tests/unit/test_assembly_lineages_records.py",
     "seconds": 12.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_registration.py",
+    "seconds": 13.49,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -1667,6 +1836,14 @@
     }
    },
    {
+    "file": "tests/unit/test_blas_import_pin.py",
+    "seconds": 6.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
     "file": "tests/unit/test_blas_threads.py",
     "seconds": 3.22,
     "exit_code": 0,
@@ -1780,30 +1957,6 @@
     }
    },
    {
-    "file": "tests/unit/test_charged_surface_backend.py",
-    "seconds": 0.82,
-    "exit_code": 5,
-    "counts": {
-     "skipped": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_charged_surface_repository.py",
-    "seconds": 0.82,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_charged_surface_work.py",
-    "seconds": 0.47,
-    "exit_code": 5,
-    "counts": {
-     "skipped": 1
-    }
-   },
-   {
     "file": "tests/unit/test_cleft_egg_engine.py",
     "seconds": 19.0,
     "exit_code": 0,
@@ -1892,25 +2045,8 @@
     }
    },
    {
-    "file": "tests/unit/test_conservative_polygon_geometry.py",
-    "seconds": 13.91,
-    "exit_code": 1,
-    "counts": {
-     "failed": 12,
-     "passed": 32
-    }
-   },
-   {
-    "file": "tests/unit/test_conservative_polygon_tissue_preparation.py",
-    "seconds": 0.92,
-    "exit_code": 1,
-    "counts": {
-     "failed": 19
-    }
-   },
-   {
     "file": "tests/unit/test_continuity_bypass.py",
-    "seconds": 16.16,
+    "seconds": 10.54,
     "exit_code": 0,
     "counts": {
      "passed": 17
@@ -1918,18 +2054,18 @@
    },
    {
     "file": "tests/unit/test_continuity_loaders.py",
-    "seconds": 15.0,
+    "seconds": 12.6,
     "exit_code": 0,
     "counts": {
-     "passed": 54
+     "passed": 60
     }
    },
    {
     "file": "tests/unit/test_continuity_tools.py",
-    "seconds": 7.99,
+    "seconds": 6.03,
     "exit_code": 0,
     "counts": {
-     "passed": 21
+     "passed": 22
     }
    },
    {
@@ -2201,12 +2337,131 @@
     }
    },
    {
-    "file": "tests/unit/test_fixed_polygon_removal.py",
-    "seconds": 0.72,
+    "file": "tests/unit/test_fr10_qualification.py",
+    "seconds": 2.37,
     "exit_code": 0,
     "counts": {
-     "passed": 2,
-     "skipped": 29
+     "passed": 31
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_reference_inputs.py",
+    "seconds": 1.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_design.py",
+    "seconds": 6.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_faces.py",
+    "seconds": 1.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_harness.py",
+    "seconds": 9.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_ion.py",
+    "seconds": 4.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_records.py",
+    "seconds": 3.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_qualification.py",
+    "seconds": 3.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_reference_inputs.py",
+    "seconds": 1.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_design.py",
+    "seconds": 11.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_forms.py",
+    "seconds": 1.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_worlds.py",
+    "seconds": 4.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_acceptance_worlds.py",
+    "seconds": 4.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_qualification.py",
+    "seconds": 2.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 57
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_forms.py",
+    "seconds": 5.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_worlds.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
@@ -2258,6 +2513,22 @@
     }
    },
    {
+    "file": "tests/unit/test_fr6_a5pp_qualification.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_references_a5pp.py",
+    "seconds": 7.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_frozen_resource_dependencies.py",
     "seconds": 0.62,
     "exit_code": 0,
@@ -2266,11 +2537,27 @@
     }
    },
    {
-    "file": "tests/unit/test_gard_references_harness.py",
-    "seconds": 12.45,
+    "file": "tests/unit/test_gard_references_engine_layout.py",
+    "seconds": 1.57,
     "exit_code": 0,
     "counts": {
-     "passed": 48
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_ensemble_design.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_gard_references_harness.py",
+    "seconds": 13.11,
+    "exit_code": 0,
+    "counts": {
+     "passed": 49
     }
    },
    {
@@ -2283,10 +2570,10 @@
    },
    {
     "file": "tests/unit/test_gard_references_row03_04.py",
-    "seconds": 4.18,
+    "seconds": 5.38,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 14
     }
    },
    {
@@ -2512,6 +2799,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_foreign_writes.py",
+    "seconds": 4.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
     "file": "tests/unit/test_kind_rules.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -2577,7 +2872,7 @@
    },
    {
     "file": "tests/unit/test_legacy_entry.py",
-    "seconds": 5.28,
+    "seconds": 3.67,
     "exit_code": 0,
     "counts": {
      "passed": 19
@@ -2913,6 +3208,14 @@
     }
    },
    {
+    "file": "tests/unit/test_passive_share_floor.py",
+    "seconds": 19.86,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
     "file": "tests/unit/test_phase_records.py",
     "seconds": 8.92,
     "exit_code": 0,
@@ -3075,58 +3378,10 @@
    },
    {
     "file": "tests/unit/test_rectangular_current_coupling.py",
-    "seconds": 0.87,
+    "seconds": 0.52,
     "exit_code": 0,
     "counts": {
-     "passed": 12
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_current_transfer.py",
-    "seconds": 0.87,
-    "exit_code": 0,
-    "counts": {
-     "passed": 33
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_current_transfer_jax.py",
-    "seconds": 7.35,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment.py",
-    "seconds": 0.77,
-    "exit_code": 0,
-    "counts": {
-     "passed": 23
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_conduction.py",
-    "seconds": 0.72,
-    "exit_code": 0,
-    "counts": {
-     "passed": 44
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_iterative.py",
-    "seconds": 0.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 57
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_metric.py",
-    "seconds": 0.77,
-    "exit_code": 0,
-    "counts": {
-     "passed": 24
+     "passed": 1
     }
    },
    {
@@ -3135,14 +3390,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 60
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_stencil.py",
-    "seconds": 0.77,
-    "exit_code": 0,
-    "counts": {
-     "passed": 27
     }
    },
    {
@@ -3563,14 +3810,6 @@
     }
    },
    {
-    "file": "tests/unit/test_stable_geometry_primitives.py",
-    "seconds": 9.56,
-    "exit_code": 0,
-    "counts": {
-     "passed": 84
-    }
-   },
-   {
     "file": "tests/unit/test_stable_initial_mesh_summary.py",
     "seconds": 0.72,
     "exit_code": 0,
@@ -3584,41 +3823,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
-    }
-   },
-   {
-    "file": "tests/unit/test_stable_mesh_physical_reconstruction.py",
-    "seconds": 8.49,
-    "exit_code": 0,
-    "counts": {
-     "passed": 33
-    }
-   },
-   {
-    "file": "tests/unit/test_stable_seed_partition_advance.py",
-    "seconds": 0.78,
-    "exit_code": 1,
-    "counts": {
-     "failed": 6,
-     "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_stable_seed_partition_advance_refinement.py",
-    "seconds": 0.92,
-    "exit_code": 1,
-    "counts": {
-     "failed": 13,
-     "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_stable_seed_partition_trajectory.py",
-    "seconds": 1.98,
-    "exit_code": 1,
-    "counts": {
-     "failed": 36,
-     "passed": 2
     }
    },
    {
@@ -3879,6 +4083,14 @@
     }
    },
    {
+    "file": "tests/unit/test_vector_failure_mask.py",
+    "seconds": 15.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
+    }
+   },
+   {
     "file": "tests/unit/test_voltage_gated_artifact_audit.py",
     "seconds": 0.57,
     "exit_code": 0,
@@ -3909,30 +4121,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_inheritance.py",
-    "seconds": 5.68,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_keys.py",
-    "seconds": 15.7,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_registration.py",
-    "seconds": 13.49,
-    "exit_code": 0,
-    "counts": {
-     "passed": 4
     }
    }
   ],
@@ -4154,11 +4342,59 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_arms.py",
+    "seconds": 29.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_checkpoints.py",
+    "seconds": 20.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_fission.py",
+    "seconds": 22.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_freeze.py",
+    "seconds": 22.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
     "seconds": 30.83,
     "exit_code": 0,
     "counts": {
      "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_population.py",
+    "seconds": 34.65,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_relations.py",
+    "seconds": 27.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -4243,14 +4479,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_fission.py",
-    "seconds": 22.01,
-    "exit_code": 0,
-    "counts": {
-     "passed": 13
     }
    },
    {
@@ -4729,30 +4957,6 @@
     }
    },
    {
-    "file": "tests/unit/test_rectangular_current_coupling_jax.py",
-    "seconds": 20.81,
-    "exit_code": 0,
-    "counts": {
-     "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_conduction_jax.py",
-    "seconds": 30.49,
-    "exit_code": 0,
-    "counts": {
-     "passed": 14
-    }
-   },
-   {
-    "file": "tests/unit/test_rectangular_environment_jax.py",
-    "seconds": 21.1,
-    "exit_code": 0,
-    "counts": {
-     "passed": 15
-    }
-   },
-   {
     "file": "tests/unit/test_run_view.py",
     "seconds": 57.61,
     "exit_code": 0,
@@ -4950,14 +5154,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_stable_seed_control_volumes.py",
-    "seconds": 45.74,
-    "exit_code": 0,
-    "counts": {
-     "passed": 41
     }
    },
    {
@@ -5194,46 +5390,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_arms.py",
-    "seconds": 29.04,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_checkpoints.py",
-    "seconds": 20.77,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_freeze.py",
-    "seconds": 22.37,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_population.py",
-    "seconds": 34.65,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_lineages_relations.py",
-    "seconds": 27.48,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
     }
    }
   ],
@@ -5497,19 +5653,7 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_active_ecm_polygon_preparation.py",
-    "seconds": 90.01,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_active_membrane_profile_phase_handoff.py",
-    "seconds": 90.03,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_active_polygon_physiology_preparation.py",
     "seconds": 90.03,
     "exit_code": null,
     "counts": {}
@@ -5723,12 +5867,6 @@
    {
     "file": "tests/unit/test_field_propagation.py",
     "seconds": 90.27,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_finite_ecm_polygon_preparation.py",
-    "seconds": 90.02,
     "exit_code": null,
     "counts": {}
    },
@@ -6103,24 +6241,6 @@
    {
     "file": "tests/unit/test_species_regulated_availability_regression.py",
     "seconds": 90.25,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_stable_mesh_metric_reconstruction.py",
-    "seconds": 90.01,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_stable_mesh_operator_reconstruction.py",
-    "seconds": 90.01,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_stable_seed_explicit_ecm_partition.py",
-    "seconds": 90.01,
     "exit_code": null,
     "counts": {}
    },

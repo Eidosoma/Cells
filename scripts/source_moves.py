@@ -7,13 +7,17 @@ in the files in scope, and only those references:
     the move would change becomes absolute);
   - attribute chains of a module imported without an alias (`pkg.mod.name`);
   - dotted module paths in strings and comments, with or without an attribute after them
-    (mock targets, `-m` arguments, `module:function` entry points);
+    (mock targets, `-m` arguments, `module:function` entry points); a `from PKG import X` in
+    free text (a program in a string with escapes, a comment) maps X by X's own new home when X
+    is a moved module, as a Python from-import is mapped, not by PKG's;
   - file paths of moved modules in strings and comments, as `src/cells/<path>.py`, `cells/<path>`
     or a path relative to src/cells that starts with one of its folders.
 A file the rewrite changed then gets ruff's import sorting (`--select I --fix`) and nothing else.
 Nothing else is edited: no formatting, no hand edits. Strings that build a module path at run
 time (a package prefix ending in a dot, an f-string) cannot be rewritten; scan lists them as
-hazards and apply refuses a map that a hazard reaches.
+hazards and apply refuses a map that a hazard reaches. A package the map lists under "dissolve"
+loses its package file (a docstring only) when every other file in its folder moves away; nothing
+may name that package afterwards. cells.modules is reserved: no map moves into or out of it.
 
 Scope: tracked files under src/, tests/, validation/, scripts/ and examples/ (Python, and the
 shell, TOML and config files there), and pyproject.toml. Left alone: everything else (docs,
@@ -70,6 +74,17 @@ PATH = re.compile(
 )
 
 
+# Packages no move touches: cells.modules is the stable import surface for contributed modules,
+# "one package whose path never moves" (D185, D195; docs/CORE_SEAMS_DESIGN.md section 8.5). A map
+# may neither move a module into it or out of it nor create a package there; a tree that already
+# holds it (seam F's provisional package) is moved around it.
+RESERVED = (PACKAGE + ".modules",)
+
+
+def _under(module, package):
+    return module == package or module.startswith(package + ".")
+
+
 class Refused(Exception):
     """The map or the tree cannot be moved as asked."""
 
@@ -98,6 +113,18 @@ class MoveMap:
         if set(news) & set(self.pairs):
             raise Refused(f"{name}: a module moves onto another moved module's old name")
         self.packages = dict(doc.get("packages", {}))
+        # Packages dissolved by the move: each one's package file (a docstring only) is removed,
+        # because every module in its folder moves away (D188 move 2: processes/).
+        self.dissolve = list(doc.get("dissolve", []))
+        for pkg in self.dissolve:
+            if not re.fullmatch(PACKAGE + r"(\.[A-Za-z_]\w*)+", pkg) or pkg in self.pairs:
+                raise Refused(f"{name}: cannot dissolve {pkg!r} (not a package name, or mapped)")
+            if any(_under(m, pkg) for m in [*news, *self.packages]):
+                raise Refused(f"{name}: a module or package moves into dissolved {pkg}")
+        touched = [*self.pairs, *news, *self.packages, *self.dissolve]
+        reserved = sorted(m for m in touched if any(_under(m, r) for r in RESERVED))
+        if reserved:
+            raise Refused(f"{name}: moves into or out of a reserved package: {reserved[:5]}")
         self.keep = {k["path"]: k["reason"] for k in doc.get("keep", [])}
         self.reviewed = {k["path"]: k["reason"] for k in doc.get("reviewed", [])}
         # Splits and merges are refactors, never part of a move commit: each is declared with
@@ -116,6 +143,10 @@ class MoveMap:
 
     def kept(self, path):
         return path in self.keep or any(path.startswith(p) for p in SELF)
+
+    def stale(self, dotted):
+        """A dotted reference to a dissolved package that no moved module accounts for."""
+        return self.resolve(dotted) is None and any(_under(dotted, p) for p in self.dissolve)
 
 
 def module_path(dotted, files):
@@ -171,6 +202,18 @@ def plan_files(mp, files):
             left = [f for f in left if f not in moves]
             if left:
                 raise Refused(f"{folder} moves, but the map does not list {left[:5]}")
+    removes = []
+    for pkg in mp.dissolve:  # Its package file goes; every other file in its folder must move.
+        init = "src/" + pkg.replace(".", "/") + "/__init__.py"
+        folder = init.rsplit("/", 1)[0] + "/"
+        left = [f for f in files if f.startswith(folder) and f != init and f not in moves]
+        if left:
+            raise Refused(f"{pkg} dissolves, but the map does not move {left[:5]}")
+        if init not in files:
+            continue  # Already dissolved: this map was applied here before.
+        if not _docstring_only(files[init][1]):
+            raise Refused(f"{init}: a dissolved package's file may hold a docstring only")
+        removes.append(init)
     creates = {}
     for pkg, text in mp.packages.items():
         path = "src/" + pkg.replace(".", "/") + "/__init__.py"
@@ -189,17 +232,33 @@ def plan_files(mp, files):
     clash = targets & (set(files) - set(moves))
     if clash:
         raise Refused(f"targets already exist: {sorted(clash)[:5]}")
-    return moves, creates, done
+    return moves, creates, done, removes
+
+
+def _docstring_only(data):
+    """A package file holding nothing but (at most) a docstring: dissolving it loses no name."""
+    body = ast.parse(data.decode()).body
+    return (
+        all(
+            isinstance(n, ast.Expr)
+            and isinstance(n.value, ast.Constant)
+            and isinstance(n.value.value, str)
+            for n in body
+        )
+        and len(body) <= 1
+    )
 
 
 # ------------------------------------------------------------------ text rewrites
 
 
-def _rewrite_dotted(text, mp, edits_out=None, base=0):
+def _rewrite_dotted(text, mp, edits_out=None, base=0, skip=()):
     if PACKAGE + "." not in text:
         return text
     out, last = [], 0
     for m in DOTTED.finditer(text):
+        if any(a <= m.start() < b for a, b in skip):
+            continue  # Inside a from-import the text rule below has already mapped.
         new = mp.resolve(m.group(0))
         if new is None:
             continue
@@ -208,6 +267,55 @@ def _rewrite_dotted(text, mp, edits_out=None, base=0):
         if edits_out is not None:
             edits_out.append(("dotted", base + m.start(), m.group(0), new))
     return "".join(out) + text[last:]
+
+
+_NAME_AS = r"[A-Za-z_]\w*(?:[ \t]+as[ \t]+[A-Za-z_]\w*)?"
+FROM_TEXT = re.compile(  # After a word boundary, or after an escape (a program with "\n" in it).
+    r"(?:(?<=\\[nt])|(?<![\w.\\]))from[ \t]+("
+    + PACKAGE
+    + r"(?:\.[A-Za-z_]\w*)*)[ \t]+import[ \t]+("
+    + _NAME_AS
+    + r"(?:[ \t]*,[ \t]*"
+    + _NAME_AS
+    + r")*)"
+)
+
+
+def _from_text(text, mp):
+    """`from PKG import a, b as c` statements in free text (a string, a comment, a shell or TOML
+    file), each mapped as the Python rewriter maps a from-import: an imported name that is a moved
+    module goes to that module's new parent (with `as old_name` where its leaf is renamed), any
+    other name stays with PKG's new name. The dotted rule alone maps PKG, the package, which is
+    wrong for a submodule moving elsewhere (`from cells.core import devices` when core's package
+    file and devices move to different folders). Names that diverge become one statement per new
+    parent, joined by "; ". Returns [(start, end, replacement)], only for statements this rule
+    changes differently from the dotted rule."""
+    out = []
+    for m in FROM_TEXT.finditer(text):
+        base = m.group(1)
+        names = [re.split(r"[ \t]+as[ \t]+", n.strip()) for n in m.group(2).split(",")]
+        if not any(f"{base}.{n[0]}" in mp.pairs for n in names):
+            continue  # No moved submodule: the dotted rule maps it.
+        here = mp.resolve(base) or base
+        groups, order = defaultdict(list), []
+        for n in names:
+            name, asname = n[0], (n[1] if len(n) > 1 else None)
+            full = f"{base}.{name}"
+            if full in mp.pairs:
+                parent, _, leaf = mp.pairs[full].rpartition(".")
+                item = (leaf, asname if asname else (None if leaf == name else name))
+            else:
+                parent, item = here, (name, asname)
+            if parent not in groups:
+                order.append(parent)
+            groups[parent].append(item)
+        statements = [
+            f"from {p} import "
+            + ", ".join(n if a in (None, n) else f"{n} as {a}" for n, a in groups[p])
+            for p in order
+        ]
+        out.append((m.start(), m.end(), "; ".join(statements)))
+    return out
 
 
 def _old_files(mp):
@@ -244,9 +352,22 @@ def _rewrite_paths(text, mp, top, edits_out=None, base=0):
 
 
 def rewrite_text(text, mp, top, edits_out=None, base=0):
-    """Dotted module paths, then moved files' paths, in free text."""
+    """From-imports of moved modules (by each module's own new home), dotted module paths, then
+    moved files' paths, in free text."""
     found = []
-    text = _rewrite_dotted(text, mp, found, base)
+    spans = _from_text(text, mp) if "import" in text else []
+    if spans:
+        out, last, skip, shift = [], 0, [], 0
+        for s, e, new in spans:
+            out += [text[last:s], new]
+            skip.append((s + shift, s + shift + len(new)))
+            shift += len(new) - (e - s)
+            found.append(("from-text", base + s, text[s:e], new))
+            last = e
+        text = "".join(out) + text[last:]
+    else:
+        skip = []
+    text = _rewrite_dotted(text, mp, found, base, skip)
     text = _rewrite_paths(text, mp, top, found, base)
     if edits_out is not None:
         edits_out.extend(found)
@@ -352,7 +473,8 @@ STRING_PARTS = re.compile(r"^([rRuU]?)(\"\"\"|\'\'\'|\"|\')(.*)\2$", re.S)
 def _embedded(tok, mp, modules, top, report):
     """A string holding a Python program that imports a cells module (a test's subprocess
     program): its body rewritten as Python, or None. Bodies with escapes cannot be mapped to
-    source text and are left to the plain string rules (scan lists them as hazards)."""
+    source text and are left to the plain string rules, whose from-import rule maps each
+    imported module by its own new home (scan still lists them as hazards, for review)."""
     m = STRING_PARTS.match(tok)
     if not m or "import" not in m.group(3) or PACKAGE not in m.group(3):
         return None, []
@@ -554,7 +676,7 @@ def sort_imports(text, path):
 
 def transform(files, mp):
     """The tree after one map: (files, report). files is {path: (mode, bytes)} of tracked files."""
-    moves, creates, done = plan_files(mp, files)
+    moves, creates, done, removes = plan_files(mp, files)
     modules = {dotted_of(p) for p in files if dotted_of(p)}
     top = {  # The folders of src/cells: a path relative to src/cells starts with one.
         PurePosixPath(p).parts[2]
@@ -562,9 +684,11 @@ def transform(files, mp):
         if p.startswith("src/" + PACKAGE + "/") and len(PurePosixPath(p).parts) > 3
     }
     out, report, hazards = {}, dict(moved=[], created=[], files={}, done=done), []
+    report["dissolved"] = sorted(removes)
     back = {new: old for old, new in moves.items()}
     for path, (mode, data) in files.items():
-        out[moves.get(path, path)] = (mode, data)
+        if path not in removes:
+            out[moves.get(path, path)] = (mode, data)
     for path, text in creates.items():
         out[path] = ("100644", text.encode())
         report["created"].append(path)
@@ -712,8 +836,9 @@ def load_map(path):
 def path_table(mp, files):
     """The old-to-new path table of one map, for tools that read src/cells by place: one row
     per file the move relocates (with whether it goes to legacy/), the package files it creates,
-    and the map's declared refactors (splits or merges, each with its own commit)."""
-    moves, creates, done = plan_files(mp, files)
+    and the map's declared refactors (splits or merges, each with its own commit), and the
+    package files dissolved (removed, every module of their folder moving away)."""
+    moves, creates, done, removes = plan_files(mp, files)
     rows = [
         dict(
             old=old,
@@ -735,6 +860,17 @@ def path_table(mp, files):
             new_module=dotted_of(path),
         )
         for path in sorted(creates)
+    ]
+    rows += [
+        dict(
+            old=path,
+            new=None,
+            kind="dissolved",
+            to_legacy=False,
+            old_module=dotted_of(path),
+            new_module=None,
+        )
+        for path in sorted(removes)
     ]
     for r in mp.refactors:
         rows.append(dict(r, kind=r.get("kind", "split")))
@@ -768,8 +904,18 @@ def cmd_table(args):
 def cmd_check(args):
     mp = load_map(args.map)
     files = worktree_files(args.tree)
-    moves, creates, done = plan_files(mp, files)
-    print(json.dumps(dict(move=mp.name, moves=len(moves), creates=sorted(creates), done=done)))
+    moves, creates, done, removes = plan_files(mp, files)
+    print(
+        json.dumps(
+            dict(
+                move=mp.name,
+                moves=len(moves),
+                creates=sorted(creates),
+                dissolves=sorted(removes),
+                done=done,
+            )
+        )
+    )
     return 0
 
 
@@ -837,13 +983,16 @@ def cmd_apply(args):
         (tree / new).parent.mkdir(parents=True, exist_ok=True)
         (tree / old).rename(tree / new)
     touched = [p for pair in report["moved"] for p in pair]
+    for path in report["dissolved"]:  # A dissolved package's file (a docstring only).
+        (tree / path).unlink()
+        touched.append(path)
     for path, (_, data) in out.items():
         p = tree / path
         if not p.exists() or p.read_bytes() != data:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_bytes(data)
             touched.append(path)
-    for old, _ in report["moved"]:  # Folders the moves emptied.
+    for old in [o for o, _ in report["moved"]] + report["dissolved"]:  # Folders now empty.
         parent = (tree / old).parent
         while parent != tree and parent.exists() and not any(parent.iterdir()):
             parent.rmdir()
@@ -862,6 +1011,7 @@ def cmd_apply(args):
                 move=mp.name,
                 moved=len(report["moved"]),
                 created=report["created"],
+                dissolved=report["dissolved"],
                 files_rewritten=len(report["files"]),
                 done=report["done"],
                 hazards=len(reached),
@@ -920,11 +1070,17 @@ def verify(mp, base, head, cwd=ROOT):
     missing = unresolved_imports(expected)
     problems += [dict(path=m.split(":")[0], why=f"unresolved import: {m}") for m in missing]
     still = []
+    gone = {  # Dissolved package files, as paths relative to src/cells.
+        "/".join(p.split(".")[1:]) + "/__init__.py" for p in mp.dissolve
+    }
     for path, (_, data) in expected.items():
         if in_scope(path) and not mp.kept(path) and path.endswith(".py"):
             text = data.decode(errors="replace")
             for m in DOTTED.finditer(text):
-                if mp.resolve(m.group(0)):
+                if mp.resolve(m.group(0)) or mp.stale(m.group(0)):
+                    still.append(f"{path}: {m.group(0)}")
+            for m in PATH.finditer(text) if gone else ():
+                if m.group(2) in gone:
                     still.append(f"{path}: {m.group(0)}")
     problems += [dict(path=s.split(":")[0], why=f"old reference left: {s}") for s in still[:50]]
     return dict(
@@ -1239,6 +1395,148 @@ def cmd_selftest(args):
     got, _ = transform(rel, rel_map)
     checks["relative import made absolute when its file moves"] = (
         got["src/cells/b/m.py"][1].decode() == "from cells.a import n\nfrom cells.a.n import f\n"
+    )
+    # cells.modules (D195's surface) is reserved: a map that moves into or out of it, or creates a
+    # package there, is refused; a tree that already holds it is moved around it.
+    reserved = {
+        "into it": dict(modules=[["cells.core.old_spec", "cells.modules.old_spec"]], packages={}),
+        "out of it": dict(modules=[["cells.modules.surface", "cells.core.surface"]], packages={}),
+        "a package there": dict(SELFTEST_MAP, packages={"cells.modules.extra": ""}),
+    }
+    refused = []
+    for label, doc in reserved.items():
+        try:
+            MoveMap(dict(SELFTEST_MAP, **doc))
+        except Refused as error:
+            refused.append(label if "reserved" in str(error) else None)
+    surface = dict(files)
+    surface["src/cells/modules/__init__.py"] = (
+        "100644",
+        b'"""Provisional surface."""\n\nfrom cells.core.old_spec import parse\n',
+    )
+    got, _ = transform(surface, mp)
+    checks["cells.modules reserved: refused into it, out of it and as a new package"] = (
+        refused == list(reserved)
+    )
+    checks["cells.modules reserved: an existing surface stays in place, its imports rewritten"] = (
+        got["src/cells/modules/__init__.py"][1]
+        == b'"""Provisional surface."""\n\nfrom cells.legacy.core.old_spec import parse\n'
+    )
+    # A dissolved package (D188 move 2: processes/): its modules move to different homes, its
+    # package file (a docstring only) is removed, and nothing may name the package afterwards.
+    pkg_tree = {
+        "src/cells/__init__.py": "",
+        "src/cells/old/__init__.py": '"""Old laws."""\n',
+        "src/cells/old/a.py": "A = 1\n",
+        "src/cells/old/b.py": "B = 2\n",
+        "tests/test_dissolve.py": (
+            "from cells.old import a, b\n\n"
+            'PROGRAM = "import sys\\nfrom cells.old import a\\n"\n\n\n'
+            "def test_it():\n    assert a.A + b.B == 3\n"
+        ),
+    }
+    pkg_tree = {p: ("100644", t.encode()) for p, t in pkg_tree.items()}
+    pkg_doc = dict(
+        kind=MAP_KIND,
+        move="dissolve",
+        modules=[["cells.old.a", "cells.new.a"], ["cells.old.b", "cells.other.b"]],
+        packages={"cells.new": '"""New laws."""\n', "cells.other": ""},
+        dissolve=["cells.old"],
+    )
+    dmap = MoveMap(pkg_doc)
+    got, rep = transform(pkg_tree, dmap)
+    t = got["tests/test_dissolve.py"][1].decode()
+    checks["dissolve: the package file goes, its modules move apart, imports split"] = (
+        "src/cells/old/__init__.py" not in got
+        and rep["dissolved"] == ["src/cells/old/__init__.py"]
+        and got["src/cells/new/__init__.py"][1] == b'"""New laws."""\n'
+        and "from cells.new import a\nfrom cells.other import b\n" in t
+        and "\\nfrom cells.new import a\\n" in t
+        and verify(dmap, pkg_tree, got)["verdict"] == "holds"
+        and transform(got, dmap)[0] == got
+        and {"old": "src/cells/old/__init__.py", "new": None, "kind": "dissolved"}.items()
+        <= next(r for r in path_table(dmap, pkg_tree)["rows"] if r["kind"] == "dissolved").items()
+    )
+    refusals = []
+    for label, change in (
+        ("a module left", dict(modules=[["cells.old.a", "cells.new.a"]])),
+        ("a name in its file", None),
+    ):
+        tree = dict(pkg_tree)
+        if change is None:
+            tree["src/cells/old/__init__.py"] = ("100644", b'"""Old."""\n\nX = 1\n')
+        try:
+            transform(tree, MoveMap(dict(pkg_doc, **(change or {}))))
+            refusals.append(None)
+        except Refused:
+            refusals.append(label)
+    stale = dict(got)
+    stale["tests/test_stale.py"] = ("100644", b'NAME = "cells.old"\n')
+    checks["dissolve: a module left, a name in its file and a stale reference are refused"] = (
+        refusals == ["a module left", "a name in its file"]
+        and any(
+            "old reference left" in p["why"] and "cells.old" in p["why"]
+            for p in verify(
+                dmap, dict(pkg_tree, **{"tests/test_stale.py": stale["tests/test_stale.py"]}), stale
+            )["problems"]
+        )
+    )
+    # D188 move 2: a from-import in free text (a program string with escapes, a comment) maps
+    # each moved submodule by its own new home, not by its package's.
+    escaped = dict(files)
+    escaped["tests/test_escaped.py"] = (
+        "100644",
+        b'PROGRAM = "import sys\\nfrom cells.core import old_spec, specs\\n"\n'
+        b'LINES = ("import sys\\n" "from cells.core import old_spec as o\\n")\n'
+        b"# from cells.core import old_spec\n",
+    )
+    got, _ = transform(escaped, mp)
+    t = got["tests/test_escaped.py"][1].decode()
+    checks["text from-import: a moved submodule by its own home, the rest by the package's"] = (
+        "import sys\\nfrom cells.legacy.core import old_spec; from cells.core import specs\\n" in t
+        and '"from cells.legacy.core import old_spec as o\\n"' in t
+        and "# from cells.legacy.core import old_spec\n" in t
+        and transform(got, mp)[0] == got
+    )
+    split = {
+        "src/cells/__init__.py": "",
+        "src/cells/core/__init__.py": '"""Core."""\n',
+        "src/cells/core/devices.py": "X = 1\n",
+        "src/cells/core/specs.py": "Y = 2\n",
+        "src/cells/models/__init__.py": "",
+        "src/cells/models/registry.py": "Z = 3\n",
+        "tests/test_split.py": (
+            'A = "from cells.core import devices\\n"\n'
+            'B = "from cells.core import devices, specs\\n"\n'
+            'C = "from cells.models import registry as r\\n"\n'
+            'D = "from cells.models import registry\\n"\n'
+        ),
+    }
+    split = {p: ("100644", t.encode()) for p, t in split.items()}
+    split_map = MoveMap(
+        dict(
+            kind=MAP_KIND,
+            move="split",
+            modules=[
+                ["cells.core", "cells.definitions"],
+                ["cells.core.devices", "cells.execution.devices"],
+                ["cells.core.specs", "cells.definitions.specs"],
+                ["cells.models.registry", "cells.registry.models"],
+            ],
+            packages={"cells.execution": "", "cells.registry": ""},
+        )
+    )
+    got, _ = transform(split, split_map)
+    t = got["tests/test_split.py"][1].decode()
+    checks["text from-import: a package file and its submodules re-homed apart, a leaf renamed"] = (
+        'A = "from cells.execution import devices\\n"' in t
+        and 'B = "from cells.execution import devices; from cells.definitions import specs\\n"' in t
+        and 'C = "from cells.registry import models as r\\n"' in t
+        and 'D = "from cells.registry import models as registry\\n"' in t
+        and transform(got, split_map)[0] == got
+        # The planted error: the dotted rule alone maps the package, not the submodule.
+        and _rewrite_dotted("from cells.core import devices", split_map)
+        == "from cells.definitions import devices"
     )
     base_ids = [
         "tests/test_old.py::test_old",

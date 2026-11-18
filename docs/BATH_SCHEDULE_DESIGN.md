@@ -1,5 +1,12 @@
 # A scheduled bath composition in the composite (design)
 
+**Qualified, 17 November 2026.** The registered protocol `fr10-dose-schedule-v1`
+(`validation/tissue/bath_schedule_protocol.json`, registered at 407ba164) was judged once from a
+clean snapshot of that commit: passed, 31 of 31 judged criteria, against the code-blind references
+R-faces, R-ion and R-records (`validation/fr10/references`). Its scope is the operator as built
+there: neutral formula units, held baths, steps inside the measured region, ARS at 1 ms and RK4 at
+0.1 ms.
+
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** A dose from nothing is a known limit (way (a), extending D150's resolved-start ruling). Version 1 is qualified on steps between resolved levels, and a staircase probe is requested.
 
 **Status: proposed, 14 November 2026; revised the same day after the lead's review with the
@@ -151,7 +158,7 @@ operator's own fields.
 | `surface_pump.ledger_magnitudes` | The declared layout | Its reservoir-work magnitude needs §2.3's terms |
 | `surface_pump.explicit_rate_bound`, at the definition | The declared layout | Needs the worst case (§2.4) |
 | D150's exchange and turnover | Finite nodes only | Neither acts on a held bath, so they compose |
-| D152's `local_species_reactions@1` | `CONFLICTS_VIEW` lists the field | Refused, but nominally: §3.1 |
+| D152's `local_species_reactions@1` | `CONFLICTS_VIEW` lists the field | Composes since door S (§3.1, updated 17 November 2026); refused, nominally, before it |
 | `scheduled_membrane_insertion@1` | It provides the field (onset nodes) | Two providers: refused; door S |
 | S5's closers | The adapter pads the field | A provider beside a closer is refused; door S |
 | Water@1 (`osmotic_water`) | The declared amounts for the bath's osmotic pressure; the bath's water potential bound at the definition | Sees the declared bath: §3.1 |
@@ -258,6 +265,14 @@ uptake into a cell runs from a finite node beside the bath, not from the bath it
     the species operators are refused together.
 
 **The walls on the field.**
+- **Updated 17 November 2026: door S has landed (D176's round, `docs/SCOPED_COMPOSITION_DESIGN.md`),
+  and D152 now composes with this operator in either order.** Checked on main:
+  `pump_composite.structure_errors` is empty for the pair in both orders, and the first delivery
+  world binds with disjoint slots (`tests/unit/test_door_s.py`). Insertion@1 and the closers stay
+  refused, as below. `site_occupancy@1` (FR-3) beside this operator is refused, since it reads the
+  field as declared. The operator's module docstring still calls D152 refused; that text is stale
+  and is corrected in a later `src` edit, after move 2 (the lead's ruling). The paragraphs below
+  record the analysis as written before door S.
 - **D152: refused, but the conflict is nominal** (read, not run). Everywhere D152 reads the field it
   masks held baths: `node_amounts` and `reactions_domain_valid` read finite nodes only
   (`outside_active & ~reservoir`, `species_reactions.py`), and D152 refuses held-bath sites. Its
@@ -284,7 +299,8 @@ uptake into a cell runs from a finite node beside the bath, not from the bath it
 - a target that is not a held bath: a finite node cannot be clamped, as the older family also
   refuses;
 - a net-charged formula unit (§2.5);
-- D152 (nominally), insertion@1, the closers and the lumens;
+- insertion@1, the closers and the lumens; D152 only before door S (it composes since door S
+  landed: see above); `site_occupancy@1`, which reads the field as declared;
 - water@1 with an anisosmotic step;
 - the stationary analysis.
 

@@ -1232,7 +1232,6 @@ def worker(output):
                     environment.update(
                         CELLS_ER_TEST_BACKEND=backend,
                         CELLS_ER_EVIDENCE=str(output / "er-evidence"),
-                        CELLS_ER_NATIVE_SOURCE=str(output / "source/validation/chemistry/native"),
                     )
                 if calcium:
                     environment.update(
@@ -1248,7 +1247,6 @@ def worker(output):
                     environment.update(
                         CELLS_CAV_TEST_BACKEND=backend,
                         CELLS_CAV_EVIDENCE=str(output / "cav-evidence"),
-                        CELLS_CAV_NATIVE_SOURCE=str(output / "source/validation/chemistry/native"),
                     )
                 if ip3:
                     environment.update(
@@ -2063,26 +2061,13 @@ def main():
             source / "validation/chemistry" / protocol_path.name,
         )
         if args.chemistry_case in ("er", "spatial", "plasma", "gated", "ip3"):
-            native = (
-                source_input / "validation/chemistry/native"
-                if cpu_parent
-                else Path("/mnt/workspaces/Cells/betse-v1.5.0/betse/science")
-            )
-            target = source / "validation/chemistry/native"
-            target.mkdir()
-            for name, expected in chemistry_protocol["native_sources_sha256"].items():
-                original = native / (
-                    "organelles/endo_retic.py"
-                    if name == "endo_retic.py" and not cpu_parent
-                    else "channels/" + name
-                    if name in ("vg_ca.py", "channelsabc.py") and not cpu_parent
-                    else name
-                )
-                if digest(original) != expected:
-                    raise ValueError("Pinned ER reference source changed")
-                shutil.copy2(original, target / name)
-            license_file = native / "LICENSE.txt" if cpu_parent else native.parents[1] / "LICENSE"
-            shutil.copy2(license_file, target / "LICENSE.txt")
+            # Every such suite runs test_er_calcium.py, whose pinned-source checks start BETSE
+            # unmodified in its own environment through this capture script, out of process
+            # (AGENTS.md; tests/reference_er_calcium.native_capture checks the source pins).
+            # No BETSE file is copied into the run.
+            capture_path = Path("validation/betse/calcium_functions_native.py")
+            (source / capture_path.parent).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_input / capture_path, source / capture_path)
         if args.chemistry_case in ("spatial", "plasma", "gated", "ip3"):
             reference_path = Path("validation/betse/spatial_cluster/reference.py")
             (source / reference_path.parent).mkdir(parents=True)

@@ -6,16 +6,16 @@ and a general feature, never one built for one study (D144).
 
 | ID | Feature | Priority | Status | Next step |
 | --- | --- | --- | --- | --- |
-| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls | Its protocol as exchange's first judged acceptance. The charged door's version 1.1, refusal 4 for FR-4's kinds, landed with the inner-model round (16 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §3.4.1) |
+| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls. **Judged, 18 November 2026:** its protocol, `fr1-closed-compartment-v1` (registration 05a8d193), passed, 44 of 44 judged criteria, against the code-blind references; exchange's first judged acceptance | The later doors (creation, division, fission and fusion, retirement) with seam B and the mitochondria work (D210, D216) |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
-| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls | Its independent references, then its protocol and judged run; a shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
-| [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design accepted (§16 of [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md)). Built and on main since fr45-next merged (16 November): the two source kinds, refusal 4 version 1.2, refusal 5 version 1.1 and FR-5's start part, for development, not judged. Its protocol, `fr5-transfer-v1`, is registered (17 November 2026), not yet judged | Its protocol's registration, rehearsal and judged run |
-| [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations | The channel target, qualified with the coupling operator (A5); the routing door; the regulatory state as a prior condition (below) |
+| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls. **Judged, 18 November 2026:** its protocol, `fr3-site-occupancy-v1` (registration 1b838d75), passed, 51 of 51 judged criteria, against the code-blind references; `site_occupancy@1`'s first judged acceptance | A shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
+| [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design accepted (§16 of [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md)). Built and on main since fr45-next merged (16 November): the two source kinds, refusal 4 version 1.2, refusal 5 version 1.1 and FR-5's start part, for development, not judged. Its protocol, `fr5-transfer-v1`, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria (D195; tag fr5-v1-qualified-2026-11-17) | Done. The verdict's scope: `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1) |
+| [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations. **A5″ judged, 18 November 2026:** its protocol, `fr6-a5pp-v1` (registration 555d8771), passed, 18 of 18 judged criteria, against the code-blind references: the gate-free channel target (item 1) driven through the regulatory state from a per-cell prior (item 3) | The routing door (item 2); gated channel populations (A5′), leaks and pumps (item 1's rest) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged, and registered as a consumer of the coupling operator's routing and abundance-source doors, with removal and surface insertion under FR-2 (D177). Most of part (b) is the coupling operator's channel target | A design note after D172's integrated landing; the closed loop's unit is the user's choice (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
-| [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down) | Further ions and faster faces as each is measured; its protocol |
-| [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Its registration, rehearsal and judged run on the landed core |
+| [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down). Its protocol, `fr10-dose-schedule-v1`, is registered and judged on 17 November 2026: passed, 31 of 31 judged criteria (registration 407ba164), against the code-blind references R-faces, R-ion and R-records | Further ions and faster faces as each is measured |
+| [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Done: `fr4-acidification-v1` judged on 17 November 2026: passed, 21 of 21 judged criteria (D195; tag fr4-v1-qualified-2026-11-17) |
 | [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Partly built, on main with the run-view writer since 16 November: its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November), the writer's loop block with its closure measure, and the planarian loop's builder (`validation/replay/`), with one development run of that loop, not judged. The human loop waits for the human cardiac laws |
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
 | [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | M0 now: the viewer's catalogue, as illustration. M1, ATP synthase, after the core-seams pass; no model yet (D209) | M1's build plan: [the design note](MOLECULAR_MACHINES_DESIGN.md) §10 |
@@ -24,6 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed on branch `passive-share-band`: the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\| | Land `passive-share-band`, and renew crossrev's kinds record at its landing |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -214,6 +215,8 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
 - **What it touches.** S3's insertion and membrane-state operators, D150 and D152's energy-pool door,
   FR-1's compartment, and the composition walls (the species operators refuse insertion today).
 
+**The design note (proposed, 18 November 2026):** [MEMBRANE_RETRIEVAL_DESIGN.md](MEMBRANE_RETRIEVAL_DESIGN.md), with the energy source answered once for D150's question 11, D152's question 10 and D151 (D216).
+
 ## FR-3 — The site-occupancy primitive
 
 **Logged 14 November 2026, priority 2** (the request's label; the user: "then next one"). The request
@@ -381,7 +384,11 @@ an accepted design, with no code yet.** The inventory-coupling note (D155 item 1
      delivered template's effect on a cell's electrical behaviour runs through channel
      availability.
    - Leaks and pumps on the same path would cover the rest.
-   - *Mapping:* probe P1, the channel path, is in milestone 1 now. Leaks and pumps are the note's
+   - *Status (18 November):* **qualified for gate-free channel populations** by the coupling
+     operator's judged protocol `coupling_regulated_availability_v1` (A5; 15 November, 47 of 47:
+     V and the amounts at order 2.00, the factor exact to rounding, every control caught). Gated
+     populations are not covered.
+   - *Mapping:* probe P1, the channel path, was milestone 1's. Leaks and pumps are the note's
      next targets on the same path.
 2. **The routing door (§2): a factor on another operator's control,** specifically a turnover rate,
    an exchange rate and a reaction multiplier.
@@ -394,6 +401,11 @@ an accepted design, with no code yet.** The inventory-coupling note (D155 item 1
    condition, set before a dose arrives. That is the variable the study turns on: the same
    formulation given to differently conditioned cells.
    - It matches the GZMK review's "slow, writable per-cell state" row.
+   - *Status (18 November):* **qualified for a gate-free channel population** by `fr6-a5pp-v1`
+     (A5″; registration 555d8771, 18 of 18): two cells given the same regulator dose from
+     s₀ = 0.1 and 0.8, V and the amounts at order 2.01 against R-cell, and every control that
+     tells the two cells apart caught (the prior swapped, shared or ignored, the state bypassed,
+     its rates 1% off, the basal level).
    - *Mapping:* the note's state has a declared initial value per cell (s₀), and interventions
      write it (`regulatory_writes`). So a prior condition is a declared s₀ or a write before the
      dose. Its version 1 refuses replaced slots (version 1.1).
@@ -437,6 +449,8 @@ use Cells' unit choice than ask for its own.
   species concentration. It is to be recorded in that note's doors when the channel target lands.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
+
+**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216).
 
 ## FR-8 — A qualified long-duration mode
 
@@ -484,6 +498,8 @@ requester is writing a benchmark specification for its own composition):
 - **The two-clock pattern helps where the physics separates.** Track E's plan runs a slow world
   coarsely and short fast assays from frozen snapshots (D155). It is not a long-time method for
   one coupled trajectory.
+
+**The design note (proposed, 18 November 2026):** [LONG_DURATION_MODE_DESIGN.md](LONG_DURATION_MODE_DESIGN.md), the long-time path for composite operators, written before the GH200 numbers and the benchmark specification (D216).
 
 ## FR-9 — Raise the 7-species cap
 
@@ -731,14 +747,20 @@ explored.
 - **Where it came from.** The gap-junction replication (D207) found it on 17 November 2026. In the
   public preprint 10.64898/2026.09.02.748840, a microRNA is made in cells and crosses gap junctions.
 - **What refuses:**
-  - **F1:** `local_species_reactions@1`, turnover, exchange and site occupancy refuse any species
-    with a junction route (`species_common.check_impermeant`). Even the preprint's linear model as
-    written is refused, so the replication ran its exact Norton equivalent instead.
-  - **F2:** the same operators refuse charged species.
+  - **F1, narrower than first reported.** `species_common.check_impermeant` covers only @3's own
+    constant-field junction route, for a species an operator writes.
+    - A neutral species on the passive-routes kind (`cells.passive_routes@1`,
+      `passive_neutral_permeation@1` on a junction host), made and destroyed by
+      `local_species_reactions@1`, is admitted.
+    - So the preprint's linear model runs as written, unqualified, converging at second order
+      (dev-04). Its exact Norton equivalent serves as its check.
+    - The first report said the model as written is refused. That was corrected the same day.
+  - **F2:** the passive routes' neutral law carries valence 0 only, but the preprint's microRNA
+    drifts with valence −1. The species operators also refuse charged species on @3's own routes.
 - **Why it is general.** Any signalling species that cells make or use and that also crosses
   junctions needs it: second messengers, small RNAs, metabolites.
-- **First step:** find why `check_impermeant` refuses (its design reason and the decisions it
-  cites), and whether D191's composition rule is the intended way to lift it.
+- **First step, done:** the reason for `check_impermeant`'s refusal was found (F1 above). What remains
+  is F2.
 - **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
   features.
 
@@ -779,3 +801,42 @@ explored.
 - **What is asked of the core:** review whether the check's tolerance, or the step-size advice that
   goes with it, should change. It is not loosened for one experiment.
 - **Status:** reported to the core.
+
+## FR-19 — The passive routes' heat-share sign test at rounding level
+
+- **The finding.** `passive_neutral_permeation@1`'s exact heat booking
+  (`src/cells/models/inner_kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
+  exact route's heat share is negative, with no tolerance. The raw-sum check beside it does allow
+  `RAW_SUM_FACTOR` eps.
+- **Where it showed.** The gap-junction replication's 1D tissue line has healthy cells that start
+  identical, and its threshold search was refused at most coupling values.
+- **The measurement.** A refused step was replayed with the engine unchanged
+  (`/mnt/workspaces/Cells/gap-junction-20261117/probes/neither-fail-01/`):
+  - share −2.1e-35 RT·fmol, about 40 times inside the raw-sum check's own bound for its terms;
+  - transfer 4.8e-20 fmol, below the amounts' resolution;
+  - potential difference 2 ulp of ln c.
+
+  It is rounding, not a transfer against its gradient.
+- **Scope.** FR-5's cargo routes use the same booking, so FR-5 can meet the refusal near equilibrium.
+  FR-4's proton leak does not.
+- **Fixed on main** (merge 49494e49, of branch `passive-share-tolerance` at 3d8e7b3b):
+  - **The rule:** a share is refused only below `−RAW_SUM_FACTOR·eps` times its own terms, in the
+    share's units. Admitted shares are booked as computed, so the ledgers close exactly.
+  - **The gates:** G1 is 113 of 113; tiers 1+2 changed 0 of 514 files; FR's bitwise landing set
+    passed. In crossrev only the kinds set's three checked steps differ, in the predicate, by design.
+  - **The law keeps its ID** as an in-place fix (D148). Leaving qualified worlds on `@1` with a new
+    `@2` stays the user's alternative.
+  - **The replays:** the replication's previously refused points now run the full 20,000 s
+    (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/`).
+- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band`.**
+  - **Why.** Near 1 mM the first floor still closed, since its terms scaled with |μ̄| while the
+    potential keeps the ulp of ln c + 1.
+  - **The fix.** The floor's scale adds the potential's evaluation rounding, (|μ̄_in| + |μ̄_out| +
+    2)·|m|, so at 1 mM it is 32 eps |m|.
+  - **On the closed pair:** all 47 rounding-level cases are admitted (leads of 1–16 ulp, 1e-4 to
+    100 mM), the worst at half its floor. At 1 mM a share at twice its floor, or a million times
+    below it, is still refused.
+  - **Unchanged:** previously admitted steps, since the floor only moved down. The same gates
+    apply, and crossrev's kinds record is renewed again at its landing.
+  - The replication never reaches the band, since its concentrations stay at or below 0.1 mM.
+

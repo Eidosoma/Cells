@@ -6,7 +6,7 @@ from time import perf_counter
 from typing import Mapping
 
 from cells import continuity as _continuity
-from cells import run_view
+from cells import run_view, source_layout
 from cells.core.batch import (
     BatchSpec,
     _checkpoint_map,
@@ -96,7 +96,8 @@ def load_batch_snapshot(directory, *, continuity=None):
     continuity=None, the default, keeps every refusal. A cells.continuity.Request binds the
     cohort manifest instead of the two identity comparisons, and each child is then loaded
     against the cohort's admitted identity; every other cohort and child check runs as
-    without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 6).
+    without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 6). A cohort written before a
+    source move is refused either way (cells.source_layout).
     """
     path = Path(directory).resolve()
     manifest = _fields(
@@ -120,6 +121,8 @@ def load_batch_snapshot(directory, *, continuity=None):
         raise ConfigError("Unsupported batch checkpoint schema")
     if manifest["kind"] != "cells_independent_world_checkpoint":
         raise ConfigError("Not a complete independent-world checkpoint")
+    # D195 item 4: no checkpoint crosses a source move, with a continuity record or without.
+    source_layout.require(manifest["source_hashes"], "Batch checkpoint")
     if continuity is None:
         if manifest["source_hashes"] != source_hashes():
             raise ConfigError("Batch checkpoint source differs from this installation")
