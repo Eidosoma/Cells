@@ -805,10 +805,12 @@ kind is checked per move:
 - **Every row a kind moves at the compartment's node,** as its `moved_rows` gives them, needs a step
   term. A move across the bounding patch moves its row there, at the patch's outside end.
   - A charged row needs a charge slope, `stage_term`, which the per-stage rule holds at the node.
-  - A neutral row needs a material slope, `material_term`, or a definition-time bound,
-    `bound_rate`.
+  - A neutral row needs a material slope, `material_term`, or a definition-time material bound,
+    `material_bound`.
+  - A charge bound, `charge_bound`, holds neither: it bounds the declared state only.
 - **The term is read by law ID from the law registry.** The law declares it on the law template,
-  and the kind that hosts the law must have the hook of that name. So a planted kind that reuses a
+  and the kind that hosts the law must have the hook that supplies it: `stage_term` and
+  `material_term` by those names, both bounds through `bound_rate`. So a planted kind that reuses a
   law's ID, as FR-4's K2 does, is admitted only where it keeps the hooks the law names.
 - **Fails closed.** A move is refused, naming its law, when the law declares no needed term, when
   its kind lacks the hook, when the move names no law, when the law is unregistered, or when
@@ -826,9 +828,11 @@ kind is checked per move:
   material term. No world on main has it (CORE_SEAMS_STEP0 §3, redone call by call for this
   version).
 - **Newly admitted:** a kind none of whose moves is at a compartment's node, whatever its ID.
-- **What it needs:** the law template's step terms (`registry/laws.py`), and the passive routes'
-  two laws declaring theirs (the leak a `stage_term`, the neutral law a `bound_rate`). Without
-  them, FR-4's and FR-5's declared worlds are refused.
+- **What it needs** (CORE_SEAMS §18 as amended): the law template's step terms in
+  `registry/laws.py`, that is `stage_term`, `material_term`, `charge_bound` and `material_bound` on
+  the cycle and route law types, and the passive routes' two laws declaring theirs (the leak a
+  `stage_term`, the neutral law a `material_bound`). Without them, FR-4's and FR-5's declared worlds
+  are refused.
 - **Text.** The summary's scope string changes to version 1.3. No judged record holds it. Frozen
   operator summaries see it differ. The unchanged branches keep version 1.2's messages, since FR-1's
   judged refusal record holds the permeability one.

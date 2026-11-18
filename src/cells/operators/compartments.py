@@ -20,10 +20,11 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    that version 1's refusal stands there. The kinds are checked per move, not per kind
    (docs/CORE_SEAMS_DESIGN.md §4.4): every row a kind moves at the compartment's node (a move
    across the bounding patch moves its row there, at the patch's outside end) is held by a step
-   term its law declares in the law registry and its kind holds by the hook of that name: a
+   term its law declares in the law registry and its kind holds by the hook that supplies it: a
    charged row by a charge slope (stage_term, in the per-stage rule), a neutral row by a material
-   slope (material_term) or a definition-time bound (bound_rate). A move whose law declares no
-   such term is refused, naming the law, and so is a move with no law ID. A kind that declares no
+   slope (material_term) or a definition-time material bound (material_bound, through the kind's
+   bound_rate). A charge bound alone holds neither. A move whose law declares no such term is
+   refused, naming the law, and so is a move with no law ID. A kind that declares no
    moved rows is admitted only as a stage read (its rows declared; no rates, moves or slope) or a
    source (none of a mover's hooks), each judged by its hooks; any other fails closed. That is
    the charged door (§3.4) and its material twin: a compartment has no face, so its charge
@@ -71,15 +72,23 @@ from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 
 LAW_ID = "cell_owned_compartments@1"
-# Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4). Each is a field a
-# law declares on the law template (registry/laws.py, §8.1: its kernel's name, or None) and the
-# kind hook of the same name that holds it at the step: a charge slope in the per-stage rule
+# Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4 and §18 as amended).
+# Each is a field a law declares on the law template (registry/laws.py, §8.1: its kernel's name,
+# or None), held at the step by the kind hook it maps to: a charge slope in the per-stage rule
 # (stage_term, surface_pump_v3.membrane_rate at every free outside node, a face-free
 # compartment's included), a material slope per stage (material_term, surface_pump_v3's
-# material_rate) or a definition-time bound (bound_rate, the IMEX step checks). A charged row
-# moved at a compartment's node needs a charge slope; a neutral row a material slope or a bound.
+# material_rate), and the definition-time bounds of its charge and of its material relaxation
+# (charge_bound and material_bound, both through the kind's bound_rate, which the IMEX step checks
+# hold). A charged row moved at a compartment's node needs a charge slope; a neutral row a material
+# slope or a material bound. A charge bound alone holds neither: it bounds the declared state only.
+TERM_HOOKS = {
+    "stage_term": "stage_term",
+    "material_term": "material_term",
+    "charge_bound": "bound_rate",
+    "material_bound": "bound_rate",
+}
 CHARGE_TERMS = ("stage_term",)
-MATERIAL_TERMS = ("material_term", "bound_rate")
+MATERIAL_TERMS = ("material_term", "material_bound")
 # A kind that declares no moved rows is admitted only by its hooks (never its ID), as one of two
 # non-movers. A stage read (B4's buffer): it declares the rows it reads (stage_rows), and has no
 # rates, so no move and no slope; the read changes the concentrations the stage's rates see, never
@@ -200,12 +209,12 @@ def capacitor_components(model):
 
 
 def held_terms(kind, law_id):
-    """The step terms a move under `law_id` by `kind` has: those of CHARGE_TERMS and
-    MATERIAL_TERMS that the law declares in the active law registry and that the kind moving it
-    holds by its hook of the same name, with the reason when there are none. Read by law ID, so a
-    planted kind that reuses a law's ID (FR-4's K2) is admitted on the law's declaration only where
-    it keeps the hooks the law names. A move with no law ID, an unregistered law and a law another
-    kind hosts have none (fails closed)."""
+    """The step terms a move under `law_id` by `kind` has: those of TERM_HOOKS that the law
+    declares in the active law registry and that the kind moving it holds by the hook each maps
+    to, with the reason when there are none. Read by law ID, so a planted kind that reuses a law's
+    ID (FR-4's K2) is admitted on the law's declaration only where it keeps the hooks the law
+    names. A move with no law ID, an unregistered law and a law another kind hosts have none
+    (fails closed)."""
     if law_id is None:
         return (), "names no law (a moved row without a law ID)"
     laws = law_registry.active()
@@ -215,8 +224,8 @@ def held_terms(kind, law_id):
     host = kind_registry.qualified(law.host)
     if host != kind_registry.qualified(kind.kind_id):
         return (), f"is hosted by {host}, whose hooks hold its terms"
-    declared = [t for t in (*CHARGE_TERMS, *MATERIAL_TERMS) if getattr(law, t, None)]
-    held = tuple(t for t in declared if getattr(kind, t, None) is not None)
+    declared = [t for t in TERM_HOOKS if getattr(law, t, None)]
+    held = tuple(t for t in declared if getattr(kind, TERM_HOOKS[t], None) is not None)
     if not declared:
         return held, "declares no step term"
     holds = ", ".join(held) or "none"
@@ -226,8 +235,8 @@ def held_terms(kind, law_id):
 def refuse_kind_moves(model, node, kind_id, declaration):
     """Refusal 4's kinds, per move (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4): every
     row the kind moves at the compartment's node is held by its law's declared step term (a
-    charged row by a charge slope, a neutral row by a material slope or a definition-time bound);
-    a kind that declares no moved rows is admitted as a stage read or a source, by its hooks."""
+    charged row by a charge slope, a neutral row by a material slope or a material bound); a kind
+    that declares no moved rows is admitted as a stage read or a source, by its hooks."""
     kind = kind_registry.active().lookup(kind_id)
     if kind.moved_rows is None:
         if kind.stage_read is not None:  # A stage read, which declares its rows.
@@ -262,7 +271,8 @@ def refuse_kind_moves(model, node, kind_id, declaration):
                 + (
                     "a charge slope (stage_term), which the per-stage rule holds there"
                     if charged
-                    else "a material slope (material_term) or a definition-time bound (bound_rate)"
+                    else "a material slope (material_term) or a definition-time material bound "
+                    "(material_bound, through the kind's bound_rate)"
                 )
                 + " (fails closed)"
             )

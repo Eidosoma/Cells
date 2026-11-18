@@ -644,7 +644,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
     """Version 1.3's premise (§3.4.4; §3.4.1's wording after the core's review, finding 4): each
     built-in law a kind moves rows under declares, in the law registry, the step terms its kind
     holds. The pump's proton law and the leak declare a charge slope (stage_term, the per-stage
-    rule's); the passive neutral law a definition-time bound (bound_rate: dt L <= 1). The
+    rule's); the passive neutral law a material bound (material_bound: dt L <= 1). The
     transporter's neutral law declares none, version 1.1's open item, so a move of it at a
     compartment's node is refused (the test below). The buffer is a stage read and the routing
     door's two kinds are sources, by their hooks. If a declaration or a hook goes, refusal 4's
@@ -661,7 +661,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         PROTON_PUMP: ("stage_term",),
         NEUTRAL_PUMP: (),
         LEAK: ("stage_term",),
-        NEUTRAL_ROUTE: ("bound_rate",),
+        NEUTRAL_ROUTE: ("material_bound",),
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     for kind_id in ("cells.rapid_proton_buffer@1", *SOURCE_KINDS):
@@ -680,7 +680,8 @@ class PlantedLaw(law_registry.Law):
 
     stage_term: str | None = None
     material_term: str | None = None
-    bound_rate: str | None = None
+    charge_bound: str | None = None
+    material_bound: str | None = None
 
     interface: ClassVar[str] = "tests.planted_law@1"
 
@@ -725,8 +726,14 @@ PLANTED_MOVES = {
     "a charged row whose law declares no term": ("K", {}, {}, "declares no step term"),
     "a charged row held only by material terms": (
         "K",
-        dict(material_term="slope", bound_rate="bound"),
+        dict(material_term="slope", material_bound="bound"),
         dict(material_term=no_slope, bound_rate=no_bound),
+        "a charge slope",
+    ),
+    "a charged row held only by its charge bound": (
+        "K",
+        dict(charge_bound="bound"),
+        dict(stage_term=None, bound_rate=no_bound),
         "a charge slope",
     ),
     "a charged row whose kind lacks the slope its law declares": (
@@ -741,9 +748,9 @@ PLANTED_MOVES = {
         dict(material_term=no_slope),
         None,
     ),
-    "a neutral row held by its definition-time bound": (
+    "a neutral row held by its material bound": (
         "S",
-        dict(bound_rate="bound"),
+        dict(material_bound="bound"),
         dict(bound_rate=no_bound),
         None,
     ),
@@ -759,9 +766,15 @@ PLANTED_MOVES = {
         {},
         "a material slope",
     ),
+    "a neutral row held only by a charge bound": (
+        "S",
+        dict(charge_bound="bound"),
+        dict(bound_rate=no_bound),
+        "a material slope",
+    ),
     "a neutral row whose kind lacks the bound its law declares": (
         "S",
-        dict(bound_rate="bound"),
+        dict(material_bound="bound"),
         {},
         "of which its kind holds none",
     ),
@@ -773,8 +786,10 @@ def test_a_move_at_the_compartments_node_needs_a_term_its_law_declares(name):
     """Refusal 4, version 1.3 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4; docs/CORE_SEAMS_DESIGN.md
     §4.4): a planted kind moves a row across the bounding patch, so at the compartment's node,
     under a planted law. A charged row is admitted only by a charge slope (stage_term), a neutral
-    row by a material slope (material_term) or a definition-time bound (bound_rate), each declared
-    by the law and held by the kind's hook of that name; otherwise it is refused, naming the law."""
+    row by a material slope (material_term) or a definition-time material bound (material_bound),
+    each declared by the law and held by the kind's hook that supplies it (bound_rate for the
+    bounds); a charge bound alone holds neither (§18 as amended splits the bound). Otherwise the
+    move is refused, naming the law."""
     species, terms, hooks, refusal = PLANTED_MOVES[name]
     hooks = dict(dict(stage_term=no_slope), **hooks)  # The carrier has no slope of its own.
     kind = carrier_under(PLANTED_LAW, **hooks)
