@@ -1,0 +1,19 @@
+{
+ "format": "cells.visualizer.cell_type@1",
+ "species": "brightfin",
+ "id": "ciliated-dense",
+ "extends": "ciliated",
+ "label": "Ciliated cell, dense",
+ "order": 21,
+ "plain": "A made-up variant: the ciliated cell with another parameter set.",
+ "differs": {
+  "in": "parameters",
+  "says": "It differs from the ciliated cell in the strengths of its currents, not in its structures, so it is drawn the same.",
+  "record": [
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D999, made up"
+   }
+  ]
+ }
+}

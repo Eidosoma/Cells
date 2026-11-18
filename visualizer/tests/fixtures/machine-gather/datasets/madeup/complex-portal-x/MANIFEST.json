@@ -1,0 +1,21 @@
+{
+ "source_id": "complex-portal-x",
+ "record": {
+  "what": "A made-up complextab file for tests/machine_gather.test.mjs: no data of any source",
+  "licence": "Made up for the test"
+ },
+ "files": [
+  {
+   "name": "complextab.tsv",
+   "url": null,
+   "role": "made up",
+   "retrieved_utc": "2026-11-17T00:00:00Z",
+   "http_status": null,
+   "size_bytes": 291,
+   "sha256": "60beaeb87168a4a699cfe558a389fdf4d1d06178623f3a3075b62191d8a749d9",
+   "ok": true,
+   "error": null
+  }
+ ],
+ "note": "Made up for the test; not a download."
+}

@@ -1,0 +1,2382 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; y from the part ring's centre to the part head's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "6OQR": {
+   "entry": "6OQR",
+   "title": "E. coli ATP Synthase ADP State 1a",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.1",
+   "left_out": [],
+   "whole": {
+    "atoms": 36767,
+    "axes": [
+     [
+      0.052,
+      0.9982,
+      -0.0298
+     ],
+     [
+      0.9986,
+      -0.0521,
+      0.0
+     ],
+     [
+      -0.0016,
+      -0.0297,
+      -0.9996
+     ]
+    ],
+    "across_nm": [
+     25.4,
+     11.4,
+     9.4
+    ],
+    "farthest_nm": [
+     22.3,
+     12.4,
+     11.3
+    ],
+    "middle_98_percent_nm": [
+     20.6,
+     10.5,
+     9.2
+    ],
+    "radius_of_gyration_nm": 6.57
+   },
+   "frame": {
+    "from": "ring",
+    "to": "head",
+    "between_centres_nm": 12.0
+   },
+   "parts": {
+    "head": {
+     "by": "entities",
+     "ids": [
+      "2",
+      "6"
+     ],
+     "atoms": 22138,
+     "centre_nm": [
+      0.58,
+      3.06,
+      -0.03
+     ],
+     "axes": [
+      [
+       0.9843,
+       -0.1463,
+       -0.0984
+      ],
+      [
+       0.1184,
+       0.1343,
+       0.9838
+      ],
+      [
+       -0.1307,
+       -0.9801,
+       0.1495
+      ]
+     ],
+     "across_nm": [
+      11.6,
+      11.1,
+      9.8
+     ],
+     "farthest_nm": [
+      12.4,
+      11.4,
+      11.6
+     ],
+     "radius_of_gyration_nm": 4.21
+    },
+    "central-stalk": {
+     "by": "entities",
+     "ids": [
+      "5",
+      "4"
+     ],
+     "atoms": 3220,
+     "centre_nm": [
+      0.38,
+      -2.62,
+      0.04
+     ],
+     "axes": [
+      [
+       0.0289,
+       0.9961,
+       0.0837
+      ],
+      [
+       -0.144,
+       -0.0787,
+       0.9864
+      ],
+      [
+       0.9892,
+       -0.0405,
+       0.1412
+      ]
+     ],
+     "across_nm": [
+      11.1,
+      5.3,
+      3.6
+     ],
+     "farthest_nm": [
+      11.8,
+      6.4,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.87
+    },
+    "peripheral-stalk": {
+     "by": "entities",
+     "ids": [
+      "3",
+      "1"
+     ],
+     "atoms": 3740,
+     "centre_nm": [
+      -2.98,
+      2.62,
+      -0.18
+     ],
+     "axes": [
+      [
+       0.1441,
+       0.982,
+       -0.1217
+      ],
+      [
+       0.9295,
+       -0.0922,
+       0.357
+      ],
+      [
+       0.3394,
+       -0.1646,
+       -0.9261
+      ]
+     ],
+     "across_nm": [
+      29.4,
+      9.6,
+      3.6
+     ],
+     "farthest_nm": [
+      21.6,
+      8.5,
+      4.8
+     ],
+     "radius_of_gyration_nm": 6.96
+    },
+    "ring": {
+     "by": "entities",
+     "ids": [
+      "7"
+     ],
+     "atoms": 5565,
+     "centre_nm": [
+      0.58,
+      -8.93,
+      -0.03
+     ],
+     "axes": [
+      [
+       -0.0379,
+       0.9988,
+       -0.0305
+      ],
+      [
+       -0.2781,
+       0.0187,
+       0.9604
+      ],
+      [
+       0.9598,
+       0.0449,
+       0.277
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      6.0,
+      6.0
+     ],
+     "farthest_nm": [
+      6.7,
+      5.5,
+      5.5
+     ],
+     "radius_of_gyration_nm": 2.57
+    },
+    "stator-foot": {
+     "by": "entities",
+     "ids": [
+      "8"
+     ],
+     "atoms": 2104,
+     "centre_nm": [
+      -2.87,
+      -9.25,
+      0.65
+     ],
+     "axes": [
+      [
+       -0.008,
+       -0.5161,
+       0.8565
+      ],
+      [
+       -0.3904,
+       0.7902,
+       0.4725
+      ],
+      [
+       -0.9206,
+       -0.3305,
+       -0.2078
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.3,
+      3.9
+     ],
+     "farthest_nm": [
+      7.5,
+      6.0,
+      4.6
+     ],
+     "radius_of_gyration_nm": 2.26
+    }
+   },
+   "chains": [
+    {
+     "chain": "W",
+     "entity": "1",
+     "description": "ATP synthase subunit delta",
+     "atoms": 1320,
+     "centre_nm": [
+      -0.53,
+      8.27,
+      -0.27
+     ],
+     "axes": [
+      [
+       0.9977,
+       -0.0008,
+       0.0673
+      ],
+      [
+       -0.046,
+       0.721,
+       0.6914
+      ],
+      [
+       -0.0491,
+       -0.6929,
+       0.7194
+      ]
+     ],
+     "across_nm": [
+      8.2,
+      3.9,
+      2.8
+     ],
+     "farthest_nm": [
+      6.9,
+      4.1,
+      2.9
+     ],
+     "radius_of_gyration_nm": 2.14
+    },
+    {
+     "chain": "C",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3869,
+     "centre_nm": [
+      2.67,
+      3.11,
+      2.37
+     ],
+     "axes": [
+      [
+       -0.1752,
+       0.976,
+       -0.1294
+      ],
+      [
+       0.7464,
+       0.2173,
+       0.629
+      ],
+      [
+       0.642,
+       0.0136,
+       -0.7666
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      5.1,
+      3.8
+     ],
+     "farthest_nm": [
+      10.3,
+      6.3,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.76
+    },
+    {
+     "chain": "B",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3851,
+     "centre_nm": [
+      -2.8,
+      3.34,
+      0.7
+     ],
+     "axes": [
+      [
+       0.1505,
+       0.9542,
+       -0.2584
+      ],
+      [
+       0.9714,
+       -0.1914,
+       -0.1408
+      ],
+      [
+       -0.1838,
+       -0.2298,
+       -0.9557
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      5.5,
+      4.0
+     ],
+     "farthest_nm": [
+      9.0,
+      6.0,
+      4.9
+     ],
+     "radius_of_gyration_nm": 2.64
+    },
+    {
+     "chain": "A",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3832,
+     "centre_nm": [
+      1.77,
+      2.95,
+      -3.12
+     ],
+     "axes": [
+      [
+       -0.0077,
+       0.9747,
+       0.2236
+      ],
+      [
+       -0.065,
+       -0.2236,
+       0.9725
+      ],
+      [
+       0.9979,
+       -0.0071,
+       0.0651
+      ]
+     ],
+     "across_nm": [
+      10.9,
+      4.9,
+      3.8
+     ],
+     "farthest_nm": [
+      11.5,
+      6.1,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.81
+    },
+    {
+     "chain": "X",
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "atoms": 1210,
+     "centre_nm": [
+      -4.56,
+      -0.35,
+      -0.74
+     ],
+     "axes": [
+      [
+       -0.069,
+       0.9858,
+       -0.1532
+      ],
+      [
+       0.4292,
+       0.1679,
+       0.8875
+      ],
+      [
+       0.9006,
+       -0.0045,
+       -0.4347
+      ]
+     ],
+     "across_nm": [
+      27.3,
+      2.8,
+      1.8
+     ],
+     "farthest_nm": [
+      20.1,
+      3.3,
+      2.8
+     ],
+     "radius_of_gyration_nm": 6.15
+    },
+    {
+     "chain": "H",
+     "entity": "4",
+     "description": "ATP synthase epsilon chain",
+     "atoms": 1034,
+     "centre_nm": [
+      0.98,
+      -3.47,
+      -0.68
+     ],
+     "axes": [
+      [
+       0.0358,
+       0.9153,
+       0.4011
+      ],
+      [
+       0.4842,
+       -0.367,
+       0.7943
+      ],
+      [
+       0.8743,
+       0.1658,
+       -0.4563
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      4.6,
+      2.6
+     ],
+     "farthest_nm": [
+      8.6,
+      4.5,
+      2.9
+     ],
+     "radius_of_gyration_nm": 2.65
+    },
+    {
+     "chain": "G",
+     "entity": "5",
+     "description": "ATP synthase gamma chain",
+     "atoms": 2186,
+     "centre_nm": [
+      0.1,
+      -2.22,
+      0.38
+     ],
+     "axes": [
+      [
+       0.0964,
+       0.9883,
+       -0.1178
+      ],
+      [
+       0.1421,
+       0.1034,
+       0.9844
+      ],
+      [
+       0.9851,
+       -0.1117,
+       -0.1305
+      ]
+     ],
+     "across_nm": [
+      11.3,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      11.6,
+      4.3,
+      3.3
+     ],
+     "radius_of_gyration_nm": 2.78
+    },
+    {
+     "chain": "F",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3520,
+     "centre_nm": [
+      -0.55,
+      3.26,
+      2.8
+     ],
+     "axes": [
+      [
+       -0.0635,
+       0.9973,
+       -0.0364
+      ],
+      [
+       -0.3834,
+       0.0093,
+       0.9235
+      ],
+      [
+       0.9214,
+       0.0726,
+       0.3818
+      ]
+     ],
+     "across_nm": [
+      9.4,
+      4.8,
+      4.0
+     ],
+     "farthest_nm": [
+      8.8,
+      5.3,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.52
+    },
+    {
+     "chain": "E",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3533,
+     "centre_nm": [
+      -1.53,
+      2.92,
+      -2.56
+     ],
+     "axes": [
+      [
+       0.2827,
+       0.9592,
+       0.0011
+      ],
+      [
+       0.5199,
+       -0.1542,
+       0.8402
+      ],
+      [
+       0.8061,
+       -0.237,
+       -0.5423
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      4.5,
+      4.0
+     ],
+     "farthest_nm": [
+      9.1,
+      5.0,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.54
+    },
+    {
+     "chain": "D",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3533,
+     "centre_nm": [
+      3.89,
+      2.79,
+      -0.39
+     ],
+     "axes": [
+      [
+       -0.0651,
+       0.9955,
+       0.0695
+      ],
+      [
+       0.9972,
+       0.0674,
+       -0.0318
+      ],
+      [
+       -0.0363,
+       0.0673,
+       -0.9971
+      ]
+     ],
+     "across_nm": [
+      9.6,
+      4.5,
+      4.0
+     ],
+     "farthest_nm": [
+      9.2,
+      5.0,
+      5.0
+     ],
+     "radius_of_gyration_nm": 2.53
+    },
+    {
+     "chain": "J",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -1.15,
+      -9.03,
+      -0.49
+     ],
+     "axes": [
+      [
+       -0.052,
+       0.9986,
+       -0.0131
+      ],
+      [
+       0.7744,
+       0.0486,
+       0.6308
+      ],
+      [
+       0.6305,
+       0.0227,
+       -0.7758
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.4,
+      2.3,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.85
+    },
+    {
+     "chain": "L",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -1.09,
+      -8.99,
+      0.64
+     ],
+     "axes": [
+      [
+       -0.0513,
+       0.9987,
+       -0.0012
+      ],
+      [
+       0.9983,
+       0.0513,
+       0.0291
+      ],
+      [
+       0.0291,
+       0.0003,
+       -0.9996
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.4,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "M",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -0.54,
+      -9.03,
+      -1.42
+     ],
+     "axes": [
+      [
+       -0.0681,
+       0.9973,
+       -0.028
+      ],
+      [
+       0.2614,
+       0.0449,
+       0.9642
+      ],
+      [
+       0.9628,
+       0.0583,
+       -0.2637
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.4
+     ],
+     "farthest_nm": [
+      6.5,
+      2.3,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.84
+    },
+    {
+     "chain": "N",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      2.24,
+      -8.88,
+      -0.69
+     ],
+     "axes": [
+      [
+       -0.0329,
+       0.9975,
+       -0.0626
+      ],
+      [
+       0.9986,
+       0.0353,
+       0.0391
+      ],
+      [
+       0.0412,
+       -0.0612,
+       -0.9973
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.4,
+      2.2,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.83
+    },
+    {
+     "chain": "O",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      2.3,
+      -8.84,
+      0.41
+     ],
+     "axes": [
+      [
+       -0.0209,
+       0.9989,
+       -0.0425
+      ],
+      [
+       0.8245,
+       0.0413,
+       0.5644
+      ],
+      [
+       0.5655,
+       -0.0232,
+       -0.8244
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.7,
+      2.1,
+      2.0
+     ],
+     "radius_of_gyration_nm": 1.84
+    },
+    {
+     "chain": "P",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      1.69,
+      -8.84,
+      1.37
+     ],
+     "axes": [
+      [
+       -0.0182,
+       0.9991,
+       -0.0395
+      ],
+      [
+       0.3032,
+       0.0432,
+       0.9519
+      ],
+      [
+       0.9527,
+       0.0054,
+       -0.3037
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.4
+     ],
+     "farthest_nm": [
+      6.2,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.83
+    },
+    {
+     "chain": "Q",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -0.4,
+      -8.93,
+      1.48
+     ],
+     "axes": [
+      [
+       -0.0461,
+       0.9989,
+       0.0047
+      ],
+      [
+       0.8212,
+       0.0406,
+       -0.5692
+      ],
+      [
+       -0.5688,
+       -0.0224,
+       -0.8222
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.7,
+      2.0,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "R",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 552,
+     "centre_nm": [
+      0.48,
+      -8.99,
+      -1.83
+     ],
+     "axes": [
+      [
+       -0.0529,
+       0.997,
+       -0.0558
+      ],
+      [
+       -0.3016,
+       0.0373,
+       0.9527
+      ],
+      [
+       0.9519,
+       0.0673,
+       0.2988
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.5,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.83
+    },
+    {
+     "chain": "Y",
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "atoms": 1210,
+     "centre_nm": [
+      -4.06,
+      -0.59,
+      0.5
+     ],
+     "axes": [
+      [
+       -0.0854,
+       0.9648,
+       -0.2488
+      ],
+      [
+       0.8566,
+       0.1986,
+       0.4762
+      ],
+      [
+       0.5088,
+       -0.1724,
+       -0.8434
+      ]
+     ],
+     "across_nm": [
+      28.5,
+      4.3,
+      1.8
+     ],
+     "farthest_nm": [
+      21.2,
+      4.5,
+      2.5
+     ],
+     "radius_of_gyration_nm": 6.46
+    },
+    {
+     "chain": "a",
+     "entity": "8",
+     "description": "ATP synthase subunit a",
+     "atoms": 2104,
+     "centre_nm": [
+      -2.87,
+      -9.25,
+      0.65
+     ],
+     "axes": [
+      [
+       -0.008,
+       -0.5161,
+       0.8565
+      ],
+      [
+       -0.3904,
+       0.7902,
+       0.4725
+      ],
+      [
+       -0.9206,
+       -0.3305,
+       -0.2078
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.3,
+      3.9
+     ],
+     "farthest_nm": [
+      7.5,
+      6.0,
+      4.6
+     ],
+     "radius_of_gyration_nm": 2.26
+    },
+    {
+     "chain": "I",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      0.67,
+      -8.87,
+      1.77
+     ],
+     "axes": [
+      [
+       -0.0262,
+       0.9995,
+       -0.0172
+      ],
+      [
+       -0.3075,
+       0.0083,
+       0.9515
+      ],
+      [
+       0.9512,
+       0.0303,
+       0.3072
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.2,
+      1.4
+     ],
+     "farthest_nm": [
+      6.6,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.84
+    },
+    {
+     "chain": "S",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      1.55,
+      -8.95,
+      -1.55
+     ],
+     "axes": [
+      [
+       -0.0506,
+       0.9971,
+       -0.0571
+      ],
+      [
+       0.7997,
+       0.0062,
+       -0.6004
+      ],
+      [
+       -0.5983,
+       -0.0761,
+       -0.7977
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.2,
+      1.5
+     ],
+     "farthest_nm": [
+      6.7,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.85
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "ATP synthase subunit delta",
+     "copies": 1,
+     "sequence_length": 177,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.977,
+     "atoms_per_modelled_residue": 7.63
+    },
+    {
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "copies": 3,
+     "sequence_length": 513,
+     "residues_modelled_per_copy": 510.3,
+     "modelled_share": 0.995,
+     "atoms_per_modelled_residue": 7.55
+    },
+    {
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "copies": 2,
+     "sequence_length": 156,
+     "residues_modelled_per_copy": 156.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 7.76
+    },
+    {
+     "entity": "4",
+     "description": "ATP synthase epsilon chain",
+     "copies": 1,
+     "sequence_length": 139,
+     "residues_modelled_per_copy": 136.0,
+     "modelled_share": 0.978,
+     "atoms_per_modelled_residue": 7.6
+    },
+    {
+     "entity": "5",
+     "description": "ATP synthase gamma chain",
+     "copies": 1,
+     "sequence_length": 287,
+     "residues_modelled_per_copy": 284.0,
+     "modelled_share": 0.99,
+     "atoms_per_modelled_residue": 7.7
+    },
+    {
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "copies": 3,
+     "sequence_length": 471,
+     "residues_modelled_per_copy": 459.3,
+     "modelled_share": 0.975,
+     "atoms_per_modelled_residue": 7.68
+    },
+    {
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "copies": 10,
+     "sequence_length": 79,
+     "residues_modelled_per_copy": 76.9,
+     "modelled_share": 0.973,
+     "atoms_per_modelled_residue": 7.24
+    },
+    {
+     "entity": "8",
+     "description": "ATP synthase subunit a",
+     "copies": 1,
+     "sequence_length": 271,
+     "residues_modelled_per_copy": 266.0,
+     "modelled_share": 0.982,
+     "atoms_per_modelled_residue": 7.91
+    }
+   ]
+  },
+  "6OQS": {
+   "entry": "6OQS",
+   "title": "E. coli ATP synthase State 1b",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.3",
+   "left_out": [],
+   "whole": {
+    "atoms": 36787,
+    "axes": [
+     [
+      0.0565,
+      0.9983,
+      -0.016
+     ],
+     [
+      0.9984,
+      -0.0566,
+      0.0
+     ],
+     [
+      -0.0009,
+      -0.0159,
+      -0.9999
+     ]
+    ],
+    "across_nm": [
+     25.4,
+     11.5,
+     9.3
+    ],
+    "farthest_nm": [
+     22.4,
+     12.3,
+     11.4
+    ],
+    "middle_98_percent_nm": [
+     20.6,
+     10.6,
+     9.2
+    ],
+    "radius_of_gyration_nm": 6.58
+   },
+   "frame": {
+    "from": "ring",
+    "to": "head",
+    "between_centres_nm": 12.0
+   },
+   "parts": {
+    "head": {
+     "by": "entities",
+     "ids": [
+      "2",
+      "6"
+     ],
+     "atoms": 22158,
+     "centre_nm": [
+      0.59,
+      3.06,
+      -0.01
+     ],
+     "axes": [
+      [
+       0.9792,
+       -0.1437,
+       -0.1432
+      ],
+      [
+       0.1643,
+       0.1474,
+       0.9753
+      ],
+      [
+       -0.1191,
+       -0.9786,
+       0.1679
+      ]
+     ],
+     "across_nm": [
+      11.7,
+      11.1,
+      9.8
+     ],
+     "farthest_nm": [
+      12.3,
+      11.5,
+      11.6
+     ],
+     "radius_of_gyration_nm": 4.22
+    },
+    "central-stalk": {
+     "by": "entities",
+     "ids": [
+      "5",
+      "4"
+     ],
+     "atoms": 3220,
+     "centre_nm": [
+      0.3,
+      -2.62,
+      0.11
+     ],
+     "axes": [
+      [
+       0.0584,
+       0.9955,
+       0.0741
+      ],
+      [
+       -0.01,
+       -0.0736,
+       0.9972
+      ],
+      [
+       0.9982,
+       -0.059,
+       0.0056
+      ]
+     ],
+     "across_nm": [
+      11.1,
+      5.3,
+      3.6
+     ],
+     "farthest_nm": [
+      11.7,
+      6.4,
+      4.5
+     ],
+     "radius_of_gyration_nm": 2.87
+    },
+    "peripheral-stalk": {
+     "by": "entities",
+     "ids": [
+      "3",
+      "1"
+     ],
+     "atoms": 3740,
+     "centre_nm": [
+      -2.98,
+      2.64,
+      -0.12
+     ],
+     "axes": [
+      [
+       0.1596,
+       0.9834,
+       -0.0865
+      ],
+      [
+       0.9559,
+       -0.132,
+       0.2624
+      ],
+      [
+       0.2466,
+       -0.1246,
+       -0.9611
+      ]
+     ],
+     "across_nm": [
+      29.5,
+      9.5,
+      3.7
+     ],
+     "farthest_nm": [
+      21.6,
+      8.4,
+      4.6
+     ],
+     "radius_of_gyration_nm": 6.98
+    },
+    "ring": {
+     "by": "entities",
+     "ids": [
+      "7"
+     ],
+     "atoms": 5565,
+     "centre_nm": [
+      0.59,
+      -8.92,
+      -0.01
+     ],
+     "axes": [
+      [
+       -0.0452,
+       0.9989,
+       -0.0091
+      ],
+      [
+       0.2217,
+       0.0189,
+       0.9749
+      ],
+      [
+       0.9741,
+       0.0421,
+       -0.2224
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      6.0,
+      6.0
+     ],
+     "farthest_nm": [
+      6.7,
+      5.5,
+      5.5
+     ],
+     "radius_of_gyration_nm": 2.56
+    },
+    "stator-foot": {
+     "by": "entities",
+     "ids": [
+      "8"
+     ],
+     "atoms": 2104,
+     "centre_nm": [
+      -2.89,
+      -9.31,
+      0.23
+     ],
+     "axes": [
+      [
+       -0.0974,
+       -0.5415,
+       0.835
+      ],
+      [
+       -0.4802,
+       0.7604,
+       0.4371
+      ],
+      [
+       -0.8717,
+       -0.3584,
+       -0.3341
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.3,
+      3.8
+     ],
+     "farthest_nm": [
+      7.5,
+      6.0,
+      4.6
+     ],
+     "radius_of_gyration_nm": 2.25
+    }
+   },
+   "chains": [
+    {
+     "chain": "W",
+     "entity": "1",
+     "description": "ATP synthase subunit delta",
+     "atoms": 1320,
+     "centre_nm": [
+      -0.41,
+      8.29,
+      -0.18
+     ],
+     "axes": [
+      [
+       0.9997,
+       -0.0235,
+       -0.0049
+      ],
+      [
+       0.0203,
+       0.7221,
+       0.6915
+      ],
+      [
+       -0.0127,
+       -0.6914,
+       0.7224
+      ]
+     ],
+     "across_nm": [
+      8.2,
+      3.9,
+      2.8
+     ],
+     "farthest_nm": [
+      6.8,
+      4.1,
+      3.0
+     ],
+     "radius_of_gyration_nm": 2.13
+    },
+    {
+     "chain": "C",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3869,
+     "centre_nm": [
+      2.86,
+      3.06,
+      2.23
+     ],
+     "axes": [
+      [
+       -0.1659,
+       0.9791,
+       -0.1175
+      ],
+      [
+       0.793,
+       0.2033,
+       0.5742
+      ],
+      [
+       0.5861,
+       0.0021,
+       -0.8102
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      5.1,
+      3.8
+     ],
+     "farthest_nm": [
+      10.3,
+      6.3,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.75
+    },
+    {
+     "chain": "B",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3871,
+     "centre_nm": [
+      -2.77,
+      3.39,
+      0.94
+     ],
+     "axes": [
+      [
+       0.194,
+       0.9482,
+       -0.2514
+      ],
+      [
+       0.9529,
+       -0.2431,
+       -0.1814
+      ],
+      [
+       -0.2331,
+       -0.2044,
+       -0.9507
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      5.5,
+      4.0
+     ],
+     "farthest_nm": [
+      8.8,
+      6.1,
+      5.0
+     ],
+     "radius_of_gyration_nm": 2.65
+    },
+    {
+     "chain": "A",
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "atoms": 3832,
+     "centre_nm": [
+      1.56,
+      2.92,
+      -3.18
+     ],
+     "axes": [
+      [
+       0.0328,
+       0.9756,
+       0.2173
+      ],
+      [
+       0.0035,
+       -0.2175,
+       0.9761
+      ],
+      [
+       0.9995,
+       -0.0313,
+       -0.0106
+      ]
+     ],
+     "across_nm": [
+      10.9,
+      4.9,
+      3.8
+     ],
+     "farthest_nm": [
+      11.5,
+      6.2,
+      4.7
+     ],
+     "radius_of_gyration_nm": 2.81
+    },
+    {
+     "chain": "X",
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "atoms": 1210,
+     "centre_nm": [
+      -4.6,
+      -0.3,
+      -0.71
+     ],
+     "axes": [
+      [
+       -0.0694,
+       0.9934,
+       -0.0911
+      ],
+      [
+       0.5068,
+       0.1138,
+       0.8545
+      ],
+      [
+       0.8593,
+       0.0132,
+       -0.5114
+      ]
+     ],
+     "across_nm": [
+      27.4,
+      2.6,
+      1.8
+     ],
+     "farthest_nm": [
+      20.1,
+      3.1,
+      2.7
+     ],
+     "radius_of_gyration_nm": 6.17
+    },
+    {
+     "chain": "H",
+     "entity": "4",
+     "description": "ATP synthase epsilon chain",
+     "atoms": 1034,
+     "centre_nm": [
+      0.78,
+      -3.47,
+      -0.67
+     ],
+     "axes": [
+      [
+       0.1033,
+       0.9139,
+       0.3926
+      ],
+      [
+       0.5886,
+       -0.3743,
+       0.7165
+      ],
+      [
+       0.8018,
+       0.1571,
+       -0.5766
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      4.6,
+      2.6
+     ],
+     "farthest_nm": [
+      8.6,
+      4.6,
+      2.9
+     ],
+     "radius_of_gyration_nm": 2.64
+    },
+    {
+     "chain": "G",
+     "entity": "5",
+     "description": "ATP synthase gamma chain",
+     "atoms": 2186,
+     "centre_nm": [
+      0.07,
+      -2.22,
+      0.48
+     ],
+     "axes": [
+      [
+       0.0988,
+       0.9861,
+       -0.1335
+      ],
+      [
+       0.2586,
+       0.1041,
+       0.9604
+      ],
+      [
+       0.9609,
+       -0.1294,
+       -0.2447
+      ]
+     ],
+     "across_nm": [
+      11.3,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      11.6,
+      4.4,
+      3.2
+     ],
+     "radius_of_gyration_nm": 2.78
+    },
+    {
+     "chain": "F",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3520,
+     "centre_nm": [
+      -0.31,
+      3.27,
+      2.9
+     ],
+     "axes": [
+      [
+       -0.0486,
+       0.9982,
+       -0.0356
+      ],
+      [
+       -0.3171,
+       0.0183,
+       0.9482
+      ],
+      [
+       0.9472,
+       0.0574,
+       0.3156
+      ]
+     ],
+     "across_nm": [
+      9.4,
+      4.8,
+      4.0
+     ],
+     "farthest_nm": [
+      8.8,
+      5.3,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.52
+    },
+    {
+     "chain": "E",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3533,
+     "centre_nm": [
+      -1.68,
+      2.95,
+      -2.38
+     ],
+     "axes": [
+      [
+       0.2989,
+       0.9539,
+       -0.0249
+      ],
+      [
+       0.5673,
+       -0.1566,
+       0.8085
+      ],
+      [
+       0.7674,
+       -0.2558,
+       -0.588
+      ]
+     ],
+     "across_nm": [
+      9.7,
+      4.5,
+      4.0
+     ],
+     "farthest_nm": [
+      9.2,
+      5.1,
+      4.8
+     ],
+     "radius_of_gyration_nm": 2.54
+    },
+    {
+     "chain": "D",
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "atoms": 3533,
+     "centre_nm": [
+      3.87,
+      2.73,
+      -0.61
+     ],
+     "axes": [
+      [
+       -0.0392,
+       0.9966,
+       0.0722
+      ],
+      [
+       0.9932,
+       0.0468,
+       -0.1063
+      ],
+      [
+       -0.1093,
+       0.0676,
+       -0.9917
+      ]
+     ],
+     "across_nm": [
+      9.6,
+      4.5,
+      4.0
+     ],
+     "farthest_nm": [
+      9.3,
+      5.0,
+      4.9
+     ],
+     "radius_of_gyration_nm": 2.53
+    },
+    {
+     "chain": "I",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      1.22,
+      -8.87,
+      1.67
+     ],
+     "axes": [
+      [
+       -0.0466,
+       0.9988,
+       0.0136
+      ],
+      [
+       -0.0197,
+       -0.0145,
+       0.9997
+      ],
+      [
+       0.9987,
+       0.0463,
+       0.0204
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.2,
+      1.4
+     ],
+     "farthest_nm": [
+      6.5,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "J",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -1.2,
+      -9.0,
+      0.08
+     ],
+     "axes": [
+      [
+       -0.0604,
+       0.9982,
+       -0.001
+      ],
+      [
+       0.949,
+       0.0578,
+       0.3099
+      ],
+      [
+       0.3094,
+       0.0178,
+       -0.9508
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.2,
+      1.5
+     ],
+     "farthest_nm": [
+      6.4,
+      2.0,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "L",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -0.82,
+      -9.0,
+      1.11
+     ],
+     "axes": [
+      [
+       -0.0637,
+       0.9978,
+       0.0181
+      ],
+      [
+       0.9582,
+       0.0663,
+       -0.2783
+      ],
+      [
+       -0.2789,
+       -0.0004,
+       -0.9603
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.6,
+      2.1,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "M",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      -0.93,
+      -8.99,
+      -1.01
+     ],
+     "axes": [
+      [
+       -0.0713,
+       0.9974,
+       -0.0077
+      ],
+      [
+       0.5688,
+       0.047,
+       0.8211
+      ],
+      [
+       0.8194,
+       0.0542,
+       -0.5707
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.2,
+      1.5
+     ],
+     "farthest_nm": [
+      6.4,
+      2.1,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "N",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      1.98,
+      -8.86,
+      -1.15
+     ],
+     "axes": [
+      [
+       -0.0352,
+       0.9991,
+       -0.0217
+      ],
+      [
+       0.968,
+       0.0286,
+       -0.2494
+      ],
+      [
+       -0.2486,
+       -0.0298,
+       -0.9681
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.6,
+      2.2,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.83
+    },
+    {
+     "chain": "O",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      2.38,
+      -8.83,
+      -0.05
+     ],
+     "axes": [
+      [
+       -0.0292,
+       0.9994,
+       -0.0191
+      ],
+      [
+       0.9426,
+       0.0339,
+       0.3321
+      ],
+      [
+       0.3326,
+       -0.0083,
+       -0.943
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.7,
+      2.1,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.84
+    },
+    {
+     "chain": "P",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      2.08,
+      -8.83,
+      0.97
+     ],
+     "axes": [
+      [
+       -0.0225,
+       0.9997,
+       -0.0007
+      ],
+      [
+       0.5849,
+       0.0137,
+       0.811
+      ],
+      [
+       0.8108,
+       0.0179,
+       -0.5851
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.4
+     ],
+     "farthest_nm": [
+      6.4,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "Q",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      0.11,
+      -8.93,
+      1.72
+     ],
+     "axes": [
+      [
+       -0.0528,
+       0.9985,
+       0.0162
+      ],
+      [
+       -0.6244,
+       -0.0456,
+       0.7798
+      ],
+      [
+       0.7793,
+       0.031,
+       0.6258
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.5,
+      2.1,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.82
+    },
+    {
+     "chain": "R",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 552,
+     "centre_nm": [
+      -0.02,
+      -8.97,
+      -1.72
+     ],
+     "axes": [
+      [
+       -0.0629,
+       0.9966,
+       -0.0539
+      ],
+      [
+       -0.0827,
+       0.0486,
+       0.9954
+      ],
+      [
+       0.9946,
+       0.0671,
+       0.0794
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      2.3,
+      1.5
+     ],
+     "farthest_nm": [
+      6.5,
+      2.1,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.81
+    },
+    {
+     "chain": "S",
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "atoms": 557,
+     "centre_nm": [
+      1.06,
+      -8.93,
+      -1.76
+     ],
+     "axes": [
+      [
+       -0.0362,
+       0.9987,
+       -0.0368
+      ],
+      [
+       -0.6186,
+       0.0065,
+       0.7856
+      ],
+      [
+       0.7848,
+       0.0512,
+       0.6176
+      ]
+     ],
+     "across_nm": [
+      7.8,
+      2.2,
+      1.5
+     ],
+     "farthest_nm": [
+      6.6,
+      2.1,
+      1.9
+     ],
+     "radius_of_gyration_nm": 1.83
+    },
+    {
+     "chain": "Y",
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "atoms": 1210,
+     "centre_nm": [
+      -4.17,
+      -0.58,
+      0.52
+     ],
+     "axes": [
+      [
+       -0.0638,
+       0.9782,
+       -0.1977
+      ],
+      [
+       0.8859,
+       0.1467,
+       0.4401
+      ],
+      [
+       0.4595,
+       -0.1471,
+       -0.8759
+      ]
+     ],
+     "across_nm": [
+      28.6,
+      4.2,
+      1.7
+     ],
+     "farthest_nm": [
+      21.2,
+      4.4,
+      2.5
+     ],
+     "radius_of_gyration_nm": 6.47
+    },
+    {
+     "chain": "a",
+     "entity": "8",
+     "description": "ATP synthase subunit a",
+     "atoms": 2104,
+     "centre_nm": [
+      -2.89,
+      -9.31,
+      0.23
+     ],
+     "axes": [
+      [
+       -0.0974,
+       -0.5415,
+       0.835
+      ],
+      [
+       -0.4802,
+       0.7604,
+       0.4371
+      ],
+      [
+       -0.8717,
+       -0.3584,
+       -0.3341
+      ]
+     ],
+     "across_nm": [
+      7.7,
+      5.3,
+      3.8
+     ],
+     "farthest_nm": [
+      7.5,
+      6.0,
+      4.6
+     ],
+     "radius_of_gyration_nm": 2.25
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "ATP synthase subunit delta",
+     "copies": 1,
+     "sequence_length": 177,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.977,
+     "atoms_per_modelled_residue": 7.63
+    },
+    {
+     "entity": "2",
+     "description": "ATP synthase subunit alpha",
+     "copies": 3,
+     "sequence_length": 513,
+     "residues_modelled_per_copy": 511.0,
+     "modelled_share": 0.996,
+     "atoms_per_modelled_residue": 7.55
+    },
+    {
+     "entity": "3",
+     "description": "ATP synthase subunit b",
+     "copies": 2,
+     "sequence_length": 156,
+     "residues_modelled_per_copy": 156.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 7.76
+    },
+    {
+     "entity": "4",
+     "description": "ATP synthase epsilon chain",
+     "copies": 1,
+     "sequence_length": 139,
+     "residues_modelled_per_copy": 136.0,
+     "modelled_share": 0.978,
+     "atoms_per_modelled_residue": 7.6
+    },
+    {
+     "entity": "5",
+     "description": "ATP synthase gamma chain",
+     "copies": 1,
+     "sequence_length": 287,
+     "residues_modelled_per_copy": 284.0,
+     "modelled_share": 0.99,
+     "atoms_per_modelled_residue": 7.7
+    },
+    {
+     "entity": "6",
+     "description": "ATP synthase subunit beta",
+     "copies": 3,
+     "sequence_length": 471,
+     "residues_modelled_per_copy": 459.3,
+     "modelled_share": 0.975,
+     "atoms_per_modelled_residue": 7.68
+    },
+    {
+     "entity": "7",
+     "description": "ATP synthase subunit c",
+     "copies": 10,
+     "sequence_length": 79,
+     "residues_modelled_per_copy": 76.9,
+     "modelled_share": 0.973,
+     "atoms_per_modelled_residue": 7.24
+    },
+    {
+     "entity": "8",
+     "description": "ATP synthase subunit a",
+     "copies": 1,
+     "sequence_length": 271,
+     "residues_modelled_per_copy": 266.0,
+     "modelled_share": 0.982,
+     "atoms_per_modelled_residue": 7.91
+    }
+   ]
+  }
+ }
+}

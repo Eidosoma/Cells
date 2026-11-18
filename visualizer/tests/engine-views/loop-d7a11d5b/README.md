@@ -1,9 +1,11 @@
 # A looping run written by the engine's run-view writer (branch run-view-d154, d7a11d5b)
 
 The interim planarian loop of FR-11: a development run with no verdict, an illustration, not
-registered. Its writer is on the branch `run-view-d154`, not on main; it reaches main only after its
-own landing and gates. Nothing of it is published. It is kept here as a development fixture for the
-viewer's reader of a run view, until the engine's lead says it has landed.
+registered. It was written at d7a11d5b, a revision of the development branch `run-view-d154` that
+main holds through its merge: its writer is on main since 050aa741 (16 November 2026). The run is
+still what it was, a development run with no verdict. It is kept here as a fixture of the writer's
+interim shape (before it read the engine's own declarations); the run the page carries is
+`loop-b08af640/`'s.
 
 - **What it is:** seven heredity cells on a hexagonal patch, an electrode in the centre cell
   (`cell_3`) driven by a charge-balanced square wave of period 2 s; four settling periods, then one

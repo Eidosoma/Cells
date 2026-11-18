@@ -85,6 +85,7 @@ Each fact is in `cell.facts` of the species file with its source.
 | Inside | No nucleus: ribosomes spread through the whole cell, the chromosome among them | Gilbert and others 2021, tomograms of two cells |
 | Chromosome | One circle of 543,379 base pairs | GenBank CP016816.2 |
 | Ribosomes | About 500 in a small cell | Counted two ways in the tomograms: 503 or 684 in the smaller cell, 820 or 1,095 in the larger. The counts differ by a third |
+| Ribosome's size | Drawn as E. coli's ribosome, as the viewer measured it from the PDB entry 7K00: the large subunit 20.6 by 18 by 14.3 nm and the small 23.5 by 15.2 by 10 nm, the whole 26.1 by 21.1 by 17.3 nm (5MDZ gives 25.6 by 21.2 by 18.5) | The viewer's own measure (`tools/measure_particle.py`; the PDB's entries are CC0). No structure of Syn3A's own ribosome is among the file's sources. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model, and found the ribosomes in their tomograms with E. coli's 5MDZ as the template |
 | Proteins | About 77,000 molecules in an average cell | An estimate: measured shares of the protein signal, scaled by dry mass (Breuer and others 2019) |
 | Doubling time | About 105 minutes in rich medium | Breuer and others 2019, a growth curve |
 | Energy | ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP | Breuer and others 2019. Thornburg and others 2022 is named as a place to read more |

@@ -76,6 +76,8 @@ export function declared(run, id) {
     resets: record.resets || null,
     // What the run's view itself notes of the record, in its own words.
     note: record.note || null,
+    // A record of states in words (a criterion's states, as the experiment's driver states them): each whole number names one.
+    words: Array.isArray(record.words) ? record.words : null,
     // A record of an example run: its numbers are invented, and no model computed them (rule 6).
     example: Boolean(run.example),
     loaded: run.records.has(id),

@@ -83,3 +83,28 @@ test("an upload stays under the artifact's limit of files, and a missing file st
     await rm(folder, { recursive: true, force: true });
   }
 });
+
+test("the staging says how much of a version's limit the artifact then holds, and stops when it would be over", async () => {
+  const folder = await mkdtemp(path.join(os.tmpdir(), "stage-publish-"));
+  try {
+    await exported(folder, { "runs/a.json": "A", "runs/b.json": "B", "runs/c.json": "C" });
+    assert.equal(stage(folder, "--new", path.join(folder, "out", "v1")).status, 0);
+    // What is no longer listed stays published until it is removed by name, so it still counts.
+    await exported(folder, { "runs/a.json": "A", "runs/d.json": "D" });
+    const kept = stage(folder, "--new", path.join(folder, "out", "v2"), "--old", path.join(folder, "out", "v1"));
+    assert.equal(kept.status, 0, kept.stderr);
+    assert.match(kept.stdout, /the artifact then holds 5 of at most 511 files, the page among them/, "two listed, the page, and two no longer listed");
+    const many = Object.fromEntries(Array.from({ length: 511 }, (_, index) => [`runs/r${String(index).padStart(3, "0")}.json`, String(index)]));
+    await exported(folder, many);
+    const over = stage(folder, "--new", path.join(folder, "out", "v3"));
+    assert.notEqual(over.status, 0, "511 files and the page are one too many");
+    assert.match(over.stderr, /over what one version of an artifact holds/);
+    const near = Object.fromEntries(Object.entries(many).slice(0, 470));
+    await exported(folder, near);
+    const close = stage(folder, "--new", path.join(folder, "out", "v4"));
+    assert.equal(close.status, 0, close.stderr);
+    assert.match(close.stdout, /nine tenths of the limit or more/);
+  } finally {
+    await rm(folder, { recursive: true, force: true });
+  }
+});

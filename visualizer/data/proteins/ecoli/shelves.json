@@ -159,7 +159,7 @@
  "family_notes": {
   "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
   "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-  "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+  "units": "The inventory units with which the species' atlas lists a member on this line: as a candidate for the machine, where the member was found by the signature of a family that makes it, or as a part that goes with the machine, where 'found_by' names the member or the line.",
   "total": "The family's members on every shelf and on none.",
   "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'. In 'shelves' and 'no_shelf', 'families' is every family with a member there (its lines and its lone proteins), 'lines' the families' lines there, 'lone' the proteins that are the only member of their family, 'no_family' those with none."
  },

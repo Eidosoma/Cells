@@ -24,6 +24,7 @@ import { css } from "../src/ui/styles.js";
 const SPECIES = path.join(ROOT, "data", "species");
 const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
 const CAPABILITIES = Object.fromEntries(overlay.capabilities.map((item) => [item.id, item.scale]));
+const PARTS = Object.fromEntries(overlay.capabilities.map((item) => [item.id, item.part])); // where each is drawn, for the structures table (data/parts/structures.json)
 const contract = await readFile(path.join(ROOT, "schema", "SPECIES.md"), "utf8");
 const shapesNote = await readFile(path.join(ROOT, "schema", "SPECIES_SHAPES.md"), "utf8");
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
@@ -34,13 +35,13 @@ const READER = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from lib import species as reader
-found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]))
+found, shapes, warnings, remarks = reader.read_species(sys.argv[2], json.loads(sys.argv[3]), json.loads(sys.argv[4]), json.loads(sys.argv[5]))
 print(json.dumps({"species": found, "shapes": shapes, "warnings": warnings, "remarks": remarks,
                   "words": {"levels": reader.LEVELS, "states": reader.STATES, "kinds": sorted(reader.CELL_KINDS), "parts": sorted(reader.PARTS), "part_kinds": sorted(reader.PART_KINDS), "organelles": reader.ORGANELLES}}))
 `;
 /** `leftOut` names the capabilities the map leaves out of the picture for now, as the build passes them. */
 function readFolder(folder, leftOut = []) {
-  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES), JSON.stringify(leftOut)], { encoding: "utf8" });
+  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, JSON.stringify(CAPABILITIES), JSON.stringify(leftOut), JSON.stringify(PARTS)], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr);
   return JSON.parse(run.stdout);
 }
@@ -112,8 +113,8 @@ test("a made-up species with a rod-shaped cell and a body of its own is read fro
   assert.equal(species.no_further_levels, "It has no organs.");
   assert.deepEqual(Object.keys(sound.shapes), ["rodlet"], "the scene carries the shape files the species use");
   assert.equal(sound.shapes.rodlet.parts.length, 3);
-  // Its cell is small, so it is drawn in one size mode: the build remarks on it.
-  assert.ok(sound.remarks.some((remark) => /drawn in one size mode/.test(remark)), JSON.stringify(sound.remarks));
+  // Its cell is small, and is drawn in both size modes all the same: the build no longer remarks on its size.
+  assert.ok(!sound.remarks.some((remark) => /size mode/.test(remark)), JSON.stringify(sound.remarks));
 });
 
 test("what breaks the contracts is warned about, and the species is left out", async () => {
@@ -141,12 +142,18 @@ test("what breaks the contracts is warned about, and the species is left out", a
     ["a heading for the list that is not a few words", (data) => (data.group = ["Bacteria"]), /group is a heading of a few words/],
     ["an empty heading for the list", (data) => (data.group = " "), /group is a heading of a few words/],
     ["framing the level does not take", (data) => (data.levels[3].camera = "near"), /does not take camera/],
+    ["a looping run named by no id", (data) => (data.cell_type = { loop: " " }), /cell_type is \{id, label, loop\}/],
+    ["a cell type with a key it does not take", (data) => (data.cell_type = { loops: "x" }), /cell_type is \{id, label, loop\}/],
+    ["a loop in the cell block, where the cell type holds it", (data) => (data.cell.loop = "some-run"), /cell does not take loop/],
   ];
   for (const [name, change, expected] of cases) {
     const result = await read({ rodlet: madeUp(change) }, { rodlet: body() });
     assert.ok(result.warnings.some((warning) => expected.test(warning)), `${name}: ${JSON.stringify(result.warnings)}`);
     assert.equal(result.species.length, 0, `${name}: the species is left out`);
   }
+  // A species' own cell type may name its looping run among the packaged replays (CELL_TYPES.md, `loop`): the scene carries the block.
+  const looped = await read({ rodlet: madeUp((data) => (data.cell_type = { loop: "some-run--its-arm" })) }, { rodlet: body() });
+  assert.deepEqual([looped.warnings, looped.species[0]?.cell_type], [[], { loop: "some-run--its-arm" }]);
   const loft = await read({ rodlet: madeUp() }, { rodlet: body((data) => (data.parts[0].stations = [[0, 0, 0]])) });
   assert.ok(loft.warnings.some((warning) => /two or more stations/.test(warning)), JSON.stringify(loft.warnings));
   const kind = await read({ rodlet: madeUp() }, { rodlet: body((data) => (data.parts[1].kind = "blob")) });
@@ -386,8 +393,8 @@ function planned(species) {
 test("the levels, the size modes and what has no place follow the species", () => {
   const rodlet = planned(sound.species[0]);
   assert.deepEqual(Object.entries(rodlet.levels).filter(([, level]) => level).map(([id]) => id), ["molecules", "cell", "tissue", "organism"]);
-  assert.deepEqual(rodlet.modes, ["schematic"], "a cell this small is drawn in one size mode");
-  assert.equal(rodlet.sizeMode, "schematic", "a mode the species does not have is left");
+  assert.deepEqual(rodlet.modes, ["schematic", "real"], "every cell is drawn in both size modes, however small");
+  assert.equal(rodlet.sizeMode, "real", "the mode asked for is kept");
   assert.equal(rodlet.absent.get("cap.calcium"), "It has no endoplasmic reticulum.");
   assert.equal(rodlet.absent.get("scale.organ"), "It has no organs.", "a level the species lacks has the species' own sentence as its reason");
   assert.ok(!rodlet.absent.has("cap.sheet") && !rodlet.absent.has("cap.circuits"));
@@ -398,7 +405,7 @@ test("the levels, the size modes and what has no place follow the species", () =
       const said = species.cell.capabilities[id]?.place === "absent";
       assert.equal(lens.absent.has(id), said || !levels.includes(scale), `${species.id}: ${id}`);
     }
-    assert.equal(lens.modes.length, cellAcross(species.levels.find((level) => level.id === "cell").shape) < REF.small ? 1 : 2, species.id);
+    assert.deepEqual(lens.modes, ["schematic", "real"], species.id);
   }
   // The planarian and the human are animals: every capability has a place, in both size modes.
   for (const id of ["planarian", "human"]) {
@@ -422,6 +429,14 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
   for (const name of (await readdir(SPECIES)).filter((item) => item.endsWith(".json"))) {
     const data = JSON.parse(await readFile(path.join(SPECIES, name), "utf8"));
     for (const word of [data.id, data.label, ...String(data.organism || "").split(/\s+/).slice(0, 2)]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  }
+  // And the switch's other entries (schema/ENTRIES.md): cell types of their own files, and model systems.
+  for (const folder of ["cells", "models"]) {
+    const dir = path.join(ROOT, "data", folder);
+    for (const name of (await readdir(dir).catch(() => [])).filter((item) => item.endsWith(".json"))) {
+      const data = JSON.parse(await readFile(path.join(dir, name), "utf8"));
+      for (const word of [data.id, data.label]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    }
   }
   const named = new RegExp(`\\b(${[...words].join("|")})\\b`, "i");
   for (const file of files) {

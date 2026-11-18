@@ -78,13 +78,13 @@ export function readFlux(file) {
 
 /**
  * Whether a law of the engine speaks for a part of this species (the file's `speaks_for`).
- * It does not for a species that is only proposed (nothing of it is in the engine), nor
- * where the species' file has words of its own on the part: they say how the species'
- * part differs from the engine's, and the viewer does not weigh free text.
+ * It does not for a species of which nothing is in the engine (proposed, planned or designed:
+ * schema/ENTRIES.md), nor where the species' file has words of its own on the part: they say
+ * how the species' part differs from the engine's, and the viewer does not weigh free text.
  * Returns { ok } or { ok: false, proposed, note }.
  */
 export function speaksFor(species, capability) {
-  const proposed = species?.modelled?.state === "proposed";
+  const proposed = ["proposed", "planned", "designed"].includes(species?.modelled?.state);
   const note = (capability && species?.cell?.capabilities?.[capability.id]?.note) || null;
   return proposed || note ? { ok: false, proposed, note } : { ok: true };
 }

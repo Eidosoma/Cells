@@ -218,7 +218,10 @@ repeat them.
   count is an integer, or the name of the population's parameter that holds it, negated by a
   leading `-`;
 - `fuel_kinds`: the fuel kinds it can run on;
-- `stage_term` and `loop_term`: its terms in the step, where its host takes one;
+- `stage_term`, its charge slope in the step's stage rule; `material_term`, its material slope
+  per stage; `charge_bound` and `material_bound`, its definition-time bounds on a charged and on
+  a neutral row. Each names the kernel that supplies it, or is null where the law has none;
+- `loop_term`: its loop term, where its host takes one;
 - its kernels: `kinetics` and `domain_valid`. Its stage reads are its `reads`.
 
 ### Route laws
@@ -226,6 +229,8 @@ repeat them.
 `cells.route_law@1`: a passive route.
 - `hosts`: the entities its routes sit on, such as membranes and junctions;
 - `basis`: what it is, in its sources' words.
+- `stage_term`, `material_term`, `charge_bound` and `material_bound`: its step terms, as for cycle
+  laws, each a kernel's name or null.
 
 A route law declares nothing it changes: a definition chooses the species of most routes.
 

@@ -1,252 +1,267 @@
-# The Laws library: the list of the engine's declared pieces
+# The Laws library: the engine's declared pieces, as its declarations manifest gives them
 
-Status: **fixed for the viewer, 16 November 2026**, for phase 1 of the Laws library. The user
-chose the racks from the ideas page (`docs/LAWS_LIBRARY.md`, `docs/ideas/laws-library.html`),
-and asked for it to be built "now", and then "use the engines manifest when those are ready".
+Status: **format 2 (`cells.visualizer.laws@2`), 17 November 2026.** The Laws library reads what
+the engine declares from the engine's declarations manifest alone. Format 1 read the engine's
+code at fa19d80c and is replaced whole. The lead ruled on 17 November 2026 that the declarations
+file is the whole truth of what the engine declares, and that what no active registry declares
+comes off the wall.
 
-The library is a view of its own. It shows every declared piece of the engine on a wall,
-shelved by family: channel laws, junction laws, pumps, operators, kinds, solvers. In front
-of the wall stand the frames, one for each model and what it declares. This file fixes the
-list both are drawn from, and what may be said of each piece.
-
-It is read from the engine's code, without running it. When the engine writes its
-declarations manifest (D185), the list is made from that manifest instead. The tool then
-changes; this contract keeps its fields.
+The library is a view of its own. It shows every piece the engine declares on a wall, shelved
+by interface: channel, cycle, route and junction laws; kinds; the composite's operators by their
+part of the step. In front of the wall stand the racks, one for each active model with rows,
+each piece in its slot; a model family with no rows stands as a closed case on the plinth. This
+file fixes the list they are drawn from, and what may be said of each piece.
 
 ## Files
 
 | File | Made by | Holds |
 | --- | --- | --- |
-| `data/laws/pieces.json` | `tools/extract_laws.py` (generated: do not edit) | The pieces, the frames, the families and the stamp |
-| `data/laws/overlay.json` | Hand (curated) | The viewer's words: families and shelves, the family of an identifier no rule places, the pieces design notes name, the frames' words |
+| `data/engine/declarations.json` | The engine's own command, copied unchanged (`data/engine/README.md`) | The manifest, `cells.declarations@2`: the input, and the tests' oracle |
+| `data/laws/pieces.json` | `tools/extract_laws.py` (generated: do not edit) | The manifest's pieces and models, each carried unchanged, with the viewer's layer |
+| `data/laws/overlay.json` | Hand (`cells.visualizer.laws_overlay@2`) | The viewer's words: the families and shelves, the models' short names and Engine view boxes, the laws design notes name |
+| `data/laws/law_port.json` | `tools/extract_law_port.py` (generated: do not edit) | The law-port inventory's table (`cells.visualizer.law_port@1`, below): what a unit of the Protein atlas says of a law no active model declares |
 
 ```bash
-python3 tools/extract_laws.py --ref origin/main                      # main as pushed (since the landing of 16 November 2026)
-python3 tools/extract_laws.py --ref origin/main --candidate BRANCH   # and a working branch's pieces that main lacks
-python3 tools/extract_laws.py --ref origin/main --out -              # to standard output
+python3 tools/extract_laws.py              # data/engine/declarations.json -> data/laws/pieces.json
+python3 tools/extract_laws.py --out -      # to standard output
 ```
 
-The tool reads through git (`git show`, `git ls-tree`, `git grep`) at a revision, so it
-changes no checkout and writes nothing but its output. It parses Python with the viewer's
-own static reader (`tools/lib/static_eval.py`) and imports nothing of `cells`.
+The manifest's format is the engine's page `docs/library/DECLARATIONS_FORMAT.md`: that page and
+the manifest's `kind` are the contract. The tool reads nothing of the engine's source, imports
+nothing of it and runs nothing of it. Making the list again from the same manifest and overlay
+gives the same bytes (a test holds it).
+
+**The reader refuses** (exit status 2, nothing written):
+- a manifest whose `kind` is not `cells.declarations@2` (another major, or not a declarations
+  manifest);
+- a manifest whose tree was not clean (`dirty` not false);
+- a manifest whose `revision` is not a full Git revision.
+
+The view's `Library` (`src/lenses/laws_data.js`) refuses a list read from another major or from
+a tree that was not clean as well.
 
 ## The stamp
 
 ```json
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "main": { "ref": "origin/main", "revision": "ab267c39", "date": "2026-11-16", "on_remote": true },
-  "candidate": null,
-  "landed": null,
-  "records": { "scene_revision": "…", "inventory": "2026-11-12 (engine fec863f)" },
-  "warnings": []
+  "read": "Read from the engine's declarations at main b5d3faf0",
+  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "b5d3faf0", "dirty": false, "origin": "git checkout" },
+  "overlay_as_of": "2026-11-18",
+  "boxes": "data/architecture/overlay.json: the Engine view's components, matched to each piece's module_path"
 }
 ```
 
-- **The main revision must be one others can find.** This is the map's extractor's rule, since
-  06684552. Where the checkout read has a remote, the revision must be on a remote branch as
-  last fetched. Otherwise the tool warns, and `--strict` fails. A checkout with no remote (a
-  test's copy) is taken as it is.
-- **A candidate is a working branch.** Working branches are not in the public repository until
-  they land, so the candidate's revision is stated and never linked. Once the candidate is an
-  ancestor of the main revision, it adds nothing: `landed` names it, and every piece is read
-  from main.
-- **Nothing in a piece changes between two readings of the same revisions.** The file holds no
-  clock time.
+The manifest states no date, and the view writes none.
 
 ## A piece
 
 ```json
-{
-  "id": "kv1p5_mh@1",
-  "kind": "channel law",
-  "where": "main",
-  "family": "potassium",
-  "read": {
-    "ref": "origin/main", "revision": "ab267c39", "path": "src/cells/processes/voltage_gates.py",
-    "found_by": "LAW_CODES table",
-    "fields": { "code": 0, "permeant": [["K", 1.0]], "doc": "Pure continuous m/h kinetics in volts/seconds; no implicit preparation." },
-    "also": ["src/cells/processes/cav_channels.py"]
-  },
-  "curated": { "family": "potassium", "family_by": "unit kind", "unit": "Kv1.5 channel", "unit_by": "the protein inventory of 2026-11-12 (engine fec863f)" },
-  "declared_by": [{ "frame": "resolved_pump_tissue@3", "how": "direct" }, { "frame": "resolved_pump_composite@1", "how": "inner", "via": "resolved_pump_tissue@3" }],
-  "status": null,
-  "box": { "id": "laws.channels", "label": "Channel catalogue", "level": "established", "source": { "path": "docs/README.md", "where": "Models and execution" } }
-}
+{ "id": "kv1p5_mh@1", "family": "channel", "where": "declared", "box": { "id": "laws.declarations", "label": "Laws as declared pieces" }, "declared": { "...": "the manifest's piece, unchanged" } }
 ```
 
-- **`id`** is the engine's own `name@version`, or a namespaced `namespace.name@version`.
-  Ids are unique in the file.
-- **`kind`** is one of: `channel law`, `route law`, `route kind`, `junction law`, `pump law`,
-  `release law`, `factor`, `read`, `fuel kind`, `kind`, `operator`, `solver`, `law`.
-- **`where`** is `main`, `candidate` (on the landing candidate, not on main yet) or `design`
-  (named in a design note; no code). A piece found on both main and the candidate is `main`.
-- **`read`** is what the code says, with where it was read: the ref, the revision, the file,
-  and which rule found it. Its `fields` are read from the code:
-  - `code`, `permeant`, `gate_powers` and `gate_states` from the catalogue tables;
-  - an operator's contract (`parts`, `provides`, `reads_declared`, `reads_current`, `writes`,
-    `requires`, `heat`, `work`, `ledgers`, `step_method`, `schedule`);
-  - a kind's own `pieces`;
-  - `doc`, the first paragraph of the module's docstring, quoted as the module's own words.
+- **`id`** is the piece's `declared_id`, the spelling its declaration uses. The page's id is
+  `laws:<id>`. Either spelling names the piece (the format page's ID rule, D185): an address
+  `laws:cells.kv1p5_mh@1` opens `kv1p5_mh@1`, and
+  `laws:atp_driven_transporter_mass_action_positive@1` opens
+  `cells.atp_driven_transporter_mass_action_positive@1`.
+- **`family`** is the viewer's shelving: the first overlay family whose `match` the piece meets
+  (its `piece`, its `interface`, an operator's `fields.parts`). A piece no family takes is
+  refused.
+- **`where`** is `declared` for every piece of the manifest, `design` for a law a design note
+  names (below).
+- **`box`** is the Engine view's box whose path globs match the piece's `module_path` (the map's
+  own record, `data/architecture/overlay.json`), or null. It names the box and carries no level.
+- **`declared`** is the manifest's piece, unchanged. Nothing else of the list says what a piece
+  is.
+- **No `status`** is added. A level is shown only where the manifest's `status` gives one, with
+  its `status_source`. At main b5d3faf0 none does.
 
-  `read` is `null` for a `design` piece.
-- **`curated`** is the viewer's: the family and how it was given (`family_by`: `family_of`,
-  `unit kind`, `permeant ions`, `kind`, `rule` or `designed`), the unit the protein inventory
-  says the law acts on, an operator's label from the Engine view, and the design notes that name
-  a `design` piece (`named_in`, each with its path, its place and its ref: `main` or a
-  development branch).
-- **`declared_by`** lists the frames that declare the piece (below). Every entry names a frame
-  of the file.
-- **`registry`** and **`registered_in`** say where it stands registered (above). `read.fields`
-  may add `provenance` (inner_laws' tag) and `unversioned` (an id with no version).
-- **`status`** is a level only where a record states one for this piece, with that record. Today
-  that means the operators, whose levels the Engine view's overlay records with their sources.
-  It is `null` everywhere else, and the view says "No level recorded for this piece".
-  - `level` is one of the Engine view's status ids, `label` its words, and `as_of` its date.
-  - `source` is the record the level rests on (`path`, `where`), and `record` the line of the
-    map that carries it.
-  - No status is inferred, and none comes without a source.
-- **`box`** is the Engine view's box that holds the piece's file, with that box's level and
-  source. It is a status of the box, never of the piece, and the view says so. It is given only
-  for pieces on main, and only where the box has a level and a source.
-
-## What counts as a piece: the lead's provisional answers of 16 November 2026
-
-The engine's lead answered the page's questions provisionally on 16 November 2026, through the
-coordinator. The formal answers come with a later pass of the core. The file carries these
-answers (`stamp.what_counts`), and the tool follows them:
-
-- **A piece is what is registered:**
-  - a law in `inner_laws`' tables;
-  - a kind in the kind registry;
-  - an operator in `OPERATORS`;
-  - a model by its `MODEL_ID` (the frames).
-
-  Each piece says where it stands registered (`registry`, below).
-- **The older families' laws count.** They stand on their own part of each shelf, marked as in
-  an older family. The user chose this on 16 November 2026. A law named only by a constant
-  (`no registry`) stands on that upper part too, with its own words.
-- **Solvers and step methods count**, an operator's `STEP_ID` among them. `rk4` has no version. It is shown as it is (`unversioned`),
-  and the manifest's design is to close that gap. No version is given to it.
-- **A kernel in the code that no kind imports is not a piece yet.** It becomes one when
-  registered. The overlay names such kernels (`not_registered`), and the file keeps them in
-  `unregistered`, apart from the pieces. They are never counted, never drawn on the wall, and
-  each carries the words "In the code, not registered: not a piece yet".
-- **`provenance` in `inner_laws`** (today always `"parity"`) is a source tag and not a level. It
-  is read as `read.fields.provenance` and said as that. How a moved piece names the frozen
-  original it came from is the core's to specify.
-
-`registry` is one of:
-
-| Value | Means |
-| --- | --- |
-| `inner_laws.py` | Named by a table or constant of `src/cells/models/inner_laws.py` (`registered_in` gives which) |
-| `the kind registry` | A built-in kind, registered as an outside package would be |
-| `a registered kind` | One of a registered kind's own pieces (`registered_in.kind`); the page's reading of "what is registered" |
-| `OPERATORS` | An operator of the composite's registry |
-| `a registered operator` | A law named in a registered operator's own module (`registered_in.operator`); the page's reading |
-| `the inner model's structure` | Named by the inner model's own declarations outside `inner_laws` (its heat booking) |
-| `a solver or step method` | A solver or step method |
-| `an older family` | A law of the older families' channel catalogue: a `LAW_CODES` table inside its own module, until a use moves it (D167) |
-| `no registry` | A constant named for a law that no registry the tool reads holds: shelved by the page's reading until the manifest says what it is |
-
-A `design` piece has `registry: null`.
-
-## How a piece is found
-
-Each rule reads the code at a revision. A rule's name is the piece's `read.found_by`.
-
-1. **Catalogue tables.** Every `LAW_CODES` dictionary of a module in `src/cells/processes/`
-   gives channel laws, each with its registry code and, where the module has them, its
-   `LAW_PERMEABILITIES`, `GATE_POWERS` and `STATE_COUNTS` entries. A code used by two
-   identifiers is a warning.
-2. **The operator registry.** `OPERATORS` in `src/cells/models/operators/__init__.py`, each
-   operator's `LAW_ID` and its contract declarations.
-3. **Kinds.** Each module of `src/cells/models/inner_kinds/` with a `KIND_ID`. A kind's own
-   pieces are the `LAW_ID` and `READ_ID` of the processes modules it imports, and its
-   module-level constants whose value is an identifier.
-4. **Named constants.** The module-level constants of `src/cells/processes/`, `numerics/`,
-   `coupling/`, `core/` and `models/` (but not `models/operators/`) whose value is an
-   identifier and whose name says what it names:
-   - a name with `SOLVER` or `METHOD` in it, or `ARS222_ID` or `EULER_ID`, is a solver;
-   - a name with `LAW` in it is a law;
-   - `READ_ID` is a read;
-   - `KIND_ID` in `processes/` is a route kind.
-
-   Other identifiers (random streams, stage domains, schema ids) are not pieces. The form
-   `name@version` alone does not say what a thing is.
-5. **The inner model's declarations.** The pieces @3 declares (below) that no rule above
-   found.
-6. **The protein inventory.** A law of the inventory's snapshot that no rule found, where its
-   identifier stands as a string in `src/cells` at the revision.
-7. **Designed.** The overlay's `designed` pieces, each named in a design note. None of them may
-   stand in the code: if one does, the tool warns, and the code's reading wins.
-
-A piece whose identifier names a reference simulator is never listed. A reference simulator is
-no piece of Cells. Quoted docstrings may name one as the source of a law's coefficients.
-
-## A frame
+### A law a design note names
 
 ```json
-{
-  "id": "resolved_pump_tissue@3",
-  "kind": "inner model",
-  "read": { "ref": "origin/main", "revision": "ab267c39", "path": "src/cells/core/surface_pump_v3_spec.py", "found_by": "MODEL_ID" },
-  "rows": [
-    { "label": "Channel laws", "pieces": ["kv1p5_mh@1", "…"], "next_code": 5,
-      "read": { "path": "src/cells/models/inner_laws.py", "name": "CHANNEL_LAWS", "ref": "origin/main", "revision": "ab267c39" },
-      "codes": { "kv1p5_mh@1": 0, "…": 4 }, "codes_read": { "path": "src/cells/core/surface_pump_v3_spec.py", "name": "LAW_CODES" } }
-  ],
-  "boxes": [{ "id": "models.pump_tissue", "level": "qualified", "label": "…", "as_of": "2026-11-10", "source": { "path": "PROGRESS.md", "where": "…" } }]
-}
+{ "id": "fast_sodium_m3hj@1", "family": "design-channel", "where": "design", "box": null, "declared": null, "kind": "channel law",
+  "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 168 }] }
 ```
 
-- **`kind`** is `inner model`, `composite`, `composition` or `older family`.
-- **The inner model's rows** are read from `models/inner_laws.py` where the revision has it:
-  - its channel, junction and pump registries;
-  - its route ids and its fuel kind;
-  - its heat booking (`TRAPEZOID_JUNCTION_HEAT`);
-  - its built-in kinds, and its family's `SOLVERS`.
+It is not declared, and it stands on a shelf apart, in glass. It is kept only while its note
+still names it on that line at the manifest's revision (a test asks the main checkout where it
+is there). A design note's law that the manifest declares is refused: it is a declared piece.
 
-  Each row says the ref it was read at. Where main has no `inner_laws.py` (before the landing of
-  16 November 2026), the rows come from the candidate, and main's closed table stands beside
-  them (`closed_on_main`). `codes` are the inner model's own registry codes (`LAW_CODES` of
-  `core/surface_pump_v3_spec.py`), a registry apart from the older families' catalogue codes.
-  `next_code` is the next free one: a new channel law takes it, and no code is reused.
-- **The composite's row** is the operator registry: any ordered subset of it is a definition
-  (`any_order`).
-- **A composition's row** is curated: the operators of the blocks that `frozen_definition`
-  moves into the operator list, with that source.
-- **An older family** has no rows. Its laws are a table inside its own module, and they become
-  declared pieces as each moves into the one model, when a use needs it (D167).
-- **`boxes`** are the Engine view's boxes for the model, with their levels and sources. A
-  frame's status never comes from its parts: "integration grants no acceptance"
-  (`development_status`, read from `core/pump_composite_spec.py`).
+## A model
 
-## What declares a piece
+```json
+{ "id": "resolved_pump_tissue@3", "short": "@3", "boxes": [{ "id": "models.pump_tissue", "label": "…" }], "declared": { "...": "the manifest's model, unchanged" } }
+```
 
-`declared_by` has one entry for each frame, with `how`:
+The view draws a model with rows as a rack, its rows grouped by role in the manifest's order:
+- **the inner model:** channel laws by code, with its `next_code` as the empty socket marked
+  "free"; its junction law; its cycle laws; its route laws; a fuel kind (a row whose `piece` is
+  null, drawn as an empty socket with its ID and "no piece"); its kinds by definition key;
+- **the composite:** its operators, in ID order, and the inner model whose pieces the manifest
+  lets it declare, as a block;
+- **a composition:** its inner model, as a block, then each operator by position.
 
-- **`direct`**: a row of the frame names the piece;
-- **`kind`**: the piece is one of a kind's own pieces, and a row names the kind (`via`);
-- **`inner`**: the frame holds the inner model (`via`), and the inner model declares the piece
-  directly or through a kind.
+A family with no rows is a closed case on the plinth. `short` and `boxes` are the viewer's.
 
-The view lights exactly these when a piece is chosen: its slots in each frame, and for `kind` and
-`inner` the slot of the kind or the block of the inner model it comes through.
+### What declares a piece
+
+From the models' rows alone: a row of its own (`direct`); the kind that hosts it, where that
+kind is a row (`kind`); or the inner model a model holds, where the piece is of that inner
+model's family (`inner`). Every model the piece's `models` names declares it in one of these
+ways.
+
+## The three meanings of null, and what the panel says
+
+The panel says what the manifest states of a piece, in plain words, and no more. A piece key
+that is null is said by its meaning (the format page, "The three meanings of null"):
+- **not applicable** (the key does not apply to that kind of piece): nothing is said;
+- **not extracted** (the pair (its `interface`, the key) is in `not_extracted`): "not yet
+  extracted in the engine's declarations";
+- **not stated** (otherwise): "not stated".
+
+An empty list or object says "the declaration lists none". A nested null keeps the meaning the
+format page gives its field: `rk4_step_s` null is "none: a law with no gate"; `stage_term`,
+`loop_term` and `step_method` null are "none". `declared_host` null says the host is not stated
+as a registered model, kind or operator; a null `module_path` says the module is outside the
+`cells` package, and nothing is linked.
+
+The panel says, of a declared piece:
+- its ID (and the spelling it is declared with), interface, host, family and models;
+- where it is declared: `module_path` and `line`;
+- its kernels, each with its file;
+- its provenance: the tag in the format page's words ("moved from an older family (moving is
+  not calibrating)", "cited", "calibrated"), what it rests on, and a citation's source, place,
+  licence and departures, with its works (each a link to its DOI or URL, opening outside the
+  page);
+- its test; its reads with mode and stage; what it changes, owns, writes, provides and controls;
+  its ledgers and energy; its units and signs; an operator's requirements; a kind's laws;
+- the rest under `fields`, by the format page's section for its interface;
+- its status ("not stated" today) and its page (`doc`: "none given yet" today).
 
 ## Sources and links
 
-Every source here is the engine's own record (its code and documents, under the project's MIT
-licence) or the viewer's own data. No third-party source is read.
+Every source is the engine's own record or the viewer's own data; no third-party source is read.
 
-A file on main may be linked at the map's source address. A file read on a candidate or a
-development branch, and a design note on a branch, is named in words and never linked: those
-branches are not in the public repository until they land.
+- **The manifest's revision.** A file the manifest names (a piece's `module_path`, a kernel's, a
+  model's, a page in `doc`, a design note's) links at `stamp.manifest.revision`, in the
+  repository of the scene's `source_base_url`: the file is there by construction. Where the
+  map's revision is another, the words beside the link say so ("line 88, as declared at main
+  b5d3faf0"). The link names the file; the line is said in words.
+- **Not linked.** No page is linked while the manifest gives none, and no file outside the
+  package is linked.
+- **The Engine view's boxes** are linked only where the page draws them, and no level of a box
+  is said.
 
-## What the view may say
+## What the view's marks may stand for
 
-- What a piece computes is its module's docstring, quoted. The view writes no physics of its own.
-- What it declares is `read.fields`. What it acts on is `curated.unit`, as the inventory's.
-- Its status is `status`, or "No level recorded for this piece". A `box` is said as the box's.
-- Every count the view shows is counted from this file.
+Each visual difference in the room stands for one thing the list says, and the legend names
+each one that is drawn (`MARKS` in `src/lenses/laws.js`, a swatch for each in
+`src/lenses/laws_styles.js`). Its counts are the manifest's.
+
+- solid slate: declared by the engine; a glass outline, on a shelf apart: named in a design note,
+  not declared;
+- a column's height: the family's count; a rack: a model with rows; a card in it: a piece that is
+  a row of the model, with its code, key or position written under it; a block across its head:
+  the inner model it holds; an empty socket marked "free": the inner model's next free channel
+  code; an empty socket with a name: a row with no piece of its own;
+- a closed case on the plinth: a model family with no rows;
+- forward and faint: what a search or a filter finds and does not; a faint bar: an empty place,
+  in a test of size only;
+- blue light: what is chosen, the slots that declare it and the routes between.
+
+Nothing else differs. The glass, rails, planks, dividers, sockets and plinth are the room. No
+mark is dashed, and no status token (`--st-*`) is used.
+
+## The wall's layout
+
+The overlay's shelves name a `band`; on a wide screen each band is a row of columns, and a shelf
+marked `apart` stands a gap away from the shelves before it. On a tall screen the shelves break
+into bands of at most six families, a shelf never split. A family with no piece is not drawn, and
+a long family name is written smaller so that it fits its column. A shelf of one family is named
+by its family alone. Today all six shelves stand on one band: the laws of the inner model, a model
+family's own laws, the kinds, the composite's operators by their part of the step (split, event
+and split, event, process, no part), a model family's own operators, and, apart, the laws named
+in design notes. A model family's own laws and operators stand on shelves of their own because
+they are not the inner model's laws nor the composite's operators, and a shelf's name stands
+over every column on it (a test holds this).
+
+## What the wall does not show
+
+- **The older model families** of the manifest's `legacy` list are not drawn. The List names them
+  by ID, as the manifest gives them, under "Not shown: the older model families (legacy code, to
+  be dropped)". An address naming one opens the notice: "The engine's declarations list <id>
+  among the older model families: legacy code, to be dropped, with no page of its own. The map
+  does not show it."
+- **Any other ID** an address names, a piece of an older list included, opens: "The engine's
+  declarations do not list <id>: no active registry declares it, so the map does not show it."
+  It is never called legacy unless the manifest's `legacy` names it.
+- **A row with no piece of its own** (the fuel kind) is drawn as its socket; its address opens
+  what the model says of it and the cycle laws that run on it.
+
+## On the map's page
+
+The page carries this file in its scene as `laws` (`tools/lib/build_page.mjs`), and the viewer
+offers the Laws library only when it does. It carries the law-port table (below) as `law_port`.
+
+- **The address.** `lens=laws` (or `#laws`) opens it. `select=laws:<id>` opens it on a piece, a
+  model or a notice, from any view.
+- **The doors.**
+  - An Engine view box that holds the files of declared pieces: "Show its N declared pieces in
+    the Laws library", which picks them out; the card says so, and its Close lets them go.
+  - An Engine view operator (`op.<id>`) the manifest declares: "Open <id> on the Laws library's wall".
+  - A unit of the Protein atlas: for each law its panel names, "Open <id> on the Laws library's
+    wall" where the manifest declares it. For those it does not, lines that open nothing: one for
+    each mark the law-port table gives them, "<laws>: <the mark's words>" (below), and one for the
+    laws the table has no row for: "No active model declares these laws of this unit: <ids>. The
+    engine's declarations do not list them, and the Laws library does not show them." (in the
+    singular for one).
+- **The way back.** A piece's panel links its box, or an operator's own part, and a model's
+  panel its boxes, where the page draws them.
+- **The card** has the search field, the Family control and "Where it stands". `]` and Page Down
+  step to the next piece in the wall's order, `[` and Page Up to the one before.
+- **The room** is kept clear of the cards on the left on a wide window, and the names written on
+  it come back with a lost context or a lost graphics process.
+
+## The law-port table
+
+On 17 November 2026 the project decided to port tested older laws to the active engine (D211).
+Its first step was a read-only inventory of the law IDs behind the Protein atlas's units that no
+active model declares (`cells.law_port_inventory@1`, a working record of the engine's lead, kept
+at `/mnt/workspaces/Cells/law-port-20261117/inventory.json`). The page reads it through a table
+of its own, made by a tool and never by hand:
+
+```bash
+python3 -I tools/extract_law_port.py --inventory PATH/inventory.json   # -> data/laws/law_port.json
+```
+
+```json
+{
+  "format": "cells.visualizer.law_port@1",
+  "note": "…how it is made…",
+  "inventory": { "kind": "cells.law_port_inventory@1 (working record, D211)", "made": "2026-11-17", "head": "<40 hex digits>" },
+  "counts": { "rows": 54, "units": 38, "marks": { "port as is": 47, "fold into an owner's planned law": 5, "not a port": 2 }, "test_class": { "a": 52, "b": 2 } },
+  "rows": [ { "law": "kv1p1_mh2@1", "has_id": true, "units": ["U05"], "mark": "port as is", "test_class": "a" }, … ]
+}
+```
+
+- **A row** is the inventory's row: `law` its `law_id` (for the one row without an ID, what the
+  inventory calls it, and `has_id` false), `units` its `atlas_units`, `mark` its `owner.mark`,
+  `test_class` its `tests.test_class` (a: a passing test of the kernel against a reference; b:
+  passing tests of the family only). Nothing else of the inventory is copied, and no path.
+- **The tool refuses** (exit status 2, nothing written) an inventory whose `kind` is not
+  `cells.law_port_inventory@1` (with or without words in brackets), and one whose rows do not
+  hold 47, 5 and 2 laws of the three marks on 38 units, whose own counts of its marks differ from
+  its rows, that lists a law twice, that gives a law to port as is a tests' class that does not
+  pass ("tested" is said of it), or a law to fold to another than the cardiac lane.
+- **The words** for each mark are in `src/lenses/law_port.js` (`PORT_PHRASES`) and nowhere else:
+  one for "port as is", one for "fold into an owner's planned law", and for "not a port" one for
+  each of its two laws (the mitochondrial passive permeability, the gap-junction flux). They are
+  the lead's, given to the viewer on 17 November 2026, and a test holds them letter for letter.
+  "Tested" in them is the inventory's word for a passing test of the old kernel, not a judgement
+  of the engine; "declared" is not a level.
+- **A row is matched** to a law a unit's panel names by the law ID as written, on a unit the row
+  names. The row without an ID is matched, on each unit it names, to that unit's one law that is
+  not an ID and begins with the same word (the function's name, `junction_flux()`). A law of a
+  mark the source has no words for, or with no row, keeps the line for laws the declarations do
+  not list: no mark is guessed. A law the manifest declares is a door, whatever the table says.

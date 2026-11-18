@@ -57,7 +57,11 @@ viewer reads nothing else for it:
   where it has a nucleus;
 - every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,
   or a stated part of it; where it gives none, the number drawn is the picture's choice, and
-  the panel says so.
+  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17
+  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as
+  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In
+  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn
+  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.
 
 A part a cell does not hold is listed under the species' "Not in this organism", with the
 reason read from `cell.parts`.
@@ -68,3 +72,28 @@ Sizes and counts come from the species' file where it gives them. The rest is th
 choice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a
 cell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic
 picture the ribosomes are enlarged, as every small part is.
+
+## Where the Golgi stands
+
+The user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus
+stand ("B as you recommend"). Before, the Golgi stood about 6 µm from the nucleus, beyond the
+ER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and
+no number from a paper stands behind them:
+
+- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the
+  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis
+  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about
+  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of
+  the Golgi, and each runs on from the envelope.
+- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery
+  with no status, and its panel says so. It is two short barrels at right angles, between the
+  nucleus and the Golgi.
+- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through
+  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are
+  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where
+  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.
+- **However many stacks there are, they are one shared geometry**: each level of cisterna is one
+  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as
+  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.
+- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis
+  face, and go from its trans face to the membrane.

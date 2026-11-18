@@ -1,9 +1,11 @@
 # Origin of life in the viewer: GARD, the options, and a recommendation
 
-Ideas and options for the user, 16 November 2026. **Nothing here is built, and nothing of GARD is in
-Cells' engine yet.** The engine's GARD design note is **proposed, on a development branch, not on main**
-(`docs/GARD_DESIGN.md`, branch `gard-design` at `e75b4b1f`); this note and the page beside it follow its
-names and its run records, and mark what they take from it. The page,
+Ideas and options for the user, 16 November 2026; the view the user chose is now built standing alone,
+with a preview page (see "Status", below). **When this was written nothing of GARD was in Cells'
+engine; since 17 November 2026 its first part is on main (see "The record", under the protocell).** The engine's
+GARD design note is **on main, decided on 16 November 2026** (`docs/GARD_DESIGN.md`, D192; first read
+on its branch `gard-design` at `e75b4b1f`), and GARD is built in step 4 of D194's order; this note and
+the page beside it follow its names and its run records, and mark what they take from it. The page,
 [`docs/ideas/origin-of-life.html`](ideas/origin-of-life.html), draws each option live from a small toy
 that it runs when it opens. The toy follows GARD's rules as the preprint and the original papers print
 them; it is not Cells' engine, not the preprint's code and not its runs, and nothing it shows is a
@@ -38,7 +40,9 @@ as recommended:
 7. **The options page's toy does not enter the built viewer.** The viewer draws saved runs.
 8. **One lineage first, populations later.**
 9. **Where the engine runs both forms of its kernel, the viewer shows the pair under one clock**, each
-   labelled with the law it ran, and says nothing of which is right.
+   labelled with the law it ran, and says nothing of which is right. (Asked again on 16 November,
+   late evening, whether the preview should show the two already, the user: "yes we'll wait for the
+   real runs but great to have everything ready". See "Status".)
 
 **How "be ambitious" is read** (the visualizer session's reading, not the user's words): the whole
 view is built now, and not only the entry with an empty view while the engine's first GARD run is
@@ -52,16 +56,179 @@ awaited.
   and not the preprint's runs, and nothing it shows is a finding. This goes one step past answer 7 as it
   was recommended (which named such a file for tests only), and is the one point of this reading that
   the user may want to turn down.
-- **The view reads a run through a contract of the viewer's own.** The engine's GARD design note is
-  proposed, on a development branch, not on main, so no code here binds to its record names: a table
-  says which of its proposed records each field would be read from, and an adapter is written when the
-  engine's first run exists.
+- **The view reads a run through a contract of the viewer's own.** The engine's GARD design note
+  was then proposed, on a development branch (it is now on main, decided: "Status"), so no code here
+  binds to its record names: a table says which of its records each field would be read from, and an
+  adapter is written when the engine's first run exists.
 - **The entry, its contract and its place in the switch are designed together with the cell-type
   contract** (`docs/CELL_TYPES_DESIGN.md`): species, cell type and model system change the same reader
   and the same switch, so they are one change. It is wired into the page when the files it shares with
   work in progress are free.
 
-What follows is the note as it was handed over, unchanged but for this section.
+## Status, 16 November 2026, late evening
+
+- **The entry read "Designed, not modelled"** then (`data/models/gard.json`, under `schema/ENTRIES.md`):
+  the engine's design note is a tracked file of main, decided (`docs/GARD_DESIGN.md`, D192), and GARD
+  is built in step 4 of D194's order. Nothing of it was in the engine. **Since 17 November 2026,
+  evening, it reads "Modelled", for comparison only** (below, "The record, the same day").
+- **The two forms of the law, in D192's words** (`docs/DECISIONS.md`, D192, "The reversibility
+  finding, as checked"): in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer uses these words and no others, and shows no comparison of
+  the two forms on invented numbers.
+- **The pair of forms is ready for the engine's runs** (the user: "yes we'll wait for the real runs
+  but great to have everything ready"): a run states its form (`law.form`, with the engine's own name
+  in `law.engine_name` once it has one) and its world; the view offers the two side by side only for
+  two real runs of the engine, of one world, by one set of rules, one of each form, and never for an
+  example (`schema/ASSEMBLY_RUN.md`, "The two forms of the law, side by side"). Tests hold it on a
+  test's own two made-up runs, which no page carries.
+- **What the engine's runs will be** (D192: an exact stochastic simulation, one molecule an event;
+  abstract assemblies over a generic ideal-mixing phase; a dense lognormal matrix with about a hundred
+  types as each world's data): the contract carries each without change (its table "What the engine's
+  runs will be").
+- **The assembly is drawn as lipids in water** (the user, 16 November 2026, late evening: "so for the
+  origin of life GARD simulation, let's make that one visually amazing - for example lets simulate the
+  self assembly of the lipids (visuall for now but maybe law later), and the different chemicals
+  seeping in and out, and the split, let's use nice water and lipid 3D elements and textures"). The
+  run gives which type joins or leaves and when, the composition, each fission and how it divides the
+  molecules; everything else (how a lipid looks, moves and packs, the water, the free molecules, every
+  size) is the picture's own, and the picture says that no law of Cells computes how the lipids move
+  and pack. A head's form and colour say its type; the micelle stands on a phone and with less motion
+  too (this replaces the cluster of answer 2 there); the founder gathers from the water at a run's
+  start, the one exception to the rule of motion, said so on the picture. The preview page is built by
+  `node tools/build_view_page.mjs lineage` (`src/standalone/lineage.*`).
+
+## On the map's page, 17 November 2026
+
+- **The view is on the map's page.** Choosing GARD in the species switch (or `entry=gard` in the
+  address) shows it in the first tab's place, named "Origin of life" ("Origin" on a phone, which keeps
+  the bar to one row). It plays what the entry names as the page opens it (the marked example until
+  17 November 2026, evening; the engine's own pair of runs since), after the founder has
+  gathered, and it stands for a visitor who asks for less motion and with `still=1`.
+  - Its levels are the page's rail, under "Level". Its clock is the page's one timeline.
+  - Its legend and note are the page's legend. Its similarity is a select on the page's card.
+  - It is mounted by `src/lenses/lineage_entry.js` and one line in `src/ui/model_views.js`.
+- **The example's mark stands at the first place free of the page's cards**, under the bar, at every
+  level and window size. On a phone it wraps to stand beside the card.
+- **The pair of forms stays unseen.** No page carries two real runs, so the page offers no pair. A
+  check-only scene with a test's own two made-up runs holds it (`tools/check_origin.mjs`, `CASE=pair`).
+- **On a phone at the Lineages level**, the lineage is shorter and seen from the front, under the
+  page's card, and the assembly leaves it the picture.
+- **The micelle stands everywhere, on a phone and with less motion too.** Answer 2 had the
+  cluster there. Asked again once the micelle was built to stand still, the user left it to
+  the coordinator (17 November 2026: "You decide"), who chose the micelle: it is the picture
+  the view was built for, and it costs the same to draw as the cluster (the same draw calls
+  and triangles by turns in one page on the project's graphics card; no phone was measured).
+  Version 13 of the map had shipped it before the answer and Versions 14 and 15 the cluster.
+  The choice is one line, `CLUSTER_WHERE_SMALL_OR_STILL` in `src/lenses/lineage.js`, and
+  either packing can be chosen on the card.
+- **Contact shade is left to the Molecules level.** At the Lineages level it cost a frame about
+  1.5 ms on the card, and kept the page just under 60 frames a second at 1400 by 900.
+
+## The protocell, 17 November 2026
+
+The user looked at the view on the map and sent two slides of their own public deck as the
+direction for its look (the deck of 10 November 2026, kept outside the repository,
+pages 12 and 13, "GARD Origin-of-Life Simulator" and "GARD Growth and Division"; nothing of the
+slides is in the repository):
+
+> I'm not asking for this level of Lipid simulation but still something that has the lipid
+> assembly then small molecules moving in and out
+
+and, on what moves:
+
+> yes, so the lipid [assembly] self assembles then the molicules move in and out of it, the 90 or
+> whatever we use in our GARD
+
+So:
+
+- **The view opens on a protocell**, a third packing beside the micelle and the cluster (the
+  picture's choice, as they are): a closed shell of the run's lipids, a molecule each, in two faces,
+  heads to the water outside and inside with the tails between. Its two faces are drawn as soft
+  glassy surfaces (the picture's own, no molecule), so that its 40 to 80 lipids read as one shell; a
+  bilayer of so few molecules could not otherwise close. Its near side is drawn see-through, so its
+  inside shows and every molecule stays on the picture.
+- **The molecules seen moving in and out are the run's own,** of its own types: each one drawn
+  coming in is a join of the run, each one going out a leave. They are seen at every speed, not only
+  molecule by molecule: no more than a cap fly at once, and where a growth's pace would put more in
+  flight, one in N is drawn in flight and the legend says N. The joins come in on one side and the
+  leaves go out on the other, as on the slide. First the founder gathers, then the exchange is seen,
+  in the user's order. No solute that is not a molecule of the run is drawn, and nothing carries a
+  chemical's name.
+- **The catalytic network inside** is read from the run's world: for the types the protocell holds,
+  the links are its table's factors (which type speeds which), the strongest drawn. It changes as the
+  types held change and never pulses with a join, since the run does not record what helped one.
+- **At a fission** the shell draws in at its waist into two protocells, each with the lipids the
+  run's split gives it and its own network; the daughter that carries on stays, the other drifts off
+  into the haze.
+- **What is the picture's own** is said on the picture and in the legend: "No law of Cells computes
+  how the lipids move and pack: the shell, the paths in and out, the water and every size are the
+  picture's own. Which molecule joins or leaves, and in what order, is the run's."
+- **`CLUSTER_WHERE_SMALL_OR_STILL`** now says whether a phone and less motion get the cluster (true)
+  or the protocell like everywhere else (false, as it stands).
+
+What follows is the note as it was handed over, unchanged but for these sections and the lines
+that state the engine's note's status.
+
+**The record, the same day.** GARD's build in the engine started on 17 November 2026, and its first
+part merged into main that afternoon: the stochastic assembly family `cells.assembly_lineages@1`,
+with GARD's two forms as one law set on it, its own tests, and development runs that are not judged
+(`PROGRESS.md`). The entry's word stayed "Designed, not modelled" until the engine's declarations
+listed the model (the lead's word, 17 November 2026). **That evening the second part merged into
+main** (`1f9863ce`; `PROGRESS.md`, "GARD's G1, part 2, on main"): the engine's declarations at main
+`a16b2571` list `cells.assembly_lineages@1` with GARD's three laws and its two lineage operators, so
+the entry reads "Modelled", for comparison only, and names the engine's final pair of runs, which
+the page now plays under the mark "Development run of the engine, not judged". Declared is not
+qualified: nothing of GARD is judged. The example of invented numbers stays as the checks' own
+scene. By D197 GARD is one law set, kept only for
+comparison, and the origin-of-life engine is to be Cells' own, with laws from physical chemistry; its
+design note, `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md`, is proposed; its first choices were decided on
+17 November (D199). The entry's words and
+notes say so (`data/models/gard.json`). That note proposes vesicles, a bilayer round a lumen, as the
+engine's first assemblies, dividing at shear events into two or more: when such runs exist, this view
+will need a vesicle's picture for them.
+
+## The engine's own runs, 17 November 2026
+
+The user had said on 16 November, of the two forms side by side: "yes we'll wait for the real runs
+but great to have everything ready". On 17 November the first part of GARD's build reached main: the
+stochastic assembly family `cells.assembly_lineages@1`, with development runs, not judged. The
+engine's lead decided the same day how the view meets them:
+
+- **Not part 1's pair:** its format predates part 2's freeze. The adapter is built on part 2's
+  provisional set (`gard-g1-part2-20261117/probes-6af93a51/probes/`, its roles `lineage` and
+  `lineage_single_event`: one world, one founder, one set of streams). That set is final but for
+  three interface ID strings, which change at the freeze, so the adapter reads such IDs from the run
+  and holds none.
+- **Nothing of the provisional set goes on the page.** The page keeps its marked example until the
+  final set comes; the real runs are a state the view shows on a check-only scene. Going to the final
+  set is data alone.
+- **The words:** "Development run of the engine, not judged", the revision, `cells.assembly_lineages@1`
+  and the two laws by name; each ledger line exactly as the run states it; D192's scoped words only;
+  the single-event form never called wrong (it is the preprint's form, kept for comparison and
+  declared driven).
+- **Side by side:** the engine's default first, the pair-consistent form, labelled as the engine's
+  passive law; the preprint's single-event form beside it, labelled as the comparison model (D192).
+
+What the view does with them (`schema/ASSEMBLY_RUN.md`, "The adapter, from the engine's run
+format"):
+
+- **`tools/adapt_assembly_run.py`** writes one small file of the view's contract for each run folder
+  (135 KB each for the provisional pair), with the viewer's own reader and nothing of the engine. It
+  takes every array through the run's own records table and every convention from the run's own
+  tables, copies the run's interface IDs, and stops in plain words where the run lacks what the
+  contract needs or states what it does not know. The run states no standing of its own; the adapter
+  is given it (`--standing development`) with where it is recorded.
+- **The view opens on the engine's runs wherever the entry names any** (`runToPlay`, the same rule on
+  the map's page and on the page of its own), and on the example where it names none. On a wide
+  screen the two stand side by side under one clock; on a phone one at a time, with a switch on the
+  card. The mark on the picture, in the legend, in the bar and on an opened card is the run's
+  standing, its revision and the engine's model. Each run's panel gives every line the run states of
+  its law's check and of its ledger, as `run.json` writes it; a fission's panel gives the run's
+  carrier keys. The clock spaces each growth's events by the run's own times. A run of the engine
+  carries no analysis, so no threshold is drawn and no fission is marked.
+- **The example leaves the page when the final set comes,** and stays in the repository as the
+  fixture the click checks hold the example's view on (on a check-only scene once the page names the
+  engine's runs). An example beside the engine's runs would ask a visitor to tell invented numbers from
+  a run, and the view would play the runs anyway.
 
 ## In short
 
@@ -115,10 +282,11 @@ open papers. On reading it (`e75b4b1f`):
   record holds H for the parent against each daughter.
 - **Inheritance and F12 are the analysis's,** in `validation/gard/`, so the threshold is the analysis's
   constant, not a `mark` the run writes.
-- **The toy's kernel is said to be the published form,** `cells.member_catalysis_at_state@1` in the
-  note's names, and the note's open finding on it is stated, without judging it.
+- **The toy's kernel is said to be the preprint's single-event form,** `cells.member_catalysis_at_state@1`
+  in the note's names (which the engine builds for the reference comparison; D192's words are in
+  "Status").
 - **The entry's card moves to `proposed`,** since the design note is now a tracked file on a
-  development branch.
+  development branch (and later to `designed`, when the note reached main: "Status").
 - **New questions for the lead** (section 7), and one for the user (question 9: the two kernel forms
   side by side).
 - **The population tree's 24 lanes are the note's slots:** a fission writes its two daughters into the
@@ -233,7 +401,7 @@ disputed (Vasas and others 2010; the reply of Markovitch and Lancet 2012 and the
 preprint sets the exchange out. So every shape, place and motion in a picture of GARD is the picture's
 choice, and is labelled so.
 
-### 1.5 In the engine's design note (proposed, on a development branch, not on main)
+### 1.5 In the engine's design note (on main, decided, D192)
 
 - **Entities:** an *assembly* (integer counts over the species, a carrier key, an event counter; no
   volume, area or charge in the abstract option); the *reservoir* (held activities ρ and the matrix β:
@@ -252,13 +420,11 @@ choice, and is labelled so.
 - **Recommended:** exact single-molecule events; abstract assemblies first, declared so that vesicles
   in the physical world can bind the same laws later; dense log-normal β at 100 types; both kernel
   forms, with the published one for the reference comparison (the preprint's T2-02).
-- **An open finding, under review:** the engine's note has an open finding on the published kernel,
-  under review, and proposes a second form of the law beside it; its first experiment would compare
-  the two. This note does not restate the finding and takes no view on it.
+- **The two forms of the law, in D192's words:** in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference (D192).
 
 ## 2. What a run would save, and what each sketch reads
 
-From the engine's note, section 5 (proposed, on a development branch, not on main):
+From the engine's note, section 5 (on main, decided, D192):
 
 | Record | Kind, axes | Saved | Read by |
 | --- | --- | --- | --- |
@@ -320,6 +486,7 @@ tracked file on a development branch; that is a choice, since the cell types' de
 on main before calling a cell type designed. The line would read "nothing yet; a design is proposed, on a development branch, not on main
 (16 November 2026)", with the record's one sourced fact on main (the preprint was built on GARD,
 `docs/SCIENTIFIC_BASIS.md`). `modelled` only when the record says a registered GARD model exists.
+(Since the note reached main, decided, the card reads "Designed, not modelled": "Status".)
 
 **Levels.** Molecules (the hundred types and β), One assembly (the droplet, molecule by molecule),
 Population (many assemblies at once, in a fixed number of slots), Lineages (generations across fissions).
@@ -331,7 +498,7 @@ parts have nothing for it and say so.
 Each is drawn live on the page, with what the visitor sees and does, what it reads, its cost, how it
 holds for one assembly and for thousands, and how it works on a phone, with less motion, and without 3D.
 
-| | Option | Reads (the engine's note, proposed) | Cost (my estimate) |
+| | Option | Reads (the engine's note) | Cost (my estimate) |
 | --- | --- | --- | --- |
 | A | The entry: "Origin of life" in the switch, the card, four levels, β at the molecules level | None; β for the molecules level | 2–3 days |
 | B | One assembly, one bead per molecule, growing and splitting: micelle (pick), cluster, vesicle (shown to say why not: 80 molecules cannot make one) | `assembly_count`, `fission_split`, `fission_followed`; the event trace to draw each molecule | 2–3 days |
@@ -433,10 +600,10 @@ by every sketch under one clock.
   to every propensity, an exact half drawn without replacement, the first daughter carrying on (the
   preprint's version T2-02); H and the strict 0.9 (the preprint); a population kept at one size by
   removing a random other assembly at each fission (Gross and others 2014).
-- **Its kernel is the published form:** the factor b<sub>i</sub> at the current state for a join and a
-  leave alike (`cells.member_catalysis_at_state@1` in the note's names). The engine's note has an open
-  finding on this form and proposes a pair-consistent form beside it; the toy offers only the published
-  one, and the page says so without judging it.
+- **Its kernel is the preprint's single-event form:** the factor b<sub>i</sub> at the current state for
+  a join and a leave alike (`cells.member_catalysis_at_state@1` in the note's names). The engine builds
+  it for the reference comparison, beside the pair-consistent form, its own law (D192); the toy offers
+  only the preprint's form, and the page says so without judging it.
 - **The page's own:** the seed (16, picked from 30 tried because its picture shows long inherited
   stretches, breaks and a return; seeds differ widely); the one
   matrix it draws; 120 fissions; waiting times, used only to order the population's events; a population
@@ -459,12 +626,13 @@ there; no frame rate could be measured.
 - "Highly similar" in the papers' composome definition has no number in what I read; the preprint's 0.9
   is its own and applies to the fission.
 - The cost estimates are mine.
-- The engine's note is proposed and under review; its names, records and the open finding may change.
+- The engine's note is decided (D192) and not built; its names and records may still change as it is
+  built.
 
 ## Sources
 
-1. Cells, `docs/GARD_DESIGN.md`, the engine's GARD design note: proposed, on a development branch, not on
-   main (branch `gard-design`, `e75b4b1f`, 16 November 2026).
+1. Cells, `docs/GARD_DESIGN.md`, the engine's GARD design note: on main, decided on 16 November 2026
+   (D192, read at `fa19d80c`); first read on its branch `gard-design` at `e75b4b1f`.
 2. *Plastic heredity: Predicting and steering how inheritance breaks, returns, and persists*, preprint,
    version 5.0, doi:10.5281/zenodo.22143269, CC BY 4.0, read 16 November 2026.
 3. Segrè D, Ben-Eli D, Lancet D (2000) Compositional genomes: prebiotic information transfer in mutually

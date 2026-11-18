@@ -1,0 +1,15 @@
+{
+  "view": "lineage",
+  "title": "GARD Assembly Preview",
+  "description": "A GARD assembly drawn as lipids in water, gathering, taking molecules in and letting them go, and splitting in two, as the run its entry names plays (marked on the page: an example of invented numbers, or a development run of the engine): the origin-of-life view of Cells, standing alone.",
+  "boot": "Loading the GARD assembly…",
+  "scene": {
+    "from": "data/architecture/architecture.scene.json",
+    "keep": ["format", "kind", "title", "meta", "statuses", "relation_kinds", "groups"]
+  },
+  "data": [
+    { "into": "entry", "from": "data/models/gard.json" },
+    { "into": "runs", "runs_of": "entry" }
+  ],
+  "stamp": "{runs.0.data.example.says||runs.0.data.development.says}. The lipids, the water and how they move are the picture's own: no law of Cells computes how the lipids move and pack. GARD in Cells' engine: {entry.modelled.state}."
+}

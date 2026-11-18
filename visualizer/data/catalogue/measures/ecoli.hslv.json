@@ -1,0 +1,1952 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; y from the part hslv's centre to the part hslu's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "1G4A-assembly1": {
+   "entry": "1G4A",
+   "assembly": "1",
+   "title": "CRYSTAL STRUCTURES OF THE HSLVU PEPTIDASE-ATPASE COMPLEX REVEAL AN ATP-DEPENDENT PROTEOLYSIS MECHANISM",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 32604,
+    "axes": [
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0
+     ]
+    ],
+    "across_nm": [
+     16.0,
+     11.3,
+     11.3
+    ],
+    "farthest_nm": [
+     15.0,
+     12.5,
+     11.8
+    ],
+    "middle_98_percent_nm": [
+     13.3,
+     9.8,
+     9.7
+    ],
+    "radius_of_gyration_nm": 5.05
+   },
+   "frame": {
+    "from": "hslv",
+    "to": "hslu",
+    "between_centres_nm": 6.2
+   },
+   "parts": {
+    "hslv": {
+     "by": "entities",
+     "ids": [
+      "2"
+     ],
+     "atoms": 15828,
+     "centre_nm": [
+      0.0,
+      -3.19,
+      0.0
+     ],
+     "axes": [
+      [
+       0.815,
+       0.0,
+       -0.5795
+      ],
+      [
+       0.5795,
+       0.0,
+       0.815
+      ],
+      [
+       0.0,
+       -1.0,
+       0.0
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      10.6,
+      8.9
+     ],
+     "farthest_nm": [
+      10.5,
+      10.4,
+      8.3
+     ],
+     "radius_of_gyration_nm": 3.9
+    },
+    "hslu": {
+     "by": "entities",
+     "ids": [
+      "1"
+     ],
+     "atoms": 16776,
+     "centre_nm": [
+      0.0,
+      3.01,
+      0.0
+     ],
+     "axes": [
+      [
+       0.9962,
+       0.0,
+       0.0875
+      ],
+      [
+       -0.0875,
+       0.0,
+       0.9962
+      ],
+      [
+       0.0,
+       -1.0,
+       0.0
+      ]
+     ],
+     "across_nm": [
+      11.9,
+      11.9,
+      6.9
+     ],
+     "farthest_nm": [
+      12.6,
+      11.4,
+      7.7
+     ],
+     "radius_of_gyration_nm": 4.06
+    }
+   },
+   "chains": [
+    {
+     "chain": "E",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      -2.48,
+      3.01,
+      -2.11
+     ],
+     "axes": [
+      [
+       -0.113,
+       0.4959,
+       0.861
+      ],
+      [
+       0.1218,
+       0.8669,
+       -0.4834
+      ],
+      [
+       -0.9861,
+       0.0502,
+       -0.1584
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.6,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.7,
+      5.2
+     ],
+     "radius_of_gyration_nm": 2.43
+    },
+    {
+     "chain": "F",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      0.59,
+      3.02,
+      -3.2
+     ],
+     "axes": [
+      [
+       0.7978,
+       -0.5047,
+       -0.3299
+      ],
+      [
+       0.4818,
+       0.8626,
+       -0.1545
+      ],
+      [
+       0.3626,
+       -0.0357,
+       0.9313
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.7,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.9,
+      4.9
+     ],
+     "radius_of_gyration_nm": 2.44
+    },
+    {
+     "chain": "B",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -2.13,
+      -4.92,
+      -2.22
+     ],
+     "axes": [
+      [
+       -0.3159,
+       0.7891,
+       -0.5268
+      ],
+      [
+       0.8866,
+       0.4433,
+       0.1323
+      ],
+      [
+       0.3379,
+       -0.4252,
+       -0.8396
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      4.4,
+      4.5,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "A",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      0.85,
+      -4.92,
+      -2.96
+     ],
+     "axes": [
+      [
+       0.3087,
+       0.7731,
+       -0.5541
+      ],
+      [
+       0.3756,
+       0.4362,
+       0.8177
+      ],
+      [
+       0.8739,
+       -0.4605,
+       -0.1557
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.7,
+      4.3,
+      2.9
+     ],
+     "radius_of_gyration_nm": 1.56
+    },
+    {
+     "chain": "D",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      0.15,
+      -1.46,
+      -3.16
+     ],
+     "axes": [
+      [
+       0.1647,
+       0.8741,
+       0.4571
+      ],
+      [
+       -0.5781,
+       -0.2899,
+       0.7627
+      ],
+      [
+       0.7992,
+       -0.3898,
+       0.4576
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.5,
+      4.4,
+      3.4
+     ],
+     "radius_of_gyration_nm": 1.58
+    },
+    {
+     "chain": "C",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -2.66,
+      -1.48,
+      -1.71
+     ],
+     "axes": [
+      [
+       0.4873,
+       0.8693,
+       0.0829
+      ],
+      [
+       0.3726,
+       -0.2928,
+       0.8806
+      ],
+      [
+       0.7898,
+       -0.3982,
+       -0.4665
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.6,
+      4.5,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "E-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      3.07,
+      3.01,
+      -1.09
+     ],
+     "axes": [
+      [
+       0.6891,
+       -0.4959,
+       0.5284
+      ],
+      [
+       0.3577,
+       0.8669,
+       0.3471
+      ],
+      [
+       -0.6302,
+       -0.0502,
+       0.7748
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.6,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.7,
+      5.2
+     ],
+     "radius_of_gyration_nm": 2.43
+    },
+    {
+     "chain": "F-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      2.48,
+      3.02,
+      2.11
+     ],
+     "axes": [
+      [
+       -0.1131,
+       -0.5047,
+       0.8559
+      ],
+      [
+       -0.1071,
+       0.8626,
+       0.4945
+      ],
+      [
+       -0.9878,
+       -0.0357,
+       -0.1516
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.7,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.9,
+      4.9
+     ],
+     "radius_of_gyration_nm": 2.44
+    },
+    {
+     "chain": "B-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.99,
+      -4.92,
+      -0.74
+     ],
+     "axes": [
+      [
+       0.6142,
+       0.7891,
+       -0.0102
+      ],
+      [
+       -0.5579,
+       0.4433,
+       0.7016
+      ],
+      [
+       0.5582,
+       -0.4252,
+       0.7125
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      4.4,
+      4.5,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "A-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.14,
+      -4.92,
+      2.21
+     ],
+     "axes": [
+      [
+       0.3255,
+       0.7731,
+       0.5444
+      ],
+      [
+       0.896,
+       -0.4362,
+       0.0836
+      ],
+      [
+       0.3021,
+       0.4605,
+       -0.8347
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.7,
+      4.3,
+      2.9
+     ],
+     "radius_of_gyration_nm": 1.56
+    },
+    {
+     "chain": "D-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.67,
+      -1.46,
+      1.71
+     ],
+     "axes": [
+      [
+       -0.4782,
+       0.8741,
+       -0.0859
+      ],
+      [
+       0.3714,
+       0.2899,
+       0.882
+      ],
+      [
+       0.7959,
+       0.3898,
+       -0.4633
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.5,
+      4.4,
+      3.4
+     ],
+     "radius_of_gyration_nm": 1.58
+    },
+    {
+     "chain": "C-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.81,
+      -1.48,
+      -1.45
+     ],
+     "axes": [
+      [
+       -0.3154,
+       0.8693,
+       0.3806
+      ],
+      [
+       0.9489,
+       0.2928,
+       0.1177
+      ],
+      [
+       -0.0091,
+       0.3982,
+       -0.9172
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.6,
+      4.5,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "E-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      -0.59,
+      3.01,
+      3.2
+     ],
+     "axes": [
+      [
+       0.8021,
+       0.4959,
+       -0.3326
+      ],
+      [
+       -0.4795,
+       0.8669,
+       0.1362
+      ],
+      [
+       0.3559,
+       0.0502,
+       0.9332
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.6,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.7,
+      5.2
+     ],
+     "radius_of_gyration_nm": 2.43
+    },
+    {
+     "chain": "F-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 2796,
+     "centre_nm": [
+      -3.07,
+      3.02,
+      1.09
+     ],
+     "axes": [
+      [
+       0.6846,
+       0.5047,
+       0.5259
+      ],
+      [
+       -0.3747,
+       0.8626,
+       -0.34
+      ],
+      [
+       -0.6252,
+       0.0357,
+       0.7796
+      ]
+     ],
+     "across_nm": [
+      7.6,
+      6.7,
+      4.0
+     ],
+     "farthest_nm": [
+      7.0,
+      7.9,
+      4.9
+     ],
+     "radius_of_gyration_nm": 2.44
+    },
+    {
+     "chain": "B-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -0.85,
+      -4.92,
+      2.96
+     ],
+     "axes": [
+      [
+       -0.2982,
+       0.7891,
+       0.537
+      ],
+      [
+       0.3287,
+       -0.4433,
+       0.8339
+      ],
+      [
+       0.8961,
+       0.4252,
+       -0.1272
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.8
+     ],
+     "farthest_nm": [
+      4.4,
+      4.5,
+      2.8
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "A-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -2.99,
+      -4.92,
+      0.74
+     ],
+     "axes": [
+      [
+       -0.6342,
+       0.7731,
+       0.0097
+      ],
+      [
+       -0.5204,
+       -0.4362,
+       0.7341
+      ],
+      [
+       0.5718,
+       0.4605,
+       0.6789
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.7,
+      4.3,
+      2.9
+     ],
+     "radius_of_gyration_nm": 1.56
+    },
+    {
+     "chain": "D-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -2.81,
+      -1.46,
+      1.45
+     ],
+     "axes": [
+      [
+       0.3135,
+       0.8741,
+       -0.3711
+      ],
+      [
+       0.9496,
+       -0.2899,
+       0.1193
+      ],
+      [
+       -0.0033,
+       -0.3898,
+       -0.9209
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.5,
+      4.4,
+      3.4
+     ],
+     "radius_of_gyration_nm": 1.58
+    },
+    {
+     "chain": "C-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -0.15,
+      -1.48,
+      3.16
+     ],
+     "axes": [
+      [
+       -0.1719,
+       0.8693,
+       -0.4634
+      ],
+      [
+       -0.5764,
+       0.2928,
+       0.763
+      ],
+      [
+       0.7989,
+       0.3982,
+       0.4507
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.1,
+      2.8
+     ],
+     "farthest_nm": [
+      4.6,
+      4.5,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.57
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "copies": 6,
+     "sequence_length": 443,
+     "residues_modelled_per_copy": 356.0,
+     "modelled_share": 0.804,
+     "atoms_per_modelled_residue": 7.85
+    },
+    {
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "copies": 12,
+     "sequence_length": 175,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.989,
+     "atoms_per_modelled_residue": 7.62
+    }
+   ]
+  },
+  "1G4B-assembly1": {
+   "entry": "1G4B",
+   "assembly": "1",
+   "title": "CRYSTAL STRUCTURES OF THE HSLVU PEPTIDASE-ATPASE COMPLEX REVEAL AN ATP-DEPENDENT PROTEOLYSIS MECHANISM",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 52980,
+    "axes": [
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0
+     ]
+    ],
+    "across_nm": [
+     26.9,
+     11.7,
+     11.7
+    ],
+    "farthest_nm": [
+     25.3,
+     11.8,
+     12.8
+    ],
+    "middle_98_percent_nm": [
+     23.4,
+     10.0,
+     10.3
+    ],
+    "radius_of_gyration_nm": 7.07
+   },
+   "frame": {
+    "from": "hslv",
+    "to": "hslu",
+    "between_centres_nm": 0.1
+   },
+   "parts": {
+    "hslv": {
+     "by": "entities",
+     "ids": [
+      "2"
+     ],
+     "atoms": 15828,
+     "centre_nm": [
+      0.0,
+      -0.05,
+      0.0
+     ],
+     "axes": [
+      [
+       0.7867,
+       0.0,
+       -0.6173
+      ],
+      [
+       0.6173,
+       0.0,
+       0.7867
+      ],
+      [
+       0.0,
+       -1.0,
+       0.0
+      ]
+     ],
+     "across_nm": [
+      10.6,
+      10.6,
+      9.5
+     ],
+     "farthest_nm": [
+      10.1,
+      10.8,
+      8.9
+     ],
+     "radius_of_gyration_nm": 3.98
+    },
+    "hslu": {
+     "by": "entities",
+     "ids": [
+      "1"
+     ],
+     "atoms": 37152,
+     "centre_nm": [
+      0.0,
+      0.02,
+      0.0
+     ],
+     "axes": [
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.9514,
+       0.0,
+       0.3079
+      ],
+      [
+       0.3079,
+       0.0,
+       -0.9514
+      ]
+     ],
+     "across_nm": [
+      31.5,
+      12.2,
+      12.2
+     ],
+     "farthest_nm": [
+      25.3,
+      12.5,
+      12.3
+     ],
+     "radius_of_gyration_nm": 8.03
+    }
+   },
+   "chains": [
+    {
+     "chain": "E",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      1.08,
+      6.83,
+      3.2
+     ],
+     "axes": [
+      [
+       -0.1406,
+       0.9844,
+       0.106
+      ],
+      [
+       -0.5971,
+       -0.1697,
+       0.784
+      ],
+      [
+       0.7897,
+       0.0469,
+       0.6117
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "F",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -2.12,
+      6.7,
+      2.55
+     ],
+     "axes": [
+      [
+       -0.2079,
+       0.9719,
+       -0.1101
+      ],
+      [
+       0.9611,
+       0.2239,
+       0.162
+      ],
+      [
+       0.1821,
+       -0.0721,
+       -0.9806
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "K",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -1.34,
+      -6.69,
+      3.33
+     ],
+     "axes": [
+      [
+       -0.1391,
+       0.9806,
+       -0.1378
+      ],
+      [
+       0.5531,
+       0.1923,
+       0.8106
+      ],
+      [
+       0.8215,
+       0.0366,
+       -0.5691
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "L",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      2.01,
+      -6.77,
+      2.45
+     ],
+     "axes": [
+      [
+       -0.1723,
+       0.9835,
+       0.0554
+      ],
+      [
+       0.9818,
+       0.176,
+       -0.0708
+      ],
+      [
+       -0.0794,
+       0.0422,
+       -0.9959
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "M",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -1.22,
+      1.76,
+      2.73
+     ],
+     "axes": [
+      [
+       0.0909,
+       0.8173,
+       -0.569
+      ],
+      [
+       0.8241,
+       -0.3825,
+       -0.4178
+      ],
+      [
+       -0.5591,
+       -0.4309,
+       -0.7083
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "N",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.13,
+      1.88,
+      2.62
+     ],
+     "axes": [
+      [
+       -0.3759,
+       0.8632,
+       -0.3369
+      ],
+      [
+       -0.0299,
+       0.3521,
+       0.9355
+      ],
+      [
+       0.9262,
+       0.3617,
+       -0.1066
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "O",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      1.19,
+      -2.04,
+      2.66
+     ],
+     "axes": [
+      [
+       0.0833,
+       0.8288,
+       0.5534
+      ],
+      [
+       0.8082,
+       -0.381,
+       0.449
+      ],
+      [
+       0.583,
+       0.4099,
+       -0.7015
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "P",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -1.91,
+      -1.79,
+      2.66
+     ],
+     "axes": [
+      [
+       -0.3449,
+       0.8906,
+       0.2965
+      ],
+      [
+       -0.0021,
+       -0.3166,
+       0.9485
+      ],
+      [
+       0.9386,
+       0.3265,
+       0.1111
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "E-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      2.23,
+      6.83,
+      -2.54
+     ],
+     "axes": [
+      [
+       0.162,
+       0.9844,
+       0.0688
+      ],
+      [
+       0.9775,
+       -0.1697,
+       0.1251
+      ],
+      [
+       0.1348,
+       0.0469,
+       -0.9898
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "F-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      3.26,
+      6.7,
+      0.56
+     ],
+     "axes": [
+      [
+       0.0086,
+       0.9719,
+       0.2351
+      ],
+      [
+       0.3402,
+       -0.2239,
+       0.9133
+      ],
+      [
+       0.9403,
+       0.0721,
+       -0.3326
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "K-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      3.55,
+      -6.69,
+      -0.51
+     ],
+     "axes": [
+      [
+       -0.0498,
+       0.9806,
+       0.1893
+      ],
+      [
+       -0.4255,
+       -0.1923,
+       0.8843
+      ],
+      [
+       0.9036,
+       -0.0366,
+       0.4268
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "L-2",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      1.12,
+      -6.77,
+      -2.96
+     ],
+     "axes": [
+      [
+       0.1342,
+       0.9835,
+       0.1215
+      ],
+      [
+       0.5523,
+       -0.176,
+       0.8149
+      ],
+      [
+       0.8228,
+       -0.0422,
+       -0.5668
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "M-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      2.97,
+      1.76,
+      -0.31
+     ],
+     "axes": [
+      [
+       -0.5382,
+       0.8173,
+       0.2057
+      ],
+      [
+       0.7738,
+       0.3825,
+       0.5048
+      ],
+      [
+       0.3339,
+       0.4309,
+       -0.8383
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "N-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      1.21,
+      1.88,
+      -3.15
+     ],
+     "axes": [
+      [
+       -0.1038,
+       0.8632,
+       0.494
+      ],
+      [
+       0.8251,
+       0.3521,
+       -0.4419
+      ],
+      [
+       -0.5554,
+       0.3617,
+       -0.7488
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "O-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      1.71,
+      -2.04,
+      -2.36
+     ],
+     "axes": [
+      [
+       0.4376,
+       0.8288,
+       -0.3488
+      ],
+      [
+       0.0152,
+       0.381,
+       0.9244
+      ],
+      [
+       0.899,
+       -0.4099,
+       0.1541
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "P-2",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      3.26,
+      -1.79,
+      0.33
+     ],
+     "axes": [
+      [
+       0.4292,
+       0.8906,
+       0.1504
+      ],
+      [
+       0.8225,
+       -0.3166,
+       -0.4724
+      ],
+      [
+       -0.3731,
+       0.3265,
+       -0.8684
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "E-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -3.32,
+      6.83,
+      -0.67
+     ],
+     "axes": [
+      [
+       -0.0215,
+       0.9844,
+       -0.1747
+      ],
+      [
+       0.3804,
+       0.1697,
+       0.9091
+      ],
+      [
+       0.9246,
+       -0.0469,
+       -0.3781
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "F-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -1.15,
+      6.7,
+      -3.11
+     ],
+     "axes": [
+      [
+       0.1993,
+       0.9719,
+       -0.125
+      ],
+      [
+       -0.6208,
+       0.2239,
+       0.7513
+      ],
+      [
+       0.7582,
+       -0.0721,
+       0.648
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "K-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -2.22,
+      -6.69,
+      -2.82
+     ],
+     "axes": [
+      [
+       0.1889,
+       0.9806,
+       -0.0516
+      ],
+      [
+       0.9786,
+       -0.1923,
+       -0.0736
+      ],
+      [
+       -0.0821,
+       -0.0366,
+       -0.996
+      ]
+     ],
+     "across_nm": [
+      9.2,
+      7.2,
+      4.0
+     ],
+     "farthest_nm": [
+      9.4,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "L-3",
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "atoms": 3096,
+     "centre_nm": [
+      -3.13,
+      -6.77,
+      0.51
+     ],
+     "axes": [
+      [
+       0.0382,
+       0.9835,
+       -0.1769
+      ],
+      [
+       -0.4296,
+       0.176,
+       0.8857
+      ],
+      [
+       0.9022,
+       0.0422,
+       0.4292
+      ]
+     ],
+     "across_nm": [
+      9.3,
+      7.3,
+      3.9
+     ],
+     "farthest_nm": [
+      9.3,
+      7.1,
+      5.1
+     ],
+     "radius_of_gyration_nm": 2.77
+    },
+    {
+     "chain": "M-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -1.76,
+      1.76,
+      -2.42
+     ],
+     "axes": [
+      [
+       0.4473,
+       0.8173,
+       0.3632
+      ],
+      [
+       -0.0503,
+       -0.3825,
+       0.9226
+      ],
+      [
+       0.893,
+       -0.4309,
+       -0.13
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "N-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -3.34,
+      1.88,
+      0.53
+     ],
+     "axes": [
+      [
+       0.4797,
+       0.8632,
+       -0.1571
+      ],
+      [
+       0.7952,
+       -0.3521,
+       0.4936
+      ],
+      [
+       0.3708,
+       -0.3617,
+       -0.8554
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "O-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -2.9,
+      -2.04,
+      -0.3
+     ],
+     "axes": [
+      [
+       -0.5209,
+       0.8288,
+       -0.2046
+      ],
+      [
+       0.793,
+       0.381,
+       -0.4754
+      ],
+      [
+       -0.3161,
+       -0.4099,
+       -0.8556
+      ]
+     ],
+     "across_nm": [
+      4.9,
+      4.2,
+      2.7
+     ],
+     "farthest_nm": [
+      4.7,
+      4.5,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    },
+    {
+     "chain": "P-3",
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "atoms": 1319,
+     "centre_nm": [
+      -1.35,
+      -1.79,
+      -2.99
+     ],
+     "axes": [
+      [
+       -0.0843,
+       0.8906,
+       -0.4469
+      ],
+      [
+       0.8204,
+       0.3166,
+       0.4761
+      ],
+      [
+       0.5656,
+       -0.3265,
+       -0.7573
+      ]
+     ],
+     "across_nm": [
+      5.0,
+      4.1,
+      2.7
+     ],
+     "farthest_nm": [
+      4.6,
+      4.4,
+      3.0
+     ],
+     "radius_of_gyration_nm": 1.57
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "ATP-DEPENDENT HSL PROTEASE ATP-BINDING SUBUNIT HSLU",
+     "copies": 12,
+     "sequence_length": 443,
+     "residues_modelled_per_copy": 393.0,
+     "modelled_share": 0.887,
+     "atoms_per_modelled_residue": 7.88
+    },
+    {
+     "entity": "2",
+     "description": "ATP-DEPENDENT PROTEASE HSLV",
+     "copies": 12,
+     "sequence_length": 175,
+     "residues_modelled_per_copy": 173.0,
+     "modelled_share": 0.989,
+     "atoms_per_modelled_residue": 7.62
+    }
+   ]
+  }
+ }
+}

@@ -3,17 +3,39 @@
 Kv1.1/2/3/4/6 extend the previously qualified Kv1.5, Kir2.1, NaV1.2 and HCN
 laws. Voltage is in volts and time constants in seconds. These continuous
 equations preserve source gate powers; they do not adopt BETSE's update clock.
+
+Each law's numbers live in its own module, laws/channels/kv1p{1,2,3,4,6}_mh*.py, the law's one
+source (docs/CORE_SEAMS_DESIGN.md §8.6 as amended: the lead's ruling (B), 18 November 2026). This
+dispatcher gathers the same floats per element: a recorded temporary second form of the five laws'
+math, which retires with the legacy catalogue families, holds these five, and takes no new law
+(tests/unit/test_kv1_channel_laws.py). Its program text and outputs are today's. Why the two forms
+differ under JAX: XLA on CPU rewrites x / constant as x * (1/constant), while this dispatcher
+divides by gathered arrays, which it keeps exact; the per-law kernels, which divide by constants,
+are held to it bitwise under NumPy and within 32 ulps under JAX.
 """
 
 import jax.numpy as jnp
 
-from cells.laws.channels import hcn_channels
+from cells.laws.channels import hcn_channels, kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
 
 FAMILIES = (1, 2, 3, 4, 6)
 KV1_LAWS = {f"kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in FAMILIES}
 LAW_CODES = {**hcn_channels.LAW_CODES, **{law: i for i, law in enumerate(KV1_LAWS, 6)}}
 LAW_PERMEABILITIES = hcn_channels.LAW_PERMEABILITIES | {law: (("K", 1.0),) for law in KV1_LAWS}
 SPECIES_VALENCE = hcn_channels.SPECIES_VALENCE
+LAWS = (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)  # Catalogue codes 6-10, in order.
+# A logistic time constant's (scale, midpoint, slope) where a law's takes another form (Kv1.3's
+# affine, Kv1.4's constant), which then replaces it.
+PLACEHOLDER = (0, 0, 1)
+
+
+def _columns(name, *, logistic_tau=False):
+    """Each coefficient of `name` across the five laws, as the lists this dispatcher gathers."""
+    rows = [
+        PLACEHOLDER if logistic_tau and law in (kv1p3_mh, kv1p4_mh) else getattr(law, name)
+        for law in LAWS
+    ]
+    return [list(column) for column in zip(*rows, strict=True)]
 
 
 def kinetics(voltage, law_codes, *, xp=jnp):
@@ -26,24 +48,18 @@ def kinetics(voltage, law_codes, *, xp=jnp):
     def logistic(midpoint, slope):
         return 1 / (1 + xp.exp((voltage - parameters(midpoint)) / parameters(slope)))
 
-    activation = logistic(
-        [-0.0305, -0.021, -0.0141, -0.0217, -0.0208],
-        [-0.0113943, -0.0113943, -0.0103, -0.0169, -0.0081],
-    )
-    inactivation = logistic(
-        [-0.030, -0.022, -0.033, -0.0736, -0.022],
-        [0.0273943, 0.0113943, 0.0037, 0.0128, 0.01139],
-    )
-    activation_tau = parameters([0.030, 0.150, 0, 0, 0.030]) * logistic(
-        [-0.07656, -0.06756, 0, 0, -0.04656], [0.0261479, 0.0341479, 1, 1, 0.04414]
-    )
-    inactivation_tau = parameters([15, 15, 0, 0, 5]) * logistic(
-        [-0.16056, -0.04656, 0, 0, -0.04656], [-0.100, -0.0441479, 1, 1, -0.04414]
-    )
-    activation_tau = xp.where(index == 2, 0.01916 - 0.284 * voltage, activation_tau)
-    inactivation_tau = xp.where(index == 2, 1.1624 - 13.760 * voltage, inactivation_tau)
-    activation_tau = xp.where(index == 3, 0.003, activation_tau)
-    inactivation_tau = xp.where(index == 3, 0.119, inactivation_tau)
+    activation = logistic(*_columns("ACTIVATION"))
+    inactivation = logistic(*_columns("INACTIVATION"))
+    scale, midpoint, slope = _columns("ACTIVATION_TAU", logistic_tau=True)
+    activation_tau = parameters(scale) * logistic(midpoint, slope)
+    scale, midpoint, slope = _columns("INACTIVATION_TAU", logistic_tau=True)
+    inactivation_tau = parameters(scale) * logistic(midpoint, slope)
+    intercept, gradient = kv1p3_mh.ACTIVATION_TAU
+    activation_tau = xp.where(index == 2, intercept - gradient * voltage, activation_tau)
+    intercept, gradient = kv1p3_mh.INACTIVATION_TAU
+    inactivation_tau = xp.where(index == 2, intercept - gradient * voltage, inactivation_tau)
+    activation_tau = xp.where(index == 3, kv1p4_mh.ACTIVATION_TAU_S, activation_tau)
+    inactivation_tau = xp.where(index == 3, kv1p4_mh.INACTIVATION_TAU_S, inactivation_tau)
     selected = xp.expand_dims(law_codes >= 6, -2)
     return (
         xp.where(selected, xp.stack((activation, inactivation), axis=-2), target),

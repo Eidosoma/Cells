@@ -131,8 +131,8 @@ Not stated: no record states a level for this piece.
 
 <!-- generated: links -->
 
-- Declared in [`src/cells/models/inner_laws.py`](../../../../src/cells/models/inner_laws.py) (`cells.models.inner_laws`).
-- Kernels: `kinetics`, `cells.models.inner_laws._kv1p5_kinetics`; `opening`, `cells.models.inner_laws._open_mh`.
+- Declared in [`src/cells/laws/channels/kv1p5_mh.py`](../../../../src/cells/laws/channels/kv1p5_mh.py) (`cells.laws.channels.kv1p5_mh`).
+- Kernels: `kinetics`, `cells.laws.channels.kv1p5_mh.kinetics`; `opening`, `cells.laws.channels.kv1p5_mh.opening`.
 - Runs in `cells.resolved_pump_tissue@3`.
 - Manifest entry: (law, `cells.kv1p5_mh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.kv1p5_mh@1`.

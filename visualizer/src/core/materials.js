@@ -4,6 +4,7 @@
 
 import * as THREE from "../three.js";
 import { statusToken } from "./theme.js";
+import { paintedTexture } from "./painted.js";
 
 export const STATUS_ORDER = ["qualified", "landed", "established", "failed", "designed", "planned", "external", null];
 
@@ -124,15 +125,13 @@ export function linkCurve(from, to) {
 
 /** A small text sprite for marks drawn in the scene itself (charges, gate numbers). */
 export function glyphSprite(text, colour, size = 1) {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 96;
-  const context = canvas.getContext("2d");
-  context.font = "600 68px system-ui, sans-serif";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillStyle = colour;
-  context.fillText(text, 48, 52);
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = paintedTexture(96, 96, (context) => {
+    context.font = "600 68px system-ui, sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = colour;
+    context.fillText(text, 48, 52);
+  });
   texture.colorSpace = THREE.SRGBColorSpace;
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
   sprite.scale.setScalar(size);

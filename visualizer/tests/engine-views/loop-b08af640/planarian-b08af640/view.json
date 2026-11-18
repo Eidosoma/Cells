@@ -1,0 +1,1931 @@
+{
+  "constants": [
+    {
+      "axes": [],
+      "from": "the definition (the bound layout)",
+      "id": "temperature",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "K",
+      "values": 310.0
+    },
+    {
+      "axes": [
+        "species"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "valence",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        1.0,
+        1.0,
+        -1.0,
+        -1.0
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        0.7505222518670602,
+        0.7505222518670602,
+        0.7505222518670602,
+        0.7505222518670602,
+        0.7505222518670602,
+        0.7505222518670602,
+        0.7505222518670602
+      ]
+    },
+    {
+      "axes": [
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "extracellular_volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_area",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m2",
+      "values": [
+        3.261272165616906e-10,
+        3.261272165616906e-10,
+        3.261272165616906e-10,
+        3.261272165616906e-10,
+        3.261272165616906e-10,
+        3.261272165616906e-10,
+        3.261272165616906e-10
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_capacitance",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "F",
+      "values": [
+        1.6306360828084532e-11,
+        1.6306360828084532e-11,
+        1.6306360828084532e-11,
+        1.6306360828084532e-11,
+        1.6306360828084532e-11,
+        1.6306360828084532e-11,
+        1.6306360828084532e-11
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "initial_cell_charge_C",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "C",
+      "values": [
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12,
+        -1.2972730823853619e-12
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_abundance",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": [
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07,
+        1e-08,
+        2.5e-07
+      ]
+    },
+    {
+      "axes": [
+        "species",
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": [
+        [
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11
+        ],
+        [
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10
+        ],
+        [
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.03261272165616906,
+        0.03261272165616906,
+        0.03261272165616906,
+        0.03261272165616906,
+        0.03261272165616906,
+        0.03261272165616906,
+        0.03261272165616906
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "calcium_pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "outside_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "junction"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "junction_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "face"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "face_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": []
+    },
+    {
+      "axes": [
+        "species",
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "extracellular_amount_reference",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol",
+      "values": [
+        [
+          145.0,
+          145.0,
+          145.0,
+          145.0,
+          145.0,
+          145.0,
+          145.0
+        ],
+        [
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        [
+          140.0,
+          140.0,
+          140.0,
+          140.0,
+          140.0,
+          140.0,
+          140.0
+        ],
+        [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      ]
+    },
+    {
+      "axes": [
+        "species",
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "amount_reference",
+      "says": "the fixed reference that amount_increment is stored over: its quantity is this plus the record",
+      "unit": "fmol",
+      "values": [
+        [
+          4.454019878031574,
+          4.454019878031574,
+          4.454019878031574,
+          4.454019878031574,
+          4.454019878031574,
+          4.454019878031574,
+          4.454019878031574
+        ],
+        [
+          102.2001158140796,
+          102.2001158140796,
+          102.2001158140796,
+          102.2001158140796,
+          102.2001158140796,
+          102.2001158140796,
+          102.2001158140796
+        ],
+        [
+          5.347092846055745,
+          5.347092846055745,
+          5.347092846055745,
+          5.347092846055745,
+          5.347092846055745,
+          5.347092846055745,
+          5.347092846055745
+        ],
+        [
+          101.32050400205313,
+          101.32050400205313,
+          101.32050400205313,
+          101.32050400205313,
+          101.32050400205313,
+          101.32050400205313,
+          101.32050400205313
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: 2e-12 A",
+      "layer": "injection",
+      "time": 0.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: -2e-12 A",
+      "layer": "injection",
+      "time": 1.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: 2e-12 A",
+      "layer": "injection",
+      "time": 2.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: -2e-12 A",
+      "layer": "injection",
+      "time": 3.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: 2e-12 A",
+      "layer": "injection",
+      "time": 4.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: -2e-12 A",
+      "layer": "injection",
+      "time": 5.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: 2e-12 A",
+      "layer": "injection",
+      "time": 6.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: -2e-12 A",
+      "layer": "injection",
+      "time": 7.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: 2e-12 A",
+      "layer": "injection",
+      "time": 8.0
+    },
+    {
+      "at": {
+        "cell": "cell_3"
+      },
+      "kind": "current",
+      "label": "electrode current in cell_3: -2e-12 A",
+      "layer": "injection",
+      "time": 9.0
+    }
+  ],
+  "format": "cells.run_view@1",
+  "layers": [
+    {
+      "id": "membrane",
+      "label": "Membrane voltage and ions",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "simulated"
+    },
+    {
+      "id": "channels",
+      "label": "Channel populations and junction gates",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "pumps",
+      "label": "Pump populations",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "injection",
+      "label": "Electrode current injection",
+      "owner": "electrode_current_injection@1",
+      "representation": "prescribed"
+    }
+  ],
+  "loop": {
+    "cell": "cell_3",
+    "closes": {
+      "says": "the last observed row meets the first within 2.8e-05 relative (largest in observed_membrane_flux_fmol_s)",
+      "tolerance": 0.0001,
+      "within": 2.7606981408476794e-05,
+      "zero": []
+    },
+    "not_measured": [
+      {
+        "records": [
+          "observed_membrane_transferred",
+          "observed_junction_transferred",
+          "observed_channel_transferred",
+          "observed_pump_cycles",
+          "observed_injection_supplied_fmol",
+          "observed_injection_removed_fmol",
+          "observed_injection_charge_C"
+        ],
+        "why": "cumulative totals: they grow by design, so the reader differences them inside the loop"
+      }
+    ],
+    "period": 2.0,
+    "species": "planarian"
+  },
+  "recording": {
+    "mode": "observations",
+    "subset": {
+      "elements": null,
+      "every": 1,
+      "fields": [
+        "amount",
+        "cell_potential_V",
+        "membrane_voltage_V",
+        "junction_voltage_V",
+        "channel_gate",
+        "junction_gate",
+        "membrane_transferred",
+        "channel_transferred",
+        "pump_cycles",
+        "junction_transferred",
+        "membrane_flux_fmol_s",
+        "channel_flux_fmol_s",
+        "junction_flux_fmol_s",
+        "pump_cycle_rate_fmol_s",
+        "injection_supplied_fmol",
+        "injection_removed_fmol",
+        "injection_charge_C"
+      ]
+    }
+  },
+  "records": [
+    {
+      "array": "observed_membrane_transferred",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_transferred",
+      "id": "observed_membrane_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "note": "the passive membrane routes only. A patch's total in the material balance is the balance's own sum: this record plus channel_transferred of its populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is a separate term, never in this record",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "inside",
+        "says": "a positive amount leaves the patch's cell for its outside node",
+        "to": "outside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_junction_transferred",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_transferred",
+      "id": "observed_junction_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "sender",
+        "says": "a positive amount leaves the sender for the receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_channel_gate",
+      "axes": [
+        "time",
+        "gate",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_gate",
+      "id": "observed_channel_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "observed_channel_transferred",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_transferred",
+      "id": "observed_channel_transferred",
+      "kind": "cumulative",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the population's patch for that patch's outside node; the material balance adds it into the patch's total",
+        "to": "outside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_junction_gate",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_gate",
+      "id": "observed_junction_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "1"
+    },
+    {
+      "array": "observed_pump_cycles",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_cycles",
+      "id": "observed_pump_cycles",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the law's moves, by role, signed) from the patch's outside node into its cell",
+        "to": "inside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_amount",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "amount",
+      "id": "observed_amount",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_cell_potential_V",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "cell_potential_V",
+      "id": "observed_cell_potential_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "V"
+    },
+    {
+      "array": "observed_membrane_voltage_V",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "difference": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "minus": "outside",
+        "plus": "inside",
+        "says": "the potential of the patch's cell less that of its outside node: positive when the cell is at the higher potential"
+      },
+      "field": "membrane_voltage_V",
+      "id": "observed_membrane_voltage_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "V"
+    },
+    {
+      "array": "observed_junction_voltage_V",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "difference": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "minus": "receiver",
+        "plus": "sender",
+        "says": "the potential of the junction's sender cell less that of its receiver: positive when the sender is at the higher potential"
+      },
+      "field": "junction_voltage_V",
+      "id": "observed_junction_voltage_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "V"
+    },
+    {
+      "array": "observed_membrane_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_flux_fmol_s",
+      "id": "observed_membrane_flux_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "inside",
+        "says": "a positive amount leaves the patch's cell for its outside node",
+        "to": "outside"
+      },
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_junction_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_flux_fmol_s",
+      "id": "observed_junction_flux_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "sender",
+        "says": "a positive amount leaves the sender for the receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_channel_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_flux_fmol_s",
+      "id": "observed_channel_flux_fmol_s",
+      "kind": "rate",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the population's patch for that patch's outside node; the material balance adds it into the patch's total",
+        "to": "outside"
+      },
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_pump_cycle_rate_fmol_s",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_cycle_rate_fmol_s",
+      "id": "observed_pump_cycle_rate_fmol_s",
+      "kind": "rate",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the law's moves, by role, signed) from the patch's outside node into its cell",
+        "to": "inside"
+      },
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_injection_supplied_fmol",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "injection_supplied_fmol",
+      "id": "observed_injection_supplied_fmol",
+      "kind": "cumulative",
+      "layer": "injection",
+      "owner": "electrode_current_injection@1",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_injection_removed_fmol",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "injection_removed_fmol",
+      "id": "observed_injection_removed_fmol",
+      "kind": "cumulative",
+      "layer": "injection",
+      "owner": "electrode_current_injection@1",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_injection_charge_C",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "injection_charge_C",
+      "id": "observed_injection_charge_C",
+      "kind": "cumulative",
+      "layer": "injection",
+      "owner": "electrode_current_injection@1",
+      "set": "cell",
+      "unit": "C"
+    }
+  ],
+  "run": {
+    "arm": "planarian",
+    "composition": {
+      "inner_model": "resolved_pump_tissue@3",
+      "model": "resolved_pump_composite@1",
+      "operators": [
+        "electrode_current_injection@1"
+      ]
+    },
+    "definition_sha256": "1031749f7a52e82c8990fbeb5590aecb5b7de0920df516d973bb520cdd0ee275",
+    "end": {
+      "status": "complete",
+      "step": 10000,
+      "time": 10.0
+    },
+    "engine_models": [
+      "resolved_pump_composite@1",
+      "resolved_pump_tissue@3",
+      "electrode_current_injection@1"
+    ],
+    "experiment": "fr11-looping-replay",
+    "id": "planarian-loop",
+    "label": "interim planarian loop: a seven-cell heredity sheet patch under a subthreshold current train into its centre cell (illustration, no verdict)",
+    "model": "resolved_pump_composite@1",
+    "scale": "cell",
+    "source": {
+      "dirty": false,
+      "from": "the execution snapshot's record (SNAPSHOT.json)",
+      "revision": "b08af640c3db83e891e29ade36c300d6f8e5a553"
+    }
+  },
+  "sets": [
+    {
+      "id": "species",
+      "ids": [
+        "Na",
+        "K",
+        "M",
+        "P"
+      ],
+      "scale": "molecule",
+      "species": [
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        }
+      ],
+      "valence": [
+        1,
+        1,
+        -1,
+        -1
+      ]
+    },
+    {
+      "geometry": {
+        "faces": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          [
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
+          ],
+          [
+            30,
+            31,
+            32,
+            33,
+            34,
+            35
+          ],
+          [
+            36,
+            37,
+            38,
+            39,
+            40,
+            41
+          ]
+        ],
+        "kind": "polygons",
+        "vertices": [
+          [
+            -4.624999999999999,
+            2.670244995002019
+          ],
+          [
+            -9.25,
+            5.340489990004039
+          ],
+          [
+            -13.875,
+            2.670244995002019
+          ],
+          [
+            -13.875,
+            -2.6702449950020197
+          ],
+          [
+            -9.250000000000002,
+            -5.340489990004039
+          ],
+          [
+            -4.625000000000001,
+            -2.6702449950020215
+          ],
+          [
+            8.881784197001252e-16,
+            10.680979980008075
+          ],
+          [
+            -4.625,
+            13.351224975010094
+          ],
+          [
+            -9.25,
+            10.680979980008075
+          ],
+          [
+            -9.25,
+            5.340489990004037
+          ],
+          [
+            -4.625000000000001,
+            2.670244995002018
+          ],
+          [
+            -8.881784197001252e-16,
+            5.340489990004035
+          ],
+          [
+            8.881784197001252e-16,
+            -5.340489990004038
+          ],
+          [
+            -4.625,
+            -2.670244995002018
+          ],
+          [
+            -9.25,
+            -5.340489990004038
+          ],
+          [
+            -9.25,
+            -10.680979980008075
+          ],
+          [
+            -4.625000000000001,
+            -13.351224975010094
+          ],
+          [
+            -8.881784197001252e-16,
+            -10.680979980008079
+          ],
+          [
+            4.625000000000001,
+            2.670244995002019
+          ],
+          [
+            3.270106986068463e-16,
+            5.340489990004039
+          ],
+          [
+            -4.625000000000001,
+            2.670244995002019
+          ],
+          [
+            -4.625,
+            -2.6702449950020197
+          ],
+          [
+            -9.81032095820539e-16,
+            -5.340489990004039
+          ],
+          [
+            4.624999999999999,
+            -2.6702449950020215
+          ],
+          [
+            9.25,
+            10.680979980008075
+          ],
+          [
+            4.625,
+            13.351224975010094
+          ],
+          [
+            -8.881784197001252e-16,
+            10.680979980008075
+          ],
+          [
+            0.0,
+            5.340489990004037
+          ],
+          [
+            4.624999999999999,
+            2.670244995002018
+          ],
+          [
+            9.25,
+            5.340489990004035
+          ],
+          [
+            9.25,
+            -5.340489990004038
+          ],
+          [
+            4.625,
+            -2.670244995002018
+          ],
+          [
+            -8.881784197001252e-16,
+            -5.340489990004038
+          ],
+          [
+            0.0,
+            -10.680979980008075
+          ],
+          [
+            4.624999999999999,
+            -13.351224975010094
+          ],
+          [
+            9.25,
+            -10.680979980008079
+          ],
+          [
+            13.875,
+            2.670244995002019
+          ],
+          [
+            9.25,
+            5.340489990004039
+          ],
+          [
+            4.624999999999999,
+            2.670244995002019
+          ],
+          [
+            4.625,
+            -2.6702449950020197
+          ],
+          [
+            9.249999999999998,
+            -5.340489990004039
+          ],
+          [
+            13.875,
+            -2.6702449950020215
+          ]
+        ]
+      },
+      "id": "cell",
+      "ids": [
+        "cell_0",
+        "cell_1",
+        "cell_2",
+        "cell_3",
+        "cell_4",
+        "cell_5",
+        "cell_6"
+      ],
+      "lifetimes": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "scale": "cell"
+    },
+    {
+      "geometry": null,
+      "holds": "outside node",
+      "id": "outside",
+      "ids": [
+        "bath_0",
+        "bath_1",
+        "bath_2",
+        "bath_3",
+        "bath_4",
+        "bath_5",
+        "bath_6"
+      ],
+      "reservoir": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "roles": {
+        "exterior": "beyond the world (a held node's reservoir)",
+        "node": "the node"
+      },
+      "scale": "cell"
+    },
+    {
+      "calcium_pumps": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "geometry": {
+        "index": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "kind": "on",
+        "set": "cell"
+      },
+      "holds": "membrane patch",
+      "id": "membrane",
+      "ids": [
+        "membrane_0",
+        "membrane_1",
+        "membrane_2",
+        "membrane_3",
+        "membrane_4",
+        "membrane_5",
+        "membrane_6"
+      ],
+      "laws": [
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        }
+      ],
+      "outside": {
+        "index": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "set": "outside"
+      },
+      "pumps": [
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_0",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_1",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_2",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_3",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_4",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_5",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        },
+        {
+          "fuel_kinds": [
+            "maintained_chemical_reservoirs@1"
+          ],
+          "id": "pump_6",
+          "law_id": "nak_atp_mass_action_positive@1",
+          "per_cycle": [
+            {
+              "count": -3,
+              "role": "sodium",
+              "species": "Na"
+            },
+            {
+              "count": 2,
+              "role": "potassium",
+              "species": "K"
+            }
+          ],
+          "per_cycle_sign": "inward-positive",
+          "provenance": "parity"
+        }
+      ],
+      "pumps_are": "columns of this set (version 1)",
+      "roles": {
+        "inside": "the patch's cell",
+        "outside": "the patch's outside node (the set's outside index)"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "cell",
+        "ends": [
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            6,
+            4
+          ]
+        ],
+        "kind": "links"
+      },
+      "id": "junction",
+      "ids": [
+        "junction_0",
+        "junction_1",
+        "junction_2",
+        "junction_3",
+        "junction_4",
+        "junction_5",
+        "junction_6",
+        "junction_7",
+        "junction_8",
+        "junction_9",
+        "junction_10",
+        "junction_11"
+      ],
+      "laws": [
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        },
+        {
+          "law_id": "junction_voltage_relaxation@1",
+          "provenance": "parity"
+        }
+      ],
+      "roles": {
+        "receiver": "its second cell (ends[1])",
+        "sender": "the junction's first cell (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "outside",
+        "ends": [],
+        "kind": "links"
+      },
+      "holds": "face",
+      "id": "face",
+      "ids": [],
+      "laws": [],
+      "roles": {
+        "receiver": "its second outside node (ends[1])",
+        "sender": "the face's first outside node (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "index": [
+          0,
+          0,
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5,
+          6,
+          6
+        ],
+        "kind": "on",
+        "set": "membrane"
+      },
+      "holds": "channel population",
+      "id": "channel",
+      "ids": [
+        "kir_0",
+        "nav_0",
+        "kir_1",
+        "nav_1",
+        "kir_2",
+        "nav_2",
+        "kir_3",
+        "nav_3",
+        "kir_4",
+        "nav_4",
+        "kir_5",
+        "nav_5",
+        "kir_6",
+        "nav_6"
+      ],
+      "laws": [
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        }
+      ],
+      "roles": {
+        "inside": "the cell of the population's patch",
+        "outside": "that patch's outside node"
+      },
+      "scale": "cell"
+    },
+    {
+      "holds": "channel gate row",
+      "id": "gate",
+      "ids": [
+        "gate_0",
+        "gate_1"
+      ],
+      "says": "row i of a population's gates is gates[i] of its law (the channel set)",
+      "scale": "molecule"
+    },
+    {
+      "composed_of": [
+        "cell",
+        "outside"
+      ],
+      "holds": "field node",
+      "id": "node",
+      "ids": [
+        "cell_0",
+        "cell_1",
+        "cell_2",
+        "cell_3",
+        "cell_4",
+        "cell_5",
+        "cell_6",
+        "bath_0",
+        "bath_1",
+        "bath_2",
+        "bath_3",
+        "bath_4",
+        "bath_5",
+        "bath_6"
+      ],
+      "scale": "cell"
+    },
+    {
+      "id": "world",
+      "ids": [
+        "world"
+      ],
+      "scale": "cell"
+    },
+    {
+      "holds": "floating capacitor component",
+      "id": "floating_component",
+      "ids": [],
+      "members": [],
+      "scale": "cell"
+    }
+  ],
+  "space": {
+    "dimensions": 2,
+    "representation": "prescribed",
+    "source": "validation/replay/planarian.py: hexagon(1) in axial coordinates at the W225 sheet's cell spacing",
+    "unit": "um"
+  },
+  "time": {
+    "bases": [
+      {
+        "array": "observation_times",
+        "files": [
+          {
+            "file": "chunks/window-00000015.npz",
+            "rows": [
+              0,
+              1
+            ]
+          },
+          {
+            "file": "chunks/window-00000016.npz",
+            "rows": [
+              1,
+              26
+            ]
+          },
+          {
+            "file": "chunks/window-00000017.npz",
+            "rows": [
+              26,
+              51
+            ]
+          },
+          {
+            "file": "chunks/window-00000018.npz",
+            "rows": [
+              51,
+              76
+            ]
+          },
+          {
+            "file": "chunks/window-00000019.npz",
+            "rows": [
+              76,
+              101
+            ]
+          }
+        ],
+        "id": "observation",
+        "says": "the observed rows"
+      }
+    ],
+    "event_rows": "Every event here is an operator's event map, which acts at the start of the step that leaves the event's time: the row saved at that time holds the state before the event, the next row the state after it.",
+    "unit": "s"
+  },
+  "unstated": []
+}

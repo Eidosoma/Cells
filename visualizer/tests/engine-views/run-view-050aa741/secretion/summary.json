@@ -1,0 +1,140 @@
+{
+  "active_cells": 1,
+  "boundary": "held chemical/electrical reservoirs",
+  "calcium_pump_law": "ca_atp_mass_action_positive@1",
+  "capacity": 1,
+  "cell_id": 1,
+  "cell_ids": [
+    1
+  ],
+  "channel_laws": {},
+  "closure_law": "resolved_capacitor_components_current_continuity@1",
+  "composition": {
+    "inner_model": "resolved_pump_tissue@3",
+    "model": "resolved_pump_composite@1",
+    "operators": [
+      "scheduled_species_turnover@1",
+      "scheduled_species_exchange@1"
+    ]
+  },
+  "composition_status": "development composition: integration grants no acceptance; judged status only from a registered protocol for this composition",
+  "end_time": 0.01,
+  "exchange_law": "scheduled_species_exchange@1",
+  "exchange_rk4": "exact half-steps around the inner RK4 step",
+  "exchange_routes": {
+    "secrete": {
+      "direction": "export",
+      "law": "first_order",
+      "patch": "contact_0",
+      "species": "S"
+    },
+    "sink": {
+      "direction": "import",
+      "law": "saturable",
+      "patch": "contact_0",
+      "species": "S"
+    }
+  },
+  "exchange_species": {
+    "S": {
+      "catalogue": null,
+      "evidence": null
+    }
+  },
+  "exchange_stages": "palindromic exact stages (module docstring)",
+  "executed_steps": 10,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "gate_integrator": "exponential_mean_rate_linear_target_gates@1",
+  "global_step_index": 10,
+  "inner_model": "resolved_pump_tissue@3",
+  "junction_heat_booking": "explicit_tableau",
+  "junction_law": "junction_voltage_relaxation@1",
+  "max_balance_error_fmol": 2.3822801641527197e-22,
+  "max_capacitor_charge_error_C": 0.0,
+  "max_electrode_charge_error_C": 0.0,
+  "max_electrode_work_error_pJ": 0.0,
+  "max_energy_balance_error_pJ": 2.668971321417011e-12,
+  "max_energy_balance_relative": 5.321335159502221e-09,
+  "max_extracellular_balance_error_fmol": 1.138200522872966e-21,
+  "max_global_balance_error_fmol": 1.2705494208814505e-21,
+  "max_global_charge_bound_ratio": 0.0,
+  "max_global_charge_error_C": 0.0,
+  "max_metabolic_work_error_pJ": 0.0,
+  "max_reservoir_work_error_pJ": 2.710505431213761e-20,
+  "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
+  "model": "resolved_pump_composite@1",
+  "observation_scope": "accepted integration boundaries only",
+  "operator_steps": {
+    "scheduled_species_exchange@1": "palindromic_exact_exchange_stages@1",
+    "scheduled_species_turnover@1": "exact_production_clearance_half_steps@1"
+  },
+  "operators": [
+    "scheduled_species_turnover@1",
+    "scheduled_species_exchange@1"
+  ],
+  "pump_law": "nak_atp_mass_action_positive@1",
+  "species_ids": [
+    "Na",
+    "K",
+    "Cl",
+    "S"
+  ],
+  "splitting": "events_then_symmetric_operator_halves@1",
+  "start_time": 0.0,
+  "state_fields": [
+    "amount_increment",
+    "extracellular_amount_increment",
+    "membrane_transferred",
+    "junction_transferred",
+    "face_transferred",
+    "reservoir_supplied",
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "electrode_charge_transferred_C",
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "channel_gate",
+    "channel_transferred",
+    "channel_dissipated_energy_pJ",
+    "junction_gate",
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+    "turnover_produced_fmol",
+    "turnover_cleared_fmol",
+    "turnover_outside_cleared_fmol",
+    "turnover_work_pJ",
+    "turnover_outside_work_pJ",
+    "turnover_energy_magnitude_pJ",
+    "turnover_outside_energy_magnitude_pJ",
+    "exchange_moved_fmol",
+    "exchange_work_pJ",
+    "exchange_energy_magnitude_pJ"
+  ],
+  "status": "complete",
+  "time_integrator": "imex_ars222_face_electromigration@1",
+  "turnover_law": "scheduled_species_turnover@1",
+  "turnover_rk4": "exact half-steps around the inner RK4 step",
+  "turnover_routes": {
+    "clear": {
+      "kind": "clearance",
+      "node": "ecs_0",
+      "species": "S"
+    },
+    "produce": {
+      "kind": "production",
+      "node": "cell_0",
+      "species": "S"
+    }
+  },
+  "turnover_species": {
+    "S": {
+      "catalogue": null,
+      "evidence": null
+    }
+  }
+}

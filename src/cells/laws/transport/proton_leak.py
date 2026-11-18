@@ -19,6 +19,7 @@ then the instantaneous rate heat_pJ_s = J (mu_out - mu_in) applies, which is non
 import jax.numpy as jnp
 
 from cells.laws.electrochemistry import F, R, electrochemical_potential, ghk_leak
+from cells.modules import Citation, RouteLaw
 
 LAW_ID = "proton_constant_field_leak@1"
 VALENCE = 1
@@ -43,3 +44,24 @@ def conductance_S(h_in_mM, h_out_mM, voltage_V, temperature_K, area_m2, permeabi
     return F * F / (R * temperature_K) * permeability_m_s * area_m2 * availability * xp.maximum(
         h_in_mM, h_out_mM
     )
+
+
+# The law's declaration (CORE_SEAMS §8.2): a route law of the passive routes kind, registered by
+# the law registry's loader. Moved from kinds/passive_routes.py (the lead's recorded exception, 18
+# November 2026). The works it names were named from memory, not read (CORE_SEAMS §15).
+LAW = RouteLaw(
+    LAW_ID,
+    ("membrane",),
+    "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each "
+    "node's closure (laws/transport/proton_leak.py)",
+    stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
+    host="cells.passive_routes@1",
+    provenance="cited",
+    source=Citation(
+        "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "
+        "B. Katz, 1949; named from memory and not read; standard theory)",
+        "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1",
+        "no numbers taken: the law is a form, its permeability a definition's value",
+        ("it reads free h at both nodes through their closures and moves proton equivalents",),
+    ),
+)

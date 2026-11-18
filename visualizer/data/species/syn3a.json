@@ -10,8 +10,18 @@
  "default": false,
  "made": "2026-11-15",
  "modelled": {
-  "state": "proposed",
-  "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted."
+  "state": "planned",
+  "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells: the decision adopted it as a track, run beside the current work. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted. That milestone, on protein-free vesicles, tests membrane physics and not Syn3A.",
+  "record": [
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D173: Syn3A becomes the minimal-cell track; no contact with authors"
+   },
+   {
+    "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
+    "where": "0. Verdict; 6. The first milestone"
+   }
+  ]
  },
  "levels": [
   {
@@ -73,6 +83,15 @@
     ]
    },
    {
+    "label": "Ribosome's size",
+    "value": "drawn as E. coli's ribosome, measured by the viewer from the coordinates of the Protein Data Bank's entry 7K00: as the ellipsoids of the same spread as their atoms, the large subunit 20.6 by 18 by 14.3 nm across and the small one 23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5 nm, within 1.2 nm of it. No structure of its own ribosome is among this file's sources. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template",
+    "sources": [
+     "pdb7k00",
+     "pdb5mdz",
+     "gilbert2021"
+    ]
+   },
+   {
     "label": "Ribosomes",
     "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across",
     "sources": [
@@ -81,7 +100,7 @@
    },
    {
     "label": "Proteins",
-    "value": "about 77,000 molecules in an average cell, an estimate from proteomics; 427 of the 452 kinds were detected, and the added marker tetM",
+    "value": "about 77,000 molecules in an average cell, an estimate from proteomics (77,028 by the paper's table); 427 of the 452 kinds were detected, and the added marker tetM. An estimated 7,685 of the molecules are of the 99 kinds that this file's shelves place in or on the membrane",
     "sources": [
      "breuer2019"
     ]
@@ -142,7 +161,109 @@
    "wall": false,
    "nucleus": false,
    "chromosome_kbp": 543,
-   "ribosomes": 500
+   "ribosomes": 500,
+   "ribosome": {
+    "large": {
+     "across_nm": [
+      20.6,
+      18.0,
+      14.3
+     ],
+     "centre_nm": [
+      0.0,
+      -3.87,
+      0.0
+     ],
+     "axes": [
+      [
+       0.9964,
+       0.0801,
+       0.0272
+      ],
+      [
+       -0.0384,
+       0.1419,
+       0.9891
+      ],
+      [
+       0.0754,
+       -0.9866,
+       0.1445
+      ]
+     ]
+    },
+    "small": {
+     "across_nm": [
+      23.5,
+      15.2,
+      10.0
+     ],
+     "centre_nm": [
+      0.0,
+      6.48,
+      0.0
+     ],
+     "axes": [
+      [
+       0.7858,
+       0.1358,
+       -0.6034
+      ],
+      [
+       0.5466,
+       0.3042,
+       0.7802
+      ],
+      [
+       0.2896,
+       -0.9429,
+       0.1648
+      ]
+     ]
+    },
+    "across_nm": [
+     26.1,
+     21.1,
+     17.3
+    ],
+    "farthest_nm": [
+     26.8,
+     24.3,
+     20.6
+    ],
+    "between_nm": 10.4,
+    "of": "Escherichia coli",
+    "entry": "7K00",
+    "beside": {
+     "entry": "5MDZ",
+     "across_nm": [
+      25.6,
+      21.2,
+      18.5
+     ],
+     "farthest_nm": [
+      26.6,
+      25.1,
+      23.1
+     ],
+     "between_nm": 10.0
+    },
+    "measured": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "pdb7k00",
+     "pdb5mdz",
+     "gilbert2021"
+    ],
+    "note": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template."
+   },
+   "proteins": {
+    "count": 77028,
+    "membrane": 7685,
+    "membrane_from": "the proteins that the species' own shelves place in or on the membrane",
+    "sources": [
+     "breuer2019"
+    ]
+   }
   },
   "capabilities": {
    "cap.membrane": {
@@ -199,7 +320,13 @@
    },
    "cap.machines": {
     "place": "present",
-    "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+    "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.",
+    "left_out": {
+     "since": "2026-11-17",
+     "says": "the barrel drawn for its molecular machines",
+     "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn",
+     "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."
+    }
    },
    "cap.secretion": {
     "place": "present",
@@ -330,6 +457,22 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-14"
+  },
+  "pdb7k00": {
+   "text": "Protein Data Bank entry 7K00: Structure of the Bacterial Ribosome at 2 Angstrom Resolution (electron microscopy, 1.98 Å; Escherichia coli).",
+   "doi": "10.2210/pdb7K00/pdb",
+   "url": "https://www.rcsb.org/structure/7K00",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
+  },
+  "pdb5mdz": {
+   "text": "Protein Data Bank entry 5MDZ: Structure of the 70S ribosome (empty A site) (electron microscopy, 3.10 Å; Escherichia coli).",
+   "doi": "10.2210/pdb5MDZ/pdb",
+   "url": "https://www.rcsb.org/structure/5MDZ",
+   "licence": "CC0 1.0: \"Data files contained in the PDB archive are available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.\" (the wwPDB's usage policies)",
+   "class": "permissive",
+   "accessed": "2026-11-17"
   }
  }
 }

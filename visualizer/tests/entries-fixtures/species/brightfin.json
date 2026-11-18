@@ -1,0 +1,66 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "brightfin",
+ "label": "Brightfin",
+ "organism": "Pinnula exemplaris",
+ "plain": "A made-up animal, to show that a species with several cell types is read from files alone.",
+ "group": "Animals",
+ "order": 10,
+ "default": true,
+ "made": "2026-11-16",
+ "modelled": {
+  "state": "generic",
+  "text": "A made-up species for a test: Cells models a generic cell and a sheet of such cells, not this animal."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 6,
+    "radius_um": 10.6,
+    "height_um": 13
+   },
+   "note": "A made-up cell; its shape is the picture's choice."
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 3
+   },
+   "note": "A made-up sheet."
+  }
+ ],
+ "no_further_levels": "A made-up animal of one layer: it has no organs.",
+ "cell": {
+  "facts": [],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": true
+  },
+  "capabilities": {}
+ },
+ "cell_type": {
+  "id": "generic",
+  "label": "Generic cell"
+ },
+ "cell_types": [
+  "ciliated",
+  "ciliated-dense"
+ ],
+ "default_cell_type": "generic",
+ "sources": {
+  "made": {
+   "text": "Made up for the entries reader's tests.",
+   "url": "https://example.org/made-up",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ }
+}
