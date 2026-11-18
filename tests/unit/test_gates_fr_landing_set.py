@@ -10,6 +10,9 @@
   checkout's own validation/source_snapshot.py, and reports whether the selection is clean. A dirty
   file must make it unclean, and --require-clean must then exit 1. It runs on a throwaway Git
   repository holding a copy of that tool.
+- scripts/gates/fr_landing_set.sh's lock: when its flock is killed while it waits, the set must
+  refuse and run nothing. The set runs as a copy beside stubs of the holder and the verdict, in its
+  own process group, so no case here can reach a real lane or start a unit.
 """
 
 import json
@@ -174,29 +177,46 @@ def flock_child(parent, lock, timeout=20.0):
     raise AssertionError("the set's flock did not start")
 
 
+def stub_gates(tmp_path):
+    """The set script as it stands, copied beside stubs of the holder and the verdict that only
+    leave a mark. Whatever happens in the test, nothing can reach a real lane or start a unit."""
+    gates = tmp_path / "gates"
+    gates.mkdir()
+    shutil.copy2(SET, gates / SET.name)
+    (gates / "fr_landing_holder.sh").write_text('#!/bin/bash\ntouch "$4/holder-ran"\n')
+    (gates / "fr_landing_verdict.py").write_text(
+        "import pathlib\nimport sys\npathlib.Path(sys.argv[2], 'verdict-ran').touch()\n")
+    return gates / SET.name
+
+
 def test_a_killed_flock_refuses_the_set_and_runs_nothing(repo, tmp_path):
     """The plant: the lane's lock is held, the set waits in flock, and the flock is killed. The set
     must refuse (exit 2, done 2) without running the holder or the verdict, and remove its worktree.
-    The gate scripts built as `exec 9> LOCK; flock 9` ran on unlocked when that happened."""
+    The gate scripts built as `exec 9> LOCK; flock 9` ran on unlocked when that happened. Its own
+    process group is killed before the lock is released, so nothing outlives the test."""
     import fcntl
     import os
     import signal
 
-    lock, out = tmp_path / "lane.lock", tmp_path / "out"
+    script, lock, out = stub_gates(tmp_path), tmp_path / "lane.lock", tmp_path / "out"
     rev = git(repo, "rev-parse", "HEAD").strip()
     env = dict(os.environ, REPO=str(repo), LANE_LOCK=str(lock), PY=sys.executable)
     with open(lock, "w") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
-        run = subprocess.Popen(["bash", str(SET), rev, str(out)], env=env)
+        run = subprocess.Popen(["bash", str(script), rev, str(out)], env=env,
+                               start_new_session=True)
         try:
             os.kill(flock_child(run.pid, lock), signal.SIGTERM)
             code = run.wait(timeout=60)
         finally:
-            if run.poll() is None:
-                run.kill()
+            try:
+                os.killpg(run.pid, signal.SIGKILL)  # Anything left, while the lock is still held.
+            except ProcessLookupError:
+                pass
+            run.wait()
     assert code == 2 and (out / "done").read_text().strip() == "2"
     log = (out / "fr-landing-set.log").read_text()
     assert "refused: the holder did not run to its end" in log
-    assert not (out / "fr-landing" / "run.log").exists()  # The holder never ran.
-    assert not (out / "fr-landing" / "verdict.json").exists()  # Nor the verdict.
+    assert not (out / "fr-landing" / "holder-ran").exists()  # The holder never ran.
+    assert not (out / "fr-landing" / "verdict-ran").exists()  # Nor the verdict.
     assert not (out / "fr-worktree").exists()  # Its worktree removed.
