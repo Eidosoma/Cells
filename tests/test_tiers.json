@@ -145,7 +145,10 @@
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
   "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
-  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json"
+  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
+  "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1197,6 +1200,27 @@
    "root": "/mnt/workspaces/Cells/d188-m2-prep-20261117/trees/head-a085126b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T23:54:33+00:00"
+  },
+  {
+   "git_revision": "992ce38510770949ffc162ce468ce3e0df2e707c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:21+00:00"
+  },
+  {
+   "git_revision": "bc287a20ab3b336d487a1bac145648b64748a72a",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:13:18+00:00"
+  },
+  {
+   "git_revision": "a06d46f015181246ec680026856cd6fcfd07f195",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:29:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2390,6 +2414,38 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_acceptance_worlds.py",
+    "seconds": 4.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_qualification.py",
+    "seconds": 2.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 57
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_forms.py",
+    "seconds": 5.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_worlds.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
