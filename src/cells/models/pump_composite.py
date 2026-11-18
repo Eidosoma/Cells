@@ -60,7 +60,13 @@ from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.operators.contract import COMMUTING, READ_STAGES, part_stages, reads_of
+from cells.operators.contract import (
+    COMMUTING,
+    READ_STAGES,
+    monotone_heat,
+    part_stages,
+    reads_of,
+)
 from cells.registry import kind_registry, species_registry
 
 OBSERVER_ID = "resolved_pump_composite_accepted_grid_readouts@1"
@@ -895,9 +901,12 @@ class Composition:
             "CompositeValues",
             [(k, object) for k in ("field", "derivative", "ionic", *self.READOUTS, "valid")],
         )
+        # The dissipation check's fields: each operator's heat fields whose declared energy role
+        # is monotone (contract.monotone_heat; every heat field by default). A non-monotone heat
+        # stays among the energy flows above.
         self.DISSIPATION_FIELDS = (
             *inner.DISSIPATION_FIELDS,
-            *(k for op in operators for k in op.HEAT_FIELDS),
+            *(k for op in operators for k in monotone_heat(op)),
         )
         self.own_ledger_operators = tuple(op for op in operators if op.LEDGERS)
         self.LEDGERS = (*inner.LEDGERS, *(k for op in operators for k in op.LEDGERS))

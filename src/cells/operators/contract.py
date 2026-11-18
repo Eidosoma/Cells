@@ -12,7 +12,17 @@ Declarations (class attributes):
   names non-float fields. ``HEAT_FIELDS`` and ``WORK_FIELDS`` declare which owned
   fields are booked as dissipation or work: the family's energy-flow sum reads
   every field ending in ``_dissipated_energy_pJ`` or ``_work_pJ`` by name, so no
-  other owned field may carry those suffixes.
+  other owned field may carry those suffixes. ``ENERGY_ROLES`` ({owned state field:
+  kind_registry.EnergyRole(role, monotone)}, the kinds' form; docs/CORE_SEAMS_DESIGN.md §6.1)
+  declares a field's energy role, heat, work or stored, and whether it never decreases per
+  element. An undeclared field of HEAT_FIELDS is heat and monotone, and one of WORK_FIELDS is
+  work and not monotone (energy_roles), so today's programs stand. A declaration keeps both
+  lists complete, since the run view and the declarations manifest read them: heat only on a
+  field of HEAT_FIELDS, work only on one of WORK_FIELDS, and stored on a field of neither,
+  without either suffix. The composite's dissipation check (non-negative and non-decreasing per
+  element) takes monotone heat only, and its energy ledger's flows every heat and work field, so
+  a non-monotone heat (GARD's event heat, closing against a state function) is booked but not
+  held monotone. A stored field is a level, in neither.
 * Entity writes, ``ENTITY_WRITES``: inner state fields it changes, each mapped to
   the owned accumulators that book the change, so the inner ledgers close with
   the operator's ledger terms (Δx = Σ over writers of their booked terms).
@@ -169,6 +179,7 @@ fields are the inner model's followed by each operator's in declared order.
 Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
+from collections.abc import Mapping
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -247,6 +258,7 @@ class Operator:
     STATE_DTYPES = MappingProxyType({})
     HEAT_FIELDS = ()
     WORK_FIELDS = ()
+    ENERGY_ROLES = MappingProxyType({})  # {owned state field: kind_registry.EnergyRole}
     LAYOUT_FIELDS = ()
     CONTROL_FIELDS = ()
     EXPERIMENT_KEYS = ()
@@ -429,6 +441,16 @@ class Operator:
     def species_potentials(self, declaration):
         """The standard potentials it declares, ((species, mu°/RT, c0 in mM), ...); ().
         core/species_registry.check_potentials refuses one that the registry gives otherwise."""
+        return ()
+
+    def standard_free_energies(self, declaration):
+        """The reaction-level standard free energies it declares (docs/CORE_SEAMS_DESIGN.md §7.1,
+        seam E): ((stoichiometry, dG°/RT, c0 in mM), ...), the stoichiometry ((species, nu), ...)
+        with nu signed (products positive); (). A law with constants of its own (a cycle's
+        equilibrium constant, say) declares them here, and the species registry's check compares
+        each with the registry's sum of nu mu°/RT, converted by (sum of nu) ln(c0_registry / c0).
+        A species' potential is the case of one species at nu = 1; species_potentials keeps
+        declaring those, as today's check reads them."""
         return ()
 
     def view_events(self, spec, declaration, schedule):
@@ -670,6 +692,7 @@ def check_declarations(operator):
     for field in (*operator.HEAT_FIELDS, *operator.WORK_FIELDS):
         if field not in operator.STATE_AXES:
             raise ValueError(f"{name}: heat and work fields must be owned state")
+    _check_energy_roles(operator)
     if set(operator.STATE_RESETS) & set(operator.ENTITY_WRITES):
         raise ValueError(f"{name}: a field is either a ledgered write or a kinetic reset")
     if operator.STATE_RESETS and not operator.EVENT:
@@ -718,6 +741,63 @@ def check_declarations(operator):
     _check_records(operator)
     _check_kinds(operator)
     return operator
+
+
+def energy_roles(operator):
+    """{owned state field: kind_registry.EnergyRole} of every field the operator books as energy,
+    in STATE_AXES order: its declaration (ENERGY_ROLES), else heat and monotone for a field of
+    HEAT_FIELDS and work, not monotone, for one of WORK_FIELDS (today's rule)."""
+    out = {}
+    for field in operator.STATE_AXES:
+        role = operator.ENERGY_ROLES.get(field)
+        if role is None and field in operator.HEAT_FIELDS:
+            role = kind_registry.EnergyRole("heat", True)
+        elif role is None and field in operator.WORK_FIELDS:
+            role = kind_registry.EnergyRole("work", False)
+        if role is not None:
+            out[field] = role
+    return out
+
+
+def monotone_heat(operator):
+    """The operator's HEAT_FIELDS whose energy role is monotone, in HEAT_FIELDS' order: the fields
+    the composite's dissipation check holds non-negative and non-decreasing per element."""
+    roles = energy_roles(operator)
+    return tuple(k for k in operator.HEAT_FIELDS if roles[k].monotone)
+
+
+def _check_energy_roles(operator):
+    """ENERGY_ROLES: kind_registry.EnergyRole values on owned state fields, consistent with
+    HEAT_FIELDS and WORK_FIELDS (heat only on a listed heat field, work only on a listed work field,
+    stored on neither and on no suffixed field)."""
+    name, roles = operator.LAW_ID, operator.ENERGY_ROLES
+    if not isinstance(roles, Mapping):
+        raise ValueError(f"{name}: ENERGY_ROLES maps owned state fields to EnergyRole")
+    lists = {"heat": operator.HEAT_FIELDS, "work": operator.WORK_FIELDS}
+    for field, role in roles.items():
+        if field not in operator.STATE_AXES:
+            raise ValueError(f"{name}: the energy role of {field} names no owned state field")
+        if not (
+            isinstance(role, kind_registry.EnergyRole)
+            and role.role in kind_registry.ENERGY_ROLES
+            and isinstance(role.monotone, bool)
+        ):
+            raise ValueError(
+                f"{name}: the energy role of {field} is an EnergyRole of "
+                f"{', '.join(kind_registry.ENERGY_ROLES)} with a bool monotone"
+            )
+        listed = [r for r, fields in lists.items() if field in fields]
+        if role.role == "stored":
+            if listed or field.endswith((HEAT_SUFFIX, WORK_SUFFIX)):
+                raise ValueError(
+                    f"{name}: {field} is stored energy, a level: it is neither a heat nor a work "
+                    f"field, and carries neither {HEAT_SUFFIX} nor {WORK_SUFFIX}"
+                )
+        elif listed != [role.role]:
+            raise ValueError(
+                f"{name}: {field} is declared {role.role}, so it is listed in "
+                f"{role.role.upper()}_FIELDS alone (listed in: {', '.join(listed) or 'neither'})"
+            )
 
 
 def _check_records(operator):
