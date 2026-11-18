@@ -7110,9 +7110,13 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
 - **Scope.** The first two stages start the work: R0, three hexamer types in stacks under flow in the
   dark; then R1, with light and the bound cofactor. That is about 16–25 agent-days, after OL3
   (D212). The rest of the replication is decided after them.
-- **The authors' model** (Zenodo, CC BY 4.0) runs unmodified in GNU Octave, out of process, as a
+- **The authors' model** (Zenodo, CC BY 4.0) is to run unmodified in GNU Octave, out of process, as a
   reference.
   - Octave 9.4.0 is installed system-wide from the distribution's packages, with the user's leave.
+  - **It has not run yet** (18 November 2026, evening). This build has no SUNDIALS, so its `ode15s`
+    cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
+    authors' MATLAB call passes. The attempt is recorded in the replication note's §5.4, and the
+    route (U5, L11) is put to the user.
   - Its outputs are numbers, cited.
   - Its code is never copied into Cells.
 - **The perturbation-and-recovery experiment** suggested in the user's reading summary is registered
