@@ -120,7 +120,51 @@
   "compile time, memory and cost per step"
  ],
  "what_it_does_not_show": "no biological comparison (D151) and no receptor-kinetic values (every value synthetic, §8.4); no faces, contacts in a run, composition with D150's or D152's operators, charged ligands, RK4, or site occupancy beside a bath schedule (refused; the lead's scope ruling); no §9 door. The references' zero-power cases (their design file's zero_power; the lead's ruling): Q1's third order in the slow worlds, where an honest error is at rounding at every rung (shown in q1_fast); the work's control in passive worlds, which book no work (carried by the internalising worlds); the receiving cell's volume on q1_eps_1e-1's state (5.8e-19 fmol: shown on its work and in q5_inward); k_on in q3_dissociation (1.3e-10 fmol: k_on has power in every binding world); the affinity factor (A) at c << K_d (2.5e-3 and 1.9e-3 of theta: caught at 100 K_d); the background guard on heat and work (the references' finding: RT ln c carries the trace's logarithm, through the receiving cell's potential; 6.9e-5 and 1.9e-4 relative, 14 x and 5.3 x below B_energy; engine and references share the trace, so the comparisons are unaffected; the lead's ruling 2). The per-law NumPy dG test on random states (R-dG, §3.4 item 2): not shown in this version, since the references' usage note gives it no entry point; it can be added only through a dated references amendment that adds one (the lead's ruling 6), and the world-level closure at rounding and the heat and work against R-ode's integrals carry the energy claim here. §4.8's claim 1 is reported, not judged (cross-revision). Not declarable, so not run: the wrong destination, m_b on k_on alone and the lower-order steppers (their power stays with the references, the lead's ruling 9). Thirteen worlds carry no registered state control (budgets). Integration grants no acceptance (D143)",
- "judged_parts": "written by the drafter when the generator exists",
+ "judged_parts": [
+  "q1_eps_1e-1",
+  "q1_eps_1e-2",
+  "q1_eps_1e-3",
+  "q1_eps_1e-1_alpha_half",
+  "q2_large",
+  "q2_closed",
+  "q2_two_populations",
+  "q3_association",
+  "q3_dissociation",
+  "q3_binding_multiplier",
+  "q3_internalisation",
+  "q4_alpha_1_low",
+  "q4_alpha_1_high",
+  "q4_alpha_1_2_low",
+  "q4_alpha_1_2_high",
+  "q4_alpha_1_4_low",
+  "q4_alpha_1_4_high",
+  "q5_passive_from_zero",
+  "q5_passive_preformed",
+  "q5_washout",
+  "q5_class_switch",
+  "q5_inward",
+  "q5_background_threshold",
+  "q5_background_lowered",
+  "q1_fast_rung_1ms",
+  "q1_fast_rung_0p5ms",
+  "q1_fast_rung_0p25ms",
+  "K_rates",
+  "K_alpha",
+  "K_binding_multiplier",
+  "K_internalisation_multiplier",
+  "K_cell_volume",
+  "Q4_kinetic",
+  "Q4_affinity",
+  "Q5_material_plants",
+  "Q5_energy_plants",
+  "Q6_restart",
+  "Q6_batch",
+  "Q6_idle",
+  "Q6_twins",
+  "Q6_signature",
+  "Q6_refusals",
+  "references"
+ ],
  "outcome_rules": "a criterion passes or fails as written; a failed criterion is reported, not repaired; the protocol passes when every judged criterion passes",
  "development_runs": {
   "runs": [
@@ -152,5 +196,1178 @@
   "The budgets' basis is reference side only: the references' api.reference on every world through the usage note, and their registered design file (/mnt/workspaces/Cells/site-occupancy-fr3-20261118/authoring/budget_window.json)",
   "One layout choice is the adapter's, not the references': an inward population sits on its cell's wall patch (facing inside), as milestone 1's runs placed it; in a face-free world its patch carries no other role",
   "18 November 2026: the lead ruled on the draft's nine questions (questions_answered) before any engine output of a protocol world; no budget, band or margin changed"
- ]
+ ],
+ "judge": {
+  "written": "18 November 2026, by the FR owner, after the protocol's worlds were fixed, its budgets declared and the lead's rulings recorded, and before any engine output of a protocol world",
+  "generator": "validation/tissue/site_occupancy_acceptance_qualification.py (records only)",
+  "plants": "validation/tissue/site_occupancy_acceptance_plants.py (checkpoint edits, each in its own process)",
+  "judge": "validation/tissue/site_occupancy_acceptance_judge.py (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only from validation/tissue/compartment_ph_judge.py)",
+  "references": "the FR references agent's R-ode, R-closed, R-eq and R-qss through validation/fr3/references/REFERENCES_USAGE.md (api.reference, api.accessibility), on validation/fr3/references/reference_inputs.json",
+  "derivation": {
+   "run_parts": [
+    "q1_eps_1e-1",
+    "q1_eps_1e-2",
+    "q1_eps_1e-3",
+    "q1_eps_1e-1_alpha_half",
+    "q2_large",
+    "q2_closed",
+    "q2_two_populations",
+    "q3_association",
+    "q3_dissociation",
+    "q3_binding_multiplier",
+    "q3_internalisation",
+    "q4_alpha_1_low",
+    "q4_alpha_1_high",
+    "q4_alpha_1_2_low",
+    "q4_alpha_1_2_high",
+    "q4_alpha_1_4_low",
+    "q4_alpha_1_4_high",
+    "q5_passive_from_zero",
+    "q5_passive_preformed",
+    "q5_washout",
+    "q5_class_switch",
+    "q5_inward",
+    "q5_background_threshold",
+    "q5_background_lowered",
+    "q1_fast_rung_1ms",
+    "q1_fast_rung_0p5ms",
+    "q1_fast_rung_0p25ms",
+    "K_rates",
+    "K_alpha",
+    "K_binding_multiplier",
+    "K_internalisation_multiplier",
+    "K_cell_volume",
+    "Q4_kinetic",
+    "Q4_affinity",
+    "Q5_material_plants",
+    "Q5_energy_plants",
+    "Q6_restart",
+    "Q6_batch",
+    "Q6_idle",
+    "Q6_twins",
+    "Q6_signature",
+    "Q6_refusals",
+    "references"
+   ],
+   "engine_parts": [
+    "q1_eps_1e-1",
+    "q1_eps_1e-2",
+    "q1_eps_1e-3",
+    "q1_eps_1e-1_alpha_half",
+    "q2_large",
+    "q2_closed",
+    "q2_two_populations",
+    "q3_association",
+    "q3_dissociation",
+    "q3_binding_multiplier",
+    "q3_internalisation",
+    "q4_alpha_1_low",
+    "q4_alpha_1_high",
+    "q4_alpha_1_2_low",
+    "q4_alpha_1_2_high",
+    "q4_alpha_1_4_low",
+    "q4_alpha_1_4_high",
+    "q5_passive_from_zero",
+    "q5_passive_preformed",
+    "q5_washout",
+    "q5_class_switch",
+    "q5_inward",
+    "q5_background_threshold",
+    "q5_background_lowered",
+    "q1_fast_rung_1ms",
+    "q1_fast_rung_0p5ms",
+    "q1_fast_rung_0p25ms"
+   ],
+   "control_parts": [
+    "K_rates",
+    "K_alpha",
+    "K_binding_multiplier",
+    "K_internalisation_multiplier",
+    "K_cell_volume",
+    "Q4_kinetic",
+    "Q4_affinity"
+   ],
+   "engine_ids": [
+    "resolved_pump_composite@1",
+    "resolved_pump_tissue@3",
+    "site_occupancy@1",
+    "langmuir_site_binding@1",
+    "site_conserving_internalisation@1",
+    "ssprk33_unidirectional_stage_condition_site_bookings@1",
+    "constant_field@1",
+    "resolved_capacitor_components_current_continuity@1",
+    "capacitive_reduction_gauged_damped_newton@2",
+    "imex_ars222_face_electromigration@1"
+   ],
+   "world_of": {
+    "q1_eps_1e-1": "q1_eps_1e-1",
+    "q1_eps_1e-2": "q1_eps_1e-2",
+    "q1_eps_1e-3": "q1_eps_1e-3",
+    "q1_eps_1e-1_alpha_half": "q1_eps_1e-1_alpha_half",
+    "q2_large": "q2_large",
+    "q2_closed": "q2_closed",
+    "q2_two_populations": "q2_two_populations",
+    "q3_association": "q3_association",
+    "q3_dissociation": "q3_dissociation",
+    "q3_binding_multiplier": "q3_binding_multiplier",
+    "q3_internalisation": "q3_internalisation",
+    "q4_alpha_1_low": "q4_alpha_1_low",
+    "q4_alpha_1_high": "q4_alpha_1_high",
+    "q4_alpha_1_2_low": "q4_alpha_1_2_low",
+    "q4_alpha_1_2_high": "q4_alpha_1_2_high",
+    "q4_alpha_1_4_low": "q4_alpha_1_4_low",
+    "q4_alpha_1_4_high": "q4_alpha_1_4_high",
+    "q5_passive_from_zero": "q5_passive_from_zero",
+    "q5_passive_preformed": "q5_passive_preformed",
+    "q5_washout": "q5_washout",
+    "q5_class_switch": "q5_class_switch",
+    "q5_inward": "q5_inward",
+    "q5_background_threshold": "q5_background_threshold",
+    "q5_background_lowered": "q5_background_lowered",
+    "q1_fast_rung_1ms": "q1_fast",
+    "q1_fast_rung_0p5ms": "q1_fast",
+    "q1_fast_rung_0p25ms": "q1_fast"
+   },
+   "items": {
+    "Q1": [
+     "q1_eps_1e-1",
+     "q1_eps_1e-2",
+     "q1_eps_1e-3",
+     "q1_eps_1e-1_alpha_half",
+     "q1_fast_rung_1ms",
+     "q1_fast_rung_0p5ms",
+     "q1_fast_rung_0p25ms"
+    ],
+    "Q2": [
+     "q2_large",
+     "q2_closed",
+     "q2_two_populations"
+    ],
+    "Q3": [
+     "q3_association",
+     "q3_dissociation",
+     "q3_binding_multiplier",
+     "q3_internalisation"
+    ],
+    "Q4": [
+     "q4_alpha_1_low",
+     "q4_alpha_1_high",
+     "q4_alpha_1_2_low",
+     "q4_alpha_1_2_high",
+     "q4_alpha_1_4_low",
+     "q4_alpha_1_4_high",
+     "q1_eps_1e-1_alpha_half"
+    ],
+    "Q5": [
+     "q5_passive_from_zero",
+     "q5_passive_preformed",
+     "q5_washout",
+     "q5_class_switch",
+     "q5_inward",
+     "q5_background_threshold",
+     "q5_background_lowered"
+    ]
+   },
+   "F_state": 2e-05,
+   "F_energy": 0.001,
+   "closure_rounding": 2.5,
+   "band": [
+    2.8,
+    3.2
+   ],
+   "band_reported": [
+    1.8,
+    2.2
+   ],
+   "order_observables": [
+    "amount_cell_0",
+    "amount_ecs_0",
+    "B_r0"
+   ],
+   "order_reported": [
+    "heat_pJ",
+    "work_pJ"
+   ],
+   "ladder_world": "q1_fast",
+   "ladder_parts": [
+    "q1_fast_rung_1ms",
+    "q1_fast_rung_0p5ms",
+    "q1_fast_rung_0p25ms"
+   ],
+   "ladder_dt_s": [
+    0.001,
+    0.0005,
+    0.00025
+   ],
+   "qss_worlds": [
+    "q1_eps_1e-1",
+    "q1_eps_1e-2",
+    "q1_eps_1e-3"
+   ],
+   "Q2": [
+    "q2_large",
+    "q2_closed",
+    "q2_two_populations"
+   ],
+   "Q2_quadratic": "q2_closed",
+   "Q4": {
+    "margin": 0.001,
+    "regimes": [
+     "low",
+     "high"
+    ],
+    "worlds": {
+     "low": {
+      "0.5": "q4_alpha_1_2_low",
+      "0.25": "q4_alpha_1_4_low"
+     },
+     "high": {
+      "0.5": "q4_alpha_1_2_high",
+      "0.25": "q4_alpha_1_4_high"
+     }
+    }
+   },
+   "ledgers": [
+    "local",
+    "outside",
+    "total",
+    "charge",
+    "electrode",
+    "global_charge",
+    "reservoir_work",
+    "electrode_work",
+    "metabolic_work",
+    "site_bound_entity",
+    "site_moiety_entity"
+   ],
+   "controls": {
+    "K_rates": {
+     "k_on": "state",
+     "k_off": "state",
+     "k_int": "state"
+    },
+    "K_alpha": {
+     "alpha_ignored": "state"
+    },
+    "K_binding_multiplier": {
+     "ignored": "state",
+     "squared": "state"
+    },
+    "K_internalisation_multiplier": {
+     "ignored": "state"
+    },
+    "K_cell_volume": {
+     "q5_inward": "state",
+     "q1_eps_1e-1": "work_pJ"
+    }
+   },
+   "background": {
+    "pair": [
+     "q5_background_threshold",
+     "q5_background_lowered"
+    ],
+    "factor": 0.1,
+    "S_world_fmol": 0.00016605390671738468
+   },
+   "plants": {
+    "Q5_material_plants": [
+     "move",
+     "bound"
+    ],
+    "Q5_energy_plants": [
+     "work",
+     "heat_sign",
+     "site_free_energy"
+    ]
+   },
+   "material_plants": [
+    "move",
+    "bound"
+   ],
+   "energy_plants": [
+    "work",
+    "heat_sign",
+    "site_free_energy"
+   ],
+   "Q6": {
+    "restarts": 6,
+    "batch_worlds": 4,
+    "signature": {
+     "internalisation_differs": true,
+     "facing_differs": true,
+     "same_structure": false
+    },
+    "refusal_checks": {
+     "ligand_charged": "ligand charged",
+     "ligand_undeclared": "ligand undeclared",
+     "ligand_permeant": "ligand permeant",
+     "identity": "identity",
+     "species_cap": "species cap",
+     "trace_node_below": "trace: node below",
+     "trace_above_limit": "trace: above 1e-6 K_d",
+     "unknown_patch": "unknown patch",
+     "unknown_contact": "unknown contact",
+     "held_bath": "held bath",
+     "copies": "copies",
+     "sites_per_copy": "sites per copy",
+     "accessible_fraction": "accessible fraction",
+     "unlisted_ligand": "unlisted ligand",
+     "initial_occupancy": "initial occupancy",
+     "k_on": "k_on",
+     "k_off": "k_off",
+     "k_int": "k_int",
+     "internalisation_inward": "internalisation owner",
+     "internalisation_compartment": "compartment",
+     "destination": "destination",
+     "replaced_slot": "replaced slot",
+     "rk4": "RK4",
+     "schedule_missing": "schedule missing",
+     "schedule_start": "schedule start",
+     "schedule_grid": "schedule grid",
+     "schedule_horizon": "schedule horizon",
+     "schedule_negative": "schedule negative",
+     "schedule_static_parameter": "schedule route",
+     "unknown_key": "unknown key",
+     "duplicate_population": "duplicate population",
+     "view_conflict_bath_schedule": "view conflict",
+     "view_conflict_water": "view conflict",
+     "stationary_analysis": "stationary analysis",
+     "stage_condition": null
+    }
+   },
+   "trace_independent": [
+    "q2_large",
+    "q2_closed",
+    "q2_two_populations",
+    "q3_association",
+    "q3_binding_multiplier",
+    "q4_alpha_1_low",
+    "q4_alpha_1_high",
+    "q4_alpha_1_2_low",
+    "q4_alpha_1_2_high",
+    "q4_alpha_1_4_low",
+    "q4_alpha_1_4_high",
+    "q5_passive_from_zero",
+    "q5_passive_preformed"
+   ],
+   "record_unit_s": 0.001
+  },
+  "criteria": [
+   {
+    "id": "C0_admission",
+    "metrics": [
+     "derived.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every run part admitted and run to its end with every host check on every accepted row (the runner)",
+    "judged": true
+   },
+   {
+    "id": "C0_ids",
+    "metrics": [
+     "derived.ids.all"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every engine run's printed IDs among the declared engine models",
+    "judged": true
+   },
+   {
+    "id": "Q1_state",
+    "metrics": [
+     "derived.Q1.state"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q1's worlds: every amount within B_state (+ 10 x the reference's floor) of R-ode at every record",
+    "judged": true
+   },
+   {
+    "id": "Q1_energy",
+    "metrics": [
+     "derived.Q1.energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q1's worlds: the heat and the work within B_energy of R-ode's integrals at every record",
+    "judged": true
+   },
+   {
+    "id": "Q2_state",
+    "metrics": [
+     "derived.Q2.state"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q2's worlds: every amount within B_state (+ 10 x the reference's floor) of R-ode at every record",
+    "judged": true
+   },
+   {
+    "id": "Q2_energy",
+    "metrics": [
+     "derived.Q2.energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q2's worlds: the heat and the work within B_energy of R-ode's integrals at every record",
+    "judged": true
+   },
+   {
+    "id": "Q3_state",
+    "metrics": [
+     "derived.Q3.state"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q3's worlds: every amount within B_state (+ 10 x the reference's floor) of R-ode at every record",
+    "judged": true
+   },
+   {
+    "id": "Q3_energy",
+    "metrics": [
+     "derived.Q3.energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q3's worlds: the heat and the work within B_energy of R-ode's integrals at every record",
+    "judged": true
+   },
+   {
+    "id": "Q4_state",
+    "metrics": [
+     "derived.Q4.state"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q4's worlds: every amount within B_state (+ 10 x the reference's floor) of R-ode at every record",
+    "judged": true
+   },
+   {
+    "id": "Q4_energy",
+    "metrics": [
+     "derived.Q4.energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q4's worlds: the heat and the work within B_energy of R-ode's integrals at every record",
+    "judged": true
+   },
+   {
+    "id": "Q5_state",
+    "metrics": [
+     "derived.Q5.state"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q5's worlds: every amount within B_state (+ 10 x the reference's floor) of R-ode at every record",
+    "judged": true
+   },
+   {
+    "id": "Q5_energy",
+    "metrics": [
+     "derived.Q5.energy"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q5's worlds: the heat and the work within B_energy of R-ode's integrals at every record",
+    "judged": true
+   },
+   {
+    "id": "Q1_order_amount_cell_0",
+    "metrics": [
+     "derived.orders.amount_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "q1_fast's amount_cell_0 on the registered ladder: both pairs of errors against R-ode by FR-4's classes rule in [2.8, 3.2]",
+    "judged": true
+   },
+   {
+    "id": "Q1_order_amount_ecs_0",
+    "metrics": [
+     "derived.orders.amount_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "q1_fast's amount_ecs_0 on the registered ladder: both pairs of errors against R-ode by FR-4's classes rule in [2.8, 3.2]",
+    "judged": true
+   },
+   {
+    "id": "Q1_order_B_r0",
+    "metrics": [
+     "derived.orders.B_r0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "q1_fast's B_r0 on the registered ladder: both pairs of errors against R-ode by FR-4's classes rule in [2.8, 3.2]",
+    "judged": true
+   },
+   {
+    "id": "Q1_order_energy_reported",
+    "metrics": [
+     "derived.orders.heat_pJ.passes",
+     "derived.orders.work_pJ.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the heat's and the work's orders on q1_fast in [1.8, 2.2] (the share, §4.5): reported",
+    "judged": false
+   },
+   {
+    "id": "Q1_eps_reported",
+    "metrics": [
+     "derived.Q1_eps_reported.orders"
+    ],
+    "comparison": "within",
+    "threshold": [
+     0.9,
+     1.1
+    ],
+    "basis": "the order in eps of R-ode against R-qss, a property of the references (the lead's ruling 8): reported",
+    "judged": false
+   },
+   {
+    "id": "Q2_equilibrium",
+    "metrics": [
+     "derived.Q2_equilibrium"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q2's worlds: the last record's B of each population and the free ligand at the facing node within B_state of R-eq",
+    "judged": true
+   },
+   {
+    "id": "Q2_quadratic",
+    "metrics": [
+     "derived.Q2_quadratic"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "q2_closed's last B within B_state of the depletion quadratic's r-",
+    "judged": true
+   },
+   {
+    "id": "Q2_heat_to_equilibrium",
+    "metrics": [
+     "derived.Q2_heat_to_equilibrium"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "Q2's worlds: the total heat at the last record within 1e-3 of G(start) - G(eq)",
+    "judged": true
+   },
+   {
+    "id": "Q3_riccati",
+    "metrics": [
+     "derived.riccati"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "wherever the references give the Riccati form, B and the free ligand within B_state of it at every record",
+    "judged": true
+   },
+   {
+    "id": "Q4_ratio",
+    "metrics": [
+     "derived.Q4_accessibility.ratio_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "|B(alpha, t)/B(1, t) - alpha| <= M_Q4 at every record t > 0, both regimes, alpha = 1/2 and 1/4",
+    "judged": true
+   },
+   {
+    "id": "Q4_K",
+    "metrics": [
+     "derived.Q4_accessibility.K_min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the kinetic factor (K) departs by at least 10 M_Q4 in both regimes",
+    "judged": true
+   },
+   {
+    "id": "Q4_A",
+    "metrics": [
+     "derived.Q4_accessibility.A_high_min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the affinity factor (A) departs by at least 10 M_Q4 at 100 K_d",
+    "judged": true
+   },
+   {
+    "id": "Q4_A_low_reported",
+    "metrics": [
+     "derived.Q4_accessibility.A.low_0.5",
+     "derived.Q4_accessibility.A.low_0.25"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "(A) at 0.01 K_d: zero power (the lead's ruling 5), reported",
+    "judged": false
+   },
+   {
+    "id": "Q5_closure",
+    "metrics": [
+     "derived.closure_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the guard of record: |energy residual| <= 2.5 eps x steps x the energy magnitude at every record of every engine run",
+    "judged": true
+   },
+   {
+    "id": "Q5_heat",
+    "metrics": [
+     "derived.heat_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "every heat field non-negative and non-decreasing to the closure's rounding at every record of every engine run",
+    "judged": true
+   },
+   {
+    "id": "Q5_ledgers",
+    "metrics": [
+     "derived.ledgers"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "every material, charge and own ledger within the engine's bound at every record of every engine run",
+    "judged": true
+   },
+   {
+    "id": "Q5_system_total",
+    "metrics": [
+     "derived.system_total"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the ligand's system total within its floor + N eps max |total| at every record of every engine run",
+    "judged": true
+   },
+   {
+    "id": "Q5_background",
+    "metrics": [
+     "derived.background.ratio"
+    ],
+    "comparison": "le",
+    "threshold": 0.1,
+    "basis": "the background guard: every amount's change from t = 0 in the two background worlds against each other at least 10 x below B_state (the lead's ruling 2)",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_move",
+    "metrics": [
+     "derived.plants.move.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the move plant: every prefix row within every check, the planted row flagged by the plant's checks with its passing ledgers within their bounds",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_move_margin",
+    "metrics": [
+     "derived.plants.move.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the move plant's margin at its row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_bound",
+    "metrics": [
+     "derived.plants.bound.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the bound plant: every prefix row within every check, the planted row flagged by the plant's checks with its passing ledgers within their bounds",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_bound_margin",
+    "metrics": [
+     "derived.plants.bound.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the bound plant's margin at its row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_work",
+    "metrics": [
+     "derived.plants.work.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the work plant: every prefix row within every check, the planted row flagged by the plant's checks with its passing ledgers within their bounds",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_work_margin",
+    "metrics": [
+     "derived.plants.work.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the work plant's margin at its row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_heat_sign",
+    "metrics": [
+     "derived.plants.heat_sign.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the heat_sign plant: every prefix row within every check, the planted row flagged by the plant's checks with its passing ledgers within their bounds",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_heat_sign_margin",
+    "metrics": [
+     "derived.plants.heat_sign.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the heat_sign plant's margin at its row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_site_free_energy",
+    "metrics": [
+     "derived.plants.site_free_energy.exact"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the site_free_energy plant: every prefix row within every check, the planted row flagged by the plant's checks with its passing ledgers within their bounds",
+    "judged": true
+   },
+   {
+    "id": "Q5_plant_site_free_energy_margin",
+    "metrics": [
+     "derived.plants.site_free_energy.margin"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "the site_free_energy plant's margin at its row, at least 10",
+    "judged": true
+   },
+   {
+    "id": "Q5_plants_material_engine",
+    "metrics": [
+     "derived.plants_material_engine"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the material plants refused by the engine on resuming, naming their ledger",
+    "judged": true
+   },
+   {
+    "id": "Q5_plants_energy_engine_reported",
+    "metrics": [
+     "derived.plants.work.engine_refused",
+     "derived.plants.heat_sign.engine_refused",
+     "derived.plants.site_free_energy.engine_refused"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the engine's own verdict on each energy plant (under ARS, 2e-8 pJ + 2e-3 x the flows does not refuse a 1e-6 misbooking: FR-18): reported",
+    "judged": false
+   },
+   {
+    "id": "Q5_energy_margins_reported",
+    "metrics": [
+     "derived.worlds.q2_large.heat",
+     "derived.worlds.q2_closed.heat",
+     "derived.worlds.q2_two_populations.heat",
+     "derived.worlds.q3_association.heat",
+     "derived.worlds.q3_binding_multiplier.heat",
+     "derived.worlds.q4_alpha_1_low.heat",
+     "derived.worlds.q4_alpha_1_high.heat",
+     "derived.worlds.q4_alpha_1_2_low.heat",
+     "derived.worlds.q4_alpha_1_2_high.heat",
+     "derived.worlds.q4_alpha_1_4_low.heat",
+     "derived.worlds.q4_alpha_1_4_high.heat",
+     "derived.worlds.q5_passive_from_zero.heat",
+     "derived.worlds.q5_passive_preformed.heat"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the honest heat errors over B_energy in the worlds whose energy does not depend on the trace (the lead's ruling 1): reported",
+    "judged": false
+   },
+   {
+    "id": "K_rates",
+    "metrics": [
+     "derived.controls.K_rates.min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "K_rates (k_on, k_off, k_int): each departs from its arm's reference by at least 10 x the arm's budget",
+    "judged": true
+   },
+   {
+    "id": "K_alpha",
+    "metrics": [
+     "derived.controls.K_alpha.min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "K_alpha (alpha_ignored): each departs from its arm's reference by at least 10 x the arm's budget",
+    "judged": true
+   },
+   {
+    "id": "K_binding_multiplier",
+    "metrics": [
+     "derived.controls.K_binding_multiplier.min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "K_binding_multiplier (ignored, squared): each departs from its arm's reference by at least 10 x the arm's budget",
+    "judged": true
+   },
+   {
+    "id": "K_internalisation_multiplier",
+    "metrics": [
+     "derived.controls.K_internalisation_multiplier.min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "K_internalisation_multiplier (ignored): each departs from its arm's reference by at least 10 x the arm's budget",
+    "judged": true
+   },
+   {
+    "id": "K_cell_volume",
+    "metrics": [
+     "derived.controls.K_cell_volume.min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "K_cell_volume (q5_inward, q1_eps_1e-1): each departs from its arm's reference by at least 10 x the arm's budget",
+    "judged": true
+   },
+   {
+    "id": "Q6_restart",
+    "metrics": [
+     "derived.Q6.restart"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every restart, in process and through a snapshot, bitwise the straight run",
+    "judged": true
+   },
+   {
+    "id": "K4",
+    "metrics": [
+     "derived.Q6.K4_moved_switch_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the restart with its switch moved one step is not bitwise the straight run",
+    "judged": true
+   },
+   {
+    "id": "Q6_batch_scalar",
+    "metrics": [
+     "derived.Q6.batch_relative"
+    ],
+    "comparison": "le",
+    "threshold": 1e-12,
+    "basis": "each batched world within 1e-12 relative of its scalar run",
+    "judged": true
+   },
+   {
+    "id": "Q6_batch_reversed",
+    "metrics": [
+     "derived.Q6.batch_reversed"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each batched world bitwise its place in the reversed batch",
+    "judged": true
+   },
+   {
+    "id": "Q6_batch_scalar_bitwise",
+    "metrics": [
+     "derived.Q6.batch_scalar_bitwise"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each batched world bitwise its scalar run: reported",
+    "judged": false
+   },
+   {
+    "id": "Q6_idle",
+    "metrics": [
+     "derived.Q6.idle"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "§4.8's claim 2: every multiplier zero, and no populations, bitwise the world without the operator on every inner field and row",
+    "judged": true
+   },
+   {
+    "id": "Q6_twins",
+    "metrics": [
+     "derived.Q6.twins"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the value twins identical in program text and closed-over constants",
+    "judged": true
+   },
+   {
+    "id": "Q6_signature",
+    "metrics": [
+     "derived.Q6.signature"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "worlds of different structure refused by the batch signature with its reason; one structure admitted",
+    "judged": true
+   },
+   {
+    "id": "Q6_refusals",
+    "metrics": [
+     "derived.Q6.refusals_all"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each refusal class's representative refused by its own check, its neighbour admitted and run; the stage condition refused at run time",
+    "judged": true
+   },
+   {
+    "id": "Q6_refusals_reported",
+    "metrics": [
+     "derived.Q6.refusals.ligand_charged",
+     "derived.Q6.refusals.ligand_undeclared",
+     "derived.Q6.refusals.ligand_permeant",
+     "derived.Q6.refusals.identity",
+     "derived.Q6.refusals.species_cap",
+     "derived.Q6.refusals.trace_node_below",
+     "derived.Q6.refusals.trace_above_limit",
+     "derived.Q6.refusals.unknown_patch",
+     "derived.Q6.refusals.unknown_contact",
+     "derived.Q6.refusals.held_bath",
+     "derived.Q6.refusals.copies",
+     "derived.Q6.refusals.sites_per_copy",
+     "derived.Q6.refusals.accessible_fraction",
+     "derived.Q6.refusals.unlisted_ligand",
+     "derived.Q6.refusals.initial_occupancy",
+     "derived.Q6.refusals.k_on",
+     "derived.Q6.refusals.k_off",
+     "derived.Q6.refusals.k_int",
+     "derived.Q6.refusals.internalisation_inward",
+     "derived.Q6.refusals.internalisation_compartment",
+     "derived.Q6.refusals.destination",
+     "derived.Q6.refusals.replaced_slot",
+     "derived.Q6.refusals.rk4",
+     "derived.Q6.refusals.schedule_missing",
+     "derived.Q6.refusals.schedule_start",
+     "derived.Q6.refusals.schedule_grid",
+     "derived.Q6.refusals.schedule_horizon",
+     "derived.Q6.refusals.schedule_negative",
+     "derived.Q6.refusals.schedule_static_parameter",
+     "derived.Q6.refusals.unknown_key",
+     "derived.Q6.refusals.duplicate_population",
+     "derived.Q6.refusals.view_conflict_bath_schedule",
+     "derived.Q6.refusals.view_conflict_water",
+     "derived.Q6.refusals.stationary_analysis",
+     "derived.Q6.refusals.stage_condition"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each refusal class, reported",
+    "judged": false
+   }
+  ],
+  "units": {
+   "q1_eps_1e-1": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q1_eps_1e-2": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q1_eps_1e-3": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q1_eps_1e-1_alpha_half": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q2_large": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q2_closed": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q2_two_populations": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q3_association": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q3_dissociation": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q3_binding_multiplier": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q3_internalisation": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_low": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_high": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_2_low": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_2_high": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_4_low": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q4_alpha_1_4_high": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_passive_from_zero": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_passive_preformed": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_washout": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_class_switch": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_inward": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_background_threshold": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q5_background_lowered": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "q1_fast_rung_1ms": {
+    "dt_s": 0.001,
+    "note": "sized at the rehearsal"
+   },
+   "q1_fast_rung_0p5ms": {
+    "dt_s": 0.0005,
+    "note": "sized at the rehearsal"
+   },
+   "q1_fast_rung_0p25ms": {
+    "dt_s": 0.00025,
+    "note": "sized at the rehearsal"
+   },
+   "K_rates": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K_alpha": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K_binding_multiplier": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K_internalisation_multiplier": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "K_cell_volume": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q4_kinetic": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q4_affinity": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q5_material_plants": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q5_energy_plants": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_restart": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_batch": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_idle": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_twins": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_signature": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "Q6_refusals": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   },
+   "references": {
+    "dt_s": null,
+    "note": "sized at the rehearsal"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), OPENBLAS_NUM_THREADS=1, PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr3-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env OPENBLAS_NUM_THREADS=1 --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.site_occupancy_acceptance_qualification judged SNAPSHOT/validation/tissue/site_occupancy_acceptance_protocol.json OUT/PART PART",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.site_occupancy_acceptance_judge judged SNAPSHOT/validation/tissue/site_occupancy_acceptance_protocol.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "D150's rule on the larger of a sizing rate and the rehearsal's wall (3 x estimate + 600 s, rounded up to the minute)",
+   "attempts": "harness_limits"
+  }
+ }
 }

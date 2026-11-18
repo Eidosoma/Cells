@@ -99,8 +99,10 @@ def _schedules(world, populations):
     return out
 
 
-def build(world, *, dt=DECLARED_DT, solver=SOLVER):
-    """The engine definition of a world in the references' form (registered or a control's)."""
+def build(world, *, dt=DECLARED_DT, solver=SOLVER, operator=True, populations=True):
+    """The engine definition of a world in the references' form (registered or a control's);
+    operator=False: the same world without the operator's block (Q6_idle's reference);
+    populations=False: the operator declared with no populations, the layout kept."""
     if float(world.get("temperature_K", TEMPERATURE_K)) != TEMPERATURE_K:
         raise ValueError("the adapter's worlds are at 310 K (fx.world's temperature)")
     nodes = world["nodes"]
@@ -147,6 +149,10 @@ def build(world, *, dt=DECLARED_DT, solver=SOLVER):
         concentrations_mM={nid: float(n["L_mM"]) for nid, n in nodes.items()},
         observation_times=record_times(world, dt),
     )
+    if not operator:
+        return raw
+    if not populations:
+        return sfx.with_site_occupancy(raw, [], ligands=[sfx.ligand(trace_mM=trace)], controls={})
     return sfx.with_site_occupancy(
         raw,
         populations,
