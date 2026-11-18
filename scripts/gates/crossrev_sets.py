@@ -1,8 +1,9 @@
 """crossrev's sets of one snapshot (the gates' cross-revision runner and record maker).
 
   run     SNAPSHOT OUT RECORD   each set of the snapshot, compared with the record's (the gates)
-  record  SNAPSHOT OUT          a new record of the snapshot, each set compared with an earlier
-                                record's when --previous is given (the record maker)
+  record  SNAPSHOT OUT          a new record of the snapshot (the record maker): the --sets given,
+                                or else the --previous record's sets, each compared with its set
+                                there
 
 Per set it runs the set's actions (jaxprs, bindings, and check for the operators' own modules) from
 the snapshot's root, with PYTHONPATH at the snapshot, at nice 10, into OUT/SET. Then
@@ -26,7 +27,7 @@ This supersedes these runners, which stay byte for byte because recorded runs ci
 
 Usage:
   python crossrev_sets.py run SNAPSHOT OUT RECORD [--sets SET ...] [--python PY]
-  python crossrev_sets.py record SNAPSHOT OUT [--sets SET ...] [--previous RECORD] [--python PY]
+  python crossrev_sets.py record SNAPSHOT OUT (--sets SET ... | --previous RECORD) [--python PY]
 """
 
 import argparse
@@ -76,7 +77,8 @@ def chosen(sets, record=None):
             raise SystemExit(f"Refused: unknown sets {unknown} (known: {list(ORDER)})")
         return [s for s in ORDER if s in sets]
     if record is None:
-        raise SystemExit("Refused: give --sets when there is no record to read them from")
+        raise SystemExit("Refused: give --sets, or a record to read them from (run's RECORD, "
+                         "record's --previous)")
     return record_sets(record)
 
 
@@ -152,7 +154,7 @@ def main(argv=None):
     if not (snapshot / "SNAPSHOT.json").is_file():
         raise SystemExit(f"Refused: {snapshot} is not an execution snapshot")
     against = a.record if a.mode == "run" else a.previous
-    sets = chosen(a.sets, a.record if a.mode == "run" else None)
+    sets = chosen(a.sets, against)  # run: the record's sets; record: the previous record's.
     out.mkdir(parents=True, exist_ok=True)
 
     def log(line):

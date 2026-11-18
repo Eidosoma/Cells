@@ -11,7 +11,11 @@ files are timed individually and grouped into tiers:
            in the tier its time gives; every other row is kept as it stands, in its order;
            the measurements' sources and provenance are appended. Refused, with nothing
            written, when a row would be dropped (its file has left tests/), when a measured
-           file is not in tests/, or when a measured row failed (exit code, failures, errors)
+           file is not in tests/, or when a measured row failed (exit code, failures, errors).
+           Run it in the tree that holds the landing's test files (fold reads tests/ beside
+           itself), on main's record: at a landing, merge without committing, take main's
+           tests/test_tiers.json (git checkout --ours), fold the landing's measured.json files
+           (later ones win per file), and commit the merge with the folded record
   merge    the three-way fold of a merge, when the branch's measurements are not at hand: the
            branch's row delta against the merge base (rows it added, changed or removed) applied
            to main's record, main's order kept and the branch's new rows inserted at their sorted

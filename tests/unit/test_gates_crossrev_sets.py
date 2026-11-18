@@ -127,3 +127,38 @@ def test_the_record_maker_compares_only_with_a_given_previous_record(cs, tmp_pat
 def test_main_refuses_a_folder_that_is_not_a_snapshot(cs, tmp_path):
     with pytest.raises(SystemExit, match="not an execution snapshot"):
         cs.main(["run", str(tmp_path), str(tmp_path / "out"), str(record(tmp_path, ["base"]))])
+
+
+def snapshot(tmp_path):
+    s = tmp_path / "snapshot"
+    s.mkdir()
+    (s / "SNAPSHOT.json").write_text("{}")
+    return s
+
+
+def test_main_record_takes_the_previous_records_sets(cs, tmp_path, monkeypatch):
+    previous = record(tmp_path, ["coupling", "base", "kinds-superseded-20261117"])
+    seen = {}
+
+    def fake_sweep(snap, out, sets, against, python, log, call=None):
+        seen.update(sets=sets, against=against)
+        return 0
+
+    monkeypatch.setattr(cs, "sweep", fake_sweep)
+    assert cs.main(["record", str(snapshot(tmp_path)), str(tmp_path / "new"),
+                    "--previous", str(previous)]) == 0
+    assert seen == dict(sets=["base", "coupling"], against=str(previous))
+    assert cs.main(["record", str(tmp_path / "snapshot"), str(tmp_path / "new2"),
+                    "--sets", "volume"]) == 0
+    assert seen == dict(sets=["volume"], against=None)
+    with pytest.raises(SystemExit, match="give --sets"):
+        cs.main(["record", str(tmp_path / "snapshot"), str(tmp_path / "new3")])
+
+
+def test_main_run_takes_the_records_sets(cs, tmp_path, monkeypatch):
+    rec = record(tmp_path, ["acceptances", "base"])
+    seen = {}
+    monkeypatch.setattr(cs, "sweep", lambda snap, out, sets, against, python, log, call=None:
+                        seen.update(sets=sets) or 0)
+    assert cs.main(["run", str(snapshot(tmp_path)), str(tmp_path / "out"), str(rec)]) == 0
+    assert seen["sets"] == ["base", "acceptances"]
