@@ -414,14 +414,19 @@ def _restart(raw, at, workdir, *, through_snapshot):
     head["experiment"]["end_time"] = at
     head["experiment"]["observation_times"] = [t for t in raw["experiment"]["observation_times"]
                                                if t <= at + 1e-12]
+    for key in ("exchange_controls", "turnover_controls", "reaction_controls"):
+        for control in head["experiment"].get(key, []):  # Changes at or after `at` are the
+            control["schedule"] = [c for c in control["schedule"] if c["time"] < at]  # resume's.
     first = run(parse_spec(head))
-    checkpoint = first.final
+    origin, checkpoint = first.spec, first.final
     if through_snapshot:
         directory = Path(workdir) / f"checkpoint-{at:g}"
         directory.parent.mkdir(parents=True, exist_ok=True)
         write_snapshot(directory, first.spec, first.final)
-        checkpoint = load_snapshot(directory).checkpoint
-    return run(spec, branch_checkpoint(spec, checkpoint, spec))
+        loaded = load_snapshot(directory)
+        origin, checkpoint = loaded.spec, loaded.checkpoint
+    # A branch from the head's own checkpoint into the full schedule (its changes from `at` on).
+    return run(spec, branch_checkpoint(origin, checkpoint, spec))
 
 
 def c12_restart(name, context):
@@ -450,7 +455,7 @@ def c12_restart(name, context):
         planted = None
         if t < end:
             moved = quick(moved) if context["quick"] else moved
-            planted = compare_results(straight, _restart(moved, 0.25, workdir,
+            planted = compare_results(straight, _restart(moved, 0.25, Path(workdir) / "moved",
                                                          through_snapshot=True), start=0.25)
     return dict(kind="comparison", admitted=True, completed=True, restarts=out, planted=planted,
                 wall_s=time.perf_counter() - started)
