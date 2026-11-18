@@ -40,8 +40,15 @@ declarations manifest (registry/declarations.py) writes out.
   slope in the per-stage rule; `material_term`, its material slope per stage; `charge_bound` and
   `material_bound`, its definition-time bounds on a charged and on a neutral row. Its host's
   hooks evaluate them (registry/kind_registry.Kind: stage_term, material_term, bound_rate), and
-  refusal 4 reads which a law declares (operators/compartments.py);
-- `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C);
+  refusal 4 reads which a law declares (operators/compartments.py). Each may also declare `forms`:
+  "base" where its stoichiometry is written in base forms with every ligand out, so a rapid binding
+  closure's totals stay exact (§5.2's admission; None otherwise). A cycle law may carry its general
+  form, `cycle` (seam A's CycleForm, the kinds owner's type, checked by its own errors(): this
+  module imports no law module);
+- `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C). Its general form
+  (CORE_SEAMS §19 as amended) declares `forms="registry"` (its binders' forms are the species
+  registry's) and the kernels free_energy (G*), envelope (the lag envelope) and free_amounts (the
+  free forms from the totals, P1's predictor's), each None in version 1;
 - `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
   membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
@@ -108,6 +115,7 @@ __all__ = (
     "PumpLaw",
     "RouteLaw",
     "active",
+    "hosted_laws",
     "scope",
 )
 
@@ -266,6 +274,23 @@ def _callables(law, *names):
 STEP_TERMS = ("stage_term", "material_term", "charge_bound", "material_bound")
 
 
+def _forms_errors(law):
+    return [] if law.forms in (None, "base") else ['its forms are "base", or None']
+
+
+def _cycle_errors(cycle):
+    """A cycle law's general form checked by its own errors() (duck-typed, module docstring)."""
+    if cycle is None:
+        return []
+    check = getattr(cycle, "errors", None)
+    if not callable(check):
+        return ["its cycle is a form with its own errors(), or None"]
+    problems = check()
+    if not isinstance(problems, list) or not all(map(_named, problems)):
+        return ["its cycle's errors() returns a list of reasons"]
+    return [f"its cycle: {problem}" for problem in problems]
+
+
 def _named_or_none(law, *names):
     return [
         f"its {name} is named, or None"
@@ -359,6 +384,8 @@ class CycleLaw(Law):
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
+    forms: str | None = None  # "base": its moves are in base forms (CORE_SEAMS §5.2), or None.
+    cycle: object = None  # Its general form: seam A's CycleForm, or None (module docstring).
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -382,7 +409,8 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        return out + _named_or_none(self, *STEP_TERMS, "loop_term")
+        out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
+        return out + _cycle_errors(self.cycle)
 
 
 PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (§8.1).
@@ -399,6 +427,7 @@ class RouteLaw(Law):
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
+    forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -408,7 +437,7 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
-        return out + _named_or_none(self, *STEP_TERMS)
+        return out + _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
 
 
 @dataclass(frozen=True)
@@ -419,6 +448,11 @@ class BindingLaw(Law):
     ligands: tuple[str, ...]
     closure: Callable
     domain_valid: Callable | None = None
+    # The general closure's (module docstring), each None in version 1.
+    forms: str | None = None  # "registry": its binders' forms are the species registry's.
+    free_energy: Callable | None = None  # G*, its free-energy term.
+    envelope: Callable | None = None  # The first-order lag envelope of its binding network.
+    free_amounts: Callable | None = None  # The free forms from the totals (P1's predictor's).
 
     interface: ClassVar[str] = BINDING_LAW
 
@@ -428,8 +462,11 @@ class BindingLaw(Law):
             isinstance(self.ligands, tuple) and self.ligands and all(map(_named, self.ligands))
         ):
             out.append("its ligands are a tuple of roles")
-        if self.domain_valid is not None and not callable(self.domain_valid):
-            out.append("its domain_valid is callable, or None")
+        for name in ("domain_valid", "free_energy", "envelope", "free_amounts"):
+            if getattr(self, name) is not None and not callable(getattr(self, name)):
+                out.append(f"its {name} is callable, or None")
+        if self.forms not in (None, "registry"):
+            out.append('its forms are "registry", or None')
         return out
 
 
@@ -585,6 +622,12 @@ def _load_builtins():
             if isinstance(law, Law) and BUILTIN._laws.get(qualified(law.law_id)) is not law:
                 BUILTIN._register(law, name)
         _builtins_loaded = True
+
+
+def hosted_laws(interface, host):
+    """The active registry's laws of `interface` that `host` runs, in canonical (sorted namespaced
+    ID) order: how a kind or the inner model finds its laws (§8.3), on the surface for kinds."""
+    return active().laws(interface, host)
 
 
 def active():
