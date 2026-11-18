@@ -4,7 +4,7 @@
  "status": "registered before any engine output for seams A and C (CORE_SEAMS_DESIGN \u00a719 item 7: the kinds and binding owners had not started)",
  "inputs": {
   "path": "validation/core_seams/references/reference_inputs.json",
-  "git_blob": "a12ccbcc94c7359c9bbfe00749d9cb8c038c9e81"
+  "git_blob": "91d8055ee1b76591e505e9f3863ec81c92c4e6a8"
  },
  "min_margin": 10.0,
  "verdict_band_eps": 64.0,
@@ -105,6 +105,12 @@
    "claim": "Amendment C3: the envelope is the first-order lag of the linearised binding network, with k_on per (binder, ligand); it reduces to B4's for one two-form buffer; every form is reachable from its base by unit steps (\u00a719 amended at 19:52 UTC)",
    "reference": "\u03b4 = \u2212K\u207b\u00b9 P D at 60 digits; the full nonlinear network under the drive by Radau and BDF, its lag measured against the closure at each state's own totals; eight cases, one a cooperative chain",
    "plants": ["a per-step minimum \u03bb (non-conservative on the chain: the budget's verdict flips)", "a k_on that ignores the ligand", "k_on swapped between the ligands", "a binder with a form not reachable by unit steps"]
+  },
+  {
+   "row": "C7",
+   "claim": "Amendment C4: the closure's validity is the joint condition t* > 0, t* = min over the ligand simplex of \u03bb\u00b7T \u2212 \u03a3_B T_B min_f \u03bb\u00b7n_f; the per-ligand floors \u03a3 T_B min n are its values at the simplex's vertices, necessary and not sufficient for mixed-sign counts (\u00a719 amended at 19:52 UTC)",
+   "reference": "t* exactly in rationals by the arrangement's vertices, and by the primal LP (HiGHS); every registered state; four planted states of S7, whose Mg\u00b2\u207a binding releases H\u207a",
+   "plants": ["the per-ligand floors alone, which admit joint_infeasible (t* = \u22121/2 fmol)", "the boundary, t* = 0: not an interior state"]
   },
   {
    "row": "C5",
@@ -3427,7 +3433,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 9617113.486905966,
@@ -3437,7 +3444,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 127577535710109.58,
@@ -3447,7 +3455,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 89483891215304.6,
@@ -3457,7 +3466,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 1000.0000000000001,
@@ -3467,7 +3477,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 3.7553160141597906e-11,
@@ -3503,7 +3514,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 8782205.018006802,
@@ -3513,7 +3525,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 48327894324432.51,
@@ -3523,7 +3536,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 180986881863033.12,
@@ -3533,7 +3547,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 1000.0000000000001,
@@ -3543,7 +3558,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 1.1499745175553519e-12,
@@ -3579,7 +3595,8 @@
       "weak_at": [],
       "states": 12,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 8148860.905038873,
@@ -3589,7 +3606,8 @@
       "weak_at": [],
       "states": 12,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 25360202021911.492,
@@ -3599,7 +3617,8 @@
       "weak_at": [],
       "states": 12,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 75391307547293.52,
@@ -3609,7 +3628,8 @@
       "weak_at": [],
       "states": 12,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 958.7476169394113,
@@ -3619,7 +3639,8 @@
       "weak_at": [],
       "states": 12,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 8.020664053571028e-13,
@@ -3655,7 +3676,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 4363752.862334023,
@@ -3665,7 +3687,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 924823277981.8434,
@@ -3675,7 +3698,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 84012401204624.19,
@@ -3685,7 +3709,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 678.2999966035469,
@@ -3695,7 +3720,8 @@
       "weak_at": [],
       "states": 13,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 1.648734214286444e-12,
@@ -3731,7 +3757,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 7684570.006068954,
@@ -3741,7 +3768,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 47110156392758.56,
@@ -3751,7 +3779,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 73270811703365.0,
@@ -3761,7 +3790,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 1000.0000000000002,
@@ -3771,7 +3801,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 3.0763053858138347e-12,
@@ -3807,7 +3838,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "K_1e-6": {
       "max": 787115.6116759959,
@@ -3817,7 +3849,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "form_dropped": {
       "max": 121785250713.67229,
@@ -3827,7 +3860,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "count_off_by_one": {
       "max": 12765130208416.205,
@@ -3837,7 +3871,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      },
      "conservation_1e-10": {
       "max": 891.0854001922087,
@@ -3847,7 +3882,8 @@
       "weak_at": [],
       "states": 11,
       "undefined": 0,
-      "note": "deviation over the residual-bound floor at each state"
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
      }
     },
     "floor_residual_max": 1.4981714468695744e-11,
@@ -3872,6 +3908,87 @@
     "charge_plant_min_fmol_e": 2.0709727203683955e-07,
     "speciation_part_max_pJ": -15.530705878790116,
     "states_with_a_total_not_positive": []
+   },
+   "S7": {
+    "plants": {
+     "K_1pct": {
+      "max": 11246474506.30782,
+      "at": "random_4",
+      "min": 78849248.90306805,
+      "min_at": "mostly_MgmH",
+      "weak_at": [],
+      "states": 9,
+      "undefined": 0,
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
+     },
+     "K_1e-6": {
+      "max": 1130705.6058569206,
+      "at": "random_4",
+      "min": 7924.404552047066,
+      "min_at": "mostly_MgmH",
+      "weak_at": [],
+      "states": 9,
+      "undefined": 0,
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
+     },
+     "form_dropped": {
+      "max": 1046280013748.79,
+      "at": "random_3",
+      "min": 111067806162.73834,
+      "min_at": "random_2",
+      "weak_at": [],
+      "states": 3,
+      "undefined": 0,
+      "caught_by_refusal_at": ["random_0", "random_4", "random_5", "random_6", "random_7", "mostly_MgmH"],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
+     },
+     "count_off_by_one": {
+      "max": 30268833041134.57,
+      "at": "random_3",
+      "min": 9563116191514.158,
+      "min_at": "random_2",
+      "weak_at": [],
+      "states": 3,
+      "undefined": 0,
+      "caught_by_refusal_at": ["random_0", "random_4", "random_5", "random_6", "random_7", "mostly_MgmH"],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
+     },
+     "conservation_1e-10": {
+      "max": 703.692571957934,
+      "at": "random_2",
+      "min": 501.3863276098473,
+      "min_at": "mostly_MgmH",
+      "weak_at": [],
+      "states": 9,
+      "undefined": 0,
+      "caught_by_refusal_at": [],
+      "note": "deviation over the residual-bound floor at each state; where the planted closure refuses the state, it is caught by refusal"
+     }
+    },
+    "floor_residual_max": 1.2579301072417412e-10,
+    "floor_input_max": 2.829958320807544e-13,
+    "manufactured_max_dln": 2.2776099739757154e-14,
+    "residual_max_rel": 1.4739103227311748e-55,
+    "conservation_max_rel": 1.4739266220004579e-55,
+    "charge_max_abs_fmol_e": 1.84706e-54,
+    "gradient_vs_differences_max_rel": 2.395719948963155e-34,
+    "newton_vs_bisection_max_rel": 5.276063832248365e-32,
+    "joint_vs_separate_max_rel": 0.0,
+    "gradient_plant": {
+     "max": 24386.879224338347,
+     "at": "random_2",
+     "min": 4852.650613227628,
+     "min_at": "random_4",
+     "weak_at": [],
+     "states": 9,
+     "undefined": 0
+    },
+    "nonminimum_plant_min_excess_pJ": 0.009489505799779934,
+    "charge_plant_min_fmol_e": 0.003396116231364812,
+    "speciation_part_max_pJ": -27.42616677348279,
+    "states_with_a_total_not_positive": ["random_0", "random_4", "random_5", "random_6", "random_7", "mostly_MgmH"]
    }
   },
   "C1_amendment_booked_term_and_primal": {
@@ -4114,6 +4231,46 @@
     "primal_vs_dual_max_abs_dln": 8.742435e-53,
     "primal_certificate_max": 8.79763e-53,
     "primal_iterations_max": 26
+   },
+   "S7": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 160959741377019.75,
+      "at": "random_1->random_2",
+      "min": 223887702447.00287,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "states": 8,
+      "undefined": 0,
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 106369074663778.3,
+      "at": "random_4->random_5",
+      "min": 8074122320991.506,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "states": 8,
+      "undefined": 0,
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 43681415467156.375,
+      "at": "random_2->random_3",
+      "min": 42837984078940.914,
+      "min_at": "random_1->random_2",
+      "weak_at": ["random_0->random_1", "random_3->random_4", "random_4->random_5", "random_5->random_6", "random_6->random_7", "random_7->mostly_MgmH"],
+      "states": 8,
+      "undefined": 6,
+      "undefined_at": ["random_0->random_1", "random_3->random_4", "random_4->random_5", "random_5->random_6", "random_6->random_7", "random_7->mostly_MgmH"]
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 5.765279451394689e-30,
+    "states_where_S_c_is_undefined": ["random_0", "random_4", "random_5", "random_6", "random_7", "mostly_MgmH"],
+    "primal_vs_dual_max_abs_dln": 2.5632803e-53,
+    "primal_certificate_max": 2.56347e-53,
+    "primal_iterations_max": 17
    }
   },
   "C2_amendment_convergence_scale": {
@@ -4164,7 +4321,96 @@
     "old_scale_tolerance_ulps_at_min": 450.3599627370496,
     "new_scale_tolerance_ulps": 450.3599627370496,
     "residual_max_rel_to_scale": 3.7306791744287726e-53
+   },
+   "S7": {
+    "min_total_over_scale": 0.5269362360939654,
+    "at": "random_4",
+    "states_where_the_scales_differ": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "mostly_MgmH"],
+    "old_scale_tolerance_ulps_at_min": 237.31098365207944,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 1.4739103227311748e-55
    }
+  },
+  "C4_amendment_joint_validity": {
+   "registered": {
+    "S1": {
+     "states": 13,
+     "min_t_star_fmol": 0.0006000000000000002,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S2": {
+     "states": 11,
+     "min_t_star_fmol": 0.4052976423695484,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S3": {
+     "states": 12,
+     "min_t_star_fmol": 0.0009362178206020235,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S4": {
+     "states": 13,
+     "min_t_star_fmol": 0.4999997875327811,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S5": {
+     "states": 11,
+     "min_t_star_fmol": 0.0013180882845275374,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S6": {
+     "states": 11,
+     "min_t_star_fmol": 1.4716117083412143e-05,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 0.0
+    },
+    "S7": {
+     "states": 9,
+     "min_t_star_fmol": 0.01583662553426457,
+     "every_state_valid": true,
+     "exact_vs_lp_max_abs_fmol": 8.881784197001252e-16
+    }
+   },
+   "planted": {
+    "joint_infeasible": {
+     "t_star_exact": "-1/2",
+     "valid": false,
+     "per_ligand_valid": true,
+     "exact_vs_lp_abs_fmol": 0.0,
+     "dual": "refused",
+     "primal": "refused"
+    },
+    "boundary": {
+     "t_star_exact": "0",
+     "valid": false,
+     "per_ligand_valid": true,
+     "exact_vs_lp_abs_fmol": 0.0,
+     "dual": "refused",
+     "primal": "refused"
+    },
+    "feasible_near": {
+     "t_star_exact": "1/2",
+     "valid": true,
+     "per_ligand_valid": true,
+     "exact_vs_lp_abs_fmol": 0.0,
+     "dual": "solved",
+     "primal": "solved"
+    },
+    "per_ligand_infeasible": {
+     "t_star_exact": "-1",
+     "valid": false,
+     "per_ligand_valid": false,
+     "exact_vs_lp_abs_fmol": 0.0,
+     "dual": "refused",
+     "primal": "refused"
+    }
+   },
+   "per_ligand_floor_admits_an_invalid_state": ["joint_infeasible", "boundary"]
   },
   "C3_amendment_envelope": {
    "E0_b4": {
@@ -4556,6 +4802,9 @@
      "verdict": "admitted"
     },
     "coop2": {
+     "verdict": "admitted"
+    },
+    "mgx": {
      "verdict": "admitted"
     },
     "unreach2": {

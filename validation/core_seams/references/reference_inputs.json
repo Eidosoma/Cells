@@ -13968,6 +13968,37 @@
        }
       }
      ]
+    },
+    "mgx": {
+     "base_valence": -2,
+     "forms": [
+      {
+       "id": "mgx_base",
+       "mu0_RT": -0.25
+      },
+      {
+       "id": "mgx_H",
+       "mu0_RT": -16.36809565095832,
+       "counts": {
+        "H": 1
+       }
+      },
+      {
+       "id": "mgx_Mg",
+       "mu0_RT": -5.464608098422191,
+       "counts": {
+        "Mg": 1
+       }
+      },
+      {
+       "id": "mgx_MgmH",
+       "mu0_RT": 9.267193191416238,
+       "counts": {
+        "H": -1,
+        "Mg": 1
+       }
+      }
+     ]
     }
    },
    "moieties": {
@@ -14077,6 +14108,18 @@
     "volume_pL": 1.0,
     "note": "three ligands connected through shared binders",
     "designated": "cabuf_CaH"
+   },
+   "S7": {
+    "ligands": [
+     "H",
+     "Mg"
+    ],
+    "binders": [
+     "mgx"
+    ],
+    "volume_pL": 1.0,
+    "note": "amendment C4: a binder whose Mg\u00b2\u207a binding releases H\u207a, so the per-ligand floors are not the joint condition",
+    "designated": "mgx_MgmH"
    }
   },
   "manufactured_states": {
@@ -15533,6 +15576,179 @@
       }
      }
     }
+   ],
+   "S7": [
+    {
+     "tag": "random_0",
+     "free_mM": {
+      "H": 1.4749914799645697e-05,
+      "Mg": 2.120505150370552
+     },
+     "binders_mM": {
+      "mgx": 4.169265931671168
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.852083897713566,
+       "Mg": 6.13524436360794
+      },
+      "binders_fmol": {
+       "mgx": 4.169265931671168
+      }
+     }
+    },
+    {
+     "tag": "random_1",
+     "free_mM": {
+      "H": 0.0004888634062865346,
+      "Mg": 0.029091035592200408
+     },
+     "binders_mM": {
+      "mgx": 2.1414836584911354
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 1.7660509839387277,
+       "Mg": 0.03866585841392152
+      },
+      "binders_fmol": {
+       "mgx": 2.1414836584911354
+      }
+     }
+    },
+    {
+     "tag": "random_2",
+     "free_mM": {
+      "H": 0.0009208039422413167,
+      "Mg": 0.012160412707969566
+     },
+     "binders_mM": {
+      "mgx": 13.136650163752973
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 11.837166811497394,
+       "Mg": 0.023374421974710492
+      },
+      "binders_fmol": {
+       "mgx": 13.136650163752973
+      }
+     }
+    },
+    {
+     "tag": "random_3",
+     "free_mM": {
+      "H": 0.0007129799620336596,
+      "Mg": 1.652268600992041
+     },
+     "binders_mM": {
+      "mgx": 1.5757538708461798
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 1.1159068087693669,
+       "Mg": 1.8680058129150856
+      },
+      "binders_fmol": {
+       "mgx": 1.5757538708461798
+      }
+     }
+    },
+    {
+     "tag": "random_4",
+     "free_mM": {
+      "H": 0.00010906791911308087,
+      "Mg": 1.919939872963956
+     },
+     "binders_mM": {
+      "mgx": 12.768510751585568
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -4.721478036816238,
+       "Mg": 10.626098034694454
+      },
+      "binders_fmol": {
+       "mgx": 12.768510751585568
+      }
+     }
+    },
+    {
+     "tag": "random_5",
+     "free_mM": {
+      "H": 7.117454263750017e-06,
+      "Mg": 0.041050169428217466
+     },
+     "binders_mM": {
+      "mgx": 1.3429424283588383
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -0.6473766095492859,
+       "Mg": 0.7432828864270014
+      },
+      "binders_fmol": {
+       "mgx": 1.3429424283588383
+      }
+     }
+    },
+    {
+     "tag": "random_6",
+     "free_mM": {
+      "H": 1.0421127870365655e-05,
+      "Mg": 0.08005642494672015
+     },
+     "binders_mM": {
+      "mgx": 3.439222348444517
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.8374824869685793,
+       "Mg": 2.102604799428228
+      },
+      "binders_fmol": {
+       "mgx": 3.439222348444517
+      }
+     }
+    },
+    {
+     "tag": "random_7",
+     "free_mM": {
+      "H": 1.6557449741963978e-05,
+      "Mg": 0.7570859437839187
+     },
+     "binders_mM": {
+      "mgx": 3.0154021670560622
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.5330792872900196,
+       "Mg": 3.4436780326649408
+      },
+      "binders_fmol": {
+       "mgx": 3.0154021670560622
+      }
+     }
+    },
+    {
+     "tag": "mostly_MgmH",
+     "free_mM": {
+      "H": 3.162277660168379e-07,
+      "Mg": 2.0
+     },
+     "binders_mM": {
+      "mgx": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -9.984163374465735,
+       "Mg": 11.99208184534675
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     }
+    }
    ]
   },
   "p1_nodes": {
@@ -16151,6 +16367,63 @@
     }
    },
    "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time"
+  },
+  "validity": {
+   "note": "amendment C4: t* = min over the ligand simplex of \u03bb\u00b7T \u2212 \u03a3_B T_B min_f \u03bb\u00b7n_f; a state is valid iff t* > 0; the per-ligand floors are t at \u03bb = e_L",
+   "planted": {
+    "joint_infeasible": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 1.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "per-ligand floors pass; jointly infeasible"
+    },
+    "boundary": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 2.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "t* = 0: on the boundary, not interior"
+    },
+    "feasible_near": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 3.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "t* = +1/2: valid, close to the boundary"
+    },
+    "per_ligand_infeasible": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -11.0,
+       "Mg": 20.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "below the H floor \u2212T_B"
+    }
+   }
   }
  }
 }

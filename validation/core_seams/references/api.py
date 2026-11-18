@@ -478,7 +478,13 @@ def binding_plants(system_spec, registry, totals, V, designated) -> dict:
     with context():
         for name, reg in plants.items():
             sy = Bd.System(system_spec, reg)
-            sp = Bd.solve(sy, totals["ligands_fmol"], totals["binders_fmol"], V)
+            try:
+                sp = Bd.solve(sy, totals["ligands_fmol"], totals["binders_fmol"], V)
+            except (ValueError, RuntimeError) as e:
+                # amendment C4: a plant can make a valid state unrepresentable (removing the only
+                # negative count): the planted closure refuses it, which is a detection
+                out[name] = {"max_abs_dln": None, "where": None, "variant_refused": str(e)}
+                continue
             worst, where = Decimal(0), None
             for L in sy_ref.ligands:
                 d = abs((sp["x_mM"][L] / ref["x_mM"][L]).ln())
@@ -540,7 +546,10 @@ def nonminimum_plant(system_spec, registry, totals, V, designated) -> dict:
                                      if f["id"] != designated]
     with context():
         ref = Bd.solve(sy, TL, TB, V)
-        sp2 = Bd.solve(Bd.System(system_spec, reg), TL, TB, V)
+        try:
+            sp2 = Bd.solve(Bd.System(system_spec, reg), TL, TB, V)
+        except (ValueError, RuntimeError) as e:
+            return {"excess_pJ": None, "variant_refused": str(e)}
         sp2["forms_mM"][B_of][designated] = Decimal(0)
         return {"excess_pJ": fl(Bd.free_energy(sy, sp2, V) - Bd.free_energy(sy, ref, V))}
 

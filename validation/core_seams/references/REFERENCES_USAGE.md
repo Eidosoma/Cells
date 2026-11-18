@@ -181,6 +181,16 @@ the exact amount by which that booking misses ΔE_c.
 
 `values.seam_c.envelope.reachability` {binder: verdict}.
 
+**`values.seam_c.validity`** (amendment C4):
+- **`systems.<S>`:** per registered state, `t_star_fmol`, `t_star_exact` (a rational),
+  `lambda_star`, `per_ligand_fmol` (t at λ = e_L), `valid`, `per_ligand_valid` and
+  `lp_t_star_fmol`.
+- **`planted.<tag>`:** the same, with the `dual` and `primal` outcomes (solved, with `x_mM`, or
+  refused, with a reason).
+
+A state is valid iff t* > 0. The closure's validity report must agree, and the per-ligand floors
+alone must not decide it.
+
 **`values.seam_c.movers.<id>`** gives `verdict` and `reasons`. **`values.seam_c.parse`** gives
 `form_valences` and the planted declared valence.
 

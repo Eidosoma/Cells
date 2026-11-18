@@ -361,7 +361,7 @@ positive up to the stored amount.
   - **The correction to 17:33:** the per-ligand floor Σ T_B min n is necessary but not sufficient
     for mixed-sign counts. The joint condition is the closure's own validity. In the registered
     systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
-    attained jointly.
+    attained jointly. Amendment C4 registers the case where it is not.
   - One test added (binding: 10).
 - **18 November 2026, 20:21 UTC, amendment C3, the envelope's two-ligand kinetic reference, before any
   output of the general closure** (§19 amended at 19:52 UTC; B4's Appendix A.2 generalised):
@@ -427,6 +427,38 @@ positive up to the stored amount.
   - **The verifier's four plants are tests** (cycles: 13): a dropped V seed, a spurious response
     at a zero slope (100 τ fails, 0.1 τ passes, 1e-40 pS at a zero floor fails), a route's j⁺
     dropped to 0, and a zero Hill total hiding a basis total.
+- **18 November 2026, 23:04 UTC, amendment C4, the closure's joint validity, before the general
+  closure's validity output** (offered at the C1–C3 hand-back; §19's correction that the
+  per-ligand floor Σ T_B min n is necessary, not sufficient, for mixed-sign counts):
+  - **The margin.** t* = min over the ligand simplex of λ·T − Σ_B T_B min_f λ·n_f, the largest
+    amount every free ligand can keep, by LP duality. A state is valid iff t* > 0. The per-ligand
+    floors are t at λ = e_L.
+    - `binding.joint_margin` computes it exactly in rationals, by the vertices of the convex
+      piecewise-linear arrangement.
+    - `binding.joint_margin_lp` computes it by the primal LP (HiGHS); the two agree to 9e-16
+      fmol.
+    - `binding.solve` now refuses a jointly infeasible state with its t*.
+  - **The registry gains `mgx`,** whose Mg²⁺ binding releases a proton (`mgx_MgmH`: H −1, Mg +1),
+    reached from its base by unit steps through `mgx_Mg`. It is appended, and joins no earlier
+    system.
+  - **S7** is an ordinary system of `mgx`, with 9 states drawn after every earlier input. It gets
+    every row: booked term, primal route, floors, plants and pairs. Its two plants that remove
+    the only negative count are caught by refusal at its negative-total states.
+  - **Four planted states,** given by their totals (`seam_c.validity`):
+
+    | State | t* (fmol) | Verdict | Solves |
+    | --- | --- | --- | --- |
+    | joint_infeasible: T_H −2, T_Mg 1, T_B 10 | −1/2 | per-ligand floors pass (+8 and +1); jointly invalid | dual and primal refuse |
+    | boundary (T_Mg 2) | 0 | not interior | both refuse |
+    | feasible_near (T_Mg 3) | +1/2 | valid | dual and primal agree to 1e-45 |
+    | per_ligand_infeasible (T_H −11) | −1 | refused by either test | both refuse |
+
+    Every registered state of S1–S7 is valid.
+  - **The primal route's start gains a fallback,** for where its anchors cannot free a ligand
+    without binding another. It takes the LP's binder distribution, mixed toward uniform. It runs
+    only where the anchors fail, so S1–S6's primal rows are unchanged.
+  - Earlier inputs and values are unchanged. S7, `validity`, and mgx's reachability and valences
+    are added. One test added (binding: 11).
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 

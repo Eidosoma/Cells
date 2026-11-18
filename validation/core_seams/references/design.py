@@ -415,6 +415,8 @@ def seam_c(inputs) -> tuple:
         val["movers"][mv["id"]] = api.mover_verdict(mv, reg)
     if "envelope" in Cc:
         val["envelope"] = envelope_values(Cc)
+    if "validity" in Cc:
+        val["validity"] = validity_values(Cc)
     val["parse"]["form_valences"] = {
         B: {f["id"]: int(b["base_valence"]) + sum(int(n) * int(reg["species"][L]["valence"])
                                                   for L, n in f.get("counts", {}).items())
@@ -423,6 +425,52 @@ def seam_c(inputs) -> tuple:
         "form": "nuc4_Mg", "declared": -1,
         "derived": val["parse"]["form_valences"]["nuc4"]["nuc4_Mg"], "verdict": "refused"}
     return val, dia
+
+
+def validity_values(Cc) -> dict:
+    """Amendment C4: the joint margin t* at every registered state (exact, and by the LP), and the
+    planted validity states with each solver's outcome."""
+    from . import binding as Bd
+    from . import primal as Pr
+    reg = Cc["registry"]
+
+    def margin(spec, TL, TB):
+        sy = Bd.System(spec, reg)
+        jm = Bd.joint_margin(sy, TL, TB)
+        return sy, {"t_star_fmol": float(jm["t_star"]), "t_star_exact": str(jm["t_star"]),
+                    "lambda_star": [str(x) for x in jm["lambda_star"]],
+                    "per_ligand_fmol": {L: float(v) for L, v in jm["per_ligand"].items()},
+                    "valid": jm["valid"], "per_ligand_valid": jm["per_ligand_valid"],
+                    "lp_t_star_fmol": Bd.joint_margin_lp(sy, TL, TB)}
+
+    out = {"systems": {}, "planted": {}}
+    for name, sysd in Cc["systems"].items():
+        spec = {"ligands": sysd["ligands"], "binders": sysd["binders"]}
+        rows = []
+        for st in Cc["manufactured_states"][name]:
+            _sy, m = margin(spec, st["totals"]["ligands_fmol"], st["totals"]["binders_fmol"])
+            rows.append(dict({"tag": st["tag"]}, **m))
+        out["systems"][name] = rows
+    for tag, ps in Cc["validity"]["planted"].items():
+        sysd = Cc["systems"][ps["system"]]
+        spec = {"ligands": sysd["ligands"], "binders": sysd["binders"]}
+        TL, TB = ps["totals"]["ligands_fmol"], ps["totals"]["binders_fmol"]
+        sy, m = margin(spec, TL, TB)
+        V = sysd["volume_pL"]
+        for route, fn in (("dual", lambda sy=sy, TL=TL, TB=TB, V=V: Bd.solve(sy, TL, TB, V)),
+                          ("primal", lambda spec=spec, TL=TL, TB=TB, V=V:
+                           Pr.solve_primal(spec, reg, TL, TB, V))):
+            try:
+                r = fn()
+                m[route] = {"outcome": "solved",
+                            "x_mM": {L: exact.fl(v) for L, v in r["x_mM"].items()}}
+            except (ValueError, RuntimeError) as e:
+                m[route] = {"outcome": "refused", "reason": str(e)}
+        if m["dual"]["outcome"] == "solved" and m["primal"]["outcome"] == "solved":
+            m["dual_vs_primal_max_rel"] = max(abs(m["dual"]["x_mM"][L] / m["primal"]["x_mM"][L]
+                                                  - 1) for L in sysd["ligands"])
+        out["planted"][tag] = dict(m, system=ps["system"])
+    return out
 
 
 def envelope_values(Cc) -> dict:
@@ -738,10 +786,15 @@ def power_c(inputs, vc, dc) -> dict:
         per = {}
         for plant in ("K_1pct", "K_1e-6", "form_dropped", "count_off_by_one",
                       "conservation_1e-10"):
-            over = [d["plants"][plant]["max_abs_dln"] / f for d, f in zip(drows, floors,
-                                                                         strict=True)]
-            per[plant] = summarise(tags, over, weak=MIN_MARGIN)
-            per[plant]["note"] = "deviation over the residual-bound floor at each state"
+            refused = [t for t, d in zip(tags, drows, strict=True)
+                       if d["plants"][plant].get("variant_refused")]
+            kept = [(t, d["plants"][plant]["max_abs_dln"] / f)
+                    for t, d, f in zip(tags, drows, floors, strict=True) if t not in refused]
+            per[plant] = summarise([t for t, _ in kept], [x for _, x in kept], weak=MIN_MARGIN)
+            per[plant]["caught_by_refusal_at"] = refused
+            per[plant]["note"] = ("deviation over the residual-bound floor at each state; where "
+                                  "the planted closure refuses the state, it is caught by "
+                                  "refusal")
         grad = [r["gradient_vs_differences_rel"] for r in rows
                 if "gradient_vs_differences_rel" in r]
         bis = [r["newton_vs_bisection_rel"] for r in rows if "newton_vs_bisection_rel" in r]
@@ -762,7 +815,9 @@ def power_c(inputs, vc, dc) -> dict:
             "gradient_plant": summarise(tags, [d["gradient_plant"]["max_abs_J_per_mol"]
                                                for d in drows], weak=1.0),
             "nonminimum_plant_min_excess_pJ": min(d["nonminimum_plant"]["excess_pJ"]
-                                                  for d in drows),
+                                                  for d in drows
+                                                  if d["nonminimum_plant"]["excess_pJ"]
+                                                  is not None),
             "charge_plant_min_fmol_e": min(d["charge_plant_fmol_e"] for d in drows),
             "speciation_part_max_pJ": max(spec_part) if spec_part else None,
             "states_with_a_total_not_positive": [r["tag"] for r in rows
@@ -814,6 +869,25 @@ def power_c(inputs, vc, dc) -> dict:
                     "residual_max_rel_to_scale": max(max(r["residual_rel"].values())
                                                      for r in rows)}
     power["C2_amendment_convergence_scale"] = cs
+    # amendment C4: the joint validity margin
+    if "validity" in vc:
+        vv = vc["validity"]
+        reg_rows = {name: {"states": len(rows),
+                           "min_t_star_fmol": min(r["t_star_fmol"] for r in rows),
+                           "every_state_valid": all(r["valid"] for r in rows),
+                           "exact_vs_lp_max_abs_fmol": max(abs(r["t_star_fmol"] -
+                                                               r["lp_t_star_fmol"])
+                                                           for r in rows)}
+                    for name, rows in vv["systems"].items()}
+        planted = {tag: {"t_star_exact": r["t_star_exact"], "valid": r["valid"],
+                         "per_ligand_valid": r["per_ligand_valid"],
+                         "exact_vs_lp_abs_fmol": abs(r["t_star_fmol"] - r["lp_t_star_fmol"]),
+                         "dual": r["dual"]["outcome"], "primal": r["primal"]["outcome"]}
+                   for tag, r in vv["planted"].items()}
+        power["C4_amendment_joint_validity"] = {
+            "registered": reg_rows, "planted": planted,
+            "per_ligand_floor_admits_an_invalid_state": [
+                t for t, r in planted.items() if r["per_ligand_valid"] and not r["valid"]]}
     # amendment C3: the envelope
     if "envelope" in vc:
         budget = inputs["seam_c"]["envelope"]["budget_pH"]
@@ -963,6 +1037,16 @@ CLAIMS = [
      "plants": ["a per-step minimum λ (non-conservative on the chain: the budget's verdict flips)",
                 "a k_on that ignores the ligand", "k_on swapped between the ligands",
                 "a binder with a form not reachable by unit steps"]},
+    {"row": "C7", "claim": ("Amendment C4: the closure's validity is the joint condition t* > 0, "
+                            "t* = min over the ligand simplex of λ·T − Σ_B T_B min_f λ·n_f; the "
+                            "per-ligand floors Σ T_B min n are its values at the simplex's "
+                            "vertices, necessary and not sufficient for mixed-sign counts (§19 "
+                            "amended at 19:52 UTC)"),
+     "reference": ("t* exactly in rationals by the arrangement's vertices, and by the primal LP "
+                   "(HiGHS); every registered state; four planted states of S7, whose Mg²⁺ "
+                   "binding releases H⁺"),
+     "plants": ["the per-ligand floors alone, which admit joint_infeasible (t* = −1/2 fmol)",
+                "the boundary, t* = 0: not an interior state"]},
     {"row": "C5", "claim": ("P1's buffered node: a predictor must read the quantity it "
                             "differentiates (§17, §18)"),
      "reference": ("rate-normalised thresholds (the free amount, the stored equivalents above "

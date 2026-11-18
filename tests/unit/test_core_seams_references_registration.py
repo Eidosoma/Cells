@@ -100,6 +100,16 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment C4: every registered state is jointly valid; the per-ligand floors admit the
+    # two planted invalid states
+    c4 = p["C4_amendment_joint_validity"]
+    assert all(r["every_state_valid"] and r["exact_vs_lp_max_abs_fmol"] < 1e-9
+               for r in c4["registered"].values())
+    assert sorted(c4["per_ligand_floor_admits_an_invalid_state"]) == ["boundary",
+                                                                        "joint_infeasible"]
+    assert c4["planted"]["joint_infeasible"]["t_star_exact"] == "-1/2"
+    assert c4["planted"]["feasible_near"]["dual"] == c4["planted"]["feasible_near"]["primal"] \
+        == "solved"
     # amendment F4: every slope pair, route pair and basis total compared, none skipped
     for lid, c in p["A6_slopes"].items():
         e = c["exact_vs_differences"]
@@ -127,7 +137,7 @@ def test_the_registered_power(registered):
         if name == "S4":
             assert c["at"] == "near_zero_H_total" and c["min_total_over_scale"] < 1e-8
             assert c["old_scale_tolerance_ulps_at_min"] < 1
-        else:
+        elif name != "S7":                     # S7 (amendment C4) has a count of −1 as well
             assert c["states_where_the_scales_differ"] == [], name
     # amendment C1: the booked term's plants, its identity and the primal route
     for name, c in p["C1_amendment_booked_term_and_primal"].items():
@@ -135,8 +145,9 @@ def test_the_registered_power(registered):
         assert c["primal_vs_dual_max_abs_dln"] < 1e-45 and c["primal_certificate_max"] <= 1e-50
         for plant, row in c["plants"].items():
             assert row["max"] > 1e3 * design.MIN_MARGIN, (name, plant)
-        assert c["states_where_S_c_is_undefined"] == (["high_pH_negative_total"]
-                                                      if name == "S4" else [])
+        nonpositive = [st["tag"] for st in _inputs["seam_c"]["manufactured_states"][name]
+                       if any(v <= 0 for v in st["totals"]["ligands_fmol"].values())]
+        assert c["states_where_S_c_is_undefined"] == nonpositive, name
     assert {m: v["verdict"] for m, v in p["C3_movers"].items()} == \
         {m["id"]: m["expected"] for m in worlds.MOVERS}
     assert len(des["zero_power"]) >= 15 and des["readings"]
