@@ -1333,3 +1333,16 @@ hand-backs:**
   snapshot, so a landing's own tier-3 effects stay distinguishable.
 - **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
   main before gating, so each gate is at its merged head.
+
+**Amended the same evening (the lead, about 18:40 UTC), on the Kv1 extraction's finding:**
+- **XLA on CPU rewrites division by a constant as multiplication by its reciprocal,** in eager and
+  jit alike. Division by a gathered array stays exact.
+- **So delegating `kv1_channels.py`'s dispatcher** to scalar-constant per-law kernels would move the
+  legacy catalogue families' device outputs by up to 32 ulps.
+- **Ruled: one source for the numbers, rather than one copy of the formula.**
+  - The per-law modules hold the coefficients, and the dispatcher builds its gather arrays from the
+    same floats. Every existing record and program stays bitwise (D148).
+  - The per-law kernels are the laws' math. They are held bitwise to the dispatcher under NumPy,
+    and within a stated ulp bound under JAX, with a plant beyond it.
+- **The dispatcher's formula is a recorded temporary second form.** It retires with the legacy
+  catalogue families in the approved legacy-removal batch. A test refuses a sixth law in it.
