@@ -17,7 +17,7 @@ doi:[10.1038/s41929-025-01409-3](https://doi.org/10.1038/s41929-025-01409-3) ("t
   mutations under tuneable photocatalytic cofactor function", Zenodo record 15104674, 4 February
   2025 (concept doi:[10.5281/zenodo.15104673](https://doi.org/10.5281/zenodo.15104673)).
   - It is one MATLAB file, `FAMonomers5d.m`, under CC BY 4.0.
-  - It is never copied into Cells; §5 says how it was run.
+  - It is never copied into Cells. §5.1 says why it was not run.
 
 **Status: a replication note, its criteria registered before any run.** First task of a new
 track, 18 November 2026.
@@ -30,7 +30,7 @@ track, 18 November 2026.
 - **from the workbooks**, by sheet;
 - **read** off a plotted figure;
 - **derived** here (**S**: this note's own arithmetic, with the script that generated it);
-- **from the code**, or **from its run** (§5).
+- **from the code** (it was not run, §5.1).
 
 **Evidence.** The scripts that read the workbooks use the standard library alone, run with
 `python -I`, and write their outputs beside them:
@@ -44,8 +44,37 @@ free-to-read papers. This article is neither, though its SI and workbooks are fr
 The lead's brief directs numbers as read, with their locations. §7 asks the lead to confirm that
 (question L9).
 
+**In short.**
+- **The paper.** Two systems of synthetic self-replicating macrocycles run in a lit, stirred flow
+  reactor. A dye that binds the replicators' fibres speeds the making of their precursors, and the
+  more active mutants win: hexamers over trimers (2 + 3), and 1-rich over 4-rich hexamers (1 + 4).
+- **The data** (§1.5). In every paired run, the bound cofactor's readout exceeds the control's.
+  - E = 1.57–4.11 for 2 + 3 (n = 6), and 1.41–2.90 for 1 + 4 at a 7:3 feed (n = 7).
+  - At a 6:4 feed, E = 1.12–1.25 (n = 2). One run was made at a higher flow.
+- **The paper's inconsistencies** (§1.8). Among them:
+  - one of Fig. 4e's six repeats ran at another flow rate;
+  - five steady-state panels match no row of their own time series;
+  - the SI's model equations and the code differ in two places.
+- **The targets** (§2), registered before any run (commit 3c9572bf):
+  - orderings, with factor bands on s = ln E anchored on the worst paired repeat;
+  - what is calibrated (C1–C6) against what is predicted (T0–T5, T8);
+  - planted controls P1–P3;
+  - criteria M0–M6 for the authors' model.
+- **The reference** (§5).
+  - The authors' code (CC BY 4.0, MATLAB) was not run: installing Octave was refused by the
+    session's permission system. The SI's plotted model outputs stand in for it.
+  - The model is not admissible in Cells' origin-of-life family (half orders, irreversible steps,
+    no oxidant). So Cells' first model is its own: R0, three hexamer types in stacks under flow
+    in the dark, then R1 with light.
+- **The engine** (§3, §4).
+  - Six general features: a linear-stack geometry kind, side places, light with a photon
+    potential, continuous flow, stack breaks and a ring family.
+  - 15–23.5 agent-days with their references. The whole replication is 23.5–36, after OL3
+    (D212).
+- **Questions** (§7.3): ten for the lead (eight on physics) and four for the user.
+
 **Engine models run: none.** Docs only. The milestones in §7 name the models they would run. The
-authors' model was run out of process, as a reference (§5).
+authors' model was not run (§5.1).
 
 ## 1. What the paper shows
 
@@ -74,17 +103,18 @@ authors' model was run out of process, as a reference (§5).
   - Bound and irradiated, ThT makes singlet oxygen (¹O₂) more efficiently than free ThT does.
   - ¹O₂ speeds the oxidation of the dithiol building blocks into precursors, which bind the
     fibres.
-- **Locality.** ¹O₂ lives about 3.5 µs in water (printed; the paper's ref. 41). It therefore
-  oxidises building blocks near the fibre that made it, and is unlikely to reach a neighbouring
-  fibre (SI Table 1 and Supplementary Fig. 101; §1.8, item 11).
+- **Locality.** ¹O₂ lives about 3.5 µs in water (printed; the paper's ref. 41). So, the paper
+  argues, it oxidises building blocks near the fibre that made it, and is unlikely to reach a
+  neighbouring fibre (SI Table 1 and Supplementary Fig. 101). §1.8, item 11 questions the fibre
+  spacing behind that.
 
 ### 1.2 The activities: what bound ThT does
 
 | Quantity | Value | Source |
 | --- | --- | --- |
-| ¹O₂ from 1₆–ThT, against 1₃/1₄–ThT and against ThT alone | The probe's fall, fitted by least squares: 0.049, 0.014 and 0.0033 per h, ratios 3.6 and 14.7. The text says only "more efficiently" | Supplementary Fig. 96d; derived (**S**) |
+| ¹O₂ from 1₆–ThT, against 1₃/1₄–ThT and against ThT alone | The probe's fall, fitted by least squares: 0.049, 0.014 and 0.0033 per h, ratios 3.6 and 14.7. The text gives no number | Supplementary Fig. 96d; derived (**S**) |
 | Oxidation of 1 in 2 h (µM; each the mean of two repeats) | 25.6 (1₆ + ThT, light); 14.9 (1₃/1₄ + ThT, light); 4.3 (ThT, light); 4.6 (1₆, light); 4.8 (1₆ + ThT, dark); 4.4 (1₆, dark) | Fig. 2a, from the workbook |
-| The same as ratios | The text: about twice that of 1₃/1₄–ThT and about four times that of ThT alone. The workbook: 1.71 and 5.99, and 2.03 against 1₃/1₄–ThT once the dark mean (4.57) is subtracted | Fig. 2a; derived (**S**) |
+| The same as ratios | The text: about two times that of 1₃/1₄–ThT and about four times that of ThT alone. The workbook: 1.71 and 5.99, and 2.03 against 1₃/1₄–ThT once the dark mean (4.57) is subtracted | Fig. 2a; derived (**S**) |
 | Replication of 1₆ under light with ThT | About nine times faster than without light, ThT or both: 2.67 against 0.29, 0.29 and 0.31 %/h | Printed, Supplementary Fig. 99 |
 | ¹O₂: 2-rich hexamers against 3-rich trimers (2 + 3 system) | 2.6 times | Printed, Supplementary Fig. 97. Derived (**S**): 2.61 from the probe's fall at 3 h, 2.65 from the fitted slopes |
 | ¹O₂: 1-rich hexamers (n ≥ 4) against 4-rich (n ≤ 4) | 2.8 times | Printed, Supplementary Fig. 98. Derived (**S**): 2.81 from the fitted slopes, 2.98 from the fall at 3 h |
@@ -327,7 +357,7 @@ equally from any fibre's activity, and no selection could follow (the paper's ar
      - 120f, whose nearest row is 71 h, by 3.26.
    - Fig. 5d's 1₂4₄ bar is 5.27, where Fig. 5b's 94 h row has 6.27.
 4. **Fig. 2a.**
-   - The text's "about twice" and "about four times" are 1.71 and 5.99 in the workbook (§1.2).
+   - The text's factors of about two and about four are 1.71 and 5.99 in the workbook (§1.2).
    - The caption gives the average of two experiments. The Methods give three samples, with
      standard deviations. The workbook holds two.
 5. **Fig. 2c's workbook.** Its summary columns headed trimer, tetramer and pentamer hold the
@@ -387,8 +417,8 @@ equally from any fibre's activity, and no selection could follow (the paper's ar
   - **Its structure:** no fibres, lengths or breakage, and three hexamer types;
   - **Its scope:** it models the 1 + 4 claims only, at a fixed 1:1 inflow. It does not model the
     2 + 3 system, the inflow ratio, the flow rate or retention;
-  - **Its constants:** they were chosen to reproduce the observed behaviour (SI Table 3's
-    heading), so its agreement is not a prediction.
+  - **Its constants:** they were chosen to reproduce the observed behaviour (SI
+    section 16.1), so its agreement is not a prediction.
 - **Evolution beyond the fed set.** The mutant set is fixed by the building blocks fed, so no
   mutant can arise beyond those compositions.
 
@@ -512,3 +542,385 @@ given with each.
 
 A run that completes but fails M1 or M2 is reported as not reproducing the SI's figures, and its
 numbers are not called the authors' reference.
+
+## 3. The mapping onto the engine, entity by entity
+
+The engine is the origin-of-life family, `cells.assembly_lineages@2`:
+- OL1's laws (landed; `ol1-landed-2026-11-18`);
+- OL2's geometry and shared pool (in progress on `ol2-engine`);
+- OL3's division, transfer and labels (designed: ORIGIN_OF_LIFE_OL2_OL3_CHECK.md and the design
+  note's §0.2c–d).
+
+| Paper part | Physics | Cells today | Status |
+| --- | --- | --- | --- |
+| Building blocks 1–4, and the labelled 1′ | Peptide dithiols in buffer at pH 8.2, two thiols each | Species in the registry; pool places in @2 (OL1); the building-block core as a moiety (CORE_SEAMS_DESIGN §7.3) | Covered as species. The thiol and disulfide states need declaring (F6) |
+| Precursors: small rings (1₃, 1₄, mixed rings) | Disulfide macrocycles of 3–4 building blocks, of every composition | Species with integer coefficients, at most three reactant molecules per step (D152), in a declared family as OL8's polymers are | Gap: a ring family (F6) |
+| Replicators: the macrocycles whose compositions are the mutants | Rings that stack: seven hexamers 1ₙ4₆₋ₙ (n = 0–6); for 2 + 3, hexamers and trimers | Species in a stack's core place | The species are fine; the place is F1 |
+| Fibres | One-dimensional stacks. Length from the count of stacked rings (0.5 nm per ring, Supplementary Fig. 101); two ends; sides | An assembly with a geometry kind on OL2's interface `cells.assembly_geometry@1`, whose only kind is `cells.bilayer_geometry@1` | **F1.** The design check's fit test already places a fibre "as a later geometry kind" (OL2/OL3 check §3.5) |
+| End growth | Side-bound precursors convert, at an end, into a stacked hexamer, with some fidelity to the end | Phase exchange's encounters are `insertion_area` and `diffusion_radius`, with steps in a phase (`count_on_m`). Fidelity is a factor on m: OL1's `cells.transition_state_factor@1` | **F1** (an end-capture encounter) and **F2** (side-to-core steps at the ends). Fidelity needs no new law |
+| Fragmentation under agitation | Stirring breaks a stack at one of its bonds; the two pieces' lengths sum to the parent's; the stirrer pays | OL3's `cells.shear_fission@1` (designed): vesicles, admitted at v ≤ k^(−1/2) at scheduled or Poisson shear events, split by C3x | **F5:** a stack's break rule |
+| Precursor reservoirs on fibre sides | An adsorbed layer: binding in proportion to side area, unbinding from F, retention between fibres (Fig. 3) | Places are pool, membrane and lumen. There is no adsorbed place | **F2:** a side place on an assembly |
+| The bound cofactor (ThT) | Binds β-sheet stacks with an affinity that depends on composition. Bound, it photo-oxidises: activity ratios 2.6 and 2.8 (C1) | A side-place species. Its binding term depends on the stack's composition (a free-energy term on OL1's hook `cells.free_energy_term@1`, reciprocal by the design note's E2 lesson). Its activity is a factor on m of the photo-step | Needs F2 and F3. The factor is OL1's |
+| The unbound control (Ru(bpy)₃) | Free in solution; photo-oxidation in the bulk | A pool species catalysing the same photo-step in the pool | Needs F3 |
+| Singlet oxygen's locality (about 3.5 µs, 200 nm) | A short-lived oxidant that acts near its source | Not a resolved species, since there is no space. Its locality becomes where the photo-step's product goes: the producing stack's side, or the pool | **A physics choice (L3).** The step is cross-phase (a pool monomer to a side product), and §0.2c rule 3 requires a geometric encounter for such steps (F2) |
+| Light | The sensitiser absorbs, transfers energy to O₂ and oxidises; the lamp pays | The design note's §3.1 lists light as "later". §3.2 refuses a driven law without a source. The kernel's event domain is \|ΔF/k_BT\| ≤ 80 (§2.1) | **F3:** a photon source with a declared potential (below) |
+| Dark oxidation by O₂ | Air oxidation, slow (C2) | Held O₂ (G1's held phase) and a reversible step with registry potentials | Covered in form (OL1, OL4). Its potentials are to be declared |
+| Thiol–disulfide exchange | Thiolate attacks a disulfide, so rings swap building blocks: reversible and passive | `cells.stochastic_mass_action@1` (OL1) | Covered in form. The family and its potentials are F6 |
+| Protected inner rings | Stacked rings take no part in exchange; ends and side-bound rings do | Steps are declared on places. No exchange step names the core place; only end steps touch it | Covered by declaration once F1 and F2 exist |
+| The stirred flow reactor | Inflow of the feed at rate D·V, and outflow of everything at rate D: indiscriminate death | OL3's `cells.serial_transfer@1` (designed) is a discrete bottleneck. A held pool holds an activity, not a flow | **F4:** continuous flow |
+| One finite pool for every fibre | Competition for building blocks | OL2's `cells.shared_pool@1` (in progress) | Covered by OL2 |
+| The fibre population (5 × 10¹³ to 3 × 10¹¹ in 500 µL, §1.8 item 11) | Far too many to follow one by one | Lanes are worlds; K slots per world (64–256) | **A declared representative sub-volume** of K stacks (L7) |
+| Isotope labels (1′) and the retention readout | Mass-resolved isotopologues; the readout counts pure and mixed hexamers, molecule by molecule | OL3's labels (§0.2c rule 17): an amount per label per place, read by no law | **Two readings** (below). No new feature beyond F6's family |
+| Readouts (UPLC peak areas) | Relative peak areas at 254 nm | Analysis of the records, in `validation/` | Validation work |
+
+**Light, and where the free energy comes from** (**S**, with standard values from memory).
+- **The net reaction is already downhill in the dark.** Two thiols oxidised by O₂ to a disulfide
+  release about 82 k_BT with water as the product, or about 39 k_BT with H₂O₂ (from E° of O₂ and of
+  a cysteine-like disulfide, from memory). The light speeds a reaction that is already allowed.
+  - So the selection is kinetic: the rate of precursor supply.
+  - The replicators' distance from equilibrium is paid by four sources:
+    - the oxidation (dithiol and O₂ against disulfide);
+    - the stirring (shear work at each break);
+    - the inflow (a source);
+    - the lamp (photons, mostly dissipated).
+  - These are the design note's §3.1 sources: a chemostat (O₂ held), a fuel-to-waste step, shear,
+    a schedule, and light.
+- **A visible photon carries 89–121 k_BT at 298 K,** across 540–400 nm (**S**: E = hc/λ).
+  - That is 110 k_BT at ThT's filter edge (435 nm).
+  - Singlet oxygen's excitation is 0.98 eV, 38 k_BT (from memory).
+- **So one absorption event exceeds the kernel's event domain of 80 k_BT,** and a one-step
+  oxidation to water sits at its edge. Light needs either the domain widened or a stepwise path
+  (L8).
+
+**Labels against isotopologues.**
+- **OL3's labels answer the retention claim directly.** Mark each stack's side-bound precursors
+  with that stack's label. "How much of stack j's growth came from its own precursors" is then a
+  label measure: whose material went where.
+- **The paper's readout needs more.** It counts pure (1₆, 1′₆) against mixed (1ₙ1′₆₋ₙ)
+  hexamers, a property of each molecule. A label is an amount per place, not a joint composition
+  inside one molecule.
+- **So the readout takes isotopologues as declared species:** 1 and 1′ with identical potentials
+  and kinetics, giving the seven hexamers 1ₙ1′₆₋ₙ. Their identity is itself a planted check: the
+  sum over labels must behave as one species.
+
+## 4. What the engine lacks, as general features
+
+None is specific to this paper (D136, D144).
+- **The fibre is the second geometry kind,** after the bilayer.
+- **Its general uses:**
+  - the side place serves adsorption on any assembly;
+  - light serves photochemistry;
+  - flow serves any chemostat.
+- **Each feature needs its own design section (D142),** references and qualification before a
+  replication relies on it.
+
+**The physics choices are questions for the lead (§7.3),** to be ruled into the design note's §0.2.
+
+| Feature | What | Milestone | Files and owner (CORE_SEAMS_DESIGN §18; STEP0 §4.2) | Agent-days (**S**) |
+| --- | --- | --- | --- | --- |
+| **F1. A linear-stack geometry kind** | `cells.linear_stack_geometry@1`, on `cells.assembly_geometry@1`: length from the core's count, two ends, side area in proportion to length. An end-capture encounter (`exchange_encounter: end_capture`, extent ∝ the number of ends). An end cost, like the vesicle's C_close, entering only where the number of stacks changes | New item **OL10, stacks and flow**, after OL3 | The OL2/OL3 builder's: `models/assembly_lineages_v2/` (the geometry, exchange, world, spec, kernel, balance and records modules); `validation/assembly_lineages_v2/`; their tests; @2's rows in `registry/model_table.py` | 2.5–4 |
+| **F2. Side places** | A third place kind on an assembly, beside membrane and lumen. A join from the pool with a side-area encounter, the leave from F. Side-locus steps, and side-to-core steps at the ends. A binding term that depends on the core's composition (a new law on OL1's free-energy hook). The photo-step's cross-phase encounter (L3) | OL10 | The OL2/OL3 builder's, as F1; `records/relations.py` for labels on side places | 2.5–4 |
+| **F3. Light** | A held photon species with a declared potential. Absorption as an event, booked as lamp work (payer `source:light/<name>`). The event domain widened, or a stepwise path required (L8) | **OL4b**, with OL4 (energy) | OL4's builder (not yet seated). The domain check is in the OL2/OL3 builder's `kernel.py` and `balance.py`, a hand-off. The photon's entry goes in `registry/species_registry.py` (the binding owner's) | 2–3 |
+| **F4. Continuous flow** | A population operator. Poisson outflow per assembly and per pool molecule at a dilution rate D. Inflow of a declared feed as a source (`source:inflow/<feed>`, substrate), with a schedule for a change of feed. Slots freed by outflow. Generalises `cells.serial_transfer@1` from a discrete bottleneck to a continuous one | OL10 | The OL2/OL3 builder's: the population, transfer and streams modules (a stream for flow in the `schedule` domain); `records/relations.py` (an end reason for washout, in the next relations version) | 1.5–2.5 |
+| **F5. Stack breaks** | A break rule for `cells.shear_fission@1`: a rate per interior bond under declared agitation, the break point uniform over the bonds, the split by layers (lumped: hypergeometric at the drawn sizes), booked as shear work | OL10 | The OL2/OL3 builder's `division.py` | 1–1.5 |
+| **F6. A ring family** | Building-block moieties; rings by size and composition, in capacity buckets (sizes 3–6 with two building blocks: 4 + 5 + 6 + 7 = 22 species); oxidation and exchange steps with registry potentials; isotopologues as declared twins | With **OL8** (its family machinery) | OL8's builder (not yet seated), with the binding owner for the family's registry declaration (`registry/species_registry.py`; the design note's R7) | 2.5–4 |
+| **References** | F1–F6's component claims, each with a planted error, by an agent who never reads the engine (as OL5) | Beside OL10 and OL4b | OL5's `validation/ool/references` | 3–4.5 |
+| **In all** | | | | **15–23.5** |
+
+**Reference forms the components could be checked against** (**S**, all standard; for the
+references agent to derive independently):
+- the stack's length and end count from its counts;
+- binding isotherms on a side;
+- a chemostat's washout and steady state for one replicator, in closed form;
+- the steady length distribution under constant per-bond breakage and end growth;
+- the photon ledger's closure.
+
+## 5. The reference
+
+### 5.1 The authors' model was not run
+
+- **Its licence allows it.** CC BY 4.0, from the Zenodo record's metadata: it may be run and
+  cited, with attribution.
+- **It was downloaded and read.** Its md5 matches the record's.
+- **It is MATLAB** (`ode15s`), and neither MATLAB nor GNU Octave is installed.
+- **The install was refused.** GNU Octave 10.3.0 was to come from conda-forge through micromamba,
+  into the downloads folder, pinned to the light CPUs and started with no startup files. The
+  session's permission system refused the command that would have extracted and run the
+  downloaded micromamba binary (18 November 2026).
+  - Nothing in it was executed.
+  - As the brief requires, the refusal is reported and not routed round: no other installer or
+    container was tried, and the code was not transcribed.
+- **Criteria M0–M6 stay registered** (§2.5, committed at 3c9572bf before any run), for a run the
+  lead or the user approves (§7.3, U3).
+- **Meanwhile the reference is the SI's own plotted model outputs,** read with §2.5's tolerances.
+  These are readings, not a run:
+
+  | Case | Value at 100 h |
+  | --- | --- |
+  | Supplementary Fig. 121 | A₃B₃ 0.62 of the building blocks; A₆ = B₆ = 0.07 |
+  | Supplementary Fig. 122 | A₆/B₆ about 1.55, still rising slightly |
+  | Supplementary Fig. 123 | A₆/B₆ about 1.245 |
+  | Supplementary Figs. 124–125 | The colour grids (§1.8, items 9–10) |
+
+- **What a run could judge, and what not.** The code's fixed inflow (1:1), outflow (0.04 per h),
+  seeds and 100 h horizon mean that an unmodified run gives references only for the two model
+  claims (Supplementary Figs. 121–125).
+  - It judges no target on the 2 + 3 system, the inflow ratio, the flow rate or retention: T0,
+    T1, T3, T4, T5 and T7.
+  - It bears on T2 and T8 only in kind.
+
+### 5.2 Why Cells cannot reproduce the authors' model as written
+
+- **Its oxidation steps are not elementary mass action.** They have half orders and a
+  non-integer product (A₁.₅B₁.₅), and the 3A → A₃ step is written first order. D152's mass action
+  takes integer coefficients and at most three reactant molecules.
+- **Its steps are irreversible, and its oxidation names no oxidant.** §3.2 of the design note
+  refuses a driven law without a source in this family. D199's U2, the lead's call, set one F for
+  every law.
+- **The code's rates depend on population shares** (x_h), not on one assembly's own counts and its
+  pool.
+
+So **the first Cells model is Cells' own admissible version, not a transcription.** Its comparison
+with the authors' model is in kind: T8a and T8b, as orderings.
+
+### 5.3 The smallest population model with mutants, and which comes first
+
+**R0: three hexamer types in stacks, in flow, oxidised in the dark.** Cells' admissible form of
+the authors' model, built from F1, F2, F4 and F5.
+- **The pool:** building blocks A and B, finite and fed (F4); O₂ held.
+- **Oxidation:** one building block and one O₂ give an activated unit and waste. Three units close
+  a trimer, at most three molecules per step. The oxidant's form is L2's question.
+- **The trimers** are A₃ and B₃ only. The mixed trimer is left out, a declared truncation, so that
+  the hexamers are the authors' three. They sit in the pool and on stack sides (F2).
+- **Stacks** (F1). Their cores count A₆, A₃B₃ and B₆.
+  - An end turns two side trimers into a hexamer: A₃ + A₃ → A₆, A₃ + B₃ → A₃B₃, B₃ + B₃ → B₆.
+  - Fidelity comes from the core's composition, as a factor on m (OL1's law).
+- **Breaks** under stirring (F5) and **outflow** (F4).
+- **Checks:**
+  - the symmetric case gives A₆ = B₆, M0's analogue;
+  - a chemostat's closed-form washout bounds the dilution rate.
+- **Calibration:** it calibrates C3 and C5, in kind.
+
+**R1: R0 plus light and the cofactor** (F3).
+- **The photo-step.** One building block, O₂ and a held photon give an activated unit. It is
+  catalysed by the side-bound sensitiser, with an activity per stack composition as a factor on m.
+- **The two arms.**
+  - **The ThT arm:** the product goes to the producing stack's side, its locality (L3).
+  - **The control arm:** the same step catalysed in the pool, with its product in the pool.
+- **The runs.**
+  - An activity ratio of 2 on the A₆-rich stacks: T8a's analogue. A₆/B₆ is compared with
+    Supplementary Fig. 122 in kind.
+  - A run that changes fidelity only: T8b's analogue.
+  - P1–P3.
+
+**R0 comes first.** It needs no light, so it tests the stack kind, the sides, breaks and flow,
+which every later world needs. **Then R1,** then:
+- **R2, the 1 + 4 system:** trimers A₃, A₂B, AB₂ and B₃, the seven hexamers, 7:3 against 6:4.
+  T2, T3, T5 and T8.
+- **R3, the 2 + 3 system:** two stack kinds, trimer and hexamer, at three flow rates. T1 and T4.
+- **R4, retention:** isotopologues and labels. T7.
+- **R5, the batch photo-replication:** T0.
+
+R2–R5 need F6's ring family; R0 and R1 need only its minimal subset.
+
+## 6. What a judged comparison would need: a D138 question for the user
+
+A judged comparison needs the user's approval and a registered protocol (D138). Proposed, for the
+user to decide:
+- **(a) Now: development only.**
+  - Build §4's features as general engine features, each with its references and qualification.
+  - Run R0–R5 as development work against §2's registered targets: reported, not judged.
+- **(b) Then, a judged comparison against the paper's orderings.**
+  - T0–T5 and T7, from the workbooks, with §2's O and F as the criteria. The protocol is drawn
+    from §2 and registered before the judged runs, once R2 and R3 run.
+  - **Recommended** as the reference for judgement.
+- **(c) Against the authors' model's outputs:**
+  - only T8a and T8b, and only in kind;
+  - the model is not admissible in this family (§5.2), has three types and a fixed 1:1 feed;
+  - it needs the model to run (§5.1, U3).
+
+  **Recommended** as a reported reference, not judged.
+- **(d) Against both,** with (c)'s numbers reported beside (b)'s verdicts.
+
+## 7. The plan
+
+### 7.1 Milestones, and their order against OL2 and OL3
+
+| Milestone | Content | Engine models it runs | Needs | Agent-days (**S**) |
+| --- | --- | --- | --- | --- |
+| **SR0** Desk | This note; the lead's rulings and the user's answers on §7.3's questions | None (design) | — | Done; 0.5 for the amendments |
+| **SR1** Reference | The authors' model run out of process against M0–M6, if approved | None: an external reference, run out of process | U3 | 0.5 |
+| **OL10** Stacks and flow (new) | F1, F2, F4 and F5, behind OL2's invariance gate; tests and tier rows | `cells.assembly_lineages@2` with `cells.linear_stack_geometry@1`, `cells.phase_exchange@1` (`end_capture`), the side-binding law, `cells.shear_fission@1` (stack breaks) and the flow operator | OL3 landed | 8–13 |
+| **OL4b** Light | F3 | The photon source, with `cells.stochastic_mass_action@1` | OL4 | 2–3 |
+| **Ring family** | F6 | `cells.stochastic_mass_action@1` over the family | OL8's family machinery | 2.5–4 |
+| **References** | F1–F6's component references | OL10's and OL4b's models against them | — | 3–4.5 |
+| **SR2** R0 and R1 | Three types, dark then light, with P1–P3, T8a and T8b | All of the above, with `cells.transition_state_factor@1` and `cells.shared_pool@1` | OL10, OL4b | 2–3 |
+| **SR3** R2–R5 | 1 + 4, 2 + 3, retention, batch | The same, with the ring family | F6 | 3–4.5 |
+| **SR4** Judged, if approved | The protocol from §2, the judged runs and their analysis | The same | U1 | 2–3 |
+| **In all** | | | | **23.5–36** |
+
+**The order.**
+- **Lipids come first (D212).** No code starts before OL3 lands.
+  - F1, F2, F4 and F5 extend OL2's geometry interface and shared pool, and OL3's fission, streams
+    and transfer.
+  - Those are the OL2/OL3 builder's files (CORE_SEAMS_DESIGN §18). Building earlier would put two
+    owners on them, or bend OL2's and OL3's invariance gates.
+- **OL10 follows OL3,** by the OL2/OL3 builder, or by a second builder after a hand-off the lead
+  rules.
+- **OL4b goes with OL4,** beside OL6.
+- **SR1 can run at any time once approved.** It is out of process and touches no engine file.
+- **Elapsed:** about 10–16 working days after OL3 lands, with two builders and the references
+  agent (**S**). No dates are given (D194).
+- **Staffing:** within the cap of seven (D171), beside the core pass and the programme's other
+  milestones.
+
+### 7.2 How this relates to the user's experiment idea
+
+The user's reading summary (`docs/originOfLifeIdeas/READ_SUMMARY_OOL.md` §4) proposes an
+autocatalytic network in a growing, dividing compartment, with energy, inheritance, perturbation,
+and recovery of functional organisation against random, scrambled and no-history controls. It names
+this paper as a strong starting point. Against that idea:
+- **The system.** The paper's unit is a fibre, not a compartment. Retention on fibre sides stands
+  in for a compartment, and the authors name a compartment system as future work (Conclusions).
+  - In Cells the same pieces compose with OL2's and OL3's vesicles: rings and stacks in a lumen,
+    with light or fuel.
+  - So the user's experiment reuses this replication's general features rather than needing new
+    ones.
+- **Energy:** light and O₂ here (F3); OL4's fuels in the vesicle worlds.
+- **Inheritance:** a fibre's composition, carried through growth and breakage. The design note's
+  heritability measures (§5.1) apply to stacks as to vesicles.
+- **Perturbation and recovery** are not in the paper. Cells could add them as an extension beyond
+  the replication (U4).
+  - **Perturbations:** a dark interval, a pulse of the 6:4 feed, or a pulse of 4-rich seeds, then
+    a return to the base condition.
+  - **Controls:**
+    - random seeds of the same total composition;
+    - scrambled seeds, with compositions reassigned among stacks;
+    - no-history seeds, which are fresh.
+  - **The question:** does the 1-rich organisation return, and how much does that depend on
+    history? That is the summary's measurement row.
+  - It would be registered on its own, not as part of this replication.
+- **Adamala's 2026 synthetic-cell preprint** (Gaut et al., bioRxiv,
+  doi:10.64898/2026.07.01.735724; SpudCell in docs/SOTA_ORIGIN_OF_LIFE.md) was not read for this
+  note.
+  - It bears on compartments, growth and division with supplied machinery: OL2, OL3 and the
+    Syn3A track, not this chemistry.
+  - D199 makes it a candidate benchmark, raised only after its primary source is read.
+  - This note does that reading for D199's other candidate, the Otto-type replicators.
+
+### 7.3 Questions
+
+**For the lead** (physics choices, to be ruled into the design note's §0.2):
+1. **L1, light.**
+   - **The options:**
+     - (a) absorption as an event pair, with a held photon at a declared potential;
+     - (b) a lumped photo-oxidation, with a held activated oxidant whose activity the light sets;
+     - (c) light as a declared rate, booked as lamp work.
+   - **Recommended: (a).** The paper gives no irradiance, so the photon's potential and flux are
+     declared and marked unsourced.
+2. **L2, the oxidant chemistry.**
+   - **The options:**
+     - (a) one building block activated per oxidant, then ring closure;
+     - (b) explicit thiols and disulfide bonds, with exchange;
+     - (c) the authors' lumped monomers-to-bound-trimers.
+
+     (c) is not admissible (§5.2).
+   - **Recommended:** (a) for R0 and R1, and (b) for the full library (F6).
+3. **L3, locality.**
+   - **The options:**
+     - (a) a declared fraction of each stack's photo-products delivered to its own side: 1 in R1,
+       0 in P2, calibrated by T7;
+     - (b) derived from ¹O₂'s diffusion length and the stacks' number density, which the paper
+       does not measure (§1.8, item 11);
+     - (c) spatial resolution, which is out of scope.
+   - **Recommended:** (a), with (b) reported.
+4. **L4, stack resolution.**
+   - **The options:** lumped, with counts per core species and ends taking the stack's mean
+     composition; or layered, with an ordered sequence, so that ends carry their own composition
+     and a break passes on contiguous pieces.
+   - **Recommended:** lumped first, and layered as a later token value.
+5. **L5, fidelity.**
+   - **The options:**
+     - kinetic, a factor on m from the core's composition (OL1's law), which leaves the
+       equilibrium alone;
+     - thermodynamic, composition-dependent stacking energies (a regular-mixing term, reciprocal by
+       E2's lesson), which is selection by stability;
+     - both.
+   - **Recommended:** kinetic first, and the thermodynamic form as an arm.
+6. **L6, breaks.**
+   - **The options:** a per-bond rate under declared agitation, one-way and booked as shear work;
+     or with end-to-end rejoining from F.
+   - **Recommended:** one-way first.
+7. **L7, flow and scale.**
+   - A representative sub-volume of K stacks, its share of the reactor declared, with Poisson
+     outflow per assembly and per molecule.
+   - The stack size declared, and varied over 1.2 × 10³ to 1.8 × 10⁵ building blocks (§1.8,
+     item 11).
+   - Slots sized by a preflight, since a full set stops the run (§0.2c rule 13).
+8. **L8, the event domain.**
+   - The kernel's |ΔF/k_BT| ≤ 80 is reached by visible photons (89–121 k_BT) and by a one-step O₂
+     oxidation to water (about 82 k_BT, from memory).
+   - Widen it, or require stepwise forms?
+
+**For the lead** (process):
+
+9. **L9, numbers from a subscription article.** Its SI and workbooks are free to download.
+   Confirm that D186 and D201 cover them, or put the question to the user.
+10. **L10, milestones and owners.**
+    - **The proposal:** OL10 by the OL2/OL3 builder after OL3; OL4b with OL4's builder; F6 with
+      OL8's builder and the binding owner; the replication's driver,
+      `validation/self_replicator_selection/`, by this track.
+    - **The index:** an index line in `docs/README.md` and a row in `docs/PAPER_BACKLOG.md`, which
+      this note leaves to the lead.
+
+**For the user:**
+1. **U1, D138.** Development only now (recommended)? Then a judged comparison against the paper's
+   orderings (T0–T5, T7) once R2 and R3 run, with the authors' model as a reported reference only
+   (§6)?
+2. **U2, scope and order.**
+   - The replication after OL3 (lipids first, D212), at about 23.5–36 agent-days, with its
+     features general (stacks, surfaces, light, flow)?
+   - Or a first pass of R0 and R1 alone, about 16–25?
+3. **U3, the authors' MATLAB code.** Its run needs a MATLAB-compatible interpreter.
+   - The install of GNU Octave (GPL, run out of process only) under the downloads folder was
+     refused by the session's permission system.
+   - Approve it, or another route, or leave the model unrun with its plotted outputs as the
+     reference?
+4. **U4, an extension beyond the replication.** Perturbation and recovery, as the reading
+   summary's experiment (§7.2), registered on its own after the replication?
+
+## Sources
+
+**Fetching.**
+- Plain requests with a generic client name, carrying no user details.
+- Each download in its own folder under
+  `/mnt/workspaces/Cells/self-replicator-selection-20261118/downloads/`, treated as untrusted and
+  read with `python -I` or `pdftotext`.
+- Nothing from them is committed.
+
+| Source | Result |
+| --- | --- |
+| The paper, *Nat. Catal.* 8, 1000 (2025) | Read from a private copy supplied by the user. The publisher's page marks it as not free to read |
+| Its Supplementary Information (MOESM1), 134 pages | Read: sections 7–17, the captions of Supplementary Figs. 90–126, and the figure pages of Supplementary Figs. 114 and 121–125 |
+| Supplementary Data File 1 (MOESM3) | Read: the sheets for Supplementary Figs. 96–101 and 104–120 |
+| Source Data for Figs. 2–5 (MOESM7–MOESM10) | Read whole |
+| Supplementary Videos 1–3; the Reporting Summary | Not downloaded |
+| Zenodo record 15104674: metadata and `FAMonomers5d.m` | Read. CC BY 4.0. Not run (§5.1) |
+| micromamba 2.10.0 (conda-forge) | Downloaded; not extracted or run, since the command was refused |
+
+**Engine documents read:**
+- AGENTS.md;
+- `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` (the whole note);
+- `docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md`, `docs/SOTA_ORIGIN_OF_LIFE.md`, `docs/GARD_DESIGN.md` and
+  `docs/RELATIONSHIPS_DESIGN.md` (§2, and the lead's review and rulings);
+- `docs/DECISIONS.md`: D136–D138, D142, D144, D173, D186, D197–D201, D207, D208, D212 and D215;
+- `docs/GAP_JUNCTION_CANCER_REPLICATION.md`, this note's pattern;
+- `docs/CORE_SEAMS_STEP0.md` §4.2 and `docs/CORE_SEAMS_DESIGN.md` §18–§19;
+- `docs/originOfLifeIdeas/READ_SUMMARY_OOL.md`;
+- `docs/PAPER_BACKLOG.md`.
+
+**Cited from memory, not read for this note:**
+- the standard redox potentials of O₂ and of cysteine-like disulfides;
+- singlet oxygen's excitation energy;
+- the photon energy E = hc/λ;
+- the chemostat's washout.
