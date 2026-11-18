@@ -261,7 +261,9 @@ test("the Machines catalogue: every source has its class, and what names a machi
     const catalogue = await json(file);
     const where = rel(file);
     for (const [key, source] of Object.entries(catalogue.sources || {})) held(source, `${where}: source ${key}`);
-    for (const entry of catalogue.entries) {
+    // Its entries stand on its species' benches, files of their own beside it (data/catalogue/benches/).
+    const entries = catalogue.entries || (await Promise.all(Object.values(catalogue.benches || {}).map((bench) => json(path.join(DATA, "catalogue", "benches", path.basename(bench.file)))))).flatMap((bench) => bench.entries);
+    for (const entry of entries) {
       for (const [name, block] of Object.entries({ named: entry.named, count: entry.count, size: entry.size })) {
         for (const key of block?.sources || []) assert.equal(catalogue.sources[key]?.class, "permissive", `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
       }

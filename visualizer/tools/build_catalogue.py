@@ -162,6 +162,81 @@ def measured_from_file(overlay, size, where, inputs, own_source, gathered=None):
 
 SHAPES = ROOT / "data" / "catalogue" / "shapes"
 
+# A dossier's sentence that reaches a panel is said without a file's or a field's name: the gatherer's words keep them
+# (they speak of its own files), the page's do not. Each rewrite is exact; a sentence that still holds such a name stops
+# the build, so that a new one is mended here or in its dossier, never shown.
+PLAIN = [
+    (" is left out by gather.json, each because its own title names another complex (left_out).", " is left out, each because its own title names another complex; they are listed below."),
+    (" has a file of its own (data/machines/ecoli.flagellar-motor.json) whose ", " has a file of its own, whose "),
+    # The shape files' definition (schema/MACHINE_SHAPES.md) names the field that lists the pieces dropped.
+    (", smaller ones dropped (listed under dropped)", ", smaller ones dropped, each listed in the shape's file"),
+]
+# The dossier's word for a machine named only by its family route (schema/MACHINE_DOSSIERS.md).
+FAMILY = "family signature"
+TOOL_WORDS = re.compile(r"gather\.json|\.py\b|\((?:data|tools|schema|src)/|listed under dropped|\b(?:left_out|holds_more|structure_elsewhere|not_looked_for|no_structure|looked_for|by_protein|per_cell|in_atlas|own_mark|sub_assemblies|left_out_entities|proteins_wanted)\b")
+
+
+def plain(text, where):
+    """A dossier's sentence as a panel says it (PLAIN); a file's or a field's name left in it is a breach."""
+    if not isinstance(text, str):
+        return text
+    for old, new in PLAIN:
+        text = text.replace(old, new)
+    found = TOOL_WORDS.search(text)
+    if found:
+        raise Breach(f"{where}: its panel would say {found.group(0)!r}: {text[:140]}")
+    return text
+
+
+def gathered_entry(machine, dossier, entry, source, where=""):
+    """What a machine's dossier adds to its entry (schema/MACHINE_DOSSIERS.md), each said as what it is: its proteins by tier
+    (or, for a species by family, its candidates, never called parts, and what was looked for, part by part); PaxDb's
+    abundance; UniProt's SUBUNIT sentences; the sub-assemblies the Gene Ontology and UniProt name; the entry the gathering
+    picked, with its own title, where its size is not measured from it; another organism's entry where the species has
+    none; and what was left out, and why."""
+    columns = machine["proteins"]["columns"]
+    rows = [dict(zip(columns, row)) for row in machine["proteins"]["rows"]]
+    family = dossier.get("route") == "family"
+    out = {"proteins": [[row["id"], row.get("gene"), row.get("label"), "candidate by family" if family else row["tier"], *([row.get("stands_for") or []] if family else [])] for row in rows]}
+    out["in_atlas"] = all(row.get("in_atlas", True) for row in rows) if not family else machine["join"].get("in_atlas") == machine["join"].get("candidates")
+    if family:
+        out["route"] = {"by": "family", "reference": dossier.get("reference") or machine["named"].get("reference"), "text": machine["named"]["text"]}
+        looked = machine.get("looked_for") or {}
+        at = {name: index for index, name in enumerate(looked.get("columns") or [])}
+        out["looked_for"] = [[row[at["gene"]], row[at["tier"]], row[at["outcome"]], len(row[at["candidates"]] or [])] for row in looked.get("rows") or []]
+        if machine.get("own_mark"):
+            mark = machine["own_mark"]
+            out["own_mark"] = {"mark": mark["mark"], "value": mark["value"], "marked": mark["marked"], "both": mark["both"], "marked_only": len(mark.get("marked_only") or []), "candidates_only": len(mark.get("candidates_only") or [])}
+    if machine.get("paxdb"):
+        pax = machine["paxdb"]
+        out["paxdb"] = {"dataset": pax["dataset_name"], "unit": pax["unit"], "items": pax["items"], "source": source("paxdb")}
+    if machine.get("uniprot_subunit"):
+        out["subunit"] = [[item["gene"], item["id"], item["says"]] for item in machine["uniprot_subunit"]["items"] if item.get("says")]
+    named = {}
+    for term, value in ((machine.get("sub_assemblies") or {}).get("go") or {}).items():
+        named[f"{value['name']} ({term})"] = value["parts"]
+    if named:
+        out["sub_assemblies"] = named
+    if machine.get("uniprot_fractions"):
+        out["fractions"] = machine["uniprot_fractions"]["groups"]
+    structure = machine.get("structure") or {}
+    measured = (entry.get("size") or {}).get("entry")
+    if structure.get("entry") and (not measured or measured.split("-assembly")[0] != structure["entry"]):
+        whole = structure.get("whole") or {}
+        key = f"pdb{structure['entry'].lower()}"
+        out["pick"] = {"entry": structure["entry"], "title": structure.get("title"), "resolution_A": structure.get("resolution_A"), "present": whole.get("present"), "wanted": whole.get("proteins_wanted"), "measurable": structure.get("measurable"),
+                       **({"holds_more": {"says": plain(structure["holds_more"]["says"], where), "left_out_entities": structure["holds_more"].get("left_out_entities")}} if structure.get("holds_more") else {}),
+                       "source": source(key) if key in dossier["sources"] else None}
+    elsewhere = machine.get("structure_elsewhere")
+    if elsewhere and not structure.get("entry") and (not measured or measured.split("-assembly")[0] != elsewhere.get("entry")):
+        key = f"pdb{elsewhere['entry'].lower()}"
+        out["elsewhere"] = {"entry": elsewhere["entry"], "organism": elsewhere["organism"], "title": elsewhere.get("title"), "resolution_A": elsewhere.get("resolution_A"), "source": source(key) if key in dossier["sources"] else None}
+    if machine.get("no_structure") and not structure.get("entry"):
+        out["no_structure"] = plain(machine["no_structure"], where)
+    if machine.get("left_out"):
+        out["left_out"] = [[item["entry"], item.get("title"), plain(item.get("why"), where)] for item in machine["left_out"]]
+    return out
+
 
 def shape_of(size, species, kind, where, inputs):
     """The shape file a measured size is drawn by at the Shape level (schema/MACHINE_SHAPES.md), where one is published:
@@ -189,7 +264,7 @@ def shape_of(size, species, kind, where, inputs):
         inputs.add(rel(path))
         counts = data.get("counts") or {}
         return {"file": f"shapes/{path.name}", "of": path.name.split(".")[0], "entry": data["entry"], **({"assembly": data["assembly"]} if data.get("assembly") else {}),
-                "definition": data["definition"], "width_nm": data["parameters"]["width_nm"], "by": data["parameters"]["by"],
+                "definition": plain(data["definition"], where), "width_nm": data["parameters"]["width_nm"], "by": data["parameters"]["by"],
                 **({"setting_width_nm": data["parameters"]["setting_width_nm"]} if data["parameters"].get("setting_width_nm") else {}),
                 "triangles": counts.get("triangles"), **({"tones": True} if data.get("tones") else {})}
     return None
@@ -239,6 +314,7 @@ def build():
     sources = {}
     entries = []
     by_protein = {}
+    none_found = {}
     inputs = {rel(overlay_path), *([rel(gather_path)] if gather_path.exists() else []), *(f"data/catalogue/dossiers/{species}.json" for species in dossiers)}
 
     def gathered_source(species, key):
@@ -299,7 +375,7 @@ def build():
             machine = gathered.get(item["kind"])
             said = None
             if machine:
-                said = {"text": machine["named"]["text"], "by": machine["named"]["by"], "sources": [gathered_source(species, key) for key in machine["named"]["sources"]]}
+                said = {"text": plain(machine["named"]["text"], where), "by": machine["named"]["by"], "sources": [gathered_source(species, key) for key in machine["named"]["sources"]]}
             named = item.get("named")
             if not named:
                 if not said:
@@ -345,7 +421,9 @@ def build():
                         found = fact(species_file, number["fact"], where)
                         entry["count"] = {"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where)}
                     else:
-                        counted.append({"value": number["value"], "unit": number["unit"], "counts": number["counts"], "cell": number["cell"], "where": number["where"], "source": gathered_source(species, number["source"])})
+                        # The paper's own number as it writes it (`written`, with its power of ten), never one worked out here;
+                        # and whom it cites, where it gives another paper's number.
+                        counted.append({"value": number["value"], **({"written": number["written"]} if number.get("written") else {}), **({"cites": number["cites"]} if number.get("cites") else {}), "unit": number["unit"], "counts": plain(number["counts"], where), "cell": plain(number["cell"], where), "where": plain(number["where"], where), "source": gathered_source(species, number["source"])})
                 if counted:
                     entry["per_cell"] = counted
             # How big: the overlay's sentence from a paper, checked against the saved text, or a fact of the species file.
@@ -375,20 +453,13 @@ def build():
             # Its proteins as the dossier gives them, by tier (schema/MACHINE_DOSSIERS.md), and the entry the gathering would
             # measure it from, where that is not the entry its size is measured from.
             if machine:
-                columns = machine["proteins"]["columns"]
-                rows = [dict(zip(columns, row)) for row in machine["proteins"]["rows"]]
-                entry["gathered"] = {"proteins": [[row["id"], row["gene"], row["label"], row["tier"]] for row in rows], "in_atlas": all(row["in_atlas"] for row in rows)}
-                structure = machine.get("structure") or {}
-                measured = (entry.get("size") or {}).get("entry")
-                if structure.get("entry") and (not measured or measured.split("-assembly")[0] != structure["entry"]):
-                    whole = structure.get("whole") or {}
-                    entry["gathered"]["pick"] = {"entry": structure["entry"], "resolution_A": structure.get("resolution_A"), "present": whole.get("present"), "wanted": whole.get("proteins_wanted"), "measurable": structure.get("measurable"), "source": gathered_source(species, f"pdb{structure['entry'].lower()}") if f"pdb{structure['entry'].lower()}" in dossier["sources"] else None}
+                entry["gathered"] = gathered_entry(machine, dossier, entry, lambda key: gathered_source(species, key), where)
             # The proteins the species' own data marks with it.
             if "proteins" in item:
                 entry["proteins"] = marked_proteins(species, item["proteins"]["mark"], item["proteins"]["value"])
                 inputs.add(entry["proteins"]["from"])
             # A closer view: the machine file of the species (schema/MACHINES.md).
-            if kind.get("machine_file"):
+            if kind.get("machine_file") and (ROOT / "data" / "machines" / f"{species}.{kind['machine_file']}.json").exists():
                 path = ROOT / "data" / "machines" / f"{species}.{kind['machine_file']}.json"
                 machine = read(path)
                 inputs.add(rel(path))
@@ -399,6 +470,13 @@ def build():
                 kind.setdefault("label", machine["label"])
                 if not entry["label"]:
                     entry["label"] = machine["label"]
+            # A machine that only its dossier's family route names, and for which it found no candidate: not on the bench,
+            # in no count or tray; the species' list of what was looked for by family and not found holds it, with its
+            # reference machine and what was looked for, part by part.
+            route = (entry.get("gathered") or {}).get("route") or {}
+            if route.get("by") == "family" and (entry.get("named") or {}).get("by") == FAMILY and not entry["gathered"]["proteins"]:
+                none_found.setdefault(species, []).append({"id": kind["id"], "label": entry["label"], "group": kind["group"], "reference": route["reference"], "looked_for": entry["gathered"]["looked_for"], "text": route["text"], "sources": entry["named"]["sources"]})
+                continue
             entries.append(entry)
     for kind in kinds.values():
         if not kind.get("plain"):
@@ -435,6 +513,7 @@ def build():
         "kinds": list(kinds.values()),
         "entries": entries,
         "by_protein": by_protein,
+        "none_found": none_found,
         **({"unit_sizes": unit_sizes} if unit_sizes else {}),
         "sources": dict(sorted(sources.items())),
     }
@@ -444,26 +523,63 @@ def dumps(catalogue) -> str:
     return json.dumps(catalogue, indent=1, ensure_ascii=False) + "\n"
 
 
+BENCHES = ROOT / "data" / "catalogue" / "benches"
+BENCH_FORMAT = "cells.visualizer.machine_bench@1"
+
+
+def split(whole):
+    """The catalogue as the page reads it: what every bench needs (the groups, the kinds with the species that have each,
+    the records, the sources, the units' sizes, and an index of the benches) in `catalogue.json`, which the page carries;
+    and each species' bench (its entries, and its proteins' machines for the atlas's way back) in a file of its own,
+    `benches/<species>.json`, published beside the page and read when that bench is shown."""
+    species = []
+    for entry in whole["entries"]:
+        if entry["species"] not in species:
+            species.append(entry["species"])
+    benches = {}
+    for name in species:
+        entries = [entry for entry in whole["entries"] if entry["species"] == name]
+        benches[name] = {"format": BENCH_FORMAT, "species": name, "note": "Generated by visualizer/tools/build_catalogue.py with catalogue.json: do not edit.", "entries": entries, "by_protein": whole["by_protein"].get(name, {}),
+                         **({"none_found": whole["none_found"][name]} if whole.get("none_found", {}).get(name) else {})}
+    having = {}
+    for entry in whole["entries"]:
+        having.setdefault(entry["id"], []).append(entry["species"])
+    core = {key: value for key, value in whole.items() if key not in ("entries", "by_protein", "none_found")}
+    core["kinds"] = [{**kind, "species": having.get(kind["id"], [])} for kind in whole["kinds"]]
+    core["benches"] = {name: {"file": f"catalogue/{name}.json", "machines": len(benches[name]["entries"])} for name in species}
+    return core, benches
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--out", default=str(OUT), help="where to write it; - for standard output")
-    parser.add_argument("--check", action="store_true", help="fail if the file on disk is not what this would write")
+    parser.add_argument("--out", default=str(OUT), help="where to write the catalogue's core; - for the whole catalogue (core and benches together) on standard output")
+    parser.add_argument("--check", action="store_true", help="fail if the files on disk are not what this would write")
     args = parser.parse_args(argv)
     try:
-        text = dumps(build())
+        whole = build()
     except Breach as breach:
         print(f"error: {breach}", file=sys.stderr)
         return 1
-    if args.check:
-        same = OUT.exists() and OUT.read_text(encoding="utf-8") == text
-        print("the catalogue is as the tool writes it" if same else f"{rel(OUT)} is not what the tool writes: run it again", file=sys.stderr)
-        return 0 if same else 1
     if args.out == "-":
-        sys.stdout.write(text)
-    else:
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        Path(args.out).write_text(text, encoding="utf-8")
-        print(f"wrote {args.out}: {len(json.loads(text)['entries'])} entries", file=sys.stderr)
+        sys.stdout.write(dumps(whole))
+        return 0
+    core, benches = split(whole)
+    texts = {OUT: dumps(core), **{BENCHES / f"{name}.json": dumps(bench) for name, bench in benches.items()}}
+    if args.check:
+        stale = [rel(path) for path, text in texts.items() if not path.exists() or path.read_text(encoding="utf-8") != text]
+        stale += [rel(path) for path in BENCHES.glob("*.json") if path not in texts]
+        print("the catalogue is as the tool writes it" if not stale else f"{', '.join(stale)}: not what the tool writes; run it again", file=sys.stderr)
+        return 0 if not stale else 1
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(texts.pop(OUT), encoding="utf-8")
+    BENCHES.mkdir(parents=True, exist_ok=True)
+    for path in BENCHES.glob("*.json"):
+        if path not in texts:
+            path.unlink()
+    for path, text in texts.items():
+        path.write_text(text, encoding="utf-8")
+    print(f"wrote {args.out}: {len(whole['entries'])} entries, on {len(benches)} benches beside it", file=sys.stderr)
     return 0
 
 

@@ -1,0 +1,4 @@
+#Complex ac	Recommended name	Aliases for complex	Taxonomy identifier	Identifiers (and stoichiometry) of molecules in complex
+CPX-1	Made-up whole machine	-	1	P00001(2)|P00002(1)|P00003(0)
+CPX-2	Made-up sub-assembly	-	1	P00001(2)|P00002(1)
+CPX-3	Made-up other complex	-	1	Q00009(1)|CHEBI:1(0)

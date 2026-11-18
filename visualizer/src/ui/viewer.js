@@ -45,7 +45,7 @@ const SPECIES_IN_BAR = 1000;
 const LENSES = [
   { id: "cell", label: "Scope", short: "Scope", make: (stage, model, labels) => new CellLens(stage, model, labels) },
   // The Machines catalogue (schema/MACHINE_CATALOGUE.md), by species. "present": how it shows a part of another view's that it holds too (a unit with laws).
-  { id: "machines", label: "Machines", short: "Machines", needs: (scene) => scene.catalogue?.entries?.length, owns: machinesOwn, doorsFor: machinesDoors, textSections: machinesSections, textDescribe: machinesDescribe, present: machinesPresent, styles: MACHINES_CSS, make: (stage, model, labels) => new MachinesLens(stage, model, labels) },
+  { id: "machines", label: "Machines", short: "Machines", needs: (scene) => scene.catalogue?.entries?.length || Object.keys(scene.catalogue?.benches || {}).length, owns: machinesOwn, doorsFor: machinesDoors, textSections: machinesSections, textDescribe: machinesDescribe, present: machinesPresent, styles: MACHINES_CSS, make: (stage, model, labels) => new MachinesLens(stage, model, labels) },
   { id: "proteins", label: "Proteins", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
   // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
@@ -158,6 +158,13 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
     root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
     root.addEventListener("cells-door", (event) => this.openDoor(event.detail));
+    // A species' bench of the Machines catalogue read from beside the page: the list, the panel and the card read it again.
+    globalThis.addEventListener?.("cells-bench", () => {
+      if (!this.isConnected) return;
+      this.renderIndex();
+      this.renderPanel();
+      this.renderChrome();
+    });
     // The protein atlas: what colour carries on a species' own proteins (its legend's "Colour").
     root.addEventListener("cells-own-colour", (event) => this.current?.setOwnColour?.(event.detail));
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
@@ -491,11 +498,17 @@ class CellsViewer extends HTMLElement {
 
   // ------------------------------------------------------------ state changes
 
-  select(id, { fly = false } = {}) {
+  select(id, { fly = false, waited = false } = {}) {
     // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
     // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).
     const owner = id && !this.current?.has?.(id) && this.views?.find((view) => view.owns?.(id));
     if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true);
+    // A view still reading what would name it (a species' bench of machines, for a part of one): the choice waits for it, once.
+    const view = this.current, waiting = id && !waited ? view?.waitsFor?.(id) : null;
+    if (waiting) {
+      waiting.then(() => this.current === view && this.select(id, { fly, waited: true }));
+      return;
+    }
     if (id && !this.lookup(id)) return;
     if (id && !this.shows(id)) {
       if (!this.model.get(id)) return; // a part of a view that is not the one shown

@@ -4,11 +4,18 @@
 // Protein atlas reads them. Nothing here draws; the view (machines.js), its card and the text
 // page all read the catalogue through this one class.
 
+import { loadBeside } from "./protein_shelves.js";
+
 export const CATALOGUE_FORMAT = "cells.visualizer.machine_catalogue@1";
+export const BENCH_FORMAT = "cells.visualizer.machine_bench@1";
 /** A machine's id on the page: `machine:<kind>`, the same id its closer view in the Cell view uses (one machine, one identity). */
 export const PREFIX = "machine:";
 export const pageId = (kind) => `${PREFIX}${kind}`;
 export const kindOf = (id) => (typeof id === "string" && id.startsWith(PREFIX) ? id.slice(PREFIX.length).split(":")[0] : null);
+/** The dossier's word for a machine that only its family route names (schema/MACHINE_DOSSIERS.md): candidates, not parts. */
+export const FAMILY = "family signature";
+/** Whether a machine of a bench is named only by its dossier's family route: a machine its species' records do not name. */
+export const byFamily = (item) => item?.entry?.named?.by === FAMILY;
 /** The group the units of the law inventory that are protein assemblies stand in (the overlay's groups name it). */
 export const IONS = "ions";
 /** A unit of the law inventory is a machine of a species where its atlas found its family there, or built from another. */
@@ -26,6 +33,51 @@ export class Catalogue {
     this.leftOut = new Map(Object.entries(this.raw.units_left_out?.units || {}));
     this.unitSizes = this.raw.unit_sizes || null;
     this.cache = new Map();
+    // Each species' bench: carried whole (a catalogue with its entries: the tests, an older page), or read when it is shown
+    // from its file beside the page (`benches`: schema/MACHINE_CATALOGUE.md). `benches` holds what is read, by species.
+    this.benches = new Map();
+    this.reading = new Map();
+    // A shape file the view could not read, by its path: the words its panel gives instead.
+    this.shapeWords = new Map();
+    if (this.raw.entries) for (const name of new Set(this.raw.entries.map((entry) => entry.species))) this.benches.set(name, { status: "found", entries: this.raw.entries.filter((entry) => entry.species === name), byProtein: this.raw.by_protein?.[name] || {}, noneFound: this.raw.none_found?.[name] || [] });
+  }
+
+  /** Whether a species' bench is in hand (read, or carried whole). */
+  hasBench(species) {
+    return this.benches.get(species)?.status === "found";
+  }
+
+  /** What became of a species' bench: null before it is asked for; else { status: "found" | "failed", words }. */
+  benchState(species) {
+    return this.benches.get(species) || null;
+  }
+
+  /**
+   * Reads a species' bench from beside the page, once (`loadBeside`: the page's own copy where it carries one). Resolves
+   * to its state; a bench that cannot be read says why in plain words, and the catalogue goes on without it.
+   */
+  loadBench(species, { load = loadBeside } = {}) {
+    if (this.benches.has(species)) return Promise.resolve(this.benches.get(species));
+    const path = this.raw.benches?.[species]?.file;
+    if (!path) return Promise.resolve(null);
+    if (!this.reading.has(species)) {
+      this.reading.set(species, Promise.resolve()
+        .then(() => load(path))
+        .then((data) => {
+          if (data?.format !== BENCH_FORMAT || data.species !== species) throw new Error(`it is not the bench of ${species}`);
+          return { status: "found", entries: data.entries || [], byProtein: data.by_protein || {}, noneFound: data.none_found || [] };
+        })
+        .catch((error) => ({ status: "failed", words: `The machines of this species could not be read (${path}: ${error?.message || error}). The units of the law inventory stand without them.` }))
+        .then((state) => {
+          this.benches.set(species, state);
+          this.reading.delete(species);
+          this.cache.delete(species);
+          // The views and the page's list read the catalogue again (src/ui/viewer.js listens).
+          globalThis.dispatchEvent?.(new CustomEvent("cells-bench", { detail: { species, status: state.status } }));
+          return state;
+        }));
+    }
+    return this.reading.get(species);
   }
 
   /**
@@ -39,9 +91,9 @@ export class Catalogue {
     return this.unitSizes.units?.[unit.id]?.[finding] || null;
   }
 
-  /** The species the catalogue holds machines for, in the order of its entries. */
+  /** The species the catalogue holds machines for, in the order of its benches (or of its entries, carried whole). */
   get species() {
-    return [...new Set((this.raw.entries || []).map((entry) => entry.species))];
+    return this.raw.benches ? Object.keys(this.raw.benches) : [...new Set((this.raw.entries || []).map((entry) => entry.species))];
   }
 
   /** Whether a unit of the law inventory is a machine of this species, by its atlas's finding. */
@@ -61,7 +113,8 @@ export class Catalogue {
   of(species) {
     if (this.cache.has(species)) return this.cache.get(species);
     const items = [];
-    for (const entry of this.raw.entries || []) {
+    const bench = this.benches.get(species);
+    for (const entry of bench?.entries || []) {
       if (entry.species !== species) continue;
       const kind = this.kinds.get(entry.id);
       if (!kind) continue;
@@ -74,7 +127,8 @@ export class Catalogue {
     }
     const rank = new Map(this.groups.map((group, index) => [group.id, index]));
     const ordered = items.map((item, index) => [item, index]).sort((a, b) => (rank.get(a[0].group) ?? 99) - (rank.get(b[0].group) ?? 99) || a[1] - b[1]).map(([item]) => item);
-    this.cache.set(species, ordered);
+    // A bench not yet read is not kept: it is read again once its file is in.
+    if (this.hasBench(species) || !this.raw.benches?.[species]) this.cache.set(species, ordered);
     return ordered;
   }
 
@@ -86,7 +140,7 @@ export class Catalogue {
   /** The species that have a machine of this kind (for a machine the species shown lacks). */
   speciesWith(id) {
     const kind = kindOf(id);
-    if (kind) return [...new Set((this.raw.entries || []).filter((entry) => entry.id === kind).map((entry) => entry.species))];
+    if (kind) return this.kinds.get(kind)?.species || [...new Set((this.raw.entries || []).filter((entry) => entry.id === kind).map((entry) => entry.species))];
     const unit = this.units.find((item) => item.id === id);
     return unit ? (this.scene?.proteins?.atlases || []).map((atlas) => atlas.id).filter((species) => this.unitIn(unit, species)) : [];
   }
@@ -103,10 +157,20 @@ export class Catalogue {
     return keywords(item).toLowerCase().includes(words);
   }
 
+  /**
+   * The machines a species' dossier looked for by family and found no candidate for (`none_found`): not on its bench, in
+   * no count; each with its reference machine and what was looked for, part by part. Empty while the bench is not in hand.
+   */
+  noneFound(species) {
+    return this.benches.get(species)?.noneFound || [];
+  }
+
   /** Counts for the card and the legend. */
   counts(species) {
     const items = this.of(species);
-    return { machines: items.length, sized: items.filter((item) => item.sized).length, cards: items.filter((item) => !item.sized).length, laws: items.filter((item) => item.unit).length, groups: new Set(items.map((item) => item.group)).size };
+    const family = items.filter(byFamily).length, laws = items.filter((item) => item.unit).length;
+    // Of the machines that are not units of the law inventory: those the species' records name, and the candidates by family.
+    return { machines: items.length, sized: items.filter((item) => item.sized).length, cards: items.filter((item) => !item.sized).length, laws, groups: new Set(items.map((item) => item.group)).size, named: items.length - laws - family, family, none: this.noneFound(species).length };
   }
 
   source(key) {
@@ -115,7 +179,7 @@ export class Catalogue {
 
   /** The machines a protein of a species is a part of, by its dossier (`by_protein`): [[kind, tier], …]. */
   machinesOf(species, accession) {
-    return this.raw.by_protein?.[species]?.[accession] || [];
+    return this.benches.get(species)?.byProtein?.[accession] || [];
   }
 
   record(key) {

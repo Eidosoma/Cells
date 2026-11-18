@@ -19,7 +19,9 @@ import { SHAPE_FORMAT, buildShape, loadShape, shapeColours, shapePath, shapeProb
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SHAPES = path.join(ROOT, "data", "catalogue", "shapes");
 const json = (file) => JSON.parse(readFileSync(file, "utf8"));
-const catalogue = json(path.join(ROOT, "data", "catalogue", "catalogue.json"));
+// The catalogue's core and its species' benches, read together (schema/MACHINE_CATALOGUE.md: the benches are files of their own).
+const core = json(path.join(ROOT, "data", "catalogue", "catalogue.json"));
+const catalogue = { ...core, entries: Object.keys(core.benches || {}).flatMap((name) => json(path.join(ROOT, "data", "catalogue", "benches", `${name}.json`)).entries) };
 
 /** A made-up shape: two closed surfaces of one part (an octahedron and a tetrahedron), and the octahedron's two tones (its halves). */
 function madeUp() {

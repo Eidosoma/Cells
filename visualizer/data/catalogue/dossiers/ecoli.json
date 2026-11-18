@@ -931,6 +931,21 @@
      "part by keyword": 2
     }
    },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A7K2",
+      "gene": "rplL",
+      "says": [
+       "Homodimer."
+      ]
+     }
+    ]
+   },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
     "by": "the atlas's id: a UniProt accession",
@@ -2382,6 +2397,294 @@
      "proteins": []
     }
    },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A7L0",
+      "rplA",
+      3928.0
+     ],
+     [
+      "P60422",
+      "rplB",
+      4457.0
+     ],
+     [
+      "P60438",
+      "rplC",
+      3636.0
+     ],
+     [
+      "P60723",
+      "rplD",
+      3462.0
+     ],
+     [
+      "P62399",
+      "rplE",
+      4031.0
+     ],
+     [
+      "P0AG55",
+      "rplF",
+      4413.0
+     ],
+     [
+      "P0A7R1",
+      "rplI",
+      4654.0
+     ],
+     [
+      "P0A7J3",
+      "rplJ",
+      4464.0
+     ],
+     [
+      "P0A7J7",
+      "rplK",
+      3553.0
+     ],
+     [
+      "P0A7K2",
+      "rplL",
+      11544.0
+     ],
+     [
+      "P0AA10",
+      "rplM",
+      3574.0
+     ],
+     [
+      "P0ADY3",
+      "rplN",
+      3643.0
+     ],
+     [
+      "P02413",
+      "rplO",
+      3759.0
+     ],
+     [
+      "P0ADY7",
+      "rplP",
+      3121.0
+     ],
+     [
+      "P0AG44",
+      "rplQ",
+      4295.0
+     ],
+     [
+      "P0C018",
+      "rplR",
+      4004.0
+     ],
+     [
+      "P0A7K6",
+      "rplS",
+      3354.0
+     ],
+     [
+      "P0A7L3",
+      "rplT",
+      3650.0
+     ],
+     [
+      "P0AG48",
+      "rplU",
+      2284.0
+     ],
+     [
+      "P61175",
+      "rplV",
+      5723.0
+     ],
+     [
+      "P0ADZ0",
+      "rplW",
+      1140.0
+     ],
+     [
+      "P60624",
+      "rplX",
+      3952.0
+     ],
+     [
+      "P68919",
+      "rplY",
+      5408.0
+     ],
+     [
+      "P0A7L8",
+      "rpmA",
+      2097.0
+     ],
+     [
+      "P0A7M2",
+      "rpmB",
+      4302.0
+     ],
+     [
+      "P0A7M6",
+      "rpmC",
+      3327.0
+     ],
+     [
+      "P0AG51",
+      "rpmD",
+      3149.0
+     ],
+     [
+      "P0A7M9",
+      "rpmE",
+      1219.0
+     ],
+     [
+      "P0A7N4",
+      "rpmF",
+      2514.0
+     ],
+     [
+      "P0A7N9",
+      "rpmG",
+      2782.0
+     ],
+     [
+      "P0A7P5",
+      "rpmH",
+      2090.0
+     ],
+     [
+      "P0A7Q1",
+      "rpmI",
+      520.0
+     ],
+     [
+      "P0A7Q6",
+      "rpmJ1",
+      661.0
+     ],
+     [
+      "P0AG67",
+      "rpsA",
+      3487.0
+     ],
+     [
+      "P0A7V0",
+      "rpsB",
+      3628.0
+     ],
+     [
+      "P0A7V3",
+      "rpsC",
+      4786.0
+     ],
+     [
+      "P0A7V8",
+      "rpsD",
+      5110.0
+     ],
+     [
+      "P0A7W1",
+      "rpsE",
+      5375.0
+     ],
+     [
+      "P02358",
+      "rpsF",
+      4020.0
+     ],
+     [
+      "P02359",
+      "rpsG",
+      5941.0
+     ],
+     [
+      "P0A7W7",
+      "rpsH",
+      2978.0
+     ],
+     [
+      "P0A7X3",
+      "rpsI",
+      2951.0
+     ],
+     [
+      "P0A7R5",
+      "rpsJ",
+      4138.0
+     ],
+     [
+      "P0A7R9",
+      "rpsK",
+      2190.0
+     ],
+     [
+      "P0A7S3",
+      "rpsL",
+      2892.0
+     ],
+     [
+      "P0A7S9",
+      "rpsM",
+      5009.0
+     ],
+     [
+      "P0AG59",
+      "rpsN",
+      4001.0
+     ],
+     [
+      "P0ADZ4",
+      "rpsO",
+      3631.0
+     ],
+     [
+      "P0A7T3",
+      "rpsP",
+      3908.0
+     ],
+     [
+      "P0AG63",
+      "rpsQ",
+      2475.0
+     ],
+     [
+      "P0A7T7",
+      "rpsR",
+      4081.0
+     ],
+     [
+      "P0A7U3",
+      "rpsS",
+      3310.0
+     ],
+     [
+      "P0A7U7",
+      "rpsT",
+      4422.0
+     ],
+     [
+      "P68679",
+      "rpsU",
+      6456.0
+     ],
+     [
+      "P0A7N1",
+      "ykgM",
+      285.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
+   },
    "per_cell": [
     {
      "fact": "Ribosomes",
@@ -2517,6 +2820,21 @@
      "part": 4
     }
    },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A7Z4",
+      "gene": "rpoA",
+      "says": [
+       "Homodimer."
+      ]
+     }
+    ]
+   },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
     "by": "the atlas's id: a UniProt accession",
@@ -2560,7 +2878,7 @@
     "compared": [
      {
       "entry": "6P1K",
-      "by": "the catalogue's measured entry, in the folder wwpdb-rna-polymerase",
+      "by": "the catalogue's measured entry, in the folder wwpdb-rna-polymerase: the σ70 holoenzyme",
       "rank": 22,
       "of": 432,
       "present": 4,
@@ -2766,6 +3084,57 @@
      "proteins": []
     }
    },
+   "sub_assemblies": {
+    "note": "Parts of the machine that its records name: narrower Gene Ontology terms its parts carry (as UniProt gives them). Nothing is matched by a name.",
+    "go": {
+     "GO:0000345": {
+      "name": "cytosolic DNA-directed RNA polymerase complex",
+      "parts": [
+       "P0A7Z4",
+       "P0A8V2",
+       "P0A8T7",
+       "P0A800"
+      ]
+     }
+    },
+    "sources": [
+     "go",
+     "uniprot"
+    ]
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A7Z4",
+      "rpoA",
+      2332.0
+     ],
+     [
+      "P0A8V2",
+      "rpoB",
+      1499.0
+     ],
+     [
+      "P0A8T7",
+      "rpoC",
+      1810.0
+     ],
+     [
+      "P0A800",
+      "rpoZ",
+      1633.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
+   },
    "per_cell": [
     {
      "value": 1844,
@@ -2942,6 +3311,78 @@
      "named": 1,
      "part": 8
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0ABB0",
+      "gene": "atpA",
+      "says": [
+       "CF(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "CF(0) has three main subunits: a(1), b(2) and c(9-12)."
+      ]
+     },
+     {
+      "id": "P0AB98",
+      "gene": "atpB",
+      "says": [
+       "CF(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "CF(0) has three main subunits: a(1), b(2) and c(9-12)."
+      ]
+     },
+     {
+      "id": "P0A6E6",
+      "gene": "atpC",
+      "says": [
+       "CF(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "CF(0) has three main subunits: a, b and c."
+      ]
+     },
+     {
+      "id": "P0ABB4",
+      "gene": "atpD",
+      "says": [
+       "CF(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "CF(0) has three main subunits: a(1), b(2) and c(9-12)."
+      ]
+     },
+     {
+      "id": "P68699",
+      "gene": "atpE",
+      "says": [
+       "F(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "F(0) has three main subunits: a(1), b(2) and c(10)."
+      ]
+     },
+     {
+      "id": "P0ABA0",
+      "gene": "atpF",
+      "says": [
+       "F(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "F(0) has three main subunits: a(1), b(2) and c(10-14)."
+      ]
+     },
+     {
+      "id": "P0ABA6",
+      "gene": "atpG",
+      "says": [
+       "CF(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "CF(0) has three main subunits: a, b and c."
+      ]
+     },
+     {
+      "id": "P0ABA4",
+      "gene": "atpH",
+      "says": [
+       "F(1) has five subunits: alpha(3), beta(3), gamma(1), delta(1), epsilon(1).",
+       "F(0) has three main subunits: a(1), b(2) and c(10-14)."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -3291,6 +3732,59 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0ABB0",
+      "atpA",
+      2836.0
+     ],
+     [
+      "P0AB98",
+      "atpB",
+      68.4
+     ],
+     [
+      "P0A6E6",
+      "atpC",
+      1118.0
+     ],
+     [
+      "P0ABB4",
+      "atpD",
+      3831.0
+     ],
+     [
+      "P68699",
+      "atpE",
+      795.0
+     ],
+     [
+      "P0ABA0",
+      "atpF",
+      1126.0
+     ],
+     [
+      "P0ABA6",
+      "atpG",
+      1080.0
+     ],
+     [
+      "P0ABA4",
+      "atpH",
+      983.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -4896,6 +5390,11 @@
     "sources": [
      "pdb9rbf"
     ],
+    "holds_more": {
+     "says": "the machine among other complexes",
+     "why": "Noted on 18 November 2026: the entry was kept for the machine, and it holds the machine among other complexes; the measure leaves them out by entity id.",
+     "left_out_entities": 57
+    },
     "in_entry_only": {
      "count": 49,
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
@@ -5344,6 +5843,39 @@
      ]
     }
    },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0AG96",
+      "secE",
+      38.1
+     ],
+     [
+      "P0AG99",
+      "secG",
+      311.0
+     ],
+     [
+      "P0AGA2",
+      "secY",
+      205.0
+     ],
+     [
+      "P25714",
+      "yidC",
+      150.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
+   },
    "per_cell": [
     {
      "value": 500,
@@ -5478,6 +6010,21 @@
      "named": 2,
      "part": 2
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P69425",
+      "gene": "tatB",
+      "says": [
+       "Each of TatA, TatB and TatC are able to interact in pairs without the third partner; TatB also forms homooligomers."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -5664,6 +6211,29 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P69425",
+      "tatB",
+      80.6
+     ],
+     [
+      "P69423",
+      "tatC",
+      47.5
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -5758,6 +6328,21 @@
     "counts": {
      "part": 5
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A937",
+      "gene": "bamE",
+      "says": [
+       "The intact Bam complex can have 2 BamE subunits (PubMed:27686148)."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -6016,6 +6601,44 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A940",
+      "bamA",
+      307.0
+     ],
+     [
+      "P77774",
+      "bamB",
+      297.0
+     ],
+     [
+      "P0A903",
+      "bamC",
+      408.0
+     ],
+     [
+      "P0AC02",
+      "bamD",
+      195.0
+     ],
+     [
+      "P0A937",
+      "bamE",
+      360.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -6265,6 +6888,24 @@
       }
      ]
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0AGD7",
+      "ffh",
+      260.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -6317,6 +6958,28 @@
     "counts": {
      "part": 2
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A6F5",
+      "gene": "groEL",
+      "says": [
+       "Forms a cylinder of 14 subunits composed of two heptameric rings stacked back-to-back (PubMed:1361169, PubMed:15327959, PubMed:7935790, PubMed:8846220, PubMed:9285585)."
+      ]
+     },
+     {
+      "id": "P0A6F9",
+      "gene": "groES",
+      "says": [
+       "Heptamer of 7 subunits arranged in a ring (PubMed:1361169, PubMed:9285585)."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -6503,6 +7166,29 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A6F5",
+      "groEL",
+      6197.0
+     ],
+     [
+      "P0A6F9",
+      "groES",
+      4201.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -6568,6 +7254,28 @@
      "named": 1,
      "part": 2
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A6G7",
+      "gene": "clpP",
+      "says": [
+       "Fourteen ClpP subunits assemble into 2 heptameric rings which stack back to back to give a disk-like structure with a central cavity, resembling the structure of eukaryotic proteasomes."
+      ]
+     },
+     {
+      "id": "P0A6H1",
+      "gene": "clpX",
+      "says": [
+       "Forms a hexameric ring that, in the presence of ATP, binds to fourteen ClpP subunits assembled into a disk-like structure with a central cavity, resembling the structure of eukaryotic proteasomes."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -6754,6 +7462,29 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A6G7",
+      "clpP",
+      932.0
+     ],
+     [
+      "P0A6H1",
+      "clpX",
+      674.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -6843,6 +7574,28 @@
      "part": 2
     }
    },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A6H5",
+      "gene": "hslU",
+      "says": [
+       "A double ring-shaped homohexamer of HslV is capped on each side by a ring-shaped HslU homohexamer."
+      ]
+     },
+     {
+      "id": "P0A7B8",
+      "gene": "hslV",
+      "says": [
+       "A double ring-shaped homohexamer of HslV is capped on each side by a ring-shaped HslU homohexamer."
+      ]
+     }
+    ]
+   },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
     "by": "the atlas's id: a UniProt accession",
@@ -6885,7 +7638,7 @@
     "compared": [
      {
       "entry": "1G4A",
-      "by": "the catalogue's measured entry, in the folder wwpdb-hslv",
+      "by": "the catalogue's measured entry, in the folder wwpdb-hslv: one cap, so a frame from the ring to the cap stands",
       "rank": 5,
       "of": 16,
       "present": 2,
@@ -7050,6 +7803,29 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A6H5",
+      "hslU",
+      422.0
+     ],
+     [
+      "P0A7B8",
+      "hslV",
+      193.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -7085,6 +7861,21 @@
     "counts": {
      "part": 1
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A9M0",
+      "gene": "lon",
+      "says": [
+       "Homohexamer."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -7255,6 +8046,24 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A9M0",
+      "lon",
+      442.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -7314,6 +8123,21 @@
     "counts": {
      "part": 3
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0AAI3",
+      "gene": "ftsH",
+      "says": [
+       "The E.coli AAA domain has been modeled as a homohexamer, in Thermus thermophilus the same domain crystallizes as a homohexamer."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -7532,6 +8356,34 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0AAI3",
+      "ftsH",
+      441.0
+     ],
+     [
+      "P0ABC3",
+      "hflC",
+      276.0
+     ],
+     [
+      "P0ABC7",
+      "hflK",
+      384.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -7738,6 +8590,105 @@
     "counts": {
      "part": 13
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0AFC3",
+      "gene": "nuoA",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFC7",
+      "gene": "nuoB",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P33599",
+      "gene": "nuoC",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFD1",
+      "gene": "nuoE",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P31979",
+      "gene": "nuoF",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P33602",
+      "gene": "nuoG",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFD4",
+      "gene": "nuoH",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFD6",
+      "gene": "nuoI",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFE0",
+      "gene": "nuoJ",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFE4",
+      "gene": "nuoK",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P33607",
+      "gene": "nuoL",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFE8",
+      "gene": "nuoM",
+      "says": [
+       "Composed of 13 different subunits."
+      ]
+     },
+     {
+      "id": "P0AFF0",
+      "gene": "nuoN",
+      "says": [
+       "NDH-1 is composed of 13 different subunits."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -8188,6 +9139,84 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0AFC3",
+      "nuoA",
+      167.0
+     ],
+     [
+      "P0AFC7",
+      "nuoB",
+      272.0
+     ],
+     [
+      "P33599",
+      "nuoC",
+      358.0
+     ],
+     [
+      "P0AFD1",
+      "nuoE",
+      203.0
+     ],
+     [
+      "P31979",
+      "nuoF",
+      206.0
+     ],
+     [
+      "P33602",
+      "nuoG",
+      329.0
+     ],
+     [
+      "P0AFD4",
+      "nuoH",
+      21.0
+     ],
+     [
+      "P0AFD6",
+      "nuoI",
+      276.0
+     ],
+     [
+      "P0AFE0",
+      "nuoJ",
+      12.3
+     ],
+     [
+      "P0AFE4",
+      "nuoK",
+      87.4
+     ],
+     [
+      "P33607",
+      "nuoL",
+      17.3
+     ],
+     [
+      "P0AFE8",
+      "nuoM",
+      2.59
+     ],
+     [
+      "P0AFF0",
+      "nuoN",
+      22.4
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -8268,6 +9297,44 @@
     "counts": {
      "part": 4
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0AC41",
+      "gene": "sdhA",
+      "says": [
+       "Part of an enzyme complex containing four subunits: a flavoprotein, an iron-sulfur, cytochrome b-556, and a hydrophobic anchor protein."
+      ]
+     },
+     {
+      "id": "P07014",
+      "gene": "sdhB",
+      "says": [
+       "Part of an enzyme complex containing four subunits: a flavoprotein, an iron-sulfur, cytochrome b-556, and a hydrophobic anchor protein."
+      ]
+     },
+     {
+      "id": "P69054",
+      "gene": "sdhC",
+      "says": [
+       "Part of an enzyme complex containing four subunits: a flavoprotein, an iron-sulfur protein, plus two membrane-anchoring proteins, SdhC and SdhD.",
+       "The complex can form homotrimers."
+      ]
+     },
+     {
+      "id": "P0AC44",
+      "gene": "sdhD",
+      "says": [
+       "Part of an enzyme complex containing four subunits: a flavoprotein, an iron-sulfur protein, plus two membrane-anchoring proteins, SdhC and SdhD.",
+       "The complex can form homotrimers."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -8494,6 +9561,39 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0AC41",
+      "sdhA",
+      742.0
+     ],
+     [
+      "P07014",
+      "sdhB",
+      870.0
+     ],
+     [
+      "P69054",
+      "sdhC",
+      107.0
+     ],
+     [
+      "P0AC44",
+      "sdhD",
+      249.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -8808,6 +9908,39 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0ABJ1",
+      "cyoA",
+      265.0
+     ],
+     [
+      "P0ABI8",
+      "cyoB",
+      113.0
+     ],
+     [
+      "P0ABJ3",
+      "cyoC",
+      9.44
+     ],
+     [
+      "P0ABJ6",
+      "cyoD",
+      16.8
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -8961,6 +10094,59 @@
      "named": 3,
      "part": 6
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A988",
+      "gene": "dnaN",
+      "says": [
+       "Forms a ring-shaped head-to-tail homodimer (PubMed:2040637, PubMed:9927437, PubMed:1349852, PubMed:12832762, PubMed:14592985, PubMed:14729336, PubMed:18191219, PubMed:18678908) around DNA (PubMed:18191219), which can be opened by the delta subunit (PubMed:11525728, PubMed:9927437).",
+       "The beta* isoform probably forms homotrimers which probably load onto DNA (PubMed:8576212).",
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex.",
+       "Binds to CrfC homooligomers at the midcell position during DNA replication (PubMed:23994470)."
+      ]
+     },
+     {
+      "id": "P06710",
+      "gene": "dnaX",
+      "says": [
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex."
+      ]
+     },
+     {
+      "id": "P28630",
+      "gene": "holA",
+      "says": [
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex."
+      ]
+     },
+     {
+      "id": "P28631",
+      "gene": "holB",
+      "says": [
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex."
+      ]
+     },
+     {
+      "id": "P28905",
+      "gene": "holC",
+      "says": [
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex."
+      ]
+     },
+     {
+      "id": "P28632",
+      "gene": "holD",
+      "says": [
+       "The DNA polymerase III holoenzyme complex contains at least 10 different subunits organized into 3 functionally essential subassemblies: the Pol III core, the beta sliding clamp processivity factor and the clamp-loading complex."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -9280,6 +10466,68 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "sub_assemblies": {
+    "note": "Parts of the machine that its records name: narrower Gene Ontology terms its parts carry (as UniProt gives them). Nothing is matched by a name.",
+    "go": {
+     "GO:0043846": {
+      "name": "DNA polymerase III, clamp loader complex",
+      "parts": [
+       "P06710",
+       "P28630",
+       "P28631",
+       "P28905",
+       "P28632"
+      ]
+     }
+    },
+    "sources": [
+     "go",
+     "uniprot"
+    ]
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A988",
+      "dnaN",
+      192.0
+     ],
+     [
+      "P06710",
+      "dnaX",
+      14.1
+     ],
+     [
+      "P28630",
+      "holA",
+      2.24
+     ],
+     [
+      "P28631",
+      "holB",
+      5.71
+     ],
+     [
+      "P28905",
+      "holC",
+      14.8
+     ],
+     [
+      "P28632",
+      "holD",
+      9.83
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -9328,14 +10576,12 @@
       "P0A8F8",
       "uvrB",
       "UvrABC system protein B",
-      "part",
+      "named",
       [
        "GO:0009380"
       ],
       [],
-      [
-       "1"
-      ],
+      [],
       true
      ],
      [
@@ -9352,16 +10598,15 @@
      ]
     ],
     "counts": {
-     "named": 3,
-     "part": 1
+     "named": 4
     }
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
     "by": "the atlas's id: a UniProt accession",
-    "parts": 1,
-    "parts_in_atlas": 1,
-    "held_by_entry": 1,
+    "parts": 0,
+    "parts_in_atlas": 0,
+    "held_by_entry": 0,
     "all": 4,
     "all_in_atlas": 4,
     "not_in_atlas": []
@@ -9384,117 +10629,19 @@
      "go"
     ]
    },
-   "structure": {
-    "entry": "1QOJ",
-    "title": "Crystal Structure of E.coli UvrB C-terminal domain, and a model for UvrB-UvrC interaction.",
-    "method": "X-RAY DIFFRACTION",
-    "resolution_A": 3.0,
-    "released": "2000-11-10",
-    "organism": "Escherichia coli",
-    "same_organism": true,
-    "measurable": false,
-    "measurable_says": "It holds 1 of the 4 proteins sought, and their residues with coordinates add up to 0.07 whole proteins. That is less than 70 per cent of the proteins it holds: no size of the machine should be read from it.",
-    "compared": [],
-    "whole": {
-     "proteins_wanted": 4,
-     "present": 1,
-     "nearly_whole": 0,
-     "equivalents": 0.07,
-     "copies": 4,
-     "rule": "a protein is nearly whole where the entity's residues with coordinates (RCSB's count of residues without coordinates, in every copy) are at least 80 per cent of its UniProt entry's length"
-    },
-    "file": "ecoli/wwpdb-uvrabc-g/1QOJ-assembly1.cif.gz",
-    "file_to_fetch": null,
-    "assembly": "software_defined_assembly",
-    "assembly_note": "The deposited model holds 2 chains and the first biological assembly 4: measure the assembly's file.",
-    "entities": [
-     {
-      "id": "1",
-      "description": "UVRB",
-      "type": "polypeptide(L)",
-      "accessions": [
-       "P0A8F8"
-      ],
-      "gene": "uvrB",
-      "organism": "Escherichia coli",
-      "same_organism": true,
-      "copies": 2,
-      "copies_in_assembly": 4,
-      "with_coordinates": 0.73,
-      "of_protein": 0.068,
-      "role": "part",
-      "part": "uvrB",
-      "file_reference": null,
-      "file_agrees": false
-     }
-    ],
-    "measure": {
-     "exclude": [],
-     "parts": {
-      "uvrB": [
-       "1"
-      ]
-     },
-     "frame": null,
-     "call": "python3 -I tools/measure_particle.py --machine DATASETS/ecoli/wwpdb-uvrabc-g/1QOJ-assembly1.cif.gz --part uvrB=1 --out OUT.json"
-    },
-    "chosen_by": "first by the rule",
-    "candidates": [
-     {
-      "entry": "1QOJ",
-      "method": "X-RAY DIFFRACTION",
-      "resolution_A": 3.0,
-      "present": 1,
-      "whole": 0,
-      "equivalents": 0.07,
-      "copies": 4,
-      "others": 0
-     },
-     {
-      "entry": "4DFC",
-      "method": "X-RAY DIFFRACTION",
-      "resolution_A": 2.803,
-      "present": 1,
-      "whole": 0,
-      "equivalents": 0.13,
-      "copies": 1,
-      "others": 1
-     },
-     {
-      "entry": "1E52",
-      "method": "SOLUTION NMR",
-      "resolution_A": null,
-      "present": 1,
-      "whole": 0,
-      "equivalents": 0.08,
-      "copies": 2,
-      "others": 0
-     },
-     {
-      "entry": "1KFT",
-      "method": "SOLUTION NMR",
-      "resolution_A": null,
-      "present": 1,
-      "whole": 0,
-      "equivalents": 0.09,
-      "copies": 1,
-      "others": 0
-     }
-    ],
-    "search": {
-     "asked": "2026-11-17",
-     "hits": 4,
-     "read": 4,
-     "file": "ecoli/rcsb-machines-g/search_uvrabc.json"
-    },
+   "structure": null,
+   "no_structure": "None in hand of the species' own: the best entry of RCSB's search of 2026-11-17, 1QOJ, holds one of the 4 proteins sought, and an entry of one protein of a larger machine is not taken.",
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [],
+    "missing": [],
     "sources": [
-     "pdb1qoj"
-    ],
-    "in_entry_only": {
-     "count": 0,
-     "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
-     "proteins": []
-    }
+     "paxdb"
+    ]
    }
   },
   {
@@ -9771,6 +10918,34 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P08394",
+      "recB",
+      1.42
+     ],
+     [
+      "P07648",
+      "recC",
+      3.05
+     ],
+     [
+      "P04993",
+      "recD",
+      3.05
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -9848,6 +11023,29 @@
      "named": 2,
      "part": 2
     }
+   },
+   "uniprot_subunit": {
+    "note": "The sentences of each part's UniProt entry (its SUBUNIT comment) that say how many copies of the protein go together, in UniProt's own words, its evidence tags left out.",
+    "sources": [
+     "uniprot"
+    ],
+    "items": [
+     {
+      "id": "P0A6P9",
+      "gene": "eno",
+      "says": [
+       "Homodimer (PubMed:11676541, PubMed:16516921, PubMed:20823555, PubMed:4942326).",
+       "Homodimers that trimerize (PubMed:30714720)."
+      ]
+     },
+     {
+      "id": "P21513",
+      "gene": "rne",
+      "says": [
+       "Within the RNA degradosome, RNase E assembles into a homotetramer formed by a dimer of dimers."
+      ]
+     }
+    ]
    },
    "join": {
     "atlas": "data/proteins/ecoli/proteins.tsv",
@@ -10030,6 +11228,29 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P0A6P9",
+      "eno",
+      6953.0
+     ],
+     [
+      "P21513",
+      "rne",
+      415.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   },
   {
@@ -10521,6 +11742,18 @@
    },
    "structure": null,
    "no_structure": "The motor has a file of its own (data/machines/ecoli.flagellar-motor.json) whose sizes rest on its own entries and papers, most of them of Salmonella. The rule finds no entry of E. coli that holds it: the best by the rule holds 2 of the 34 proteins (CheY and CheZ, which the ontology places in the flagellum).",
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
+   },
    "per_cell": [
     {
      "fact": "Flagella",
@@ -10826,16 +12059,6 @@
       "others": 0
      },
      {
-      "entry": "1KMI",
-      "method": "X-RAY DIFFRACTION",
-      "resolution_A": 2.9,
-      "present": 1,
-      "whole": 1,
-      "equivalents": 0.83,
-      "copies": 2,
-      "others": 1
-     },
-     {
       "entry": "2HO9",
       "method": "SOLUTION NMR",
       "resolution_A": null,
@@ -10864,12 +12087,22 @@
       "equivalents": 0.29,
       "copies": 2,
       "others": 0
+     },
+     {
+      "entry": "4Z9I",
+      "method": "X-RAY DIFFRACTION",
+      "resolution_A": 1.57,
+      "present": 1,
+      "whole": 0,
+      "equivalents": 0.29,
+      "copies": 2,
+      "others": 0
      }
     ],
     "search": {
      "asked": "2026-11-17",
      "hits": 20,
-     "read": 20,
+     "read": 19,
      "file": "ecoli/rcsb-machines-g/search_chemoreceptor-array.json"
     },
     "sources": [
@@ -10880,6 +12113,34 @@
      "note": "Proteins of the species that the entry holds and the ontology does not name with the machine: left out of the measure.",
      "proteins": []
     }
+   },
+   "paxdb": {
+    "note": "PaxDb's abundance of each part in one of its datasets, as that database gives it: parts per million of the dataset's protein molecules (PaxDb's page calls its values protein abundance, ppm). It is no count of copies in a cell.",
+    "dataset": "511145-WHOLE_ORGANISM-integrated.txt",
+    "dataset_id": "3740039012",
+    "dataset_name": "E.coli str. K-12 substr. MG1655 - Whole organism (Integrated)",
+    "unit": "ppm",
+    "items": [
+     [
+      "P07363",
+      "cheA",
+      229.0
+     ],
+     [
+      "P0A964",
+      "cheW",
+      262.0
+     ],
+     [
+      "P02942",
+      "tsr",
+      133.0
+     ]
+    ],
+    "missing": [],
+    "sources": [
+     "paxdb"
+    ]
    }
   }
  ],
@@ -11187,12 +12448,6 @@
   "P0A800": [
    {
     "machine": "rna-polymerase",
-    "tier": "part"
-   }
-  ],
-  "P0A8F8": [
-   {
-    "machine": "uvrabc",
     "tier": "part"
    }
   ],
@@ -11660,6 +12915,12 @@
    "accessed": "2026-11-17",
    "standing": "open paper, numbers only"
   },
+  "paxdb": {
+   "text": "PaxDb, release 6.1: the dataset 511145-WHOLE_ORGANISM-integrated.txt (E.coli str. K-12 substr. MG1655 - Whole organism (Integrated), PaxDb dataset id 3740039012); 3747 of its 3747 values joined to the species' UniProt entries.",
+   "url": "https://pax-db.org/",
+   "licence": "CC BY 4.0, as PaxDb's home page declares for the database; saved in human/terms-paxdb-g",
+   "class": "permissive"
+  },
   "pdb1g4a": {
    "text": "Protein Data Bank entry 1G4A: CRYSTAL STRUCTURES OF THE HSLVU PEPTIDASE-ATPASE COMPLEX REVEAL AN ATP-DEPENDENT PROTEOLYSIS MECHANISM. X-ray diffraction, 3.0 Å.",
    "url": "https://www.rcsb.org/structure/1G4A",
@@ -11669,12 +12930,6 @@
   "pdb1ht1": {
    "text": "Protein Data Bank entry 1HT1: Nucleotide-Dependent Conformational Changes in a Protease-Associated ATPase HslU. X-ray diffraction, 2.8 Å.",
    "url": "https://www.rcsb.org/structure/1HT1",
-   "licence": "CC0 1.0",
-   "class": "permissive"
-  },
-  "pdb1qoj": {
-   "text": "Protein Data Bank entry 1QOJ: Crystal Structure of E.coli UvrB C-terminal domain, and a model for UvrB-UvrC interaction.. X-ray diffraction, 3.0 Å.",
-   "url": "https://www.rcsb.org/structure/1QOJ",
    "licence": "CC0 1.0",
    "class": "permissive"
   },
@@ -11837,7 +13092,7 @@
    "accessed": "2026-11-15"
   },
   "uniprot": {
-   "text": "UniProtKB, release 2026_04: the reviewed entries of the reference proteome UP000000625 (Escherichia coli K-12), their keywords and the Gene Ontology terms UniProt gives them, read from the saved copies in ecoli/uniprot-ecoli-k12-reviewed-proteome.",
+   "text": "UniProtKB, release 2026_04: the reviewed entries of the reference proteome UP000000625 (Escherichia coli K-12), their keywords and the Gene Ontology terms UniProt gives them, read from the saved copies in ecoli/uniprot-ecoli-k12-reviewed-proteome, the SUBUNIT comments from ecoli/uniprot-ecoli-subunit-g (release 2026_04).",
    "url": "https://www.uniprot.org",
    "licence": "CC BY 4.0",
    "class": "permissive"

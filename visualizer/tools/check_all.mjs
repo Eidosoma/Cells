@@ -129,6 +129,11 @@ const SUITE = [
   { name: "catalogue-shape-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 2 },
   { name: "catalogue-shape-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 2 },
   { name: "catalogue-human-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 2 },
+  // The benches read beside the page (the planarian's by family, the thale cress's with its machines of light, one that cannot be read).
+  { name: "catalogue-benches", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches", WIDTH: "1440", HEIGHT: "900" }, minutes: 3 },
+  { name: "catalogue-benches-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 3 },
+  { name: "catalogue-benches-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 3 },
+  { name: "catalogue-benches-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 3 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

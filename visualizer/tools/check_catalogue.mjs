@@ -480,6 +480,140 @@ try {
     s = await state();
     check("Syn3A's ribosome at Shape is E. coli's shape, and its panel says whose", /It is the shape of a structure of Escherichia coli, as its size is\./.test(s.panel), s.panel.slice(0, 160));
     await errorsAtEnd();
+  } else if (CASE === "benches") {
+    // ---------------------------------------------------------- the benches read beside the page: the planarian's, the thale cress's
+    check("the page opens on lens=machines with the planarian", await open("lens=machines&entry=planarian", 3500));
+    const benchIn = (species) => until(`${L}.catalogue.hasBench(${JSON.stringify(species)}) && ${L}.layout.items.some((item) => !item.item.unit)`, 80);
+    check("its bench is read from beside the page (catalogue/planarian.json), and no other species' bench is", (await benchIn("planarian")) && (await evaluate(`(() => { const read = performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => /\\/catalogue\\/[a-z0-9]+\\.json$/.test(name)); return read.length === 1 && read[0].endsWith("/catalogue/planarian.json"); })()`)), JSON.stringify(await evaluate(`performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => /catalogue/.test(name))`)));
+    const bench = await evaluate(`(() => { const lens = ${L}, counts = lens.catalogue.counts("planarian"); return { trays: lens.layout.trays.length, groups: counts.groups, machines: counts.machines, cost: lens.cost(), sections: ${V}.sections().length, apart: lens.catalogue.noneFound("planarian").length ? 1 : 0 }; })()`);
+    check("the planarian's bench: a tray for each group, its machines and units, the List by group (and what was looked for and not found, apart), within the ceiling", bench.trays === bench.groups && bench.machines >= 60 && bench.sections === bench.groups + bench.apart && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
+    const edges = await evaluate(`(() => { const v = ${V}, lens = v.current, r = v.canvas.getBoundingClientRect(), out = [];
+      for (const tray of lens.layout.trays) for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        const p = lens.root.position.clone().set(tray.x + dx * tray.w / 2, 0, tray.z + dz * tray.d / 2); const q = v.stage.project(p, p.clone());
+        if (q.x < -2 || q.x > r.width + 2 || q.y < -2 || q.y > r.height + 2) out.push(tray.group);
+      }
+      return [...new Set(out)]; })()`);
+    check(`${WIDTH} by ${HEIGHT}: the opening view cuts no tray at the screen's edge`, edges.length === 0, JSON.stringify(edges));
+    await shot(`${NAME}-planarian`);
+    // A real press on a machine named by family: its panel says its proteins are candidates, and what was looked for.
+    const card = await evaluate(`(() => { const v = ${V}, item = v.current.layout.items.find((value) => value.id === "machine:proteasome"); if (!item) return null; v.current.focus("machine:proteasome"); return true; })()`);
+    await sleep(2000);
+    const at = await evaluate(`(() => { const v = ${V}, item = v.current.layout.items.find((value) => value.id === "machine:proteasome"); const p = v.current.root.position.clone().set(item.x, item.y + item.h, item.z); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; })()`);
+    if (card && at) await click(at.x, at.y, 1500);
+    let s = await state();
+    check("a real press on the proteasome's card: its proteins are candidates by their family, not its parts, with what was looked for part by part (\"Looked for, by family\", not \"Named by\")", s.selected === "machine:proteasome" && /candidates by their family \(InterPro\) for parts of Human's machine: candidates, not the machine's parts/.test(s.panel) && /What was looked for, part by part/.test(s.panel) && /Looked for, by family/.test(s.panel) && !/Named by/.test(s.panel) && !/Its parts, held by the structure/.test(s.panel), JSON.stringify([at, s.selected, s.panel.slice(0, 200)]));
+    await shot(`${NAME}-planarian-proteasome`);
+    // The planarian's bench by family: the machines its records name and the candidates by family, counted apart in the card,
+    // and the one looked for and not found listed apart; a candidate's card says so on its face.
+    const family = await evaluate(`(() => { const lens = ${L}, stats = Object.fromEntries(lens.chrome().card.stats.map(([value, label]) => [label, value])); return { stats, bench: lens.layout.items.filter((item) => !item.item.unit).length, none: lens.catalogue.noneFound("planarian").map((row) => row.id), myosin: lens.layout.items.some((item) => item.id === "machine:myosin-ii"), face: lens.plaques.some((plaque) => plaque.text === "candidates for 22 of 32 parts,"), list: [...${V}.shadowRoot.querySelectorAll(".mach-none-found summary")].map((el) => el.textContent) }; })()`);
+    check("the planarian's card counts 1 machine its records name and 29 candidates by family; myosin II, with no candidate, is off the bench and listed apart; the proteasome's card says its candidates on its face", family.stats["named by its own records"] === 1 && family.stats["candidates by family"] === 29 && family.bench === 30 && !family.myosin && family.none.join() === "myosin-ii" && family.face && /^Looked for by family, no candidate found · 1$/.test(family.list[0] || ""), JSON.stringify(family));
+    // The search finds a machine by a candidate's name.
+    await evaluate(`(() => { const v = ${V}; v.select(null); v.current.setQuery("proteasome subunit alpha"); v.renderChrome(); })()`);
+    await sleep(500);
+    const found = await evaluate(`${L}.chrome().legend.items.find((item) => item.id === "mach-found")?.count ?? null`);
+    check("the card's search finds the proteasome by a candidate's name", found >= 1, String(found));
+    await evaluate(`(() => { const v = ${V}; v.current.setQuery(""); v.renderChrome(); })()`);
+    // A candidate's door in the Protein atlas says what it is, and a real press on it opens Machines on its machine.
+    await evaluate(`${V}.openDoor({ lens: "proteins", show: "own", find: "h1SMcG0000958" })`);
+    await until(`String(${V}.state.selected || "").endsWith(":h1SMcG0000958")`, 80);
+    await sleep(800);
+    const candidate = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /^It is a candidate, by its family, for a part of Human's proteasome: show it in Machines/.test(button.textContent))`);
+    const atlasDoors = (await state()).doors;
+    if (candidate) await click(candidate.x, candidate.y, 2500);
+    await until(`${V}.state.lens === "machines" && ${V}.state.selected === "machine:proteasome"`, 40);
+    await sleep(1500);
+    const flown = await evaluate(`(() => { const v = ${V}, lens = v.current, item = lens.layout.items.find((value) => value.id === "machine:proteasome"); const r = v.canvas.getBoundingClientRect(), insets = v.stage.insets || {}; const p = lens.root.position.clone().set(item.x, item.y + item.h, item.z); const q = v.stage.project(p, p.clone()); const x = r.left + q.x, y = r.top + q.y, top = v.shadowRoot.elementFromPoint(x, y); return { x: Math.round(x), y: Math.round(y), clear: top === v.canvas, inside: x >= r.left + (insets.left || 0) && x <= r.right - (insets.right || 0) && y >= r.top && y <= r.bottom - (insets.bottom || 0) }; })()`);
+    check("a planarian protein's door says it is a candidate, by its family, for a part of Human's proteasome, never \"a part of\"; a real press opens Machines on the proteasome, in sight", Boolean(candidate) && !atlasDoors.some((door) => /^It is a part of/.test(door)) && flown.clear && flown.inside, JSON.stringify([candidate, atlasDoors, flown]));
+    await shot(`${NAME}-planarian-candidate-door`);
+    // The thale cress: its machines of light in a tray of their own.
+    await evaluate(`${V}.setSpecies("thalecress")`);
+    await benchIn("thalecress");
+    await sleep(1200);
+    const plant = await evaluate(`(() => { const lens = ${L}; return { trays: lens.layout.trays.map((tray) => tray.group), machines: lens.catalogue.counts("thalecress").machines, cost: lens.cost() }; })()`);
+    check("the thale cress's bench: its machines of light in a tray of their own, within the ceiling", plant.trays.includes("light") && plant.machines >= 38 && plant.cost.draws <= 40 && plant.cost.triangles <= 40000, JSON.stringify(plant));
+    await shot(`${NAME}-thalecress`);
+    // Syn3A: what its own file names stays; the ten machines looked for by family with no candidate are off the bench,
+    // listed in the card under their own heading, and the card's search finds one there, not as a machine of Syn3A.
+    await evaluate(`(() => { const v = ${V}; v.select(null); v.setSpecies("syn3a"); })()`);
+    await benchIn("syn3a");
+    await sleep(1200);
+    await evaluate(`(() => { const v = ${V}; v.current.setQuery("bamA"); v.renderChrome(); })()`);
+    await sleep(400);
+    const apart = await evaluate(`(() => { const v = ${V}, lens = v.current, block = v.shadowRoot.querySelector(".mach-none-found"); return { bench: lens.layout.items.filter((item) => !item.item.unit).map((item) => item.id.slice(8)).sort(), found: lens.chrome().legend.items.find((item) => item.id === "mach-found")?.count ?? 0, open: Boolean(block?.open), rows: block ? [...block.querySelectorAll("li")].map((li) => li.textContent) : [], summary: block?.querySelector("summary")?.textContent || null }; })()`);
+    check("Syn3A's bench: its file's six machines and three candidates by family; BAM complex is off it, and the card's search finds it in the list apart, with its reference, not as a machine of Syn3A", apart.bench.length === 9 && !apart.bench.includes("bam-complex") && ["ribosome", "rna-polymerase", "atp-synthase", "protein-translocon", "ftsh", "lon"].every((id) => apart.bench.includes(id)) && apart.found === 0 && apart.open && apart.rows.join() === "BAM complex: E. coli's, 5 parts looked for" && apart.summary === "Looked for by family, no candidate found · 1", JSON.stringify(apart));
+    await shot(`${NAME}-syn3a-apart`);
+    await evaluate(`(() => { const v = ${V}; v.current.setQuery(""); v.renderChrome(); })()`);
+    await errorsAtEnd();
+    // A bench that cannot be read: the card says so plainly, and the tab still works with the units.
+    await evaluate(`(() => { const lens = ${L}; lens.catalogue.raw.benches.fruitfly.file = "catalogue/none-such.json"; ${V}.setSpecies("fruitfly"); })()`);
+    await until(`${L}.catalogue.benchState("fruitfly")?.status === "failed"`, 80);
+    await sleep(800);
+    const failed = await evaluate(`(() => { const lens = ${L}; return { notice: lens.chrome().card.notice, units: lens.layout.items.filter((item) => item.item.unit).length, others: lens.layout.items.filter((item) => !item.item.unit).length }; })()`);
+    check("a bench that cannot be read says so in the card, and the units stand", /^The machines of this species could not be read \(catalogue\/none-such\.json: /.test(failed.notice || "") && failed.units > 0 && failed.others === 0, JSON.stringify(failed));
+    await shot(`${NAME}-failed`);
+    // Cold addresses: what an address names (a machine drawn to scale, a card, a unit, a part, a chain) is chosen once its
+    // species' bench is read, drawn at its level, and flown to: it stands in the room the card and the panel leave free,
+    // as near as a choice on the bench already read brings it.
+    const placeIn = (id) =>
+      evaluate(`(() => { const v = ${V}, lens = v.current, id = ${JSON.stringify(id)}, owner = lens.partOf(id) || id.match(/^(machine:[^:]+|unit\\.[^:]+)/)[1];
+        const item = lens.layout.items.find((value) => value.id === owner); if (!item) return { owner, missing: true, selected: v.state.selected };
+        const r = v.canvas.getBoundingClientRect(), insets = v.stage.insets || {}, lift = lens.lifts.get(owner) || 0;
+        const at = (dx) => { const p = lens.root.position.clone().set(item.x + dx, item.y + lift + item.h / 2, item.z); const q = v.stage.project(p, p.clone()); return { x: r.left + q.x, y: r.top + q.y }; };
+        const mid = at(0), wide = Math.abs(at(item.w / 2).x - at(-item.w / 2).x), top = v.shadowRoot.elementFromPoint(mid.x, mid.y);
+        const room = { left: r.left + (insets.left || 0), right: r.right - (insets.right || 0), top: r.top, bottom: r.bottom - (insets.bottom || 0) };
+        return { owner, x: Math.round(mid.x), y: Math.round(mid.y), wide: Math.round(wide), room: Object.fromEntries(Object.entries(room).map(([k, n]) => [k, Math.round(n)])), clear: Boolean(top) && (top === v.canvas || top.tagName === "CANVAS"), over: top && top !== v.canvas ? top.tagName.toLowerCase() + (top.className ? "." + String(top.className).split(" ")[0] : "") : null,
+          level: lens.built.get(owner)?.level ?? null, part: lens.selectedPart || null, selected: v.state.selected }; })()`);
+    const inRoom = (seen) => !seen.missing && seen.clear && seen.x >= seen.room.left && seen.x <= seen.room.right && seen.y >= seen.room.top && seen.y <= seen.room.bottom && seen.wide >= 0.06 * (seen.room.right - seen.room.left); // at the whole bench's view a unit is some 2 per cent of it
+    const logged = pageLog.length;
+    // A file's or a field's name that no panel says (the dossiers' sentences reach it in plain words).
+    const TOOL_WORDS = /gather\.json|\b(?:left_out|holds_more|structure_elsewhere|not_looked_for|no_structure|looked_for|by_protein|per_cell)\b|\((?:data|tools|schema|src)\//;
+    for (const [species, id, what] of [
+      ["human", "machine:ribosome", "a machine drawn to scale"],
+      ["planarian", "machine:proteasome", "a card; the planarian is the page's first species"],
+      ["mouse", "unit.U39", "a unit drawn to scale"],
+      ["thalecress", "machine:rna-polymerase", "a card"],
+      ["human", "machine:proteasome:chain-U", "a chain of a machine drawn to scale"],
+      ["mouse", "machine:ribosome:small", "a part of a machine drawn to scale"],
+      ["fruitfly", "machine:ribosome:large", "a part, with no lens named: the address opens Machines"],
+    ]) {
+      await open(`${/no lens/.test(what) ? "" : "lens=machines&"}${species === "planarian" ? "" : `species=${species}&`}select=${id}`, 300);
+      const chosen = await until(`${V}.state.selected === ${JSON.stringify(id)} && ${L}.catalogue.hasBench(${JSON.stringify(species)}) && ${L}.layout.items.some((item) => !item.item.unit)`, 80);
+      await sleep(2800);
+      const cold = await placeIn(id);
+      const thrown = await evaluate(`(window.__pageErrors || []).slice(0, 3)`);
+      await shot(`${NAME}-cold-${species}-${id.replace(/[^a-z0-9]+/gi, "-")}`);
+      // The same choice made again on the bench as it now stands: the level and the place a choice there gives.
+      await evaluate(`(() => { const v = ${V}; v.select(null); v.select(${JSON.stringify(id)}, { fly: true }); })()`);
+      await sleep(2800);
+      const again = await placeIn(id);
+      const words = (await state()).panel.match(TOOL_WORDS)?.[0] || null;
+      check(`a cold address on ${species}'s ${id} (${what}): chosen, at the level a choice on the read bench gives, in the free room of the picture; its panel in plain words`, chosen && cold.selected === id && cold.level === again.level && cold.part === again.part && inRoom(cold) && inRoom(again) && thrown.length === 0 && !words, JSON.stringify({ cold, again, thrown, words }));
+    }
+    // While a bench is still being read (its file held back a moment and a half): a unit chosen as the List chooses it,
+    // and a door from another view into Machines; each chosen at its level once the bench is in, and flown to, in the
+    // picture's free room, as the same choice on the bench in hand.
+    const holdBack = `(() => { const fetched = window.fetch; window.fetch = (what, ...rest) => (/\\/catalogue\\/[a-z0-9]+\\.json/.test(String(what)) ? new Promise((done) => setTimeout(done, 1500)).then(() => fetched(what, ...rest)) : fetched(what, ...rest)); return true; })()`;
+    for (const [from, species, id, how] of [
+      ["cell", "mouse", "unit.U39", "list"],
+      ["proteins", "thalecress", "machine:ribosome", "door"],
+      ["cell", "human", "machine:proteasome", "door"],
+    ]) {
+      await open(`lens=${from}&species=${species}`, 1500);
+      const unread = await evaluate(`!${V}.lenses?.get("machines")?.catalogue?.hasBench(${JSON.stringify(species)})`).catch(() => null);
+      await evaluate(holdBack);
+      if (how === "list") await evaluate(`(() => { const v = ${V}; v.setLens("machines", true); v.select(${JSON.stringify(id)}, { fly: true }); })()`);
+      else await evaluate(`${V}.openDoor({ lens: "machines", value: ${JSON.stringify(id)} })`);
+      const chosen = await until(`${V}.state.selected === ${JSON.stringify(id)} && ${L}.catalogue.hasBench(${JSON.stringify(species)}) && ${L}.layout.items.some((item) => !item.item.unit)`, 80);
+      await sleep(2800);
+      const held = await placeIn(id);
+      await shot(`${NAME}-held-${how}-${species}-${id.replace(/[^a-z0-9]+/gi, "-")}`);
+      await evaluate(how === "list" ? `(() => { const v = ${V}; v.select(null); v.select(${JSON.stringify(id)}, { fly: true }); })()` : `(() => { const v = ${V}; v.select(null); v.stage.rig.setView(v.current.homeView()); v.openDoor({ lens: "machines", value: ${JSON.stringify(id)} }); })()`);
+      await sleep(2800);
+      const again = await placeIn(id);
+      check(`${how === "list" ? "the List's press" : `a door from the ${from === "cell" ? "Cell view" : "Protein atlas"}`} on ${species}'s ${id} while its bench is read: chosen at its level once it is in, and flown to, in the picture's free room`, chosen && held.selected === id && held.level === again.level && inRoom(held) && inRoom(again), JSON.stringify({ unread, held, again }));
+    }
+    const later = pageLog.slice(logged).filter((line) => /error|exception|rejection|blocked/i.test(line));
+    check("the cold addresses and the held benches logged no error", later.length === 0, later.slice(0, 3).join(" / "));
   } else if (CASE === "phone") {
     check("the page opens on lens=machines with E. coli, on a phone", await open("lens=machines&entry=ecoli", 3500));
     const bar = await evaluate(`(() => {

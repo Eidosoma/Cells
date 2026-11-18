@@ -23,7 +23,8 @@ same in both views (`machine:<id>`).
 | `data/catalogue/measures/*.json` | `tools/measure_particle.py`, run by the viewer | The tool's own output for an entry, as written |
 | `data/catalogue/overlay.json` | Hand | The groups; the units of the law inventory left out, with why; the measures it reads and the entries they rest on; the kinds of machine (id, label, group, a plain line, the record lines of what Cells models of it); for each species, the kinds its records name and where each is named, counted and sized |
 | `data/catalogue/gather.json`, `data/catalogue/dossiers/<species>.json` | Hand, and `tools/gather_machines.py` (`schema/MACHINE_DOSSIERS.md`) | The kinds looked for, and for each species with a dossier file its machines, their proteins by tier, counts per cell from open papers, the entry the gathering would measure each from, and `by_protein`; read here, never written |
-| `data/catalogue/catalogue.json` | `tools/build_catalogue.py` (generated: do not edit) | The groups, the kinds and one entry for each machine of each species, with what its records give and their sources |
+| `data/catalogue/catalogue.json` | `tools/build_catalogue.py` (generated: do not edit) | The catalogue's core, which the page carries: the groups, the kinds (each with the species that have it), the records, the sources, the units' sizes, and `benches`, an index of the species' benches |
+| `data/catalogue/benches/<species>.json` | `tools/build_catalogue.py` (generated: do not edit) | One species' bench (`cells.visualizer.machine_bench@1`): an entry for each of its machines, with what its records give and their sources; `by_protein`, its proteins' machines; and `none_found`, the machines its dossier looked for by family and found no candidate for (each with its reference, its rows part by part, the dossier's sentence and its sources); published beside the page at `catalogue/<species>.json` |
 
 ```bash
 python3 tools/build_catalogue.py            # writes data/catalogue/catalogue.json
@@ -33,8 +34,17 @@ python3 tools/build_catalogue.py --check    # fails if the file is not what the 
 One catalogue for all species, with species' entries: a kind (the ribosome, the ATP synthase)
 recurs across species, and what it is and does, its group and what the record says Cells models of
 it are the kind's, said once; what names it, its count, its size and its proteins are the species',
-each entry with its own sources. The page carries the catalogue in its scene as `catalogue` (as the
-Laws library's list), so the view, its List and the text page read one file. The membrane units of
+each entry with its own sources. The page carries the catalogue's core in its scene as `catalogue`
+(as the Laws library's list); each species' bench is a file beside the page, read once when that
+bench is first shown (by the view, its List, the text page, or the atlas's way back to a protein's
+machines), through `loadBeside`, as the atlas reads its shelves. A page for the disk carries every
+bench inside it. While a bench is read the card says so; one that cannot be read says why in plain
+words, and the tab goes on with the units of the law inventory. While it is read the view is not
+`ready`: the viewer waits on it before it chooses what an address or a door names, so that a
+machine, a part, a chain or a unit is chosen at its level on the bench laid out, and flown to, as
+on a bench in hand; a choice made meanwhile (a unit pressed, the List) is chosen again once the
+bench is laid out, and the camera sent to it goes to its new place. Decided 18 November 2026: with
+eight dossiers the whole catalogue was about 1.2 MB, too much for every page to carry. The membrane units of
 the law inventory are not in the file: the page reads them from the scene's protein units, as
 the Protein atlas does ("Cells' N units"), and lists a unit for a species where that species' atlas
 found its family there or found it built from another (for the inventory's own species, a unit that
@@ -139,6 +149,52 @@ catalogue never says their count.
     of the atlas offers the machines its dossier makes it a part of, or names it with.
   - *A machine that stays a card* says why in one line (`no_size`, a dated decision): the human's
     nuclear pore, whose entry is an integrative model holding about a third of its proteins.
+- **The eight dossiers** (since 18 November 2026: E. coli, the human, the mouse, the fruit fly and the
+  thale cress by their own reviewed entries; the planarian, Syn3A and M. pneumoniae by family).
+  What the panel says of each, each said as what it is and with its source:
+  - *A species by family.* Its proteins are candidates by their family (InterPro) for parts of the
+    reference's machine, never the machine's parts: "Candidates by family, not its parts", and
+    "What was looked for, part by part", with the answer for each part in the dossier schema's
+    words (candidates; not in the table, which says what the table holds, not that the species
+    lacks the protein; cannot tell; no family signature). Where the species' own data marks the
+    machine's proteins, both sets side by side. The species' own records keep their place above
+    the dossier's ("Named by", FR-13's line). Nothing of the species names the machine by its
+    family route, so that line is "Looked for, by family", never "Named by": the panel writes it
+    from the dossier's rows, part by part, with the dossier's own counts (the species' candidates,
+    the parts they stand for, and the parts not in the table, that it cannot tell of, and with no
+    family signature).
+  - *Looked for, no candidate found.* A machine that only the family route names and for which it
+    found no candidate is not on the bench: in no count, no tray and none of the List's groups. The
+    bench's `none_found` lists it, and the card and the List give it under its own heading,
+    "Looked for by family, no candidate found", with the dossier's caveat (this says what the
+    species' table holds, not that the species lacks the machine), each with its reference
+    machine; the card's search and the List's find it there, and its panel says what was looked
+    for, part by part. A machine the species' own file or record names stays on the bench, whatever
+    the family route found (Syn3A's ribosome, RNA polymerase, ATP synthase, translocon, FtsH and
+    Lon; M. pneumoniae's attachment organelle). Since 18 November 2026: the planarian 30 machines
+    and 1 apart, Syn3A 9 and 10, M. pneumoniae 11 and 9.
+  - *A candidate by family on the bench* says so on its card's face, in words ("candidates for 22
+    of 32 parts, by family"), and in the List beside its name; the card counts the machines the
+    species' own records name and the candidates by family apart. No dash, outline or status
+    colour marks it: those are the page's statuses.
+  - *A protein's door from the atlas* says what its dossier makes it: "It is a part of the …", "It
+    is a part, by UniProt's keyword, of the …", "It is named with the …", or "It is a candidate, by
+    its family, for a part of Human's proteasome"; a tier these words do not know has no door.
+  - *Plain words.* A dossier's sentence reaches a panel without a file's or a field's name: the
+    tool rewrites the few that hold one (each rewrite exact) and stops on any other, and a source
+    that is a file of the tree is named in words, the file standing in the panel's list of files.
+  - *PaxDb's abundance*: parts per million of one whole-organism dataset, named, as that database
+    gives them; no count of copies.
+  - *UniProt's SUBUNIT sentences*, in quotation marks, as UniProt's: not a count of copies.
+  - *Sub-assemblies* by the Gene Ontology's narrower terms, and UniProt's fractions (complex I).
+  - *The pick*, with its entry's own title, and where it holds other complexes, that it does, and how
+    many of its entities a measure would leave out; *a structure elsewhere*, named as another
+    organism's, where the species has none of its own; *entries left out*, and why.
+  - *A count per cell* as the paper writes it (its power of ten kept: "1064 × 10^4"), what it counts,
+    in what cell, the paper and its place, and whom it cites; several conditions, each with its own,
+    none picked. The viewer multiplies nothing.
+  The group `light` ("Capturing light", from gather.json) has a tray of its own, in the chloroplast's
+  green; copying and mending DNA took the Golgi's pink.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
   a species' file draws at another's measure, the shape of that same entry: Syn3A's and M.
@@ -219,6 +275,12 @@ catalogue never says their count.
   that it is the shape of a structure of that organism, as its size is. A unit of the law
   inventory is drawn by its own page id (`unit.U39:chain-A`). The card's Detail stands in one row,
   and in two rows of two on a phone, where four whole words do not fit in one.
+- **The ceiling at every level.** Every measured machine and unit, chosen at every level it has, stays
+  within 40 draws and 40,000 triangles on its species' bench (held by the tests for each of them): a
+  chosen machine's bodies are as smooth as before, and coarser where it has many (the mitochondrial
+  ribosome's 89 chains), within about 12,000 triangles together, as the bench's outlines coarsen.
+- **A chain named while a shape of parts is shown** (the ribosomes' shapes are their two subunits):
+  the machine goes to its Subunits, and the card's Detail and the panel say so.
 - **The choice told apart.** A part or a chain chosen in a machine is lit in the page's accent, as
   the chosen machine is: by its instance's colour at Parts and Subunits, by its surface's at Shape
   (`recolour`); choosing it does not rebuild the machine. The legend's line for the choice says so.

@@ -122,6 +122,16 @@ export async function shapeFiles({ shapesDir = DEFAULT_SHAPES } = {}) {
   return { files: names.map((name) => ({ path: `shapes/${name}`, source: path.join(shapesDir, name) })), problems: [] };
 }
 
+// Each species' bench of the Machines catalogue (schema/MACHINE_CATALOGUE.md): one file a species under
+// data/catalogue/benches/, published beside the page at catalogue/<species>.json and read when that bench is shown; the
+// page carries the catalogue's core (data/catalogue/catalogue.json). Returns { files: [{ path, source }], problems: [] }.
+export const DEFAULT_BENCHES = path.join(ROOT, "data", "catalogue", "benches");
+const BENCH_FILE = /^[a-z0-9][a-z0-9_-]*\.json$/;
+export async function benchFiles({ benchesDir = DEFAULT_BENCHES } = {}) {
+  const names = (await readdir(benchesDir).catch(() => [])).filter((name) => BENCH_FILE.test(name)).sort();
+  return { files: names.map((name) => ({ path: `catalogue/${name}`, source: path.join(benchesDir, name) })), problems: [] };
+}
+
 export const NAMES_FILE = "names.json";
 export const NAMES_FORMAT = "cells.visualizer.species_protein_names@1";
 
@@ -288,7 +298,7 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.
   if (inlineRuns) {
-    for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files, ...(await modelFiles(data)).files, ...(await shapeFiles()).files]) {
+    for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files, ...(await modelFiles(data)).files, ...(await shapeFiles()).files, ...(await benchFiles()).files]) {
       const text = (await readFile(file.source, "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-file="${file.path}">${text}</script>`;
     }

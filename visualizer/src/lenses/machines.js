@@ -20,8 +20,9 @@ import { disposeTree } from "../core/stage.js";
 import { fitView, plaqueMesh } from "./laws_marks.js";
 import { buildMachine, describeMachinePart } from "./machine_parts.js";
 import { loadBeside } from "./protein_shelves.js";
-import { IONS, PREFIX, kindOf } from "./machines_data.js";
-import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, shapeWords, SHAPE_LEVEL, SWATCH, groupSwatch } from "./machines_card.js";
+import { IONS, PREFIX, kindOf, byFamily } from "./machines_data.js";
+import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, shapeWords, SHAPE_LEVEL, SWATCH, groupSwatch, NONE_FOUND, noneFoundNote } from "./machines_card.js";
+import { h } from "../ui/dom.js";
 import { loadShape, buildShape } from "./machine_shape.js";
 import { layoutOf, bodiesAt, membraneOf, partOfChain, CARD, TRAY, BENCH, UNIT_NM } from "./machines_layout.js";
 
@@ -29,7 +30,7 @@ import { layoutOf, bodiesAt, membraneOf, partOfChain, CARD, TRAY, BENCH, UNIT_NM
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
 /** Each group's colour: a token of the page's palette (page.css), one for each thing the machines do. */
 // Each group's own colour, told apart in both themes: the three groups the dossiers brought take colours no other tray has.
-export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", traffic: "bioWound" };
+export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioGolgi", light: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", traffic: "bioWound" };
 /** What each role of a machine file's part wears (as its closer view, machine_view.js, dresses it). */
 const ROLE_HUE = { membrane: ["bioMembrane", 0.32, true], wall: ["ghost", 0.36, true], rotor: ["bioProtein", 1], stator: ["bioMito", 1], bearing: ["edge", 1], export: ["bioIon", 1], mark: ["fg", 1], swept: ["fg", 0.3, true], arrow: ["fg", 1] };
 const VIEW = { azimuth: 0.12, polar: 0.98 };
@@ -103,6 +104,56 @@ export class MachinesLens {
     this.build();
     if (this.active) this.afterBuild(true);
     this.onChrome?.();
+    this.readBench();
+  }
+
+  /**
+   * The species' bench, read from beside the page when it is first shown (schema/MACHINE_CATALOGUE.md, `benches`): the
+   * bench stands with its units meanwhile, and is built again when its machines are in; one that cannot be read leaves
+   * the units standing, and the card says why. While it is read the view is not `ready`: the viewer waits on it before
+   * it chooses what an address or a door names, so that a machine, a part or a unit is chosen on the bench laid out.
+   */
+  readBench() {
+    const species = this.species;
+    if (!this.catalogue || !species || this.catalogue.hasBench(species) || this.catalogue.benchState(species) || this.benchReading?.species === species) return;
+    const promise = this.catalogue.loadBench(species).then(() => {
+      if (this.benchReading?.promise === promise) this.benchReading = null;
+      if (this.species !== species || this.disposed) return;
+      // What was chosen while it was read (a unit pressed meanwhile, the List): chosen again on the bench as laid out
+      // now, at its own levels; the camera that was sent to it goes to its place, else to the whole bench.
+      const held = this.selected, aim = this.focused?.id;
+      this.measured = {};
+      this.selected = this.selectedPart = null;
+      this.build();
+      if (held && this.has(held)) this.setSelection(held);
+      if (this.active) {
+        this.afterBuild(false);
+        // Where it now stands on the bench (a machine the species lacks stands nowhere: the whole bench, then).
+        const there = aim && aim === this.selected && this.layout.items.some((item) => item.id === (this.partOf(aim) || this.measuredPart(aim)?.owner || aim));
+        if (there) this.focus(aim);
+        else this.stage.rig?.setView(this.homeView());
+      }
+      this.onChrome?.();
+      this.onOpen?.();
+      this.stage.invalidate?.();
+    });
+    this.benchReading = { species, promise };
+  }
+
+  /** Settles once the species' bench is read and laid out (the viewer waits on it); nothing while none is being read. */
+  get ready() {
+    return this.benchReading?.species === this.species ? this.benchReading.promise : null;
+  }
+
+  /** What the viewer waits on before it chooses `id`: the bench, while it is read and the id (a part, a chain) is not yet known. */
+  waitsFor(id) {
+    return this.ready && !this.has(id) ? this.ready : null;
+  }
+
+  /** Where the bench is laid out anew (a new width, a machine's own file read): the camera sent to the choice follows it. */
+  reaim() {
+    const aim = this.focused?.id;
+    if (aim && this.active && (aim === this.selected || aim === this.selectedPart)) this.focus(aim);
   }
 
   item(id) {
@@ -150,6 +201,7 @@ export class MachinesLens {
     const items = this.catalogue && this.species ? this.catalogue.of(this.species) : [];
     this.counts = this.catalogue && this.species ? this.catalogue.counts(this.species) : this.counts;
     this.layout = layoutOf(items, this.catalogue?.groups || [], { columns: this.columns, measured: this.measured, ions: IONS });
+    this.layoutBench = Boolean(this.catalogue?.hasBench(this.species));
     const { trays, items: placed, bench, scale } = this.layout;
     // The bench and the trays: the room.
     const benchMesh = new THREE.Mesh(new THREE.BoxGeometry(bench.w, BENCH.h, bench.d), this.materials.bench);
@@ -358,10 +410,12 @@ export class MachinesLens {
     // At Shape, the ellipsoids of the level before stand until the surfaces are read (and stay where they cannot be).
     const level = surface ? 3 : this.level;
     const group = new THREE.Group(), ids = new Set();
-    const ball = (this.ballGeometry ??= new THREE.SphereGeometry(0.5, 24, 16));
     // A chain wears the hue of the named part that holds it (by its entity or by its chain), where the overlay gives that part one.
     const partOf = (body) => (body.entity || body.chain || String(body.id || "").startsWith("chain-") ? partOfChain(shape, body) : null);
     const bodies = bodiesAt(shape, level).map((body) => ({ ...body, hue: body.hue || partOf(body)?.hue || null }));
+    // Its bodies' spheres: as smooth as a chosen machine's are, and coarser where it has many bodies (the mitochondrial
+    // ribosome's 89 chains), so that a chosen machine at any level stays within about 12,000 triangles on any bench.
+    const ball = this.bodyBall(bodies.length);
     const entities = [...new Set(bodies.map((body) => body.entity).filter(Boolean))];
     // Its shade. At Parts, a part drawn as its chains is one colour: its hue, or the group's in one of two shades by
     // part. At Subunits, by its kind of chain where the entry has several; where it has one, by the part that holds
@@ -414,6 +468,7 @@ export class MachinesLens {
     if (this.built.get(entry.id) !== built || this.disposed) return; // chosen otherwise meanwhile
     if (found.status !== "found") {
       built.surfaceWords = found.words;
+      this.catalogue.shapeWords.set(surface.file, found.words);
       this.onChrome?.();
       this.onOpen?.();
       return;
@@ -451,6 +506,14 @@ export class MachinesLens {
       const apart = (within.get(row.id) % 2) * 0.18 + (kind === "nucleic" ? 0.35 : 0);
       return base.lerp(ground, Math.min(0.8, (part?.hue ? 0 : index % 2 ? 0.45 : 0) + apart));
     };
+  }
+
+  /** A sphere for a chosen machine's bodies, the finest that keeps them within about 12,000 triangles together. */
+  bodyBall(count) {
+    const detail = [[24, 16], [16, 12], [12, 9], [10, 8], [8, 6]].find(([across, down]) => count * across * down * 2 <= 12000) || [8, 6];
+    this.bodyBalls ??= new Map();
+    if (!this.bodyBalls.has(detail.join())) this.bodyBalls.set(detail.join(), new THREE.SphereGeometry(0.5, ...detail));
+    return this.bodyBalls.get(detail.join());
   }
 
   /** The colour each body of a chosen measured machine wears, as hex (for the checks). */
@@ -578,7 +641,16 @@ export class MachinesLens {
     for (const entry of this.cardList) {
       const text = entry.item.short || entry.item.label;
       // Written on the card as it lies: a card that rises (chosen) is named by the page's label above it, so the names are not written again each frame.
-      plaques.push({ text, x: entry.x + 0.55, y: -entry.z, z: entry.y + entry.h + 0.02, h: fit(text, entry.w - 1.6, 1.15), align: "center", tone: "strong" });
+      // A machine its species' records do not name, only its dossier's family route, says so on its face, in words.
+      const rows = byFamily(entry.item) ? entry.item.entry.gathered?.looked_for || [] : null;
+      if (!rows) {
+        plaques.push({ text, x: entry.x + 0.55, y: -entry.z, z: entry.y + entry.h + 0.02, h: fit(text, entry.w - 1.6, 1.15), align: "center", tone: "strong" });
+        continue;
+      }
+      const lines = [`candidates for ${rows.filter((row) => row[2] === "candidates").length} of ${rows.length} ${rows.length === 1 ? "part" : "parts"},`, "by family"];
+      plaques.push({ text, x: entry.x + 0.55, y: -(entry.z - 0.55), z: entry.y + entry.h + 0.02, h: fit(text, entry.w - 1.6, 1.0), align: "center", tone: "strong" });
+      const small = Math.min(...lines.map((line) => fit(line, entry.w - 1.6, 0.55)));
+      lines.forEach((line, index) => plaques.push({ text: line, x: entry.x + 0.55, y: -(entry.z + 0.45 + index * 0.62), z: entry.y + entry.h + 0.02, h: small, align: "center", tone: "soft" }));
     }
     // Each tray's name in its strip along the front, in one line or two.
     for (const tray of this.layout.trays) {
@@ -588,6 +660,7 @@ export class MachinesLens {
       });
     }
     if (this.layout.scale) plaques.push({ text: `${this.layout.scale.nm} nm`, x: this.layout.scale.x + this.layout.scale.length + 0.8, y: -this.layout.scale.z, z: 0.02, h: 1.1, align: "left", tone: "soft" });
+    this.plaques = plaques; // what is written on the bench, in words (the tests read it)
     this.flatNames = plaqueMesh(plaques, palette);
     if (this.flatNames) {
       this.flatNames.rotation.x = -Math.PI / 2;
@@ -665,8 +738,11 @@ export class MachinesLens {
         find: { label: "Find a machine", placeholder: "Find a machine or a gene", value: this.query },
         marks: groups.length > 1 ? { label: "Group", options: [["all", "All groups"], ...groups.map((group) => [group.id, group.label])], active: this.focusGroup || "all" } : null,
         modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level), oneRow: true } : null,
-        notice: counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
-        stats: [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
+        // While its bench is read, and where it cannot be, the card says so; else whether any machine has a size in hand.
+        notice: this.catalogue.benchState(this.species)?.status === "failed" ? this.catalogue.benchState(this.species).words : this.catalogue.raw.benches?.[this.species] && !this.catalogue.hasBench(this.species) ? `Reading the machines of ${label}…` : counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
+        // A species whose dossier looks by family: how many machines its own records name, and how many are candidates by family.
+        stats: counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
+        own: () => this.cardNoneFound(),
         text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
@@ -683,11 +759,39 @@ export class MachinesLens {
     };
   }
 
+  /**
+   * The card's list of what the species' dossier looked for by family and found no candidate for: under its own heading,
+   * with the dossier's caveat, each with its reference machine; never on the bench. The card's search finds them here.
+   */
+  cardNoneFound() {
+    const none = this.catalogue?.noneFound(this.species) || [];
+    if (!none.length) return [];
+    const scene = this.model.raw, labelOf = (id) => (scene.species || []).find((item) => item.id === id)?.label || id;
+    const query = this.query.trim().toLowerCase();
+    const rows = none.filter((row) => !query || [row.label, this.catalogue.kinds.get(row.id)?.plain, ...row.looked_for.map(([gene]) => gene)].filter(Boolean).join(" ").toLowerCase().includes(query));
+    if (query && !rows.length) return [];
+    return [
+      h(
+        "details",
+        { class: "card-more mach-none-found", open: Boolean(query) || Boolean(this.noneOpen), ontoggle: (event) => (this.noneOpen = event.target.open) },
+        h("summary", {}, `${NONE_FOUND} · ${rows.length}`),
+        h("p", { class: "card-text" }, noneFoundNote(labelOf(this.species))),
+        h(
+          "ul",
+          { class: "card-extra" },
+          rows.map((row) => h("li", {}, h("button", { class: "link-button", type: "button", onclick: () => this.onShown?.(`${PREFIX}${row.id}`) }, row.label), `: ${labelOf(row.reference)}'s, ${row.looked_for.length} ${row.looked_for.length === 1 ? "part" : "parts"} looked for`))
+        )
+      ),
+    ];
+  }
+
   activate() {
     const { stage } = this;
     this.active = true;
     stage.scene.add(this.root);
-    if (!this.layout) this.build();
+    // A bench laid out before its machines were read (they came while another view was shown): laid out again with them.
+    if (!this.layout || this.layoutBench !== Boolean(this.catalogue?.hasBench(this.species))) this.build();
+    this.readBench();
     if (stage.sun) {
       stage.sun.castShadow = false;
       stage.sun.position.set(this.layout.bounds.maxX * 0.6, 120, 90);
@@ -782,7 +886,7 @@ export class MachinesLens {
   }
 
   setSelection(id) {
-    const first = this.selected;
+    const first = this.selected, levelBefore = this.built?.get(first)?.level;
     // A measured part named before its machine shows it: the machine is drawn at that part's level first.
     const asked = id && !this.partOf(id) ? this.measuredPart(id) : null;
     if (asked) {
@@ -806,7 +910,9 @@ export class MachinesLens {
     }
     for (const value of rebuild) this.rebuildMachine(value);
     this.refresh();
-    if (first !== this.selected) this.onChrome?.(); // the card's Detail is offered while a machine with levels is chosen
+    // The card's Detail is offered while a machine with levels is chosen, and follows its level where a choice changed it
+    // (a chain named by an address while a shape of parts is shown: the machine goes to its Subunits).
+    if (first !== this.selected || this.built?.get(this.selected)?.level !== levelBefore) this.onChrome?.();
   }
 
   rebuildMachine(id) {
@@ -853,7 +959,12 @@ export class MachinesLens {
 
   /** A door from another view (the viewer's openDoor, `value`): the machine it names is chosen. */
   setFinding(id) {
-    if (id && this.has(id)) this.onShown?.(id);
+    if (!id || !this.has(id)) return;
+    this.onShown?.(id);
+    // The camera goes to it, as to a choice an address names. A door opens this view afresh, even from its own panels
+    // ("Back to the machine", "Its part"), and the view opens on the whole bench: with no flight it stayed there, and on
+    // a phone the machine could lie under the card or the bar.
+    if (this.active && this.selected) this.focus(id);
   }
 
   back() {
@@ -944,19 +1055,23 @@ export class MachinesLens {
   focus(id) {
     const owner = this.partOf(id) || this.measuredPart(id)?.owner || id;
     const entry = this.layout?.items.find((item) => item.id === owner);
-    if (!entry) return;
+    // Not on the bench yet (its species' machines are being read): the camera is sent to it once they are laid out.
+    if (!entry) {
+      this.focused = { id, box: null };
+      return;
+    }
     const pad = entry.type === "card" ? 6 : Math.max(2, Math.max(entry.w, entry.h) * 0.6);
     const box = new THREE.Box3(new THREE.Vector3(entry.x - entry.w / 2 - pad, entry.y, entry.z - entry.d / 2 - pad), new THREE.Vector3(entry.x + entry.w / 2 + pad, entry.y + entry.h + LIFT + 1, entry.z + entry.d / 2 + pad));
-    this.flyToBox(box);
+    this.flyToBox(box, id);
   }
 
-  flyToBox(box) {
+  flyToBox(box, id = null) {
     const { stage } = this, rig = stage.rig;
     if (!rig?.flyTo || box.isEmpty()) return;
     this.homeHeld = null;
     const view = this.fitOnScreen(box, 0.1);
     rig.flyTo(view, 1000);
-    this.focused = { box: box.clone(), insets: JSON.stringify(stage.insets || {}), until: now() + 1600 };
+    this.focused = { id, box: box.clone(), insets: JSON.stringify(stage.insets || {}), until: now() + 1600 };
   }
 
   update(dt = 16) {
@@ -964,12 +1079,14 @@ export class MachinesLens {
       this.columns = columnsFor(this.stage);
       this.build();
       this.afterBuild(true);
+      this.reaim();
       return true;
     }
     if (this.relayout) {
       this.relayout = false;
       this.build();
       this.afterBuild(!this.selected);
+      this.reaim();
       return true;
     }
     const held = this.homeHeld, insets = JSON.stringify(this.stage.insets || {});
@@ -978,7 +1095,7 @@ export class MachinesLens {
       this.stage.rig?.setView?.(this.homeView());
     }
     const focused = this.focused;
-    if (focused && now() < focused.until && focused.insets !== insets) this.flyToBox(focused.box);
+    if (focused?.box && now() < focused.until && focused.insets !== insets) this.flyToBox(focused.box, focused.id);
     // The chosen machine rises; the others settle.
     const k = this.stage.reducedMotion ? 1 : Math.min(1, (dt / 1000) * 9);
     let moving = false, cards = false;
