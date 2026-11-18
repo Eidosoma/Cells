@@ -1484,3 +1484,18 @@ confirmed with the advisor.
   row at a closure node. Until seam A and the `forms` field exist, version 2 serves speciation and
   reads only. Transport of Ca²⁺ or Mg²⁺ through a closure node, such as cardiac Ca²⁺ buffering, waits
   for them.
+- **Amended at 20:09 UTC, on the binding owner's first hand-back.** The limits are widened by what
+  exists today.
+  - **Refused at parse at a general closure node:**
+    - @3's own routes and its pumps: the calcium pump moves its Ca²⁺ row in the step, and the Na/K
+      pump its own rows;
+    - in-step kind moves whose law's reads lack `rapid_binding@1`;
+    - operators that move or name a held row.
+  - **Admitted:** operators that name no row and change totals or volume uniformly. These are
+    replacement, division, the lumen's fill, water, insertion, current injection and the bridge
+    closure. The closure re-solves at the next stage, and an inadmissible total refuses the step
+    there.
+  - **Before any such operator runs at a general closure node** (item 3), it is shown, with one
+    planted dilution, that the energy ledger closes or refuses and never drifts.
+  - **The general parse may come before the three reference amendments:** declaration, admission
+    and refusals, with no closure solve and no number from it. The gate on C's outputs is unchanged.
