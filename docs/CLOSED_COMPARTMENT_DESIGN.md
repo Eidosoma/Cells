@@ -828,11 +828,12 @@ kind is checked per move:
   material term. No world on main has it (CORE_SEAMS_STEP0 §3, redone call by call for this
   version).
 - **Newly admitted:** a kind none of whose moves is at a compartment's node, whatever its ID.
-- **What it needs** (CORE_SEAMS §18 as amended): the law template's step terms in
-  `registry/laws.py`, that is `stage_term`, `material_term`, `charge_bound` and `material_bound` on
-  the cycle and route law types, and the passive routes' two laws declaring theirs (the leak a
-  `stage_term`, the neutral law a `material_bound`). Without them, FR-4's and FR-5's declared worlds
-  are refused.
+- **What it needs** (CORE_SEAMS §18 as amended), on main since seam F's landing (8c2cb523, merged
+  at 599b8610): the law template's step terms (`registry/laws.STEP_TERMS`), that is `stage_term`,
+  `material_term`, `charge_bound` and `material_bound` on the cycle and route law types, and the
+  passive routes' two laws declaring theirs (the leak a `stage_term`, the neutral law a
+  `material_bound`). Without them, FR-4's and FR-5's declared worlds would be refused; the premise
+  test fails if a declaration goes or the template gains a term refusal 4 does not map.
 - **Text.** The summary's scope string changes to version 1.3. No judged record holds it. Frozen
   operator summaries see it differ. The unchanged branches keep version 1.2's messages, since FR-1's
   judged refusal record holds the permeability one.

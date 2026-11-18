@@ -643,14 +643,18 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
 def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
     """Version 1.3's premise (§3.4.4; §3.4.1's wording after the core's review, finding 4): each
     built-in law a kind moves rows under declares, in the law registry, the step terms its kind
-    holds. The pump's proton law and the leak declare a charge slope (stage_term, the per-stage
-    rule's); the passive neutral law a material bound (material_bound: dt L <= 1). The
-    transporter's neutral law declares none, version 1.1's open item, so a move of it at a
-    compartment's node is refused (the test below). The buffer is a stage read and the routing
-    door's two kinds are sources, by their hooks. If a declaration or a hook goes, refusal 4's
-    admission loses its premise and this fails."""
+    holds. The declarations are seam F's (CORE_SEAMS §18 as amended): the pump's proton law and
+    the leak (laws/transport/proton_leak) declare a charge slope (stage_term, the per-stage
+    rule's), the passive neutral law (laws/routes/passive_permeation) a material bound
+    (material_bound, through the kind's bound_rate: dt L <= 1). The transporter's neutral law
+    declares none, version 1.1's open item, so a move of it at a compartment's node is refused
+    (the test below). The buffer is a stage read and the routing door's two kinds are sources,
+    by their hooks. Refusal 4 reads exactly the template's step terms (registry/laws.STEP_TERMS),
+    each mapped to a hook. If a declaration or a hook goes, or the template gains a term refusal
+    4 does not map, its admission loses its premise and this fails."""
     laws = law_registry.active()
     kinds = kind_registry.active()
+    assert tuple(comp.TERM_HOOKS) == law_registry.STEP_TERMS
     pump, routes = kinds.lookup("cells.transporter@1"), kinds.lookup("cells.passive_routes@1")
     held = {
         law.law_id: comp.held_terms(kind, law.law_id)[0]
@@ -675,8 +679,9 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
 @dataclass(frozen=True)
 class PlantedLaw(law_registry.Law):
     """A planted law under its own tests. interface (never registered on BUILTIN): the step-term
-    fields of the law template (registry/laws.py; docs/CORE_SEAMS_DESIGN.md §8.1), each a kernel's
-    name or None, as refusal 4 version 1.3 reads them."""
+    fields the cycle and route law types declare (registry/laws.STEP_TERMS;
+    docs/CORE_SEAMS_DESIGN.md §8.1), each a kernel's name or None, as refusal 4 version 1.3 reads
+    them."""
 
     stage_term: str | None = None
     material_term: str | None = None

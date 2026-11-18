@@ -73,14 +73,15 @@ from cells.registry import laws as law_registry
 
 LAW_ID = "cell_owned_compartments@1"
 # Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4 and §18 as amended).
-# Each is a field a law declares on the law template (registry/laws.py, §8.1: its kernel's name,
-# or None), held at the step by the kind hook it maps to: a charge slope in the per-stage rule
-# (stage_term, surface_pump_v3.membrane_rate at every free outside node, a face-free
-# compartment's included), a material slope per stage (material_term, surface_pump_v3's
-# material_rate), and the definition-time bounds of its charge and of its material relaxation
-# (charge_bound and material_bound, both through the kind's bound_rate, which the IMEX step checks
-# hold). A charged row moved at a compartment's node needs a charge slope; a neutral row a material
-# slope or a material bound. A charge bound alone holds neither: it bounds the declared state only.
+# Each is a field the cycle and route law types declare (registry/laws.STEP_TERMS, §8.1: its
+# kernel's name, or None), held at the step by the kind hook it maps to: a charge slope in the
+# per-stage rule (stage_term, surface_pump_v3.membrane_rate at every free outside node, a
+# face-free compartment's included), a material slope per stage (material_term,
+# surface_pump_v3's material_rate), and the definition-time bounds of its charge and of its
+# material relaxation (charge_bound and material_bound, both through the kind's bound_rate, which
+# the IMEX step checks hold). A charged row moved at a compartment's node needs a charge slope; a
+# neutral row a material slope or a material bound. A charge bound alone holds neither: it bounds
+# the declared state only.
 TERM_HOOKS = {
     "stage_term": "stage_term",
     "material_term": "material_term",
