@@ -85,6 +85,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D214's two core boundary fixes on main (18 November 2026, early).** Merged from
+  `core-boundary-checks` at 13aaf72a.
+  - **Fix 1a:** kinds write only their own resolved, declared fields: initial values, derivatives
+    and control outputs, at the pump family's three merge points. `test_kind_foreign_writes.py` has
+    19 tests.
+  - **Fix 1b:** the vector windows' failure mask refuses, at admission, more checks than its dtype
+    and shift hold. `test_vector_failure_mask.py` has 34 tests.
+  - **The gate at 1aca2314:** crossrev 9 of 9 identical against the renewed record (the placement
+    proof), G1 113 of 113, tiers 1+2 with 0 of 495 changed, collected IDs with 53 new and none
+    missing, and FR's bitwise set passed.
+  - **The targeted check at 13aaf72a,** for FR-10's pump-family worlds landed after that gate: FR-10's
+    seven test files, the bath-schedule files, the door-S view and the continuity bypass, 0 changed.
+    IDs show additions only.
+  - Evidence: `/mnt/workspaces/Cells/core-boundary-checks-20261117/` (`gate-1aca2314/`,
+    `fr-landing-1aca2314/`, `targeted-13aaf72a/`).
+
 - **FR-10 judged: passed (17 November 2026, 23:45–23:50 UTC).** The registered protocol
   `fr10-dose-schedule-v1` was judged once from the clean snapshot of its registration commit
   407ba164, on lane A (CPUs 0-3, under its lock). Its references are the code-blind FR references
@@ -116,6 +132,29 @@ machine-readable inputs, results, checks and failures.
     found that the run-time energy guard holds there (R12's neighbour, disclosed).
   - **Evidence:** `/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/run-407ba164/`
     (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
+
+- **The gap-junction tissue line, dense records, and the sheet (17 November 2026, night).**
+  Development, not judged (D138). Note §7.6, registered before these runs, merged from
+  `gap-junction-replication` at 0471f7c3.
+  - **Dense records** (`runs/dense-01`, D = 0, x2/2, x2 and 2·x2): about 370 log-spaced records per
+    arm, the first one step in. Every end state is bitwise its earlier run (picks-02 and picks-01),
+    so the records changed nothing. Each package carries the tumour cells, a species map, each
+    arm's place against x2, and the cells' miR200, Zeb mRNA and ZEB protein in µM.
+  - **The 9×9 sheet** (`runs/sheet-01`): an extension beyond the replication, not part of it.
+    - Its setup: 4-neighbour junctions, a 3×3 tumour patch in the middle, the same seeds and
+      protocol, and a coupled horizon of 2,000 s (a tenth of the line's).
+    - The tumour holds at D = 0, x2/16 and x2/8, and the sheet normalises at x2/4, x2/2 and x2.
+      No arm is still changing at 2,000 s.
+    - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (0.9–1.8e-15 m²/s), 4 to 8
+      times below the line's. That is observed; why is not measured.
+  - **The coupling ladder** (`runs/ladder-01`, ten line arms to 20,000 s, none refused):
+    - below x2, the tumour holds (0.70 x2) or converts only partly (0.87 and 0.98 x2);
+    - above x2, every arm normalises, sooner as coupling grows: first all-E record at 6,800 s at
+      1.05 x2, down to 311 s at 6.97 x2. The times are as fine as the record spacing.
+  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed. The ladder's commit b40b9169 is
+    docs only.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/`, `runs/sheet-01/` and
+    `runs/ladder-01/`.
 
 - **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
   Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.

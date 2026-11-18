@@ -379,6 +379,26 @@ class KindView(NamedTuple):
     record_references: object = MappingProxyType({})  # {increment field: reference layout field}
 
 
+def refuse_foreign_writes(kind, hook, values, fields, role):
+    """A kind's hook output, {field: value}, may name only that kind's own declared fields of one
+    role: `fields`, from the kind bound to its structure entry (`bound`), so a field that another
+    kind, the base model or another declaration of the same kind owns is refused.
+
+    - Where the outputs merge: the initial values (state and layout), the rates' derivatives
+      (state) and the control outputs (control). That is @3's booking guard
+      (surface_pump_v3._kind_bookings), extended.
+    - It reads the keys alone, at construction and while tracing, so it adds nothing to a
+      compiled step.
+    - Without it, a foreign key overwrote a base or another kind's initial value, or was dropped
+      silently, or was taken as another kind's derivative or control."""
+    foreign = set(values) - set(fields)
+    if foreign:
+        raise ValueError(
+            f"Kind {kind.kind_id} writes {sorted(foreign)} from its {hook}; a kind writes only its "
+            f"own declared {role} fields ({', '.join(fields) or 'none'})"
+        )
+
+
 @cache
 def bound(kind, entry):
     """The kind with the fields of one declaration's structure entry (§7.4 (n) 5): its

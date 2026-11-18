@@ -802,6 +802,96 @@ Written before the rerun's search reaches any point.
   - `viewer/summary.json` lists them as the sweep `neither-1d`. They replace `picks-01` for the
     tissue line.
 
+**6. The tissue line for the demo: dense records, a sheet and a ladder.** Fixed here before
+each runs. All are development runs of the engine, not judged (D138).
+- **Dense records** (`runs/dense-01`): the arms D = 0, x2/2, x2 and 2 x2 again, with 200
+  log-spaced records from the first step to the end, plus the every-100 s records.
+  - Each record sits on the step grid, so no record splits a step and the run is unchanged. The
+    earliest record is one step in: 0.125 s, or 0.0625 s at 2 x2. Each end state is checked
+    against `picks-02`'s, and D = 0's against `picks-01`'s, bitwise.
+  - Each package adds the switch's three concentrations (miR200, Zeb mRNA and ZEB protein, in
+    µM) as sidecars.
+  - **Result** (from 4c3ab947, lane B): all four arms ran with views (`run_view.validate`), 369
+    records each (371 at 2 x2), the first at one step. Each end state is bitwise that of
+    `picks-02` (x2/2, x2 and 2 x2) and of `picks-01` (D = 0). The packages supersede `picks-02`'s
+    for the viewer.
+- **The sheet** (`runs/sheet-01`): **an extension beyond the replication, not part of it.**
+  - 9x9 cells with 4-neighbour junctions and a 3x3 tumor patch in the middle, with the line's
+    switch, seeds and uncoupled 500 s. Its step follows section 7's rule with four neighbours
+    (1/8 s up to D = 3.6e-15, 1/16 s at x2).
+  - **Its coupled horizon is 2,000 s, a tenth of the line's**, so each outcome is the state at
+    2,000 s, not after 20,000.
+  - Arms: D = 0, x2/16, x2/8, x2/4, x2/2 and x2, with x2 the line's threshold. Dense records,
+    as above.
+  - For each arm, whether its last records are still changing is reported, so that an arm near
+    the sheet's own threshold is not read as settled.
+  - A short test before registration (two arms of 100 s) already showed the 3x3 patch fully E
+    within 100 s at x2. So the sheet's threshold is observed to be lower than the line's. Any
+    explanation, such as more healthy neighbours per tumor cell, is an interpretation.
+  - **Result** (`runs/sheet-01`, from 3ed9ef24, lane A, one arm per core): all six arms ran to
+    2,000 s with views (`run_view.validate`), `criterion.json` and the concentration sidecars;
+    none was refused. Layers at most 1.21 MB.
+
+    | D (m²/s) | Arm | State at 2,000 s (81 cells) |
+    | --- | --- | --- |
+    | 0 | D = 0 | the 3x3 patch M, 72 E |
+    | 4.486e-16 | x2/16 | the 3x3 patch M, 72 E |
+    | 8.972e-16 | x2/8 | the 3x3 patch M, 72 E |
+    | 1.794e-15 | x2/4 | 81 E: normalized |
+    | 3.589e-15 | x2/2 | 81 E: normalized |
+    | 7.178e-15 | x2 | 81 E: normalized |
+
+  - **None is still changing at the end.** Over the last 200 s, no cell changes state and no
+    miR200 minus Zeb mRNA value moves by more than 1.4e-14 µM; over the last 1,000 s, by at most
+    9e-10 µM.
+  - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (9.0e-16 to 1.8e-15 m²/s),
+    four to eight times below the line's x2. That is observed, at the sheet's shorter horizon;
+    why it is lower is not measured here.
+- **Packaging, stated rather than inferred** (no run changed):
+  - Every tissue package's `criterion.json`, and each sweep in `viewer/summary.json`, lists the
+    tumor's cells (`tumor_cells`, as seeded) and the species map (`species`: u miR200, m Zeb
+    mRNA, z ZEB protein).
+  - Each arm's place against x2 is data (`place`: D, its ratio to x2, a label such as "x2/2" and
+    its side, below, at or above), in `criterion.json` and in the summary's arms. The source is
+    section 7.5's x2 for the line, and for the sheet the same x2, the sheet's own threshold being
+    section 7.6's.
+  - The junctions' miR200 transfers are in every view with D > 0, the sheet's included
+    (`observed_passive_transferred`, over species and passive route, each route's junction in the
+    `passive_route` set's `at`). The D = 0 arms record none: they declare no routes.
+  - The cells' places are prescribed in each view: `view.json`'s `space` (2 dimensions, µm,
+    "prescribed") and the `cell` set's `geometry` (spheres: a centre and a radius per cell, in
+    the set's `ids` order). The `junction` set's `geometry` gives each junction's two cells
+    (`ends`, indices into the cell set).
+  - The sheet's summary carries this note's sentence: "The sheet is an extension beyond the
+    replication, not part of it. Its coupled horizon is 2,000 s, a tenth of the line's, so each
+    outcome is the state at 2,000 s."
+  - `dense-01`'s and `sheet-01`'s `criterion.json` and summaries were rewritten after their runs
+    by `neither.py --sidecars`, from the records' own data. Their values and states are
+    unchanged.
+- **The ladder** (`runs/ladder-01`): the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and
+  7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step
+  rule, with dense records. 1e-13 is left out for its step (1/64 s).
+  - **Result** (from 3ed9ef24, lane B, one arm per core; packaged at 0471f7c3): all ten arms ran
+    to 20,000 s with views (`run_view.validate`) and the sidecars; none was refused. Layers at
+    most 0.56 MB.
+
+    | D (m²/s) | D / x2 | End states (cells 1-25) | First record with every cell E |
+    | --- | --- | --- | --- |
+    | 5e-15 | 0.697 | 6 M, 19 E: the tumor holds | none |
+    | 6.25e-15 | 0.871 | 5 M, 20 E: partly converted | none |
+    | 7e-15 | 0.975 | 5 M, 20 E: partly converted | none |
+    | 7.5e-15 | 1.045 | 25 E | 6,800 s |
+    | 8.5e-15 | 1.184 | 25 E | 4,300 s |
+    | 1e-14 | 1.393 | 25 E | 3,200 s |
+    | 1.2e-14 | 1.672 | 25 E | 2,500 s |
+    | 2e-14 | 2.786 | 25 E | 1,200 s |
+    | 3e-14 | 4.180 | 25 E | 650 s |
+    | 5e-14 | 6.966 | 25 E | 311 s |
+
+  - The times are the first observed record at which every cell is E, so they are as fine as the
+    records (log-spaced, and every 100 s). Above x2, normalization comes sooner as the coupling
+    grows; below it, the tumor holds or converts only partly.
+
 ## 8. The next stage, for a next owner
 
 This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-junction-20261117/`.
