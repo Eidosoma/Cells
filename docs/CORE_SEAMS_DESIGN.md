@@ -1429,3 +1429,58 @@ clock.
     reproduces the record of record bit for bit. Only then is the new format recorded, on the same
     tree. A set whose files do not change is left as it is.
   - Seam D's first landing follows the renewal.
+
+**§19 amended the same evening (the lead, 19:52 UTC), on the binding owner's design statement 1**
+(core-pass-binding-20261118/design_statement_1.md, sent 19:43 UTC before any output of C). It was
+confirmed with the advisor.
+- **The booked term (item 3):** E_c = G* − Σ_r T_r μ°′_r over the rows a closure holds
+  (= S_c + Σ_r ideal_r, where S_c = G* − Σ_r own_r).
+  - Its derivatives are the free forms' potentials in @3's frame. So the references' reading ("the
+    closure books the speciation part only") and the 17:33 ruling ("the closure owns the whole
+    energy term") are one rule in two splits. Standard parts are never the closure's: modes book
+    them.
+  - Version 1 keeps B4's formula bit for bit. The kernel subtracts ideal-only row terms
+    (`inner_row_energy_pJ`), then the proton's standard part, so B4 books S_c + Σ_B T_B μ°′_B,
+    whose binder part is constant while binder rows are inert. Version 2 drops that binder part.
+- **Phase 1 books in B4's split; the 17:33 split becomes phase 2.**
+  - In phase 1 the closure books S_c, and @3 books its ideal terms on held rows.
+  - Phase 2, in which the closure books E_c whole and @3 no ideal term there, comes when a consumer
+    needs a held total at or below zero. It needs edits in @3's, the operators' and two unowned
+    files, and every planned consumer has positive totals.
+  - **Conditions on phase 1:**
+    - a world-level check that the closure's term plus @3's ideal terms on held rows equals the
+      references' E_c row;
+    - a planted test that a held total at or below zero is refused before any logarithm is taken;
+    - the kernel's functions (G*, E_c, the free amounts and the floors) held to the references at
+      every registered state now, including seam C's S4[10], whose H⁺ total is negative. Only the
+      world path refuses there.
+- **A correction to 17:33:** the per-ligand admissible floor Σ T_B·min n is necessary but not
+  sufficient for mixed-sign counts. The joint condition is the closure's own validity, which its read
+  reports.
+- **Convergence (§19 item 2, changed):** |g_L| ≤ 1e-13 A_L, with A_L = x_L + Σ|n| c. It equals
+  1e-13 |T_L| wherever every count is ≥ 0. The references amend their criterion by a dated
+  amendment.
+- **The envelope:** the first-order lag of the linearised binding network, with k_on per (binder,
+  ligand); it reduces to B4's for one two-form buffer.
+  - Every form must be reachable from its base by unit steps, refused at parse otherwise.
+  - The references register a two-ligand kinetic reference before C's envelope output.
+- **§5.2's admission:** an optional template field `forms` ("base" or None) on CycleLaw and RouteLaw.
+  - It is F's file, so it comes as one F commit after 8e11638a lands, with BindingLaw's fields and
+    the law homes.
+  - Charge and moieties are checked by one registry function, shared with A's parse.
+- **P1's predictor (narrowing §18's line):**
+  - The free-amount predictor applies only where the general layout is declared.
+  - FR-4 and FR-5 keep today's predictor, so §17's gap stays open for them, with its margin check,
+    until they move to the general layout by a dated renewal.
+- **The name:**
+  - The kind stays `cells.rapid_proton_buffer@1`, and every recorded string is kept. It now hosts
+    general binding, a naming debt left to module stage 1's aliases.
+  - The general read is a new law and read ID, `rapid_binding@1`. A mover at a general closure node
+    whose reads lack it is refused at parse, and that is planted.
+- **Gating C's closure (item 3):** three references amendments must be on main before any output of
+  the general closure: the booked-term row, the convergence criterion and the two-ligand kinetic
+  reference. Item 2, the registry's forms, proceeds now.
+- **Recorded limits:** the general layout refuses @3's own routes on every held ligand and binder
+  row at a closure node. Until seam A and the `forms` field exist, version 2 serves speciation and
+  reads only. Transport of Ca²⁺ or Mg²⁺ through a closure node, such as cardiac Ca²⁺ buffering, waits
+  for them.
