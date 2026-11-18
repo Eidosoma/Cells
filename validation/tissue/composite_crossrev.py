@@ -26,19 +26,21 @@ programs on identical inputs run identically on a CPU. Outputs written before co
 were recorded (13 November 2026) have no .consts.json files: compare says so, and its
 verdict then covers the texts and bindings only.
 
-Five world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+Six world sets: base (small worlds of every structure: routes, sheets, RK4, events,
 donors, padding), qualification (the guarded qualification worlds themselves:
 W1's trajectories, W2's arms and G2-Q1's cases), injection (electrode injection
 without a field-input provider, the Rm1 egg included), volume (replacement@2 over
-water, v2 design §2; recorded from its first revision on, with constants) and kinds
+water, v2 design §2; recorded from its first revision on, with constants), kinds
 (kind-declaring worlds, D187 rule 2: FR-4's development and declared worlds and FR-5's arm
-T; recorded from 16 November 2026, after D172's landing). For the
-qualification set, bindings are also saved at every step size of the dt studies the
+T; recorded from 16 November 2026, after D172's landing) and acceptances (quick worlds of the
+judged acceptances of 17 and 18 November 2026, FR-1's, FR-3's, FR-10's and FR-6's A5'', from
+their protocols' own generators: docs/CORE_SEAMS_DESIGN.md §18; recorded from 18 November 2026).
+For the qualification set, bindings are also saved at every step size of the dt studies the
 guards did not repeat (W1's and Q5's), since dt enters the bound inputs (step counts,
 event steps) as well as the traced program.
 
 Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification,
-injection, volume or kinds):
+injection, volume, kinds or acceptances):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -270,6 +272,47 @@ def kinds_worlds():
     }
 
 
+def acceptances_worlds():
+    """Quick worlds of the judged acceptances that the core-seams pass's files serve
+    (docs/CORE_SEAMS_DESIGN.md §18), each built by its registered protocol's own generator:
+
+    * FR-1, fr1-closed-compartment-v1 (compartment_acceptance_fixtures):
+      cell_owned_compartments@1 with exchange@1's first-order export from the cytosol into the
+      compartment, beside turnover@1's first-order clearance at its node (C6, load_and_degrade)
+      or beside D152's first-order S -> P there (C7, load_and_react);
+    * FR-3, fr3-site-occupancy-v1 (site_occupancy_acceptance_fixtures): site_occupancy@1 with an
+      outward population internalising into its cell and an inward one on the cell's wall
+      (q5_inward), and with the internalisation multiplier off, on at 5 s and off at 10 s
+      (q5_class_switch);
+    * FR-10, fr10-dose-schedule-v1 (bath_schedule_fixtures): scheduled_bath_composition@1's ion
+      world, KCl for NaCl at 0.5 s beside a K-permeable cell under ARS at 1 ms (W2), and its
+      ledger world, the dose leg's bath S stepped at step 20 of 60 under RK4 at 0.1 ms (W3);
+    * FR-6's A5'', fr6-a5pp-v1 (a5pp_acceptance_fixtures): species_regulated_availability@1
+      with hill_regulated_two_state@1, two cells' K-leak populations driven through the state
+      from the per-cell prior s0 = 0.1 and 0.8, the same regulator dose by turnover@1, at 1 ms.
+
+    The unscheduled worlds run over their first five steps. §18 asks for the judged worlds' first
+    few steps; a world with a schedule change after time 0 keeps its registered horizon instead,
+    since the operators refuse a change outside the horizon (the lead accepted this, 18 November
+    2026). crossrev runs nothing, so the horizon enters the records only through the schedule's
+    times: over their first five steps, the unscheduled worlds' records equal their registered
+    horizons' (measured at b5d3faf0)."""
+    from validation.tissue import a5pp_acceptance_fixtures as a5pp
+    from validation.tissue import bath_schedule_fixtures as bath
+    from validation.tissue import compartment_acceptance_fixtures as compartment
+    from validation.tissue import site_occupancy_acceptance_fixtures as occupancy
+
+    return {
+        "fr1_load_and_degrade": _first_steps(compartment.load_and_degrade()),
+        "fr1_load_and_react": _first_steps(compartment.load_and_react()),
+        "fr3_q5_inward": _first_steps(occupancy.registered_world("q5_inward")),
+        "fr3_q5_class_switch": occupancy.registered_world("q5_class_switch"),
+        "fr10_ion": bath.ion_world(),
+        "fr10_ledger": bath.ledger_world(),
+        "fr6_a5pp": a5pp.registered_world(),
+    }
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
@@ -281,8 +324,11 @@ def _worlds(world_set, all_steps):
         return volume_worlds()
     if world_set == "kinds":
         return kinds_worlds()
+    if world_set == "acceptances":
+        return acceptances_worlds()
     raise SystemExit(
-        f"Unknown world set {world_set!r} (base, qualification, injection, volume or kinds)"
+        f"Unknown world set {world_set!r} "
+        "(base, qualification, injection, volume, kinds or acceptances)"
     )
 
 
