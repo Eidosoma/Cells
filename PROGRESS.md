@@ -3991,7 +3991,7 @@ machine-readable inputs, results, checks and failures.
   (`e8ded03`). The run used a clean snapshot of that commit, on CPU in float64
   ([results](/mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/judged-01/results/results.json)).
   The source is a large-volume reservoir cell (the model has no source term).
-  The references are independent numpy/scipy solutions. All 12 criteria pass:
+  The references are independent numpy/scipy solutions. All 12 criteria pass (13 judged entries; A6 has two parts):
   - profile against the exact discrete steady state: at most 4.6e-13
     relative on strips and 3.0e-14 on the Voronoi tissue, against 1e-9;
   - decay length against √(D/k) = 19.92 µm (Kicheva 2007 wing-disc values):

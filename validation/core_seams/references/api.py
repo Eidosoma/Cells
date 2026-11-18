@@ -14,6 +14,7 @@ from . import binding as Bd
 from . import cycles as C
 from . import diagrams as D
 from . import exact
+from . import primal as Pr
 from .exact import context, dec, fl
 
 
@@ -251,8 +252,11 @@ def binding_state(system_spec, registry, totals, V, extra_checks=False) -> dict:
         sens = Bd.sensitivities(sy, sp, TL, TB, V)
         out = {"x_mM": sp["x_mM"], "forms_mM": sp["forms_mM"],
                "free_fmol": {L: dec(V) * sp["x_mM"][L] for L in sy.ligands},
-               "residual_rel": {L: abs(sp["residual_fmol"][L]) / abs(dec(TL[L]))
+               "residual_scale_fmol": Bd.residual_scale(sy, sp, V),
+               "residual_rel": {L: abs(sp["residual_fmol"][L]) / Bd.residual_scale(sy, sp, V)[L]
                                 for L in sy.ligands},
+               "totals_over_scale": {L: abs(dec(TL[L])) / Bd.residual_scale(sy, sp, V)[L]
+                                     for L in sy.ligands},
                "conservation_rel": Bd.conservation(sy, sp, TL, TB, V),
                "charge": Bd.charge(sy, sp, TL, TB, V),
                "G_star_pJ": Bd.free_energy(sy, sp, V),
@@ -269,11 +273,23 @@ def binding_state(system_spec, registry, totals, V, extra_checks=False) -> dict:
         # form below its base can make a ligand's total equivalents ≤ 0 (a reading)
         out["speciation_part_pJ"] = (out["G_star_pJ"] - out["own_terms_pJ"]) if positive else None
         out["every_total_positive"] = positive
+        # amendment C1: the booked term in either split, and the primal route's agreement
+        out["booked_term"] = Bd.booked(sy, sp, TL, TB, V)
+        pr = Pr.solve_primal(system_spec, registry, TL, TB, V)
+        worst = max(abs((pr["x_mM"][L] / sp["x_mM"][L]).ln()) for L in sy.ligands)
+        for B in sy.binders:
+            for fid, c in sp["forms_mM"][B].items():
+                worst = max(worst, abs((pr["forms_mM"][B][fid] / c).ln()))
+        out["primal"] = {"max_abs_dln_vs_dual": worst, "certificate": pr["certificate"],
+                         "iterations": pr["iterations"]}
         if extra_checks:
             gd = Bd.gradient_by_differences(sy, TL, TB, V)
             pot = out["potentials_J_per_mol"]
             out["gradient_vs_differences_rel"] = max(abs(pot[r] - gd[r]) / abs(pot[r])
                                                      for r in pot)
+            ge = Bd.booked_gradient_by_differences(sy, TL, TB, V)
+            g3 = out["booked_term"]["gradient_at3_J_per_mol"]
+            out["E_c_gradient_vs_differences_abs_J_per_mol"] = max(abs(g3[r] - ge[r]) for r in g3)
             if len(sy.ligands) <= 2:
                 bi = Bd.solve_bisection(sy, TL, TB, V)
                 out["newton_vs_bisection_rel"] = max(abs(sp["x_mM"][L] / bi["x_mM"][L] - 1)
@@ -330,13 +346,15 @@ def binding_plants(system_spec, registry, totals, V, designated) -> dict:
                         if d > worst:
                             worst, where = d, f"{B}|{fid}"
             out[name] = {"max_abs_dln": fl(worst), "where": where}
-        # a solution whose ligand conservation is off by 1e-10 relative: δu = H⁻¹ δg
+        # a solution whose ligand conservation is off by 1e-10 of the convergence scale V A_L
+        # (amendment C2; = 1e-10 |T_L| where every count is ≥ 0): δu = H⁻¹ δg
         Ls = sy_ref.ligands
         H = [[ref["hessian_fmol"][L][M] for M in Ls] for L in Ls]
+        scale = Bd.residual_scale(sy_ref, ref, V)
         worst = Decimal(0)
         for j, M in enumerate(Ls):
             dg = [Decimal(0)] * len(Ls)
-            dg[j] = Decimal("1e-10") * abs(dec(totals["ligands_fmol"][M]))
+            dg[j] = Decimal("1e-10") * scale[M]
             du = exact.solve(H, dg)
             worst = max(worst, max(abs(x) for x in du))
         out["conservation_1e-10"] = {"max_abs_dln": fl(worst), "where": "free ligands"}

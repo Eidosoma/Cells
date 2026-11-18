@@ -100,6 +100,30 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment C3: the envelope's planted per-step minimum flips E1's verdict; first order holds
+    ec = p["C3_amendment_envelope"]
+    assert ec["E1_chain"]["verdict_first_order"] == "outside"
+    assert ec["E1_chain"]["verdict_per_step"] == "inside"
+    assert ec["E0_b4"]["b4_formula_vs_general_rel"] < 1e-12
+    assert abs(ec["scalings"]["E1_chain_over_kon100"] - 100) < 1e-6
+    assert 8 < ec["scalings"]["second_order_ratio"] < 12
+    assert ec["reachability"]["unreach2"]["verdict"] == "refused"
+    assert all(v["verdict"] == "admitted" for b, v in ec["reachability"].items() if b != "unreach2")
+    # amendment C2: the scales part only in S4, and by 1e9 at its cancelling state
+    for name, c in p["C2_amendment_convergence_scale"].items():
+        if name == "S4":
+            assert c["at"] == "near_zero_H_total" and c["min_total_over_scale"] < 1e-8
+            assert c["old_scale_tolerance_ulps_at_min"] < 1
+        else:
+            assert c["states_where_the_scales_differ"] == [], name
+    # amendment C1: the booked term's plants, its identity and the primal route
+    for name, c in p["C1_amendment_booked_term_and_primal"].items():
+        assert c["identity_E_c_minus_S_c_minus_ideal_max_pJ"] < 1e-50, name
+        assert c["primal_vs_dual_max_abs_dln"] < 1e-45 and c["primal_certificate_max"] <= 1e-50
+        for plant, row in c["plants"].items():
+            assert row["max"] > 1e3 * design.MIN_MARGIN, (name, plant)
+        assert c["states_where_S_c_is_undefined"] == (["high_pH_negative_total"]
+                                                      if name == "S4" else [])
     assert {m: v["verdict"] for m, v in p["C3_movers"].items()} == \
         {m["id"]: m["expected"] for m in worlds.MOVERS}
     assert len(des["zero_power"]) >= 15 and des["readings"]

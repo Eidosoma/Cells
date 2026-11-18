@@ -7171,3 +7171,32 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
   - the gap-junction replication's crossrev set, which guards every core landing;
   - OL2, when its gate passes;
   - the self-replicator's reference run (landed, 9f9ffd7f).
+
+## D223: Gates use both lanes, and are sized to what a landing changes
+
+2026-11-18, late evening. The user approved two standing rules: "yes on 1. and 2.". Quality is
+unchanged: every check that could see a change still runs.
+1. **Both lanes host full gates.**
+   - Lane A (CPUs 0–3, 16–19) and lane B (8–11, 24–27) are the same hardware. A full gate runs on
+     whichever is free.
+   - Until the gate tooling's lane check lands (`scripts/gates/lane_busy.py`, which ignores units that
+     are only waiting for the lock), lane B takes at most one full gate at a time, launched only when
+     it is free. Otherwise a pinned gate waiting there would make FR's holder refuse.
+2. **A gate is sized to the landing's changed files:**
+   - **src/ changed:** the full gate, as before:
+     - tiers 1+2, G1's 113 worlds, crossrev's eleven sets and IDs;
+     - FR's bitwise set for a landing under operators/, kinds/ or @3;
+     - the lead's merged check at landing.
+   - **No src/ change:**
+     - tiers 1+2 and IDs always;
+     - crossrev only if a changed file is in the import closure of the crossrev set modules, whose
+       worlds come from validation generators;
+     - G1 only if a changed file is in the import closure of its harness
+       (`validation/results_baseline.py`).
+
+     A check that can't see the change is not run.
+   - **Docs only** (docs/ outside docs/library/, and the root's Markdown): the private-term scan.
+     docs/library/'s generated pages also run their page tests.
+   - The import closures are computed at the landing's head, never guessed. The gate tooling gains a
+     scope tool for it.
+   - When in doubt, the larger gate runs.

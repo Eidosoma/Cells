@@ -133,14 +133,23 @@ counted from each base form.
 | Key | Meaning |
 | --- | --- |
 | `x_mM`, `free_fmol`, `forms_mM` | The free ligands, and every form's concentration ({binder: {form: mM}}) |
-| `residual_rel`, `conservation_rel` | \|g_L\|/\|T_L\|, and each row's reconstruction error (~1e-50) |
+| `residual_scale_fmol`, `residual_rel`, `totals_over_scale` | Amendment C2: V A_L, with A_L = x_L + Σ \|n\| c (the convergence scale); \|g_L\|/(V A_L); and \|T_L\|/(V A_L), which is 1 wherever every count is ≥ 0 |
+| `conservation_rel` | Each row's reconstruction error (~1e-50) |
 | `charge` | `species_fmol_e`, `totals_fmol_e` and their difference |
 | `G_star_pJ` | Σ n (μ° + RT(ln(c/c°) − 1)) over the free ligands and every form |
 | `potentials_J_per_mol` | ∂G*/∂T per row: the free ligand's, and each binder's free base form's |
 | `own_terms_pJ`, `speciation_part_pJ` | Σ over the rows as single base-form species, and G* minus it (null where a total is ≤ 0). **Not the booked term** (§19 item 3) |
-| `floor_input_rounding`, `floor_residual_1e-13` | {x: {ligand: \|δ ln x\|}, forms: {"binder\|form": \|δ ln c\|}}: from ½ ulp on every input, and from a residual \|g\|/T ≤ 1e-13. Compare solutions against the second |
+| `floor_input_rounding`, `floor_residual_1e-13` | {x: {ligand: \|δ ln x\|}, forms: {"binder\|form": \|δ ln c\|}}: from ½ ulp on every input, and from a residual \|g_L\| ≤ 1e-13 V A_L (amendment C2). Compare solutions against the second |
 | `manufactured_dln` | The registered solution against the manufactured free ligands |
 | `gradient_vs_differences_rel`, `newton_vs_bisection_rel` | Where computed (two states per system and every hard state) |
+| `booked_term` | Amendment C1, the closure's booked term in both splits. It holds `E_c_pJ` (= G* − Σ_r T_r μ°′_r) and `S_c_pJ` (= E_c − Σ ideal_r, = `speciation_part_pJ`; null where a total is ≤ 0). It also holds `ideal_rows_pJ` and `ideal_total_pJ` (@3's RT T (ln(T/V) − 1); null at T ≤ 0), `standard_parts_pJ` and `standard_total_pJ` (T μ°′ with μ°′ = μ° − RT ln c°, c° in mM), `B4_term_pJ` (S_c + Σ_B T_B μ°′_B), `identity_residual_pJ`, `gradient_at3_J_per_mol` (∂E_c/∂T_r = RT ln(c_free/1 mM)), and `terms_abs_pJ`, for rounding floors. A world-level check: the closure's phase-1 term (S_c) plus @3's ideal terms on its rows equals `E_c_pJ` |
+| `primal` | Amendment C1, the second route (`primal.py`): `max_abs_dln_vs_dual`, `certificate` (max formation \|ΔG/RT\|) and `iterations` |
+| `E_c_gradient_vs_differences_abs_J_per_mol` | Where computed |
+
+**`values.seam_c.systems.<S>.pairs`** (amendment C1): consecutive states (k, k + 1), each with
+`dE_c_pJ`, `dS_c_pJ`, `floor_pJ` (8 eps of both states' terms) and `plants_pJ`. The plants are
+G* booked whole, B4's formula on moved binders, and S_c alone with @3's ideal terms masked, each
+the exact amount by which that booking misses ΔE_c.
 
 **`values.seam_c.p1.<node>`** (amounts in fmol; divide by |J| for θ·dt in s):
 - `n_free_fmol` and `stored_fmol`;
@@ -151,6 +160,26 @@ counted from each base form.
   n_free;
 - `ladder`: after drawing k × n_free, the equilibrated free amount, today's predictor and the
   linearised free amount.
+
+**`seam_c.envelope`** (amendment C3, inputs). It gives `budget_pH` (1e-3, B4's) and
+`planted_unreachable_binders`. Each case under `cases.<id>` gives:
+- `ligands`, `binders`, `volume_pL`, the free values it was made from, and `totals`;
+- `kon_per_mM_per_s`: [binder, ligand, k_on] for every (binder, ligand) pair;
+- `drive_fmol_per_s`: [ligand or binder, rate]. A binder's drive adds its base form;
+- `record_slow_times`, in units of the network's slowest relaxation time.
+
+**`values.seam_c.envelope.cases.<id>`** holds:
+- `species`, `closure_fmol`, and the `steps` with their `K_r_mM` and B4's `lambda_per_s`;
+- `slowest_network_rates_per_s` and `min_step_rate_per_s`;
+- `first_order_dln` {L: Δ ln x_L} and `first_order_pH`;
+- `per_step_estimate_dln`, the plant: min over all steps, or over the ligand's own steps;
+- `per_step_pH`, and `b4_formula_pH` for E0;
+- `kinetic.rows`: per record time, `lag_dln`, `first_order_dln` at that state and `floor_dln`
+  (|Radau − BDF|);
+- `plants` {name: {L: relative deviation}} and `first_order_floor_rel`;
+- `kinetic_vs_first_order_rel` at the last record.
+
+`values.seam_c.envelope.reachability` {binder: verdict}.
 
 **`values.seam_c.movers.<id>`** gives `verdict` and `reasons`. **`values.seam_c.parse`** gives
 `form_valences` and the planted declared valence.
