@@ -139,7 +139,8 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-af0d3ec3/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-591adadb/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-6e78883b/measured.json",
-  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-cbae394b/measured.json"
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-cbae394b/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1149,6 +1150,13 @@
    "root": ".claude/worktrees/ool-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T11:45:02+00:00"
+  },
+  {
+   "git_revision": "2dcaaa44359c7b6bf4c8e11826e782a7077345f7",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T12:16:43+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4650,6 +4658,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 25
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_engine_layout.py",
+    "seconds": 32.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
