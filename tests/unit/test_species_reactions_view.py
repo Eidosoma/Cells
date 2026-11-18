@@ -12,7 +12,7 @@ Each claim with a planted error it must catch (D187):
 - each declaration the view needs, removed in turn, is refused again with its reason, and nothing
   is written (planted: no layers, no readout axes, no route set, no unit for A/RT);
 - the declarations manifest (cells.declarations@2) reads the same units and signs.
-"""
+"""  # noqa: E501
 
 import json
 

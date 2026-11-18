@@ -15,7 +15,7 @@ the step".
 * The coupling operator refuses an instantaneous read of a row something moves in the step.
 * No pairwise identity check is left in src/.
 The refusal tests of D150, D152, the coupling operator and FR-3 pass unedited beside these.
-"""
+"""  # noqa: E501
 
 from dataclasses import dataclass
 from pathlib import Path

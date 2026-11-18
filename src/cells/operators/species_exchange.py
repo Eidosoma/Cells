@@ -486,7 +486,7 @@ class ScheduledSpeciesExchange(Operator):
 
     def view_sets(self, spec, declaration):
         """The run view's set of its own axis (cells/records/run_view.py): its routes, in declared order,
-        each on its patch, with the species it carries, its declared direction and its roles."""
+        each on its patch, with the species it carries, its declared direction and its roles."""  # noqa: E501
         routes = declaration.routes
         return {
             "exchange_route": {

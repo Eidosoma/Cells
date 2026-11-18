@@ -84,7 +84,7 @@ from cells.execution.errors import NumericalError  # noqa: E402
 from cells.execution.windows import WindowPolicy, iter_windows  # noqa: E402
 from cells.laws.channels import voltage_gates  # noqa: E402
 from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
-from cells.laws.junctions import junction_gate
+from cells.laws.junctions import junction_gate  # noqa: E402
 from cells.models import surface_pump_v3 as v3  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import field_solver_choice  # noqa: E402

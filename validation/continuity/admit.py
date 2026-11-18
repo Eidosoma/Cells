@@ -31,7 +31,7 @@ Usage:
                    [--python PY] [--launcher subprocess|detached] [--cpus LIST] [--memory 3G]
   admit.py finalise --proposed NEW_RUN/continuity/proposed.json --admitted-by NAME --role ROLE
 Exit status: 0 proposed (or finalised), 2 refused, 3 cannot decide.
-"""
+"""  # noqa: E501
 
 import argparse
 import hashlib

@@ -174,7 +174,7 @@ def scan(tree):
         continuity=any(k.arg == "continuity" for c in calls for k in c.keywords),
         provenance=any(_name(c) == "provenance" for c in calls),
         imports_continuity=any(
-            name == "cells.execution.continuity" or name.startswith("cells.execution.continuity.") for name in imports
+            name == "cells.execution.continuity" or name.startswith("cells.execution.continuity.") for name in imports  # noqa: E501
         ),
     )
 
@@ -271,7 +271,7 @@ SOURCES = {  # Synthetic modules: does the scan flag them, and do they pass a re
     "path = run / 'snapshots' / 'x' / 'world-1' / 'state.npz'\n": (True, False),
     "import numpy as np\nfrom cells.execution.state import Checkpoint\n"
     "a = np.load(f)\nc = Checkpoint(a['s'], a['l'], 0.0, 0, 0)\n": (True, False),
-    "from cells.execution.state import Checkpoint\nc = Checkpoint(s, l, 0.0, 0, 0)\n": (False, False),
+    "from cells.execution.state import Checkpoint\nc = Checkpoint(s, l, 0.0, 0, 0)\n": (False, False),  # noqa: E501
     "from cells.records.io import load_snapshot\nsaved = load_snapshot(path)\n": (False, False),
     "from cells.records.batch_io import load_batch_snapshot\n"
     "saved = load_batch_snapshot(p, continuity=request)\n": (False, True),

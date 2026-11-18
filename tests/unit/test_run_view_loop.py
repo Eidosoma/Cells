@@ -20,7 +20,7 @@
 
 The run: one heredity cell under a biphasic current train (an injection world), observed over its
 second period.
-"""
+"""  # noqa: E501
 
 import json
 

@@ -20,7 +20,7 @@ count back and refuses the run if any loaded BLAS is not at THREADS, or if none 
 libraries() is the run manifest's record of them: each library's API, prefix, version, kernel
 architecture and thread count. The bits stay machine-dependent: OpenBLAS picks its kernels by CPU
 type, so a bitwise comparison also needs the same libraries on the same kind of CPU.
-"""
+"""  # noqa: E501
 
 import os
 import sys

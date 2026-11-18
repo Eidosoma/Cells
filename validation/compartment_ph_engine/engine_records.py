@@ -256,7 +256,7 @@ def one_world(sink, world_id=VECTOR_WORLD_ID):
 def _run_vector(spec, sink, window_steps):
     """The one world through cells.execution.vector_windows (every accepted row checked on the device:
     the model's device_checks, the kinds' check hooks included): (steps, diagnostics, timings,
-    resources, final checkpoint), the windowed runner's result fields."""
+    resources, final checkpoint), the windowed runner's result fields."""  # noqa: E501
     from cells.execution.batch import BatchSpec, WorldSpec
     from cells.execution.vector_windows import run_vector_windowed
     from cells.execution.windows import WindowPolicy
@@ -284,7 +284,7 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
     start part) a run that completes also writes the engine's snapshot of its final state there
     (cells.records.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`
     (Records.start, from its last record: the run ends on a record), for
-    definitions.start_extract."""
+    definitions.start_extract."""  # noqa: E501
     from cells.definitions.specs import ConfigError, parse_spec
     from cells.execution.errors import NumericalError
     from cells.execution.windows import WindowPolicy, run_windowed

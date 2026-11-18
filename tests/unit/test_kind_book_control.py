@@ -6,7 +6,7 @@ and u_res piecewise-constant schedules. Its book replaces d with the law's exact
 held control. With the schedules' breakpoints on the step grid (an off-nominal one inserted), d
 matches its closed form at every step boundary to rounding: injury on from 1 ms, then off and
 resealing on from 2.5 ms. Left to the tableau alone (no book), the same run does not.
-"""
+"""  # noqa: E501
 
 import math
 

@@ -182,7 +182,7 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
     names a planted law registered only inside its block (K2). With `checkpoint_dir` (FR-5's
     start part) a completed run also writes the engine's snapshot there at the end
     (cells.records.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`,
-    which fr5_start makes the start extract (definitions.start_extract, producer "engine")."""
+    which fr5_start makes the start extract (definitions.start_extract, producer "engine")."""  # noqa: E501
     from validation.compartment_ph_engine import engine_records
     from validation.compartment_ph_engine import planted as plants
 

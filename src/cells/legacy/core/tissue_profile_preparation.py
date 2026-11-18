@@ -41,7 +41,7 @@ SOURCE_CORRESPONDENCE = dict(
     native_revision="5269a714aa2593ed2a6708c4516289977d8ae1a2",
     native_flux="betse/science/sim_toolbox.py:electroflux and update_Co",
     native_geometry="betse/science/sim.py passes p.tm and initial rho_channel=1",
-    cells_flux="cells.laws.junctions.selective.selective_flux, via cells.numerics.surface_transport",
+    cells_flux="cells.laws.junctions.selective.selective_flux, via cells.numerics.surface_transport",  # noqa: E501
 )
 
 

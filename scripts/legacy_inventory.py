@@ -31,7 +31,7 @@ Usage:
 The runtime action runs one saved G1 world's first window and records the cells modules loaded
 beyond those the registry's own module-level imports load: the inventory checks they lie in the
 static active closure (a cross-check of the static graph).
-"""
+"""  # noqa: E501
 
 import argparse
 import ast
@@ -347,7 +347,8 @@ def registry_dispatch(index):
     return out
 
 
-SHARED = "cells.definitions.specs"  # The shared definitions module: one family per dispatched class.
+# The shared definitions module: one family per dispatched class.
+SHARED = "cells.definitions.specs"
 
 
 def _snake(name):
@@ -445,7 +446,7 @@ def family_rows(fam, rows):
     """A family's rows in the model table: those keyed by one of its IDs, or naming its
     definitions' module where that module defines no other family (definitions/specs.py defines many,
     each matched by its ID; a namespaced ID such as cells.assembly_lineages@1 is matched by its
-    module, since the inventory's ID pattern is the bare one)."""
+    module, since the inventory's ID pattern is the bare one)."""  # noqa: E501
     ids = set(fam["ids"]) | {i for i in fam["class_ids"].values() if i}
     shared = fam["definition"] == SHARED
     return sorted(

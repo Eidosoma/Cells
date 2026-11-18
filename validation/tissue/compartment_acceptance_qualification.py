@@ -45,7 +45,7 @@ A judged run is refused, before anything is computed or written, unless the prot
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
 blocks a requested part, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development
 only) runs every engine world to QUICK_FRACTION of its horizon.
-"""
+"""  # noqa: E501
 
 import argparse
 import copy

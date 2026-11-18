@@ -63,7 +63,7 @@ Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu
     python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study]
 results.json is rewritten after every arm. --no-dt-study runs the as-written arms at the step
 rule's dt only, for a rerun that writes their records (with views) and nothing more.
-"""
+"""  # noqa: E501
 
 import json
 import math

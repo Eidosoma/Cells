@@ -38,7 +38,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "qualified",
         "declared_schedule",
     ),
-    "cells.definitions.specs": ("ConfigError", "require_fields", "finite_number", "bounded_integer"),
+    "cells.definitions.specs": ("ConfigError", "require_fields", "finite_number", "bounded_integer"),  # noqa: E501
     "cells.laws.electrochemistry": ("R", "F", "CHARGE_PER_FMOL"),
     "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
     "cells.numerics.extracellular_field": ("scatter",),

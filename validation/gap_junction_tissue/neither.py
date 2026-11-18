@@ -47,7 +47,7 @@ Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu
     python -B validation/gap_junction_tissue/neither.py OUTDIR --cpus 0,1,2,3,16,17,18,19
     python -B validation/gap_junction_tissue/neither.py OUTDIR --points 1e-14 --end 600  (a probe)
     python -B validation/gap_junction_tissue/neither.py OUTDIR --record 6e-15,7.2e-15,9e-15
-"""
+"""  # noqa: E501
 
 import argparse
 import json

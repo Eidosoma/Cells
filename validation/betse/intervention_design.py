@@ -348,7 +348,7 @@ def probe(kind):
 
     class Fence(importlib.abc.MetaPathFinder):
         def find_spec(self, fullname, path=None, target=None):
-            if fullname in {"betse.science.sim", "betse.science.simrunner", "cells.execution.runner"}:
+            if fullname in {"betse.science.sim", "betse.science.simrunner", "cells.execution.runner"}:  # noqa: E501
                 raise AssertionError("Control probe imported integration entry: " + fullname)
 
     sys.meta_path.insert(0, Fence())

@@ -118,9 +118,9 @@ MODELS = MappingProxyType(
         ),
         # The older active families (D189): their laws are tables inside them, and they declare
         # no piece.
-        "apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),
+        "apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),  # noqa: E501
         "reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
-        "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),
-        "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),
+        "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
+        "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
     }
 )

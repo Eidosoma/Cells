@@ -36,7 +36,7 @@ Usage (python -m validation.tissue.matched_arm_export COMMAND OUT [options]):
   continue OUT --step K | windows OUT --steps N   (one fresh process each)
   duration OUT --seconds S          (separate from `all`)
 A stage that fails writes OUT/failures/<stage>.failure.json and the next stages still run.
-"""
+"""  # noqa: E501
 
 import argparse
 import ast

@@ -116,7 +116,7 @@ def test_the_entry_imports_the_one_constant():
         ("__main__.py", "from .legacy import registration\n"),
         ("execution/schedule.py", "from ..legacy.registration import control_values\n"),
         ("ensemble/cli.py", "from .. import legacy\n"),
-        ("definitions/specs.py", "import importlib\nm = importlib.import_module('cells.legacy.x')\n"),
+        ("definitions/specs.py", "import importlib\nm = importlib.import_module('cells.legacy.x')\n"),  # noqa: E501
         ("definitions/specs.py", "m = __import__('cells.legacy.registration')\n"),
         ("definitions/specs.py", "import sys\nm = sys.modules['cells.legacy.registration']\n"),
         ("definitions/specs.py", "import cells\nm = cells.legacy.registration\n"),
@@ -132,7 +132,8 @@ def test_the_allowed_forms_are_not_flagged():
     entry = (SRC / ENTRY).read_text()
     assert findings(entry, ENTRY) == []
     assert findings('"""Mentions cells.legacy in prose."""\nx = 1\n', "definitions/specs.py") == []
-    assert findings('LEGACY = "cells.legacy.registration"\n', "definitions/specs.py")  # Not the entry.
+    # Not the entry.
+    assert findings('LEGACY = "cells.legacy.registration"\n', "definitions/specs.py")
 
 
 def test_a_planted_module_in_a_copied_tree_is_caught(tmp_path):

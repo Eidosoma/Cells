@@ -443,7 +443,7 @@ class ScheduledSpeciesTurnover(Operator):
 
     def view_sets(self, spec, declaration):
         """The run view's set of its routes (cells/records/run_view.py; no field has that axis): each with
-        the species it carries, its kind and the cell or outside node it acts at."""
+        the species it carries, its kind and the cell or outside node it acts at."""  # noqa: E501
         routes = declaration.routes
         return {
             "turnover_route": {

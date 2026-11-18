@@ -240,7 +240,8 @@ def require_entry_points():
         raise CannotDecide("the tree lacks the probe's entry points: " + ", ".join(missing))
 
 
-LAYOUT = "cells.records.source_layout"  # The loaders' layout rule (D195 item 4), in trees that have it.
+# The loaders' layout rule (D195 item 4), in trees that have it.
+LAYOUT = "cells.records.source_layout"
 
 
 def require_layout(manifest, what):

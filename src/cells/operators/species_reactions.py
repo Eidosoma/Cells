@@ -1336,7 +1336,7 @@ class LocalSpeciesReactions(Operator):
         """The run view's set of its own axis (cells/records/run_view.py): its routes, each one reaction
         at one site, in the declaration's order (reaction by reaction, then site), each named
         `reaction:node`, at its cell or outside node, with its law as a word and the roles its
-        signs name."""
+        signs name."""  # noqa: E501
         laws = {r.id: r.law for r in declaration.reactions}
         routes = declaration.routes
         return {

@@ -58,7 +58,8 @@ from cells.registry.legacy_entry import LEGACY
 FORMAT = "cells.declarations@2"
 KIND_INTERFACE = "cells.kind@1"
 OPERATOR_INTERFACE = operator_registry.COMPOSITE_INTERFACE
-INNER = qualified(inner_spec.MODEL_ID)  # Runs @3's own laws and its kinds (registry/kind_registry.py).
+# Runs @3's own laws and its kinds (registry/kind_registry.py).
+INNER = qualified(inner_spec.MODEL_ID)
 COMPOSITE = qualified(composite_spec.MODEL_ID)  # Runs the composite's operators.
 # The library of pages (docs/LAW_DOCUMENTATION_DESIGN.md §1.2): one page per piece and per model
 # with declared structure, at LIBRARY/<namespace>/<section>/<name>@<major>.md.

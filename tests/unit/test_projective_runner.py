@@ -4,7 +4,7 @@ Rejected jumps leave the fine engine's rows bitwise; accepted jumps are checked,
 verified by the next burst and recorded; no jump crosses a scheduled input
 change or an observation; jumped rows are restartable accepted boundaries.
 Compiles the IMEX burst kernel and the ordinary rollout once each (slow).
-"""
+"""  # noqa: E501
 
 import jax
 import numpy as np

@@ -835,7 +835,7 @@ def study(dt, *, window_steps=STUDY_WINDOW, keep=None):
     final row), the electrode, reservoir-work, energy and fill residuals against their
     bounds. keep: a folder for the run's observation rows, diagnostics and final checkpoint,
     written before any post-processing (cells.records.io.write_snapshot), so a later failure loses no
-    run."""
+    run."""  # noqa: E501
     import time
 
     from cells.definitions.specs import parse_spec

@@ -17,7 +17,7 @@ the plan, its refusals and the reader's check. The windowed paths: test_run_view
   requested seams) only shrink.
 
 Declarations an operator does not carry yet are planted for a test's duration only.
-"""
+"""  # noqa: E501
 
 import json
 import os

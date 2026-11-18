@@ -29,7 +29,7 @@ Usage:
   dev_run.py resume --snapshot SNAP --checkpoint-run RUN0 --out RUN --window-steps 8
                     --recording checkpoints [--continuity RECORD] [--snapshot-every 1]
   dev_run.py compare A B --out FILE
-"""
+"""  # noqa: E501
 
 import argparse
 import hashlib

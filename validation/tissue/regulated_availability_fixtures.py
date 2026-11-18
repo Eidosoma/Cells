@@ -13,7 +13,7 @@ channel availabilities matter electrically. A neutral regulator R is declared by
 * schedule_junction, schedule_channel: one element's availability held at a value from time 0;
 * differing: the @3 state fields and observation columns in which two runs are not bitwise equal;
 * with_turnover: D150's turnover clearing R in one cell (a moving, impermeant source).
-"""
+"""  # noqa: E501
 
 import copy
 

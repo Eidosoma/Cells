@@ -40,7 +40,7 @@ A judged run is refused, before anything is computed or written, unless the prot
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
 blocks a requested part, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development
 only) runs every engine world to QUICK_FRACTION of its horizon, events kept inside it.
-"""
+"""  # noqa: E501
 
 import argparse
 import copy
@@ -383,7 +383,7 @@ def w4_idle(name, context):
 
 def _restart(raw, at, workdir):
     """raw run to `at` (truncated), its checkpoint written and loaded through cells.records.io, and the
-    full definition resumed from it (cells.execution.runner.branch_checkpoint)."""
+    full definition resumed from it (cells.execution.runner.branch_checkpoint)."""  # noqa: E501
     from cells.definitions.specs import parse_spec
     from cells.execution.runner import branch_checkpoint, run
     from cells.records.io import load_snapshot, write_snapshot

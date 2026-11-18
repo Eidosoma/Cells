@@ -15,7 +15,7 @@ Exit 0: the run is a loop. Exit 1: the run completed but is not a loop (the view
 unstated) or the package is above the size limit; the run stays as failed evidence. Exit 2: refused
 before any output, for instance from a checkout (a package names its engine source, so it runs
 from an execution snapshot of the checkout).
-"""
+"""  # noqa: E501
 
 import importlib
 import json

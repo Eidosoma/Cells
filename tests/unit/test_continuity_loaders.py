@@ -14,7 +14,7 @@
 Then the admitted loads, scalar and cohort, and the module's host-only imports. Snapshots are
 step-0 checkpoints and the records are hand-built (validation/continuity/admit.py writes the
 real ones), so nothing here compiles a model program.
-"""
+"""  # noqa: E501
 
 import ast
 import copy

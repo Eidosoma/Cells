@@ -181,7 +181,7 @@ def validate_workers(r, native, cells, registration_sha):
         cells["module_sha256"]
         == {
             n: r["sources_sha256"][n]
-            for n in ("src/cells/laws/channels/voltage_gates.py", "src/cells/numerics/fixed_step.py")
+            for n in ("src/cells/laws/channels/voltage_gates.py", "src/cells/numerics/fixed_step.py")  # noqa: E501
         },
         "Production kernel identity changed",
     )

@@ -98,7 +98,7 @@ def load_batch_snapshot(directory, *, continuity=None):
     against the cohort's admitted identity; every other cohort and child check runs as
     without it (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 6). A cohort written before a
     source move is refused either way (cells.records.source_layout).
-    """
+    """  # noqa: E501
     path = Path(directory).resolve()
     manifest = _fields(
         read_json(path / "manifest.json"),

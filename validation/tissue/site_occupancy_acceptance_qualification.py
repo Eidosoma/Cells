@@ -492,7 +492,7 @@ def _head(raw, at):
 def _restart(raw, at, workdir, *, through_snapshot):
     """Run to `at`, then resume to the end: in process from the head's checkpoint, or through a
     written snapshot (cells.records.io.write_snapshot and load_snapshot); a branch from the head's own
-    checkpoint into the full schedule (its changes from `at` on)."""
+    checkpoint into the full schedule (its changes from `at` on)."""  # noqa: E501
     from cells.definitions.specs import parse_spec
     from cells.execution.runner import branch_checkpoint, run
     from cells.records.io import load_snapshot, write_snapshot

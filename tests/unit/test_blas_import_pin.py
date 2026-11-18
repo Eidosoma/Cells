@@ -27,7 +27,7 @@ PROBES = {
     "cells.definitions.specs": "parse: the definitions' vocabulary",
     "cells.execution.runner": "runs",
     "cells.registry.kind_registry": "the kinds' registry",
-    "cells.execution.output_paths": "the only core module the assembly, pool and ensemble lines import",
+    "cells.execution.output_paths": "the only core module the assembly, pool and ensemble lines import",  # noqa: E501
     "cells.registry.laws": "the law registry",
     "cells.records.observers": "imports only core's errors",
     "cells.records.io": "run records and checkpoints",

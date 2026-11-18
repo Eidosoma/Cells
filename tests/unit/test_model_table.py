@@ -140,7 +140,7 @@ def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
 def dispatched(source, namespace):
     """{model ID: the module its branch parses with} of parse_spec's own dispatch: each comparison
     of data['model'].get('id') with a literal or a name of `namespace`, and the module its branch
-    imports parse from (definitions/specs.py itself for an inline branch). Any other form refuses."""
+    imports parse from (definitions/specs.py itself for an inline branch). Any other form refuses."""  # noqa: E501
     out = {}
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.If):

@@ -86,7 +86,7 @@ NEUTRAL = law_registry.BUILTIN.register(
     law_registry.RouteLaw(
         LAW_ID,
         ("membrane", "junction"),
-        "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "
+        "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "  # noqa: E501
         "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
         host=KIND_ID,
         provenance="cited",

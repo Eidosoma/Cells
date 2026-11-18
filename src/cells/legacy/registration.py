@@ -881,7 +881,7 @@ def model_for(spec):
 def parse(data):
     """`parse_spec`'s older families by model ID, in its order: the parsed definition (None when
     none matches). The projective pre-check, the active families and the inline definitions
-    (source_decay@1, emt_mirna@1, passive_pair@1, reaction_transport@1) stay in definitions/specs.py."""
+    (source_decay@1, emt_mirna@1, passive_pair@1, reaction_transport@1) stay in definitions/specs.py."""  # noqa: E501
     if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_open_calcium_bath_epoch@1"
