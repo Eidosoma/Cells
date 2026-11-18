@@ -31,9 +31,10 @@ import { beads } from "./beads.js";
 import { stream } from "./stream.js";
 import { glow } from "./glow.js";
 import { fog } from "./fog.js";
+import { network } from "./network.js";
 
 // A mark that says `built: false` has its place and its arithmetic, and does not draw yet:
 // a layer that names it is listed for a run with that reason, and cannot be switched on.
 // A mark that moves has `tick(milliseconds)`, and one the lens may mark to shine lists what
 // shines under `shines`.
-export const MARKS = { tint, relief, wedge, arrows, stipple, beads, stream, glow, fog };
+export const MARKS = { tint, relief, wedge, network, arrows, stipple, beads, stream, glow, fog };

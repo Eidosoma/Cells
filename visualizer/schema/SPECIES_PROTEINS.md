@@ -7,10 +7,10 @@ outside for syn3a and all of them - humans have a 100k ones so let's maybe think
 that last". And of the catalogues too large for one marker each: "we should show them all
 but maybe cool expandable protein families, same for humans".
 
-The protein atlas draws the machines Cells has laws for. A species' side of it
+The protein atlas draws the units of Cells' law inventory. A species' side of it
 (`SPECIES_ATLAS.md`) says which of those machines the species has. This file is the other
-half: **the species' own proteins**, whether or not Cells has a law for them, laid out the
-same way for every species.
+half: **the species' own proteins**, whether or not they are listed with a unit of that
+inventory, laid out the same way for every species.
 
 **One format for every species: a shelf is a membrane, and every protein sits outside
 it, in it or inside it.** A bacterium with one membrane has one shelf, its cell membrane; one with two has a
@@ -75,7 +75,42 @@ catalogue table, the same bytes every time.
   then calls each a predicted protein and its side a prediction on a predicted protein.
 - **`unit`** is the inventory unit the atlas already draws for this protein, or null. A
   protein with a unit is drawn as that unit; every other protein is a plain marker,
-  labelled as not modelled.
+  labelled as not modelled. A protein that the species' atlas lists with a unit only as
+  going with the machine (below, `found_by`) is a plain marker too, and its panel says so.
+- **`found_by`** (16 November 2026): how the species' atlas found each protein it lists
+  with a unit, in the atlas's own words (`schema/SPECIES_ATLAS.md`, `found_by`). Optional,
+  and given where the atlas lists any protein with a unit:
+
+  ```json
+  "found_by": {"note": "…", "default": "family signature",
+               "proteins": {"accessory signature": ["Q80UL9"], "named in a publication": ["A0A0A0"]},
+               "families": {"accessory signature": ["IPR005983"]}}
+  ```
+
+  A protein with a unit is found the `default` way unless `proteins` names it under
+  another; `families` names the families every one of whose proteins with a unit was found
+  only by an accessory family's signature. Such a protein, and such a family's line, is
+  listed with the unit and is no candidate for the machine's own work: the page draws it
+  plain, a grey marker in neither the unit's shape nor the units' tone (a gathering that
+  holds such a family keeps its small sign of a unit), and its panel says how the atlas
+  found it and what that makes it, in the atlas panel's words. The members' files are
+  unchanged by it.
+- **`inventory_roles`** (16 November 2026), for a species with no atlas of its own (the
+  human), whose proteins take their `unit` from the inventory's own naming of their human
+  entries: the entries whose every role in the inventory names a part that goes with the
+  machine (an auxiliary subunit, "… auxiliary family …"; the sodium pump's beta subunits,
+  "beta"; the uniplex's regulators, "uniplex"; the pump's FXYD regulators, "FXYD" and
+  "FXYD (gamma)"), each with its roles in the inventory's words, and the families every one
+  of whose proteins with a unit is such an entry:
+
+  ```json
+  "inventory_roles": {"note": "…", "proteins": {"Q07699": ["beta, auxiliary family; pairing not specified in source"]},
+                      "families": ["IPR027098"]}
+  ```
+
+  The page draws them as it draws an atlas's accessory finds (`found_by`): plain, in
+  neither the unit's shape nor its tone, and the panel says "Named by the inventory as"
+  with the roles. `tools/build_human_atlas.py` writes it; the human's file names 27 entries.
 - **`marks`** are what else can be shown or filtered: whether it was seen in proteomics,
   its essentiality, a measured or estimated amount. Each mark is declared once, with its
   values, whether it is measured, and its source (the name of an entry in `sources`). A
@@ -187,6 +222,16 @@ its members, each a protein of the catalogue.
   cell's membranes together, and its `outside` says what "beyond a membrane" then covers.
 - **The members' file** written beside the page has the format
   `cells.visualizer.species_protein_members@1` and holds `columns` and `members`.
+- **The names file** (16 November 2026), `names.json` beside a large catalogue's members'
+  files, is written by the page builder from them, whenever they are newer, and published
+  with them: one more file for each large catalogue. Its format is
+  `cells.visualizer.species_protein_names@1`; it holds `files` (the members' files, in
+  order), `counts` (how many members each holds), `columns` (`id`, `gene`, `label`, `side`)
+  and `names`, one row for each member in the files' order: its identifier, gene, name and
+  side. A row's file and its place there follow from the order and the counts, and a name
+  leads to its line by the same `file` and `at` the shelves give, so the
+  page's search finds a protein whose family is not open. Like the members' files it is
+  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB).
 - **`by_basis`**, for each side how many proteins have it by each basis, is given by
   every catalogue in families: the page's words on how sides are known rest on it.
 
@@ -294,7 +339,8 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   - The file counts these apart, under `plant`.
 - **A whole reference proteome.** Where a species' catalogue is its whole reference
   proteome, reviewed and unreviewed entries together (the fruit fly, at the user's word of
-  15 November 2026), one marker stands for each gene: the protein that the database's own
+  15 November 2026; the mouse, with that word taken as its default, 16 November 2026), one
+  marker stands for each gene: the protein that the database's own
   gene-by-gene set gives for it. The mark `reviewed` says whether its entry was written by
   a curator, and the mark `entries` counts the proteome's entries for its gene. A place
   that a rule system states in an unreviewed entry is `stated` with the evidence `rule`.

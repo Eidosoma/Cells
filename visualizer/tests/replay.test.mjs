@@ -279,3 +279,17 @@ test("what an experiment found is two facts from the record, and a run's class i
   assert.equal(catalogue.classOf(catalogue.byId.get("a--x--seed2")), null, "a run without a class shows none");
 });
 
+
+test("the timeline says a time with what it lies in: a run's length, or, where its records start later, its first and last record", async () => {
+  const { whereWords, SECONDS } = await import("../src/replay/player.js");
+  // A run from nought: its own time of its length, as always.
+  assert.deepEqual(whereWords({ time: 0.4, start: 0, end: 4 }), { now: "0.4 s", of: " of 4 s" });
+  // One period of a longer run, packaged to loop (its records run from 8 s to 10 s): the run's own time, between its two ends,
+  // and never "10 s of 2 s".
+  assert.deepEqual(whereWords({ time: 9.2, start: 8, end: 10 }), { now: "9.2 s", of: ", between 8 s and 10 s" });
+  assert.deepEqual(whereWords({ time: 10, start: 8, end: 10, base: SECONDS }), { now: "10 s", of: ", between 8 s and 10 s" });
+  // A time base of its own (counted steps) keeps its own words for both.
+  const counted = { clock: (value) => `step ${value}`, length: (value) => `${value} steps` };
+  assert.deepEqual(whereWords({ time: 3, start: 0, end: 12, base: counted }), { now: "step 3", of: " of 12 steps" });
+  assert.deepEqual(whereWords({ time: 5, start: 2, end: 12, base: counted }), { now: "step 5", of: ", between step 2 and step 12" });
+});

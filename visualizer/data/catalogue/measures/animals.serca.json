@@ -1,0 +1,104 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6LLE": {
+   "entry": "6LLE",
+   "title": "CryoEM structure of SERCA2b WT in E1-2Ca2+-AMPPCP state.",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "2.9",
+   "left_out": [],
+   "whole": {
+    "atoms": 7882,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     15.0,
+     6.5,
+     4.6
+    ],
+    "farthest_nm": [
+     13.4,
+     7.1,
+     5.4
+    ],
+    "middle_98_percent_nm": [
+     11.9,
+     6.0,
+     4.3
+    ],
+    "radius_of_gyration_nm": 3.79
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 2",
+     "atoms": 7882,
+     "centre_nm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ],
+     "across_nm": [
+      15.0,
+      6.5,
+      4.6
+     ],
+     "farthest_nm": [
+      13.4,
+      7.1,
+      5.4
+     ],
+     "radius_of_gyration_nm": 3.79
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Sarcoplasmic/endoplasmic reticulum calcium ATPase 2",
+     "copies": 1,
+     "sequence_length": 1070,
+     "residues_modelled_per_copy": 1020.0,
+     "modelled_share": 0.953,
+     "atoms_per_modelled_residue": 7.73
+    }
+   ]
+  }
+ }
+}

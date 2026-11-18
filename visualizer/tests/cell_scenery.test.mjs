@@ -167,12 +167,15 @@ test("the scale bar says small parts are enlarged for as long as they are drawn 
 });
 
 test("a species without such parts is built with none of them", () => {
+  // An animal cell's centrosome is scenery that can be chosen too, drawn with its Golgi (cell_structures.js; the user,
+  // 17 November 2026): it is not a part of a species' file, and tests/cell_structures.test.mjs holds it.
+  const own = (id) => id !== "scenery:centrosome";
   for (const id of ["planarian", "human", "syn3a", "mpneumoniae"]) {
     for (const mode of ["schematic", "real"]) {
       const { handles, added } = built(species(id), mode);
-      assert.deepEqual(handles.scenery, [], `${id}: nothing of the kind to choose`);
+      assert.deepEqual(handles.scenery.filter((item) => own(item.id)), [], `${id}: nothing of the kind to choose`);
       assert.equal(handles.reach, 0);
-      assert.ok(!added.some((entry) => String(entry.pick || "").startsWith("scenery:")), `${id}: nothing of the kind drawn`);
+      assert.ok(!added.some((entry) => String(entry.pick || "").startsWith("scenery:") && own(entry.pick)), `${id}: nothing of the kind drawn`);
       assert.deepEqual(handles.notes, [], `${id}: and the picture says no line more`);
     }
   }

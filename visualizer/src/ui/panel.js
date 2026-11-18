@@ -77,8 +77,12 @@ class CellsPanel extends HTMLElement {
       body.append(trace);
       trace.data = entity.chart;
     }
+    // A figure the view draws itself for this part (the tissue's switch, for a chosen cell): its own element.
+    if (entity.figure && typeof entity.figure === "object" && entity.figure.nodeType === 1) body.append(entity.figure);
     // A door into another view: which view, and what to show there (the Protein atlas on one set of a species' proteins).
-    for (const door of entity.doors || []) body.append(h("p", { class: "panel-door" }, h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-door", door) }, `${door.label} →`)));
+    // A door is pressed: it opens another view, or does what its own view does with it ("Look closer" at a machine). An item that
+    // says `says` is words in a door's place and opens nothing (the Laws library on a unit's laws that it does not show).
+    for (const door of entity.doors || []) body.append(!door.says ? h("p", { class: "panel-door" }, h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-door", door) }, `${door.label} →`)) : h("p", { class: "panel-door quiet" }, door.label));
     for (const section of entity.sections || []) {
       if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items", section.note));
     }

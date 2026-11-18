@@ -74,7 +74,7 @@ the viewer changes.
      electrochemical potential difference, R T ln(c inside / c outside) and z F V, and
      their sum, from the saved concentrations and voltage and the definition's
      temperature and valence (the engine's `electrochemical_potential`, in
-     `src/cells/processes/electrochemistry.py`). Shown in millivolts, each divided by z F.
+     `src/cells/laws/electrochemistry.py`). Shown in millivolts, each divided by z F.
      Where a run saved amounts, a concentration is the amount over the volume of its
      compartment.
 
@@ -136,24 +136,50 @@ the viewer changes.
    Switching a layer on takes its channels from whichever layer held them. Layers on
    different channels show together.
 3. **Something moves only where a rate stands behind it.** A level or a difference never
-   moves. A bead is a token of a rate: the legend says how much one stands for. A layer
-   on the `motion` channel keeps the clock of what it is drawn in (the user, 16 November
-   2026, asked whether beads keep a clock of their own or follow the playhead: "the
-   replays and you must be able to slow down and make replays faster"). On a replay that
-   is the replay's own clock: its tokens stand while the replay is paused and, while it
-   plays, as many pass as the rate gives over the stretch of the run the playhead covers.
-   A replay may be slowed below true speed and made faster than it, from its timeline,
-   which says in words what each step is. In the Cell view a looping run keeps its
-   loop's clock, slowed from the legend. What one token stands for follows the speed, so
-   that the busiest lane passes about as many tokens a second at any speed. The picture
-   states the speed (true speed, how much it is slowed or made faster), that the replay
-   is paused where it is, the loop it plays, and what one token stands for. The rate
-   sets how many tokens pass, never how fast one travels. The interval the rate is a
-   mean over stands with the time. An arrowhead ends each lane that carries something and points the way
-   its tokens go, so that a still picture, and a visitor who asks for less motion, are
-   told the way. Where nothing may move, the tokens stand, as many as would be on their
-   way at one moment, and the picture says that it is shown still; a stream too thin for
-   one token shows a small arrowhead alone.
+   moves. A token (a packet or a bead) is a token of a rate: the legend says how much one
+   stands for. A layer on the `motion` channel keeps the clock of what it is drawn in (the
+   user, 16 November 2026, asked whether beads keep a clock of their own or follow the
+   playhead: "the replays and you must be able to slow down and make replays faster"). On
+   a replay that is the replay's own clock: its tokens stand while the replay is paused
+   and, while it plays, as many pass as the rate gives over the stretch of the run the
+   playhead covers. A replay may be slowed below true speed and made faster than it, from
+   its timeline, which says in words what each step is. In the Cell view a looping run
+   keeps its loop's clock, slowed from the legend's slider.
+
+   **How a rate is drawn follows the speed the picture keeps, so that slowing down is
+   seen** (the user, 17 November 2026: "the speed does not change the anymation of the
+   beads and arrows in flux"; "nice visual effects to show the speed at full speed, you
+   wont see any individual ions"). At true speed no single particle can be followed: each
+   lane is a stream, as wide and as bright as its rate (the busiest the fullest), and the
+   picture says the busiest's rate in numbers. Slowed, the stream resolves into packets
+   and then into single beads, with no jump between: fewer pass a second and each crosses
+   more slowly, the more the picture is slowed. A token stands for 1, 2 or 5 times a
+   power of ten of what flows, never under one particle, and the tokens passing a second
+   times what one stands for is the rate at the speed in force, exactly. The rate sets how
+   many tokens pass and how wide a stream is, never how fast one travels: how fast a
+   streak, a packet or a bead goes is a sign of the slow-down and stands for nothing
+   measured.
+
+   The picture states what is drawn and what one token stands for, the speed (true speed,
+   how much it is slowed or made faster), that the replay is paused where it is, the loop
+   it plays, and the interval the rate is a mean over. Where an interval passes too fast
+   to be read at the speed in force, the picture gives its length ("means over each 20 ms
+   between records") in place of its place. The way a lane flows is shown by chevrons
+   along it, which stand where nothing may move, so that a still picture, and a visitor
+   who asks for less motion, are told the way; a stream too thin for one token shows its
+   chevrons alone. Where nothing may move, the tokens stand, as many as would be on their
+   way at one moment, and the picture says that it is shown still. Faster than true speed
+   the lanes are streams as at true speed, and the picture gives the rate at full width
+   both in the run's seconds and in the seconds of watching. However short a lane and
+   however busy, no token overlaps the next on it: a packet is drawn shorter, and a bead
+   smaller, never fewer; where lanes lie side by side a chevron is drawn no wider than
+   leaves room to the next. A chevron is one flat, see-through mark a little paler than
+   its lane, without a glow, so that it is not taken for a particle.
+
+   The same holds in the Cell view and in a replay's sheet and close-up, which draw
+   through one renderer. An illustration (a species with no run) has no rate and no
+   speed: it keeps beads at one pace, with chevrons for the way, and never draws a
+   stream, so that it cannot look like a measured one.
 4. **Always a legend:** the quantity, its unit and scale, what stands behind it (the
    record's owner and how it is represented), and for a derivation the rule and its
    inputs. Text wears the page's text colours, never the mark's colour. For a run
@@ -176,7 +202,15 @@ the viewer changes.
    view of a species it is drawn only from that species' own looping run, a run the
    engine made of that one cell and packaged to loop. The picture then names the run,
    says that it loops, and gives the loop's length in the cell's time and how much it is
-   slowed. A species with no such run shows no run-fed layer in its Cell view. A
+   slowed. A species with no such run shows no run-fed layer in its Cell view. The run
+   belongs to the species' cell type (`cell_type.loop`, `CELL_TYPES.md`). The page finds
+   it in its catalogue of runs and says what the catalogue says it is (a development run
+   of the engine, not judged); while it is on its way, or where the page cannot have it,
+   nothing is drawn and the reason is given, and illustration does not stand in for it.
+   The picture says, in the fewest words, which of the run's cells the Cell view's cell is
+   and what drives it that is not drawn, and that it is no measurement of a living cell;
+   the legend and the panel say which part takes a flux from which record, and what the
+   run's closure leaves out. A
    packaged replay says that it is such a loop in its view (`loop`,
    `schema/RUN_VIEW.md`, in the shape the engine's writer gives it): the species whose
    cell it is, the cell, the loop's period, and the run's own word that its last record
@@ -226,6 +260,42 @@ the viewer changes.
     so beside the Flux switch. They hold still where they stood while any flux shows,
     those of a part whose flux shows give way to its beads, and they stand for a visitor
     who asks for reduced motion.
+13. **A machine's own motion is illustration from papers, and says so** (the user, 16
+    November 2026: "motor, yes it should turn at real life speeds at flux ... except if we
+    slow down the flux"; and of the blur: "sounds good on the blur but you can skipt the
+    too fast to follow text").
+    - **Its basis.** In a closer view of a machine (`schema/MACHINES.md`), a part turns only
+      where the machine's file gives a saved sentence of a permissive paper for its way,
+      with the side it is seen from, and a sentence, a declared derivation or a stated choice
+      within the range the sentences give, for its rate. This is the one exception to "No
+      textbook direction is drawn" in "Flux in the Cell view".
+    - **It is the machine's flux.** It moves while the machine is the part shown (opened by
+      the visitor: "Look closer", the machine's stop on the scale rail), or while the Flux
+      switch shows all. It stands when the address opens the closer view (until the visitor
+      chooses), on a page opened still, and for a visitor who asks for reduced motion.
+    - **Its speed.** It turns at real-life speed, at the rate the file draws. Only the Cell
+      view's flux slow-down slows it: it keeps that one speed, offered in the legend's Speed
+      slider while it turns, and has no speed, no steps and no words for them of its own. Its
+      clock is the real time that passed.
+    - **An arrowhead shows the way** whenever the machine is drawn, turning or still.
+    - **No mark may be read as another way or another rate.** The marks give way to a swept
+      form, the marks smeared round into a body of revolution with no angle of its own:
+      above an eighth of a turn in a frame for a single mark, and above a quarter of their
+      spacing for a set of like copies, judging each frame by the larger of its own step and
+      the smoothed step. The two fade into each other over the half step below the limit.
+    - **What the picture states**, for as long as the machine shows (or the panel or sheet in
+      front of it, where the picture has no room): "Illustration: not a run" while it turns;
+      that Cells has no model of the machine; the way, and where it is seen from; and the
+      speed: the rate drawn with what it rests on, and the top rate the papers give, or,
+      slowed, the flux's own words for the slow-down with the rate in life. The panel names
+      the papers. Nothing says that it is too fast to follow.
+    - **It holds the motion channel**, so the look's own motion stops while it moves (rule
+      12). It never shares a picture with a run-fed layer: the cell and its beads are
+      faded out while the machine shows, and the picture's one statement is the machine's.
+    - **Tokens through a part** follow rule 3. None is drawn yet: the user's decision of 16
+      November 2026 was to wait with protons.
+    - **A motion with no sentence** for its way or for its rate is not drawn. Where Cells
+      comes to model the machine, its run's numbers take the place of the papers'.
 
 ## Flux in the Cell view
 
@@ -237,6 +307,12 @@ Flux switch shows all of it**; its numbers come first from the species' own loop
 and **illustration is allowed** where there is none (rule 11); and **all of it flows**:
 ions through channels and pumps, the exchange with neighbours, water, secreted signals
 and fuel, each where a rate stands behind it.
+
+Since 17 November 2026 how a rate is drawn follows the speed (rule 3): a stream at true
+speed, packets and then single beads as it is slowed. The Cell view's speed is a slider,
+from true speed to ten million times slower, marked at a thousandfold (half way) and a
+millionfold (three quarters); it never goes faster than life. The motor and a looping run
+share it.
 
 **How it is switched.** The legend of the Cell view has a Flux switch, off as the page
 opens. A part's flux shows when the visitor chooses the part, alone, whatever the
@@ -264,7 +340,8 @@ for the engine's generic cell: it is drawn on a species only where the page show
 species as the generic cell, or as modelled, and the species' file has no words of its
 own on the part. Where no basis gives a direction, both ways are drawn side by side and
 the page says that neither is claimed to carry more; or nothing is drawn and the reason
-is given. No textbook direction is drawn.
+is given. No textbook direction is drawn. A machine's closer view is not flux of the cell:
+what moves there follows rule 13, the one exception.
 
 | What flows | Drawn as illustration | Basis |
 | --- | --- | --- |
@@ -302,6 +379,7 @@ layout is the viewer's, and the page says so. A layer on a border (`transfers`,
 | `voltage-tint` | the colouring the replay has today | cell | `tint` | colour | record: membrane voltage |
 | `voltage-relief` | 1 | cell | `relief` | height | record: membrane voltage |
 | `junction-drops` | 2 | junction | `wedge` | links | the first a run can give of: the engine's own junction voltage; the `difference` of the two cells' potentials; the `difference` of membrane voltage where the run states that the cells' surroundings share one potential. With it, how far the junction's gate is open and whether a junction has formed |
+| `junction-coupling` | 2 | junction | `network` | links | each junction's own number as the run saves it: its conductance where it saves one, else its gate. A line between the middles of its two cells, across their border, as wide as the number (a gate's scale is nought to one, fully open; any other number's nought to a round number at or above its largest); a hairline, fainter, under a fiftieth of the scale. Transfers runs along the same line. A chosen cell's panel gives each of its junctions' number |
 | `ion-push-pull` | 3 | membrane of the chosen cell | `arrows` | arrows | `potential terms` for each ion, on the close-up of the chosen cell's membrane |
 | `membrane-charge` | 4 | membrane of the chosen cell | `stipple` | surface | `charge`, counted on a piece of 100 nm by 25 nm |
 | `transfers` | 5 | junction, face, membrane and exchange route: the border between the two places each joins | `stream` | motion | `rate` of every saved total carried (`junction_transferred`, `face_transferred`, `membrane_transferred`, `exchange_moved_fmol`), each species by itself |

@@ -73,16 +73,24 @@ export function problemsOf(machine) {
     if (!node || typeof node !== "object") return;
     const isNumber = ["nm", "n", "turns_per_s", "most_turns_per_s"].some((key) => key in node);
     if (isNumber) {
-      const bases = ["says", "read", "choice", "derived"].filter((key) => key in node);
+      const bases = ["says", "read", "pdb", "choice", "derived"].filter((key) => key in node);
       if (bases.length !== 1) problems.push(`${where}: a number with ${bases.length ? bases.join(" and ") : "no basis"}`);
       if (node.derived !== undefined && !(node.from || node.from_says)) problems.push(`${where}: worked out from nothing named`);
+      if (node.pdb) {
+        // A value from a structure: its entry is one the file lists, and the organism beside it is one its record states.
+        const entry = (machine.structures || []).find((item) => item.entry === node.pdb.entry);
+        if (!entry) problems.push(`${where}: from the entry ${node.pdb.entry}, which the file's structures do not list`);
+        else if (node.measured_in && !entry.organisms.some((organism) => organism.includes(node.measured_in.replace(/^other bacteria: /, "")))) problems.push(`${where}: measured in ${node.measured_in}, which ${node.pdb.entry}'s record does not name`);
+        if (!node.pdb.what) problems.push(`${where}: from ${node.pdb.entry}, with no word of what was read there`);
+        if (sources.pdb?.class !== "permissive") problems.push(`${where}: from a structure, and the file has no permissive source for the Protein Data Bank`);
+      }
       if (node.read) {
         const source = sources[node.read.source];
         if (source?.standing !== "open paper, numbers only") problems.push(`${where}: read from ${node.read.source}, which is not an open paper whose numbers alone are taken`);
         if (!node.read.where) problems.push(`${where}: read with no place in the paper`);
       }
     }
-    for (const key of ["says", "also_says", "caveat_says", "from_says"]) {
+    for (const key of ["says", "also_says", "caveat_says", "from_says", "within_says"]) {
       for (const id of [node[key]].flat().filter((id) => typeof id === "string")) if (!sentences[id]) problems.push(`${where}: ${key} ${id}, which is no sentence`);
     }
     for (const [key, value] of Object.entries(node)) if (key !== "sentences" && key !== "sources") walk(value, `${where}.${key}`);
@@ -177,6 +185,7 @@ export function bentLine(lo, hi, length) {
 }
 
 const UP = new THREE.Vector3(0, 1, 0);
+const ONE = new THREE.Vector3(1, 1, 1); // the unit scale, kept so that placing again each frame makes no vector of its own
 
 /** A frame along a curve at a share `t` of its length: its point, its tangent and two normals. */
 function frameAt(curve, t) {
@@ -203,7 +212,7 @@ export function placeAlong(mesh, curve, { count, strands, radius, angle = 0, fro
       const phi = angle + (strand / strands) * Math.PI * 2 + step * 0.12;
       place.copy(point).addScaledVector(side, Math.cos(phi) * radius).addScaledVector(other, Math.sin(phi) * radius);
       turn.setFromUnitVectors(UP, tangent);
-      matrix.compose(place, turn, new THREE.Vector3(1, 1, 1));
+      matrix.compose(place, turn, ONE);
       mesh.setMatrixAt(index, matrix);
     }
   }
@@ -468,6 +477,10 @@ export function basisWords(machine, node) {
   if (node.choice !== undefined) return `the picture's choice: ${node.choice}`;
   if (node.derived !== undefined) return `worked out: ${node.derived}`;
   if (node.read) return `${cite(sources[node.read.source])}, ${node.read.where} (an open paper with no licence declared: its number alone is taken)${node.measured_in ? `; in ${node.measured_in.replace(/^other bacteria: /, "")}` : ""}`;
+  if (node.pdb) {
+    const entry = (machine.structures || []).find((item) => item.entry === node.pdb.entry);
+    return `the Protein Data Bank's entry ${node.pdb.entry}${entry ? `, of ${entry.organisms.join(" and ")} as its record states` : ""}: ${node.pdb.what}`;
+  }
   const keys = [node.says].flat().filter(Boolean);
   const papers = [...new Set(keys.map((key) => cite(sources[sentences[key]?.source])))].join("; ");
   const where = node.measured_in === "not stated" ? "the sentence names no species" : node.measured_in ? `measured in ${node.measured_in}` : "";
@@ -484,7 +497,10 @@ function caveatsOf(machine, node) {
 function linksOf(machine, node) {
   const keys = [node.says, node.from_says].flat().filter(Boolean);
   const names = [...new Set([...keys.map((key) => machine.sentences?.[key]?.source), node.read?.source].filter(Boolean))];
-  return names.map((name) => machine.sources[name]).filter(Boolean).map((source) => ({ text: cite(source), url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+  const links = names.map((name) => machine.sources[name]).filter(Boolean).map((source) => ({ text: cite(source), url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+  // A structure's entry links to its page at the Protein Data Bank.
+  if (node.pdb?.entry) links.push({ text: `PDB ${node.pdb.entry}`, url: `https://www.rcsb.org/structure/${node.pdb.entry}` });
+  return links;
 }
 
 /** The door from a part into the Protein atlas: the machine's set, and of it this part's proteins. */
@@ -516,6 +532,7 @@ export function describeMachinePart(machine, partId, { species = null, names = {
     const item = { label: node.of ? `${label}: ${node.of}` : label, detail: valueWords(node), lines: [basisWords(machine, node), ...caveatsOf(machine, node)] };
     if (node.disagree) item.lines.push(`The sources disagree: ${node.disagree}`);
     if (node.also) item.lines.push(`Also: ${node.also.text} (${basisWords(machine, node.also)})`);
+    if (node.placed) item.lines.push(node.placed);
     (node.choice !== undefined ? drawn : sizes).push({ ...item, links: linksOf(machine, node) });
     note(node);
   }
@@ -529,12 +546,12 @@ export function describeMachinePart(machine, partId, { species = null, names = {
     note(part.copies);
   }
   for (const figure of part.holds?.figures || []) {
-    sizes.push({ label: `What ${part.holds.of} holds`, detail: figure.text, lines: [basisWords(machine, figure)], links: linksOf(machine, figure) });
+    sizes.push({ label: `What ${part.holds.of} holds`, detail: figure.text, lines: [basisWords(machine, figure), ...(figure.also ? [`Also: ${figure.also.text} (${basisWords(machine, figure.also)})`] : [])], links: linksOf(machine, figure) });
     note(figure);
   }
   for (const sub of part.subunits?.of || []) {
     if (!sub.count) continue;
-    sizes.push({ label: `${sub.gene}, copies`, detail: valueWords(sub.count), lines: [basisWords(machine, sub.count), `Drawn at level 3 (${sub.arranged || sub.layout}).`], links: linksOf(machine, sub.count) });
+    sizes.push({ label: `${sub.gene}, copies`, detail: valueWords(sub.count), lines: [basisWords(machine, sub.count), ...(sub.count.also ? [`Also: ${sub.count.also.text} (${basisWords(machine, sub.count.also)})`] : []), sub.layout && sub.layout !== "band" && sub.layout !== "smooth" ? `Drawn at level 3 (${sub.arranged || sub.layout}).` : sub.why || "A number for the panel: not drawn as blocks."], links: linksOf(machine, sub.count) });
     note(sub.count);
   }
   if (part.drawn_as) drawn.push({ label: "As drawn", lines: [part.drawn_as.choice] });
@@ -547,7 +564,8 @@ export function describeMachinePart(machine, partId, { species = null, names = {
   const motion = machine.motion || {}, rotor = motion.rotor;
   const how = [];
   if (part.turns && rotor) {
-    how.push({ label: "How it turns", lines: [`${rotor.as ? `${rotor.as[0].toUpperCase()}${rotor.as.slice(1)}, it` : "It"} turns ${rotor.way}, seen ${rotor.seen_from?.text || "from outside the cell"}.`, rotor.about?.why?.text && rotor.about.own_line?.includes(part.id) ? rotor.about.why.text : null, rotor.drawn ? `Drawn at ${valueWords(rotor.drawn)} turns a second (${rotor.drawn.as}), at real-life speed unless the flux is slowed; up to ${valueWords(rotor.rate)} at its top speed (${basisWords(machine, rotor.rate)}).` : null, rotor.caveat || null].filter(Boolean) });
+    how.push({ label: "How it turns", lines: [`${rotor.as ? `${rotor.as[0].toUpperCase()}${rotor.as.slice(1)}, it` : "It"} turns ${rotor.way}, seen ${rotor.seen_from?.text || "from outside the cell"}.`, rotor.about?.why?.text && rotor.about.own_line?.includes(part.id) ? rotor.about.why.text : null, rotor.drawn ? (rotor.drawn.words ? `Drawn at real-life speed unless the flux is slowed: ${rotor.drawn.words}; ${rotor.rate?.words || ""} (${basisWords(machine, rotor.rate)}).` : `Drawn at ${valueWords(rotor.drawn)} turns a second${rotor.drawn.as ? ` (${rotor.drawn.as})` : ""}, at real-life speed unless the flux is slowed; up to ${valueWords(rotor.rate)} at its top speed (${basisWords(machine, rotor.rate)}).`) : null,
+      rotor.drawn?.choice ? `Why that rate: ${rotor.drawn.choice}` : null, rotor.caveat || null].filter(Boolean) });
     [rotor.says, rotor.seen_from?.says, rotor.rate?.says, rotor.drawn?.from_says, rotor.caveat_says].flat().filter(Boolean).forEach((key) => sentences.add(key));
     if (rotor.seams && !(part.subunits?.of || []).some((sub) => sub.count && sub.layout === "round")) how.push({ label: "Its mark", lines: [rotor.seams.choice] });
   } else if (!isLayer && rotor) {
@@ -578,5 +596,56 @@ export function describeMachinePart(machine, partId, { species = null, names = {
       { title: "What Cells plans", items: plans },
     ].filter((section) => section.items.length),
     disclosures: quoted.length ? [{ title: "The sentences", lines: quoted }] : [],
+  };
+}
+
+/** How many of the file's numbers rest on each basis: measured in each organism as its sentence names it, read from a structure, the picture's choice, worked out. */
+export function basisCounts(machine) {
+  const counts = new Map();
+  const count = (key) => counts.set(key, (counts.get(key) || 0) + 1);
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    if (["nm", "n", "turns_per_s", "most_turns_per_s"].some((key) => key in node)) {
+      if (node.choice !== undefined) count("the picture's choice");
+      else if (node.derived !== undefined) count("worked out from other numbers");
+      else if (node.pdb) count(`from a structure of ${node.measured_in ? node.measured_in.replace(/^other bacteria: /, "") : "an organism not stated"}`);
+      else if (node.measured_in === "not stated") count("from a sentence that names no species");
+      else if (node.measured_in) count(`measured in ${node.measured_in}`);
+    }
+    Object.values(node).forEach(walk);
+  };
+  walk([machine.layers, machine.parts, machine.motion]);
+  return [...counts].sort((a, b) => b[1] - a[1]);
+}
+
+/**
+ * The machine as a whole, as its own panel describes it: what it is, that Cells has no model
+ * of it, its parts (each a button that chooses it), what is drawn at each level, where its
+ * numbers come from, what is not drawn and why, and its doors. `words` are what the picture
+ * says of its motion now; `doors` the lens's own (back to the cell).
+ */
+export function describeMachine(machine, { species = null, capability = null, level = 2, words = [], doors = [] } = {}) {
+  const pick = (id) => `machine:${machine.id}:${id}`;
+  const count = machine.parts.flatMap((part) => part.proteins).length + (machine.not_drawn || []).length;
+  const all = machine.set ? { label: `Show all ${count} of its proteins in the Protein atlas`, lens: "proteins", show: "own", mark: machine.set.mark, value: machine.set.value } : null;
+  return {
+    id: `machine:${machine.id}`,
+    kind: "machine",
+    group: "biology",
+    label: machine.label,
+    eyebrow: `${species?.label ? `${species.label} · ` : ""}a closer view`,
+    chips: [{ label: "Illustration", title: `${noModel(machine)}; drawn from published sizes` }],
+    plain: machine.plain,
+    note: `${noModel(machine)}: what is drawn is an illustration, built from sizes and counts that papers give, as simple shapes, not structures.`,
+    doors: [...doors, ...(all ? [all] : [])],
+    opens: [{ title: "Its parts", items: machine.parts.filter((part) => (part.levels || [1, 2, 3]).includes(level)).map((part) => ({ id: pick(part.id), label: part.label, swatch: "illustration" })) }],
+    sections: [
+      { title: "How it moves", items: words.length ? [{ label: "On the picture", lines: words }] : [] },
+      { title: "What is drawn", items: (machine.levels || []).map((item) => ({ label: `${item.id}. ${item.label}${item.id === level ? " (shown)" : ""}`, lines: [item.says] })) },
+      { title: "Where its numbers come from", note: "Each part's panel gives each of its numbers with its paper.", items: basisCounts(machine).map(([label, n]) => ({ label: `${label[0].toUpperCase()}${label.slice(1)}`, detail: String(n) })) },
+      { title: "Not drawn", items: (machine.not_drawn || []).map((item) => ({ label: item.gene, detail: item.id, lines: [item.why] })) },
+      { title: "What Cells plans", items: capability ? [{ label: capability.label || "Molecular machines", detail: capability.status || "planned", lines: [capability.plain || ""].filter(Boolean) }] : [] },
+    ].filter((section) => section.items.length),
   };
 }

@@ -1,11 +1,11 @@
 {
- "format": "cells.visualizer.species_atlas@1",
+ "format": "cells.visualizer.species_atlas@2",
  "species": {
   "id": "ecoli",
   "label": "E. coli",
   "organism": "Escherichia coli K-12",
   "taxon": 83333,
-  "plain": "A rod-shaped bacterium of the animal gut with 4,403 proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it."
+  "plain": "A rod-shaped bacterium of the animal gut with 4,403 proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are channels, pumps and junctions of animal cells; this is what the same families' signatures find in it."
  },
  "made": "2026-11-15",
  "method": [
@@ -44,22 +44,22 @@
  "units": {
   "U01": {
    "finding": "none found",
-   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
    "products": []
   },
   "U02": {
    "finding": "none found",
-   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
    "products": []
   },
   "U03": {
    "finding": "none found",
-   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
    "products": []
   },
   "U04": {
    "finding": "none found",
-   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+   "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
    "products": []
   },
   "U05": {
@@ -300,7 +300,8 @@
     }
    ],
    "length": 417,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Voltage-gated potassium channel Kch\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR013099 (Potassium channel domain).",
    "citation": null,
    "why": "Carries the signature of the potassium channel domain. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -316,7 +317,8 @@
     }
    ],
    "length": 136,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Large-conductance mechanosensitive channel\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001185 (Large-conductance mechanosensitive channel).",
    "citation": null,
    "why": "Carries the signature of the large-conductance mechanosensitive channel (MscL). The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -332,7 +334,8 @@
     }
    ],
    "length": 1120,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Mechanosensitive channel MscK\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -348,7 +351,8 @@
     }
    ],
    "length": 1107,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Miniconductance mechanosensitive channel MscM\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -364,7 +368,8 @@
     }
    ],
    "length": 286,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Small-conductance mechanosensitive channel\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -380,7 +385,8 @@
     }
    ],
    "length": 415,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Mechanosensing system component YbdG\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -396,7 +402,8 @@
     }
    ],
    "length": 741,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Moderate conductance mechanosensitive channel YbiO\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -412,7 +419,8 @@
     }
    ],
    "length": 343,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Low conductance mechanosensitive channel YnaI\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain).",
    "citation": null,
    "why": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -428,7 +436,8 @@
     }
    ],
    "length": 473,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"H(+)/Cl(-) exchange transporter ClcA\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001807 (Chloride channel).",
    "citation": null,
    "why": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -444,7 +453,8 @@
     }
    ],
    "length": 418,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Voltage-gated ClC-type chloride channel ClcB\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001807 (Chloride channel).",
    "citation": null,
    "why": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -460,7 +470,8 @@
     }
    ],
    "length": 418,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Putative ion-transport protein YfeO\", with UniProt's level of evidence \"inferred from homology\". The entry carries IPR001807 (Chloride channel).",
    "citation": null,
    "why": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -476,7 +487,8 @@
     }
    ],
    "length": 231,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Aquaporin Z\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000425 (Major intrinsic protein).",
    "citation": null,
    "why": "Carries the signature of aquaporins and their relatives (major intrinsic proteins). The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -492,7 +504,8 @@
     }
    ],
    "length": 281,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Glycerol uptake facilitator protein\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000425 (Major intrinsic protein).",
    "citation": null,
    "why": "Carries the signature of aquaporins and their relatives (major intrinsic proteins). The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -508,7 +521,8 @@
     }
    ],
    "length": 316,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Magnesium transport protein CorA\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR002523 (Mg2+ transporter protein, CorA-like/Zinc transport protein ZntB).",
    "citation": null,
    "why": "Carries the signature of CorA-type magnesium channels. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -524,7 +538,8 @@
     }
    ],
    "length": 327,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Zinc transport protein ZntB\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR002523 (Mg2+ transporter protein, CorA-like/Zinc transport protein ZntB).",
    "citation": null,
    "why": "Carries the signature of CorA-type magnesium channels. The law inventory has no unit for this family; it is one of the cell's own channels."
@@ -540,7 +555,8 @@
     }
    ],
    "length": 834,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Copper-exporting P-type ATPase\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase).",
    "citation": null,
    "why": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
@@ -556,7 +572,8 @@
     }
    ],
    "length": 682,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Potassium-transporting ATPase ATP-binding subunit\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase).",
    "citation": null,
    "why": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
@@ -572,7 +589,8 @@
     }
    ],
    "length": 898,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Magnesium-transporting ATPase, P-type 1\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase).",
    "citation": null,
    "why": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
@@ -588,7 +606,8 @@
     }
    ],
    "length": 732,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Zinc/cadmium/lead-transporting P-type ATPase\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase).",
    "citation": null,
    "why": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
@@ -604,7 +623,8 @@
     }
    ],
    "length": 513,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"ATP synthase subunit alpha\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain).",
    "citation": null,
    "why": "Part of the cell's F-type ATP synthase, which sits in its inner membrane. The law inventory has no F-type ATPase."
@@ -620,7 +640,8 @@
     }
    ],
    "length": 460,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"ATP synthase subunit beta\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain).",
    "citation": null,
    "why": "Part of the cell's F-type ATP synthase, which sits in its inner membrane. The law inventory has no F-type ATPase."
@@ -636,7 +657,8 @@
     }
    ],
    "length": 575,
-   "evidence": "reviewed entry",
+   "found_by": "accessory signature",
+   "entry": "reviewed",
    "evidence_note": "Its reviewed UniProtKB entry names it \"Uncharacterized protein YfbK\", with UniProt's level of evidence \"predicted\". The entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta).",
    "citation": null,
    "why": "Carries the family signature of calcium channel alpha-2/delta subunits, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit (U24 to U30 asked for it)."

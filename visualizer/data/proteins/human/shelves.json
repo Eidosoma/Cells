@@ -5919,6 +5919,100 @@
   ["SL-0548","Zymogen granule lumen","other","inside","kind of","Cytoplasmic vesicle lumen",0]
  ],
  "place_words": {"0004": "Cytoplasmic vesicle, secretory vesicle, acrosome inner membrane", "0005": "Cytoplasmic vesicle, secretory vesicle, acrosome lumen", "0006": "Cytoplasmic vesicle, secretory vesicle, acrosome membrane", "0007": "Cytoplasmic vesicle, secretory vesicle, acrosome", "0009": "Cell junction, adherens junction", "0015": "Apical cell membrane", "0017": "Apicolateral cell membrane", "0022": "Cytoplasmic vesicle, autophagosome membrane", "0023": "Cytoplasmic vesicle, autophagosome", "0024": "Basal cell membrane", "0025": "Secreted, extracellular space, extracellular matrix, basement membrane", "0026": "Basolateral cell membrane", "0031": "Nucleus, Cajal body", "0032": "Cytoplasm, cytoskeleton, perinuclear theca, calyx", "0035": "Membrane, caveola", "0038": "Cell junction", "0039": "Cell membrane", "0046": "Cytoplasm, cytoskeleton, microtubule organizing center, centrosome, centriole", "0047": "Chromosome, centromere", "0048": "Cytoplasm, cytoskeleton, microtubule organizing center, centrosome", "0061": "Cytoplasmic vesicle, secretory vesicle, chromaffin granule", "0062": "Cytoplasmic vesicle, secretory vesicle, chromaffin granule membrane", "0066": "Cell projection, cilium", "0067": "Golgi apparatus, cis-Golgi network", "0068": "Golgi apparatus, cis-Golgi network membrane", "0069": "Membrane, clathrin-coated pit", "0070": "Cytoplasmic vesicle, clathrin-coated vesicle", "0071": "Cytoplasmic vesicle, clathrin-coated vesicle membrane", "0072": "Membrane, coated pit", "0075": "Cytoplasmic vesicle, COPI-coated vesicle", "0076": "Cytoplasmic vesicle, COPI-coated vesicle membrane", "0077": "Cytoplasmic vesicle, COPII-coated vesicle", "0078": "Cytoplasmic vesicle, COPII-coated vesicle membrane", "0079": "Cornified envelope", "0086": "Cytoplasm", "0087": "Cytoplasm, cytoskeleton, cilium basal body", "0088": "Cytoplasmic vesicle", "0089": "Cytoplasmic vesicle membrane", "0090": "Cytoplasm, cytoskeleton", "0091": "Cytoplasm, cytosol", "0092": "Cell junction, desmosome", "0093": "Early endosome membrane", "0094": "Early endosome", "0095": "Endoplasmic reticulum", "0096": "Endoplasmic reticulum lumen", "0097": "Endoplasmic reticulum membrane", "0098": "Endoplasmic reticulum-Golgi intermediate compartment", "0099": "Endoplasmic reticulum-Golgi intermediate compartment membrane", "0100": "Endosome membrane", "0101": "Endosome", "0111": "Secreted, extracellular space, extracellular matrix", "0112": "Secreted, extracellular space", "0114": "Cytoplasm, cytoskeleton, flagellum axoneme", "0115": "Cell projection, cilium, flagellum membrane", "0117": "Cell projection, cilium, flagellum", "0118": "Cell junction, focal adhesion", "0124": "Cell junction, gap junction", "0127": "Nucleus, gem", "0132": "Golgi apparatus", "0133": "Golgi apparatus lumen", "0134": "Golgi apparatus membrane", "0135": "Golgi apparatus, Golgi stack", "0136": "Golgi apparatus, Golgi stack membrane", "0137": "Cell junction, hemidesmosome", "0138": "Cytoplasm, cell cortex", "0141": "Cell projection, uropodium", "0146": "Secreted, extracellular space, extracellular matrix, interphotoreceptor matrix", "0147": "Endomembrane system", "0148": "Cell projection, invadopodium", "0149": "Chromosome, centromere, kinetochore", "0151": "Late endosome membrane", "0152": "Late endosome", "0153": "Lateral cell membrane", "0154": "Lipid droplet", "0156": "Lysosome lumen", "0157": "Lysosome membrane", "0158": "Lysosome", "0160": "Melanosome membrane", "0161": "Melanosome", "0162": "Membrane", "0164": "Cytoplasmic vesicle, secretory vesicle, microneme membrane", "0165": "Microsome membrane", "0166": "Microsome", "0168": "Mitochondrion inner membrane", "0169": "Mitochondrion intermembrane space", "0170": "Mitochondrion matrix", "0171": "Mitochondrion membrane", "0172": "Mitochondrion outer membrane", "0173": "Mitochondrion", "0174": "Endosome, multivesicular body", "0175": "Endosome, multivesicular body membrane", "0176": "Myelin membrane", "0178": "Nucleus envelope", "0179": "Nucleus inner membrane", "0180": "Nucleus lamina", "0181": "Nucleus matrix", "0182": "Nucleus membrane", "0183": "Nucleus outer membrane", "0184": "Nucleus intermembrane space", "0185": "Nucleus, nuclear pore complex", "0186": "Nucleus speckle", "0188": "Nucleus, nucleolus", "0190": "Nucleus, nucleoplasm", "0191": "Nucleus", "0192": "Cell junction, paranodal septate junction", "0197": "Perikaryon", "0198": "Cytoplasm, perinuclear region", "0199": "Cytoplasm, cytoskeleton, perinuclear theca", "0202": "Peroxisome matrix", "0203": "Peroxisome membrane", "0204": "Peroxisome", "0205": "Cytoplasmic vesicle, phagosome membrane", "0206": "Cytoplasmic vesicle, phagosome", "0219": "Postsynaptic cell membrane", "0220": "Preautophagosomal structure", "0221": "Preautophagosomal structure membrane", "0222": "Presynaptic cell membrane", "0230": "Cytoplasm, P-body", "0231": "Recycling endosome membrane", "0232": "Recycling endosome", "0235": "Rough endoplasmic reticulum", "0236": "Rough endoplasmic reticulum lumen", "0237": "Rough endoplasmic reticulum membrane", "0238": "Cell membrane, sarcolemma", "0239": "Sarcoplasmic reticulum", "0240": "Sarcoplasmic reticulum lumen", "0241": "Sarcoplasmic reticulum membrane", "0243": "Secreted", "0244": "Cytoplasmic vesicle, secretory vesicle", "0245": "Cytoplasmic vesicle, secretory vesicle membrane", "0250": "Smooth endoplasmic reticulum membrane", "0251": "Cytoplasm, cytoskeleton, spindle", "0252": "Cytoplasm, cytoskeleton, microtubule organizing center, spindle pole body", "0255": "Secreted, extracellular space, surface film", "0258": "Synapse", "0259": "Cytoplasmic vesicle, secretory vesicle, synaptic vesicle", "0260": "Cytoplasmic vesicle, secretory vesicle, synaptic vesicle membrane", "0261": "Synapse, synaptosome", "0265": "Cell junction, tight junction", "0266": "Golgi apparatus, trans-Golgi network", "0267": "Golgi apparatus, trans-Golgi network membrane", "0269": "Mitochondrion matrix, mitochondrion nucleoid", "0271": "Vacuole membrane", "0272": "Vacuole", "0274": "Virion", "0276": "Chromosome, telomere", "0279": "Cell projection, axon", "0280": "Cell projection", "0281": "Cytoplasmic granule", "0282": "Cytoplasmic granule membrane", "0283": "Cell projection, dendrite", "0284": "Cell projection, dendritic spine", "0285": "Cell projection, dendritic spine membrane", "0286": "Cell projection, filopodium", "0287": "Cell projection, filopodium membrane", "0288": "Cell projection, growth cone", "0289": "Cell projection, growth cone membrane", "0290": "Cell projection, invadopodium membrane", "0291": "Cell projection, lamellipodium", "0292": "Cell projection, lamellipodium membrane", "0293": "Cell projection, microvillus", "0294": "Cell projection, microvillus membrane", "0295": "Cell projection, podosome", "0296": "Cell projection, podosome membrane", "0297": "Postsynaptic density", "0298": "Cell projection, pseudopodium", "0299": "Cell projection, pseudopodium membrane", "0300": "Cell projection, ruffle", "0301": "Cell projection, ruffle membrane", "0302": "Cell projection, stereocilium", "0303": "Cell projection, stereocilium membrane", "0304": "Cytoplasm, cytoskeleton, cilium axoneme", "0305": "Cell projection, cilium membrane", "0308": "Cytoplasm, cytoskeleton, flagellum basal body", "0310": "Cell surface", "0311": "Cytoplasm, sarcoplasm", "0312": "Cytoplasm, myofibril", "0313": "Cytoplasm, myofibril, sarcomere", "0314": "Cytoplasm, myofibril, sarcomere, Z line", "0315": "Cytoplasm, myofibril, sarcomere, M line", "0318": "Cytoplasmic vesicle, autophagosome lumen", "0324": "Cytoplasmic granule lumen", "0325": "Cytoplasmic vesicle lumen", "0326": "Endoplasmic reticulum-Golgi intermediate compartment lumen", "0327": "Endosome lumen", "0340": "Endosome, multivesicular body lumen", "0347": "Cytoplasmic vesicle, secretory vesicle lumen", "0349": "Cytoplasmic vesicle, secretory vesicle, chromaffin granule lumen", "0370": "Membrane raft", "0447": "Cytoplasmic vesicle, secretory vesicle, acrosome outer membrane", "0448": "Cytoplasm, cytoskeleton, spindle pole", "0451": "Target cell membrane", "0456": "Cell tip", "0457": "Photoreceptor inner segment", "0458": "Cell projection, cilium, photoreceptor outer segment", "0460": "Cell projection, kinocilium", "0465": "Nucleus, PML body", "0466": "Secreted, extracellular exosome", "0467": "Cleavage furrow", "0468": "Chromosome", "0469": "Midbody", "0470": "Cell projection, filopodium tip", "0472": "Cell projection, bleb", "0473": "Cell projection, phagocytic cup", "0476": "Cytoplasm, myofibril, sarcomere, A band", "0478": "Cytoplasm, myofibril, sarcomere, I band", "0484": "Cytoplasm, cytoskeleton, microtubule organizing center", "0485": "Cytoplasm, cytoskeleton, microtubule organizing center, centrosome, centriolar satellite", "0488": "Inflammasome", "0490": "Midbody, Midbody ring", "0494": "Nucleus, nuclear body", "0495": "Cytoplasm, Cytoplasmic ribonucleoprotein granule", "0496": "Cytoplasm, Stress granule", "0497": "Nucleus, nucleolus fibrillar center", "0498": "Vesicle", "0499": "Extracellular vesicle", "0500": "Extracellular vesicle membrane", "0501": "Cytoplasm, cytoskeleton, stress fiber", "0505": "Cell membrane, sarcolemma, T-tubule", "0513": "Photoreceptor outer segment membrane", "0514": "Photoreceptor inner segment membrane", "0515": "Postsynapse", "0516": "Presynapse", "0517": "Synaptic cleft", "0518": "Cell projection, neuron projection", "0519": "Presynaptic active zone", "0520": "Postsynaptic density membrane", "0521": "Golgi outpost", "0526": "Cytoplasmic vesicle, secretory vesicle, neuronal dense core vesicle", "0531": "Synaptic cell membrane", "0532": "Cytoplasmic vesicle, secretory vesicle, neuronal dense core vesicle membrane", "0533": "Postsynaptic recycling endosome membrane", "0535": "Autolysosome", "0536": "Autolysosome membrane", "0541": "Cytoplasmic vesicle, secretory vesicle, Cortical granule", "0542": "Dynein axonemal particle", "0543": "Cytolytic granule", "0545": "Zymogen granule", "0547": "Cytolytic granule membrane", "0548": "Zymogen granule lumen", "0549": "Zymogen granule membrane", "9901": "Lipid-anchor", "9902": "Lipid-anchor, GPI-anchor", "9903": "Peripheral membrane protein", "9904": "Single-pass membrane protein", "9905": "Single-pass type I membrane protein", "9906": "Single-pass type II membrane protein", "9907": "Single-pass type III membrane protein", "9908": "Single-pass type IV membrane protein", "9909": "Multi-pass membrane protein", "9910": "Cytoplasmic side", "9911": "Extracellular side", "9912": "Intermembrane side", "9913": "Matrix side", "9914": "Lumenal side", "9915": "Nucleoplasmic side", "9920": "Lipid-anchor, GPI-like-anchor"},
+ "inventory_roles": {
+  "note": "The human has no species atlas: a protein's unit is the inventory's own naming of its human entry. Where every role the inventory gives the entry names a part that goes with the machine (an auxiliary subunit, the sodium pump's beta subunits, the uniplex's regulators, the pump's FXYD regulators), the entry is listed here with its roles, in the inventory's words: it is drawn plain, not in the unit's shape, and is no candidate for the machine's own work. 'families' names the families every one of whose proteins with a unit is listed so.",
+  "proteins": {
+   "O00168": [
+    "FXYD"
+   ],
+   "O00305": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "O43448": [
+    "Kv-beta, auxiliary family; pairing not specified in source"
+   ],
+   "O60939": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "P05026": [
+    "beta"
+   ],
+   "P14415": [
+    "beta"
+   ],
+   "P54284": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "P54289": [
+    "alpha2delta, auxiliary family; pairing not specified in source"
+   ],
+   "P54709": [
+    "beta"
+   ],
+   "P54710": [
+    "FXYD (gamma)"
+   ],
+   "Q7Z3S7": [
+    "alpha2delta, auxiliary family; pairing not specified in source"
+   ],
+   "Q8IWT1": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q8IYU8": [
+    "uniplex"
+   ],
+   "Q8IZS8": [
+    "alpha2delta, auxiliary family; pairing not specified in source"
+   ],
+   "Q9BPX6": [
+    "uniplex"
+   ],
+   "Q9H4I9": [
+    "uniplex"
+   ],
+   "Q9NPA1": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q9NY47": [
+    "alpha2delta, auxiliary family; pairing not specified in source"
+   ],
+   "Q9NY72": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q9Y691": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q86W47": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q02641": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q07699": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q08289": [
+    "beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q13303": [
+    "Kv-beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q14722": [
+    "Kv-beta, auxiliary family; pairing not specified in source"
+   ],
+   "Q16558": [
+    "beta, auxiliary family; pairing not specified in source"
+   ]
+  },
+  "families": [
+   "IPR000402",
+   "IPR000920",
+   "IPR003930",
+   "IPR027098",
+   "IPR039800",
+   "IPR051173"
+  ]
+ },
  "marks": {
   "isoforms": {
    "label": "Isoforms described",

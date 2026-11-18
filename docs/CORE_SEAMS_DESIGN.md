@@ -1333,3 +1333,61 @@ hand-backs:**
   snapshot, so a landing's own tier-3 effects stay distinguishable.
 - **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
   main before gating, so each gate is at its merged head.
+
+**Amended the same evening (the lead, about 18:40 UTC), on the Kv1 extraction's finding:**
+- **XLA on CPU rewrites division by a constant as multiplication by its reciprocal,** in eager and
+  jit alike. Division by a gathered array stays exact.
+- **So delegating `kv1_channels.py`'s dispatcher** to scalar-constant per-law kernels would move the
+  legacy catalogue families' device outputs by up to 32 ulps.
+- **Ruled: one source for the numbers, rather than one copy of the formula.**
+  - The per-law modules hold the coefficients, and the dispatcher builds its gather arrays from the
+    same floats. Every existing record and program stays bitwise (D148).
+  - The per-law kernels are the laws' math. They are held bitwise to the dispatcher under NumPy,
+    and within a stated ulp bound under JAX, with a plant beyond it.
+- **The dispatcher's formula is a recorded temporary second form.** It retires with the legacy
+  catalogue families in the approved legacy-removal batch. A test refuses a sixth law in it.
+
+**§19 amended the same evening (the lead, about 18:50 UTC), on the references agent's
+registration:**
+- **J⁻ comes from the contract.** The kind forms J⁻ = J⁺·e^{ΔG/RT} (§16), never a diagram's own
+  backward flux. That flux differs by rounding, and booking it would show J·ΔG > 0 near equilibrium
+  for an admitted law.
+- **Negative ligand totals** arise legitimately from a form below its base (§19 item 6). For the
+  rows a binding closure holds:
+  - the closure owns the whole energy term, and @3 books no per-row ideal term there;
+  - positivity guards use the admissible floor (Σ T_B·min n), not zero.
+
+  The exact booked term is still the binding owner's first design statement (§19 item 3).
+- **A's two first laws** are `proton_atp_mass_action_positive@1` and
+  `atp_driven_transporter_mass_action_positive@1`. The neutral law's version-1 rows may rest on
+  R-fuel's specification.
+- **Two blind spots are registered now,** by a dated amendment before A's first output: a
+  finite-fuel population, so the stored rate has power, and a population with N = b.
+
+**Amended the same evening (the lead, about 19:00 UTC), on the @3 owner's second hand-back:**
+- **D's heat-booking classes** gain membranes, pumps and calcium pumps beside channels and
+  junctions. Each admits `trapezoid_nonnegative@1`, since their power is never negative. This is the
+  F owner's switch.
+- **Recorded exceptions for the @3 owner:**
+  - the carried `heat_bookings` line in `definitions/surface_pump_water_spec.py` and
+    `surface_pump_water_v2_spec.py`, two files with no owner;
+  - two lines of `kinds/ph_condition.py`. The kind is the word "factor", and the law ID moves
+    under `laws`.
+- **The moved-rows guard.** Each kind's rates are checked against its `moved_rows` at binding, on the
+  host, at the initial state and at a perturbed one. Programs do not change. A per-stage check
+  follows only if a real case needs it.
+- **The Kv1 pilot's @3 side.** `LAW_CODES`, `GATE_COUNTS` and `LAW_PERMEABILITIES` stay today's five
+  by name, and a later law is checked with its structure. So the code-0 dispatch, the structure-free
+  domain check and the replacement operator's tables are unchanged.
+
+**Amended the same evening (the lead, about 19:15 UTC):**
+- **The ensemble's dispatch through the model table (§15's follow-up): option (a).**
+  - A new `ensemble` column, "module:object" or None, names a family's EnsembleAdapter: the
+    ensemble's eight hooks and its kind. `ensemble/families.py` builds its models from the adapter
+    rows and falls back to today's chains.
+  - The F owner edits `ensemble/families.py`, and `plan.py` and `worker.py` only where the dispatch
+    needs them. This is a recorded exception, since `ensemble/` has no owner in the pass.
+  - GARD's adapter comes after, from the OL2/OL3 builder.
+- **`operators/site_occupancy.py`.** The FR owner fixes its memory estimate, from an external review
+  of 18 November, as a recorded assignment. The file then passes to the binding owner, since FR-3's
+  site binding is seam C's (§5.3).

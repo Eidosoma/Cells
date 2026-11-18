@@ -18,7 +18,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -31,6 +31,7 @@ import { columnsFor, freeOf, opensFor, shapeFor } from "../src/lenses/shelves_vi
 import {
   BASES,
   MEMBERS_FORMAT,
+  NAMES_FILE,
   NO_SHELF,
   OWN_FAMILY,
   OWN_PART,
@@ -303,7 +304,7 @@ test("a protein's panel gives its name, gene, identifier, side and how that is k
   assert.equal(facts.Essentiality, "essential (measured)");
   assert.equal(facts["Estimated copies in a cell"], "1,500", "an estimate is not called measured");
   assert.equal(facts.Assembly, "ribosome");
-  assert.deepEqual(said.chips.map((chip) => chip.label), ["No law in Cells", "Inside the cell", "By function"]);
+  assert.deepEqual(said.chips.map((chip) => chip.label), ["Not in the law inventory", "Inside the cell", "By function"]);
   assert.deepEqual(said.sections.map((section) => section.title), ["Look it up", "Sources and licences"]);
   assert.deepEqual(said.sections[0].items[0].links, [{ text: "Look up TB_004", url: "https://www.ncbi.nlm.nih.gov/protein/?term=TB_004" }]);
   assert.match(said.disclosures[0].title, /taken from function/);
@@ -313,27 +314,90 @@ test("a protein's panel gives its name, gene, identifier, side and how that is k
   assert.match(shelves.describe(keyOf("testbug", "p", "TB_003")).plain, /^It is outside the cell\./);
   const unknown = shelves.describe(keyOf("testbug", "p", "TB_008"));
   assert.match(unknown.plain, /^Its side of the membrane is not known\. .* set apart and not placed by guess\.$/);
-  assert.deepEqual(unknown.chips.map((chip) => chip.label), ["No law in Cells", "Side not known", "Not known"]);
+  assert.deepEqual(unknown.chips.map((chip) => chip.label), ["Not in the law inventory", "Side not known", "Not known"]);
   // A mark that can be either says "no"; one that is only ever set is left out when it is not.
   assert.equal(Object.fromEntries(shelves.describe(keyOf("testbug", "p", "TB_002")).facts)["Seen in the proteomics"], "no (measured)");
   assert.equal(Object.fromEntries(shelves.describe(keyOf("testbug", "p", "TB_002")).facts)["Lipid anchor read from the sequence"], undefined);
   assert.equal(shelves.describe("own:testbug:p:nobody"), null);
 });
 
-test("only a protein with a unit is tied to a machine Cells has a law for, and the words stop there", () => {
+test("a protein the atlas lists with a unit only as going with its machine says so, in the atlas's words, and is drawn plain", async () => {
+  // The made-up bug's sodium channel (TB_001, U01) and a regulator listed with the same unit only by an accessory family's signature.
+  const data = madeUpSmall({
+    change: (made) => {
+      made.proteins.push(["TB_010", "Channel regulator", "nacr", "cell", "inside", "predicted", "transport", 190, "U01", {}]);
+      made.counts.inside += 1;
+      made.found_by = { note: "made up", default: "family signature", proteins: { "accessory signature": ["TB_010"] }, families: {} };
+    },
+  });
+  const words = OVERLAY.species.found_by;
+  const shelves = new Shelves(data, { label: "Test bug", links: LINKS, units: UNITS, found: words });
+  const channel = shelves.describe(keyOf("testbug", "p", "TB_001"));
+  const regulator = shelves.describe(keyOf("testbug", "p", "TB_010"));
+  assert.equal(channel.chips[0].label, "Would make a unit of the law inventory");
+  assert.deepEqual(channel.related, [{ title: "Drawn in the atlas as", ids: ["unit.U01"] }]);
+  assert.deepEqual([Object.fromEntries(channel.facts)["How the atlas found it"], Object.fromEntries(channel.facts)["In the atlas"]], ["Family signature", "Candidate by family, not an established counterpart"]);
+  assert.equal(regulator.chips[0].label, "Goes with a unit of the law inventory");
+  assert.match(regulator.chips[0].title, /no candidate for the machine's own work, and is drawn as a plain marker/);
+  assert.deepEqual(regulator.related, [{ title: "Listed in the atlas with", ids: ["unit.U01"] }]);
+  assert.deepEqual([Object.fromEntries(regulator.facts)["How the atlas found it"], Object.fromEntries(regulator.facts)["In the atlas"]], ["Accessory family", "Goes with the machine, no candidate for its own work"]);
+  assert.ok(!regulator.chips.some((chip) => /Would make/.test(chip.label)));
+  assert.deepEqual([channel.chips[0].swatch, regulator.chips[0].swatch], ["map-assigned", "own-plain"]);
+  // Drawn plain: the view gives it no unit's form and the plain grey tone, while the channel keeps its own form and the units' tone.
+  const { ShelvesView } = await import("../src/lenses/shelves_view.js");
+  const view = Object.assign(Object.create(ShelvesView.prototype), { shelves, lens: { model: { get: (id) => (id === "unit.U01" ? { id, form: {} } : null) } } });
+  const byId = (id) => shelves.byKey.get(keyOf("testbug", "p", id));
+  assert.equal(view.unitOf(byId("TB_010")), null);
+  assert.equal(view.unitOf(byId("TB_001"))?.id, "unit.U01");
+  assert.deepEqual([view.toneOf(byId("TB_010")), view.toneOf(byId("TB_001")), view.toneOf(byId("TB_001"), true)], ["plain", "unit", "more"]);
+  // A file without the block says nothing of how its proteins were found, and draws them as before.
+  const older = new Shelves(madeUpSmall(), { label: "Test bug", links: LINKS, units: UNITS, found: words });
+  assert.equal(Object.fromEntries(older.describe(keyOf("testbug", "p", "TB_001")).facts)["How the atlas found it"], undefined);
+  assert.equal(older.goesWithOnly(older.byKey.get(keyOf("testbug", "p", "TB_001"))), false);
+});
+
+test("every species' shelves name the proteins their atlas lists with a unit only as going with its machine, and the families all of whose such proteins are so", async () => {
+  for (const id of ["fruitfly", "mouse", "thalecress", "planarian"]) {
+    const shelves = JSON.parse(await readFile(path.join(PROTEINS, id, "shelves.json"), "utf8"));
+    const atlas = JSON.parse(await readFile(path.join(PROTEINS, "atlases", `${id}.json`), "utf8"));
+    const found = new Map();
+    for (const unit of Object.values(atlas.units)) for (const product of unit.products) for (const item of product.ids) found.set(item.id, product.found_by);
+    const going = [...found].filter(([, how]) => how === "accessory signature").map(([key]) => key).sort();
+    assert.deepEqual([...(shelves.found_by?.proteins?.["accessory signature"] || [])].sort(), going, `${id}: the accessory proteins`);
+    assert.equal(shelves.found_by.default, "family signature", id);
+    assert.ok(!/candidates by family alone/.test(JSON.stringify(shelves.family_notes || {})), `${id}: the family note's older words`);
+  }
+  // E. coli lists no protein with a unit: its shelves carry no block.
+  assert.equal(JSON.parse(await readFile(path.join(PROTEINS, "ecoli", "shelves.json"), "utf8")).found_by, undefined);
+});
+
+test("the atlas's words stand on the law inventory: a unit, protein or family is listed in it or with one of its units, never one Cells has a law for", async () => {
+  // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of 38 of the 48 units are
+  // implemented in older code only. The sources of the atlas's words, and the species files they read.
+  const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
+  for (const file of files) {
+    if (!existsSync(path.join(ROOT, file))) continue;
+    const text = await readFile(path.join(ROOT, file), "utf8");
+    assert.ok(!/Cells ha(s|ve) (a |no )?laws? for|units Cells has|No law in Cells|with a law in Cells|"Cells' laws"/.test(text), `${file} says what Cells has a law for`);
+  }
+});
+
+test("only a protein with a unit is tied to a unit of the law inventory, and the words stop there", () => {
   const shelves = small();
   const channel = shelves.describe(keyOf("testbug", "p", "TB_001"));
-  assert.equal(channel.chips[0].label, "Would make a machine Cells has a law for");
+  assert.equal(channel.chips[0].label, "Would make a unit of the law inventory");
   assert.match(channel.chips[0].title, /the engine does not model this protein/);
   assert.deepEqual(channel.related, [{ title: "Drawn in the atlas as", ids: ["unit.U01"] }]);
   assert.equal(channel.swatch, "map-assigned");
   const plain = shelves.describe(keyOf("testbug", "p", "TB_002"));
-  assert.equal(plain.chips[0].label, "No law in Cells");
-  assert.match(plain.chips[0].title, /Cells has no law for this protein/);
+  assert.equal(plain.chips[0].label, "Not in the law inventory");
+  assert.match(plain.chips[0].title, /This protein is listed with no unit of Cells' law inventory/);
   assert.equal(plain.swatch, "own-plain");
   // Nowhere do the words say that the engine models, simulates or runs one of these proteins.
   const words = JSON.stringify([...shelves.proteins.map((protein) => shelves.describe(protein.key)), ...large().markers.map((item) => large().describe(item.key))]);
   assert.ok(!/(engine|Cells) (models|simulates|runs) (this|these|the|a) (protein|proteins|family)/i.test(words));
+  // Nor what Cells has a law for: a protein is listed with a unit of Cells' law inventory, or it is not.
+  assert.ok(!/Cells has (a |no )?laws? |law in Cells/.test(words), "the words stand on the law inventory");
 });
 
 test("a family's panel says what opening it shows, where its members sit, and that their sides are predictions on predicted proteins", () => {
@@ -344,8 +408,9 @@ test("a family's panel says what opening it shows, where its members sit, and th
   const facts = Object.fromEntries(family.facts);
   assert.equal(facts["Where its members sit"], "7 proteins spanning a membrane; 1 protein inside the cell");
   assert.match(facts["Named place"], /^plasma membrane \(an annotation carried by signatures, not a prediction for these proteins\)$/);
-  assert.equal(family.chips[0].label, "Holds parts of a machine Cells has a law for");
-  assert.deepEqual(family.related, [{ title: "Holds candidate products of", ids: ["unit.U37"] }]);
+  assert.equal(family.chips[0].label, "Holds parts of a unit of the law inventory");
+  // Proteins listed with a unit: candidates for its unit, or parts that go with it (an accessory family's carry `unit` too).
+  assert.deepEqual(family.related, [{ title: "Holds proteins listed with", ids: ["unit.U37"] }]);
   assert.deepEqual(family.sections[0].items[0].links, [{ text: "InterPro IPR000001", url: "https://www.ebi.ac.uk/interpro/entry/InterPro/IPR000001/" }]);
   assert.deepEqual([family.opens[0].title, family.opens[0].count, family.opens[0].items.length], ["Its proteins", 8, 8]);
   // A gathering lists its families, then every protein of them.
@@ -544,7 +609,7 @@ test("an open family is a small set of shelves of its own: membrane in the middl
 
 // ---------------------------------------------------------------- which of the two the atlas opens on
 
-test("the atlas opens on the species' own proteins where it found almost none of Cells' machines, and on the machines otherwise", () => {
+test("the atlas opens on the species' own proteins where it found almost none of Cells' units, and on the machines otherwise", () => {
   const proteins = {
     findings: [{ id: "found" }, { id: "none found", mark: "dashes" }],
     atlases: [
@@ -558,7 +623,7 @@ test("the atlas opens on the species' own proteins where it found almost none of
   assert.equal(shelvesOf(proteins, "reference"), null);
   assert.equal(shelvesOf({}, "quietbug"), null);
   assert.equal(firstMode(proteins, "quietbug"), "own", "its own proteins say most");
-  assert.equal(firstMode(proteins, "richworm"), "units", "the machines Cells has laws for, with the switch to its own proteins");
+  assert.equal(firstMode(proteins, "richworm"), "units", "the units of Cells' law inventory, with the switch to its own proteins");
   assert.equal(firstMode(proteins, "newcomer"), "own", "no side of the atlas at all");
   assert.equal(firstMode(proteins, "reference"), "units", "no catalogue of its own: the atlas as it is");
   assert.equal(firstMode({ atlases: proteins.atlases }, "quietbug"), "units", "a scene from before the shelves");
@@ -1099,18 +1164,18 @@ test("several shelves: a protein's panel says where it is against its own shelf,
   // The shelf is known and the side is not: set apart beside its shelf. No place at all: apart from every shelf.
   const beside = text(member("IPR900007", "nucleus", "not known"));
   assert.equal(beside.plain, "Its side of the nuclear envelope is not known. No source states it and nothing predicts it, so it is set apart beside its shelf and not placed by guess.");
-  assert.deepEqual(beside.chips.map((chip) => chip.label), ["No law in Cells", "Side not known", "Not known"]);
+  assert.deepEqual(beside.chips.map((chip) => chip.label), ["Not in the law inventory", "Side not known", "Not known"]);
   const facts = Object.fromEntries(beside.facts);
   assert.equal(facts.Shelf, "Nuclear envelope");
   assert.equal(facts["Place named"], "Nuclear envelope", "the place a source names is among its marks");
   assert.equal(facts.Family, "Drift factor (IPR900007)");
   const nowhere = text(member("IPR900010", null, "not known"));
   assert.equal(nowhere.plain, "No place is known for it: no source states where it is and nothing predicts it, so it stands apart from every shelf and is not placed by guess.");
-  assert.deepEqual(nowhere.chips.map((chip) => chip.label), ["No law in Cells", "No place known", "Not known"]);
+  assert.deepEqual(nowhere.chips.map((chip) => chip.label), ["Not in the law inventory", "No place known", "Not known"]);
   assert.equal(Object.fromEntries(nowhere.facts).Shelf, "None: no place is known");
   // The chip names the membrane, and a member leads back to its own line.
   const pore = text(member("IPR900006", "nucleus", "in"));
-  assert.deepEqual(pore.chips.map((chip) => chip.label), ["Would make a machine Cells has a law for", "In the nuclear envelope", "Stated"]);
+  assert.deepEqual(pore.chips.map((chip) => chip.label), ["Would make a unit of the law inventory", "In the nuclear envelope", "Stated"]);
   assert.deepEqual(pore.opens, [{ title: "Its family", items: [{ id: "own:testcell:f@nucleus:IPR900006", label: "Harbour pore", swatch: "map-assigned" }] }]);
   assert.equal(Object.fromEntries(pore.facts).Shelf, "Nuclear envelope");
   // A member of a line that stands gathered leads back to that line itself, once the gathering has been opened.
@@ -1142,7 +1207,7 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   const narrow = shelves.describe("own:testcell:g@cell:IPR910002");
   assert.deepEqual(several({ loaded: false }).describe("own:testcell:g@cell:IPR910002").opens[0].items, [{ id: "own:testcell:n@mito:no-family|inside", label: "Mitochondrial inner membrane · 3", swatch: "own-family" }]);
   assert.equal(narrow.opens[0].title, "The same grouping on other shelves");
-  assert.deepEqual(onCell.chips.map((chip) => chip.label), ["Holds parts of a machine Cells has a law for", "Most in the cell membrane"]);
+  assert.deepEqual(onCell.chips.map((chip) => chip.label), ["Holds parts of a unit of the law inventory", "Most in the cell membrane"]);
   assert.deepEqual(onCell.disclosures.map((item) => item.title), ["How a side is stated", "How a side is predicted"]);
   // A line that has a marker of its own is linked to directly; a line on no shelf says so.
   const kinase = shelves.describe("own:testcell:f@nucleus:IPR900002");
@@ -1151,7 +1216,7 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   assert.equal(Object.fromEntries(kinase.facts)["Where its members sit"], "1 protein on the cytoplasmic face of the nuclear envelope; 5 proteins in the nucleus");
   const mist = shelves.describe("own:testcell:f@:IPR900010");
   assert.match(mist.plain, /^A family of 7 proteins, 6 of them on no shelf, since no place is known for them\. Opening it shows those 6\./);
-  assert.deepEqual(mist.chips.map((chip) => chip.label), ["No law in Cells", "No place known"]);
+  assert.deepEqual(mist.chips.map((chip) => chip.label), ["Not in the law inventory", "No place known"]);
   const mistFacts = Object.fromEntries(mist.facts);
   assert.deepEqual([mistFacts.Shelf, mistFacts["Where its members sit"], mistFacts.Elsewhere], ["None: no place is known", "6 proteins with no place known", "1 protein at the cell membrane"]);
   assert.equal(Object.fromEntries(shelves.describe("own:testcell:f@cell:IPR900010").facts).Elsewhere, "6 proteins on no shelf");
@@ -1160,7 +1225,7 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   assert.match(pore.plain, /^A family of 5 proteins\. Opening it shows every member\./);
   assert.equal(pore.opens.find((group) => /other shelves/.test(group.title)), undefined);
   const drift = shelves.describe("own:testcell:f@nucleus:IPR900007");
-  assert.deepEqual(drift.chips.map((chip) => chip.label), ["No law in Cells", "Most side not known"]);
+  assert.deepEqual(drift.chips.map((chip) => chip.label), ["Not in the law inventory", "Most side not known"]);
   assert.equal(Object.fromEntries(drift.facts)["Where its members sit"], "2 proteins in the nucleus; 4 proteins with no side known");
   // A part of "no family" on several shelves is still not a family; a gathering is of one shelf.
   const part = shelves.describe("own:testcell:g@cell:IPR910001");
@@ -1188,6 +1253,7 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   // Nowhere do the words say that the engine models one of these proteins.
   const words = JSON.stringify([...shelves.markers.map((item) => shelves.describe(item.key)), ...shelves.markers.flatMap((item) => shelves.membersOf(item).map((protein) => shelves.describe(protein.key)))]);
   assert.ok(!/(engine|Cells) (models|simulates|runs) (this|these|the|a) (protein|proteins|family)/i.test(words));
+  assert.ok(!/Cells has (a |no )?laws? |law in Cells/.test(words), "the words stand on the law inventory");
   assert.ok(!/undefined|\bNaN\b|\[object/.test(words), "no word is missing from any panel");
 });
 
@@ -1279,7 +1345,7 @@ test("a family of one has no line: its protein stands with the other only member
   const facts = Object.fromEntries(said.facts);
   assert.deepEqual([facts.Proteins, facts.District, facts.Shelf, facts["Where its members sit"]], ["4", "Channels", "Cell membrane", "4 proteins spanning the cell membrane"]);
   assert.deepEqual(said.opens.map((group) => [group.title, group.count]), [["Its proteins", 4]]);
-  assert.deepEqual(said.chips.map((chip) => chip.label), ["Holds parts of a machine Cells has a law for", "Most in the cell membrane"]);
+  assert.deepEqual(said.chips.map((chip) => chip.label), ["Holds parts of a unit of the law inventory", "Most in the cell membrane"]);
   assert.match(shelves.describe("own:testcell:l@:lone-enzymes-not-known").plain, /^The only member of its family: 3 proteins of Enzymes, each alone in its family in this catalogue\. No place is known for any of them, so they stand together apart from every shelf; opening it shows/);
   assert.deepEqual(shelves.listed(part), { id: part.key, label: "The only member of its family · 4", short: null, keywords: "lone-channels-in", swatch: "map-assigned" });
   // Each of its proteins names its own family, which is looked up where any family is; and leads back to the part it is listed with.
@@ -1882,7 +1948,7 @@ test("a large catalogue's members are cut into files by the step it names, and e
   assert.deepEqual(found.problems, []);
   for (const summary of big) {
     const shelves = new Shelves(JSON.parse(await readFile(path.join(PROTEINS, summary.id, "shelves.json"), "utf8")), { units: UNITS });
-    const files = found.files.filter((file) => file.species === summary.id && !file.path.endsWith("shelves.json"));
+    const files = found.files.filter((file) => file.species === summary.id && !file.path.endsWith("shelves.json") && !file.path.endsWith(NAMES_FILE));
     assert.deepEqual(files.map((file) => path.basename(file.path)), summary.members);
     assert.ok(files.length <= 40, "a few files, of a few thousand proteins each");
     let bytes = 0;
@@ -1904,11 +1970,51 @@ test("a large catalogue's members are cut into files by the step it names, and e
     const largest = shelves.markers.reduce((best, item) => (item.count > best.count ? item : best));
     const dish = layoutDish(shelves.membersOf(largest));
     assert.equal(dish.places.length, largest.count);
-    // A member that would make one of Cells' machines names a unit of the inventory.
+    // A member that would make one of Cells' units names a unit of the inventory.
     const withUnit = [...seen].length && shelves.markers.flatMap((marker) => shelves.membersOf(marker)).filter((member) => member.units.length);
     for (const member of withUnit) for (const unit of member.units) assert.ok(UNITS.has(unit), `${member.id}: ${unit}`);
-    t.diagnostic(`${summary.id}: ${files.length} files of members, ${(bytes / 1024 / 1024).toFixed(2)} MB; the largest that opens is ${largest.label} with ${largest.count}; ${withUnit.length} members would make one of Cells' machines`);
+    t.diagnostic(`${summary.id}: ${files.length} files of members, ${(bytes / 1024 / 1024).toFixed(2)} MB; the largest that opens is ${largest.label} with ${largest.count}; ${withUnit.length} members would make one of Cells' units`);
+    // Beside them, the names of every member (one file for each large catalogue), each leading to the line it stands on.
+    const listed = found.files.filter((file) => file.species === summary.id && file.path.endsWith(NAMES_FILE));
+    assert.equal(listed.length, 1, `${summary.id}: one file of names beside the members`);
+    const names = JSON.parse(await readFile(listed[0].source, "utf8"));
+    shelves.addNames(names);
+    assert.equal(shelves.names.length, shelves.total, `${summary.id}: a name for every protein`);
+    for (const name of shelves.names) {
+      const line = shelves.lineOfName(name);
+      assert.ok(line && shelves.membersOf(line).some((member) => member.id === name.id), `${summary.id}: ${name.id} leads to its own line`);
+    }
   }
+});
+
+test("the search finds a protein by its gene inside a family that is not open, a family by its name, and a shelf", async () => {
+  const proteinsDir = path.join(folder, "several"), membersDir = path.join(folder, "several-members");
+  await proteinFiles({ proteins: { shelves: readShelves(proteinsDir).summaries } }, { proteinsDir, membersDir }); // the names file is written beside the members
+  const { data } = madeUpSeveral();
+  const shelves = new Shelves(data, {});
+  const before = shelves.search("tgm");
+  assert.equal(before.namesMissing, true, "before the names are in, the search says it finds families only");
+  shelves.addNames(JSON.parse(await readFile(path.join(membersDir, "testcell", NAMES_FILE), "utf8")));
+  const member = shelves.names[3];
+  const found = shelves.search(member.id);
+  assert.equal(found.proteins[0].id, member.id, "a member is found by its identifier");
+  assert.equal(found.proteins[0].line, shelves.lineOfName(member));
+  assert.ok(!found.namesMissing);
+  const family = shelves.families[0];
+  assert.ok(shelves.search(family.label).families.includes(family), "a family's line is found by its name");
+  assert.ok(shelves.search(shelves.shelves[0].label).shelves.length >= 1, "a shelf is found by its name");
+  assert.equal(shelves.search("a"), null, "one letter finds nothing yet");
+});
+
+test("the human's entries that the inventory names only as going with a machine are drawn plain, with their roles", () => {
+  const data = JSON.parse(readFileSync(path.join(PROTEINS, "human", "shelves.json"), "utf8"));
+  const shelves = new Shelves(data, { units: UNITS });
+  const roles = data.inventory_roles;
+  assert.ok(roles && Object.keys(roles.proteins).length === 27, "the 27 entries whose every role goes with the machine");
+  for (const [id, said] of Object.entries(roles.proteins)) assert.ok(said.length && said.every((role) => /auxiliary/.test(role) || ["beta", "uniplex", "FXYD", "FXYD (gamma)"].includes(role)), `${id}: ${said}`);
+  for (const id of ["Q07699", "P05026", "Q9BPX6", "O00168"]) assert.ok(shelves.goesWithOnly({ type: "p", id, units: ["U01"] }), `${id} goes with the machine`);
+  assert.ok(!shelves.goesWithOnly({ type: "p", id: "Q99250", units: ["U01"] }), "SCN2A, the pore, still makes it");
+  for (const id of roles.families) assert.ok(shelves.goesWithOnly({ type: "f", id, units: ["U01"] }), `${id}: a family of only such entries is drawn plain`);
 });
 
 // The whole build, once, with the repository's own shelves. It reads a checkout: where there
@@ -1952,5 +2058,5 @@ test("the build puts each species' summary and the patterns of the addresses in 
   for (const item of scene.proteins.shelves) assert.ok(["own", "units"].includes(firstMode(scene.proteins, item.id)));
   const files = await proteinFiles(scene, { membersDir: path.join(folder, "cut") });
   assert.deepEqual(files.problems, []);
-  assert.ok(files.files.length <= 60, `${files.files.length} files beside the page: the page may publish 255 in all, and the runs need theirs`);
+  assert.ok(files.files.length <= 80, `${files.files.length} files beside the page: a version holds at most 511, a publish sends 255 at a time, and the runs need theirs`);
 });

@@ -5,6 +5,7 @@
 import * as THREE from "../three.js";
 import { StatusMaterials, STATUS_ORDER, formOf, roundedSlab, linkCurve, glyphSprite } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
+import { paintedTexture } from "../core/painted.js";
 
 const NODE = { w: 3.7, d: 2.4, gapX: 0.85, gapZ: 0.95 };
 const PLATE_PAD = 1.5;
@@ -199,16 +200,15 @@ export class StackLens {
 
   shadeMaterial() {
     if (!this.shade) {
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = 128;
-      const context = canvas.getContext("2d");
-      const gradient = context.createRadialGradient(64, 64, 18, 64, 64, 64);
-      gradient.addColorStop(0, "rgba(0,0,0,0.55)");
-      gradient.addColorStop(0.6, "rgba(0,0,0,0.22)");
-      gradient.addColorStop(1, "rgba(0,0,0,0)");
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, 128, 128);
-      this.shade = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false, opacity: 0.5 });
+      const shade = paintedTexture(128, 128, (context) => {
+        const gradient = context.createRadialGradient(64, 64, 18, 64, 64, 64);
+        gradient.addColorStop(0, "rgba(0,0,0,0.55)");
+        gradient.addColorStop(0.6, "rgba(0,0,0,0.22)");
+        gradient.addColorStop(1, "rgba(0,0,0,0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 128, 128);
+      });
+      this.shade = new THREE.MeshBasicMaterial({ map: shade, transparent: true, depthWrite: false, opacity: 0.5 });
     }
     return this.shade;
   }

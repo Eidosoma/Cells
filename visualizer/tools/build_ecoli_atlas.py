@@ -56,6 +56,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import build_mpneumoniae_atlas as M  # noqa: E402  the families asked of every species, read and never changed
 from lib import proteome_shelves as P  # noqa: E402  the shelves' machinery: vocabulary, placement, families, districts, lines
+from lib import ribosome as RIBOSOME  # noqa: E402  the ribosome's size, the viewer's own measure of two PDB entries (schema/SPECIES_SHAPES.md)
 
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 SPECIES_FILE = ROOT / "data" / "species" / "ecoli.json"
@@ -127,6 +128,35 @@ PAPERS = {
                                r"The Salmonella hook is formed by about 120 copies of the hook protein FlgE", r"The MS ring is composed of the transmembrane protein FliF", r"FliG, FliM, and FliN form the C ring on the cytoplasmic face of the MS ring", r"with a 12 FliH to 6 FliI to 1 FliJ stoichiometry"]},
 }
 RIBOSOMES_DRAWN = 6800  # the low end of the range the paper gives
+
+# Open papers whose numbers alone the species file takes, by the user's ruling of 16 November 2026
+# (D186) that numbers from open papers may be used even where no licence is declared. Each was read
+# at PubMed Central on 17 November 2026 for a limit on use in its own text, and states none; nothing
+# of its text is copied, and nothing is downloaded. The file gives each number, the citation and
+# where in the paper the number stands (schema/SPECIES_SHAPES.md, `envelope`). Each is named in
+# the register of tests/licence_classes.test.mjs.
+# By the user's ruling of 17 November 2026, numbers from papers that are free to read but not open access may be used, each with its citation.
+NUMBERS_ONLY = {
+    "matias2003": {
+        "text": "Matias VRF, Al-Amoudi A, Dubochet J, Beveridge TJ (2003) Cryo-transmission electron microscopy of frozen-hydrated sections of Escherichia coli and Pseudomonas aeruginosa. J Bacteriol 185:6112–6118.",
+        "doi": "10.1128/JB.185.20.6112-6118.2003", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC225031/",
+        "licence": "No open licence stated: the publisher's copyright (American Society for Microbiology), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+        "where": "Table 1, the row for E. coli K-12: the five widths, each the mean of eight measurements, made on the least deformed regions of the sections (as its methods say), and the periplasm's average compression in the sections, 32.47%",
+    },
+    "berry2010": {
+        "text": "Berry J, Savva C, Holzenburg A, Young R (2010) The lambda spanin components Rz and Rz1 undergo tertiary and quaternary rearrangements upon complex formation. Protein Sci 19:1967–1977.",
+        "doi": "10.1002/pro.485", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2998730/",
+        "licence": "No open licence stated: the publisher's copyright (The Protein Society), free to read at PubMed Central; its own text states no limit on use. Its numbers alone are taken, with the citation and their place in the paper",
+        "where": "the legend of Figure 7: the distance between the inner and outer membranes at the mid-length of 31 cells of K-12, 25.5 ± 3.1 nm",
+    },
+}
+NUMBERS_READ = "2026-11-17"
+# The envelope's widths in nanometres, as Matias and others 2003 give them in Table 1 for E. coli K-12, each the
+# mean of eight measurements made on the least deformed regions of the sections: the plasma (inner) membrane's
+# thickness, the peptidoglycan's (the wall), the outer membrane's, the periplasm's width (between the two membranes),
+# and the distance from the wall to the outer membrane. The paper does not say between which faces the last two run:
+# this viewer reads them as between the facing surfaces, and the fact says so.
+ENVELOPE = {"membrane_nm": 5.84, "wall_nm": 6.35, "outer_nm": 6.87, "between_nm": 20.99, "wall_to_outer_nm": 5.34}
 
 SOURCES = {
     KB: {
@@ -452,12 +482,13 @@ def build(datasets_folder, snapshot):
     # The organism's own membrane machines that bear on what the atlas draws and match no unit.
     extra, seen_extra = [], set()
 
-    def add_extra(accession, role, signature, why):
+    def add_extra(accession, role, signature, why, found_by=P.FOUND_SIGNATURE):
         if accession in seen_extra:
             return
         seen_extra.add(accession)
         entry = entries[accession]
-        extra.append({"name": entry["name"], "gene": entry["gene"] or None, "role": role, "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"], "evidence": "reviewed entry", "evidence_note": f"Its reviewed UniProtKB entry names it \"{entry['name']}\", with UniProt's level of evidence \"{EXISTENCE[entry['seen']]}\". The entry carries {signature} ({signature_name(signature)}).", "citation": None, "why": why})
+        # Found by the signature named; every entry of this catalogue is a reviewed one.
+        extra.append({"name": entry["name"], "gene": entry["gene"] or None, "role": role, "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"], "found_by": found_by, "entry": P.ENTRY_REVIEWED, "evidence_note": f"Its reviewed UniProtKB entry names it \"{entry['name']}\", with UniProt's level of evidence \"{EXISTENCE[entry['seen']]}\". The entry carries {signature} ({signature_name(signature)}).", "citation": None, "why": why})
 
     for signature, what in M.BACTERIAL_CHANNELS.items():
         for accession in order(carriers.get(signature, [])):
@@ -470,7 +501,7 @@ def build(datasets_folder, snapshot):
     for accession in order(beside):
         family, asked_by = beside[accession]
         signature = next(signature for signature in family["signatures"] if accession in carriers.get(signature, []))
-        add_extra(accession, "accessory-subunit family", signature, f"Carries the family signature of {family['of']}, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit ({asked_by[0]} to {asked_by[-1]} asked for it).")
+        add_extra(accession, "accessory-subunit family", signature, found_by=P.FOUND_ACCESSORY, why=f"Carries the family signature of {family['of']}, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit ({asked_by[0]} to {asked_by[-1]} asked for it).")
 
     # --- the lines of the shelves ---------------------------------------------------------------
     lines, alone, rest = P.make_lines(entries, placed, filing, unit_ids, CELL)
@@ -529,7 +560,7 @@ def build(datasets_folder, snapshot):
         "family_notes": {
             "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
             "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
-            "units": "The inventory units for which a member on this line carries the family's signature: candidates by family alone.",
+            "units": P.UNITS_NOTE,
             "total": "The family's members on every shelf and on none.",
             "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'. In 'shelves' and 'no_shelf', 'families' is every family with a member there (its lines and its lone proteins), 'lines' the families' lines there, 'lone' the proteins that are the only member of their family, 'no_family' those with none.",
         },
@@ -649,7 +680,11 @@ def build(datasets_folder, snapshot):
         "uniprot": uniprot_source,
         "genbank": {"text": f"GenBank {GENOME}: {record['title']}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{GENOME}", "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".", "class": "permissive", "accessed": d.day(NCBI, f"genbank_{GENOME}_summary.json")},
         **{key_: {"text": paper_cite(d, key_), "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, f"{key_}_fulltext.xml")} for key_, paper in PAPERS.items() if paper.get("use") != "note"},
+        **{key_: {"text": paper["text"], "doi": paper["doi"], "url": paper["url"], "licence": paper["licence"], "class": "no stated terms", "standing": "open paper, numbers only", "where": paper["where"], "accessed": NUMBERS_READ} for key_, paper in NUMBERS_ONLY.items()},
+        **RIBOSOME.sources(),
     }
+    # The envelope's widths (schema/SPECIES_SHAPES.md, `envelope`): numbers alone, each with where it stands in the paper.
+    envelope = {**ENVELOPE, "sources": ["matias2003"], "read": {"source": "matias2003", "where": "Table 1, the row for E. coli K-12: the thickness of the plasma membrane, the peptidoglycan and the outer membrane, the periplasmic width, and the distance between the peptidoglycan and the outer membrane, each the mean of eight measurements made on the least deformed regions of the sections; that the last two run between the facing surfaces is this viewer's reading"}}
     # The appendages (schema/SPECIES.md): each number is a fact below, with its source.
     base = {"id": "flagellar-motor", "label": "Flagellar motor", "mark": "complex", "value": "flagellum"}
     if base["value"] not in marks[base["mark"]]["values"] or not complexes_said[base["value"]]:
@@ -664,7 +699,7 @@ def build(datasets_folder, snapshot):
     ]
     capabilities = {
         "cap.membrane": {"place": "present", "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."},
-        "cap.channels": {"place": "present", "note": f"Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. {len(channels)} of its proteins carry the signature of a bacterial channel family: {channels_said}."},
+        "cap.channels": {"place": "present", "note": f"Not the channels of animal cells: none of its proteins carries the signature of a channel family listed in Cells' law inventory. {len(channels)} of its proteins carry the signature of a bacterial channel family: {channels_said}."},
         "cap.pumps": {"place": "present", "note": f"Not the pumps of animal cells: none of its proteins carries the signature of the sodium-potassium pump. Its P-type ATPases ({listed(own['p_type'])}) and its ATP synthase are stated to be in the inner membrane."},
         "cap.junctions": {"place": "absent", "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."},
         "cap.extracellular": {"place": "present", "note": "Two spaces lie beyond its inner membrane: the periplasm, between its two membranes, and what surrounds the cell, the lower gut of an animal or wherever it is released."},
@@ -676,7 +711,7 @@ def build(datasets_folder, snapshot):
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi: no entry of its proteome states a place in either. By the names of their entries, its proteins cross or enter the inner membrane through the Sec and Tat translocases."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase, its flagella and its chemoreceptor arrays. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": f"Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. {proteasome_said}"},
+        "cap.machines": {"place": "present", "note": f"Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. {proteasome_said}", "left_out": {"since": "2026-11-17", "says": "the barrel drawn for its molecular machines", "reason": "the picture drew it as a proteasome's core, and in a cell this small that barrel stood among the largest things drawn", "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."}},
         "cap.secretion": {"place": "present", "note": "Some of its proteins are stated to be secreted, and porins and transporters carry molecules across its two membranes. Signalling between its own cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its envelope. No source read for this file describes an injury of it or its resealing in this organism."},
         "cap.division": {"place": "present", "note": "It divides as a single cell: its proteome names the cell division protein FtsZ."},
@@ -695,7 +730,7 @@ def build(datasets_folder, snapshot):
         "order": 50,
         "default": False,
         "made": made,
-        "modelled": {"state": "proposed", "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."},
+        "modelled": {"state": "proposed", "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run.", "record": [{"path": "docs/DECISIONS.md", "where": "D179: The FEP track's decisions: on hold, E. coli as data only"}]},  # the record behind the word (schema/ENTRIES.md)
         "levels": [
             {"id": "molecules"},
             {"id": "cell", "label": "One cell", "shape": {"kind": "capsule", "length_um": 2.5, "across_um": 1}, "note": f"Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its {RIBOSOMES_DRAWN:,} ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.", "sources": ["volkmer2011", "urich2008", "uniprot"]},
@@ -706,9 +741,11 @@ def build(datasets_folder, snapshot):
                 {"label": "Shape and size", "value": "a straight rod; earlier work put its average length between 1.6 and 3.1 µm and its width at 0.7 to 1.1 µm, and one study measured 1.6 µm (cells at rest) to 3.9 µm (cells growing on a rich medium) in length and 1.26 µm in width", "sources": ["volkmer2011", "uniprot"]},
                 {"label": "Volume", "value": "1.5 to 4.4 femtolitres, by the conditions it grows in", "sources": ["volkmer2011"]},
                 {"label": "Envelope", "value": "two membranes: the inner one separates the cytoplasm from the periplasm, the outer one the periplasm from the cell's surroundings; the cell wall lies between them", "sources": ["uniprot"]},
+                {"label": "Envelope's widths", "value": f"in frozen-hydrated sections of strain K-12, measured where the sections were least deformed, the inner membrane is {ENVELOPE['membrane_nm']} nm thick, the wall {ENVELOPE['wall_nm']} nm and the outer membrane {ENVELOPE['outer_nm']} nm; the space between the two membranes is {ENVELOPE['between_nm']} nm wide, and the wall lies {ENVELOPE['wall_to_outer_nm']} nm from the outer membrane, each the mean of eight measurements. Its authors give the periplasm's average compression in the sections as 32.47%. The paper does not say between which faces these widths run: taking them between the facing surfaces is this viewer's reading. Another paper measured 25.5 nm between the outer surface of the inner membrane and the inner surface of the outer membrane, at the middle of 31 whole cells of K-12, without osmoprotectants or fixation; the flagellar motor's close view takes a wider spacing from a third paper, of whole cells in hyperosmotic conditions, which its own file names", "sources": ["matias2003", "berry2010"]},
                 {"label": "Inside", "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds", "sources": ["uniprot"]},
                 {"label": "Chromosome", "value": f"one circle of {genome_length:,} base pairs", "sources": ["genbank"]},
                 {"label": "Proteins", "value": f"{len(entries):,} in UniProt's reference proteome of strain K-12, every one with a reviewed entry", "sources": ["uniprot"]},
+                {"label": "Ribosome's size", "value": RIBOSOME.fact(own=True), "sources": list(RIBOSOME.sources())},
                 {"label": "Ribosomes", "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates", "sources": ["urich2008"]},
                 {"label": "Movement", "value": "swims with flagella that grow all over its surface, or does not move", "sources": ["uniprot"]},
                 {"label": "Flagella", "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another", "sources": ["mears2014", "schavemaker2022", "dvoriashyna2021", "zhuang2025"]},
@@ -717,11 +754,11 @@ def build(datasets_folder, snapshot):
                 {"label": "Chemotaxis", "value": f"{len(chemotaxis)} of its proteins carry UniProt's keyword for chemotaxis ({listed(by_gene(chemotaxis))}), and {len(complexes_said['flagellum'])} are parts of the flagellum by the Gene Ontology terms UniProt gives them", "sources": ["uniprot"]},
                 {"label": "Energy", "value": "respiration and fermentation: it lives with or without oxygen", "sources": ["uniprot"]},
                 {"label": "Where it lives", "value": "the lower gut of animals; it survives when released to the natural environment", "sources": ["uniprot"]},
-                {"label": "Ion channels", "value": f"none of the animal families Cells has laws for; {len(channels)} proteins of bacterial channel families ({listed(by_gene(channels))})", "sources": ["uniprot"]},
+                {"label": "Ion channels", "value": f"none of the animal families listed in Cells' law inventory; {len(channels)} proteins of bacterial channel families ({listed(by_gene(channels))})", "sources": ["uniprot"]},
                 {"label": "Signalling", "value": f"{two_component} proteins carry UniProt's keyword for two-component regulatory systems", "sources": ["uniprot"]},
                 {"label": "Strain", "value": f"K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly ({proteome['genomeAssembly']['assemblyId']})", "sources": ["genbank", "uniprot"]},
             ],
-            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages},
+            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages, "envelope": envelope, "ribosome": RIBOSOME.part()},
             "capabilities": capabilities,
         },
         "capability_sources": {key_: ["uniprot"] for key_ in capabilities if key_ not in ("cap.grn", "cap.replacement", "cap.mechanics", "cap.sheet", "cap.repair", "cap.junctions")} | {"cap.junctions": ["uniprot"]},
@@ -732,8 +769,8 @@ def build(datasets_folder, snapshot):
     # --- the atlas file -----------------------------------------------------------------------
     findings = Counter(unit["finding"] for unit in units.values())
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
-        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A rod-shaped bacterium of the animal gut with {len(entries):,} proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it."},
+        "format": P.ATLAS_FORMAT,
+        "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A rod-shaped bacterium of the animal gut with {len(entries):,} proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are channels, pumps and junctions of animal cells; this is what the same families' signatures find in it."},
         "made": made,
         "method": [
             f"The organism's proteins are the {len(entries):,} reviewed entries of UniProt's reference proteome {PROTEOME} (release {release}), one protein each.",

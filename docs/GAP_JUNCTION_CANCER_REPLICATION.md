@@ -86,6 +86,16 @@ Driver: [`validation/gap_junction_tissue/`](../validation/gap_junction_tissue/).
   (Figure 1). Effective miRNA valence: -1.
 
 **Regulation.** In every cell, the miR200/ZEB EMT switch (Figure 2; its refs. 49-50).
+
+**The switch, in plain words.**
+- Each cell carries a switch made of two molecules that suppress each other: the microRNA miR200
+  blocks the making of the protein ZEB, and ZEB blocks the making of miR200.
+- With miR200 high and ZEB low, the cell is epithelial (E), the healthy state here. With ZEB high and
+  miR200 low, it is mesenchymal (M), the tumour state.
+- Each state sustains itself, which is what makes it a switch.
+- Only miR200 passes through gap junctions, so healthy neighbours can feed it into a tumour cell. With
+  enough coupling, that tips the cell's switch back to E. With too little, the tumour holds. §7's
+  "neither" search finds that threshold.
 - Modified Hill rates (1 + lambda (TF/Km)^n) / (1 + (TF/Km)^n), and miR200-Zeb binding at fast
   equilibrium.
 - Snail is chosen so that only E and M are stable. Only miR200 crosses junctions.
