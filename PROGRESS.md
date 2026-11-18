@@ -89,6 +89,19 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-19's band follow-up on main (18 November 2026, early).** Merged from `passive-share-band` at
+  7bfe0c68.
+  - **The fix:** the passive routes' heat-share floor now bounds the rounding by
+    (|μ̄_in| + |μ̄_out| + 2)·|m|. FR-19's |μ̄_in·m| + |μ̄_out·m| left a band near 1 mM.
+    `test_passive_share_floor.py` now has 11 tests.
+  - **The gate at cde5efd1:** crossrev, eight sets identical. The kinds set differs, by design,
+    only in the three FR checked steps' floor terms (constants 12/12, bindings 3/3). G1 113 of 113;
+    tiers 1+2 502 files, 0 changed; IDs, only the band's renamed tests; FR's bitwise set passed.
+  - **The record's kinds texts** are renewed on main after this landing, as for FR-19. The
+    superseded texts are kept, and crossrev's nine sets are rerun against the renewed record.
+  - Evidence: `/mnt/workspaces/Cells/passive-share-band-20261117/gate-cde5efd1/` and
+    `fr-landing-cde5efd1/verdict.json`.
+
 - **D214's two core boundary fixes on main (18 November 2026, early).** Merged from
   `core-boundary-checks` at 13aaf72a.
   - **Fix 1a:** kinds write only their own resolved, declared fields: initial values, derivatives
