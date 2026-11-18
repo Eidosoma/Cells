@@ -614,6 +614,21 @@ user to decide:
     (`/mnt/workspaces/Cells/venv-bitsey`), to produce Cells' own reference outputs at the
     revision the preprint used (b2cb370), as is done for BETSE.
 
+**The user's answers (18 November 2026; D219).**
+- **(a) and (b) are approved as judged comparisons,** each under a registered protocol with code-blind
+  references.
+- **Figure 8** is judged against independently derived physical balances. The printed recursion's
+  discrepancy stays as a finding.
+- **The threshold's verdict** includes successful refinement and a predeclared convergence condition.
+  - The 1D line's registration discloses that its value was already seen in neither-02. The 2D field
+    is the true pre-registration.
+  - The historical log is named, with the uncertainty about its producing revision. A pinned BITSEY
+    run is an additional reference.
+- **(d) Table 3:** the logged inputs and the executed interventions govern the code-reproduction
+  target, and the printed table is kept as a separate publication target, with the mapping
+  discrepancies reported. Interventions are named by what they do, with the original labels as
+  provenance.
+
 ## 7. The "neither" comparison (b): written before the search
 
 BITSEY's code below is cited at b2cb370 under D208; nothing is copied.

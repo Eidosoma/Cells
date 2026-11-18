@@ -374,3 +374,23 @@ which changes a response.
 - Connexin half-lives: as cited in `src/cells/laws/junctions/junction_formation.py`. The papers were not
   read for this note.
 - No web search was made, and no external file was fetched.
+
+## 9. The user's answers (18 November 2026; D217, D218)
+
+These hold before any build, and the details are in D217 and D218.
+- **U2 first,** a membrane channel population, then U1. The estimate is 10–16 agent-days, beyond
+  FR-2 and composition. The abundance source's live integration needs composition's M1.
+- **The first acceptance** runs on synthetic minute-scale lifetimes, labelled as such. It covers
+  finite unit turnover, several declared lifetimes, and template clearance measured from the
+  trajectory:
+  - the criterion is declared before the run;
+  - its threshold is meaningful for the template's remaining drive;
+  - there is a rule for falling back below it;
+  - releasing compartments are included;
+  - "not cleared" is a valid outcome.
+- **Qualification of the closed loop.** The closed-loop capability is not called qualified until a
+  closed feedback case passes with a feedback-cut control. Persistence is measured, not required. The
+  linear chain (§7) is a first check only.
+- **The loop itself** (question 2) is admitted under D218, through B1′, with its evaluation timing and
+  operating range declared. It is verified with a reference, timestep refinement and the cut control.
+  The self-source refusal is built with (b).

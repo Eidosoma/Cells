@@ -1316,3 +1316,20 @@ hand-backs:**
   imports, before the kinds owner starts.
 - **Deferred.** `ph_conditioned_factor@1` and `bounding_patch_damage@1` go to B1. The ensemble's
   dispatch through the model table comes back as a design note first.
+
+**Amended the same evening (the lead, about 18:00 UTC), on the user's go (D217–D220):**
+- **B1′ is admitted** (D218). It stays the operators owner's, after B1 and alongside composition's
+  M2–M5. Each production-feedback loop declares its evaluation timing and operating range, and is
+  verified whole: a reference, timestep refinement and a feedback-cut control. Two refusals are kept:
+  unsupported instantaneous cycles, and a population's availability times its own conducting
+  abundance.
+- **FR-2's split-and-merge kernel** is built inside B1's operator part (D217). That adds about 1–1.5
+  agent-days to the operators owner, which is on the critical path.
+- **The FR-18 energy-check probe** moves to right after B1's @3 part, since it now also gates FR-8's
+  choice of method (D217).
+- **Tier 3 before the first core landing.** What the rule protects is the frozen snapshot of the
+  core-fixes landing (e16e26bb), on which tier 3, G3 and G4 are running. Landings may proceed before
+  their classification finishes. A later tier-3 run compares against the record re-frozen from that
+  snapshot, so a landing's own tier-3 effects stay distinguishable.
+- **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
+  main before gating, so each gate is at its merged head.
