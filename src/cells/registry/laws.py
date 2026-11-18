@@ -35,6 +35,12 @@ declarations manifest (registry/declarations.py) writes out.
 - `cells.cycle_law@1`, `CycleLaw` (also named `PumpLaw`): a membrane cycle, such as @3's two pumps
   and the transporter kind's two laws. Seam A adds its modes and its S or J as optional fields;
 - `cells.route_law@1`, `RouteLaw`: a passive route law;
+- a cycle and a route law name their step terms (docs/CORE_SEAMS_DESIGN.md §18, amended): each is
+  the name of the kernel that supplies it, or None where the law has none. `stage_term`, its charge
+  slope in the per-stage rule; `material_term`, its material slope per stage; `charge_bound` and
+  `material_bound`, its definition-time bounds on a charged and on a neutral row. Its host's
+  hooks evaluate them (registry/kind_registry.Kind: stage_term, material_term, bound_rate), and
+  refusal 4 reads which a law declares (operators/compartments.py);
 - `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C);
 - `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
@@ -52,7 +58,10 @@ fields. An outside package's interfaces are in its own namespace.
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
   are the static model table's `law_homes` (registry/model_table.py), loaded by name, once, when
   the registry is first used, so the core imports no law module to find a law, and what is
-  registered never depends on what happened to be imported first;
+  registered never depends on what happened to be imported first. A home either calls the
+  registration call itself, or is an inert law module (§8.2): it declares its one law as `LAW`,
+  importing only cells.modules and laws/, and the loader registers it with the module as its
+  declarer, so importing it registers nothing;
 - the active registry is BUILTIN, unless a caller builds inside `scope(registry)`;
 - a registered law that no definition declares changes nothing: the inner model and the kinds
   read only the laws their declarations name;
@@ -87,6 +96,7 @@ __all__ = (
     "JUNCTION_LAW",
     "PROVENANCES",
     "ROUTE_LAW",
+    "STEP_TERMS",
     "BindingLaw",
     "ChannelLaw",
     "Citation",
@@ -253,6 +263,17 @@ def _callables(law, *names):
     return [f"its {name} is callable" for name in names if not callable(getattr(law, name))]
 
 
+STEP_TERMS = ("stage_term", "material_term", "charge_bound", "material_bound")
+
+
+def _named_or_none(law, *names):
+    return [
+        f"its {name} is named, or None"
+        for name in names
+        if getattr(law, name) is not None and not _named(getattr(law, name))
+    ]
+
+
 @dataclass(frozen=True)
 class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
@@ -332,8 +353,12 @@ class CycleLaw(Law):
     kinetics: Callable
     domain_valid: Callable
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
-    stage_term: str | None = None  # Its slope in the stage rule, where its host takes one.
+    stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
     loop_term: str | None = None
+    # Its other step terms (module docstring), each its kernel's name or None.
+    material_term: str | None = None  # Its material slope per stage.
+    charge_bound: str | None = None  # Its definition-time bound on a charged row.
+    material_bound: str | None = None  # Its definition-time bound on a neutral row.
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -357,10 +382,7 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        for name in ("stage_term", "loop_term"):
-            if getattr(self, name) is not None and not _named(getattr(self, name)):
-                out.append(f"its {name} is named, or None")
-        return out
+        return out + _named_or_none(self, *STEP_TERMS, "loop_term")
 
 
 PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (§8.1).
@@ -368,10 +390,15 @@ PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (
 
 @dataclass(frozen=True)
 class RouteLaw(Law):
-    """A passive route law: the entities its routes sit on, and what it is (its basis)."""
+    """A passive route law: the entities its routes sit on, what it is (its basis), and its step
+    terms (module docstring)."""
 
     hosts: tuple[str, ...]
     basis: str
+    stage_term: str | None = None  # Its charge slope in the stage rule.
+    material_term: str | None = None  # Its material slope per stage.
+    charge_bound: str | None = None  # Its definition-time bound on a charged row.
+    material_bound: str | None = None  # Its definition-time bound on a neutral row.
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -381,7 +408,7 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
-        return out
+        return out + _named_or_none(self, *STEP_TERMS)
 
 
 @dataclass(frozen=True)
@@ -453,6 +480,11 @@ class LawRegistry:
         """The one registration call: `law` checked against the template, then held under its
         namespaced ID, with the module that called this (its declaring module, for the
         declarations manifest). Returns the law."""
+        return self._register(law, sys._getframe(1).f_globals.get("__name__"))
+
+    def _register(self, law, module):
+        """register, with `module` as the law's declaring module (the loader's form for an inert
+        law module, which declares its LAW and registers nothing itself)."""
         if not isinstance(law, Law):
             raise ValueError(f"A law's declaration is built on the template (Law), not {law!r}")
         problems = law.errors()
@@ -484,7 +516,7 @@ class LawRegistry:
                         "are distinct)"
                     )
         self._laws[key] = law
-        self._modules[key] = sys._getframe(1).f_globals.get("__name__")
+        self._modules[key] = module
         return law
 
     def module(self, law_id):
@@ -540,12 +572,18 @@ _builtins_loaded = False
 
 
 def _load_builtins():
-    """Import the built-in laws' homes once, by name, so each registers on BUILTIN through the
-    call an outside package uses."""
+    """Import the built-in laws' homes once, by name. A home that calls the registration call an
+    outside package uses has registered its laws by then. An inert law module (docs/
+    CORE_SEAMS_DESIGN.md §8.2; the lead's ruling R1, 18 November 2026) declares its one law as a
+    module-level `LAW` and registers nothing at import; it is registered here, with that module
+    as its declarer, so importing a law module, as the older families' kernel modules do, changes
+    no registry."""
     global _builtins_loaded
     if not _builtins_loaded:
         for name in BUILTIN_PACKAGES:
-            importlib.import_module(name)
+            law = getattr(importlib.import_module(name), "LAW", None)
+            if isinstance(law, Law) and BUILTIN._laws.get(qualified(law.law_id)) is not law:
+                BUILTIN._register(law, name)
         _builtins_loaded = True
 
 

@@ -10,7 +10,12 @@ Each claim is checked once, with a planted error it must catch (D187):
   tuple (planted: a registry without a law a module tuple would still list; a law of a kind's
   interface that its version-1 layout has no path for);
 - a registered but undeclared law changes no program (planted: a consumer that reads every law
-  it hosts instead of the declared ones, which the same comparison must catch).
+  it hosts instead of the declared ones, which the same comparison must catch);
+- cycle and route laws name their step terms (CORE_SEAMS §18, amended): stage_term,
+  material_term, charge_bound and material_bound, each a kernel's name or None after today's
+  fields; the passive kind's leak names its charge slope and its neutral law its material bound,
+  each a kernel of its own module, and only the proton pump's charge slope besides (planted, each
+  refused: an empty name and a non-name in each of the four, on each type).
 """
 
 import dataclasses
@@ -20,6 +25,8 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.kinds import passive_routes, proton_buffer, transporter
+from cells.laws.routes import passive_permeation
+from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
 from cells.registry import laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
@@ -132,6 +139,51 @@ def test_the_template_refuses_a_malformed_declaration():
     cited = laws.Citation("a source", "its section", "no numbers taken")
     assert registry.register(dataclasses.replace(cycle, provenance="cited", source=cited))
     assert not registry._laws.keys() - {"tests.planted_cycle@1"}  # Only the admitted one.
+
+
+def test_cycle_and_route_laws_name_their_step_terms():
+    # After today's fields, so today's positional call sites keep their meaning.
+    assert [f.name for f in dataclasses.fields(laws.CycleLaw) if not f.kw_only] == [
+        "law_id",
+        "moves",
+        "fuel_kinds",
+        "kinetics",
+        "domain_valid",
+        "reads",
+        "stage_term",
+        "loop_term",
+        *laws.STEP_TERMS[1:],
+    ]
+    assert [f.name for f in dataclasses.fields(laws.RouteLaw) if not f.kw_only] == [
+        "law_id",
+        "hosts",
+        "basis",
+        *laws.STEP_TERMS,
+    ]
+    _, cycle, route_law, _ = planted_laws()
+    for law in (cycle, route_law):
+        assert all(getattr(law, name) is None for name in laws.STEP_TERMS) and law.errors() == []
+        for name in laws.STEP_TERMS:
+            for value in ("", 1):  # Planted: an empty name and a non-name.
+                with pytest.raises(ValueError, match=f"its {name} is named, or None"):
+                    laws.LawRegistry().register(dataclasses.replace(law, **{name: value}))
+            named = dataclasses.replace(law, **{name: "a_kernel"})
+            assert laws.LawRegistry().register(named) is named
+    # The passive kind's two declarations, each a kernel of its law's own module.
+    assert callable(getattr(proton_leak, passive_routes.LEAK.stage_term))
+    assert callable(getattr(passive_permeation, passive_routes.NEUTRAL.material_bound))
+    declared = {
+        (law.law_id, name): getattr(law, name)
+        for law in laws.active()._laws.values()
+        if type(law).interface in (laws.CYCLE_LAW, laws.ROUTE_LAW)
+        for name in laws.STEP_TERMS
+        if getattr(law, name) is not None
+    }
+    assert declared == {
+        (passive_routes.LEAK_LAW_ID, "stage_term"): "conductance_S",
+        (passive_routes.LAW_ID, "material_bound"): "bound_rate_per_s",
+        (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
+    }
 
 
 # ------------------------------------------------------------------ the registry (§8.3)

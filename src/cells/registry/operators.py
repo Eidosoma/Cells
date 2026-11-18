@@ -29,9 +29,15 @@ dictionary's was, because definitions and the composite's checks compare operato
 strings. Assigning an operator under its LAW_ID registers it, check_declarations included.
 Deleting one unregisters it, for a planted operator that a test or a control registers only for
 its block.
+
+**A package of operators** registers through `register_package` (docs/CORE_SEAMS_DESIGN.md §18,
+the further hand-offs): every operator its modules define, the order it names first, then the rest
+by module name. So a new operator module joins the section with no edit to its package's
+`__init__`; the composite's package (operators/__init__.py) registers this way.
 """
 
 import importlib
+import pkgutil
 import sys
 from collections.abc import MutableMapping
 from contextlib import contextmanager
@@ -52,6 +58,8 @@ __all__ = (
     "OPERATORS",
     "OperatorRegistry",
     "active",
+    "package_operators",
+    "register_package",
     "scope",
 )
 
@@ -223,6 +231,54 @@ class OperatorRegistry:
             if new:
                 out._modules[qualified(operator.operator_id)] = caller
         return out
+
+
+def package_operators(package):
+    """The composite operators a package's modules define, in module-name order and then in each
+    module's own order (the order its namespace binds them).
+
+    Every module directly in the package is imported by name, in sorted order, and an import that
+    fails raises; a subpackage is refused, so no operator can sit where this does not look. An
+    operator is a class that a module defines (its `__module__` is that module), a subclass of the
+    contract's Operator (operators/contract.py), with a law ID of its own (a string LAW_ID in the
+    class's own namespace): an imported class is its defining module's, an intermediate base
+    declares no LAW_ID, and a subclass that only inherits one is not a second operator."""
+    from cells.operators.contract import Operator
+
+    root = importlib.import_module(package)
+    found = []
+    for info in sorted(pkgutil.iter_modules(root.__path__), key=lambda info: info.name):
+        name = f"{root.__name__}.{info.name}"
+        if info.ispkg:
+            raise ValueError(f"{name}: an operator package holds modules, not subpackages")
+        module = importlib.import_module(name)
+        for value in vars(module).values():
+            if (
+                isinstance(value, type)
+                and value.__module__ == module.__name__
+                and issubclass(value, Operator)
+                and isinstance(vars(value).get("LAW_ID"), str)
+                and value not in found
+            ):
+                found.append(value)
+    return tuple(found)
+
+
+def register_package(section, package, *, first=()):
+    """Register every composite operator of `package` (package_operators) on `section`, through
+    its one registration call (check_declarations included): `first`, in its order, then the
+    others in package_operators' order. A new operator module so joins with no edit to the
+    package's `__init__`. `first` names only operators the package defines. Returns the
+    registered instances, in registration order."""
+    found = package_operators(package)
+    stray = [cls for cls in first if cls not in found]
+    if stray or len(set(first)) != len(first):
+        raise ValueError(
+            f"Package {package}: `first` names each of its own operators once, not "
+            + ", ".join(f"{cls.__module__}.{cls.__qualname__}" for cls in stray or first)
+        )
+    ordered = (*first, *(cls for cls in found if cls not in first))
+    return tuple(section.register(cls) for cls in ordered)
 
 
 class _ActiveOperators(MutableMapping):
