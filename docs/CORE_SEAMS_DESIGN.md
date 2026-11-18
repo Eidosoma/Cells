@@ -1246,7 +1246,7 @@ too.
 **Order.** Register in whichever order fits, before either builder's first output. The binding
 owner's seat comes after the kinds owner's or near it (§18), so C need not go first.
 
-**Amended the same day (the lead, about 17:15 UTC), on the operators and @3 owners' first
+**Amended the same day (the lead, 16:52 UTC), on the operators and @3 owners' first
 hand-backs:**
 - **The operators owner's order follows D195 as amended:**
   1. refusal 4 per move (version 1.3, built);
@@ -1293,7 +1293,7 @@ hand-backs:**
   same merge window as G's "@" refusal in the run-view writer, a recorded exception while the kinds
   owner has not started.
 
-**Amended the same evening (the lead, about 17:40 UTC), on the F owner's questions:**
+**Amended the same evening (the lead, 17:07 UTC), on the F owner's questions:**
 - **Law registration (R1).** Law modules are inert: `LAW = …`, importing only `cells.modules` and
   `cells.laws.*`. Each is listed as a law home in the model table, and the loader registers it,
   recording its module. `cells.modules` becomes lazy (PEP 562) and keeps object identity.
@@ -1317,7 +1317,7 @@ hand-backs:**
 - **Deferred.** `ph_conditioned_factor@1` and `bounding_patch_damage@1` go to B1. The ensemble's
   dispatch through the model table comes back as a design note first.
 
-**Amended the same evening (the lead, about 18:00 UTC), on the user's go (D217–D220):**
+**Amended the same evening (the lead, 17:18 UTC), on the user's go (D217–D220):**
 - **B1′ is admitted** (D218). It stays the operators owner's, after B1 and alongside composition's
   M2–M5. Each production-feedback loop declares its evaluation timing and operating range, and is
   verified whole: a reference, timestep refinement and a feedback-cut control. Two refusals are kept:
@@ -1334,7 +1334,7 @@ hand-backs:**
 - **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
   main before gating, so each gate is at its merged head.
 
-**Amended the same evening (the lead, about 18:40 UTC), on the Kv1 extraction's finding:**
+**Amended the same evening (the lead, 17:32 UTC), on the Kv1 extraction's finding:**
 - **XLA on CPU rewrites division by a constant as multiplication by its reciprocal,** in eager and
   jit alike. Division by a gathered array stays exact.
 - **So delegating `kv1_channels.py`'s dispatcher** to scalar-constant per-law kernels would move the
@@ -1347,7 +1347,7 @@ hand-backs:**
 - **The dispatcher's formula is a recorded temporary second form.** It retires with the legacy
   catalogue families in the approved legacy-removal batch. A test refuses a sixth law in it.
 
-**§19 amended the same evening (the lead, about 18:50 UTC), on the references agent's
+**§19 amended the same evening (the lead, 17:33 UTC), on the references agent's
 registration:**
 - **J⁻ comes from the contract.** The kind forms J⁻ = J⁺·e^{ΔG/RT} (§16), never a diagram's own
   backward flux. That flux differs by rounding, and booking it would show J·ΔG > 0 near equilibrium
@@ -1364,7 +1364,7 @@ registration:**
 - **Two blind spots are registered now,** by a dated amendment before A's first output: a
   finite-fuel population, so the stored rate has power, and a population with N = b.
 
-**Amended the same evening (the lead, about 19:00 UTC), on the @3 owner's second hand-back:**
+**Amended the same evening (the lead, 17:42 UTC), on the @3 owner's second hand-back:**
 - **D's heat-booking classes** gain membranes, pumps and calcium pumps beside channels and
   junctions. Each admits `trapezoid_nonnegative@1`, since their power is never negative. This is the
   F owner's switch.
@@ -1380,7 +1380,7 @@ registration:**
   by name, and a later law is checked with its structure. So the code-0 dispatch, the structure-free
   domain check and the replacement operator's tables are unchanged.
 
-**Amended the same evening (the lead, about 19:15 UTC):**
+**Amended the same evening (the lead, 17:51 UTC):**
 - **The ensemble's dispatch through the model table (§15's follow-up): option (a).**
   - A new `ensemble` column, "module:object" or None, names a family's EnsembleAdapter: the
     ensemble's eight hooks and its kind. `ensemble/families.py` builds its models from the adapter
@@ -1391,3 +1391,41 @@ registration:**
 - **`operators/site_occupancy.py`.** The FR owner fixes its memory estimate, from an external review
   of 18 November, as a recorded assignment. The file then passes to the binding owner, since FR-3's
   site binding is seam C's (§5.3).
+
+**Amended the same evening (the lead, 18:45 UTC), on the gap-junction bundle's, the operators
+owner's and the FR owner's hand-backs.** The times of this section's earlier amendments were
+corrected to their commits' times on the same evening, since several had been written ahead of the
+clock.
+- **The replication set's baseline is fixed, and every head with a `src/` diff must reproduce it.**
+  - The baseline (`crossrev-replication-20261118/baseline-34a7fe85`) was recorded from main
+    baa45ff0's `src/`, before any core-pass head.
+  - It is never re-recorded to clear a difference. A difference is a finding, and an intended
+    program change is a dated renewal, with its reason, decided before landing.
+  - Before a head with a `src/` diff lands, its trial merge must regenerate the set bit for bit:
+    55 of 55 files identical, with equal file listings, not an exit code alone. While
+    gap-junction-bundle is off main, the trial merge includes it. The lead runs the check
+    (`replication_check.sh`, proved to refuse a planted difference).
+  - Heads are found by their diff, not by their owner.
+  - The set's install at landing re-checks main as a whole, so landing order no longer carries the
+    safety.
+- **M1 lands as `core-pass-operators-b1` at 42ca1c94.**
+  - Its lane-B gate covers 497a97e5, 20c3103c and cd983bad.
+  - It brings the split-and-merge kernel (e12539fc, c7edcf2e), a pure function that nothing calls
+    yet.
+  - 497a97e5's two units were stopped.
+- **Recorded exceptions to the owner table, for crossrev:**
+  - the gap-junction bundle owner edits `validation/tissue/composite_crossrev.py`, the lead's file,
+    for the replication set;
+  - the FR owner edits that file and the four operator crossrev modules (`division_crossrev`,
+    `secreted_species_crossrev`, `species_reactions_crossrev` and
+    `regulated_availability_crossrev`) for the external review's findings 2 and 3.
+
+  No other head touches those five files.
+- **The review's renewal (findings 2 and 3) comes after the replication set's install.**
+  - **One implementation:** the schedule-timing and independent-state helpers take in the
+    replication set's `replication_bindings` and `_replication_traced`, rather than sitting beside
+    them.
+  - **The renewal rule, for every set:** at the renewal's `src/`, each set's old format first
+    reproduces the record of record bit for bit. Only then is the new format recorded, on the same
+    tree. A set whose files do not change is left as it is.
+  - Seam D's first landing follows the renewal.
