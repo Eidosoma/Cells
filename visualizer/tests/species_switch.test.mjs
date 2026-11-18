@@ -449,7 +449,7 @@ function unitPart(id) {
     chips: [{ label: "Assigned in source", swatch: "map-assigned" }, { label: "Between two cells" }],
     facts: [["Assembly", "2 x 6"]],
     sections: [
-      { key: "laws", title: "Engine laws", items: [{ label: "a_law@1", code: true }] },
+      { key: "laws", title: "Laws in the inventory", items: [{ label: "a_law@1", code: true }] },
       { key: "products", title: "Candidate products", items: [{ label: "GJC1", links: [{ text: "UniProt P36383", url: "https://www.uniprot.org/uniprotkb/P36383/entry" }] }] },
       { key: "structures", title: "Reference structures", items: [{ label: "PDB 7XYZ" }] },
     ],
@@ -577,7 +577,7 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   assert.equal(said.card.method[0], "Made up for the tests.");
   assert.equal(said.card.method.length, LEFT_OUT.length ? 2 : 1);
   if (LEFT_OUT.length) assert.match(said.card.method[1], LEFT_OUT_LINE);
-  assert.match(said.card.check, /units and their laws are the engine's, the same for every species/);
+  assert.match(said.card.check, /units of Cells' law inventory and their laws are the same for every species/);
   assert.match(said.card.check, /not anything the engine models/);
   // How they were found, then what their records are, apart; a reviewed entry is said to be no more sure.
   assert.match(said.card.check, /How they were found: 2 by the signature of a family that makes the machine, candidates by family, not established counterparts; 1 by sequence similarity, a candidate, not an established counterpart; 1 only by that of a family that goes with one \(a regulator, or a subunit that makes none by itself\), no candidate for its own work; 1 named in a publication\./);
@@ -595,7 +595,7 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   // Nowhere do the view's own words, or the vocabulary, say that the engine models this species' proteins.
   const words = JSON.stringify([said, overlay.species]);
   assert.ok(!/(engine|Cells) (models|simulates) (a |the )?(test worm|this species|species'|planarian)/i.test(words));
-  assert.ok(!/The units Cells has laws for/.test(words), "that heading is the inventory's own atlas's");
+  assert.ok(!/The units of Cells' law inventory/.test(words), "that heading is the inventory's own atlas's");
 });
 
 // ---------------------------------------------------------------- the whole build

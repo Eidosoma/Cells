@@ -312,7 +312,7 @@ if (process.env.CASE === "model") {
     // The Protein atlas: the species last shown, with the model system's sentence before its own caveat.
     await press('.switch [data-lens="proteins"]');
     s = await state();
-    check(`${from}: the Protein atlas keeps ${lastLabel}, the pill names the model system, and its caveat's first sentence says a model system has no proteins of a species`, s.lens === "proteins" && s.species === last && `${s.inBar}${s.inCard}` === `${gard.id}*` && new RegExp(`^${escape(gard.label)} is a model system, not an organism: it has no proteins of a species\\. The atlas shows the units Cells has laws for, as for ${escape(lastLabel)}\\.`).test(s.caveat || ""), JSON.stringify([s.lens, s.species, s.inBar, s.inCard, s.caveat]));
+    check(`${from}: the Protein atlas keeps ${lastLabel}, the pill names the model system, and its caveat's first sentence says a model system has no proteins of a species`, s.lens === "proteins" && s.species === last && `${s.inBar}${s.inCard}` === `${gard.id}*` && new RegExp(`^${escape(gard.label)} is a model system, not an organism: it has no proteins of a species\\. The atlas shows the units of Cells' law inventory, as for ${escape(lastLabel)}\\.`).test(s.caveat || ""), JSON.stringify([s.lens, s.species, s.inBar, s.inCard, s.caveat]));
     // Its own proteins, where it has them: the trail, the map of the stack, the search and the Colour select.
     if ((await evaluate(`${V}.current.mode`)) !== "own" && (await evaluate(`Boolean(${V}.shadowRoot.querySelector('.view-card [data-show="own"]'))`))) await press('.view-card [data-show="own"]');
     const mounted = await until(`Boolean(${V}.current.mounted)`, 480);
@@ -748,7 +748,7 @@ try {
   }
   await pressSpecies("human");
   s = await state();
-  check("Human in the atlas: the inventory's own side, with no rings", s.species === "human" && s.heading === "The units Cells has laws for" && s.marks === 0, JSON.stringify([s.species, s.heading, s.marks]));
+  check("Human in the atlas: the inventory's own side, with no rings", s.species === "human" && s.heading === "The units of Cells' law inventory" && s.marks === 0, JSON.stringify([s.species, s.heading, s.marks]));
   if (withOwn.length && !withOwn.includes("human")) check("Human in the atlas: one line says its own catalogue of proteins is not made", s.show === "units" && /not made yet/.test(s.notice || "") && s.shows === "", JSON.stringify([s.show, s.notice, s.shows]));
   await pressSpecies("planarian");
   s = await state();
@@ -818,7 +818,7 @@ try {
   check("species= in the address sets the species", s.species === "syn3a" && s.rail === "molecule cell*", JSON.stringify([s.species, s.rail]));
   await open("lens=proteins&atlas=human");
   s = await state();
-  check("atlas= is another name for it", s.species === "human" && s.heading === "The units Cells has laws for", JSON.stringify([s.species, s.heading]));
+  check("atlas= is another name for it", s.species === "human" && s.heading === "The units of Cells' law inventory", JSON.stringify([s.species, s.heading]));
   await open("lens=cell&species=no-such-species");
   s = await state();
   check("an unknown species in the address is ignored", s.species === "planarian", String(s.species));

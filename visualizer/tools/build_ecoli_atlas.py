@@ -699,7 +699,7 @@ def build(datasets_folder, snapshot):
     ]
     capabilities = {
         "cap.membrane": {"place": "present", "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."},
-        "cap.channels": {"place": "present", "note": f"Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. {len(channels)} of its proteins carry the signature of a bacterial channel family: {channels_said}."},
+        "cap.channels": {"place": "present", "note": f"Not the channels of animal cells: none of its proteins carries the signature of a channel family listed in Cells' law inventory. {len(channels)} of its proteins carry the signature of a bacterial channel family: {channels_said}."},
         "cap.pumps": {"place": "present", "note": f"Not the pumps of animal cells: none of its proteins carries the signature of the sodium-potassium pump. Its P-type ATPases ({listed(own['p_type'])}) and its ATP synthase are stated to be in the inner membrane."},
         "cap.junctions": {"place": "absent", "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."},
         "cap.extracellular": {"place": "present", "note": "Two spaces lie beyond its inner membrane: the periplasm, between its two membranes, and what surrounds the cell, the lower gut of an animal or wherever it is released."},
@@ -754,7 +754,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Chemotaxis", "value": f"{len(chemotaxis)} of its proteins carry UniProt's keyword for chemotaxis ({listed(by_gene(chemotaxis))}), and {len(complexes_said['flagellum'])} are parts of the flagellum by the Gene Ontology terms UniProt gives them", "sources": ["uniprot"]},
                 {"label": "Energy", "value": "respiration and fermentation: it lives with or without oxygen", "sources": ["uniprot"]},
                 {"label": "Where it lives", "value": "the lower gut of animals; it survives when released to the natural environment", "sources": ["uniprot"]},
-                {"label": "Ion channels", "value": f"none of the animal families Cells has laws for; {len(channels)} proteins of bacterial channel families ({listed(by_gene(channels))})", "sources": ["uniprot"]},
+                {"label": "Ion channels", "value": f"none of the animal families listed in Cells' law inventory; {len(channels)} proteins of bacterial channel families ({listed(by_gene(channels))})", "sources": ["uniprot"]},
                 {"label": "Signalling", "value": f"{two_component} proteins carry UniProt's keyword for two-component regulatory systems", "sources": ["uniprot"]},
                 {"label": "Strain", "value": f"K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly ({proteome['genomeAssembly']['assemblyId']})", "sources": ["genbank", "uniprot"]},
             ],

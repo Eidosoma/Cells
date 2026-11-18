@@ -18,9 +18,9 @@ One data file, the scene, drawn through six lenses, each under a tab, in this or
 | --- | --- |
 | **Scope** (the Cell view) | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
 | **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). On the animals' benches the eukaryotic ribosome and five units of the law inventory (the sodium pump, SERCA, the IP3 receptor, Kv1.2 and the gap-junction channel) are drawn to scale from the viewer's own measure of a structure, of the species' own organism or another, and each panel says whose structure it is; the ATP synthase, chosen, stands in a thin slab where its ring stands, an illustration. Eight species' benches hold the machines their dossiers name (`schema/MACHINE_DOSSIERS.md`; the planarian's, Syn3A's and M. pneumoniae's proteins as candidates by family, never called parts), each bench a file beside the page read when it is shown (the page carries the catalogue's core), each with its proteins by tier, its count from an open paper where one gives it, and a door from each chain to its protein in the Protein atlas and back; the human's proteasome, mitochondrial ATP synthase, three RNA polymerases, complex I, mitochondrial ribosome and CMG helicase are measured, and its nuclear pore stays a card. Every measured machine and unit (E. coli's six, the mycoplasmas' ribosomes at E. coli's, the human's eight, the animals' 80S and five units) offers a fourth level, Shape: the viewer's own smooth surface of each chain (`schema/MACHINE_SHAPES.md`, drawn by `src/lenses/machine_shape.js` as one mesh), a press on a surface choosing its chain. A part or chain chosen in a machine is lit in the page's accent. A measured machine's parts are its sub-assemblies, drawn as their chains, each part in one colour; the opening view frames the shapes, and while one is chosen the rest of the bench is faint. The law inventory's membrane units stand in a tray of their own, as the Protein atlas lists them; a unit's panel says which of its laws an active model declares. All of it is illustration |
-| **Proteins** (the Protein atlas) | The units Cells has laws for, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each unit (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
+| **Proteins** (the Protein atlas) | The units of Cells' law inventory, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. A unit's panel opens each of its laws an active model declares in the Laws library; of each other law it says, with no door, what the law-port inventory of 17 November 2026 marks it (D211: to port as is, to fold into the cardiac lane's planned laws, or not a port), or, where that inventory has no row for it, that the engine's declarations do not list it. For the species shown it gives the gene products that would make each unit (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
-| **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared says so, with no door. Its files link at the manifest's revision |
+| **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared opens nothing, and says what the law-port inventory marks it (`data/laws/law_port.json`, made by `tools/extract_law_port.py`; the words in `src/lenses/law_port.js`), or that the declarations do not list it. Its files link at the manifest's revision |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
@@ -246,7 +246,7 @@ must bve configurable as well based on our different species as we add them".
   machine, such as a beta subunit or a regulator, is a plain grey marker, and its panel
   says how the atlas found it and that it goes with the machine (`found_by`,
   `schema/SPECIES_PROTEINS.md`, since 16 November 2026). Every other protein is a plain
-  marker, and the page says Cells has no law for it. The card's switch moves between "Cells' 48 units"
+  marker, and the page says it is listed with no unit of Cells' law inventory. The card's switch moves between "Cells' 48 units"
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
   on the machines.
 - **Colour says the side** (the user, 16 November 2026, choosing the atlas's look: colour by
@@ -254,8 +254,8 @@ must bve configurable as well based on our different species as we add them".
   side of each one's own membrane: beyond it, in it, enclosed by it (a family by the side
   where most of its members sit); what has no known side is hollow and grey. "Colour" at
   the head of the legend also shows how each side is known, essentiality where the
-  species states it, and Cells' laws (one hue for what makes a unit Cells has a law
-  for). Each shelf's own words name its sides. A gathering takes its side's own colour
+  species states it, and Cells' law inventory (one hue for what makes a unit of that
+  inventory). Each shelf's own words name its sides. A gathering takes its side's own colour
   and is told by its dashed ring and its name.
 - **Finding your way.** A trail above the picture says where you are (species, shelf,
   side, family, protein); each step goes back to it, and its arrow and Escape go back one
@@ -649,9 +649,10 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   at 1400 by 900; a test holds one protocell to 21 draws and 142,000 triangles.
 - **GARD's status.** Its entry reads "Modelled", for comparison only (D197), since 17
   November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
-  part 2, on main"), and the engine's declarations at main `a16b2571` list the stochastic
-  assembly family `cells.assembly_lineages@1` with GARD's three laws and two lineage
-  operators (`data/engine/declarations.json`). Declared is not qualified: its runs are
+  part 2, on main"), and the engine's declarations list the stochastic assembly family
+  `cells.assembly_lineages@1` with GARD's three laws and two lineage operators
+  (`data/engine/declarations.json`, written at main `79d23cd5`, the map's revision; they
+  did so at `a16b2571` too). Declared is not qualified: its runs are
   development runs, not judged, and the page says so on every picture of them. Until
   that evening the entry read "Designed, not modelled" (`docs/GARD_DESIGN.md`, D192) and
   the page played a marked example. Cells' own origin-of-life engine, with
@@ -762,6 +763,7 @@ cd visualizer
 npm install                 # three.js 0.170.0 and esbuild, both pinned
 npm run extract             # read the main checkout (or --repo PATH, or the one CELLS_ENGINE_REPO names), write data/architecture/architecture.scene.json
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
+python3 -I tools/extract_law_port.py --inventory PATH/inventory.json  # only when the law-port inventory (D211) changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
@@ -905,7 +907,7 @@ Every engine file belongs to exactly one part; the extractor warns if one does n
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("226 of 226 engine files placed, 341 left out as legacy code").
+build counts them apart ("210 of 210 engine files placed, 321 left out as legacy code").
 The map's patterns are carried through the engine's source moves by `tools/move_paths.py`,
 from the engine's own path tables (`scripts/moves/*-table.json`), with a check that every
 file stands in the part it stood in before.
@@ -972,8 +974,9 @@ stay out of git (61 runs in 327 files, 96 MB).
    1d86a192, on 17 November at df2b910b, after D188's first move at 6a5d509f, at 76846486
    the same day (main's changes were docs only), after seam F at f3b3f526, and with GARD's
    first part at 95de49de, after the combined landing at 7538b0cd, where it first read the
-   engine's declarations manifest, and with GARD's second part at a16b2571: 258 parts and 936
-   relations, which it states.
+   engine's declarations manifest, with GARD's second part at a16b2571, and on 18 November at
+   79d23cd5, after D198's retire batch and the feature-request lane's judged acceptances: 256
+   parts and 939 relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -1150,11 +1153,14 @@ Ideas kept for after the basics (the user, 14 November 2026):
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library is read from the engine's declarations manifest written at main 7538b0cd:
-  38 pieces and 10 models. It is read again when a new manifest is copied in. The manifest
+- The Laws library is read from the engine's declarations manifest written at main 79d23cd5:
+  43 pieces and 10 models. It is read again when a new manifest is copied in. The manifest
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared
-  law (38 of 48) stay in the atlas; their laws say they are not declared. At rest on a wide
+  law (38 of 48) stay in the atlas; their laws say what the law-port inventory of 17 November
+  2026 marks them (D211), and the table is made again only when that inventory changes. The
+  15 laws on the other ten units that the inventory has no row for say that the declarations
+  do not list them. At rest on a wide
   screen the model families' names are small; they read once a case is chosen.
 - The Laws library's card scrolls beside its legend on a wide window under about 1000 px
   tall. The room it keeps clear on

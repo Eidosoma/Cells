@@ -2,12 +2,12 @@
  "format": "cells.visualizer.laws@2",
  "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "read": "Read from the engine's declarations at main a16b2571",
+  "read": "Read from the engine's declarations at main 79d23cd5",
   "manifest": {
    "path": "data/engine/declarations.json",
    "kind": "cells.declarations@2",
-   "revision": "a16b257184fb3eb471af09d5e442f06d53b072bb",
-   "short": "a16b2571",
+   "revision": "79d23cd5f7e4491cfa52b288692906769df78ea4",
+   "short": "79d23cd5",
    "dirty": false,
    "origin": "git checkout"
   },
@@ -208,7 +208,7 @@
      "cells.proton_constant_field_leak@1"
     ],
     "ledgers": null,
-    "line": 653,
+    "line": 686,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -1789,7 +1789,7 @@
     "kernels": {},
     "laws": null,
     "ledgers": null,
-    "line": 82,
+    "line": 86,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -1945,7 +1945,7 @@
     "kernels": {},
     "laws": null,
     "ledgers": null,
-    "line": 97,
+    "line": 101,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"

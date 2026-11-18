@@ -4,7 +4,7 @@
 The protein atlas draws the functional units of the Cells law inventory, and the inventory
 already names the human gene products that would make each unit. This tool makes the other
 half for the human (schema/SPECIES_PROTEINS.md): the species' own proteins, whether or not
-Cells has a law for them, laid out on shelves. A shelf is a membrane, and every protein
+they are listed with a unit of that inventory, laid out on shelves. A shelf is a membrane, and every protein
 sits outside it, in it or inside it.
 
 The catalogue is UniProt's reviewed human proteome: one canonical protein for each

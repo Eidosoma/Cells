@@ -4,7 +4,7 @@
  "label": "Fruit fly",
  "organism": "Drosophila melanogaster",
  "taxon": 7227,
- "plain": "The fruit fly of the laboratory: 13,814 genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps Cells has laws for have a counterpart of the same family in it.",
+ "plain": "The fruit fly of the laboratory: 13,814 genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps listed in Cells' law inventory have a counterpart of the same family in it.",
  "group": "Animals",
  "order": 25,
  "default": false,

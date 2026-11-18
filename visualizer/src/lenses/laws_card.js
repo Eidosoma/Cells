@@ -4,6 +4,7 @@
 // and <cells-index>; nothing here is new to the page.
 
 import { Library, PREFIX, WHERE, FAMILY, pageId, engineId, namespaced, interfaceWords, isId } from "./laws_data.js";
+import { portLines, portTable } from "./law_port.js";
 
 /** A piece's swatch in the list and the panel: the mark it is drawn with on the wall (laws.js MARKS, laws_styles.js). */
 export function swatchOf(piece) {
@@ -341,8 +342,9 @@ function describeRow(library, row) {
  * The doors this view offers on another view's parts (the viewer asks every view it offers):
  * - an Engine view box that holds the files of declared pieces: one into the library with them picked out;
  * - an Engine view operator (op.<id>) the manifest declares: one onto that operator;
- * - a unit of the Protein atlas: one onto each of its laws the manifest declares, and one line of
- *   words, opening nothing (no lens), that names each law it does not.
+ * - a unit of the Protein atlas: one onto each of its laws the manifest declares; and for those it
+ *   does not, lines of words that open nothing (no lens): one for each mark the law-port inventory
+ *   gives them (law_port.js), and one that names each law the inventory has no row for.
  */
 export function doorsFor(entity, scene) {
   if (!entity?.id || !scene?.laws?.pieces) return [];
@@ -359,13 +361,16 @@ export function doorsFor(entity, scene) {
     if (piece?.where === "declared") out.push({ label: `Open ${piece.id} on the Laws library's wall`, lens: "laws", value: pageId(piece.id) });
     else undeclared.push(law);
   }
-  // The laws no active model declares, in one line that names each as the unit's panel does.
-  if (undeclared.length === 1) out.push({ says: true, label: `No active model declares this unit's law ${undeclared[0]}. The engine's declarations do not list it, and the Laws library does not show it.` });
-  else if (undeclared.length) out.push({ says: true, label: `No active model declares these laws of this unit: ${undeclared.join(", ")}. The engine's declarations do not list them, and the Laws library does not show them.` });
+  // The laws no active model declares, named as the unit's panel names them: a line for each mark's
+  // words in the law-port inventory, the laws of one mark gathered; and one line for the laws it has no row for.
+  const { lines, uncovered } = portLines(portTable(scene), entity.id.replace(/^unit\./, ""), undeclared, unitLaws(entity));
+  for (const line of lines) out.push({ says: true, label: line.label });
+  if (uncovered.length === 1) out.push({ says: true, label: `No active model declares this unit's law ${uncovered[0]}. The engine's declarations do not list it, and the Laws library does not show it.` });
+  else if (uncovered.length) out.push({ says: true, label: `No active model declares these laws of this unit: ${uncovered.join(", ")}. The engine's declarations do not list them, and the Laws library does not show them.` });
   return out;
 }
 
-/** The laws a unit of the Protein atlas names (its "Engine laws" list), as its panel names them: an ID, or the inventory's words where it has none. */
+/** The laws a unit of the Protein atlas names (its "Laws in the inventory" list), as its panel names them: an ID, or the inventory's words where it has none. */
 export function unitLaws(entity) {
   if (entity?.kind !== "unit") return [];
   return (entity.sections || []).filter((section) => section.key === "laws").flatMap((section) => (section.items || []).map((item) => item.label)).filter(Boolean);

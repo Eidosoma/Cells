@@ -1217,7 +1217,7 @@
     "cells.proton_constant_field_leak@1"
    ],
    "ledgers": null,
-   "line": 653,
+   "line": 686,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2636,7 +2636,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 82,
+   "line": 86,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2774,7 +2774,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 97,
+   "line": 101,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -5629,5 +5629,5 @@
    "writes": {}
   }
  ],
- "revision": "a16b257184fb3eb471af09d5e442f06d53b072bb"
+ "revision": "79d23cd5f7e4491cfa52b288692906769df78ea4"
 }

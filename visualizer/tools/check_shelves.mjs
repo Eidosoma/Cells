@@ -275,7 +275,7 @@ try {
     s = await state();
     check("a click on a marker selects its protein and opens the panel", s.selected === bead.key && s.panel && /protein$/.test(s.panel.eyebrow), JSON.stringify([s.selected, s.panel?.title, s.panel?.eyebrow]));
     note(`panel: ${JSON.stringify(s.panel)}`);
-    check("the panel says Cells has no law for it, and how its side is known", /No law in Cells/.test(s.panel?.chips || "") && /Predicted|Stated|By function|Not known/.test(s.panel?.chips || ""), s.panel?.chips);
+    check("the panel says it is not in the law inventory, and how its side is known", /Not in the law inventory/.test(s.panel?.chips || "") && /Predicted|Stated|By function|Not known/.test(s.panel?.chips || ""), s.panel?.chips);
     check("it links out to look the protein up", /ncbi/.test(s.panel?.hosts || ""), s.panel?.hosts);
     await shot("syn3a-protein-selected");
     await key("Escape", "Escape", 27);
@@ -317,7 +317,7 @@ try {
     // The other mode and back.
     await press('.view-card [data-show="units"]');
     s = await state();
-    check("the switch shows the units Cells has laws for", s.show === "units" && s.heading === "Syn3A atlas" && /units\*/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
+    check("the switch shows the units of Cells' law inventory", s.show === "units" && s.heading === "Syn3A atlas" && /units\*/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
     await press('.view-card [data-show="own"]');
     s = await state();
     check("and back to its own proteins", s.show === "own" && s.drawn?.markers === 455, JSON.stringify([s.show]));
@@ -343,7 +343,7 @@ try {
     s = await state();
     if (humanHas) check("Human: the choice is kept, and its own proteins are shown", s.show === "own" && s.heading === "Human proteins" && s.drawn?.markers > 0, JSON.stringify([s.show, s.heading, s.notice, s.drawn?.markers]));
     if (humanHas) check("Human states no essentiality: its proteins are coloured by side, and the legend says so", s.colour === "side" && (await evaluate(`${L}.mounted?.colourBy`)) === "side", String(s.colour));
-    else check("Human: the units, with one line that its own catalogue is not made", s.show === "units" && s.heading === "The units Cells has laws for" && /not made yet/.test(s.notice || "") && s.modes === "", JSON.stringify([s.show, s.heading, s.notice, s.modes]));
+    else check("Human: the units, with one line that its own catalogue is not made", s.show === "units" && s.heading === "The units of Cells' law inventory" && /not made yet/.test(s.notice || "") && s.modes === "", JSON.stringify([s.show, s.heading, s.notice, s.modes]));
     await pickSpecies("mpneumoniae");
     await sleep(600);
     s = await state();
@@ -369,7 +369,7 @@ try {
   if (scenario === "planarian") {
     await open("lens=proteins&species=planarian");
     let s = await state();
-    check("the planarian opens on the units Cells has laws for, with the switch to its own proteins", s.show === "units" && s.heading === "Planarian atlas" && /own:Its 18,882 proteins/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
+    check("the planarian opens on the units of Cells' law inventory, with the switch to its own proteins", s.show === "units" && s.heading === "Planarian atlas" && /own:Its 18,882 proteins/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
     const started = Date.now();
     await press('.view-card [data-show="own"]', 0);
     await evaluate(`Promise.resolve(${L}.ready)`);
@@ -384,7 +384,7 @@ try {
     note(`the switch alone, with the file already in and no layout kept: ${JSON.stringify(await evaluate(`(() => { const lens = ${L}; const state = lens.own.get("planarian"); const times = []; for (let i = 0; i < 3; i++) { lens.setMode("units", { user: true }); for (const view of state.views.values()) view.dispose(); state.views.clear(); const t = performance.now(); lens.setMode("own", { user: true }); times.push(Math.round(performance.now() - t)); } return times; })()`))} ms, three times (layout, meshes, labels and the card)`);
     await sleep(400);
     await shot("planarian-rest");
-    // Open a family that holds a unit Cells has a law for.
+    // Open a family that holds a unit of the law inventory.
     const innexin = await at("own:planarian:f:IPR000990");
     check("the Innexin family is under the pointer", Boolean(innexin), JSON.stringify(innexin));
     await move(innexin.x, innexin.y);
@@ -397,7 +397,7 @@ try {
     await sleep(600);
     s = await state();
     check("a click on a family opens it to every member", s.opened === "own:planarian:f:IPR000990" && s.drawn.open?.members === 70 && /Innexin · 70 proteins/.test(s.open || ""), JSON.stringify([s.opened, s.drawn.open, s.open]));
-    check("its members are drawn as the unit Cells has a law for", s.drawn.open?.forms === 70, JSON.stringify(s.drawn.open));
+    check("its members are drawn as the unit of the law inventory they would make", s.drawn.open?.forms === 70, JSON.stringify(s.drawn.open));
     check("the panel describes the family", s.panel?.title === "Innexin" && /family/.test(s.panel?.eyebrow || "") && /Its proteins/.test(s.panel?.heads || ""), JSON.stringify(s.panel));
     note(`panel: ${JSON.stringify(s.panel)}`);
     await shot("planarian-innexin-open");
@@ -466,7 +466,7 @@ try {
     check("a gathering opens to the proteins of all its families", s.opened === gathered.key && s.drawn.open?.members > 0, JSON.stringify([s.opened, s.drawn.open, s.open]));
     note(`panel: ${JSON.stringify(s.panel)}`);
     await shot("planarian-gathering-open");
-    // From a family to the unit Cells has a law for, and back from the machine to its families.
+    // From a family to the unit of the law inventory, and back from the machine to its families.
     await press("cells-panel .connection .link-button");
     await sleep(500);
     s = await state();
@@ -476,11 +476,11 @@ try {
     s = await state();
     check("one of them opens among its own proteins", s.show === "own" && /:f:|:m:/.test(s.opened || "") && s.drawn.open?.members > 0, JSON.stringify([s.show, s.selected, s.opened, s.drawn?.open]));
     await shot("planarian-from-unit");
-    // The legend's toggle: families that hold a unit with a law.
+    // The legend's toggle: families that hold a unit of the law inventory.
     await press('[data-close="open"]');
     await press("cells-legend .legend-group");
     s = await state();
-    check("the legend shows the families holding a unit with a law alone", s.lit > 0 && s.lit < 60, `${s.lit} lit; ${s.legend}`);
+    check("the legend shows the families holding a unit of the law inventory alone", s.lit > 0 && s.lit < 60, `${s.lit} lit; ${s.legend}`);
     await shot("planarian-units-only");
   }
 
@@ -539,7 +539,7 @@ try {
     let s = await state();
     const has = await evaluate(`Boolean(${L}.atlas.shelves?.some((item) => item.id === "human"))`);
     check("the scene names a catalogue for the human", has, "build the scene with data/proteins/human in place");
-    check("the human opens on Cells' units, and the switch offers its own proteins", s.show === "units" && s.heading === "The units Cells has laws for" && /units\*/.test(s.modes) && /own:Its [\d,]+ proteins/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
+    check("the human opens on Cells' units, and the switch offers its own proteins", s.show === "units" && s.heading === "The units of Cells' law inventory" && /units\*/.test(s.modes) && /own:Its [\d,]+ proteins/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
     await press('.view-card [data-show="own"]');
     for (let tries = 0; tries < 160 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
     await still();
@@ -837,7 +837,7 @@ try {
     const family = plain[0];
     await evaluate(`${V}.select(${JSON.stringify(family?.key)}, { fly: true })`);
     let s = await until((now) => now.panel?.chips?.includes("go with"));
-    check("such a family's panel says its members go with a unit Cells has a law for", /Holds parts that go with a unit Cells has a law for/.test(s.panel?.chips || ""), JSON.stringify(s.panel?.chips));
+    check("such a family's panel says its members go with a unit of the law inventory", /Holds parts that go with a unit of the law inventory/.test(s.panel?.chips || ""), JSON.stringify(s.panel?.chips));
     // The family opens; one of its members, found only by the accessory family's signature, is chosen.
     const opened = await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened?.key === ${JSON.stringify(family?.key)} || performance.now() - began > 30000 ? resolve(lens.mounted?.opened?.key ?? null) : setTimeout(wait, 50)); wait(); })`);
     await still();
@@ -846,7 +846,7 @@ try {
       await evaluate(`${V}.select(${JSON.stringify(key)})`);
       s = await until((now) => now.selected === key && Boolean(now.panel?.title));
       const plainMember = await evaluate(`(() => { const view = ${L}.mounted, entry = view.dish?.nodes.get(${JSON.stringify(key)}); return view.unitOf(view.shelves.byKey.get(${JSON.stringify(key)})) === null && Boolean(entry) && entry.tone === "plain" && !entry.form; })()`);
-      check("a member found only by an accessory family's signature says so in the atlas's words, is listed with the unit and is drawn plain", plainMember && /Goes with a unit Cells has a law for/.test(s.panel?.chips || "") && !/Would make a machine/.test(s.panel?.chips || "") && (byRoles ? /Named by the inventory as: .+: it goes with the machine/.test(s.panel?.facts || "") : /How the atlas found it: Accessory family/.test(s.panel?.facts || "") && /In the atlas: Goes with the machine, no candidate for its own work/.test(s.panel?.facts || "")) && /Listed in the atlas with/.test(s.panel?.heads || ""), JSON.stringify([key, plainMember, s.panel?.chips, s.panel?.facts, s.panel?.heads]));
+      check("a member found only by an accessory family's signature says so in the atlas's words, is listed with the unit and is drawn plain", plainMember && /Goes with a unit of the law inventory/.test(s.panel?.chips || "") && !/Would make a machine/.test(s.panel?.chips || "") && (byRoles ? /Named by the inventory as: .+: it goes with the machine/.test(s.panel?.facts || "") : /How the atlas found it: Accessory family/.test(s.panel?.facts || "") && /In the atlas: Goes with the machine, no candidate for its own work/.test(s.panel?.facts || "")) && /Listed in the atlas with/.test(s.panel?.heads || ""), JSON.stringify([key, plainMember, s.panel?.chips, s.panel?.facts, s.panel?.heads]));
     } else check("the accessory family opens and holds a member found so", false, JSON.stringify([opened, family?.key, key, member]));
     await shot(`accessory-${id}-member`);
   }
@@ -1025,7 +1025,7 @@ try {
     await press(".atlas-results .atlas-hit", 600);
     s = await until((now) => now.selected === "own:human:p:Q07699", 20000);
     check("on a phone a press on a result chooses it and puts the field away", s.selected === "own:human:p:Q07699" && (await evaluate(`getComputedStyle(${V}.shadowRoot.querySelector(".atlas-findbox")).display`)) === "none", JSON.stringify([s.selected, found]));
-    check("SCN1B, which the inventory names only as going with the machine, says so", /Goes with a unit Cells has a law for/.test(s.panel?.chips || "") && /Named by the inventory as: beta, auxiliary family/.test(s.panel?.facts || ""), JSON.stringify([s.panel?.chips, s.panel?.facts]));
+    check("SCN1B, which the inventory names only as going with the machine, says so", /Goes with a unit of the law inventory/.test(s.panel?.chips || "") && /Named by the inventory as: beta, auxiliary family/.test(s.panel?.facts || ""), JSON.stringify([s.panel?.chips, s.panel?.facts]));
     await size(WIDTH, HEIGHT);
   }
 
@@ -1470,13 +1470,13 @@ try {
     check("a protein of a small catalogue that has a unit is drawn as that unit, on a base of the units' colour", made.drawn.forms === 3 && made.feet === 3 && made.drawn.markers === 455, JSON.stringify(made));
     let s = await state();
     note(`card: ${s.stats}; caveat: ${s.caveat}`);
-    check("the page then says how many are drawn as a unit Cells has a law for", /3with a law in Cells/.test(s.stats) && /A drawn shape is a unit Cells has a law for/.test(s.caveat || ""), JSON.stringify([s.stats, s.caveat]));
+    check("the page then says how many are drawn as a unit of the law inventory", /3with a unit of the law inventory/.test(s.stats) && /A drawn shape is a unit of Cells' law inventory/.test(s.caveat || ""), JSON.stringify([s.stats, s.caveat]));
     const spot = await at(`own:syn3a:p:${made.given[0]}`);
     check("its form can be found under the pointer", Boolean(spot), JSON.stringify(spot));
     if (spot) {
       await click(spot.x, spot.y);
       s = await state();
-      check("a click on the form selects the protein, and the panel ties it to the machine", s.selected === spot.key && /Would make a unit Cells has a law for/.test(s.panel?.chips || "") && /Drawn in the atlas as/.test(s.panel?.heads || ""), JSON.stringify([s.selected, s.panel?.chips, s.panel?.heads]));
+      check("a click on the form selects the protein, and the panel ties it to the machine", s.selected === spot.key && /Would make a unit of the law inventory/.test(s.panel?.chips || "") && /Drawn in the atlas as/.test(s.panel?.heads || ""), JSON.stringify([s.selected, s.panel?.chips, s.panel?.heads]));
     }
     await shot("small-with-units");
   }

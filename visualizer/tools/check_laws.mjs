@@ -18,7 +18,9 @@
 //            words; an ID the manifest does not list, one that says so; the fuel kind, its row.
 //            A piece links where it is declared at the manifest's revision. A unit of the
 //            Protein atlas opens a declared law through its door, and says of an undeclared one
-//            that no active model declares it, with no door.
+//            that no active model declares it, with no door; a unit of each mark of the law-port
+//            inventory (U05, U42, U47, U37) says its law and that mark's words, in one line with
+//            no door.
 //   phone    on a 360 px phone the six views' switch fits the bar (its row scrolls, the library's tab in sight); the library opens on its wall,
 //            a piece chosen opens the panel as a sheet, and no room is kept on the left.
 //   gone     on a check-only scene without the Engine view's box that holds the declared laws'
@@ -42,6 +44,7 @@ import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
+import { phraseOf } from "../src/lenses/law_port.js";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
@@ -64,6 +67,8 @@ let scene = process.env.CHECK_SCENE || DEFAULT_SCENE;
 // The Engine view's box that holds the file the inner model's own laws are declared in (inner_laws.py), and its door's piece.
 const GONE_BOX = "laws.declarations";
 const MANIFEST = JSON.parse(await readFile(path.join(ROOT, "data", "engine", "declarations.json"), "utf8"));
+// The law-port inventory's table: the mark of each law a unit names that no active model declares.
+const PORT = JSON.parse(await readFile(path.join(ROOT, "data", "laws", "law_port.json"), "utf8"));
 // What the checks expect is counted from the manifest, never fixed here: it gains pieces at later merges.
 const lineOf = (id) => MANIFEST.pieces.find((piece) => piece.declared_id === id)?.line;
 const CASES = MANIFEST.models.filter((model) => !model.rows.length).length, RACKS = MANIFEST.models.length - CASES;
@@ -377,6 +382,17 @@ try {
     if (unitDoor) await click(unitDoor.x, unitDoor.y, 2200);
     unit = await state();
     check("the unit's door opens the library on that law, chosen", unit.lens === "laws" && (await evaluate(`${L}.selected`)) === "laws:kv1p5_mh@1" && /kv1p5_mh@1/.test(unit.panel), JSON.stringify([unit.lens, unit.selected]));
+    // A unit of each mark of the law-port inventory: its law, a colon, and that mark's words, in one line that opens nothing.
+    for (const [id, law] of [["U05", "kv1p1_mh2@1"], ["U42", "ncx_3na_1ca_symmetric_barrier@1"], ["U47", "mitochondrial_passive_continuous_si@1"], ["U37", "junction_flux() in the nominal profile"]]) {
+      const row = PORT.rows.find((item) => item.units.includes(id) && (item.has_id ? item.law === law : true));
+      await open(`select=unit.${id}`);
+      const doors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
+      const words = doors.filter((door) => !door.button);
+      check(`unit.${id}: one line, ${law} and the words for "${row?.mark}", and no door into the Laws library`, Boolean(row) && words.length === 1 && words[0].text.trim().startsWith(law) && words[0].text.trim().endsWith(`: ${phraseOf(row)}`) && !doors.some((door) => door.button && /Laws library/.test(door.text)), JSON.stringify(doors));
+      await evaluate(`${V}.shadowRoot.querySelector("cells-panel .panel-door.quiet")?.scrollIntoView({ block: "center" })`);
+      await sleep(300);
+      await shot(`${NAME}-unit-${id}`);
+    }
     // What the view leaves behind: the Cell view opened after it is as the Cell view opened alone.
     const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3) }; })()`);
     await open("lens=cell");

@@ -294,7 +294,7 @@ def build(datasets_folder, snapshot):
     findings = Counter(unit["finding"] for unit in units.values())
     species = {
         "format": "cells.visualizer.species@1", "id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON,
-        "plain": f"The fruit fly of the laboratory: {stated['genes']:,} genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps Cells has laws for have a counterpart of the same family in it.",
+        "plain": f"The fruit fly of the laboratory: {stated['genes']:,} genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps listed in Cells' law inventory have a counterpart of the same family in it.",
         "group": "Animals", "order": 25, "default": False, "made": made,  # after the other animals, before the bacteria
         "modelled": {"state": "generic", "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet is drawn on a wing for the scales only. The wings and the fly are placeholder outlines: nothing at those scales is simulated."},
         "levels": [

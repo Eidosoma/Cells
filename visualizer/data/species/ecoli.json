@@ -163,7 +163,7 @@
    },
    {
     "label": "Ion channels",
-    "value": "none of the animal families Cells has laws for; 15 proteins of bacterial channel families (aqpZ, clcA, clcB, corA, glpF, kch, mscK, mscL, mscM, mscS, ybdG, ybiO, yfeO, ynaI and zntB)",
+    "value": "none of the animal families listed in Cells' law inventory; 15 proteins of bacterial channel families (aqpZ, clcA, clcB, corA, glpF, kch, mscK, mscL, mscM, mscS, ybdG, ybiO, yfeO, ynaI and zntB)",
     "sources": [
      "uniprot"
     ]
@@ -355,7 +355,7 @@
    },
    "cap.channels": {
     "place": "present",
-    "note": "Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. 15 of its proteins carry the signature of a bacterial channel family: the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)."
+    "note": "Not the channels of animal cells: none of its proteins carries the signature of a channel family listed in Cells' law inventory. 15 of its proteins carry the signature of a bacterial channel family: the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)."
    },
    "cap.pumps": {
     "place": "present",

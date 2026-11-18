@@ -19,6 +19,7 @@ file fixes the list they are drawn from, and what may be said of each piece.
 | `data/engine/declarations.json` | The engine's own command, copied unchanged (`data/engine/README.md`) | The manifest, `cells.declarations@2`: the input, and the tests' oracle |
 | `data/laws/pieces.json` | `tools/extract_laws.py` (generated: do not edit) | The manifest's pieces and models, each carried unchanged, with the viewer's layer |
 | `data/laws/overlay.json` | Hand (`cells.visualizer.laws_overlay@2`) | The viewer's words: the families and shelves, the models' short names and Engine view boxes, the laws design notes name |
+| `data/laws/law_port.json` | `tools/extract_law_port.py` (generated: do not edit) | The law-port inventory's table (`cells.visualizer.law_port@1`, below): what a unit of the Protein atlas says of a law no active model declares |
 
 ```bash
 python3 tools/extract_laws.py              # data/engine/declarations.json -> data/laws/pieces.json
@@ -44,8 +45,8 @@ a tree that was not clean as well.
 ```json
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "read": "Read from the engine's declarations at main 7538b0cd",
-  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "7538b0cd", "dirty": false, "origin": "git checkout" },
+  "read": "Read from the engine's declarations at main 79d23cd5",
+  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "79d23cd5", "dirty": false, "origin": "git checkout" },
   "overlay_as_of": "2026-11-17",
   "boxes": "data/architecture/overlay.json: the Engine view's components, matched to each piece's module_path"
 }
@@ -74,7 +75,7 @@ The manifest states no date, and the view writes none.
 - **`declared`** is the manifest's piece, unchanged. Nothing else of the list says what a piece
   is.
 - **No `status`** is added. A level is shown only where the manifest's `status` gives one, with
-  its `status_source`. At main 7538b0cd none does.
+  its `status_source`. At main 79d23cd5 none does.
 
 ### A law a design note names
 
@@ -146,7 +147,7 @@ Every source is the engine's own record or the viewer's own data; no third-party
   model's, a page in `doc`, a design note's) links at `stamp.manifest.revision`, in the
   repository of the scene's `source_base_url`: the file is there by construction. Where the
   map's revision is another, the words beside the link say so ("line 93, as declared at main
-  7538b0cd"). The link names the file; the line is said in words.
+  79d23cd5"). The link names the file; the line is said in words.
 - **Not linked.** No page is linked while the manifest gives none, and no file outside the
   package is linked.
 - **The Engine view's boxes** are linked only where the page draws them, and no level of a box
@@ -198,7 +199,7 @@ notes.
 ## On the map's page
 
 The page carries this file in its scene as `laws` (`tools/lib/build_page.mjs`), and the viewer
-offers the Laws library only when it does.
+offers the Laws library only when it does. It carries the law-port table (below) as `law_port`.
 
 - **The address.** `lens=laws` (or `#laws`) opens it. `select=laws:<id>` opens it on a piece, a
   model or a notice, from any view.
@@ -207,12 +208,57 @@ offers the Laws library only when it does.
     the Laws library", which picks them out; the card says so, and its Close lets them go.
   - An Engine view operator (`op.<id>`) the manifest declares: "Open <id> on the Laws library's wall".
   - A unit of the Protein atlas: for each law its panel names, "Open <id> on the Laws library's
-    wall" where the manifest declares it, and one line, which opens nothing, for those it does not:
-    "No active model declares these laws of this unit: <ids>. The engine's declarations do not
-    list them, and the Laws library does not show them." (in the singular for one).
+    wall" where the manifest declares it. For those it does not, lines that open nothing: one for
+    each mark the law-port table gives them, "<laws>: <the mark's words>" (below), and one for the
+    laws the table has no row for: "No active model declares these laws of this unit: <ids>. The
+    engine's declarations do not list them, and the Laws library does not show them." (in the
+    singular for one).
 - **The way back.** A piece's panel links its box, or an operator's own part, and a model's
   panel its boxes, where the page draws them.
 - **The card** has the search field, the Family control and "Where it stands". `]` and Page Down
   step to the next piece in the wall's order, `[` and Page Up to the one before.
 - **The room** is kept clear of the cards on the left on a wide window, and the names written on
   it come back with a lost context or a lost graphics process.
+
+## The law-port table
+
+On 17 November 2026 the project decided to port tested older laws to the active engine (D211).
+Its first step was a read-only inventory of the law IDs behind the Protein atlas's units that no
+active model declares (`cells.law_port_inventory@1`, a working record of the engine's lead, kept
+at `/mnt/workspaces/Cells/law-port-20261117/inventory.json`). The page reads it through a table
+of its own, made by a tool and never by hand:
+
+```bash
+python3 -I tools/extract_law_port.py --inventory PATH/inventory.json   # -> data/laws/law_port.json
+```
+
+```json
+{
+  "format": "cells.visualizer.law_port@1",
+  "note": "…how it is made…",
+  "inventory": { "kind": "cells.law_port_inventory@1 (working record, D211)", "made": "2026-11-17", "head": "<40 hex digits>" },
+  "counts": { "rows": 54, "units": 38, "marks": { "port as is": 47, "fold into an owner's planned law": 5, "not a port": 2 }, "test_class": { "a": 52, "b": 2 } },
+  "rows": [ { "law": "kv1p1_mh2@1", "has_id": true, "units": ["U05"], "mark": "port as is", "test_class": "a" }, … ]
+}
+```
+
+- **A row** is the inventory's row: `law` its `law_id` (for the one row without an ID, what the
+  inventory calls it, and `has_id` false), `units` its `atlas_units`, `mark` its `owner.mark`,
+  `test_class` its `tests.test_class` (a: a passing test of the kernel against a reference; b:
+  passing tests of the family only). Nothing else of the inventory is copied, and no path.
+- **The tool refuses** (exit status 2, nothing written) an inventory whose `kind` is not
+  `cells.law_port_inventory@1` (with or without words in brackets), and one whose rows do not
+  hold 47, 5 and 2 laws of the three marks on 38 units, whose own counts of its marks differ from
+  its rows, that lists a law twice, that gives a law to port as is a tests' class that does not
+  pass ("tested" is said of it), or a law to fold to another than the cardiac lane.
+- **The words** for each mark are in `src/lenses/law_port.js` (`PORT_PHRASES`) and nowhere else:
+  one for "port as is", one for "fold into an owner's planned law", and for "not a port" one for
+  each of its two laws (the mitochondrial passive permeability, the gap-junction flux). They are
+  the lead's, given to the viewer on 17 November 2026, and a test holds them letter for letter.
+  "Tested" in them is the inventory's word for a passing test of the old kernel, not a judgement
+  of the engine; "declared" is not a level.
+- **A row is matched** to a law a unit's panel names by the law ID as written, on a unit the row
+  names. The row without an ID is matched, on each unit it names, to that unit's one law that is
+  not an ID and begins with the same word (the function's name, `junction_flux()`). A law of a
+  mark the source has no words for, or with no row, keeps the line for laws the declarations do
+  not list: no mark is guessed. A law the manifest declares is a door, whatever the table says.

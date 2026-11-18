@@ -15,6 +15,7 @@ import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND } from "../src/lenses/laws_layout.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
 import { sections as listSections } from "../src/lenses/laws_card.js";
+import { LAW_PORT_FORMAT, PORT_PHRASES, phraseOf, portLines, portTable } from "../src/lenses/law_port.js";
 
 const raw = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 const overlay = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "overlay.json"), "utf8"));
@@ -27,6 +28,10 @@ const library = new Library(raw);
 const byId = new Map(library.pieces.map((piece) => [piece.id, piece]));
 const frameById = new Map(library.frames.map((frame) => [frame.id, frame]));
 const tool = (args) => spawnSync("python3", ["-I", path.join(ROOT, "tools", "extract_laws.py"), ...args], { encoding: "utf8" });
+// The law-port inventory's table (data/laws/law_port.json), and the tool that makes it from the inventory.
+const PORT_PATH = path.join(ROOT, "data", "laws", "law_port.json");
+const port = JSON.parse(readFileSync(PORT_PATH, "utf8"));
+const portTool = (args) => spawnSync("python3", ["-I", path.join(ROOT, "tools", "extract_law_port.py"), ...args], { encoding: "utf8" });
 
 // ------------------------------------------------------------ the list, held to the manifest
 
@@ -253,6 +258,151 @@ test("what the manifest has not exercised yet is said as the format page says it
     assert.ok(!today.sources.some((source) => source.path.startsWith("docs/library/")), piece.id);
     assert.equal(today.status, null);
   }
+});
+
+// ------------------------------------------------------------ the law-port inventory's table
+
+// The inventory D211's first step made (cells.law_port_inventory@1), a working record of the engine's lead, read where it is
+// kept, never written: the table is held to it where it is on this machine (LAW_PORT_INVENTORY names another copy).
+const PORT_INVENTORY = process.env.LAW_PORT_INVENTORY || "/mnt/workspaces/Cells/law-port-20261117/inventory.json";
+// An inventory shaped as the tool reads one, from the table's own rows: the facts the tool copies, and words that satisfy it.
+const inventoryOf = (table, change = (rows) => rows) => ({
+  ...table.inventory,
+  counts: { owner_mark: { ...table.counts.marks } },
+  rows: change(table.rows.map((row) => ({
+    law_id: row.law,
+    atlas_units: row.units.join(", "),
+    owner: { mark: row.mark, owner: row.mark === "fold into an owner's planned law" ? "Cardiac lane (a fixture)" : "A fixture's owner" },
+    tests: { test_class: row.test_class },
+  }))),
+});
+
+test("the law-port table is the tool's reading of the inventory: four facts a row, the inventory's kind, made and head, and its counts", (t) => {
+  assert.equal(port.format, LAW_PORT_FORMAT);
+  assert.deepEqual(Object.keys(port), ["format", "note", "inventory", "counts", "rows"]);
+  assert.deepEqual(Object.keys(port.inventory), ["kind", "made", "head"]);
+  assert.match(port.inventory.kind, /^cells\.law_port_inventory@1( \(.*\))?$/);
+  assert.match(port.inventory.head, /^[0-9a-f]{40}$/);
+  assert.ok(!MACHINE.test(JSON.stringify(port)), "a machine path leaked into the table");
+  assert.ok(contract.includes(LAW_PORT_FORMAT), "the contract names the table's format");
+  // The counts the tool holds it to: 47 laws to port as is, 5 to fold into the cardiac lane's, 2 that are not a port; 38 units.
+  assert.deepEqual(port.counts.marks, { "port as is": 47, "fold into an owner's planned law": 5, "not a port": 2 });
+  assert.equal(port.counts.rows, 54);
+  assert.equal(port.rows.length, 54);
+  assert.equal(new Set(port.rows.flatMap((row) => row.units)).size, 38);
+  assert.equal(port.counts.units, 38);
+  for (const row of port.rows) {
+    assert.deepEqual(Object.keys(row), ["law", "has_id", "units", "mark", "test_class"], row.law);
+    assert.equal(row.has_id, /^[A-Za-z_][A-Za-z0-9_.]*@[0-9]+$/.test(row.law), row.law);
+    if (row.mark === "port as is") assert.ok(["a", "b"].includes(row.test_class), `${row.law}: "tested" needs a passing test`);
+  }
+  // None of them is declared by the manifest the wall reads.
+  const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
+  for (const row of port.rows) assert.ok(!declaredIds.has(namespaced(row.law)), `${row.law} is declared by an active model now: the table's words for it no longer hold`);
+  // The tool reads only what it copies: rows of the inventory's shape give the table back, byte for byte.
+  mkdirSync(path.join(ROOT, "out"), { recursive: true });
+  const scratch = mkdtempSync(path.join(ROOT, "out", "law-port-"));
+  try {
+    const file = path.join(scratch, "inventory.json");
+    writeFileSync(file, JSON.stringify(inventoryOf(port)));
+    const run = portTool(["--inventory", file, "--out", "-"]);
+    assert.equal(run.status, 0, run.stderr);
+    assert.equal(run.stdout, readFileSync(PORT_PATH, "utf8"));
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+  // The inventory itself, where it is kept on this machine: the same bytes, while it is the one the table names.
+  if (!existsSync(PORT_INVENTORY)) return t.diagnostic("the law-port inventory is not on this machine (set LAW_PORT_INVENTORY): the table is held to its own rows only");
+  const inventory = JSON.parse(readFileSync(PORT_INVENTORY, "utf8"));
+  if (["kind", "made", "head"].some((key) => inventory[key] !== port.inventory[key])) return t.diagnostic(`the inventory is another than the table names (${inventory.made} at ${String(inventory.head).slice(0, 8)}): make the table again`);
+  const run = portTool(["--inventory", PORT_INVENTORY, "--out", "-"]);
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(run.stdout, readFileSync(PORT_PATH, "utf8"), "making the table again from the inventory gives the committed bytes");
+});
+
+test("the tool refuses an inventory of another kind, and one whose rows do not hold what the page says of them", () => {
+  mkdirSync(path.join(ROOT, "out"), { recursive: true });
+  const scratch = mkdtempSync(path.join(ROOT, "out", "law-port-refused-"));
+  const first = (mark) => (rows) => rows.findIndex((row) => row.owner.mark === mark);
+  const changing = (mark, edit) => (rows) => rows.map((row, index) => (index === first(mark)(rows) ? edit(JSON.parse(JSON.stringify(row))) : row));
+  try {
+    for (const [inventory, says] of [
+      [{ ...inventoryOf(port), kind: "cells.law_port_inventory@2" }, /not a cells\.law_port_inventory@1 inventory/],
+      [{ ...inventoryOf(port), kind: "cells.protein_catalogue.law_inventory@2" }, /not a cells\.law_port_inventory@1 inventory/],
+      [{ ...inventoryOf(port), kind: undefined }, /not a cells\.law_port_inventory@1 inventory/],
+      [inventoryOf(port, changing("port as is", (row) => ({ ...row, owner: { ...row.owner, mark: "not a port" } }))), /the marks are/],
+      [inventoryOf(port, changing("port as is", (row) => ({ ...row, owner: { ...row.owner, mark: "port later" } }))), /a mark the page has no words for/],
+      [inventoryOf(port, changing("port as is", (row) => ({ ...row, atlas_units: `${row.atlas_units}, U99` }))), /the rows name 39 units, not 38/],
+      [inventoryOf(port, changing("port as is", (row) => ({ ...row, tests: { test_class: "c" } }))), /not a passing one/],
+      [inventoryOf(port, changing("port as is", (row) => ({ ...row, tests: { test_class: "d" } }))), /not a passing one/],
+      [inventoryOf(port, changing("fold into an owner's planned law", (row) => ({ ...row, owner: { ...row.owner, owner: "D193 (a fixture)" } }))), /not into the cardiac lane's laws/],
+      [inventoryOf(port, (rows) => [...rows, rows[0]]), /listed twice/],
+      [{ ...inventoryOf(port), counts: { owner_mark: { "port as is": 46, "fold into an owner's planned law": 6, "not a port": 2 } } }, /the inventory's own counts of its marks/],
+    ]) {
+      const file = path.join(scratch, "inventory.json");
+      writeFileSync(file, JSON.stringify(inventory));
+      const run = portTool(["--inventory", file, "--out", path.join(scratch, "law_port.json")]);
+      assert.equal(run.status, 2, String(says));
+      assert.match(run.stderr, says);
+      assert.ok(!existsSync(path.join(scratch, "law_port.json")), "nothing is written");
+    }
+    // The kind with no words in brackets is the same kind.
+    writeFileSync(path.join(scratch, "inventory.json"), JSON.stringify({ ...inventoryOf(port), kind: "cells.law_port_inventory@1" }));
+    assert.equal(portTool(["--inventory", path.join(scratch, "inventory.json"), "--out", "-"]).status, 0);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("each mark's words are the lead's, letter for letter, in one place, and every row of the table has its own", () => {
+  // The words given to the viewer on 17 November 2026, for this merge (D211).
+  assert.deepEqual(PORT_PHRASES, {
+    "port as is": "Listed in Cells' law inventory, implemented in older code and tested; not yet declared by an active model. Porting is planned (D211).",
+    "fold into an owner's planned law": "Listed in the law inventory; to be rebuilt as the cardiac lane's laws (D211).",
+    "not a port": {
+      "mitochondrial_passive_continuous_si@1": "Covered by the mitochondria design (D193)",
+      "junction_flux() of emt_mirna_pair@1 (no ID)": "A feature request (FR-16)",
+    },
+  });
+  assert.deepEqual(Object.keys(PORT_PHRASES), Object.keys(port.counts.marks), "the marks in the table's order");
+  for (const row of port.rows) {
+    const phrase = phraseOf(row);
+    assert.ok(phrase, `${row.law}: no words for its mark`);
+    assert.equal(phrase, typeof PORT_PHRASES[row.mark] === "string" ? PORT_PHRASES[row.mark] : PORT_PHRASES[row.mark][row.law], row.law);
+  }
+  // A law that is not a port has words of its own only where it is a row of that mark: none is kept for a row that is gone.
+  assert.deepEqual(Object.keys(PORT_PHRASES["not a port"]).sort(), port.rows.filter((row) => row.mark === "not a port").map((row) => row.law).sort());
+  // The words are written only there: no other source of the page holds them.
+  const sources = ["laws_card.js", "proteins.js", "protein_shelves.js", "machines_card.js"].map((name) => readFileSync(path.join(ROOT, "src", "lenses", name), "utf8")).join("\n");
+  for (const phrase of [PORT_PHRASES["port as is"], PORT_PHRASES["fold into an owner's planned law"], ...Object.values(PORT_PHRASES["not a port"])]) assert.ok(!sources.includes(phrase), phrase);
+});
+
+test("a unit's laws of several marks say each, in the marks' order, and a law with no row, or a row with no words, keeps the earlier words", () => {
+  const rows = [
+    { law: "a_law@1", has_id: true, units: ["U98"], mark: "port as is", test_class: "a" },
+    { law: "b_law@1", has_id: true, units: ["U98"], mark: "fold into an owner's planned law", test_class: "a" },
+    { law: "c_law@1", has_id: true, units: ["U98"], mark: "port as is", test_class: "b" },
+    { law: "junction_flux() of emt_mirna_pair@1 (no ID)", has_id: false, units: ["U98"], mark: "not a port", test_class: "b" },
+    { law: "e_law@1", has_id: true, units: ["U98"], mark: "not a port", test_class: "b" },
+    { law: "f_law@1", has_id: true, units: ["U97"], mark: "port as is", test_class: "a" },
+  ];
+  const table = { format: LAW_PORT_FORMAT, rows };
+  const laws = ["b_law@1", "a_law@1", "d_law@1", "junction_flux() in a profile of a model (no constant)", "membrane_flux() in a profile of a model (no constant)", "c_law@1", "e_law@1", "f_law@1"];
+  const { lines, uncovered } = portLines(table, "U98", laws, laws);
+  assert.deepEqual(lines.map((line) => line.label), [
+    `a_law@1, c_law@1: ${PORT_PHRASES["port as is"]}`,
+    `b_law@1: ${PORT_PHRASES["fold into an owner's planned law"]}`,
+    `junction_flux() in a profile of a model (no constant): ${PORT_PHRASES["not a port"]["junction_flux() of emt_mirna_pair@1 (no ID)"]}`,
+  ]);
+  // No row (d_law@1); words of another function (membrane_flux()); a row with no words (e_law@1); a row of another unit (f_law@1).
+  assert.deepEqual(uncovered, ["d_law@1", "membrane_flux() in a profile of a model (no constant)", "e_law@1", "f_law@1"]);
+  // The row with no ID matches nothing where the unit has two laws with no ID that begin with its word.
+  const two = ["junction_flux() in one profile (no constant)", "junction_flux() in another (no constant)"];
+  assert.deepEqual(portLines(table, "U98", two, two).uncovered, two);
+  // A table of another format, or none, says nothing new.
+  assert.equal(portTable({ law_port: { ...table, format: "cells.visualizer.law_port@2" } }), null);
+  assert.equal(portTable({}), null);
+  assert.deepEqual(portLines(null, "U98", laws, laws), { lines: [], uncovered: laws });
 });
 
 // ------------------------------------------------------------ the view, without a browser
@@ -783,7 +933,7 @@ test("the Library refuses a list that breaks its contract", () => {
 test("on the map's page: the doors into the library open a declared piece, or say plainly that the engine's declarations do not list it", async () => {
   const { doorsFor, describe, drawnIn, unitLaws } = await import("../src/lenses/laws_card.js");
   const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
-  const withLaws = { ...scene, laws: raw };
+  const withLaws = { ...scene, laws: raw, law_port: port };
   // An Engine view box that holds the files of declared pieces opens the library on them.
   const inBox = (id) => library.pieces.filter((piece) => piece.box?.id === id);
   for (const id of new Set(library.pieces.map((piece) => piece.box?.id).filter(Boolean))) {
@@ -798,25 +948,58 @@ test("on the map's page: the doors into the library open a declared piece, or sa
     const doors = doorsFor({ id: `op.${piece.id}` }, withLaws);
     assert.deepEqual(doors, [{ label: `Open ${piece.id} on the Laws library's wall`, lens: "laws", value: `laws:${piece.id}` }], piece.id);
   }
-  // A unit of the Protein atlas: a door onto each of its laws that is declared; words, and no door, for each that is not.
+  // A unit of the Protein atlas: a door onto each of its laws that is declared; words, and no door, for each that is not:
+  // a line for each mark the law-port inventory gives them, the laws of one mark gathered, and one line for the laws it has
+  // no row for, in the words the panel gave them before. The rows are found here by their own rule, apart from the source's:
+  // a law ID as written, on a unit the row names; the row with no ID, on a unit it names, for that unit's one law with no ID.
   const units = scene.entities.filter((entity) => entity.kind === "unit");
   assert.equal(units.length, 48);
-  const opening = [];
+  const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
+  const isId = (law) => /^[A-Za-z_][A-Za-z0-9_.]*@[0-9]+$/.test(law);
+  const opening = [], saying = new Set(), said = [], uncovered = [];
   for (const unit of units) {
+    const code = unit.id.replace(/^unit\./, "");
     const laws = unitLaws(unit);
     const doors = doorsFor(unit, withLaws);
     const declared = laws.filter((law) => library.piece(law)?.where === "declared"), undeclared = laws.filter((law) => !declared.includes(law));
     assert.deepEqual(doors.filter((door) => door.lens).map((door) => door.value), declared.map((law) => `laws:${library.piece(law).id}`), unit.id);
     const words = doors.filter((door) => !door.lens);
     assert.ok(words.every((door) => door.says === true), `${unit.id}: words in a door's place say so, so that the panel never takes another view's own door for words`);
-    assert.equal(words.length, undeclared.length ? 1 : 0, `${unit.id}: one line for the laws that are not declared`);
-    if (undeclared.length === 1) assert.equal(words[0].label, `No active model declares this unit's law ${undeclared[0]}. The engine's declarations do not list it, and the Laws library does not show it.`, unit.id);
-    if (undeclared.length > 1) assert.equal(words[0].label, `No active model declares these laws of this unit: ${undeclared.join(", ")}. The engine's declarations do not list them, and the Laws library does not show them.`, unit.id);
+    const rowOf = (law) => port.rows.find((row) => row.units.includes(code) && (row.has_id ? row.law === law : !isId(law) && laws.filter((item) => !isId(item)).length === 1));
+    const marks = Object.keys(PORT_PHRASES);
+    const groups = [];
+    for (const law of undeclared) {
+      const row = rowOf(law);
+      if (!row) continue;
+      const phrase = phraseOf(row);
+      assert.ok(phrase, `${unit.id}: ${row.law} has words for its mark`);
+      const group = groups.find((item) => item.phrase === phrase) || groups[groups.push({ mark: row.mark, phrase, laws: [] }) - 1];
+      group.laws.push(law);
+      said.push([code, row.law]);
+    }
+    groups.sort((a, b) => marks.indexOf(a.mark) - marks.indexOf(b.mark));
+    const none = undeclared.filter((law) => !rowOf(law));
+    const expected = groups.map((group) => `${group.laws.join(", ")}: ${group.phrase}`);
+    if (none.length === 1) expected.push(`No active model declares this unit's law ${none[0]}. The engine's declarations do not list it, and the Laws library does not show it.`);
+    if (none.length > 1) expected.push(`No active model declares these laws of this unit: ${none.join(", ")}. The engine's declarations do not list them, and the Laws library does not show them.`);
+    assert.deepEqual(words.map((door) => door.label), expected, unit.id);
+    // No law no active model declares is said to be declared: the lines name only such laws (above), none opens a door, and
+    // each says "declared" only to deny it.
+    for (const law of undeclared) assert.ok(!declaredIds.has(namespaced(law)), `${unit.id}: ${law}`);
+    for (const door of words) assert.ok(!/declar/i.test(door.label.replace(/not yet declared by an active model|No active model declares|The engine's declarations do not list/g, "")), `${unit.id}: ${door.label}`);
+    if (groups.length) saying.add(code);
+    uncovered.push(...none.map((law) => [code, law]));
     if (doors.some((door) => door.lens)) opening.push(unit.label);
   }
-  // As many units open a piece as name a law the manifest declares (10 of the 48 at 7538b0cd): counted from the manifest, not fixed here.
-  const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
+  // As many units open a piece as name a law the manifest declares (10 of the 48 at 79d23cd5): counted from the manifest, not fixed here.
   assert.equal(opening.length, units.filter((unit) => unitLaws(unit).some((law) => declaredIds.has(namespaced(law)))).length, opening.join("; "));
+  // Every row of the table is said on each unit it names, and the units that say a mark's words are the table's units.
+  assert.deepEqual(said.map(([code, law]) => `${code} ${law}`).sort(), port.rows.flatMap((row) => row.units.map((code) => `${code} ${row.law}`)).sort());
+  assert.deepEqual([...saying].sort(), [...new Set(port.rows.flatMap((row) => row.units))].sort());
+  assert.equal(saying.size, port.counts.units);
+  // The laws with no row keep the earlier words. The inventory took every law of the units that open no declared piece, so
+  // each law it has no row for is on a unit that opens one.
+  for (const [code, law] of uncovered) assert.ok(opening.includes(units.find((unit) => unit.id === `unit.${code}`).label), `${code}: ${law}`);
   // Each declared piece links back to its box where the page draws it, and an operator to its own part.
   const drawn = drawnIn(scene);
   for (const piece of library.pieces.filter((item) => item.where === "declared")) {
@@ -850,6 +1033,7 @@ test("the page carries the list in its scene, and the viewer offers the view wit
   const page = await buildPage();
   const scene = JSON.parse(/<script type="application\/json">(.*?)<\/script>/s.exec(page)[1]);
   assert.deepEqual(scene.laws, raw, "the list, whole");
+  assert.deepEqual(scene.law_port, port, "the law-port inventory's table, whole");
   const viewer = readFileSync(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
   const entry = viewer.split("\n").find((line) => line.includes('id: "laws"'));
   // Its tab's titles are stated in that line and nowhere else: this test holds none of its own.

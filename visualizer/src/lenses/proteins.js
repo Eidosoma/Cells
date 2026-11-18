@@ -1,4 +1,4 @@
-// The protein atlas lens: the units Cells has laws for, set in the membranes
+// The protein atlas lens: the units of Cells' law inventory, set in the membranes
 // where their laws act. One stretch of plasma membrane holds the channels, pumps and
 // transporters; a second membrane above one corner is the neighbouring cell, for the
 // junction channels; pieces of ER and mitochondrial membrane and the protein cage sit
@@ -15,9 +15,9 @@
 // and puts a flat ring beside each unit where that species differs. The units, their forms
 // and the engine's laws are the same in every atlas.
 //
-// The lens shows one of two things. "units" is that board: the units Cells has laws for.
+// The lens shows one of two things. "units" is that board: the units of Cells' law inventory.
 // "own" is the species' own proteins on shelves (schema/SPECIES_PROTEINS.md), whether or not
-// Cells has a law for them: protein_shelves.js reads them and shelves_view.js draws them.
+// they are listed with a unit of the inventory: protein_shelves.js reads them and shelves_view.js draws them.
 // Their file is published beside the page and fetched when the species is first shown.
 
 import * as THREE from "../three.js";
@@ -76,7 +76,7 @@ export function shelvesOf(proteins, id) {
 }
 
 /**
- * Which of the two the atlas opens on for a species: the units Cells has laws for, or the
+ * Which of the two the atlas opens on for a species: the units of Cells' law inventory, or the
  * species' own proteins. A species in which the atlas found almost none of those units,
  * or which has no side of the atlas at all, says most with its own proteins.
  */
@@ -216,7 +216,7 @@ export function speciesWords(proteins, species) {
       stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], ...(kept ? [[counts.candidates, "of them candidates for a unit"]] : [])],
       text: species.plain,
       check:
-        `The ${counts.units} units and their laws are the engine's, the same for every species. Listed here are the ${name} gene products that would make each unit, not anything the engine models.` +
+        `The ${counts.units} units of Cells' law inventory and their laws are the same for every species. Listed here are the ${name} gene products that would make each unit, not anything the engine models.` +
         (said ? ` ${said}` : "") +
         // Where the species has almost none of these units, the card points at the proteins it does have.
         (quiet && more ? ` Most of these units were not found in it. The ${more} of its own proteins that bear on the picture are listed below.` : ""),
@@ -257,7 +257,7 @@ export class ProteinLens {
     this.environment = makeEnvironment(stage.renderer);
     // The species' own proteins: which of the two is shown, what the visitor asked for, and
     // each species' shelves once its file is in.
-    this.mode = "units"; // "units": the units Cells has laws for; "own": the species' own proteins
+    this.mode = "units"; // "units": the units of Cells' law inventory; "own": the species' own proteins
     this.wanted = null; // the one of the two the visitor asked for, kept from species to species
     this.own = new Map(); // species id -> { status: "loading" | "ready" | "failed", shelves, views, error, promise }
     this.mounted = null; // the shelves that are drawn, in place of the board of units; null while the board is
@@ -534,7 +534,7 @@ export class ProteinLens {
   }
 
   /**
-   * Show the units Cells has laws for ("units") or the species' own proteins ("own").
+   * Show the units of Cells' law inventory ("units") or the species' own proteins ("own").
    * The own proteins are shown once their file is in; until then, and if it cannot be read,
    * the units are. Returns a promise that settles when the lens shows what it will.
    */
@@ -622,7 +622,7 @@ export class ProteinLens {
     const small = shelves.kind === "proteins" ? shelves.filterable() : [];
     const ordered = small.filter((mark) => ORDERED_MARKS.has(mark.id));
     for (const mark of ordered) out.push([`mark:${mark.id}`, mark.measured ? `${mark.label}, measured` : mark.label]);
-    out.push(["law", "Cells' laws"]);
+    out.push(["law", "Cells' law inventory"]);
     // The other marks of a catalogue of one marker each (what its "Show by" offered): a protein with a value is coloured.
     for (const mark of small.filter((item) => !ORDERED_MARKS.has(item.id))) out.push([`mark:${mark.id}`, mark.label]);
     return out;
@@ -679,7 +679,7 @@ export class ProteinLens {
         return { title: mark.measured ? `${mark.label}, measured` : mark.label, items, colour, note: ordered ? null : { text: "A protein that carries a value of this mark takes its colour; the others stay grey." } };
       }
     }
-    return { title: sideTitle, items: sideItems(), colour, note: by === "law" ? { swatch: "map-assigned", text: "One hue for a protein or family that makes a unit Cells has a law for; every other is grey." } : null };
+    return { title: sideTitle, items: sideItems(), colour, note: by === "law" ? { swatch: "map-assigned", text: "One hue for a protein or family that makes a unit of Cells' law inventory; every other is grey." } : null };
   }
 
   // ------------------------------------------------------------ the trail, Escape, the search and the map
@@ -895,13 +895,13 @@ export class ProteinLens {
     const label = (this.list.find((item) => item.id === this.page) || atlasOf(this.atlas, this.page))?.label || "This species";
     if (!summary) {
       // Said only in a scene that has such proteins for some species: an older scene knows none.
-      return { modes: null, notice: this.atlas.shelves?.length ? `${label}'s own catalogue of proteins is not made yet: the atlas shows the units Cells has laws for.` : null };
+      return { modes: null, notice: this.atlas.shelves?.length ? `${label}'s own catalogue of proteins is not made yet: the atlas shows the units of Cells' law inventory.` : null };
     }
     const state = this.own.get(this.page);
     const modes = { label: "What the atlas shows", options: [["units", `Cells' ${number(this.atlas.counts.units)} units`], ["own", `Its ${number(summary.proteins)} proteins`]], active: this.mode };
     let notice = null;
     if (!this.mounted && state?.status === "loading" && (this.wanted || firstMode(this.atlas, this.page)) === "own") notice = `Fetching ${label}'s own proteins…`;
-    else if (state?.status === "failed") notice = `${label}'s own proteins could not be loaded (${state.error}). The atlas shows the units Cells has laws for.`;
+    else if (state?.status === "failed") notice = `${label}'s own proteins could not be loaded (${state.error}). The atlas shows the units of Cells' law inventory.`;
     return { modes, notice };
   }
 
@@ -915,7 +915,7 @@ export class ProteinLens {
     const near = several && view.focused !== undefined ? shelves.byShelf.find((entry) => entry.id === view.focused) || null : null;
     const words = shelves.sideWords(near ? near.id : undefined);
     const total = shelves.total, basis = shelves.byBasis();
-    // What holds a protein listed with a unit Cells has a law for. With one shelf, its
+    // What holds a protein listed with a unit of Cells' law inventory. With one shelf, its
     // families (or its proteins). With several: the families that do on any shelf, the
     // gatherings of families of one and the groups of "no family" that do, and the markers
     // that are lit for them (Shelves.lawHolders).
@@ -929,13 +929,13 @@ export class ProteinLens {
     const some = (count, all) => (count === all ? (all === 1 ? "its one" : `all ${number(all)}`) : `${number(count)} of the ${number(all)}`);
     // The legend's first block names what colour carries (docs/ATLAS_LOOK.md, decided 16 November 2026), with the
     // choice at its head: the side of each protein's own membrane, how that side is known, a mark the species
-    // states (a small catalogue's "Show by" folded into it), or Cells' laws. A press on a value shows it alone.
+    // states (a small catalogue's "Show by" folded into it), or Cells' law inventory. A press on a value shows it alone.
     const legend = this.colourLegend(shelves, view, near, words, basis);
-    // The second: what holds a unit with a law (in families), or how the side is known (one marker each; not
+    // The second: what holds a unit of the law inventory (in families), or how the side is known (one marker each; not
     // while colour itself is that).
     const filter = families
       ? withUnit
-        ? { title: "Cells' laws", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a unit with a law", title: "Families that hold proteins listed with a unit of the law inventory: candidates for its unit, or parts that go with it. Cells has no law for any other.", count: lawMarkers }], active: view.units ? "units" : null }
+        ? { title: "Cells' law inventory", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a unit of the law inventory", title: "Families that hold proteins listed with a unit of the law inventory: candidates for its unit, or parts that go with it. No other is listed with a unit of the inventory.", count: lawMarkers }], active: view.units ? "units" : null }
         : null
       : view.colourBy === "basis"
         ? null
@@ -966,10 +966,10 @@ export class ProteinLens {
     const law = withUnit
       ? families
         ? several
-          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold proteins listed with units Cells has laws for. Cells has no law for any other protein here.`
-          : `${number(withUnit)} families hold proteins listed with units Cells has laws for: one that makes a unit carries its shape, one that only goes with it is drawn plain. Cells has no law for any other protein here.`
-        : `${number(withUnit)} of them are drawn as the unit Cells has a law for. Every other is a plain marker: Cells has no law for it.`
-      : "Cells has no law for any of these proteins: every one is a plain marker.";
+          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold proteins listed with units of Cells' law inventory. No other protein here is listed with one.`
+          : `${number(withUnit)} families hold proteins listed with units of Cells' law inventory: one that makes a unit carries its shape, one that only goes with it is drawn plain. No other protein here is listed with one.`
+        : `${number(withUnit)} of them are drawn as a unit of Cells' law inventory. Every other is a plain marker: it is listed with no unit of the inventory.`
+      : "None of these proteins is listed with a unit of Cells' law inventory: every one is a plain marker.";
     const sides =
       [
         basis.stated ? `${number(basis.stated)} stated by a curated entry or a paper` : "",
@@ -999,8 +999,8 @@ export class ProteinLens {
       caveat: view.status
         ? null
         : families
-        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`
-        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`,
+        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit of Cells' law inventory; a plain marker is listed with none." : "None of them is listed with a unit of Cells' law inventory."}`
+        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit of Cells' law inventory; a plain marker is listed with none." : "None of them is listed with a unit of Cells' law inventory."}`,
       status: view.status || null,
       stamp: `${shelves.label} proteins${data.made ? ` of ${day(data.made)}` : ""} · ${number(total)}`,
       legend,
@@ -1020,7 +1020,7 @@ export class ProteinLens {
           ? several
             ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.familiesInAll), "families in all"]]
             : [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.noFamily.count), "with no family"]]
-          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), several ? "in a membrane or beyond one" : "in or on the membrane"], [number(withUnit), "with a law in Cells"]],
+          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), several ? "in a membrane or beyond one" : "in or on the membrane"], [number(withUnit), "with a unit of the law inventory"]],
         open: opened ? { label: opened.label, count: `${number(opened.count)} ${opened.count === 1 ? "protein" : "proteins"}`, id: opened.key } : null,
         text: families
           ? several
@@ -1077,7 +1077,7 @@ export class ProteinLens {
       legend,
       filter,
       card: {
-        heading: "The units Cells has laws for",
+        heading: "The units of Cells' law inventory",
         species: choice,
         ...own,
         stats: [[counts.units, "functional units"], [counts.laws, "laws"], [counts.genes, "candidate genes"]],
@@ -1262,7 +1262,7 @@ export class ProteinLens {
   setTogether(evidence) {
     const view = this.mounted;
     if (view) {
-      // On the shelves: how a side is known, or (of families) those holding a unit with a law.
+      // On the shelves: how a side is known, or (of families) those holding a unit of the law inventory.
       view.units = evidence === "units";
       view.basis = BASES.includes(evidence) ? evidence : null;
     } else this.evidence = evidence || null;

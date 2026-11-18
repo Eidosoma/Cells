@@ -43,6 +43,6 @@ scripts/run_detached.sh viz-declarations-<revision> 3G --cpus 12-15,28-31 --oom-
 Then the file is copied here byte for byte. Nothing edits it by hand. A reader checks `kind`
 first and refuses another major.
 
-The file here was written on 17 November 2026 from main `a16b2571` (a clean checkout): 43
+The file here was written on 18 November 2026 from main `79d23cd5` (a clean checkout): 43
 pieces (17 laws, 5 kinds, 21 operators), 10 models and 127 legacy model IDs. The run's own
-log is kept in `/mnt/workspaces/Cells/visualizer-analysis/declarations-a16b2571/`.
+log is kept in `/mnt/workspaces/Cells/visualizer-analysis/declarations-79d23cd5/`.

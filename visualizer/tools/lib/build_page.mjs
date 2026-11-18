@@ -252,6 +252,8 @@ export async function bundle(entry, { three = THREE_CDN } = {}) {
 
 /** The Laws library's list (schema/LAWS_LIBRARY.md), carried in the scene as `laws`: the view is offered only with it. */
 export const DEFAULT_LAWS = path.join(ROOT, "data", "laws", "pieces.json");
+/** The law-port inventory's table (schema/LAWS_LIBRARY.md), carried in the scene as `law_port`: what a unit says of a law no active model declares. */
+export const DEFAULT_LAW_PORT = path.join(ROOT, "data", "laws", "law_port.json");
 /** The Machines catalogue (schema/MACHINE_CATALOGUE.md), carried in the scene as `catalogue`: the view is offered only with it. */
 export const DEFAULT_CATALOGUE = path.join(ROOT, "data", "catalogue", "catalogue.json");
 
@@ -273,10 +275,11 @@ export function publishedReplays(index, scene) {
   return { ...index, experiments: index.experiments.filter((item) => listed.has(item.id) || kept.has(item.id)), runs };
 }
 
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, cataloguePath = DEFAULT_CATALOGUE } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
+  if (lawPortPath && !data.law_port && (await modified(lawPortPath)) !== null) data.law_port = JSON.parse(await readFile(lawPortPath, "utf8"));
   if (cataloguePath && !data.catalogue && (await modified(cataloguePath)) !== null) data.catalogue = JSON.parse(await readFile(cataloguePath, "utf8"));
   const replays = published ? publishedReplays(await readReplays(runsDir), data) : await readReplays(runsDir);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux

@@ -12,7 +12,7 @@
 // at height 0, and moved to its place. Its name is always shown; the names of its districts
 // and of its sides only while it is the shelf in focus.
 // A protein that the atlas draws as a unit is drawn as that unit, small; every other protein
-// is a plain marker, for which Cells has no law. A large catalogue stands as families: one
+// is a plain marker, listed with no unit of Cells' law inventory. A large catalogue stands as families: one
 // round marker each, sized by its members. Pressing one opens it: a small set of shelves of
 // its own rises from it, round, with every member on it: in its piece of membrane or on it,
 // on the glass around it, or set apart beyond the rim.
@@ -235,7 +235,7 @@ export class ShelvesView {
     this.isolate = null; // a side
     this.basis = null; // how a side is known
     this.mark = null; // { name, value }, and `ids` where a door names some proteins of the set
-    this.units = false; // only what Cells has a law for
+    this.units = false; // only what makes a unit of the law inventory
     this.opened = null; // the family, part or gathering that is open
     this.wanted = null; // the one being fetched
     this.status = null; // what the view is doing, or why it could not
@@ -245,7 +245,7 @@ export class ShelvesView {
     this.colours = {};
     // What colour carries (docs/ATLAS_LOOK.md, decided 16 November 2026): the side of each protein's own membrane
     // ("side", the default), how that side is known ("basis"), a measured mark with ordered values ("mark", and
-    // `markName`), or Cells' laws ("law": one hue for what makes a unit Cells has a law for, as before).
+    // `markName`), or Cells' law inventory ("law": one hue for what makes a unit of that inventory, as before).
     this.colourBy = "side";
     this.markName = null;
     this.build();
@@ -267,7 +267,7 @@ export class ShelvesView {
   }
 
   /**
-   * Whether an item is drawn as making a unit Cells has a law for: it has a unit, and not only as going with the
+   * Whether an item is drawn as making a unit of the law inventory: it has a unit, and not only as going with the
    * machine. Such a one takes the units' tone and its unit's form; one that only goes with it is drawn plain, in grey.
    */
   makes(item) {
@@ -391,7 +391,7 @@ export class ShelvesView {
             set(unknown ? "puck-ghost" : "puck", G.puck, unknown ? ghost : solid).push(node);
             if (item.side === "outside") set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, membraneTop + 1.3, z), scale: [2.2, 2.6, 2.2] });
             if (entity && !many) {
-              // A family that holds a unit Cells has a law for carries that unit's form, small.
+              // A family that holds a unit of the law inventory carries that unit's form, small.
               const form = this.formFor(entity);
               const fit = Math.min(0.62, (place.radius * 0.92) / form.reach.radius);
               form.group.scale.setScalar(fit);
@@ -1079,7 +1079,7 @@ export class ShelvesView {
         const text = node.item.type === "l" ? plural(node.item.count, "family of one", "families of one") : node.item.label;
         node.label = labels.add({ id: node.item.key, text, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 20 + Math.log2(node.item.count + 1) + (held ? 6 : 0), kind: "part label-unit", lift: 6, swatch: held ? "map-assigned" : null });
       }
-      // Every family that holds a unit Cells has a law for is named too.
+      // Every family that holds a unit of the law inventory is named too.
       for (const node of this.nodes.values()) {
         if (node.label || !node.form) continue;
         node.label = labels.add({ id: node.item.key, text: node.item.label, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 30, kind: "part label-unit", lift: 6, swatch: "map-assigned" });
@@ -1149,7 +1149,7 @@ export class ShelvesView {
   }
 
   /**
-   * A marker's colour as colour is asked to carry (colourBy). Cells' laws: the units' tone for what makes a machine,
+   * A marker's colour as colour is asked to carry (colourBy). Cells' law inventory: the units' tone for what makes a machine,
    * grey for the rest, as the shelves were first drawn. The side of its membrane: the side's colour, for a protein
    * its own and for a family's line the side where most of its members sit (a gathering the same, told by its ring;
    * a neighbour in an open gathering a shade deeper). How the side is known, or a mark: a protein's own; a family's line states

@@ -280,7 +280,7 @@ class CellsViewer extends HTMLElement {
     else if (!["run", "record", "layers", "strength"].some((key) => query.get(key)) && !(wanted === "experiments" && query.get("select") && !query.get("select").startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
-    // The protein atlas: the units Cells has laws for ("units") or the species' own proteins ("own").
+    // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
     if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
@@ -707,7 +707,7 @@ class CellsViewer extends HTMLElement {
     const out = { ...chrome };
     if (chrome.view?.species) out.view = { ...chrome.view, species };
     if (chrome.card) out.card = { ...chrome.card, species };
-    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units Cells has laws for, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units of Cells' law inventory, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
     if (entry && this.state.lens === "machines") out.caveat = [`${entry.label} is a model system, not an organism: it has no machines of a species. The catalogue shows ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}'s.`, chrome.caveat].filter(Boolean).join(" ");
     return out;
   }
@@ -1306,7 +1306,7 @@ class CellsViewer extends HTMLElement {
       // A model system's card (src/lenses/entry_card.js) gives its word under the switch, as the Cell view's card does a species'.
       species?.model && !this.speciesInBar ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
       organism ? h("p", { class: "card-organism" }, organism) : null,
-      // The protein atlas: the units Cells has laws for, or the species' own proteins.
+      // The protein atlas: the units of Cells' law inventory, or the species' own proteins.
       modes
         ? h(
             "div",

@@ -372,10 +372,10 @@ class Atlas:
             facts.append(["Candidate assembly" if generic else "Assembly", stoichiometry])
         if unit["assembly"].get("sources"):
             facts.append(["Assembly from", "; ".join(unit["assembly"]["sources"])])
-        facts.append(["Engine laws", str(len(laws))])
+        facts.append(["Laws in the inventory", str(len(laws))])
 
         # The keys let the view put a species' gene products in the place of the inventory's.
-        sections = [{"key": "laws", "title": "Engine laws", "items": [self.law_item(law) for law in laws]}]
+        sections = [{"key": "laws", "title": "Laws in the inventory", "items": [self.law_item(law) for law in laws]}]
         if unit.get("products"):
             sections.append({"key": "products", "title": "Candidate products", "items": [self.product_item(product) for product in unit["products"]]})
         cited = [pdb for source in unit["assembly"].get("sources", []) for pdb in PDB.findall(source)]
