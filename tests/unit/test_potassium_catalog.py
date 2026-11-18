@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import potassium_catalog as potassium
-from cells.processes import potassium_channels as accepted
+from cells.laws.channels import potassium_catalog as potassium
+from cells.laws.channels import potassium_channels as accepted
 from validation.channels import potassium_catalog_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

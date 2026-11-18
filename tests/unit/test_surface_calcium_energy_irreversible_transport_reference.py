@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
+from cells.execution.schedule import control_values
 from cells.legacy.core import surface_calcium_energy_irreversible_transport_spec as schema
 from cells.legacy.models import surface_calcium_energy_irreversible_transport as model
 from cells.numerics.fixed_step import rk4_step

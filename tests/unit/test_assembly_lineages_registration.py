@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages import (
     CONTINUATION,
     EXCHANGE_INTERFACE,

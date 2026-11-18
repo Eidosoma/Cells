@@ -1,4 +1,4 @@
-"""resolved_pump_replacement@1 in vectorized worlds (core/vector_windows.py).
+"""resolved_pump_replacement@1 in vectorized worlds (execution/vector_windows.py).
 
 Two worlds with different replacement schedules and templates, advanced as one
 vmapped batch with device checks, reproduce each world's own windowed run to
@@ -10,11 +10,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy, run_windowed
 from validation.tissue import cell_replacement_fixtures as fx
 
 DT = 1e-3

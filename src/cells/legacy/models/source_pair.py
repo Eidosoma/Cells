@@ -12,14 +12,14 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
-from cells.core.state import EMTState, SourcePairLayout, SourcePairState
-from cells.coupling.passive import scatter_exchange
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.execution.state import EMTState, SourcePairLayout, SourcePairState
+from cells.laws.junctions.passive import scatter_exchange
 from cells.legacy.models import emt_mirna
 from cells.legacy.processes import source_electrochemistry as laws
-from cells.observers import hermite_bounds, sample_hermite_history
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 STATE_TYPE, LAYOUT_TYPE = SourcePairState, SourcePairLayout
 OBSERVER_ID = "emt_mirna_pair_pure_readouts@1"

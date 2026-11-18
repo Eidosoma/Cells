@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass, replace
 
-from cells.core.specs import ConfigError, _fields
+from cells.definitions.specs import ConfigError, _fields
 from cells.legacy.core import surface_calcium_energy_atp_transport_spec as base
 from cells.legacy.core.surface_energy_spec import _project
 from cells.legacy.core.surface_excision_spec import MAX_CUTS
@@ -127,7 +127,7 @@ def parse(data):
             epoch_start_time=point.time,
         ),
     )
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     EventGrid(spec).exact_index(point.time)
     return spec

@@ -20,7 +20,7 @@ import jaxlib
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from tests.betse_physiology.integration.test_physiology_modulated_schedule import inputs as template
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import active_nodes
 from tests.betse_physiology.integration.test_physiology_protein_loop import budget

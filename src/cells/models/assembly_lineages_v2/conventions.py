@@ -33,7 +33,7 @@ readers of one world (the engine and an independent reference) cannot differ sil
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 
 TOKENS = MappingProxyType(
     {

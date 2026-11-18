@@ -21,7 +21,7 @@ import dataclasses
 
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages import GARD_SINGLE_EVENT, factors, gard
 from cells.models.assembly_lineages import runner as v1_runner
 from cells.models.assembly_lineages.spec import LineageModel
@@ -42,10 +42,10 @@ from cells.models.assembly_lineages_v2 import (
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
 from cells.models.assembly_lineages_v2.spec import AssemblyModel
-from cells.models.registry import get_model
 from cells.registry import declarations
 from cells.registry import laws as law_registry
 from cells.registry.model_table import MODELS
+from cells.registry.models import get_model
 from tests import assembly_lineage_fixtures as v1_fixtures
 from tests.assembly_lineage_v2_fixtures import definition, world
 

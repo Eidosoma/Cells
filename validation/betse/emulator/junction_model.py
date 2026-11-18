@@ -10,9 +10,9 @@ from typing import NamedTuple
 import jax
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.processes import junction_gate
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.junctions import junction_gate
 from validation.betse.emulator import junction as kernel
 from validation.betse.emulator import spatial as passive
 from validation.betse.emulator import spatial_model as base

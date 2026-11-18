@@ -15,13 +15,13 @@ import jax
 import numpy as np
 
 from cells.assembly.engine import device_for
-from cells.core.schedule import control_values
 from cells.ensemble import cli
+from cells.execution.schedule import control_values
 from cells.legacy.assembly_cell.io import flatten
 from cells.legacy.assembly_cluster import engine, kernel
 from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec
 from cells.legacy.models import spatial_junction
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 if __package__:
     from validation.assembly.cluster_partition_replay import differences

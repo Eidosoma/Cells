@@ -20,7 +20,7 @@ Parts (the protocol's judged_parts):
 * C10_rk4: first-order loading under RK4 at 0.1 ms, every row;
 * C11_<law>_ars, C11_<law>_rk4: each loading and release law from a 1e-15 mM trace, every row;
 * C12_restart: two_way with a rate change at 0.5 s, straight and resumed through the engine's
-  checkpoint at 0.25, 0.5 and 0.75 s, in process and through a snapshot (cells.io), with K4's
+  checkpoint at 0.25, 0.5 and 0.75 s, in process and through a snapshot (cells.records.io), with K4's
   restart whose change is moved one step; C12_batch: four worlds of different compartment volumes
   and rates in one vector batch, against each scalar run and against the reversed batch;
 * K1_one_way: C4 at 1 ms without its import; K2_no_clearance: C6 at 1 ms without its clearance;
@@ -222,9 +222,9 @@ def every_step(raw):
 
 def admit(raw):
     """(spec, None) when the definition is admitted (parsed, and its clock's step checks pass:
-    cells.core.runner.timeline), else (None, the refusal message)."""
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, parse_spec
+    cells.execution.runner.timeline), else (None, the refusal message)."""
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.runner import timeline
 
     try:
         spec = parse_spec(raw)
@@ -249,8 +249,8 @@ def _ratio(balance, bound):
 def records_of(result, raw):
     """Every observation time's series (module docstring) from a runner result; `raw` names the
     exchange routes and turnover's nodes in declared order."""
-    from cells.models.registry import get_model
     from cells.models.surface_pump import ENERGY_RTOL
+    from cells.registry.models import get_model
 
     spec = result.spec
     model = get_model(spec.model)
@@ -322,8 +322,8 @@ def records_of(result, raw):
 
 def engine_part(raw, context, *, label=None):
     """One run of one definition: its admission, run and records (records_of)."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     raw = quick(raw) if context["quick"] else raw
     started = time.perf_counter()
@@ -404,10 +404,10 @@ def c10_rk4(name, context):
 
 def _restart(raw, at, workdir, *, through_snapshot):
     """Run to `at`, then resume to the end: in process from the checkpoint, or through a written
-    snapshot (cells.io.write_snapshot and load_snapshot)."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    snapshot (cells.records.io.write_snapshot and load_snapshot)."""
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_snapshot
 
     spec = parse_spec(raw)
     head = copy.deepcopy(raw)
@@ -432,8 +432,8 @@ def _restart(raw, at, workdir, *, through_snapshot):
 def c12_restart(name, context):
     """C12: straight, then resumed at, before and after the rate change, in process and through a
     snapshot; K4: the change moved one step later, resumed, against the straight run."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()
@@ -464,11 +464,11 @@ def c12_restart(name, context):
 def c12_batch(name, context):
     """C12: four worlds of different compartment volumes and rates in one vector batch, against
     each world's scalar run (within 1e-12 relative) and against the reversed batch (bitwise)."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.runner import run
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     del name
     started = time.perf_counter()
@@ -552,11 +552,11 @@ def k2_no_clearance(name, context):
 def c9_silence(name, context):
     """C9: S1 to S3 on every row of W+ in every program family, with what shows the check is
     live (compartment_fixtures.silence); S4 (W+ against the world without the node) reported."""
-    from cells.core.batch import BatchSpec, WorldSpec, run_batch
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+    from cells.execution.runner import run
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     del name
     started = time.perf_counter()
@@ -610,9 +610,9 @@ def _merge_silence(found):
 
 def _silence_restart(spec, context):
     """W+ run to half its horizon, written as a snapshot, loaded and resumed to its end."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_snapshot
 
     end = spec.experiment.end_time
     at = round(end / 2 / 1e-3) * 1e-3
@@ -753,8 +753,8 @@ def _replaced(events):
 
 
 def c1_refusals(name, context):
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()

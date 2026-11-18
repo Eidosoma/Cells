@@ -28,9 +28,9 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import logmean, scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 
 EULER_ID = "imex_euler_face_electromigration@1"
 ARS222_ID = "imex_ars222_face_electromigration@1"

@@ -6,9 +6,9 @@ import sys
 
 import numpy as np
 
-from cells.core.specs import parse_spec
-from cells.io import load_snapshot
+from cells.definitions.specs import parse_spec
 from cells.legacy.models import environment_barrier_interventions as model
+from cells.records.io import load_snapshot
 from tests.environment_barrier_fixtures import public_definition
 from tests.unit.test_environment_barrier_interventions import evidence
 

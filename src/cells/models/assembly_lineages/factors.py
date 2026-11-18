@@ -38,7 +38,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Callable, ClassVar
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import MODEL_ID, RATE_FACTOR_INTERFACE
 from cells.modules import Law
 

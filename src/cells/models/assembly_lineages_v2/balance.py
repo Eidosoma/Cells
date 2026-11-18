@@ -25,7 +25,7 @@ import functools
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
     MASS_ACTION,
@@ -229,7 +229,7 @@ PROBES = tuple(
 def verdict():
     """The check's verdict on its generic probe worlds (PROBES), as a dict; refuses (ConfigError)
     if any pair fails the identity. Cached: it is a property of the family's code."""
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     rng = np.random.default_rng(PROBE_SEED)
     worst, pairs = 0.0, 0

@@ -178,9 +178,9 @@ def test_inactive_channels_keep_their_gates_and_move_nothing(network_case):
 
 
 def test_resolved_definition_adds_one_population_per_patch_and_channel(network_case):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models import surface_pump_v3
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     world = net.network_world(network_case, blind=True)
     backend = net.NETWORK_RESOLVED
@@ -366,9 +366,9 @@ def test_heredity_step_matches_betse_order_by_hand(heredity_case, phase, leak_on
 
 
 def test_resolved_definition_maps_heredity_laws_ions_and_gates(heredity_case):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models import surface_pump_v3
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     world = net.network_world(heredity_case, blind=True)
     start = adapter.phase_start(world, "init")

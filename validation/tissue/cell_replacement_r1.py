@@ -45,7 +45,7 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from cells.models import cell_replacement as model  # noqa: E402
 from validation.stationary import heredity_conversion as hc  # noqa: E402
 from validation.stationary import heredity_prescreen as hp  # noqa: E402
@@ -375,8 +375,8 @@ CRITERIA_R2 = dict(
 
 def checked_case(scale, rate, order):
     """R2: one R1 case through run_windowed with every host row check."""
-    from cells.core.errors import NumericalError
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     unit = hp.units()["theta_per_unit_scale"]
     case = ht.Sheet(*ht.DISCS[37])

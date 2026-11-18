@@ -76,7 +76,7 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from cells.models import cell_replacement as model  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import cell_replacement_fixtures as fx  # noqa: E402

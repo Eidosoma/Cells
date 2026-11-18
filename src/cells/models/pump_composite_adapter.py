@@ -39,15 +39,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import kind_registry
-from cells.core.specs import ConfigError
-from cells.core.surface_pump_v2_spec import Control
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_pump_v2_spec import Control
+from cells.laws.electrochemistry import R
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import R
+from cells.registry import kind_registry
 
 MODEL_ID = ionic.MODEL_ID
 STATE_AXES = ionic.STATE_AXES

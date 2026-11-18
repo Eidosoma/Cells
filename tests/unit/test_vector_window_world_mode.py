@@ -14,8 +14,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import WorldRefusal
-from cells.core.vector_windows import WorldCheckError, run_vector_windowed
+from cells.execution.batch import WorldRefusal
+from cells.execution.vector_windows import WorldCheckError, run_vector_windowed
 from cells.models import surface_pump
 from tests.unit.test_vector_windows import POLICY, cohort, corrupted_step, definition
 

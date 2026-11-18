@@ -42,7 +42,7 @@ def raw(world=1, refinement=1):
 
 
 def identity():
-    from cells.io import runtime_identity, source_hashes
+    from cells.records.io import runtime_identity, source_hashes
 
     current = dict(runtime=runtime_identity("cpu"), source_hashes=source_hashes())
     assert current == read(OUT / "public_identity.json")
@@ -86,8 +86,8 @@ def check_reference(result, world=1):
 
 def merge_windows(records):
     """Concatenate accepted public results; no integration step is introduced."""
-    from cells.core.runner import RunResult
-    from cells.core.windows import merge_diagnostics
+    from cells.execution.runner import RunResult
+    from cells.execution.windows import merge_diagnostics
 
     first = records[0]
     times = np.concatenate([r.times if i == 0 else r.times[1:] for i, r in enumerate(records)])
@@ -125,7 +125,7 @@ def save_trace(path, result):
 
 
 def scalar_run(spec, checkpoint=None):
-    from cells.core.windows import WindowPolicy, iter_windows
+    from cells.execution.windows import WindowPolicy, iter_windows
 
     records = []
     for window in iter_windows(spec, WindowPolicy(1, "full"), checkpoint):
@@ -135,14 +135,14 @@ def scalar_run(spec, checkpoint=None):
 
 
 def test_contracts_public_dispatch_absolute_controls_and_refusals():
-    from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-    from cells.core.runner import timeline
-    from cells.core.schedule import control_values, event_index
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.core.windows import WindowPolicy, plan_windows
-    from cells.io import runtime_identity, source_hashes
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+    from cells.execution.runner import timeline
+    from cells.execution.schedule import control_values, event_index
+    from cells.execution.windows import WindowPolicy, plan_windows
     from cells.legacy.models import surface_calcium_energy_regulated_v2 as model
-    from cells.models.registry import get_model
+    from cells.records.io import runtime_identity, source_hashes
+    from cells.registry.models import get_model
 
     spec = parse_spec(raw())
     assert spec == parse_spec(spec.to_dict()) and get_model(spec.model) is model
@@ -172,7 +172,7 @@ def test_contracts_public_dispatch_absolute_controls_and_refusals():
     refusals.append("scalar_trace_budget")
     changed = batch.to_dict()
     changed["execution"]["max_working_bytes"] = 1
-    from cells.core.batch_windows import plan_batch_windows
+    from cells.execution.batch_windows import plan_batch_windows
 
     with pytest.raises(ConfigError):
         plan_batch_windows(parse_batch(changed), WindowPolicy(1, "full"))
@@ -296,8 +296,8 @@ def test_reference_independent_world_two_capture():
 
 @pytest.mark.parametrize("refinement", [1, 2], ids=["base", "fine"])
 def test_scalar_checked_bounded_full_transient_and_public_checkpoint(refinement):
-    from cells.core.specs import parse_spec
-    from cells.io import write_run
+    from cells.definitions.specs import parse_spec
+    from cells.records.io import write_run
 
     identity()
     spec = parse_spec(raw(refinement=refinement))
@@ -342,8 +342,8 @@ def test_scalar_checked_bounded_full_transient_and_public_checkpoint(refinement)
 
 
 def test_restore_scalar_fresh_process_complete_suffix_and_identity_refusals():
-    from cells.core.specs import ConfigError, digest
-    from cells.io import load_snapshot
+    from cells.definitions.specs import ConfigError, digest
+    from cells.records.io import load_snapshot
 
     identity()
     baseline = OUT / "scalar-base"
@@ -392,8 +392,8 @@ def test_restore_scalar_fresh_process_complete_suffix_and_identity_refusals():
 
 
 def cohort():
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
 
     return BatchSpec(
         (WorldSpec(23, parse_spec(raw())), WorldSpec(71, parse_spec(raw(2)))), 2, 128, 2**32
@@ -401,9 +401,9 @@ def cohort():
 
 
 def batch_run(spec, checkpoints=None, save_midpoint=False):
-    from cells.batch_io import write_batch_snapshot
-    from cells.core.batch_windows import iter_batch_windows
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch_windows import iter_batch_windows
+    from cells.execution.windows import WindowPolicy
+    from cells.records.batch_io import write_batch_snapshot
 
     records = {23: [], 71: []}
     saved = False
@@ -428,7 +428,7 @@ def batch_run(spec, checkpoints=None, save_midpoint=False):
 
 
 def test_batch_checked_two_worlds_absolute_clocks_and_independent_reference():
-    from cells.batch_io import write_batch_snapshot
+    from cells.records.batch_io import write_batch_snapshot
 
     identity()
     spec = cohort()
@@ -466,7 +466,7 @@ def test_batch_checked_two_worlds_absolute_clocks_and_independent_reference():
 
 
 def test_batch_restore_fresh_process_complete_cohort_suffix():
-    from cells.batch_io import load_batch_snapshot
+    from cells.records.batch_io import load_batch_snapshot
 
     identity()
     saved = load_batch_snapshot(OUT / "batch-midpoint")

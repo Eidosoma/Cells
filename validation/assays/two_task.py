@@ -12,9 +12,9 @@ from pathlib import Path
 import numpy as np
 
 from cells.assays.readout import CentroidReader, VoltageReadout, score_predictions
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.runner import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import control_values
 from validation.betse.emulator.rehost import moved
 from validation.betse.spatial_active.refinement import completed_prior, digest
 

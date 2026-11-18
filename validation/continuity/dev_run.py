@@ -2,7 +2,7 @@
 
 docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 10 item 7. A development run, not a registered
 one. Engine models run: resolved_pump_replacement@1 (cell replacement on the resolved pump
-tissue; the probe-5 cohort of the design's evidence) through core/vector_windows.py.
+tissue; the probe-5 cohort of the design's evidence) through execution/vector_windows.py.
 
 No engine writer records a vector-window run (batch_window_io.write_windowed_batch drives the
 batch_windows path), so this driver defines the run folder that verify_run.py checks:
@@ -17,9 +17,9 @@ batch_windows path), so this driver defines the run folder that verify_run.py ch
   checkpoint_final the final cohort snapshot
   manifest.json    path, policy, identity, provenance and file digests (written last)
 The provenance is {"operation": "fresh"}, {"operation": "resume", ...} for a resume under the
-checkpoint's own source, or cells.continuity.provenance(admission) for an admitted resume.
+checkpoint's own source, or cells.execution.continuity.provenance(admission) for an admitted resume.
 
-Under the checkpoint's own tree S0 (which predates cells.continuity) only fresh runs and plain
+Under the checkpoint's own tree S0 (which predates cells.execution.continuity) only fresh runs and plain
 resumes are possible; --continuity needs the resuming tree.
 
 Usage:
@@ -64,9 +64,9 @@ def cohort(end_steps=40, backend="cpu"):
     every 12 steps and at the end. backend="gpu" is for the GPU probe of design section 13.4
     only; the first landing admits CPU definitions.
     """
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.cell_replacement_spec import exact_event_times
-    from cells.core.specs import parse_spec
+    from cells.definitions.cell_replacement_spec import exact_event_times
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
     from validation.tissue import cell_replacement_fixtures as fx
 
     observed = sorted({*range(0, end_steps + 1, 12), end_steps})
@@ -97,8 +97,8 @@ def backend(spec):
 
 def engine_identity(spec):
     import cells
-    from cells.core.specs import digest
-    from cells.io import runtime_identity, source_hashes
+    from cells.definitions.specs import digest
+    from cells.records.io import runtime_identity, source_hashes
 
     tree = Path(cells.__file__).resolve().parents[2]
     marker = tree / "SNAPSHOT.json"
@@ -124,10 +124,10 @@ def prepare(out):
 
 def execute(spec, policy, checkpoints, out, provenance, inputs, every):
     """The vector-windows path; every round recorded, cohort snapshots every ``every``."""
-    from cells.batch_io import write_batch_snapshot
-    from cells.core.specs import canonical_json
-    from cells.core.vector_windows import iter_vector_windows
-    from cells.io import runtime_identity, source_hashes
+    from cells.definitions.specs import canonical_json
+    from cells.execution.vector_windows import iter_vector_windows
+    from cells.records.batch_io import write_batch_snapshot
+    from cells.records.io import runtime_identity, source_hashes
 
     write_json(out / "inputs.json", inputs)
     started, snapshots, rounds, last = time.perf_counter(), [], 0, None
@@ -194,8 +194,8 @@ def run(args):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.batch import load_batch
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import load_batch
+    from cells.execution.windows import WindowPolicy
 
     out = prepare(args.out)
     spec = load_batch(args.batch)
@@ -217,8 +217,8 @@ def resume(args):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.windows import WindowPolicy
+    from cells.execution.windows import WindowPolicy
+    from cells.records.batch_io import load_batch_snapshot
 
     out = prepare(args.out)
     policy = WindowPolicy(args.window_steps, args.recording)
@@ -238,7 +238,7 @@ def resume(args):
         saved = load_batch_snapshot(snapshot)  # Refuses any source or runtime change.
         provenance = {"operation": "resume", "parent_checkpoint_sha256": saved.fingerprint}
     else:
-        from cells import continuity
+        from cells.execution import continuity
 
         record = Path(args.continuity).resolve()
         inputs.update(continuity_record=str(record), continuity_record_sha256=sha256(record))

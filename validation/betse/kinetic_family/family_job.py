@@ -81,7 +81,7 @@ def prior():
         all(sha(original / n) == h for n, h in r["qualification_files_sha256"].items()),
         "Process qualification payload changed",
     )
-    process_name = "src/cells/processes/kinetic_pump.py"
+    process_name = "src/cells/laws/pumps/kinetic_pump.py"
     require(
         sha(ROOT / process_name)
         == read(original / "registration.json")["sources_sha256"][process_name],

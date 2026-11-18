@@ -195,9 +195,9 @@ def quick(raw):
 
 def admit(raw):
     """(spec, None) when the definition is admitted (parsed, and its clock's step checks pass:
-    cells.core.runner.timeline), else (None, the refusal message)."""
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, parse_spec
+    cells.execution.runner.timeline), else (None, the refusal message)."""
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.runner import timeline
 
     try:
         spec = parse_spec(raw)
@@ -210,8 +210,8 @@ def admit(raw):
 def ids_of(spec):
     """The IDs the definition prints: the composite, its inner model, the closure, the patches'
     laws, the operators with their steps and laws, the solver and the field solver."""
-    from cells.models.operators import OPERATORS
-    from cells.models.operators import site_occupancy as so
+    from cells.operators import OPERATORS
+    from cells.operators import site_occupancy as so
 
     d = spec.to_dict()
     m, x = d["model"], d["execution"]
@@ -245,7 +245,7 @@ def _ratio(balance, bound):
 
 
 def declared_populations(raw):
-    from cells.models.operators import site_occupancy as so
+    from cells.operators import site_occupancy as so
 
     block = next((op for op in raw["model"]["operators"] if op["law"] == so.LAW_ID), None)
     return [] if block is None else list(block["populations"])
@@ -330,7 +330,7 @@ def layout_of(spec, p, populations):
 
 def records_of(result, raw):
     """Every observation time's series (module docstring) from a runner result."""
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     spec = result.spec
     model = get_model(spec.model)
@@ -355,8 +355,8 @@ def records_of(result, raw):
 
 def engine_part(raw, context, *, label=None, arm=None):
     """One run of one definition: its admission, run and records (records_of)."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     raw = quick(raw) if context["quick"] else raw
     started = time.perf_counter()
@@ -491,11 +491,11 @@ def _head(raw, at):
 
 def _restart(raw, at, workdir, *, through_snapshot):
     """Run to `at`, then resume to the end: in process from the head's checkpoint, or through a
-    written snapshot (cells.io.write_snapshot and load_snapshot); a branch from the head's own
+    written snapshot (cells.records.io.write_snapshot and load_snapshot); a branch from the head's own
     checkpoint into the full schedule (its changes from `at` on)."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_snapshot
 
     spec = parse_spec(raw)
     first = run(parse_spec(_head(raw, at)))
@@ -525,8 +525,8 @@ def moved_switch(world_id=RESTART_WORLD, at=SWITCH_S, dt=af.DECLARED_DT):
 def q6_restart(name, context):
     """Q6: straight, then resumed before, at and after the switch-on, in process and through a
     snapshot; K4: the switch moved one step, resumed, against the straight run."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()
@@ -618,11 +618,11 @@ def _bitwise(a, b):
 def q6_batch(name, context):
     """Q6: four worlds with every parameter different in one vector batch, against each scalar
     run (within 1e-12 relative, every observed field) and against the reversed batch (bitwise)."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.runner import run
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     del name
     started = time.perf_counter()
@@ -694,9 +694,9 @@ def same_inner(a, b, model):
 def q6_idle(name, context):
     """Q6, §4.8's claim 2: every multiplier zero, and no populations, each bitwise the world
     without the operator on every inner field and row; the zero world's own fields frozen."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.registry.models import get_model
 
     del name, context
     started = time.perf_counter()
@@ -772,8 +772,8 @@ def q6_twins(name, context):
 def q6_signature(name, context):
     """Q6, §2.7: worlds of different structure in one batch refused by the batch signature, with
     its reason; worlds of one structure and different parameters admitted (planned)."""
-    from cells.core.batch import BatchSpec, WorldSpec, plan_batch
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec, plan_batch
 
     del name, context
     started = time.perf_counter()
@@ -960,7 +960,7 @@ def refusal_classes():
     changed in the one way its class names; each neighbour is W, or W with the admitted variant.
     kind: 'definition' (parse and timeline), 'structure' (the composite's structure check, both
     orders), 'analysis' (the stationary analysis), 'runtime' (the run)."""
-    from cells.models.operators import site_occupancy as so
+    from cells.operators import site_occupancy as so
     from validation.tissue import site_occupancy_fixtures as sfx
 
     W = af.build(_w())
@@ -1058,8 +1058,8 @@ EXPECTED_CHECKS = {
 
 def _run_admitted(raw, cache):
     """(admitted, ran, message) of a neighbour, each distinct definition run once."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     key = json.dumps(raw, sort_keys=True)
     if key not in cache:
@@ -1077,12 +1077,12 @@ def _run_admitted(raw, cache):
 
 def q6_refusals(name, context):
     from cells.analysis import stationary
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
     from cells.models import pump_composite
     from cells.models import pump_composite_adapter as adapter
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     del name, context
     started = time.perf_counter()

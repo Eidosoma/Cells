@@ -111,9 +111,9 @@ def chemistry_tests(case="reactions"):
 
 def chemistry_grid_preflight(path, protocol):
     """Check the default and every registered refinement grid without integration."""
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, load_spec
+    from cells.definitions.specs import ConfigError, load_spec
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
 
     spec = load_spec(path)
     steps = protocol["steps_s"]

@@ -7,20 +7,26 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, event_index, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, plan_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import (
+    branch_checkpoint,
+    event_index,
+    run,
+    timeline,
+    validate_checkpoint,
+)
+from cells.execution.schedule import control_values
+from cells.execution.state import Checkpoint
 from cells.legacy.core.surface_repair_spec import base_spec
 from cells.legacy.models import surface_calcium_cav as prior
 from cells.legacy.models import surface_repair as model
 from cells.legacy.processes import membrane_injury
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_calcium import BACKEND, evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_repair_fixtures as fixtures

@@ -38,10 +38,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.apical_vertex_spec import MODEL_ID, held_parameters, topology_index
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.processes import vertex_mechanics as vm
+from cells.definitions.apical_vertex_spec import MODEL_ID, held_parameters, topology_index
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.mechanics import vertex_mechanics as vm
 
 OBSERVER_ID = "apical_vertex_rows@1"
 OBSERVATION_SAMPLING = "accepted_rows_only"
@@ -302,7 +302,7 @@ def _numpy_topology(spec):
 
 def check_definition(spec):
     """Initial domain, tiling area identity and bounded energy for every control."""
-    from cells.core.apical_vertex_spec import control_values
+    from cells.definitions.apical_vertex_spec import control_values
 
     state, layout = initial_values(spec)
     topo = topology(layout)
@@ -325,7 +325,7 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     """Observations on accepted boundaries; the step bound at the initial state."""
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     grid = EventGrid(spec)
     for t in spec.experiment.observation_times:

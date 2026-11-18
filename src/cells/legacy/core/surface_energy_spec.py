@@ -5,8 +5,8 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core import surface_kinetic_spec as prior
-from cells.core.specs import (
+from cells.definitions import surface_kinetic_spec as prior
+from cells.definitions.specs import (
     ChannelChange,
     ConfigError,
     KineticPumpSpec,

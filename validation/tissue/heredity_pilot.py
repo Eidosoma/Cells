@@ -8,10 +8,10 @@ does a batched run with observers cost? It is also the first E07 experiment
 driver.
 
 Engine models run: resolved_pump_tissue@3 (IMEX ARS(2,2,2) with exponential
-stage gates, dt 1 ms, float64) through core/vector_windows.py, the
+stage gates, dt 1 ms, float64) through execution/vector_windows.py, the
 world_batching="vmap" mapping with the model's device row checks (the
 ionic_worlds@1 task replicates one definition, so heterogeneous worlds use the
-same runner directly), and through core/runner.py for the single-cell check;
+same runner directly), and through execution/runner.py for the single-cell check;
 stationary_continuation_analysis@1 (cells.analysis.stationary) for the start
 state. Nothing here adds physics.
 
@@ -74,10 +74,10 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core import phases  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.surface_pump_v3_spec import NALEAK_LAW_ID  # noqa: E402
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.definitions.surface_pump_v3_spec import NALEAK_LAW_ID  # noqa: E402
+from cells.execution import phases  # noqa: E402
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import field_solver_choice  # noqa: E402
 from validation.tissue import resolved_scale_world as scale_world  # noqa: E402
@@ -109,7 +109,7 @@ def log(line):
     print(f"[{time.strftime('%H:%M:%S')}] {line}", flush=True)
 
 
-# The four phases of a run (cells.core.phases), in the run log and the reports.
+# The four phases of a run (cells.execution.phases), in the run log and the reports.
 PHASE_KEYS = ("preparation", "compile", "execution", "observation", "output")
 
 
@@ -359,7 +359,7 @@ def cell_states(tissue, seeds=SEEDS):
 
 def part_cue(args):
     """Single heredity cell: how long must Na leak x10 last to switch H -> D?"""
-    from cells.core.runner import run
+    from cells.execution.runner import run
 
     out = dict(dt_s=DT, threshold_V=THRESHOLD_V, cue_start_s=0.1, after_s=5.0, cases=[])
     for duration_ms in (20, 50, 100, 120, 150, 200, 500, 2000):
@@ -445,9 +445,9 @@ def observation_steps_sheet(on, off, end):
 
 
 def part_sheet(args):
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     output = Path(args.output) / "sheet"
     output.mkdir(parents=True, exist_ok=True)
@@ -873,7 +873,7 @@ class SheetRecorder:
             end = ends.pop()
             due = [t for t in self.snapshots if end >= t - 1e-9]
             if due:
-                from cells.batch_io import write_batch_snapshot
+                from cells.records.batch_io import write_batch_snapshot
 
                 self.save()
                 write_batch_snapshot(
@@ -905,8 +905,8 @@ class SheetRecorder:
 
 def part_longsheet(args):
     """Cue-written 19- and 37-cell discs on the homogeneous held-bath sheet, 70 min."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     output = Path(args.output) / (f"longsheet-{args.label}" if args.label else "longsheet")
     output.mkdir(parents=True, exist_ok=True)
@@ -941,7 +941,7 @@ def part_longsheet(args):
         "baths, E07 gated junctions at s, homogeneous heredity cells (ionic background), "
         "cue populations on the 37-cell disc's cells",
         engine_model=members[0].simulation.to_dict()["model"]["id"]
-        + " through core/vector_windows.py (device checks)",
+        + " through execution/vector_windows.py (device checks)",
         volume_model=WATER,
         water_availability=None if WATER is None else WATER_AVAILABILITY,
         water_start=None if WATER is None else water_cell_start(WATER),
@@ -1017,7 +1017,7 @@ def part_sheetreplay(args):
     """
     import jax.numpy as jnp
 
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump_v3 as model
 
     label = args.label or "replay"
@@ -1027,7 +1027,7 @@ def part_sheetreplay(args):
     n = len(cells)
     disc_cells = args.discs[0]
     if args.replay_snapshot:
-        from cells.batch_io import load_batch_snapshot
+        from cells.records.batch_io import load_batch_snapshot
 
         snapshot = load_batch_snapshot(args.replay_snapshot)
         world = next(w for w in snapshot.spec.worlds if w.world_id == args.replay_world)
@@ -1205,7 +1205,7 @@ def part_heatdrift(args):
     """
     import jax.numpy as jnp
 
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump as first
     from cells.models import surface_pump_v3 as model
     from cells.models.surface_pump_checks import DISSIPATION_ATOL_PJ
@@ -1883,7 +1883,7 @@ class Observer:
 
     def snapshot(self, window):
         """A complete cohort snapshot at the window's end (a resume point)."""
-        from cells.batch_io import write_batch_snapshot
+        from cells.records.batch_io import write_batch_snapshot
 
         end = max(c.time for c in window.checkpoints.values())
         path = self.output.parent / "snapshots" / f"t{end:09.3f}"
@@ -1922,7 +1922,7 @@ def world_meta(spec, tissue, disc=None):
 
 def run_batch(spec, policy, observer, checkpoints=None):
     """run_vector_windowed with the failure preserved; returns (result, failure)."""
-    from cells.core.vector_windows import WorldCheckError, run_vector_windowed
+    from cells.execution.vector_windows import WorldCheckError, run_vector_windowed
 
     try:
         result = run_vector_windowed(spec, policy, checkpoints, sink=observer)
@@ -1951,8 +1951,8 @@ def run_segment(spec, policy, observer, checkpoints, stop_time):
     or after stop_time ends the segment with a cohort snapshot there (the resume
     point for the next segment, --resume). Returns (summary, failure).
     """
-    from cells.core.vector_windows import WorldCheckError, iter_vector_windows
-    from cells.core.windows import merge_diagnostics
+    from cells.execution.vector_windows import WorldCheckError, iter_vector_windows
+    from cells.execution.windows import merge_diagnostics
 
     timings, diagnostics, executed, last, end = {}, {}, 0, None, None
     output_seconds = 0.0
@@ -2008,7 +2008,7 @@ def prepare_steps(args):
 
 def prepare_worlds(args, tissue, *, end_step, observed, cue_for=None):
     """(BatchSpec, meta) of the (seed, s) worlds from their start states."""
-    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.execution.batch import BatchSpec, WorldSpec
 
     members, meta = [], {}
     for seed in args.seeds:
@@ -2029,7 +2029,7 @@ def prepare_worlds(args, tissue, *, end_step, observed, cue_for=None):
 
 def stationarity(spec, checkpoint, tissue):
     """The law's derivative at a checkpoint: rates per cell, drift over the run's length."""
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump_v3 as model
 
     state = model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state))
@@ -2080,8 +2080,8 @@ STATIONARY_RELATIVE_DRIFT = 0.005
 
 
 def part_prepare(args):
-    from cells.batch_io import write_batch_snapshot
-    from cells.core.windows import WindowPolicy
+    from cells.execution.windows import WindowPolicy
+    from cells.records.batch_io import write_batch_snapshot
 
     tissue = Tissue()
     output = Path(args.output) / "prepare"
@@ -2219,8 +2219,8 @@ def observation_steps_run(start, on, off, end):
 
 
 def part_run(args):
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.windows import WindowPolicy
+    from cells.execution.windows import WindowPolicy
+    from cells.records.batch_io import load_batch_snapshot
 
     tissue = Tissue()
     output = Path(args.output) / ("run" if args.label is None else f"run-{args.label}")
@@ -2491,10 +2491,10 @@ def part_heat(args):
     """
     import jax.numpy as jnp
 
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump_v3 as model
     from cells.models.surface_pump_checks import DISSIPATION_ATOL_PJ
+    from cells.records.batch_io import load_batch_snapshot
 
     tissue = Tissue()
     output = Path(args.output) / ("run" if args.label is None else f"run-{args.label}")
@@ -2609,12 +2609,12 @@ def part_gapa(args):
     tests/unit/test_surface_pump_v3_device_checks.py and test_surface_pump_device_
     checks.py, the allowance (c) would give each seeded route at the seeded row.
     """
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump as first
     from cells.models import surface_pump_v3 as model
     from cells.models.surface_pump_checks import DISSIPATION_ATOL_PJ
     from cells.numerics import surface_imex as imex
+    from cells.records.batch_io import load_batch_snapshot
 
     tableau = imex.TABLEAUX[imex.ARS222_ID].explicit
     delta, weights = float(tableau[2, 0]), np.asarray(tableau[2, :2], dtype=float)
@@ -2731,10 +2731,10 @@ def part_floor(args):
     """
     import jax.numpy as jnp
 
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump as first
     from cells.models import surface_pump_v3 as model
+    from cells.records.batch_io import load_batch_snapshot
 
     output = Path(args.output) / ("run" if args.label is None else f"run-{args.label}")
     run = json.loads((output / "run.json").read_text())
@@ -2858,8 +2858,8 @@ def seeded_fault_allowances(delta):
     whose heat the tableau books (membrane, junction, channel, pump) - faces book
     J^2 RT / W >= 0 and keep the strict test either way.
     """
-    from cells.core.runner import run
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.execution.runner import run
     from cells.models import surface_pump_v3 as model
     from cells.numerics import surface_imex as imex
     from validation.tissue import surface_pump_v3_fixtures as fixtures

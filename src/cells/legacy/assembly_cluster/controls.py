@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import control_values
+from cells.execution.schedule import control_values
 
 
 class ScheduledControl(NamedTuple):

@@ -13,7 +13,7 @@ Parts (the protocol's judged_parts):
   reservoir-work ledger without the operator's term);
 * W4_idle: the operator with no event against the composition without it, bitwise, and K4's
   planted one-ulp pair;
-* W5_restart: W1 straight and resumed through the engine's checkpoint (cells.io.write_snapshot and
+* W5_restart: W1 straight and resumed through the engine's checkpoint (cells.records.io.write_snapshot and
   load_snapshot, within this run's snapshot) from 0.5, 1 and 1.5 s, and K5's moved event;
   W5_batch: three schedules on one bath in a vector batch against each in a batch of one;
 * W6_water: the isosmotic step beside water@1; W7_staircase_ars, W7_staircase_rk4: the six-stair
@@ -195,9 +195,9 @@ def quick(raw):
 
 def admit(raw):
     """(spec, None) when the definition is admitted (parsed, and its clock's step checks pass:
-    cells.core.runner.timeline), else (None, the refusal message)."""
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, parse_spec
+    cells.execution.runner.timeline), else (None, the refusal message)."""
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.runner import timeline
 
     try:
         spec = parse_spec(raw)
@@ -221,8 +221,8 @@ def _ratio(balance, bound):
 
 def records_of(result):
     """Every observation time's series (module docstring) from a runner result."""
-    from cells.models.registry import get_model
     from cells.models.surface_pump import ENERGY_RTOL
+    from cells.registry.models import get_model
 
     spec = result.spec
     model = get_model(spec.model)
@@ -295,8 +295,8 @@ def records_of(result):
 
 def engine_part(raw, context, *, label=None):
     """One run of one definition: its admission, run and records (records_of)."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     raw = quick(raw) if context["quick"] else raw
     started = time.perf_counter()
@@ -355,7 +355,7 @@ def compare_results(a, b, *, start=None):
 
 
 def w4_idle(name, context):
-    from cells.core.runner import run
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()
@@ -382,11 +382,11 @@ def w4_idle(name, context):
 
 
 def _restart(raw, at, workdir):
-    """raw run to `at` (truncated), its checkpoint written and loaded through cells.io, and the
-    full definition resumed from it (cells.core.runner.branch_checkpoint)."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    """raw run to `at` (truncated), its checkpoint written and loaded through cells.records.io, and the
+    full definition resumed from it (cells.execution.runner.branch_checkpoint)."""
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_snapshot
 
     first = run(parse_spec(bfx.truncated(raw, at)))
     directory = Path(workdir) / f"checkpoint-{at:g}"
@@ -398,8 +398,8 @@ def _restart(raw, at, workdir):
 
 
 def w5_restart(name, context):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()
@@ -425,12 +425,12 @@ def w5_restart(name, context):
 
 
 def w5_batch(name, context):
-    """Three schedules on one bath in one vector batch (cells.core.batch, run_vector_windowed),
+    """Three schedules on one bath in one vector batch (cells.execution.batch, run_vector_windowed),
     each against itself in a batch of one: the final state and every observation, bit for bit."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     del name
     started = time.perf_counter()
@@ -487,8 +487,8 @@ def _compare_worlds(a, a_observations, b, b_observations):
 def refusals_part(name, context):
     """Every refusal class: its representative(s) refused, with the check the message names, and
     its neighbour(s) admitted and run (R12 adds the declared composition alone at 1 ms)."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     del name
     started = time.perf_counter()

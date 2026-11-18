@@ -13,19 +13,19 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.assembly_cluster.spec import AssemblyError
 from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.legacy.core import owned_calcium_profile_phase_handoff as phase_handoff
 from cells.legacy.core.excision import excise
-from cells.models.registry import get_model
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.joint_water_hcn_fixtures import assembly_definition
 from tests.joint_water_profile_fixtures import DT, FAMILIES, FIELDS, components, definition
 from tests.unit.test_surface_catalog import evidence

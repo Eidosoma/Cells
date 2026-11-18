@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import F, R
+from cells.laws.pumps import kinetic_pump as pump
 from cells.legacy.processes import finite_energy as energy
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import F, R
 from validation.betse.pump_contact import pump_reference
 from validation.chemistry import finite_energy_reference as reference
 

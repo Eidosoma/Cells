@@ -13,7 +13,7 @@ from numbers import Real
 
 import numpy as np
 
-from cells.core.grid import EventGrid
+from cells.execution.grid import EventGrid
 from validation.betse import spatial_modulation as spatial
 from validation.betse import time_modulation as modulators
 from validation.betse.physiology.core import physiology_native_calendar as native_clocks

@@ -10,10 +10,10 @@ array stays host mode's, bitwise.
 import jax
 import pytest
 
-from cells.core import row_checks
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, run_windowed
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution import row_checks
+from cells.execution.windows import WindowPolicy, run_windowed
+from cells.registry.models import get_model
 from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
 from validation.tissue import composite_crossrev as crossrev
 

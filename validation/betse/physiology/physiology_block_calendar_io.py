@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import source_hashes
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.records.io import source_hashes
 from validation.betse.physiology import physiology_block_checkpoint as blocked
 from validation.betse.physiology.core import physiology_block_calendar as calls
 from validation.betse.physiology.core import physiology_native_calendar as clocks

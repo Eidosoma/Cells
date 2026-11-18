@@ -10,8 +10,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest
-from cells.io import runtime_identity, source_hashes
+from cells.definitions.specs import ConfigError, digest
+from cells.records.io import runtime_identity, source_hashes
 from validation.betse.physiology import physiology_initial_preparation_io as initial_io
 from validation.betse.physiology.core import physiology_initial_preparation as initial
 from validation.betse.physiology.core import physiology_tissue_loop as loop

@@ -5,7 +5,7 @@ from bisect import bisect_right
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core.specs import ChannelChange, ConfigError, _fields, _integer, _number
+from cells.definitions.specs import ChannelChange, ConfigError, _fields, _integer, _number
 from cells.legacy.core import surface_mobile_pump_spec as prior
 from cells.legacy.core.bioelectric_spec import positive
 from cells.legacy.core.multispecies_spec import aligned, identifier

@@ -12,12 +12,12 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot  # noqa: E402
-from cells.core.batch import load_batch  # noqa: E402
-from cells.core.specs import load_spec, read_json  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import load_spec, read_json  # noqa: E402
+from cells.execution.batch import load_batch  # noqa: E402
 from cells.legacy.models import spatial_extracellular as model  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
 from scripts import spatial_extracellular_acceptance_plan as plan  # noqa: E402
 from scripts.spatial_extracellular_acceptance_resources import (  # noqa: E402
     authenticate_prior_stop,

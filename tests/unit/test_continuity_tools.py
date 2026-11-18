@@ -17,8 +17,9 @@ import numpy as np
 import pytest
 
 import cells
-from cells import batch_io, continuity, io, source_layout
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution import continuity
+from cells.records import batch_io, io, source_layout
 from validation.continuity import (
     admit,
     probe,
@@ -193,8 +194,8 @@ def test_overlap_comparison_checks():
 
 
 def cohort_snapshot(tmp_path, jit=True):
-    from cells.core.batch import parse_batch
-    from cells.core.state import initialise
+    from cells.execution.batch import parse_batch
+    from cells.execution.state import initialise
     from tests.batch_fixtures import definition, short_spec
 
     first = short_spec("single_cell_pulse", jit=jit)
@@ -242,7 +243,7 @@ def test_the_probe_cannot_decide_outside_the_first_landing(tmp_path):
     with pytest.raises(probe.CannotDecide, match="jit: false"):
         probe.read_cohort(cohort_snapshot(tmp_path, jit=False))
     scalar = tmp_path / "scalar"
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
     from tests.batch_fixtures import short_spec
 
     one = short_spec("single_cell_pulse")
@@ -413,9 +414,9 @@ def test_the_device_patch_reaches_every_binding_and_is_recorded():
         "from validation.continuity import probe\n"
         "first = dict(probe.patch_execution_device())\n"
         "second = probe.patch_execution_device()\n"
-        "from cells.core import devices\n"
-        "from cells.core.specs import parse_spec\n"
-        "from cells.core.state import initialise\n"
+        "from cells.execution import devices\n"
+        "from cells.definitions.specs import parse_spec\n"
+        "from cells.execution.state import initialise\n"
         "from cells.numerics import surface_imex as imex\n"
         "from validation.tissue import surface_pump_fixtures as fx\n"
         "kept = [n for n, m in sys.modules.items()\n"
@@ -444,12 +445,12 @@ def test_the_device_patch_reaches_every_binding_and_is_recorded():
     found = json.loads(done.stdout.strip().splitlines()[-1])
     assert found["same"] and found["kept"] == [] and found["placed"] == ["cpu"]
     path_modules = {
-        "cells.core.devices",
-        "cells.core.runner",
-        "cells.core.batch",
-        "cells.core.batch_windows",
-        "cells.core.vector_windows",
-        "cells.io",
+        "cells.execution.devices",
+        "cells.execution.runner",
+        "cells.execution.batch",
+        "cells.execution.batch_windows",
+        "cells.execution.vector_windows",
+        "cells.records.io",
     }
     assert path_modules <= set(found["bound"])
     assert found["first"] == {

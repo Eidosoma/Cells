@@ -8,11 +8,11 @@ from itertools import product
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.legacy.models import open_calcium_admission as ionic_domain
 from cells.legacy.models import surface_bath_epoch as ordinary_epoch
 from cells.legacy.models import surface_calcium_energy as fuel
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 
 def validate_carried_envelope(scheduled, state, layout):
@@ -26,7 +26,7 @@ def validate_carried_envelope(scheduled, state, layout):
 
 def carried_pool_turnover_bound(scheduled, spec, state, layout):
     """Full rates at actual carried amounts, every SIM control and pulse corner."""
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     if not hasattr(state, "energy_amount_increment_fmol"):
         return dict(maximum_fraction_rate_s_inv=0.0, finite_fuel=False)

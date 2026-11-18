@@ -68,8 +68,8 @@ J1_FUNCTIONS = {
     for name in ("DECLARED", "load_declared", "build", "scalar_values", "band_members")
 }
 PARTITION_MODULES = {
-    "cells.models.operators.partition",  # isopotential_partition@1.
-    "cells.core.partition_spec",  # Its definition helper.
+    "cells.operators.partition",  # isopotential_partition@1.
+    "cells.definitions.partition_spec",  # Its definition helper.
     "validation.division.partition_reference",  # R-ops.
     "tests.partition_fixtures",  # S5's compact worlds (the lead, 13 November).
     "validation.division.q10_sensitivity",  # The Q10 driver.
@@ -233,13 +233,13 @@ def test_the_listed_j1_functions_exist_and_their_module_names_a_j1_file():
 
 
 def test_the_engine_partition_module_declares_the_law():
-    path = ROOT / "src/cells/models/operators/partition.py"
+    path = ROOT / "src/cells/operators/partition.py"
     if path.exists():
         assert PARTITION_LAW in path.read_text()
 
 
 J1_FILE = J1_FILES[0] + ".json"
-PARTITION_IMPORT = "from cells.models.operators import partition as op"
+PARTITION_IMPORT = "from cells.operators import partition as op"
 SOURCES = {  # Synthetic modules: (does it hold a J1 source, a partition source)?
     f"import json\nD = '{J1_FILE}'\nLAW = '{PARTITION_LAW}'\n": (True, True),
     f'"""Mentions {J1_FILE} and {PARTITION_LAW} in its docstring."""\n': (False, False),
@@ -258,7 +258,7 @@ SOURCES = {  # Synthetic modules: (does it hold a J1 source, a partition source)
         False,
         False,
     ),
-    "import cells.core.partition_spec\n": (False, True),
+    "import cells.definitions.partition_spec\n": (False, True),
     "from validation.division import partition_reference\n": (False, True),
 }
 
@@ -281,10 +281,10 @@ def test_relative_imports_resolve():
 # follow the operator and model registries: every engine user reaches them, and they register
 # every law. Reaching the partition through them would need its law named in a definition, which
 # the literal check above sees.
-REGISTRIES = {"cells.models.operators", "cells.models.registry"}
+REGISTRIES = {"cells.operators", "cells.registry.models"}
 CLEAN = (
-    "cells.models.operators.membrane_insertion_v2",
-    "cells.models.operators.restricted_lumen_v2",
+    "cells.operators.membrane_insertion_v2",
+    "cells.operators.restricted_lumen_v2",
 )
 
 
@@ -336,8 +336,8 @@ def test_insertion_v2_and_lumen_v2_reach_no_partition_code(module):
 
 def test_the_import_scan_sees_a_partition_through_a_chain():
     # The bridge imports the partition directly, and lumen@2 reaches insertion@2.
-    assert "cells.models.operators.partition" in reached("cells.models.operators.bridge_closure")
-    assert "cells.models.operators.membrane_insertion_v2" in reached(CLEAN[1])
+    assert "cells.operators.partition" in reached("cells.operators.bridge_closure")
+    assert "cells.operators.membrane_insertion_v2" in reached(CLEAN[1])
 
 
 # ---------------------------------------------------------------- lazy reaches (the lead, 14 Nov)

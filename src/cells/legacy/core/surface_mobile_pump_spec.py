@@ -5,7 +5,7 @@ from bisect import bisect_right
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     ChannelChange,
     ConfigError,
     KineticPumpSpec,
@@ -14,7 +14,7 @@ from cells.core.specs import (
     _integer,
     _number,
 )
-from cells.core.surface_tissue_spec import SurfaceChange, SurfaceExperiment
+from cells.definitions.surface_tissue_spec import SurfaceChange, SurfaceExperiment
 from cells.legacy.core import surface_redistribution_spec as prior
 from cells.legacy.core.bioelectric_spec import positive
 from cells.legacy.core.kinetic_finite_spec import parse_pump

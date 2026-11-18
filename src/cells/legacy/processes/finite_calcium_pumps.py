@@ -10,9 +10,9 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import F, R
+from cells.laws.reactions import er_calcium, plasma_calcium
 from cells.legacy.processes import finite_energy
-from cells.processes import er_calcium, plasma_calcium
-from cells.processes.electrochemistry import F, R
 
 PMCA_LAW = "finite_atp_pmca_positive@1"
 ER_LAW = "finite_atp_er_1ca_positive@1"

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _integer, _number, digest
+from cells.definitions.specs import ConfigError, _fields, _integer, _number, digest
 from cells.legacy.core import environment_barrier_composition_preparation as composed
 from cells.legacy.core import environment_barrier_interventions_spec as native
 from cells.legacy.core.multispecies_spec import identifier

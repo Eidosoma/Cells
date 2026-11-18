@@ -15,13 +15,13 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
-from cells.core.grid import EventGrid
-from cells.core.windows import WindowPolicy
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.batch_windows import iter_batch_windows, plan_batch_windows
+from cells.execution.grid import EventGrid
+from cells.execution.windows import WindowPolicy
 from cells.legacy.excision_io import load_excision
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run
 from tests.unit.test_surface_kinetic import assert_states, exact
 
 WORLD_IDS = (3, 79)

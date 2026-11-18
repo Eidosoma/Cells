@@ -13,7 +13,7 @@ from dataclasses import replace
 
 import numpy as np
 
-from cells.io import load_snapshot
+from cells.records.io import load_snapshot
 from tests.unit.test_fr4_world_engine import short
 from validation.compartment_ph_engine import definitions as defs
 from validation.compartment_ph_engine import engine_records

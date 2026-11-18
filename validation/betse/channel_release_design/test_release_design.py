@@ -144,10 +144,10 @@ def test_only_controls_change_not_hidden_state_or_intrinsic_physics(plan, histor
 @pytest.mark.parametrize("condition", design.CONDITIONS)
 @pytest.mark.parametrize("step", [50e-6, 25e-6, 12.5e-6])
 def test_real_cells_timeline_and_right_continuous_controls(plan, history, condition, step):
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.schedule import control_values, event_index
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
+    from cells.execution.schedule import control_values, event_index
 
     spec = parse_spec(design.definition(plan, history, condition, step))
     grid = timeline(spec)  # Preflight only; no rollout or integration step.
@@ -203,7 +203,7 @@ def test_changed_native_source_contract_rejected(fault):
 
 @pytest.fixture(scope="module")
 def evaluated(plan):
-    import cells.core.runner as runner
+    import cells.execution.runner as runner
     import cells.numerics.fixed_step as steps
 
     def forbidden(*args, **kwargs):

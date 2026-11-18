@@ -10,9 +10,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.numerics import surface_field as model
 from cells.numerics import tissue_field as legacy
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import surface_field_fixtures as fixtures
 from validation.tissue import surface_field_reference as reference
 

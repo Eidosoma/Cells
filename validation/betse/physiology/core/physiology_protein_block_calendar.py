@@ -12,8 +12,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
 from cells.numerics import surface_field as field
 from validation.betse.physiology.core import physiology_protein_batch_loop as journal
 from validation.betse.physiology.core import physiology_protein_block_calendar_scope as scoped

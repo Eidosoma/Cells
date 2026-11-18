@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from cells.core.runner import timeline
-from cells.core.specs import ConfigError, load_spec, parse_spec
+from cells.definitions.specs import ConfigError, load_spec, parse_spec
+from cells.execution.runner import timeline
 
 
 @pytest.mark.parametrize(

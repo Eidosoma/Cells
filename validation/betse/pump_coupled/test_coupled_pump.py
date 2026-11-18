@@ -83,7 +83,7 @@ def test_domain_refuses_bad_trial_without_repair(index, value):
 
 
 def test_synthetic_pump_is_not_called_or_subtracted(monkeypatch):
-    from cells.processes import electrochemistry
+    from cells.laws import electrochemistry
 
     def forbidden(*_args, **_kwargs):
         raise AssertionError("Synthetic pump cannot stand in for kinetic pump")

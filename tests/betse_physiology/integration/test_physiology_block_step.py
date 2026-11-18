@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from tests.betse_physiology.integration.test_physiology_checkpoint import assert_same_component
 from tests.betse_physiology.integration.test_physiology_tissue_step_checkpoint import hashes
 from tests.betse_physiology.unit.test_physiology_permeability_view import (

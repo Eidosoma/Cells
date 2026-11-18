@@ -29,7 +29,7 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np  # noqa: E402
 
 from cells.analysis import stationary as current  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 

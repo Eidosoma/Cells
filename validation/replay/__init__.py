@@ -1,7 +1,7 @@
 """Looping replay packages of living cells for the viewer (FR-11; docs/LOOPING_REPLAY_DESIGN.md).
 
 A package is one real engine run of laws the engine has, written by the shared output path with
-its run view (cells/run_view.py, D154), whose observed rows cover exactly one period of a
+its run view (cells/records/run_view.py, D154), whose observed rows cover exactly one period of a
 periodic state; the writer measures its closure and writes the view's loop block. Each package is
 an illustration at a declared low level of detail (D175), never an experiment: no verdict, not
 registered.

@@ -20,9 +20,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.core.surface_pump_v2_spec import MODEL_ID, Control
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_pump_v2_spec import MODEL_ID, Control
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions import junction_gate
+from cells.laws.pumps import calcium_atpase
+from cells.laws.pumps import kinetic_pump as pump
+from cells.laws.pumps import kinetic_pump_binding as pumps
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
 from cells.models import surface_tissue as tissue
@@ -31,10 +36,6 @@ from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.processes import calcium_atpase, junction_gate
-from cells.processes import kinetic_pump as pump
-from cells.processes import kinetic_pump_binding as pumps
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = kinetic.OBSERVER_ID
 OBSERVATION_SAMPLING = kinetic.OBSERVATION_SAMPLING
@@ -177,7 +178,7 @@ def calcium_rates(ci, co, voltage, control, p, *, xp):
 
 def readouts(state, control, p, *, xp=jnp):
     """surface_kinetic.readouts for an empty channel set, with the calcium pump."""
-    from cells.core.schedule import SurfaceControl
+    from cells.execution.schedule import SurfaceControl
 
     v = tissue.field_values(
         state, SurfaceControl(control.membrane, control.junction * state.junction_gate), p, xp=xp
@@ -538,7 +539,7 @@ def checked_step(state, dt, control, p, active):
 
 
 def check_definition(spec):
-    from cells.core.surface_pump_v2_spec import control_values
+    from cells.definitions.surface_pump_v2_spec import control_values
 
     if spec.model.channels or spec.execution.channel_capacity:
         raise ConfigError("Resolved pump tissue has no channel population")
@@ -660,7 +661,7 @@ def check_values(state, spec, steps=None):
     )
 
 
-# Device checks (cells.core.vector_windows): check_values' tests per accepted row.
+# Device checks (cells.execution.vector_windows): check_values' tests per accepted row.
 DEVICE_CHECKS = first.DEVICE_CHECKS
 DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
 device_failure_message = first.device_failure_message
@@ -731,7 +732,7 @@ Observations = make_dataclass(
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.surface_pump_v2_spec import control_values
+    from cells.definitions.surface_pump_v2_spec import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -793,7 +794,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.surface_pump_v2_spec import control_values
+    from cells.definitions.surface_pump_v2_spec import control_values
 
     controls = control_values(spec, [time])
     control = Control(*(v[0] for v in controls))

@@ -15,8 +15,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import k_anion_symport as law
-from cells.processes.electrochemistry import R
+from cells.laws.electrochemistry import R
+from cells.laws.routes import k_anion_symport as law
 
 
 @pytest.fixture(scope="module", autouse=True)

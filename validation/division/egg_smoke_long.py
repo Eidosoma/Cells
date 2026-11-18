@@ -68,10 +68,10 @@ def ledger_ratios(spec, rows, steps):
 
 
 def main(argv=None):
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
     from cells.models import surface_pump_v3 as v3
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])

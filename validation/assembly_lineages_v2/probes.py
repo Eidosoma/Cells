@@ -116,7 +116,7 @@ def _json(path, value):
 
 
 def _source():
-    from cells.run_view import _engine_source
+    from cells.records.run_view import _engine_source
 
     return _engine_source() or {"unstated": "the engine ran from a checkout, not a snapshot"}
 
@@ -312,7 +312,7 @@ def _parsed_or_refusal(directory, definition, provenance):
     """The parsed definition, or None after writing refused.json with the engine parser's message
     in `directory` (§0.2b rule 8, for one: the world's own declaration decides, never the
     driver)."""
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
 
     try:
         return parse_spec(definition)
@@ -331,7 +331,7 @@ def _run_or_refusal(directory, definition, provenance):
     """A run's bundle, or, when the engine's parser refuses its world (§0.2b rule 8: a run world
     under multinomial_less_one with a membrane place on both sides of a step), refused.json with
     the parser's message in the role's folder."""
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
 
     try:
         spec = parse_spec(definition)
@@ -393,7 +393,7 @@ def wb_specs(spec, rung, pair):
 
 
 def wb_ensemble(inputs, out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages_v2 import runner
 
     design = json.loads((Path(inputs) / "ol1_design.json").read_text())
@@ -459,7 +459,7 @@ def refusal_pair(registered_world):
 
 
 def refusals(inputs, out):
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
 
     directory = Path(out) / "refusals"
     directory.mkdir(parents=True, exist_ok=False)

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes.junction_gate import Parameters
+from cells.laws.junctions.junction_gate import Parameters
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
 import common as u  # noqa: E402

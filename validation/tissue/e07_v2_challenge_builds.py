@@ -43,8 +43,8 @@ jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp  # noqa: E402
 import numpy as np  # noqa: E402
 
-from cells.core import pump_composite_spec as composite_spec  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions import pump_composite_spec as composite_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from cells.models import cell_replacement as replacement_model  # noqa: E402
 from cells.models import pump_composite  # noqa: E402
 from validation.stationary import worlds  # noqa: E402

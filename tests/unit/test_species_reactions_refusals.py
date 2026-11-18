@@ -19,12 +19,12 @@ import re
 
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
+from cells.operators import OPERATORS
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 
@@ -508,7 +508,7 @@ def test_a_volume_provider_is_refused_through_the_parser():
 
 
 def batch(*worlds):
-    from cells.core.batch import parse_batch
+    from cells.execution.batch import parse_batch
 
     execution = dict(
         mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31

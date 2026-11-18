@@ -39,13 +39,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.operators import species_reactions as sr
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
 from cells.models.surface_pump import ENERGY_RTOL, LEDGER_STEP_ROUNDING
+from cells.operators import species_reactions as sr
+from cells.registry.models import get_model
 from validation.tissue import species_reactions_fixtures as rfx
 
 jax.config.update("jax_enable_x64", True)

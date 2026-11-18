@@ -21,14 +21,14 @@ import math
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
-from cells.models.inner_kinds import proton_buffer
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.kinds import proton_buffer
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests import kind_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 
@@ -154,7 +154,7 @@ def test_with_only_the_closure_nothing_moves():
 def with_standard_part(state, p, *, xp):
     """The kernel's term as it stands: B4's term plus the proton's standard part on the stored
     proton equivalents, RT n (mu°_H/RT - ln c0), whose change @3's reservoir work never books."""
-    from cells.processes.electrochemistry import R
+    from cells.laws.electrochemistry import R
 
     amounts = proton_buffer._amounts(state, p, xp)
     start = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
@@ -213,9 +213,9 @@ def test_carried_protons_close_material_and_energy_with_the_declared_term():
 def test_the_closure_runs_on_the_vector_window_path():
     """The carried-proton world through one compiled window: every row passes the device checks,
     the closure's read and its stored term included (traced under jax.numpy)."""
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution import vector_windows
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     steps, big = 4, 2**53 - 1
     kinds, raw = carried()
@@ -258,8 +258,8 @@ def test_the_proton_leak_reads_free_h_and_joins_the_stage_rule():
     """cells.passive_routes@1's charged law: its flux is the kernel's at the closure's free h (not
     H_eq / V) and the patch voltage, it is the patch's only H flux (gap 9), and its slope
     conductance joins membrane_rate (gap 5)."""
-    from cells.models.inner_kinds import passive_routes
-    from cells.processes import proton_leak
+    from cells.kinds import passive_routes
+    from cells.laws.transport import proton_leak
     from validation.tissue.surface_pump_v3_fixtures import HEREDITY_AREA_M2
 
     spec = parse_spec(leaky_world())
@@ -339,7 +339,7 @@ def test_the_envelope_refuses_a_k_on_outside_it():
 def test_a_root_that_misses_the_residual_check_refuses(monkeypatch):
     """The kernel's convergence check (|g|/H <= 1e-13) is the read's validity: with the check made
     impossible, the row and the step's end state are refused (domain_valid reads them)."""
-    from cells.processes import rapid_proton_buffer as closure
+    from cells.laws.reactions import rapid_proton_buffer as closure
 
     spec = parse_spec(buffered_world())
     impl, state, p, control = host(spec)

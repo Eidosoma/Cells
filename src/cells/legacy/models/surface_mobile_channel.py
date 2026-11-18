@@ -13,8 +13,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_mobile_channel_spec import MODEL_ID, prior_spec
 from cells.legacy.core.surface_mobile_pump_spec import Control as PumpControl
 from cells.legacy.models import surface_mobile_pump as prior
@@ -294,7 +294,7 @@ def check_definition(spec):
         ),
     )
     state, p = initial_values(compact)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     c = control_values(compact, [v.time for v in compact.experiment.changes])
     for i in range(len(compact.experiment.changes)):
@@ -379,7 +379,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     times, requested = np.asarray(times), np.asarray(requested)
     if any(t not in times for t in requested):
@@ -469,7 +469,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     c = control_values(spec, [time])
     control = type(c)(*(v[0] for v in c))

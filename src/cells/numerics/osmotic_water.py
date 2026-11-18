@@ -9,8 +9,8 @@ from typing import NamedTuple
 
 import numpy as np
 
+from cells.laws.electrochemistry import R
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import R
 
 LAW_ID = "ideal_osmosis_linear_compliance_water@1"
 

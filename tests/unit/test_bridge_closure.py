@@ -25,12 +25,12 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import bridge_closure as bridge
-from cells.models.operators import partition
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.operators import bridge_closure as bridge
+from cells.operators import partition
+from cells.registry.models import get_model
 from tests import partition_fixtures as fx
 
 H = 0.5 * fx.DT

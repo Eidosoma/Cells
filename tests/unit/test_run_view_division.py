@@ -24,10 +24,10 @@ import json
 import numpy as np
 import pytest
 
-from cells import run_view
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy
-from cells.window_io import write_windowed_run
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy
+from cells.records import run_view
+from cells.records.window_io import write_windowed_run
 from tests import partition_fixtures as pf
 from tests.run_view_fixtures import (
     PARTITION,

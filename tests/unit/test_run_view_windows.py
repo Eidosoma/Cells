@@ -1,4 +1,4 @@
-"""The run view on the windowed paths (cells/run_view.py; window_io and batch_window_io).
+"""The run view on the windowed paths (cells/records/run_view.py; window_io and batch_window_io).
 
 * A windowed run's view names every chunk once per time base, from the run's index (requirement
   8: one entry per record, its base listing (file, rows)); the manifest covers view.json, and
@@ -15,10 +15,10 @@ import json
 import numpy as np
 import pytest
 
-from cells import run_view
-from cells.batch_window_io import write_windowed_batch
-from cells.core.windows import WindowPolicy
-from cells.window_io import write_windowed_run
+from cells.execution.windows import WindowPolicy
+from cells.records import run_view
+from cells.records.batch_window_io import write_windowed_batch
+from cells.records.window_io import write_windowed_run
 from tests.batch_fixtures import definition
 from tests.run_view_fixtures import declare_secretion, load, secretion
 

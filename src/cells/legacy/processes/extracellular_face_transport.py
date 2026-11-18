@@ -15,8 +15,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import bernoulli
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import bernoulli
 
 SOURCE_LAW_ID = "extracellular_face_transport@1"
 FACE_LAW_ID = "bernoulli_fitted_environment_faces@1"

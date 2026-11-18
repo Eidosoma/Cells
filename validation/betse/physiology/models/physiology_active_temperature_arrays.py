@@ -11,15 +11,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import SurfaceCalciumControl, SurfaceKineticControl
+from cells.execution.schedule import SurfaceCalciumControl, SurfaceKineticControl
+from cells.laws.electrochemistry import R
+from cells.laws.pumps import kinetic_pump
 from cells.legacy.core.surface_calcium_energy_spec import Control as FuelControl
 from cells.legacy.models import surface_calcium as calcium
 from cells.legacy.models import surface_calcium_energy as fuel
 from cells.legacy.models.kinetic_finite_extracellular import pump_parameters
 from cells.numerics import surface_transport
 from cells.numerics.extracellular_field import scatter
-from cells.processes import kinetic_pump
-from cells.processes.electrochemistry import R
 from validation.betse.physiology.core.physiology_active_temperature_arrays import (
     Certificate,
     NumericCohort,

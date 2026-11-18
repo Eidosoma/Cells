@@ -6,15 +6,15 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import runner, windows
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
-from cells.io import _sha256, load_snapshot
-from cells.models.registry import get_model
-from cells.window_io import write_windowed_run
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution import runner, windows
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
+from cells.records.io import _sha256, load_snapshot
+from cells.records.window_io import write_windowed_run
+from cells.registry.models import get_model
 from tests.batch_fixtures import MODELS, short_spec, synthetic_pair
 
 
@@ -86,7 +86,7 @@ def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
 ):
     import jax
 
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     spec = short_spec(name, 0.073)
     full = run(spec)
@@ -119,7 +119,7 @@ def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
 
 
 def test_completed_restart_still_refuses_an_invalid_historical_step(monkeypatch):
-    from cells.core.resources import trace_bytes
+    from cells.execution.resources import trace_bytes
 
     raw = synthetic_pair().worlds[0].simulation.to_dict()
     raw["experiment"]["source"]["schedule"].append({"time": 0.5, "rate": 0})

@@ -8,9 +8,9 @@ Refusal means unable to certify, not necessarily an actually unsafe trajectory.
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
-from cells.processes.kinetic_pump import MAX_ABS_AFFINITY_OVER_RT, MAX_ABS_ION_POTENTIAL_OVER_RT
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.pumps.kinetic_pump import MAX_ABS_AFFINITY_OVER_RT, MAX_ABS_ION_POTENTIAL_OVER_RT
 
 
 def outward(lo, hi):

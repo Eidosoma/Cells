@@ -13,10 +13,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, _fields, digest, read_json
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, _fields, digest, read_json
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import surface_calcium_energy_water_profile_epoch_spec as water_epoch
 from cells.legacy.core import surface_calcium_energy_water_profile_interventions_spec as water_spec
 from cells.legacy.core import surface_calcium_energy_water_repair_profile_epoch_spec as repair_epoch

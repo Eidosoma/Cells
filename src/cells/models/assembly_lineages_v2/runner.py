@@ -35,7 +35,7 @@ from time import perf_counter
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import MODE, balance, kernel, ledger, model
 from cells.models.assembly_lineages_v2.spec import world_id
@@ -177,7 +177,7 @@ def run_lanes(specs):
     """Several worlds of one structure, as lanes of one program; one WorldRun each."""
     import jax
 
-    from cells.core.devices import execution_device
+    from cells.execution.devices import execution_device
 
     if any(s.execution.mode != MODE for s in specs):
         raise ConfigError(f"run_lanes runs {MODE} worlds")

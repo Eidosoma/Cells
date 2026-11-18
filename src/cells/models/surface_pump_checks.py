@@ -15,10 +15,10 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import surface_tissue as tissue
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 # Dissipation integrals may not fall below this, nor decrease by more per row.
 DISSIPATION_ATOL_PJ = 1e-12
@@ -135,7 +135,7 @@ def row_checks(
     reads surface_pump's, today's list.
 
     margins=True also returns ratios [ledgers]: each ledger's largest |residual| /
-    bound, 0 for a zero residual and +inf for a NaN one (core/row_checks.py's guard
+    bound, 0 for a zero residual and +inf for a NaN one (execution/row_checks.py's guard
     band, docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.3). It is a static branch: with
     the default, the traced program is unchanged.
     """

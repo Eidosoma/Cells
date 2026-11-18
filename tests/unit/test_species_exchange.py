@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
 getcontext().prec = 50

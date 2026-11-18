@@ -130,10 +130,10 @@ def physical(history):
 
 
 def run(c, protocol, dt, output, write):
-    from cells.core.runner import run as simulate
-    from cells.core.specs import parse_spec
-    from cells.core.state import Checkpoint
-    from cells.io import load_snapshot, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run as simulate
+    from cells.execution.state import Checkpoint
+    from cells.records.io import load_snapshot, write_snapshot
 
     output.mkdir(parents=True, exist_ok=False)
     raw = definition(c, protocol, dt)

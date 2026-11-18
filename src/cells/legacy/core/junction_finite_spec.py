@@ -1,7 +1,7 @@
 """Explicit kinetic-pump / physical-time junction composition, finite_extracellular@3."""
 
-from cells.core.rate_junction_spec import GATE_FIELDS, parse_junction
-from cells.core.specs import (
+from cells.definitions.rate_junction_spec import GATE_FIELDS, parse_junction
+from cells.definitions.specs import (
     JUNCTION_FINITE_EXTRACELLULAR_ID,
     ConfigError,
     JunctionFiniteExtracellularSpec,

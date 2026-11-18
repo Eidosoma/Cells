@@ -8,8 +8,8 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from cells.processes import cav_channels as channels
-from cells.processes import kv1_channels as prior
+from cells.laws.channels import cav_channels as channels
+from cells.laws.channels import kv1_channels as prior
 from tests.unit import test_surface_calcium as shared
 from tests.unit.test_surface_kinetic import exact
 from validation.tissue import cav_reference as reference

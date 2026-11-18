@@ -16,12 +16,12 @@ import json
 import jax
 import pytest
 
-from cells import batch_io, io
-from cells.core import devices
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution import devices
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.state import initialise
 from cells.numerics import surface_imex as imex
+from cells.records import batch_io, io
 from tests.unit.test_continuity_loaders import build_record, change_source, refused, request
 from validation.tissue import surface_pump_fixtures
 

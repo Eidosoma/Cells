@@ -47,11 +47,11 @@ def gpu(output, preparation, plan, cpu_output, *, variants=u.VARIANTS):
     import jax
     import numpy as np
 
-    from cells.core.runner import _analyse_segment, _compiled_checked_rollout, timeline
-    from cells.core.schedule import control_values, event_index
-    from cells.core.specs import parse_spec
-    from cells.core.state import Checkpoint
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import _analyse_segment, _compiled_checked_rollout, timeline
+    from cells.execution.schedule import control_values, event_index
+    from cells.execution.state import Checkpoint
+    from cells.registry.models import get_model
 
     u.module_path("pump_matched_pilot")
     import pilot_context

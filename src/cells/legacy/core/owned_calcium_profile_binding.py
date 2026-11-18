@@ -9,12 +9,12 @@ from dataclasses import asdict, dataclass, fields
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _integer, _number, digest
+from cells.definitions.specs import ConfigError, _fields, _integer, _number, digest
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core import surface_profile_interventions_spec as membrane
 from cells.legacy.core import tissue_profile_composition_preparation as composed
 from cells.legacy.core import tissue_profile_preparation as direct
 from cells.legacy.processes import tissue_target_selectors as native
-from cells.processes.electrochemistry import F, R
 
 TIMING_POLICY = membrane.TIMING_POLICY
 RESET_POLICY = membrane.RESET_POLICY

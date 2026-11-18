@@ -17,17 +17,17 @@ import math
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.errors import NumericalError
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.kinds import proton_buffer, transporter
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.pumps import atp_transporter as neutral
+from cells.laws.pumps import proton_pump as proton
 from cells.models import surface_pump_v3
-from cells.models.inner_kinds import proton_buffer, transporter
-from cells.models.registry import get_model
-from cells.processes import atp_transporter as neutral
-from cells.processes import proton_pump as proton
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 END_S = 0.004
@@ -322,7 +322,7 @@ def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
       by the capacitor's closed form;
     - gap 9: the pump's flux is in the patch's membrane flux and current;
     - ledgers: every accepted row passes all ten, the energy ledger with B4's stored term."""
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from validation.tissue.surface_pump_v3_fixtures import HEREDITY_CAPACITANCE_F
 
     with charged():
@@ -368,7 +368,7 @@ def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
 def test_a_held_fuel_row_has_one_writer():
     """Gap 8, for the neutral role's held fuel: held ATP at the cell is refused at binding where
     an @3 route or another kind (a passive route) moves it, naming the writer."""
-    from cells.models.inner_kinds import passive_routes
+    from cells.kinds import passive_routes
 
     raw = held_world()
     raw["model"]["membranes"][0]["permeability_m_per_s"]["ATP"] = 1e-10
@@ -408,8 +408,8 @@ def converted(raw, c0_mM):
 def test_the_kinetics_do_not_depend_on_the_registrys_standard_concentration():
     """The proton law's c° is 1000 mM and the neutral law takes the registry's: once the
     potentials are converted, both laws' rates and energies at c0 = 1 mM equal those at 1000 mM."""
-    from cells.core.surface_pump_v3_spec import control_values
-    from cells.models.inner_kinds import proton_buffer
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.kinds import proton_buffer
 
     def start(raw):
         spec = parse_spec(raw)
@@ -437,8 +437,8 @@ def test_the_pumps_slope_joins_the_step_rules():
     without potentials), at both of the patch's ends (cells, then outside nodes);
     bound_rate is the host term with the role's saturation at 1, over the cell's capacitance (the
     bath is held), and a capacity that breaches it at 1 ms is refused by the step checks."""
-    from cells.core.surface_pump_v3_spec import control_values
-    from cells.models.inner_kinds import proton_buffer
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.kinds import proton_buffer
 
     with charged():
         spec = parse_spec(charged_world())
@@ -472,7 +472,7 @@ def test_the_pumps_slope_follows_the_voltage_past_its_static_head():
     above it past the head, where the patch drives it into reverse (V < V_head); called bare it
     is the head's. Through membrane_rate the reversed slope breaches the 1 ms step bound where
     the slope at the head does not."""
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
 
     with charged():
         spec = parse_spec(charged_world())

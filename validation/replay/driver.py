@@ -5,7 +5,7 @@ Usage: python -m validation.replay.driver BUILDER OUT
   OUT      a new directory, under /mnt/workspaces/Cells/replay-<date>/.
 
 It writes the builder's package through the shared windowed output path
-(cells.window_io.write_windowed_run) with recording "observations" (only the observed rows, which
+(cells.records.window_io.write_windowed_run) with recording "observations" (only the observed rows, which
 the builder places in the last period) and the builder's run view request (view=, with its loop),
 then checks the view against its files (run_view.validate) and writes OUT.result.json beside OUT:
 the loop block or the reason it was left out, the engine models and source, and the package's
@@ -22,10 +22,10 @@ import json
 import sys
 from pathlib import Path
 
-from cells import run_view
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy
-from cells.window_io import write_windowed_run
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy
+from cells.records import run_view
+from cells.records.window_io import write_windowed_run
 
 BUILDERS = {"planarian": "validation.replay.planarian"}
 LIMIT_BYTES = 1_000_000  # The viewer's limit per package (about 1 MB, §1).

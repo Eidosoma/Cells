@@ -14,8 +14,8 @@ from typing import NamedTuple
 import jax
 import numpy as np
 
-from cells.core.schedule import control_values
-from cells.core.specs import digest, parse_spec
+from cells.definitions.specs import digest, parse_spec
+from cells.execution.schedule import control_values
 from validation.betse.physiology.core import physiology_active_temperature as contract
 from validation.betse.physiology.models import physiology_active_temperature_view as host
 from validation.betse.physiology.models import physiology_permeability_view as ordinary

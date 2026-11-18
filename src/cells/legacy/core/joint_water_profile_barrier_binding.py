@@ -3,7 +3,7 @@
 from copy import deepcopy
 from types import SimpleNamespace
 
-from cells.core.specs import ConfigError, _fields, digest
+from cells.definitions.specs import ConfigError, _fields, digest
 from cells.legacy.core import joint_water_profile_barrier_preparation as preparation
 from cells.legacy.core import joint_water_profile_interventions_binding as membrane_declarations
 from cells.legacy.core import surface_active_profile_barrier_binding as coefficients

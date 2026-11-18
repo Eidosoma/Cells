@@ -14,10 +14,10 @@ refusal lifted in this test only; it stays in the engine). On the host, at the o
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.operators import membrane_insertion as v1
-from cells.models.operators import membrane_insertion_v2 as v2
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import membrane_insertion as v1
+from cells.operators import membrane_insertion_v2 as v2
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as ifx
 from tests.unit.test_membrane_insertion_v2 import as_v2, control_at, operator
 

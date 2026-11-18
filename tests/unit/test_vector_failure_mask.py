@@ -1,4 +1,4 @@
-"""The vector windows' failure mask (cells.core.vector_windows).
+"""The vector windows' failure mask (cells.execution.vector_windows).
 
 Each world's failures are one int32: bit 0 is the step refusal, and the model's device checks
 follow from FAILURE_SHIFT (both _pack calls take it).
@@ -17,8 +17,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import vector_windows as vw
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution import vector_windows as vw
 
 CHECKS = tuple(f"check_{k}" for k in range(vw.MAX_DEVICE_CHECKS))  # The last supported count.
 

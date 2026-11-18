@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import morris_lecar_channels as ml
+from cells.laws.channels import morris_lecar_channels as ml
 from validation.channels import morris_lecar_channels_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

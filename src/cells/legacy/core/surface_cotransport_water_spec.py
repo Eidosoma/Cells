@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core.specs import ConfigError, _fields, _number
+from cells.definitions.specs import ConfigError, _fields, _number
 from cells.legacy.core import surface_cotransport_spec as cotransport
 from cells.legacy.core import surface_energy_spec as energy
 from cells.legacy.core import surface_energy_water_spec as water
@@ -101,7 +101,7 @@ def to_dict(spec):
         dict(membrane_id=p.id, schedule=[asdict(c) for c in group])
         for p, group in zip(spec.model.membranes, spec.experiment.water, strict=True)
     ]
-    from cells.core.grid import refinement_times
+    from cells.execution.grid import refinement_times
 
     points = refinement_times(spec)
     if points:
@@ -149,7 +149,7 @@ def parse(data):
             **vars(validated.experiment), cotransports=original.experiment.cotransports
         ),
     )
-    from cells.core.grid import refinement_times
+    from cells.execution.grid import refinement_times
 
     refinement_times(spec)
     from cells.legacy.models import surface_cotransport_water

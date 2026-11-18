@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from tests.betse_physiology.unit.test_random_tissue_profile_preparation import compare_definition
 from tests.betse_physiology.unit.test_random_tissue_profile_preparation import (
     request as profile_request,

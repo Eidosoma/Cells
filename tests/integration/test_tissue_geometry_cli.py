@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy import tissue_geometry as cli
 from cells.legacy.core import geometry_tissue_preparation as bridge
 from cells.models import surface_tissue as model

@@ -12,9 +12,9 @@ sets its Kir population's availability (the complement, basal 1/4). One program;
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
 from validation.tissue import secreted_species_fixtures as sfx

@@ -1,6 +1,6 @@
 """53 shared laws in resolved tissue, with explicit zero/one/two-state gates."""
 
-from cells.core.surface_kinetic_spec import MORRIS_LECAR_MODEL_ID as MODEL_ID  # noqa: F401
+from cells.definitions.surface_kinetic_spec import MORRIS_LECAR_MODEL_ID as MODEL_ID  # noqa: F401
 from cells.legacy.models.surface_cav import (  # noqa: F401
     BATCH_CAPACITIES,
     OBSERVATION_FIELDS,

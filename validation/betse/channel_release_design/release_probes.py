@@ -43,10 +43,10 @@ def cells_probes(plan, backends=None):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.core.schedule import PhysicalIonicGraphControl, control_values
-    from cells.core.specs import parse_spec
-    from cells.io import runtime_identity
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import PhysicalIonicGraphControl, control_values
     from cells.legacy.models import finite_extracellular as model
+    from cells.records.io import runtime_identity
 
     design.validate_plan(plan)
     c.require(

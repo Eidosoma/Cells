@@ -6,14 +6,14 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import CalciumControl, control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import CalciumControl, control_values
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.reactions import plasma_calcium as process
 from cells.legacy.core.plasma_calcium_spec import MODEL_ID, base_spec
 from cells.legacy.models import spatial_calcium as base
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes import plasma_calcium as process
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 EXTRA_FIELDS = ("plasma_pump_cycles", "plasma_exchange_cycles", "plasma_dissipated_energy_pJ")
 State = NamedTuple("State", [(k, object) for k in (*base.State._fields, *EXTRA_FIELDS)])

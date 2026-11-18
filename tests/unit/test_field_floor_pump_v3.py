@@ -13,8 +13,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import surface_pump_v3 as model
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex
@@ -46,8 +46,8 @@ def test_version_3_is_bitwise_version_2_where_version_2_converges(arm):
 
 def test_version_3_checkpoint_round_trips_and_resumes_bitwise(tmp_path):
     """A version 3 snapshot of @3 loads with its own layout type and resumes as run."""
-    from cells.core.runner import branch_checkpoint
-    from cells.io import load_snapshot, write_snapshot
+    from cells.execution.runner import branch_checkpoint
+    from cells.records.io import load_snapshot, write_snapshot
 
     raw = definition("release", field.FLOOR_SOLVER_ID)
     whole = run(parse_spec(raw))

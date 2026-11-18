@@ -1,7 +1,7 @@
 """mechanical_equilibrium_analysis@1: equilibria, spectra and linear moduli of a vertex tissue.
 
 An opt-in, read-only analysis of an apical_vertex_mechanics@1 definition (or of a
-state of one). It evaluates the model's own energy (processes/vertex_mechanics.py)
+state of one). It evaluates the model's own energy (laws/mechanics/vertex_mechanics.py)
 and never writes a run, a checkpoint or a definition; ordinary runs do not import
 it. A problem takes the definition's topology, box, friction and the parameters of
 one experiment control (the one at time zero by default), with the definition's
@@ -68,8 +68,8 @@ import jax.numpy as jnp
 import numpy as np
 from scipy import optimize
 
-from cells.core.specs import ConfigError
-from cells.processes import vertex_mechanics as vm
+from cells.definitions.specs import ConfigError
+from cells.laws.mechanics import vertex_mechanics as vm
 
 ANALYSIS_ID = "mechanical_equilibrium_analysis@1"
 MODEL_ID = "apical_vertex_mechanics@1"
@@ -144,7 +144,7 @@ class ContractionPath:
 
 
 def problem(spec, *, position=None, control=0, box=None):
-    from cells.core.apical_vertex_spec import held_parameters
+    from cells.definitions.apical_vertex_spec import held_parameters
     from cells.models import apical_vertex as av
 
     if getattr(spec.model, "units", None) != "reduced" or not hasattr(spec.model, "cells"):

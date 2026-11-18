@@ -27,11 +27,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import partition
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
+from cells.operators import partition
+from cells.registry.models import get_model
 from tests import partition_fixtures as fx
 
 HISTORY = (1e-3, -1e-3, 2e-4, 0.0)  # A synthetic pre-event increment of the parent (fmol).
@@ -476,7 +476,7 @@ def test_replacement_over_water_is_refused_beside_a_closer(closer, mask):
     """§5.5, against replacement@2 as landed: it reads the masks on the declared layout
     (CONFLICTS_VIEW), and a closer counts as a mask's provider for that check."""
     from cells.models import pump_composite
-    from cells.models.operators import OPERATORS, cell_replacement_v2, osmotic_water
+    from cells.operators import OPERATORS, cell_replacement_v2, osmotic_water
 
     replacement = cell_replacement_v2.LAW_ID
     water = osmotic_water.LAW_ID

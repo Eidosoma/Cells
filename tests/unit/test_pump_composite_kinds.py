@@ -23,18 +23,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
-from cells.io import write_snapshot
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import run
+from cells.execution.state import initialise
 from cells.models import cell_replacement, pump_composite, surface_pump_water, surface_pump_water_v2
 from cells.models import pump_composite_adapter as pump3
 from cells.models import surface_pump_v3 as ionic
-from cells.models.operators import OPERATORS, contract
-from cells.models.registry import get_model
+from cells.operators import OPERATORS, contract
+from cells.records.io import write_snapshot
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from tests import partition_fixtures as pfx
 from tests import replacement_water_fixtures as wrfx

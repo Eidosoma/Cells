@@ -134,8 +134,8 @@ def run_arm(name, *, end=None, times=None):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     spec = parse_spec(arm_world(name, end=end, times=times))
     started = time.perf_counter()

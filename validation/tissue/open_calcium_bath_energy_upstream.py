@@ -156,8 +156,8 @@ def product_record(name, source, factors, arrays):
 
 def expanded_terms(model, state, layout, value, *, finite, arrays):
     """Expose original chemical products, all heat arrays and fuel products."""
+    from cells.laws.electrochemistry import R
     from cells.legacy.models import surface_calcium as calcium
-    from cells.processes.electrochemistry import R
 
     p = model.stage_layout(layout, value.signal)
     raw = value.parent.parent
@@ -268,10 +268,10 @@ def program_identity(signal):
 
 def field_power_record(model, state, layout, value, arrays, *, finite):
     """Exact decomposition using the production rate solve, never snapshot charge."""
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL, F
     from cells.legacy.models import surface_calcium as calcium
     from cells.models import surface_tissue as passive
     from cells.numerics import surface_field as field
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL, F
     from validation.tissue.open_calcium_bath_energy_diagnostic import closure_terms
 
     p = model.stage_layout(layout, value.signal)
@@ -438,7 +438,7 @@ def field_power_record(model, state, layout, value, arrays, *, finite):
 
 
 def run(bundle, diagnostic, output):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
     from validation.tissue import open_calcium_bath_energy_diagnostic as prior
     from validation.tissue import open_calcium_bath_reference as reference
     from validation.tissue import open_calcium_bath_trajectory_common as artifact

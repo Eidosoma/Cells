@@ -13,8 +13,8 @@ import math
 import jax
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from tests.species_cap_fixtures import charged_nine, species_order
 
 

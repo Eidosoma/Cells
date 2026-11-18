@@ -10,8 +10,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import voltage_gates
-from cells.processes.electrochemistry import R
+from cells.laws.channels import voltage_gates
+from cells.laws.electrochemistry import R
 
 LAW_ID = voltage_gates.LAW_ID
 STATE_IDS = ("m0h0", "m0h1", "m1h0", "m1h1")

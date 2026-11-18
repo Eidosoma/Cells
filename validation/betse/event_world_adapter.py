@@ -663,8 +663,8 @@ def resolved_event_definition(world, phase, start, *, dt, **kwargs):
 
 def _window_sink(observed, newton, spec, model):
     """default_world_adapter._window_sink with each window's readouts at its end control."""
-    from cells.core.schedule import control_values
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.execution.schedule import control_values
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     def sink(window):
         for k in adapter.RESOLVED_OBSERVED:
@@ -696,9 +696,9 @@ def _window_sink(observed, newton, spec, model):
 
 def _resolved_phase(world, phase, start, out, *, dt, device_kind, solver, field_solver, window):
     """One resolved phase: (record, layout phase or None, final checkpoint or None)."""
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.registry.models import get_model
 
     definition = resolved_event_definition(
         world, phase, start, dt=dt, backend=device_kind, solver=solver, field_solver=field_solver

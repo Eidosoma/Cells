@@ -18,10 +18,10 @@ import sys
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.runner import branch_checkpoint, run
-from cells.core.specs import ConfigError, parse_spec
-from cells.io import write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import branch_checkpoint, run
+from cells.records.io import write_snapshot
+from cells.registry import kind_registry
 from tests.unit.test_kind_schedules import GRID, MOVED, RATE, scheduled, world
 
 
@@ -71,9 +71,9 @@ def test_a_restart_across_a_breakpoint_continues_bitwise(whole, tmp_path):
         assert np.array_equal(np.asarray(a), np.asarray(b)), name
     script = (
         "import sys\n"
-        "from cells.core import kind_registry\n"
-        "from cells.core.runner import run\n"
-        "from cells.io import load_snapshot\n"
+        "from cells.registry import kind_registry\n"
+        "from cells.execution.runner import run\n"
+        "from cells.records.io import load_snapshot\n"
         "from tests import kind_fixtures as kf\n"
         "with kind_registry.scope(kf.registry(exchange=kf.SCHEDULED_EXCHANGE)):\n"
         "    snapshot = load_snapshot(sys.argv[1])\n"

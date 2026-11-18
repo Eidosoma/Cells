@@ -10,8 +10,8 @@ pulse over [0.2, 0.5) s (pulse_factor 10 or 1) and the coupling switch (1 or 0):
     regulated_pulse, regulated_no_pulse, disabled_pulse, disabled_no_pulse
 
 each at dt 1, 0.5, 0.25 and 0.125 ms to 1 s, observed every 0.05 s: 16 definitions. This module is
-a driver of the established runners (rr.engine_definition, cells.core.windows.iter_windows,
-cells.io snapshots, validation/coupling's R-cell reference); it adds no physics and no verdict.
+a driver of the established runners (rr.engine_definition, cells.execution.windows.iter_windows,
+cells.records.io snapshots, validation/coupling's R-cell reference); it adds no physics and no verdict.
 
 Record times are the engine's own grid values, (k * stride) * dt (the dt study's grid_records):
 a resolved-pump definition is refused at window planning if an observation time is not an
@@ -54,11 +54,11 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
-from cells.io import load_snapshot, write_snapshot
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.windows import WindowPolicy, iter_windows, plan_windows, run_windowed
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.coupling import cells_reference as rc
 from validation.tissue import regulated_availability_dt_study as study
 from validation.tissue import regulated_availability_references as rr

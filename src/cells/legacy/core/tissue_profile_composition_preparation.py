@@ -14,10 +14,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core import surface_kinetic_spec
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions import surface_kinetic_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy.core import tissue_profile_preparation as direct
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 BRIDGE_ID = "resolved_composed_static_profiles@1"
 KIND = "cells.resolved_composed_profile_preparation@1"

@@ -9,10 +9,10 @@ inactive slots, and an undeclared pump's rates up to the sign of a zero.
 import jax
 import numpy as np
 
-from cells.core import surface_pump_v3_spec as spec3
-from cells.core.specs import parse_spec
+from cells.definitions import surface_pump_v3_spec as spec3
+from cells.definitions.specs import parse_spec
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.unit.test_inner_laws import (
     ARS,
     compiled_matches,

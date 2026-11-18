@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from cells.core.specs import PHYSICAL_IONIC_GRAPH_ID, parse_spec
+from cells.definitions.specs import PHYSICAL_IONIC_GRAPH_ID, parse_spec
 from tests import multispecies_fixtures as ionic
 from tests import physical_ionic_graph_numerical_data as data
 

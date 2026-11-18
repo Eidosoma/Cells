@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.io import _write_json, runtime_identity, source_hashes  # noqa: E402
+from cells.records.io import _write_json, runtime_identity, source_hashes  # noqa: E402
 from scripts.test_spatial_extracellular_build import implementation_hashes  # noqa: E402
 
 DOCUMENTS = {
@@ -28,10 +28,10 @@ DOCUMENTS = {
 API_AND_VERSION = {
     "pyproject.toml",
     "src/cells/__init__.py",
-    "src/cells/core/specs.py",
-    "src/cells/core/schedule.py",
-    "src/cells/core/state.py",
-    "src/cells/models/registry.py",
+    "src/cells/definitions/specs.py",
+    "src/cells/execution/schedule.py",
+    "src/cells/execution/state.py",
+    "src/cells/registry/models.py",
 }
 
 

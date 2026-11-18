@@ -13,10 +13,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.laws.reactions import hill_factors
 from cells.models import pump_composite as pc
-from cells.models.operators import species_reactions as sr
-from cells.processes import hill_factors
+from cells.operators import species_reactions as sr
 from validation.tissue import species_reactions_fixtures as rfx
 
 K_VALUES = (1e-9, 1e-6, 1e-3, 0.37, 1.0, 120.0)

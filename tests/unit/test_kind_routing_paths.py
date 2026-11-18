@@ -10,11 +10,11 @@ source (factor 0.3):
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests.unit.test_kind_routing import pair, with_routes
 from validation.tissue import composite_guard as guard
 
@@ -38,9 +38,9 @@ def test_an_empty_composition_of_a_factored_world_is_its_run_bitwise(scalar):
 
 
 def test_the_vector_window_path_gives_the_scalar_runs_transfer_and_heat(scalar):
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution import vector_windows
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     registry, raw, reference = scalar
     big = 2**53 - 1

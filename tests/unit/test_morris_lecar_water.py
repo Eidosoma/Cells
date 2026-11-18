@@ -4,17 +4,17 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import morris_lecar_catalog as catalog
 from cells.legacy.core.surface_water_kinetic_spec import prior_spec
 from cells.legacy.models import surface_water_kinetic
 from cells.legacy.models import surface_water_morris_lecar as model
 from cells.models import surface_kinetic
-from cells.models.registry import get_model
-from cells.processes import morris_lecar_catalog as catalog
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_kinetic import exact
 from tests.unit.test_surface_water_kinetic import error_budget, evidence
 from validation.tissue import morris_lecar_water_fixtures as fixtures
@@ -268,7 +268,7 @@ def test_blocking_and_zero_permeability_keep_dynamic_gate_clocks():
 
 def test_initial_snapshot_keeps_the_new_catalog_and_water_owners(tmp_path):
     spec, y, p, _ = initial(fixtures.compact_probe())
-    from cells.core.state import Checkpoint
+    from cells.execution.state import Checkpoint
 
     checkpoint = Checkpoint(y, p, 0.0, 0, 0)
     write_snapshot(tmp_path / "initial", spec, checkpoint)

@@ -12,9 +12,9 @@ import json
 
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, plan_windows
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.windows import WindowPolicy, plan_windows
 from validation.tissue import matched_arm_export as me
 
 

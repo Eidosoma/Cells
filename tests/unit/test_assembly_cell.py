@@ -14,8 +14,8 @@ from cells.assembly.graph import OPEN_CHAIN
 from cells.assembly.kernel import random_pair
 from cells.assembly.spec import AssemblyError
 from cells.assembly_pool import reference
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
 from cells.legacy.assembly_cell import engine
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cell.spec import parse_spec

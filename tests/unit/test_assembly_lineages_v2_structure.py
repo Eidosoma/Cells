@@ -18,7 +18,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages import streams as v1_streams
 from cells.models.assembly_lineages_v2 import kernel, model, records, runner, streams
 from tests.assembly_lineage_v2_fixtures import definition, world

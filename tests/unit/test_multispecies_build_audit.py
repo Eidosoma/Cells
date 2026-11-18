@@ -2,8 +2,8 @@
 
 import pytest
 
-from cells.core.runner import run
-from cells.io import write_run
+from cells.execution.runner import run
+from cells.records.io import write_run
 from scripts.audit_multispecies_build import audit_run
 from tests.multispecies_fixtures import spec_for
 from tests.unit.test_multispecies_membrane import PLAN, REFERENCE, short_case

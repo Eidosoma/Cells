@@ -9,14 +9,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.laws.electrochemistry import F, R
 from cells.legacy.models import finite_extracellular as old
 from cells.legacy.models import kinetic_finite_bounds as bounds
 from cells.legacy.models import kinetic_finite_extracellular as model
-from cells.observers import sample_hermite_history
-from cells.processes.electrochemistry import F, R
+from cells.records.observers import sample_hermite_history
 from tests.kinetic_finite_fixtures import ROOT, canonical, definition, evidence, spec_for
 
 sys.path.insert(0, str(ROOT / "validation/betse/pump_coupled"))

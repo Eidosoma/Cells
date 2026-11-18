@@ -14,9 +14,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import control_values
-from cells.models.registry import get_model
+from cells.execution.schedule import control_values
 from cells.numerics import projective as method
+from cells.registry.models import get_model
 
 
 def step_jacobian(spec, state, time=0.0):
@@ -85,8 +85,8 @@ def heredity_modes(output, *, burst=2000, slope=250, jumps=(2.0, 10.0, 30.0, 60.
     import json
     from pathlib import Path
 
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
+    from cells.definitions.specs import parse_spec
+    from cells.execution.state import initialise
     from validation.tissue import surface_pump_v3_fixtures as heredity
 
     report = dict(burst_steps=burst, slope_steps=slope, states={})

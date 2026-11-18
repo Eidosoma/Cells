@@ -14,11 +14,11 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import validate_checkpoint as validate_seed
-from cells.core.schedule import control_values, event_index
-from cells.core.state import Checkpoint
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import validate_checkpoint as validate_seed
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from validation.betse.physiology.core import physiology_protein_charge_step as step
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.core import physiology_tissue_loop as seals

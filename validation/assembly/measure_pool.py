@@ -14,8 +14,8 @@ from cells.assembly.cli import output_path, utc
 from cells.assembly.io import digest, runtime, write_json
 from cells.assembly_pool.io import source_identity
 from cells.assembly_pool.spec import load_spec
-from cells.core.output_paths import configure_caches
 from cells.ensemble.telemetry import Monitor, devices, utilization
+from cells.execution.output_paths import configure_caches
 
 
 def sources():

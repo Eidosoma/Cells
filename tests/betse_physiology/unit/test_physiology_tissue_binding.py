@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import joint_water_profile_interventions_binding as native
 from cells.legacy.core import surface_calcium_energy_water_repair_hcn_extra_spec as parent
 from cells.legacy.core.surface_calcium_energy_spec import Execution as ParentExecution

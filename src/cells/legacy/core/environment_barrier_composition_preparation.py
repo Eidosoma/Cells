@@ -9,10 +9,10 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy.core import environment_barrier_preparation as direct
 from cells.legacy.core import tissue_profile_composition_preparation as composition
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 BRIDGE_ID = "resolved_composed_static_environment_barriers@1"
 REQUEST_KIND = "cells.composed_environment_barrier_preparation_request@1"

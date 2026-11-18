@@ -4,10 +4,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import vertex_preparation as prep
-from cells.core.specs import parse_spec
+from cells.definitions import vertex_preparation as prep
+from cells.definitions.specs import parse_spec
+from cells.laws.mechanics import vertex_mechanics as vm
 from cells.models import apical_vertex as av
-from cells.processes import vertex_mechanics as vm
 from validation.morphogenesis import mg1_theory as theory
 
 LAMBDA, GAMMA = 0.12, 0.04

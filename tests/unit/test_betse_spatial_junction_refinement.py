@@ -9,7 +9,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.processes import junction_gate
+from cells.laws.junctions import junction_gate
 from tests.unit import test_betse_spatial_active_refinement as temporal
 from tests.unit import test_betse_spatial_junction as short
 from tests.unit.test_betse_tissue_contact import load_capture

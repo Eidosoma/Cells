@@ -7,20 +7,20 @@ Geometry, channel/junction physics and conservative ledgers are shared with v1.
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import KINETIC_FINITE_EXTRACELLULAR_ID, ConfigError
-from cells.core.state import KineticFiniteExtracellularLayout
-from cells.legacy.models import finite_extracellular as finite
-from cells.legacy.models.kinetic_finite_bounds import check_pump_interpolants
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import electrochemical_potential
-from cells.processes.kinetic_pump_binding import (
+from cells.definitions.specs import KINETIC_FINITE_EXTRACELLULAR_ID, ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import KineticFiniteExtracellularLayout
+from cells.laws.electrochemistry import electrochemical_potential
+from cells.laws.pumps import kinetic_pump as pump
+from cells.laws.pumps.kinetic_pump_binding import (
     bind_pumps,
     declared_parameters,
     pump_parameters,
     role_inputs,
 )
+from cells.legacy.models import finite_extracellular as finite
+from cells.legacy.models.kinetic_finite_bounds import check_pump_interpolants
 
 STATE_TYPE = finite.STATE_TYPE
 LAYOUT_TYPE = KineticFiniteExtracellularLayout

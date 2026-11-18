@@ -12,8 +12,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_energy_water_spec import (
     MODEL_ID,  # noqa: F401
     SurfaceEnergyWaterMorrisLecarModel,
@@ -27,7 +28,6 @@ from cells.models import surface_tissue as passive
 from cells.numerics import osmotic_water as water
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import ordered_scatter, scatter
-from cells.processes.electrochemistry import R
 
 OBSERVER_ID = "resolved_finite_energy_compliant_water_accepted_grid@1"
 STAGE_DOMAIN_ID = "positive_finite_energy_ions_and_bounded_water_actual_controls@1"
@@ -244,7 +244,7 @@ def check_definition(spec):
             regeneration_capacity=len(m.regeneration_ports),
         ),
     )
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(compact)
     table = control_values(compact, [v.time for v in compact.experiment.changes])
@@ -389,7 +389,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -443,7 +443,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [time])
     control = type(table)(*(v[0] for v in table))

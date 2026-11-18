@@ -27,14 +27,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
-from cells.io import write_snapshot
-from cells.models.operators import partition
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
+from cells.operators import partition
+from cells.records.io import write_snapshot
+from cells.registry.models import get_model
 from tests import partition_fixtures as fx
 from validation.tissue import composite_guard as guard
 
@@ -95,7 +95,7 @@ def test_restart_across_and_after_a_partition_is_bitwise(division_run, tmp_path)
     write_snapshot(tmp_path / "checkpoint", value.spec, checkpoint)
     script = (
         "import jax, numpy as np; jax.config.update('jax_enable_x64', True)\n"
-        "from cells.io import load_snapshot\nfrom cells.core.runner import run\n"
+        "from cells.records.io import load_snapshot\nfrom cells.execution.runner import run\n"
         f"loaded = load_snapshot({str(tmp_path / 'checkpoint')!r})\n"
         "result = run(loaded.spec, loaded.checkpoint)\n"
         f"np.savez({str(tmp_path / 'fresh.npz')!r}, "
@@ -152,7 +152,7 @@ def test_an_idle_partition_runs_as_the_composition_without_it():
 
 
 def test_the_manifest_names_the_closer(division_run, tmp_path):
-    from cells.io import write_run
+    from cells.records.io import write_run
 
     _, value = division_run
     write_run(tmp_path / "run", value)
@@ -171,8 +171,8 @@ def test_the_record_is_state_wherever_state_goes(division_run, tmp_path):
       first row after the event.
     A checkpoint after a partition carries the record too: its restart is bitwise
     (test_restart_across_and_after_a_partition_is_bitwise)."""
-    from cells.core.errors import NumericalError
-    from cells.io import write_run
+    from cells.execution.errors import NumericalError
+    from cells.records.io import write_run
 
     spec, value = division_run
     model = get_model(spec.model)

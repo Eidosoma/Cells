@@ -9,10 +9,10 @@ from validation.tissue import open_calcium_bath_trajectory_common as artifact
 def run(bundle, job_id, output, dependency_runs=None):
     import numpy as np
 
-    from cells.core.grid import EventGrid, checked_grid
-    from cells.core.resources import trace_bytes
-    from cells.core.schedule import control_values, event_index
-    from cells.core.state import Checkpoint
+    from cells.execution.grid import EventGrid, checked_grid
+    from cells.execution.resources import trace_bytes
+    from cells.execution.schedule import control_values, event_index
+    from cells.execution.state import Checkpoint
     from cells.numerics.fixed_step import rk4_step
     from validation.tissue import open_calcium_bath_reference as reference
     from validation.topology import open_calcium_bath_phase_handoff_reference as phase_reference

@@ -13,10 +13,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
 from cells.legacy.core import surface_calcium_energy_water_profile_interventions_spec as water_spec
 from cells.legacy.core import (
     surface_calcium_energy_water_repair_profile_interventions_spec as repair_spec,

@@ -21,15 +21,15 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
-from cells.models.operators import cell_replacement as v1
-from cells.models.operators import osmotic_water as water
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
+from cells.operators import cell_replacement as v1
+from cells.operators import osmotic_water as water
+from cells.registry.models import get_model
 from tests import replacement_water_fixtures as fx
 from validation.tissue import pump_water_fixtures as wfx
 

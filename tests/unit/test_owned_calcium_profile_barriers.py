@@ -13,18 +13,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.core import owned_calcium_profile_barrier_preparation as preparation
 from cells.legacy.core import tissue_profile_composition_preparation as profiles
 from cells.legacy.core import tissue_profile_preparation as direct
 from cells.legacy.processes import tissue_target_selectors as native
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.transport import owned_calcium_profile_barrier_fixtures as fixtures
 from validation.transport import owned_calcium_profile_barrier_reference as reference
 
@@ -414,7 +414,7 @@ def test_portable_snapshots_full_controls_and_recipe(family, case, tmp_path):
     ):
         np.testing.assert_array_equal(a, b)
     code = (
-        "from cells.io import load_snapshot; import sys; "
+        "from cells.records.io import load_snapshot; import sys; "
         "r=load_snapshot(sys.argv[1]); assert len(r.checkpoint.state)==int(sys.argv[2])"
     )
     subprocess.run(
@@ -539,10 +539,10 @@ def test_closed_history_corruption_and_both_step_bounds_refuse(family, history_n
 
 @pytest.mark.parametrize("family", FAMILIES)
 def test_strong_background_sum_boundary_keeps_full_chemical_and_fuel_guards(family):
+    from cells.laws.channels import calcium_gates
     from cells.legacy.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
     from cells.legacy.models import surface_calcium as calcium
     from cells.legacy.models import surface_calcium_energy as fuel
-    from cells.processes import calcium_gates
 
     schema, model = modules(family)
     _, original, _, _, _ = initialized(family)

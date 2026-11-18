@@ -944,11 +944,11 @@ def draft(output, paths, guards=None, basis=None):
         ),
         engine_models=[
             "resolved_pump_composite@1 (src/cells/models/pump_composite.py)",
-            "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, "
+            "resolved_pump_tissue@3 (src/cells/definitions/surface_pump_v3_spec.py, "
             "src/cells/models/surface_pump_v3.py), IMEX ARS(2,2,2), CPU, float64",
-            "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven "
+            "local_species_reactions@1 (src/cells/operators/species_reactions.py): driven "
             "mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
-            "cells.core.inventory_species (D150) declares the network's species",
+            "cells.registry.inventory_species (D150) declares the network's species",
         ],
         scope=SCOPE,
         driver="validation/morphogenesis/mg0c_turing.py",

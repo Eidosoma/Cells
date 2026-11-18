@@ -7,7 +7,7 @@ instantaneous gate, graph growth, or source-compatible parameter profile.
 
 from dataclasses import asdict, replace
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     BIOELECTRIC_ID,
     BIOELECTRIC_PAIR_ID,
     BioelectricPairSpec,

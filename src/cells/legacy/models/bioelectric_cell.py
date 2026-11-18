@@ -10,12 +10,11 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
-from cells.core.state import BioelectricLayout, BioelectricState, identity_arrays
-from cells.observers import sample_hermite_history
-from cells.processes.electrochemistry import (
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.execution.state import BioelectricLayout, BioelectricState, identity_arrays
+from cells.laws.electrochemistry import (
     CHARGE_PER_FMOL,
     M3_PER_PL,
     MOL_PER_FMOL,
@@ -25,6 +24,7 @@ from cells.processes.electrochemistry import (
     ghk_leak,
     reversible_pump,
 )
+from cells.records.observers import sample_hermite_history
 
 STATE_TYPE = BioelectricState
 LAYOUT_TYPE = BioelectricLayout

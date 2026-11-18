@@ -92,8 +92,8 @@ import numpy as np
 import scipy.linalg
 import scipy.sparse.linalg
 
-from cells.core.specs import ConfigError
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions.specs import ConfigError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
 ANALYSIS_ID = "stationary_continuation_analysis@1"
 MODEL_IDS = (
@@ -815,8 +815,8 @@ def problem(
     world: the frozen composition in fast mode and the conserved totals in
     slow mode. Controls are the schedules' values at control_time.
     """
-    from cells.core.schedule import control_values
-    from cells.models.registry import get_model
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     model_id = model_identity(spec)
     if model_id not in MODEL_IDS:

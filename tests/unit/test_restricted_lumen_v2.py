@@ -27,13 +27,13 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import membrane_insertion as insertion_v1
-from cells.models.operators import membrane_insertion_v2 as insertion_v2
-from cells.models.operators import restricted_lumen as v1
-from cells.models.operators import restricted_lumen_v2 as v2
-from cells.models.registry import get_model
+from cells.operators import membrane_insertion as insertion_v1
+from cells.operators import membrane_insertion_v2 as insertion_v2
+from cells.operators import restricted_lumen as v1
+from cells.operators import restricted_lumen_v2 as v2
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as ifx
 from tests import partition_fixtures as fx
 

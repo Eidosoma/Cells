@@ -186,7 +186,7 @@ def test_complete_native_panel_copies_with_all_gate_traces(parent, tmp_path):
 @pytest.mark.parametrize(
     "name",
     [
-        "src/cells/core/runner.py",
+        "src/cells/execution/runner.py",
         "validation/betse/junction_native_coupled/native.py",
         "validation/betse/junction_native_coupled/protocol.json",
         "validation/betse/junction_native_coupled/reference.py",

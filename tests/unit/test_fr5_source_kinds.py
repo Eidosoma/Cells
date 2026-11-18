@@ -16,14 +16,14 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.kind_registry import declared_schedule
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
-from cells.models.inner_kinds import patch_damage as damage
-from cells.models.inner_kinds import ph_condition as condition
-from cells.processes import patch_damage as law
-from cells.processes import ph_condition as phc
-from cells.processes import rapid_proton_buffer as closure
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.kinds import patch_damage as damage
+from cells.kinds import ph_condition as condition
+from cells.laws.reactions import ph_condition as phc
+from cells.laws.reactions import rapid_proton_buffer as closure
+from cells.laws.transport import patch_damage as law
+from cells.registry.kind_registry import declared_schedule
 from validation.compartment_ph_engine import definitions as defs
 
 DAMAGE = dict(id="damage_0", patch=defs.BOUNDING, law="bounding_patch_damage@1",
@@ -74,7 +74,7 @@ def test_both_kinds_parse_round_trip_and_append_their_fields():
                           (condition.PH_CONDITION, ("acid_0",))):
         assert kind.factor_sources(dict(spec.model.kinds)[kind.kind_id]) == sources
         assert kind.factors is not None and kind.routed_controls is None
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     assert "patch_damage" in model.STATE_TYPE._fields
@@ -125,7 +125,7 @@ def test_a_condition_outside_its_contract_is_refused(change, match):
 def test_an_undeclared_source_kind_is_absent():
     spec = parse_spec(world(damages=None, conditions=None))
     assert not {damage.KIND_ID, condition.KIND_ID} & set(dict(spec.model.kinds))
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     fields = get_model(spec.model).STATE_TYPE._fields
     assert not any(f.startswith("patch_damage") for f in fields)
@@ -180,7 +180,7 @@ def test_fr5s_world_declares_every_field_and_column_for_the_run_view():
     test, on FR-5's world: every state field and readout column of the structure, the source
     kinds' among them, has a unit, a record kind and a layer; every readout has its axes; every
     axis has a view set (the condition's own included)."""
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
     from tests.unit.test_inner_view_declarations import INNER_AXES, RECORD_KINDS
     from validation.compartment_ph_engine.parameters import ARM_R
 
@@ -279,11 +279,11 @@ def test_the_damage_domain_and_its_factor():
 
 def test_the_condition_reads_free_h_at_its_node_as_every_rate_does():
     spec = parse_spec(world())
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     state, p = model.initial_values(spec)
-    from cells.models.inner_kinds import proton_buffer
+    from cells.kinds import proton_buffer
 
     read, ok = proton_buffer.PROTON_BUFFER.stage_read(state, p, xp=np)
     assert ok

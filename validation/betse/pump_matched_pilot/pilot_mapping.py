@@ -12,8 +12,8 @@ def check_held(row, variant, index, compiled, ledger):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.core.schedule import PhysicalIonicGraphControl, control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import PhysicalIonicGraphControl, control_values
     from cells.legacy.models import kinetic_finite_extracellular as model
 
     raw = row["trace"]["raw_steps"][index]

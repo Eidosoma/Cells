@@ -7,8 +7,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_cotransport_water_spec import MODEL_ID, cotransport_spec, water_spec
 from cells.legacy.models import surface_cotransport as transport
 from cells.legacy.models import surface_energy_water as prior
@@ -174,7 +174,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     m = spec.model
     compact = replace(
@@ -282,7 +282,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -324,7 +324,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [time])
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))

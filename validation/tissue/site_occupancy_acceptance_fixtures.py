@@ -38,7 +38,7 @@ import json
 import math
 from pathlib import Path
 
-from cells.models.operators.site_occupancy import SITES_PER_FMOL
+from cells.operators.site_occupancy import SITES_PER_FMOL
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
 

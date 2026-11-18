@@ -44,7 +44,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import mass_action, streams
 from cells.models.assembly_lineages_v2 import world as world_rules

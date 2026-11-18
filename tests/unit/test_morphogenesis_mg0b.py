@@ -14,10 +14,10 @@ from types import SimpleNamespace
 import jax
 import numpy as np
 
-from cells.core.specs import parse_spec
-from cells.core.surface_pump_v3_spec import control_values
+from cells.definitions.specs import parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.morphogenesis import mg0b_domain_wall as dw
 from validation.morphogenesis import mg0b_theory as theory
 from validation.tissue import surface_pump_v3_fixtures as fixtures

@@ -123,7 +123,7 @@ def over_water(
     """[water, scheduled_cell_replacement@2] on a raw @3 definition (v2 design §2): water as
     pump_water_fixtures.with_water declares it, then the replacement block of with_replacement
     under law @2, with its impermeant species. Templates' volume_pL are arrival volumes."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import pump_water_fixtures as wfx
 
     water = cs.frozen_definition(

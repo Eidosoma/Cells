@@ -40,9 +40,9 @@ NATIVE_FILES = (
     "betse/science/math/toolbox.py",
 )
 CELLS_FILES = (
-    "src/cells/core/schedule.py",
-    "src/cells/core/grid.py",
-    "src/cells/core/runner.py",
+    "src/cells/execution/schedule.py",
+    "src/cells/execution/grid.py",
+    "src/cells/execution/runner.py",
     "src/cells/legacy/models/finite_extracellular.py",
     "src/cells/numerics/fixed_step.py",
 )
@@ -296,9 +296,9 @@ def native_probe(p):
 def cells_probe():
     import numpy as np
 
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
 
     definition = copy.deepcopy(
         trajectory.trusted_registration()["cells_definitions"]["passive/jax_eager/0.00010000"]
@@ -348,7 +348,7 @@ def probe(kind):
 
     class Fence(importlib.abc.MetaPathFinder):
         def find_spec(self, fullname, path=None, target=None):
-            if fullname in {"betse.science.sim", "betse.science.simrunner", "cells.core.runner"}:
+            if fullname in {"betse.science.sim", "betse.science.simrunner", "cells.execution.runner"}:
                 raise AssertionError("Control probe imported integration entry: " + fullname)
 
     sys.meta_path.insert(0, Fence())

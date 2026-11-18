@@ -12,23 +12,23 @@ import jax
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import parse_batch, run_batch
-from cells.core.batch_windows import run_batch_windowed
-from cells.core.devices import execution_device
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.io import load_snapshot, write_run
+from cells.execution.batch import parse_batch, run_batch
+from cells.execution.batch_windows import run_batch_windowed
+from cells.execution.devices import execution_device
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.windows import WindowPolicy, run_windowed
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine as assembly
 from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.legacy.core.ip3_calcium_spec import base_spec
 from cells.legacy.models import ip3_calcium as model
 from cells.legacy.processes import ip3_release as process
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run
 from tests.batch_fixtures import definition
 from tests.reference_er_calcium import native_capture
 from tests.reference_ip3_calcium import (

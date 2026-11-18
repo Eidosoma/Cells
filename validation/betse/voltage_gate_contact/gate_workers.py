@@ -113,9 +113,9 @@ def cells_worker(registration):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.io import runtime_identity
+    from cells.laws.channels import voltage_gates
     from cells.numerics import fixed_step
-    from cells.processes import voltage_gates
+    from cells.records.io import runtime_identity
 
     c.require(jax.default_backend() == "cpu" and jax.config.x64_enabled, "Need CPU float64")
     c.require(not jax.config.jax_disable_jit, "JIT disabled")
@@ -123,7 +123,7 @@ def cells_worker(registration):
     c.require(voltage_gates.LAW_ID == registration["protocol"]["kinetic_law"], "Wrong law")
     c.require(voltage_gates.TEMPERATURE_K == 298.15, "Wrong temperature contract")
     modules = (voltage_gates, fixed_step)
-    paths = ("src/cells/processes/voltage_gates.py", "src/cells/numerics/fixed_step.py")
+    paths = ("src/cells/laws/channels/voltage_gates.py", "src/cells/numerics/fixed_step.py")
     c.require(
         all(
             Path(m.__file__).resolve() == c.ROOT / name

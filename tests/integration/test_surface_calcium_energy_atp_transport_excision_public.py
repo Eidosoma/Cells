@@ -6,15 +6,14 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.grid import EventGrid
-from cells.core.runner import timeline
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import Checkpoint
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.grid import EventGrid
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.core import surface_calcium_energy_atp_transport_excision_spec as schema
 from cells.legacy.core.excision import excise
 from cells.legacy.excision_io import (
@@ -24,8 +23,9 @@ from cells.legacy.excision_io import (
 )
 from cells.legacy.models import surface_calcium_energy_atp_transport as parent
 from cells.legacy.models import surface_calcium_energy_atp_transport_excision as model
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact
 from validation.tissue import calcium_energy_atp_transport_excision_fixtures as fixtures

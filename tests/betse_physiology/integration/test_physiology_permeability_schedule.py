@@ -7,8 +7,8 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import digest
+from cells.definitions.specs import digest
+from cells.execution.errors import NumericalError
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import active_nodes
 from tests.betse_physiology.integration.test_physiology_protein_loop import (
     budget,

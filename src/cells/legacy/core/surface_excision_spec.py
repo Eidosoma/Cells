@@ -3,8 +3,8 @@
 import json
 from dataclasses import dataclass, replace
 
-from cells.core import surface_tissue_spec as base
-from cells.core.specs import ConfigError, _fields
+from cells.definitions import surface_tissue_spec as base
+from cells.definitions.specs import ConfigError, _fields
 from cells.legacy.core.surface_energy_spec import _project
 from cells.legacy.processes.tissue_removal import LAW_ID
 
@@ -107,7 +107,7 @@ def parse(data):
             epoch_start_time=point.time,
         ),
     )
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     EventGrid(spec).exact_index(point.time)
     return spec

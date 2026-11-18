@@ -16,11 +16,11 @@ import copy
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 
@@ -318,7 +318,7 @@ def test_a_face_free_compartments_free_node_is_held_to_the_stage_rule():
 def test_a_held_row_has_one_writer():
     """Gap 8: a row a kind holds is moved by nothing in the step: refused where a route or another
     kind moves it, admitted where nothing does."""
-    from cells.core.inventory_species import add_inventory_species
+    from cells.registry.inventory_species import add_inventory_species
     from tests import kind_fixtures
 
     def holding(species):

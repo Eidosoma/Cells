@@ -11,11 +11,11 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.runner import branch_checkpoint, run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import branch_checkpoint, run
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.models import surface_mobile_pump_repair as model
+from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import surface_mobile_pump_repair_fixtures as fixtures
 
 
@@ -116,7 +116,7 @@ def windows(root, backend):
     assert loaded.spec.execution.backend == backend
     # Equal windows cover every accepted step, including off-grid controls.
     # One compiled length per process keeps the same memory guard as scalar runs.
-    from cells.core.runner import timeline
+    from cells.execution.runner import timeline
 
     total = len(timeline(loaded.spec)) - 1
     width = next(d for d in range(12, 0, -1) if total % d == 0)

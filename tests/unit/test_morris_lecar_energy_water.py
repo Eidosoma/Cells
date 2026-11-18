@@ -6,20 +6,20 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import morris_lecar_catalog as catalog
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_energy_spec import initial_ionic_spec
 from cells.legacy.core.surface_energy_water_spec import energy_spec
 from cells.legacy.models import surface_energy as old_energy
 from cells.legacy.models import surface_energy_morris_lecar as energy
 from cells.legacy.models import surface_energy_water as old_water
 from cells.legacy.models import surface_energy_water_morris_lecar as water
-from cells.models.registry import get_model
-from cells.processes import morris_lecar_catalog as catalog
-from cells.processes.electrochemistry import R
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_energy_water import evidence
 from tests.unit.test_surface_kinetic import exact
 from tests.unit.test_surface_water_kinetic import error_budget
@@ -280,7 +280,7 @@ def test_permanently_absent_water_route_rejects_accumulated_history():
 
 @pytest.mark.parametrize("kind", fixtures.KINDS)
 def test_complete_initial_snapshot(kind, tmp_path):
-    from cells.core.state import Checkpoint
+    from cells.execution.state import Checkpoint
 
     spec, y, p, _ = initial(kind, fixtures.compact_probe(kind))
     write_snapshot(tmp_path / "initial", spec, Checkpoint(y, p, 0.0, 0, 0))

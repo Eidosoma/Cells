@@ -9,9 +9,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.legacy.core import surface_calcium_energy_atp_transport_spec as schema
 from cells.legacy.models import surface_calcium_energy as pools
 from cells.legacy.models import surface_calcium_energy_atp_transport as model

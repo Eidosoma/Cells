@@ -4,7 +4,7 @@ All values are synthetic. Every world is quiescent in its ions, the species-only
 design's §7: passive cells (no pump, no channel, zero membrane permeability), every node at the
 bath's ion composition with a zero charge anchor, and zero ion diffusivity on every face, so no ion
 moves and the energy flows and bound are the species' own. The neutral species S is declared by
-the engine's helper (cells.core.inventory_species) at a trace background, with a species-scale
+the engine's helper (cells.registry.inventory_species) at a trace background, with a species-scale
 material floor; guard worlds start it from a pre-formed profile (the lead's ruling 5).
 
 * world: cells, each with a capacitive wall patch on the held bath ``bath`` (so every node is in a
@@ -22,8 +22,8 @@ import math
 
 import numpy as np
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
+from cells.definitions import pump_composite_spec as cs
+from cells.registry.inventory_species import add_inventory_species
 
 ION_SPECIES = (("Na", 1), ("K", 1), ("Cl", -1))
 BATH_mM = dict(Na=145.0, K=5.0, Cl=150.0)
@@ -113,7 +113,7 @@ def world(
     permeability (donor copies need one). concentrations_mM: S at named nodes (a pre-formed
     profile).
     """
-    from cells.processes import junction_gate
+    from cells.laws.junctions import junction_gate
 
     outside = [_node(b, 1.0, reservoir=True) for b in baths]
     outside += [_node(name, volume) for name, volume in nodes]
@@ -335,7 +335,7 @@ def heredity_chain(*, secreted, dt=1e-3, end=0.1, observation_times=None, profil
     world, design §11.1). The ions move: pumps, channels, junction-free contacts and ion faces.
     secreted: S declared (trace 1e-9 mM, D_S on every face, a pre-formed profile from cell_0 down
     the chain), else the four heredity species only. A composite definition with no operators."""
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.tissue import surface_pump_v3_fixtures as v3fx
 
     state = v3fx.HEREDITY_STATES["H"][:4]

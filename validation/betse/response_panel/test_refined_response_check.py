@@ -377,7 +377,7 @@ print("fence_pass")
 def test_registered_definitions_parse_without_integrating(registered):
     code = """
 import json, sys
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 for definition in json.load(sys.stdin).values():
     parse_spec(definition)
 print("48_declared_definitions_parse_no_integration")

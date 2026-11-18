@@ -1,8 +1,8 @@
 """D188 step 0's legacy inventory, built with D187's test audit: each registered model family's
 consumers, and what the modular path imports from older modules.
 
-A family is one definition module (src/cells/core/*_spec.py, or core/specs.py) with the model IDs
-it declares and the model modules src/cells/models/registry.py dispatches its classes to. For
+A family is one definition module (src/cells/core/*_spec.py, or definitions/specs.py) with the model IDs
+it declares and the model modules src/cells/registry/models.py dispatches its classes to. For
 each family the inventory gives:
   - its place in the import graph from the active entry points (ENTRIES: the modular tissue
     model @3, the composite, the operators, the kinds, the runner and execution). The registry is
@@ -43,7 +43,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
-REGISTRY = "cells.models.registry"
+REGISTRY = "cells.registry.models"
 # D188 R1: the older families' halves of the dispatch points live in the legacy registration;
 # the core's dispatch points reach it on a miss, through core/legacy_entry's one constant.
 REGISTRATION = "cells.legacy.registration"
@@ -51,33 +51,33 @@ TRANSIT = (REGISTRY, REGISTRATION)  # The transit nodes that import every family
 # Dispatch chains: modules that import every family to dispatch on it (the model registry,
 # the definition parser, the control schedules). They are reached but not expanded, and each
 # one's per-family imports are listed apart: move 1 refactors them (D188).
-DISPATCH = (REGISTRY, "cells.core.specs", "cells.core.schedule", REGISTRATION)
+DISPATCH = (REGISTRY, "cells.definitions.specs", "cells.execution.schedule", REGISTRATION)
 CLASSES = ("active", "decide", "legacy")
 ENTRIES = {
-    "@3": ["cells.models.surface_pump_v3", "cells.core.surface_pump_v3_spec"],
+    "@3": ["cells.models.surface_pump_v3", "cells.definitions.surface_pump_v3_spec"],
     "composite": [
         "cells.models.pump_composite",
         "cells.models.pump_composite_adapter",
-        "cells.core.pump_composite_spec",
+        "cells.definitions.pump_composite_spec",
     ],
-    "operators": ["cells.models.operators"],
+    "operators": ["cells.operators"],
     "kinds": [
-        "cells.core.kind_registry",
-        "cells.models.inner_kinds",
+        "cells.registry.kind_registry",
+        "cells.kinds",
         "cells.models.inner_laws",
-        "cells.core.species_registry",
-        "cells.core.inventory_species",
+        "cells.registry.species_registry",
+        "cells.registry.inventory_species",
     ],
     "runner and execution": [
-        "cells.core.runner",
-        "cells.core.windows",
-        "cells.core.vector_windows",
-        "cells.core.batch",
-        "cells.core.batch_windows",
-        "cells.core.projective",
-        "cells.core.devices",
-        "cells.core.phases",
-        "cells.continuity",
+        "cells.execution.runner",
+        "cells.execution.windows",
+        "cells.execution.vector_windows",
+        "cells.execution.batch",
+        "cells.execution.batch_windows",
+        "cells.execution.projective",
+        "cells.execution.devices",
+        "cells.execution.phases",
+        "cells.execution.continuity",
     ],
 }
 ID = re.compile(r"^[a-z][a-z0-9_]*@\d+$")
@@ -347,7 +347,7 @@ def registry_dispatch(index):
     return out
 
 
-SHARED = "cells.core.specs"  # The shared definitions module: one family per dispatched class.
+SHARED = "cells.definitions.specs"  # The shared definitions module: one family per dispatched class.
 
 
 def _snake(name):
@@ -381,7 +381,7 @@ def _class_id(cls, model, consts, chain):
 
 def families(index):
     """{family: {"definition", "classes", "models", "dispatch", "ids", "class_ids"}}: one per
-    definition module the registry dispatches from (one per class for core/specs.py)."""
+    definition module the registry dispatches from (one per class for definitions/specs.py)."""
     out = {}
     for spec, cls, model in registry_dispatch(index):
         key = f"{spec}:{cls}" if spec == SHARED else spec
@@ -443,7 +443,7 @@ def table_rows(index):
 
 def family_rows(fam, rows):
     """A family's rows in the model table: those keyed by one of its IDs, or naming its
-    definitions' module where that module defines no other family (core/specs.py defines many,
+    definitions' module where that module defines no other family (definitions/specs.py defines many,
     each matched by its ID; a namespaced ID such as cells.assembly_lineages@1 is matched by its
     module, since the inventory's ID pattern is the bare one)."""
     ids = set(fam["ids"]) | {i for i in fam["class_ids"].values() if i}
@@ -490,7 +490,7 @@ def g1_worlds(merged):
 def protocols():
     """validation.protocol_models.scan()'s rows, each with every model-ID-like string its file
     names (scan() keeps only IDs declared as *MODEL_ID constants; older families declare theirs
-    under other names, e.g. core/specs.py's BIOELECTRIC_ID)."""
+    under other names, e.g. definitions/specs.py's BIOELECTRIC_ID)."""
     from validation import protocol_models
 
     rows = protocol_models.scan()["rows"]
@@ -767,8 +767,8 @@ def runtime(args):
     doc = json.loads(Path(args.world).read_text())
     importlib.import_module(REGISTRY)
     before = {m for m in sys.modules if m.startswith("cells")}
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, iter_windows
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, iter_windows
 
     spec = parse_spec(doc["definition"])
     next(iter(iter_windows(spec, WindowPolicy(args.steps, "checkpoints"))))

@@ -14,10 +14,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 

@@ -129,8 +129,8 @@ def _load(name):
 
 
 def pair_specs(raw):
-    from cells.core import pump_composite_spec as cs
-    from cells.core.specs import parse_spec
+    from cells.definitions import pump_composite_spec as cs
+    from cells.definitions.specs import parse_spec
 
     return parse_spec(raw), parse_spec(cs.frozen_definition(raw))
 
@@ -139,7 +139,7 @@ def runner_pair(raw):
     """Frozen and composite runs through core/runner.run (host checks on every row)."""
     import time
 
-    from cells.core.runner import run
+    from cells.execution.runner import run
 
     frozen, composite = pair_specs(raw)
     started = time.perf_counter()
@@ -155,7 +155,7 @@ def windowed_pair(raw, window_steps=4000):
     """Frozen and composite runs through core/windows.run_windowed (observations policy)."""
     import time
 
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     out = []
     for spec in pair_specs(raw):
@@ -240,8 +240,8 @@ def evaluation_pair(raw, states, *, steps=4):
     import jax
     import jax.numpy as jnp
 
-    from cells.core.schedule import control_values
-    from cells.models.registry import get_model
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     frozen, composite = pair_specs(raw)
     out = []
@@ -299,7 +299,7 @@ def device_pair(first, second, chunk=512):
     import jax
     import jax.numpy as jnp
 
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     outputs = []
     for spec, result in (first, second):
@@ -368,7 +368,7 @@ def part_w1_dt(args, record):
 def _w1_states():
     """The P2 stationary guesses (H, U, D) and the frozen Newton solutions."""
     from cells.analysis import stationary as sa
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models import surface_pump_v3
 
     predictions = _load("w1")
@@ -424,7 +424,7 @@ def part_w1_drift(args, record):
 
 def _w2_arm_states(predictions, arm):
     from cells.analysis import stationary as sa
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from validation.tissue import pump_water_kcc_qualification as w2q
 
     raw = w2q.definition(predictions, arm)
@@ -498,11 +498,11 @@ def part_g2_order(args, record):
 def part_g2_vmap(args, record):
     import copy
 
-    from cells.core import pump_composite_spec as cs
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions import pump_composite_spec as cs
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     cases, qual = _g2_cases()
     w7 = [qual.at_dt(cases[n], 1e-3) for n in ("W7/literature", "W7/short_lag")]
@@ -547,7 +547,7 @@ def part_g2_vmap(args, record):
 
 
 def part_w37(args, record):
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.stationary import worlds
     from validation.tissue import cell_replacement_fixtures as fx
     from validation.tissue import cell_replacement_judge as judge
@@ -578,9 +578,9 @@ def part_w37(args, record):
 
 def part_scale(args, record):
     """The 825-node world (200 steps): empty, closed-water and event-free compositions."""
-    from cells.core import pump_composite_spec as cs
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions import pump_composite_spec as cs
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
     from validation.tissue import cell_replacement_fixtures as fx
     from validation.tissue import pump_water_fixtures as wfx
     from validation.tissue import surface_pump_v3_study as study

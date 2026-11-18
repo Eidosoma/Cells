@@ -233,7 +233,7 @@ def field_inputs(world, phase, cells_layout, *, boltzmann, vpatch):
     the same BETSE geometry. Update u spans [u dt, (u + 1) dt) and takes the latest Cells
     sample at or before u dt (the first sample for the earliest updates).
     """
-    from cells.processes.electrochemistry import F, R
+    from cells.laws.electrochemistry import F, R
     from validation.betse.emulator import spatial
 
     directory = Path(cells_layout)

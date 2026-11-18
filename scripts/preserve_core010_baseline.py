@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.io import _write_json, runtime_identity, source_hashes  # noqa: E402
+from cells.records.io import _write_json, runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_finite_extracellular_build import audit as audit_build  # noqa: E402
 from scripts.audit_spatial_extracellular_reference import audit as audit_reference  # noqa: E402
 from scripts.spatial_extracellular_artifacts import SOURCE_FILES  # noqa: E402

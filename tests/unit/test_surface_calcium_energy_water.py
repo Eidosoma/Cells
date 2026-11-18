@@ -6,18 +6,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
+from cells.execution.errors import NumericalError
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import morris_lecar_catalog as catalog
 from cells.legacy.core.surface_calcium_energy_spec import initial_prior_spec
 from cells.legacy.core.surface_calcium_energy_water_spec import energy_spec, minimum_energy_spec
 from cells.legacy.models import surface_calcium_energy as fuel
 from cells.legacy.models import surface_calcium_energy_water as model
 from cells.legacy.models import surface_calcium_water as chemical_water
-from cells.models.registry import get_model
-from cells.processes import morris_lecar_catalog as catalog
+from cells.registry.models import get_model
 from tests.unit.test_morris_lecar_catalog import perturb_free_calcium
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact

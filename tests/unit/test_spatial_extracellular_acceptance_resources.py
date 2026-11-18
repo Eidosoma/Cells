@@ -6,8 +6,8 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.io import _sha256 as sha
-from cells.io import runtime_identity, source_hashes
+from cells.records.io import _sha256 as sha
+from cells.records.io import runtime_identity, source_hashes
 from scripts import spatial_extracellular_acceptance_plan as science
 from scripts import spatial_extracellular_acceptance_resources as resources
 from scripts import verify_spatial_extracellular_build as driver

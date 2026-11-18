@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import leak_channels as leaks
+from cells.laws.channels import leak_channels as leaks
 from validation.channels import leak_channels_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

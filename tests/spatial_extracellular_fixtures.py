@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import SPATIAL_EXTRACELLULAR_ID, parse_spec
+from cells.definitions.specs import SPATIAL_EXTRACELLULAR_ID, parse_spec
 from cells.legacy.core.spatial_extracellular_spec import (
     CLOSURE,
     FACE_LAW,

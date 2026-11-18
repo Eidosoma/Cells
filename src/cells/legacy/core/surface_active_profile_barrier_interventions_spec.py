@@ -3,8 +3,8 @@
 from copy import deepcopy
 from dataclasses import asdict, dataclass, fields, replace
 
-from cells.core import surface_kinetic_spec as parent
-from cells.core.specs import ConfigError, SimulationSpec, _fields, digest
+from cells.definitions import surface_kinetic_spec as parent
+from cells.definitions.specs import ConfigError, SimulationSpec, _fields, digest
 from cells.legacy.core import active_profile_barrier_preparation as preparation
 from cells.legacy.core import surface_active_barrier_interventions_spec as barrier
 from cells.legacy.core import surface_active_profile_interventions_spec as membrane

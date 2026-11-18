@@ -1,4 +1,4 @@
-"""The scalar windows' device row check program and its admission (core/row_checks.py).
+"""The scalar windows' device row check program and its admission (execution/row_checks.py).
 
 docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.3. A stub model's device checks see exactly the rows
 the host check sees: row 0 (the window's start, its own predecessor), then each real row with
@@ -18,12 +18,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import row_checks
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.batch_windows import plan_batch_windows
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.vector_windows import plan_vector_windows
-from cells.core.windows import WindowPolicy, iter_windows, plan_windows
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution import row_checks
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.batch_windows import plan_batch_windows
+from cells.execution.vector_windows import plan_vector_windows
+from cells.execution.windows import WindowPolicy, iter_windows, plan_windows
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
 from tests.integration.test_cli import cli

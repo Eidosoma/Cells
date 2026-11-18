@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPTURE = ROOT / "runs/num-011-kinetic-pump-2026-09-16/candidate-01"

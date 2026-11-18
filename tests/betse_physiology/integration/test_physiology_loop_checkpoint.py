@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest, read_json
+from cells.definitions.specs import ConfigError, digest, read_json
 from tests.betse_physiology.integration.test_physiology_checkpoint import (
     assert_same_component,
     write_json,

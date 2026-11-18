@@ -11,9 +11,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
 from cells.legacy.core.tissue_spec import MODEL_ID
 from cells.legacy.models import finite_extracellular as finite
 from cells.legacy.models import junction_finite_extracellular as cluster
@@ -248,7 +248,7 @@ def check_steps(spec, steps, controls):
     for edge in spec.model.junctions:
         if maximum * (1.3 * np.exp(77 * edge.threshold_voltage_V) + 20) > 0.125:
             raise ConfigError("Tissue RK4 step does not resolve junction kinetics")
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     grid = EventGrid(spec)
     for time in spec.experiment.observation_times:

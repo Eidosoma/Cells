@@ -8,10 +8,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import runner
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, plan_windows
+from cells.definitions.specs import parse_spec
+from cells.execution import runner
+from cells.execution.runner import run
+from cells.execution.windows import WindowPolicy, iter_windows, plan_windows
 from tests.batch_fixtures import MODELS, short_spec
 from tests.unit.test_windows import assert_windows
 from validation.betse.emulator.rehost import REHOST_REASON

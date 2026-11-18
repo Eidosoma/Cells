@@ -23,7 +23,7 @@ from cells.assembly.io import (
     write_json,
 )
 from cells.assembly.spec import AssemblyError, load_spec, parse_spec
-from cells.core.output_paths import configure_caches, within_output_root
+from cells.execution.output_paths import configure_caches, within_output_root
 
 
 def utc():

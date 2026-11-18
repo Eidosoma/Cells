@@ -10,23 +10,23 @@ import jax
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.batch_windows import iter_batch_windows
-from cells.core.errors import NumericalError
-from cells.core.runner import (
+from cells.definitions.specs import ConfigError, load_spec, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.batch_windows import iter_batch_windows
+from cells.execution.errors import NumericalError
+from cells.execution.runner import (
     _compiled_discrete_rollout,
     branch_checkpoint,
     run,
     timeline,
     validate_checkpoint,
 )
-from cells.core.specs import ConfigError, load_spec, parse_spec
-from cells.core.state import Checkpoint
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models.registry import get_model
-from cells.window_io import write_windowed_run
+from cells.execution.state import Checkpoint
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.records.window_io import write_windowed_run
+from cells.registry.models import get_model
 from tests.unit import test_betse_spatial_active as short
 from tests.unit.test_windows import assert_windows
 from validation.betse.emulator import active as active

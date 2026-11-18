@@ -47,7 +47,7 @@ def declared(raw, solver):
 
 def version_pair(raw):
     """(version 2, version 3) specifications of one definition (composite_guard.pair_specs)."""
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.numerics import surface_field as field
 
     return (
@@ -241,8 +241,8 @@ def jaxprs(out, world_set="base", paths=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
+    from cells.definitions.specs import parse_spec
+    from cells.execution.state import initialise
     from cells.numerics import surface_field as field
 
     record = dict(world_set=world_set, worlds={})
@@ -310,9 +310,9 @@ def bindings(out, world_set="base", paths=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.schedule import control_values
-    from cells.models.registry import get_model
+    from cells.execution.schedule import control_values
     from cells.numerics import surface_field as field
+    from cells.registry.models import get_model
 
     record = dict(world_set=world_set, worlds={})
     same = True
@@ -367,9 +367,9 @@ def bindings(out, world_set="base", paths=()):
 
 def part_g2_vmap(args, record):
     """G2-Q1's vectorized cohorts (composite_guard.part_g2_vmap) under both declarations."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
     from cells.numerics import surface_field as field
     from validation.tissue import composite_guard as guard
 
@@ -385,7 +385,7 @@ def part_g2_vmap(args, record):
     for label, raws in (("2_W7", w7), ("8_C9", c9)):
 
         def evaluate(raws=raws):
-            from cells.core.specs import parse_spec
+            from cells.definitions.specs import parse_spec
 
             results = []
             for solver in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID):

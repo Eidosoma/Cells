@@ -13,7 +13,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import junction_gate
+from cells.laws.junctions import junction_gate
 from validation.betse.emulator import active, laws
 from validation.betse.emulator import spatial as passive
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes.junction_gate import Parameters
+from cells.laws.junctions.junction_gate import Parameters
 
 _spec = importlib.util.spec_from_file_location(
     "native_gate_compatibility", Path(__file__).parents[1] / "junction_gate/compatibility.py"

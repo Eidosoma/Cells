@@ -32,7 +32,7 @@ NEW_NAMES = (
 SOURCE_NAMES = tuple(f"validation/betse/voltage_gate_contact/{n}" for n in NEW_NAMES) + (
     "validation/betse/contact.py",
     "validation/betse/requirements-lock.txt",
-    "src/cells/processes/voltage_gates.py",
+    "src/cells/laws/channels/voltage_gates.py",
     "src/cells/numerics/fixed_step.py",
     "configs/reference/voltage_gated_channel_v1.json",
     "docs/BETSE_VOLTAGE_GATE_CONTACT.md",
@@ -181,7 +181,7 @@ def validate_workers(r, native, cells, registration_sha):
         cells["module_sha256"]
         == {
             n: r["sources_sha256"][n]
-            for n in ("src/cells/processes/voltage_gates.py", "src/cells/numerics/fixed_step.py")
+            for n in ("src/cells/laws/channels/voltage_gates.py", "src/cells/numerics/fixed_step.py")
         },
         "Production kernel identity changed",
     )

@@ -48,11 +48,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from validation.morphogenesis import mg0c_turing as mg
 from validation.reactions import chain_reference as cr
 from validation.tissue import secreted_species_fixtures as fx
@@ -356,8 +356,8 @@ import json, sys
 import jax
 jax.config.update("jax_enable_x64", True)
 import numpy as np
-from cells.core.runner import run
-from cells.io import load_snapshot
+from cells.execution.runner import run
+from cells.records.io import load_snapshot
 loaded = load_snapshot(sys.argv[1])
 result = run(loaded.spec, loaded.checkpoint)
 np.savez(sys.argv[2], **{k: np.asarray(v) for k, v in result.history._asdict().items()})
@@ -366,10 +366,10 @@ print(json.dumps(dict(start=int(loaded.checkpoint.step_index))))
 
 
 def test_restart_and_a_vector_batch_preserve_the_composed_worlds_results(tmp_path):
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
-    from cells.io import write_snapshot
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
+    from cells.records.io import write_snapshot
 
     spec = parse_spec(composition())
     result = run(spec)

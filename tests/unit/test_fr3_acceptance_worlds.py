@@ -15,9 +15,9 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.runner import timeline
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import timeline
+from cells.registry.models import get_model
 from validation.tissue import site_occupancy_acceptance_fixtures as af
 from validation.tissue import site_occupancy_acceptance_qualification as generator
 

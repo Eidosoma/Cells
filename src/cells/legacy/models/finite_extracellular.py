@@ -11,16 +11,12 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError
-from cells.core.state import FiniteExtracellularLayout, FiniteExtracellularState
-from cells.coupling.selective import gate_target, selective_flux
-from cells.legacy.models import multispecies_membrane as ionic
-from cells.legacy.models import physical_ionic_graph as graph
-from cells.legacy.models import voltage_gated_membrane as gated
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import (
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import FiniteExtracellularLayout, FiniteExtracellularState
+from cells.laws.channels.voltage_gates import TEMPERATURE_K, VOLTAGE_DOMAIN_V, kinetics
+from cells.laws.electrochemistry import (
     CHARGE_PER_FMOL,
     MOL_PER_FMOL,
     F,
@@ -29,7 +25,11 @@ from cells.processes.electrochemistry import (
     ghk_leak,
     reversible_pump,
 )
-from cells.processes.voltage_gates import TEMPERATURE_K, VOLTAGE_DOMAIN_V, kinetics
+from cells.laws.junctions.selective import gate_target, selective_flux
+from cells.legacy.models import multispecies_membrane as ionic
+from cells.legacy.models import physical_ionic_graph as graph
+from cells.legacy.models import voltage_gated_membrane as gated
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 STATE_TYPE = FiniteExtracellularState
 LAYOUT_TYPE = FiniteExtracellularLayout

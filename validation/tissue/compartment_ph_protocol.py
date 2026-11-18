@@ -855,7 +855,7 @@ DECLARED_WORLD_FR5 = (
 )
 EXECUTION_PATH = (
     "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
-    "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
+    "part runs its world as the one world of a vector window (cells.execution.vector_windows; the "
     "generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), "
     "which checks every accepted row on the device with the host checks' own functions and bounds "
     "(the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms "

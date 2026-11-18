@@ -7,16 +7,16 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import F
 from cells.legacy.core import surface_open_calcium_bath_events_spec as calcium_schema
 from cells.legacy.core import surface_open_calcium_energy_bath_events_spec as fuel_schema
 from cells.legacy.models import surface_open_calcium_bath_events as calcium
 from cells.legacy.models import surface_open_calcium_energy_bath_events as fuel
 from cells.legacy.processes import extracellular_face_transport as literal
 from cells.numerics.fixed_step import rk4_step
-from cells.processes.electrochemistry import F
 from validation.tissue import open_calcium_bath_fixtures as fixtures
 from validation.tissue import open_calcium_bath_reference as reference
 from validation.tissue import open_calcium_fixtures as static_fixtures

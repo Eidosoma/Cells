@@ -8,11 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells import batch_io
-from cells.core.batch import parse_batch
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.batch import parse_batch
+from cells.execution.state import initialise
+from cells.records import batch_io
+from cells.records.io import load_snapshot, write_snapshot
 from tests.batch_fixtures import definition
 
 

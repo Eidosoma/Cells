@@ -1,7 +1,7 @@
 """The older model families' registrations (D188 R1): the legacy halves of the dispatch points.
 
 The core's dispatch points check the active families (D189) first and, on a miss, call this
-module through its one entry point, `cells.core.legacy_entry.legacy()`:
+module through its one entry point, `cells.registry.legacy_entry.legacy()`:
 
 - `model_for(spec)`: `models/registry.get_model`;
 - `parse(data)` and `to_dict(self)`: `core/specs.parse_spec` and `SimulationSpec._fine_dict`;
@@ -21,17 +21,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from cells.core.schedule import (
-    CalciumControl,
-    ERControl,
-    GatedCalciumControl,
-    PlasmaControl,
-    SurfaceCalciumControl,
-    SurfaceMobilePumpRepairControl,
-    SurfaceMobileRepairControl,
-    SurfaceRepairControl,
-)
-from cells.core.specs import (
+from cells.definitions.specs import (
     BIOELECTRIC_ID,
     BIOELECTRIC_PAIR_ID,
     FINITE_EXTRACELLULAR_ID,
@@ -61,7 +51,7 @@ from cells.core.specs import (
     SpatialJunctionSpec,
     VoltageGatedSpec,
 )
-from cells.core.surface_kinetic_spec import (
+from cells.definitions.surface_kinetic_spec import (
     SurfaceCalciumActivatedModel,
     SurfaceCatalogModel,
     SurfaceCavModel,
@@ -74,8 +64,17 @@ from cells.core.surface_kinetic_spec import (
     SurfaceMorrisLecarModel,
     SurfaceSodiumModel,
 )
-from cells.core.surface_tissue_spec import SurfaceTissueModel
-from cells.io import load_snapshot
+from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+from cells.execution.schedule import (
+    CalciumControl,
+    ERControl,
+    GatedCalciumControl,
+    PlasmaControl,
+    SurfaceCalciumControl,
+    SurfaceMobilePumpRepairControl,
+    SurfaceMobileRepairControl,
+    SurfaceRepairControl,
+)
 from cells.legacy.core.er_spec import (
     ERChange,
     ERModel,
@@ -257,6 +256,7 @@ from cells.legacy.models import (
     voltage_gated_membrane,
 )
 from cells.models import surface_kinetic, surface_tissue
+from cells.records.io import load_snapshot
 
 
 def model_for(spec):
@@ -881,7 +881,7 @@ def model_for(spec):
 def parse(data):
     """`parse_spec`'s older families by model ID, in its order: the parsed definition (None when
     none matches). The projective pre-check, the active families and the inline definitions
-    (source_decay@1, emt_mirna@1, passive_pair@1, reaction_transport@1) stay in core/specs.py."""
+    (source_decay@1, emt_mirna@1, passive_pair@1, reaction_transport@1) stay in definitions/specs.py."""
     if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_open_calcium_bath_epoch@1"
@@ -1206,7 +1206,7 @@ def parse(data):
         "resolved_tissue@11",
         "resolved_tissue@12",
     ):
-        from cells.core.surface_kinetic_spec import parse
+        from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") in (
@@ -1442,7 +1442,7 @@ def parse(data):
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":
-        from cells.core.surface_tissue_spec import parse
+        from cells.definitions.surface_tissue_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "spatial_calcium@5":
@@ -1943,7 +1943,7 @@ def to_dict(self):
 
     if isinstance(m, SurfaceActiveExcisionModel):
         return to_dict(self)
-    from cells.core.surface_kinetic_spec import SurfaceKineticModel, to_dict
+    from cells.definitions.surface_kinetic_spec import SurfaceKineticModel, to_dict
 
     if isinstance(m, SurfaceKineticModel):
         return to_dict(self)
@@ -1974,7 +1974,7 @@ def to_dict(self):
 
     if isinstance(m, EnvironmentBarrierModel):
         return barrier_to_dict(self)
-    from cells.core.surface_tissue_spec import SurfaceTissueModel, to_dict
+    from cells.definitions.surface_tissue_spec import SurfaceTissueModel, to_dict
 
     if isinstance(m, SurfaceTissueModel):
         return to_dict(self)
@@ -2065,7 +2065,9 @@ def control_values(spec, times):
     """`control_values`' older families, in its order: their model entries, then the change
     types of the moved modules (surface calcium, gated, plasma and stored calcium, ER,
     reactions). None when none matches, or when there are no changes (the core's zeros)."""
-    from cells.core.schedule import control_values  # Recursion: the core's whole chain, as before.
+    from cells.execution.schedule import (
+        control_values,  # Recursion: the core's whole chain, as before.
+    )
     from cells.legacy.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
     from cells.legacy.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
 

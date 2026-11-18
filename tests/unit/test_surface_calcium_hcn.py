@@ -6,14 +6,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import timeline
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import timeline
 from cells.legacy.assembly_cluster.spec import channel_owners
 from cells.legacy.ensemble.cluster import aggregate
 from cells.legacy.models import surface_calcium_hcn as model
 from cells.legacy.models import surface_calcium_sodium as prior
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.unit import test_surface_calcium as shared
 from tests.unit import test_surface_calcium_sodium as sodium
 from tests.unit.test_surface_kinetic import assert_states, exact

@@ -12,8 +12,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_calcium_energy_water_hcn_extra_spec import MODEL_ID as MODEL_ID
 from cells.legacy.core.surface_calcium_energy_water_hcn_extra_spec import (
     energy_spec,
@@ -29,7 +30,6 @@ from cells.models import surface_tissue as passive
 from cells.numerics import osmotic_water as water
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import ordered_scatter, scatter
-from cells.processes.electrochemistry import R
 
 EXTRA_AXES = water_model.EXTRA_AXES | {"pool_volume_work_pJ": ["cell_slot"]}
 STATE_AXES = prior.STATE_AXES | EXTRA_AXES
@@ -257,7 +257,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     table = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -409,7 +409,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)

@@ -14,12 +14,12 @@ import re
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import species_common, species_exchange, species_turnover
-from cells.models.registry import get_model
+from cells.operators import species_common, species_exchange, species_turnover
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
 EVENT = 0.003
@@ -461,7 +461,7 @@ def test_padded_capacities_and_a_species_scale_energy_negative_control():
     species-only world (its flows are the species' own)."""
     from types import SimpleNamespace
 
-    from cells.core.errors import NumericalError
+    from cells.execution.errors import NumericalError
 
     raw = full_world()
     x = raw["execution"]
@@ -489,7 +489,7 @@ def test_padded_capacities_and_a_species_scale_energy_negative_control():
 
 def test_a_batch_refuses_worlds_with_different_route_structures():
     """The batch signature carries the static route structure (§7); rates are per-world data."""
-    from cells.core.batch import parse_batch
+    from cells.execution.batch import parse_batch
 
     a = turnover_world()
     b = fx.with_turnover(

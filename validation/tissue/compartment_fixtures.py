@@ -121,7 +121,7 @@ def without_compartment(*, dt=1e-3, end=0.02, solver=fx.IMEX, observation_times=
 
 def _anchor(node, charge):
     """Set a node's charge anchor to `charge` (C), its fixed charge to match (the anchor rule)."""
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     ions = math.fsum(z * node["initial_amount_fmol"][s] for s, z in fx.ION_SPECIES)
     node["initial_charge_C"] = charge
@@ -158,9 +158,9 @@ def live_without_compartment(**kwargs):
 
 def bindings(raw):
     """{name: array} of a definition's bindings (composite_crossrev.bindings' arrays)."""
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     spec = parse_spec(raw)
     model = get_model(spec.model)
@@ -211,8 +211,8 @@ def silence(spec, observations, *, node=NODE, patch=PATCH, owner=OWNER):
     max_phi_owner and max_phi_node (the largest |potential|), loaded (S's increment at the node
     over the rows, when S is declared)}. S2 and S3 hold when their ratios are at most 1.
     """
-    from cells.models.registry import get_model
     from cells.numerics import surface_field as field
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     state, _ = model.initial_values(spec)

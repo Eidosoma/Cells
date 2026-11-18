@@ -53,9 +53,9 @@ WINDOW = ["--window-steps", "8", "--recording", "checkpoints"]
 APPEND = None  # An edit that appends to its file.
 EDITS = {
     "host": [
-        ("core/phases.py", APPEND, '\n\ndef acceptance_note():\n    return "host only"\n'),
+        ("execution/phases.py", APPEND, '\n\ndef acceptance_note():\n    return "host only"\n'),
         (
-            "core/vector_windows.py",
+            "execution/vector_windows.py",
             "        self.seconds = perf_counter() - tick\n",
             "        self.seconds = perf_counter() - tick\n"
             "        self.host_note = worlds  # Acceptance-test edit: host only.\n",
@@ -79,7 +79,7 @@ EDITS = {
     ],
     "benign": [
         (
-            "core/vector_windows.py",
+            "execution/vector_windows.py",
             "        following = _Round(plan, grids, starts, ids, current.stops, False)\n",
             "        following = _Round(plan, grids, starts, ids, current.stops, False)\n"
             '        phases.detail("acceptance.round", index=round_index + 1)  # Host only.\n',
@@ -87,7 +87,7 @@ EDITS = {
     ],
     "ulp": [
         (
-            "core/vector_windows.py",
+            "execution/vector_windows.py",
             "        following = _Round(plan, grids, starts, ids, current.stops, False)\n",
             "        following = _Round(plan, grids, starts, ids, current.stops, False)\n"
             "        moved = following.arrays[2]._replace(\n"
@@ -98,7 +98,7 @@ EDITS = {
     ],
     "builder": [
         (
-            "core/vector_windows.py",
+            "execution/vector_windows.py",
             "        self.arrays = (steps, counts, _stack(tables), index, slots, origin)\n",
             "        table = _stack(tables)\n"
             "        if not first_round:  # Acceptance-test edit: pump controls 1e-6 higher.\n"
@@ -128,7 +128,7 @@ EDITS = {
     ],
     "binding": [
         (
-            "core/schedule.py",
+            "execution/schedule.py",
             "        return replacement.control_values(spec, times)\n",
             "        table = replacement.control_values(spec, times)  # Acceptance-test edit:\n"
             "        return table._replace(pump=np.nextafter(table.pump, 0.0))  # one ulp.\n",
@@ -246,8 +246,8 @@ GPU_CHECKPOINT = (
     "import sys\n"
     "from validation.continuity import probe\n"
     "probe.patch_execution_device()\n"
-    "from cells.batch_io import write_batch_snapshot\n"
-    "from cells.core.state import initialise\n"
+    "from cells.records.batch_io import write_batch_snapshot\n"
+    "from cells.execution.state import initialise\n"
     "from validation.continuity.dev_run import cohort\n"
     "spec = cohort(40, backend='gpu')\n"
     "write_batch_snapshot(sys.argv[1], spec, {w.world_id: initialise(w.simulation)\n"
@@ -258,8 +258,8 @@ GPU_LOAD = (
     "import sys\n"
     "from validation.continuity import probe\n"
     "probe.patch_execution_device()\n"
-    "from cells import continuity\n"
-    "from cells.batch_io import load_batch_snapshot\n"
+    "from cells.execution import continuity\n"
+    "from cells.records.batch_io import load_batch_snapshot\n"
     "request = continuity.Request(sys.argv[2], path='vector_windows',\n"
     "                             policy={'window_steps': 8, 'recording': 'checkpoints'})\n"
     "saved = load_batch_snapshot(sys.argv[1], continuity=request)\n"
@@ -294,7 +294,7 @@ def gpu(world):
 def test_host_only_edits_are_admitted_and_resume_bitwise(world):
     code, proposed, s1, out = propose(world, "host")
     assert code == 0
-    assert proposed["changed_files"] == ["core/phases.py", "core/vector_windows.py"]
+    assert proposed["changed_files"] == ["execution/phases.py", "execution/vector_windows.py"]
     assert proposed["scope"]["horizon_rounds"] == 4 and proposed["scope"]["overlap_rounds"] == 2
     done = run_tool(
         "admit", "finalise", "--proposed", out / "proposed.json",
@@ -331,9 +331,9 @@ def test_host_only_edits_are_admitted_and_resume_bitwise(world):
 
 def test_the_record_is_refused_under_any_other_tree(world):
     """In this process (this checkout, S0's source) the host record binds nothing."""
-    from cells import continuity
-    from cells.batch_io import load_batch_snapshot
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
+    from cells.execution import continuity
+    from cells.records.batch_io import load_batch_snapshot
 
     checkpoint = world["run0"] / "snapshots" / "round-000001"
     assert load_batch_snapshot(checkpoint).admission is None  # Same source: no record needed.
@@ -350,7 +350,7 @@ def test_the_record_is_refused_under_any_other_tree(world):
 def test_a_benign_loop_edit_is_admitted(world):
     code, proposed, _, _ = propose(world, "benign")
     assert code == 0, proposed.get("reason")
-    assert proposed["changed_files"] == ["core/vector_windows.py"]
+    assert proposed["changed_files"] == ["execution/vector_windows.py"]
 
 
 def test_comment_and_docstring_edits_in_traced_code_are_admitted(world):
@@ -402,7 +402,7 @@ def test_a_tree_without_an_entry_point_cannot_decide(world):
     assert admit.propose(admission(world, s1, out), launcher=world["launcher"]) == 3
     refusal = json.loads((out / "refusal.json").read_text())
     assert refusal["verdict"] == "cannot_decide"
-    assert "cells.core.vector_windows._Round" in refusal["reason"]
+    assert "cells.execution.vector_windows._Round" in refusal["reason"]
 
 
 def test_a_gpu_checkpoint_is_admitted_with_the_patch_noted(world, gpu):

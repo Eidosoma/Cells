@@ -11,15 +11,15 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.runner import branch_checkpoint, timeline, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.io import load_snapshot, write_snapshot
-from cells.models.registry import get_model
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.runner import branch_checkpoint, timeline, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.integration.test_surface_bath_events_public import invoke
 from tests.surface_open_calcium_fixtures import OWNERS, PREFIX_DT, definition, prefix
 from tests.unit.test_surface_catalog import evidence

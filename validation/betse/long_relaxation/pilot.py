@@ -473,7 +473,7 @@ def make_plan(original):
 
 
 def cell_spec(plan, preparation, dt):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     u.module_path("pump_matched_pilot")
     import pilot_context
@@ -489,9 +489,9 @@ def cell_spec(plan, preparation, dt):
 
 def cell_preflight(plan, preparation):
     """Check every actual production grid before any trajectory or native run."""
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.specs import digest
+    from cells.definitions.specs import digest
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
 
     rows = []
     for dt in plan["cells_steps_s"]:
@@ -591,8 +591,8 @@ def inputs(parent, references):
 def cells(root, registration, directory):
     import numpy as np
 
-    from cells.core.runner import run
-    from cells.io import load_snapshot, write_run
+    from cells.execution.runner import run
+    from cells.records.io import load_snapshot, write_run
 
     u.module_path("pump_matched_pilot")
     import pilot_context

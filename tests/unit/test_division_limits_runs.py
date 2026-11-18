@@ -36,11 +36,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import pump_composite_adapter as adapter
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.registry.models import get_model
 from tests import partition_fixtures as fx
 
 DT = 2.5e-4

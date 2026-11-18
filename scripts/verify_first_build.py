@@ -12,8 +12,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import load_spec, read_json
-from cells.io import load_snapshot, source_hashes
+from cells.definitions.specs import load_spec, read_json
+from cells.records.io import load_snapshot, source_hashes
 
 
 def require(condition, message):

@@ -19,16 +19,16 @@ import numpy as np
 import pytest
 from scipy import optimize
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_water_spec import Control, control_values
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_water_spec import Control, control_values
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.laws.electrochemistry import R
 from cells.models import surface_pump_v3, surface_pump_water
-from cells.models.registry import get_model
 from cells.numerics import osmotic_water as water
 from cells.numerics import surface_imex as imex
-from cells.processes.electrochemistry import R
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 

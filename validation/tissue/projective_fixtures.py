@@ -1,4 +1,4 @@
-"""Worlds and projective blocks for the coarse projective mode (core/projective.py).
+"""Worlds and projective blocks for the coarse projective mode (execution/projective.py).
 
 pump_cells(): independent resolved_pump_tissue@1 cells, each facing its own held
 bath, with the heredity pre-screen's passive and pump parameters
@@ -15,7 +15,7 @@ projective_block(): an execution.projective block with every field explicit.
 import copy
 import math
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
 TEMPERATURE_K = 310.0
 VOLUME_PL = 0.7505222518670602

@@ -80,10 +80,10 @@ def diagnostic_grid(inputs, subdivisions, start, end):
 def production(root):
     import numpy as np
 
-    from cells.core.errors import NumericalError
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
     from cells.legacy.models import surface_cotransport_water as model
     from cells.legacy.processes import finite_energy as fuel
     from cells.numerics.fixed_step import rk4_step

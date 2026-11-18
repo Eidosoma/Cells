@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from cells.core.specs import read_json
-from cells.io import _sha256 as sha
+from cells.definitions.specs import read_json
+from cells.records.io import _sha256 as sha
 from scripts import spatial_extracellular_acceptance_plan as plan
 from scripts.spatial_extracellular_production_audit import authenticate, require
 

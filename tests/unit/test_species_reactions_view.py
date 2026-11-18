@@ -1,4 +1,4 @@
-"""local_species_reactions@1 in the run view (docs/RUN_VIEW_DESIGN.md §3; cells/run_view.py): the
+"""local_species_reactions@1 in the run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py): the
 operator's view declarations, which the gap-junction replication's viewer example needs (D207).
 
 Each claim with a planted error it must catch (D187):
@@ -18,12 +18,12 @@ import json
 
 import pytest
 
-from cells import run_view
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.io import write_run
-from cells.models.operators import OPERATORS
-from cells.models.operators import species_reactions as sr
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.operators import OPERATORS
+from cells.operators import species_reactions as sr
+from cells.records import run_view
+from cells.records.io import write_run
 from cells.registry import declarations
 from tests.run_view_fixtures import load, plant
 from validation.tissue import species_reactions_fixtures as rfx

@@ -1,4 +1,4 @@
-"""Vectorized resolved_pump_tissue@3 worlds (core/vector_windows.py) against single worlds.
+"""Vectorized resolved_pump_tissue@3 worlds (execution/vector_windows.py) against single worlds.
 
 A batch of heterogeneous worlds with all five channel laws (the eight-population
 fixture, channels switched on mid-run) reproduces each world's own windowed run
@@ -16,18 +16,18 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.batch_windows import run_batch_windowed
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.vector_windows import WorldCheckError, iter_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.batch_windows import run_batch_windowed
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
+from cells.execution.vector_windows import WorldCheckError, iter_vector_windows, run_vector_windowed
+from cells.execution.windows import WindowPolicy, run_windowed
 from cells.models import surface_pump, surface_pump_v3
-from cells.models.registry import get_model
 from cells.numerics import surface_imex as imex
+from cells.registry.models import get_model
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 POLICY = WindowPolicy(5, "checkpoints")
@@ -221,9 +221,9 @@ def test_held_controls_are_the_per_slot_schedule_controls_read_once(monkeypatch)
     control (the release schedule and a world-specific change), its segments are
     event_index per slot, and the schedule is read a fixed number of times per call
     however many slots the window has (@3 rebuilds experiment.changes per access)."""
-    from cells.core import surface_pump_v2_spec
-    from cells.core.schedule import event_index
-    from cells.core.vector_windows import held_controls
+    from cells.definitions import surface_pump_v2_spec
+    from cells.execution.schedule import event_index
+    from cells.execution.vector_windows import held_controls
 
     spec = definition(change=CHANGE)
     grid = EventGrid(spec)

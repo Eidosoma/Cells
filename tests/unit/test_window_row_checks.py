@@ -23,14 +23,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import row_checks
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, run_windowed
+from cells.definitions.specs import parse_spec
+from cells.execution import row_checks
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.windows import WindowPolicy, iter_windows, run_windowed
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
-from cells.window_io import write_windowed_run
+from cells.records.window_io import write_windowed_run
 from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
 from validation.tissue import surface_pump_fixtures
 

@@ -131,10 +131,10 @@ def test_ionic_aggregation_does_not_invent_assembly_statistics():
 
 def test_ionic_checkpoint_window_replay_and_scalar_parity(tmp_path):
     from cells.assembly.engine import device_for
-    from cells.core.batch_windows import iter_batch_windows
-    from cells.core.runner import run as scalar
-    from cells.core.windows import WindowPolicy
     from cells.ensemble import ionic
+    from cells.execution.batch_windows import iter_batch_windows
+    from cells.execution.runner import run as scalar
+    from cells.execution.windows import WindowPolicy
 
     raw = experiment("ionic", backend=BACKEND)["arms"][0]["definition"]
     spec = parse_definition(bind_definition(raw, worlds=2, world_id_start=0, seed=123))

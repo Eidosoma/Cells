@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
-from cells.processes import junction_gate as gate
+from cells.laws.junctions import junction_gate as gate
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check as panel_check  # noqa: E402

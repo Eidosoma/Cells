@@ -1,4 +1,4 @@
-"""Throughput of vectorized resolved-pump worlds (core/vector_windows.py) on one GPU.
+"""Throughput of vectorized resolved-pump worlds (execution/vector_windows.py) on one GPU.
 
 Engine models: resolved_pump_tissue@1, @2 and @3, IMEX ARS(2,2,2) at dt = 1 ms
 on the synthetic 825-node world of validation/tissue/resolved_scale_world.py
@@ -16,12 +16,12 @@ Parts (one process each, so compile time and peak memory are per configuration):
               device (block_until_ready per window) with optional DCGM counters
   endtoend    run_vector_windowed over whole windows: host preparation, transfers,
               observation checks and device time, as the ensemble runner sees them
-  sequential  the existing guarded lax.map path (core/batch_windows.py) with its
+  sequential  the existing guarded lax.map path (execution/batch_windows.py) with its
               per-step host checks, for comparison
   components  the window's parts timed alone: vmapped IMEX steps, device checks,
               batched dense Cholesky factorization and solve
   equivalence heterogeneous worlds (--heterogeneous implied): the vectorized batch
-              against each world's own windowed run (core/windows.py) on the same
+              against each world's own windowed run (execution/windows.py) on the same
               backend; state and membrane-voltage differences
   checks      one world's accepted rows (core/runner.run): the model's device checks
               against its host check_values row for row (verdicts and diagnostics
@@ -46,9 +46,9 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.batch import BatchSpec, WorldSpec  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.windows import WindowPolicy  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.batch import BatchSpec, WorldSpec  # noqa: E402
+from cells.execution.windows import WindowPolicy  # noqa: E402
 from cells.numerics import surface_imex as imex  # noqa: E402
 from validation.tissue import resolved_scale_world as world  # noqa: E402
 
@@ -187,9 +187,9 @@ def counters_start(args, directory):
 
 def setup(args, steps, report):
     """Planned cohort, validated starts and resident device inputs, timed."""
-    from cells.core import vector_windows as vw
-    from cells.core.devices import execution_device
-    from cells.models.registry import get_model
+    from cells.execution import vector_windows as vw
+    from cells.execution.devices import execution_device
+    from cells.registry.models import get_model
 
     began = time.perf_counter()
     spec = batch(args, steps)
@@ -223,7 +223,7 @@ def setup(args, steps, report):
 
 
 def part_vector(args):
-    from cells.core import vector_windows as vw
+    from cells.execution import vector_windows as vw
 
     label = f"vector-model{args.model}-worlds{args.worlds}"
     label += "-heterogeneous" if args.heterogeneous else ""
@@ -341,7 +341,7 @@ def part_components(args):
 
 
 def part_endtoend(args):
-    from cells.core.vector_windows import run_vector_windowed
+    from cells.execution.vector_windows import run_vector_windowed
 
     label = f"endtoend-model{args.model}-worlds{args.worlds}"
     steps = args.window * args.max_windows
@@ -372,7 +372,7 @@ def part_endtoend(args):
 
 
 def part_sequential(args):
-    from cells.core.batch_windows import iter_batch_windows
+    from cells.execution.batch_windows import iter_batch_windows
 
     label = f"sequential-model{args.model}-worlds{args.worlds}"
     steps = args.window * args.max_windows
@@ -401,8 +401,8 @@ def part_sequential(args):
 
 
 def part_equivalence(args):
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import run_windowed
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import run_windowed
 
     args.heterogeneous = True
     label = f"equivalence-{args.backend}-model{args.model}-worlds{args.worlds}"
@@ -489,10 +489,10 @@ def seeded_fault(history, p, kind, row):
 
 def part_checks(args):
     """Device checks against host check_values on one world's accepted rows."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
     from cells.models import surface_pump as family
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     label = f"checks-{args.backend}-model{args.model}"
     steps = args.window * args.max_windows

@@ -10,7 +10,7 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
-from cells.processes.electrochemistry import electrochemical_potential, ghk_leak
+from cells.laws.electrochemistry import electrochemical_potential, ghk_leak
 
 LAW_ID = "mitochondrial_passive_continuous_si@1"
 # Cited source law: the native discrete BETSE 1.5.0 mitochondrial ion/voltage

@@ -10,9 +10,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells import io as numeric_io
-from cells.core.state import Checkpoint
+from cells.execution.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
+from cells.records import io as numeric_io
 from tests.betse_physiology.unit.test_physiology_active_temperature import KINDS, serial, setup
 from validation.betse.physiology.core import physiology_active_temperature_arrays as prepared
 from validation.betse.physiology.models import physiology_active_temperature_arrays as arrays

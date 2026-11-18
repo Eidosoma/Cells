@@ -12,18 +12,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
 from cells.legacy.core.surface_mobile_repair_spec import prior_spec
 from cells.legacy.models import surface_mobile_repair as model
 from cells.legacy.models import surface_repair as prior
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
+from cells.records.io import load_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_mobile_channel import error_budget, exact
 from validation.tissue import surface_mobile_repair_fixtures as fixtures
 from validation.tissue import surface_mobile_repair_reference as reference

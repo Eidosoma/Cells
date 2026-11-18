@@ -14,13 +14,13 @@ stage read carries: finite fuel's bookkeeping in miniature. It stores the standa
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.surface_pump_v3_spec import control_values
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import R
+from cells.definitions.specs import parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.runner import run
+from cells.laws.electrochemistry import R
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from validation.tissue import pump_water_fixtures as water_fixtures
 
@@ -105,9 +105,9 @@ def test_every_ledger_closes_and_the_observed_rows_stay_closed():
 
 
 def test_the_device_ledgers_take_the_net_production_on_the_vector_window_path():
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution import vector_windows
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     big = 2**53 - 1
     with kind_registry.scope(kf.registry(kf.conversion())):

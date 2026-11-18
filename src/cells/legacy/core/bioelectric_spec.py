@@ -6,8 +6,8 @@ No model name or assay outcome selects numerical behaviour.
 
 from dataclasses import asdict
 
-from cells.core.spec_values import positive, signed_number
-from cells.core.specs import (
+from cells.definitions.spec_values import positive, signed_number
+from cells.definitions.specs import (
     BIOELECTRIC_ID,
     BathSpec,
     BioelectricSpec,

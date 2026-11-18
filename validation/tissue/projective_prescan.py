@@ -56,8 +56,8 @@ def f2_definition(scale, *, end_time=HORIZON_S, backend="cpu", every=30.0):
 
 def lingering(scale, *, backend, horizon=HORIZON_S):
     """Fine steps of one scale until the switch or the horizon: its record."""
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
     from cells.models import surface_pump_projective as readouts
     from cells.models import surface_pump_v3 as model
 

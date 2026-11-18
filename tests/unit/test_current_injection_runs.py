@@ -12,10 +12,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import pump_water_fixtures as fx
 
 jax.config.update("jax_enable_x64", True)
@@ -125,9 +125,9 @@ def pulsed_cleft(current):
 def test_pulses_across_the_onset_and_their_vmapped_batch():
     """Host checks close with pulses before and after the onset; a vmapped batch of two
     currents reproduces each world's own run to rounding (it compiles differently)."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     specs = [pulsed_cleft(1e-12), pulsed_cleft(2e-12)]
     singles = [run(s) for s in specs]

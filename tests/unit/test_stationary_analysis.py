@@ -21,7 +21,7 @@ import pytest
 from cells.analysis import cli
 from cells.analysis import continuation as cont
 from cells.analysis import stationary as sa
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from validation.stationary import worlds
 from validation.tissue import surface_pump_fixtures as pump_fixtures
 

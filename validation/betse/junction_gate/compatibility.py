@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from cells.processes import junction_gate as physical
+from cells.laws.junctions import junction_gate as physical
 
 
 def class_initialization(voltage, block, parameters, *, xp=np):

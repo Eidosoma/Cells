@@ -8,7 +8,7 @@ recipe replay starts from the saved source, not from the saved successor.
 from copy import deepcopy
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy import tissue_profiles as static
 from cells.legacy.core import tissue_profile_composition_preparation as composed
 from cells.legacy.core import tissue_profile_preparation as direct

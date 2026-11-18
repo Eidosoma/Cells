@@ -2,8 +2,8 @@
 
 from dataclasses import asdict, replace
 
-from cells.core.spec_values import _tuple
-from cells.core.specs import (
+from cells.definitions.spec_values import _tuple
+from cells.definitions.specs import (
     MULTISPECIES_ID,
     PHYSICAL_IONIC_GRAPH_ID,
     VOLTAGE_GATED_ID,

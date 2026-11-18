@@ -7,9 +7,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core import surface_active_bath_events_spec as active_schema
 from cells.legacy.core import surface_bath_events_binding as binding
 from cells.legacy.core import surface_passive_bath_events_spec as passive_schema
@@ -17,7 +18,6 @@ from cells.legacy.models import surface_active_bath_events as active
 from cells.legacy.models import surface_passive_bath_events as passive
 from cells.legacy.processes import extracellular_face_transport as literal
 from cells.numerics.fixed_step import rk4_step
-from cells.processes.electrochemistry import F, R
 from validation.transport import surface_bath_events_fixtures as fixtures
 from validation.transport import surface_bath_events_reference as reference
 

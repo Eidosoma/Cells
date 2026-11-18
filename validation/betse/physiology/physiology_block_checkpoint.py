@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import source_hashes
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.records.io import source_hashes
 from validation.betse.physiology import physiology_checkpoint as paired
 from validation.betse.physiology.core import physiology_block_control_step as step
 from validation.betse.physiology.models import physiology_block_control_view as blocks

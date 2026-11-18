@@ -10,7 +10,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from cells.core.schedule import SurfaceCalciumControl
+from cells.execution.schedule import SurfaceCalciumControl
 from cells.legacy.core.surface_calcium_energy_spec import Control as FuelControl
 from cells.legacy.models import surface_calcium as calcium
 from cells.legacy.models import surface_calcium_energy as fuel

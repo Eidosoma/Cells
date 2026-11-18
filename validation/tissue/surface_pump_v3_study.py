@@ -30,13 +30,13 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.surface_pump_v3_spec import (  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.definitions.surface_pump_v3_spec import (  # noqa: E402
     KIR2P1_LAW_ID,
     NALEAK_LAW_ID,
     NAV1P2_LAW_ID,
 )
+from cells.execution.runner import run  # noqa: E402
 from validation.tissue import resolved_scale_world as world  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fixtures  # noqa: E402
 
@@ -293,7 +293,7 @@ def part_charge(args):
     """
     import jax.numpy as jnp
 
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump_v3 as model
 
     dt, chunk = 1e-3, 1000

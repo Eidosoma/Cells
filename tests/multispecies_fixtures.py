@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from cells.core.specs import MULTISPECIES_ID, parse_spec
+from cells.definitions.specs import MULTISPECIES_ID, parse_spec
 
 
 def definition(case, *, dt=0.01, jit=True, capacity=1, membrane_capacity=1, samples=None):

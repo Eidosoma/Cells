@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes import junction_gate
+from cells.laws.junctions import junction_gate
 from validation.betse.emulator import junction as model
 from validation.betse.spatial_active import fixtures, refinement
 

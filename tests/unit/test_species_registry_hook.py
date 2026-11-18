@@ -12,9 +12,9 @@ import copy
 
 import pytest
 
-from cells.core import species_registry as registry
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.registry import species_registry as registry
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf

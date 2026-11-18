@@ -14,8 +14,8 @@ import copy
 
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.compartment_ph_engine import definitions as defs
 from validation.compartment_ph_engine.parameters import ARM_R, ARM_T
 

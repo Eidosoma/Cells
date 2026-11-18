@@ -4,17 +4,17 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
-from cells.io import load_snapshot, write_run
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.channels import cav_channels as channels
+from cells.laws.channels import kv1_channels
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.legacy.assembly_cluster.spec import channel_owners
 from cells.legacy.core.surface_calcium_spec import ionic_spec
 from cells.legacy.models import surface_calcium_cav as model
 from cells.legacy.models import surface_calcium_kv1 as prior
 from cells.legacy.models import surface_cav as ionic_model
-from cells.models.registry import get_model
-from cells.processes import cav_channels as channels
-from cells.processes import kv1_channels
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.records.io import load_snapshot, write_run
+from cells.registry.models import get_model
 from tests.unit import test_surface_calcium as shared
 from tests.unit import test_surface_calcium_hcn as hcn
 from tests.unit import test_surface_calcium_sodium as sodium

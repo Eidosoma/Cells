@@ -11,12 +11,12 @@ compile_window's own key starts with this part (tests/unit/test_inner_executable
 
 import copy
 
-from cells.core import kind_registry
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.vector_windows import spec_world_key
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.state import initialise
+from cells.execution.vector_windows import spec_world_key
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 

@@ -6,11 +6,17 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import NumericalError, branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.specs import ConfigError, InputChange, load_spec, parse_spec
-from cells.core.state import EMTState, initialise
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions.specs import ConfigError, InputChange, load_spec, parse_spec
+from cells.execution.runner import (
+    NumericalError,
+    branch_checkpoint,
+    run,
+    timeline,
+    validate_checkpoint,
+)
+from cells.execution.state import EMTState, initialise
 from cells.legacy.models import emt_mirna
+from cells.records.io import load_snapshot, write_run, write_snapshot
 from tests.reference_emt import reference_rhs, reference_solution
 
 ROOT = Path(__file__).resolve().parents[2]

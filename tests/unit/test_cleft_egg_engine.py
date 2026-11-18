@@ -10,7 +10,7 @@ step of the study, at R-full's times.
 import jax
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.division import cleft_egg_engine as engine
 
 EXACT = (
@@ -58,7 +58,7 @@ def test_the_engine_egg_is_rfulls_field_by_field():
 def test_the_horizon_ledgers_cover_every_probed_ledger_shape():
     """The study's horizon ledgers (ledger_ratios) on the egg's initial row: every probed ledger,
     the fill's [species, outside] ledger included, gives its residual, bound and ratio."""
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     spec = parse_spec(engine.definition())
     state, _ = get_model(spec.model).initial_values(spec)

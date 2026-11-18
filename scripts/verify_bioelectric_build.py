@@ -18,10 +18,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.runner import branch_checkpoint, run  # noqa: E402
-from cells.core.specs import load_spec  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
+from cells.definitions.specs import load_spec  # noqa: E402
+from cells.execution.runner import branch_checkpoint, run  # noqa: E402
 from cells.legacy.models import bioelectric_cell as model  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
 from tests.bioelectric_fixtures import (  # noqa: E402
     TARGETS,
     assert_targets,

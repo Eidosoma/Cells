@@ -46,8 +46,8 @@ def free_field_offsets(raw):
 
     The layout is built on the CPU: the count does not depend on the declared backend.
     """
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
+    from cells.definitions.specs import parse_spec
+    from cells.execution.state import initialise
 
     probe = copy.deepcopy(raw)
     probe["execution"]["backend"] = "cpu"

@@ -12,10 +12,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy.processes import tissue_target_selectors as profiles
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.betse_physiology.unit.test_physiology_target_selection import streams
 from validation.betse.physiology import random_tissue_profiles as public
 from validation.betse.physiology.core import physiology_target_selection as selection

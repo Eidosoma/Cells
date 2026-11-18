@@ -26,8 +26,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import Snapshot, load_snapshot, source_hashes, write_snapshot
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.records.io import Snapshot, load_snapshot, source_hashes, write_snapshot
 from validation.betse.physiology.core import physiology_random_streams as streams
 
 KIND = "cells.physiology_random_checkpoint@1"

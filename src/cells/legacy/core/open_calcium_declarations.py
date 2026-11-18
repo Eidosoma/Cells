@@ -7,7 +7,7 @@ No reservoir flag, original amount or fixed background is replaced for parsing.
 
 from copy import deepcopy
 
-from cells.core.specs import ConfigError, _fields, _number
+from cells.definitions.specs import ConfigError, _fields, _number
 
 EXTERIOR_POLICY = "static_declared_ideal_chemical_and_voltage_reservoirs@1"
 DOMAIN_POLICY = "hard_global_ionic_moiety_ceilings_fmol_every_stage@1"

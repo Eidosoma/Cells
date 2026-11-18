@@ -16,7 +16,7 @@ import math
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages_v2 import (
     ideal_mixing,
     kernel,

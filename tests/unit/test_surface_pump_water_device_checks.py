@@ -1,6 +1,6 @@
 """resolved_pump_water@1 device checks and vectorized worlds.
 
-On a water-on trajectory the device checks (core/vector_windows.py hooks)
+On a water-on trajectory the device checks (execution/vector_windows.py hooks)
 pass every row and their diagnostics match the host's to rounding. Faults in
 the water ledgers (a water transfer booking, a bath-work booking, negative
 water heat) fail the same checks on the host and on the device, with the water
@@ -14,13 +14,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.specs import parse_spec
 from cells.ensemble import ionic as ensemble
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy, run_windowed
 from cells.models import surface_pump_water as model
 from cells.numerics import surface_imex as imex
 from validation.tissue import pump_water_fixtures as fixtures

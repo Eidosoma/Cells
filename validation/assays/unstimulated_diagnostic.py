@@ -15,7 +15,7 @@ import numpy as np
 
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import write_json
-from cells.processes.electrochemistry import F
+from cells.laws.electrochemistry import F
 from validation.assays import template_diagnostic as geometry
 from validation.assays import template_readout as reader
 from validation.assays import unstimulated_readout as assay

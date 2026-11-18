@@ -46,11 +46,11 @@ surface_pump_v3_fixtures.kicked), or a 1 ms cation conductance: one kleak_always
 naleak_always_open@1 population of equal permeability on each stimulated cell (reversal near
 0 mV), switched by @3's own channel_controls.
 
-Execution. cells.core.windows.iter_windows (each step's own refusal, the host checks on every
+Execution. cells.execution.windows.iter_windows (each step's own refusal, the host checks on every
 accepted row, the model's observer every millisecond). Membrane and junction voltages at every
 accepted step come from the engine's own readouts (surface_pump_v3.readouts, compiled) on each
 window's accepted history, checked against the observer's rows. The device row checks run in
-cells.core.vector_windows.run_vector_windowed. Refusals are attributed with the engine's own
+cells.execution.vector_windows.run_vector_windowed. Refusals are attributed with the engine's own
 functions at the last accepted state. Run through run_part.sh in the evidence folder.
 """
 
@@ -72,19 +72,20 @@ import numpy as np
 jax.config.update("jax_enable_x64", True)
 
 import cells  # noqa: E402
-from cells.core.errors import NumericalError  # noqa: E402
-from cells.core.specs import ConfigError, parse_spec  # noqa: E402
-from cells.core.surface_pump_v3_spec import (  # noqa: E402
+from cells.definitions.specs import ConfigError, parse_spec  # noqa: E402
+from cells.definitions.surface_pump_v3_spec import (  # noqa: E402
     KLEAK_LAW_ID,
     KV1P5_LAW_ID,
     NALEAK_LAW_ID,
     Control,
 )
-from cells.core.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
-from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.definitions.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
+from cells.execution.errors import NumericalError  # noqa: E402
+from cells.execution.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.laws.channels import voltage_gates  # noqa: E402
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
+from cells.laws.junctions import junction_gate
 from cells.models import surface_pump_v3 as v3  # noqa: E402
-from cells.processes import junction_gate, voltage_gates  # noqa: E402
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import field_solver_choice  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fx  # noqa: E402
@@ -559,7 +560,7 @@ def execute(raw, *, window_steps=1024, stop=None):
             last_accepted_window_end_s=None if last is None else float(last.time),
         )
         if last is None and isinstance(error, NumericalError):
-            from cells.core.state import initialise
+            from cells.execution.state import initialise
 
             try:  # A refusal inside the first window: attribute from the initial state.
                 last = initialise(parse_spec(raw))
@@ -1495,8 +1496,8 @@ def part_domain(args):
 
 def part_device(args):
     """The model's device row checks (vector windows) on the main accepted cases."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
 
     out = dict(provenance=provenance(), plan=PLAN, part="device", batches=[])
     path = Path(args.output) / "device.json"

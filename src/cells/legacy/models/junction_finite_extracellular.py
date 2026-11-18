@@ -9,15 +9,15 @@ is applied, and no temperature scaling or biological parameter fit is implied.
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import JUNCTION_FINITE_EXTRACELLULAR_ID, ConfigError
-from cells.core.state import JunctionFiniteExtracellularLayout
+from cells.definitions.specs import JUNCTION_FINITE_EXTRACELLULAR_ID, ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import JunctionFiniteExtracellularLayout
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.junctions import junction_gate as gate
 from cells.legacy.models import finite_extracellular as finite
 from cells.legacy.models import kinetic_finite_extracellular as kinetic
-from cells.observers import hermite_bounds
-from cells.processes import junction_gate as gate
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.records.observers import hermite_bounds
 
 STATE_TYPE = finite.STATE_TYPE
 LAYOUT_TYPE = JunctionFiniteExtracellularLayout

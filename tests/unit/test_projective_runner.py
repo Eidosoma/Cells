@@ -1,4 +1,4 @@
-"""Projective execution through cells.core.runner.run on a one-cell resolved_pump_tissue@1 world.
+"""Projective execution through cells.execution.runner.run on a one-cell resolved_pump_tissue@1 world.
 
 Rejected jumps leave the fine engine's rows bitwise; accepted jumps are checked,
 verified by the next burst and recorded; no jump crosses a scheduled input
@@ -10,10 +10,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.projective import ROW_FINE, ROW_JUMP, ProjectiveRunResult
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.projective import ROW_FINE, ROW_JUMP, ProjectiveRunResult
+from cells.execution.runner import run
 from cells.numerics import surface_field as field
 from validation.tissue import projective_fixtures as fixtures
 

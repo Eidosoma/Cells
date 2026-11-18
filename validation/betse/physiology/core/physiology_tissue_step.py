@@ -15,11 +15,11 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.state import Checkpoint
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.numerics import surface_transport
 from cells.numerics.extracellular_field import ordered_scatter
 from validation.betse.physiology.core import physiology_tissue_binding as units

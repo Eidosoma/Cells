@@ -6,10 +6,11 @@ from copy import deepcopy
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, _fields
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, _fields
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.legacy.core.surface_calcium_energy_atp_transport_excision_spec import (
     MODEL_ID,
     POLICIES,
@@ -26,7 +27,6 @@ from cells.legacy.processes import finite_energy as fuel
 from cells.legacy.processes import tissue_removal as removal
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 GATES = ("channel_gate", "junction_gate", "calcium_gate")
 # The parent builds PMCA/ER initial parameters through its legacy maintained-law

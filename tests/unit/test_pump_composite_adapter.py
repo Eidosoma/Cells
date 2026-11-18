@@ -16,7 +16,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as pump3
 from cells.models import surface_pump_v3
 from cells.numerics import surface_imex as imex

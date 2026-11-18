@@ -105,8 +105,8 @@ def definition(cells=4, dt=DT, steps=STEPS):
     """The static world of `cells` quarter eggs on one held bath, pulsed (raw definition)."""
     import copy
 
-    from cells.core import pump_composite_spec as cs
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.definitions import pump_composite_spec as cs
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.tissue import egg_scale_smoke as egg
 
     end = steps * dt
@@ -229,11 +229,11 @@ def probe(cells=4, dt=DT, steps=STEPS, width=WINDOW, chunk=4096):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.core import runner
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution import runner
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     started = time.perf_counter()
     raw, inputs = definition(cells, dt, steps)

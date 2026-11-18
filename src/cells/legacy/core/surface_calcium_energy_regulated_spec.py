@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass, replace
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _integer
+from cells.definitions.specs import ConfigError, _fields, _integer
 from cells.legacy.core import surface_calcium_energy_spec as prior
 from cells.legacy.core.surface_energy_spec import _project, identifier
 from cells.legacy.core.voltage_gated_spec import fraction
@@ -50,7 +50,7 @@ def base_spec(spec):
 
 
 def control_values(spec, times):
-    from cells.core.schedule import control_values as inherited
+    from cells.execution.schedule import control_values as inherited
 
     return inherited(base_spec(spec), times)
 

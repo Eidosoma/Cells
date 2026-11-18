@@ -48,9 +48,9 @@ def _run_windows(raw, *, window_s, record=None):
 
     Each window ends on an observation time, so record(result) sees its end row.
     """
-    from cells.core.grid import EventGrid
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.grid import EventGrid
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     raw = copy.deepcopy(raw)
     steps = max(1, round(window_s / raw["execution"]["dt"]))
@@ -75,8 +75,8 @@ def _run_windows(raw, *, window_s, record=None):
 
 
 def part_trajectory(args):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     raw = json.loads(Path(args.definition).read_text())
     if args.end is not None:
@@ -143,8 +143,8 @@ def heredity_raw(cells, *, dt, end_time, gate_voltages, channels=True):
 def part_electrode(args):
     import jax.numpy as jnp
 
-    from cells.core.specs import parse_spec
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.specs import parse_spec
+    from cells.definitions.surface_pump_v3_spec import control_values
     from cells.models import surface_pump_v3 as model
     from cells.models import surface_tissue as tissue
     from validation.tissue import surface_pump_v3_fixtures as fixtures
@@ -267,10 +267,10 @@ def gauge_raw(world, *, dt, end_time, backend):
 
 
 def part_gauge(args):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models import surface_tissue as tissue
-    from cells.models.registry import get_model
     from cells.numerics import surface_field as field
+    from cells.registry.models import get_model
 
     raw = gauge_raw(args.world, dt=args.dt, end_time=60.0 * args.minutes, backend=args.backend)
     spec = parse_spec(raw)

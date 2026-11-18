@@ -9,10 +9,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.specs import read_json  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import read_json  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_spatial_extracellular_build import implementation  # noqa: E402
 from scripts.spatial_extracellular_acceptance_resources import from_registration  # noqa: E402
 from scripts.spatial_extracellular_production_audit import authenticate, require  # noqa: E402

@@ -7,7 +7,7 @@ from copy import deepcopy
 from dataclasses import fields
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy.core import active_profile_barrier_preparation as active_combined
 from cells.legacy.core import environment_barrier_composition_preparation as composed_barriers
 from cells.legacy.core import environment_barrier_preparation as environment_barriers

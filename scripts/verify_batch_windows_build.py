@@ -21,17 +21,17 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot  # noqa: E402
-from cells.batch_window_io import write_windowed_batch  # noqa: E402
-from cells.core.batch import branch_batch_checkpoints, load_batch  # noqa: E402
-from cells.core.grid import EventGrid  # noqa: E402
-from cells.core.schedule import event_index  # noqa: E402
-from cells.core.specs import ConfigError  # noqa: E402
-from cells.core.windows import WindowPolicy  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
+from cells.definitions.specs import ConfigError  # noqa: E402
+from cells.execution.batch import branch_batch_checkpoints, load_batch  # noqa: E402
+from cells.execution.grid import EventGrid  # noqa: E402
+from cells.execution.schedule import event_index  # noqa: E402
+from cells.execution.windows import WindowPolicy  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot  # noqa: E402
+from cells.records.batch_window_io import write_windowed_batch  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 from scripts.verify_windows_build import audit_windows, baseline, payloads  # noqa: E402
 from scripts.verify_windows_build import verify as verify_regression  # noqa: E402
 
@@ -162,10 +162,10 @@ ARCHIVE_WORKER = r"""
 import json, sys
 from pathlib import Path
 import numpy as np
-from cells.io import load_snapshot, source_hashes
-from cells.batch_io import load_batch_snapshot
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.window_io import write_windowed_run
+from cells.records.io import load_snapshot, source_hashes
+from cells.records.batch_io import load_batch_snapshot
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.window_io import write_windowed_run
 data = json.loads(sys.stdin.read())
 assert source_hashes() == data['source_hashes']
 for name in data['snapshots']:

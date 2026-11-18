@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core.specs import ConfigError, _fields
+from cells.definitions.specs import ConfigError, _fields
 from cells.legacy.core import surface_calcium_energy_water_hcn_extra_spec as base
 from cells.legacy.core.reaction_spec import bounded
 from cells.legacy.core.spatial_calcium_spec import project

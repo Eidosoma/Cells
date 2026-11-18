@@ -11,8 +11,8 @@ The mixed face-free world under ARS(2,2,2) at 1 ms. A few compiles: not tier 1.
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import site_occupancy_fixtures as sfx
 
 jax.config.update("jax_enable_x64", True)
@@ -30,7 +30,7 @@ def world(k_on=1e3):
 
 
 def test_restart_in_process_and_through_a_snapshot_is_bitwise(tmp_path):
-    from cells.io import load_snapshot, write_snapshot
+    from cells.records.io import load_snapshot, write_snapshot
 
     spec = world()
     result = run(spec)

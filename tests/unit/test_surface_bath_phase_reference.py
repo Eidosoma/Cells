@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.schedule import control_values
 from tests.unit.test_surface_bath_phase_handoff import setup
 from validation.topology import surface_bath_phase_fixtures as fixtures
 from validation.topology import surface_bath_phase_handoff_reference as reference

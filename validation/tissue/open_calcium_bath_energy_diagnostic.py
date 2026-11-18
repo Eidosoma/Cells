@@ -101,7 +101,7 @@ def closure_terms(value, *, finite_fuel):
 def run(bundle, completed, output):
     import numpy as np
 
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
     from validation.tissue import open_calcium_bath_reference as reference
     from validation.tissue import open_calcium_bath_trajectory_common as artifact
     from validation.tissue.open_calcium_bath_trajectory_observers import full_state

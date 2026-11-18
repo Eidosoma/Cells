@@ -12,9 +12,9 @@ from contextlib import nullcontext
 import jax
 import pytest
 
-from cells.core import kind_registry
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.numerics import surface_imex as imex
+from cells.registry import kind_registry
 from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
 from validation.tissue import surface_pump_v2_fixtures
 

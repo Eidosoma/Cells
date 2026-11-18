@@ -23,9 +23,9 @@ All values are synthetic. The engine's constants are the reference's inputs (F, 
 import copy
 import math
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.processes.electrochemistry import F, R
+from cells.definitions import pump_composite_spec as cs
+from cells.laws.electrochemistry import F, R
+from cells.registry.inventory_species import add_inventory_species
 from validation.coupling import cells_reference as rc
 from validation.coupling import state_reference as rs
 from validation.tissue import regulated_availability_fixtures as rf

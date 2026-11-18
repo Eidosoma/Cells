@@ -417,8 +417,8 @@ def model_screen():
     import jax
     import numpy as np
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     raw = spatial_definitions()["pump_release"]
     runs = {}
@@ -461,7 +461,7 @@ def model_screen():
 
 
 def check(args):
-    from cells.core.output_paths import configure_caches
+    from cells.execution.output_paths import configure_caches
 
     began = time.time()
     if args.output is not None and args.output.exists():
@@ -907,7 +907,7 @@ def run_smoke(args, out, record):
 
 
 def smoke(args):
-    from cells.core.output_paths import within_output_root
+    from cells.execution.output_paths import within_output_root
 
     out = args.output.resolve()
     if out.exists() or not within_output_root(out):

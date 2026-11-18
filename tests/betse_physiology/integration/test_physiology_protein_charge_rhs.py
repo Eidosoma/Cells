@@ -224,9 +224,9 @@ def test_ER_intrinsics_stay_owned_while_plasma_influx_and_fuel_demand_respond(ki
 
 
 def test_evolved_fuel_rates_use_live_pools_when_reference_rebuilds_its_calcium_context():
-    from cells.core.schedule import event_index
-    from cells.core.specs import parse_spec
-    from cells.core.state import Checkpoint
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import event_index
+    from cells.execution.state import Checkpoint
     from tests.betse_physiology.unit.test_physiology_tissue_binding import (
         arguments,
         component_state,

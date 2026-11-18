@@ -13,8 +13,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
+from cells.laws.pumps import kinetic_pump as pump
 
 ROOT = Path(__file__).resolve().parents[3]
 CAPTURE = ROOT / "runs/ref-005a-pump-contact-2026-09-16/capture-01"

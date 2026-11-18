@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy.core import geometry_tissue_preparation as geometric
 from cells.legacy.core import tissue_profile_preparation as profiles
 from cells.legacy.processes import tissue_target_selectors as native

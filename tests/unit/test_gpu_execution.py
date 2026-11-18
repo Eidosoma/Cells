@@ -8,12 +8,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch, run_batch
-from cells.core.devices import execution_device
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, run_batch
+from cells.execution.devices import execution_device
+from cells.execution.runner import run
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.io import load_snapshot, write_snapshot
 
 ROOT = Path(__file__).parents[2]
 

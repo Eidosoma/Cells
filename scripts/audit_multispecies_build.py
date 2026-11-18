@@ -18,10 +18,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.specs import load_spec  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import load_spec  # noqa: E402
 from cells.legacy.models import multispecies_membrane as model  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_multispecies_reference import replay  # noqa: E402
 from scripts.verify_batch_windows_build import audit_cohort, suffix  # noqa: E402
 from scripts.verify_windows_build import payloads  # noqa: E402
@@ -322,7 +322,7 @@ def audit(path):
         selected = [c for c in cases if c.startswith(prefix)]
         expected = {i + 1: data[f"jit/{c}"] for i, c in enumerate(selected)}
         cohorts[prefix] = audit_cohort(path / "cohorts" / prefix, expected)
-        from cells.batch_io import load_batch_snapshot
+        from cells.records.batch_io import load_batch_snapshot
 
         saved = load_batch_snapshot(path / "cohorts" / prefix / "snapshots/round-0000000001")
         wanted = {i: suffix(v, saved.checkpoints[i], model) for i, v in expected.items()}

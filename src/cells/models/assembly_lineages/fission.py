@@ -28,7 +28,7 @@ fission table records each fission (records.py; GARD_DESIGN §5.2).
 
 from dataclasses import dataclass
 
-from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
 from cells.models.assembly_lineages import FISSION, MODEL_ID
 from cells.models.assembly_lineages.lineage_operators import LineageOperator
 from cells.modules import Citation

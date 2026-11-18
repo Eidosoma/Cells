@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy.models import surface_active_profile_barrier_epoch as model
 from tests import active_profile_barrier_phase_fixtures as fixtures
 from validation.topology import active_profile_barrier_phase_handoff_reference as reference

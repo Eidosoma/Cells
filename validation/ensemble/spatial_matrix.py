@@ -13,14 +13,14 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from cells.core.batch_windows import plan_batch_windows
-from cells.core.output_paths import within_output_root
-from cells.core.runner import timeline
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import parse_spec
 from cells.ensemble.cli import write
 from cells.ensemble.ionic import parse_spec as parse_worlds
 from cells.ensemble.plan import plan
+from cells.execution.batch_windows import plan_batch_windows
+from cells.execution.output_paths import within_output_root
+from cells.execution.runner import timeline
+from cells.execution.windows import WindowPolicy
 
 ROOT = Path(__file__).resolve().parents[2]
 ARMS = ("baseline", "pump_release")

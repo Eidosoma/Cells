@@ -3,10 +3,10 @@
 
 Engine models run, unmodified (IMEX ARS(2,2,2), CPU, float64):
   resolved_pump_composite@1 (src/cells/models/pump_composite.py) over resolved_pump_tissue@3
-  (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py) with
-  local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven mass action
+  (src/cells/definitions/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py) with
+  local_species_reactions@1 (src/cells/operators/species_reactions.py): driven mass action
   for Schnakenberg, and ideal_detailed_balance_mass_action@1 in a linear world. The network's
-  species are declared by cells.core.inventory_species (D150).
+  species are declared by cells.registry.inventory_species (D150).
 
 The world (§6.4): a closed chain of N finite outside nodes of one volume V = 0.5 pL at spacing
 h = l/2 = 5 um, joined by faces of area V/h = 1e-10 m^2 and length h (the references' chain
@@ -244,8 +244,8 @@ def chain_world(
     inventory species and no network; network: (species, reactions, controls), default Schnakenberg;
     diffusivities: {species: m^2/s}, default U at D_U and V at d D_U; faces=False isolates every
     node (the face-free world, where the network is the only energy flow)."""
-    from cells.core import pump_composite_spec as cs
-    from cells.core.inventory_species import add_inventory_species
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.inventory_species import add_inventory_species
 
     names = list(profile_mM)
     n_nodes = len(next(iter(profile_mM.values()))) if names else n_nodes
@@ -368,10 +368,10 @@ def run_chain(raw, base_mM, *, every_row=False, window_steps=WINDOW_STEPS):
     (local, outside, total), the energy residual over the rounding allowance alone (2.5 eps x
     steps x the energy magnitude, the face-free guard of record, §3.4 guard 1) and the smallest
     network amount."""
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
     from cells.models.surface_pump import ENERGY_RTOL, LEDGER_STEP_ROUNDING
+    from cells.registry.models import get_model
 
     spec = parse_spec(raw)
     model = get_model(spec.model)
@@ -691,8 +691,8 @@ def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS, *, bisect
 def part_timing(quick):
     """Per chain size: a first run (compile), a second world with another start (does the compile
     carry over?), the second world again, and the window's working estimate."""
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, plan_windows
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, plan_windows
 
     out = {}
     for n_nodes in (12, 22) if quick else (12, 16, 22, 32, 60):
@@ -1396,8 +1396,8 @@ import json, sys
 import jax
 jax.config.update("jax_enable_x64", True)
 import numpy as np
-from cells.core.runner import run
-from cells.io import load_snapshot
+from cells.execution.runner import run
+from cells.records.io import load_snapshot
 loaded = load_snapshot(sys.argv[1])
 result = run(loaded.spec, loaded.checkpoint)
 np.savez(sys.argv[2], **{k: np.asarray(v) for k, v in result.history._asdict().items()})
@@ -1410,12 +1410,12 @@ def part_q7(quick, output):
     fresh process, bitwise; a vector batch over seeds on one domain (each world within 1e-12 of
     its scalar run; bitwise against the reversed batch). Every other part's ledgers are in its own
     accounting records."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
-    from cells.io import write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.runner import run
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
+    from cells.records.io import write_snapshot
 
     n_nodes = DOMAINS[6]
     out = {}

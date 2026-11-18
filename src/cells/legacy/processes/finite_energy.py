@@ -11,9 +11,9 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import R
+from cells.laws.pumps import kinetic_pump as pump
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import R
 
 LAW_ID = "finite_atp_adp_pi_transformed@1"
 REGENERATION_LAW_ID = "driven_atp_regeneration_tanh@1"

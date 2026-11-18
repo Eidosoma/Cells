@@ -14,9 +14,9 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy.processes import tissue_target_selectors as native
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 BRIDGE_ID = "resolved_tissue_static_profiles@1"
 KIND = "cells.resolved_tissue_profile_preparation@1"
@@ -41,7 +41,7 @@ SOURCE_CORRESPONDENCE = dict(
     native_revision="5269a714aa2593ed2a6708c4516289977d8ae1a2",
     native_flux="betse/science/sim_toolbox.py:electroflux and update_Co",
     native_geometry="betse/science/sim.py passes p.tm and initial rho_channel=1",
-    cells_flux="cells.coupling.selective.selective_flux, via cells.numerics.surface_transport",
+    cells_flux="cells.laws.junctions.selective.selective_flux, via cells.numerics.surface_transport",
 )
 
 

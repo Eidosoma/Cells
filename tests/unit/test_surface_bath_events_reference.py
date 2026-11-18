@@ -13,8 +13,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_surface_bath_events import control, setup
 from validation.transport import surface_bath_events_fixtures as fixtures

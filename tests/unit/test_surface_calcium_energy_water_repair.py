@@ -5,14 +5,14 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values
 from cells.legacy.core.surface_calcium_energy_water_repair_spec import base_spec
 from cells.legacy.models import surface_calcium_energy_water as parent
 from cells.legacy.models import surface_calcium_energy_water_repair as model
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.unit.test_surface_calcium_energy_water import changed as change_parent
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact

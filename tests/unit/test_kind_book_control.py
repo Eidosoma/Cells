@@ -1,7 +1,7 @@
 """The step's control reaches a kind's book (docs/INNER_MODEL_V4_DESIGN.md §7.4 (l) 5).
 
 tests/kind_fixtures.py's `tests.relaxation@1` is FR-5's damage law in miniature
-(processes/patch_damage.py): per cell, dd/dt = k_inj u_inj(t) (1 - d) - k_res u_res(t) d, with u_inj
+(laws/transport/patch_damage.py): per cell, dd/dt = k_inj u_inj(t) (1 - d) - k_res u_res(t) d, with u_inj
 and u_res piecewise-constant schedules. Its book replaces d with the law's exact step at the step's
 held control. With the schedules' breakpoints on the step grid (an off-nominal one inserted), d
 matches its closed form at every step boundary to rounding: injury on from 1 ms, then off and
@@ -13,9 +13,9 @@ import math
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry import kind_registry
 from tests import kind_fixtures as kf
 from validation.tissue import pump_water_fixtures as water_fixtures
 

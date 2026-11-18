@@ -18,10 +18,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.specs import load_spec  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import load_spec  # noqa: E402
 from cells.legacy.models import finite_extracellular as model  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_finite_extracellular_reference_v2 import replay  # noqa: E402
 from scripts.verify_batch_windows_build import audit_cohort, suffix  # noqa: E402
 from scripts.verify_windows_build import audit_windows, payloads  # noqa: E402
@@ -606,7 +606,7 @@ def audit(path):
         windows[group] = audit_windows(path / "windows" / group, arrays[f"jit/{name}"])
         wanted = {i + 1: arrays[f"jit/{c}"] for i, c in enumerate(names)}
         cohorts[group] = audit_cohort(path / "cohorts" / group, wanted)
-        from cells.batch_io import load_batch_snapshot
+        from cells.records.batch_io import load_batch_snapshot
 
         saved = load_batch_snapshot(path / "cohorts" / group / "snapshots/round-0000000001")
         cohorts[f"resumed/{group}"] = audit_cohort(

@@ -1,4 +1,4 @@
-"""The species registry (core/species_registry.py; D176): one authority per species, and "moved by
+"""The species registry (registry/species_registry.py; D176): one authority per species, and "moved by
 the step".
 
 * The catalogue parser moved there, unchanged, and is still importable from membrane_state.
@@ -22,11 +22,11 @@ from pathlib import Path
 
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core import species_registry as registry
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.operators import k_anion_symport, membrane_state
-from cells.models.operators import species_regulated_availability as sra
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import k_anion_symport, membrane_state
+from cells.operators import species_regulated_availability as sra
+from cells.registry import species_registry as registry
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
@@ -176,7 +176,7 @@ def test_moved_in_step_names_each_mover():
 def test_an_in_step_process_must_declare_what_it_moves(monkeypatch):
     """The contract refuses it at registration (contract.check_declarations, D176's additions):
     the base's moves_in_step moves nothing, so the registry's own check cannot meet one."""
-    from cells.models.operators.contract import check_declarations
+    from cells.operators.contract import check_declarations
 
     monkeypatch.delattr(k_anion_symport.KAnionSymport, "moves_in_step")
     with pytest.raises(ValueError, match="declares the rows it moves"):
@@ -200,4 +200,4 @@ def test_no_pairwise_identity_check_is_left_in_src():
         for path in (ROOT / "src" / "cells").rglob("*.py")
         if "declares species {" in path.read_text()
     )
-    assert holders == ["src/cells/core/species_registry.py"]
+    assert holders == ["src/cells/registry/species_registry.py"]

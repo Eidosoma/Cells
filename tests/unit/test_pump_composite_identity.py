@@ -15,14 +15,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.numerics import surface_imex as imex
+from cells.records.io import load_snapshot, write_run, write_snapshot
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import composite_guard as guard
 from validation.tissue import pump_water_fixtures as wfx

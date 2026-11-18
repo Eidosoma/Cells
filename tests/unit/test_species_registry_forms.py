@@ -1,4 +1,4 @@
-"""The species registry's hook, absent rows and two-form rows (core/species_registry.py; D176).
+"""The species registry's hook, absent rows and two-form rows (registry/species_registry.py; D176).
 
 * The core parser's hook (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7): parse_entries pops the
   registry keys from the parser's copy of the model, returns None when the model declares none,
@@ -24,9 +24,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from cells.core import species_registry as registry
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.registry import species_registry as registry
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import regulated_availability_fixtures as rf
 

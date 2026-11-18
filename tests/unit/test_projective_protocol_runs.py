@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.tissue import projective_study as study
 
 PROTOCOL = json.loads(
@@ -20,7 +20,7 @@ PROTOCOL = json.loads(
 
 
 def test_patch_voltage_map_matches_the_readouts():
-    from cells.core.runner import run
+    from cells.execution.runner import run
     from cells.models import surface_pump_projective as readouts
     from validation.tissue import projective_fixtures
 

@@ -7,8 +7,8 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import R
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import R
 from tests.betse_physiology.unit.test_physiology_protein_projection import protein, transfer
 from tests.betse_physiology.unit.test_physiology_tissue_binding import bind, component_state
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, evidence

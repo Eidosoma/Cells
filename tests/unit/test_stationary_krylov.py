@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from cells.analysis import stationary as sa
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.stationary import worlds
 
 

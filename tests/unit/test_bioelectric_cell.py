@@ -6,21 +6,28 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, InputChange, LeakChange, PumpChange, load_spec, parse_spec
-from cells.core.state import BioelectricState, initialise
-from cells.io import load_snapshot, write_run, write_snapshot
-from cells.legacy.models import bioelectric_cell as model
-from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.observers import sample_hermite_history, sample_history
-from cells.processes.electrochemistry import (
+from cells.definitions.specs import (
+    ConfigError,
+    InputChange,
+    LeakChange,
+    PumpChange,
+    load_spec,
+    parse_spec,
+)
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import BioelectricState, initialise
+from cells.laws.electrochemistry import (
     bernoulli,
     electrochemical_potential,
     ghk_leak,
     reversible_pump,
 )
+from cells.legacy.models import bioelectric_cell as model
+from cells.numerics.fixed_step import rk4_checked_step, rk4_step
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.records.observers import sample_hermite_history, sample_history
 from tests.bioelectric_fixtures import (
     ROOT,
     assert_targets,

@@ -9,9 +9,9 @@ ordinary/held numeric checkpoint or claim subsequent-loop continuation.
 from dataclasses import dataclass
 from pathlib import Path
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import runtime_identity, source_hashes
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.execution.errors import NumericalError
+from cells.records.io import runtime_identity, source_hashes
 from validation.betse.physiology import physiology_protein_checkpoint as held_io
 from validation.betse.physiology.core import physiology_perturbation_phases as phases
 from validation.betse.physiology.core import physiology_protein_transition as transition

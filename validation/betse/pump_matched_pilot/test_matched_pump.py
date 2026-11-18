@@ -40,7 +40,7 @@ def test_protocol_changes_rejected(setup, key):
 
 @pytest.mark.parametrize("index", range(6))
 def test_native_mapping_schema_and_measured_charge(setup, index):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     case = list(setup["cases"].values())[index]
     data = ctx.definition(case, 5e-5)
@@ -171,9 +171,9 @@ def test_unregistered_observation_grid_rejected():
 def test_public_compiled_runner_and_complete_restart_smoke(setup, tmp_path):
     import numpy as np
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.records.io import load_snapshot, write_run
 
     case = copy.deepcopy(setup["cases"]["closed_boundary"])
     case["end_time_s"] = 5e-5

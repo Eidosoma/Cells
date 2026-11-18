@@ -252,8 +252,8 @@ def launch(root):
         available >= limits["max_worker_rss_bytes"] + 4 * 1024**3,
         "Spatial available-memory reserve",
     )
-    from cells.core.runner import timeline
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import timeline
 
     definitions = {
         a: fixtures.definition(arm=a, end=protocol["duration_s"]) for a in protocol["arms"]

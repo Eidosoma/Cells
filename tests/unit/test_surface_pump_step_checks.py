@@ -15,18 +15,18 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core import grid as grid_module
-from cells.core.grid import EventGrid, checked_grid, clock_checks
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import NAV1P2_LAW_ID, projection
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import NAV1P2_LAW_ID, projection
+from cells.execution import grid as grid_module
+from cells.execution.grid import EventGrid, checked_grid, clock_checks
+from cells.execution.schedule import control_values
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second
 from cells.models import surface_pump_v3 as third
 from cells.models import surface_tissue as tissue
-from cells.models.registry import get_model
 from cells.numerics import surface_imex as imex
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water
 from validation.tissue import surface_pump_fixtures as fixtures_1
 from validation.tissue import surface_pump_v2_fixtures as fixtures_2

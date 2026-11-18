@@ -14,16 +14,16 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
 from cells.models import surface_kinetic, surface_pump
-from cells.models.registry import get_model
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.tissue import surface_field_fixtures
 from validation.tissue import surface_pump_fixtures as fixtures
 
@@ -340,7 +340,7 @@ def test_imex_restart_is_bitwise_and_invalid_controls_refuse_the_step(tmp_path, 
 
 def test_global_charge_bound_scales_with_moved_charge_and_catches_injected_error(imex_runs):
     """Rounding of the moved charge passes; an injected charge error fails first here."""
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     value = imex_runs["clamped", imex.ARS222_ID]
     _, p = surface_kinetic.initial_values(value.spec)

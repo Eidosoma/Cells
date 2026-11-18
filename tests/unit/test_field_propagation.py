@@ -13,7 +13,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
 from tests.unit.test_betse_network_emulator import CHANNELS, network_config
 from tests.unit.test_default_world_adapter import AREA, MAMMAL, OWNER, PROTOCOL, SITE, write_case
 from validation.betse import cells_betse_compare as cmp

@@ -21,7 +21,7 @@ import math
 import re
 from dataclasses import dataclass
 
-from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
 
 PREFIX = re.compile(r"[a-z][a-z0-9_]*")
 MAX_TYPES = 2**16

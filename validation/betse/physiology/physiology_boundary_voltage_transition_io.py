@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells import io as numeric_io
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, read_json
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.records import io as numeric_io
 from validation.betse.physiology import physiology_checkpoint as durable
 from validation.betse.physiology.core import physiology_boundary_voltage as boundary
 from validation.betse.physiology.core import physiology_boundary_voltage_transition as transition

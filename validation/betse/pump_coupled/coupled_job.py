@@ -34,7 +34,7 @@ SOURCES = tuple(
     "validation/betse/pump_contact/pump_array.py",
     "validation/betse/pump_contact/pump_reference.py",
     "src/cells/numerics/fixed_step.py",
-    "src/cells/processes/electrochemistry.py",
+    "src/cells/laws/electrochemistry.py",
     "docs/KINETIC_PUMP_INTEGRATION.md",
     "reports/REF005A_PUMP_CONTACT_CLOSEOUT.md",
     "reports/NUM011_KINETIC_PUMP_HANDOFF.md",

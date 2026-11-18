@@ -10,8 +10,8 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core import surface_tissue_spec as prior
-from cells.core.specs import ChannelChange, ConfigError, _fields, _number
+from cells.definitions import surface_tissue_spec as prior
+from cells.definitions.specs import ChannelChange, ConfigError, _fields, _number
 from cells.legacy.core.bioelectric_spec import positive, signed_number
 from cells.legacy.core.multispecies_spec import identifier
 from cells.legacy.core.voltage_gated_spec import fraction

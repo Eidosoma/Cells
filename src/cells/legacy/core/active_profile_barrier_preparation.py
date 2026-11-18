@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from cells.core.specs import ConfigError, _fields, digest, parse_spec
+from cells.definitions.specs import ConfigError, _fields, digest, parse_spec
 from cells.legacy.core import environment_barrier_composition_preparation as barriers
 from cells.legacy.core import tissue_profile_preparation as profiles
 

@@ -15,7 +15,7 @@ Anything else answers cannot_decide, and the resume is refused.
   validation/continuity/admit.py runs it under the checkpoint's tree S0 and the resuming tree
   S1, and compares the outputs.
 - **It uses only APIs that S0 already has.** The first real checkpoints predate this work, so
-  it never imports cells.continuity. A tree that lacks one of its entry points answers
+  it never imports cells.execution.continuity. A tree that lacks one of its entry points answers
   cannot_decide.
 - **It reads the checkpoint without the two identity comparisons**, keeping every other check
   of batch_io.load_batch_snapshot, and it never continues a run. It is exempt from the bypass
@@ -71,7 +71,7 @@ CHUNK = 65536  # Steps per chunk of the remaining-horizon digests: bounded host 
 PARTS = ("P", "B", "H", "O")
 # Every entry point the probe drives; a tree without one cannot be decided (section 4.2).
 ENTRY_POINTS = {
-    "cells.core.vector_windows": (
+    "cells.execution.vector_windows": (
         "plan_vector_windows",
         "iter_vector_windows",
         "_compiled_vector_window",
@@ -82,16 +82,16 @@ ENTRY_POINTS = {
         "_Round",
         "require_device_checks",
     ),
-    "cells.core.runner": ("integration_steps", "validate_checkpoint", "check_steps"),
-    "cells.core.schedule": ("control_values",),
-    "cells.core.windows": ("WindowPolicy", "_observation_tail"),
-    "cells.core.grid": ("EventGrid",),
-    "cells.core.state": ("Checkpoint", "initialise"),
-    "cells.core.batch": ("parse_batch", "checkpoint_batch_limits"),
-    "cells.core.devices": ("execution_device",),
-    "cells.core.specs": ("ConfigError", "digest", "parse_spec", "read_json", "_fields"),
-    "cells.io": ("source_hashes", "runtime_identity"),
-    "cells.models.registry": ("get_model",),
+    "cells.execution.runner": ("integration_steps", "validate_checkpoint", "check_steps"),
+    "cells.execution.schedule": ("control_values",),
+    "cells.execution.windows": ("WindowPolicy", "_observation_tail"),
+    "cells.execution.grid": ("EventGrid",),
+    "cells.execution.state": ("Checkpoint", "initialise"),
+    "cells.execution.batch": ("parse_batch", "checkpoint_batch_limits"),
+    "cells.execution.devices": ("execution_device",),
+    "cells.definitions.specs": ("ConfigError", "digest", "parse_spec", "read_json", "_fields"),
+    "cells.records.io": ("source_hashes", "runtime_identity"),
+    "cells.registry.models": ("get_model",),
 }
 MODEL_PROTOCOL = ("STATE_TYPE", "parameters", "check_values", "observe_history", "summarize")
 T0 = time.perf_counter()
@@ -240,7 +240,7 @@ def require_entry_points():
         raise CannotDecide("the tree lacks the probe's entry points: " + ", ".join(missing))
 
 
-LAYOUT = "cells.source_layout"  # The loaders' layout rule (D195 item 4), in trees that have it.
+LAYOUT = "cells.records.source_layout"  # The loaders' layout rule (D195 item 4), in trees that have it.
 
 
 def require_layout(manifest, what):
@@ -260,11 +260,11 @@ def read_scalar(path):
     """io.load_snapshot without its two identity comparisons; every other check is kept."""
     import jax
 
-    from cells.core.devices import execution_device
-    from cells.core.runner import validate_checkpoint
-    from cells.core.specs import ConfigError, digest, parse_spec, read_json
-    from cells.core.state import Checkpoint, initialise
-    from cells.models.registry import get_model
+    from cells.definitions.specs import ConfigError, digest, parse_spec, read_json
+    from cells.execution.devices import execution_device
+    from cells.execution.runner import validate_checkpoint
+    from cells.execution.state import Checkpoint, initialise
+    from cells.registry.models import get_model
 
     path = Path(path)
     manifest = read_json(path / "manifest.json")
@@ -340,18 +340,18 @@ def require_scope(spec):
 # The device patch of a GPU cohort's probe (section 13.4): set once per process, recorded.
 PATCH = {}
 # The devices module and the modules of the checkpoint paths that bind its execution_device by
-# name (cells.core.state imports it inside initialise, so it finds the patched one); any other
+# name (cells.execution.state imports it inside initialise, so it finds the patched one); any other
 # loaded module that binds it is patched too.
 DEVICE_MODULES = (
-    "cells.core.devices",
-    "cells.core.state",
-    "cells.core.runner",
-    "cells.core.batch",
-    "cells.core.batch_windows",
-    "cells.core.vector_windows",
-    "cells.io",
-    "cells.window_io",
-    "cells.batch_window_io",
+    "cells.execution.devices",
+    "cells.execution.state",
+    "cells.execution.runner",
+    "cells.execution.batch",
+    "cells.execution.batch_windows",
+    "cells.execution.vector_windows",
+    "cells.records.io",
+    "cells.records.window_io",
+    "cells.records.batch_window_io",
 )
 
 
@@ -369,7 +369,7 @@ def patch_execution_device():
         return PATCH
     import jax
 
-    from cells.core import devices
+    from cells.execution import devices
 
     for name in DEVICE_MODULES:
         try:
@@ -403,8 +403,8 @@ def read_cohort(path):
     Returns (spec, checkpoints, manifest, children): the parsed cohort, its checkpoints by
     world ID, the cohort manifest and each child's manifest.
     """
-    from cells.core.batch import checkpoint_batch_limits, parse_batch
-    from cells.core.specs import ConfigError, _fields, digest, read_json
+    from cells.definitions.specs import ConfigError, _fields, digest, read_json
+    from cells.execution.batch import checkpoint_batch_limits, parse_batch
 
     path = Path(path).resolve()
     raw = read_json(path / "manifest.json")
@@ -523,8 +523,8 @@ def step_texts(spec, checkpoints, out):
     import jax
     import jax.numpy as jnp
 
-    from cells.core.schedule import control_values
-    from cells.models.registry import get_model
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     texts = {}
     for world in spec.worlds:
@@ -605,10 +605,10 @@ def horizon_bindings(s, checkpoint):
     """Per definition: the remaining grid, its integration steps and controls, in chunks."""
     import jax
 
-    from cells.core.grid import EventGrid
-    from cells.core.runner import integration_steps
-    from cells.core.schedule import control_values
-    from cells.core.state import initialise
+    from cells.execution.grid import EventGrid
+    from cells.execution.runner import integration_steps
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
 
     grid = EventGrid(s)
     start, last = checkpoint.step_index, len(grid) - 1
@@ -641,8 +641,8 @@ def bindings(vw, spec, policy, checkpoints, out):
     """B: everything the path binds over the remaining horizon, from its own builders."""
     import jax
 
-    from cells.core.devices import execution_device
-    from cells.models.registry import get_model
+    from cells.execution.devices import execution_device
+    from cells.registry.models import get_model
 
     model = get_model(spec.worlds[0].simulation.model)
     device = execution_device(spec.worlds[0].simulation.execution.backend)
@@ -726,10 +726,10 @@ def host_replay(states):
     A part that raises is recorded as {"raised": message}: it repeats or not under the other
     tree, but it compares nothing, so admit.py cannot decide on it (host_replay_errors).
     """
-    from cells.core.grid import EventGrid
-    from cells.core.runner import check_steps
-    from cells.core.windows import _observation_tail
-    from cells.models.registry import get_model
+    from cells.execution.grid import EventGrid
+    from cells.execution.runner import check_steps
+    from cells.execution.windows import _observation_tail
+    from cells.registry.models import get_model
 
     rows, previous = [], {}
     unique = {(w, c.step_index): (label, w, s, c) for label, w, s, c in states}
@@ -863,11 +863,11 @@ def overlap(vw, spec, policy, checkpoints, wanted, own):
 
 def _probe(args, out, summary, parts):
     import cells
-    from cells import io
-    from cells.core import vector_windows as vw
-    from cells.core.specs import digest
-    from cells.core.windows import WindowPolicy
-    from cells.models.registry import get_model
+    from cells.definitions.specs import digest
+    from cells.execution import vector_windows as vw
+    from cells.execution.windows import WindowPolicy
+    from cells.records import io
+    from cells.registry.models import get_model
 
     sources = io.source_hashes()
     summary.update(
@@ -964,7 +964,7 @@ def probe(args):
 
         jax.config.update("jax_enable_x64", True)
         require_entry_points()
-        from cells.core.specs import ConfigError
+        from cells.definitions.specs import ConfigError
 
         try:
             _probe(args, out, summary, parts)

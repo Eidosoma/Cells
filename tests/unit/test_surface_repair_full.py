@@ -9,14 +9,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.batch_windows import iter_batch_windows
-from cells.core.runner import run, timeline
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.batch_windows import iter_batch_windows
+from cells.execution.runner import run, timeline
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.models import surface_repair as model
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run, write_snapshot
 from tests.unit.test_surface_calcium import BACKEND, EVIDENCE, evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_repair_fixtures as fixtures

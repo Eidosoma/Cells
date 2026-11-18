@@ -27,8 +27,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.reactions import dissipation_reference as dr
 from validation.reactions import network_reference as nr
 from validation.tissue import species_reactions_fixtures as rfx

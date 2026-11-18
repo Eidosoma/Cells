@@ -18,9 +18,9 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import pump_composite_adapter as adapter
 from tests import membrane_insertion_fixtures as ifx
 from tests import partition_fixtures as fx

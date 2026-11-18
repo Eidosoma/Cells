@@ -5,8 +5,8 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core import surface_kinetic_spec as kinetic
-from cells.core.specs import ConfigError, _fields
+from cells.definitions import surface_kinetic_spec as kinetic
+from cells.definitions.specs import ConfigError, _fields
 from cells.legacy.core import surface_calcium_energy_spec as energy
 from cells.legacy.core import surface_calcium_spec as calcium
 from cells.legacy.core import surface_water_spec as water

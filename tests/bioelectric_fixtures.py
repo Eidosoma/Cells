@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from tests.reference_bioelectric import Case, Control, Parameters
 
 ROOT = Path(__file__).resolve().parents[1]

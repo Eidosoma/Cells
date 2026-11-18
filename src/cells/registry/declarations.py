@@ -46,20 +46,19 @@ from pathlib import Path
 from types import MappingProxyType
 
 import cells
-from cells import run_view
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as composite_spec
-from cells.core import surface_pump_v3_spec as inner_spec
-from cells.core.kind_registry import qualified
-from cells.core.legacy_entry import LEGACY
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import surface_pump_v3_spec as inner_spec
+from cells.records import run_view
+from cells.registry import kind_registry, model_table
 from cells.registry import laws as law_registry
-from cells.registry import model_table
 from cells.registry import operators as operator_registry
+from cells.registry.kind_registry import qualified
+from cells.registry.legacy_entry import LEGACY
 
 FORMAT = "cells.declarations@2"
 KIND_INTERFACE = "cells.kind@1"
 OPERATOR_INTERFACE = operator_registry.COMPOSITE_INTERFACE
-INNER = qualified(inner_spec.MODEL_ID)  # Runs @3's own laws and its kinds (core/kind_registry.py).
+INNER = qualified(inner_spec.MODEL_ID)  # Runs @3's own laws and its kinds (registry/kind_registry.py).
 COMPOSITE = qualified(composite_spec.MODEL_ID)  # Runs the composite's operators.
 # The library of pages (docs/LAW_DOCUMENTATION_DESIGN.md §1.2): one page per piece and per model
 # with declared structure, at LIBRARY/<namespace>/<section>/<name>@<major>.md.
@@ -436,7 +435,7 @@ def kind_entry(kind, context):
 
 
 def operator_entry(operator, context):
-    """A composite operator's entry: its contract declarations (models/operators/contract.py) by
+    """A composite operator's entry: its contract declarations (operators/contract.py) by
     role, each read with its mode (door S's Read: current, fixed or reference)."""
     cls = type(operator)
     parts = (("event", "EVENT"), ("split", "SPLIT"), ("process", "PROCESS"))

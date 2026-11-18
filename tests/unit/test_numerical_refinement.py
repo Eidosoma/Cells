@@ -14,16 +14,16 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import batch, runner
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.grid import checked_grid
-from cells.core.resources import trace_bytes
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_snapshot
-from cells.models.registry import get_model
+from cells.execution import batch, runner
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.grid import checked_grid
+from cells.execution.resources import trace_bytes
+from cells.execution.schedule import control_values, event_index
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.betse.emulator.rehost import REHOST_REASON
 from validation.tissue import surface_cotransport_water_fixtures as fixtures
 
