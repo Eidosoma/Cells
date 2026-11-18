@@ -101,6 +101,21 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **core-fixes carried across move 2 and landed (18 November 2026).** Merge 270825ab
+  (core-fixes-m2 2d22a666): D3 and D4 (ff5ca5ff, 0a00ba6e) and G's item 1 (9b0d8baa).
+  - **Carrying it.** Git placed the edits in the moved files. move2.json's apply then brought them
+    to the new homes (c4881c6d), after a tool fix (06bcbba9) for merging a post-move main.
+  - **One semantic fix:** seam F's step 1 had renamed `LAWS` to `VERSION_1_LAWS`.
+  - **The gate:**
+    - tiers 1+2: 533 files, 0 changed;
+    - G1: 113 of 113;
+    - crossrev: 9 of 9;
+    - IDs: additions only;
+    - FR's bitwise set passed, and R1's 274 definitions are all equal;
+    - one count increase: the compartments test's fail-closed check gains a case for D4's new
+      operator-contract method, as designed. Its tier row was re-measured at 149 (e16e26bb).
+  - The core-seams pass's owners branched from it (CORE_SEAMS §18).
+  - **Evidence:** `/mnt/workspaces/Cells/d188-m2-move-20261118/gate-2d22a666/`.
 - **D188's move 2 landed on main (18 November 2026).** Merge d5d56d1b (d188-m2-prep e0a3e6a3),
   tagged `d188-move2-landed-2026-11-18`. The tree before it is tagged `pre-d188-move2-2026-11-18`.
   The evidence is in `/mnt/workspaces/Cells/d188-m2-move-20261118/`: the gate is `gate-e0a3e6a3/`,
