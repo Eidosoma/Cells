@@ -7,12 +7,12 @@
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists",
   "needs_first": [
-   "the lead's rulings on questions_for_the_lead",
+   "the lead's ruling on questions_for_the_lead 6 (the basal control)",
    "the generator (records only), the judge (reads records, never runs; the coupling protocol's arithmetic imported read-only from validation/tissue/regulated_availability_judge.py) and the drafter, in FR-1's form, with tool tests and planted judge mutants",
    "the development run on the ladder, which fixes delta and the resolved-pair counts (disclosed), then a rehearsal on a registered dry-run copy until it passes"
   ],
   "path": "the D150/MG0c path, as FR-1's and FR-3's",
-  "move_2": "the side of D188's move 2 it registers on is the lead's (questions_for_the_lead 4); it is rehearsed on that side"
+  "move_2": "the lead's ruling 4: on the current, pre-move main if ready before OL1 lands (FR-3 first), otherwise after move 2 on the moved tree; rehearsed on that side"
  },
  "rung": "FR-6 items 1 and 3, acceptance A5'' (numerical verification, D174's first claim kind; no biological comparison, D151)",
  "question": "Does species_regulated_availability@1 drive each of two cells' gate-free K-leak populations through that cell's own regulatory state s1 (hill_regulated_two_state@1, read from the cell's X by a Hill activation, X under D150's turnover, the same dose in both cells), from a per-cell prior s0 = 0.1 in a and 0.8 in b, so that V and the amounts of both cells converge at second order to R-cell with the state integrated alongside; and are the two cells told apart: a swapped, shared or ignored prior, the state bypassed, the state's rates 1% off and the basal level x (1 + delta) each caught?",
@@ -41,18 +41,18 @@
   "status": "declared 18 November 2026 by the FR owner, before any engine output compared with the references (one well-posedness run, no comparison: disclosures); for the lead's ruling (questions_for_the_lead)",
   "orders": "A5's rule, the coupling protocol's resolved-pair rule (imported read-only): V and the amounts of both cells, the max norm of each rung's error against R-cell over the records; a pair of successive rungs is resolved when its finer error is at least 100 x the reference's floor and its rounding scale; every resolved pair's order in [1.7, 2.3]; at least (the development count - 1) resolved pairs per observable, the count fixed by the development run and disclosed (the coupling protocol's form). s, U, F and a_eff reported",
   "start": "row 0 equal to the references' registered start (V, the amounts and s) within 1e-15 relative (a priori: both sides start from it)",
-  "state_budget": "proposed (questions_for_the_lead 1): B_V(dt) = 1e-6 V (dt / 1 ms)^2 and B_n(dt) = 3e-8 fmol (dt / 1 ms)^2 for V and the amounts of both cells at every record of every rung. It is the registered honest stand-in's errors rounded up (6.6e-7 V and 2.1e-8 fmol at 1 ms, at second order), not a closed form of declared values: the stand-in sits at 0.64 to 0.71 of it on every rung. Every registered control departs by at least 10 x it at 1 ms: the prior's by 2.9e3 x to 6.1e3 x in V (2.0e4 x to 4.3e4 x in the amounts), the bypass 5.4e3 x, k_on and k_off 24 x in V and 560 x in the amounts, the basal x (1 + 1e-3) 16.8 x in the amounts only (1.0 x in V)",
+  "state_budget": "reported, not judged (the lead's ruling 1; derived from the references' stand-in, disclosed): B_V(dt) = 1e-6 V (dt / 1 ms)^2 and B_n(dt) = 3e-8 fmol (dt / 1 ms)^2 for V and the amounts of both cells at every record of every rung. It is the registered honest stand-in's errors rounded up (6.6e-7 V and 2.1e-8 fmol at 1 ms, at second order), not a closed form of declared values: the stand-in sits at 0.64 to 0.71 of it on every rung. Every registered control departs by at least 10 x it at 1 ms: the prior's by 2.9e3 x to 6.1e3 x in V (2.0e4 x to 4.3e4 x in the amounts), the bypass 5.4e3 x, k_on and k_off 24 x in V and 560 x in the amounts, the basal x (1 + 1e-3) 16.8 x in the amounts only (1.0 x in V)",
   "delta": "the basal control's delta, by the coupling protocol's rule, declared now and registered after the development run (disclosed): the delta whose control's V departure plateaus at 10 x the development run's finest (0.125 ms) V error, rounded up on a 1-2-5 grid. Judged: at the registered delta the control puts a resolved pair of V or the amounts out of the band (the rule can fail)",
-  "controls_margin": "each control world departs from R-cell's registered world by at least 10 x the scale the lead rules (questions_for_the_lead 1) on every rung"
+  "controls_margin": "the lead's ruling 1: each control's departure from the references (the max norm over the records against R-cell's registered world) at least 10 x the honest engine's own error at the same rung (the registered world's run at that rung against the same reference), in each observable where the references show power: V and the amounts for the prior, the bypass and the rates, on all four rungs; the basal control as questions_for_the_lead 6 settles"
  },
  "criteria": {
   "C0_admission": "every run part admitted and run to its end with every host check on every accepted row (the runner); the printed IDs among the declared engine models",
   "A5pp_orders": "V and the amounts of both cells: every resolved pair in [1.7, 2.3], at least the declared count of resolved pairs (orders budget)",
   "A5pp_start": "row 0 is the references' start, within 1e-15",
-  "A5pp_state": "V and the amounts within the state budget at every record of every rung (if the lead rules the budget form)",
-  "prior": "the prior swapped, shared (a's, b's, the mean) and ignored: each departs by at least 10 x the ruled scale on every rung: the two cells are told apart",
-  "state": "the state bypassed (A5's instantaneous form) departs by at least 10 x the ruled scale on every rung",
-  "rates": "k_on and k_off x 1.01 each depart by at least 10 x the ruled scale on every rung",
+  "A5pp_state_reported": "V and the amounts against the state budget at every record of every rung: reported, derived from the references' stand-in (ruling 1)",
+  "prior": "the prior swapped, shared (a's, b's, the mean) and ignored: each departs by at least 10 x the honest engine's own error in V and in the amounts on every rung: the two cells are told apart",
+  "state": "the state bypassed (A5's instantaneous form) departs by at least 10 x the honest engine's own error in V and in the amounts on every rung",
+  "rates": "k_on and k_off x 1.01 each depart by at least 10 x the honest engine's own error in V and in the amounts on every rung",
   "basal": "the basal x (1 + delta) at the registered delta puts a resolved pair out of the band"
  },
  "dt_study_criteria_written_first": {
@@ -95,16 +95,19 @@
   "note": "development evidence only: no run of this protocol exists"
  },
  "questions_for_the_lead": [
-  "1. The scale the prior, bypass and rate controls are judged against (the registered claim fixes the orders by the resolved-pair rule; the scale of the controls is not fixed). Proposed: (a) the state budget B_V(dt) = 1e-6 V (dt/1 ms)^2 and B_n(dt) = 3e-8 fmol (dt/1 ms)^2, judged at every record of every rung, with each control at least 10 x it on every rung. It is the registered stand-in's errors rounded up, not a closed form of declared values (budgets). The alternative: (b) each control's departure over the engine's own error at the same rung, at least 10 (the references' margins_over_honest form with the engine in place of the stand-in), no absolute state budget, as A5 judged orders only. (b) is reported either way",
-  "2. delta by the coupling protocol's rule (budgets), registered after the development run and disclosed, the control judged by the order rule: confirm",
-  "3. Every control on all four rungs (the README's 'at every rung'): confirm. About 36 short runs",
-  "4. D188's move 2: which side FR-6 registers on (it is rehearsed on that side)",
-  "5. The resolved-pair counts: at least the development count less one, per observable, as the coupling protocol: confirm"
+  "6. The basal control under rulings 1 and 2 together (raised 18 November 2026, after the rulings and before any engine output). By the coupling protocol's rule, delta makes the control's V departure 10 x the finest (0.125 ms) V error. The control's departure is linear in delta, and the honest error falls at second order, so its margin over the engine's own error at a rung is 10 x (dt_finest/dt)^2 in V, and on the registered stand-in's error ratios (the amounts 15.6 x more sensitive to it than V, relative to the honest error) about 2.4 x, 9.8 x, 39 x and 156 x in the amounts at 1, 0.5, 0.25 and 0.125 ms. So 'judged in the amounts at every rung' (ruling 1) holds at the references' registered delta (1e-3: 24 x to 1,563 x over the stand-in), but at the rule's delta only from 0.25 ms down. Options: (i) the coupling protocol's delta, judged by its own detection (a resolved pair out of the band) and by rule (b) where it has power (the amounts at 0.25 and 0.125 ms, V at 0.125 ms); (ii) the references' delta = 1e-3 under rule (b) (the amounts at every rung, V at 0.25 and 0.125 ms); (iii) both controls, each judged as in (i) and (ii). Proposed: (iii)"
  ],
- "questions_answered": [],
+ "questions_answered": [
+  "1. The controls' scale (the lead, 18 November 2026): (b) is judged and (a) is reported. Every control's departure from the references must be at least 10 x the honest engine's own error at the same rung, in each observable where the references show power: V and the amounts for the prior, bypass and rate controls; the basal control in the amounts at every rung, and in V only at the rungs where the references show power. Accuracy comes from the resolved-pair order rule, as for A5: orders in [1.7, 2.3], with the resolved counts; a wrong limit breaks convergence there. (a) is not judged because a budget made by rounding up the references' stand-in could fail an honest second-order engine on its error constant alone; its comparison is reported, disclosed as derived from the stand-in",
+  "2. delta by the coupling protocol's rule (the lead, 18 November 2026): confirmed. The rule is declared now; the number comes after the development run and is disclosed before registration",
+  "3. Every control on all four rungs, about 36 short runs (the lead, 18 November 2026): confirmed",
+  "4. D188's move 2 (the lead, 18 November 2026): it cannot start until OL1 lands, which waits for the user's go this morning. If A5'' is ready before then, it rehearses and registers on the current, pre-move main, with FR-3 first; otherwise it registers after move 2, on the moved tree. The lead is told when either proposal is near",
+  "5. The resolved-pair counts as the coupling protocol sets them (the lead, 18 November 2026): confirmed; its rule imported read-only"
+ ],
  "disclosures": [
   "Drafted on 18 November 2026 after the coupling protocol's judged A5 (15 November, 47 of 47), whose engine errors and orders are known (§9-§10: 2.9e-8 V at 1 ms, orders 2.00). Nothing here is set from them",
   "Before the draft, host-only checks: the engine's F and R equal the registered exact SI products (N_A e and N_A k_B) to the last bit, so the constants induce no V offset (100 floors of V are 3.3e-12 V); the engine's bound start equals the references' registered row 0 (the amounts 24, 280 and 60 fmol, -60 mV from the charge over the capacitance, s = 0.1 and 0.8); @3's explicit-rate bound admits the world up to between 5 and 10 ms, so 1 ms has a factor of at least 5 (the README's open item, closed)",
-  "One well-posedness run (development_runs), with no comparison with the references"
+  "One well-posedness run (development_runs), with no comparison with the references",
+  "18 November 2026: the lead ruled on the draft's five questions (questions_answered) before any engine output was compared with the references; question 6 (the basal control under rulings 1 and 2) raised the same day, before any such output"
  ]
 }
