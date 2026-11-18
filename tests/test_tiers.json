@@ -138,7 +138,8 @@
   "/mnt/workspaces/Cells/fr10-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/fr10-references-20261117/measure-02/measured.json",
   "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json",
-  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-258d2be7/measured.json"
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-258d2be7/measured.json",
+  "/mnt/workspaces/Cells/core-boundary-checks-20261117/measure-0298b49f/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1141,6 +1142,13 @@
    "root": ".claude/worktrees/fr10-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T23:41:56+00:00"
+  },
+  {
+   "git_revision": "0298b49ff75c46496decae29ad22b7e0f6f16a60",
+   "dirty": false,
+   "root": ".claude/worktrees/core-boundary-checks",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:05:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2607,6 +2615,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_foreign_writes.py",
+    "seconds": 4.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
     "file": "tests/unit/test_kind_rules.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -3880,6 +3896,14 @@
     "counts": {
      "failed": 1,
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_failure_mask.py",
+    "seconds": 15.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
     }
    },
    {
