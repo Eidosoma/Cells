@@ -7098,3 +7098,23 @@ control → production loop is within the narrowed hold.
   2025) to be replicated. The pasted text stays out of the repository: it is paraphrased, cited, and
   its numbers are given as read. The authors' kinetic model runs out of process as a reference only
   if its licence allows. A replication owner writes the docs-only replication note first.
+
+## D221: The self-replicator replication: development first, R0 and R1, the authors' model in Octave, recovery kept apart
+
+2026-11-18, evening. The user answered the replication note's four questions
+(SELF_REPLICATOR_SELECTION_REPLICATION §7.3): "1. A", "2. Agreed first two to start with", "3. Yes
+fine with the install you have sudo on this vm", "4. yes agreed keep seperate as you suggest".
+- **D138.** Development runs first. Once both chemical systems (1+4 and 2+3) run in Cells, there is a
+  judged comparison against the paper's orderings, with the authors' model as a reported reference
+  only.
+- **Scope.** The first two stages start the work: R0, three hexamer types in stacks under flow in the
+  dark; then R1, with light and the bound cofactor. That is about 16–25 agent-days, after OL3
+  (D212). The rest of the replication is decided after them.
+- **The authors' model** (Zenodo, CC BY 4.0) runs unmodified in GNU Octave, out of process, as a
+  reference.
+  - Octave 9.4.0 is installed system-wide from the distribution's packages, with the user's leave.
+  - Its outputs are numbers, cited.
+  - Its code is never copied into Cells.
+- **The perturbation-and-recovery experiment** suggested in the user's reading summary is registered
+  separately, after the basic replication works, so that the match with the paper stays
+  unambiguous.
