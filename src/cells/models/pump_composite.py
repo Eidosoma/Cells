@@ -494,6 +494,13 @@ def _change_stages(op, names):
     return declared
 
 
+def closure_reach(inner, op):
+    """The view fields op's closures change (close()): for each mask it closes, the inner model's
+    CLOSURE_REACH, in its order; a mask the inner model gives no reach changes only itself."""
+    reach = getattr(inner, "CLOSURE_REACH", {})
+    return tuple(dict.fromkeys(k for name in op.CLOSES for k in reach.get(name, (name,))))
+
+
 def view_changes(inner, operators):
     """{view field: (ViewChange, ...)}: every change of a view field in an ordered operator list,
     in declared order, once per stage it is made at (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and
@@ -504,13 +511,12 @@ def view_changes(inner, operators):
       undeclared change counts at every stage its parts run at), and also at the stages of the
       earlier changes of what it reads current, since its view takes the view the providers before
       it accumulated. Only the declared stage is its own (ViewChange.own).
-    * A closer changes every activity mask and padded field at the stages of its closures:
-      close() propagates closure down the entity hierarchy (a closed cell closes its patches) and
-      pads every closed slot.
+    * A closer changes, at the stages of its closures, what close() changes for the masks it
+      closes (the inner model's CLOSURE_REACH): the masks below them in the entity hierarchy (a
+      closed cell closes its patches) and the padded fields of the slots closed.
     * A writer of an earlier owner's accepted state (ACCEPTS_WRITES) changes every field that owner
       provides, at each stage its own parts run at (contract.part_stages).
     """
-    masks = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
     out, owners = {}, {}
     for i, op in enumerate(operators):
         found = {}  # {field: {stage: own}}
@@ -523,7 +529,7 @@ def view_changes(inner, operators):
             found[name] = stages
         if op.CLOSES:
             closures = _change_stages(op, op.CLOSES)
-            for name in masks:
+            for name in closure_reach(inner, op):
                 stages = found.setdefault(name, {})
                 for stage in closures:
                     stages.setdefault(stage, False)
@@ -600,8 +606,8 @@ def structure_errors(inner, operators):
             if name not in getattr(inner, "MASK_FIELDS", ()):
                 errors.append(f"{op.LAW_ID} closes {name}, which is not an inner activity mask")
             closed.setdefault(name, op.LAW_ID)
+    padded = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
     if closed:  # Propagation rewrites every mask and pads closed slots: no provider of them.
-        padded = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
         for name in set(providers) & set(padded):
             errors.append(
                 f"{name} has closers or a provider, never both ({providers[name]} provides it)"
@@ -628,6 +634,12 @@ def structure_errors(inner, operators):
                 columns[name].append(op.LAW_ID)
             else:
                 errors.append(f"{op.LAW_ID} replaces {name}, which no earlier owner observes")
+    # A closer changes what close() changes for the masks it closes (closure_reach: the masks
+    # below them in the entity hierarchy and the padded fields of the slots closed), so a fixed read
+    # of any of those beside another operator's closer is refused, not only of the masks it names
+    # (door S's rule 4; docs/OPERATOR_COMPOSITION_DESIGN.md §17). The closer named is the first that
+    # closes the field itself, else the first whose closures reach it.
+    reached = [(op, closure_reach(inner, op)) for op in operators if op.CLOSES]
     for op in operators:
         for name in op.CONFLICTS_VIEW:
             for changer in changers.get(name, ()):
@@ -635,8 +647,12 @@ def structure_errors(inner, operators):
                     errors.append(
                         f"{op.LAW_ID} reads {name} as declared, but {changer.LAW_ID} provides it"
                     )
-            if closed.get(name, op.LAW_ID) != op.LAW_ID:
-                errors.append(f"{op.LAW_ID} reads {name} as declared, but {closed[name]} closes it")
+            others = [c for c, reach in reached if c is not op and name in reach]
+            if others:
+                closer = next((c for c in others if name in c.CLOSES), others[0])
+                errors.append(
+                    f"{op.LAW_ID} reads {name} as declared, but {closer.LAW_ID} closes it"
+                )
     # The order of a current read (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and §5, C1 and C2),
     # against every change of its field (view_changes): a field no operator changes is read at
     # its declared value, the fallback; a change at another stage of the step is seen whatever

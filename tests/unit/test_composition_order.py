@@ -251,9 +251,11 @@ def test_a_closer_changes_every_mask_and_padded_field_and_a_writer_what_its_owne
             (1, INSERTION, "split", False),
         ]
     # It closes two masks, undeclared, so at both of its parts' stages (its event map opens an
-    # onset); close() changes every mask and padded field.
+    # onset); close() changes what closing them reaches (CLOSURE_REACH), and nothing else.
+    reach = {*adapter.CLOSURE_REACH["membrane_active"], *adapter.CLOSURE_REACH["outside_active"]}
     for name in (*adapter.MASK_FIELDS, *adapter.PADDED_FIELDS):
-        assert stages[name] == [(1, INSERTION, "event", False), (1, INSERTION, "split", False)]
+        expected = [(1, INSERTION, "event", False), (1, INSERTION, "split", False)]
+        assert stages.get(name, []) == (expected if name in reach else []), name
     # A provider changes at the stages of the earlier changes of what it reads current; only its
     # own declared stage is its own.
     lumen = OPERATORS["restricted_cleft_lumen@2"]  # Reads membrane_area, provides VOLUME.
@@ -317,6 +319,76 @@ def test_a_reader_of_a_patch_mask_sees_a_closed_cells_patches_closed(two_cells):
     assert structure(patches, split_closer) == [
         late("test_patch_reader@1", "membrane_active", "split", "test_closer@1")
     ]
+
+
+@pytest.mark.parametrize("mask", adapter.MASK_FIELDS)
+def test_the_closure_reach_covers_everything_close_changes(mask):
+    """CLOSURE_REACH, which the table of changes and the fixed-read rule read, holds every field
+    close() changes when one slot of `mask` closes, in a world with every entity kind (cells, an
+    outside node with a face, patches, a channel population, a contact). The planted twin: a reach
+    that leaves out one changed field must fail this."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0), ("ecs_1", 1.0)),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_1")),
+        faces=(("face_0", "ecs_0", "ecs_1", 1e-10, 1e-5),),
+        junctions=(("junction_0", "cell_0", "cell_1"),),
+        end=0.004,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-6, ecs_1=1e-6),
+    )
+    raw["model"]["channels"] = [
+        dict(
+            id="leak_0",
+            membrane_id="contact_0",
+            kinetic_law="kleak_always_open@1",
+            max_permeability_m_per_s=1e-9,
+            abundance=1.0,
+            initial_gate=[],
+            permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
+        )
+    ]
+    raw["experiment"]["channel_controls"] = [
+        dict(channel_id="leak_0", schedule=[dict(time=0.0, availability=1.0)])
+    ]
+    raw["execution"]["channel_capacity"] = 1
+    spec = parse_spec(raw)
+    state, p = get_model(spec.model).initial_values(spec)
+    q = adapter.inner_layout(p)
+
+    def closes(first):
+        def closures(self, state, p, q, *, xp):
+            closed = np.ones(np.shape(getattr(q, mask)), dtype=bool)
+            closed[first] = False
+            return {mask: xp.asarray(closed)}
+
+        body = dict(LAW_ID="test_reach@1", EVENT=True, CLOSES=(mask,), closures=closures)
+        return check_declarations(type("Reach", (Operator,), body))()
+
+    fields = (*adapter.MASK_FIELDS, *adapter.PADDED_FIELDS)
+    changed = set()
+    for first in range(np.shape(getattr(q, mask))[-1]):
+        closed = adapter.close(q, state, p, (closes(first),), xp=np)
+        changed |= {
+            k
+            for k in fields
+            if np.asarray(getattr(closed, k)).tobytes() != np.asarray(getattr(q, k)).tobytes()
+        }
+    assert mask in changed and changed <= set(adapter.CLOSURE_REACH[mask]), (mask, changed)
+    for left_out in changed:  # The planted twin: one field fewer must fail.
+        assert not changed <= set(adapter.CLOSURE_REACH[mask]) - {left_out}
+
+
+def test_a_fixed_read_of_a_mask_a_closure_reaches_is_refused():
+    """§4 of the M1 hand-back (the lead's ruling (a)): a fixed read of a mask that another closer's
+    closure reaches through close()'s propagation is refused, not only of the masks it names; one
+    the closure does not reach is admitted."""
+    fixed = reader("test_fixed_patches@1", "membrane_active", Read("fixed", "split"))
+    cell_closer = closer("test_closer@1", [0])  # Closes active; its patches follow.
+    assert structure(cell_closer, fixed) == [
+        "test_fixed_patches@1 reads membrane_active as declared, but test_closer@1 closes it"
+    ]
+    faces = reader("test_fixed_faces@1", "face_active", Read("fixed", "split"))
+    assert structure(cell_closer, faces) == []  # Closing a cell closes no face.
 
 
 # ------------------------------------------------------------------ C3, per-stage read modes

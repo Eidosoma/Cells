@@ -814,9 +814,11 @@ Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's w
     reads current, since its view takes the accumulated view. An undeclared change of an operator
     with an event map and a split part counts at both stages (insertion@2's closures open at its
     event, though `view_change` defaults them to `split`); a `VIEW_CHANGES` entry narrows it;
-  - a closer's change of every mask and padded field, since `close()` propagates and pads. So a
-    reader of `membrane_active` beside a closer of `active` alone receives the view, never the
-    declared mask (gap 5's hazard);
+  - a closer's change of what `close()` changes for the masks it closes, the adapter's
+    `CLOSURE_REACH`: the masks below them in the entity hierarchy and the padded fields of the
+    slots closed. So a reader of `membrane_active` beside a closer of `active` alone receives the
+    view, never the declared mask (gap 5's hazard), while a closer of cells reaches no face or
+    outside anchor;
   - a writer of an owner's accepted state, as a change of everything the owner provides, at each
     stage its parts run at.
 - **C1:** a current read of a field nothing changes is admitted and reads the declared value; its
@@ -832,6 +834,10 @@ Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's w
 - **A declared stage is one of the operator's parts':** a read or change at `event` needs the event
   map, at `split` the split part (a part-less owner may change at `split`, its default), and a read
   at `inner` the in-step process.
+- **Fixed reads, tightened** (the lead's ruling on M1's hand-back): a fixed read is refused beside
+  another operator's closer whose closure reaches the field, not only one that closes it by name
+  (door S's rule 4). No sequence is newly refused or admitted; the composition matrix gains eleven
+  tagged rows (four nominal), all in cells already refused, so no cell changes.
 - **C4:** a door S reader's part receives `reader_view`: the full view's merge of every provider and
   closer, without the field refresh, holding only its read fields. An operator that books at the
   view keeps the full view.

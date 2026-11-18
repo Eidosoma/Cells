@@ -533,6 +533,68 @@ def _tags():
         order.format(what="mask", does="opens it"),
         (),
     )
+    # A closer changes what close() changes for the masks it closes (CLOSURE_REACH), the masks
+    # below them in the entity hierarchy and the padded fields of the slots closed, so a reader
+    # of those as declared meets it too (docs/OPERATOR_COMPOSITION_DESIGN.md §17).
+    propagates = (
+        "; closure propagates from the retired cell to its patches, populations and contacts"
+    )
+    for name in ("membrane_active", "channel_active", "junction_active"):
+        tags[("reads-closed", REPLACEMENT_2, PARTITION, name)] = (
+            REAL,
+            CELL_MASK[REPLACEMENT_2] + propagates,
+            (),
+        )
+        tags[("reads-closed", COMPARTMENTS, PARTITION, name)] = (
+            REAL,
+            tags[("reads-closed", COMPARTMENTS, PARTITION, "active")][1] + propagates,
+            (),
+        )
+    for reader in (EXCHANGE, COUPLING):
+        tags[("reads-closed", reader, PARTITION, "membrane_active")] = (
+            REAL,
+            CELL_MASK[reader] + propagates,
+            (),
+        )
+    tags[("reads-closed", SITES, PARTITION, "membrane_active")] = (
+        REAL,
+        tags[("reads-closed", SITES, PARTITION, "active")][1] + propagates,
+        (),
+    )
+    tags[("reads-closed", TURNOVER, PARTITION, "membrane_active")] = (
+        NOMINAL,
+        TURNOVER_NO_PATCH,
+        TURNOVER_RUNTIME,
+    )
+    onset_populations = (
+        "insertion@2 closes only onset patches and nodes, and refuses a channel population on an "
+        "onset patch (check_onsets), so no population it closes exists"
+    )
+    for reader in (REPLACEMENT_2, COMPARTMENTS):
+        tags[("reads-closed", reader, INSERTION_2, "channel_active")] = (
+            NOMINAL,
+            onset_populations[0].upper() + onset_populations[1:],
+            (ONSET_CHANNELS[INSERTION_2],),
+        )
+    tags[("reads-closed", COMPARTMENTS, INSERTION_2, "face_active")] = (
+        NOMINAL,
+        "No face names a compartment's node (refusal 1, parse_declaration), and insertion@2's "
+        "closure closes only faces at its onset nodes (closures): the slots are disjoint",
+        (OPS + "compartments.py::parse_declaration", OPS + "membrane_insertion_v2.py::closures"),
+    )
+    anchors = "Insertion@2's closure pads the anchors of its onset nodes until their onset"
+    tags[("reads-closed", REACTIONS, INSERTION_2, "extracellular_amount_reference")] = (
+        REAL,
+        "D152 reads finite nodes' anchors (BATH_SCHEDULE_DESIGN.md §3.1); "
+        + anchors[0].lower()
+        + anchors[1:],
+        (),
+    )
+    tags[("reads-closed", SITES, INSERTION_2, "extracellular_amount_reference")] = (
+        REAL,
+        anchors + "; a population's facing pool may be one (not shown nominal)",
+        (),
+    )
     return tags
 
 

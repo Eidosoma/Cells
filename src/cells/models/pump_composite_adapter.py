@@ -119,6 +119,35 @@ PADDED_FIELDS = (
     "channel_laws",
     "junction_minimum",
 )
+# What closing each mask changes in close(): the mask, the masks below it in the entity hierarchy
+# (a cell's patches, a node's patches and faces, a patch's populations, a cell's contacts) and the
+# padded fields of all those slots. The composite's table of changes reads it
+# (pump_composite.view_changes; docs/OPERATOR_COMPOSITION_DESIGN.md §17).
+_POPULATION = ("channel_active", "channel_laws")
+_PATCH = ("membrane_active", *_POPULATION)
+CLOSURE_REACH = MappingProxyType(
+    {
+        "active": (
+            "active",
+            *_PATCH,
+            "junction_active",
+            "amount_reference",
+            "initial_cell_charge_C",
+            "junction_minimum",
+        ),
+        "outside_active": (
+            "outside_active",
+            *_PATCH,
+            "face_active",
+            "extracellular_amount_reference",
+            "initial_outside_charge_C",
+        ),
+        "membrane_active": _PATCH,
+        "channel_active": _POPULATION,
+        "junction_active": ("junction_active", "junction_minimum"),
+        "face_active": ("face_active",),
+    }
+)
 # Option (a) of v2 design §3 (R3): the refresh refactorises every step once a field input is
 # provided, so a field-input provider is refused above this many field nodes (cells plus
 # outside nodes, padded). Measured on one CPU core (composite-v2-20261112-01/s2-r3-cost): +7.5%
