@@ -25,10 +25,24 @@ them back). Each entry may give:
   inert until a law declares how it moves the forms (the lead, 15 November 2026);
 * ``background``: ``{trace_mM, floor_fmol}``, the trace the species is declared at where it is
   absent and its ledger floor (check_background). With a registry declared, a row is never an
-  exact zero at a node: an absent row is a declared trace (operators/PLAN.md §2.4, accepted).
+  exact zero at a node: an absent row is a declared trace (operators/PLAN.md §2.4, accepted);
+* ``forms`` (seam C, docs/CORE_SEAMS_DESIGN.md §5.1 and §19 item 6): a multi-form row, a binder,
+  lists its non-base forms, ``[{id, counts, standard_mu_RT[, valence]}, ...]``. The row itself is
+  the base form: its ``standard_mu_RT`` and the model's valence are the base form's, so scalar
+  readers are unaffected, and the row holds the binder's total. Each form gives its ID (distinct
+  from every species and every other form), its ligand counts relative to the base (``{ligand
+  species: nonzero integer}``; a negative count is a form below its base, such as PO4 from HPO4),
+  its mu°/RT at c0 and, optionally, its valence, which must be the base's plus the ligands'
+  (z_base + sum n z_L; check_forms). A ligand is a species with a standard potential and no forms
+  of its own. ``forms`` and ``protonated_standard_mu_RT`` (version 1's spelling of a two-form row)
+  do not meet on one row. With the ligands' potentials the forms give each form's stability
+  constant (form_log_constants): c_f = c_base beta_f prod (x_L / c0)^n_L at equilibrium, where
+  ln beta_f = mu°_base/RT + sum n mu°_L/RT - mu°_f/RT. A row with forms stays inert like a
+  two-form row (check_two_form_rows) until a law declares how it moves the forms (§5.2).
 
-check_definition runs the definition-time checks (background and absent rows, two-form rows); the
-core's hook calls it ahead of the inner model's own checks, so its messages come first.
+check_definition runs the definition-time checks (background and absent rows, two-form and
+multi-form rows, the forms' valences); the core's hook calls it ahead of the inner model's own
+checks, so its messages come first.
 
 Resolution of identities (identities)
 -------------------------------------
@@ -90,12 +104,26 @@ class Background:
 
 
 @dataclass(frozen=True)
+class Form:
+    """A non-base form of a multi-form row (module docstring, ``forms``): its ID, its ligand counts
+    relative to the row's base form, ((ligand species, n), ...) in declared order with each n a
+    nonzero integer (negative: a form below the base), its mu°/RT at the model's c0, and its
+    valence where declared (None otherwise; check_forms compares it with z_base + sum n z_L)."""
+
+    id: str
+    counts: tuple
+    standard_mu_RT: float
+    valence: int | None = None
+
+
+@dataclass(frozen=True)
 class Entry:
     id: str
     identity: Identity | None
     standard_mu_RT: float | None  # The base form's, at the row's valence z.
     background: Background | None
     protonated_standard_mu_RT: float | None = None  # The form at z + 1, for a two-form row.
+    forms: tuple = ()  # Form, ...: a multi-form row's non-base forms, in declared order.
 
 
 @dataclass(frozen=True)
@@ -144,14 +172,106 @@ def _positive(value, what):
     return result
 
 
-REGISTRY_KEYS = ("identity", "standard_mu_RT", "protonated_standard_mu_RT", "background")
+REGISTRY_KEYS = ("identity", "standard_mu_RT", "protonated_standard_mu_RT", "background", "forms")
 MODEL_KEY = "standard_concentration_mM"
+FORM_KEYS = ("id", "counts", "standard_mu_RT")  # A form's required keys; "valence" is optional.
 
 
 def _potential(value, what):
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise ConfigError(f"{what} must be a finite number")
     return float(value)
+
+
+def _integer(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _parse_forms(raw_forms, name):
+    """A row's declared non-base forms, each a Form, in declared order (structure only: the checks
+    across entries are _check_forms', and the valences check_forms')."""
+    where = f"species {name}'s forms"
+    if not isinstance(raw_forms, list) or not raw_forms:
+        raise ConfigError(f"{where}: a non-empty list of {{id, counts, standard_mu_RT}} forms")
+    forms = []
+    for raw in raw_forms:
+        if not isinstance(raw, dict):
+            raise ConfigError(f"{where}: each form is an object")
+        keys = set(FORM_KEYS) | ({"valence"} & set(raw))
+        _fields(raw, keys, f"a form of species {name}")
+        form_id, counts = raw["id"], raw["counts"]
+        if type(form_id) is not str or not form_id:
+            raise ConfigError(f"{where}: a form's id is a non-empty string")
+        if not isinstance(counts, dict) or not counts:
+            raise ConfigError(
+                f"species {name}'s form {form_id}: counts map each ligand to its number, relative "
+                "to the base form (a form with no counts is the base itself)"
+            )
+        for ligand, n in counts.items():
+            if type(ligand) is not str or not ligand or not _integer(n) or n == 0:
+                raise ConfigError(
+                    f"species {name}'s form {form_id}: each count is a nonzero integer of a named "
+                    "ligand (negative: a form below the base)"
+                )
+        valence = raw.get("valence")
+        if "valence" in raw and not _integer(valence):
+            raise ConfigError(f"species {name}'s form {form_id}: its valence is an integer")
+        mu = _potential(raw["standard_mu_RT"], f"species {name}'s form {form_id}'s standard_mu_RT")
+        forms.append(Form(form_id, tuple(counts.items()), mu, valence))
+    return tuple(forms)
+
+
+def _check_forms(entries):
+    """The forms' checks across entries (build): a row with forms has its base potential and no
+    protonated form; form IDs are distinct from each other and from every species; each ligand is
+    another species with a standard potential and no forms of its own; and no two forms of a row
+    have equal counts (isomers, which a rapid closure cannot tell apart)."""
+    by_id = {e.id: e for e in entries}
+    taken = set(by_id)
+    for e in entries:
+        if not e.forms:
+            continue
+        if e.standard_mu_RT is None:
+            raise ConfigError(
+                f"species {e.id} declares forms without its base form's potential: give "
+                "standard_mu_RT (the base form, at the row's valence) too"
+            )
+        if e.protonated_standard_mu_RT is not None:
+            raise ConfigError(
+                f"species {e.id} declares both forms and protonated_standard_mu_RT: version 1's "
+                "two-form spelling and the forms are one declaration each; declare its forms only"
+            )
+        seen = set()
+        for form in e.forms:
+            if form.id in taken:
+                raise ConfigError(
+                    f"species {e.id}'s form {form.id}: its id is already a species' or a form's"
+                )
+            taken.add(form.id)
+            for ligand, _ in form.counts:
+                other = by_id.get(ligand)
+                if ligand == e.id or other is None:
+                    raise ConfigError(
+                        f"species {e.id}'s form {form.id}: its ligand {ligand!r} is not another "
+                        "species of the model"
+                    )
+                if other.standard_mu_RT is None:
+                    raise ConfigError(
+                        f"species {e.id}'s form {form.id}: its ligand {ligand} declares no "
+                        "standard_mu_RT, so the form's stability has no authority"
+                    )
+                if other.forms or other.protonated_standard_mu_RT is not None:
+                    raise ConfigError(
+                        f"species {e.id}'s form {form.id}: its ligand {ligand} has forms of its "
+                        "own; a ligand is a single-form species"
+                    )
+            composition = tuple(sorted(form.counts))
+            if composition in seen:
+                raise ConfigError(
+                    f"species {e.id}: two forms have the counts {dict(composition)}. Isomers are "
+                    "one form to a rapid closure: declare one, at mu°/RT = -ln(sum exp(-mu°_i/RT))"
+                )
+            seen.add(composition)
 
 
 def build(raw_entries, standard_concentration_mM=None):
@@ -184,7 +304,9 @@ def build(raw_entries, standard_concentration_mM=None):
                 _positive(background["trace_mM"], f"species {name}'s trace_mM"),
                 _positive(background["floor_fmol"], f"species {name}'s floor_fmol"),
             )
-        entries.append(Entry(name, identity, mu, background, protonated))
+        forms = () if raw.get("forms") is None else _parse_forms(raw["forms"], name)
+        entries.append(Entry(name, identity, mu, background, protonated, forms))
+    _check_forms(entries)
     if any(e.standard_mu_RT is not None for e in entries):
         if standard_concentration_mM is None:
             raise ConfigError(
@@ -216,6 +338,14 @@ def parse_entries(raw_model):
     )
 
 
+def _form_to_dict(form):
+    """A Form as declared: its keys in the declared form's order, the valence only when given."""
+    out = dict(id=form.id, counts=dict(form.counts), standard_mu_RT=form.standard_mu_RT)
+    if form.valence is not None:
+        out["valence"] = form.valence
+    return out
+
+
 def to_entries(declared_registry):
     """parse_entries' inverse, for the model's to_dict: ({species id: its registry keys}, {model
     keys}), each key present only when declared."""
@@ -230,6 +360,8 @@ def to_entries(declared_registry):
             keys["standard_mu_RT"] = e.standard_mu_RT
         if e.protonated_standard_mu_RT is not None:
             keys["protonated_standard_mu_RT"] = e.protonated_standard_mu_RT
+        if e.forms:
+            keys["forms"] = [_form_to_dict(form) for form in e.forms]
         if e.background is not None:
             keys["background"] = dict(
                 trace_mM=e.background.trace_mM, floor_fmol=e.background.floor_fmol
@@ -368,6 +500,96 @@ def pK(spec, species, proton):
     return -math.log10(dissociation_constant_mM(spec, species, proton) / 1000.0)
 
 
+def _multi_form_entry(spec, species):
+    model = declared(spec)
+    entry = None if model is None else model.entry(species)
+    if entry is None or not entry.forms:
+        raise ConfigError(f"species {species} declares no forms")
+    return model, entry
+
+
+def forms_of(spec, species):
+    """A multi-form row's forms, base first: ((form ID, ((ligand, n), ...), mu°/RT), ...), the base
+    being the row itself with no counts and its standard_mu_RT (module docstring, ``forms``)."""
+    _, entry = _multi_form_entry(spec, species)
+    base = (entry.id, (), entry.standard_mu_RT)
+    return (base, *((f.id, f.counts, f.standard_mu_RT) for f in entry.forms))
+
+
+def form_log_constants(spec, species):
+    """((ln beta_f per form, base first, the base's 0.0), c0 in mM) of a multi-form row, from the
+    one authority: ln beta_f = mu°_base/RT + sum n_L mu°_L/RT - mu°_f/RT, the stability of form f
+    against its base form and its free ligands, so that at equilibrium
+    c_f = c_base beta_f prod (x_L / c0)^n_L with c0 the model's standard_concentration_mM."""
+    model, entry = _multi_form_entry(spec, species)
+    logs = [0.0]
+    for form in entry.forms:
+        value = entry.standard_mu_RT
+        for ligand, n in form.counts:
+            value += n * model.entry(ligand).standard_mu_RT
+        logs.append(value - form.standard_mu_RT)
+    return tuple(logs), model.standard_concentration_mM
+
+
+def one_step_dissociation_constant_mM(spec, species):
+    """K (mM) of a multi-form row whose one form holds one more of a single ligand, B4's two-form
+    case written as forms, computed operation for operation as dissociation_constant_mM computes
+    version 1's: c0 exp(mu°_f - mu°_base - mu°_L). So a two-form row gives B4's K bit for bit
+    however it is spelt, and the general closure's one-ligand path is B4's (CORE_SEAMS §10, C)."""
+    model, entry = _multi_form_entry(spec, species)
+    forms = entry.forms
+    if len(forms) != 1 or len(forms[0].counts) != 1 or forms[0].counts[0][1] != 1:
+        raise ConfigError(
+            f"species {species} is not a one-step two-form row (one form holding one more of a "
+            "single ligand)"
+        )
+    form, (ligand, _) = forms[0], forms[0].counts[0]
+    exponent = form.standard_mu_RT - entry.standard_mu_RT - model.entry(ligand).standard_mu_RT
+    return model.standard_concentration_mM * math.exp(exponent)
+
+
+def form_valences(spec, species):
+    """Each form's valence, base first: the row's (the base form's) plus sum n_L z_L, the charge
+    its ligand counts carry (CORE_SEAMS §19 item 6)."""
+    _, entry = _multi_form_entry(spec, species)
+    m = _inner_model(spec)
+    z = dict(zip(m.species_ids, m.valence, strict=True))
+    base = z[entry.id]
+    return (base, *(base + sum(n * z[ligand] for ligand, n in f.counts) for f in entry.forms))
+
+
+def ligand_floor_counts(spec, species):
+    """{ligand: the smallest count of it over the row's forms, the base's 0 included}, each <= 0. A
+    binder total T_B times it is that ligand's part of the admissible floor of its total,
+    sum_B T_B min_f n_L,f (CORE_SEAMS §19 item 6; negative with a form below its base)."""
+    _, entry = _multi_form_entry(spec, species)
+    floors = {}
+    for form in entry.forms:
+        for ligand, n in form.counts:
+            floors[ligand] = min(floors.get(ligand, 0), n)
+    return floors
+
+
+def check_forms(spec):
+    """Refuse a form whose declared valence is not the base's plus sum n_L z_L: its counts fix the
+    charge it carries, so a declared valence that disagrees would book another charge (the
+    references' planted valence)."""
+    model = declared(spec)
+    if model is None:
+        return
+    for entry in model.entries:
+        if not entry.forms:
+            continue
+        base, *derived = form_valences(spec, entry.id)
+        for form, valence in zip(entry.forms, derived, strict=True):
+            if form.valence is not None and form.valence != valence:
+                raise ConfigError(
+                    f"species {entry.id}'s form {form.id} declares valence {form.valence}, but its "
+                    f"counts {dict(form.counts)} on the base's {base} give {valence} "
+                    "(z_base + sum n z_L)"
+                )
+
+
 def check_background(spec, *, rtol=1e-12):
     """With a registry declared: no row is an exact zero (or below zero, or not finite) at a cell
     or outside node, since an absent row is a declared trace (operators/PLAN.md §2.4); each declared
@@ -406,42 +628,53 @@ def check_background(spec, *, rtol=1e-12):
             )
 
 
+def _forms_label(entry):
+    """How a refusal names a row's forms: version 1's two-form spelling, or its declared forms."""
+    if entry.protonated_standard_mu_RT is not None:
+        return "two forms (protonated_standard_mu_RT)"
+    return f"forms ({', '.join(f.id for f in entry.forms)} beside its base)"
+
+
 def check_two_form_rows(spec):
-    """Refuse a route or a reaction that names a two-form row: an in-step mover of it (inner
-    routes, pumps, an operator's in-step process; moved_in_step), or an operator that declares it
-    among its species (D150's routes, D152's reactions, FR-3's sites, the coupling's reads). The
-    row stays inert until a law declares how it moves the forms. Operators that act on every row
-    alike and name none (a replacement template, a division, a lumen's fill) are not refused
-    here."""
+    """Refuse a route or a reaction that names a two-form or multi-form row: an in-step mover of
+    it (inner routes, pumps, an operator's in-step process; moved_in_step), or an operator that
+    declares it among its species (D150's routes, D152's reactions, FR-3's sites, the coupling's
+    reads). The row stays inert until a law declares how it moves the forms (§5.2). Operators that
+    act on every row alike and name none (a replacement template, a division, a lumen's fill) are
+    not refused here."""
     model = declared(spec)
     if model is None:
         return
-    two = [e.id for e in model.entries if e.protonated_standard_mu_RT is not None]
-    if not two:
+    labels = {
+        e.id: _forms_label(e)
+        for e in model.entries
+        if e.protonated_standard_mu_RT is not None or e.forms
+    }
+    if not labels:
         return
     reason = "no law declares how it moves the forms, so the row stays inert"
     moved = moved_in_step(spec)
-    for species in two:
+    for species, label in labels.items():
         for kind in ("cell", "outside"):
             for mover in moved.get(species, {}).get(kind, ()):
                 raise ConfigError(
-                    f"species {species} has two forms (protonated_standard_mu_RT): {mover} moves "
-                    f"its {kind} rows, and {reason}"
+                    f"species {species} has {label}: {mover} moves its {kind} rows, and {reason}"
                 )
     for op, declaration in _entries(spec):
         for item in operator_identities(op, declaration):
-            if item.id in two:
+            if item.id in labels:
                 raise ConfigError(
-                    f"species {item.id} has two forms (protonated_standard_mu_RT): {op.LAW_ID} "
-                    f"names it, and {reason}"
+                    f"species {item.id} has {labels[item.id]}: {op.LAW_ID} names it, and {reason}"
                 )
 
 
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
-    model's own: absent rows and backgrounds, two-form rows, then operators' potentials."""
+    model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
+    then operators' potentials."""
     check_background(spec)
     check_two_form_rows(spec)
+    check_forms(spec)
     check_potentials(spec)
 
 
