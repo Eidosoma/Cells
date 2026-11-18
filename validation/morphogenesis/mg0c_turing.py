@@ -1753,6 +1753,9 @@ def judge(protocol_path, output, results_paths, root=ROOT):
         raise SystemExit(f"Refused: the judged runs lack parts {missing}; no verdict is written")
     results = dict(parts=parts)
     results["accounting_summary"] = accounting_summary(results)
+    from validation.tissue import judge_harness  # The empty-metric guard (the review's finding 4).
+
+    judge_harness.refuse(judge_harness.metrics(protocol["criteria"], results))
     verdict = evaluate(protocol, results)
     record = dict(
         item="parts",

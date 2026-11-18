@@ -1,0 +1,202 @@
+"""The Kv1 port pilot's five laws (D211, D213; seam F's step 2, docs/CORE_SEAMS_DESIGN.md §8.2 and
+§8.6 as amended, the lead's ruling (B) of 18 November 2026), each claim with a planted error it
+must catch (D187). Legacy-free: the reference checks of tests/unit/test_surface_calcium_kv1.py,
+moved beside the laws (D196's safeguard), which keeps its own family's tests.
+
+- Each law's kernels match both references: BETSE v1.5.0's unchanged Kv1 classes, run out of
+  process in their own environment (validation/betse/kv1_native.py) against the source the Kv1
+  protocol pins, and the independent 80-digit Decimal equations (validation/tissue/
+  kv1_reference.py), at the protocol's tolerances (planted: a midpoint moved by a part in 10^9,
+  and Kv1.1's opening with one power of h);
+- each law's kernels are held to the older catalogue's dispatcher, which gathers the same floats:
+  bitwise under NumPy, and under JAX within ULP_BOUND, since XLA on CPU rewrites x / constant as
+  x * (1/constant) while the dispatcher divides by gathered arrays (planted: a slope moved by one
+  ulp, which NumPy's equality refuses, and a midpoint moved by a part in 10^12, beyond the bound);
+- the dispatcher, a recorded temporary second form, holds exactly these five laws and takes their
+  numbers from their modules, so a new law only ever gets the single form (planted: a sixth law);
+- each law is declared on the template, channel codes 5-9 after @3's five, with BETSE as its cited
+  source and this file's test, and is held, inert and unregistered, while @3's parser still reads
+  its channel table as literals (the lead's ruling 3; the hold flips when that changes).
+"""
+
+import json
+import math
+import subprocess
+import types
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from cells.definitions import surface_pump_v3_spec as spec3
+from cells.laws.channels import kv1_channels, kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
+from cells.registry import laws as law_registry
+from cells.registry.model_table import MODELS
+from validation.tissue import kv1_reference
+
+ROOT = Path(__file__).resolve().parents[2]
+BETSE_PYTHON = "/mnt/workspaces/Cells/venv-betse/bin/python"
+PROTOCOL = ROOT / "validation/tissue/surface_calcium_kv1_protocol.json"
+LAWS = {1: kv1p1_mh2, 2: kv1p2_mh, 3: kv1p3_mh, 4: kv1p4_mh, 6: kv1p6_mh}  # BETSE family -> law
+CODES = {kv1p1_mh2: 5, kv1p2_mh: 6, kv1p3_mh: 7, kv1p4_mh: 8, kv1p6_mh: 9}  # @3's channel codes
+RTOL, ATOL = 5e-14, 5e-15  # The Kv1 protocol's source and Decimal tolerances.
+ULP_BOUND = 32  # Per-law kernel against the dispatcher under JAX: the largest measured, 32 ulps.
+VOLTAGE = np.linspace(-0.12, 0.06, 20001)
+
+
+def ulps(a, b):
+    """The largest distance in units in the last place between two float64 arrays."""
+    a, b = np.asarray(a, np.float64), np.asarray(b, np.float64)
+    return int(np.max(np.abs(a.view(np.int64) - b.view(np.int64))))
+
+
+def reference_errors(law, family, voltage, opening=None):
+    """Where a law's kernels leave the Decimal reference (empty: they keep it)."""
+    target, tau = law.kinetics(voltage, xp=np)
+    expected = [
+        np.asarray([[float(x) for x in kv1_reference.kinetics(v, family)[i]] for v in voltage]).T
+        for i in (0, 1)
+    ]
+    out = []
+    for name, actual, wanted in (("target", target, expected[0]), ("tau", tau, expected[1])):
+        if not np.allclose(actual, wanted, rtol=RTOL, atol=ATOL):
+            out.append(name)
+    gates = np.stack((np.linspace(0.0, 1.0, 101), np.linspace(1.0, 0.0, 101)))
+    opened = (opening or law.opening)(gates, xp=np)
+    wanted = [float(kv1_reference.opening(pair, family)) for pair in gates.T]
+    if not np.allclose(opened, wanted, rtol=3e-15, atol=3e-16):
+        out.append("opening")
+    return out
+
+
+def _kinetics_with(law, coefficients):
+    """A law's kernel reading `coefficients` in place of its module's: a planted kernel, the
+    module untouched."""
+    kernel = law.kinetics
+    planted = types.FunctionType(
+        kernel.__code__, {**kernel.__globals__, **coefficients}, "kinetics"
+    )
+    planted.__kwdefaults__ = kernel.__kwdefaults__
+    return planted
+
+
+@pytest.fixture(scope="module")
+def native(tmp_path_factory):
+    """BETSE's capture of its unchanged Kv1 classes, out of process in its own environment."""
+    output = tmp_path_factory.mktemp("betse") / "native.json"
+    script = ROOT / "validation/betse/kv1_native.py"
+    child = subprocess.run(
+        [BETSE_PYTHON, "-B", str(script), str(output)], capture_output=True, text=True, timeout=120
+    )
+    assert child.returncode == 0, child.stderr[-2000:]
+    return json.loads(output.read_text())
+
+
+def test_each_kv1_law_matches_its_references(native):
+    baseline = json.loads(PROTOCOL.read_text())["source_baseline"]
+    assert native["version"] == baseline["version"] == "1.5.0"
+    pinned = {name: baseline["sha256"][name] for name in native["source_sha256"]}
+    assert native["source_sha256"] == pinned  # The protocol's pinned source, read as data.
+    voltage = np.asarray(native["voltage_V"])
+    for family, law in LAWS.items():
+        row = native["families"][str(family)]
+        assert row["powers"] == [1, 2 if family == 1 else 1] and row["ions"] == ["K"]
+        for xp, run in ((np, law.kinetics), (jnp, jax.jit(law.kinetics))):
+            target, tau = run(voltage) if xp is jnp else run(voltage, xp=np)
+            np.testing.assert_allclose(target, row["target"], rtol=RTOL, atol=ATOL)
+            np.testing.assert_allclose(tau, row["tau_s"], rtol=RTOL, atol=ATOL)
+        assert reference_errors(law, family, voltage) == [], law.LAW_ID
+    # Planted: a midpoint moved by a part in 10^9, and Kv1.1's opening with one power of h.
+    moved = _kinetics_with(
+        kv1p2_mh, {"ACTIVATION": (kv1p2_mh.ACTIVATION[0] * (1 + 1e-9), kv1p2_mh.ACTIVATION[1])}
+    )
+    planted = types.SimpleNamespace(kinetics=moved, opening=kv1p2_mh.opening)
+    assert reference_errors(planted, 2, voltage) == ["target"]
+    one_power = lambda gates, *, xp: gates[..., 0, :] * gates[..., 1, :]  # noqa: E731
+    assert reference_errors(kv1p1_mh2, 1, voltage, opening=one_power) == ["opening"]
+
+
+def test_each_kernel_is_held_to_the_catalogue_s_dispatcher():
+    gates = np.stack((np.linspace(0.0, 1.0, VOLTAGE.size), np.linspace(1.0, 0.0, VOLTAGE.size)))
+    for code, law in enumerate(kv1_channels.LAWS, 6):
+        codes = np.full(VOLTAGE.shape, code, np.int64)
+        old = kv1_channels.kinetics(VOLTAGE, codes, xp=np)
+        new = law.kinetics(VOLTAGE, xp=np)
+        assert all(np.array_equal(a, b) for a, b in zip(old, new, strict=True)), law.LAW_ID
+        assert np.array_equal(kv1_channels.opening(gates, codes, xp=np), law.opening(gates, xp=np))
+        for run_old, run_new in (
+            (kv1_channels.kinetics, law.kinetics),
+            (jax.jit(kv1_channels.kinetics), jax.jit(law.kinetics)),
+        ):
+            old = run_old(jnp.asarray(VOLTAGE), jnp.asarray(codes))
+            new = run_new(jnp.asarray(VOLTAGE))
+            assert max(ulps(a, b) for a, b in zip(old, new, strict=True)) <= ULP_BOUND, law.LAW_ID
+        opened = jax.jit(kv1_channels.opening)(jnp.asarray(gates), jnp.asarray(codes))
+        assert np.array_equal(opened, jax.jit(law.opening, static_argnames="xp")(gates, xp=jnp))
+    # Planted: a slope one ulp away, which NumPy's equality refuses, and a midpoint moved by a part
+    # in 10^12, beyond the bound under JAX.
+    codes = np.full(VOLTAGE.shape, 6, np.int64)
+    slope = kv1p1_mh2.ACTIVATION[1]
+    nudged = _kinetics_with(
+        kv1p1_mh2, {"ACTIVATION": (kv1p1_mh2.ACTIVATION[0], math.nextafter(slope, 0.0))}
+    )
+    old = kv1_channels.kinetics(VOLTAGE, codes, xp=np)
+    assert not all(np.array_equal(a, b) for a, b in zip(old, nudged(VOLTAGE, xp=np), strict=True))
+    shifted = _kinetics_with(
+        kv1p1_mh2, {"ACTIVATION": (kv1p1_mh2.ACTIVATION[0] * (1 + 1e-12), slope)}
+    )
+    old = jax.jit(kv1_channels.kinetics)(jnp.asarray(VOLTAGE), jnp.asarray(codes))
+    new = jax.jit(shifted)(jnp.asarray(VOLTAGE))
+    assert max(ulps(a, b) for a, b in zip(old, new, strict=True)) > ULP_BOUND
+
+
+def dispatcher_errors(module, laws):
+    """Where the catalogue's Kv1 dispatcher is not the recorded second form of exactly `laws`."""
+    out = []
+    if tuple(module.LAWS) != tuple(laws):
+        out.append(f"its laws are {[m.__name__ for m in module.LAWS]}")
+    if sorted(module.KV1_LAWS) != sorted(law.LAW_ID for law in laws):
+        out.append(f"its law IDs are {sorted(module.KV1_LAWS)}")
+    if max(module.LAW_CODES.values()) != 5 + len(laws):
+        out.append("its codes run past the five laws'")
+    return out
+
+
+def test_the_dispatcher_holds_these_five_and_takes_their_numbers():
+    five = (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)
+    assert dispatcher_errors(kv1_channels, five) == []
+    for name in ("ACTIVATION", "INACTIVATION"):
+        columns = [[vars(law)[name][k] for law in five] for k in (0, 1)]
+        assert kv1_channels._columns(name) == columns
+    # Planted: a sixth law joined to the dispatcher.
+    sixth = types.SimpleNamespace(LAW_ID="kv1p7_mh@1", __name__="kv1p7_mh")
+    planted = types.SimpleNamespace(
+        LAWS=(*five, sixth),
+        KV1_LAWS={**kv1_channels.KV1_LAWS, "kv1p7_mh@1": 7},
+        LAW_CODES={**kv1_channels.LAW_CODES, "kv1p7_mh@1": 11},
+    )
+    assert len(dispatcher_errors(planted, five)) == 3
+
+
+def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_registry():
+    hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, "cells.resolved_pump_tissue@3")
+    host_codes = {law.code for law in hosted}
+    homes = {home for model in MODELS.values() for home in model.law_homes}
+    for law, code in CODES.items():
+        declared = law.LAW
+        assert declared.errors() == [] and declared.law_id == law.LAW_ID and declared.code == code
+        assert code not in host_codes  # After @3's five, none reused.
+        assert declared.gates == ("m", "h") and declared.permeant == (("K", 1, 1.0),)
+        assert declared.rk4_step_s == 2.5e-6 and declared.voltage_domain_V == (-0.120, 0.060)
+        assert declared.kinetics is law.kinetics and declared.opening is law.opening
+        assert declared.provenance == "cited" and "vg_k.py:" in declared.source.place
+        (work,) = declared.source.works
+        assert work.url == "https://github.com/betsee/betse" and "1.5.0" in work.title
+        test_file, test_name = declared.test.split("::")
+        assert (ROOT / test_file).resolve() == Path(__file__).resolve()
+        assert callable(globals()[test_name])
+        # Held: inert and unregistered while @3's parser reads its channel table as literals.
+        assert law.__name__ not in homes and law.LAW_ID not in law_registry.active()
+        assert law.LAW_ID not in spec3.LAW_CODES

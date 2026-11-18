@@ -172,6 +172,10 @@ the [project README](../README.md) gives the short feature overview.
   Mathews and Levin's bioRxiv preprint, runs its linear model (as written and as its Norton
   equivalent) and its 1D "neither" condition on the engine, and lists the engine features its
   tissue simulations need (development, not judged).
+- [Self-replicator selection replication](SELF_REPLICATOR_SELECTION_REPLICATION.md) specifies Liu
+  et al.'s Darwinian selection of photocatalytic self-replicators (Nature Catalysis 2025) for the
+  origin-of-life engine: the targets registered before any run, the mapping, the features the engine
+  lacks, and the plan after OL3 (D220).
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

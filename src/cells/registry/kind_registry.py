@@ -18,7 +18,8 @@ experiment's change times, so each is a step boundary and the change records car
 
 import importlib
 import math
-from collections.abc import Callable
+import re
+from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, replace
@@ -35,19 +36,31 @@ from cells.definitions.specs import ConfigError, bounded_integer, finite_number,
 
 __all__ = (
     "BUILTIN",
+    "ENERGY_ROLES",
+    "HEAT_SUFFIX",
+    "LEDGER_TERM_ROLES",
+    "PARTITION_ROLES",
+    "WORK_SUFFIX",
     "ConfigError",
+    "EnergyRole",
     "Kind",
     "KindFields",
     "KindRates",
     "KindView",
     "KindRegistry",
+    "PartitionRole",
     "Schedule",
     "active",
     "bound",
     "bounded_integer",
+    "declaration_errors",
     "declared_schedule",
+    "energy_role",
     "finite_number",
+    "kind_ledgers",
+    "missing_partition_roles",
     "parse_series",
+    "partition_fields",
     "qualified",
     "require_fields",
     "scope",
@@ -241,7 +254,14 @@ class Kind:
       <= EXPLICIT_STEP_BOUND, then holds at every cell and every free outside node (a face-free
       compartment's included); `bound_rate(spec,
       declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
-      bound (the passive law's dt L <= 1).
+      bound (the passive law's dt L <= 1); `material_term(read, potentials, control, p, *, xp)`
+      -> [cells, then outside nodes] the kind's material slope (1/s) at the stage's read amounts
+      and node potentials: per node, the largest |dJ/dn| of a row it moves there (a neutral
+      transporter's k S n e^a / n near its static head grows as the node empties, which no
+      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms per
+      node, and the step refuses at every explicit stage where dt x its largest over cells and
+      non-held outside nodes exceeds the same bound (the material counterpart of stage_term; the
+      FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program changes.
     - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
       never moves (held fuel); binding refuses any inner route or other kind that moves one.
     - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
@@ -274,6 +294,24 @@ class Kind:
       buffered node) and its node potentials, so a charged law can report its instantaneous rate.
     - a kind's own domain at a stage: KindRates.valid (from `rates`, at the stage's read and
       potentials; a charged law's V-dependent domain); false refuses the row or the step.
+
+    The seams' declarations (docs/CORE_SEAMS_DESIGN.md §4.2, §6.1, §7.3), each optional and read
+    on the host only, so a kind that declares none keeps today's behaviour and its programs:
+    - `energy_roles`, {state field: EnergyRole(role, monotone)}: heat, work or stored, and
+      whether the field never decreases per element (§6.1). An undeclared field takes today's
+      suffix rule (energy_role); a declaration may not contradict it on a suffixed field, since
+      today's energy-flow sums read heat and work by suffix;
+    - `heat_bookings`, the versioned booking IDs (name@major) its routes admit beyond the tableau,
+      which every mover class admits and which is never listed (§6.1, one booking per mover class:
+      the definition picks, InnerStructure.heat_bookings holds the pick);
+    - `partition_roles`, {field: PartitionRole(role, fill)}: extensive, intensive, history, or
+      structural with its fill, for each field a split, a retirement or a close acts on
+      (partition_fields: state, layout and control). A kind with a field left undeclared stays
+      refused beside closers (§4.2, fail-closed; missing_partition_roles);
+    - `ledgers(declaration)` -> ((ledger, diagnostic), ...), the kind's own conserved quantities
+      (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
+      and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
+      together (kind_ledgers checks the hook's result).
     """
 
     kind_id: str
@@ -293,6 +331,7 @@ class Kind:
     stage_check: Callable | None = None
     stage_term: Callable | None = None
     bound_rate: Callable | None = None
+    material_term: Callable | None = None
     held_rows: Callable | None = None
     stage_values: Callable | None = None
     stage_extrema: tuple = ()
@@ -315,6 +354,12 @@ class Kind:
     # The run view (D154): its fields' declarations, and its own axes' sets.
     view: object = None  # A KindView.
     view_sets: Callable | None = None
+    # The seams' declarations (CORE_SEAMS §4.2, §6.1, §7.3; the docstring's last list).
+    energy_roles: object = MappingProxyType({})  # {state field: EnergyRole}
+    heat_bookings: tuple = ()  # Versioned booking IDs its routes admit beyond the tableau.
+    partition_roles: object = MappingProxyType({})  # {field: PartitionRole}
+    ledgers: Callable | None = None  # (declaration) -> ((ledger, diagnostic), ...)
+    ledger_bounds: Callable | None = None  # (row, p, tol, steps, *, xp) -> their bounds
 
     @property
     def state_fields(self):
@@ -379,6 +424,169 @@ class KindView(NamedTuple):
     record_references: object = MappingProxyType({})  # {increment field: reference layout field}
 
 
+# ---------------------------------------------------------------------- the seams' declarations
+# (docs/CORE_SEAMS_DESIGN.md §4.2, §6.1, §7.3; Kind's docstring, its last list)
+
+HEAT_SUFFIX = "_dissipated_energy_pJ"  # Today's suffix rule, as operators/contract.py states it.
+WORK_SUFFIX = "_work_pJ"
+ENERGY_ROLES = ("heat", "work", "stored")
+PARTITION_ROLES = ("extensive", "intensive", "history", "structural")
+# ledger_terms' keys that fold into today's ten ledgers by role (rule (a)); a kind's own ledgers
+# take other names.
+LEDGER_TERM_ROLES = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
+_BOOKING_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*@[1-9][0-9]*")  # name@major
+
+
+class EnergyRole(NamedTuple):
+    """A state field's energy role (CORE_SEAMS §6.1): `role`, heat, work or stored; `monotone`,
+    whether the field never decreases per element (the dissipation check reads it)."""
+
+    role: str
+    monotone: bool
+
+
+class PartitionRole(NamedTuple):
+    """A field's role at a split, a retirement and a close (CORE_SEAMS §4.2):
+    - extensive: divided by the host's fraction with the anchor rule, so the daughters sum to the
+      parent exactly; padded at retirement;
+    - intensive: copied; padded at retirement;
+    - history: each daughter starts from 0; at retirement it moves into the closer's record;
+    - structural: as declared (law, host, orientation); padded with `fill` at retirement.
+    `fill` is a structural field's padding value (a finite number or a bool) and None for the
+    other roles."""
+
+    role: str
+    fill: object = None
+
+
+def _suffix_role(field):
+    if field.endswith(HEAT_SUFFIX):
+        return EnergyRole("heat", True)
+    if field.endswith(WORK_SUFFIX):
+        return EnergyRole("work", False)
+    return None
+
+
+def energy_role(kind, field):
+    """A kind state field's energy role: its declaration (Kind.energy_roles), else today's suffix
+    rule (heat, monotone, for a field ending in _dissipated_energy_pJ; work, not monotone, for one
+    ending in _work_pJ), else None: the field books no energy."""
+    declared = kind.energy_roles.get(field)
+    return declared if declared is not None else _suffix_role(field)
+
+
+def partition_fields(kind):
+    """The fields a split, a retirement or a close acts on: the kind's state, layout and control
+    fields, in that order (for a bound kind, its structure entry's)."""
+    return (*kind.state_fields, *kind.layout_fields, *kind.control_fields)
+
+
+def missing_partition_roles(kind):
+    """The kind's partition fields that declare no role, in field order. Empty: every field has
+    one, so §4.2's fail-closed refusal beside closers may lift for it. Bind a kind that declares
+    its fields per entry (bound) first."""
+    return tuple(field for field in partition_fields(kind) if field not in kind.partition_roles)
+
+
+def kind_ledgers(kind, declaration):
+    """A kind's own ledgers (CORE_SEAMS §7.3; INNER_MODEL_V4_DESIGN §7.4 (p)): its
+    ledgers(declaration) hook's ((ledger, diagnostic), ...), checked: pairs of distinct non-empty
+    names, no ledger named for one of ledger_terms' roles. () for a kind that declares none."""
+    if kind.ledgers is None:
+        return ()
+    pairs = kind.ledgers(declaration)
+    named = isinstance(pairs, tuple) and all(
+        isinstance(pair, tuple) and len(pair) == 2 and all(isinstance(n, str) and n for n in pair)
+        for pair in pairs
+    )
+    if not named:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s ledgers(declaration) returns ((ledger, diagnostic), ...)"
+        )
+    names = [name for pair in pairs for name in pair]
+    if len(set(names)) != len(names):
+        raise ValueError(f"Kind {kind.kind_id}'s ledgers and diagnostics are distinct names")
+    reserved = sorted({ledger for ledger, _ in pairs} & set(LEDGER_TERM_ROLES))
+    if reserved:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s ledgers {reserved} take names of ledger_terms' roles, which "
+            "fold into today's ledgers (rule (a))"
+        )
+    return pairs
+
+
+def _finite_fill(value):
+    if isinstance(value, bool):
+        return True
+    return isinstance(value, (int, float)) and math.isfinite(value)
+
+
+def declaration_errors(kind):
+    """Why a kind's seam declarations (energy_roles, heat_bookings, partition_roles, ledgers and
+    ledger_bounds) break the contract (empty: they keep it). The fields they name are checked
+    against the kind's own where its fields are static; a kind that declares its fields per entry
+    (declared_fields) may name the fields of every entry."""
+    out, static = [], kind.declared_fields is None
+    roles = kind.energy_roles
+    if not isinstance(roles, Mapping) or not all(isinstance(k, str) and k for k in roles):
+        out.append("its energy_roles map state field names to EnergyRole")
+    else:
+        for field, role in roles.items():
+            if not (
+                isinstance(role, EnergyRole)
+                and role.role in ENERGY_ROLES
+                and isinstance(role.monotone, bool)
+            ):
+                out.append(
+                    f"energy role of {field}: an EnergyRole of {', '.join(ENERGY_ROLES)} with a "
+                    "bool monotone"
+                )
+            elif _suffix_role(field) is not None and role.role != _suffix_role(field).role:
+                out.append(
+                    f"energy role of {field}: its suffix makes it {_suffix_role(field).role}, "
+                    "which today's energy-flow sums read by name"
+                )
+        if static:
+            stray = sorted(set(roles) - set(kind.state_fields))
+            if stray:
+                out.append(f"energy_roles name fields it does not hold: {stray}")
+    bookings = kind.heat_bookings
+    if not (
+        isinstance(bookings, tuple)
+        and all(isinstance(b, str) and _BOOKING_ID.fullmatch(b) for b in bookings)
+        and len(set(bookings)) == len(bookings)
+    ):
+        out.append(
+            "its heat_bookings are distinct versioned booking IDs (name@major), the tableau "
+            "never among them"
+        )
+    parts = kind.partition_roles
+    if not isinstance(parts, Mapping) or not all(isinstance(k, str) and k for k in parts):
+        out.append("its partition_roles map field names to PartitionRole")
+    else:
+        for field, part in parts.items():
+            structural = isinstance(part, PartitionRole) and part.role == "structural"
+            if not (
+                isinstance(part, PartitionRole)
+                and part.role in PARTITION_ROLES
+                and (_finite_fill(part.fill) if structural else part.fill is None)
+            ):
+                out.append(
+                    f"partition role of {field}: a PartitionRole of {', '.join(PARTITION_ROLES)}, "
+                    "a structural one with a finite fill and no other with one"
+                )
+        if static:
+            stray = sorted(set(parts) - set(partition_fields(kind)))
+            if stray:
+                out.append(f"partition_roles name fields it does not hold: {stray}")
+    hooks = (kind.ledgers, kind.ledger_bounds)
+    if (hooks[0] is None) != (hooks[1] is None) or any(
+        h is not None and not callable(h) for h in hooks
+    ):
+        out.append("it declares ledgers and ledger_bounds together, each a callable")
+    return out
+
+
 def refuse_foreign_writes(kind, hook, values, fields, role):
     """A kind's hook output, {field: value}, may name only that kind's own declared fields of one
     role: `fields`, from the kind bound to its structure entry (`bound`), so a field that another
@@ -431,6 +639,9 @@ class KindRegistry:
         known = self._kinds.get(key)
         if known is not None and known is not kind:
             raise ValueError(f"Kind {key} is already registered")
+        problems = declaration_errors(kind)  # The seams' declarations (CORE_SEAMS §4.2-§7.3).
+        if problems:
+            raise ValueError(f"Kind {key}: " + "; ".join(problems))
         clash = [k for k in self._kinds.values() if k.model_key == kind.model_key and k is not kind]
         if clash:
             raise ValueError(f"Kind {key}'s model key {kind.model_key!r} is already registered")

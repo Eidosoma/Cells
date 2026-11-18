@@ -103,15 +103,31 @@ Declarations (class attributes):
     closer's is ``and``), at stage ``event`` or ``split``. A scoped change is taken only on
     the slots ``changed_slots`` names (host) and ``view_slots`` masks (device); otherwise on
     every slot. Defaults (``view_change``): ``replace`` (``and`` for a closer) on every slot;
-  - ``SCOPED_READS`` ({field: Read}): the mode of a read, ``current`` (the merged view at its
-    stage: a ``VIEW_READS`` field), ``fixed`` (the declared value taken as the physical one:
-    a ``CONFLICTS_VIEW`` field) or ``reference`` (the bound value as data, an anchor), and
-    its stage. A scoped read covers only the slots ``read_slots`` names. Defaults
-    (``scoped_read``): ``current`` for each ``VIEW_READS`` field, ``fixed`` for each
-    ``CONFLICTS_VIEW`` field, on every slot.
+  - ``SCOPED_READS`` ({field: Read, or a tuple of Reads at distinct stages}): the mode of a
+    read, ``current`` (the merged view at its stage: a ``VIEW_READS`` field), ``fixed`` (the
+    declared value taken as the physical one: a ``CONFLICTS_VIEW`` field) or ``reference`` (the
+    bound value as data, an anchor), and its stage. One field may be read in two modes at two
+    stages (docs/OPERATOR_COMPOSITION_DESIGN.md §3, C3): ``current`` at the rates' stage beside
+    ``reference`` at the existence checks'. A scoped read covers only the slots ``read_slots``
+    names. Defaults (``scoped_read``): ``current`` for each ``VIEW_READS`` field, ``fixed`` for
+    each ``CONFLICTS_VIEW`` field, on every slot. ``reads_of`` gives every Read of a field.
+  - **A declared stage is one of its parts':** a change or read at ``event`` needs its event
+    part, at ``split`` its split part (a change at ``split`` may also be a part-less state
+    owner's, the default), and a read at ``inner`` its in-step process. The composite orders
+    reads and changes by their stages, so a stage no part runs at is refused.
   Two changes or a change and a read of one field meet only on the slots both name; the
   composite admits a pair per slot (pump_composite.structure_errors and scope_errors) and
   merges each change onto the accumulated view on its slots (pump_composite_adapter.view).
+  **The order of a current read** (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and §5, C1 and C2),
+  checked by pump_composite.structure_errors against every change of the field in the
+  composition (pump_composite.view_changes: providers, closers, which change every mask and
+  padded field, and writers of a provider's accepted state, at each stage they run at):
+  - a field no operator changes is read at its declared value, and its reader receives no view
+    (the fallback, C1);
+  - a change at another stage of the step is seen whatever the declared order: the events run
+    before the split parts' first halves, and an event reads the previous step's end;
+  - a change at the reader's own stage must precede it in the declared order (door S's rule 3);
+    a reader placed before it is refused rather than given a lagged value.
 * Species identity and the step (registry/species_registry.py, D176): ``IDENTITY_ROLE``
   ("author" for an operator that declares the species it writes, "user" for one that refers to
   species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
@@ -174,7 +190,7 @@ CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer'
 COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
 CHANGE_STAGES = ("event", "split")
 READ_MODES = ("reference", "current", "fixed")
-READ_STAGES = ("event", "split", "inner", "end", "observe")
+READ_STAGES = ("event", "split", "inner", "end", "observe")  # In step order.
 
 
 class Change(NamedTuple):
@@ -197,6 +213,23 @@ class Read(NamedTuple):
     mode: str
     stage: str
     scoped: bool = False
+
+
+def reads_of(operator, field):
+    """Door S: every Read of `field` by `operator`, in declared order (C3: one per stage), from
+    SCOPED_READS, else its default read (Operator.scoped_read's), or ()."""
+    if field in operator.SCOPED_READS:
+        declared = operator.SCOPED_READS[field]
+        return (declared,) if isinstance(declared, Read) else tuple(declared)
+    read = operator.scoped_read(field)
+    return () if read is None else (read,)
+
+
+def part_stages(operator):
+    """The stages at which an operator's own parts run: event (its event map), split (its
+    half-steps) and inner (its in-step process)."""
+    parts = (("event", operator.EVENT), ("split", operator.SPLIT), ("inner", operator.PROCESS))
+    return tuple(stage for stage, part in parts if part)
 
 
 class Operator:
@@ -296,9 +329,18 @@ class Operator:
     @classmethod
     def scoped_read(cls, field):
         """Door S: the Read of a field it reads (SCOPED_READS, else current for VIEW_READS and
-        fixed for CONFLICTS_VIEW, on every slot), or None."""
+        fixed for CONFLICTS_VIEW, on every slot), or None. A field read at several stages (C3)
+        has no single Read: reads_of gives them all, and this refuses (fails closed)."""
         if field in cls.SCOPED_READS:
-            return cls.SCOPED_READS[field]
+            declared = cls.SCOPED_READS[field]
+            if isinstance(declared, Read):
+                return declared
+            if len(declared) == 1:
+                return declared[0]
+            raise ValueError(
+                f"{cls.LAW_ID} reads {field} at {len(declared)} stages; contract.reads_of gives "
+                "every Read of it"
+            )
         stage = "split" if cls.SPLIT else "event"
         if field in cls.VIEW_READS:
             return Read("current", stage)
@@ -382,6 +424,11 @@ class Operator:
 
     def species_identities(self, declaration):
         """The species identities it declares: items with id, catalogue and evidence; ()."""
+        return ()
+
+    def species_potentials(self, declaration):
+        """The standard potentials it declares, ((species, mu°/RT, c0 in mM), ...); ().
+        core/species_registry.check_potentials refuses one that the registry gives otherwise."""
         return ()
 
     def view_events(self, spec, declaration, schedule):
@@ -773,8 +820,11 @@ def _check_layers(operator):
 
 
 def _check_scopes(operator):
-    """Door S's declarations (docs/SCOPED_COMPOSITION_DESIGN.md §2)."""
+    """Door S's declarations (docs/SCOPED_COMPOSITION_DESIGN.md §2), with per-stage read modes
+    (docs/OPERATOR_COMPOSITION_DESIGN.md §3, C3) and each declared stage one of its parts'."""
     name = operator.LAW_ID
+    stages = part_stages(operator)
+    owner = not (operator.EVENT or operator.SPLIT or operator.PROCESS)  # A part-less state owner.
     for field, change in operator.VIEW_CHANGES.items():
         if not isinstance(change, Change):
             raise ValueError(f"{name}: VIEW_CHANGES maps {field} to a Change")
@@ -794,24 +844,47 @@ def _check_scopes(operator):
             raise ValueError(f"{name}: the change of {field} is one of {CONTRIBUTIONS}")
         if change.stage not in CHANGE_STAGES:
             raise ValueError(f"{name}: the change of {field} is at a stage of {CHANGE_STAGES}")
-    for field, read in operator.SCOPED_READS.items():
-        if not isinstance(read, Read):
-            raise ValueError(f"{name}: SCOPED_READS maps {field} to a Read")
-        if read.mode not in READ_MODES or read.stage not in READ_STAGES:
+        if change.stage not in stages and not (change.stage == "split" and owner):
             raise ValueError(
-                f"{name}: the read of {field} has a mode of {READ_MODES} and a stage of "
-                f"{READ_STAGES}"
+                f"{name}: the change of {field} is at stage {change.stage}, which none of its "
+                "parts runs at"
             )
-        listed = dict(current=operator.VIEW_READS, fixed=operator.CONFLICTS_VIEW).get(read.mode)
-        if listed is not None and field not in listed:
-            kind = "VIEW_READS" if read.mode == "current" else "CONFLICTS_VIEW"
-            raise ValueError(f"{name}: a {read.mode} read of {field} needs it in {kind}")
-        if read.mode == "reference" and field in (
-            *operator.VIEW_READS,
-            *operator.CONFLICTS_VIEW,
-            *operator.VIEW_FIELDS,
-        ):
+    for field, declared in operator.SCOPED_READS.items():
+        reads = (declared,) if isinstance(declared, Read) else declared
+        if not (type(reads) is tuple and reads and all(isinstance(r, Read) for r in reads)):
             raise ValueError(
-                f"{name}: a reference read of {field} is not also read, held as declared or "
-                "provided"
+                f"{name}: SCOPED_READS maps {field} to a Read, or to a tuple of Reads at "
+                "distinct stages"
             )
+        if len({r.stage for r in reads}) != len(reads):
+            raise ValueError(f"{name}: SCOPED_READS reads {field} once per stage")
+        modes = {r.mode for r in reads}
+        for read in reads:
+            if read.mode not in READ_MODES or read.stage not in READ_STAGES:
+                raise ValueError(
+                    f"{name}: the read of {field} has a mode of {READ_MODES} and a stage of "
+                    f"{READ_STAGES}"
+                )
+            listed = dict(current=operator.VIEW_READS, fixed=operator.CONFLICTS_VIEW).get(read.mode)
+            if listed is not None and field not in listed:
+                kind = "VIEW_READS" if read.mode == "current" else "CONFLICTS_VIEW"
+                raise ValueError(f"{name}: a {read.mode} read of {field} needs it in {kind}")
+            # A reference read beside a current one at another stage is the two-mode read (C3):
+            # existence checks on the declared slots beside rates on the merged view.
+            if read.mode == "reference" and (
+                field in (*operator.CONFLICTS_VIEW, *operator.VIEW_FIELDS)
+                or (field in operator.VIEW_READS and "current" not in modes)
+            ):
+                raise ValueError(
+                    f"{name}: a reference read of {field} is not also read, held as declared or "
+                    "provided, except beside a current read of it at another stage"
+                )
+            if read.stage in ("event", "split", "inner") and read.stage not in stages:
+                raise ValueError(
+                    f"{name}: the read of {field} is at stage {read.stage}, which none of its "
+                    "parts runs at"
+                )
+        if field in operator.VIEW_READS and "current" not in modes:
+            raise ValueError(f"{name}: a VIEW_READS field, {field}, has a current read")
+        if field in operator.CONFLICTS_VIEW and "fixed" not in modes:
+            raise ValueError(f"{name}: a CONFLICTS_VIEW field, {field}, has a fixed read")

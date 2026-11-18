@@ -583,6 +583,54 @@ def verdict(parts, protocol):
     return derived, evaluated
 
 
+def incomplete(parts, protocol):
+    """The harness's completeness check (judge_harness, the external review's finding 4), added
+    beside the arithmetic above, which is unchanged. Every part compared at shared records, and each
+    references world compared with it, holds the grid of the reference's own world, keyed as the
+    arithmetic keys records (round(t)). FR-4's and FR-5's protocols register no record list, so the
+    code-blind reference's world defines the grid: FR-4's `declared` (with `floor` and
+    `kinetic_outside`), and each FR-5 arm's own (with its floor)."""
+    from validation.tissue import judge_harness as harness
+
+    d = protocol["judge"]["derivation"]
+    worlds = (parts.get("reference") or {}).get("worlds") or {}
+    if protocol["id"] == "fr4-acidification-v1":
+        groups = [("declared", ("floor", "kinetic_outside"),
+                   (*d["ladder_parts"], d["declared_part"], d["half_part"], d["control_parts"][1]))]
+    else:
+        groups = [(arm, (f"{arm}_floor",),
+                   (*a["ladder_parts"], a["declared_part"], a["half_part"], a["control_part"]))
+                  for arm, a in d["arms"].items()]
+
+    def keyed(times):
+        return None if times is None else [round(t) for t in times]
+
+    problems = []
+    for world, others, names in groups:
+        grid = keyed((worlds.get(world) or {}).get("record_s"))
+        if not grid:
+            problems.append(f"reference/{world}: no record grid")
+            continue
+        for other in others:
+            problems += harness.grid(f"reference/{other}",
+                                     keyed((worlds.get(other) or {}).get("record_s")), grid)
+        for name in dict.fromkeys(names):
+            problems += harness.grid(name, keyed((parts.get(name) or {}).get("record_s")), grid)
+    return problems
+
+
+def harnessed(parts, protocol):
+    """verdict's derivation and evaluation with the harness's checks before scoring: refused,
+    as a harness failure, when the evidence is incomplete."""
+    from validation.tissue import judge_harness as harness
+
+    harness.refuse(incomplete(parts, protocol))  # Before any derivation.
+    derived = derive(parts, protocol)
+    criteria = protocol["judge"]["criteria"]
+    harness.refuse(harness.metrics(criteria, dict(parts=parts, derived=derived)))
+    return derived, evaluate(dict(criteria=criteria), dict(parts=parts, derived=derived))
+
+
 # ------------------------------------------------------------------------ merging and refusals
 
 
@@ -689,8 +737,19 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = verdict(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    from validation.tissue import judge_harness
+
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += judge_harness.metrics(protocol["judge"]["criteria"],
+                                      dict(parts=parts, derived=derived))
+    report = dict(version=judge_harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

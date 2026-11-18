@@ -80,40 +80,10 @@ MODEL_KEY = "passive_routes"
 LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
 VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID)  # Version 1 runs each by name (Route.law's dispatch).
-# The kind's two laws on the law template (registry/laws.py), registered for the kind to find by
-# interface and host. Each moves to its own module with step 2's extraction (CORE_SEAMS §8.2).
-NEUTRAL = law_registry.BUILTIN.register(
-    law_registry.RouteLaw(
-        LAW_ID,
-        ("membrane", "junction"),
-        "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "  # noqa: E501
-        "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
-        host=KIND_ID,
-        provenance="cited",
-        source=law_registry.Citation(
-            "Fick's law of diffusion (A. Fick, 1855; standard theory)",
-            "docs/INNER_MODEL_V4_DESIGN.md §11",
-            "no numbers taken: the law is a form, its permeability a definition's value",
-        ),
-    )
-)
-LEAK = law_registry.BUILTIN.register(
-    law_registry.RouteLaw(
-        LEAK_LAW_ID,
-        ("membrane",),
-        "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each "
-        "node's closure (laws/transport/proton_leak.py)",
-        host=KIND_ID,
-        provenance="cited",
-        source=law_registry.Citation(
-            "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "
-            "B. Katz, 1949; standard theory)",
-            "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1",
-            "no numbers taken: the law is a form, its permeability a definition's value",
-            ("it reads free h at both nodes through their closures and moves proton equivalents",),
-        ),
-    )
-)
+# The kind's two laws, each declared in its own module (CORE_SEAMS §8.2), where the law registry's
+# loader registers them for the kind to find by interface and host.
+NEUTRAL = passive.LAW
+LEAK = leak.LAW
 DEFAULT_PROTON = "H"
 RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps (own + inputs), per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
@@ -662,8 +632,14 @@ VIEW = KindView(
 )
 
 
+# The run view's word for each law's routes (per-entity kinds are words, docs/RUN_VIEW_DESIGN.md;
+# each route's law ID is under "laws", in the form of the view's own sets).
+KIND_WORDS = MappingProxyType({LAW_ID: "permeation", LEAK_LAW_ID: "leak"})
+
+
 def view_sets(spec, declaration):
-    """The view's set of the routes' axis: one entry per route, in the declaration's order."""
+    """The view's set of the routes' axis: one entry per route, in the declaration's order, each
+    with its kind as a word (KIND_WORDS) and its law ID under "laws"."""
     return {
         "passive_route": {
             "id": "passive_route",
@@ -673,7 +649,8 @@ def view_sets(spec, declaration):
                 "outside": "its outside end: its patch's outside node, or its junction's receiver",
             },
             "carries": [[route.species] for route in declaration],
-            "kinds": [route.law for route in declaration],
+            "kinds": [KIND_WORDS[route.law] for route in declaration],
+            "laws": [{"law_id": route.law} for route in declaration],
             "at": [
                 {"membrane" if route.host_kind == "patch" else "junction": route.host}
                 for route in declaration
