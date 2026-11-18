@@ -91,7 +91,9 @@ export function shapeColours(palette = {}, { hues = {} } = {}) {
 }
 
 /**
- * Builds a machine's shape as one mesh. `kind` is the catalogue's kind of the machine (its page id `machine:<kind>`).
+ * Builds a machine's shape as one mesh. `kind` is the catalogue's kind of the machine (its page id `machine:<kind>`);
+ * for an item of the catalogue that is not a kind (a unit of the law inventory, `unit.U39`), `id` gives its page id
+ * instead, and its surfaces are named `<id>:<part>` and `<id>:chain-<id>`.
  * Options: `perNm` (the caller's units in a nanometre; 1 by default), `colour` (part, kind, surface) -> a colour (a
  * THREE.Color or anything THREE.Color takes; shapeColours({}) by default), `tones` (draw a part of protein and nucleic
  * acid as its two tones instead of one solid, where the file gives them), `material` (the caller's, kept by the caller;
@@ -100,10 +102,11 @@ export function shapeColours(palette = {}, { hues = {} } = {}) {
  * surface: { id, part, chain, partId, kind, entity, description, residues, within, shade, first, last, firstVertex,
  * vertexCount } (first and last are triangle numbers, last included; part and chain are page ids or null).
  */
-export function buildShape(data, { kind, perNm = 1, colour = null, tones = false, material = null } = {}) {
+export function buildShape(data, { kind = null, id = null, perNm = 1, colour = null, tones = false, material = null } = {}) {
   const problems = shapeProblems(data);
   if (problems.length) throw new Error(`a shape that cannot be drawn: ${problems.join("; ")}`);
-  const machine = pageId(kind);
+  if (!id && !kind) throw new Error("a shape is built for a machine: give its kind, or its page id");
+  const machine = id || pageId(kind);
   const toneOf = new Map();
   if (tones) for (const tone of data.tones || []) toneOf.set(tone.within, [...(toneOf.get(tone.within) || []), tone]);
   const drawn = data.meshes.flatMap((mesh) => toneOf.get(mesh.id) || [mesh]);

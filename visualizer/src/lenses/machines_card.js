@@ -76,8 +76,17 @@ export const SHAPE_LEVEL = 4;
 /** What a machine's shape is, in the contract's words: whose surface, of which entry, by what definition, at what setting. */
 export function shapeWords(surface) {
   const of = `Protein Data Bank entry ${surface.entry}${surface.assembly ? ` (its biological assembly ${surface.assembly})` : ""}`;
-  const by = surface.by === "parts" ? `each part as one solid, at ${Number(surface.width_nm).toFixed(1)} nm` : `a chain at ${Number(surface.width_nm).toFixed(1)} nm`;
+  const width = `${Number(surface.width_nm).toFixed(1)} nm${surface.setting_width_nm ? `, coarser than the setting's ${Number(surface.setting_width_nm).toFixed(1)} nm to hold the budget` : ""}`;
+  const by = surface.by === "parts" ? `each part as one solid, at ${width}` : `a chain at ${width}`;
   return `The viewer's own smooth surface of ${of}'s coordinates (${by}), worked out by tools/shape_particle.py: ${surface.definition}. An illustration, not the structure and not a measurement; the Protein Data Bank states no surface.`;
+}
+
+/** "Its shape", for a panel: what the shape is, and whose, where the structure is of another organism than the species'. */
+export function shapeFact(item, scene, species) {
+  const size = item?.size, surface = size?.surface;
+  if (!surface) return null;
+  const whose = size.of && !sameOrganism(organismOf(scene, species), size.of) ? ` It is the shape of a structure of ${size.of}, as its size is.` : "";
+  return ["Its shape", `${shapeWords(surface)}${whose}`];
 }
 
 /** The drawing levels a machine has (a catalogue item): its closer view's file's, or, measured from a structure, an outline and its parts. */
@@ -215,7 +224,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
       swatch: SWATCH.sized,
       chips: [...(base.chips || []), { label: "Drawn to scale", title: "An ellipsoid of each body at its measured size, from a structure: an illustration, not the structure" }],
       note: `A unit of the law inventory, and a protein assembly. The panel says what the inventory states of its laws, as the Protein atlas does. It is drawn to scale from the viewer's own measure of a structure${other ? ` of the family ${where}'s atlas finds it built from` : " of its own kind"}: an illustration, not the structure.`,
-      facts: [...(shown.facts || []), ["How big", sizeWords(catalogue, item.size, { organism: organismOf(scene, species) })]],
+      facts: [...(shown.facts || []), ["How big", sizeWords(catalogue, item.size, { organism: organismOf(scene, species) })], shapeFact(item, scene, species)].filter(Boolean),
       sections: [
         ...(shown.sections || []),
         levels ? { title: "How it is drawn", items: levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
@@ -238,6 +247,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   else if (entry.closer) facts.push(["How big", "As its closer view draws it: each part's size is in its own panel, with its paper"]);
   else if (entry.no_size) facts.push(["How big", entry.no_size]);
   else facts.push(["How big", "No size in hand: it stands as a card, not a shape"]);
+  if (shapeFact(item, scene, species)) facts.push(shapeFact(item, scene, species));
   // The entry the gathering would measure it from, where its size is not measured from that one.
   const pick = entry.gathered?.pick;
   if (pick) facts.push(["The gathering's pick", `Protein Data Bank entry ${pick.entry}${pick.resolution_A ? ` (${pick.resolution_A} Å)` : ""}, which holds ${pick.present} of the ${pick.wanted} proteins its dossier seeks${item.size?.shape === "measured" ? `: not the entry this size is measured from` : entry.no_size ? "" : ": not measured here yet"}`]);

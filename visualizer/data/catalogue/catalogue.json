@@ -28,12 +28,27 @@
    "data/catalogue/measures/human.rna-polymerase-iii.json",
    "data/catalogue/measures/human.rna-polymerase.json",
    "data/catalogue/overlay.json",
+   "data/catalogue/shapes/animals.connexin-channel.json",
+   "data/catalogue/shapes/animals.innexin-channel.json",
+   "data/catalogue/shapes/animals.ip3r.json",
+   "data/catalogue/shapes/animals.kv1-2.json",
+   "data/catalogue/shapes/animals.ribosome.json",
+   "data/catalogue/shapes/animals.serca.json",
+   "data/catalogue/shapes/animals.sodium-pump.json",
    "data/catalogue/shapes/ecoli.atp-synthase.json",
    "data/catalogue/shapes/ecoli.hslv.json",
    "data/catalogue/shapes/ecoli.lon.json",
    "data/catalogue/shapes/ecoli.ribosome.json",
    "data/catalogue/shapes/ecoli.rna-polymerase.json",
    "data/catalogue/shapes/ecoli.translocon.json",
+   "data/catalogue/shapes/human.atp-synthase.json",
+   "data/catalogue/shapes/human.cmg-helicase.json",
+   "data/catalogue/shapes/human.complex-i.json",
+   "data/catalogue/shapes/human.mitochondrial-ribosome.json",
+   "data/catalogue/shapes/human.proteasome.json",
+   "data/catalogue/shapes/human.rna-polymerase-i.json",
+   "data/catalogue/shapes/human.rna-polymerase-iii.json",
+   "data/catalogue/shapes/human.rna-polymerase.json",
    "data/machines/ecoli.flagellar-motor.json",
    "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
@@ -6665,7 +6680,14 @@
     "word": "every cell has ribosomes",
     "record": "cell-structures"
    },
-   "also_named": "# The cell's structures in the Cell view\n\nThe nucleus, the Golgi apparatus and the ribosomes are parts of the Cell view of their own\nsince 16 November 2026. This note says why, and what each part's status rests on. The map's\nentries for them (`cap.nucleus`, `cap.golgi`, `cap.ribosomes` in\n`data/architecture/overlay.json`) cite it as their source.\n\n## The user's decision\n\nThe user was shown that nothing in the engine is a nucleus, a Golgi or a ribosome today, and\nsaid on 16 November 2026:\n\n> \"So we will have nucleus, Golgi, ribosomes modeled to some extend, not protein folding\n> level (yet) so we should assume those are going to be in there soon, so make them 1st\n> class items but still you can sort and view what is done and what is not yet done, we have\n> selectors for that, but in the default mode show it all in the coolest possible way\"\n\nThe same day the user agreed that the label \"Regulatory circuits\" moves off the nucleus onto\nthe genome, worded as a separate small model, and that choosing a structure opens the\nproteins known to be in it in the Protein atlas (\"yes\").\n\n## What follows on the page\n\n- **Each is a part like any other.** It can be chosen, has a name with its status dot, a\n  panel, a line in the list, and a place in the legend's counts.\n- **Drawn whole in the default colouring.** With \"Colour: Biology\" every part of the cell is\n  drawn whole, whatever its status. The dot beside each name, the legend's counts and its\n  filter, and \"Colour: Status\" show what is built and what is not; with \"Colour: Status\" a\n  part that is not built is a grey sketch, as before.\n- **A door into the Protein atlas** where the species' own proteins can show the set: the\n  shelf of the nuclear envelope, the endoplasmic reticulum or the mitochondrial inner\n  membrane, for a species with those shelves; the ribosome's proteins, for a species whose\n  file marks them. Where a species' data cannot show the set, there is no door.\n\n## What each status rests on\n\n| Part | Status | Rests on |\n| --- | --- | --- |\n| Nucleus | Planned | The user's decision above. Nothing of the nucleus is in the engine: no compartment, no envelope, no transport through its pores |\n| Golgi apparatus | Planned | The user's decision above. The roadmap's item 9 (`docs/ROADMAP.md`) plans membrane trafficking through the endoplasmic reticulum, the Golgi and vesicles, and leaves the Golgi's own structure out of its scope; it is not started |\n| Ribosomes | Planned | The user's decision above. Nothing of protein synthesis is in the engine |\n| Regulatory circuits | Established, as before | The repository's README, \"What Cells can do\": isolated regulatory circuits and a bounded two-cell regulatory and ionic model. It is a separate small model that runs on its own and does not model the nucleus; it is drawn at the cell's DNA, the chromatin inside the nucleus or the free chromosome of a cell without one |\n| Membrane trafficking | Planned, as before | The roadmap's item 9. It is drawn as the vesicles between the endoplasmic reticulum, the Golgi and the membrane, now that the Golgi is a part of its own |\n\n\"Planned\" is the map's word for what is named in the plan or the roadmap, or decided by the\nuser, and not started. None of these three parts is called established, simulated or\nqualified anywhere on the page; their representation is \"Illustration only\".\n\n## Where a cell has them\n\nWhat a cell holds comes from its species' file (`schema/SPECIES.md`, `cell.parts`), and the\nviewer reads nothing else for it:\n\n- a cell with `nucleus: true` has a nucleus; one without has none, and its chromosome lies\n  free in the cytoplasm (`chromosome_kbp`);\n- a cell has a Golgi where `organelles` lists `golgi`, or, where `organelles` is not given,\n  where it has a nucleus;\n- every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,\n  or a stated part of it; where it gives none, the number drawn is the picture's choice, and\n  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17\n  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as\n  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In\n  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn\n  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.\n\nA part a cell does not hold is listed under the species' \"Not in this organism\", with the\nreason read from `cell.parts`.\n\n## What the picture chooses\n\nSizes and counts come from the species' file where it gives them. The rest is the picture's\nchoice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a\ncell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic\npicture the ribosomes are enlarged, as every small part is.\n\n## Where the Golgi stands\n\nThe user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus\nstand (\"B as you recommend\"). Before, the Golgi stood about 6 µm from the nucleus, beyond the\nER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and\nno number from a paper stands behind them:\n\n- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the\n  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis\n  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about\n  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of\n  the Golgi, and each runs on from the envelope.\n- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery\n  with no status, and its panel says so. It is two short barrels at right angles, between the\n  nucleus and the Golgi.\n- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through\n  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are\n  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where\n  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.\n- **However many stacks there are, they are one shared geometry**: each level of cisterna is one\n  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as\n  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.\n- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis\n  face, and go from its trans face to the membrane.\n",
+   "also_named": {
+    "text": "97 of the species' reviewed UniProt entries carry the Gene Ontology's term cytosolic large ribosomal subunit (GO:0022625) or cytosolic small ribosomal subunit (GO:0022627) or a narrower one; 95 of them also carry UniProt's keyword Ribosomal protein.",
+    "by": "Gene Ontology",
+    "sources": [
+     "gathered:human:uniprot",
+     "gathered:human:go"
+    ]
+   },
    "size": {
     "shape": "measured",
     "entry": "8YOP",
@@ -6767,7 +6789,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/animals.ribosome.json",
+     "of": "animals",
+     "entry": "8YOP",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2 nm wide weighted by its volume, on a grid 2 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.0,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 3944,
+     "tones": true
+    }
    },
    "gathered": {
     "proteins": [
@@ -9133,7 +9166,17 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part core's centre to the part lid's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb7qyb"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.proteasome.json",
+     "of": "human",
+     "entry": "7QYB",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1.5 nm wide, on a grid 1.5 nm apart (coarser than the setting's 1 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.5,
+     "by": "chains",
+     "setting_width_nm": 1.0,
+     "triangles": 10896
+    }
    },
    "gathered": {
     "proteins": [
@@ -10659,7 +10702,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part ring's centre to the part head's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8h9t"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.atp-synthase.json",
+     "of": "human",
+     "entry": "8H9T",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 11280
+    }
    },
    "gathered": {
     "proteins": [
@@ -11283,7 +11335,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb6drd"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.rna-polymerase.json",
+     "of": "human",
+     "entry": "6DRD",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 6392
+    }
    },
    "gathered": {
     "proteins": [
@@ -11883,7 +11944,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb7oba"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.rna-polymerase-i.json",
+     "of": "human",
+     "entry": "7OBA",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 7924
+    }
    },
    "gathered": {
     "proteins": [
@@ -12591,7 +12661,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb7d59"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.rna-polymerase-iii.json",
+     "of": "human",
+     "entry": "7D59",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 9592
+    }
    },
    "gathered": {
     "proteins": [
@@ -14253,7 +14332,17 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part MT-ND1's centre to the part NDUFV1's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb9i4i"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.complex-i.json",
+     "of": "human",
+     "entry": "9I4I",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1.3 nm wide, on a grid 1.3 nm apart (coarser than the setting's 1 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.3,
+     "by": "chains",
+     "setting_width_nm": 1.0,
+     "triangles": 10924
+    }
    },
    "gathered": {
     "proteins": [
@@ -14674,8 +14763,7 @@
        "55",
        "56",
        "57"
-      ],
-      "hue": "bioRibosome"
+      ]
      },
      {
       "id": "small",
@@ -14744,8 +14832,7 @@
        "83",
        "84",
        "85"
-      ],
-      "hue": "bioProtein"
+      ]
      }
     ],
     "chains": [
@@ -17696,7 +17783,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part large's centre to the part small's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb9s7c"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.mitochondrial-ribosome.json",
+     "of": "human",
+     "entry": "9S7C",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 1.8 nm wide weighted by its volume, on a grid 1.8 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 1.8,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 4672,
+     "tones": true
+    }
    },
    "gathered": {
     "proteins": [
@@ -18766,7 +18864,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb6xtx"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/human.cmg-helicase.json",
+     "of": "human",
+     "entry": "6XTX",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 8724
+    }
    },
    "gathered": {
     "proteins": [
@@ -22469,7 +22576,6 @@
     "word": "every cell has ribosomes",
     "record": "cell-structures"
    },
-   "also_named": "# The cell's structures in the Cell view\n\nThe nucleus, the Golgi apparatus and the ribosomes are parts of the Cell view of their own\nsince 16 November 2026. This note says why, and what each part's status rests on. The map's\nentries for them (`cap.nucleus`, `cap.golgi`, `cap.ribosomes` in\n`data/architecture/overlay.json`) cite it as their source.\n\n## The user's decision\n\nThe user was shown that nothing in the engine is a nucleus, a Golgi or a ribosome today, and\nsaid on 16 November 2026:\n\n> \"So we will have nucleus, Golgi, ribosomes modeled to some extend, not protein folding\n> level (yet) so we should assume those are going to be in there soon, so make them 1st\n> class items but still you can sort and view what is done and what is not yet done, we have\n> selectors for that, but in the default mode show it all in the coolest possible way\"\n\nThe same day the user agreed that the label \"Regulatory circuits\" moves off the nucleus onto\nthe genome, worded as a separate small model, and that choosing a structure opens the\nproteins known to be in it in the Protein atlas (\"yes\").\n\n## What follows on the page\n\n- **Each is a part like any other.** It can be chosen, has a name with its status dot, a\n  panel, a line in the list, and a place in the legend's counts.\n- **Drawn whole in the default colouring.** With \"Colour: Biology\" every part of the cell is\n  drawn whole, whatever its status. The dot beside each name, the legend's counts and its\n  filter, and \"Colour: Status\" show what is built and what is not; with \"Colour: Status\" a\n  part that is not built is a grey sketch, as before.\n- **A door into the Protein atlas** where the species' own proteins can show the set: the\n  shelf of the nuclear envelope, the endoplasmic reticulum or the mitochondrial inner\n  membrane, for a species with those shelves; the ribosome's proteins, for a species whose\n  file marks them. Where a species' data cannot show the set, there is no door.\n\n## What each status rests on\n\n| Part | Status | Rests on |\n| --- | --- | --- |\n| Nucleus | Planned | The user's decision above. Nothing of the nucleus is in the engine: no compartment, no envelope, no transport through its pores |\n| Golgi apparatus | Planned | The user's decision above. The roadmap's item 9 (`docs/ROADMAP.md`) plans membrane trafficking through the endoplasmic reticulum, the Golgi and vesicles, and leaves the Golgi's own structure out of its scope; it is not started |\n| Ribosomes | Planned | The user's decision above. Nothing of protein synthesis is in the engine |\n| Regulatory circuits | Established, as before | The repository's README, \"What Cells can do\": isolated regulatory circuits and a bounded two-cell regulatory and ionic model. It is a separate small model that runs on its own and does not model the nucleus; it is drawn at the cell's DNA, the chromatin inside the nucleus or the free chromosome of a cell without one |\n| Membrane trafficking | Planned, as before | The roadmap's item 9. It is drawn as the vesicles between the endoplasmic reticulum, the Golgi and the membrane, now that the Golgi is a part of its own |\n\n\"Planned\" is the map's word for what is named in the plan or the roadmap, or decided by the\nuser, and not started. None of these three parts is called established, simulated or\nqualified anywhere on the page; their representation is \"Illustration only\".\n\n## Where a cell has them\n\nWhat a cell holds comes from its species' file (`schema/SPECIES.md`, `cell.parts`), and the\nviewer reads nothing else for it:\n\n- a cell with `nucleus: true` has a nucleus; one without has none, and its chromosome lies\n  free in the cytoplasm (`chromosome_kbp`);\n- a cell has a Golgi where `organelles` lists `golgi`, or, where `organelles` is not given,\n  where it has a nucleus;\n- every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,\n  or a stated part of it; where it gives none, the number drawn is the picture's choice, and\n  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17\n  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as\n  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In\n  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn\n  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.\n\nA part a cell does not hold is listed under the species' \"Not in this organism\", with the\nreason read from `cell.parts`.\n\n## What the picture chooses\n\nSizes and counts come from the species' file where it gives them. The rest is the picture's\nchoice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a\ncell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic\npicture the ribosomes are enlarged, as every small part is.\n\n## Where the Golgi stands\n\nThe user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus\nstand (\"B as you recommend\"). Before, the Golgi stood about 6 µm from the nucleus, beyond the\nER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and\nno number from a paper stands behind them:\n\n- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the\n  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis\n  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about\n  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of\n  the Golgi, and each runs on from the envelope.\n- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery\n  with no status, and its panel says so. It is two short barrels at right angles, between the\n  nucleus and the Golgi.\n- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through\n  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are\n  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where\n  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.\n- **However many stacks there are, they are one shared geometry**: each level of cisterna is one\n  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as\n  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.\n- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis\n  face, and go from its trans face to the membrane.\n",
    "size": {
     "shape": "measured",
     "entry": "8YOP",
@@ -22571,7 +22677,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/animals.ribosome.json",
+     "of": "animals",
+     "entry": "8YOP",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2 nm wide weighted by its volume, on a grid 2 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.0,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 3944,
+     "tones": true
+    }
    }
   },
   {
@@ -22582,7 +22699,6 @@
     "word": "every cell has ribosomes",
     "record": "cell-structures"
    },
-   "also_named": "# The cell's structures in the Cell view\n\nThe nucleus, the Golgi apparatus and the ribosomes are parts of the Cell view of their own\nsince 16 November 2026. This note says why, and what each part's status rests on. The map's\nentries for them (`cap.nucleus`, `cap.golgi`, `cap.ribosomes` in\n`data/architecture/overlay.json`) cite it as their source.\n\n## The user's decision\n\nThe user was shown that nothing in the engine is a nucleus, a Golgi or a ribosome today, and\nsaid on 16 November 2026:\n\n> \"So we will have nucleus, Golgi, ribosomes modeled to some extend, not protein folding\n> level (yet) so we should assume those are going to be in there soon, so make them 1st\n> class items but still you can sort and view what is done and what is not yet done, we have\n> selectors for that, but in the default mode show it all in the coolest possible way\"\n\nThe same day the user agreed that the label \"Regulatory circuits\" moves off the nucleus onto\nthe genome, worded as a separate small model, and that choosing a structure opens the\nproteins known to be in it in the Protein atlas (\"yes\").\n\n## What follows on the page\n\n- **Each is a part like any other.** It can be chosen, has a name with its status dot, a\n  panel, a line in the list, and a place in the legend's counts.\n- **Drawn whole in the default colouring.** With \"Colour: Biology\" every part of the cell is\n  drawn whole, whatever its status. The dot beside each name, the legend's counts and its\n  filter, and \"Colour: Status\" show what is built and what is not; with \"Colour: Status\" a\n  part that is not built is a grey sketch, as before.\n- **A door into the Protein atlas** where the species' own proteins can show the set: the\n  shelf of the nuclear envelope, the endoplasmic reticulum or the mitochondrial inner\n  membrane, for a species with those shelves; the ribosome's proteins, for a species whose\n  file marks them. Where a species' data cannot show the set, there is no door.\n\n## What each status rests on\n\n| Part | Status | Rests on |\n| --- | --- | --- |\n| Nucleus | Planned | The user's decision above. Nothing of the nucleus is in the engine: no compartment, no envelope, no transport through its pores |\n| Golgi apparatus | Planned | The user's decision above. The roadmap's item 9 (`docs/ROADMAP.md`) plans membrane trafficking through the endoplasmic reticulum, the Golgi and vesicles, and leaves the Golgi's own structure out of its scope; it is not started |\n| Ribosomes | Planned | The user's decision above. Nothing of protein synthesis is in the engine |\n| Regulatory circuits | Established, as before | The repository's README, \"What Cells can do\": isolated regulatory circuits and a bounded two-cell regulatory and ionic model. It is a separate small model that runs on its own and does not model the nucleus; it is drawn at the cell's DNA, the chromatin inside the nucleus or the free chromosome of a cell without one |\n| Membrane trafficking | Planned, as before | The roadmap's item 9. It is drawn as the vesicles between the endoplasmic reticulum, the Golgi and the membrane, now that the Golgi is a part of its own |\n\n\"Planned\" is the map's word for what is named in the plan or the roadmap, or decided by the\nuser, and not started. None of these three parts is called established, simulated or\nqualified anywhere on the page; their representation is \"Illustration only\".\n\n## Where a cell has them\n\nWhat a cell holds comes from its species' file (`schema/SPECIES.md`, `cell.parts`), and the\nviewer reads nothing else for it:\n\n- a cell with `nucleus: true` has a nucleus; one without has none, and its chromosome lies\n  free in the cytoplasm (`chromosome_kbp`);\n- a cell has a Golgi where `organelles` lists `golgi`, or, where `organelles` is not given,\n  where it has a nucleus;\n- every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,\n  or a stated part of it; where it gives none, the number drawn is the picture's choice, and\n  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17\n  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as\n  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In\n  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn\n  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.\n\nA part a cell does not hold is listed under the species' \"Not in this organism\", with the\nreason read from `cell.parts`.\n\n## What the picture chooses\n\nSizes and counts come from the species' file where it gives them. The rest is the picture's\nchoice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a\ncell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic\npicture the ribosomes are enlarged, as every small part is.\n\n## Where the Golgi stands\n\nThe user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus\nstand (\"B as you recommend\"). Before, the Golgi stood about 6 µm from the nucleus, beyond the\nER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and\nno number from a paper stands behind them:\n\n- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the\n  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis\n  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about\n  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of\n  the Golgi, and each runs on from the envelope.\n- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery\n  with no status, and its panel says so. It is two short barrels at right angles, between the\n  nucleus and the Golgi.\n- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through\n  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are\n  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where\n  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.\n- **However many stacks there are, they are one shared geometry**: each level of cisterna is one\n  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as\n  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.\n- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis\n  face, and go from its trans face to the membrane.\n",
    "size": {
     "shape": "measured",
     "entry": "8YOP",
@@ -22684,7 +22800,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/animals.ribosome.json",
+     "of": "animals",
+     "entry": "8YOP",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2 nm wide weighted by its volume, on a grid 2 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.0,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 3944,
+     "tones": true
+    }
    }
   },
   {
@@ -22695,7 +22822,6 @@
     "word": "every cell has ribosomes",
     "record": "cell-structures"
    },
-   "also_named": "# The cell's structures in the Cell view\n\nThe nucleus, the Golgi apparatus and the ribosomes are parts of the Cell view of their own\nsince 16 November 2026. This note says why, and what each part's status rests on. The map's\nentries for them (`cap.nucleus`, `cap.golgi`, `cap.ribosomes` in\n`data/architecture/overlay.json`) cite it as their source.\n\n## The user's decision\n\nThe user was shown that nothing in the engine is a nucleus, a Golgi or a ribosome today, and\nsaid on 16 November 2026:\n\n> \"So we will have nucleus, Golgi, ribosomes modeled to some extend, not protein folding\n> level (yet) so we should assume those are going to be in there soon, so make them 1st\n> class items but still you can sort and view what is done and what is not yet done, we have\n> selectors for that, but in the default mode show it all in the coolest possible way\"\n\nThe same day the user agreed that the label \"Regulatory circuits\" moves off the nucleus onto\nthe genome, worded as a separate small model, and that choosing a structure opens the\nproteins known to be in it in the Protein atlas (\"yes\").\n\n## What follows on the page\n\n- **Each is a part like any other.** It can be chosen, has a name with its status dot, a\n  panel, a line in the list, and a place in the legend's counts.\n- **Drawn whole in the default colouring.** With \"Colour: Biology\" every part of the cell is\n  drawn whole, whatever its status. The dot beside each name, the legend's counts and its\n  filter, and \"Colour: Status\" show what is built and what is not; with \"Colour: Status\" a\n  part that is not built is a grey sketch, as before.\n- **A door into the Protein atlas** where the species' own proteins can show the set: the\n  shelf of the nuclear envelope, the endoplasmic reticulum or the mitochondrial inner\n  membrane, for a species with those shelves; the ribosome's proteins, for a species whose\n  file marks them. Where a species' data cannot show the set, there is no door.\n\n## What each status rests on\n\n| Part | Status | Rests on |\n| --- | --- | --- |\n| Nucleus | Planned | The user's decision above. Nothing of the nucleus is in the engine: no compartment, no envelope, no transport through its pores |\n| Golgi apparatus | Planned | The user's decision above. The roadmap's item 9 (`docs/ROADMAP.md`) plans membrane trafficking through the endoplasmic reticulum, the Golgi and vesicles, and leaves the Golgi's own structure out of its scope; it is not started |\n| Ribosomes | Planned | The user's decision above. Nothing of protein synthesis is in the engine |\n| Regulatory circuits | Established, as before | The repository's README, \"What Cells can do\": isolated regulatory circuits and a bounded two-cell regulatory and ionic model. It is a separate small model that runs on its own and does not model the nucleus; it is drawn at the cell's DNA, the chromatin inside the nucleus or the free chromosome of a cell without one |\n| Membrane trafficking | Planned, as before | The roadmap's item 9. It is drawn as the vesicles between the endoplasmic reticulum, the Golgi and the membrane, now that the Golgi is a part of its own |\n\n\"Planned\" is the map's word for what is named in the plan or the roadmap, or decided by the\nuser, and not started. None of these three parts is called established, simulated or\nqualified anywhere on the page; their representation is \"Illustration only\".\n\n## Where a cell has them\n\nWhat a cell holds comes from its species' file (`schema/SPECIES.md`, `cell.parts`), and the\nviewer reads nothing else for it:\n\n- a cell with `nucleus: true` has a nucleus; one without has none, and its chromosome lies\n  free in the cytoplasm (`chromosome_kbp`);\n- a cell has a Golgi where `organelles` lists `golgi`, or, where `organelles` is not given,\n  where it has a nucleus;\n- every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,\n  or a stated part of it; where it gives none, the number drawn is the picture's choice, and\n  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17\n  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as\n  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In\n  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn\n  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.\n\nA part a cell does not hold is listed under the species' \"Not in this organism\", with the\nreason read from `cell.parts`.\n\n## What the picture chooses\n\nSizes and counts come from the species' file where it gives them. The rest is the picture's\nchoice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a\ncell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic\npicture the ribosomes are enlarged, as every small part is.\n\n## Where the Golgi stands\n\nThe user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus\nstand (\"B as you recommend\"). Before, the Golgi stood about 6 µm from the nucleus, beyond the\nER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and\nno number from a paper stands behind them:\n\n- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the\n  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis\n  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about\n  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of\n  the Golgi, and each runs on from the envelope.\n- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery\n  with no status, and its panel says so. It is two short barrels at right angles, between the\n  nucleus and the Golgi.\n- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through\n  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are\n  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where\n  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.\n- **However many stacks there are, they are one shared geometry**: each level of cisterna is one\n  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as\n  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.\n- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis\n  face, and go from its trans face to the membrane.\n",
    "size": {
     "shape": "measured",
     "entry": "8YOP",
@@ -22797,7 +22923,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/animals.ribosome.json",
+     "of": "animals",
+     "entry": "8YOP",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2 nm wide weighted by its volume, on a grid 2 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.0,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 3944,
+     "tones": true
+    }
    }
   },
   {
@@ -22808,7 +22945,6 @@
     "word": "every cell has ribosomes",
     "record": "cell-structures"
    },
-   "also_named": "# The cell's structures in the Cell view\n\nThe nucleus, the Golgi apparatus and the ribosomes are parts of the Cell view of their own\nsince 16 November 2026. This note says why, and what each part's status rests on. The map's\nentries for them (`cap.nucleus`, `cap.golgi`, `cap.ribosomes` in\n`data/architecture/overlay.json`) cite it as their source.\n\n## The user's decision\n\nThe user was shown that nothing in the engine is a nucleus, a Golgi or a ribosome today, and\nsaid on 16 November 2026:\n\n> \"So we will have nucleus, Golgi, ribosomes modeled to some extend, not protein folding\n> level (yet) so we should assume those are going to be in there soon, so make them 1st\n> class items but still you can sort and view what is done and what is not yet done, we have\n> selectors for that, but in the default mode show it all in the coolest possible way\"\n\nThe same day the user agreed that the label \"Regulatory circuits\" moves off the nucleus onto\nthe genome, worded as a separate small model, and that choosing a structure opens the\nproteins known to be in it in the Protein atlas (\"yes\").\n\n## What follows on the page\n\n- **Each is a part like any other.** It can be chosen, has a name with its status dot, a\n  panel, a line in the list, and a place in the legend's counts.\n- **Drawn whole in the default colouring.** With \"Colour: Biology\" every part of the cell is\n  drawn whole, whatever its status. The dot beside each name, the legend's counts and its\n  filter, and \"Colour: Status\" show what is built and what is not; with \"Colour: Status\" a\n  part that is not built is a grey sketch, as before.\n- **A door into the Protein atlas** where the species' own proteins can show the set: the\n  shelf of the nuclear envelope, the endoplasmic reticulum or the mitochondrial inner\n  membrane, for a species with those shelves; the ribosome's proteins, for a species whose\n  file marks them. Where a species' data cannot show the set, there is no door.\n\n## What each status rests on\n\n| Part | Status | Rests on |\n| --- | --- | --- |\n| Nucleus | Planned | The user's decision above. Nothing of the nucleus is in the engine: no compartment, no envelope, no transport through its pores |\n| Golgi apparatus | Planned | The user's decision above. The roadmap's item 9 (`docs/ROADMAP.md`) plans membrane trafficking through the endoplasmic reticulum, the Golgi and vesicles, and leaves the Golgi's own structure out of its scope; it is not started |\n| Ribosomes | Planned | The user's decision above. Nothing of protein synthesis is in the engine |\n| Regulatory circuits | Established, as before | The repository's README, \"What Cells can do\": isolated regulatory circuits and a bounded two-cell regulatory and ionic model. It is a separate small model that runs on its own and does not model the nucleus; it is drawn at the cell's DNA, the chromatin inside the nucleus or the free chromosome of a cell without one |\n| Membrane trafficking | Planned, as before | The roadmap's item 9. It is drawn as the vesicles between the endoplasmic reticulum, the Golgi and the membrane, now that the Golgi is a part of its own |\n\n\"Planned\" is the map's word for what is named in the plan or the roadmap, or decided by the\nuser, and not started. None of these three parts is called established, simulated or\nqualified anywhere on the page; their representation is \"Illustration only\".\n\n## Where a cell has them\n\nWhat a cell holds comes from its species' file (`schema/SPECIES.md`, `cell.parts`), and the\nviewer reads nothing else for it:\n\n- a cell with `nucleus: true` has a nucleus; one without has none, and its chromosome lies\n  free in the cytoplasm (`chromosome_kbp`);\n- a cell has a Golgi where `organelles` lists `golgi`, or, where `organelles` is not given,\n  where it has a nucleus;\n- every cell has ribosomes. Where the file gives `ribosomes` (a count), that count is drawn,\n  or a stated part of it; where it gives none, the number drawn is the picture's choice, and\n  the panel says so. Where it gives `ribosome` (a measured shape: the three bacteria, since 17\n  November 2026), each is drawn as its two subunits, each the ellipsoid of the same spread as\n  its atoms, from the viewer's own measure of a PDB entry (`tools/measure_particle.py`). In\n  the schematic picture they are enlarged as the membrane's proteins are, and fewer are drawn\n  (`cell_layout.js`, `RIBOSOME_RULES`). A large cell's ribosomes are as they were.\n\nA part a cell does not hold is listed under the species' \"Not in this organism\", with the\nreason read from `cell.parts`.\n\n## What the picture chooses\n\nSizes and counts come from the species' file where it gives them. The rest is the picture's\nchoice and the panel says so: in a generic animal cell the nucleus is drawn 6 µm across in a\ncell about 18 µm across, the Golgi as a stack of five or six cisternae, and in the schematic\npicture the ribosomes are enlarged, as every small part is.\n\n## Where the Golgi stands\n\nThe user chose this on 17 November 2026 from a review of where the Golgi, the ER and the nucleus\nstand (\"B as you recommend\"). Before, the Golgi stood about 6 µm from the nucleus, beyond the\nER. Now it stands as a cell's does. Its distances and counts are still the picture's choice, and\nno number from a paper stands behind them:\n\n- **An animal cell** (a cell with a nucleus and no large vacuole). The Golgi stands beside the\n  nucleus, toward the cell's middle, round the centrosome. Enlarged, it is one stack whose cis\n  face is about 1 µm from the envelope. To scale, it is a ribbon of four stacks, each about\n  1.2 µm across, about 0.4 µm from the envelope. The rough ER lies in two arms, one each side of\n  the Golgi, and each runs on from the envelope.\n- **The centrosome is scenery.** Cells models none, so it is drawn in the neutral glass of scenery\n  with no status, and its panel says so. It is two short barrels at right angles, between the\n  nucleus and the Golgi.\n- **A plant cell** (a cell with a large vacuole). Its Golgi is many small stacks spread through\n  the thin cytoplasm by the membrane, with no ribbon and no centrosome: 14 where parts are\n  enlarged, and 40 to scale, each about 1.2 µm across. The first stands beside the nucleus, where\n  the carriers from the ER reach it. The ER is as before, on the nucleus's inner side.\n- **However many stacks there are, they are one shared geometry**: each level of cisterna is one\n  mesh, and the rims and the buds are one instanced mesh each. A frame draws as many of them as\n  for one stack. `tests/cell_structures.test.mjs` holds a ceiling on what the cell's parts draw.\n- **The carriers of membrane trafficking** leave from the point of the ER nearest the Golgi's cis\n  face, and go from its trans face to the membrane.\n",
    "size": {
     "shape": "measured",
     "entry": "8YOP",
@@ -22910,7 +23046,18 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/animals.ribosome.json",
+     "of": "animals",
+     "entry": "8YOP",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2 nm wide weighted by its volume, on a grid 2 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.0,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 3944,
+     "tones": true
+    }
    }
   }
  ],
@@ -27311,7 +27458,16 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part alpha's centre to the part beta's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb7e1z"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.sodium-pump.json",
+      "of": "animals",
+      "entry": "7E1Z",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.0,
+      "by": "chains",
+      "triangles": 2192
+     }
     }
    },
    "unit.U41": {
@@ -27363,7 +27519,16 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb6lle"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.serca.json",
+      "of": "animals",
+      "entry": "6LLE",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.0,
+      "by": "chains",
+      "triangles": 1548
+     }
     }
    },
    "unit.U43": {
@@ -27544,7 +27709,17 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb6dqj"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.ip3r.json",
+      "of": "animals",
+      "entry": "6DQJ",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1.1 nm wide, on a grid 1.1 nm apart (coarser than the setting's 1 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.1,
+      "by": "chains",
+      "setting_width_nm": 1.0,
+      "triangles": 10688
+     }
     }
    },
    "unit.U06": {
@@ -27934,7 +28109,17 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part beta's centre to the part channel's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb3lut"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.kv1-2.json",
+      "of": "animals",
+      "entry": "3LUT",
+      "assembly": "1",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.0,
+      "by": "chains",
+      "triangles": 5704
+     }
     }
    },
    "unit.U36": {
@@ -28460,7 +28645,16 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part connexon-1's centre to the part connexon-2's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb7z22"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.connexin-channel.json",
+      "of": "animals",
+      "entry": "7Z22",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.0,
+      "by": "chains",
+      "triangles": 5352
+     }
     },
     "different family": {
      "shape": "measured",
@@ -29116,7 +29310,16 @@
      "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; y from the part hemichannel-1's centre to the part hemichannel-2's; x the whole's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
      "sources": [
       "catalogue:pdb5h1r"
-     ]
+     ],
+     "surface": {
+      "file": "shapes/animals.innexin-channel.json",
+      "of": "animals",
+      "entry": "5H1R",
+      "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+      "width_nm": 1.0,
+      "by": "chains",
+      "triangles": 11680
+     }
     }
    }
   }

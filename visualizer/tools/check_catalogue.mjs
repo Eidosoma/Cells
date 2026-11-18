@@ -331,6 +331,18 @@ try {
     const channel = await evaluate(`(() => { const b = ${L}.built.get("unit.U36"); return { level: b?.level, ids: b?.ids.size, shades: new Set(${L}.bodyColours("unit.U36")).size, cost: ${L}.cost() }; })()`);
     check("a real press on Subunits shows its sixteen chains, the two hemichannels told apart, in one more draw", channel.level === 3 && channel.ids === 16 && channel.shades >= 2 && channel.cost.draws <= 40, JSON.stringify([chains, channel]));
     await shot(`${NAME}-innexin`);
+    // Its Shape level: the unit drawn by its page id, a surface chosen as its chain, within the ceiling.
+    let shapeButton = await placeOf(`root.querySelector('[data-show="4"]')`);
+    if (!shapeButton) {
+      await press(".view-toggle", 900);
+      shapeButton = await placeOf(`root.querySelector('[data-show="4"]')`);
+    }
+    if (shapeButton) await click(shapeButton.x, shapeButton.y, 1200);
+    await until(`Boolean(${L}.built.get("unit.U36")?.surface)`, 60);
+    const unitShape = await evaluate(`(() => { const b = ${L}.built.get("unit.U36"); return { level: b?.level, surface: Boolean(b?.surface), picked: b?.surface?.mesh.userData.pick({ faceIndex: 0 }) || null, cost: ${L}.cost() }; })()`);
+    s = await state();
+    check("a real press on Shape draws the innexin channel's surfaces by the unit's id, within the ceiling, and says whose structure it is", unitShape.level === 4 && unitShape.surface && /^unit\.U36:chain-/.test(unitShape.picked || "") && unitShape.cost.draws <= 40 && unitShape.cost.triangles <= 40000 && /It is the shape of a structure of Caenorhabditis elegans/.test(s.panel), JSON.stringify([shapeButton, unitShape, s.panel.slice(0, 120)]));
+    await shot(`${NAME}-innexin-shape`);
     await evaluate(`${V}.select(null); ${V}.stage.rig.setView(${V}.current.homeView())`);
     await sleep(1200);
     const cost = await evaluate(`(() => {
@@ -421,14 +433,14 @@ try {
       }
       if (button) await click(button.x, button.y, 1200);
       await until(`Boolean(${L}.built.get(${JSON.stringify(id)})?.surface)`, 60);
-      const row = await evaluate(`(() => { const buttons = [...${V}.shadowRoot.querySelectorAll('[data-show]')].map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0); return { count: buttons.length, rows: new Set(buttons.map((r) => Math.round(r.top))).size, narrowest: Math.round(Math.min(...buttons.map((r) => r.width))) }; })()`);
+      const row = await evaluate(`(() => { const els = [...${V}.shadowRoot.querySelectorAll('[data-show]')].filter((el) => el.getBoundingClientRect().width > 0), buttons = els.map((el) => el.getBoundingClientRect()); return { count: buttons.length, rows: new Set(buttons.map((r) => Math.round(r.top))).size, narrowest: Math.round(Math.min(...buttons.map((r) => r.width))), cut: els.filter((el) => el.scrollWidth > el.clientWidth + 1).map((el) => el.textContent) }; })()`);
       if (await evaluate(`Boolean(${V}.shadowRoot.querySelector(".view-toggle")) && ${V}.clientWidth < 760`)) await press(".view-toggle", 600);
       return { button, row };
     };
     let shown = await toShape("machine:atp-synthase");
     let built = await evaluate(`(() => { const b = ${L}.built.get("machine:atp-synthase"); return { level: b?.level, surface: Boolean(b?.surface), bodies: b?.bodies?.visible, cost: ${L}.cost() }; })()`);
     check("a real press on Shape draws the ATP synthase's surfaces in the place of its ellipsoids, in one draw, within the ceiling", Boolean(shown.button) && built.level === 4 && built.surface && built.bodies === false && built.cost.draws <= 40 && built.cost.triangles <= 40000, JSON.stringify([shown.button, built]));
-    check("the Detail's four levels stand in one row", shown.row.count === 4 && shown.row.rows === 1, JSON.stringify(shown.row));
+    check("the Detail's four levels stand in one row on a wide screen, in two of two on a phone, and no label is cut", shown.row.count === 4 && shown.row.rows === (WIDTH < 560 ? 2 : 1) && shown.row.cut.length === 0, JSON.stringify(shown.row));
     let s = await state();
     check("its panel says what the shape is: the viewer's own surface of 6OQR's coordinates, an illustration, not a measurement", /The viewer's own smooth surface of Protein Data Bank entry 6OQR's coordinates \(a chain at 1\.0 nm\)/.test(s.panel) && /An illustration, not the structure and not a measurement/.test(s.panel), s.panel.slice(0, 200));
     await shot(`${NAME}-atp`);
@@ -466,7 +478,7 @@ try {
     await sleep(1500);
     shown = await toShape("machine:ribosome");
     s = await state();
-    check("Syn3A's ribosome at Shape is E. coli's shape, and its panel says whose", /It is the shape of E\. coli's ribosome, as its size is E\. coli's measure/.test(s.panel), s.panel.slice(0, 160));
+    check("Syn3A's ribosome at Shape is E. coli's shape, and its panel says whose", /It is the shape of a structure of Escherichia coli, as its size is\./.test(s.panel), s.panel.slice(0, 160));
     await errorsAtEnd();
   } else if (CASE === "phone") {
     check("the page opens on lens=machines with E. coli, on a phone", await open("lens=machines&entry=ecoli", 3500));

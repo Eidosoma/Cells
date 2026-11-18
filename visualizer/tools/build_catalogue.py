@@ -190,6 +190,7 @@ def shape_of(size, species, kind, where, inputs):
         counts = data.get("counts") or {}
         return {"file": f"shapes/{path.name}", "of": path.name.split(".")[0], "entry": data["entry"], **({"assembly": data["assembly"]} if data.get("assembly") else {}),
                 "definition": data["definition"], "width_nm": data["parameters"]["width_nm"], "by": data["parameters"]["by"],
+                **({"setting_width_nm": data["parameters"]["setting_width_nm"]} if data["parameters"].get("setting_width_nm") else {}),
                 "triangles": counts.get("triangles"), **({"tones": True} if data.get("tones") else {})}
     return None
 
@@ -324,8 +325,8 @@ def build():
                 entry["named"] = {"text": f"Its own proteins hold {found.get('gene') or found['id']} ({found['id']}), named in its entry “{found['name']}”.", "word": found.get("gene") or found["id"], "protein": found["id"], "file": rel(table), "sources": cite(species, ["uniprot"], species_file, where)}
             else:
                 record = overlay["records"][named["record"]]
-                said = (ROOT.parent / record["path"]).read_text(encoding="utf-8") if record["path"].startswith("visualizer/") else ""
-                if named["word"] not in said:
+                written = (ROOT.parent / record["path"]).read_text(encoding="utf-8") if record["path"].startswith("visualizer/") else ""
+                if named["word"] not in written:
                     raise Breach(f"{where}: {record['path']} does not say {named['word']!r}")
                 entry["named"] = {"word": named["word"], "record": named["record"]}
             if named and said:
@@ -413,7 +414,12 @@ def build():
             for finding, key in by_finding.items():
                 if finding not in ("found", "different family"):
                     raise Breach(f"unit_sizes: {unit}: {finding!r} is no finding of an atlas")
-                units.setdefault(unit, {})[finding] = measured_from_file(overlay, {"measure": key}, f"unit_sizes {unit}", inputs, own_source)
+                size = measured_from_file(overlay, {"measure": key}, f"unit_sizes {unit}", inputs, own_source)
+                # A unit's shape, where one is published for its measure (schema/MACHINE_SHAPES.md: a unit by its page id).
+                shape = shape_of(size, "unit", unit, f"unit_sizes {unit}", inputs)
+                if shape:
+                    size["surface"] = shape
+                units.setdefault(unit, {})[finding] = size
         unit_sizes = {"note": unit_sizes["note"], "species": unit_sizes["species"], "units": units}
     for key, source in sources.items():
         if source.get("class") not in ("permissive", "non-commercial", "no stated terms"):

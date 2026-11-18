@@ -1,5 +1,5 @@
 // Drawing a machine's shape (src/lenses/machine_shape.js; schema/MACHINE_SHAPES.md, "Drawing a shape"): a made-up file
-// and E. coli's six build to one mesh a machine, with the triangles their counts state; every surface's range of the
+// and every shape file build to one mesh a machine, with the triangles their counts state; every surface's range of the
 // mesh is closed; each face finds its surface; a second build is the same geometry; recolouring touches one surface's
 // vertices only; disposal frees what was built and nothing of the caller's; a machine with no file is said to have none.
 // It also notes what one chosen machine costs a frame at this level (draws and triangles).
@@ -20,7 +20,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SHAPES = path.join(ROOT, "data", "catalogue", "shapes");
 const json = (file) => JSON.parse(readFileSync(file, "utf8"));
 const catalogue = json(path.join(ROOT, "data", "catalogue", "catalogue.json"));
-const measured = catalogue.entries.filter((entry) => entry.species === "ecoli" && entry.size?.shape === "measured");
 
 /** A made-up shape: two closed surfaces of one part (an octahedron and a tetrahedron), and the octahedron's two tones (its halves). */
 function madeUp() {
@@ -138,38 +137,57 @@ test("a second build is the same geometry; recolouring rewrites one surface's ve
   painted.dispose();
 });
 
-test("E. coli's six shapes build to the triangles their counts state, one draw a machine, with every face finding a surface the catalogue names", (t) => {
-  const files = readdirSync(SHAPES).filter((name) => name.startsWith("ecoli.") && name.endsWith(".json")).sort();
-  assert.equal(files.length, 6);
-  for (const entry of measured) {
-    const where = shapePath("ecoli", entry.id, entry.size);
+test("every shape builds to the triangles its counts state, one draw a machine, with every face finding a surface the catalogue names", (t) => {
+  const files = readdirSync(SHAPES).filter((name) => name.endsWith(".json")).sort();
+  // Every machine and unit the catalogue measures, with the page id its view chooses it by (a kind's `machine:<kind>`, a unit's own id).
+  const items = [
+    ...catalogue.entries.filter((entry) => entry.size?.shape === "measured").map((entry) => ({ species: entry.species, kind: entry.id, id: null, size: entry.size })),
+    ...Object.entries(catalogue.unit_sizes?.units || {}).flatMap(([unit, by]) => Object.values(by).filter((size) => size.shape === "measured").map((size) => ({ species: null, kind: null, id: unit, size }))),
+  ];
+  const drawn = new Set();
+  const rows = [];
+  for (const item of items) {
+    const where = shapePath(item.species, item.kind, item.size);
     const name = where.slice("shapes/".length);
-    assert.ok(files.includes(name), `${entry.id}: its shape is published at ${where}`);
+    // Syn3A's and M. pneumoniae's ribosomes are drawn at E. coli's measure and have no file of their own: the view offers them E. coli's.
+    if (!files.includes(name)) {
+      assert.match(item.size.whose || "", /./, `${item.species} ${item.kind}: no shape at ${where}, and its size is another species'`);
+      continue;
+    }
+    drawn.add(name);
     const data = json(path.join(SHAPES, name));
+    const prefix = item.id || `machine:${item.kind}`;
+    const parts = new Set((item.size.parts || []).map((part) => `${prefix}:${part.id}`));
+    const chains = new Set((item.size.chains || []).map((chain) => `${prefix}:${chain.id}`));
     for (const tones of [false, true]) {
-      const built = buildShape(data, { kind: entry.id, perNm: 0.1, colour: shapeColours({}), tones });
-      const counted = tones && data.counts.tones ? data.counts.tones.triangles + data.meshes.filter((mesh) => !data.tones.some((tone) => tone.within === mesh.id)).reduce((sum, mesh) => sum + mesh.triangles.length / 3, 0) : data.counts.triangles;
+      if (tones && !data.tones) continue;
+      const built = buildShape(data, { kind: item.kind, id: item.id, perNm: 0.1, colour: shapeColours({}), tones });
+      const counted = tones ? data.counts.tones.triangles + data.meshes.filter((mesh) => !data.tones.some((tone) => tone.within === mesh.id)).reduce((sum, mesh) => sum + mesh.triangles.length / 3, 0) : data.counts.triangles;
       assert.equal(built.cost.triangles, counted, `${name}${tones ? ", in two tones" : ""}`);
       assert.equal(built.cost.draws, 1);
+      assert.ok(built.cost.triangles <= 12000, `${name}: ${built.cost.triangles} triangles, within the budget of one chosen machine`);
       assert.ok(closedRanges(built), `${name}: every surface closed`);
-      const second = buildShape(data, { kind: entry.id, perNm: 0.1, colour: shapeColours({}), tones });
+      const second = buildShape(data, { kind: item.kind, id: item.id, perNm: 0.1, colour: shapeColours({}), tones });
       assert.ok(sameArrays(built, second), `${name}: a second build is the same geometry`);
       second.dispose();
-      // Every face finds its surface; every surface is named as the catalogue names its parts and chains.
-      const parts = new Set((entry.size.parts || []).map((part) => `machine:${entry.id}:${part.id}`));
-      const chains = new Set((entry.size.chains || []).map((chain) => `machine:${entry.id}:${chain.id}`));
+      // Every face finds its surface; every surface is named as the catalogue names its parts and chains (where it names any).
       for (const row of built.surfaces) {
         assert.equal(built.surfaceAt(row.first), row);
         assert.equal(built.surfaceAt(row.last), row);
-        if (row.part) assert.ok(parts.has(row.part), `${name}: ${row.part} is a part the catalogue names`);
+        if (row.part && parts.size) assert.ok(parts.has(row.part), `${name}: ${row.part} is a part the catalogue names`);
         if (row.chain && chains.size) assert.ok(chains.has(row.chain), `${name}: ${row.chain} is a chain the catalogue names`);
         assert.ok(row.part || row.chain, `${name}: ${row.id} can be chosen`);
       }
-      if (!tones && (entry.id === "atp-synthase" || entry.id === "ribosome")) t.diagnostic(`frame cost of a chosen ${entry.id} at the Shape level: ${built.cost.draws} draw, ${built.cost.triangles} triangles, ${built.cost.vertices} vertices`);
-      if (tones && data.tones) t.diagnostic(`frame cost of a chosen ${entry.id} in two tones: ${built.cost.draws} draw, ${built.cost.triangles} triangles`);
+      // And the reverse: a file drawn by chains has a surface for every chain the catalogue names.
+      if (data.parameters?.by === "chains" && chains.size) assert.deepEqual(built.surfaces.map((row) => row.chain).sort(), [...chains].sort(), `${name}: a surface for each chain the catalogue names`);
+      if (!rows.some((one) => one.startsWith(`${name}${tones ? " (tones)" : ""}:`))) rows.push(`${name}${tones ? " (tones)" : ""}: ${built.cost.draws} draw, ${built.cost.triangles} triangles, ${built.cost.vertices} vertices`);
       built.dispose();
     }
   }
+  // Every shape file is one the catalogue draws.
+  assert.deepEqual([...drawn].sort(), files);
+  // What one chosen machine costs a frame at the Shape level.
+  for (const row of rows) t.diagnostic(`frame cost: ${row}`);
 });
 
 test("a machine with no shape file is said to have none; a file that cannot be drawn is said so; a catalogue entry finds its file's path", async () => {

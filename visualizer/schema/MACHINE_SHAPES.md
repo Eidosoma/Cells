@@ -13,10 +13,15 @@ numbers the viewer worked out itself.
 
 ## Where the files are
 
-- One file a machine, never one a chain: `data/catalogue/shapes/<species>.<machine>.json`,
-  committed, the same name as the machine's measure in `data/catalogue/measures/` (for example
-  `ecoli.atp-synthase.json`; the ribosome's one record is the species files', `data/measures/ecoli.ribosome.json`). Each is under 400 KB (the budget below), far under the 1 MB the
-  user set for checked-in data.
+- One file a measure, never one a chain: `data/catalogue/shapes/<name>.json`, committed, with the
+  same name as the measure it is drawn in. That is a file in `data/catalogue/measures/` (for
+  example `human.complex-i.json`, or `animals.ribosome.json`, which every animal species' ribosome
+  draws); E. coli's ribosome's one record is the species files', `data/measures/ecoli.ribosome.json`.
+  Each file is at most 250,000 bytes (the budget below), far under the 1 MB the user set for
+  checked-in data.
+- A shape file for every machine and unit the catalogue measures (21 since 18 November 2026; the
+  list is under "How each file is made"). A unit of the law inventory (the sodium pump, SERCA)
+  draws its measure's shape as a machine does.
 - Published beside the page at **`shapes/<species>.<machine>.json`**: the exporter lists every
   such file (`tools/lib/build_page.mjs`, `shapeFiles`), the local server serves it at that path,
   and staging takes it with the page's other files. A view fetches it by that path, as it fetches
@@ -99,7 +104,8 @@ in nanometres, so that a surface sits where its ellipsoid sits. A view places a 
 that measure's bodies (their `centre_nm` and `axes` are in the same frame), and moves and scales
 the whole machine as it moves and scales its ellipsoids. The file's `frame` says the frame in
 words: the measuring tool's, from the same entry, `--exclude`, `--part`, `--frame-from` and
-`--frame-to` as its measure.
+`--frame-to` as its measure. Since 18 November 2026 every file is made with `--measure`, which
+reads those options from the measure's own record, so a shape cannot be made in another frame.
 
 ## What a consumer may rely on
 
@@ -109,20 +115,36 @@ words: the measuring tool's, from the same entry, `--exclude`, `--part`, `--fram
 - A chain's surface holds its residues' own volume to within 2%, with what was dropped of it. A
   machine's parts hold the whole's residues' own volume between them to within 2%: each part is
   the share of the whole's solid where its cloud is the greater, so a part holds about, not
-  exactly, its own residues' volume (the ribosome's small subunit 93%, its large one 105%).
+  exactly, its own residues' volume (E. coli's ribosome's small subunit 93%, its large one 105%).
+- A surface's middle lies inside its measured ellipsoid. A thin chain's volume gathers where its
+  residues pack, so its middle may stand well off the ellipsoid's centre: up to about a fifth of
+  the chain's length for the ATP synthases' subunit b (5.2 nm of 28 nm in the human one).
 - Neighbouring parts meet at one shared face: the vertices of the faces each has inside are the
   same places. A part's two tones fill it, each inside it or on it.
 - **Pieces.** A chain may be thin between its domains, so that its surface falls into pieces. The
   largest piece is kept, and every piece that holds at least 5% of the surface's volume; smaller
-  slivers are dropped and listed under `dropped`. In E. coli's six files that left out a sliver
-  of RNA polymerase's β (about 1 residue's volume) and of σ70 (0.1), and two of SecE's (about 1
-  residue's volume together); σ70's piece of 7% (about 36 residues' volume, below the claw) is
-  kept. A part's tones may be in pieces (a ribosome's proteins on its RNA).
-- **The budget**, held by `tests/machine_shapes.test.mjs`: a file under 400 KB and 20,000
-  triangles in all; a ribosome under 8,000 drawn either way (its solids 4,836, its tones 7,900).
-  A chain's surface is a few dozen to a few hundred triangles, up to about 2,000 for the largest
-  chains (RNA polymerase's β′, 1,325 residues, 1,912 triangles). A phone draws one chosen
-  machine at this level without trouble.
+  slivers are dropped and listed under `dropped`.
+  - In E. coli's files that left out a sliver of RNA polymerase's β (about 1 residue's volume)
+    and of σ70 (0.1), and two of SecE's (about 1 residue's volume together). σ70's piece of 7%
+    (about 36 residues' volume, below the claw) is kept.
+  - In the others:
+    - the most dropped from one surface is 0.63 nm³ (the human mitochondrial ribosome's large
+      subunit, 2 residues inside);
+    - the most from one file is 1.06 nm³ (the IP3 receptor's four chains, a sliver each);
+    - the most residues inside a file's drops is 7, in subunit b of the human ATP synthase (chain
+      K, 0.49 nm³).
+  - A part's tones may be in pieces (a ribosome's proteins on its RNA).
+  - Where a part's sliver is dropped against its neighbour, the neighbour keeps the few faces it
+    had against it: a dent of a tenth of a nanometre (5 vertices, in the mitochondrial ribosome).
+- **The budget**, held by `tests/machine_shapes.test.mjs`, has been this since 18 November 2026:
+  - a file at most 250,000 bytes;
+  - one chosen machine at most 12,000 triangles, drawn either way (its meshes, or its meshes with
+    each part's tones in its solid's place). The tool refuses past either (`--most-triangles`,
+    `--most-bytes`).
+  - A chain's surface is a few dozen to a few hundred triangles, up to about 3,000 for the largest
+    chains (the IP3 receptor's, 2,181 residues each, 2,764 triangles at most).
+  - The bench may draw 40 draws and 40,000 triangles in all; a chosen machine at this level is
+    one draw.
 - Chains' surfaces may overlap one another where chains pack closely: each is drawn whole.
 
 ## How meshes map to the catalogue's ids
@@ -132,14 +154,32 @@ words: the measuring tool's, from the same entry, `--exclude`, `--part`, `--fram
   chains' surfaces, and a part's hue is its chains' hue, as at the Subunits level.
 - A part's solid `part-<part>`, and each of its tones, is the body `machine:<kind>:<part>`; drawn
   in its two tones, the nucleic acid may wear its own colour.
-- A ribosome is drawn by its parts (`--ribosome`: `large` and `small`): its fifty chains are too
-  many to tell apart at this resolution. The other machines are drawn by their chains. Where the
-  catalogue names no chains for a machine (the translocon), its chains' surfaces map by their
-  `part` alone.
-- What is in neither subunit of a ribosome (7K00's tRNAs and messenger) is drawn by no surface
-  and listed nowhere in the shape file; the measure lists it under its `left_out`. `--large` and
-  `--small` place an entity the caller names in a subunit, as the measuring tool's two-subunit
-  mode does (a human ribosome's RACK1, whose name says neither).
+- A unit of the law inventory has no kind. Its page id is its own (`unit.U39`), and its surfaces
+  are `unit.U39:<part>` and `unit.U39:chain-<id>`.
+- A ribosome is drawn by its parts (`large` and `small`): its fifty to ninety chains are too many
+  to tell apart at this resolution. The other machines are drawn by their chains.
+- Where the catalogue names no chains for a machine (the translocon), its chains' surfaces map by
+  their `part` alone.
+- Where the catalogue names no parts (complex I, the three human RNA polymerases), a surface's
+  `part` is the measure's own name for its subunit (`NDUFS2`, `POLR2A`), and a view chooses it by
+  its chain.
+- **The rule for a ribosome** (two subunits, each one solid of all its residues, with two tones):
+  - It is drawn the same way whether the measure is the two-subunit mode's (E. coli's 7K00, the
+    animals' 8YOP) or the machine mode's with parts `large` and `small` (the human mitochondrial
+    ribosome, 9S7C, made with `--by parts`).
+  - The tones come from each residue's kind, not from the measure's parts, so the mitochondrial
+    ribosome has its RNA and protein tones although its parts do not split them. Its proteins are
+    the greater part of it, so in two tones it is mostly protein, its rRNA showing at the
+    interface.
+  - The frame differs: the mitochondrial ribosome's is the machine mode's, from the whole's centre
+    to the subunits' line.
+- **Where the rule does not reach,** what the measure leaves out of both subunits is drawn by no
+  surface and listed nowhere in the shape file; the measure lists it under its `left_out`:
+  - 7K00's tRNAs and messenger;
+  - 9S7C's mitochondrial tRNA-Val, which sits in the large subunit's central protuberance, left
+    out by its measure with the example messenger, tRNAs and nascent chain.
+  If a measure is made again with such an entity placed (`--large`, `--small`, or a part that
+  names it), `--measure` makes the shape follow it.
 - A machine whose catalogue entry draws another species' measure (Syn3A's and M. pneumoniae's
   ribosomes are drawn at E. coli's, as their files say) has no shape file of its own; the view
   offers it E. coli's shape, and the panel says whose shape it is. The file's `entry` is the
@@ -157,8 +197,8 @@ say how much was left out, and of which chains. Nothing says modelled or qualifi
 
 ## How each file is made
 
-The definition is the same for every machine: a chain's surface at 1 nm, a part's solid at
-1.6 nm. These widths were weighed on 17 November 2026 against 0.8 and 1.4 nm for a chain and 1.2
+The definition is the same for every machine, and so is the setting: a chain's surface at 1 nm,
+a part's solid at 1.6 nm (five large machines are coarser, below). These widths were weighed on 17 November 2026 against 0.8 and 1.4 nm for a chain and 1.2
 and 2.0 nm for a part, on the ATP synthase and the ribosome, and the user chose them the same day:
 they hold the budget without a pass that simplifies the surfaces. Later that day a part's one
 solid, with its two tones, replaced its separate protein and nucleic-acid surfaces, which stood
@@ -171,22 +211,57 @@ share of its part where its kind's cloud is the greater. On the grid's tetrahedr
 on one of these fields' zeros, clipped by the others; a vertex where several meet is worked out
 once from the corners and the fields that make it, so neighbouring surfaces share it exactly.
 
-With `DATA` the folder of E. coli's downloads (each entry with its MANIFEST; the Protein Data
-Bank's files are CC0), from the visualizer's folder:
+**A coarser width where the setting breaks the budget.** On 18 November 2026 five machines were
+too large for the budget at the setting. Each is made at the finest width that holds it, in steps
+of 0.1 nm, with the grid as wide. The setting stays the default.
+- The file says so: `parameters.width_nm` gives the width, `parameters.setting_width_nm` the
+  setting's, and its `definition` adds "coarser than the setting's … nm, to hold the budget".
+- Each next step finer broke the budget:
+
+  | File | At the setting | Made at |
+  | --- | --- | --- |
+  | the human proteasome (46 chains) | 25,044 triangles | 1.5 nm; at 1.4, 12,428 |
+  | complex I (45 chains) | 18,460 | 1.3 nm; at 1.2, 12,628 |
+  | the IP3 receptor (four chains of 2,181 residues) | 13,092 | 1.1 nm |
+  | the 80S ribosome | its tones 13,740, 397 KB | 2.0 nm; at 1.9, 254,650 bytes |
+  | the mitochondrial ribosome | 331 KB | 1.8 nm; at 1.7, 287,326 bytes |
+
+**Each call** reads the measure's parts, frame and left-out entities from its record
+(`--measure`). E. coli's six give the same bytes as the explicit calls they were first made with.
+With `DATASETS` the folder of the downloads (each entry with its MANIFEST; the Protein Data Bank's
+files are CC0), from the visualizer's folder, each file is:
 
 ```
-python3 -I tools/shape_particle.py DATA/wwpdb-ribosome/7K00.cif.gz --ribosome --out data/catalogue/shapes/ecoli.ribosome.json
-python3 -I tools/shape_particle.py DATA/wwpdb-atp-synthase/6OQR.cif.gz --part head=2,6 --part central-stalk=5,4 --part peripheral-stalk=3,1 --part ring=7 --part stator-foot=8 --frame-from ring --frame-to head --out data/catalogue/shapes/ecoli.atp-synthase.json
-python3 -I tools/shape_particle.py DATA/wwpdb-rna-polymerase/6P1K.cif.gz --part beta=2 --part beta-prime=3 --part alpha=1 --part omega=4 --part sigma=5 --out data/catalogue/shapes/ecoli.rna-polymerase.json
-python3 -I tools/shape_particle.py DATA/wwpdb-translocon/9RBF.cif.gz --exclude LEFT_OUT --part secy=7 --part sece=8 --part secg=9 --out data/catalogue/shapes/ecoli.translocon.json
-python3 -I tools/shape_particle.py DATA/wwpdb-hslv/1G4A-assembly1.cif.gz --part hslv=2 --part hslu=1 --frame-from hslv --frame-to hslu --out data/catalogue/shapes/ecoli.hslv.json
-python3 -I tools/shape_particle.py DATA/wwpdb-lon/6U5Z.cif.gz --out data/catalogue/shapes/ecoli.lon.json
+python3 -I tools/shape_particle.py DATASETS/ENTRY --measure MEASURE [OPTIONS] --out data/catalogue/shapes/NAME
 ```
 
-`LEFT_OUT` is the translocon measure's own `left_out` entities, comma-separated: the ribosome
-and YidC that 9RBF holds beside SecYEG. The same call made twice gives the same bytes, and
-`tests/machine_shapes.test.mjs` makes the six again and compares them byte for byte, where the
-downloads are on the machine.
+| `NAME` | `ENTRY` | `MEASURE` | `OPTIONS` | Triangles | Bytes |
+| --- | --- | --- | --- | --- | --- |
+| `ecoli.ribosome.json` | `ecoli/wwpdb-ribosome/7K00.cif.gz` | `data/measures/ecoli.ribosome.json` | | 4,836 / 7,900 in tones | 241,452 |
+| `ecoli.atp-synthase.json` | `ecoli/wwpdb-atp-synthase/6OQR.cif.gz` | `data/catalogue/measures/ecoli.atp-synthase.json` | | 9,348 | 162,924 |
+| `ecoli.rna-polymerase.json` | `ecoli/wwpdb-rna-polymerase/6P1K.cif.gz` | `data/catalogue/measures/ecoli.rna-polymerase.json` | | 6,112 | 111,280 |
+| `ecoli.translocon.json` | `ecoli/wwpdb-translocon/9RBF.cif.gz` | `data/catalogue/measures/ecoli.translocon.json` | | 1,284 | 27,119 |
+| `ecoli.hslv.json` | `ecoli/wwpdb-hslv/1G4A-assembly1.cif.gz` | `data/catalogue/measures/ecoli.hslv.json` | | 8,136 | 143,130 |
+| `ecoli.lon.json` | `ecoli/wwpdb-lon/6U5Z.cif.gz` | `data/catalogue/measures/ecoli.lon.json` | | 5,512 | 99,640 |
+| `human.proteasome.json` | `human/wwpdb-proteasome-g/7QYB.cif.gz` | `data/catalogue/measures/human.proteasome.json` | `--width 1.5` | 10,896 | 184,515 |
+| `human.atp-synthase.json` | `human/wwpdb-atp-synthase-g/8H9T.cif.gz` | `data/catalogue/measures/human.atp-synthase.json` | | 11,280 | 197,004 |
+| `human.rna-polymerase.json` | `human/wwpdb-rna-polymerase-g/6DRD.cif.gz` | `data/catalogue/measures/human.rna-polymerase.json` | | 6,392 | 112,840 |
+| `human.rna-polymerase-i.json` | `human/wwpdb-rna-polymerase-i-g/7OBA.cif.gz` | `data/catalogue/measures/human.rna-polymerase-i.json` | | 7,924 | 142,201 |
+| `human.rna-polymerase-iii.json` | `human/wwpdb-rna-polymerase-iii-g/7D59.cif.gz` | `data/catalogue/measures/human.rna-polymerase-iii.json` | | 9,592 | 170,765 |
+| `human.complex-i.json` | `human/wwpdb-complex-i-g/9I4I.cif.gz` | `data/catalogue/measures/human.complex-i.json` | `--width 1.3` | 10,924 | 187,030 |
+| `human.mitochondrial-ribosome.json` | `human/wwpdb-mitochondrial-ribosome-g/9S7C.cif.gz` | `data/catalogue/measures/human.mitochondrial-ribosome.json` | `--width 1.8 --by parts` | 4,672 / 8,256 in tones | 245,604 |
+| `human.cmg-helicase.json` | `human/wwpdb-cmg-helicase-g/6XTX.cif.gz` | `data/catalogue/measures/human.cmg-helicase.json` | | 8,724 | 157,078 |
+| `animals.ribosome.json` | `human/wwpdb-ribosome-80s-b/8YOP.cif.gz` | `data/catalogue/measures/animals.ribosome.json` | `--width 2.0` | 3,944 / 7,820 in tones | 220,669 |
+| `animals.sodium-pump.json` | `human/wwpdb-sodium-pump/7E1Z.cif.gz` | `data/catalogue/measures/animals.sodium-pump.json` | | 2,192 | 39,905 |
+| `animals.serca.json` | `human/wwpdb-serca/6LLE.cif.gz` | `data/catalogue/measures/animals.serca.json` | | 1,548 | 29,069 |
+| `animals.ip3r.json` | `human/wwpdb-ip3r/6DQJ.cif.gz` | `data/catalogue/measures/animals.ip3r.json` | `--width 1.1` | 10,688 | 207,132 |
+| `animals.kv1-2.json` | `human/wwpdb-kv-channel/3LUT-assembly1.cif.gz` | `data/catalogue/measures/animals.kv1-2.json` | | 5,704 | 102,250 |
+| `animals.connexin-channel.json` | `human/wwpdb-gap-junction-cx43/7Z22.cif.gz` | `data/catalogue/measures/animals.connexin-channel.json` | | 5,352 | 94,064 |
+| `animals.innexin-channel.json` | `planarian/wwpdb-innexin-channel/5H1R.cif.gz` | `data/catalogue/measures/animals.innexin-channel.json` | | 11,680 | 209,460 |
+
+The same call made twice gives the same bytes. `tests/machine_shapes.test.mjs` makes every file
+again, two at a time, and compares them byte for byte, wherever the downloads are on the
+machine. The largest call, the 80S ribosome, takes about 13 s and 650 MB.
 
 ## Drawing a shape
 
@@ -203,7 +278,7 @@ downloads are on the machine.
   only. A view learns that a machine has no shape only by asking: either a page for the disk carries
   its shapes inside it and not this one, or the host answers the fetch with a client error (404,
   or any 4xx).
-- **`buildShape(data, { kind, perNm, colour, tones })`** builds the whole machine as **one mesh**
+- **`buildShape(data, { kind, id, perNm, colour, tones })`** builds the whole machine as **one mesh**
   (one draw), every surface in one buffer. The normals are worked out once, and each vertex has
   a colour. The call returns:
   - **`mesh`**: a `THREE.Mesh` with one material of this module's (vertex colours); a caller may
@@ -223,6 +298,8 @@ downloads are on the machine.
     parent.
 - **The options of `buildShape`:**
   - `kind` is the catalogue's kind (`atp-synthase`), which makes the page ids.
+  - `id`, given instead of `kind`, is a unit's own page id (`unit.U39`), which then makes them.
+    It was added on 18 November 2026; nothing else of the interface changed.
   - `perNm` is the caller's units in a nanometre.
   - `colour(partId, kind, row)` returns a colour for a surface: a `THREE.Color` or anything
     `THREE.Color` takes. `shapeColours(palette, { hues })` is a default from the page's palette.
@@ -245,5 +322,9 @@ shape.recolour(row, chosenColour); // lit; shape.recolour(row) puts it back
 // Later: shape.dispose();
 ```
 
-At this level a chosen ATP synthase costs 1 draw and 9,348 triangles; a ribosome 1 draw and
-4,836 triangles (7,900 in two tones).
+For a unit, `shapePath(null, null, size)` and `buildShape(data, { id: unit.id, ... })`.
+
+At this level a chosen machine costs 1 draw and the triangles in the table above.
+- The most are the innexin channel's 11,680 and the human ATP synthase's 11,280.
+- A ribosome is 3,944 to 4,836 triangles as its solids, and 7,820 to 8,256 in two tones.
+- `tests/machine_shape_drawing.test.mjs` notes each machine's cost.

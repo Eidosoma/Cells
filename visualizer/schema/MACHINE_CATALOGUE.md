@@ -142,11 +142,15 @@ catalogue never says their count.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
   a species' file draws at another's measure, the shape of that same entry: Syn3A's and M.
-  pneumoniae's ribosomes take E. coli's), the size names it: its file as published
+  pneumoniae's ribosomes take E. coli's; a unit's size the same, by its measure), the size names it: its file as published
   (`shapes/<name>.json`), whose it is, its entry and assembly, its definition and setting (a chain
-  at 1.0 nm; a ribosome's subunits as solids at 1.6 nm) and its triangles. The builder stops where
+  at 1.0 nm; a ribosome's subunits as solids at 1.6 nm; where a file was made coarser to hold its
+  budget, both widths) and its triangles. Every measured machine and unit has one since 18
+  November 2026: E. coli's six, the human's eight, and the animals' 80S and five units. The builder stops where
   the shape's entry is not the measured one, or a surface names a chain or part the size does not.
-  The page asks for a shape file only where the size names one.
+  The page asks for a shape file only where the size names one. On every bench, a chosen machine at
+  Shape stays within the ceiling: the bench's cost plus its heaviest shape (the innexin channel's
+  11,680 triangles) is held by the tests.
 - **A label of the species' own.** Where a species' dossier names a machine by one term that adds a
   numeral to the kind's label, the species' entry takes it: the human's RNA polymerase is "RNA
   polymerase II" (the Gene Ontology's "RNA polymerase II, core complex"), beside I and III.
@@ -210,8 +214,11 @@ catalogue never says their count.
   part; the chain's panel gives its protein, its door into the atlas and a door to its part. The
   machine's panel says what the shape is: the viewer's own smooth surface of the entry's
   coordinates, by its definition, at its setting, an illustration, not the structure and not a
-  measurement; the Protein Data Bank states no surface; and whose it is where it is another's.
-  The card's Detail stands in one row.
+  measurement; the Protein Data Bank states no surface; the width a file was made at where it is
+  coarser than the setting's; and, where the entry is of another organism than the species shown,
+  that it is the shape of a structure of that organism, as its size is. A unit of the law
+  inventory is drawn by its own page id (`unit.U39:chain-A`). The card's Detail stands in one row,
+  and in two rows of two on a phone, where four whole words do not fit in one.
 - **The choice told apart.** A part or a chain chosen in a machine is lit in the page's accent, as
   the chosen machine is: by its instance's colour at Parts and Subunits, by its surface's at Shape
   (`recolour`); choosing it does not rebuild the machine. The legend's line for the choice says so.

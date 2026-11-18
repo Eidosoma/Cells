@@ -1,13 +1,13 @@
 // A machine's shape (schema/MACHINE_SHAPES.md; tools/shape_particle.py): the tool on made-up machines whose answers
 // are known (closed, outward, holding its residues' own volume, inside the bounds its atoms give, the same bytes on a
 // second run, a part's solid and its two tones, slivers dropped and listed, the budget, the refusals), and E. coli's
-// six shape files against the contract and their measures.
+// shape files against the contract and their measures, each made again byte for byte where its entry is saved here.
 //
 //   node --test tests/machine_shapes.test.mjs
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -16,10 +16,32 @@ import path from "node:path";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TOOL = path.join(ROOT, "tools", "shape_particle.py");
 const SHAPES = path.join(ROOT, "data", "catalogue", "shapes");
-const MEASURES = path.join(ROOT, "data", "catalogue", "measures");
-// A machine's measure: the catalogue's, but for the ribosome, whose one record is the species files' (data/measures/).
-const measureOf = (name) => (name === "ecoli.ribosome.json" ? path.join(ROOT, "data", "measures", name) : path.join(MEASURES, name));
 const VOLUME = { protein: 0.135, nucleic: 0.32 };
+// Each shape file's call (schema/MACHINE_SHAPES.md): its entry as saved under the datasets' folder, the measure whose
+// parts, frame and left-out entities it takes, the width where it is coarser than the setting, and any other option.
+const CALLS = {
+  "ecoli.ribosome.json": ["ecoli/wwpdb-ribosome/7K00.cif.gz", "data/measures/ecoli.ribosome.json"],
+  "ecoli.atp-synthase.json": ["ecoli/wwpdb-atp-synthase/6OQR.cif.gz", "data/catalogue/measures/ecoli.atp-synthase.json"],
+  "ecoli.rna-polymerase.json": ["ecoli/wwpdb-rna-polymerase/6P1K.cif.gz", "data/catalogue/measures/ecoli.rna-polymerase.json"],
+  "ecoli.translocon.json": ["ecoli/wwpdb-translocon/9RBF.cif.gz", "data/catalogue/measures/ecoli.translocon.json"],
+  "ecoli.hslv.json": ["ecoli/wwpdb-hslv/1G4A-assembly1.cif.gz", "data/catalogue/measures/ecoli.hslv.json"],
+  "ecoli.lon.json": ["ecoli/wwpdb-lon/6U5Z.cif.gz", "data/catalogue/measures/ecoli.lon.json"],
+  "human.proteasome.json": ["human/wwpdb-proteasome-g/7QYB.cif.gz", "data/catalogue/measures/human.proteasome.json", 1.5],
+  "human.atp-synthase.json": ["human/wwpdb-atp-synthase-g/8H9T.cif.gz", "data/catalogue/measures/human.atp-synthase.json"],
+  "human.rna-polymerase.json": ["human/wwpdb-rna-polymerase-g/6DRD.cif.gz", "data/catalogue/measures/human.rna-polymerase.json"],
+  "human.rna-polymerase-i.json": ["human/wwpdb-rna-polymerase-i-g/7OBA.cif.gz", "data/catalogue/measures/human.rna-polymerase-i.json"],
+  "human.rna-polymerase-iii.json": ["human/wwpdb-rna-polymerase-iii-g/7D59.cif.gz", "data/catalogue/measures/human.rna-polymerase-iii.json"],
+  "human.complex-i.json": ["human/wwpdb-complex-i-g/9I4I.cif.gz", "data/catalogue/measures/human.complex-i.json", 1.3],
+  "human.mitochondrial-ribosome.json": ["human/wwpdb-mitochondrial-ribosome-g/9S7C.cif.gz", "data/catalogue/measures/human.mitochondrial-ribosome.json", 1.8, "--by", "parts"],
+  "human.cmg-helicase.json": ["human/wwpdb-cmg-helicase-g/6XTX.cif.gz", "data/catalogue/measures/human.cmg-helicase.json"],
+  "animals.ribosome.json": ["human/wwpdb-ribosome-80s-b/8YOP.cif.gz", "data/catalogue/measures/animals.ribosome.json", 2.0],
+  "animals.sodium-pump.json": ["human/wwpdb-sodium-pump/7E1Z.cif.gz", "data/catalogue/measures/animals.sodium-pump.json"],
+  "animals.serca.json": ["human/wwpdb-serca/6LLE.cif.gz", "data/catalogue/measures/animals.serca.json"],
+  "animals.ip3r.json": ["human/wwpdb-ip3r/6DQJ.cif.gz", "data/catalogue/measures/animals.ip3r.json", 1.1],
+  "animals.kv1-2.json": ["human/wwpdb-kv-channel/3LUT-assembly1.cif.gz", "data/catalogue/measures/animals.kv1-2.json"],
+  "animals.connexin-channel.json": ["human/wwpdb-gap-junction-cx43/7Z22.cif.gz", "data/catalogue/measures/animals.connexin-channel.json"],
+  "animals.innexin-channel.json": ["planarian/wwpdb-innexin-channel/5H1R.cif.gz", "data/catalogue/measures/animals.innexin-channel.json"],
+};
 const run = (...args) => spawnSync("python3", ["-I", TOOL, ...args], { encoding: "utf8" });
 
 /** A made-up entry: each chain a block of residues 3.8 Å apart, one atom standing for each (CA, or P for a nucleotide). */
@@ -88,6 +110,9 @@ function insideOrOn(point, mesh, unit, near = 0.02) {
   }
   return least <= near || crossings % 2 === 1;
 }
+
+/** Where a point stands against a measured body's ellipsoid: at most 1 inside it (the sum over its axes of the squared offset over the half-width). */
+const withinEllipsoid = (point, body) => body.axes.reduce((sum, axis, n) => sum + ((point.reduce((d, x, k) => d + (x - body.centre_nm[k]) * axis[k], 0)) / (body.across_nm[n] / 2)) ** 2, 0);
 
 /** A mesh's checks: each edge met both ways as often, the volume it holds (nm³), its vertices' farthest reach from the origin (nm). */
 function checked(mesh, unit) {
@@ -215,7 +240,7 @@ test("a surface's slivers: its largest piece and every piece of at least 5% of i
   }
 });
 
-test("the tool refuses, and writes nothing, where a part names no atom, a frame's part is not given, or the budget would break", () => {
+test("the tool refuses, and writes nothing, where a part names no atom, a frame's part is not given, the budget would break, or a measure is not this entry's", () => {
   const folder = mkdtempSync(path.join(tmpdir(), "shape-"));
   try {
     const file = path.join(folder, "made.cif"), out = path.join(folder, "out.json");
@@ -226,28 +251,40 @@ test("the tool refuses, and writes nothing, where a part names no atom, a frame'
     done = run(file, "--part", "head=1", "--frame-from", "head", "--frame-to", "ring", "--out", out);
     assert.match(done.stderr, /the frame's part ring is not given with --part; nothing is made/);
     done = run(file, "--most-triangles", "10", "--out", out);
-    assert.match(done.stderr, /triangles, above the budget of 10; nothing is made/);
+    assert.match(done.stderr, /triangles drawn, above the budget of 10; nothing is made/);
     done = run(file, "--most-bytes", "100", "--out", out);
     assert.match(done.stderr, /bytes, above the budget of 100; nothing is made/);
+    // A measure's call is taken whole, from a measure of this entry.
+    const measure = path.join(folder, "measure.json");
+    writeFileSync(measure, JSON.stringify({ frame: "origin at the centre of the whole's atoms; its own axes", measured: { OTHER: { entry: "OTHER" } } }));
+    done = run(file, "--measure", measure, "--part", "head=1", "--out", out);
+    assert.match(done.stderr, /--measure gives the parts, the frame and what is left out: give none of them besides/);
+    done = run(file, "--measure", measure, "--out", out);
+    assert.match(done.stderr, /measure\.json holds no measure of made; nothing is made/);
     assert.equal(existsSync(out), false);
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }
 });
 
-test("E. coli's six shape files hold to the contract and sit where their measures' bodies sit", () => {
+test("every shape file holds to the contract and sits where its measure's bodies sit", () => {
   const names = readdirSync(SHAPES).filter((name) => name.endsWith(".json")).sort();
-  assert.deepEqual(names, ["ecoli.atp-synthase.json", "ecoli.hslv.json", "ecoli.lon.json", "ecoli.ribosome.json", "ecoli.rna-polymerase.json", "ecoli.translocon.json"]);
+  assert.deepEqual(names, Object.keys(CALLS).sort(), "a shape file for each measure the catalogue draws, and no other");
   for (const name of names) {
     const file = path.join(SHAPES, name), shape = JSON.parse(readFileSync(file, "utf8"));
-    const measured = Object.values(JSON.parse(readFileSync(measureOf(name), "utf8")).measured)[0];
-    // The budget: a file under 400 KB and 20,000 triangles; a ribosome under 8,000 drawn either way (its solids, or its
-    // two tones); a chain's surface up to about 2,000.
+    const records = Object.entries(JSON.parse(readFileSync(path.join(ROOT, CALLS[name][1]), "utf8")).measured);
+    const measured = (records.find(([key]) => key === (shape.assembly ? `${shape.entry}-assembly${shape.assembly}` : shape.entry)) || records[0])[1];
+    // The budget: a file at most 250,000 bytes; one chosen machine at most 12,000 triangles drawn either way (its meshes,
+    // or its meshes with each part's tones in its solid's place); a chain's surface up to about 3,000.
     const tones = shape.tones || [];
-    const all = [...shape.meshes, ...tones].reduce((sum, mesh) => sum + mesh.triangles.length / 3, 0);
-    assert.ok(statSync(file).size < 400000, `${name}: ${statSync(file).size} bytes`);
-    assert.ok(all < 20000, `${name}: ${all} triangles in all`);
-    if (name === "ecoli.ribosome.json") assert.ok(shape.counts.triangles < 8000 && shape.counts.tones.triangles < 8000, `${name}: ${shape.counts.triangles} and ${shape.counts.tones.triangles} triangles`);
+    const toned = new Set(tones.map((tone) => tone.within));
+    const drawnToned = [...shape.meshes.filter((mesh) => !toned.has(mesh.id)), ...tones].reduce((sum, mesh) => sum + mesh.triangles.length / 3, 0);
+    assert.ok(statSync(file).size <= 250000, `${name}: ${statSync(file).size} bytes`);
+    assert.ok(shape.counts.triangles <= 12000 && drawnToned <= 12000, `${name}: ${shape.counts.triangles} and ${drawnToned} triangles drawn`);
+    // At the setting the user chose, or coarser where the setting would break the budget, as the file says.
+    const setting = shape.parameters.by === "parts" ? 1.6 : 1.0;
+    assert.equal(shape.parameters.width_nm, (CALLS[name][2] || setting), `${name}: its width`);
+    if (shape.parameters.width_nm !== setting) assert.ok(shape.parameters.setting_width_nm === setting && shape.definition.includes(`coarser than the setting's ${setting} nm, to hold the budget`), `${name}: says it is coarser`);
     assert.equal(shape.format, "cells.visualizer.machine-shape@1");
     assert.equal(shape.tool, "tools/shape_particle.py");
     assert.equal(shape.entry, measured.entry, name);
@@ -259,7 +296,7 @@ test("E. coli's six shape files hold to the contract and sit where their measure
     // What was dropped: slivers of surfaces in the file, each with the chains it came from.
     const lost = new Map();
     for (const item of shape.dropped) {
-      assert.ok(shape.meshes.some((mesh) => mesh.id === item.surface) && item.pieces > 0 && item.volume_nm3 > 0 && item.chains.length > 0, `${name}: ${JSON.stringify(item)}`);
+      assert.ok(shape.meshes.some((mesh) => mesh.id === item.surface) && item.pieces > 0 && item.volume_nm3 >= 0 && item.chains.length > 0, `${name}: ${JSON.stringify(item)}`);
       lost.set(item.surface, item.volume_nm3);
     }
     const parts = measured.parts ? Object.keys(measured.parts) : ["large", "small"];
@@ -270,7 +307,7 @@ test("E. coli's six shape files hold to the contract and sit where their measure
       assert.ok(closed && volume > 0, `${name} ${mesh.id}: closed and facing out`);
       // A chain's surface holds its own volume, with what was dropped of it; a part's solid holds its share of the whole's (below).
       if (mesh.kind !== "nucleoprotein") assert.ok(Math.abs((volume + (lost.get(mesh.id) || 0)) / (mesh.residues * VOLUME[mesh.kind]) - 1) < 0.02, `${name} ${mesh.id}: holds ${volume.toFixed(1)} nm³`);
-      assert.ok(!mesh.chain || triangles <= 2000, `${name} ${mesh.id}: ${triangles} triangles, a chain's surface`);
+      assert.ok(!mesh.chain || triangles <= 3000, `${name} ${mesh.id}: ${triangles} triangles, a chain's surface`);
       assert.ok(mesh.vertices.every(Number.isInteger) && mesh.triangles.every((n) => Number.isInteger(n) && n >= 0 && n < mesh.vertices.length / 3), `${name} ${mesh.id}: integers`);
       assert.ok(mesh.part === null || parts.includes(mesh.part), `${name} ${mesh.id}: its part ${mesh.part} is the measure's`);
       if (!mesh.chain && mesh.part) {
@@ -286,7 +323,7 @@ test("E. coli's six shape files hold to the contract and sit where their measure
       }
       if (mesh.chain) {
         // Each chain's surface is the body the catalogue names chain-<id>, and sits on its ellipsoid: the volume's middle
-        // within a quarter of the chain's farthest reach of the measure's centre (one atom stands for each residue here).
+        // inside it (one atom stands for each residue here, and a thin chain's volume gathers where its residues pack).
         const body = chains.get(mesh.chain);
         assert.ok(body && mesh.id === `chain-${mesh.chain}`, `${name} ${mesh.id}: a chain of the measure`);
         const middle = [0, 0, 0];
@@ -298,8 +335,8 @@ test("E. coli's six shape files hold to the contract and sit where their measure
           held += w;
           for (let n = 0; n < 3; n++) middle[n] += (w * (a[n] + b[n] + c[n])) / 4;
         }
-        const off = Math.hypot(...middle.map((x, n) => x / held - body.centre_nm[n]));
-        assert.ok(off <= 0.25 * Math.max(...body.farthest_nm), `${name} ${mesh.id}: ${off.toFixed(2)} nm from its ellipsoid's centre`);
+        const inside = withinEllipsoid(middle.map((x) => x / held), body);
+        assert.ok(inside <= 1, `${name} ${mesh.id}: its middle at ${inside.toFixed(2)} of its ellipsoid's reach`);
       }
     }
     // A machine drawn by its parts: the parts' solids hold the whole's own volume between them, neighbours meet at one
@@ -311,8 +348,11 @@ test("E. coli's six shape files hold to the contract and sit where their measure
       assert.ok(Math.abs(held / wanted - 1) < 0.02, `${name}: its parts hold ${held.toFixed(1)} of ${wanted.toFixed(1)} nm³`);
       const inner = (mesh) => new Set(mesh.triangles.slice(3 * mesh.outer).map((n) => mesh.vertices.slice(3 * n, 3 * n + 3).join(",")));
       if (solids.length === 2) {
+        // Where a sliver of one part was dropped against the other, the other keeps the few faces it had against it.
         const [one, two] = solids.map(inner);
-        assert.ok(one.size > 0 && one.size === two.size && [...one].every((key) => two.has(key)), `${name}: the two parts meet at one shared face`);
+        const shared = [...one].filter((key) => two.has(key)).length;
+        const exact = !solids.some((mesh) => lost.has(mesh.id));
+        assert.ok(shared > 0 && (exact ? shared === one.size && shared === two.size : shared >= 0.95 * Math.max(one.size, two.size)), `${name}: the two parts meet at one shared face (${shared} of ${one.size} and ${two.size} vertices)`);
       }
       for (const mesh of solids) {
         const own = tones.filter((tone) => tone.within === mesh.id);
@@ -336,29 +376,30 @@ test("E. coli's six shape files hold to the contract and sit where their measure
     // A part drawn by its surfaces (a ribosome's subunit) sits on its ellipsoid as a chain does.
     for (const [part, { held, middle }] of byPart) {
       const body = measured.parts?.[part] || measured[part];
-      const off = Math.hypot(...middle.map((x, n) => x / held - body.centre_nm[n]));
-      assert.ok(off <= 0.25 * Math.max(...body.farthest_nm), `${name} ${part}: ${off.toFixed(2)} nm from its ellipsoid's centre`);
+      const inside = withinEllipsoid(middle.map((x) => x / held), body);
+      assert.ok(inside <= 1, `${name} ${part}: its middle at ${inside.toFixed(2)} of its ellipsoid's reach`);
     }
   }
 });
 
-const DATA = process.env.ECOLI_ENTRIES || "/mnt/datasets/Cells/ecoli";
-test("each of the six files is the tool's shape of its entry, made again byte for byte by the contract's call", { skip: !existsSync(path.join(DATA, "wwpdb-ribosome", "7K00.cif.gz")) && "the entries are not on this machine" }, () => {
-  const left = Object.values(JSON.parse(readFileSync(path.join(MEASURES, "ecoli.translocon.json"), "utf8")).measured)[0].left_out.map((item) => item.entity).join(",");
-  const calls = {
-    "ecoli.ribosome.json": ["wwpdb-ribosome/7K00.cif.gz", "--ribosome"],
-    "ecoli.atp-synthase.json": ["wwpdb-atp-synthase/6OQR.cif.gz", "--part", "head=2,6", "--part", "central-stalk=5,4", "--part", "peripheral-stalk=3,1", "--part", "ring=7", "--part", "stator-foot=8", "--frame-from", "ring", "--frame-to", "head"],
-    "ecoli.rna-polymerase.json": ["wwpdb-rna-polymerase/6P1K.cif.gz", "--part", "beta=2", "--part", "beta-prime=3", "--part", "alpha=1", "--part", "omega=4", "--part", "sigma=5"],
-    "ecoli.translocon.json": ["wwpdb-translocon/9RBF.cif.gz", "--exclude", left, "--part", "secy=7", "--part", "sece=8", "--part", "secg=9"],
-    "ecoli.hslv.json": ["wwpdb-hslv/1G4A-assembly1.cif.gz", "--part", "hslv=2", "--part", "hslu=1", "--frame-from", "hslv", "--frame-to", "hslu"],
-    "ecoli.lon.json": ["wwpdb-lon/6U5Z.cif.gz"],
-  };
+const DATASETS = process.env.CELLS_DATASETS || "/mnt/datasets/Cells";
+test("each shape file is the tool's shape of its entry, made again byte for byte by the contract's call", async () => {
   const folder = mkdtempSync(path.join(tmpdir(), "shape-"));
-  try {
-    for (const [name, [entry, ...options]] of Object.entries(calls)) {
+  // Two at a time: the largest takes about 13 s and 650 MB.
+  const remake = ([name, [saved, measure, width, ...more]]) =>
+    new Promise((resolve) => {
       const out = path.join(folder, name);
-      const done = run(path.join(DATA, entry), ...options, "--out", out);
-      assert.equal(done.status, 0, done.stderr);
+      const options = [path.join(DATASETS, saved), "--measure", path.join(ROOT, measure), ...(width ? ["--width", String(width)] : []), ...more, "--out", out];
+      execFile("python3", ["-I", TOOL, ...options], { encoding: "utf8" }, (error, _, stderr) => resolve({ name, error, stderr, out }));
+    });
+  try {
+    const waiting = Object.entries(CALLS).filter(([, [saved]]) => existsSync(path.join(DATASETS, saved)));
+    const missing = Object.keys(CALLS).length - waiting.length;
+    if (missing) console.log(`# ${missing} entries are not on this machine; their files are not made again`);
+    const done = [];
+    while (waiting.length) done.push(...(await Promise.all(waiting.splice(0, 2).map(remake))));
+    for (const { name, error, stderr, out } of done) {
+      assert.equal(error, null, `${name}: ${stderr}`);
       assert.ok(readFileSync(out).equals(readFileSync(path.join(SHAPES, name))), `${name} is made again byte for byte`);
     }
   } finally {

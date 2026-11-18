@@ -16,7 +16,10 @@ The definition, the same for every machine (one sentence, its numbers in the fil
 The widths were weighed on 17 November 2026 (0.8, 1.0 and 1.4 nm for a chain; 1.2, 1.6 and 2.0 nm for a part),
 and the user chose these the same day: they hold the budget (schema/MACHINE_SHAPES.md) without a pass that
 simplifies the surfaces. A part's solid replaced its separate protein and nucleic-acid surfaces on 17 November
-2026: those stood apart, so that a ribosome's subunits did not meet.
+2026: those stood apart, so that a ribosome's subunits did not meet. On 18 November 2026 the budget became what one
+chosen machine draws, 12,000 triangles (its solids, or its tones), and 250,000 bytes a file; a machine too large for
+it at the setting (the human proteasome, complex I, the IP3 receptor, the 80S and mitochondrial ribosomes) is made at
+the finest width, in steps of 0.1 nm, that holds it, given with --width and stated in its file.
 
 How: one atom stands for each residue (an amino acid's alpha carbon, a nucleotide's phosphorus or else
 its C4'), of model 1's polymer atoms, one place for an atom given in alternatives, but for the entities
@@ -38,8 +41,11 @@ Standard library only. It reads the file it is given (untrusted data, by the mea
 and writes only --out. It refuses, and writes nothing, where a part, a frame's part or a subunit has no
 atom, or the shapes would break the budget (--most-triangles, --most-bytes).
 
+    python3 -I tools/shape_particle.py ENTRY.cif.gz --measure MEASURE.json [--by chains|parts] [--width NM] [--out FILE]
     python3 -I tools/shape_particle.py ENTRY.cif.gz [--exclude IDS] [--part NAME=IDS ...]
         [--frame-from PART --frame-to PART] [--ribosome] [--by chains|parts] [--width NM] [--out FILE]
+With --measure the parts, the frame and what was left out are read from the measure's record, as its
+call gave them (since 18 November 2026 every shape file in the tree is made so).
 """
 
 from __future__ import annotations
@@ -47,6 +53,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -70,11 +77,12 @@ TETRAHEDRA = [(0, 5, 1, 6), (0, 1, 2, 6), (0, 2, 3, 6), (0, 3, 7, 6), (0, 7, 4, 
 def definition(width, grid, by="chains"):
     volumes = f"{VOLUME['protein']} nm³ for each amino acid, {VOLUME['nucleic']} nm³ for each nucleotide"
     pieces = f"; of a surface in pieces, its largest and every piece of at least {SHARE:.0%} of its volume are kept, smaller ones dropped (listed under dropped)"
+    coarser = f" (coarser than the setting's {WIDTH[by]:g} nm, to hold the budget)" if width != WIDTH[by] else ""
     if by == "chains":
-        return f"each chain as the closed surface that holds its own volume ({volumes}) in a cloud where each residue is spread as a Gaussian {width:g} nm wide, on a grid {grid:g} nm apart{pieces}"
+        return f"each chain as the closed surface that holds its own volume ({volumes}) in a cloud where each residue is spread as a Gaussian {width:g} nm wide, on a grid {grid:g} nm apart{coarser}{pieces}"
     return (
         f"each part as one solid: the closed surface that holds its residues' own volume ({volumes}), protein and nucleic acid together, in a cloud "
-        f"where each residue is spread as a Gaussian {width:g} nm wide weighted by its volume, on a grid {grid:g} nm apart{pieces}; for two tones, "
+        f"where each residue is spread as a Gaussian {width:g} nm wide weighted by its volume, on a grid {grid:g} nm apart{coarser}{pieces}; for two tones, "
         "that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)"
     )
 
@@ -592,9 +600,11 @@ def shape(path, args):
                               "outer": tone["outer"], "vertices": placed(tone["vertices"]), "triangles": flat(tone["triangles"])})
         elif two:
             unsure.append(mesh["id"])
-    total = sum(len(mesh["triangles"]) // 3 for mesh in meshes + tones)
+    # The budget is what one chosen machine draws: its meshes, or its meshes with each part's tones in its solid's place.
+    toned = {tone["within"] for tone in tones}
+    total = max(sum(len(mesh["triangles"]) // 3 for mesh in meshes), sum(len(mesh["triangles"]) // 3 for mesh in [m for m in meshes if m["id"] not in toned] + tones))
     if total > args.most_triangles:
-        raise SystemExit(f"{file}: {total} triangles, above the budget of {args.most_triangles}; nothing is made")
+        raise SystemExit(f"{file}: {total} triangles drawn, above the budget of {args.most_triangles}; nothing is made")
     counted = lambda items: {"meshes": len(items), "vertices": sum(len(item["vertices"]) // 3 for item in items), "triangles": sum(len(item["triangles"]) // 3 for item in items)}  # noqa: E731
     described = M.described(data, path)
     return {
@@ -602,7 +612,8 @@ def shape(path, args):
         "tool": "tools/shape_particle.py",
         "definition": definition(args.width, args.grid, args.by),
         "illustration": "The viewer's own surface of the entry's coordinates, an illustration: not the structure, and nothing of the entry is copied but the numbers worked out here. The Protein Data Bank states no surface.",
-        "parameters": {"width_nm": args.width, "grid_nm": args.grid, "reach_widths": REACH, "volume_nm3": VOLUME, "stands_for": {kind: list(atoms) for kind, atoms in STANDS_FOR.items()}, "by": args.by, "piece_share": SHARE},
+        "parameters": {"width_nm": args.width, "grid_nm": args.grid, "reach_widths": REACH, "volume_nm3": VOLUME, "stands_for": {kind: list(atoms) for kind, atoms in STANDS_FOR.items()}, "by": args.by, "piece_share": SHARE,
+                       **({"setting_width_nm": WIDTH[args.by]} if args.width != WIDTH[args.by] else {})},
         **described,
         "left_out": [{"entity": entity, "description": names.get(entity, "")} for entity in exclude if entity in names],
         "frame": frame_words,
@@ -615,6 +626,30 @@ def shape(path, args):
     }
 
 
+def from_measure(args):
+    """The options a measure was made with, read from its record (tools/measure_particle.py), so that the shape is made in
+    its frame: its two-subunit mode (and any entity the caller placed), or its parts in their order, the parts its frame
+    runs between (from its words) and the entities it left out."""
+    record = json.loads(Path(args.measure).read_text(encoding="utf-8"))
+    stem = Path(args.entry).name.split(".")[0]
+    measured = record.get("measured") or {}
+    found = measured.get(stem) or next((one for one in measured.values() if one.get("entry") == stem), None)
+    if not found:
+        raise SystemExit(f"{Path(args.measure).name} holds no measure of {stem}; nothing is made")
+    frame = record.get("frame") or ""
+    if frame.startswith("origin at the centre of both subunits' atoms"):
+        args.ribosome = True
+        for entity, said in (found.get("placed_by_the_caller") or {}).items():
+            getattr(args, said["subunit"]).append(entity)
+        return
+    left = [item["entity"] if isinstance(item, dict) else item for item in found.get("left_out") or []]
+    args.exclude = [",".join(left)] if left else []
+    args.part = [f"{name}={'chains:' if body['by'] == 'chains' else ''}{','.join(body['ids'])}" for name, body in (found.get("parts") or {}).items()]
+    said = re.search(r"y from the part (\S+)'s centre to the part (\S+)'s", frame)
+    if said:
+        args.frame_from, args.frame_to = said.groups()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("entry", help="an mmCIF file of a PDB entry, gzipped or not; a biological assembly's file as <id>-assembly1.cif.gz")
@@ -623,15 +658,20 @@ def main():
     parser.add_argument("--part", action="append", default=[], help="NAME=ENTITY,ENTITY or NAME=chains:A,B (may be given again), as the measuring tool takes it")
     parser.add_argument("--frame-from", help="the part whose centre the frame's y runs from")
     parser.add_argument("--frame-to", help="the part whose centre the frame's y runs to")
+    parser.add_argument("--measure", help="take the parts, the frame and what was left out from this measure's record (tools/measure_particle.py), so that the shape is in its frame")
     parser.add_argument("--ribosome", action="store_true", help="the measuring tool's two-subunit mode: the parts large and small by their entities' names, and its frame")
     parser.add_argument("--large", action="append", default=[], help="with --ribosome: entity ids to place in the large subunit whatever their description says")
     parser.add_argument("--small", action="append", default=[], help="with --ribosome: entity ids to place in the small subunit whatever their description says")
     parser.add_argument("--by", choices=["chains", "parts"], default=None, help="one surface for each chain, or one solid for each part with its two tones (default: chains; parts with --ribosome)")
     parser.add_argument("--width", type=float, default=None, help=f"the Gaussian's width, in nm (default {WIDTH['chains']} for chains, {WIDTH['parts']} for parts)")
     parser.add_argument("--grid", type=float, default=None, help="the grid's spacing, in nm (default: the width)")
-    parser.add_argument("--most-triangles", type=int, default=20000, help="the budget: refuse above this many triangles (default 20,000)")
-    parser.add_argument("--most-bytes", type=int, default=400000, help="the budget: refuse a file above this many bytes (default 400,000)")
+    parser.add_argument("--most-triangles", type=int, default=12000, help="the budget: refuse where one chosen machine would draw more triangles, as its solids or its tones (default 12,000)")
+    parser.add_argument("--most-bytes", type=int, default=250000, help="the budget: refuse a file above this many bytes (default 250,000)")
     args = parser.parse_args()
+    if args.measure:
+        if args.part or args.exclude or args.frame_from or args.frame_to or args.ribosome or args.large or args.small:
+            raise SystemExit("--measure gives the parts, the frame and what is left out: give none of them besides")
+        from_measure(args)
     args.by = args.by or ("parts" if args.ribosome else "chains")
     args.width = args.width or WIDTH[args.by]
     args.grid = args.grid or args.width

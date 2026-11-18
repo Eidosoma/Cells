@@ -469,18 +469,28 @@ test("the dossiers on the benches: which machines, named by what, their proteins
   // The thale cress's ribosome: the human's structure, said plainly; the ER calcium pump's choice of entry, said in the overlay.
   assert.match(fact(words("thalecress", "machine:ribosome"), "How big"), /a structure of Homo sapiens \(one of Arabidopsis thaliana: none in hand\)/);
   assert.match(overlay.measures["animals-serca"].chosen, /1SU4/);
+  // "Also named by" is a dossier's sentence with its sources, never a file's text (a record's words stay the record's).
+  for (const species of SPECIES) for (const item of catalogue.of(species)) if (item.entry?.also_named) assert.ok(typeof item.entry.also_named.text === "string" && item.entry.also_named.text.length < 600 && item.entry.also_named.sources?.length, `${species} ${item.id}`);
+  assert.match(fact(words("human", "machine:ribosome"), "Also named by"), /reviewed UniProt entries carry the Gene Ontology's term/);
   // Nothing on any panel of the two benches claims a model.
   for (const species of ["ecoli", "human"]) for (const item of catalogue.of(species)) if (!item.unit) assert.doesNotMatch(JSON.stringify(words(species, item.id)), CLAIMED, `${species} ${item.id}`);
 });
 
 test("the Shape level: offered where a shape file is published, one draw, each surface chosen as its chain or part and lit when chosen", async () => {
   const file = (name) => read(`data/catalogue/shapes/${name}`);
-  // Offered only where the catalogue names a published shape file: E. coli's six measured machines, and the two
-  // mycoplasmas' ribosomes at E. coli's, whose measure they are drawn at; nowhere else.
-  const offered = SPECIES.flatMap((species) => catalogue.of(species).filter((item) => item.size?.surface).map((item) => `${species} ${item.id}`)).sort();
-  assert.deepEqual(offered, ["ecoli machine:atp-synthase", "ecoli machine:hslv", "ecoli machine:lon", "ecoli machine:protein-translocon", "ecoli machine:ribosome", "ecoli machine:rna-polymerase", "mpneumoniae machine:ribosome", "syn3a machine:ribosome"]);
+  // Offered wherever the catalogue names a published shape file: every measured machine and unit (the mycoplasmas'
+  // ribosomes at E. coli's, whose measure they are drawn at), and nowhere a size has none.
+  for (const species of SPECIES) for (const item of catalogue.of(species)) if (item.size?.shape === "measured") assert.ok(item.size.surface, `${species} ${item.id}: a measured size, and its shape`);
   assert.equal(catalogue.item("syn3a", "machine:ribosome").size.surface.file, "shapes/ecoli.ribosome.json");
-  assert.ok(!levelsOf(catalogue.item("human", "machine:atp-synthase")).some((level) => level.label === "Shape"), "no file, no level");
+  assert.equal(catalogue.item("planarian", "unit.U39").size.surface.file, "shapes/animals.sodium-pump.json");
+  assert.ok(!(levelsOf(catalogue.item("ecoli", "machine:ftsh")) || []).some((level) => level.label === "Shape"), "no size, no shape, no level");
+  // On every bench, a chosen machine or unit at Shape stays within the ceiling: the bench's draws and triangles plus its shape's.
+  for (const species of SPECIES) {
+    const { lens: bench } = lensFor(species, { width: 390, height: 844 });
+    const cost = bench.cost();
+    const heaviest = Math.max(0, ...catalogue.of(species).map((item) => item.size?.surface?.triangles || 0));
+    assert.ok(cost.draws + 1 <= 40 && cost.triangles + heaviest <= 40000, `${species}: the bench ${JSON.stringify(cost)} and its heaviest shape, ${heaviest} triangles`);
+  }
   const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
   const { lens } = lensFor("ecoli");
   lens.surfaces = new Map(["ecoli.atp-synthase.json", "ecoli.translocon.json", "ecoli.ribosome.json"].map((name) => [`shapes/${name}`, { status: "found", data: file(name) }]));
@@ -511,11 +521,14 @@ test("the Shape level: offered where a shape file is published, one draw, each s
   lens.setSelection("machine:atp-synthase");
   const said = lens.describe("machine:atp-synthase").facts.find(([label]) => label === "Its shape")[1];
   assert.match(said, /^The viewer's own smooth surface of Protein Data Bank entry 6OQR's coordinates \(a chain at 1\.0 nm\), worked out by tools\/shape_particle\.py: .* An illustration, not the structure and not a measurement; the Protein Data Bank states no surface\.$/);
+  assert.doesNotMatch(said, /It is the shape of a structure of/, "E. coli's own entry");
   assert.doesNotMatch(said, CLAIMED);
   // Let go, its surfaces are freed.
   const mesh = built.surface.mesh;
   lens.setSelection(null);
   assert.equal(mesh.parent, null);
+  // A coarser width than the setting's is said; the human's proteasome was made at 1.5 nm.
+  assert.match(levelsOf(catalogue.item("human", "machine:proteasome")).at(-1).says, /a chain at 1\.5 nm, coarser than the setting's 1\.0 nm to hold the budget/);
   // The translocon: the catalogue names no chains of it, so a surface is chosen as its part.
   lens.setSelection("machine:protein-translocon");
   lens.setMode("4");
@@ -557,4 +570,29 @@ test("what Version 33's looks found: the card's words where there are units, pol
   lens.setSelection("machine:atp-synthase");
   assert.equal(lens.chrome().card.modes.oneRow, true);
   assert.deepEqual(lens.chrome().card.modes.options.map(([, label]) => label), ["Outline", "Parts", "Subunits", "Shape"]);
+});
+
+test("a unit's shape: drawn by its page id, its surfaces chosen as its chains, and whose structure it is", async () => {
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const { lens } = lensFor("planarian");
+  const file = (name) => read(`data/catalogue/shapes/${name}`);
+  lens.surfaces = new Map(["animals.innexin-channel.json", "animals.ribosome.json"].map((name) => [`shapes/${name}`, { status: "found", data: file(name) }]));
+  lens.setSelection("unit.U36");
+  assert.ok(levelsOf(lens.item("unit.U36")).some((level) => level.id === 4 && level.label === "Shape"));
+  lens.setMode("4");
+  await settle();
+  const built = lens.built.get("unit.U36");
+  assert.ok(built.surface, "the innexin channel's surfaces drawn");
+  const picked = built.surface.mesh.userData.pick({ faceIndex: 0 });
+  assert.match(picked, /^unit\.U36:chain-[A-P]$/);
+  assert.ok(lens.cost().draws <= 40 && lens.cost().triangles <= 40000, JSON.stringify(lens.cost()));
+  const said = lens.describe("unit.U36").facts.find(([label]) => label === "Its shape")[1];
+  assert.match(said, /Protein Data Bank entry 5H1R's coordinates \(a chain at 1\.0 nm\)/);
+  assert.match(said, /It is the shape of a structure of Caenorhabditis elegans, as its size is\.$/);
+  // The planarian's ribosome: the human 80S's shape, its two subunits as solids, said whose.
+  lens.setSelection("machine:ribosome");
+  lens.setMode("4");
+  await settle();
+  assert.deepEqual(lens.built.get("machine:ribosome").surface.surfaces.map((row) => row.partId).sort(), ["large", "small"]);
+  assert.match(lens.describe("machine:ribosome").facts.find(([label]) => label === "Its shape")[1], /each part as one solid, at 2\.0 nm, coarser than the setting's 1\.6 nm to hold the budget.*It is the shape of a structure of Homo sapiens, as its size is\.$/);
 });

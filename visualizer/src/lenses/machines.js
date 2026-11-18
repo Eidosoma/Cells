@@ -419,9 +419,10 @@ export class MachinesLens {
       return;
     }
     const shape = entry.shape, chains = new Set(shape.chains.map((chain) => chain.id));
+    // A machine of the catalogue by its kind; a unit of the law inventory by its own page id. A ribosome's subunits as two
+    // solids; `surfaceTones` (not offered on the page) draws their RNA and protein apart, for a look.
     const kind = kindOf(entry.id);
-    // A ribosome's subunits as two solids; `surfaceTones` (not offered on the page) draws their RNA and protein apart, for a look.
-    const drawn = buildShape(found.data, { kind, perNm: 1 / UNIT_NM, colour: this.surfaceColour(entry), tones: Boolean(this.surfaceTones) });
+    const drawn = buildShape(found.data, { ...(kind ? { kind } : { id: entry.id }), perNm: 1 / UNIT_NM, colour: this.surfaceColour(entry), tones: Boolean(this.surfaceTones) });
     // What a surface is chosen as: its chain, where the catalogue names the chains; else its part; else the machine.
     const idOf = (row) => (row?.chain && chains.has(row.id) ? row.chain : row?.part || null);
     drawn.mesh.userData.pick = (hit) => idOf(drawn.surfaceAt(hit.faceIndex)) || entry.id;
@@ -626,13 +627,8 @@ export class MachinesLens {
     }
     const built = this.built?.get(id);
     const panel = describeItem(this.catalogue, this.species, id, { scene: this.model.raw, level: built?.level ?? null });
-    // At the Shape level the panel says what the shape is, and whose; or, where its file could not be read, why not.
-    const surface = this.item(id)?.size?.surface;
-    if (panel && surface && built?.level === SHAPE_LEVEL) {
-      const owner = (this.model.raw.species || []).find((value) => value.id === surface.of)?.label || surface.of;
-      const whose = surface.of !== this.species ? ` It is the shape of ${owner}'s ${this.item(id).label.toLowerCase()}, as its size is ${owner}'s measure.` : "";
-      panel.facts = [...(panel.facts || []), ["Its shape", built.surfaceWords || `${shapeWords(surface)}${whose}`]];
-    }
+    // Where its shape file could not be read, its "Its shape" line says why instead (the card's words say what it is).
+    if (panel && built?.surfaceWords) panel.facts = (panel.facts || []).map((fact) => (fact[0] === "Its shape" ? ["Its shape", built.surfaceWords] : fact));
     return panel;
   }
 
