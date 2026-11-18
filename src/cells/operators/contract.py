@@ -384,6 +384,11 @@ class Operator:
         """The species identities it declares: items with id, catalogue and evidence; ()."""
         return ()
 
+    def species_potentials(self, declaration):
+        """The standard potentials it declares, ((species, mu°/RT, c0 in mM), ...); ().
+        core/species_registry.check_potentials refuses one that the registry gives otherwise."""
+        return ()
+
     def view_events(self, spec, declaration, schedule):
         """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
         each entity one {set id: entity id} ("from" optional). The default gives the births and

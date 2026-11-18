@@ -556,7 +556,9 @@ def rewrite_python(text, mp, own_old, own_new, modules, top, report):
             groups, order = defaultdict(list), []
             for a in node.names:
                 full = f"{base}.{a.name}"
-                if a.name != "*" and full in modules:  # A submodule: its parent may change.
+                # A submodule, whose parent may change: one in the tree, or a module the map moves
+                # (on a tree merged after the move, the old module is no longer there).
+                if a.name != "*" and (full in modules or full in mp.pairs):
                     target = mp.resolve(full) or full
                     parent, _, leaf = target.rpartition(".")
                     asname = a.asname if a.asname else (None if leaf == a.name else a.name)
@@ -1384,6 +1386,20 @@ def _selftest_kept_lines(mp, files, checks):
     checks["namespace package: its submodule resolves, other names and absent folders do not"] = (
         missing
         == ["tests/test_ns.py:3: from cells.ns import X", "tests/test_ns.py:4: from cells.nothing"]
+    )
+    # A branch merged after the move (core-fixes-m2, 18 November 2026): its new lines import
+    # moved modules from their old packages, which the tree no longer holds. The map's own old
+    # names say they are modules.
+    merged = dict(out)
+    merged["tests/test_late.py"] = (
+        "100644",
+        b"from cells.core import old_spec\nfrom cells.models import old_model as om\n",
+    )
+    late, _ = transform(merged, mp)
+    checks["after the move: a from-import of a moved module by its old package is mapped"] = late[
+        "tests/test_late.py"
+    ][1] == (
+        b"from cells.legacy.core import old_spec\nfrom cells.legacy.models import old_model as om\n"
     )
 
 
