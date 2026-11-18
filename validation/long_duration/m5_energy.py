@@ -1,8 +1,10 @@
 """M5: where the energy check binds, on W0 (REGISTRATION_20261118.md §7).
 
 run BOOKING DT OUT_DIR: W0 to 60 s with the dose step at 20 s and the write at 40 s, observed
-every 1 s, at dt with the junction booking, through the windowed runner (host row checks,
-256-step windows, so a run-time refusal is bracketed to 256 steps). At every accepted row the
+every 1 s, at dt with the junction booking, through the windowed runner (device row checks,
+which hand any window near a bound to the host's check_values, so a refusal keeps the host's own
+message; 256-step windows, so a run-time refusal is bracketed to 256 steps; the host checks would
+evaluate every row's ledgers a second time beside the sink's). At every accepted row the
 sink evaluates rho = |R| / B with the check's own functions: R the energy entry of the
 composite's inner_balances (the ledgers the row checks judge) and B its bound from the inner
 ledger_limits at the row's global step count (ENERGY_ATOL_PJ + rtol F plus the step rounding
@@ -131,7 +133,8 @@ def run_arm(booking, dt, out_dir, development=None):
             np.asarray(model.initial_values(spec)[1].junction_heat_trapezoid).size
         )
         sink = EnergySink(spec, model, spec.experiment.observation_times)
-        result = run_windowed(spec, WindowPolicy(window_steps=WINDOW_STEPS), sink=sink)
+        policy = WindowPolicy(window_steps=WINDOW_STEPS, row_checks="device")
+        result = run_windowed(spec, policy, sink=sink)
         record.update(status="complete", steps=int(result.resources["executed_steps"]),
                       diagnostics={k: float(v) for k, v in result.diagnostics.items()})  # fmt: skip
     except Exception as error:  # A refusal is the arm's result (§7).
@@ -278,7 +281,7 @@ def judge(output, directories):
         if refused_energy:
             entry["binding_step_s"] = min(refused_energy)
             entry["binding_step_kind"] = "smallest dt refused by the energy check"
-        elif unrefused and p:
+        elif unrefused and p is not None and p > 0:  # Only a residual growing with dt.
             largest = unrefused[-1]
             entry["binding_step_s"] = largest["dt_s"] * (1.0 / largest["rho_max"]) ** (1.0 / p)
             entry["binding_step_kind"] = "extrapolation from the largest unrefused dt"

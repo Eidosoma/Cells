@@ -57,14 +57,30 @@ def floor_of(name, floors):
     return floors["amount_fmol"]
 
 
-def judge_histories(test, ref, budget, floors):
-    """Per history field: the largest |d| / (budget max(|ref|, floor)) over rows and entries."""
+def judge_histories(test, ref, budget, floors, times=None):
+    """Per history field: the largest |d| / (budget max(|ref|, floor)) over rows and entries,
+    with where it is largest (row, entry, the two values and the entry's largest |ref| over the
+    rows), so a failure near an accumulator's zero can be told from one at its magnitude."""
     out, passed = {}, True
     for name in ref:
         a, b = np.asarray(test[name], dtype=float), np.asarray(ref[name], dtype=float)
         scale = budget * np.maximum(np.abs(b), floor_of(name, floors))
-        ratio = float(np.max(np.abs(a - b) / scale, initial=0.0))
-        out[name] = dict(ratio=ratio, passed=ratio <= 1.0)
+        ratios = np.abs(a - b) / scale
+        ratio = float(np.max(ratios, initial=0.0))
+        entry = dict(ratio=ratio, passed=ratio <= 1.0)
+        if ratios.size and ratio > 0:
+            where = np.unravel_index(int(np.argmax(ratios)), ratios.shape)
+            column = (slice(None), *where[1:])
+            entry.update(
+                row=int(where[0]),
+                entry=[int(i) for i in where[1:]],
+                test=float(a[where]),
+                ref=float(b[where]),
+                entry_largest_ref=float(np.max(np.abs(b[column]), initial=0.0)),
+            )
+            if times is not None:
+                entry["row_time_s"] = float(np.asarray(times)[where[0]])
+        out[name] = entry
         passed &= ratio <= 1.0
     return dict(fields=out, passed=bool(passed))
 
@@ -239,7 +255,7 @@ def compare(test, ref, reg):
         )
         for delta in budgets["recovery_deltas_V"]
     }
-    histories = judge_histories(h, rh, budgets["history_relative"], budgets["history_floors"])
+    histories = judge_histories(h, rh, budgets["history_relative"], budgets["history_floors"], t)
     caps = dict(
         voltage=trajectory["voltage"]["largest"] / 20e-6,
         relative_concentration=trajectory["concentration"]["largest"] / 2e-4,
