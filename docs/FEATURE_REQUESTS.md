@@ -494,6 +494,8 @@ requester is writing a benchmark specification for its own composition):
   coarsely and short fast assays from frozen snapshots (D155). It is not a long-time method for
   one coupled trajectory.
 
+**The design note (proposed, 18 November 2026):** [LONG_DURATION_MODE_DESIGN.md](LONG_DURATION_MODE_DESIGN.md), the long-time path for composite operators, written before the GH200 numbers and the benchmark specification (D216).
+
 ## FR-9 — Raise the 7-species cap
 
 **Logged 14 November 2026, priority 2, blocking for world design** (the request's label). The raise
