@@ -100,6 +100,19 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment F4: every slope pair, route pair and basis total compared, none skipped
+    for lid, c in p["A6_slopes"].items():
+        e = c["exact_vs_differences"]
+        assert e["failures"] == 0 and e["worst_over_floor"] < 1, lid
+        if lid.startswith(("v1_neutral", "ff_neutral")):
+            assert e["zero_cases_with_zero_floor"] == e["states"], lid
+    for lid, o in p["A4_one_way_fluxes"].items():
+        assert o["routes_failures"] == 0 and max(o["routes_over_floor"].values()) < 1, lid
+        if "basis_readout" in o:
+            assert o["basis_readout"]["every_state_agrees"]
+            assert o["basis_readout"]["states_with_a_zero_hill_total"]
+    for lid, row in p["A1_sign_and_zero"].items():
+        assert row.get("backward_zero_mismatches", 0) == 0, lid
     # amendment C3: the envelope's planted per-step minimum flips E1's verdict; first order holds
     ec = p["C3_amendment_envelope"]
     assert ec["E1_chain"]["verdict_first_order"] == "outside"

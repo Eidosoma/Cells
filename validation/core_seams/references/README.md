@@ -397,6 +397,36 @@ positive up to the stored amount.
   - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged. The registry's
     new binder is appended, and its form valences join the parse table
     (`seam_c.parse.form_valences.coop2`), which covers every registry binder.
+- **18 November 2026, 22:50 UTC, amendment F4, the external review's finding 4, before any engine
+  comparison of seam A's slopes.** The finding was verified at main by an independent agent;
+  this package read only its evidence (f4_planted.py, f4_floor_only.py and f4/).
+  - **The fault:** the slope check compared relatively and skipped every pair whose exact slope
+    is 0. A dropped Dual seed gives exactly that 0, and all of the three neutral laws' voltage
+    slopes were skipped. Nothing was hidden: each difference was also exactly 0, but the check
+    was empty there.
+  - **The fix:** |x − y| ≤ 10 τ for every pair (`api.slope_pairs`, `api.slope_agreement`), now
+    at every state, not the first four.
+    - τ = (terms + 8) u M/h is the central difference's rounding at 60 digits, with u = ½ 10⁻⁵⁹
+      and M the differenced function's magnitude, after the verifier.
+    - All 1,592 pairs at 251 states are within 0.221 τ, a 45× margin.
+    - 139 pairs have an exact slope of 0. The 69 with τ = 0, the neutral laws' conductances,
+      are exactly 0.
+  - **The same class elsewhere,** each now compared absolutely against a floor from its term
+    sums:
+    - `method_agreement`: j± by trees against minors, through the elimination's running error
+      bound (`exact.det_running`); the occupancies against the master equation's solve
+      (`exact.solve_running`); and each edge against its cycles. All are within 0.051 of
+      their floors;
+    - `basis_signs`: within 0.0056, and the zero Hill total at the unit state is compared;
+    - A1's backward fluxes: no `J_minus > 0` filter, with zero cases counted;
+    - `summarise`: an undefined deviation (None, from `_rel`'s zero reference, or from
+      `oneway_plants`) is weak, listed and counted, never dropped.
+  - **The values file is unchanged byte for byte.** Only the design file's checks and
+    weak-state lists moved; one weak list grew, S4's masked-ideal plant now listing its
+    undefined pairs.
+  - **The verifier's four plants are tests** (cycles: 13): a dropped V seed, a spurious response
+    at a zero slope (100 τ fails, 0.1 τ passes, 1e-40 pS at a zero floor fails), a route's j⁺
+    dropped to 0, and a zero Hill total hiding a basis total.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 

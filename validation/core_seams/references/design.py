@@ -65,14 +65,21 @@ def _rel(a, b):
 
 def summarise(tags, devs, weak=MIN_MARGIN) -> dict:
     """A plant's power over the registered states, each deviation in floors: its largest margin
-    and where, its smallest, and the states where it is weak (below ``weak`` floors)."""
+    and where, its smallest, and the states where it is weak (below ``weak`` floors).
+
+    Amendment F4: a state whose deviation is undefined (None, or not finite: a zero reference) is
+    weak, listed in ``weak_at`` and counted, never dropped."""
     pairs = [(t, d) for t, d in zip(tags, devs, strict=True) if _ok(d)]
+    undefined = [t for t, d in zip(tags, devs, strict=True) if not _ok(d)]
     if not pairs:
-        return {"max": None}
+        return {"max": None, "states": len(tags), "undefined": len(undefined),
+                "weak_at": list(undefined)}
     tmax, dmax = max(pairs, key=lambda p: p[1])
     tmin, dmin = min(pairs, key=lambda p: p[1])
     return {"max": dmax, "at": tmax, "min": dmin, "min_at": tmin,
-            "weak_at": [t for t, d in pairs if d < weak]}
+            "weak_at": [t for t, d in zip(tags, devs, strict=True)
+                        if not _ok(d) or d < weak],
+            "states": len(tags), "undefined": len(undefined)}
 
 
 # --------------------------------------------------------------------------------------------
@@ -322,7 +329,7 @@ def seam_a(inputs) -> tuple:
         if admitted:
             dia["standin"][law["id"]] = [api.guard_standin(law, pop, reg, st) for st in sts]
             dia["slope_check"][law["id"]] = [api.slope_agreement(law, pop, reg, st, vol)
-                                             for st in sts[:4]]
+                                             for st in sts]
             dia["slopes"][law["id"]] = [slope_plants(law, pop, reg, r, vol) for r in recs]
         if law["id"] == "ff_neutral_n1":
             dia["finite_fuel"] = [finite_fuel_plants(law, pop, reg, st, vol) for st in sts]
@@ -522,9 +529,21 @@ def power_a(inputs, va, da) -> dict:
         jdg = [max(s["modes"][m]["J"] * s["modes"][m]["dG_RT"] for m in s["modes"]) for s in sts]
         row = {"max_J_dG_RT": max(jdg), "at": sts[jdg.index(max(jdg))]["tag"]}
         if laws[lid]["kind"] == "diagram":
-            row["max_abs_ln_diagram_over_contract_backward"] = max(
-                abs(math.log(s["modes"][m]["J_minus_diagram"] / s["modes"][m]["J_minus"]))
-                for s in sts for m in s["modes"] if s["modes"][m]["J_minus"] > 0)
+            # amendment F4: no pair is filtered; a zero backward flux is a zero case, which
+            # agrees only when the diagram's own flux is zero too
+            logs, zeros, mismatched = [], 0, 0
+            for s_ in sts:
+                for m in s_["modes"]:
+                    jm, jd = s_["modes"][m]["J_minus"], s_["modes"][m]["J_minus_diagram"]
+                    if jm == 0 or jd == 0:
+                        zeros += 1
+                        mismatched += int(jm != jd)
+                    else:
+                        logs.append(abs(math.log(jd / jm)))
+            row["max_abs_ln_diagram_over_contract_backward"] = max(logs)
+            row["backward_pairs"] = len(logs) + zeros
+            row["backward_zero_cases"] = zeros
+            row["backward_zero_mismatches"] = mismatched
         a1[lid] = row
     neg = va["laws"]["planted_negative_S_n1"]["states"]
     a1["planted_negative_S_n1"]["states_with_S_below_zero"] = [
@@ -638,18 +657,29 @@ def power_a(inputs, va, da) -> dict:
                     per[cid][plant] = summarise(tags, devs)
         meth = da["methods"][lid]
         ow[lid] = {"plants": per,
-                   "trees_vs_minors_max_rel": max(m["trees_vs_minors_rel"] for m in meth),
-                   "occupancy_trees_vs_solve_max_abs": max(m["occupancy_trees_vs_solve_abs"]
-                                                           for m in meth),
-                   "edge_cycle_consistency_max_rel": max(m["edge_cycle_consistency_rel"]
-                                                         for m in meth)}
+                   "routes_over_floor": {
+                       "trees_vs_minors": max(m["trees_vs_minors_over_floor"] for m in meth),
+                       "occupancy_trees_vs_solve": max(m["occupancy_trees_vs_solve_over_floor"]
+                                                       for m in meth),
+                       "edge_cycle_consistency": max(m["edge_cycle_consistency_over_floor"]
+                                                     for m in meth)},
+                   "routes_compared": {"j_pairs": sum(m["j_pairs"] for m in meth),
+                                       "occupancies": sum(m["occupancy_pairs"] for m in meth),
+                                       "edges": sum(m["edges"] for m in meth)},
+                   "routes_zero_cases": sum(m["j_zero_cases"] + m["occupancy_zero_cases"] +
+                                            m["edge_zero_cases"] for m in meth),
+                   "routes_failures": sum(len(m["failures"]) for m in meth)}
     for lid, rows in da["basis"].items():
         tags = [s["tag"] for s in va["laws"][lid]["states"]]
         ow[lid]["basis_readout"] = {
             "states_with_a_basis_mode_against_its_dG": [
                 t for t, r in zip(tags, rows, strict=True)
                 if r["mode_A_against_dG"] or r["mode_B_against_dG"]],
-            "total_basis_vs_hill_max_rel": max(r["basis_vs_hill_rel"] for r in rows)}
+            "total_basis_vs_hill_max_over_floor": max(r["basis_vs_hill_over_floor"]
+                                                      for r in rows),
+            "states_with_a_zero_hill_total": [t for t, r in zip(tags, rows, strict=True)
+                                              if r["hill_total_is_zero"]],
+            "every_state_agrees": all(r["agrees"] for r in rows)}
     power["A4_one_way_fluxes"] = ow
 
     # A5: two layouts
@@ -667,8 +697,17 @@ def power_a(inputs, va, da) -> dict:
     for lid, rows in da["slopes"].items():
         tags = [s["tag"] for s in va["laws"][lid]["states"]]
         plants = sorted(set().union(*[set(r) for r in rows]))
+        chk = da["slope_check"][lid]
         sl[lid] = {"plants": {p: summarise(tags, [r.get(p) for r in rows]) for p in plants},
-                   "exact_vs_differences_max_rel": max(da["slope_check"][lid])}
+                   "exact_vs_differences": {
+                       "rule": "|x − y| ≤ 10 τ for every pair (amendment F4)",
+                       "states": len(chk),
+                       "pairs": sum(c["pairs"] for c in chk),
+                       "zero_cases": sum(c["zero_cases"] for c in chk),
+                       "zero_cases_with_zero_floor": sum(c["zero_cases_with_zero_floor"]
+                                                         for c in chk),
+                       "worst_over_floor": max(c["worst_over_floor"] for c in chk),
+                       "failures": sum(len(c["failures"]) for c in chk)}}
     power["A6_slopes"] = sl
 
     # A8, A9: amendment 1's finite-fuel and N = b populations
