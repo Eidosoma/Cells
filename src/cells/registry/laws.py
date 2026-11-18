@@ -371,12 +371,15 @@ class CycleLaw(Law):
     """A membrane cycle law: the rows it moves per cycle by role, its fuel kinds, its kernel and
     its domain. moves: ((role, count), ...), inward-positive per cycle; a count is an integer, or
     the name of the population's parameter that holds it, negated by a leading "-" (FR-4's form).
-    Seam A adds its stoichiometric modes and its S or J as optional fields (§3.2)."""
+    Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
+    must hold and its changes() gives the manifest's rows, so `moves` may be empty and kinetics and
+    domain_valid None (the kinds owner's first gap). A law without a form keeps version 1's checks:
+    moves given, both kernels callable."""
 
-    moves: tuple[tuple[str, object], ...]
-    fuel_kinds: tuple[str, ...]
-    kinetics: Callable
-    domain_valid: Callable
+    moves: tuple[tuple[str, object], ...] = ()
+    fuel_kinds: tuple[str, ...] = ()
+    kinetics: Callable | None = None
+    domain_valid: Callable | None = None
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
     loop_term: str | None = None
@@ -391,11 +394,20 @@ class CycleLaw(Law):
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
 
     def errors(self):
-        out = super().errors() + _callables(self, "kinetics", "domain_valid")
+        out = super().errors()
+        formed = self.cycle is not None  # The form carries the law (class docstring).
+        if formed:
+            out += [
+                f"its {name} is callable, or None"
+                for name in ("kinetics", "domain_valid")
+                if getattr(self, name) is not None and not callable(getattr(self, name))
+            ]
+        else:
+            out += _callables(self, "kinetics", "domain_valid")
         moves = self.moves
         if not (
             isinstance(moves, tuple)
-            and moves
+            and (moves or formed)
             and all(
                 isinstance(m, tuple)
                 and len(m) == 2

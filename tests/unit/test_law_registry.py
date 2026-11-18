@@ -20,10 +20,15 @@ Each claim is checked once, with a planted error it must catch (D187):
   form, checked by the form's own errors(), and a binding law its general closure's fields
   (§19 as amended); each is None today (planted, each refused: other forms, a form whose errors()
   reports, a form without errors(), a malformed report, binding forms other than "registry", and
-  a non-callable kernel); hosted_laws is the active registry's lookup by interface and host.
+  a non-callable kernel); hosted_laws is the active registry's lookup by interface and host;
+- a cycle law whose form carries it may leave its moves empty and its kernels None, the form's
+  own errors() then holding, while a law without a form keeps version 1's checks (planted, each
+  refused: such a law whose form reports, a formed law with a non-callable kernel, and a law
+  without a form missing its moves or a kernel).
 """
 
 import dataclasses
+import re
 
 import jax
 import pytest
@@ -340,3 +345,22 @@ def test_forms_a_cycle_form_and_a_general_closure_are_declared_and_checked():
             laws.LawRegistry().register(dataclasses.replace(binding, **changes))
     hosted = laws.hosted_laws(laws.CHANNEL_LAW, HOST)
     assert hosted == laws.active().laws(laws.CHANNEL_LAW, HOST) and KV1P5 in hosted
+
+
+def test_a_cycle_form_carries_its_law_and_version_1_keeps_its_checks():
+    _, cycle, _, _ = planted_laws()
+    host = transporter.KIND_ID
+    carried = laws.CycleLaw("tests.planted_carried_cycle@1", cycle=PlantedForm(), host=host)
+    assert (carried.moves, carried.kinetics, carried.domain_valid) == ((), None, None)
+    assert carried.errors() == [] and laws.LawRegistry().register(carried) is carried
+    # Planted, each refused: the carried law's form reporting, a non-callable kernel beside a form,
+    # and version 1's law without its moves or a kernel.
+    for law, words in (
+        (dataclasses.replace(carried, cycle=PlantedForm("a mode without a cycle")), "its cycle:"),
+        (dataclasses.replace(carried, kinetics="kinetics"), "its kinetics is callable, or None"),
+        (dataclasses.replace(cycle, moves=()), "its moves are (role, count) pairs"),
+        (dataclasses.replace(cycle, kinetics=None), "its kinetics is callable"),
+        (laws.CycleLaw("tests.planted_bare_cycle@1", host=host), "its moves are"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            laws.LawRegistry().register(law)
