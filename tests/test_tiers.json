@@ -146,7 +146,8 @@
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
   "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
   "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
-  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json"
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1205,6 +1206,13 @@
    "root": ".claude/worktrees/fr3-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T02:13:18+00:00"
+  },
+  {
+   "git_revision": "a06d46f015181246ec680026856cd6fcfd07f195",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:29:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2394,7 +2402,7 @@
    },
    {
     "file": "tests/unit/test_fr3_acceptance_worlds.py",
-    "seconds": 4.33,
+    "seconds": 4.78,
     "exit_code": 0,
     "counts": {
      "passed": 29
@@ -2402,10 +2410,10 @@
    },
    {
     "file": "tests/unit/test_fr3_qualification.py",
-    "seconds": 2.42,
+    "seconds": 2.52,
     "exit_code": 0,
     "counts": {
-     "passed": 56
+     "passed": 57
     }
    },
    {
