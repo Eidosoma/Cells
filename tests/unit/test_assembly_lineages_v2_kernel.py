@@ -365,6 +365,9 @@ def test_kept_zeroes_only_the_pairs_that_change_the_membrane_s_count(monkeypatch
     assert plus[permeate] == pytest.approx(1.0 * 1 * 5 / X_pool, rel=1e-13)
     k_minus = math.exp(mu["S@lumen"] - mu["S@pool"])
     assert minus[permeate] == pytest.approx(k_minus * 1 * 1 / X_lumen, rel=1e-13)
+    full_plus, full_minus = rates_at(spec_of(world()), empty)  # χ terms and catalysts: 0 and 1 here
+    for r in (make, permeate):
+        assert (full_plus[r], full_minus[r]) == (plus[r], minus[r])
     for joining in ("join_L", "inner_L"):  # Each changes the membrane's count from empty.
         assert plus[ids.index(joining)] == 0.0
     lone_state = empty | {"L@membrane": 1}

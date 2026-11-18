@@ -30,7 +30,7 @@ tables and ensembles. It reads only the inputs' files, never the references' cod
 - `replay` (OL1-6): the ledger run again; `other_stream` (OL1-6): the ledger run under lineage
   word 1;
 - `refusals` (OL1-4d): each registered refusal world through the engine's parser, with its
-  message.
+  message, under the probed pair its `refused_under` names (else the first pair; refusal_pair).
 The settings not in the registered inputs (the stream words, the molecule capacity, the chunk, the
 event guard of the ensembles) are recorded in roles.json.
 """
@@ -428,6 +428,17 @@ def wb_ensemble(inputs, out):
             )  # fmt: skip
 
 
+def refusal_pair(registered_world):
+    """The probed pair a registered refusal world is parsed under: the first pair whose tokens
+    include the world's `refused_under` (the references' amendment 4: §0.2b rule 8 refuses only
+    under multinomial_less_one), else the first pair."""
+    wanted = registered_world.get("refused_under") or {}
+    for pair in PAIRS:
+        if all(tokens(pair).get(key) == value for key, value in wanted.items()):
+            return pair
+    raise AssertionError(f"{registered_world.get('id')}: no probed pair has {wanted}")
+
+
 def refusals(inputs, out):
     from cells.core.specs import ConfigError, parse_spec
 
@@ -436,9 +447,10 @@ def refusals(inputs, out):
     results = []
     for path in sorted((Path(inputs) / "refusals").glob("*.world.json")):
         registered_world = json.loads(path.read_text())
-        entry = {"registered": path.name, "sha256": _sha256(path)}
+        pair = refusal_pair(registered_world)
+        entry = {"registered": path.name, "sha256": _sha256(path), "conventions": tokens(pair)}
         try:
-            parse_spec(_definition(registered_world, PAIRS[0], horizon=1.0, events=1, row_every=1))
+            parse_spec(_definition(registered_world, pair, horizon=1.0, events=1, row_every=1))
             entry |= {"refused": False, "message": None}
         except ConfigError as error:
             entry |= {"refused": True, "message": str(error)}
@@ -446,7 +458,7 @@ def refusals(inputs, out):
     _json(
         directory / "refusals.json",
         {"format": PROBE_FORMAT, "role": "refusals", "source": _source(),
-         "conventions": tokens(PAIRS[0]), "results": results,
+         "conventions": tokens(PAIRS[0]), "results": results,  # each result: its own pair
          "all_refused": all(r["refused"] for r in results)},
     )  # fmt: skip
     if not all(r["refused"] for r in results):

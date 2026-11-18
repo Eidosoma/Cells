@@ -2,8 +2,8 @@
 
 The files describe themselves; this page says where to look. Nothing here needs the engine's code.
 The physical choices are the lead's rulings in `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` §0.2a (D215,
-amended 17 November 2026, twice: "The last molecule" and "The empty common state") and §0.2b
-rule 8. The token names are those of the registered conventions, `ol1_conventions.json`.
+amended 17 November 2026, twice: "The last molecule" and "The empty common state"; `kept` reworded
+18 November 2026) and §0.2b rule 8 (its condition confirmed 18 November 2026). The token names are those of the registered conventions, `ol1_conventions.json`.
 
 ## The declared conventions (every bundle and every probe states all six)
 
@@ -23,9 +23,12 @@ the factor's continuous extension, so detailed balance holds as for every other 
 the earlier wording, "a pair whose common state has an empty membrane has rate 0".
 
 **`world_role`** (§0.2b rule 8), optional, its one value `probe`: a world declared to be probed.
-Under `condensed_measure: multinomial_less_one`, a step with a membrane place on both sides (its
-rate +inf where the membrane holds exactly its reactants) is admitted only in such a world, where a
-probe reports +inf; any other world declaring such a step is refused at parse. A probe world may be
+Under `condensed_measure: multinomial_less_one`, a step with a membrane place on both sides (one
+and the same membrane species among both its reactants and its products, as E is in
+A + B + E → C + E; its rate +inf where the membrane holds exactly its reactants) is admitted only in
+such a world, where a probe reports +inf; any other world declaring such a step is refused at
+parse. A step whose membrane species differ between its sides is not singular: at N = r it meets
+the 0/0 above and takes the cancelled form. A probe world may be
 run, and stops `stalled` at N = r. The role comes only from the registered world file, passed on as
 it is: the driver adds nothing to a world record. A role whose world the parser refuses has, in
 place of its probe or bundle, `refused.json` with the parser's message.
@@ -114,8 +117,10 @@ manifest.json (each file's SHA-256, written last).
 - **wb_ensemble/<rung>/<pair>/**: observed [run, time, place] (the state after the last event at or
   before each registered time), events [run], lineage [run] (each run's own stream word), status
   [run], and input_observation_times_s.
-- **refusals/refusals.json**: each registered refusal world with the engine parser's message.
-  `all_refused` must be true.
+- **refusals/refusals.json**: each registered refusal world with the engine parser's message and
+  the `conventions` it was parsed under: the probed pair whose tokens include the world's
+  `refused_under`, else the first pair (the file's top-level `conventions`). `all_refused` must be
+  true.
 
 `<pair>` is `multinomial__kept` or `multinomial_less_one__extinct`. **roles.json** lists every file
 with its SHA-256, the inputs' files and hashes, and the settings that the registered inputs do not

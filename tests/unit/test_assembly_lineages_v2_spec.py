@@ -23,7 +23,9 @@ Each claim with a planted error it must catch (D187):
   `phase` in place of `sites` and their values carried unchanged;
 - world_role comes only from a registered world file: the reader passes it on, the probe driver adds
   nothing to a world record, and a world the parser refuses is recorded (planted: a driver that adds
-  the role).
+  the role);
+- a registered refusal world is parsed under the probed pair its `refused_under` names, and rule 8
+  refuses it there (planted: the first pair, under which it is an ordinary world).
 """
 
 import copy
@@ -295,3 +297,19 @@ def test_world_role_comes_only_from_the_registered_file(tmp_path):
                                    row_every=1)  # fmt: skip
     spec = probes._parsed_or_refusal(tmp_path / "b", with_role, {"role": "test"})
     assert spec is not None and spec.model.world.role == "probe"
+
+
+def test_a_refusal_world_is_parsed_under_the_pair_it_names(tmp_path):
+    from validation.assembly_lineages_v2 import probes
+
+    source = registered_world() | {"refused_under": {"condensed_measure": "multinomial_less_one"}}
+    assert probes.refusal_pair(source) == ("multinomial_less_one", "extinct")
+    assert probes.refusal_pair(registered_world()) == probes.PAIRS[0]
+    (tmp_path / "inputs" / "refusals").mkdir(parents=True)
+    (tmp_path / "inputs" / "refusals" / "singular.world.json").write_text(json.dumps(source))
+    probes.refusals(tmp_path / "inputs", tmp_path / "out")
+    (entry,) = json.loads((tmp_path / "out" / "refusals" / "refusals.json").read_text())["results"]
+    assert entry["refused"] and "§0.2b rule 8" in entry["message"]
+    assert entry["conventions"]["condensed_measure"] == "multinomial_less_one"
+    planted = probes._definition(source, probes.PAIRS[0], horizon=1.0, events=1, row_every=1)
+    assert parse_spec(planted).model.world.role is None  # Planted: the first pair admits it.
