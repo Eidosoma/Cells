@@ -323,10 +323,11 @@ def test_a_reader_of_a_patch_mask_sees_a_closed_cells_patches_closed(two_cells):
 
 @pytest.mark.parametrize("mask", adapter.MASK_FIELDS)
 def test_the_closure_reach_covers_everything_close_changes(mask):
-    """CLOSURE_REACH, which the table of changes and the fixed-read rule read, holds every field
-    close() changes when one slot of `mask` closes, in a world with every entity kind (cells, an
-    outside node with a face, patches, a channel population, a contact). The planted twin: a reach
-    that leaves out one changed field must fail this."""
+    """CLOSURE_REACH, which the table of changes and the fixed-read rule read, is exactly what
+    close() changes when the slots of `mask` close one at a time, in a world with every entity kind
+    (cells, outside nodes with a face, patches, a channel population, a contact) and every padded
+    field nonzero, so that each field the map names, or leaves out, shows. It is read against
+    close() itself; the planted case of the rules it feeds is the fixed-read and order tests'."""
     raw = fx.world(
         cells=(("cell_0", 1.0), ("cell_1", 1.0)),
         nodes=(("ecs_0", 1.0), ("ecs_1", 1.0)),
@@ -354,6 +355,13 @@ def test_the_closure_reach_covers_everything_close_changes(mask):
     spec = parse_spec(raw)
     state, p = get_model(spec.model).initial_values(spec)
     q = adapter.inner_layout(p)
+    q = q._replace(  # Every padded field nonzero, so that padding a closed slot shows.
+        initial_cell_charge_C=np.full(np.shape(q.initial_cell_charge_C), 1e-15),
+        initial_outside_charge_C=np.full(np.shape(q.initial_outside_charge_C), -1e-15),
+        junction_minimum=np.full(np.shape(q.junction_minimum), 0.25),
+    )
+    for name in adapter.PADDED_FIELDS:
+        assert np.all(np.asarray(getattr(q, name)) != 0), name
 
     def closes(first):
         def closures(self, state, p, q, *, xp):
@@ -373,9 +381,7 @@ def test_the_closure_reach_covers_everything_close_changes(mask):
             for k in fields
             if np.asarray(getattr(closed, k)).tobytes() != np.asarray(getattr(q, k)).tobytes()
         }
-    assert mask in changed and changed <= set(adapter.CLOSURE_REACH[mask]), (mask, changed)
-    for left_out in changed:  # The planted twin: one field fewer must fail.
-        assert not changed <= set(adapter.CLOSURE_REACH[mask]) - {left_out}
+    assert changed == set(adapter.CLOSURE_REACH[mask]), (mask, changed)
 
 
 def test_a_fixed_read_of_a_mask_a_closure_reaches_is_refused():
