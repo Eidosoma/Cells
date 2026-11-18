@@ -916,6 +916,7 @@ script (SOURCE_LAYOUT_MOVES_DESIGN §10).
 | 2 | B1, beside A: field roles and the lifecycle for today's kinds and @3's fields; the door into @3; refusal 4 per move | F's registry | Core owner 1: `models/surface_pump_v3.py`; operators owner: `models/pump_composite*.py`, `operators/partition.py`, `operators/compartments.py` | 2–4 |
 | 2 | Independent references for A and C | F's registry | A fresh references agent: `validation/core_seams/` (new) | 2–3 |
 | 3 | B2, after A: the cycle kind's roles, and the dividing world with a kind population | A, B1 | Kinds owner, with the operators owner | 1–1.5 |
+| 3 | B1′, after B1 (D216, amended 18 November): the operator rate route of [INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md) §2.1 (`ROUTABLE_CONTROLS`), for FR-6's item 2 and FR-7's part (a). It goes ahead only if the user's answer on D145's hold admits a species → control → production loop. | B1 | Operators owner: `contract.py`, `models/pump_composite*.py`, `species_turnover.py`, `species_reactions.py` | The coupling note's estimate: 6–10 with the trigger |
 | 3 | E: moiety ledgers with A's moved rows | A | Core owner 1: `models/surface_pump_v3.py`, `registry/` | 0.5–0.75 |
 | 4 | Gates at each merge, and §10's composed-world checks | Each | The lead's gate lane | 1 |
 | X | The exact charged booking, only if P1 asks | P1, A | Core owner 2 | 2–3 |

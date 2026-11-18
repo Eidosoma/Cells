@@ -6938,4 +6938,9 @@ The user: "sounds good yes".
 - **Overlaps go to the core pass,** so no file has two owners: FR-3's binding with seam C, FR-6's
   routing door with seam B1, and FR-1's later doors (creation, division, fission and fusion,
   retirement) with seam B and the mitochondria work (D210).
+- **Amended 18 November (the lead).** FR-7's design note found that B1 as written covers the kinds'
+  routing door into @3 (CORE_SEAMS §4.3), not the coupling note's operator *rate route* (§2.1).
+  The rate route edits the operators owner's files, so it becomes step B1′, after B1, with that
+  owner (CORE_SEAMS §13's table). It goes ahead only if the user's answer on D145's hold admits a
+  species → control → production loop. That is FR-7's note, question 2.
 
