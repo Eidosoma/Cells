@@ -58,7 +58,10 @@ fields. An outside package's interfaces are in its own namespace.
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
   are the static model table's `law_homes` (registry/model_table.py), loaded by name, once, when
   the registry is first used, so the core imports no law module to find a law, and what is
-  registered never depends on what happened to be imported first;
+  registered never depends on what happened to be imported first. A home either calls the
+  registration call itself, or is an inert law module (§8.2): it declares its one law as `LAW`,
+  importing only cells.modules and laws/, and the loader registers it with the module as its
+  declarer, so importing it registers nothing;
 - the active registry is BUILTIN, unless a caller builds inside `scope(registry)`;
 - a registered law that no definition declares changes nothing: the inner model and the kinds
   read only the laws their declarations name;
@@ -477,6 +480,11 @@ class LawRegistry:
         """The one registration call: `law` checked against the template, then held under its
         namespaced ID, with the module that called this (its declaring module, for the
         declarations manifest). Returns the law."""
+        return self._register(law, sys._getframe(1).f_globals.get("__name__"))
+
+    def _register(self, law, module):
+        """register, with `module` as the law's declaring module (the loader's form for an inert
+        law module, which declares its LAW and registers nothing itself)."""
         if not isinstance(law, Law):
             raise ValueError(f"A law's declaration is built on the template (Law), not {law!r}")
         problems = law.errors()
@@ -508,7 +516,7 @@ class LawRegistry:
                         "are distinct)"
                     )
         self._laws[key] = law
-        self._modules[key] = sys._getframe(1).f_globals.get("__name__")
+        self._modules[key] = module
         return law
 
     def module(self, law_id):
@@ -564,12 +572,18 @@ _builtins_loaded = False
 
 
 def _load_builtins():
-    """Import the built-in laws' homes once, by name, so each registers on BUILTIN through the
-    call an outside package uses."""
+    """Import the built-in laws' homes once, by name. A home that calls the registration call an
+    outside package uses has registered its laws by then. An inert law module (docs/
+    CORE_SEAMS_DESIGN.md §8.2; the lead's ruling R1, 18 November 2026) declares its one law as a
+    module-level `LAW` and registers nothing at import; it is registered here, with that module
+    as its declarer, so importing a law module, as the older families' kernel modules do, changes
+    no registry."""
     global _builtins_loaded
     if not _builtins_loaded:
         for name in BUILTIN_PACKAGES:
-            importlib.import_module(name)
+            law = getattr(importlib.import_module(name), "LAW", None)
+            if isinstance(law, Law) and BUILTIN._laws.get(qualified(law.law_id)) is not law:
+                BUILTIN._register(law, name)
         _builtins_loaded = True
 
 

@@ -17,7 +17,8 @@ dispatches itself.
 - `module`: the module whose `parse` reads the model's definitions (parse_spec's dispatch);
 - `law_homes`: the modules that register its laws and kinds, imported by name, once, when the law
   registry loads (registry/laws.py). A home that is a package registers through the modules its
-  `__init__` imports;
+  `__init__` imports; an inert law module (§8.2) declares its one law as `LAW`, which the loader
+  registers;
 - `operator_homes`: the modules that register its operators, imported when the operator section
   loads (registry/operators.py), the composite's package first;
 - `interfaces`: the `cells` interfaces the family declares. The `cells` namespace is reserved
