@@ -2,9 +2,11 @@
 
 *Status: proposed, 18 November 2026, for the lead and the user (D216). Docs only. Nothing is built,
 and nothing is scaffolded before the user has discussed the options (the user's rule of
-14 November). Code was read at main 5133a850 and is cited `file`:line by today's path under
-`src/cells/`; D188's move 2 has not landed. Tags: **(code)** read in the code; **S** this note's own
-reading, derivation or proposal. Other statements cite their source.*
+14 November). The lead ruled on the note's three questions for the lead on 18 November (§6.1,
+§6.2, §8). The rulings can be revised, and the user's four questions stay open. Code was read at
+main 5133a850 and is cited `file`:line by today's path under `src/cells/`; D188's move 2 has not
+landed. Tags: **(code)** read in the code; **S** this note's own reading, derivation or proposal.
+Other statements cite their source.*
 
 **Engine models it runs** (AGENTS.md): none. Every option would run `resolved_pump_composite@1`
 over `resolved_pump_tissue@3`, with `membrane_entity_state@1`, `species_regulated_availability@1`
@@ -67,16 +69,19 @@ and `scheduled_species_turnover@1`. §5 names the further operators, existing an
      contact-maturation process and newborn integration.
    - D145's default stands until the user rules.
 6. **Part (a) is the coupling note's operator rate route (§2.1). It is not built** (§6.1).
-   - It edits `contract.py` and `pump_composite.py`, which are the operators owner's files in the
-     pass.
-   - That matches D216's "seam B1" only if B1's operator part takes it. This is a point for the
-     lead.
+   - It edits the operators owner's files: `contract.py`, `pump_composite*.py`,
+     `species_turnover.py` and `species_reactions.py`.
+   - **The lead's ruling (18 November):** it is step B1′ of the core pass, after B1, with the
+     operators owner (D216, amended 18 November; CORE_SEAMS §13's table). It goes ahead only if
+     the user's answer to question 2 admits the loop.
    - The kinds' routing door (INNER_MODEL_V4_DESIGN §7.4 (n), built for FR-5) is a different
      mechanism.
 7. **Part (b) is a source kind of the coupling operator** (§6.2).
-   - Its source is a population's relative density, read through D191's current read of the view.
-   - A self-source is refused, since the view already carries a population's own
-     abundance-to-function relation.
+   - **Its source, by the lead's ruling:** a population's absolute density N/A, a count per µm²,
+     with its unit declared and K in the same unit. It is read through D191's current read of the
+     view.
+   - A count and a self-source are refused. A constant source is reported in the run's
+     declarations, not refused.
 8. **Questions for the user** (§8):
    - the unit: confirm D145, or change it;
    - whether the species → control → production loop falls inside D145's narrowed hold (the
@@ -261,17 +266,23 @@ which changes a response.
   | File | Change | Owner in the pass |
   | --- | --- | --- |
   | `models/operators/contract.py` | `ROUTABLE_CONTROLS`, and the routed control passed to a target's half-steps | Operators owner |
-  | `models/pump_composite.py` | Routes wired at build; a route to an undeclared control refused; the per-operator static branch | Operators owner |
+  | `models/pump_composite*.py` | Routes wired at build; a route to an undeclared control refused; the per-operator static branch | Operators owner |
   | `models/operators/species_turnover.py`, `species_reactions.py` | Their routable controls declared | Operators owner |
   | `models/operators/species_regulated_availability.py` | The `operator` target in the declaration | Not in the pass ("named, not edited by the pass") |
 
-- **For the lead.** D216 assigns "FR-6's routing door" to seam B1.
-  - B1's operator part, as CORE_SEAMS §13 and STEP0 §4.2 write it, is lifecycle by roles, refusal 4
-    per move, and the composite's refusal lifted for kinds with roles. It does not name the rate
-    route.
-  - If B1's operator part takes it, every file above has one owner: the operators owner, with the
-    coupling's side following.
-  - This note does not choose.
+- **What the note found.** D216 assigned "FR-6's routing door" to seam B1. But B1's operator part,
+  as CORE_SEAMS §13 and STEP0 §4.2 wrote it, is lifecycle by roles, refusal 4 per move, and the
+  composite's refusal lifted for kinds with roles. It does not name the rate route.
+- **The lead's ruling (18 November 2026, revisable).**
+  - The rate route is **step B1′** of the core pass, after B1, with the operators owner. It edits
+    that owner's files: `contract.py`, `pump_composite*.py`, `species_turnover.py` and
+    `species_reactions.py`.
+  - It goes ahead only if the user's answer to question 2 (§8; D145's hold) admits the species →
+    control → production loop.
+  - It is recorded in D216's amendment of 18 November and in CORE_SEAMS §13's table, whose B1′ row
+    carries the coupling note's estimate: 6–10 agent-days with the event trigger.
+  - Every file above then has one owner, the operators owner, and the coupling's side follows in
+    its own module.
 - **The hold.** The loop it closes, species → control → production, is the coupling note's open
   question for the user (§6.4 Q2): inside D145's narrowed hold, or after the gene-regulation
   decision? FR-7's (a) is that loop, so the question is the user's before (a) is built (§8).
@@ -285,15 +296,19 @@ which changes a response.
     current value wherever `membrane_entity_state@1` composes.
   - Its factors need the view passed to `control_factors`, which today receives none (coupling
     §1.1). That change is composition's M1 (C1–C4), the operators owner's.
-- **The variable: the relative density a = N/(A ρ_ref) (S).** It is @3's own view field, so the
-  read adds no derived quantity. K is declared relative to ρ_ref.
-  - *Why a density, not a count.* The coupling note rejected amount sensing for species, because a
-    half-saturation is a concentration (§1.3). The surface analogue is a density. A count would make
-    the factor depend on the host's size.
-  - *What it keeps.* A density is unchanged by insertion at the declared density and by a division
-    with a = f, so neither event moves the factor by itself (**S**).
-  - *The alternative* is the absolute density N/A in units per µm². It needs one more declared unit
-    and is otherwise equivalent. A count is refused.
+- **The variable: the absolute density ρ = N/A, a count per µm²** (the lead's ruling, 18 November
+  2026, revisable). Its unit is declared, and K is declared in the same unit.
+  - *The ruling's reason:* it is the physical quantity, with nothing hidden. A world that wants a
+    threshold relative to the declared reference density sets K = K_rel·ρ_ref itself.
+  - *What the note had proposed:* the relative density a = N/(A ρ_ref), @3's own view field, with K
+    relative to ρ_ref. The two are equivalent through that substitution.
+  - *At the read,* ρ = a·ρ_ref, from the view's current `channel_abundance` and the population's
+    declared reference density (`membrane_state.py`:158).
+  - *Why a density, not a count (S).* The coupling note rejected amount sensing for species,
+    because a half-saturation is a concentration (§1.3). The surface analogue is a density. A count
+    would make the factor depend on the host's size, so a count is refused.
+  - *What a density keeps (S).* It is unchanged by insertion at the declared density and by a
+    division with a = f, so neither event moves the factor by itself.
 - **Evaluation time.** Units change only in writers' half-steps and event maps, never inside @3's
   step (**S**, from §2's writers). So an instantaneous factor on them is exact under the held
   evaluation, as one on a neutral impermeant species is (coupling §1.4).
@@ -301,9 +316,13 @@ which changes a response.
   - **a self-source:** a factor on population k's availability from k's own abundance. The view
     already carries k's linear abundance-to-function relation, so a self-factor would count it
     twice;
-  - a source outside the target's cell, or outside a contact's two cells (§1.3's locality);
-  - a source population that no writer changes. It would be a constant: refused or reported, the
-    lead's choice.
+  - a count as the source variable (above);
+  - a source outside the target's cell, or outside a contact's two cells (§1.3's locality).
+- **A constant source is reported, not refused** (the lead's ruling, 18 November 2026, revisable).
+  - A source population that no declared writer changes is a legitimate world: a fixed
+    population.
+  - The run's declarations record it as "constant source: the factor cannot vary in this run", so
+    that no reader takes it for a live loop.
 - **Its uses:** one population setting another's availability (an auxiliary subunit, or a regulator
   of a pump), and U1's junction availability from both cells' hemichannel abundances, with side
   "both" (§1.3's product).
@@ -312,7 +331,7 @@ which changes a response.
 
 | Piece | Owner | Needs | Agent-days |
 | --- | --- | --- | --- |
-| (a) the rate route | Operators owner (B1, if the lead confirms) | Composition's M1 | 3–5 |
+| (a) the rate route | Operators owner, step B1′ (D216, amended) | B1; the user's answer to question 2 | 3–5 for the route alone (**S**); CORE_SEAMS §13's B1′ row carries the coupling note's 6–10, with the event trigger |
 | (b) the abundance source | The FR lane, in the coupling's module | M1's view in `control_factors` | 1–1.5 |
 | The unit producer and one material account | The FR lane, in a new operator module. The species identity goes with the binding owner (`species_registry.py`), and membrane state's ledger with the operators owner | (a); F's operators section | 3–5 |
 | Removal | FR-2's note | FR-1; seam B | FR-2's |
@@ -340,10 +359,14 @@ which changes a response.
 4. **The measured response** the loop must later predict: one channel's abundance against Vm, or
    coupling against conduction (Track E's data, D155 item 2)?
 
-**For the lead:**
-5. Does seam B1's operator part take the operator rate route (§6.1)?
-6. (b)'s variable: the relative density a, as recommended, or the absolute density?
-7. A constant source in (b): refused or reported?
+**For the lead, ruled on 18 November 2026** (revisable; recorded in §6.1 and §6.2):
+5. **The operator rate route:** step B1′ of the core pass, after B1, with the operators owner. It
+   goes ahead only if the user's answer to question 2 admits the loop (D216, amended 18 November;
+   CORE_SEAMS §13's table).
+6. **(b)'s variable:** the absolute density N/A, a count per µm², with its unit declared and K in
+   the same unit. A world that wants a relative threshold sets K = K_rel·ρ_ref itself.
+7. **A constant source in (b):** reported, not refused. The run's declarations record "constant
+   source: the factor cannot vary in this run". The count and self-source refusals stay.
 
 ## Sources
 
