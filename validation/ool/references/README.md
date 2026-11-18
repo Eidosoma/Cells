@@ -354,6 +354,85 @@ OL2 engine output.
     hypergeometric it exceeds 0.999.
 - Tests: `test_ool_references_geometry.py` and `test_ool_references_division.py`.
 
+## OL2 and OL3, registered 18 November 2026
+
+**Registered before any OL2 or OL3 engine output exists**, under the design note's §0.2b, §0.2c
+(rule 4 as corrected on 18 November: A = q·W/2, with W counting the footprints in quanta) and §0.2d
+(the lead's rulings on my questions, at 7fb8816f on `ol-rulings-20261118`, with item 6 confirmed
+and extended and item 9 added at 95c98b5a), with §2.5, §3, §4 and §5.2. This supersedes the plan
+above for OL2 and OL3. Nothing here reads `src/cells/`, the builder's branches or worktrees, the
+OL2/OL3 design check note, or any engine output beyond OL1's probe folders used for OL1's verdicts.
+
+**Modules.**
+- `ol2.py`: the law in integer quanta. W = Σ n_i k_i, A = qW/2, R, V_osm over every lumen species
+  with c_ext held, V_sph converted to L before the minimum, the reduced volume, σ = ΔpR/2 on the
+  tense branch only; F with the lumen's term (§0.2d 3) and C_close = 8πκ + 4πκ̄ per vesicle; joins
+  under both encounter tokens and entries under `permeation_area`, a⁺ = k·E(m)·ρ0·θ⁺ (§0.2d 2 and
+  4); count_on_m for membrane steps; first-order pool steps; every reverse from the exact ΔF,
+  computed incrementally so that it is precise although |F| reaches 9×10⁵ k_BT; the floor on the
+  end states of area-changing pairs (§0.2c rule 5); lysis on the end state (strict), its release and
+  its one-row booking (§0.2d 7); the shear work.
+- `population.py`: the world model with its draw addresses (domains 1, 2, 5 and 6), the two-level
+  map with its guard (§0.2d 5), the clock rule (§0.2d 6, ruled, extended to a single lineage's own
+  counter at 95c98b5a), shear at declared times or Poisson gaps, admission v ≤ k^(−1/2), C3x and
+  the lumen split from each attempt's block (`partition.py`), the floor's refusal, birth lysis,
+  slots, `slots_full`, serial transfer (one draw per living assembly, the K_keep smallest kept,
+  ties by slot) and its booking (§3.1–§3.3), and the replay that reruns all of it on a trace's own
+  uniforms; the stream, closure and environment checks.
+- `ol2_checks.py` (kernel tables and stationary laws), `ol3_checks.py` (the partition probe),
+  `registered2.py` (the inputs), `refusals2.py` (22 declarations and the references' parser),
+  `harness2.py` (the rows, with the canonical record layout in its docstring), `standin2.py`,
+  `design2.py` (the design file, `designs/ol2_ol3_design.json`).
+
+**Inputs** (`designs/`): ten worlds (`*.world2.json`), six runs (`ol2_*_run.json`,
+`ol3_*_run.json`), four probe-state files (696 states for each kernel world; 61 one-vesicle
+states for `ol2_closed`; 12,432 for `ol2_two`'s 6,216 closed-world states), six partition parents
+(`ol3_parents.json`, 4,000 attempts each; N mod k ≠ 0 at k = 2 and 3 with equal and unequal areas,
+and one N mod k = 0 case), and 22 refusal declarations (`refusals2/`). Every value is a declared
+test parameter, unsourced.
+
+| Row | Claim | Records | Planted controls caught (margin) |
+| --- | --- | --- | --- |
+| OL2-1 | Cycle closure; a⁻/a⁺ = e^(ΔF − w) with the lumen's F; the forward forms under both tokens, the floor's zero pattern and the lysis flags; the geometry | Kernel probes of `ol2_wa` and `ol2_wa_diffusion` | Extent on the target state (forward, 10⁻³ against 10⁻¹²); a radius for an area (17.2); a dropped c0 (6.91); no lumen term (identity 72.8 against 10⁻⁸); the lumen's sign (146); the reverse's sign (167); the floor on every step (53 zero-pattern entries); a_L doubled; the Laplace factor (1,852 lysis flags; σ off by 0.55); 6π for 6√π (identity 40.7); V_sph in m³ (V_sph off by 0.999); impermeants only in N_L (identity 6.7) |
+| OL2-2 | Closed worlds relax to exp(−F)/Z: one vesicle across its kink; two vesicles sharing a pool (the swollen one takes amphiphiles) | One-vesicle probes of `ol2_closed`, `ol2_two` | Total variation 0.070 to 1.0 against a tolerance of 10⁻⁷ (honest 1.3×10⁻¹¹ and 1.6×10⁻¹¹) |
+| OL2-3 | Lysis fires on the end state, releases monomers to their pool places and the closure cost, books one row, ends `lysed` | Run `ol2_lysis_run` | Closure kept (heat off by C_close = 125.7 k_BT; the ledger does not close); release work omitted (heat and reservoir work) |
+| OL2-4 | The two-level map with the pool's group and empty slots; no discards without a schedule; closure | Run `ol2_shared_run` | A flat one-level map (channel choices) |
+| OL2-5 | Every registered declaration refused | Refusals | Any one accepted |
+| OL3-1 | C3x and the lumen split, replayed from each attempt's block and against their exact laws | Partition probe | G1's sizes, no π, the lumen by area or by equal shares: family power 1.0 at M = 4,000; the largest minimiser by replay |
+| OL3-2 | Poisson shear and serial transfer: the clock rule, the schedule streams, the transfer's sample, slots and booking, closure | Run `ol3_population_run` | The counter not advanced, a crossing draw fired, the K_keep largest kept, no draws when all are kept, gaps −ln(1 − u)/λ, admission at 1/k, the floor on the parent, the highest free slots, the fresh pool's F to the sink (sink −37.1 against −1,259.4 k_BT), the old pool not sunk (closure off by 4.45×10³), the closure cost added again |
+| OL3-3 | Declared shear times: admission, C3x at k = 3 with N mod 3 ≠ 0, the floor's refusal, birth lysis, the shear work | Run `ol3_shear_probe_run` | A daughter beyond σ_max kept alive; the floor on the parent; the highest free slots; (k − 1)·C_close added again; the closure cost kept at a birth lysis |
+| OL3-4 | A single lineage with a schedule: the clock rule on its own counter, the unfollowed daughters' sink | Run `ol3_lineage_run` | The counter not advanced; a crossing draw fired; admission at 1/k |
+| OL3-5 | A full set of slots stops the run `slots_full` before the split | Run `ol3_slots_full_run` | Admission at 1/k |
+
+Every run row also checks the environment record's threefry flag (§0.2d 9) and the run's end
+reason, and needs its run to exercise what the row tests (for example a birth lysis, a transfer
+that keeps all, a discarded draw). A run that does not is inconclusive (exit 2), not passed. Over
+200 stand-in seeds per run, every requirement was met in all 200 for each of the six runs. A birth-lysis parent
+has a daughter beyond σ_max with probability 0.90 (Monte Carlo, 200,000 splits), so all eight
+parents miss with probability 10⁻⁸.
+
+**Zero-power entries and readings.** The design file lists eighteen zero-power entries and six
+readings of mine, so that the builder can confirm them before output. The ones that bind a replay:
+- a shear acts on the assemblies living at its start;
+- an attempt draws its block before the floor is tested, and `slots_full` is tested before the
+  draw;
+- the shear work counts every daughter as born, a birth-lysed one included.
+
+**Use.** `python -m validation.ool.references.harness2 --records DIR --out verdict.json` runs the
+rows on records in the canonical layout, which an adapter writes from the engine's bundles once the
+family's format exists. The run rows need diagnostic records: every draw of domains 1, 2, 5 and 6
+with its address and uniforms, discarded draws included, and each event's changes and ledger
+terms. `python -m validation.ool.references.standin2 --out DIR` writes honest stand-in records,
+and `--planted FORM` (or `--law-planted`, `--partition-planted`) a planted set.
+
+Tests: `test_ool_references_ol2.py` (the registration, the geometry, the encounter rates, the floor,
+the incremental ΔF, the kernel and stationary checks with every planted law, lysis's booking) and
+`test_ool_references_ol3.py` (the two-level map, the clock rule, Poisson gaps and the transfer,
+the bookings, each planted run behaviour by its row, the partition probe, and the harness end to
+end: exit 0 honest, 1 planted or a refusal accepted, 2 a missing manifest). Evidence:
+`/mnt/workspaces/Cells/ool-references-20261117/evidence/` (`ol2_ol3_margins.*`,
+`ol2_ol3_coverage.*`, `ol3_birth_lysis.*`).
+
 ## What could not be confirmed from the sources
 
 - **The design's §2.2 table writes F in the continuum (Stirling) form.** Textbook mass action

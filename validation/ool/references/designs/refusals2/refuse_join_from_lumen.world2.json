@@ -1,0 +1,180 @@
+{
+ "format": "ool_references.world2@1",
+ "id": "refuse_join_from_lumen",
+ "registered": "2026-11-18",
+ "authority": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md \u00a70.2b, \u00a70.2c (rule 4 as corrected 18 November), \u00a70.2d (7fb8816f; item 6 confirmed and extended, item 9 added, at 95c98b5a), \u00a72.5, \u00a73, \u00a74, \u00a75.2",
+ "description": "OL2 kernel probe (insertion_area): joins from a finite (L1) and a held (L2) place, a permeant (G) entering from a held place, an area-preserving membrane step, the floor and lysis.",
+ "units": {
+  "q": "m^2",
+  "concentration": "mol/L (held places: mM)",
+  "volume": "L",
+  "k_ins": "m/s",
+  "D": "m^2/s",
+  "P": "m/s",
+  "sigma_max": "N/m",
+  "energy": "k_BT",
+  "time": "s"
+ },
+ "conventions": {
+  "free_energy_form": "discrete",
+  "condensed_measure": "multinomial",
+  "membrane_kinetics": "count_on_m",
+  "empty_catalyst_phase": "uncatalysed",
+  "last_molecule": "kept",
+  "lumen_volume": "osmotic",
+  "exchange_encounter": "insertion_area"
+ },
+ "geometry": {
+  "interface": "cells.assembly_geometry@1",
+  "model": "cells.bilayer_geometry@1",
+  "area_quantum_m2": 3e-17,
+  "vesicle_floor_quanta": 1000,
+  "sigma_max_N_per_m": 0.01,
+  "sigma_max_source": "a declared test parameter, unsourced",
+  "kappa_kT": 10.0,
+  "kappa_bar_kT": -10.0,
+  "closure_cost_kT": "8 pi kappa + 4 pi kappa_bar"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_M": 0.001,
+ "outside_osmolarity_M": 0.3,
+ "pool_volume_L": 8.302695335869234e-20,
+ "species": [
+  {
+   "id": "G",
+   "moieties": {
+    "g": 1
+   },
+   "standard_mu_kT": {
+    "solution": 0.0
+   }
+  },
+  {
+   "id": "L1",
+   "moieties": {
+    "a": 1
+   },
+   "standard_mu_kT": {
+    "bilayer": -2.0,
+    "solution": 0.0
+   }
+  },
+  {
+   "id": "L2",
+   "moieties": {
+    "a": 2
+   },
+   "standard_mu_kT": {
+    "bilayer": -3.0,
+    "solution": 0.0
+   }
+  },
+  {
+   "id": "S",
+   "moieties": {
+    "s": 1
+   },
+   "standard_mu_kT": {
+    "solution": 0.0
+   }
+  }
+ ],
+ "membrane": [
+  {
+   "species": "L1",
+   "area_quanta": 1
+  },
+  {
+   "species": "L2",
+   "area_quanta": 2
+  }
+ ],
+ "lumen": [
+  {
+   "species": "S"
+  },
+  {
+   "species": "G"
+  }
+ ],
+ "pool": {
+  "finite": [
+   "L1",
+   "S"
+  ],
+  "held_mM": {
+   "L2": 1.0,
+   "G": 5.0
+  }
+ },
+ "steps": [
+  {
+   "id": "join_L1",
+   "kind": "join",
+   "species": "L1",
+   "direction": "pool_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 1e-10
+  },
+  {
+   "id": "join_L2",
+   "kind": "join",
+   "species": "L2",
+   "direction": "lumen_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 5e-11
+  },
+  {
+   "id": "entry_G",
+   "kind": "entry",
+   "species": "G",
+   "direction": "pool_to_lumen",
+   "encounter": "permeation_area",
+   "locus": "membrane",
+   "constant": "P_m_per_s",
+   "value": 1e-12
+  },
+  {
+   "id": "r1",
+   "kind": "membrane",
+   "locus": "membrane",
+   "law": "cells.stochastic_mass_action@1",
+   "membrane_kinetics": "count_on_m",
+   "reactants": [
+    {
+     "phase": "membrane",
+     "species": "L1",
+     "count": 2
+    }
+   ],
+   "products": [
+    {
+     "phase": "membrane",
+     "species": "L2",
+     "count": 1
+    }
+   ],
+   "forward_rate_constant_per_s": 0.5
+  }
+ ],
+ "founder": {
+  "n": [
+   1800,
+   100
+  ],
+  "l": [
+   77445,
+   2000
+  ],
+  "p": [
+   30,
+   0
+  ]
+ },
+ "refusal": {
+  "rule": "\u00a70.2c rules 2-3",
+  "base": "ol2_wa"
+ }
+}
