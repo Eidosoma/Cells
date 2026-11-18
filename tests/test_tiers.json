@@ -145,7 +145,8 @@
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
   "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
-  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json"
+  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
+  "/mnt/workspaces/Cells/fr6-references-20261118/measure-01/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1197,6 +1198,13 @@
    "root": "/mnt/workspaces/Cells/d188-m2-prep-20261117/trees/head-a085126b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T23:54:33+00:00"
+  },
+  {
+   "git_revision": "ee1d89157e277ca380d9799e626fdde721083aa6",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T00:07:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2438,6 +2446,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_references_a5pp.py",
+    "seconds": 7.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
