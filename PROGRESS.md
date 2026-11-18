@@ -115,6 +115,25 @@ machine-readable inputs, results, checks and failures.
   - **Evidence:** `/mnt/workspaces/Cells/closed-compartment-fr1-20261117/judged/run-05a8d193/`
     (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
 
+- **BETSE's calcium references run out of process (18 November 2026, early).** This fixes the
+  compliance finding from D211's inventory. Merged from `betse-reference-out-of-process` at
+  a2a32ac3.
+  - **The change:**
+    - `validation/betse/calcium_functions_native.py` runs pumpCaER, pumpCaATP,
+      EndoRetic.channels and Cav1p2 unmodified in venv-betse, as a child process;
+    - the tests refuse a capture whose BETSE sources differ from their pins;
+    - the three in-process exec helpers are deleted, and `qualify_cell.py` no longer copies BETSE
+      files.
+  - **Tests:** the four calcium tests keep their names and every original check. Each kernel is
+    also held to an independent form of its law: the Decimal ER pump, the PMCA term, Cav1.2's
+    kinetics and the ER release factor.
+  - **Before and after:** the nine affected tier-3 files have the same 320 test IDs and the same
+    outcomes. Tiers 1+2 show 0 of 513 files changed.
+  - **On a trial merge with main:** all nine files pass, run one process per file. A first run of
+    all nine in one process was killed at its 6 GB cap; no test failed.
+  - Evidence: `/mnt/workspaces/Cells/betse-reference-20261117/` (`before/`, `after/`,
+    `gate-a2a32ac3/`, `merged-check2/`).
+
 - **FR-19's band follow-up on main (18 November 2026, early).** Merged from `passive-share-band` at
   7bfe0c68.
   - **The fix:** the passive routes' heat-share floor now bounds the rounding by
