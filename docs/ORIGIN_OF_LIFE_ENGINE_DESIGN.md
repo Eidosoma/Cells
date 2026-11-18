@@ -279,9 +279,10 @@ that refine it.
      example, at N = 5 and k = 3 the sizes are 2, 2 and 1; G1's floor-to-first gives 1, 1 and 3.
      Equal target areas mean the most even split. G1's floor-to-first stays for D1 and the GARD
      limit.
-   - **The rule is C3x,** if the builder's probe confirms it. The probe adds cases with N mod k ≥ 2
-     (N = 5 and 8 at k = 3), and must show that C3x meets the reading above exactly there. Until it
-     does, this item is provisional.
+   - **The rule is C3x.** The builder's exact probe confirmed it the same day. C3x matches the
+     reading above with total variation 0 in all six equal-weight cases, including N = 5 and N = 8
+     at k = 3. It stays exchangeable in the two unequal cases with N mod k = 2. G1's sizes, in
+     either order, fail the reading there.
    - **C3x, exactly.** All its uniforms are drawn from the parent's fission draws (domain 2), in this
      order:
      1. List the parent's membrane molecules by species, in the world's declared species order.
