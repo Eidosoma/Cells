@@ -356,7 +356,8 @@ positive up to the stored amount.
     - This package's own Newton never converged there on the |T_L| scale. It was moved to V A_L
       here.
     - Earlier states' solutions are unchanged to their printed digits.
-    - The pair S4 (11, 12) joins amendment C1's plants.
+    - The pair S4 (11, 12) joins amendment C1's plants, and the primal route agrees there to
+      1.3e-55, so it now covers 71 states.
   - **The correction to 17:33:** the per-ligand floor Σ T_B min n is necessary but not sufficient
     for mixed-sign counts. The joint condition is the closure's own validity. In the registered
     systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
@@ -405,6 +406,9 @@ All three files are tier 1. Their rows were measured at 1b607df4 on the timed la
 thread per core, under its lock) and folded with `scripts/test_tiers.py tiers --base`: binding 2.22
 s, cycles 0.67 s, registration 0.92 s. The record is
 `/mnt/workspaces/Cells/core-seams-references-20261118/gate-1b607df4/tiers/measure/measured.json`.
+After amendments C1–C3, the changed and new files were re-measured at 56dedfba the same way:
+binding 2.52 s (10 passed), envelope 1.42 s (5), registration 1.07 s (4). The record is
+`/mnt/workspaces/Cells/core-seams-references-c-20261118/gate-56dedfba/tiers/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
