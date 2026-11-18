@@ -1,7 +1,9 @@
 """scripts/gates/crossrev_sets.py: the gates' cross-revision runner and record maker.
 
-- The sets are the record's own, in the runner's order. Superseded copies (a dash in the name) are
-  skipped. A set the runner does not know is refused, so a record cannot hold a set the gates skip.
+- The sets are fail-closed: every known set is required unless --sets names fewer, and a required
+  set the record lacks fails the run unless --allow-missing names it (logged). Superseded copies (a
+  dash in the name) are skipped. A record folder the runner does not know is refused, so a record
+  cannot hold a set the gates skip.
 - Each set's command lines: composite_crossrev's sets take their name after the directory, and
   the operators' own modules add their check action.
 - A sweep fails when an action fails, when a compare differs, or when a file listing differs.
@@ -35,20 +37,18 @@ def record(tmp_path, names):
     return r
 
 
-def test_the_sets_are_the_records_own_in_order(cs, tmp_path):
+def test_every_known_set_is_required_by_default(cs, tmp_path):
     r = record(tmp_path, ["volume", "base", "acceptances", "kinds-superseded-20261117", "coupling"])
     assert cs.record_sets(r) == ["base", "volume", "coupling", "acceptances"]
-    assert cs.chosen(None, r) == ["base", "volume", "coupling", "acceptances"]
-    assert cs.chosen(["coupling", "base"], r) == ["base", "coupling"]
+    assert cs.chosen(None) == list(cs.ORDER) and "replication" in cs.ORDER
+    assert cs.chosen(["coupling", "base"]) == ["base", "coupling"]
 
 
 def test_an_unknown_set_is_refused(cs, tmp_path):
     with pytest.raises(SystemExit, match="does not know"):
         cs.record_sets(record(tmp_path, ["base", "newset"]))
     with pytest.raises(SystemExit, match="unknown sets"):
-        cs.chosen(["nosuchset"], None)
-    with pytest.raises(SystemExit, match="give --sets"):
-        cs.chosen(None, None)
+        cs.chosen(["nosuchset"])
 
 
 def test_the_command_lines(cs):
@@ -136,29 +136,48 @@ def snapshot(tmp_path):
     return s
 
 
-def test_main_record_takes_the_previous_records_sets(cs, tmp_path, monkeypatch):
-    previous = record(tmp_path, ["coupling", "base", "kinds-superseded-20261117"])
+def sweeps(cs, monkeypatch):
     seen = {}
 
-    def fake_sweep(snap, out, sets, against, python, log, call=None):
-        seen.update(sets=sets, against=against)
+    def fake_sweep(snap, out, sets, against, python, log, call=None, allow_missing=()):
+        seen.update(sets=sets, against=against, allow_missing=set(allow_missing))
         return 0
 
     monkeypatch.setattr(cs, "sweep", fake_sweep)
+    return seen
+
+
+def test_main_requires_every_known_set_by_default(cs, tmp_path, monkeypatch):
+    seen = sweeps(cs, monkeypatch)
+    previous = record(tmp_path, ["coupling", "base", "kinds-superseded-20261117"])
     assert cs.main(["record", str(snapshot(tmp_path)), str(tmp_path / "new"),
                     "--previous", str(previous)]) == 0
-    assert seen == dict(sets=["base", "coupling"], against=str(previous))
+    assert seen["sets"] == list(cs.ORDER) and seen["against"] == str(previous)
+    assert cs.main(["run", str(tmp_path / "snapshot"), str(tmp_path / "out"), str(previous)]) == 0
+    assert seen["sets"] == list(cs.ORDER)
     assert cs.main(["record", str(tmp_path / "snapshot"), str(tmp_path / "new2"),
                     "--sets", "volume"]) == 0
-    assert seen == dict(sets=["volume"], against=None)
-    with pytest.raises(SystemExit, match="give --sets"):
-        cs.main(["record", str(tmp_path / "snapshot"), str(tmp_path / "new3")])
+    assert seen == dict(sets=["volume"], against=None, allow_missing=set())
+    with pytest.raises(SystemExit, match="not required"):
+        cs.main(["run", str(tmp_path / "snapshot"), str(tmp_path / "out3"), str(previous),
+                 "--sets", "base", "--allow-missing", "volume"])
+    with pytest.raises(SystemExit, match="does not know"):
+        cs.main(["run", str(tmp_path / "snapshot"), str(tmp_path / "out4"),
+                 str(record(tmp_path / "r2", ["base", "newset"]))])
 
 
-def test_main_run_takes_the_records_sets(cs, tmp_path, monkeypatch):
-    rec = record(tmp_path, ["acceptances", "base"])
-    seen = {}
-    monkeypatch.setattr(cs, "sweep", lambda snap, out, sets, against, python, log, call=None:
-                        seen.update(sets=sets) or 0)
-    assert cs.main(["run", str(snapshot(tmp_path)), str(tmp_path / "out"), str(rec)]) == 0
-    assert seen["sets"] == ["base", "acceptances"]
+def test_a_required_set_the_record_lacks_fails_unless_allowed(cs, tmp_path):
+    """The plant: the record lacks division. The run fails, naming it; --allow-missing division
+    accepts it and says so in the log."""
+    r = record(tmp_path, ["base"])
+    for allowed, expected_status in (((), 1), (("division",), 0)):
+        lines = []
+        out = tmp_path / f"out-{len(allowed)}"
+        out.mkdir()
+        status = cs.sweep(tmp_path, out, ["base", "division"], r, "py", lines.append,
+                          call=fake_call(), allow_missing=set(allowed))
+        assert status == expected_status, lines
+        missing = [x for x in lines if x.startswith("compare division")]
+        assert len(missing) == 1
+        assert ("allowed by --allow-missing" in missing[0]) == bool(allowed)
+        assert ("fail-closed" in missing[0]) == (not allowed)

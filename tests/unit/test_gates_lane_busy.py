@@ -2,20 +2,23 @@
 
 The check it supersedes, in FR's landing-set holder, refused while any other unit pinned to the
 lane was active. On 18 November 2026 at 19:32 it refused 8c2cb523's set for
-cells-ops-b1-laneB-42ca1c94, a gate that was only waiting for lane B's lock. The new check:
-- still refuses a unit computing on the lane without the lock (the plant);
-- ignores a unit blocked in flock on the lane's lock, in both flock forms (argument and
-  descriptor), with real processes;
-- ignores a unit idle over the sampling window;
-- leaves out units off the lane, and the holder's own;
-- lists unpinned units without counting them, as the old check did.
-The gathering is checked on a fake cgroup tree and with systemd faked: no unit is started here.
+cells-ops-b1-laneB-42ca1c94, a gate that was only waiting for lane B's lock. The new check charges
+each process by its own affinity and its CPU time over the window (the lead's ruling):
+- it refuses a unit computing on the lane without the lock, including the lead's plant: a unit with
+  no pinning whose child is pinned to lane B and computing. It also refuses a child pinned onto lane
+  B under a unit pinned elsewhere, and an unpinned process that computes (it may run on the lane);
+- it ignores a unit that only waits: blocked in flock on the lane's lock (both flock forms, real
+  processes), or idle;
+- it leaves out the holder's own unit, and units with no process on the lane.
+The readers run on real processes (an affinity and a spinning child's CPU time); the sampling runs
+with systemd faked. No unit is started here.
 """
 
 import fcntl
 import importlib.util
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -23,6 +26,7 @@ import pytest
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "gates" / "lane_busy.py"
 LANE = set(range(8, 12)) | set(range(24, 28))
+ALL = set(range(32))
 
 
 @pytest.fixture(scope="module")
@@ -38,50 +42,74 @@ def test_cpu_sets(lb):
     assert lb.cpu_set("") == set() and lb.cpu_set("5") == {5}
 
 
-def decide(lb, units, waiters=(), usage=None, own=(), prefixes=()):
-    usage = usage if usage is not None else {n: 0.0 for n in units}
-    return lb.classify(units, LANE, set(waiters), usage, window=10.0, threshold=0.05,
-                       own=set(own), ignore_prefixes=prefixes)
+def decide(lb, units, waiters=(), own=()):
+    return lb.classify(units, set(waiters), window=10.0, threshold=0.05, own=set(own))
 
 
-def test_a_unit_computing_on_the_lane_without_the_lock_is_busy(lb):
-    out = decide(lb, {"cells-stray.service": {8}}, usage={"cells-stray.service": 9.8})
-    assert [r["unit"] for r in out["busy"]] == ["cells-stray.service"]  # The refusal is kept.
-    assert out["busy"][0]["cpus_used"] == pytest.approx(0.98)
+def test_the_plant_an_unpinned_unit_whose_child_computes_pinned_to_the_lane(lb):
+    """The unit's main process may run anywhere and idles; its child is pinned to CPU 8 and uses
+    one CPU. The check that went by the unit's affinity left it out as unpinned."""
+    out = decide(lb, {"cells-unpinned-parent.service": [(10, ALL, 0.0), (11, {8}, 9.9)]})
+    assert [r["unit"] for r in out["busy"]] == ["cells-unpinned-parent.service"]
+    assert out["busy"][0]["busiest"] == 11 and out["busy"][0]["cpus_used"] == pytest.approx(0.99)
 
 
-def test_the_19_32_refusal_is_a_waiter_now(lb):
-    """cells-ops-b1-laneB-42ca1c94 (8-11 24-27), queued on lane B's lock: the old check refused the
-    set for it; the new one counts it a lock waiter."""
-    unit = "cells-ops-b1-laneB-42ca1c94.service"
-    out = decide(lb, {unit: set(LANE)}, waiters={unit})
-    assert out["busy"] == [] and [r["unit"] for r in out["waiters"]] == [unit]
+def test_a_child_pinned_onto_the_lane_under_a_unit_pinned_elsewhere_is_busy(lb):
+    out = decide(lb, {"cells-laneA-gate.service": [(20, {9, 25}, 8.0)]})
+    assert [r["unit"] for r in out["busy"]] == ["cells-laneA-gate.service"]
 
 
-def test_idle_off_lane_own_and_unpinned_units(lb):
-    units = {"cells-idle.service": {9}, "cells-laneA.service": {0, 1, 2, 3},
-             "cells-me.service": {8}, "cells-fr45-landingB-q8.service": {8},
-             "cells-anywhere.service": set(), "cells-gone.service": {10}}
-    usage = {"cells-idle.service": 0.2, "cells-laneA.service": 40.0, "cells-me.service": 9.0,
-             "cells-fr45-landingB-q8.service": 9.0, "cells-anywhere.service": 50.0,
-             "cells-gone.service": None}
-    out = decide(lb, units, usage=usage, own={"cells-me.service"},
-                 prefixes=("cells-fr45-landingB-",))
+def test_an_unpinned_computing_process_is_busy(lb):
+    """Allowed on every CPU, it may run on the lane: charged (fail-closed)."""
+    assert decide(lb, {"cells-anywhere.service": [(30, ALL, 4.0)]})["busy"]
+
+
+def test_waiters_idle_units_and_the_holders_own(lb):
+    units = {"cells-ops-b1-laneB-42ca1c94.service": [(40, LANE, 0.0), (41, LANE, 0.01)],
+             "cells-idle.service": [(50, {10}, 0.2)],
+             "cells-holder.service": [(60, {8}, 9.0)],
+             "cells-laneA.service": []}
+    out = decide(lb, units, waiters={"cells-ops-b1-laneB-42ca1c94.service"},
+                 own={"cells-holder.service"})
     assert out["busy"] == []
-    assert [r["unit"] for r in out["idle"]] == ["cells-gone.service", "cells-idle.service"]
-    assert out["own"] == ["cells-fr45-landingB-q8.service", "cells-me.service"]
-    assert out["unpinned"] == ["cells-anywhere.service"]
+    assert [r["unit"] for r in out["waiters"]] == ["cells-ops-b1-laneB-42ca1c94.service"]
+    assert [r["unit"] for r in out["idle"]] == ["cells-idle.service"]
+    assert out["own"] == ["cells-holder.service"]
     listed = {r["unit"] for k in ("busy", "waiters", "idle") for r in out[k]}
-    assert "cells-laneA.service" not in listed  # Off the lane: not counted.
+    assert "cells-laneA.service" not in listed  # No process on the lane.
 
 
 def test_the_threshold_is_a_fraction_of_one_cpu(lb):
-    units = {"cells-a.service": {8}}
-    assert decide(lb, units, usage={"cells-a.service": 0.49})["busy"] == []  # 0.049 CPU.
-    assert decide(lb, units, usage={"cells-a.service": 0.51})["busy"]  # 0.051 CPU.
+    assert decide(lb, {"cells-a.service": [(1, {8}, 0.49)]})["busy"] == []  # 0.049 CPU.
+    assert decide(lb, {"cells-a.service": [(1, {8}, 0.51)]})["busy"]  # 0.051 CPU.
+    assert decide(lb, {"cells-a.service": [(1, {8}, 0.3), (2, {9}, 0.3)]})["busy"]  # Summed.
 
 
-# --------------------------------------------------------------- flock waiters, real processes
+def test_a_waiter_that_computes_on_the_lane_is_busy(lb):
+    """A flock waiter whose other process computes on the lane computes without the lock."""
+    out = decide(lb, {"cells-w.service": [(1, LANE, 0.0), (2, {8}, 5.0)]},
+                 waiters={"cells-w.service"})
+    assert [r["unit"] for r in out["busy"]] == ["cells-w.service"] and out["waiters"] == []
+
+
+# ----------------------------------------------------------------------- the readers, real
+
+
+def test_a_processs_affinity_and_cpu_time(lb):
+    cpu = min(os.sched_getaffinity(0))
+    child = subprocess.Popen(
+        [sys.executable, "-c", "import time\nt = time.time()\nwhile time.time() - t < 1.5: pass"],
+        preexec_fn=lambda: os.sched_setaffinity(0, {cpu}))
+    try:
+        time.sleep(0.3)
+        assert lb.proc_affinity(child.pid) == {cpu}
+        first = lb.proc_cpu_seconds(child.pid)
+        time.sleep(0.8)
+        assert lb.proc_cpu_seconds(child.pid) - first >= 0.3  # It computes.
+    finally:
+        child.kill()
+        child.wait()
+    assert lb.proc_affinity(999999999) is None and lb.proc_cpu_seconds(999999999) is None
 
 
 def started(proc, timeout=10.0):
@@ -118,58 +146,51 @@ def test_a_process_blocked_in_flock_on_the_lock_is_a_waiter(lb, tmp_path, form):
                 p.wait()
 
 
-# -------------------------------------------------------------- the gathering, faked systemd
-
-
-def test_cgroup_readers_on_a_fake_tree(lb, tmp_path):
+def test_cgroup_pids_and_own_unit_on_fake_trees(lb, tmp_path):
     unit = tmp_path / "cells.slice" / "cells-a.service"
     (unit / "sub").mkdir(parents=True)
-    (unit / "cpu.stat").write_text("usage_usec 1234567\nuser_usec 1\n")
     (unit / "cgroup.procs").write_text("11\n12\n")
     (unit / "sub" / "cgroup.procs").write_text("13\n")
-    group = "/cells.slice/cells-a.service"
-    assert lb.cgroup_usage_usec(group, root=tmp_path) == 1234567
-    assert sorted(lb.cgroup_pids(group, root=tmp_path)) == [11, 12, 13]
-    assert lb.cgroup_usage_usec("/cells.slice/gone.service", root=tmp_path) is None
+    assert sorted(lb.cgroup_pids("/cells.slice/cells-a.service", root=tmp_path)) == [11, 12, 13]
     assert lb.cgroup_pids("/cells.slice/gone.service", root=tmp_path) == []
-
-
-def test_own_unit_from_the_cgroup_path(lb, tmp_path):
     path = tmp_path / "cgroup"
-    path.write_text("0::/user.slice/user-1000.slice/user@1000.service/cells.slice/"
-                    "cells-gate.service\n")
+    path.write_text("0::/user.slice/user@1000.service/cells.slice/cells-gate.service\n")
     assert lb.own_unit(path) == "cells-gate.service"
-    path.write_text("0::/user.slice/user-1000.slice/session-3.scope\n")
-    assert lb.own_unit(path) == "session-3.scope"
     assert lb.own_unit(tmp_path / "missing") is None
 
 
-def test_check_samples_usage_over_the_window(lb, monkeypatch, tmp_path):
-    units = {"cells-busy.service": "8-11 24-27", "cells-waiting.service": "8-11 24-27",
-             "cells-idle.service": "10", "cells-laneA.service": "0-3 16-19"}
-    usage = {u: [0, 0] for u in units}
-    usage["cells-busy.service"] = [1_000_000, 11_000_000]  # 10 s in 10 s: one CPU.
-    usage["cells-waiting.service"] = [5, 5]
-    usage["cells-idle.service"] = [0, 100_000]  # 0.1 s in 10 s: 0.01 CPU.
-    calls = {u: 0 for u in units}
+# --------------------------------------------------------------- the sampling, faked systemd
 
-    def read(group):
-        unit = group.rsplit("/", 1)[-1]
-        value = usage[unit][min(calls[unit], 1)]
-        calls[unit] += 1
-        return value
 
-    monkeypatch.setattr(lb, "active_units", lambda pattern="cells-*": list(units))
-    monkeypatch.setattr(lb, "unit_properties", lambda u: dict(
-        CPUAffinity=units[u], ControlGroup=f"/cells.slice/{u}"))
-    monkeypatch.setattr(lb, "cgroup_usage_usec", read)
-    monkeypatch.setattr(lb, "cgroup_pids", lambda group: [group])
-    monkeypatch.setattr(lb, "waits_on_lock", lambda pids, lock: "waiting" in pids[0])
-    monkeypatch.setattr(lb, "own_unit", lambda: None)
-    slept = []
-    out = lb.check(LANE, tmp_path / "lane.lock", window=10.0, sleep=slept.append)
-    assert slept == [10.0]
-    assert [r["unit"] for r in out["busy"]] == ["cells-busy.service"]
-    assert [r["unit"] for r in out["waiters"]] == ["cells-waiting.service"]
-    assert [r["unit"] for r in out["idle"]] == ["cells-idle.service"]
-    assert out["busy"][0]["cpus_used"] == pytest.approx(1.0)
+def test_check_charges_processes_over_the_window(lb, monkeypatch, tmp_path):
+    """cells-parent: unpinned, its child 2 pinned to CPU 8 and computing (the plant). cells-wait: a
+    flock waiter. cells-born: a process born during the window, charged its whole time.
+    cells-me: the caller, left out although it computes."""
+    pids = {"cells-parent.service": {1: ALL, 2: {8}}, "cells-wait.service": {3: LANE},
+            "cells-born.service": {4: {10}}, "cells-me.service": {5: {8}},
+            "cells-laneA.service": {6: {0, 1}}}
+    cpu = {1: [0.0, 0.01], 2: [3.0, 12.9], 3: [0.0, 0.0], 4: [None, 6.0], 5: [0.0, 9.0],
+           6: [0.0, 40.0]}
+    phase = {"n": 0}
+    monkeypatch.setattr(lb, "active_units", lambda pattern="cells-*": list(pids))
+    monkeypatch.setattr(lb, "unit_cgroup", lambda u: u)
+    monkeypatch.setattr(lb, "cgroup_pids", lambda group: [
+        p for p in pids[group] if not (p == 4 and phase["n"] == 0)])
+    monkeypatch.setattr(lb, "proc_affinity", lambda pid: next(
+        a for unit in pids.values() for p, a in unit.items() if p == pid))
+    monkeypatch.setattr(lb, "proc_cpu_seconds", lambda pid: cpu[pid][phase["n"]])
+    monkeypatch.setattr(lb, "waits_on_lock", lambda ps, lock: 3 in ps)
+    monkeypatch.setattr(lb, "own_unit", lambda: "cells-me.service")
+
+    def sleep(seconds):
+        assert seconds == 10.0
+        phase["n"] = 1
+
+    out = lb.check(LANE, tmp_path / "lane.lock", window=10.0, sleep=sleep)
+    assert [r["unit"] for r in out["busy"]] == ["cells-born.service", "cells-parent.service"]
+    parent = next(r for r in out["busy"] if r["unit"] == "cells-parent.service")
+    assert parent["cpus_used"] == pytest.approx(0.991) and parent["busiest"] == 2
+    assert [r["unit"] for r in out["waiters"]] == ["cells-wait.service"]
+    assert out["own"] == ["cells-me.service"]
+    listed = {r["unit"] for k in ("busy", "waiters", "idle") for r in out[k]}
+    assert "cells-laneA.service" not in listed and "cells-me.service" not in listed

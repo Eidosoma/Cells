@@ -1,5 +1,5 @@
 """Which systemd units are computing on a gate lane without its lock: the refusal check of a gate
-holder (D222's first fault, fixed).
+holder (D222's first fault, fixed; charged by process since the lead's ruling of 18 November 2026).
 
 A holder takes its lane's lock (flock) and must not start while another unit computes on the
 lane's CPUs without that lock: the other work would perturb the lane's timed or bitwise runs. The
@@ -10,19 +10,22 @@ lock. On 18 November 2026 that refused core landings: 8c2cb523's set at 19:32, f
 on the lock. A unit that waits for the lock does not compute, and every unit that takes the lock is
 serialised by it.
 
-So among the active units (named `cells-*`) whose CPU affinity meets the lane's CPUs:
-- the caller's own unit, and units whose names start with an --ignore-prefix, are the holder's own;
-- a unit with a process named flock that holds a descriptor on the lane's lock file, or names it
-  among its arguments, is blocked in flock on the lane's lock: a lock waiter, ignored;
-- a unit whose cgroup used less than --threshold of one CPU over the sampling --window is idle,
-  ignored;
-- any other unit is computing on the lane without the lock: busy, and the caller refuses.
-A unit without a CPU affinity can run anywhere. Like the check it supersedes, this one does not
-count such a unit against the lane, but it does list it.
+Each process is charged by its own affinity, not its unit's, so a child that is pinned onto the lane
+under a unit pinned elsewhere (or not pinned at all) is seen. Over the sampling --window, every
+process of every active unit (named `cells-*`) whose CPUs (/proc/PID/status Cpus_allowed_list)
+meet the lane's is charged its CPU time (/proc/PID/stat utime and stime). A process born during the
+window is charged all of its time, and one that ends during it cannot be charged. A process allowed
+on every CPU meets the lane and is charged. A unit's charge is the sum, and then:
+- the caller's own unit is the holder's, and is left out;
+- a unit charged at least --threshold of one CPU over the window is computing on the lane without
+  the lock: busy, and the caller refuses;
+- any other unit with a process on the lane is listed: as a lock waiter when one of its processes
+  is a flock that holds a descriptor on the lane's lock file or names it among its arguments, and
+  as idle otherwise.
 
 Usage:
-  python3 lane_busy.py --cpus 8-11,24-27 --lock /path/lane.lock [--ignore-prefix PREFIX ...]
-                       [--window 10] [--threshold 0.05] [--json OUT]
+  python3 lane_busy.py --cpus 8-11,24-27 --lock /path/lane.lock [--window 10] [--threshold 0.05]
+                       [--json OUT]
 Exit 0 when no unit is busy, 1 when one is (the classification printed as JSON either way).
 """
 
@@ -35,6 +38,7 @@ import time
 from pathlib import Path
 
 CGROUP_ROOT = Path("/sys/fs/cgroup")
+PROC = Path("/proc")
 
 
 def cpu_set(text):
@@ -54,24 +58,10 @@ def active_units(pattern="cells-*"):
     return [line.split()[0] for line in listed.splitlines() if line.strip()]
 
 
-def unit_properties(unit):
-    """{property: value} of CPUAffinity and ControlGroup."""
-    shown = subprocess.run(
-        ["systemctl", "--user", "show", unit, "-p", "CPUAffinity", "-p", "ControlGroup"],
-        capture_output=True, text=True, check=True).stdout
-    return dict(line.split("=", 1) for line in shown.splitlines() if "=" in line)
-
-
-def cgroup_usage_usec(cgroup, root=CGROUP_ROOT):
-    """The cgroup's CPU time so far (cpu.stat usage_usec), or None when it has gone."""
-    try:
-        for line in (root / cgroup.lstrip("/") / "cpu.stat").read_text().splitlines():
-            key, _, value = line.partition(" ")
-            if key == "usage_usec":
-                return int(value)
-    except OSError:
-        return None
-    return None
+def unit_cgroup(unit):
+    shown = subprocess.run(["systemctl", "--user", "show", unit, "-p", "ControlGroup", "--value"],
+                           capture_output=True, text=True, check=True).stdout
+    return shown.strip()
 
 
 def cgroup_pids(cgroup, root=CGROUP_ROOT):
@@ -85,7 +75,28 @@ def cgroup_pids(cgroup, root=CGROUP_ROOT):
     return pids
 
 
-def waits_on_lock(pids, lock, proc=Path("/proc")):
+def proc_affinity(pid, proc=PROC):
+    """The CPUs the process may run on (its Cpus_allowed_list), or None when it has gone."""
+    try:
+        for line in (proc / str(pid) / "status").read_text().splitlines():
+            if line.startswith("Cpus_allowed_list:"):
+                return cpu_set(line.split(":", 1)[1].strip())
+    except OSError:
+        return None
+    return None
+
+
+def proc_cpu_seconds(pid, proc=PROC):
+    """The process's CPU time so far, all its threads (utime + stime), or None when it has gone."""
+    try:
+        text = (proc / str(pid) / "stat").read_text()
+    except OSError:
+        return None
+    fields = text[text.rindex(")") + 2:].split()  # After "pid (comm) ": state is field 3.
+    return (int(fields[11]) + int(fields[12])) / os.sysconf("SC_CLK_TCK")  # Fields 14 and 15.
+
+
+def waits_on_lock(pids, lock, proc=PROC):
     """True when one of the processes is a flock on the lock file (by descriptor or argument)."""
     lock = os.path.realpath(lock)
     for pid in pids:
@@ -120,57 +131,73 @@ def own_unit(proc_self=Path("/proc/self/cgroup")):
     return units[-1] if units else None
 
 
-def classify(units, lane, waiters, usage, window, threshold, own=(), ignore_prefixes=()):
+def classify(units, waiters, window, threshold, own=()):
     """The decision, from gathered facts.
 
-    units: {name: affinity set}; waiters: names blocked in flock on the lane's lock; usage:
-    {name: CPU seconds over the window, or None}. Returns {busy, waiters, idle, own, unpinned}.
+    units: {name: [(pid, affinity set, CPU seconds over the window)]}, each unit's processes on the
+    lane; waiters: names with a flock on the lane's lock. Returns {busy, waiters, idle, own}, each
+    unit's row giving its lane processes and the CPUs it used on them.
     """
-    out = dict(busy=[], waiters=[], idle=[], own=[], unpinned=[])
+    out = dict(busy=[], waiters=[], idle=[], own=[])
     for name in sorted(units):
-        cpus = units[name]
-        if name in own or any(name.startswith(p) for p in ignore_prefixes):
+        if name in own:
             out["own"].append(name)
             continue
-        if not cpus:
-            out["unpinned"].append(name)
+        processes = units[name]
+        if not processes:
             continue
-        if not cpus & lane:
-            continue
-        seconds = usage.get(name)
-        load = None if seconds is None else seconds / window
-        row = dict(unit=name, affinity=sorted(cpus), cpus_used=load)
-        if name in waiters:
-            out["waiters"].append(row)
-        elif load is not None and load < threshold:
-            out["idle"].append(row)
-        elif load is None:  # Gone during the window: no longer on the lane.
-            out["idle"].append(dict(row, note="ended during the window"))
-        else:
+        seconds = sum(s for _, _, s in processes)
+        row = dict(unit=name, lane_processes=len(processes), cpus_used=seconds / window,
+                   busiest=max(processes, key=lambda p: p[2])[0])
+        if seconds / window >= threshold:
             out["busy"].append(row)
+        elif name in waiters:
+            out["waiters"].append(row)
+        else:
+            out["idle"].append(row)
     return out
 
 
-def check(lane, lock, window=10.0, threshold=0.05, ignore_prefixes=(), sleep=time.sleep):
+def check(lane, lock, window=10.0, threshold=0.05, sleep=time.sleep):
     """Gather the facts from systemd, the cgroups and /proc, sample, and classify."""
-    units, groups = {}, {}
+    me = own_unit()
+    groups = {}
     for name in active_units():
+        if name == me:
+            continue
         try:
-            props = unit_properties(name)
+            groups[name] = unit_cgroup(name)
         except subprocess.CalledProcessError:
             continue
-        units[name] = cpu_set(props.get("CPUAffinity", ""))
-        groups[name] = props.get("ControlGroup", "")
-    candidates = [n for n, c in units.items() if c & lane and groups.get(n)]
-    before = {n: cgroup_usage_usec(groups[n]) for n in candidates}
+
+    def on_lane(group):
+        found = {}
+        for pid in cgroup_pids(group):
+            cpus = proc_affinity(pid)
+            if cpus and cpus & lane:
+                found[pid] = cpus
+        return found
+
+    before = {}
+    for group in groups.values():
+        for pid in on_lane(group):
+            before[pid] = proc_cpu_seconds(pid)
     sleep(window)
-    after = {n: cgroup_usage_usec(groups[n]) for n in candidates}
-    usage = {n: None if before[n] is None or after[n] is None else (after[n] - before[n]) / 1e6
-             for n in candidates}
-    waiters = {n for n in candidates if waits_on_lock(cgroup_pids(groups[n]), lock)}
-    me = own_unit()
-    result = classify(units, lane, waiters, usage, window, threshold,
-                      own={me} if me else set(), ignore_prefixes=ignore_prefixes)
+    units, waiters = {}, set()
+    for name, group in groups.items():
+        processes = []
+        for pid, cpus in on_lane(group).items():
+            now = proc_cpu_seconds(pid)
+            if now is None:
+                continue  # Ended between the listing and the reading.
+            was = before.get(pid)
+            processes.append((pid, cpus, now - (was if was is not None else 0.0)))
+        units[name] = processes
+        if processes and waits_on_lock(cgroup_pids(group), lock):
+            waiters.add(name)
+    result = classify(units, waiters, window, threshold, own={me} if me else set())
+    if me:
+        result["own"] = [me]
     result.update(lane=sorted(lane), lock=str(lock), window_s=window, threshold_cpus=threshold)
     return result
 
@@ -179,12 +206,11 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--cpus", required=True, help="the lane's CPUs, e.g. 8-11,24-27")
     p.add_argument("--lock", required=True, help="the lane's lock file")
-    p.add_argument("--ignore-prefix", action="append", default=[])
     p.add_argument("--window", type=float, default=10.0, help="sampling window, seconds")
     p.add_argument("--threshold", type=float, default=0.05, help="idle below this many CPUs")
     p.add_argument("--json", help="write the classification here too")
     a = p.parse_args(argv)
-    result = check(cpu_set(a.cpus), a.lock, a.window, a.threshold, tuple(a.ignore_prefix))
+    result = check(cpu_set(a.cpus), a.lock, a.window, a.threshold)
     text = json.dumps(result, indent=1)
     if a.json:
         Path(a.json).write_text(text + "\n")

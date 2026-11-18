@@ -1,9 +1,8 @@
 """crossrev's sets of one snapshot (the gates' cross-revision runner and record maker).
 
   run     SNAPSHOT OUT RECORD   each set of the snapshot, compared with the record's (the gates)
-  record  SNAPSHOT OUT          a new record of the snapshot (the record maker): the --sets given,
-                                or else the --previous record's sets, each compared with its set
-                                there
+  record  SNAPSHOT OUT          a new record of the snapshot (the record maker), each set compared
+                                with its set in an earlier record when --previous is given
 
 Per set it runs the set's actions (jaxprs, bindings, and check for the operators' own modules) from
 the snapshot's root, with PYTHONPATH at the snapshot, at nice 10, into OUT/SET. Then
@@ -13,11 +12,13 @@ layout is the shell runner's, so the gates' greps read it unchanged: OUT/SET, OU
 OUT/compare-SET.txt, OUT/listing-SET.diff, and OUT/crossrev.log with its line forms. Exit 0 when
 every set is identical with the same listing.
 
-The sets are the record's own: each set folder of RECORD whose name is in SETS, in ORDER, unless
---sets names them. A folder with a dash in its name is a superseded copy, kept for the record's
-renewal notes, and is skipped. Any other unknown folder is refused, so a new set is added here
-before a record holding it is used. A record lacking a set the snapshot has simply runs fewer sets;
-give --sets to require one.
+The sets are fail-closed (the lead's ruling, 18 November 2026). Every set the runner knows (SETS, in
+ORDER) is required unless --sets names fewer. A required set missing from the record (or from the
+--previous record) fails the run, unless the call names it with --allow-missing SET. The log
+records that, and no gate passes the flag. A record folder with a dash in its name is a superseded
+copy, kept for the record's renewal notes, and is skipped. Any other folder the runner does not know
+is refused, so a new set is added here before a record holding it is used. A snapshot lacking a set
+fails that set's actions, so a branch older than a set's landing merges main first.
 
 This supersedes these runners, which stay byte for byte because recorded runs cite them:
 - the ten-set runner /mnt/workspaces/Cells/crossrev-acceptances-20261118/tools/crossrev.sh,
@@ -26,8 +27,9 @@ This supersedes these runners, which stay byte for byte because recorded runs ci
 - the record maker /mnt/workspaces/Cells/core-fixes-20261116/tools/crossrev-record.sh.
 
 Usage:
-  python crossrev_sets.py run SNAPSHOT OUT RECORD [--sets SET ...] [--python PY]
-  python crossrev_sets.py record SNAPSHOT OUT (--sets SET ... | --previous RECORD) [--python PY]
+  python crossrev_sets.py run SNAPSHOT OUT RECORD [--sets SET ...] [--allow-missing SET ...]
+  python crossrev_sets.py record SNAPSHOT OUT [--sets SET ...] [--previous RECORD]
+                                              [--allow-missing SET ...]
 """
 
 import argparse
@@ -61,7 +63,8 @@ PYTHON = "/mnt/workspaces/Cells/venv-cpu/bin/python"
 
 
 def record_sets(record):
-    """The record's sets in ORDER; SystemExit on an unknown folder (superseded copies skipped)."""
+    """The record's known sets in ORDER (superseded copies skipped); SystemExit on an unknown
+    folder."""
     names = [p.name for p in Path(record).iterdir() if p.is_dir() and "-" not in p.name]
     unknown = sorted(n for n in names if n not in SETS)
     if unknown:
@@ -70,16 +73,14 @@ def record_sets(record):
     return [s for s in ORDER if s in names]
 
 
-def chosen(sets, record=None):
-    if sets:
-        unknown = sorted(set(sets) - set(SETS))
-        if unknown:
-            raise SystemExit(f"Refused: unknown sets {unknown} (known: {list(ORDER)})")
-        return [s for s in ORDER if s in sets]
-    if record is None:
-        raise SystemExit("Refused: give --sets, or a record to read them from (run's RECORD, "
-                         "record's --previous)")
-    return record_sets(record)
+def chosen(sets):
+    """The required sets: those named, or every known set (fail-closed)."""
+    if not sets:
+        return list(ORDER)
+    unknown = sorted(set(sets) - set(SETS))
+    if unknown:
+        raise SystemExit(f"Refused: unknown sets {unknown} (known: {list(ORDER)})")
+    return [s for s in ORDER if s in sets]
 
 
 def commands(snapshot, out, name, python):
@@ -109,8 +110,9 @@ def listing(path):
     return sorted(p.name for p in Path(path).iterdir()) if Path(path).is_dir() else None
 
 
-def sweep(snapshot, out, sets, against, python, log, call=call):
-    """Each set's actions, then its compare with `against` (a record, or None): the exit status."""
+def sweep(snapshot, out, sets, against, python, log, call=call, allow_missing=()):
+    """Each set's actions, then its compare with `against` (a record, or None): the exit status.
+    A set the record lacks fails, unless allow_missing names it."""
     snapshot, out = Path(snapshot).resolve(), Path(out)
     env, status = environment(snapshot), 0
     for name in sets:
@@ -120,6 +122,15 @@ def sweep(snapshot, out, sets, against, python, log, call=call):
             status |= rc != 0
             log(f"{name} {action} exit {rc} seconds {round(time.time() - start)}")
         if against is None:
+            continue
+        if not (Path(against) / name).is_dir():
+            if name in allow_missing:
+                log(f"compare {name} skipped: the record has no {name} set "
+                    "(allowed by --allow-missing)")
+            else:
+                status = 1
+                log(f"compare {name} exit 1: the record has no {name} set (fail-closed; "
+                    f"--allow-missing {name} would accept it)")
             continue
         compare = out / f"compare-{name}.txt"
         rc = call([python, "-B", "-m", COMPOSITE, "compare", str(Path(against) / name),
@@ -148,13 +159,21 @@ def main(argv=None):
         else:
             m.add_argument("--previous", help="an earlier record to compare each set with")
         m.add_argument("--sets", nargs="+")
+        m.add_argument("--allow-missing", nargs="+", default=[],
+                       help="required sets the record may lack (logged; never in a gate)")
         m.add_argument("--python", default=PYTHON)
     a = p.parse_args(argv)
     snapshot, out = Path(a.snapshot), Path(a.out)
     if not (snapshot / "SNAPSHOT.json").is_file():
         raise SystemExit(f"Refused: {snapshot} is not an execution snapshot")
     against = a.record if a.mode == "run" else a.previous
-    sets = chosen(a.sets, against)  # run: the record's sets; record: the previous record's.
+    sets = chosen(a.sets)
+    allowed = chosen(a.allow_missing) if a.allow_missing else []
+    if set(allowed) - set(sets):
+        raise SystemExit(f"Refused: --allow-missing names sets not required: "
+                         f"{sorted(set(allowed) - set(sets))}")
+    if against is not None:
+        record_sets(against)  # Refuses a folder this runner does not know.
     out.mkdir(parents=True, exist_ok=True)
 
     def log(line):
@@ -163,8 +182,9 @@ def main(argv=None):
 
     log(f"crossrev {a.mode} {snapshot} sets {' '.join(sets)} affinity "
         f"{','.join(map(str, sorted(os.sched_getaffinity(0))))}"
-        + (f" against {against}" if against else ""))
-    status = sweep(snapshot, out, sets, against, a.python, log)
+        + (f" against {against}" if against else "")
+        + (f"; allowed missing from the record: {' '.join(allowed)}" if allowed else ""))
+    status = sweep(snapshot, out, sets, against, a.python, log, allow_missing=set(allowed))
     log(f"done status {status}")
     return status
 
