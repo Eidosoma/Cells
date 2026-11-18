@@ -6,13 +6,11 @@
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates and S1 to S5 as development checks (development_runs)",
-  "needs_first": [
-   "the independent references (R-closed, R-step-map, R-linear, R-capacitor, R-energy), written by the FR references agent from docs/CLOSED_COMPARTMENT_DESIGN.md's Appendix A and validation/closed_compartment/reference_inputs.json alone (the lead's ruling of 17 November 2026: after FR-10's references, before FR-3's)",
-   "the world builders of every part (validation/tissue/compartment_acceptance_fixtures.py; C9 and C2 use compartment_fixtures' W and W+)",
-   "the generator (records only), the judge (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only) and the drafter of the machine criteria, in FR-10's form"
-  ],
+  "needs_first": [],
   "path": "the references and the tools; the dt study (development); a rehearsal of every judged part on a registered dry-run copy; the lead's registration; one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's, FR-5's and FR-10's)",
-  "move_2": "registration and the judged run sit on the same side of D188's move 2 (the lead's rule of 17 November 2026)"
+  "move_2": "registration and the judged run sit on the same side of D188's move 2 (the lead's rule of 17 November 2026)",
+  "rehearsed": "every judged part, the references included, on a registered dry-run copy (pipeline/run-5f6e857c): the judged entry passed every judged criterion on the copy",
+  "judged_run_launcher": "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/judged/judge-run.sh SNAPSHOT OUT CPU,CPU,CPU,CPU /mnt/workspaces/Cells/closed-compartment-fr1-20261117/pipeline/run-5f6e857c: from the registration's clean snapshot, on its own registered protocol, the lane's lock held; each part's runtime limit by D150's rule on the larger of the rehearsal plan's estimate and the rehearsal's wall; then the judge's judged entry and the compare of every part against the rehearsal's"
  },
  "rung": "FR-1, acceptance 1 (numerical verification, D174's first claim kind; no biological comparison, D151)",
  "question": "Does cell_owned_compartments@1 hold a closed compartment as a declared node whose content exchange@1's laws load and release exactly (the flux and first-order exports and the saturable import at rounding against their closed forms), whose two-way first-order exchange converges at second order to its closed form and equals the palindrome's step map at rounding, whose compositions with turnover's clearance, D152's reaction and an uptake path follow their linear systems, which stays electrically silent beside a live owner, whose every law books its moved amounts' exact free-energy change (from a trace too), whose runs restart and batch bitwise, whose every refusal holds with its reason, whose declaration is pure identity, and whose planted misbookings are caught?",
@@ -164,9 +162,17 @@
    {
     "path": "/mnt/workspaces/Cells/closed-compartment-m1-20261114-01",
     "status": "milestone 1's gates (§12): the tier-1 smoke, S5's four pairs, S1 to S3 in W+ with the planted controls in every program family, crossrev"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/pipeline/run-d5080224",
+    "status": "the dt study (C4, C6, C7 and C8's ladders: every order 2.0 or at rounding; Richardson errors at 1 ms at most 3.5e-3 of B_split) and the first rehearsal on a registered dry-run copy, from snapshot d5080224, on lane A at nice 10: 37 of 38 parts ran; C12_restart's tool failed at the full horizon (fixed, disclosed)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/pipeline/run-5f6e857c",
+    "status": "the dt study again and the full rehearsal on a new registered dry-run copy, from snapshot 5f6e857c, on the timed lane (CPUs 4, 5, 20 and 21: two physical cores and their hyperthreads, under its lock, at nice 10): all 38 parts ran; the judge's judged entry on the copy passed every judged criterion (44 of 44; not a judgement); the sixteen dt parts bitwise between the development and judged entries; walls up to 248 s (C9)"
    }
   ],
-  "note": "development evidence only: no run of this protocol exists"
+  "note": "development evidence only: no judged run of this protocol exists; the rehearsals ran on registered dry-run copies"
  },
  "questions_for_the_lead": [],
  "questions_answered": [
