@@ -120,12 +120,16 @@ def test_operators_is_the_active_section_with_todays_keys():
 
 
 def test_the_composite_s_package_registers_each_operator_its_modules_define():
+    """The section is FIRST, in today's order, then every other operator the package defines, in
+    package_operators' order: a later operator module joins this list with no edit to this test
+    or to FIRST (at c09ae4c7 the package defined FIRST's 19 alone, checked against main)."""
     defined = operators.package_operators("cells.operators")
-    assert sorted(defined, key=lambda c: c.LAW_ID) == sorted(package.FIRST, key=lambda c: c.LAW_ID)
+    assert set(package.FIRST) <= set(defined) and len(set(package.FIRST)) == len(package.FIRST)
     assert tuple(c.LAW_ID for c in package.FIRST)[: len(TODAY)] == TODAY  # Today's order.
+    expected = (*package.FIRST, *(c for c in defined if c not in package.FIRST))
     registered = tuple(type(op) for op in operators.BUILTIN.operators())
-    assert registered[: len(package.FIRST)] == package.FIRST
-    assert tuple(OPERATORS)[: len(package.FIRST)] == tuple(c.LAW_ID for c in package.FIRST)
+    assert registered[: len(expected)] == expected  # Planted operators of other tests follow.
+    assert tuple(OPERATORS)[: len(expected)] == tuple(c.LAW_ID for c in expected)
 
 
 @pytest.fixture
