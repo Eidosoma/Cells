@@ -25,10 +25,14 @@ Each claim with a planted error it must catch (D187):
   nothing to a world record, and a world the parser refuses is recorded (planted: a driver that adds
   the role);
 - a registered refusal world is parsed under the probed pair its `refused_under` names, and rule 8
-  refuses it there (planted: the first pair, under which it is an ordinary world).
+  refuses it there (planted: the first pair, under which it is an ordinary world);
+- every run of the ladder (OL1-4b) has its own stream identity over all rungs and both pairs, as the
+  references' design requires ("none shared"; planted: lineage word = the run's index on every
+  rung, which repeats across rungs).
 """
 
 import copy
+import dataclasses
 import json
 
 import pytest
@@ -313,3 +317,21 @@ def test_a_refusal_world_is_parsed_under_the_pair_it_names(tmp_path):
     assert entry["conventions"]["condensed_measure"] == "multinomial_less_one"
     planted = probes._definition(source, probes.PAIRS[0], horizon=1.0, events=1, row_every=1)
     assert parse_spec(planted).model.world.role is None  # Planted: the first pair admits it.
+
+
+def test_every_ladder_run_has_its_own_stream_identity():
+    from validation.assembly_lineages_v2 import probes
+
+    spec = parse_spec(definition(world()))
+    blocks = [(r, p) for r in range(len(probes.WB_RUNGS)) for p in range(len(probes.PAIRS))]
+
+    def identities(specs):
+        return [json.dumps(v2_spec.stream_identity(s), sort_keys=True) for s in specs]
+
+    made = [i for rung, pair in blocks for i in identities(probes.wb_specs(spec, rung, pair))]
+    assert len(made) == len(blocks) * probes.WB_RUNS == len(set(made))
+    assert probes.wb_lineages(0, 0) == tuple(range(probes.WB_RUNS))  # the first block as before
+    shared = [dataclasses.replace(spec, execution=dataclasses.replace(spec.execution, lineage=w))
+              for w in range(probes.WB_RUNS)]  # fmt: skip
+    planted = [i for _ in blocks for i in identities(shared)]  # Planted: index on every rung.
+    assert len(set(planted)) == probes.WB_RUNS < len(planted)  # shared across rungs: caught

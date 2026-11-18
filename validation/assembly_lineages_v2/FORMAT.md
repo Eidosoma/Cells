@@ -115,8 +115,14 @@ manifest.json (each file's SHA-256, written last).
   [state] and (kernel_probe) reservoir_work_kT [step], with input_states echoed in the registered
   place order.
 - **wb_ensemble/<rung>/<pair>/**: observed [run, time, place] (the state after the last event at or
-  before each registered time), events [run], lineage [run] (each run's own stream word), status
-  [run], and input_observation_times_s.
+  before each registered time), events [run], lineage [run], status [run], and
+  input_observation_times_s.
+  - lineage [run] is each run's own lineage word, and no two runs share one across the whole ladder:
+    2000 × (rung index × 2 + pair index) + the run's index.
+  - Rungs are in the registered order (m5, m20, m80, m320) and pairs in the order below, so the
+    words run 0 .. 15999, consecutive within each block.
+  - Seed 1, environment 0 and branch 0 hold throughout. probe.json's `streams` states the block's
+    words.
 - **refusals/refusals.json**: each registered refusal world with the engine parser's message and
   the `conventions` it was parsed under: the probed pair whose tokens include the world's
   `refused_under`, else the first pair (the file's top-level `conventions`). `all_refused` must be

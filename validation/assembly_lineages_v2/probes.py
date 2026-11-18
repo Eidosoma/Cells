@@ -23,8 +23,9 @@ tables and ensembles. It reads only the inputs' files, never the references' cod
 - `rescale_pair` (OL1-3): ol1_wa_closed and ol1_wa_closed_x2 from their initial states with one
   shared stream, RESCALE_EVENTS events each, with every draw's uniforms;
 - `wb_ensemble` (OL1-4b): each rung of the large-system ladder, WB_RUNS runs with independent
-  streams (lineage words 0 .. WB_RUNS − 1), observed at the registered times (the state after the
-  last event at or before each);
+  streams, none shared across the ladder's rungs and pairs (wb_lineages: lineage word
+  WB_RUNS × (rung × 2 + pair) + run), observed at the registered times (the state after the last
+  event at or before each);
 - `ledger_run` (OL1-4c, OL1-4d, OL1-5): ol1_wa from its initial state, LEDGER_EVENTS events or
   LEDGER_T_END seconds, a row every LEDGER_ROW_EVERY events, the trace and every draw's uniforms;
 - `replay` (OL1-6): the ledger run again; `other_stream` (OL1-6): the ledger run under lineage
@@ -36,6 +37,7 @@ event guard of the ensembles) are recorded in roles.json.
 """
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import os
@@ -371,9 +373,26 @@ def ledger_runs(inputs, out):
             )  # fmt: skip
 
 
-def wb_ensemble(inputs, out):
-    import dataclasses
+def wb_lineages(rung, pair):
+    """The lineage words of one rung's runs under one pair (indices in WB_RUNGS and PAIRS order).
 
+    The references' design (OL1-4b) has the ladder's streams "independent, one per run; none
+    shared", over all its rungs: each (rung, pair) block takes its own WB_RUNS consecutive words,
+    WB_RUNS × (rung × len(PAIRS) + pair) + run, so no two runs of the ladder share a stream identity
+    (seed SEED, environment 0, branch 0). The first block keeps the words 0 .. WB_RUNS − 1."""
+    base = WB_RUNS * (rung * len(PAIRS) + pair)
+    return tuple(range(base, base + WB_RUNS))
+
+
+def wb_specs(spec, rung, pair):
+    """One spec per run of a ladder block, each with its own lineage word (wb_lineages)."""
+    return [
+        dataclasses.replace(spec, execution=dataclasses.replace(spec.execution, lineage=word))
+        for word in wb_lineages(rung, pair)
+    ]
+
+
+def wb_ensemble(inputs, out):
     from cells.core.specs import parse_spec
     from cells.models.assembly_lineages_v2 import runner
 
@@ -381,17 +400,16 @@ def wb_ensemble(inputs, out):
     wb = design["rows"]["OL1-4"]["b_large_system"]
     assert wb["runs_per_rung"] == WB_RUNS and tuple(wb["worlds"]) == WB_RUNGS
     times = tuple(wb["observation_times_s"])
-    for name in WB_RUNGS:
+    for rung, name in enumerate(WB_RUNGS):
         registered_world, path = _registered(inputs, name)
-        for pair in PAIRS:
+        for index, pair in enumerate(PAIRS):
+            words = wb_lineages(rung, index)
             spec = parse_spec(
                 _definition(registered_world, pair, horizon=wb["t_end_s"], events=WB_GUARD,
-                            row_every=WB_GUARD, observations=times, trace=False)
+                            row_every=WB_GUARD, observations=times, trace=False,
+                            lineage=words[0])
             )  # fmt: skip
-            specs = [
-                dataclasses.replace(spec, execution=dataclasses.replace(spec.execution, lineage=w))
-                for w in range(WB_RUNS)
-            ]
+            specs = wb_specs(spec, rung, index)
             runs = runner.run_lanes(specs)
             world = spec.model.world
             observed, statuses, events = [], [], []
@@ -408,16 +426,17 @@ def wb_ensemble(inputs, out):
                 Path(out) / "wb_ensemble" / name / pair_name(pair),
                 "wb_ensemble",
                 {"observed": np.stack(observed), "events": np.asarray(events, dtype=np.int64),
-                 "lineage": np.arange(WB_RUNS, dtype=np.int64),
+                 "lineage": np.asarray([s.execution.lineage for s in specs], dtype=np.int64),
                  "status": np.asarray(statuses, dtype="<U12")},
                 {"world": {"registered": path.name, "sha256": _sha256(path)},
                  "conventions": tokens(pair),
                  "definition": spec.to_dict(),
                  "places": [p.name for p in world.places],
                  "observation_times_s": list(times),
-                 "streams": "one per run: seed 1, environment 0, branch 0, lineage word = the "
-                 "run's "
-                 "index (independent: none shared)",
+                 "streams": f"one per run, none shared across the ladder's rungs and pairs: "
+                 f"seed {SEED}, environment 0, branch 0, lineage word = {WB_RUNS} x (rung index x "
+                 f"{len(PAIRS)} + pair index) + the run's index, rungs in the registered order and "
+                 f"pairs as listed in roles.json; this block's words {words[0]}..{words[-1]}",
                  "cut": "the state after the last event at or before each observation time",
                  "says": {"observed": "[run, time, place]: the counts at each observation time, "
                           "places in `places` order", "events": "[run]: committed events to the "
@@ -502,7 +521,10 @@ def run(inputs, out, only=None):
                          "rescale_events": RESCALE_EVENTS, "wb_runs": WB_RUNS,
                          "wb_event_guard": WB_GUARD, "ledger_events": LEDGER_EVENTS,
                          "ledger_t_end_s": LEDGER_T_END, "ledger_row_every": LEDGER_ROW_EVERY,
-                         "other_stream_lineage": 1},
+                         "other_stream_lineage": 1,
+                         "wb_lineage_words": f"{WB_RUNS} x (rung index x {len(PAIRS)} + pair "
+                         "index) + the run's index: rungs in the registered order, pairs in "
+                         "`pairs` order; none shared across the ladder"},
             "roles": sorted(ROLES),
             "files": files,
             "standing": "development run of the engine, not judged",
