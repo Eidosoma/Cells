@@ -933,22 +933,41 @@ It also takes `src="scene.json"` or a `scene` property. It emits `cells-ready` a
 
 ## Publishing
 
-The visualizer session publishes its own artifacts (the user, 14 November 2026).
-`artifacts.json` records each one's URL so that updates go to the same link.
+The visualizer session publishes its own artifacts (the user, 14 November 2026). An artifact
+can be updated only from the account that published it, so the page may stand at more than
+one link over time: `artifacts.json` records every link it has had and what each holds.
+Nothing a publish needs is kept with a link or an account. The page and every file beside
+it are made again from this folder (the run files from the frozen evidence, below), so the
+page can be published to any link, or to a new one (the user, 18 November 2026).
 
-1. `npm run extract && npm test && npm run export`
-2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
-   listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
-   and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
-   `members-NN.json`). On 15 November 2026 that is 378 files (115 MB): 327 files of the 61
-   runs (59 of the experiments, the development run and the example) and 51 files of
-   proteins. A publish takes at most 255 files and 64 MB, so a full
-   set goes up in several publishes to the same URL; a later publish keeps the files it
-   does not send, so only what changed needs sending. `npm run stage` lays the export out
-   as the artifact is, in a folder that is kept as the record of what was published, and
-   writes the list of each upload (`tools/stage_publish.py`). A page published without the
-   proteins' files draws the atlas as before and says that the species' own proteins could
-   not be loaded.
+1. In a clean copy of the branch's head, with the run files in place (`out/runs/`; "From a
+   fresh checkout" below says how they are remade): `npm test`, then `npm run export`. It writes
+   `out/cells-architecture.html` and `out/cells-architecture.files.json`, the list of the
+   files to publish beside it: the runs (`runs/`), the species' own proteins
+   (`proteins/<species>/`), the catalogue, the machines' shapes and the assembly's files.
+   On 18 November 2026 that is 359 files (54 MB): 257 of 51 runs, 70 of proteins, 21 shapes,
+   8 of the catalogue, 2 of the assembly and 1 machine.
+2. `npm run stage -- --new out/publish-NAME` lays the export out as the artifact is, in a
+   folder that is kept as the record of what was published, and writes the list of each
+   upload (`tools/stage_publish.py`). A publish takes at most 255 files and 64 MB, and one
+   version holds at most 511 files and 256 MB, so a full set goes up in several publishes
+   to the same link; a later publish keeps the files it does not send.
+   - To a link this folder published to last: add `--old` with the folder staged then, and
+     only what changed is sent.
+   - To a link whose staged folder is not at hand, or to a link first published long ago:
+     save the Artifact tool's listing of the link's files, give it with `--remote`, and add
+     `--remove`: every file is sent, and the last upload removes by name what the link
+     still holds and the page no longer lists.
+   - To a new link: nothing more; record the link in `artifacts.json`.
+3. Publish the staged page to the link, one upload after another, with the staged folder as
+   the uploads' root.
+4. Read the page back from the link and compare it with the staged page (the service wraps
+   it in a short head and tail of its own), list the link's files against the staged
+   folder, and record the version in `artifacts.json`: its date, the engine revision the
+   map reads, the gate it rests on, and what was looked at.
+
+A page published without the proteins' files draws the atlas as before and says that the
+species' own proteins could not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -957,12 +976,17 @@ allowlist; everything else is inside the page.
 
 Everything that makes the page is in this folder on the branch `visualizer`, except two
 things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
-stay out of git (61 runs in 327 files, 96 MB).
+stay out of git (112 runs in 585 files, 111 MB, on 18 November 2026; 257 of those files
+are published today).
 
 1. `npm install`
 2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
-   frozen evidence folders that `data/replays/selection.json` names. Skip it when
-   `out/runs/` is still on disk.
+   frozen evidence folders that `data/replays/selection.json` names, and
+   `npm run adapt:runs -- --experiment example-sheet --root tests/fixtures/run-example --run invented-numbers`
+   adds the sheet of invented numbers. Skip both when `out/runs/` is still on disk. On 18
+   November 2026 the two calls remade all 585 files in under a minute, each one byte for
+   byte the file the page was published from. What they need outside this folder is the
+   engine's frozen evidence, which the repository does not hold.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at. A strict build fails where that revision is
    on no remote branch as last fetched (a commit not yet pushed, or amended before it
