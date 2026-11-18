@@ -1392,7 +1392,7 @@ registration:**
   of 18 November, as a recorded assignment. The file then passes to the binding owner, since FR-3's
   site binding is seam C's (§5.3).
 
-**Amended the same evening (the lead, 18:45 UTC), on the gap-junction bundle's, the operators
+**Amended the same evening (the lead, 18:31 UTC), on the gap-junction bundle's, the operators
 owner's and the FR owner's hand-backs.** The times of this section's earlier amendments were
 corrected to their commits' times on the same evening, since several had been written ahead of the
 clock.
