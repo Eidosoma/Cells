@@ -68,6 +68,7 @@ from cells.definitions.surface_pump_v3_spec import (
     NAV1P2_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
+    channel_factors,
     projection,
 )
 from cells.execution.errors import NumericalError
@@ -377,7 +378,28 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
     return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
 
 
+def host_gated_pumps(p, structure, *, xp=jnp):
+    """B1 (docs/CORE_SEAMS_DESIGN.md §4.2, §4.5 Q1): the layout @3's pump laws see, each pump idle
+    where its host is closed.
+
+    Where the structure declares a closer (padding_fill) beside a pump law, each Na/K and Ca²⁺
+    pump's presence is and-ed with its patch's activity through the host table: the view's, so a
+    pump on a patch a closer has closed reads as a padded slot's (neutral inputs inside its domain;
+    exact zeros for its cycles, heat, work and affinity) at every stage, on the host and the
+    device. Its state (cycles and booked energy, history) is untouched. Static: in every other
+    structure the layout is returned as it is, so closer-free and pump-free worlds keep their
+    programs; no world of G1's or crossrev's declares both (18 November 2026)."""
+    if structure is None or not (structure.padding_fill and structure.pump_laws):
+        return p
+    patches = host_table(p, xp=xp).active[: p.membrane_active.size]
+    return p._replace(
+        pump_present=p.pump_present & patches,
+        calcium_pump_present=p.calcium_pump_present & patches,
+    )
+
+
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
+OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
 
 
 def _kinds(structure):
@@ -396,7 +418,8 @@ def _route(structure, kinds, read, control, p, *, xp):
     """§7.4 (n), the routing door, at one stage: (the control with each routed slot set to its
     held value x its sources' factors, a left fold in declared order; valid: every factor finite
     and in [0, 1]). The factors are the sources' at the stage's read state. Static: without
-    routes the control is returned as it is, and no factor is evaluated."""
+    routes the control is returned as it is, and no factor is evaluated. The routed slots are the
+    kinds' own control fields' and @3's own channel slots (B1's door)."""
     if structure is None or not structure.routes:
         return control, True
     by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
@@ -424,8 +447,13 @@ def _route(structure, kinds, read, control, p, *, xp):
 def _routes(model):
     """§7.4 (n): the routing door's table for a parsed model block, resolved at binding: ((sink
     kind ID, control field, slot, ((source kind ID, position), ...)), ...) in canonical kind
-    order; () without a sink. Refused: an unknown source ID, one that two kinds expose, a field
-    that is not the sink's own control field, and a slot routed twice."""
+    order, then @3's own channel slots; () without a sink. Refused: an unknown source ID, one that
+    two kinds expose, a field that is not the sink's own control field, and a slot routed twice.
+
+    @3 is the sink of its own `channel` field (B1's door, docs/CORE_SEAMS_DESIGN.md §4.3): each
+    population whose entry declares factors routes its slot, its position among the channels,
+    through its sources, so "a sink routes its own control fields only" holds (sink ID: @3's
+    namespaced model ID)."""
     registry, declared = kind_registry.active(), getattr(model, "kinds", ())
     sources = {}
     for kind_id, declaration in declared:
@@ -456,6 +484,14 @@ def _routes(model):
             if unknown:
                 raise ConfigError(f"{where} names unknown factor sources {unknown}")
             routes.append((kind_id, name, slot, tuple(sources[source] for source in named)))
+    for slot, channel_id, named in channel_factors(model):  # B1: @3, the sink of its channels.
+        unknown = [source for source in named if source not in sources]
+        if unknown:
+            raise ConfigError(
+                f"Channel population {channel_id}'s factors name unknown factor sources {unknown}"
+                + ("" if declared else " (only a declared kind exposes factors)")
+            )
+        routes.append((OWN_SINK, "channel", slot, tuple(sources[source] for source in named)))
     return tuple(routes)
 
 
@@ -633,16 +669,17 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         structure=structure,
     )
     gate_rate = xp.where(p.channel_gate_active, (target - state.channel_gate) / tau, 0.0)
+    pumped = host_gated_pumps(p, structure, xp=xp)  # B1: idle on a closed host (static).
     pr, args = nak_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_delta_mu_J_mol,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
-    cycles = xp.where(p.pump_present, pr.cycles_fmol_s, 0.0)
+    cycles = xp.where(pumped.pump_present, pr.cycles_fmol_s, 0.0)
     pump_d = -1e-3 * cycles * pr.cycle_free_energy_J_mol
     metabolic = -1e-3 * cycles * pr.chemical_drive_J_mol
     ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = calcium_pump_rates(
@@ -650,7 +687,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         co[:, p.membrane_outside],
         r.membrane_voltage_V,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
@@ -818,7 +855,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         channel,
         target,
         tau,
-        xp.where(p.pump_present, pr.cycle_free_energy_J_mol, 0.0),
+        xp.where(pumped.pump_present, pr.cycle_free_energy_J_mol, 0.0),
         ca_affinity,
         valid,
     )
@@ -943,22 +980,23 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         xp=xp,
         structure=structure,
     )
+    pumped = host_gated_pumps(p, structure, xp=xp)  # B1: idle on a closed host (static).
     rate, args = nak_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_delta_mu_J_mol,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
-    cycles = xp.where(p.pump_present, rate.cycles_fmol_s, 0.0)
+    cycles = xp.where(pumped.pump_present, rate.cycles_fmol_s, 0.0)
     ca_cycles, ca_d, ca_metabolic, _, ca_args = calcium_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_voltage_V,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
@@ -1499,6 +1537,9 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     its patch (o its opening, v its availability). max(c) bounds the
     constant-field slope, so this bounds the explicit channel stiffness.
     Quasi-steady gating slopes are not included; the step studies measure them.
+    A channel population that the routing door factors (B1, docs/CORE_SEAMS_DESIGN.md §4.3) enters
+    at its held availability: its factors are at most 1, so the held value bounds the routed one
+    (conservative), and the door's order here stays the kinds' (after this term).
     """
     ci, co = physical_amounts(state, p)
     ci = xp.where(p.active, ci / p.volume, 0.0)
@@ -1986,6 +2027,82 @@ Observations = make_dataclass(
     "SurfacePumpChannelObservations", [(k, np.ndarray) for k in OBSERVATION_FIELDS], frozen=True
 )
 
+# ------------------------------------------------------------------ field roles (B1, seam B)
+# docs/CORE_SEAMS_DESIGN.md §4.2: each per-entity field declares its partition role, and the
+# lifecycle (close, split, retire and open) is implemented once for every role:
+# - extensive: divided by the host's fraction with the anchor rule, so the daughters sum to the
+#   parent exactly; padded at retirement (its amount went to the daughters);
+# - intensive: copied at a split; padded at retirement;
+# - history: each daughter starts from 0; at retirement it moves into the closer's record, which
+#   adjust_inner adds back;
+# - structural: as declared at a split (law, host, ends); padded with its fill at retirement.
+# Every padded value of @3's is 0 (the adapter's PADDED_FIELDS; a closed contact's gate), so no
+# fill is declared. @3's own fields take these roles in place of the partition's hand-written
+# lists: every state field, and the per-entity layout fields that the lifecycle splits, copies or
+# pads today. These are host-side declarations: no program reads them.
+ROLES = ("extensive", "intensive", "history", "structural")
+FIELD_ROLES = MappingProxyType(
+    {
+        # State.
+        "amount_increment": "extensive",  # The partition's carriers move its charge mismatch.
+        "extracellular_amount_increment": "extensive",
+        "membrane_transferred": "history",
+        "junction_transferred": "history",
+        "face_transferred": "history",
+        "reservoir_supplied": "history",
+        "membrane_dissipated_energy_pJ": "history",
+        "junction_dissipated_energy_pJ": "history",
+        "face_dissipated_energy_pJ": "history",
+        "electrode_charge_transferred_C": "history",
+        "reservoir_work_pJ": "history",
+        "electrode_work_pJ": "history",
+        # A closed slot keeps the code-0 law's gate update (docs/INNER_MODEL_V4_DESIGN.md §7.4
+        # (b), (o)): its fill is that padding's, until an explicit absent marker.
+        "channel_gate": "intensive",
+        "channel_transferred": "history",
+        "channel_dissipated_energy_pJ": "history",
+        "junction_gate": "intensive",  # A closed contact holds 0.
+        "pump_cycles": "history",
+        "pump_dissipated_energy_pJ": "history",
+        "metabolic_work_pJ": "history",
+        "calcium_pump_cycles": "history",
+        "calcium_pump_dissipated_energy_pJ": "history",
+        "calcium_metabolic_work_pJ": "history",
+        # Layout: the anchors the partition splits (volume, amounts, charge, area, capacitance,
+        # contact area) and the pumps' per-patch capacities (composition's level (a)).
+        "volume": "extensive",
+        "amount_reference": "extensive",
+        "initial_cell_charge_C": "extensive",
+        "extracellular_volume": "extensive",
+        "extracellular_amount_reference": "extensive",
+        "initial_outside_charge_C": "extensive",
+        "membrane_area": "extensive",
+        "membrane_capacitance": "extensive",
+        "pump_capacity": "extensive",
+        "calcium_pump_capacity": "extensive",
+        "junction_area": "extensive",
+        # Layout copied at a split. A population takes its patch's fraction through the patch's
+        # area: its abundance and permeability are copied.
+        "membrane_permeability": "intensive",
+        "channel_abundance": "intensive",
+        "channel_permeability": "intensive",
+        "channel_relative_permeability": "intensive",
+        "junction_permeability": "intensive",
+        "junction_threshold_voltage": "intensive",
+        "junction_minimum": "intensive",  # A closed contact's minimum open fraction is 0.
+        # Layout as declared: laws, hosts and ends.
+        "channel_laws": "structural",  # Padded with code 0, the padding code.
+        "channel_membranes": "structural",
+        "membrane_cell": "structural",
+        "membrane_outside": "structural",
+        "junction_sender": "structural",
+        "junction_receiver": "structural",
+        "pump_present": "structural",
+        "calcium_pump_present": "structural",
+    }
+)
+
+
 # ------------------------------------------------------------------ the run view's declarations
 # docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
 # only by the run-view writer (cells/records/run_view.py), so none changes a program, a binding or a
@@ -2200,11 +2317,15 @@ def view_declarations(structure):
             if k in present and v in types.LAYOUT_TYPE._fields
         }
     out = {name: MappingProxyType(value) for name, value in merged.items()}
+    notes = dict(RECORD_NOTES)
+    if any(sink == OWN_SINK for sink, *_ in structure.routes):  # B1's door into @3.
+        notes["channel_availability"] = ROUTED_CHANNEL_NOTE
     return out | dict(
         VIEW_LAYERS=tuple(layers),
         VIEW_AXIS_SETS=MappingProxyType(axis_sets),
         RECORD_DIAGNOSTICS=tuple(diagnostics),
         RECORD_REFERENCES=MappingProxyType(references),
+        RECORD_NOTES=MappingProxyType(notes),
     )
 
 
@@ -2216,6 +2337,15 @@ RECORD_NOTES = MappingProxyType(
         "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
         "a separate term, never in this record",
     }
+)
+
+
+# B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): what channel_availability records where a population
+# declares factors.
+ROUTED_CHANNEL_NOTE = (
+    "the held availability, before the routing door: a population that declares factors runs, at "
+    "every stage, at this times its sources' factors (a left fold in declared order), so its flux "
+    "follows the routed value, not this record"
 )
 
 

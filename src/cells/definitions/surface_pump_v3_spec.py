@@ -9,6 +9,15 @@ population format of resolved_tissue@5 and later). The experiment adds
 execution ``channel_capacity``. With no channels the identity reproduces
 resolved_pump_tissue@2.
 
+A channel population's entry may declare ``factors``, a list of factor-source IDs
+in declared order (docs/CORE_SEAMS_DESIGN.md §4.3, B1's routing door into @3): at
+each stage its availability is the held value times its sources' factors, a left
+fold, as a passive route's multiplier is (docs/INNER_MODEL_V4_DESIGN.md §7.4 (n)).
+The sources are declared kinds'. Such a population parses as a
+FactoredChannelPopulation, the shared ChannelPopulation with its factors; every
+other population, the definition and its fingerprint are today's, and the model
+gains no field (other families build their models from its fields by name).
+
 An optional model key ``junction_heat_booking`` selects how IMEX steps book
 junction heat. The default, ``explicit_tableau`` (omitted from definitions, so
 default fingerprints are unchanged), books it with the tableau's explicit
@@ -64,6 +73,12 @@ LAW_PERMEABILITIES = {
 GATE_COUNTS = {law: 2 if code < GATED_CODES else 0 for law, code in LAW_CODES.items()}
 SPECIES_VALENCE = {"Na": 1, "K": 1}
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
+# B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
+# the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
+CHANNEL_FACTORS = "factors"
+_NONE = object()  # A channel entry without factors.
+# The model fields @3's parse sets itself; the others are the @2 base's.
+OWN_FIELDS = ("channels", "junction_heat_booking", "species_registry", "kinds")
 Control = second.Control  # The channel field is filled; absent slots stay zero.
 
 
@@ -183,15 +198,58 @@ def parse_channel(raw, ids, z, membranes):
     )
 
 
+@dataclass(frozen=True)
+class FactoredChannelPopulation(kinetic.ChannelPopulation):
+    """A channel population whose entry declares factors (B1's door, docs/CORE_SEAMS_DESIGN.md
+    §4.3): the shared ChannelPopulation with its factor-source IDs, in declared order. A population
+    without factors stays a ChannelPopulation, so its form and fingerprint are today's."""
+
+    factors: tuple[str, ...] = ()
+
+
+def factored(channel, factors):
+    """The population as a FactoredChannelPopulation with these factors."""
+    values = {f.name: getattr(channel, f.name) for f in fields(kinetic.ChannelPopulation)}
+    return FactoredChannelPopulation(**values, factors=tuple(factors))
+
+
+def channel_factors(model):
+    """((slot, channel ID, (factor-source ID, ...)), ...) of the model's factored populations, in
+    channel order; () for every definition of today's (B1's door)."""
+    return tuple(
+        (slot, c.id, c.factors)
+        for slot, c in enumerate(getattr(model, "channels", ()))
+        if getattr(c, "factors", ())
+    )
+
+
+def _factor_sources(given, channel_id):
+    """A population's factors (B1's door): a non-empty list of distinct factor-source IDs."""
+    if (
+        not isinstance(given, list)
+        or not given
+        or any(not isinstance(f, str) or not f for f in given)
+        or len(set(given)) != len(given)
+    ):
+        raise ConfigError(
+            f"Channel {channel_id}: factors is a non-empty list of distinct factor-source IDs "
+            "(omit it for none)"
+        )
+    return tuple(given)
+
+
 def channel_to_dict(p):
-    if type(p) is not kinetic.ChannelPopulation or any(
+    if type(p) not in (kinetic.ChannelPopulation, FactoredChannelPopulation) or any(
         type(i) is not kinetic.PermeantIon for i in p.permeant_ions
     ):
         raise ConfigError("Require explicit immutable channel population types")
-    return asdict(p) | {
+    out = asdict(p) | {
         "initial_gate": list(p.initial_gate),
         "permeant_ions": [asdict(i) for i in p.permeant_ions],
     }
+    if type(p) is FactoredChannelPopulation:  # B1's door: its factors, in declared order.
+        out[CHANNEL_FACTORS] = list(p.factors)
+    return out
 
 
 def to_dict(spec):
@@ -273,6 +331,8 @@ def parse(data):
         raise ConfigError("A junction-heat booking option requires an IMEX solver")
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
+    # B1's door: each entry's factors leave this copy before the strict channel parse.
+    popped = [c.pop(CHANNEL_FACTORS, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
@@ -296,6 +356,10 @@ def parse(data):
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
+    parsed = tuple(
+        c if given is _NONE else factored(c, _factor_sources(given, c.id))
+        for c, given in zip(parsed, popped, strict=True)
+    )
     model = base.model
     names = [
         p.id
@@ -319,7 +383,7 @@ def parse(data):
         **{
             k: getattr(model, k)
             for k in SurfacePumpChannelModel.__dataclass_fields__
-            if k not in ("channels", "junction_heat_booking", "species_registry", "kinds")
+            if k not in OWN_FIELDS
         },
         channels=parsed,
         junction_heat_booking=booking,
@@ -352,8 +416,10 @@ def parse(data):
 
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
-        # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)).
-        check_definition(spec, structure=structure(spec.model) if spec.model.kinds else None)
+        # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)),
+        # and so is one whose channels declare factors: binding resolves their sources (B1).
+        declared = spec.model.kinds or channel_factors(spec.model)
+        check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:
         raise ConfigError("Invalid resolved pump @3 definition: " + str(error)) from error
     return spec
