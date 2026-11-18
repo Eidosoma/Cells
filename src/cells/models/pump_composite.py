@@ -473,15 +473,37 @@ def exact_row_errors(entries, spec, p):
     return errors
 
 
-def view_changes(inner, operators):
-    """{view field: ((position, operator, stage), ...)}: every change of a view field in an
-    ordered operator list, in declared order, once per stage it is made at
-    (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and §5, C2). The order rule of current reads
-    (structure_errors), its fallback (C1) and the composite's view readers read it.
+class ViewChange(NamedTuple):
+    """One change of a view field in a composition (view_changes): the changer's position in the
+    declared order, the changer, the stage, and whether that stage is the changer's own declared
+    change of the field (door S's per-slot check covers that one where both sides are scoped)."""
 
-    * A provider changes each field it provides at its change's stage (Operator.view_change), and
-      also at the stages of the earlier changes of what it reads current: its view takes the view
-      the providers before it accumulated.
+    position: int
+    operator: object
+    stage: str
+    own: bool
+
+
+def _change_stages(op, names):
+    """The stages at which op's own change of `names` is made: those its VIEW_CHANGES declares;
+    for an undeclared change, every stage its parts run at (an event map and a split part may both
+    change it), or split for a part-less state owner, Operator.view_change's default."""
+    declared = {op.VIEW_CHANGES[k].stage for k in names if k in op.VIEW_CHANGES}
+    if any(k not in op.VIEW_CHANGES for k in names):
+        declared |= set(part_stages(op)) or {op.view_change(names[0]).stage}
+    return declared
+
+
+def view_changes(inner, operators):
+    """{view field: (ViewChange, ...)}: every change of a view field in an ordered operator list,
+    in declared order, once per stage it is made at (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and
+    §5, C2). The order rule of current reads (structure_errors), its fallback (C1) and the
+    composite's view readers read it.
+
+    * A provider changes each field it provides at its change's stages (_change_stages: an
+      undeclared change counts at every stage its parts run at), and also at the stages of the
+      earlier changes of what it reads current, since its view takes the view the providers before
+      it accumulated. Only the declared stage is its own (ViewChange.own).
     * A closer changes every activity mask and padded field at the stages of its closures:
       close() propagates closure down the entity hierarchy (a closed cell closes its patches) and
       pads every closed slot.
@@ -491,21 +513,28 @@ def view_changes(inner, operators):
     masks = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
     out, owners = {}, {}
     for i, op in enumerate(operators):
-        found = {}
+        found = {}  # {field: {stage: own}}
         for name in op.VIEW_FIELDS:
-            stages = {op.view_change(name).stage}
+            stages = dict.fromkeys(_change_stages(op, (name,)), True)
             for read in op.VIEW_READS:
-                stages |= {stage for _, other, stage in out.get(read, ()) if other is not op}
+                for change in out.get(read, ()):
+                    if change.operator is not op:
+                        stages.setdefault(change.stage, False)
             found[name] = stages
-        closures = {op.view_change(name).stage for name in op.CLOSES}
-        for name in masks if closures else ():
-            found[name] = found.get(name, set()) | closures
+        if op.CLOSES:
+            closures = _change_stages(op, op.CLOSES)
+            for name in masks:
+                stages = found.setdefault(name, {})
+                for stage in closures:
+                    stages.setdefault(stage, False)
         for owner in dict.fromkeys(owners[k] for k in op.ENTITY_WRITES if k in owners):
             for name in owner.VIEW_FIELDS:
-                found[name] = found.get(name, set()) | set(part_stages(op))
+                stages = found.setdefault(name, {})
+                for stage in part_stages(op):
+                    stages.setdefault(stage, False)
         for name, stages in found.items():
-            ordered = sorted(stages, key=READ_STAGES.index)
-            out.setdefault(name, []).extend((i, op, stage) for stage in ordered)
+            for stage in sorted(stages, key=READ_STAGES.index):
+                out.setdefault(name, []).append(ViewChange(i, op, stage, stages[stage]))
         owners.update(dict.fromkeys(op.ACCEPTS_WRITES, op))
     return {name: tuple(changes) for name, changes in out.items()}
 
@@ -624,10 +653,13 @@ def structure_errors(inner, operators):
                     f"{op.LAW_ID} reads the view {name}, which is not an inner view field"
                 )
             for read in current:
-                for j, changer, stage in changes.get(name, ()):
-                    late = j > i and stage == read.stage
-                    if late and not _both_scoped(changer, op, name, read):
-                        refused.add((i, name, read.stage, changer.LAW_ID))
+                for change in changes.get(name, ()):
+                    if change.position <= i or change.stage != read.stage:
+                        continue
+                    # Only a scoped provider's own declared stage is decided per slot.
+                    if change.own and _both_scoped(change.operator, op, name, read):
+                        continue
+                    refused.add((i, name, read.stage, change.operator.LAW_ID))
     for i, name, stage, changer in sorted(refused):
         errors.append(
             f"{operators[i].LAW_ID} reads the view {name} at stage {stage} before {changer} "

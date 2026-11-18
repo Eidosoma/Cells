@@ -76,7 +76,17 @@ def reader(law, field, *declared, parts=("split",), slots=None, **attributes):
     return check_declarations(type("Reader", (Operator,), body))()
 
 
-def provider(law, field, value, *, stage="event", contribution="replace", scoped=False, slots=()):
+def provider(
+    law,
+    field,
+    value,
+    *,
+    stage="event",
+    contribution="replace",
+    scoped=False,
+    slots=(),
+    **attributes,
+):
     """A planted changer of `field` at `stage`: `value` on every slot, taken on `slots` when
     scoped."""
 
@@ -101,6 +111,7 @@ def provider(law, field, value, *, stage="event", contribution="replace", scoped
         view=view,
         changed_slots=changed_slots,
         view_slots=view_slots,
+        **attributes,
     )
     return check_declarations(type("Provider", (Operator,), body))()
 
@@ -222,28 +233,61 @@ def test_scoped_pairs_are_ordered_per_slot_and_per_stage(two_cells):
 # ------------------------------------------------------------------ the table of changes
 
 
+def listed(changes):
+    return {
+        name: [(c.position, c.operator.LAW_ID, c.stage, c.own) for c in found]
+        for name, found in changes.items()
+    }
+
+
 def test_a_closer_changes_every_mask_and_padded_field_and_a_writer_what_its_owner_provides():
     state, insertion = OPERATORS[STATE], OPERATORS[INSERTION]
-    changes = pump_composite.view_changes(adapter, (state, insertion))
-    stages = {
-        name: [(i, op.LAW_ID, stage) for i, op, stage in found] for name, found in changes.items()
-    }
+    stages = listed(pump_composite.view_changes(adapter, (state, insertion)))
     # Insertion@2 writes membrane state's increments in its event map and its split part.
     for name in state.VIEW_FIELDS:
         assert stages[name] == [
-            (0, STATE, "split"),
-            (1, INSERTION, "event"),
-            (1, INSERTION, "split"),
+            (0, STATE, "split", True),
+            (1, INSERTION, "event", False),
+            (1, INSERTION, "split", False),
         ]
-    # It closes two masks; close() changes every mask and padded field.
+    # It closes two masks, undeclared, so at both of its parts' stages (its event map opens an
+    # onset); close() changes every mask and padded field.
     for name in (*adapter.MASK_FIELDS, *adapter.PADDED_FIELDS):
-        assert stages[name] == [(1, INSERTION, "split")], name
-    # A provider changes at the stages of the earlier changes of what it reads current.
+        assert stages[name] == [(1, INSERTION, "event", False), (1, INSERTION, "split", False)]
+    # A provider changes at the stages of the earlier changes of what it reads current; only its
+    # own declared stage is its own.
     lumen = OPERATORS["restricted_cleft_lumen@2"]  # Reads membrane_area, provides VOLUME.
-    changes = pump_composite.view_changes(adapter, (state, insertion, lumen))
-    assert [(op.LAW_ID, stage) for _, op, stage in changes[VOLUME]] == [
-        (lumen.LAW_ID, "event"),
-        (lumen.LAW_ID, "split"),
+    stages = listed(pump_composite.view_changes(adapter, (state, insertion, lumen)))
+    assert stages[VOLUME] == [(2, lumen.LAW_ID, "event", False), (2, lumen.LAW_ID, "split", True)]
+
+
+def test_an_undeclared_change_of_a_two_part_operator_counts_at_its_event_too():
+    """Operator.view_change defaults a two-part operator's change to split, but its event map may
+    change the field too (insertion@2 opens an onset there): an event reader of a mask placed
+    before insertion@2 is refused, not given the mask before this step's onset."""
+    masks = reader(
+        "test_event_masks@1", "membrane_active", Read("current", "event"), parts=("event",)
+    )
+    state, insertion = OPERATORS[STATE], OPERATORS[INSERTION]
+    assert structure(state, insertion, masks) == []
+    assert structure(state, masks, insertion) == [
+        late("test_event_masks@1", "membrane_active", "event", INSERTION)
+    ]
+
+
+def test_a_scoped_providers_inherited_stage_is_ordered_at_the_structure_check():
+    """Door S's per-slot check covers a scoped provider's own declared stage only. The stage it
+    inherits from what it reads (membrane state's area, at split) is ordered at the structure check,
+    so a scoped split reader before it is refused there; without the inherited read it is not."""
+    split = Read("current", "split", scoped=True)
+    current = reader("test_reader@1", VOLUME, split, slots=[0])
+    kwargs = dict(stage="event", scoped=True, slots=[0])
+    inherits = provider("test_inherits@1", VOLUME, 2.0, VIEW_READS=("membrane_area",), **kwargs)
+    plain = provider("test_plain@1", VOLUME, 2.0, **kwargs)
+    state = OPERATORS[STATE]
+    assert structure(state, current, plain) == []  # Its own stage is event: decided per slot.
+    assert structure(state, current, inherits) == [
+        late("test_reader@1", VOLUME, "split", "test_inherits@1")
     ]
 
 

@@ -811,7 +811,9 @@ Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's w
 - **One table of changes** (`pump_composite.view_changes`) feeds C1, C2 and the view readers. It
   lists every change of a view field, once per stage it is made at:
   - a provider's change, at its declared stage, and at the stages of the earlier changes of what it
-    reads current, since its view takes the accumulated view;
+    reads current, since its view takes the accumulated view. An undeclared change of an operator
+    with an event map and a split part counts at both stages (insertion@2's closures open at its
+    event, though `view_change` defaults them to `split`); a `VIEW_CHANGES` entry narrows it;
   - a closer's change of every mask and padded field, since `close()` propagates and pads. So a
     reader of `membrane_active` beside a closer of `active` alone receives the view, never the
     declared mask (gap 5's hazard);
@@ -820,8 +822,10 @@ Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's w
 - **C1:** a current read of a field nothing changes is admitted and reads the declared value; its
   part receives no view. A current read of a name that is no view field is refused.
 - **C2:** a change at another stage is seen whatever the declared order. A later change at the
-  reader's own stage is refused, by the structure check, or per slot where both are scoped. A self
-  pair is not a constraint, as door S's per-slot check already had it.
+  reader's own stage is refused, by the structure check, or per slot where both are scoped. The
+  per-slot check covers a scoped provider's own declared stage only; a stage it inherits from what
+  it reads is ordered at the structure check. A self pair is not a constraint, as door S's per-slot
+  check already had it.
 - **C3:** `SCOPED_READS[field]` may hold one Read per stage. A reference read may stand beside a
   current one at another stage. `contract.reads_of` gives every Read, and `Operator.scoped_read`
   refuses a field read at several stages. The contract's public names are unchanged.
