@@ -64,6 +64,7 @@ import numpy as np
 from cells.laws.electrochemistry import R
 from cells.laws.reactions import rapid_proton_buffer as closure
 from cells.registry import species_registry
+from cells.modules import KindFields, finite_number
 from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindView
 
 KIND_ID = "cells.rapid_proton_buffer@1"
@@ -116,8 +117,6 @@ class GeneralEntry(NamedTuple):
 
 
 def _parse_general(entry, m):
-    from cells.modules import finite_number  # The surface (F's guard); imported at parse time.
-
     where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
     if set(entry) != set(GENERAL_FIELDS):
         raise ConfigError(f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}")
@@ -556,13 +555,96 @@ def check_definition(spec):
                 )
 
 
+# The fields of each layout (declared_fields, chosen statically by the structure entry, as the
+# passive routes' Factored is): version 1's, today's exactly; the general closure's, which exist
+# only in a world that declares rapid_binding@1.
+V1_STATE_AXES = (
+    ("proton_buffer_max_lag_pH", ("node",)),
+    ("proton_buffer_min_pH", ("node",)),
+    ("proton_buffer_max_pH", ("node",)),
+)
+V1_LAYOUT_FIELDS = (
+    "proton_buffer_rows",
+    "proton_buffer_member",
+    "proton_buffer_k_mM",
+    "proton_buffer_k_on",
+    "proton_buffer_mu_RT",
+    "proton_buffer_proton_mu_RT",
+    "proton_buffer_c0_mM",
+    "proton_buffer_initial_pJ",
+)
+# Gap 7's running extrema for the general closure: per node, its largest lag in log10 units over
+# its ligands and every stage; per ligand and node, the free ligand's pX (-log10 x/1 M) extrema.
+GENERAL_STATE_AXES = (
+    ("binding_max_lag_pX", ("node",)),
+    ("binding_min_pX", ("binding_ligand", "node")),
+    ("binding_max_pX", ("binding_ligand", "node")),
+)
+GENERAL_LAYOUT_FIELDS = (
+    "binding_rows",  # [L + B]: species indices, the ligand rows then the binder rows.
+    "binding_counts",  # [B, F, L]
+    "binding_present",  # [B, F]
+    "binding_log_beta",  # [B, F], the mM frame.
+    "binding_member",  # [B, node]
+    "binding_held",  # [L, node]
+    "binding_comp_ligand",  # [L, L, node]: the connected ligand sets.
+    "binding_comp_binder",  # [L, B, node]
+    "binding_step_matrix",  # [species, steps]: the unit steps' stoichiometry.
+    "binding_step_from",  # [steps]
+    "binding_step_ligand",  # [steps]
+    "binding_step_kon",  # [steps]
+    "binding_conservation",  # [L + B, species]
+    "binding_mu0p",  # [L + B]: each row's mu°/RT - ln c0 (@3's 1 mM frame).
+    "binding_initial_pJ",  # [node]: the booked term at the start.
+)
+GENERAL_COLUMNS = ("free_ligand_mM",)
+
+
+def declared_fields(entry):
+    """The kind's fields for its structure entry (§7.4 (n) 5): version 1's for its entry, the
+    general closure's for a GeneralEntry."""
+    if isinstance(entry, GeneralEntry):
+        return KindFields(GENERAL_STATE_AXES, GENERAL_LAYOUT_FIELDS, (), GENERAL_COLUMNS)
+    return KindFields(V1_STATE_AXES, V1_LAYOUT_FIELDS, (), COLUMNS)
+
+
+def view_sets(spec, declaration):
+    """The view's set of the general closure's own axis, its ligand rows (none in version 1)."""
+    if not isinstance(declaration, GeneralDeclaration):
+        return {}
+    return {
+        "binding_ligand": {
+            "id": "binding_ligand",
+            "ids": list(declaration.ligands),
+            "roles": {},
+            "carries": [[ligand] for ligand in declaration.ligands],
+        }
+    }
+
+
 # The run view's declarations (D154): per node, cells then outside nodes (the view's node set).
+# Both layouts' fields are declared; the view keeps those a world's types hold.
 _PH_FIELDS = ("proton_buffer_max_lag_pH", "proton_buffer_min_pH", "proton_buffer_max_pH")
+_PX_FIELDS = tuple(field for field, _ in GENERAL_STATE_AXES)
 VIEW = KindView(
-    units=MappingProxyType({**dict.fromkeys(_PH_FIELDS, "pH"), "free_proton_mM": "mM", "pH": "pH"}),
-    observation_axes=MappingProxyType({"free_proton_mM": ("node",), "pH": ("node",)}),
-    record_kinds=MappingProxyType(dict.fromkeys((*_PH_FIELDS, *COLUMNS), "level")),
-    record_layers=MappingProxyType(dict.fromkeys((*_PH_FIELDS, *COLUMNS), "membrane")),
+    units=MappingProxyType(
+        {
+            **dict.fromkeys(_PH_FIELDS, "pH"),
+            "free_proton_mM": "mM",
+            "pH": "pH",
+            **dict.fromkeys(_PX_FIELDS, "pX"),
+            "free_ligand_mM": "mM",
+        }
+    ),
+    observation_axes=MappingProxyType(
+        {"free_proton_mM": ("node",), "pH": ("node",), "free_ligand_mM": ("binding_ligand", "node")}
+    ),
+    record_kinds=MappingProxyType(
+        dict.fromkeys((*_PH_FIELDS, *COLUMNS, *_PX_FIELDS, *GENERAL_COLUMNS), "level")
+    ),
+    record_layers=MappingProxyType(
+        dict.fromkeys((*_PH_FIELDS, *COLUMNS, *_PX_FIELDS, *GENERAL_COLUMNS), "membrane")
+    ),
     axis_sets=MappingProxyType({"node": "node"}),
 )
 
@@ -572,28 +654,18 @@ PROTON_BUFFER = BUILTIN.register(
         kind_id=KIND_ID,
         model_key=MODEL_KEY,
         # Gap 7: running extrema over every IMEX stage, per node (cells, then outside nodes).
-        state_axes=(
-            ("proton_buffer_max_lag_pH", ("node",)),
-            ("proton_buffer_min_pH", ("node",)),
-            ("proton_buffer_max_pH", ("node",)),
-        ),
+        state_axes=V1_STATE_AXES,
         stage_values=stage_values,
         stage_extrema=(
             ("proton_buffer_max_lag_pH", "max"),
             ("proton_buffer_min_pH", "min"),
             ("proton_buffer_max_pH", "max"),
+            ("binding_max_lag_pX", "max"),
+            ("binding_min_pX", "min"),
+            ("binding_max_pX", "max"),
         ),
         domain=domain,
-        layout_fields=(
-            "proton_buffer_rows",
-            "proton_buffer_member",
-            "proton_buffer_k_mM",
-            "proton_buffer_k_on",
-            "proton_buffer_mu_RT",
-            "proton_buffer_proton_mu_RT",
-            "proton_buffer_c0_mM",
-            "proton_buffer_initial_pJ",
-        ),
+        layout_fields=V1_LAYOUT_FIELDS,
         readout_columns=COLUMNS,
         parse=parse,
         to_dict=to_dict,
@@ -605,6 +677,8 @@ PROTON_BUFFER = BUILTIN.register(
         ledger_terms=ledger_terms,
         readouts=readouts,
         check_definition=check_definition,
+        declared_fields=declared_fields,
         view=VIEW,
+        view_sets=view_sets,
     )
 )

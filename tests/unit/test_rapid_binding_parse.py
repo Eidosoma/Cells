@@ -289,3 +289,29 @@ def test_each_inadmissible_general_declaration_is_refused(case):
     entry, edit, message = REFUSALS[case]
     refused(general_world(), NOT_BUILT)  # The control: the declared world is admitted.
     refused(general_world(entry=copy.deepcopy(entry), edit=edit), message)
+
+
+def test_version_1s_bound_kind_keeps_todays_fields_and_the_general_entry_has_its_own():
+    """declared_fields (§7.4 (n) 5): version 1's entry binds today's fields, names and order
+    (written out here, so any change to them fails), and a GeneralEntry binds the general
+    closure's. Only version 1's own entry selects version 1's layout."""
+    from cells.registry import kind_registry
+
+    kind = kind_registry.active().lookup(KIND)
+    v1 = kind_registry.bound(kind, (2,))
+    assert v1.state_axes == (
+        ("proton_buffer_max_lag_pH", ("node",)),
+        ("proton_buffer_min_pH", ("node",)),
+        ("proton_buffer_max_pH", ("node",)),
+    )
+    assert v1.layout_fields == (
+        "proton_buffer_rows", "proton_buffer_member", "proton_buffer_k_mM", "proton_buffer_k_on",
+        "proton_buffer_mu_RT", "proton_buffer_proton_mu_RT", "proton_buffer_c0_mM",
+        "proton_buffer_initial_pJ",
+    )  # fmt: skip
+    assert v1.control_fields == () and v1.readout_columns == ("free_proton_mM", "pH")
+    general = kind_registry.bound(kind, proton_buffer.GeneralEntry(2, 3))
+    assert general.state_axes == proton_buffer.GENERAL_STATE_AXES
+    assert general.layout_fields == proton_buffer.GENERAL_LAYOUT_FIELDS
+    assert general.readout_columns == proton_buffer.GENERAL_COLUMNS
+    assert not set(general.layout_fields) & set(v1.layout_fields)
