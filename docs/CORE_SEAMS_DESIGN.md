@@ -1346,3 +1346,20 @@ hand-backs:**
     and within a stated ulp bound under JAX, with a plant beyond it.
 - **The dispatcher's formula is a recorded temporary second form.** It retires with the legacy
   catalogue families in the approved legacy-removal batch. A test refuses a sixth law in it.
+
+**§19 amended the same evening (the lead, about 18:50 UTC), on the references agent's
+registration:**
+- **J⁻ comes from the contract.** The kind forms J⁻ = J⁺·e^{ΔG/RT} (§16), never a diagram's own
+  backward flux. That flux differs by rounding, and booking it would show J·ΔG > 0 near equilibrium
+  for an admitted law.
+- **Negative ligand totals** arise legitimately from a form below its base (§19 item 6). For the
+  rows a binding closure holds:
+  - the closure owns the whole energy term, and @3 books no per-row ideal term there;
+  - positivity guards use the admissible floor (Σ T_B·min n), not zero.
+
+  The exact booked term is still the binding owner's first design statement (§19 item 3).
+- **A's two first laws** are `proton_atp_mass_action_positive@1` and
+  `atp_driven_transporter_mass_action_positive@1`. The neutral law's version-1 rows may rest on
+  R-fuel's specification.
+- **Two blind spots are registered now,** by a dated amendment before A's first output: a
+  finite-fuel population, so the stored rate has power, and a population with N = b.
