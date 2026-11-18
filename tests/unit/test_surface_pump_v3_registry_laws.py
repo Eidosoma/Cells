@@ -10,7 +10,9 @@ Kv1.5 kernels, an RK4 bound of 2.5 us), as the five Kv1 laws will be:
 - the full catalogue's domain (structure None) refuses its code, so it never meets that path's
   dispatch, which would run it gate-free;
 - an RK4 step above the law's own bound is refused, naming the law; today's two messages stay;
-- a replacement template that gates it is refused: the operator's tables hold today's five.
+- a replacement template that gates it is refused: the operator's tables hold today's five;
+- the frozen families that run @3 without a structure (water@1, replacement@1) refuse a population
+  of it at parse, with a ConfigError, while the same world without it parses.
 """
 
 import copy
@@ -142,3 +144,22 @@ def test_a_replacement_template_that_gates_a_registered_law_is_refused():
     raw = rfx.with_replacement(cells, [template], [(0.01, "cell_0", "h", "n1")])
     with scoped():
         parse_spec(raw)  # Without it the template parses as today.
+
+
+def test_the_frozen_families_refuse_a_population_of_a_registered_law():
+    water = water_fixtures.with_water(
+        water_fixtures.heredity_cell("D", end_time=0.004), pf_m_s=5e-4, bath_pressure_Pa=12.5
+    )
+    cells = rfx.heredity_sheet(1, 0, dt=1e-3, end_time=0.05)
+    template = rfx.template_from_cell(cells, "cell_1", "h")
+    events = [(0.01, "cell_0", "h", "n1")]
+    planted_cells = with_planted(cells)
+    m = planted_cells["model"]
+    m["channels"][-1]["membrane_id"] = m["membranes"][3]["id"]  # On a cell nothing replaces.
+    with scoped():
+        parse_spec(water)  # Without the population each parses (the plant's control).
+        parse_spec(rfx.with_replacement(cells, [template], events))
+        with pytest.raises(ConfigError, match="Invalid resolved pump water definition"):
+            parse_spec(with_planted(water))  # Its composite's domain refuses the code (None).
+        with pytest.raises(ConfigError, match="Invalid cell replacement definition"):
+            parse_spec(rfx.with_replacement(planted_cells, [template], events))
