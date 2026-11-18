@@ -762,7 +762,9 @@ def check_stage_read_rows(spec):
     - an operator that names a read species (its species_identities: a regulated availability's
       state inputs, a reaction's, an exchange's, a turnover's or a site's species) or moves one in
       the step is refused, since it would read or write the stored total (H_eq/V) as the free
-      species. This is per species, wherever the read holds it;
+      species. The rule is per species, not per node, until operators declare their nodes: an
+      operator naming H anywhere is refused while any read holds H somewhere (the lead, 18
+      November 2026);
     - the water operators (WATER_LAWS) are refused beside any such read: their osmolyte sum counts
       the stored rows, so bound ligands count twice (a plant took up 17% more water);
     - the lumen's fill (LUMEN_LAWS) is refused where a read holds rows at an outside node: its
