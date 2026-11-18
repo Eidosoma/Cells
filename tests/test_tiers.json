@@ -166,7 +166,8 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-93e45f00/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-94395770/measured.json",
-  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json"
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json",
+  "/mnt/workspaces/Cells/ol2-engine-20261118/measure-43155110/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1365,6 +1366,13 @@
    "root": ".claude/worktrees/ool-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T14:32:53+00:00"
+  },
+  {
+   "git_revision": "431551105f1214dc80899f2d28b22c9ef477858c",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol2-engine-20261118/tree-43155110",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T15:33:23+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4627,6 +4635,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
+    "seconds": 21.96,
+    "exit_code": 0,
+    "counts": {
+     "passed": 15
     }
    },
    {
