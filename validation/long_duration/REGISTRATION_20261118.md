@@ -475,3 +475,44 @@ The lead answered §9's questions, all as recommended. No criterion, budget or w
   operator, so the composite adds no process term to them.
 - **The direct composite call** is recorded beside it, to show the gap.
 - Nothing else changes.
+
+### Amendment 3, 22:40 UTC on 18 November 2026: two faults in the harness judge, after its first read
+
+An external review, verified by an independent agent at `7d9d9723`, found two faults in
+`harness_judge.py`. Both hold.
+
+**What had been run and seen when this was written:**
+- R1 (finished 21:09 UTC), R2 (21:25) and R3 (22:37) all ran from snapshot `24e516c7`. Their run
+  records were read as they finished, and R1's kept rows were inspected at 21:28 (cell_0's
+  voltage around the cue).
+- `cells-fr8s0-r3` was stopped at 22:37:40, before its in-chain judge wrote anything. Its
+  `judge.log` is empty, and it left no `judge.json`.
+- At 22:38 the judge from snapshot `7d9d9723` ran on R1, R2 and R3, in that order and from
+  distinct directories. Its whole output was read, **including the orders**: p was 1.30–1.48 per
+  class, outside the registered window, so no estimate of either kind was formed. The labelled
+  extra of per-span errors was read at 22:39.
+- This amendment therefore follows that read. It corrects the judge; it changes no criterion,
+  budget or window.
+
+**Fault 1: the judge accepted any list of arms.** Given [R1, R1], it scores zero error and
+selects R1 as the reference. `run()` takes the last directory as the reference and labels the
+selection with a literal, and `compare()` never checks an arm's identity or step.
+- **The correction.** The judge refuses to score unless:
+  - arm i is named R1, R2 and R3 in turn, each with its step from `arms_dt_s`;
+  - the directories are distinct;
+  - the steps strictly decrease;
+  - the arms share one snapshot revision and one registration.
+- The reference's label comes from its own record.
+- A planted control refuses [R1, R1] and [R2, R1].
+
+**Fault 2: §5.3's error estimate was R3's, not R2's.** With z_h = z* + C h^p:
+- |z2 − z3| / (2^p − 1) is R3's error;
+- R2's error is |z2 − z3| / (1 − 2^−p), which is 2^p times larger.
+- **The correction.** Inside the window [1.5, 2.5], the judge reports both, as
+  `r2_error_estimate` and `r3_error_estimate`. A planted control checks them on the 16:4:1
+  sequence (p = 2). p stays measured per class, as registered.
+
+**The judge of record** is now the corrected judge, re-run on the arms' saved rows; no arm is
+re-run. `judge-7d9d9723.json` is kept as superseded evidence and is not reported from. The
+adequacy verdicts do not depend on the faults with the arms in their registered order, and the
+estimates were not formed. That the re-run confirms both is a claim the re-run tests.
