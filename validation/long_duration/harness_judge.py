@@ -296,13 +296,48 @@ def orders(arms, window):
         for label, row in at.items():
             p = observed_order(float(e12[row]), float(e23[row]))
             inside = p is not None and window[0] <= p <= window[1]
+            estimates = error_estimates(float(e23[row]), p) if inside else (None, None)
             out[k][label] = dict(
                 time_s=float(t[row]),
                 p=p,
                 inside_window=inside,
-                r2_error_estimate=float(e23[row]) / (2**p - 1) if inside else None,
+                r2_error_estimate=estimates[0],
+                r3_error_estimate=estimates[1],
             )
     return out
+
+
+def error_estimates(e23, p):
+    """(R2's, R3's) error from |z2 - z3| and the order p, with z_h = z* + C h^p and the steps
+    halving: R3's is |z2 - z3| / (2^p - 1) and R2's |z2 - z3| / (1 - 2^-p), 2^p times larger
+    (amendment 3: the registration's text had named R3's estimate as R2's)."""
+    return e23 / (1.0 - 2.0**-p), e23 / (2.0**p - 1.0)
+
+
+ARM_NAMES = ("R1", "R2", "R3")
+
+
+def check_arms(directories, records, reg):
+    """Amendment 3: refuse to score unless arm i is R1, R2, R3 in turn with its registered step,
+    the directories are distinct, the steps strictly decrease, and every arm shares one snapshot
+    revision and one registration (two arms, R1 and R2, when R3 did not run)."""
+    if len(records) not in (2, 3) or len(directories) != len(records):
+        raise ValueError("The judge takes R1 and R2, or R1, R2 and R3")
+    resolved = [str(Path(d).resolve()) for d in directories]
+    if len(set(resolved)) != len(resolved):
+        raise ValueError("The judge's arms must come from distinct directories")
+    for i, record in enumerate(records):
+        name = ARM_NAMES[i]
+        if record.get("arm") != name:
+            raise ValueError(f"Arm {i + 1} must be {name}, not {record.get('arm')}")
+        if record.get("dt_s") != reg["arms_dt_s"][name]:
+            raise ValueError(f"{name}'s step {record.get('dt_s')} is not its registered step")
+    steps = [r["dt_s"] for r in records]
+    if any(b >= a for a, b in zip(steps[:-1], steps[1:], strict=True)):
+        raise ValueError("The arms' steps must strictly decrease")
+    for key in ("snapshot_revision", "registration"):
+        if len({r.get(key) for r in records}) != 1:
+            raise ValueError(f"The arms differ in {key}")
 
 
 def run(output, directories):
@@ -312,6 +347,8 @@ def run(output, directories):
     from validation.long_duration import worlds
 
     reg = worlds.registration()["harness"]
+    records = [json.loads((Path(d) / "run.json").read_text()) for d in directories]
+    check_arms(directories, records, reg)  # Before any scoring (amendment 3).
     arms = [load_arm(d) for d in directories]
     out = dict(
         measurement="harness reference adequacy",
@@ -326,9 +363,9 @@ def run(output, directories):
         out["R2_against_R3"] = compare(arms[1], arms[2], reg)
         out["orders"] = orders(arms, reg["order_window"])
     if out["R1_against_reference"]["adequate"]:
-        out["stage1_reference"] = "R1"
+        out["stage1_reference"] = arms[0][0]["arm"]
     elif len(arms) == 3 and out["R2_against_R3"]["adequate"]:
-        out["stage1_reference"] = "R2"
+        out["stage1_reference"] = arms[1][0]["arm"]
     else:
         out["stage1_reference"] = arms[-1][0]["arm"] + " (its error unestimated)"
     with open(output, "x") as stream:

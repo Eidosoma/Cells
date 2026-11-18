@@ -9,7 +9,9 @@ synthetic rows (no engine run):
   run has a crossing the other has not;
 - the recovery time is the first row from which the trace stays inside, and a re-exit inside the
   window moves it;
-- the observed order of a second-order sequence is 2.
+- the observed order of a second-order sequence is 2;
+- (amendment 3) the judge refuses a run compared with itself, arms out of order, a wrong step and
+  mixed snapshots, and its error estimates on the 16:4:1 sequence are R2's 4 and R3's 1.
 """
 
 import numpy as np
@@ -88,3 +90,42 @@ def test_the_recovery_time_and_a_re_exit():
 def test_the_observed_order_of_a_second_order_sequence():
     assert hj.observed_order(4e-6, 1e-6) == pytest.approx(2.0)
     assert hj.observed_order(0.0, 1e-6) is None
+
+
+REG = dict(arms_dt_s=dict(R1=1e-3, R2=5e-4, R3=2.5e-4))
+
+
+def arm_record(arm, dt, revision="rev", registration="fr8-stage0-20261118"):
+    return dict(arm=arm, dt_s=dt, snapshot_revision=revision, registration=registration)
+
+
+def test_the_judge_refuses_a_run_compared_with_itself_or_out_of_order():
+    dirs = ["/runs/R1", "/runs/R2", "/runs/R3"]
+    good = [arm_record("R1", 1e-3), arm_record("R2", 5e-4), arm_record("R3", 2.5e-4)]
+    hj.check_arms(dirs, good, REG)  # The registered order passes, and R1 with R2 alone.
+    hj.check_arms(dirs[:2], good[:2], REG)
+    refused = [
+        ([dirs[0], dirs[0]], [good[0], good[0]]),  # [R1, R1]: a run compared with itself.
+        ([dirs[0], dirs[1]], [good[0], good[0]]),  # R1's record twice, from two directories.
+        ([dirs[1], dirs[0]], [good[1], good[0]]),  # [R2, R1]: out of order.
+        (dirs, [good[0], arm_record("R2", 2.5e-4), good[2]]),  # A step not R2's.
+        (dirs, [good[0], good[1], arm_record("R3", 2.5e-4, revision="other")]),  # Two snapshots.
+        ([dirs[0], dirs[0], dirs[2]], good),  # Distinct names, one directory twice.
+    ]
+    for directories, records in refused:
+        with pytest.raises(ValueError):
+            hj.check_arms(directories, records, REG)
+
+
+def test_the_error_estimates_on_a_16_4_1_sequence():
+    t = np.arange(5, dtype=float)
+    arms = []
+    for error in (16.0, 4.0, 1.0):  # C h^2 at h = 4u, 2u, u, with z* = 1.
+        z = np.full((5, 3), 1.0 + error * 1e-6)
+        classes = dict(voltage=z, concentration=np.full((5, 3), 1.0), gate=z)
+        arms.append(({}, t, classes, {}, np.zeros(5)))
+    end = hj.orders(arms, (1.5, 2.5))["voltage"]["end_row"]
+    assert end["p"] == pytest.approx(2.0) and end["inside_window"]
+    assert end["r2_error_estimate"] == pytest.approx(4e-6)  # R2's own error.
+    assert end["r3_error_estimate"] == pytest.approx(1e-6)  # The old expression: R3's.
+    assert hj.error_estimates(3e-6, 2.0) == pytest.approx((4e-6, 1e-6))
