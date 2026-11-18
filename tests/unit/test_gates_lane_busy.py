@@ -46,6 +46,20 @@ def decide(lb, units, waiters=(), own=()):
     return lb.classify(units, set(waiters), window=10.0, threshold=0.05, own=set(own))
 
 
+def test_a_unit_computing_on_the_lane_without_the_lock_is_busy(lb):
+    out = decide(lb, {"cells-stray.service": [(5, {8}, 9.8)]})
+    assert [r["unit"] for r in out["busy"]] == ["cells-stray.service"]  # The refusal is kept.
+    assert out["busy"][0]["cpus_used"] == pytest.approx(0.98)
+
+
+def test_the_19_32_refusal_is_a_waiter_now(lb):
+    """cells-ops-b1-laneB-42ca1c94 (8-11 24-27), queued on lane B's lock: the old check refused the
+    set for it; the new one counts it a lock waiter."""
+    unit = "cells-ops-b1-laneB-42ca1c94.service"
+    out = decide(lb, {unit: [(40, LANE, 0.0), (41, LANE, 0.01)]}, waiters={unit})
+    assert out["busy"] == [] and [r["unit"] for r in out["waiters"]] == [unit]
+
+
 def test_the_plant_an_unpinned_unit_whose_child_computes_pinned_to_the_lane(lb):
     """The unit's main process may run anywhere and idles; its child is pinned to CPU 8 and uses
     one CPU. The check that went by the unit's affinity left it out as unpinned."""
@@ -65,14 +79,13 @@ def test_an_unpinned_computing_process_is_busy(lb):
 
 
 def test_waiters_idle_units_and_the_holders_own(lb):
-    units = {"cells-ops-b1-laneB-42ca1c94.service": [(40, LANE, 0.0), (41, LANE, 0.01)],
+    units = {"cells-waiting.service": [(40, LANE, 0.0)],
              "cells-idle.service": [(50, {10}, 0.2)],
              "cells-holder.service": [(60, {8}, 9.0)],
              "cells-laneA.service": []}
-    out = decide(lb, units, waiters={"cells-ops-b1-laneB-42ca1c94.service"},
-                 own={"cells-holder.service"})
+    out = decide(lb, units, waiters={"cells-waiting.service"}, own={"cells-holder.service"})
     assert out["busy"] == []
-    assert [r["unit"] for r in out["waiters"]] == ["cells-ops-b1-laneB-42ca1c94.service"]
+    assert [r["unit"] for r in out["waiters"]] == ["cells-waiting.service"]
     assert [r["unit"] for r in out["idle"]] == ["cells-idle.service"]
     assert out["own"] == ["cells-holder.service"]
     listed = {r["unit"] for k in ("busy", "waiters", "idle") for r in out[k]}
@@ -146,13 +159,16 @@ def test_a_process_blocked_in_flock_on_the_lock_is_a_waiter(lb, tmp_path, form):
                 p.wait()
 
 
-def test_cgroup_pids_and_own_unit_on_fake_trees(lb, tmp_path):
+def test_cgroup_readers_on_a_fake_tree(lb, tmp_path):
     unit = tmp_path / "cells.slice" / "cells-a.service"
     (unit / "sub").mkdir(parents=True)
     (unit / "cgroup.procs").write_text("11\n12\n")
     (unit / "sub" / "cgroup.procs").write_text("13\n")
     assert sorted(lb.cgroup_pids("/cells.slice/cells-a.service", root=tmp_path)) == [11, 12, 13]
     assert lb.cgroup_pids("/cells.slice/gone.service", root=tmp_path) == []
+
+
+def test_own_unit_from_the_cgroup_path(lb, tmp_path):
     path = tmp_path / "cgroup"
     path.write_text("0::/user.slice/user@1000.service/cells.slice/cells-gate.service\n")
     assert lb.own_unit(path) == "cells-gate.service"
@@ -162,7 +178,7 @@ def test_cgroup_pids_and_own_unit_on_fake_trees(lb, tmp_path):
 # --------------------------------------------------------------- the sampling, faked systemd
 
 
-def test_check_charges_processes_over_the_window(lb, monkeypatch, tmp_path):
+def test_check_samples_usage_over_the_window(lb, monkeypatch, tmp_path):
     """cells-parent: unpinned, its child 2 pinned to CPU 8 and computing (the plant). cells-wait: a
     flock waiter. cells-born: a process born during the window, charged its whole time.
     cells-me: the caller, left out although it computes."""
