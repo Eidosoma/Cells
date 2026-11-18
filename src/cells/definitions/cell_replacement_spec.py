@@ -297,7 +297,8 @@ def parse_template(raw, base):
     _fields(raw, set(TEMPLATE_FIELDS), "template")
     m = base.model
     species = tuple(m.species_ids)
-    laws = tuple(ionic.LAW_CODES)
+    codes, counts = ionic.law_codes(), ionic.gate_counts()  # The law registry's (§8.3).
+    laws = tuple(codes)
     state = ("volume_pL", "fixed_charge_equivalent_fmol", "amounts_fmol", "channel_gates")
     route_only = all(raw[k] is None for k in state)
     if not route_only and any(raw[k] is None for k in state):
@@ -317,11 +318,16 @@ def parse_template(raw, base):
         parsed_gates = []
         for law in sorted(gates, key=lambda k: laws.index(k) if k in laws else -1):
             values = gates[law]
-            if law not in laws or ionic.GATE_COUNTS[law] == 0:
+            if law not in laws or counts[law] == 0:
                 raise ConfigError(
                     "Template gates require a gated resolved_pump_tissue@3 channel law"
                 )
-            if type(values) is not list or len(values) != ionic.GATE_COUNTS[law]:
+            if law not in ionic.LAW_CODES:  # The operator's tables hold today's five.
+                raise ConfigError(
+                    f"Template gates of {law}: the replacement operator's tables hold today's "
+                    "five channel laws (sizing by the declared laws is later work)"
+                )
+            if type(values) is not list or len(values) != counts[law]:
                 raise ConfigError("Template gates require exactly their law's gate count")
             parsed_gates.append((law, tuple(fraction(v, "template gate") for v in values)))
         parsed_gates = tuple(parsed_gates)

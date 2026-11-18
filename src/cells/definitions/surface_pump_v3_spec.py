@@ -59,8 +59,12 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
-# Codes 0-2 are those of processes/sodium_channels.LAW_CODES, whose dispatch the
-# model reuses; 3 and 4 are gate-free leaks. Padding slots are inactive, not a code.
+# Today's five channel laws, the full catalogue's (structure None): codes 0-2 are those of
+# laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
+# leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
+# replacement operator's tables are sized and checked by these five, so a law the registry adds
+# (a code from 5) never reaches them. What a definition may name is the law registry's: law_codes,
+# law_permeabilities and gate_counts below.
 LAW_CODES = {KV1P5_LAW_ID: 0, KIR2P1_LAW_ID: 1, NAV1P2_LAW_ID: 2, KLEAK_LAW_ID: 3, NALEAK_LAW_ID: 4}
 GATED_CODES = 3  # Codes below this have two relaxation gates (m, h).
 LAW_PERMEABILITIES = {
@@ -71,6 +75,37 @@ LAW_PERMEABILITIES = {
     NALEAK_LAW_ID: (("Na", 1.0),),
 }
 GATE_COUNTS = {law: 2 if code < GATED_CODES else 0 for law, code in LAW_CODES.items()}
+
+
+def channel_laws():
+    """{law ID: declaration} of the channel laws @3 runs, in code order: the active law
+    registry's laws of cells.channel_law@1 hosted by @3 (docs/CORE_SEAMS_DESIGN.md §8.3). Read at
+    parse time, never at import (models/inner_laws, which registers today's five, imports this
+    module)."""
+    from cells.registry import laws as law_registry
+
+    hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, kind_registry.qualified(MODEL_ID))
+    return {law.law_id: law for law in sorted(hosted, key=lambda law: law.code)}
+
+
+def law_codes():
+    """{law ID: registry code} of the channel laws @3 runs (channel_laws)."""
+    return {law_id: law.code for law_id, law in channel_laws().items()}
+
+
+def law_permeabilities():
+    """{law ID: ((species, relative permeability), ...)} from each law's permeant ions."""
+    return {
+        law_id: tuple((species, weight) for species, _, weight in law.permeant)
+        for law_id, law in channel_laws().items()
+    }
+
+
+def gate_counts():
+    """{law ID: its gate count} (0 for a gate-free law)."""
+    return {law_id: len(law.gates) for law_id, law in channel_laws().items()}
+
+
 SPECIES_VALENCE = {"Na": 1, "K": 1}
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
@@ -168,7 +203,8 @@ def projection(spec):
 def parse_channel(raw, ids, z, membranes):
     _fields(raw, CHANNEL_FIELDS, "channel")
     law = raw["kinetic_law"]
-    if type(law) is not str or law not in LAW_CODES or type(raw["permeant_ions"]) is not list:
+    permeabilities, gates = law_permeabilities(), gate_counts()  # The registry's (§8.3).
+    if type(law) is not str or law not in gates or type(raw["permeant_ions"]) is not list:
         raise ConfigError("Channel requires a resolved_pump_tissue@3 law and permeant ions")
     ions = []
     for ion in raw["permeant_ions"]:
@@ -178,13 +214,13 @@ def parse_channel(raw, ids, z, membranes):
         if species not in ids or z[ids.index(species)] != SPECIES_VALENCE.get(species):
             raise ConfigError("Channel ion requires its law's species and valence")
         ions.append(kinetic.PermeantIon(species, weight))
-    if tuple((i.species_id, i.relative_permeability) for i in ions) != LAW_PERMEABILITIES[law]:
+    if tuple((i.species_id, i.relative_permeability) for i in ions) != permeabilities[law]:
         raise ConfigError("Channel ions must exactly match the named law's permeability ratios")
     patch = identifier(raw["membrane_id"])
     if (
         patch not in membranes
         or type(raw["initial_gate"]) is not list
-        or len(raw["initial_gate"]) != GATE_COUNTS[law]
+        or len(raw["initial_gate"]) != gates[law]
     ):
         raise ConfigError("Channel requires its patch and exactly its law's gate state")
     return kinetic.ChannelPopulation(
@@ -417,8 +453,13 @@ def parse(data):
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
         # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)),
-        # and so is one whose channels declare factors: binding resolves their sources (B1).
-        declared = spec.model.kinds or channel_factors(spec.model)
+        # and so is one whose channels declare factors (binding resolves their sources, B1) or
+        # name a law beyond today's five (the full catalogue's domain refuses its code).
+        declared = (
+            spec.model.kinds
+            or channel_factors(spec.model)
+            or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
+        )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:
         raise ConfigError("Invalid resolved pump @3 definition: " + str(error)) from error

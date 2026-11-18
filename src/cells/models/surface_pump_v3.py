@@ -69,6 +69,8 @@ from cells.definitions.surface_pump_v3_spec import (
     TRAPEZOID_JUNCTION_HEAT,
     Control,
     channel_factors,
+    channel_laws,
+    law_codes,
     projection,
 )
 from cells.execution.errors import NumericalError
@@ -228,11 +230,12 @@ def _todays_initial_values(spec):
         junction_heat_trapezoid=np.zeros(int(m.junction_heat_booking == TRAPEZOID_JUNCTION_HEAT)),
     )
     gate, mids = np.zeros((2, nc)), [p.id for p in m.membranes]
+    codes = law_codes()  # The registry's codes (today's five keep theirs, 0-4).
     for i, c in enumerate(m.channels):
         v["channel_membranes"][i] = mids.index(c.membrane_id)
         v["channel_permeability"][i] = c.max_permeability_m_per_s
         v["channel_abundance"][i] = c.abundance
-        v["channel_laws"][i] = LAW_CODES[c.kinetic_law]
+        v["channel_laws"][i] = codes[c.kinetic_law]
         for ion in c.permeant_ions:
             row = m.species_ids.index(ion.species_id)
             v["channel_relative_permeability"][row, i] = ion.relative_permeability
@@ -874,7 +877,8 @@ def rhs(state, control, p, active, *, xp=jnp, structure=None):
 def domain_valid(state, p, active, *, xp=jnp, structure=None):
     valid = tissue.domain_valid(kinetic.passive_state(state), p, active, xp=xp)
     laws = p.channel_laws
-    if structure is None:  # Today's check against the whole registry.
+    if structure is None:  # Today's five (codes 0-4), the only laws the full catalogue runs: a code
+        # the registry adds from 5 is refused here, so it never meets that path's dispatch.
         valid &= xp.all((laws >= 0) & (laws < len(LAW_CODES)))
     else:  # An active slot runs a declared law; no literal comes from the registry.
         declared = xp.zeros(laws.shape, dtype=bool)
@@ -1825,6 +1829,17 @@ class StepChecks(first.StepChecks):
         return {c.kinetic_law for c in self.spec.model.channels if c.initial_gate}
 
     @cached_property
+    def rk4_bound(self):
+        """(the smallest declared rk4_step_s over the world's gated laws, a law that has it), or
+        None without gated laws: each law's declaration holds its reference RK4 step bound."""
+        laws = channel_laws()
+        unbounded = sorted(law for law in self.gated_laws if laws[law].rk4_step_s is None)
+        if unbounded:  # Fail closed: a gated law without its bound runs on no RK4 grid.
+            return (0.0, unbounded[0])
+        bounds = sorted((laws[law].rk4_step_s, law) for law in self.gated_laws)
+        return bounds[0] if bounds else None
+
+    @cached_property
     def kind_rate(self):
         """Gap 5: the declared kinds' definition-time bound terms (1/s; the passive law's
         dt L <= 1, say), each its own rule: the largest."""
@@ -1839,11 +1854,16 @@ class StepChecks(first.StepChecks):
         spec, step = self.spec, np.max(steps, initial=0)
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
-            laws = self.gated_laws
+            laws, bound = self.gated_laws, self.rk4_bound
             if NAV1P2_LAW_ID in laws and step > RK4_SODIUM_STEP + 1e-16:
                 raise ConfigError("Resolved NaV1.2 channels require RK4 steps <= 2.5 us")
-            if laws and step > RK4_POTASSIUM_STEP + 1e-16:
-                raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+            if bound is not None and step > bound[0] + 1e-16:  # Each gated law's own bound.
+                if bound[0] == RK4_POTASSIUM_STEP:
+                    raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+                raise ConfigError(
+                    f"Resolved gated channels ({bound[1]}) require RK4 steps <= "
+                    f"{bound[0] * 1e6:g} us"
+                )
         else:
             self.require_accepted_observations()
             if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
