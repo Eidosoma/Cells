@@ -1,7 +1,7 @@
 """A7's static guard (the summation SPEC.md §4; docs/INNER_MODEL_V4_DESIGN.md §10.6): every sum in
 @3's module, the operators and the inner model's kinds goes through cells/numerics/species_sums.
 
-An AST scan of models/surface_pump_v3.py, models/operators/*.py and models/inner_kinds/*.py:
+An AST scan of models/surface_pump_v3.py, operators/*.py and kinds/*.py (under src/cells):
 - refused: any `.sum(...)` call (xp.sum, np.sum, jnp.sum or an array's method), any einsum, and
   builtin sum over anything but a generator expression or a list display;
 - allowed: species_sum, entity_sum, and builtin sum over a generator or a list (tableau stage
@@ -19,19 +19,19 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MODELS = ROOT / "src" / "cells" / "models"
+CELLS = ROOT / "src" / "cells"
 ALLOW = ROOT / "tests" / "species_sum_entity_sums.json"
 
 
 def scope():
     return [
-        MODELS / "surface_pump_v3.py",
-        *sorted((MODELS / "operators").glob("*.py")),
-        *sorted((MODELS / "inner_kinds").glob("*.py")),
+        CELLS / "models" / "surface_pump_v3.py",
+        *sorted((CELLS / "operators").glob("*.py")),
+        *sorted((CELLS / "kinds").glob("*.py")),
     ]
 
 
-def calls(path, base=MODELS):
+def calls(path, base=CELLS):
     """(refusals, entity sums, species sums) of one module: each entity sum as (module, function,
     expression); refusals as text with their lines, in line order."""
     tree = ast.parse(path.read_text())

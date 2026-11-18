@@ -1,8 +1,8 @@
 {
- "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, models/operators/*.py and models/inner_kinds/*.py as [module, enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added.",
+ "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added.",
  "entity_sums": [
   [
-   "inner_kinds/passive_routes.py",
+   "kinds/passive_routes.py",
    "rates",
    "entity_sum(heat, axis=None, xp=xp)"
   ],
@@ -587,102 +587,102 @@
    "entity_sum(row.turnover_outside_energy_magnitude_pJ, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "_fold_kind_ledgers",
    "entity_sum(terms['heat_pJ'], axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "_fold_kind_ledgers",
    "entity_sum(terms['stored_pJ'], axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "_fold_kind_ledgers",
    "entity_sum(terms['work_pJ'], axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "balances",
    "entity_sum(species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "device_balances",
    "entity_sum(species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "imex_step",
    "entity_sum(explicit_matrix[i], axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(ca_metabolic, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(electrode_work, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(kr.heat_pJ_s, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(kr.work_pJ_s, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(kr.stored_pJ_s, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(metabolic, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(p.membrane_capacitance * r.membrane_voltage_V * dvm, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(r.face_dissipation_pJ_s, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(r.junction_dissipation_pJ_s, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(reservoir_work + electrode_work, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(reservoir_work, axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(species_sum(xp.log(ci) * cell, xp=xp), axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(species_sum(xp.log(co) * outside, xp=xp), axis=None, xp=xp)"
   ],
   [
-   "surface_pump_v3.py",
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(total_membrane_d, axis=None, xp=xp)"
   ]

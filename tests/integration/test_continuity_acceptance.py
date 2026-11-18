@@ -394,7 +394,7 @@ def test_an_edit_reaching_the_run_is_refused_before_the_overlap(world, name, dif
 
 def test_a_tree_without_an_entry_point_cannot_decide(world):
     s1 = tree(world["base"], "missing")
-    path = s1 / "src" / "cells" / "core" / "vector_windows.py"
+    path = s1 / "src" / "cells" / "execution" / "vector_windows.py"
     text = path.read_text()
     assert text.count("_Round(") == 2 and text.count("class _Round:") == 1
     path.write_text(text.replace("_Round", "_RoundBuilder"))

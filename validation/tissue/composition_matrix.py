@@ -59,7 +59,7 @@ BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
 
-OPS = "src/cells/models/operators/"
+OPS = "src/cells/operators/"
 TESTS = "tests/unit/"
 
 

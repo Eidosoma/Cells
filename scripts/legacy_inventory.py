@@ -1,9 +1,9 @@
 """D188 step 0's legacy inventory, built with D187's test audit: each registered model family's
 consumers, and what the modular path imports from older modules.
 
-A family is one definition module (src/cells/core/*_spec.py, or definitions/specs.py) with the model IDs
-it declares and the model modules src/cells/registry/models.py dispatches its classes to. For
-each family the inventory gives:
+A family is one definition module (src/cells/definitions/*_spec.py, specs.py among them) with the
+model IDs it declares and the model modules src/cells/registry/models.py dispatches its classes
+to. For each family the inventory gives:
   - its place in the import graph from the active entry points (ENTRIES: the modular tissue
     model @3, the composite, the operators, the kinds, the runner and execution). The registry is
     cut as a transit node, since it imports every family; its importers are listed separately;

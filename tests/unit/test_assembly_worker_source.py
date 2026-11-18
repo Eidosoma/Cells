@@ -94,7 +94,7 @@ def test_planted_module_relative_root_is_caught(tmp_path, monkeypatch, capsys):
     output, module = launch(tmp_path, monkeypatch, "assembly-cell")
     found = problems(output, module, package)
     assert "copied with other bytes: __init__.py" in found  # legacy/__init__.py in its place.
-    assert "missing from the copy: io.py" in found
+    assert "missing from the copy: records/io.py" in found  # A module moved by D188 move 2.
     assert f"the worker's module {module} is not in the copy" in found
     assert "the registered source identity is not the package's" in found
     capsys.readouterr()
