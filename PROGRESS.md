@@ -31,6 +31,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
     (D192) and mitochondria (D193).
+    Proposed on 18 November, with options and questions for the user (D216):
+    [FR-7's abundance to function and the closed loop's unit](docs/ABUNDANCE_TO_FUNCTION_DESIGN.md),
+    [FR-2's membrane retrieval](docs/MEMBRANE_RETRIEVAL_DESIGN.md), and
+    [FR-8's long-duration mode](docs/LONG_DURATION_MODE_DESIGN.md).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
