@@ -75,8 +75,6 @@ export const tissueCss = `
 .tissue-door .tissue-door-title { font-weight: 600; font-size: 13.5px; }
 .tissue-door .tissue-door-sub { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .tissue-back { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 0; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--bg-raised); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; min-height: 36px; cursor: pointer; }
-/* The way back to the example's networks stands on one line in the wide card, so that it is whole above the card's fold
-   on a window 720 px high now that the list's pressed row carries a line for the part shown. */
 @media (min-width: 760px) { .tissue-way-back { white-space: nowrap; min-height: 30px; padding: 4px 12px; font-size: 12px; } }
 .tissue-back:hover { border-color: var(--accent); }
 .tissue-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -120,6 +118,41 @@ export const tissueCss = `
 .tissue-sibling-block .card-text { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--fg); }
 .tissue-sibling-block .tissue-back { margin: 0; color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
 .tissue-front { color: var(--muted); font-size: 12px; }
+/* What a newcomer is looking at: the record's own sentences, each with its source. */
+.tissue-intro { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-raised); display: grid; gap: 4px; }
+.tissue-intro-title { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.tissue-intro-first { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--fg); display: flex; gap: 6px; align-items: baseline; }
+.tissue-intro-play { flex: none; width: 0; height: 0; border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent var(--accent); translate: 0 1px; }
+.tissue-intro-says { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--fg); }
+.tissue-intro-source { font-size: 11px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.tissue-intro-source:hover { text-decoration: underline; }
+.tissue-intro-more { font-size: 12.5px; }
+.tissue-intro-more summary { cursor: pointer; min-height: 30px; display: flex; align-items: center; color: var(--accent); }
+.tissue-intro-more .tissue-intro-says { margin-top: 4px; }
+/* A cell's switch: its records in the plane of its two stated concentrations. */
+.tissue-switch-block { margin: 10px 0 0; display: grid; gap: 4px; }
+.tissue-switch { margin: 0; display: grid; gap: 4px; }
+.tissue-switch svg { width: 100%; max-width: 260px; height: auto; display: block; }
+.tissue-switch figcaption { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.tissue-switch-band { font-size: 10.5px; font-weight: 600; fill: var(--fg); }
+.tissue-switch-tick { font-size: 9.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.tissue-switch-axis { font-size: 10px; fill: var(--muted); }
+/* The walk: each coupling a point to press. */
+.tissue-walk-block { margin: 10px 0 0; display: grid; gap: 4px; justify-items: start; }
+.tissue-walk { margin: 0; display: grid; gap: 4px; }
+.tissue-walk svg { width: 100%; max-width: 250px; height: auto; display: block; }
+.tissue-walk figcaption { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.tissue-walk-point { cursor: pointer; }
+.tissue-walk-point:focus-visible { outline: none; }
+.tissue-walk-point:focus-visible circle:last-of-type, .tissue-walk-point:hover circle:last-of-type { stroke-width: 3; }
+.label-tissue-walk-label { background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px 4px; white-space: normal; width: 270px; }
+.label-tissue-walk-label .tissue-walk-block { margin: 0; }
+.label-tissue-walk-label .tissue-walk-describe { display: none; }
+.label-tissue-walk-label .tissue-walk figcaption { font-size: 10px; line-height: 1.3; }
+.label-tissue-walk-label .tissue-intro-title { font-size: 10px; }
+.label-tissue-switch-label { pointer-events: none; background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px 4px; white-space: normal; width: 300px; }
+.label-tissue-switch-label .tissue-switch svg { max-width: 200px; margin: 0 auto; }
+.label-tissue-switch-label figcaption { font-size: 11px; line-height: 1.35; height: 1.4em; overflow: hidden; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
 /* The tissue's names on the picture (src/lenses/tissue_line.js lays them out so that none meets another or a cell: each
    stands with its middle bottom on its point, as the label layer places it, and no rule here moves it off that). */
 .label-tissue-head .tissue-line, .label-tissue-end .tissue-line, .label-tissue-over .tissue-line { display: block; }
@@ -127,6 +160,8 @@ export const tissueCss = `
 .label-tissue-head .is-place { font-size: 13px; }
 .label-tissue-head .is-value { font-size: 10.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
 .label-tissue-end .is-early, .label-tissue-over .is-early { font-style: italic; }
+.label-tissue-over.is-overlaid { display: grid; }
+.label-tissue-over.is-overlaid > .tissue-line { grid-area: 1 / 1; }
 .label-tissue-head.is-wrap, .label-tissue-end.is-wrap { white-space: normal; width: max-content; }
 .label-tissue-over { font-size: 12px; line-height: 1.4; color: var(--fg); text-align: center; white-space: normal; width: max-content; padding: 1px 6px; pointer-events: none; }
 /* The key over the tissues: the three dots in a cell, and a bead. */
@@ -135,6 +170,9 @@ export const tissueCss = `
 .tissue-key-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; vertical-align: -1px; }
 .tissue-key-dot.is-bead { width: 8px; height: 8px; box-shadow: 0 0 0 1.5px var(--fg); }
 .label-tissue-door { pointer-events: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; width: max-content; white-space: normal; }
+/* The note's question, the line's head line on the picture, with its source as the card gives it. */
+.label-tissue-question { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--fg); white-space: normal; width: max-content; text-align: left; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 85%, transparent); pointer-events: auto; }
+.label-tissue-question .tissue-intro-source { font-weight: 400; font-size: 11.5px; color: var(--accent); }
 /* The line's standing on its picture, where the bar's stamp may not show it. */
 .label-tissue-door .tissue-standing { font-size: 12.5px; font-weight: 600; color: var(--fg); background: color-mix(in srgb, var(--bg) 90%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
 .label-tissue-door .tissue-door-button { margin: 0; min-height: 32px; padding: 4px 12px; font-size: 12.5px; }

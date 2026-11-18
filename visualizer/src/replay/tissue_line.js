@@ -20,7 +20,8 @@ const TIME_SLACK = 5e-4; // seconds: record times are stored as 32-bit numbers (
 export function partsOf(raw, experimentId) {
   if (!experimentId) return [];
   const runs = raw?.runs || [];
-  return (raw?.experiments || []).filter((item) => item.part_of === experimentId && item.tissue && runs.some((run) => run.experiment === item.id));
+  // A part drawn inside another's view (`tissue.walk_of`: the ladder, in the line's) is no door of its own.
+  return (raw?.experiments || []).filter((item) => item.part_of === experimentId && item.tissue && !item.tissue.walk_of && runs.some((run) => run.experiment === item.id));
 }
 
 /** The experiment a part belongs to, or null. */

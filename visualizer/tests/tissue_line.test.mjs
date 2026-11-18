@@ -256,7 +256,8 @@ test("the page's overlay and selection hold the tissue line as a part of the exa
   assert.equal(entry.tissue.tumor, undefined, "the tumour's cells are the packages' data (tumor_cells), not the overlay's words");
   assert.equal(entry.tissue.species, undefined, "and so are the species' names (species)");
   // The page's own words (a source's path is the record's own name for its file, and is not checked here).
-  const words = JSON.stringify([entry.label, entry.short, entry.plain, { ...entry.tissue, says: entry.tissue.says.filter((_, index) => index !== 3), sources: null }, entry.outcome.status, entry.outcome.text]);
+  // (A source's path, the intro's included, is the record's own name for its file.)
+  const words = JSON.stringify([entry.label, entry.short, entry.plain, { ...entry.tissue, says: entry.tissue.says.filter((_, index) => index !== 3), sources: null, intro: entry.tissue.intro?.items.map((item) => item.says), walk: entry.tissue.walk && { ...entry.tissue.walk, points_sources: null } }, entry.outcome.status, entry.outcome.text]);
   assert.doesNotMatch(words, /replicat|reproduc|agree|\bmatch|modelled|qualified|Grodstein|preprint|7\.18/i, "no comparison with the preprint's or its authors' numbers but the one sentence, and no word that judges");
   // The sentence that says whose code BITSEY is names the preprint for that alone.
   assert.doesNotMatch(entry.tissue.says[3], /replicat|reproduc|agree|\bmatch|modelled|qualified|Grodstein|7\.18|number|value|threshold/i, "what BITSEY is, with no comparison in it");
@@ -266,6 +267,37 @@ test("the page's overlay and selection hold the tissue line as a part of the exa
   assert.doesNotMatch(words, /the user|“|"include/i, "no sentence of the user's in a data file");
   assert.deepEqual(selection["gap-junction-tissue-line"].within, ["runs", "dense-01", "viewer"]);
   assert.equal(selection["gap-junction-tissue-line"].runs, "index");
+});
+
+test("a newcomer's block says what the tissue is in the record's own sentences, each with its source, and what to do first", () => {
+  const overlay = readJson(path.join(ROOT, "data", "replays", "overlay.json"));
+  for (const id of ["gap-junction-tissue-line", "gap-junction-tissue-sheet"]) {
+    const intro = overlay.experiments[id].tissue.intro;
+    assert.equal(intro.title, "What you are looking at");
+    assert.match(intro.first, /^Press play/);
+    assert.equal(intro.items[0].says, "How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state?", "the note's own question first");
+    for (const item of intro.items) {
+      assert.equal(item.source.path, "docs/GAP_JUNCTION_CANCER_REPLICATION.md", item.says);
+      assert.match(item.source.revision, /^a4ec17a2[0-9a-f]{32}$/, item.says);
+      assert.doesNotMatch(item.says, /replicat|reproduc|agree|\bmatch|Grodstein|preprint|BITSEY|logged|“/i, item.says);
+    }
+    assert.ok(intro.items.some((item) => /Only miR200 crosses junctions/.test(item.says)) && intro.items.some((item) => /the flux is Fick's/.test(item.says)));
+    assert.ok(intro.shown >= 1 && intro.shown_narrow === 1 && intro.shown <= intro.items.length);
+  }
+});
+
+test("the ladder is drawn in the line's view (its walk), never a door of its own, its times with the note's caution", () => {
+  const overlay = readJson(path.join(ROOT, "data", "replays", "overlay.json")), selection = readJson(path.join(ROOT, "data", "replays", "selection.json"));
+  const ladder = overlay.experiments["gap-junction-tissue-ladder"], line = overlay.experiments["gap-junction-tissue-line"];
+  assert.deepEqual(selection["gap-junction-tissue-ladder"].within, ["runs", "ladder-01", "viewer"]);
+  assert.equal(ladder.tissue.walk_of, "gap-junction-tissue-line");
+  assert.equal(line.tissue.walk.part, "gap-junction-tissue-ladder");
+  assert.equal(ladder.tissue.caution, "The times are the first observed record at which every cell is E, so they are as fine as the records (log-spaced, and every 100 s).");
+  for (const source of [...ladder.sources, ...ladder.tissue.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);
+  const raw = { experiments: [{ id: "whole", listed: true }, { id: "line", part_of: "whole", tissue: {} }, { id: "ladder", part_of: "whole", tissue: { walk_of: "line" } }], runs: [{ id: "line--a", experiment: "line" }, { id: "ladder--a", experiment: "ladder" }] };
+  assert.deepEqual(partsOf(raw, "whole").map((item) => item.id), ["line"], "the walk's part is no door");
+  assert.equal(isPart(raw, "ladder"), false, "and no address opens it on its own");
+  assert.doesNotMatch(JSON.stringify([ladder.label, ladder.short, ladder.plain, { ...ladder.tissue, sources: null }]), /replicat|reproduc|agree|\bmatch|Grodstein|preprint|BITSEY|“/i);
 });
 
 test("the sheet is Cells' extension, said in full with its own bracket, with the line beside it as the record of the threshold; the line opens first", () => {
@@ -288,7 +320,7 @@ test("the sheet is Cells' extension, said in full with its own bracket, with the
   assert.deepEqual(sheet.tissue.ends, { "sheet9-d0": "the 3x3 patch M, 72 E", "sheet9-d4.48608e-16": "the 3x3 patch M, 72 E", "sheet9-d8.97217e-16": "the 3x3 patch M, 72 E", "sheet9-d1.79443e-15": "81 E: normalized", "sheet9-d3.58887e-15": "81 E: normalized", "sheet9-d7.17773e-15": "81 E: normalized" }, "the note's table (section 7.6)");
   // No heading or caption reads the sheet as the preprint's experiment: it is Cells' extension of it.
   for (const words of [sheet.label, sheet.short, sheet.plain]) assert.match(words, /Cells' extension/);
-  const all = JSON.stringify([sheet.label, sheet.short, sheet.plain, { ...sheet.tissue, sources: null }, { ...sheet.outcome, sources: null }]);
+  const all = JSON.stringify([sheet.label, sheet.short, sheet.plain, { ...sheet.tissue, sources: null, intro: sheet.tissue.intro?.items.map((item) => item.says) }, { ...sheet.outcome, sources: null }]);
   assert.doesNotMatch(all, /Grodstein|Levin|preprint|reproduc|agree|\bmatch|the user|“/i);
   assert.doesNotMatch(all.replace(/extension beyond the replication, not part of it|not part of the replication/g, ""), /replicat/i, "the replication is named only to say the sheet is not part of it");
   for (const source of [...sheet.sources, ...sheet.tissue.sources, ...sheet.outcome.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);

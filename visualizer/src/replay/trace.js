@@ -7,6 +7,7 @@
 
 import { h, svg } from "../ui/dom.js";
 import { clock, display, niceDomain, number } from "./format.js";
+import { recordAt, traceReading } from "./trace_reading.js";
 
 const W = 328, H = 136;
 const PAD = { left: 38, right: 10, top: 16, bottom: 20 };
@@ -112,7 +113,8 @@ class CellsTrace extends HTMLElement {
     this.reading = h("b", { class: "trace-value" });
     this.when = h("span", { class: "trace-when" });
     const key = [];
-    if (events.length) key.push(h("span", {}, h("i", { class: "trace-key trace-key-event", "aria-hidden": "true" }), "replaced here"));
+    // What a mark on the time axis is: the spec's own words for its events where it gives them (the tissue's stated changes).
+    if (events.length) key.push(h("span", {}, h("i", { class: "trace-key trace-key-event", "aria-hidden": "true" }), this.spec.eventsSay || "replaced here"));
     for (const level of lines) {
       key.push(h("span", {}, h("i", { class: "trace-key trace-key-level", "aria-hidden": "true" }), `${number(level.value * this.shown.factor, 1)}${this.shown.unit ? ` ${this.shown.unit}` : ""}: ${level.label}`));
     }
@@ -138,7 +140,7 @@ class CellsTrace extends HTMLElement {
     this.plot.addEventListener("click", (event) => player.seek(run.t[nearest(event)]));
     this.plot.addEventListener("blur", () => this.pin(null));
     this.plot.addEventListener("keydown", (event) => {
-      const at = this.pinned ?? player.index;
+      const at = this.pinned ?? recordAt(run, player);
       if (event.key === "ArrowLeft") this.pin(Math.max(0, at - 1));
       else if (event.key === "ArrowRight") this.pin(Math.min(run.count - 1, at + 1));
       else if (event.key === "Enter" || event.key === " ") player.seek(run.t[at]);
@@ -157,7 +159,8 @@ class CellsTrace extends HTMLElement {
   place() {
     if (!this.spec || !this.head) return;
     const { run, player, extra } = this.spec;
-    const playing = player.index;
+    // The run's own record at the clock (the player may keep a clock of its own: its row is not the run's).
+    const { playing, reading, when } = traceReading({ run, player, pinned: this.pinned, value: this.value, shown: this.shown, extra });
     const x = this.x(run.t[playing]);
     this.head.setAttribute("x1", x);
     this.head.setAttribute("x2", x);
@@ -177,10 +180,8 @@ class CellsTrace extends HTMLElement {
       this.crossDot.setAttribute("cx", px);
       this.crossDot.setAttribute("cy", this.y(this.value(pinned)));
     }
-    const step = pinned ?? playing;
-    this.reading.textContent = run.isValid(step) ? `${number(this.value(step), this.shown.decimals)}${this.shown.unit ? ` ${this.shown.unit}` : ""}` : "not a valid record";
-    const more = extra ? extra(step) : "";
-    this.when.textContent = ` at ${clock(run.t[step], { precise: true })}${pinned === null ? "" : " (under the pointer)"}${more ? ` · ${more}` : ""}`;
+    this.reading.textContent = reading;
+    this.when.textContent = when;
   }
 
   /** The same values as a table, built when it is first opened. */

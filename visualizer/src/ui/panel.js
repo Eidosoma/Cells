@@ -77,6 +77,8 @@ class CellsPanel extends HTMLElement {
       body.append(trace);
       trace.data = entity.chart;
     }
+    // A figure the view draws itself for this part (the tissue's switch, for a chosen cell): its own element.
+    if (entity.figure && typeof entity.figure === "object" && entity.figure.nodeType === 1) body.append(entity.figure);
     // A door into another view: which view, and what to show there (the Protein atlas on one set of a species' proteins).
     // A door is pressed: it opens another view, or does what its own view does with it ("Look closer" at a machine). An item that
     // says `says` is words in a door's place and opens nothing (the Laws library on a unit's laws that it does not show).

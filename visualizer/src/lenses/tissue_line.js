@@ -31,7 +31,7 @@ import { MARKS } from "../layers/marks/index.js";
 import { declared } from "../layers/records.js";
 import { readTissueColours } from "../ui/tissue_styles.js";
 import { mountPartStyles } from "../ui/tissue_part.js";
-import { h } from "../ui/dom.js";
+import { h, svg } from "../ui/dom.js";
 
 export const CELL_ID = "tissue:"; // a cell of a run: `tissue:<arm>:<cell index>`
 const PITCH = 10; // the scene's unit is the view's micrometre; where a view gives no geometry, cells stand 10 apart
@@ -100,8 +100,11 @@ export class TissueLineLens {
     const tissue = this.line.entry.tissue || {};
     const groups = [{ id: this.line.id, line: this.line, front: tissue.front, role: "main", caption: tissue.caption || null }];
     const beside = tissue.beside;
-    const other = beside?.part ? lineOf(this.model.raw.replays, beside.part) : null;
-    if (other) groups.push({ id: other.id, line: other, front: beside.front, role: "beside", caption: beside.says || other.short, frontSays: beside.front_says || null });
+    // The part beside, read from the catalogue once: its slots stay the same objects from one load to the next, so that an
+    // arm fetched before is found again (with every arm in view, or back to the picture's choice).
+    if (beside?.part && this.besideOf?.id !== beside.part) this.besideOf = { id: beside.part, line: lineOf(this.model.raw.replays, beside.part) };
+    const other = beside?.part ? this.besideOf.line : null;
+    if (other) groups.push({ id: other.id, line: other, front: beside.front, everyFront: beside.every_arm_front || null, role: "beside", caption: beside.says || other.short, frontSays: beside.front_says || null, everySays: beside.every_arm_says || null });
     return groups;
   }
 
@@ -113,13 +116,55 @@ export class TissueLineLens {
 
   /** A group's arms in view: those its entry puts in front (the picture's choice), unless the visitor asked for all. */
   armsInView(group) {
-    const all = group.line.runs.map((slot) => slot.arm);
+    const all = this.slotsOf(group).filter((slot) => slot.kind === "run").map((slot) => slot.arm);
+    // With every arm of the part in view, a group beside it keeps the arms its entry names for that (`every_arm_front`: the
+    // line's x2 beside the six sheets), so that it stays in sight; none where it names none.
+    if (this.everyArm && group.role === "beside") return all.filter((arm) => (group.everyFront || []).includes(arm));
     return this.everyArm || !Array.isArray(group.front) || !group.front.length ? all : all.filter((arm) => group.front.includes(arm));
   }
 
   /** Whether some group shows fewer arms than it has: the card then offers them all. */
   someLeftOut() {
     return this.groups.some((group) => Array.isArray(group.front) && group.front.length && group.front.length < group.line.runs.length);
+  }
+
+  /**
+   * A group's slots as drawn: its own, with one taken by a coupling the walk brought in (`this.walk`: { replace, slot },
+   * in the part's own group only).
+   */
+  slotsOf(group) {
+    if (group.role !== "main" || !this.walk) return group.line.slots;
+    return group.line.slots.map((slot) => (slot.arm === this.walk.replace ? this.walk.slot : slot));
+  }
+
+  /** The walk's part (the entry's `tissue.walk`: the ladder), as the catalogue holds it; null where none. */
+  walkLine() {
+    const part = this.line?.entry.tissue?.walk?.part;
+    if (!part) return null;
+    this.walkOf ??= lineOf(this.model.raw.replays, part);
+    return this.walkOf;
+  }
+
+  /**
+   * Bring a coupling's run into the line's rows in place of the row nearest it (by D, on a log scale; D = 0 nearest the
+   * smallest), or, for one of the line's own, the line's own rows again. The run is fetched as it comes in.
+   */
+  walkTo(arm) {
+    const own = this.line.runs.find((slot) => slot.arm === arm);
+    const brought = !own && this.walkLine()?.runs.find((slot) => slot.arm === arm);
+    if (own || !brought) {
+      if (!this.walk) return;
+      this.walk = null;
+    } else {
+      const at = (value) => (value > 0 ? Math.log10(value) : -Infinity);
+      const ranked = [...this.line.runs].sort((a, b) => Math.abs(at(a.value) - at(brought.value)) - Math.abs(at(b.value) - at(brought.value)));
+      this.walk = { replace: ranked[0].arm, slot: brought };
+    }
+    this.loading = true;
+    this.onChrome?.();
+    this.ready = this.load().then(() => {
+      if (this.active) this.enter();
+    });
   }
 
   /** Show every arm, or only those in front: the arms not yet loaded are fetched as they come into view. */
@@ -142,7 +187,7 @@ export class TissueLineLens {
       // Each arm in view, fetched once: its run, and of its records in files of their own only what the tissue draws.
       const open = async (group, slot) => {
         const key = `${group.id}/${slot.arm}`;
-        if (this.loaded.has(key)) return this.loaded.get(key);
+        if (this.loaded.has(key)) return Object.assign(this.loaded.get(key), { group, slot });
         const run = await loadRun(slot.row);
         const record = wanted(group).map((id) => run.records.get(id)).find((item) => item && item.set === "cell" && item.marks?.length);
         if (!record) throw new Error(`the run ${slot.arm} has no stated quantity with a criterion to colour its cells by`);
@@ -159,7 +204,7 @@ export class TissueLineLens {
         return item;
       };
       this.groups = this.groupsOf();
-      const opened = await Promise.all(this.groups.flatMap((group) => group.line.runs.filter((slot) => this.armsInView(group).includes(slot.arm)).map((slot) => open(group, slot))));
+      const opened = await Promise.all(this.groups.flatMap((group) => this.slotsOf(group).filter((slot) => slot.kind === "run" && this.armsInView(group).includes(slot.arm)).map((slot) => open(group, slot))));
       const arms = opened.map((item) => item.slot.arm);
       if (new Set(arms).size !== arms.length) throw new Error("two runs in view have the same arm");
       this.runs = opened;
@@ -189,7 +234,7 @@ export class TissueLineLens {
       this.error = String(error?.message || error);
       this.onChrome?.();
     }
-    return this;
+    // `ready` resolves to nothing, as every view's does (a check that waits on it through a debugger brings it back).
   }
 
   /** The clock the page's timeline and the player keep: the first run's times, with the play's schedule and its marks. */
@@ -283,7 +328,7 @@ export class TissueLineLens {
     // The tissues, built at the scene's origin; placed when the layout is known.
     const blocks = [];
     for (const group of this.groups) {
-      const rows = group.line.slots
+      const rows = this.slotsOf(group)
         .filter((slot) => (slot.kind === "refused" ? group.role === "main" : this.runs.some((item) => item.slot === slot)))
         .map((slot) => {
           if (slot.kind === "refused") return { slot, group };
@@ -295,8 +340,6 @@ export class TissueLineLens {
           return { slot, group, item, sheet, thick, across, deep };
         });
       if (!rows.some((row) => row.sheet)) continue;
-      // With every arm in view the sheet's group stands alone: the line beside it is folded away (the card opens it).
-      if (group.role === "beside" && this.everyArm) continue;
       const lined = rows.filter((row) => row.sheet).every((row) => row.item.lined);
       blocks.push({ group, rows, lined, role: group.role, scale: group.role === "beside" ? BESIDE : 1 });
     }
@@ -318,17 +361,26 @@ export class TissueLineLens {
           [standing ? h("span", { class: "tissue-standing" }, standing) : null, other ? h("button", { class: "tissue-back tissue-door-button", type: "button", dataset: { part: other.id }, onclick: () => this.open(other.id) }, other.short || other.label) : null],
           { title: other ? other.tissue.caption : null, maxWidth: roomWidth }
         );
+        // The note's question, the line a newcomer needs first, as the picture's head line with its source as the card
+        // gives it: left of the door on a wide window, over it on a narrow one (where the room allows: layout below).
+        const asked = group.line.entry.tissue?.intro?.items?.[0];
+        if (asked && block.lined) block.question = made("tissue-question", [asked.says, " ", this.sourceLink(asked)], { maxWidth: narrow ? roomWidth : Math.max(240, roomWidth - block.door.width - 24) });
       } else if (block.role === "beside") block.caption = made("tissue-group", [group.caption], { maxWidth: roomWidth });
       // Over a sheet's grid, once: what x2 is (the record's words), and where its own threshold lies (the dashed line).
       if (!block.lined && block.role === "main") {
         const bracket = group.line.entry.tissue?.bracket;
         const shown = (bracket?.between || []).every((arm) => block.rows.some((row) => row.slot.arm === arm && row.sheet));
-        const over = [placeSays ? `Each place is against x2, ${placeSays} (section 7.6).` : null, bracket && shown ? `The dashed line: ${lower(bracket.says)}.` : null].filter(Boolean);
+        // On a narrow window, in one sentence.
+        const over = narrow
+          ? [[placeSays ? `Places against x2, ${placeSays}` : null, bracket && shown ? `the dashed line: ${lower(bracket.says)}` : null].filter(Boolean).join("; ").replace(/\s*\(section [\d.]+\)$/, "") + " (section 7.6)."].filter((words) => words.length > 14)
+          : [placeSays ? `Each place is against x2, ${placeSays} (section 7.6).` : null, bracket && shown ? `The dashed line: ${lower(bracket.says)}.` : null].filter(Boolean);
         // The sheets' records end before the clock's (at 2,000 s): past that, each shows its last record, said once here.
         const ends = [...new Set(block.rows.filter((row) => row.sheet && row.item.run.end < this.clock.end - 1e-6).map((row) => row.item.run.end))];
         const early = ends.length === 1 ? `Past ${clock(ends[0])} each sheet shows its last record: its run's record ends there.` : null;
         if (over.length || early) {
-          block.over = made("tissue-over", [...over.map((words) => line(words)), early ? line(early, "is-early") : null], { maxWidth: roomWidth });
+          // On a narrow window the words for after the sheets' end take the place of the words over them (one box, the
+          // larger of the two), not a second row kept empty until then.
+          block.over = made(`tissue-over${narrow && early ? " is-overlaid" : ""}`, [...over.map((words) => line(words)), early ? line(early, "is-early") : null], { maxWidth: roomWidth });
           if (early) tags.ended.push({ tag: block.over, end: ends[0] });
         }
       }
@@ -343,6 +395,19 @@ export class TissueLineLens {
         if (this.runs.some((item) => item.moved)) parts.push(h("span", { class: "tissue-key-item" }, dot(this.streamColours().ionCss(), " is-bead"), ` a bead: ${speciesWords(group.line).find((item) => item.id === this.runs.find((run) => run.moved)?.moved.species)?.label || "what crosses"} carried across`));
         if (parts.length) block.key = made("tissue-key", parts, { maxWidth: roomWidth });
       }
+      // On a wide window, the switch of the chosen cell (else the entry's own) under the tissues, where the room allows it
+      // without making them smaller (layout below).
+      if (block.role === "main" && !narrow) {
+        const at = this.switchCell();
+        const figure = at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}` });
+        if (figure) block.switch = made("tissue-switch-label", [figure]);
+        // And the walk (the line's couplings and its ladder's), pressed as the card's.
+        const walk = this.walkFigure({ compact: true });
+        if (walk) {
+          block.walk = made("tissue-walk-label", [walk]);
+          block.walk.element.style.pointerEvents = "auto";
+        }
+      }
       for (const row of block.rows) {
         const { slot } = row;
         if (!row.sheet) {
@@ -352,13 +417,17 @@ export class TissueLineLens {
         const quiet = !row.item.routes && group.line.entry.tissue?.no_routes ? group.line.entry.tissue.no_routes.replace(/^D = 0: /, "") : null;
         const early = block.lined && row.item.run.end < this.clock.end - 1e-6 ? `shows its last record (${clock(row.item.run.end)})` : null;
         if (block.lined) {
-          // A line beside the part's own stands two to a row: on a narrow window its words wrap to half the room.
-          const half = block.role === "beside" && narrow ? (roomWidth - 24) / 2 : null;
+          // A line beside the part's own stands two to a row: on a narrow window its words wrap to half the room (one arm alone
+          // has the whole width).
+          const half = block.role === "beside" && narrow && block.rows.filter((other) => other.sheet).length > 1 ? (roomWidth - 24) / 2 : null;
           row.head = made(`tissue-head${half ? " is-wrap" : ""}`, [[slot.label, where(slot, block.role === "beside" ? null : placeSays)].filter(Boolean).join(" · ")], { maxWidth: half });
           row.end = slot.end || quiet || early ? made(`tissue-end${half ? " is-wrap" : ""}`, [slot.end ? line(slot.end) : null, quiet ? line(quiet) : null, early ? line(early, "is-early") : null], { maxWidth: half }) : null;
         } else {
           row.head = made("tissue-head is-stacked", [line(where(slot, null) || slot.label, "is-place"), where(slot, null) ? line(slot.label, "is-value") : null]);
-          row.end = slot.end || quiet || early ? made("tissue-end is-stacked", [slot.end ? line(slot.end) : null, quiet ? line(quiet) : null, early ? line(early, "is-early") : null]) : null;
+          // On a narrow window with more sheets than a row holds (every arm in view), their end words are left to the card
+          // (each arm's row there gives them), so that the sheets and the line beside keep the room.
+          const crowded = narrow && block.rows.length > 3;
+          row.end = !crowded && (slot.end || quiet || early) ? made("tissue-end is-stacked", [slot.end ? line(slot.end) : null, quiet ? line(quiet) : null, early ? line(early, "is-early") : null]) : null;
         }
         if (row.end && early) tags.ended.push({ tag: row.end, end: row.item.run.end });
       }
@@ -384,6 +453,11 @@ export class TissueLineLens {
      * each block's size in pixels and, for each thing, its place in pixels from the block's top left.
      */
     const GAP = 10, ROW = 8, SIDE = 22;
+    let switchOn = false, walkOn = false, questionOn = false;
+    // With every sheet in view, the line beside them may stand at their right rather than under them (build tries both):
+    // its top level with the sheets' first names.
+    let sideBySide = false;
+    const besideAt = () => (sideBySide && blocks.length === 2 && blocks[1].role === "beside" ? { x: (blocks[0].gridWidth ?? blocks[0].size.width) + 2 * SIDE, y: blocks[0].rows[0]?.at?.y || 0 } : null);
     const layout = (scale, final = false) => {
       let width = 0, height = 0;
       for (const block of blocks) {
@@ -395,21 +469,35 @@ export class TissueLineLens {
           y += label.height + 4;
           w = Math.max(w, label.width);
         };
+        // Beside the sheets (at their right) the line's words wrap to a narrow column; under them, to the room.
+        if (block.role === "beside" && block.caption && block.captionSide !== sideBySide) {
+          fit(block.caption, sideBySide ? 230 : roomWidth);
+          block.captionSide = sideBySide;
+        }
         top(block.caption);
         // The door to the other part stands at the top right: beside the first line's names where the maps leave room there.
         // (Where the door is no wider than the maps' column, which stands over no name of the lines.)
-        const doorBeside = block.door && block.lined && block.role === "main" && !narrow && block.door.width <= 24 + 104 + 4 + tickWidth;
-        if (block.door) {
+        // The note's question at the top left, where it is shown: on a wide window the door stands at the right of its row.
+        const asking = Boolean(block.question && questionOn);
+        const doorInRow = asking && block.door && !narrow;
+        if (asking) {
+          block.question.at = { x: "left", y };
+          if (doorInRow) block.door.at = { x: "right", y };
+          y += Math.max(block.question.height, doorInRow ? block.door.height : 0) + 6;
+        }
+        const doorBeside = !asking && block.door && block.lined && block.role === "main" && !narrow && block.door.width <= 24 + 104 + 4 + tickWidth;
+        if (block.door && !doorInRow) {
           block.door.at = { x: "right", y };
           if (!doorBeside) y += block.door.height + 6;
         }
         top(block.over);
-        top(block.key);
+        // On a narrow window the question takes the key's place: the key is the legend's too.
+        if (!(narrow && asking)) top(block.key);
         if (block.lined) {
           // Lines one above the other; on a wide window of the part's own, each with its map beside it; on a narrow one, under it.
           // On a narrow window the maps are left out: the room goes to the cells (the timeline's marks keep the changes).
           const mapsBeside = block.role === "main" && !narrow, mapsUnder = false;
-          const columns = block.role === "beside" ? 2 : 1;
+          const columns = block.role === "beside" ? block.lineColumns || 2 : 1;
           const mapWidth = mapsBeside ? 104 : 0;
           const itemWidth = (row) => Math.max(row.sheet ? row.across * s : 0, row.head?.width || 0, row.end && !sideBySide(row) ? row.end.width : 0);
           const sideBySide = (row) => !row.end || (row.head?.width || 0) + row.end.width + 16 <= (row.sheet ? row.across * s : 0);
@@ -463,7 +551,8 @@ export class TissueLineLens {
           y = rowTop;
         } else {
           // Sheets three to a row; the gap between the two the threshold lies between is wide enough for its dashed line.
-          const columns = Math.min(3, block.rows.length);
+          // Three to a row; on a narrow window two where that gives the sheets more room (build tries both).
+          const columns = Math.min(block.columns || 3, block.rows.length);
           const bracket = block.group.line.entry.tissue?.bracket?.between || [];
           const sheetWidth = Math.max(...block.rows.filter((row) => row.sheet).map((row) => row.across)) * s;
           // A name's value is drawn where it fits the sheet's width; the end words wrap to it.
@@ -480,13 +569,16 @@ export class TissueLineLens {
           }
           // The end words wrap to the column: as wide as its sheet or its widest name.
           const named = Math.max(sheetWidth, ...block.rows.map((row) => row.head?.width || 0));
-          for (const row of block.rows) if (row.end) fit(row.end, Math.max(named, narrow ? 72 : 180));
+          for (const row of block.rows) if (row.end) fit(row.end, Math.max(named, narrow ? Math.max(72, Math.floor((roomWidth - (columns - 1) * 14) / columns) - 2) : sideBySide ? 150 : 180));
           const colWidth = Math.max(named, ...block.rows.map((row) => row.end?.width || 0));
           // Between two columns: room for the dashed line, less on a narrow window.
           const between = narrow ? 14 : 2 * SIDE;
           const lines = [];
           block.rows.forEach((row, k) => (lines[Math.floor(k / columns)] ||= []).push(row));
           block.divider = null;
+          // On a narrow window a change's name is wider than its sheet: a row is kept for it between the names and the
+          // sheets, clear of every cell (a leader joins it to the cells). On a wide one it stands on the sheet's top band.
+          const kept = narrow ? calloutHeight + 4 : 0;
           for (const [n, rowsOf] of lines.entries()) {
             const headHeight = Math.max(...rowsOf.map((row) => row.head?.height || 0));
             const endHeight = Math.max(0, ...rowsOf.map((row) => row.end?.height || 0));
@@ -497,31 +589,48 @@ export class TissueLineLens {
               row.at = { left, y };
               row.head.at = { x: middle, y: y + headHeight - row.head.height };
               if (row.sheet) {
-                row.cellsAt = { x: middle, y: y + headHeight + 4 + deep / 2 };
-                if (row.end) row.end.at = { x: middle, y: y + headHeight + 4 + deep + 4 };
-                row.calloutY = null;
+                row.calloutY = kept ? y + headHeight + 2 : null;
+                row.cellsAt = { x: middle, y: y + headHeight + 4 + kept + deep / 2 };
+                if (row.end) row.end.at = { x: middle, y: y + headHeight + 4 + kept + deep + 4 };
               }
               w = Math.max(w, left + colWidth);
             });
             // The dashed line between the two arms the sheet's threshold lies between: between their columns in a row,
             // or between two rows where the second starts the next.
             const k1 = rowsOf.findIndex((row) => row.slot.arm === bracket[0]), k2 = rowsOf.findIndex((row) => row.slot.arm === bracket[1]);
-            if (k1 >= 0 && k2 === k1 + 1) block.divider = { x: (k1 + 1) * (colWidth + between) - between / 2, y0: y + headHeight, y1: y + headHeight + 4 + deep };
-            y += headHeight + 4 + deep + 4 + endHeight + ROW;
+            if (k1 >= 0 && k2 === k1 + 1) block.divider = { x: (k1 + 1) * (colWidth + between) - between / 2, y0: y + headHeight, y1: y + headHeight + 4 + kept + deep };
+            y += headHeight + 4 + kept + deep + 4 + endHeight + ROW;
             const next = lines[n + 1];
             if (k1 === rowsOf.length - 1 && next && next[0]?.slot.arm === bracket[1]) {
               block.divider = { y: y + 3, x0: 0, x1: null };
               y += 8;
             }
           }
-          if (block.divider && block.divider.x1 === null) block.divider.x1 = w;
+          // The sheets' own width (the words over them may be wider): what stands at their right starts after it.
+          block.gridWidth = Math.max(...block.rows.map((row) => row.at.left)) + colWidth;
+          if (block.divider && block.divider.x1 === null) block.divider.x1 = block.gridWidth;
         }
-        block.size = { width: Math.max(w, block.caption?.width || 0, block.over?.width || 0, block.key?.width || 0, block.door?.width || 0), height: y };
+        // Under the tissues, side by side: the switch and the walk, each where the room was found for it.
+        const below = [block.switch && switchOn ? block.switch : null, block.walk && walkOn ? block.walk : null].filter(Boolean);
+        const belowWidth = below.reduce((sum, label) => sum + label.width, 0) + (below.length - 1) * 16;
+        if (below.length) {
+          block.belowAt = y + 2;
+          y += Math.max(...below.map((label) => label.height)) + 10;
+        }
+        block.size = { width: Math.max(w, block.caption?.width || 0, block.over?.width || 0, block.key?.width || 0, block.door?.width || 0, belowWidth, asking ? block.question.width + (doorInRow ? 16 + block.door.width : 0) : 0), height: y };
+        if (asking) block.question.at.x = block.question.width / 2;
+        let x = (block.size.width - belowWidth) / 2;
+        for (const label of below) {
+          label.at = { x: x + label.width / 2, y: block.belowAt };
+          x += label.width + 16;
+        }
         if (block.door) block.door.at.x = block.size.width - block.door.width / 2;
         for (const label of [block.caption, block.over, block.key]) if (label) label.at.x = block.size.width / 2;
         width = Math.max(width, block.size.width);
         height += y + (height ? GAP : 0);
       }
+      const at = besideAt();
+      if (at) return { width: Math.max(blocks[0].size.width, at.x + blocks[1].size.width), height: Math.max(blocks[0].size.height, at.y + blocks[1].size.height) };
       return { width, height };
     };
     // The largest scale at which everything fits the room. Whether it fits is not one way in the scale (a line's end words
@@ -531,27 +640,100 @@ export class TissueLineLens {
       const { width, height } = layout(scale);
       return { ok: width <= roomWidth && height <= roomHeight, over: Math.max(width - roomWidth, 0) + Math.max(height - roomHeight, 0) };
     };
-    let scale = null, upper = null, least = { over: Infinity, scale: 0.05 };
-    for (let k = 0; k <= 120; k++) {
-      const trial = 60 * Math.pow(0.02 / 60, k / 120);
-      const tried = fits(trial);
-      if (tried.ok) {
-        scale = trial;
+    const searched = () => {
+      let scale = null, upper = null, least = { over: Infinity, scale: 0.05 };
+      for (let k = 0; k <= 120; k++) {
+        const trial = 60 * Math.pow(0.02 / 60, k / 120);
+        const tried = fits(trial);
+        if (tried.ok) {
+          scale = trial;
+          break;
+        }
+        if (tried.over < least.over) least = { over: tried.over, scale: trial };
+        upper = trial;
+      }
+      if (scale !== null && upper !== null) {
+        let low = scale, high = upper;
+        for (let k = 0; k < 12; k++) {
+          const middle = Math.sqrt(low * high);
+          if (fits(middle).ok) low = middle;
+          else high = middle;
+        }
+        scale = low;
+      }
+      return scale === null ? { scale: least.scale, fits: false } : { scale, fits: true };
+    };
+    // On a narrow window the sheets take the width: they may stand two to a row rather than three, and the line beside
+    // them one arm to a row rather than two (its long lines then leave the width to the sheets), whichever gives the
+    // sheets the most room that fits.
+    let found = searched();
+    const sheets = blocks.filter((block) => !block.lined && block.role === "main");
+    if (narrow && sheets.length) {
+      const besides = blocks.filter((block) => block.lined && block.role === "beside");
+      const across = (option) => option.scale * Math.max(...sheets[0].rows.filter((row) => row.sheet).map((row) => row.across));
+      const set = ([columns, lineColumns]) => {
+        for (const block of sheets) block.columns = columns;
+        for (const block of besides) block.lineColumns = lineColumns;
+      };
+      let best = { ...found, choice: [3, 2] };
+      for (const choice of [[3, 1], [2, 2], [2, 1]]) {
+        if (choice[0] === 2 && sheets[0].rows.length <= 2) continue;
+        if (choice[1] === 1 && !besides.length) continue;
+        set(choice);
+        const tried = searched();
+        if (tried.fits && (!best.fits || across(tried) > across(best) + 0.5)) best = { ...tried, choice };
+      }
+      set(best.choice);
+      found = best;
+    }
+    if (this.everyArm && blocks.length === 2 && blocks[1].role === "beside") {
+      sideBySide = true;
+      const side = searched();
+      if (side.fits && (!found.fits || side.scale > found.scale)) found = { ...found, ...side };
+      else sideBySide = false;
+    }
+    let scale = found.scale;
+    // The note's question as the line's head line, then the switch and the walk under the tissues, where together they cost
+    // the tissues no more than a twentieth of their scale (the question first, it being what a newcomer needs first): both,
+    // else the switch alone, else neither (the card holds them).
+    const costs = () => {
+      for (let k = 0; k <= 160; k++) {
+        const trial = scale * Math.pow(0.5, k / 160);
+        if (fits(trial).ok) return trial;
+      }
+      return null;
+    };
+    const base = scale;
+    if (blocks.some((block) => block.question)) {
+      questionOn = true;
+      const withIt = costs();
+      if (withIt !== null && withIt >= 0.95 * base) scale = withIt;
+      else questionOn = false;
+    }
+    for (const [s1, w1] of [[true, true], [true, false], [false, true]]) {
+      if ((s1 && !blocks.some((block) => block.switch)) || (w1 && !blocks.some((block) => block.walk))) continue;
+      [switchOn, walkOn] = [s1, w1];
+      const withThem = costs();
+      if (withThem !== null && withThem >= 0.95 * base) {
+        scale = withThem;
         break;
       }
-      if (tried.over < least.over) least = { over: tried.over, scale: trial };
-      upper = trial;
+      [switchOn, walkOn] = [false, false];
     }
-    if (scale !== null && upper !== null) {
-      let low = scale, high = upper;
-      for (let k = 0; k < 12; k++) {
-        const middle = Math.sqrt(low * high);
-        if (fits(middle).ok) low = middle;
-        else high = middle;
+    for (const block of blocks) {
+      if (narrow && questionOn && block.question && block.key) {
+        this.labels.remove(block.key);
+        tags.made.splice(tags.made.indexOf(block.key), 1);
+        block.key = null;
       }
-      scale = low;
+      for (const [key, on] of [["question", questionOn], ["switch", switchOn], ["walk", walkOn]]) {
+        if (!block[key] || on) continue;
+        this.labels.remove(block[key]);
+        tags.made.splice(tags.made.indexOf(block[key]), 1);
+        if (key === "switch") this.switchRings?.delete("stage");
+        block[key] = null;
+      }
     }
-    if (scale === null) scale = least.scale;
     const size = layout(scale, true);
     this.pxScale = scale; // pixels for each of the scene's units, the part's own
 
@@ -559,10 +741,13 @@ export class TissueLineLens {
     // beside); the blocks stand centred, one under the other.
     let top = 0;
     const rows = [];
+    const at = besideAt();
     for (const block of blocks) {
       const s = scale * block.scale;
       const root = new THREE.Group();
-      root.position.set(0, 0, top / scale);
+      // One under the other, centred; or, side by side, the pair centred.
+      if (at) root.position.set((block === blocks[0] ? block.size.width / 2 - size.width / 2 : at.x + block.size.width / 2 - size.width / 2) / scale, 0, (block === blocks[0] ? 0 : at.y) / scale);
+      else root.position.set(0, 0, top / scale);
       root.scale.setScalar(block.scale);
       this.root.add(root);
       block.root = root;
@@ -577,7 +762,7 @@ export class TissueLineLens {
         label.local = { x: xOf(label.at.x), z: unit(label.at.y + label.height) };
       };
       root.updateMatrixWorld(true);
-      for (const label of [block.caption, block.door, block.over, block.key]) if (label) anchor(label);
+      for (const label of [block.caption, block.question, block.door, block.over, block.key, block.switch, block.walk]) if (label) anchor(label);
       for (const row of block.rows) {
         row.block = block;
         rows.push(row);
@@ -680,7 +865,7 @@ export class TissueLineLens {
     this.rows = rows;
     this.calloutHeight = calloutHeight;
     const half = (size.width / 2) / scale;
-    this.box = { x0: -half, x1: half, z0: 0, z1: (top - GAP) / scale, y0: 0, y1: 0 };
+    this.box = { x0: -half, x1: half, z0: 0, z1: (at ? size.height : top - GAP) / scale, y0: 0, y1: 0 };
     this.root.updateMatrixWorld(true);
     this.draw();
   }
@@ -796,6 +981,7 @@ export class TissueLineLens {
     }
     this.placeMarks();
     this.placeTags();
+    this.moveSwitchRings();
   }
 
   /** The chosen and the hovered cell: a ring round the cell and a frame round its column of the map. */
@@ -836,7 +1022,10 @@ export class TissueLineLens {
     const { labels, tags } = this;
     for (const { tag, end } of tags.ended) {
       const early = tag.element.querySelector(".is-early");
-      if (early) early.style.visibility = this.player.time > end + 1e-6 ? "visible" : "hidden";
+      if (!early) continue;
+      const past = this.player.time > end + 1e-6;
+      early.style.visibility = past ? "visible" : "hidden";
+      if (tag.element.classList.contains("is-overlaid")) for (const other of tag.element.querySelectorAll(".tissue-line:not(.is-early)")) other.style.visibility = past ? "hidden" : "visible";
     }
     const pxOf = (piece, x) => piece.row.cellsAt.x + x * this.pxScale * piece.row.block.scale;
     const under = (piece, xPx, yPx, label) => piece.row.block.root.localToWorld(new THREE.Vector3(piece.row.block.xOf(xPx), 0, piece.row.block.unit(yPx + label.height)));
@@ -845,6 +1034,12 @@ export class TissueLineLens {
     if (key !== tags.changeKey) {
       tags.changeKey = key;
       for (const tag of tags.changes) labels.remove(tag);
+      for (const leader of tags.leaders || []) {
+        leader.removeFromParent();
+        leader.geometry.dispose();
+        leader.material.dispose();
+      }
+      tags.leaders = [];
       const together = new Map();
       for (const { change, piece } of this.changedNow || []) {
         const at = piece.item.lined ? piece.row.slot.arm : `${piece.row.slot.arm}:${change.from}:${change.to}`;
@@ -862,14 +1057,46 @@ export class TissueLineLens {
           tag.px = pxOf(piece, x);
           tag.piece = piece;
           tag.anchor.copy(under(piece, tag.px, piece.row.calloutY, tag));
-        }
-        else {
-          // Over the changed cells' middle, on the picture.
-          tag.anchor.copy(piece.group.localToWorld(new THREE.Vector3(x, piece.thick, z)));
-          tag.lift = -tag.height / 2;
+        } else {
+          // Clear of the tumour (whose cells are the ones that change): in the row kept over the sheet on a narrow window,
+          // else on the sheet's top band; a thin leader down to the changed cells' middle.
+          const s = this.pxScale * piece.row.block.scale;
+          const edge = Math.min(...piece.sheet.cells.map((cell) => cell.centre[1] - cell.radius));
+          const kept = piece.row.calloutY !== null && piece.row.calloutY !== undefined;
+          const foot = new THREE.Vector3(0, piece.thick + 0.02, kept ? (piece.row.calloutY + tag.height - piece.row.cellsAt.y) / s : edge + (tag.height + 3) / s);
+          if (kept) {
+            tag.px = piece.row.cellsAt.x;
+            tag.piece = piece;
+            tag.anchor.copy(under(piece, tag.px, piece.row.calloutY, tag));
+          } else tag.anchor.copy(piece.group.localToWorld(foot.clone()));
+          const leader = new THREE.Line(new THREE.BufferGeometry().setFromPoints([foot, new THREE.Vector3(x, piece.thick + 0.02, z)]), new THREE.LineBasicMaterial({ color: this.colours.accent || "#1f6fd0", toneMapped: false, depthTest: false, transparent: true }));
+          leader.userData.unpickable = true;
+          leader.renderOrder = 8;
+          piece.group.add(leader);
+          tags.leaders.push(leader);
+          if (kept) Object.assign(tag, { leader, foot, target: new THREE.Vector3(x, piece.thick + 0.02, z) });
         }
         return tag;
       });
+      // Names in a kept row stand apart from each other, inside the block, each leader following its name.
+      const rows = new Map();
+      for (const tag of tags.changes) if (tag.leader) {
+        const key = `${tag.piece.row.calloutY}`;
+        if (!rows.has(tag.piece.row.block)) rows.set(tag.piece.row.block, new Map());
+        const inRow = rows.get(tag.piece.row.block);
+        if (!inRow.has(key)) inRow.set(key, []);
+        inRow.get(key).push(tag);
+      }
+      for (const [block, inRow] of rows) for (const list of inRow.values()) {
+        list.sort((a, b) => a.px - b.px);
+        list.forEach((tag, k) => (tag.px = Math.max(tag.px, tag.width / 2, k ? list[k - 1].px + (list[k - 1].width + tag.width) / 2 + 6 : -Infinity)));
+        for (let k = list.length - 1; k >= 0; k--) list[k].px = Math.min(list[k].px, block.size.width - list[k].width / 2, k < list.length - 1 ? list[k + 1].px - (list[k + 1].width + list[k].width) / 2 - 6 : Infinity);
+        for (const tag of list) {
+          tag.anchor.copy(under(tag.piece, tag.px, tag.piece.row.calloutY, tag));
+          tag.foot.x = (tag.px - tag.piece.row.cellsAt.x) / (this.pxScale * block.scale);
+          tag.leader.geometry.setFromPoints([tag.foot, tag.target]);
+        }
+      }
     }
     const piece = this.selected ? this.pieces?.get(this.selected.arm) : null;
     if (!piece?.item) {
@@ -948,10 +1175,6 @@ export class TissueLineLens {
   /** The room changed (a panel opened, the window turned): laid out again for it, and framed. */
   roomChanged() {
     if (!this.active || !this.runs.length || !this.home) return;
-    // A window that turned narrow keeps the insets the page set while it was wide (src/ui/viewer.js sets them in renderPanel,
-    // which a change of width does not call): on a narrow window the page leaves no room at the sides, so none is kept.
-    const insets = this.stage.insets || {};
-    if (this.stage.width < 760 && (insets.left || insets.right)) this.stage.setInsets({ bottom: insets.bottom || 0 });
     this.sized = { width: this.stage.width, height: this.stage.height, insets: JSON.stringify(this.stage.insets || {}) };
     const { rig } = this.stage;
     this.build();
@@ -1008,7 +1231,16 @@ export class TissueLineLens {
   setSelection(id) {
     this.panel = id || null;
     const cell = this.cellOf(id);
+    const changed = JSON.stringify(cell) !== JSON.stringify(this.selected);
     this.selected = cell;
+    if (!cell) this.switchRings?.delete("panel");
+    // The card's switch, and the one under the tissues, are the chosen cell's.
+    if (changed) {
+      const label = this.blocks?.find((block) => block.switch)?.switch, at = this.switchCell();
+      const figure = label && at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}` });
+      if (figure) label.element.replaceChildren(figure);
+      this.onChrome?.();
+    }
     // A press on a map moves the clock to the record pressed (picked said where, just before).
     if (cell && this.pressedAt?.id === id) {
       this.player.pause();
@@ -1111,6 +1343,7 @@ export class TissueLineLens {
       plain: `One cell of the tissue in the run at ${item.slot.label}. The chart shows its ${lower(label)} at every saved record, as the experiment's driver states it beside the run; the line through it is the clock.`,
       note: `Every point is a saved record, and nothing is interpolated between them. The state is the driver's own (${item.record.stated?.file || "its file"}), never read from the colour.`,
       chips: [{ label: item.slot.label, title: "The run this cell is shown in." }, ...(tumor ? [{ label: "Tumor", title: line.tumor.source || "" }] : [])],
+      figure: this.switchFigure(item, cell.cell, "panel"),
       facts: [
         ["Run", item.slot.arm],
         [`${label} at ${at}`, reading(item.record, item.record.at(index, column)) || "no value"],
@@ -1127,6 +1360,7 @@ export class TissueLineLens {
         judged: null,
         levels: item.record.marks || [],
         events: changes.map((change) => ({ time: change.time, label: change.words })),
+        eventsSay: "its stated state changed here",
         extra: item.states ? (step) => `state ${item.states.text(step, column)}` : null,
       },
       sections: [
@@ -1158,7 +1392,12 @@ export class TissueLineLens {
             choices: this.runs.length
               ? [
                   // The arms in view: those the entries put in front (the picture's choice), or every arm, fetched as it comes into view.
-                  ...(this.someLeftOut() ? [{ key: "arms", label: "In view", options: [["front", `${this.groups.reduce((sum, group) => sum + (group.front?.length || group.line.runs.length), 0)} arms (the picture's choice)`], ["all", `All ${this.groups.reduce((sum, group) => sum + group.line.runs.length, 0)}`]], active: this.everyArm ? "all" : "front", set: (value) => this.setEveryArm(value === "all") }] : []),
+                  ...(this.someLeftOut() ? [{ key: "arms", label: "In view", options: [["front", `${this.groups.reduce((sum, group) => sum + (group.front?.length || group.line.runs.length), 0)} arms (the picture's choice)`], ["all", (() => {
+                          // Every arm of the part, and what a group beside it keeps then.
+                          const own = this.groups.filter((group) => group.role === "main").reduce((sum, group) => sum + group.line.runs.length, 0);
+                          const kept = this.groups.filter((group) => group.role === "beside").reduce((sum, group) => sum + (group.everyFront || []).length, 0);
+                          return `All ${own}${kept ? `, ${kept} beside` : ""}`;
+                        })()]], active: this.everyArm ? "all" : "front", set: (value) => this.setEveryArm(value === "all") }] : []),
                   { key: "time-scale", label: "Time down the maps", options: TIME_SCALES, active: this.scale, set: (value) => this.setScale(value) },
                 ]
               : [],
@@ -1227,12 +1466,22 @@ export class TissueLineLens {
     return [
       // The way to the example's networks, at the card's head: on a phone the tab's list is a select whose chosen option is the example already.
       typeof this.back === "function" && whole ? h("button", { class: "tissue-back tissue-way-back", type: "button", onclick: () => this.back() }, "The example's networks and sweeps") : null,
+      // What a newcomer is looking at, in the record's own sentences, each with its source; what to do first.
+      this.introParts(line),
+      // The walk: the line's couplings and its ladder's, each a point to press.
+      this.runs.length ? this.walkFigure() : null,
+      // The switch of the chosen cell, else of the entry's own: its records in the plane of its two stated concentrations.
+      (() => {
+        const at = this.runs.length && this.switchCell();
+        const figure = at && this.switchFigure(at.item, at.k, "card");
+        return figure ? h("section", { class: "tissue-switch-block" }, h("p", { class: "tissue-intro-title" }, `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}`), figure) : null;
+      })(),
       // The example's other parts, each its own view here: a part with a caption of its own stands under it, in full.
       ...others.map((part) => (part.tissue?.caption ? h("div", { class: "tissue-sibling-block", dataset: { part: part.id } }, h("p", { class: "card-text" }, part.tissue.caption), door(part)) : door(part))),
       h("p", { class: "card-text" }, line.entry.plain),
       h("ul", { class: "tissue-says" }, line.says.map((said) => h("li", {}, said))),
       // Which arms stand in view, and why, while only some do (the picture's choice).
-      ...(!this.everyArm ? groups.map((group) => (group.role === "beside" ? group.frontSays : group.line.entry.tissue?.front_says)).filter(Boolean).map((said) => h("p", { class: "card-text tissue-front" }, said)) : []),
+      ...(!this.everyArm ? groups.map((group) => (group.role === "beside" ? group.frontSays : group.line.entry.tissue?.front_says)) : groups.map((group) => (group.role === "beside" ? group.everySays : null))).filter(Boolean).map((said) => h("p", { class: "card-text tissue-front" }, said)),
       // The changes of the runs in view, each a press away: the timeline's marks, in a list.
       this.marks.length
         ? h(
@@ -1262,6 +1511,201 @@ export class TissueLineLens {
         )
       ),
     ].filter(Boolean);
+  }
+
+  /**
+   * The cell whose switch the card draws: the chosen cell, else the entry's own (`tissue.switch.cell`: the tumour's edge
+   * cell of an arm in front), where its run is in view. { item, k, says } or null.
+   */
+  switchCell() {
+    const chosen = this.selected && this.runs.find((item) => item.slot.arm === this.selected.arm);
+    if (chosen) return { item: chosen, k: this.selected.cell, says: "the cell chosen" };
+    const cfg = this.line?.entry.tissue?.switch?.cell;
+    const item = cfg && this.runs.find((run) => run.slot.arm === cfg.arm);
+    const k = item ? item.cells.ids.indexOf(cfg.cell) : -1;
+    return item && k >= 0 ? { item, k, says: this.line.entry.tissue.switch.cell_says || "" } : null;
+  }
+
+  /**
+   * The switch of one cell (the entry's `tissue.switch`: two stated concentrations, x and y): every saved record of the
+   * cell a point in their plane, coloured as the cell is at that record; the criterion's two lines (x minus y at its two
+   * thresholds), the three bands between them named as the criterion names them; the record shown ringed. Only stated
+   * values, and no curve the records do not hold. Returns an element, its ring kept up to the clock by draw().
+   */
+  switchFigure(item, k, place, { compact = false, title = null } = {}) {
+    const cfg = this.line?.entry.tissue?.switch;
+    const xr = cfg && item.amounts.find((amount) => amount.id === cfg.x)?.record, yr = cfg && item.amounts.find((amount) => amount.id === cfg.y)?.record;
+    if (!xr || !yr || !item.record.marks?.length) return null;
+    const column = item.cells.columns[k], n = item.run.count;
+    const xs = Array.from({ length: n }, (_, i) => xr.at(i, column)), ys = Array.from({ length: n }, (_, i) => yr.at(i, column));
+    const top = Math.max(10, Math.ceil(Math.max(...xs, ...ys) / 10) * 10);
+    const W = compact ? 200 : 260, H = compact ? 162 : 226, left = 38, bottom = 34, right = 10, upper = 10;
+    const sx = (v) => left + (Math.max(0, v) / top) * (W - left - right), sy = (v) => H - bottom - (Math.max(0, v) / top) * (H - bottom - upper);
+    const marks = item.record.marks.map((mark) => mark.value).sort((a, b) => a - b);
+    const [low, high] = [marks[0], marks[marks.length - 1]];
+    // The criterion's lines: x - y = high (E beyond it) and x - y = low (M beyond it), inside the plot.
+    const lineAt = (d) => (d >= 0 ? [[d, 0], [top, top - d]] : [[0, -d], [top + d, top]]);
+    const words = (mark, pattern) => (item.record.marks.find((m) => m.value === mark)?.label || "").match(pattern)?.[1] || "";
+    const above = words(high, /(\w+) above/), below = words(low, /(\w+) below/), between = words(low, /, (.+) between/);
+    const letter = (name, fallback) => (/\(([A-Z])\)/.exec(name)?.[1] || name.charAt(0).toUpperCase() || fallback);
+    const ink = this.stage?.palette?.fg || "#12283a", muted = this.stage?.palette?.muted || "#566878";
+    const dots = xs.map((x, i) => {
+      const rgb = this.breaks.colour(item.record.at(i, column));
+      return svg("circle", { cx: sx(x).toFixed(1), cy: sy(ys[i]).toFixed(1), r: 1.9, fill: `rgb(${rgb.map((c) => Math.round(c * 255)).join(",")})` });
+    });
+    const ring = svg("circle", { r: 5.5, fill: "none", stroke: ink, "stroke-width": 2 });
+    const figure = h(
+      "figure",
+      { class: "tissue-switch" },
+      svg(
+        "svg",
+        { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `${xr.label ? headOf(xr.label) : "x"} against ${yr.label ? headOf(yr.label) : "y"}, every saved record of ${item.cells.ids[k]}` },
+        svg("rect", { x: left, y: upper, width: W - left - right, height: H - bottom - upper, fill: "none", stroke: muted, "stroke-opacity": 0.4 }),
+        ...[low, high].map((d) => { const [[x0, y0], [x1, y1]] = lineAt(d); return svg("line", { x1: sx(x0), y1: sy(y0), x2: sx(x1), y2: sy(y1), stroke: ink, "stroke-width": 1.2, "stroke-dasharray": "4 3" }); }),
+        // E's name in its band's open middle (its records gather at its far corner), M's at its band's top left.
+        svg("text", { x: sx(top * 0.55), y: H - bottom - 6, "text-anchor": "middle", class: "tissue-switch-band" }, `${letter(above, "E")} · ${above}`),
+        svg("text", { x: left + 4, y: upper + 12, class: "tissue-switch-band" }, `${letter(below, "M")} · ${below}`),
+        svg("text", { x: sx(top * 0.62), y: sy(top * 0.62) - 9, "text-anchor": "middle", transform: `rotate(-${(Math.atan2(H - bottom - upper, W - left - right) * 180) / Math.PI} ${sx(top * 0.62)} ${sy(top * 0.62) - 9})`, class: "tissue-switch-band" }, `${letter(between, "X")} · ${between.replace(/\s*\([A-Z]\)$/, "")}`),
+        ...dots,
+        ring,
+        ...[0, top / 2, top].map((v) => svg("text", { x: sx(v), y: H - bottom + 13, "text-anchor": "middle", class: "tissue-switch-tick" }, String(v))),
+        ...[0, top / 2, top].map((v) => svg("text", { x: left - 5, y: sy(v) + 3, "text-anchor": "end", class: "tissue-switch-tick" }, String(v))),
+        svg("text", { x: (left + W - right) / 2, y: H - 4, "text-anchor": "middle", class: "tissue-switch-axis" }, `${xr.label ? headOf(xr.label) : "x"} (${unitSign(xr.unit)})`),
+        svg("text", { x: 10, y: (upper + H - bottom) / 2, "text-anchor": "middle", transform: `rotate(-90 10 ${(upper + H - bottom) / 2})`, class: "tissue-switch-axis" }, `${yr.label ? headOf(yr.label) : "y"} (${unitSign(yr.unit)})`)
+      ),
+      compact
+        ? h("figcaption", {}, title || `The switch of ${item.cells.ids[k]} at ${item.slot.short}: each saved record a point; the ring, the record shown`)
+        : h("figcaption", {}, `Every saved record of ${item.cells.ids[k]} at ${item.slot.short} is a point, as the driver states it; the dashed lines are ${lower(headOf(item.record.label))} at ${number(high, 0)} and at ${number(low, 0)} (the criterion); the ring is the record shown.`)
+    );
+    (this.switchRings ||= new Map()).set(place, { item, column, ring, sx, sy, xs, ys });
+    this.moveSwitchRings();
+    return figure;
+  }
+
+  /**
+   * The walk (the entry's `tissue.walk`): for each coupling of the line and of its walk's part (the ladder), a row of the
+   * note's tables as the overlay holds it (`walk.points`: the tumor's cells E at the end, whether every cell is, and the
+   * first record with every cell E where the note gives it); the threshold the search reported marked. Its D is the
+   * catalogue's (no run is fetched to draw it); a point pressed brings its run into the line's rows (walkTo), fetched
+   * then. Nothing is drawn between two couplings.
+   */
+  walkFigure({ compact = false } = {}) {
+    const walk = this.line?.entry.tissue?.walk, other = this.walkLine();
+    if (!walk || !other) return null;
+    const slots = [...this.line.runs, ...other.runs];
+    const points = (walk.points || [])
+      .map((row) => ({ slot: slots.find((slot) => slot.arm === row.arm), end: row }))
+      .filter((point) => point.slot)
+      .sort((a, b) => a.slot.value - b.slot.value);
+    if (points.length < 2) return null;
+    const x2 = points.find((point) => point.slot.place?.x2)?.slot.place.x2;
+    const positive = points.filter((point) => point.slot.value > 0).map((point) => Math.log10(point.slot.value));
+    const lo = Math.min(...positive) - 0.08, hi = Math.max(...positive) + 0.08;
+    const W = 250, left = 34, right = 8, zeroGap = 16, top1 = 8, h1 = compact ? 54 : 78, gap = compact ? 20 : 26, h2 = compact ? 42 : 62, H = top1 + h1 + gap + h2 + 24;
+    const sx = (value) => (value > 0 ? left + zeroGap + ((Math.log10(value) - lo) / (hi - lo)) * (W - left - zeroGap - right) : left + 4);
+    // The tumor's cells as the packages state them (its summary's tumor_cells).
+    const tumor = this.line.tumor?.cells?.length || Math.max(1, ...points.map((point) => point.end.tumor_E));
+    const sy1 = (n) => top1 + h1 - (n / Math.max(1, tumor)) * h1;
+    const times = points.map((point) => point.end.all_E_first_s).filter((time) => Number.isFinite(time) && time > 0);
+    const tlo = Math.log10(Math.min(...times)) - 0.1, thi = Math.log10(Math.max(...times)) + 0.1;
+    const sy2 = (time) => top1 + h1 + gap + h2 - ((Math.log10(time) - tlo) / (thi - tlo)) * h2;
+    const ink = this.stage?.palette?.fg || "#12283a", muted = this.stage?.palette?.muted || "#566878", accent = this.colours.accent || "#1f6fd0";
+    const inView = new Set(this.runs.filter((item) => item.group.role === "main").map((item) => item.slot.arm));
+    const press = (arm) => (event) => {
+      if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault?.();
+      this.walkTo(arm);
+    };
+    const dot = (point, cx, cy) => {
+      const shown = inView.has(point.slot.arm), all = point.end.every_E === true;
+      const said = `${point.slot.label}${point.slot.where ? ` (${point.slot.where})` : ""}: ${point.end.end}; ${point.end.tumor_E} of the tumor's ${tumor} cells E${point.end.all_E_first_s ? `; every cell E first at ${clock(point.end.all_E_first_s)}` : ""}`;
+      const g = svg(
+        "g",
+        { class: `tissue-walk-point${shown ? " is-shown" : ""}`, role: "button", tabindex: 0, "data-arm": point.slot.arm, "aria-label": `${said}. Press to show its run in the line's rows.` },
+        svg("title", {}, said),
+        svg("circle", { cx, cy, r: 9, fill: "transparent" }),
+        svg("circle", { cx, cy, r: shown ? 5 : 4, fill: all ? accent : "none", stroke: shown ? ink : accent, "stroke-width": shown ? 2.2 : 1.6 })
+      );
+      g.addEventListener("click", press(point.slot.arm));
+      g.addEventListener("keydown", press(point.slot.arm));
+      return g;
+    };
+    const xLine = x2 ? sx(x2) : null;
+    const tick = (time) => (time < 3600 ? `${Math.round(time / 60)} min` : `${number(time / 3600, 1)} h`);
+    const figure = h(
+      "figure",
+      { class: "tissue-walk" },
+      svg(
+        "svg",
+        { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "group", "aria-label": walk.title },
+        // The upper chart: the tumor's cells E at the end.
+        svg("rect", { x: left, y: top1, width: W - left - right, height: h1, fill: "none", stroke: muted, "stroke-opacity": 0.35 }),
+        ...[0, tumor / 2, tumor].map((n) => svg("text", { x: left - 5, y: sy1(n) + 3, "text-anchor": "end", class: "tissue-switch-tick" }, String(n))),
+        svg("text", { x: 9, y: top1 + h1 / 2, "text-anchor": "middle", transform: `rotate(-90 9 ${top1 + h1 / 2})`, class: "tissue-switch-axis" }, "tumor cells E"),
+        // The lower chart: the first record with every cell E, where every cell ends E (a log scale of time).
+        svg("rect", { x: left, y: top1 + h1 + gap, width: W - left - right, height: h2, fill: "none", stroke: muted, "stroke-opacity": 0.35 }),
+        ...[Math.min(...times), Math.max(...times)].map((time) => svg("text", { x: left - 5, y: sy2(time) + 3, "text-anchor": "end", class: "tissue-switch-tick" }, tick(time))),
+        svg("text", { x: 9, y: top1 + h1 + gap + h2 / 2, "text-anchor": "middle", transform: `rotate(-90 9 ${top1 + h1 + gap + h2 / 2})`, class: "tissue-switch-axis" }, "all E first"),
+        // The threshold the search reported.
+        ...(xLine ? [svg("line", { x1: xLine, x2: xLine, y1: top1 - 4, y2: top1 + h1 + gap + h2, stroke: ink, "stroke-dasharray": "3 3", "stroke-width": 1.1 }), svg("text", { x: xLine + 3, y: top1 + h1 + 14, class: "tissue-switch-band" }, "x2")] : []),
+        // D's axis: 0 apart at the left, then a log scale.
+        svg("text", { x: left + 4, y: H - 6, "text-anchor": "middle", class: "tissue-switch-tick" }, "0"),
+        ...[Math.pow(10, Math.ceil(lo)), Math.pow(10, Math.floor(hi))].filter((value, k, all) => all.indexOf(value) === k && Math.log10(value) >= lo && Math.log10(value) <= hi).map((value) => svg("text", { x: sx(value), y: H - 6, "text-anchor": "middle", class: "tissue-switch-tick" }, `1e${Math.round(Math.log10(value))}`)),
+        svg("text", { x: (left + W - right) / 2 + 20, y: H - 6, "text-anchor": "middle", class: "tissue-switch-axis" }, `D (${this.line.parameter.unit})`),
+        ...points.map((point) => dot(point, sx(point.slot.value), sy1(point.end.tumor_E))),
+        ...points.filter((point) => point.end.all_E_first_s).map((point) => dot(point, sx(point.slot.value), sy2(point.end.all_E_first_s)))
+      ),
+      h(
+        "figcaption",
+        {},
+        h("span", { class: "tissue-walk-describe" }, `Each point a coupling: above, how many of the tumor's ${tumor} cells are E at the end (filled where every cell is); below, the first record at which every cell is E. ${walk.points_says || ""} The dashed line: ${walk.threshold}. Press a point to show its run in the line's rows. `),
+        h("span", { class: "tissue-walk-caution" }, other.entry.tissue?.caution || "")
+      )
+    );
+    return h(
+      "section",
+      { class: "tissue-walk-block" },
+      h("p", { class: "tissue-intro-title" }, compact ? walk.short || walk.title : walk.title),
+      figure,
+      this.walk ? h("button", { class: "tissue-back", type: "button", onclick: () => this.walkTo(this.line.runs[0].arm) }, walk.restore) : null
+    );
+  }
+
+  /** Each switch's ring to the record at the clock. */
+  moveSwitchRings() {
+    for (const { item, ring, sx, sy, xs, ys } of this.switchRings?.values() || []) {
+      const i = item.run.indexAt(this.player.time);
+      ring.setAttribute("cx", sx(xs[i]).toFixed(1));
+      ring.setAttribute("cy", sy(ys[i]).toFixed(1));
+    }
+  }
+
+  /**
+   * The block "What you are looking at" (the entry's `tissue.intro`): what to do first, then the record's own sentences,
+   * each with a link to its source; the first few in sight (one on a narrow window), the rest folded.
+   */
+  /** An intro sentence's source, as the card gives it: its place in the note ("In short", "§7.1"), linked at its revision. */
+  sourceLink(item) {
+    const where = String(item.source?.where || "");
+    const short = /^Section ([\d.]+)/.exec(where)?.[1] ? `§${/^Section ([\d.]+)/.exec(where)[1]}` : where.split(" (")[0];
+    const url = item.source ? this.model.sourceUrl?.(item.source) : null;
+    const title = item.source ? `${item.source.path}, ${where}${item.source.revision ? `, at ${item.source.revision.slice(0, 8)}` : ""}` : "";
+    return url ? h("a", { class: "tissue-intro-source", href: url, target: "_blank", rel: "noopener", title }, short) : h("span", { class: "tissue-intro-source", title }, short);
+  }
+
+  introParts(line) {
+    const intro = line.entry.tissue?.intro;
+    if (!intro?.items?.length) return null;
+    const shown = this.stage?.width < 760 ? intro.shown_narrow ?? 1 : intro.shown ?? intro.items.length;
+    const said = (item) => h("p", { class: "tissue-intro-says" }, item.says, " ", this.sourceLink(item));
+    return h(
+      "section",
+      { class: "tissue-intro", "aria-label": intro.title },
+      h("p", { class: "tissue-intro-title" }, intro.title),
+      intro.first ? h("p", { class: "tissue-intro-first" }, h("span", { class: "tissue-intro-play", "aria-hidden": "true" }), intro.first) : null,
+      ...intro.items.slice(0, shown).map(said),
+      intro.items.length > shown ? h("details", { class: "tissue-intro-more" }, h("summary", {}, intro.more || "More"), ...intro.items.slice(shown).map(said)) : null
+    );
   }
 
   setScale(value) {

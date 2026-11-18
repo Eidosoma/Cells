@@ -24,11 +24,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openReplay, decodeBase64 } from "../src/replay/source.js";
-import { Breaks } from "../src/replay/tissue_line.js";
+import { Breaks, unionClock } from "../src/replay/tissue_line.js";
+import { traceReading } from "../src/replay/trace_reading.js";
+import { clock, display, reading } from "../src/replay/format.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const EVIDENCE = process.env.EVIDENCE || "/mnt/workspaces/Cells";
-const PARTS = ["gap-junction-tissue-line", "gap-junction-tissue-sheet"];
+const PARTS = ["gap-junction-tissue-line", "gap-junction-tissue-sheet", "gap-junction-tissue-ladder"];
 const selection = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "selection.json"), "utf8"));
 const folderOf = (part) => path.join(EVIDENCE, selection[part].evidence_folder, ...(selection[part].within || []));
 const FLOOR = 1e-6; // a millionth: below it, a 32-bit difference is rounding
@@ -66,6 +68,62 @@ const runs = () => (cache ??= packaged());
 test("each part's arms are packaged, and what the tissue fetches for one arm stays under a megabyte", { skip }, () => {
   for (const part of PARTS) assert.ok(runs().some((item) => item.row.experiment === part), `${part} has runs`);
   for (const { row, bytes } of runs()) assert.ok(bytes <= ARM_BYTES, `${row.id}: ${bytes} bytes`);
+});
+
+test("the walk's points, the note's table rows in the overlay, are the counts of the packaged states: the tumor's cells E at the end, whether every cell is, and the first record with every cell E", { skip }, () => {
+  const overlay = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "overlay.json"), "utf8"));
+  const points = overlay.experiments["gap-junction-tissue-line"].tissue.walk.points;
+  assert.equal(points.length, 14, "the line's four couplings and the ladder's ten");
+  for (const point of points) {
+    const found = runs().find((item) => item.row.experiment === point.part && item.arm === point.arm);
+    assert.ok(found, `${point.part} ${point.arm} is packaged`);
+    const { run, criterion } = found;
+    const states = run.records.get(`${QUANTITY}.state`), ids = run.sets.get("cell").ids;
+    const tumor = criterion.tumor_cells.map((cell) => ids.indexOf(cell)), all = ids.map((_, k) => k);
+    const last = run.count - 1;
+    const first = Array.from({ length: run.count }, (_, k) => k).find((k) => all.every((c) => states.text(k, c) === "E"));
+    assert.deepEqual([point.tumor_E, point.every_E], [tumor.filter((c) => states.text(last, c) === "E").length, all.every((c) => states.text(last, c) === "E")], `${point.arm}`);
+    // The note's table gives the ladder's times, to the second (650.16 s as 650, 310.5 s as 311); for the line's own four
+    // arms it gives none, and the overlay none.
+    if (point.part === "gap-junction-tissue-ladder") assert.equal(point.all_E_first_s, first === undefined ? null : Math.round(run.t[first]), `${point.arm}`);
+    else assert.equal(point.all_E_first_s, null, `${point.arm}: the note gives no time for the line's arms`);
+  }
+});
+
+test("a cell's chart reads its own arm's record at the clock, the record its panel's facts read, for every arm under the view's union clock", { skip }, () => {
+  const of = (part) => runs().filter((item) => item.row.experiment === part);
+  const line = of("gap-junction-tissue-line"), sheet = of("gap-junction-tissue-sheet"), ladder = of("gap-junction-tissue-ladder");
+  // The views a press can reach: the line's four; the sheet's six with two of the line's beside; the line with a ladder arm
+  // brought in by the walk.
+  const views = [line, [...sheet, ...line.slice(1, 3)], [...line.slice(0, 3), ladder.find((item) => item.arm === "neither-d1e-14")]];
+  let read = 0, differs = 0;
+  for (const view of views) {
+    const union = unionClock(view.map((item) => item.run));
+    for (const { row, run, criterion } of view) {
+      const record = run.records.get(QUANTITY), shown = display(record), column = run.sets.get("cell").ids.indexOf(criterion.tumor_cells.at(-1));
+      const change = criterion.states.findIndex((states, k) => k > 0 && states.some((word, c) => word !== criterion.states[k - 1][c]));
+      const times = [
+        ["the first", union.t[0]],
+        ["a time only another arm records", union.t.find((time) => !Array.from(run.t).some((own) => Math.abs(own - time) < 1e-3))],
+        ["a stated change", change > 0 ? criterion.times_s[change] : null],
+        ["the arm's end", run.end],
+        ["past the arm's end", union.end > run.end + 1 ? union.end : null],
+      ].filter(([, time]) => Number.isFinite(time));
+      for (const [where, time] of times) {
+        // The view's clock: the player's row is the union's, not the arm's.
+        const player = { time, run: union, index: union.indexAt(time) };
+        let own = 0;
+        for (let k = 0; k < run.count; k++) if (run.t[k] <= time + 5e-4) own = k;
+        const got = traceReading({ run, player, value: (k) => record.at(k, column) * shown.factor, shown });
+        assert.equal(got.step, own, `${row.id}, ${where} (${time} s): the arm's record ${own}, not ${got.step}`);
+        assert.equal(got.reading, reading(record, record.at(own, column)), `${row.id}, ${where}: the facts' value`);
+        assert.ok(got.when.startsWith(` at ${clock(run.t[own], { precise: true })}`), `${row.id}, ${where}: the facts' time (${got.when})`);
+        if (player.index !== own) differs++;
+        read++;
+      }
+    }
+  }
+  assert.ok(read > 60 && differs > 20, `every arm read at several times (${read}), many where the union's row is another (${differs})`);
 });
 
 test("the band each packaged value falls in is the state the driver states, for every arm, record and cell", { skip }, () => {

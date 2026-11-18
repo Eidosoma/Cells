@@ -738,6 +738,16 @@ still opens the runs. A part's entry holds the record's words for the picture un
   `place_says` (what an arm's place such as "x2/4" is against, said once over the
   tissues), `bracket` (`between`: two arms, a dashed line drawn between them; `says`: what
   the line is, said with `place_says`);
+- `intro` (`title`, `first`: what to do first; `items`: the record's own sentences, each with
+  its `source`; `shown`, `shown_narrow`: how many stand before the fold), `switch` (`x`, `y`:
+  two stated quantities whose plane the chosen cell's records are drawn in; `cell`: the
+  default `{ arm, cell }`, with `cell_says`), `walk` (`part`: a part whose couplings join
+  this one's in a chart, its points pressed to bring a run into the rows; that part says
+  `walk_of` and is no door of its own, and its `caution` goes with the times; `points`: one
+  row of the record's tables for each coupling, `{ part, arm, end, tumor_E, every_E,
+  all_E_first_s }`, with `points_says` and `points_sources`);
+- `beside.every_arm_front` (the arms of the part beside that stay in view when every arm of
+  this one is, with `every_arm_says`);
 - `front` (the arms in view as the page opens, the picture's choice, with `front_says`;
   the card brings in the rest, fetched as they come into view) and `beside` (another part
   drawn under this one, smaller, folded away while every arm is in view: its `part`,

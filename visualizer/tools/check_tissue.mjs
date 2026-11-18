@@ -26,7 +26,8 @@
 //            line; at a change; a pressed cell; the sheet; the sheet at a change; the sheet with every arm; playing at a
 //            change) no two names on the picture meet, no name but a change's or a chosen cell's lies on a cell, every
 //            name is inside the window; and the tissues are large enough (a line's cell 28 px at 1280 by 720 and 36 at 1440
-//            by 900, three sheets 200 px each at 1280 by 720, six 130).
+//            by 900, three sheets 200 px each at 1280 by 720, six 130); on a wide window the way back to the networks is
+//            whole above the card's fold, with the line and with the sheet shown.
 //
 //   node tools/check_tissue.mjs [OUT_DIR]
 //
@@ -88,6 +89,10 @@ const adapt = (args) => {
 adapt(["--experiment", WHOLE, "--run", "figure5-network-g1"]);
 adapt(["--experiment", PART]);
 adapt(["--experiment", SHEET]);
+// The ladder, drawn in the line's view (its walk), where its folder is on this machine.
+const LADDER = "gap-junction-tissue-ladder";
+const ladderHere = selection[LADDER] && existsSync(folderOf(LADDER));
+if (ladderHere) adapt(["--experiment", LADDER]);
 const indexFile = path.join(runs, "index.json");
 const index = JSON.parse(readFileSync(indexFile, "utf8"));
 // Which part the tab opens on is one field, the example's opens.part: the sheet case turns it in this check's own catalogue.
@@ -190,6 +195,8 @@ try {
     note(`wrote ${file}`);
   };
   /** What the picture shows now: its names, the card's and the legend's words, where each tissue stands, the clock. */
+  // The note's question as the picture's head line, where it stands: its words, place, source and what is under it.
+  const question = () => evaluate(`(() => { const root = ${V}.shadowRoot, el = root.querySelector(".label-tissue-question"); if (!el || el.classList.contains("is-off")) return null; const r = el.getBoundingClientRect(), a = el.querySelector("a.tissue-intro-source"), at = root.elementFromPoint(r.left + Math.min(40, r.width / 2), r.top + r.height / 2), standing = root.querySelector(".label-tissue-door .tissue-standing")?.getBoundingClientRect(); return { text: el.textContent, inside: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, clear: Boolean(at && el.contains(at)) || at === el, link: a?.href || null, bottom: Math.round(r.bottom), standingTop: standing ? Math.round(standing.top) : null }; })()`);
   const state = () => evaluate(`(() => {
     const v = ${V}, root = v.shadowRoot, lens = v.current, box = v.getBoundingClientRect();
     const words = (el) => { const lines = [...el.querySelectorAll(".tissue-line")].filter((line) => !line.hidden && getComputedStyle(line).visibility !== "hidden"); return lines.length ? lines.map((line) => line.textContent).join(" / ") : el.textContent; };
@@ -307,6 +314,8 @@ try {
     const got = bytes();
     note(`the opening fetched ${got.total.toLocaleString("en-US")} bytes of runs: ${JSON.stringify(got.arms)}`);
     check(`what the opening fetches of the runs stays under ${OPENING_BYTES / 1e6} MB, and each arm under ${ARM_BYTES / 1e6} MB: only the arms in view, and of each only what the picture draws`, got.total > 0 && got.total <= OPENING_BYTES && Object.values(got.arms).every((n) => n <= ARM_BYTES) && !got.files.some((file) => /\.(amount|junction-gate|junction-voltage-v|membrane-voltage-v)\.json$/.test(file)), JSON.stringify(got));
+    // The walk's chart is drawn from the overlay's rows of the note's tables and the catalogue: no arm of the ladder is fetched until its point is pressed.
+    check("the opening fetches no run of the ladder: its chart is the note's table, and an arm is fetched when its point is pressed", Object.keys(got.arms).every((arm) => arm.startsWith(`${PART}--`)), JSON.stringify(Object.keys(got.arms)));
     check(`the line's ${LINE.runs.length} arms stand in D's order, under one clock`, JSON.stringify(s.arms) === JSON.stringify(ARMS) && s.tab === "experiments" && JSON.stringify(s.groups) === JSON.stringify([PART]), JSON.stringify(s.arms));
     const heads = s.heads.map((tag) => tag.text);
     check("each arm is named on the picture by its D and its place as the summary states it, top to bottom in D's order, inside the window", LINE.runs.every((slot, k) => heads[k] === placeWords(slot)) && s.heads.every((tag, k) => tag.inside && (k === 0 || tag.y > s.heads[k - 1].y)), JSON.stringify(heads));
@@ -321,6 +330,31 @@ try {
     const beyond = ENTRY.tissue.says.filter((line) => /BITSEY|logged/.test(line)).reduce((text, line) => text.replace(line, ""), own);
     const judging = /replicat|reproduc|\bagree|\bmatch|modelled|qualified|simulated|Grodstein/i;
     check("nothing the tissue says (but the criterion's own words, the lead's one sentence on the logged value and one on BITSEY, and the sheet's sentence that it is not part of the replication) names the preprint, its authors or their code, or says replicated, agrees or matches", !forbidden.test(beyond) && !judging.test(own) && !/BITSEY|authors|logged/.test(beyond), (beyond.match(forbidden) || own.match(judging) || beyond.match(/BITSEY|authors|logged/) || [""])[0]);
+    // What a newcomer is looking at: what to do first, and the note's own question, its source linked.
+    const intro = await evaluate(`(() => { const block = ${V}.shadowRoot.querySelector(".view .tissue-intro"); return block ? { text: block.textContent, links: [...block.querySelectorAll("a.tissue-intro-source")].map((a) => a.href) } : null; })()`);
+    check("the card opens on what you are looking at: press play, then the note's own question, its source linked at its revision", Boolean(intro) && intro.text.includes(ENTRY.tissue.intro.first) && intro.text.includes(ENTRY.tissue.intro.items[0].says) && intro.links.length >= 1 && intro.links.every((href) => href.includes(ENTRY.tissue.intro.items[0].source.revision)), JSON.stringify(intro).slice(0, 300));
+    const head = await question();
+    const asked = ENTRY.tissue.intro.items[0];
+    check("the note's question stands as the line's head line on the picture, in the window and under nothing, its source linked as the card gives it", Boolean(head) && head.text.startsWith(asked.says) && head.inside && head.clear && Boolean(head.link) && head.link.includes(asked.source.revision), JSON.stringify(head));
+    // The switch of the tumor's edge cell of the arm in front: every saved record a point.
+    const sw = await evaluate(`(() => { const lens = ${L}, figure = ${V}.shadowRoot.querySelector(".tissue-switch"); const item = lens.runs.find((run) => run.slot.arm === ${JSON.stringify(ENTRY.tissue.switch.cell.arm)}); return figure && item ? { points: figure.querySelectorAll("svg > circle").length, count: item.run.count, caption: figure.textContent.slice(-160) } : null; })()`);
+    check("the switch of the tumor's edge cell stands drawn: every saved record of it a point, and the ring at the record shown", Boolean(sw) && sw.points === sw.count + 1, JSON.stringify(sw));
+    // The walk: the line's couplings and the ladder's, each a point; a real press brings one into the line's rows.
+    if (ladderHere) {
+      const walkPoints = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".view .tissue-walk-point")].map((g) => g.getAttribute("data-arm"))`);
+      const ladderLine = lineOf(index, LADDER);
+      check(`the walk shows each of the ${LINE.runs.length + ladderLine.runs.length} couplings as a point to press, from the note's tables (the overlay's walk.points)`, new Set(walkPoints).size === LINE.runs.length + ladderLine.runs.length, JSON.stringify(walkPoints));
+      const brought = ladderLine.runs.find((slot) => slot.value > 0 && !LINE.runs.some((own) => own.value === slot.value) && slot.value > 9e-15);
+      const point = await placeOf(`root.querySelector('.view .tissue-walk-point[data-arm="${brought.arm}"]')`);
+      if (point) await click(point.x, point.y, 1500);
+      const came = await until(`${L}.runs.some((item) => item.slot.arm === ${JSON.stringify(brought.arm)}) && !${L}.loading && ${L}.pieces?.has(${JSON.stringify(brought.arm)})`, 240);
+      const rows = await evaluate(`${L}.runs.filter((item) => item.group.role === "main").map((item) => item.slot.arm)`);
+      check(`a real press on a point (${brought.label}) brings its run into the line's rows in place of the row nearest it`, Boolean(point) && came && rows.length === LINE.runs.length && rows.includes(brought.arm), JSON.stringify(rows));
+      const restore = await placeOf(`[...root.querySelectorAll(".view .tissue-walk-block .tissue-back")][0]`);
+      if (restore) await click(restore.x, restore.y, 1500);
+      const back = await until(`!${L}.walk && !${L}.loading && ${L}.runs.filter((item) => item.group.role === "main").map((item) => item.slot.arm).join() === ${JSON.stringify(ARMS.join())}`, 240);
+      check("and \"the four of the record\" gives the line its own rows again", Boolean(restore) && back, "");
+    } else note("the ladder's runs are not on this machine: the walk is not checked");
     // The colours as drawn, at the first record and at the last.
     let colours = await drawn(lineSamples);
     check("each cell's colour as drawn is the scale's colour of the value the driver states there, at the first record", allClose(colours, 12), JSON.stringify(colours.filter((c) => !close(c))));
@@ -355,6 +389,18 @@ try {
     await sleep(1200);
     s = await state();
     check("the card's time scale draws time down the maps evenly, and the legend says so", s.scale === "even" && /on an even scale/.test(s.axis) && s.ticks.some((tag) => /^[1-5] h$/.test(tag.text)), JSON.stringify([s.scale, s.ticks.map((tag) => tag.text)]));
+    // A chosen cell's chart reads its own arm's record at the clock: the read-out's value and time are the facts' above it,
+    // at the clock's first record, between two of the arm's records, and past every record (the view's clock is the union
+    // of the arms' times, its rows not the arm's).
+    const readOuts = [];
+    for (const [arm, cell, time] of [[ARMS[2], 5, 1100], [ARMS[2], 5, 13800], [ARMS[3], 2, "end"]]) {
+      await evaluate(`(() => { ${L}.player.pause(); ${L}.seek(${time === "end" ? `${L}.clock.end` : time}); ${V}.select("tissue:${arm}:${cell}"); return true; })()`);
+      await sleep(900);
+      readOuts.push(await evaluate(`(() => { const panel = ${V}.shadowRoot.querySelector("cells-panel"), lens = ${L}; const item = lens.runs.find((run) => run.slot.arm === ${JSON.stringify(arm)}); const label = item.record.label; const dts = [...panel.querySelectorAll("dl.facts dt")]; const dt = dts.find((el) => el.textContent.startsWith(label + " at ")); const at = dt ? dt.textContent.slice(label.length + 4) : null; return { arm: ${JSON.stringify(arm)}, cell: ${cell}, time: lens.player.time, facts: dt ? [dt.nextElementSibling.textContent, at] : null, readOut: [panel.querySelector(".trace-value")?.textContent || null, (panel.querySelector(".trace-when")?.textContent || "").replace(/^ at /, "").split(" · ")[0]] }; })()`));
+    }
+    check("a chosen cell's chart reads its own arm's record at the clock: at three moments its read-out's value and time are the facts' above it", readOuts.every((item) => item.facts && item.facts[0] === item.readOut[0] && item.facts[1] === item.readOut[1] && !/no value/.test(item.readOut[0])), JSON.stringify(readOuts));
+    await evaluate(`${V}.select(null)`);
+    await sleep(400);
     // A run's details, from its line in the card's picks.
     const details = await placeOf(`[...root.querySelectorAll('.tissue-slot[data-arm="${ARMS[0]}"] .tissue-open')][0]`);
     if (details) await click(details.x, details.y, 1200);
@@ -439,6 +485,8 @@ try {
     check("on the picture the sheet's small door, inside the window", s.door.length === 1 && s.door[0].inside, JSON.stringify(s.door));
     // The bar's stamp is hidden and the card folded: the line's picture says its standing on the first screen, unpressed.
     const standing = await evaluate(`(() => { const root = ${V}.shadowRoot, el = root.querySelector(".label-tissue-door .tissue-standing"); if (!el) return null; const r = el.getBoundingClientRect(), at = root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { text: el.textContent, inside: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, clear: Boolean(at && (at === el || el.contains(at))), stamp: getComputedStyle(root.querySelector(".stamp")).display, open: ${V}.state.viewOpen }; })()`);
+    const phoneHead = await question();
+    check("on a phone the note's question stands over the standing words, in the window and under nothing", Boolean(phoneHead) && phoneHead.text.startsWith(ENTRY.tissue.intro.items[0].says) && phoneHead.inside && phoneHead.clear && phoneHead.standingTop !== null && phoneHead.bottom <= phoneHead.standingTop, JSON.stringify(phoneHead));
     check("on a phone the line's first screen says \"Development work, not judged.\" on the picture, in the window and under nothing, without a press", Boolean(standing) && standing.text === ENTRY.tissue.says[0] && standing.inside && standing.clear && !standing.open, JSON.stringify(standing));
     const colours = await drawn(lineSamples);
     check("the colours as drawn are the scale's colours of the stated values, in the dark page's tokens", allClose(colours, 8), JSON.stringify(colours.filter((c) => !close(c)).slice(0, 3)));
@@ -551,7 +599,7 @@ try {
         await sleep(1200);
         if (then === "all") {
           await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); if (!select) return false; select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);
-          await until(`${L}.runs.length === ${SHEETS.runs.length + LINE.runs.length} && !${L}.loading`, 240);
+          await until(`${L}.runs.length === ${SHEETS.runs.length + (SHEET_ENTRY.tissue.beside.every_arm_front || []).length} && !${L}.loading`, 240);
           await sleep(1500);
         } else if (then === "play") {
           await evaluate(`(() => { const lens = ${L}; lens.player.pause(); lens.player.seek(${firstChange.time}); lens.player.play(); return true; })()`);
@@ -564,6 +612,11 @@ try {
         if (width === 1440 && name === "the line") check(`${tag}: a line's cell is drawn 36 px across or more (${c.sizes.line} px)`, c.sizes.line >= 36, JSON.stringify(c.sizes));
         if (width === 1280 && name === "the sheet") check(`${tag}: each of the ${c.sizes.sheets} sheets is 200 px across or more (${c.sizes.sheet} px)`, c.sizes.sheets === 3 && c.sizes.sheet >= 200, JSON.stringify(c.sizes));
         if (width === 1280 && name === "the sheet with every arm") check(`${tag}: each of the ${c.sizes.sheets} sheets is 130 px across or more (${c.sizes.sheet} px)`, c.sizes.sheets === 6 && c.sizes.sheet >= 130, JSON.stringify(c.sizes));
+        // The way back to the networks, on a wide window: whole and above the card's fold, on one line, as the card opens.
+        if (width >= 760 && (name === "the line" || name === "the sheet")) {
+          const way = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector(".view"), button = card?.querySelector(".tissue-way-back"); if (!card || !button) return null; const c = card.getBoundingClientRect(), b = button.getBoundingClientRect(); return { card: [Math.round(c.top), Math.round(c.bottom)], button: [Math.round(b.top), Math.round(b.bottom)], height: Math.round(b.height), scrolled: card.scrollTop }; })()`);
+          check(`${tag}: the way back to the networks stands whole above the card's fold, on one line`, Boolean(way) && way.button[0] >= way.card[0] && way.button[1] <= way.card[1] && way.height <= 34 && way.scrolled === 0, JSON.stringify(way));
+        }
         if ((width === 1280 || width === 360) && /line$|sheet$|every arm|pressed/.test(name)) await shot(`${width}-${name.replace(/[^a-z]+/gi, "-")}`);
       }
     }
@@ -616,17 +669,21 @@ try {
     const cost = await frameCost();
     note(`the sheet's play: the view's work on a frame, labels with it: ${JSON.stringify(cost)} ms`);
     check("the view's own work on a frame of the sheet's play, the labels' layout with it, leaves room at 60 frames a second (a median under 8 ms)", cost.median < 8, JSON.stringify(cost));
-    // Every arm in view, chosen on the card: the six sheets and the line's four, under one clock; D = 0 says it has no
-    // routes; the bracket stands between the two rows its arms are in.
+    // Every arm in view, chosen on the card: the six sheets, and the line's arm the entry keeps beside them (x2), under one
+    // clock; D = 0 says it has no routes; the bracket stands between the two rows its arms are in.
+    const KEPT = SHEET_ENTRY.tissue.beside.every_arm_front || [];
     await evaluate(`${L}.player.pause(); ${L}.seek(0); true`);
     fetched.clear();
     await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);
-    await until(`${L}.runs.length === ${SHEETS.runs.length + LINE.runs.length} && !${L}.loading`, 240);
+    await until(`${L}.runs.length === ${SHEETS.runs.length + (SHEET_ENTRY.tissue.beside.every_arm_front || []).length} && !${L}.loading`, 240);
     await sleep(2000);
     s = await state();
     note(`every arm fetched ${bytes().total.toLocaleString("en-US")} bytes more`);
     const zero = SHEETS.runs.find((slot) => slot.value === 0);
-    check(`"All" on the card brings the ${SHEETS.runs.length} sheets into view, three to a row, the line folded away (the card opens it)`, JSON.stringify(s.tissues.map((t) => t.arm).sort()) === JSON.stringify(SHEETS.runs.map((slot) => slot.arm).sort()) && s.group.length === 0, JSON.stringify(s.tissues.map((t) => t.arm)));
+    check(`"All" on the card brings the ${SHEETS.runs.length} sheets into view, three to a row`, JSON.stringify(s.tissues.filter((t) => t.part === SHEET).map((t) => t.arm).sort()) === JSON.stringify(SHEETS.runs.map((slot) => slot.arm).sort()), JSON.stringify(s.tissues.map((t) => t.arm)));
+    // 3. The line stays in sight beside them: its x2 arm, under its label as the record the threshold comes from.
+    const keptLine = s.tissues.filter((t) => t.part === PART);
+    check("3. with every sheet in view the line stays in sight beside them: its x2 arm in the window, under its label as the record the threshold comes from (section 7.5)", KEPT.length === 1 && keptLine.length === 1 && keptLine[0].arm === KEPT[0] && keptLine[0].left >= 0 && keptLine[0].right <= WIDTH && keptLine[0].bottom <= HEIGHT - 90 && s.group.length === 1 && s.group[0].text === SHEET_ENTRY.tissue.beside.says && s.group[0].inside, JSON.stringify([keptLine, s.group]));
     check("the sheet with D = 0 says under it, with its end words, that it declares no routes", Boolean(zero) && s.ends.some((tag) => tag.text.includes(zero.end) && tag.text.includes(SHEET_ENTRY.tissue.no_routes.replace(/^D = 0: /, ""))), JSON.stringify(s.ends.map((tag) => tag.text)));
     check("the dashed line stands between the rows its two arms are in, and the words over the sheets say what it is", s.divider && s.over.length === 1 && s.over[0].text.includes(lower(bracket.says)), JSON.stringify(s.over));
     await shot("sheet-all");
@@ -641,6 +698,14 @@ try {
     const chosen = await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-experiment"); return select ? [select.selectedOptions[0]?.textContent || "", select.parentElement.querySelector(".exp-within")?.textContent || ""] : null; })()`);
     check("on a phone the card's list (a list to choose from) says the sheet's own short name with the example chosen, and under it", Boolean(chosen) && chosen.every((words) => words.includes(SHEET_ENTRY.short)), JSON.stringify(chosen));
     await shot("sheet-phone");
+    // On a phone with every sheet in view the line keeps its x2 arm in sight too, and the sheets stay large enough to see.
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); if (!select) return false; select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);
+    await until(`${L}.runs.length === ${SHEETS.runs.length + KEPT.length} && !${L}.loading`, 240);
+    await sleep(1500);
+    s = await state();
+    const phoneSheets = s.tissues.filter((t) => t.part === SHEET), phoneLine = s.tissues.filter((t) => t.part === PART);
+    check("on a phone with every sheet in view: the six sheets and the line's x2 arm under its label, all inside the window, each sheet 30 px across or more", phoneSheets.length === SHEETS.runs.length && phoneLine.length === 1 && phoneLine[0].arm === KEPT[0] && [...phoneSheets, ...phoneLine].every((t) => t.left >= 0 && t.right <= WIDTH && t.top >= 56 && t.bottom <= HEIGHT - 90) && phoneSheets.every((t) => t.right - t.left >= 30) && s.group.length === 1 && s.group[0].inside, JSON.stringify([phoneSheets.map((t) => Math.round(t.right - t.left)), phoneLine, s.group]));
+    await shot("sheet-phone-all");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   }
   const font = await evaluate(`document.fonts.check('12px Inter') ? "the page's font" : "a stand-in font"`).catch(() => "unknown");

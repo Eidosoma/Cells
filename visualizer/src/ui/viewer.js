@@ -233,6 +233,11 @@ class CellsViewer extends HTMLElement {
             this.toggleViewCard(false);
           }
           this.renderChrome(); // the switch may fit the bar again, or no longer
+          // The picture's room at the sides is a wide window's (renderPanel sets it): crossing into or out of a narrow
+          // window, it is set again, so a narrow window keeps no room the wide one left for the cards.
+          const narrow = this.clientWidth < 760;
+          if (this.narrowSeen !== undefined && this.narrowSeen !== narrow) this.renderPanel();
+          this.narrowSeen = narrow;
         } else this.fitCard();
       }).observe(this);
       // On a phone the panel is a sheet along the bottom: what stands on its top edge follows its height.

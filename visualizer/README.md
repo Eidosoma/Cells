@@ -449,6 +449,21 @@ chose them for the page):
   between pass fast, a play takes about a minute, and the timeline's marks are the
   changes, with the previous and next ones a press away; with less motion nothing plays
   by itself. A pressed cell is ringed and named with its state, and its panel charts it.
+  The card opens on "What you are looking at": press play, then the note's own sentences,
+  each linked to its source. The switch of the chosen cell (by default the tumour's edge
+  cell of an arm in front) draws every saved record in the plane of its stated miR200 and
+  Zeb mRNA, with the criterion's two lines and its three bands named; on a wide window it
+  stands under the tissues where the room allows. The walk (`runs/ladder-01/viewer`, the
+  ladder, with the line's four arms: fourteen couplings) gives for each coupling how many
+  of the tumour's cells end E and the first record with every cell E, as the note's tables
+  give them (`tissue.walk.points` in the overlay, held to the packaged states by a test),
+  x2 marked; no run is fetched to draw it, and a point pressed brings its run into the
+  line's rows. With every sheet in view the line keeps its x2 arm beside them. Under
+  1024 px, where the bar's stamp is hidden or cut, the line's picture says "Development
+  work, not judged." itself. The note's question stands as the line's head line on the
+  picture where the room allows. A chosen cell's chart reads its own run's record at the
+  clock (`src/replay/trace_reading.js`), the view's clock being the union of the runs'
+  times.
   Only the arms in view and only what the picture draws are fetched (the voltages, gates
   and amounts are in files of their own). Checks: `node tools/check_tissue.mjs`
   (`CASE=wide|phone|reduced|play|sheet|layout`) and `tests/tissue_packages.test.mjs` (each

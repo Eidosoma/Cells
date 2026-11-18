@@ -8,6 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { changesOf, Schedule, followBase, marksOf, DWELL, GAP, GAP_LEAST, IDLE, FOLLOW } from "../src/replay/tissue_play.js";
+import { TissueLineLens } from "../src/lenses/tissue_line.js";
 
 /** A run of three cells with its stated states, as the replay holds them: a record of words per cell and time. */
 function runOf(t, states, ids = ["c0", "c1", "c2"]) {
@@ -69,4 +70,10 @@ test("the timeline's marks: one for each time of a change, every change of that 
   const marks = marksOf(changes);
   assert.deepEqual(marks.map((mark) => [mark.time, mark.changes.length]), [[100, 2], [10000, 1]]);
   assert.match(marks[0].label, /cell 1: M to X \(D = 1\); c3_4: M to X \(D = 2\)$/);
+});
+
+test("the tissue view's ready resolves to nothing, as every view's does, and a part it cannot find is said", async () => {
+  const lens = new TissueLineLens(null, { raw: { replays: { experiments: [], runs: [] } } }, { clear() {}, add() {} }, "no-such-part");
+  assert.equal(await lens.ready, undefined);
+  assert.match(lens.error, /no tissue called no-such-part/);
 });

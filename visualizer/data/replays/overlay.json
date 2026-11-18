@@ -104,7 +104,242 @@
             "revision": "776824f77ed857cf72275d66b9f341f1cd69414b"
           }
         ],
-        "no_routes": "D = 0: it declares no routes"
+        "no_routes": "D = 0: it declares no routes",
+        "intro": {
+          "title": "What you are looking at",
+          "first": "Press play: the clock stops at each stated change of a cell, and the hours between pass quickly.",
+          "items": [
+            {
+              "says": "How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state?",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "In short (its question)",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "In every cell, the miR200/ZEB EMT switch.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Regulation",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Tumor cells start in the mesenchymal (M) state (ZEB high, miR200 low), healthy cells in the epithelial (E) state.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Cells and network",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Snail is chosen so that only E and M are stable. Only miR200 crosses junctions.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Regulation",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "A line of 25 cells. The first 6 cells form the tumor at the corner.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, World",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Tumor cells start at miR200 0, Zeb mRNA 100, ZEB 100; healthy cells at 100, 0, 0 (scaled coordinates). Then 500 time units uncoupled, then coupled for 20,000.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, Seeds and protocol",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "So every cell has the same voltage, and every junction's dV is exactly 0.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, Every cell is the same",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "At dV = 0 the miRNA's valence -1 contributes nothing, and the flux is Fick's, -D dc/L.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, The drift vanishes",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "So the junction moves the total down its own gradient, as it moves the one species u in Cells.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, One miR200, not free and total",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Junction conductance G_GJ = D x 4 pi (5 um)² / 100 nm. Only miR200 crosses.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, Coupling",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "One scaled unit is 1 uM.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, the switch's constants",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            }
+          ],
+          "shown": 1,
+          "shown_narrow": 1,
+          "more": "More, in the note's words: the switch, the world and the condition"
+        },
+        "switch": {
+          "x": "stated.mir200",
+          "y": "stated.zeb_mrna",
+          "cell": {
+            "arm": "neither-d7.17773e-15",
+            "cell": "c5"
+          },
+          "cell_says": "the tumor's edge cell, at x2"
+        },
+        "walk": {
+          "part": "gap-junction-tissue-ladder",
+          "title": "The ladder: how many of the tumor's six cells end E, at fourteen couplings",
+          "restore": "The four of the record",
+          "threshold": "x2, the threshold the search reported",
+          "short": "Fourteen couplings: the tumor's cells E at the end",
+          "points": [
+            {
+              "part": "gap-junction-tissue-line",
+              "arm": "neither-d0",
+              "end": "6 M, 19 E: the tumor holds",
+              "tumor_E": 0,
+              "every_E": false,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-line",
+              "arm": "neither-d3.58887e-15",
+              "end": "6 M, 19 E: the tumor holds",
+              "tumor_E": 0,
+              "every_E": false,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-line",
+              "arm": "neither-d7.17773e-15",
+              "end": "25 E: normalized",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-line",
+              "arm": "neither-d1.43555e-14",
+              "end": "25 E: normalized",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d5e-15",
+              "end": "6 M, 19 E: the tumor holds",
+              "tumor_E": 0,
+              "every_E": false,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d6.25e-15",
+              "end": "5 M, 20 E: partly converted",
+              "tumor_E": 1,
+              "every_E": false,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d7e-15",
+              "end": "5 M, 20 E: partly converted",
+              "tumor_E": 1,
+              "every_E": false,
+              "all_E_first_s": null
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d7.5e-15",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 6800
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d8.5e-15",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 4300
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d1e-14",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 3200
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d1.2e-14",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 2500
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d2e-14",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 1200
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d3e-14",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 650
+            },
+            {
+              "part": "gap-junction-tissue-ladder",
+              "arm": "neither-d5e-14",
+              "end": "25 E",
+              "tumor_E": 6,
+              "every_E": true,
+              "all_E_first_s": 311
+            }
+          ],
+          "points_says": "Each point is a row of the note's tables: the end states of cells 1-25 in its words (section 7.6's table for the ladder; sections 7.5 and 7.6 for the line's four arms), the tumor's six cells (cells 1-6) E among them, and, for the ladder, its first record with every cell E. The note gives no such time for the line's own four arms.",
+          "points_sources": [
+            {
+              "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+              "where": "Section 7.6, \"The ladder\" and its table; section 7.5 and section 7.6's dense records for the line's four arms",
+              "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+            }
+          ]
+        }
       },
       "sources": [
         {
@@ -212,9 +447,111 @@
             "neither-d7.17773e-15"
           ],
           "says": "The tissue line, the record the threshold x2 comes from (section 7.5)",
-          "front_says": "Beside the sheet, two of the line's four arms (the picture's choice: x2/2 and x2, below and near the threshold the line's search reported); the card brings in all four."
+          "front_says": "Beside the sheet, two of the line's four arms (the picture's choice: x2/2 and x2, below and near the threshold the line's search reported); the card brings in all four.",
+          "every_arm_front": [
+            "neither-d7.17773e-15"
+          ],
+          "every_arm_says": "With all six sheets in view, the line keeps one arm beside them, x2 (the picture's choice), so that the record the threshold comes from stays in sight."
         },
-        "no_routes": "D = 0: it declares no routes"
+        "no_routes": "D = 0: it declares no routes",
+        "intro": {
+          "title": "What you are looking at",
+          "first": "Press play: the clock stops at each stated change of a cell, and the hours between pass quickly.",
+          "items": [
+            {
+              "says": "How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state?",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "In short (its question)",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "In every cell, the miR200/ZEB EMT switch.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Regulation",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Tumor cells start in the mesenchymal (M) state (ZEB high, miR200 low), healthy cells in the epithelial (E) state.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Cells and network",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Snail is chosen so that only E and M are stable. Only miR200 crosses junctions.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 1, Regulation",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "9x9 cells with 4-neighbour junctions and a 3x3 tumor patch in the middle, with the line's switch, seeds and uncoupled 500 s.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.6, The sheet",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "So every cell has the same voltage, and every junction's dV is exactly 0.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, Every cell is the same",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "At dV = 0 the miRNA's valence -1 contributes nothing, and the flux is Fick's, -D dc/L.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, The drift vanishes",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "So the junction moves the total down its own gradient, as it moves the one species u in Cells.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.1, One miR200, not free and total",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "Junction conductance G_GJ = D x 4 pi (5 um)² / 100 nm. Only miR200 crosses.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, Coupling",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            },
+            {
+              "says": "One scaled unit is 1 uM.",
+              "source": {
+                "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+                "where": "Section 7.2, the switch's constants",
+                "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+              }
+            }
+          ],
+          "shown": 1,
+          "shown_narrow": 1,
+          "more": "More, in the note's words: the switch, the world and the condition"
+        },
+        "switch": {
+          "x": "stated.mir200",
+          "y": "stated.zeb_mrna",
+          "cell": {
+            "arm": "sheet9-d1.79443e-15",
+            "cell": "c3_3"
+          },
+          "cell_says": "a corner of the tumor, at x2/4"
+        }
       },
       "sources": [
         {
@@ -232,6 +569,91 @@
           {
             "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
             "where": "Section 7.6, the sheet's table",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+          }
+        ]
+      },
+      "engine_entities": [
+        "models.pump_tissue",
+        "cap.junctions"
+      ],
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
+    "gap-junction-tissue-ladder": {
+      "adapter": "standard-history",
+      "development": true,
+      "part_of": "gap-junction-linear-network",
+      "summary": "summary.json",
+      "sidecar": [
+        "criterion.json",
+        "concentration_mir200.json",
+        "concentration_zeb_mrna.json",
+        "concentration_zeb_protein.json"
+      ],
+      "refused_picks": true,
+      "opens": {
+        "record": [
+          "stated.mir200_minus_zeb_mrna"
+        ]
+      },
+      "label": "The ladder: the tissue line at ten more couplings",
+      "short": "The ladder",
+      "plain": "The tissue line's world at ten more values of the junction diffusion constant D, three below the threshold the search reported and seven above it, recorded densely; shown in the tissue line's view, where a coupling of the ladder may take the place of one of the line's rows.",
+      "tissue": {
+        "walk_of": "gap-junction-tissue-line",
+        "says": [
+          "Development work, not judged.",
+          "The ladder: the line at D = 5e-15, 6.25e-15 and 7e-15 below x2, and 7.5e-15, 8.5e-15, 1e-14, 1.2e-14, 2e-14, 3e-14 and 5e-14 above it, each at section 7's step rule, with dense records."
+        ],
+        "ends": {
+          "neither-d5e-15": "6 M, 19 E: the tumor holds",
+          "neither-d6.25e-15": "5 M, 20 E: partly converted",
+          "neither-d7e-15": "5 M, 20 E: partly converted",
+          "neither-d7.5e-15": "25 E",
+          "neither-d8.5e-15": "25 E",
+          "neither-d1e-14": "25 E",
+          "neither-d1.2e-14": "25 E",
+          "neither-d2e-14": "25 E",
+          "neither-d3e-14": "25 E",
+          "neither-d5e-14": "25 E"
+        },
+        "ends_label": "End states (cells 1-25), in the note's words",
+        "ends_says": "Each run's end states are given in the note's own words (its table in section 7.6, the ladder), which describe them under the criterion as stated: development work, not judged.",
+        "caution": "The times are the first observed record at which every cell is E, so they are as fine as the records (log-spaced, and every 100 s).",
+        "refused": "Refused by an engine check: no run to show.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7.6, \"The ladder\" and its table",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "The gap-junction tissue line, dense records, and the sheet (17 November 2026, night)",
+            "revision": "776824f77ed857cf72275d66b9f341f1cd69414b"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+          "where": "Section 7.6, \"The ladder\" and its table",
+          "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development work, not judged; 17 November 2026",
+        "answer": null,
+        "text": "The note's table (section 7.6) gives each arm's end states and the first record with every cell E. Development work, not judged.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7.6, the ladder's table",
             "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
           }
         ]

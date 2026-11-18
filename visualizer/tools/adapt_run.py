@@ -2187,7 +2187,14 @@ def adapt_engine_view(root, name, experiment, entry):
     main_fields = () if entry.get("part_of") and (entry.get("opens") or {}).get("record") else HISTORY_MAIN
     if not main_fields:
         derivation.append("The voltages are packaged in a file of their own: this part's picture opens on the quantity its driver states (opens.record).")
+    # A passive route's totals are packaged for a part whose picture draws them (the tumour tissue's beads); the example's
+    # own runs keep the files they had, their layers reading other fields.
+    passive_drawn = bool(entry.get("part_of"))
+    if not passive_drawn and any(item["field"] == "passive_transferred" for item in listed):
+        derivation.append("Its passive routes' totals (passive_transferred) are not packaged: no picture of this experiment's own draws them.")
     for field in [*HISTORY_FIELDS, *VIEW_FIELD_LABELS]:  # the page's own order of fields, then the merged views it reads
+        if field == "passive_transferred" and not passive_drawn:
+            continue
         for record in [item for item in listed if item["field"] == field and merged(item) == (field in VIEW_FIELD_LABELS)] + ([summed[field]] if field in summed else []):
             rows = range(count)
             if record["base"] != timeline:

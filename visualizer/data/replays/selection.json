@@ -114,5 +114,15 @@
       "viewer"
     ],
     "runs": "index"
+  },
+  "gap-junction-tissue-ladder": {
+    "note": "The example's tissue line at ten more couplings (the ladder), drawn in the line's view: the engine side's run folder of the ladder's ten arms (17 November 2026, night). It has no index.json, so its arms are its packages that hold a view.json.",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "ladder-01",
+      "viewer"
+    ],
+    "runs": "index"
   }
 }
