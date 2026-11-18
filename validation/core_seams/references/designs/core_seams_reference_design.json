@@ -4,7 +4,7 @@
  "status": "registered before any engine output for seams A and C (CORE_SEAMS_DESIGN \u00a719 item 7: the kinds and binding owners had not started)",
  "inputs": {
   "path": "validation/core_seams/references/reference_inputs.json",
-  "git_blob": "9695f1d574090fec7027a410db9e34f344599c86"
+  "git_blob": "6d9ec5b03f2bc7749a668f576918424b14c0060f"
  },
  "min_margin": 10.0,
  "verdict_band_eps": 64.0,
@@ -51,6 +51,18 @@
    "claim": "Parse-time charge and moiety balance per mode; n_q derived (\u00a73.2)",
    "reference": "the integer sums per declared mode",
    "plants": ["X+ not conserved (charge +1)", "ATP -> ADP without Pi (phosphate \u22121)", "base-form hydrolysis without its proton (charge \u22121)"]
+  },
+  {
+   "row": "A8",
+   "claim": "Amendment 1: finite fuel is moved rows; the stored rate is their standard part in @3's 1 mM frame, RT (\u03a3 \u03bd \u03bc\u00b0/RT \u2212 (\u03a3 \u03bd) ln c\u00b0) per cycle, with no work (\u00a73.4; COMPARTMENT_PH_TRANSFER_DESIGN \u00a717.2)",
+   "reference": "ff_neutral_n1: rows, stored rate, heat and zero work at every state",
+   "plants": ["the 1 M frame (\u2212(\u03a3 \u03bd) RT ln c\u00b0 dropped)", "the stored rate dropped", "its sign", "the fuel held instead", "the fuel moved at the other end"]
+  },
+  {
+   "row": "A9",
+   "claim": "Amendment 1: a population with N = b reads its N end at the host's b, its voltage as \u03c6_b \u2212 \u03c6_a, and books its rows and charge at the right host ends (\u00a73.1)",
+   "reference": "d2_slip_exchanger_Nb at every state, slopes included",
+   "plants": ["read as N = a", "the voltage's orientation ignored", "the charge's sign", "rows at swapped ends", "the conductance's sign"]
   },
   {
    "row": "C1",
@@ -123,6 +135,15 @@
     "states_with_S_below_zero": ["random_0", "random_1"],
     "min_J_dG_RT_there": 0.02420963789577992,
     "min_over_allowance_there": 12386050691149.58
+   },
+   "ff_neutral_n1": {
+    "max_J_dG_RT": -4.001549911492655e-32,
+    "at": "static_head_+0"
+   },
+   "d2_slip_exchanger_Nb": {
+    "max_J_dG_RT": 0.0,
+    "at": "unit_activity_zero_voltage",
+    "max_abs_ln_diagram_over_contract_backward": 1.9984014443252798e-15
    }
   },
   "A2_wegscheider": {
@@ -144,6 +165,11 @@
     },
     "d4_parallel_branches": {
      "variables": ["H@N", "H@P", "Y@N", "Y@P", "psi", "constant"],
+     "rank": 6,
+     "states": 6
+    },
+    "d2_slip_exchanger_Nb": {
+     "variables": ["X@N", "X@P", "Y@N", "Y@P", "psi", "constant"],
      "rank": 6,
      "states": 6
     }
@@ -322,6 +348,63 @@
       "residual_eps_at_unit_state": 0.0,
       "standin_max_eps": 0.0823221961283945,
       "r0_over_terms_eps": 0.0
+     }
+    }
+   },
+   "d2_slip_exchanger_Nb": {
+    "verdict": "admitted",
+    "reasons": [],
+    "cycles": {
+     "A": {
+      "structurally_zero": true,
+      "b": {},
+      "b_psi": 0.0,
+      "r0": -1.8696647781170407e-15,
+      "residual_eps": {
+       "max": 0.03730593069357581,
+       "at": "random_9",
+       "min": 0.020964521687874476,
+       "min_at": "far_A_+25",
+       "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "near_A_+0", "near_A_+1e-09", "near_A_-1e-09", "near_A_+0.0001", "near_A_-0.0001", "near_A_+1", "near_A_-1", "near_B_+0", "near_B_+1e-09", "near_B_-1e-09", "near_B_+0.0001", "near_B_-0.0001", "near_B_+1", "near_B_-1", "near_C_+0", "near_C_+1e-09", "near_C_-1e-09", "near_C_+0.0001", "near_C_-0.0001", "near_C_+1", "near_C_-1", "far_A_-25", "far_A_+25"]
+      },
+      "min_residual_eps_over_generic": 0.035507184920140294,
+      "residual_eps_at_unit_state": 0.05875103907155154,
+      "standin_max_eps": 0.22327598251431321,
+      "r0_over_terms_eps": 0.05875103907155154
+     },
+     "B": {
+      "structurally_zero": true,
+      "b": {},
+      "b_psi": 0.0,
+      "r0": -1.6048579702977887e-15,
+      "residual_eps": {
+       "max": 0.05829943231376001,
+       "at": "near_A_-1",
+       "min": 0.02990911892467477,
+       "min_at": "far_A_+25",
+       "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "near_A_+0", "near_A_+1e-09", "near_A_-1e-09", "near_A_+0.0001", "near_A_-0.0001", "near_A_+1", "near_A_-1", "near_B_+0", "near_B_+1e-09", "near_B_-1e-09", "near_B_+0.0001", "near_B_-0.0001", "near_B_+1", "near_B_-1", "near_C_+0", "near_C_+1e-09", "near_C_-1e-09", "near_C_+0.0001", "near_C_-0.0001", "near_C_+1", "near_C_-1", "far_A_-25", "far_A_+25"]
+      },
+      "min_residual_eps_over_generic": 0.05496575176090735,
+      "residual_eps_at_unit_state": 0.08641865912828305,
+      "standin_max_eps": 0.15234758545996427,
+      "r0_over_terms_eps": 0.08641865912828306
+     },
+     "C": {
+      "structurally_zero": true,
+      "b": {},
+      "b_psi": 0.0,
+      "r0": -2.648068078192521e-16,
+      "residual_eps": {
+       "max": 0.009656667536035505,
+       "at": "random_9",
+       "min": 0.003974583630389891,
+       "min_at": "far_A_+25",
+       "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "near_A_+0", "near_A_+1e-09", "near_A_-1e-09", "near_A_+0.0001", "near_A_-0.0001", "near_A_+1", "near_A_-1", "near_B_+0", "near_B_+1e-09", "near_B_-1e-09", "near_B_+0.0001", "near_B_-0.0001", "near_B_+1", "near_B_-1", "near_C_+0", "near_C_+1e-09", "near_C_-1e-09", "near_C_+0.0001", "near_C_-0.0001", "near_C_+1", "near_C_-1", "far_A_-25", "far_A_+25"]
+      },
+      "min_residual_eps_over_generic": 0.008451016525427403,
+      "residual_eps_at_unit_state": 0.014106128849567329,
+      "standin_max_eps": 0.2515379599019742,
+      "r0_over_terms_eps": 0.014106128849567329
      }
     }
    },
@@ -1377,6 +1460,14 @@
     "v1_neutral_n2": {
      "standin_difference_max_eps": 0.0,
      "standin_expm1_max_total": -8.597979553102967e-31
+    },
+    "ff_neutral_n1": {
+     "standin_difference_max_eps": 0.0,
+     "standin_expm1_max_total": -4.001549911492655e-32
+    },
+    "d2_slip_exchanger_Nb": {
+     "standin_difference_max_eps": 0.0,
+     "standin_expm1_max_total": 0.0
     }
    }
   },
@@ -1651,6 +1742,82 @@
      "states_with_a_basis_mode_against_its_dG": ["random_10", "near_K1_-1e-09", "near_K1_-0.0001", "near_K1_-1", "near_K2_+0", "near_K2_+1e-09", "near_K2_+0.0001", "near_K2_+1", "near_K3_+1", "far_K1_-25", "far_K1_+25"],
      "total_basis_vs_hill_max_rel": 9.981541252651016e-60
     }
+   },
+   "d2_slip_exchanger_Nb": {
+    "plants": {
+     "A": {
+      "exponent_flipped": {
+       "max": 1.3026502860778205e+35,
+       "at": "far_A_-25",
+       "min": 0.08206814700026027,
+       "min_at": "near_A_+0",
+       "weak_at": ["near_A_+0", "unit_activity_zero_voltage"]
+      },
+      "edge_in_place_of_cycle": {
+       "max": 5.922111207094259e+31,
+       "at": "far_A_+25",
+       "min": 62138269580008.39,
+       "min_at": "far_A_-25",
+       "weak_at": []
+      },
+      "sigma_omitted": {
+       "max": 0.0,
+       "at": "random_0",
+       "min": 0.0,
+       "min_at": "random_0",
+       "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "near_A_+0", "near_A_+1e-09", "near_A_-1e-09", "near_A_+0.0001", "near_A_-0.0001", "near_A_+1", "near_A_-1", "near_B_+0", "near_B_+1e-09", "near_B_-1e-09", "near_B_+0.0001", "near_B_-0.0001", "near_B_+1", "near_B_-1", "near_C_+0", "near_C_+1e-09", "near_C_-1e-09", "near_C_+0.0001", "near_C_-0.0001", "near_C_+1", "near_C_-1", "far_A_-25", "far_A_+25", "unit_activity_zero_voltage"]
+      }
+     },
+     "B": {
+      "exponent_flipped": {
+       "max": 1.248211795782362e+58,
+       "at": "far_A_+25",
+       "min": 0.32178059040181395,
+       "min_at": "near_B_+0",
+       "weak_at": ["near_B_+0", "unit_activity_zero_voltage"]
+      },
+      "edge_in_place_of_cycle": {
+       "max": 2.0809158746408833e+31,
+       "at": "far_A_-25",
+       "min": 104141822684904.02,
+       "min_at": "far_A_+25",
+       "weak_at": []
+      },
+      "sigma_omitted": {
+       "max": 264917459791332.72,
+       "at": "unit_activity_zero_voltage",
+       "min": 46908058684733.99,
+       "min_at": "far_A_+25",
+       "weak_at": []
+      }
+     },
+     "C": {
+      "exponent_flipped": {
+       "max": 5.956785101743725e+77,
+       "at": "far_A_-25",
+       "min": 0.05546901586139321,
+       "min_at": "unit_activity_zero_voltage",
+       "weak_at": ["near_C_+0", "unit_activity_zero_voltage"]
+      },
+      "edge_in_place_of_cycle": {
+       "max": 3.0913323424562977e+31,
+       "at": "far_A_+25",
+       "min": 3324898461269.4946,
+       "min_at": "far_A_-25",
+       "weak_at": []
+      },
+      "sigma_omitted": {
+       "max": 209469629644905.0,
+       "at": "unit_activity_zero_voltage",
+       "min": 34842883961909.91,
+       "min_at": "far_A_+25",
+       "weak_at": []
+      }
+     }
+    },
+    "trees_vs_minors_max_rel": 4.8082771674057843e-54,
+    "occupancy_trees_vs_solve_max_abs": 8e-60,
+    "edge_cycle_consistency_max_rel": 1.5813476814983114e-59
    }
   },
   "A5_two_layouts": {
@@ -2413,6 +2580,202 @@
      }
     },
     "exact_vs_differences_max_rel": 9.635558899068988e-31
+   },
+   "ff_neutral_n1": {
+    "plants": {
+     "wrong_volume": {
+      "max": 612563026273550.6,
+      "at": "random_9",
+      "min": 470545330536255.7,
+      "min_at": "static_head_+1",
+      "weak_at": []
+     }
+    },
+    "exact_vs_differences_max_rel": 4.4651095687045194e-30
+   },
+   "d2_slip_exchanger_Nb": {
+    "plants": {
+     "S_frozen": {
+      "max": 4.0721195204956795e+18,
+      "at": "far_A_+25",
+      "min": 0.01935922541232585,
+      "min_at": "unit_activity_zero_voltage",
+      "weak_at": ["unit_activity_zero_voltage"]
+     },
+     "half_RT": {
+      "max": 73829502088040.92,
+      "at": "unit_activity_zero_voltage",
+      "min": 10364371904835.871,
+      "min_at": "far_A_+25",
+      "weak_at": []
+     },
+     "wrong_volume": {
+      "max": 1033613029232572.9,
+      "at": "unit_activity_zero_voltage",
+      "min": 145101206667702.2,
+      "min_at": "far_A_+25",
+      "weak_at": []
+     }
+    },
+    "exact_vs_differences_max_rel": 6.849148402977862e-37
+   }
+  },
+  "A8_finite_fuel_stored_rate": {
+   "stored_frame_1M": {
+    "stored": {
+     "max": 12611681697335.957,
+     "at": "random_9",
+     "min": 0.008150854159241,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    }
+   },
+   "stored_dropped": {
+    "stored": {
+     "max": 34337843979739.816,
+     "at": "random_9",
+     "min": 0.02219234239639526,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    }
+   },
+   "stored_sign": {
+    "stored": {
+     "max": 68675687959479.63,
+     "at": "random_9",
+     "min": 0.04438468479279052,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    }
+   },
+   "held_instead": {
+    "J": {
+     "max": 0.0,
+     "at": "random_0",
+     "min": 0.0,
+     "min_at": "random_0",
+     "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "static_head_+0", "static_head_+1e-06", "static_head_-1e-06", "static_head_+0.001", "static_head_-0.001", "static_head_+0.1", "static_head_-0.1", "static_head_+1", "static_head_-1", "far_-15", "far_-5"]
+    },
+    "rows": {
+     "max": 87509003423766.48,
+     "at": "random_9",
+     "min": 0.02219234239639527,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    },
+    "stored": {
+     "max": 34337843979739.816,
+     "at": "random_9",
+     "min": 0.02219234239639526,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    },
+    "work": {
+     "max": 40837846973450.016,
+     "at": "random_9",
+     "min": 0.007016251557422965,
+     "min_at": "static_head_+0",
+     "weak_at": ["static_head_+0"]
+    }
+   },
+   "fuel_moved_at_b": {
+    "J": {
+     "max": 76720065905771.39,
+     "at": "far_-15",
+     "min": 10866265957820.588,
+     "min_at": "random_10",
+     "weak_at": []
+    },
+    "rows": {
+     "max": 157490913709514.75,
+     "at": "far_-15",
+     "min": 29727062310037.516,
+     "min_at": "static_head_-0.1",
+     "weak_at": []
+    },
+    "stored": {
+     "max": 31840071938261.13,
+     "at": "static_head_+0",
+     "min": 4263837220007.4746,
+     "min_at": "random_10",
+     "weak_at": []
+    },
+    "work": {
+     "max": 0.0,
+     "at": "random_0",
+     "min": 0.0,
+     "min_at": "random_0",
+     "weak_at": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "random_10", "random_11", "static_head_+0", "static_head_+1e-06", "static_head_-1e-06", "static_head_+0.001", "static_head_-0.001", "static_head_+0.1", "static_head_-0.1", "static_head_+1", "static_head_-1", "far_-15", "far_-5"]
+    }
+   },
+   "stored_rate_max_abs_pJ_per_s": 7.878768671319268
+  },
+  "A9_orientation_N_b": {
+   "read_as_N_a": {
+    "J": {
+     "max": 310725735842538.7,
+     "at": "far_A_-25",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    },
+    "charge": {
+     "max": 58541408718134.03,
+     "at": "random_4",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    },
+    "rows": {
+     "max": 58536902886250.03,
+     "at": "random_4",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    }
+   },
+   "voltage_orientation_ignored": {
+    "J": {
+     "max": 8.068526760290753e+17,
+     "at": "near_B_-1",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    },
+    "charge": {
+     "max": 725944787349424.6,
+     "at": "near_B_-1",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    }
+   },
+   "charge_sign": {
+    "charge": {
+     "max": 118043914253961.19,
+     "at": "random_4",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    }
+   },
+   "rows_at_swapped_ends": {
+    "rows": {
+     "max": 118034789857267.64,
+     "at": "random_4",
+     "min": 0.0,
+     "min_at": "unit_activity_zero_voltage",
+     "weak_at": ["unit_activity_zero_voltage"]
+    }
+   },
+   "conductance_sign": {
+    "conductance": {
+     "max": 295318008352163.7,
+     "at": "unit_activity_zero_voltage",
+     "min": 41457487619343.484,
+     "min_at": "far_A_+25",
+     "weak_at": []
+    }
    }
   },
   "A7_parse_checks": {
@@ -2976,14 +3339,29 @@
    "remedy": "the fuel rows' potentials (hydrolysis) and seam C's forms"
   },
   {
-   "control": "the moved rows' standard part (the stored rate, \u00a73.4), and its frame: RT (\u03a3 \u03bd \u03bc\u00b0/RT \u2212 (\u03a3 \u03bd) ln c0) per cycle (COMPARTMENT_PH_TRANSFER_DESIGN \u00a717.2)",
+   "control": "in every held-fuel population, the moved rows' standard part (the stored rate, \u00a73.4) and its frame: RT (\u03a3 \u03bd \u03bc\u00b0/RT \u2212 (\u03a3 \u03bd) ln c0) per cycle (COMPARTMENT_PH_TRANSFER_DESIGN \u00a717.2)",
    "why": "every registered population holds its fuel and moves each species between its two ends, so \u03a3 \u03bd \u03bc\u00b0' = 0 and stored_standard_pJ_per_s is exactly 0 at every state; fuel_frame_1mM tests the held \u0394G's activity frame, a different error",
-   "remedy": "a finite-fuel population (ATP, ADP and Pi moved): the deferred composed world (\u00a719), or registered now if the lead asks"
+   "remedy": "ff_neutral_n1, the finite-fuel population added by amendment 1 (power.A8); the other populations hold their fuel"
   },
   {
-   "control": "a population with N = b (the outside end as N)",
-   "why": "every registered population has N = a; the orientation plant shows only that an N = a world is not read as N = b",
-   "remedy": "an N = b population, if the lead asks"
+   "control": "a population with N = b (the outside end as N), before amendment 1",
+   "why": "every population registered at f1808037 has N = a; the orientation plant shows only that an N = a world is not read as N = b",
+   "remedy": "d2_slip_exchanger_Nb, added by amendment 1 (power.A9)"
+  },
+  {
+   "control": "amendment 1's stored-rate plants (the 1 M frame, dropped, its sign) and the fuel held instead, at static head",
+   "why": "J \u2248 0 there, so nothing is stored or moved",
+   "remedy": "every other state of ff_neutral_n1"
+  },
+  {
+   "control": "the fuel held instead, on J; the fuel moved at b, on work",
+   "why": "the kinetics do not depend on how the fuel is booked, and finite fuel books no work either way",
+   "remedy": "the rows, the stored rate and the work (held instead); J, rows and stored (at b)"
+  },
+  {
+   "control": "amendment 1's N = b plants at the unit state",
+   "why": "both ends are identical there (every activity 1, V = 0)",
+   "remedy": "every other state of d2_slip_exchanger_Nb"
   },
   {
    "control": "bitwise agreement of the two layouts",

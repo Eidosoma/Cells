@@ -11,7 +11,7 @@ references.
 
 | Path | What it is |
 | --- | --- |
-| `reference_inputs.json` | The registered inputs, self-contained, written by `worlds.py`. Seam A: its registry, 11 laws, 22 planted diagram laws, 4 parse plants, 306 host states, the populations and the node volumes. Seam C: its registry, 6 binding systems with 70 manufactured states (their totals as doubles), 2 P1 nodes and 5 movers |
+| `reference_inputs.json` | The registered inputs, self-contained, written by `worlds.py`. Seam A: its registry, 13 laws (2 of them added by amendment 1), 22 planted diagram laws, 4 parse plants, 365 host states, the populations and the node volumes. Seam C: its registry, 6 binding systems with 70 manufactured states (their totals as doubles), 2 P1 nodes and 5 movers |
 | `designs/core_seams_reference_values.json` | The references on every registered state, one record per line |
 | `designs/core_seams_reference_design.json` | The claims; each plant's power (its largest deviation over the states, where, its smallest, and where it is weak); the zero-power cases; the readings |
 | `exact.py` | Exact SI constants, 60-digit decimals and forward-mode duals |
@@ -60,7 +60,8 @@ registered number derives from them. The worlds are this package's own synthetic
 
 ## Seam A: the laws and states
 
-All laws are on a patch with ends a (the population's cell) and b (the outside node), with N = a.
+All laws are on a patch with ends a (the population's cell) and b (the outside node), with N = a
+except `d2_slip_exchanger_Nb`.
 The states are host states: the end potentials and the free concentrations at each end.
 
 | Law | What it is | Cycles |
@@ -73,6 +74,8 @@ The states are host states: the end potentials and the free concentrations at ea
 | `v1_neutral_n1`, `v1_neutral_n2` | `cells.atp_driven_transporter_mass_action_positive@1` (R-fuel's statement) at n = 1 and 2, moving Z | the factored cycle |
 | `planted_negative_S_n1` | PLANTED: the neutral law with S − 0.05 | — |
 | `fb_shift`, `fb_masked`, `fb_basis` | Net-flow laws for the guard (A3) | — |
+| `ff_neutral_n1` | Amendment 1: the neutral law on finite fuel rows. ATP, ADP and Pi are moved at N = a and nothing is held | the factored cycle |
+| `d2_slip_exchanger_Nb` | Amendment 1: D2 with N = b, the outside node as N. Its host states are the exchange family's with the ends swapped | D2's three |
 
 **How the diagrams are built.** State energies and per-edge rates are chosen, and each edge's
 constants split its standard free-energy change evenly between its two directions. Every cycle
@@ -191,6 +194,24 @@ Every seam-A deviation is in floors at its state:
 - **n_q not squared, and F/(2RT):** each at least 1.1e13 everywhere.
 - **The wrong node's volume:** at least 1.5e14 everywhere.
 
+**A8, amendment 1's finite fuel.**
+- The stored rate is nonzero, up to 7.9 pJ/s.
+- The 1 M frame, the stored rate dropped, and its sign clear 1.3e13 to 6.9e13 floors, weak only at
+  static head.
+- With the fuel held instead, the rows, the stored rate and the work move by up to 8.8e13. J does
+  not move: the kinetics are the same either way.
+- With the fuel moved at b, J, the rows and the stored rate move by at least 4.3e12 everywhere.
+
+**A9, amendment 1's N = b.** Five plants were run:
+- read as N = a;
+- the voltage's orientation ignored;
+- the charge's sign;
+- rows at swapped ends;
+- the conductance's sign.
+
+The first four clear 5.9e13 or more at their largest and are weak only at the unit state, where
+both ends are identical. The conductance's sign clears at least 4.1e13 everywhere.
+
 **A7, parse checks:**
 - X⁺ not conserved: charge +1.
 - ATP → ADP without Pi: phosphate −1.
@@ -235,8 +256,10 @@ positive up to the stored amount.
 - the static-head formula at static head, and ∂S/∂V at equilibrium;
 - conductance plants on neutral modes;
 - a transported species' dropped μ°;
-- the moved rows' standard part (every registered population holds its fuel);
-- a population with N = b (none registered);
+- the moved rows' standard part in the held-fuel populations (amendment 1's `ff_neutral_n1`
+  gives it power);
+- a population with N = b before amendment 1 (now `d2_slip_exchanger_Nb`);
+- amendment 1's own weak cells: static head for the stored rate, and the unit state for N = b;
 - the layouts' bitwise identity (the engine against itself);
 - weakly held forms;
 - today's predictor below n_free;
@@ -264,13 +287,21 @@ positive up to the stored amount.
 
 ## Amendments
 
-- **18 November 2026, before any engine output for seams A or C** (the lead's confirmation,
-  §19 item 7; to be reconfirmed for this amendment):
+- **18 November 2026, amendment 0, before any engine output for seams A or C** (the lead's
+  confirmation, §19 item 7):
   - this README gained the registering hash;
   - the design file's `zero_power` gained two entries found at review. One is the moved rows'
     standard part: the stored rate is exactly 0 at every state, because every population holds
     its fuel. The other is a population with N = b, of which none is registered.
   - The inputs and values are unchanged, and so is every other registered number.
+- **18 November 2026, amendment 1, before A's first output** (CORE_SEAMS_DESIGN §19, amended the
+  same evening; the lead reconfirmed that no seam A or C output exists):
+  - two populations added, `ff_neutral_n1` (finite fuel, A8) and `d2_slip_exchanger_Nb` (N = b,
+    A9), with their states and plants. They are drawn after every earlier input, and every input
+    and value registered before is unchanged;
+  - the zero-power list updated: the two blind spots now name their remedies, and the amendment's
+    own weak cells are listed;
+  - two tests added.
 - The tests' tier rows follow once measured on the timed lane.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
@@ -282,7 +313,7 @@ folded with `scripts/test_tiers.py tiers --base`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
-| `tests/unit/test_core_seams_references_cycles.py` | 7 | Seam A's machinery, each test with its plant |
+| `tests/unit/test_core_seams_references_cycles.py` | 9 | Seam A's machinery, amendment 1's finite fuel and N = b included, each test with its plant |
 | `tests/unit/test_core_seams_references_binding.py` | 6 | Seam C's, each test with its plant |
 | `tests/unit/test_core_seams_references_registration.py` | 4 | The inputs equal their generator, sampled values recompute, the registered power holds, and no engine import |
 

@@ -35,7 +35,8 @@ def test_sampled_values_agree_with_a_fresh_computation(registered):
     inputs, values, _des = registered
     A = inputs["seam_a"]
     laws = {law["id"]: law for law in A["laws"]}
-    for lid in ("d2_slip_exchanger", "v1_proton_n2", "fb_shift"):
+    for lid in ("d2_slip_exchanger", "v1_proton_n2", "fb_shift", "ff_neutral_n1",
+                "d2_slip_exchanger_Nb"):
         law, pop = laws[lid], A["populations"][lid]
         for k in (0, 5):
             st = A["states"][lid][k]
@@ -80,6 +81,14 @@ def test_the_registered_power(registered):
             for key, row in keys.items():
                 allowed = {"static_head_+0"} if plant in no_flux else set()
                 assert set(row["weak_at"]) <= allowed, (lid, plant, key)
+    # amendment 1: the stored rate has power, and N = b is weak only at its symmetric unit state
+    a8 = p["A8_finite_fuel_stored_rate"]
+    assert a8["stored_rate_max_abs_pJ_per_s"] > 1e-3
+    for plant in ("stored_frame_1M", "stored_dropped", "stored_sign"):
+        assert set(a8[plant]["stored"]["weak_at"]) <= {"static_head_+0"}, plant
+    for plant, keys in p["A9_orientation_N_b"].items():
+        for key, row in keys.items():
+            assert set(row["weak_at"]) <= {"unit_activity_zero_voltage"}, (plant, key)
     g = p["A3_population_guard"]
     assert g["fb_shift"]["fires_at"] and g["fb_shift"]["min_total_over_allowance_where_fires"] > 10
     lo, hi = g["fb_shift"]["verdicts_hold_for_a_band_in_eps"]

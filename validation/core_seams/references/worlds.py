@@ -424,12 +424,17 @@ DOMAINS = {   # per law family: (species, host end, lo, hi, scale); V_a − V_b 
                 ("ADP", "b", 0.5, 3.0, "log"), ("Pi", "b", 0.5, 3.0, "log")],
 }
 V_RANGE = (-0.12, 0.06)
+# Amendment 1 (18 November 2026): D2 with N = b reads its N end at the host's b, so its host states
+# carry the exchange family's ends swapped, and the voltage range is mirrored (φ_N − φ_P = −V).
+DOMAINS["exch_Nb"] = [(s, "b" if end == "a" else "a", lo, hi, scale)
+                      for s, end, lo, hi, scale in DOMAINS["exch"]]
+V_RANGE_NB = (-0.06, 0.12)
 N_RANDOM = 12
 OFFSETS = (0.0, 1e-9, -1e-9, 1e-4, -1e-4, 1.0, -1.0)
 FAR = (-25.0, 25.0)
 
 
-def random_states(rng, family, n=N_RANDOM) -> list:
+def random_states(rng, family, n=N_RANDOM, v_range=V_RANGE) -> list:
     out = []
     for _ in range(n):
         c = {"a": {}, "b": {}}
@@ -438,7 +443,7 @@ def random_states(rng, family, n=N_RANDOM) -> list:
                 c[end][s] = 10.0 ** (3.0 - float(rng.uniform(lo, hi)))
             else:
                 c[end][s] = float(np.exp(rng.uniform(math.log(lo), math.log(hi))))
-        out.append({"phi_V": {"a": float(rng.uniform(*V_RANGE)), "b": 0.0}, "c_mM": c})
+        out.append({"phi_V": {"a": float(rng.uniform(*v_range)), "b": 0.0}, "c_mM": c})
     return out
 
 
@@ -457,37 +462,40 @@ def _dG_RT_float(nu, registry, st, orientation_N="a"):
     return g
 
 
-def placed(nu, registry, base, target, family_neutral_species=None):
+def placed(nu, registry, base, target, family_neutral_species=None, orientation_N="a"):
     """A copy of ``base`` with ΔG/RT of the mode moved to ``target``: by the voltage for a charged
     mode, or by the P-end concentration of ``family_neutral_species`` for a neutral one."""
     F = 96485.33212331001
     R = 8.31446261815324
     st = copy.deepcopy(base)
     nq = sum(registry["species"][s]["valence"] * n for s, e, n in nu if e == "P")
-    g = _dG_RT_float(nu, registry, st)
+    g = _dG_RT_float(nu, registry, st, orientation_N)
+    sign = 1.0 if orientation_N == "a" else -1.0      # φ_N − φ_P = ±(φ_a − φ_b)
     if nq != 0:
-        # ΔG/RT = chem − n_q F (φ_a − φ_b)/RT with N = a
-        st["phi_V"]["a"] = st["phi_V"]["a"] + (g - target) * R * T_K / (nq * F)
+        # ΔG/RT = chem − n_q F (φ_N − φ_P)/RT
+        st["phi_V"]["a"] = st["phi_V"]["a"] + sign * (g - target) * R * T_K / (nq * F)
     else:
         s = family_neutral_species
+        pend = "b" if orientation_N == "a" else "a"
         nP = sum(n for sp, e, n in nu if sp == s and e == "P")
-        st["c_mM"]["b"][s] = st["c_mM"]["b"][s] * math.exp((target - g) / nP)
+        st["c_mM"][pend][s] = st["c_mM"][pend][s] * math.exp((target - g) / nP)
     return st
 
 
-def states_for(law, family, rng, neutral_species=None) -> list:
+def states_for(law, family, rng, neutral_species=None, orientation_N="a",
+               v_range=V_RANGE) -> list:
     """Random states, then every mode's equilibrium neighbourhood and two far states."""
-    rnd = random_states(rng, family)
+    rnd = random_states(rng, family, v_range=v_range)
     out = [dict(s, tag=f"random_{k}") for k, s in enumerate(rnd)]
     modes = law["cycles"] if law["kind"] == "diagram" else law["modes"]
     for m in modes:
         for off in OFFSETS:
-            st = placed(m["nu"], REGISTRY_A, rnd[0], off, neutral_species)
+            st = placed(m["nu"], REGISTRY_A, rnd[0], off, neutral_species, orientation_N)
             st["tag"] = f"near_{m['id']}_{off:+g}"
             out.append(st)
     m0 = modes[0]
     for far in FAR:
-        st = placed(m0["nu"], REGISTRY_A, rnd[1], far, neutral_species)
+        st = placed(m0["nu"], REGISTRY_A, rnd[1], far, neutral_species, orientation_N)
         st["tag"] = f"far_{m0['id']}_{far:+g}"
         out.append(st)
     return out
@@ -706,6 +714,37 @@ def totals_from_manufactured(system_spec, st, volume):
             "binders_fmol": {B: float(v) for B, v in tB.items()}}
 
 
+def amendment_1(a: dict, rng) -> None:
+    """CORE_SEAMS_DESIGN §19, amended the same evening: two blind spots registered before A's first
+    output, drawn after every earlier input so that nothing registered before moves.
+    - ``ff_neutral_n1``: the neutral law on finite fuel rows (ATP, ADP and Pi moved at its fuel
+      end, finite_fuel_rows@1), so the stored rate, the moved rows' standard part in @3's 1 mM
+      frame (§3.4; COMPARTMENT_PH_TRANSFER_DESIGN §17.2), has power;
+    - ``d2_slip_exchanger_Nb``: D2 with N = b, the host's outside end as N."""
+    ff = law_v1_neutral(1)
+    ff["id"] = "ff_neutral_n1"
+    ff["note"] = ("AMENDMENT 1: the neutral law on finite fuel rows (finite_fuel_rows@1): ATP, ADP "
+                  "and Pi are moved at N = a, nothing is held, and the stored rate is the moved "
+                  "rows' standard part, RT (Σ ν μ°/RT − (Σ ν) ln c°) per cycle (§3.4)")
+    nb = law_d2()
+    nb["id"] = "d2_slip_exchanger_Nb"
+    nb["note"] = ("AMENDMENT 1: D2 with N = b (the outside node as N); its host states are the "
+                  "exchange family's with the ends swapped")
+    a["laws"] += [ff, nb]
+    a["states"]["ff_neutral_n1"] = v1_states(ff, rng, "neutral", "Z")
+    st = states_for(nb, "exch_Nb", rng, orientation_N="b", v_range=V_RANGE_NB)
+    st.append(unit_state("exch_Nb"))
+    a["states"]["d2_slip_exchanger_Nb"] = st
+    a["populations"]["ff_neutral_n1"] = {"capacity_fmol_per_s": 0.2, "availability": 0.75,
+                                         "orientation": {"N": "a"}}
+    a["populations"]["d2_slip_exchanger_Nb"] = dict(POP_DIAGRAM, orientation={"N": "b"})
+    a["generic_states"]["d2_slip_exchanger_Nb"] = generic_count(nb)
+    a["amendments"] = [{"date": "2026-11-18", "id": "amendment_1",
+                        "before_engine_output": True,
+                        "added": ["ff_neutral_n1", "d2_slip_exchanger_Nb"],
+                        "ruling": "CORE_SEAMS_DESIGN §19, amended the same evening"}]
+
+
 def build() -> dict:
     rng = np.random.default_rng(SEED)
     a = seam_a(rng)
@@ -718,6 +757,7 @@ def build() -> dict:
                                                   {"free_mM": node["free_mM"],
                                                    "binders_mM": node["binders_mM"]},
                                                   node["volume_pL"])
+    amendment_1(a, rng)
     return {
         "kind": "cells.core_seams_reference_inputs@1",
         "registered": REGISTERED,

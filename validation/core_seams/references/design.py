@@ -177,6 +177,91 @@ def layout_plants(law, pop, reg, st, vol) -> dict:
     return out
 
 
+def finite_fuel_plants(law, pop, reg, st, vol) -> dict:
+    """Amendment 1: the finite-fuel population's stored rate and moved fuel rows. Each deviation
+    over its honest floor (J, rows, stored rate, work)."""
+    ref = api.cycle_state(law, pop, reg, st, vol, with_slopes=False)
+    RT = float(exact.RT_J_per_mol(reg["temperature_K"]))
+    q = ref["modes"]["cyc"]
+    fJ, J = floor_J(q), abs(q["J"])
+    rel = rel_floor(q["dG_RT_terms_abs"])
+    ln_c0 = math.log(reg["standard_concentration_mM"])
+    nu = law["modes"][0]["nu"]
+    std = [n * (reg["species"][sp]["mu0_RT"] - ln_c0) for sp, _e, n in nu]
+    f_stored = (fJ * abs(sum(std)) + J * rel * sum(abs(x) for x in std)) * RT / 1000
+    f_work = (fJ * q["dG_RT_terms_abs"] + J * rel) * RT / 1000
+    sigma_nu = sum(n for _sp, _e, n in nu)
+
+    def run(lw=law, pp=pop):
+        return api.cycle_state(lw, pp, reg, st, vol, with_slopes=False)
+
+    def dev(r):
+        keys = set(ref["rows_fmol_per_s"]) | set(r["rows_fmol_per_s"])
+        rows = [abs(r["rows_fmol_per_s"].get(k, 0.0) -
+                    ref["rows_fmol_per_s"].get(k, 0.0)) / fJ for k in keys]
+        return {"J": abs(r["modes"]["cyc"]["J"] - q["J"]) / fJ, "rows": max(rows),
+                "stored": abs(r["stored_standard_pJ_per_s"] - ref["stored_standard_pJ_per_s"]) /
+                f_stored,
+                "work": abs(r["work_pJ_per_s"] - ref["work_pJ_per_s"]) / f_work}
+
+    out = {}
+    stored = ref["stored_standard_pJ_per_s"]
+    # the 1 M frame: the standard part without its −(Σ ν) RT ln c° (FR-4 note §17.2's trap)
+    out["stored_frame_1M"] = {"stored": abs(q["J"] * sigma_nu * ln_c0 * RT / 1000) / f_stored}
+    out["stored_dropped"] = {"stored": abs(stored) / f_stored}
+    out["stored_sign"] = {"stored": 2 * abs(stored) / f_stored}
+    out["held_instead"] = dev(run(pp=dict(pop, held_rows=[["ATP", "a"], ["ADP", "a"],
+                                                          ["Pi", "a"]])))
+    lw = copy.deepcopy(law)
+    for row in lw["modes"][0]["nu"]:
+        if row[0] in ("ATP", "ADP", "Pi"):
+            row[1] = "P"
+    for t in lw["modes"][0]["saturation"]:
+        if t["species"] == "ATP":
+            t["end"] = "P"
+    out["fuel_moved_at_b"] = dev(run(lw=lw))
+    return out
+
+
+def orientation_plants(law, pop, reg, st, vol) -> dict:
+    """Amendment 1: the N = b population's orientation, ignored in each of four ways. Each deviation
+    over its honest floor (J, rows, charge a → b, conductance)."""
+    ref = api.cycle_state(law, pop, reg, st, vol, with_slopes=True)
+    modes = ref["modes"]
+    fJ = {m: floor_J(v) for m, v in modes.items()}
+    nq = {c["id"]: C.parse_checks(c["nu"], reg)["n_q"] for c in law["cycles"]}
+    f_rows = max(fJ.values()) * 3            # |ν| ≤ 3 in D2
+    f_charge = sum(abs(nq[m]) * fJ[m] for m in modes)
+    G = ref["slopes"]["conductance_pS"]
+    f_G = abs(G) * rel_floor(max(v["dG_RT_terms_abs"] for v in modes.values()))
+
+    def jdev(r):
+        return max(abs(r["modes"][m]["J"] - modes[m]["J"]) / fJ[m] for m in modes)
+
+    def rdev(rows):
+        keys = set(ref["rows_fmol_per_s"]) | set(rows)
+        return max(abs(rows.get(k, 0.0) - ref["rows_fmol_per_s"].get(k, 0.0)) / f_rows
+                   for k in keys)
+
+    out = {}
+    r = api.cycle_state(law, dict(pop, orientation={"N": "a"}), reg, st, vol, with_slopes=False)
+    out["read_as_N_a"] = {"J": jdev(r), "rows": rdev(r["rows_fmol_per_s"]),
+                          "charge": abs(r["charge_a_to_b_fmol_per_s"] -
+                                        ref["charge_a_to_b_fmol_per_s"]) / f_charge}
+    s2 = copy.deepcopy(st)
+    s2["phi_V"]["a"], s2["phi_V"]["b"] = st["phi_V"]["b"], st["phi_V"]["a"]
+    r = api.cycle_state(law, pop, reg, s2, vol, with_slopes=False)
+    out["voltage_orientation_ignored"] = {"J": jdev(r),
+                                          "charge": abs(r["charge_a_to_b_fmol_per_s"] -
+                                                        ref["charge_a_to_b_fmol_per_s"]) / f_charge}
+    out["charge_sign"] = {"charge": 2 * abs(ref["charge_a_to_b_fmol_per_s"]) / f_charge}
+    swapped = {(k.split("@")[0] + "@" + ("a" if k.endswith("@b") else "b")): v
+               for k, v in ref["rows_fmol_per_s"].items()}
+    out["rows_at_swapped_ends"] = {"rows": rdev(swapped)}
+    out["conductance_sign"] = {"conductance": 2 * abs(G) / f_G if f_G > 0 else None}
+    return out
+
+
 def slope_plants(law, pop, reg, rec, vol) -> dict:
     """Planted slopes' relative deviations from the exact conductance and dJ/dV."""
     G = rec["slopes"]["conductance_pS"]
@@ -193,10 +278,11 @@ def slope_plants(law, pop, reg, rec, vol) -> dict:
             out["n_q_not_squared"] = _rel(abs(nq) * F * F * k * S * math.exp(g) / RT * 1e-3, abs(G))
     else:
         worst = None
+        sign = 1.0 if pop["orientation"]["N"] == "a" else -1.0     # φ_N − φ_P = ±V
         for c in law["cycles"]:
             nq = C.parse_checks(c["nu"], reg)["n_q"]
             row = rec["modes"][c["id"]]
-            frozen = row["J_plus"] * math.exp(row["dG_RT"]) * nq * F / RT
+            frozen = sign * row["J_plus"] * math.exp(row["dG_RT"]) * nq * F / RT
             r = _rel(frozen, rec["slopes"]["dJ_dV"][c["id"]])
             if _ok(r):
                 worst = r if worst is None else max(worst, r)
@@ -238,7 +324,11 @@ def seam_a(inputs) -> tuple:
             dia["slope_check"][law["id"]] = [api.slope_agreement(law, pop, reg, st, vol)
                                              for st in sts[:4]]
             dia["slopes"][law["id"]] = [slope_plants(law, pop, reg, r, vol) for r in recs]
-        if law["kind"] == "factored" and admitted:
+        if law["id"] == "ff_neutral_n1":
+            dia["finite_fuel"] = [finite_fuel_plants(law, pop, reg, st, vol) for st in sts]
+        elif law["id"] == "d2_slip_exchanger_Nb":
+            dia["orientation"] = [orientation_plants(law, pop, reg, st, vol) for st in sts]
+        elif law["kind"] == "factored" and admitted:
             dia["layout"][law["id"]] = [layout_plants(law, pop, reg, st, vol) for st in sts]
     for law in A["planted_laws"]:
         base = A["plant_states"][law["id"]]
@@ -492,6 +582,18 @@ def power_a(inputs, va, da) -> dict:
                    "exact_vs_differences_max_rel": max(da["slope_check"][lid])}
     power["A6_slopes"] = sl
 
+    # A8, A9: amendment 1's finite-fuel and N = b populations
+    for key, lid, row in (("finite_fuel", "ff_neutral_n1", "A8_finite_fuel_stored_rate"),
+                          ("orientation", "d2_slip_exchanger_Nb", "A9_orientation_N_b")):
+        rows = da[key]
+        tags = [s["tag"] for s in va["laws"][lid]["states"]]
+        power[row] = {plant: {k: summarise(tags, [(r[plant] or {}).get(k) for r in rows])
+                              for k in sorted({k for r in rows for k in (r[plant] or {})})
+                              if any(_ok((r[plant] or {}).get(k)) for r in rows)}
+                      for plant in rows[0]}
+    power["A8_finite_fuel_stored_rate"]["stored_rate_max_abs_pJ_per_s"] = max(
+        abs(s["stored_standard_pJ_per_s"]) for s in va["laws"]["ff_neutral_n1"]["states"])
+
     # A7: parse-time checks
     power["A7_parse_checks"] = {p["id"]: va["parse"][p["id"]] for p in A["parse_plants"]}
     return power
@@ -593,6 +695,18 @@ CLAIMS = [
      "reference": "the integer sums per declared mode",
      "plants": ["X+ not conserved (charge +1)", "ATP -> ADP without Pi (phosphate −1)",
                 "base-form hydrolysis without its proton (charge −1)"]},
+    {"row": "A8", "claim": ("Amendment 1: finite fuel is moved rows; the stored rate is their "
+                            "standard part in @3's 1 mM frame, RT (Σ ν μ°/RT − (Σ ν) ln c°) per "
+                            "cycle, with no work (§3.4; COMPARTMENT_PH_TRANSFER_DESIGN §17.2)"),
+     "reference": "ff_neutral_n1: rows, stored rate, heat and zero work at every state",
+     "plants": ["the 1 M frame (−(Σ ν) RT ln c° dropped)", "the stored rate dropped",
+                "its sign", "the fuel held instead", "the fuel moved at the other end"]},
+    {"row": "A9", "claim": ("Amendment 1: a population with N = b reads its N end at the host's b, "
+                            "its voltage as φ_b − φ_a, and books its rows and charge at the right "
+                            "host ends (§3.1)"),
+     "reference": "d2_slip_exchanger_Nb at every state, slopes included",
+     "plants": ["read as N = a", "the voltage's orientation ignored", "the charge's sign",
+                "rows at swapped ends", "the conductance's sign"]},
     {"row": "C1", "claim": ("The closure's free forms satisfy every binding's equilibrium and "
                             "every conservation, to its residual |g|/T ≤ 1e-13 (§19 item 2)"),
      "reference": ("Newton on the convex dual at 60 digits, nested bisection (≤ 2 ligands) and "
@@ -664,17 +778,29 @@ ZERO_POWER = [
     {"control": "a dropped standard potential of a transported species",
      "why": "it cancels between the ends of a transport mode",
      "remedy": "the fuel rows' potentials (hydrolysis) and seam C's forms"},
-    {"control": ("the moved rows' standard part (the stored rate, §3.4), and its frame: "
+    {"control": ("in every held-fuel population, the moved rows' standard part (the stored "
+                 "rate, §3.4) and its frame: "
                  "RT (Σ ν μ°/RT − (Σ ν) ln c0) per cycle (COMPARTMENT_PH_TRANSFER_DESIGN §17.2)"),
      "why": ("every registered population holds its fuel and moves each species between its two "
              "ends, so Σ ν μ°' = 0 and stored_standard_pJ_per_s is exactly 0 at every state; "
              "fuel_frame_1mM tests the held ΔG's activity frame, a different error"),
-     "remedy": ("a finite-fuel population (ATP, ADP and Pi moved): the deferred composed world "
-                "(§19), or registered now if the lead asks")},
-    {"control": "a population with N = b (the outside end as N)",
-     "why": ("every registered population has N = a; the orientation plant shows only that an "
-             "N = a world is not read as N = b"),
-     "remedy": "an N = b population, if the lead asks"},
+     "remedy": ("ff_neutral_n1, the finite-fuel population added by amendment 1 (power.A8); "
+                "the other populations hold their fuel")},
+    {"control": "a population with N = b (the outside end as N), before amendment 1",
+     "why": ("every population registered at f1808037 has N = a; the orientation plant shows only "
+             "that an N = a world is not read as N = b"),
+     "remedy": "d2_slip_exchanger_Nb, added by amendment 1 (power.A9)"},
+    {"control": ("amendment 1's stored-rate plants (the 1 M frame, dropped, its sign) and the "
+                 "fuel held instead, at static head"),
+     "why": "J ≈ 0 there, so nothing is stored or moved",
+     "remedy": "every other state of ff_neutral_n1"},
+    {"control": "the fuel held instead, on J; the fuel moved at b, on work",
+     "why": ("the kinetics do not depend on how the fuel is booked, and finite fuel books no work "
+             "either way"),
+     "remedy": "the rows, the stored rate and the work (held instead); J, rows and stored (at b)"},
+    {"control": "amendment 1's N = b plants at the unit state",
+     "why": "both ends are identical there (every activity 1, V = 0)",
+     "remedy": "every other state of d2_slip_exchanger_Nb"},
     {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
      "remedy": "the engine's own test; the references give the rates both must meet"},
     {"control": "a K plant on a form that holds little of its ligand",

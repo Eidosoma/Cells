@@ -48,7 +48,9 @@ The constants are the exact SI values, F = N_A e and R = N_A k_B, and T = 310 K.
 
 **Host:**
 - A population lies on a patch with ends a (its cell) and b (the outside node), and V = φ_a − φ_b.
-- `orientation.N` names the host end that is N. Every registered population has N = a.
+- `orientation.N` names the host end that is N. Every registered population has N = a except
+  amendment 1's `d2_slip_exchanger_Nb`, which has N = b: its law reads N at b, and
+  φ_N − φ_P = φ_b − φ_a.
 - Concentrations are the free values a stage read gives: a buffered node's free form, or an
   unbuffered row's concentration.
 
@@ -62,6 +64,7 @@ The constants are the exact SI values, F = N_A e and R = N_A k_B, and T = 310 K.
 | `populations` | {law id: {capacity_fmol_per_s, availability, orientation, held_rows}} |
 | `volumes_pL` | {a: 2.0, b: 0.25}, for the material slopes |
 | `generic_states` | {diagram id: d + 1}. The first d + 1 states of that law are its generic set, of full rank in (1, ln a, ψ) |
+| `amendments` | The dated amendments: amendment 1 added `ff_neutral_n1` (finite fuel: no `held_rows`, so ATP, ADP and Pi are moved rows) and `d2_slip_exchanger_Nb` (N = b) |
 
 **Diagram laws** (`kind: "diagram"`) have these fields:
 - `states`: names;

@@ -187,3 +187,57 @@ def test_parse_checks_refuse_each_planted_mode():
                 worlds.law_v1_proton(2), worlds.law_v1_neutral(2)):
         for m in C.modes(law):
             assert C.parse_checks(m["nu"], REG)["admitted"], (law["id"], m["id"])
+
+
+def test_finite_fuel_books_the_moved_rows_standard_part_in_the_1_mM_frame():
+    """Amendment 1 (§19): ATP, ADP and Pi moved at N = a; the stored rate is
+    J RT (Σ ν μ°/RT − (Σ ν) ln c°), with no work; the 1 M frame drops −(Σ ν) RT ln c°."""
+    law = worlds.law_v1_neutral(1)
+    pop = {"capacity_fmol_per_s": 0.2, "availability": 0.75, "orientation": {"N": "a"}}
+    st = {"phi_V": {"a": 0.0, "b": 0.0},
+          "c_mM": {"a": {"Z": 2.0, "ATP": 3.0, "ADP": 0.2, "Pi": 2.0},
+                   "b": {"Z": 4.0, "ATP": 0.5, "ADP": 1.0, "Pi": 1.0}}}
+    r = C.population_rates(law, pop, REG, st)
+    J = r["modes"]["cyc"]["J"]
+    with exact.context():
+        RT = exact.RT_J_per_mol(REG["temperature_K"])
+        sp = REG["species"]
+        fuel = exact.dec(sp["ADP"]["mu0_RT"]) + exact.dec(sp["Pi"]["mu0_RT"]) - \
+            exact.dec(sp["ATP"]["mu0_RT"])
+        stored = J * RT * (fuel - exact.dec(1000.0).ln()) / 1000
+        assert abs(r["stored_standard_pJ_per_s"] - stored) < Decimal("1e-50")
+        assert r["work_pJ_per_s"] == 0 and r["held_supply_fmol_per_s"] == {}
+        assert r["rows_fmol_per_s"]["ATP@a"] == -J and r["rows_fmol_per_s"]["Pi@a"] == J
+        # planted: the 1 M frame, which forgets −(Σ ν) RT ln c° (Σ ν = +1 for hydrolysis)
+        one_molar = J * RT * fuel / 1000
+        assert abs(one_molar - stored) > Decimal("1e-6") * abs(stored)
+        # planted: the same fuel held, which books work and no stored part for the fuel
+        held = C.population_rates(law, dict(pop, held_rows=[["ATP", "a"], ["ADP", "a"],
+                                                            ["Pi", "a"]]), REG, st)
+        assert held["stored_standard_pJ_per_s"] == 0 and held["work_pJ_per_s"] != 0
+
+
+def test_an_N_b_population_is_the_mirror_of_its_N_a_twin(d2):
+    """Amendment 1 (§19): D2 with N = b at a host state is D2 with N = a at the mirrored state,
+    with its rows at the mirrored ends and its charge a → b negated; read as N = a, it is not."""
+    host = {"phi_V": {"a": 0.0, "b": 0.045},
+            "c_mM": {"a": {"X": 140.0, "Y": 1.5}, "b": {"X": 12.0, "Y": 2e-4}}}
+    mirror = {"phi_V": {"a": 0.045, "b": 0.0},
+              "c_mM": {"a": {"X": 12.0, "Y": 2e-4}, "b": {"X": 140.0, "Y": 1.5}}}
+    nb = {"capacity_fmol_per_s": 0.1, "availability": 0.8, "orientation": {"N": "b"}}
+    na = dict(nb, orientation={"N": "a"})
+    rb = C.population_rates(d2, nb, REG, host)
+    ra = C.population_rates(d2, na, REG, mirror)
+    with exact.context():
+        for c in d2["cycles"]:
+            assert abs(rb["modes"][c["id"]]["J"] - ra["modes"][c["id"]]["J"]) < Decimal("1e-50")
+        for k, v in ra["rows_fmol_per_s"].items():
+            s, end = k.split("@")
+            assert abs(rb["rows_fmol_per_s"][f"{s}@{'b' if end == 'a' else 'a'}"] - v) < \
+                Decimal("1e-50")
+        assert abs(rb["charge_a_to_b_fmol_per_s"] + ra["charge_a_to_b_fmol_per_s"]) < \
+            Decimal("1e-50")
+        # planted: the orientation ignored (the N = b population read as N = a)
+        wrong = C.population_rates(d2, na, REG, host)
+        assert any(abs(wrong["modes"][c["id"]]["J"] / rb["modes"][c["id"]]["J"] - 1) > 0.01
+                   for c in d2["cycles"])
