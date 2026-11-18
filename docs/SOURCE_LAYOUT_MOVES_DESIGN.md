@@ -871,7 +871,7 @@ The user chose (R): retire the pinning legacy laws and their tests, and move wha
 
 ## 21. Move 2 made (18 November 2026, on d188-m2-prep at main bb69abd4)
 
-*Not landed until the lead merges. Evidence: `/mnt/workspaces/Cells/d188-m2-move-20261118/`.*
+*Landed on 18 November 2026 (merge d5d56d1b, tag `d188-move2-landed-2026-11-18`). Evidence: `/mnt/workspaces/Cells/d188-m2-move-20261118/`.*
 
 **The map** (`scripts/moves/move2.json`, with its path table):
 - **117 modules move.** 108 come from the planner's rule table (§9); the 9 it leaves unplaced are

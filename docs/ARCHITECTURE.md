@@ -397,10 +397,11 @@ note.
   above are finalized during that work.
 - **Then the single restructure round.** It landed on 16 November (tag `d172-landed-2026-11-16`),
   with main tagged before it (`d172-base-2026-11-15`), frozen evidence and the results gate.
-- **Next, the source tree takes the modular layout (D188).** It is decided and not yet done. After
-  core-next lands, a probe and then two scripted moves put the older families in
-  `src/cells/legacy/` and the modular parts in their own folders. The source paths named in this
-  document are today's.
+- **The source tree has the modular layout (D188).** Two scripted moves put the older families in
+  `src/cells/legacy/` (move 1, 17 November) and the modular parts in their own folders (move 2,
+  18 November, tag `d188-move2-landed-2026-11-18`): `laws/`, `kinds/`, `operators/`,
+  `definitions/`, `execution/`, `registry/` and `records/`. The source paths named in this document
+  are post-move.
 - **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
   real interactions exercise these contracts. The minimal-cell track supplies consumers and
   measured-data tests without displacing FR-4 and FR-5.
