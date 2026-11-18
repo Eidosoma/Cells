@@ -6369,6 +6369,17 @@ outside module arrives; then the promise comes back to the user.
 
 **4. No checkpoint crosses move 2.** A checkpoint written before move 2 is refused cleanly, and the
 refusal names the tag of the tree before the move, where it restores.
+- *Amended 18 November (the lead; to confirm with the user):*
+  - **The layout identity** is the checkpoint's recorded source map, the paths in `source_hashes`,
+    and not a new field. That covers checkpoints already on disk and the frozen @1 writer.
+    `cells.source_layout` declares each made move: its name, the folders it dissolved, and the tag
+    where the earlier layout restores.
+  - **Both engine routes refuse and name the tag:** `io.load_snapshot` and `load_batch_snapshot`,
+    the continuity route included.
+  - **One exception, the frozen comparison model:** GARD's @1 lineage reader
+    (`models/assembly_lineages/checkpoints.read`) is frozen by D215. Its refusal is clean (it refuses
+    any changed engine source), but it doesn't name the tag. GARD's documentation names the tag
+    instead.
 
 **In parallel now ("focus on the core but in parallel"):**
 - D188's move 2, starting with a full dry run;
