@@ -107,7 +107,7 @@ test("a difference, a mean rate and a charge are plain arithmetic on saved numbe
 });
 
 test("the potential terms are the two terms of the engine's own law, each divided by z F", () => {
-  // The engine: R T (ln ci - ln co) + z F V (src/cells/processes/electrochemistry.py), with its constants.
+  // The engine: R T (ln ci - ln co) + z F V (src/cells/laws/electrochemistry.py), with its constants.
   assert.equal(FARADAY, 6.02214076e23 * 1.602176634e-19);
   assert.equal(GAS, 6.02214076e23 * 1.380649e-23);
   const potassium = potentialTerms({ inside: 140, outside: 5, voltage: -0.07, valence: 1, temperature: 310 });

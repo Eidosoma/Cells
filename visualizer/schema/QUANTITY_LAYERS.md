@@ -74,7 +74,7 @@ the viewer changes.
      electrochemical potential difference, R T ln(c inside / c outside) and z F V, and
      their sum, from the saved concentrations and voltage and the definition's
      temperature and valence (the engine's `electrochemical_potential`, in
-     `src/cells/processes/electrochemistry.py`). Shown in millivolts, each divided by z F.
+     `src/cells/laws/electrochemistry.py`). Shown in millivolts, each divided by z F.
      Where a run saved amounts, a concentration is the amount over the volume of its
      compartment.
 

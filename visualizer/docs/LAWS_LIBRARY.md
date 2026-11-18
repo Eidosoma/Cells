@@ -9,12 +9,13 @@ engine's manifest (`cells.declarations@2`, its format the engine's page
 `docs/library/DECLARATIONS_FORMAT.md`) is the whole truth of what the engine declares, the lead
 ruled that day; what no active registry declares came off the wall. The list is made from that
 file alone (`tools/extract_laws.py`, `data/engine/declarations.json`), and its contract is
-`schema/LAWS_LIBRARY.md`. At main 79d23cd5 the wall holds 43 pieces (17 laws, 5 kinds, 21
-operators), six racks and four model families with no rows, with the 13 laws design notes name
-apart; the 154 pieces of the code's reading at fa19d80c, the counts below and the sketches'
-lists are this note's record of 16 November, not the wall's. The wall is shelved by interface,
-the operators by their part of the step, on one band (the stills weighed are kept with the
-hand-over of that round).
+`schema/LAWS_LIBRARY.md`. At main b5d3faf0 the wall holds 47 pieces (21 laws, 5 kinds, 21
+operators), seven racks and four model families with no rows, with the 13 laws design notes name
+apart; the 154 pieces of the code's reading at fa19d80c, the counts below, the engine's file
+paths below (read before the engine's two source moves of D188) and the sketches' lists are this
+note's record of 16 November, not the wall's. The wall is shelved by interface, the operators by
+their part of the step, and a model family's own laws and operators each on a shelf of their
+own, on one band (the stills weighed are kept with the hand-over of that round).
 
 **What a unit of the Protein atlas says of a law no active model declares (18 November 2026).**
 On 17 November 2026 the project decided to port tested older laws to the active engine (D211),

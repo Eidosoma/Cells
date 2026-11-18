@@ -1410,8 +1410,10 @@ def own_counts(path):
 
 # ---------------------------------------------------------------- the engine's own output
 #
-# A run written by the engine's shared output paths (cells.io.write_run and
-# cells.window_io.write_windowed_run): resolved_config.json (the definition) beside either
+# A run written by the engine's shared output paths (cells.records.io.write_run and
+# cells.records.window_io.write_windowed_run; cells.io and cells.window_io before the engine's
+# second source move, D188: the five worlds its writer wrote before and after it are the same files):
+# resolved_config.json (the definition) beside either
 # trajectory.npz, or windows.jsonl with one chunk of arrays for each window. The readouts
 # the run observed are saved under the engine's own names, as observed_<field> at
 # observation_times; those names are the records' names here.

@@ -517,7 +517,7 @@ class Build:
         """Where each model the engine declares is drawn: {(part, file): [(model, detail)]}.
 
         The models are the manifest's `models`, and only they are drawn as models. The manifest names the module that
-        declares a model's structure (its spec, mostly under src/cells/core/), not the module that runs it, so a model
+        declares a model's structure (its spec, mostly under src/cells/definitions/), not the module that runs it, so a model
         is drawn on the part of the model module that names it (MODEL_ID, read from the source for this placing only:
         src/cells/models/<file>.py, or a family's package, src/cells/models/<family>/__init__.py). A declared model
         that no model module names is drawn on the part that holds its declaring module. A MODEL_ID the manifest does

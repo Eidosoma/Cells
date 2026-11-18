@@ -5,34 +5,34 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-18",
-  "generated_at": "2026-11-18T13:08:47Z",
-  "revision": "79d23cd5",
+  "generated_at": "2026-11-18T17:02:03Z",
+  "revision": "b5d3faf0",
   "revision_date": "2026-11-18",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/79d23cd5f7e4491cfa52b288692906769df78ea4/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/b5d3faf064444db7dbc9321ec0f7e77c9ccc9ee2/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "declarations": {
    "kind": "cells.declarations@2",
-   "revision": "79d23cd5f7e4491cfa52b288692906769df78ea4",
+   "revision": "b5d3faf064444db7dbc9321ec0f7e77c9ccc9ee2",
    "pieces": {
     "kind": 5,
-    "law": 17,
+    "law": 21,
     "operator": 21
    },
-   "models": 10,
+   "models": 11,
    "legacy_models": 127
   },
   "counts": {
-   "engine_files": 210,
-   "engine_files_placed": 210,
-   "engine_files_read": 531,
+   "engine_files": 235,
+   "engine_files_placed": 235,
+   "engine_files_read": 556,
    "engine_files_legacy": 321,
-   "parts": 256,
-   "relations": 939,
+   "parts": 258,
+   "relations": 959,
    "by_kind": {
     "operator": 19,
-    "component": 147,
+    "component": 149,
     "state": 6,
     "gate": 8,
     "capability": 23,
@@ -41,9 +41,9 @@
    },
    "by_status": {
     "qualified": 48,
-    "landed": 37,
-    "established": 47,
-    "planned": 31,
+    "landed": 41,
+    "established": 46,
+    "planned": 30,
     "designed": 22,
     "failed": 1,
     "unstated": 66,
@@ -375,6 +375,26 @@
      "move": "d188-move-1"
     },
     {
+     "from": "src/cells/processes/calcium_activated_potassium.py",
+     "to": "src/cells/laws/channels/calcium_activated_potassium.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/calcium_atpase.py",
+     "to": "src/cells/laws/pumps/calcium_atpase.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/calcium_catalog_extra.py",
+     "to": "src/cells/laws/channels/calcium_catalog_extra.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/cav_channels.py",
+     "to": "src/cells/laws/channels/cav_channels.py",
+     "move": "d188-move-2"
+    },
+    {
      "from": "src/cells/processes/cell_zone_transport.py",
      "to": "src/cells/legacy/processes/cell_zone_transport.py",
      "move": "d188-move-1"
@@ -385,9 +405,29 @@
      "move": "d188-move-1"
     },
     {
+     "from": "src/cells/processes/electrochemistry.py",
+     "to": "src/cells/laws/electrochemistry.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/er_calcium.py",
+     "to": "src/cells/laws/reactions/er_calcium.py",
+     "move": "d188-move-2"
+    },
+    {
      "from": "src/cells/processes/finite_calcium_pumps.py",
      "to": "src/cells/legacy/processes/finite_calcium_pumps.py",
      "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/hcn_channels.py",
+     "to": "src/cells/laws/channels/hcn_channels.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/hcn_extra_channels.py",
+     "to": "src/cells/laws/channels/hcn_extra_channels.py",
+     "move": "d188-move-2"
     },
     {
      "from": "src/cells/processes/ip3_release.py",
@@ -395,14 +435,79 @@
      "move": "d188-move-1"
     },
     {
+     "from": "src/cells/processes/junction_formation.py",
+     "to": "src/cells/laws/junctions/junction_formation.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/junction_gate.py",
+     "to": "src/cells/laws/junctions/junction_gate.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/k_anion_symport.py",
+     "to": "src/cells/laws/routes/k_anion_symport.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/kinetic_pump.py",
+     "to": "src/cells/laws/pumps/kinetic_pump.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/kv1_channels.py",
+     "to": "src/cells/laws/channels/kv1_channels.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/leak_channels.py",
+     "to": "src/cells/laws/channels/leak_channels.py",
+     "move": "d188-move-2"
+    },
+    {
      "from": "src/cells/processes/mitochondrial_passive.py",
      "to": "src/cells/legacy/processes/mitochondrial_passive.py",
      "move": "d188-move-1"
     },
     {
+     "from": "src/cells/processes/morris_lecar_channels.py",
+     "to": "src/cells/laws/channels/morris_lecar_channels.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/plasma_calcium.py",
+     "to": "src/cells/laws/reactions/plasma_calcium.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/potassium_catalog.py",
+     "to": "src/cells/laws/channels/potassium_catalog.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/potassium_channels.py",
+     "to": "src/cells/laws/channels/potassium_channels.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/sodium_catalog.py",
+     "to": "src/cells/laws/channels/sodium_catalog.py",
+     "move": "d188-move-2"
+    },
+    {
+     "from": "src/cells/processes/sodium_channels.py",
+     "to": "src/cells/laws/channels/sodium_channels.py",
+     "move": "d188-move-2"
+    },
+    {
      "from": "src/cells/processes/source_electrochemistry.py",
      "to": "src/cells/legacy/processes/source_electrochemistry.py",
      "move": "d188-move-1"
+    },
+    {
+     "from": "src/cells/processes/voltage_gates.py",
+     "to": "src/cells/laws/channels/voltage_gates.py",
+     "move": "d188-move-2"
     }
    ],
    "in_legacy": {
@@ -445,20 +550,20 @@
     ]
    },
    "gained": {
-    "added": 75,
+    "added": 85,
     "removed": 125,
     "where": [
      [
-      "models/operators",
-      26
+      "operators",
+      27
      ],
      [
       "models/assembly_lineages",
       15
      ],
      [
-      "models/inner_kinds",
-      10
+      "kinds",
+      13
      ]
     ],
     "review": {
@@ -470,7 +575,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "79d23cd5"
+   "checked_at": "b5d3faf0"
   },
   "counts": {
    "units": 48,
@@ -18495,7 +18600,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/compartments.py"
+     "path": "src/cells/operators/compartments.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18547,7 +18652,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/compartments.py"
+    "src/cells/operators/compartments.py"
    ]
   },
   {
@@ -18591,7 +18696,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/bridge_closure.py"
+     "path": "src/cells/operators/bridge_closure.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18599,7 +18704,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/bridge_closure.py"
+    "src/cells/operators/bridge_closure.py"
    ]
   },
   {
@@ -18651,7 +18756,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/current_injection.py"
+     "path": "src/cells/operators/current_injection.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18659,7 +18764,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/current_injection.py"
+    "src/cells/operators/current_injection.py"
    ]
   },
   {
@@ -18723,7 +18828,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/osmotic_water.py"
+     "path": "src/cells/operators/osmotic_water.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18731,7 +18836,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/osmotic_water.py"
+    "src/cells/operators/osmotic_water.py"
    ]
   },
   {
@@ -18783,7 +18888,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/partition.py"
+     "path": "src/cells/operators/partition.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18791,7 +18896,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/partition.py"
+    "src/cells/operators/partition.py"
    ]
   },
   {
@@ -18831,7 +18936,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/k_anion_symport.py"
+     "path": "src/cells/operators/k_anion_symport.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18839,7 +18944,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/k_anion_symport.py"
+    "src/cells/operators/k_anion_symport.py"
    ]
   },
   {
@@ -18895,7 +19000,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/species_reactions.py"
+     "path": "src/cells/operators/species_reactions.py"
     },
     {
      "path": "PROGRESS.md",
@@ -18925,7 +19030,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/species_reactions.py"
+    "src/cells/operators/species_reactions.py"
    ]
   },
   {
@@ -18961,7 +19066,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/membrane_state.py"
+     "path": "src/cells/operators/membrane_state.py"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -18969,7 +19074,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/membrane_state.py"
+    "src/cells/operators/membrane_state.py"
    ]
   },
   {
@@ -19029,7 +19134,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/restricted_lumen.py"
+     "path": "src/cells/operators/restricted_lumen.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19037,7 +19142,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/restricted_lumen.py"
+    "src/cells/operators/restricted_lumen.py"
    ]
   },
   {
@@ -19097,7 +19202,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/restricted_lumen_v2.py"
+     "path": "src/cells/operators/restricted_lumen_v2.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19105,7 +19210,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/restricted_lumen_v2.py"
+    "src/cells/operators/restricted_lumen_v2.py"
    ]
   },
   {
@@ -19149,7 +19254,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/bath_schedule.py"
+     "path": "src/cells/operators/bath_schedule.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19181,7 +19286,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/bath_schedule.py"
+    "src/cells/operators/bath_schedule.py"
    ]
   },
   {
@@ -19237,7 +19342,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/cell_replacement.py"
+     "path": "src/cells/operators/cell_replacement.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19245,7 +19350,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/cell_replacement.py"
+    "src/cells/operators/cell_replacement.py"
    ]
   },
   {
@@ -19301,7 +19406,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/cell_replacement_v2.py"
+     "path": "src/cells/operators/cell_replacement_v2.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19313,7 +19418,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/cell_replacement_v2.py"
+    "src/cells/operators/cell_replacement_v2.py"
    ]
   },
   {
@@ -19369,7 +19474,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/membrane_insertion.py"
+     "path": "src/cells/operators/membrane_insertion.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19377,7 +19482,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/membrane_insertion.py"
+    "src/cells/operators/membrane_insertion.py"
    ]
   },
   {
@@ -19429,7 +19534,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/membrane_insertion_v2.py"
+     "path": "src/cells/operators/membrane_insertion_v2.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19445,7 +19550,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/membrane_insertion_v2.py"
+    "src/cells/operators/membrane_insertion_v2.py"
    ]
   },
   {
@@ -19497,7 +19602,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/species_exchange.py"
+     "path": "src/cells/operators/species_exchange.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19518,10 +19623,14 @@
     {
      "path": "PROGRESS.md",
      "where": "FR-1 judged: passed (18 November 2026, 00:57–01:08 UTC)"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Exchange is qualified within FR-1's scope line since FR-1's judged acceptance"
     }
    ],
    "files": [
-    "src/cells/models/operators/species_exchange.py"
+    "src/cells/operators/species_exchange.py"
    ]
   },
   {
@@ -19573,10 +19682,10 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/species_turnover.py"
+     "path": "src/cells/operators/species_turnover.py"
     },
     {
-     "path": "src/cells/models/operators/species_common.py"
+     "path": "src/cells/operators/species_common.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19604,8 +19713,8 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/species_turnover.py",
-    "src/cells/models/operators/species_common.py"
+    "src/cells/operators/species_turnover.py",
+    "src/cells/operators/species_common.py"
    ]
   },
   {
@@ -19665,7 +19774,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/site_occupancy.py"
+     "path": "src/cells/operators/site_occupancy.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19693,7 +19802,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/site_occupancy.py"
+    "src/cells/operators/site_occupancy.py"
    ]
   },
   {
@@ -19741,7 +19850,7 @@
    ],
    "sources": [
     {
-     "path": "src/cells/models/operators/species_regulated_availability.py"
+     "path": "src/cells/operators/species_regulated_availability.py"
     },
     {
      "path": "PROGRESS.md",
@@ -19801,7 +19910,7 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/species_regulated_availability.py"
+    "src/cells/operators/species_regulated_availability.py"
    ]
   },
   {
@@ -19953,7 +20062,7 @@
    "kind": "component",
    "group": "execution",
    "status": "established",
-   "plain": "Each run is declared as data: the model, the experiment and how to execute it. Definitions are checked before anything runs. On 17 November 2026 the value parsers and two declarations that the active families share were moved verbatim into the core (D188's R3).",
+   "plain": "Each run is declared as data: the model, the experiment and how to execute it. Definitions are checked before anything runs. On 17 November 2026 the value parsers and two declarations that the active families share were moved verbatim into the core's folder (D188's R3). Since move 2, on 18 November 2026, the definitions have a folder of their own.",
    "facts": [
     [
      "Files",
@@ -19961,7 +20070,7 @@
     ],
     [
      "Lines of Python",
-     "5,665"
+     "5,687"
     ],
     [
      "Model identifiers",
@@ -19986,9 +20095,13 @@
     {
      "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
      "where": "18. R1–R4 landed; the deviations accepted"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
-   "weight": 5665
+   "weight": 5687
   },
   {
    "id": "exec.registry",
@@ -20005,7 +20118,7 @@
     ],
     [
      "Lines of Python",
-     "91"
+     "97"
     ]
    ],
    "sources": [
@@ -20018,15 +20131,15 @@
      "where": "D172's round landed on main"
     },
     {
-     "path": "src/cells/models/registry.py"
+     "path": "src/cells/registry/models.py"
     }
    ],
    "files": [
-    "src/cells/core/legacy_entry.py",
     "src/cells/models/__init__.py",
-    "src/cells/models/registry.py"
+    "src/cells/registry/legacy_entry.py",
+    "src/cells/registry/models.py"
    ],
-   "weight": 91
+   "weight": 97
   },
   {
    "id": "exec.registry_decl",
@@ -20091,7 +20204,7 @@
      "where": "1. Status at every level"
     },
     {
-     "path": "src/cells/core/kind_registry.py"
+     "path": "src/cells/registry/kind_registry.py"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -20151,15 +20264,15 @@
     ],
     [
      "Read by this map",
-     "cells.declarations@2, written at 79d23cd5"
+     "cells.declarations@2, written at b5d3faf0"
     ],
     [
      "Laws, kinds and operators",
-     "17, 5 and 21"
+     "21, 5 and 21"
     ],
     [
      "Active models",
-     "10"
+     "11"
     ],
     [
      "Older model identifiers, by ID only",
@@ -20265,7 +20378,7 @@
     ],
     [
      "Lines of Python",
-     "110"
+     "126"
     ]
    ],
    "sources": [
@@ -20291,16 +20404,16 @@
    "files": [
     "src/cells/registry/model_table.py"
    ],
-   "weight": 110
+   "weight": 126
   },
   {
    "id": "exec.layout",
    "label": "Source layout by role",
    "kind": "component",
    "group": "execution",
-   "status": "planned",
+   "status": "landed",
    "as_of": "2026-11-18",
-   "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its design note, proposed, and the two scripts that plan, make and check the moves have been on main since 17 November 2026. The note's probe ran the whole cycle on a scratch copy of the tree, never merged: a family moved, a coupled kernel taken out and moved, and every check came out identical. Five refactors came first, on 17 November 2026: the legacy entry point (R1), computed module paths named in full (R2), the parts of seven older modules that active code reaches taken verbatim into the core (R3), and two roots taken from the package instead of from a file's depth (R4, R5). The first move then landed on main the same day: the older families' 334 modules went into src/cells/legacy/ by its committed map, with no hand edits, keeping their sub-packages and their names, with no law, kind, operator or model identifier changed, and every gate held, a continuity resume across the move among them. Move 2, which puts the modular parts into the folders by role, is next, and no checkpoint crosses it (D195). First, as decided on 17 November 2026 (D198), the processes folder is dissolved as the first batch of removals: what an active entry point reaches moves, and the rest retires with its tests. The user decided the same day that the physical laws in it are first carried onto seam F's law template, even those not used yet, each with one reference check against saved outputs of the old code and a visible not-qualified status, after a table that sorts its 33 modules and at a lower priority than the gap-junction work; its numerical methods and geometry machinery wait for the engine's own geometry design, and the batch was held until the user accepted that split (D206). Later that evening the user decided that tested laws of the older code are ported to the active engine, the 54 law IDs behind 38 of the protein atlas's 48 units first, after a read-only inventory and one pilot family, below GARD and the gap-junction work in priority; this amends D196, and the retire batch's two laws join it. Mechanisms already owned are not ported as they stand: calcium handling folds into the cardiac laws, mitochondria into their own design, and the junction flux into FR-16. A law that becomes declared is not thereby qualified (D211). The user then set the chain (D213): the retire batch lands once its gate passes, then move 2, then the core-seams pass. The retire batch landed that evening: 33 source modules that no active entry point reached, 64 validation modules and 951 test IDs retired, and a tag holds every removed path. Its table sorted the 33 modules into 2 laws, 16 methods and 15 machinery modules. The two laws, the held charged-surface work law and conduction (J = σE) on the rectangular grid around cells, are to be rebuilt under D206 and D211, and their reference outputs are saved. Four input kernels that carry BETSE's conventions moved out of the engine, to the BETSE comparison tools. Move 2's prerequisites landed on 18 November 2026. A checkpoint written before a declared source move is refused by both loaders and by the continuity route, and the refusal names the tag where it restores; the made moves are declared in one module of the engine, which this part holds and which declares none yet. The one-thread pin for linear algebra has one home, and the planner counts a family as active when the static model table has its row, so GARD's family stays active. For this the lead amended D195 the same day, to confirm with the user: the layout a checkpoint was written in is read from its recorded source map, and GARD's frozen lineage reader refuses any changed source without naming the tag, which GARD's documentation names instead. Move 2 itself waits for the landing of the origin-of-life engine's first laws (OL1). The moves are the first step of the order the user set (D194). Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned: the first move is made, and the second is not.",
+   "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its design note, proposed, and the two scripts that plan, make and check the moves have been on main since 17 November 2026. The note's probe ran the whole cycle on a scratch copy of the tree, never merged: a family moved, a coupled kernel taken out and moved, and every check came out identical. Five refactors came first, on 17 November 2026: the legacy entry point (R1), computed module paths named in full (R2), the parts of seven older modules that active code reaches taken verbatim into the core's folder (R3), and two roots taken from the package instead of from a file's depth (R4, R5). The first move then landed on main the same day: the older families' 334 modules went into src/cells/legacy/ by its committed map, with no hand edits, keeping their sub-packages and their names, with no law, kind, operator or model identifier changed, and every gate held, a continuity resume across the move among them. Move 2, which puts the modular parts into the folders by role, came next, and no checkpoint crosses it (D195). First, as decided on 17 November 2026 (D198), the processes folder is dissolved as the first batch of removals: what an active entry point reaches moves, and the rest retires with its tests. The user decided the same day that the physical laws in it are first carried onto seam F's law template, even those not used yet, each with one reference check against saved outputs of the old code and a visible not-qualified status, after a table that sorts its 33 modules and at a lower priority than the gap-junction work; its numerical methods and geometry machinery wait for the engine's own geometry design, and the batch was held until the user accepted that split (D206). Later that evening the user decided that tested laws of the older code are ported to the active engine, the 54 law IDs behind 38 of the protein atlas's 48 units first, after a read-only inventory and one pilot family, below GARD and the gap-junction work in priority; this amends D196, and the retire batch's two laws join it. Mechanisms already owned are not ported as they stand: calcium handling folds into the cardiac laws, mitochondria into their own design, and the junction flux into FR-16. A law that becomes declared is not thereby qualified (D211). The user then set the chain (D213): the retire batch lands once its gate passes, then move 2, then the core-seams pass. The retire batch landed that evening: 33 source modules that no active entry point reached, 64 validation modules and 951 test IDs retired, and a tag holds every removed path. Its table sorted the 33 modules into 2 laws, 16 methods and 15 machinery modules. The two laws, the held charged-surface work law and conduction (J = σE) on the rectangular grid around cells, are to be rebuilt under D206 and D211, and their reference outputs are saved. Four input kernels that carry BETSE's conventions moved out of the engine, to the BETSE comparison tools. Move 2's prerequisites landed on 18 November 2026. A checkpoint written before a declared source move is refused by both loaders and by the continuity route, and the refusal names the tag where it restores; the made moves are declared in one module of the engine, which this part holds. The one-thread pin for linear algebra has one home, and the planner counts a family as active when the static model table has its row, so GARD's family stays active. For this the lead amended D195 the same day, and the user confirmed the amendment before move 2 landed: the layout a checkpoint was written in is read from its recorded source map, and GARD's frozen lineage reader refuses any changed source without naming the tag, which GARD's documentation names instead. Move 2 landed on 18 November 2026, after the origin-of-life engine's first laws (OL1): 117 modules moved by the committed map, with no hand edits in the move commit, into the laws' seven groups (channels, junctions, mechanics, pumps, reactions, routes and transport) and the folders for kinds, operators, definitions, execution, the registry and records; the processes and core folders dissolved, and no law, kind, operator or model identifier changed. The module above declares the move, with the tag of the tree before it. Its first gate failed, and the record says so: the move's rule for dotted names had rewritten five strings that are recorded data, not live references, and four files built moved paths from separate parts. Each was fixed in a commit of its own, and the landing gate held: tiers 1 and 2 with no changed outcome, all 113 saved worlds, crossrev's 9 of 9, every fingerprint of R1's 274 saved definitions, the pin in all 556 modules, the continuity acceptance test 13 of 13, and GARD's frozen first version and OL1's probes unchanged. No gate covers the BETSE evidence verifiers, the frozen release verifiers, the reports' closeouts or the geometry validation's source maps, and tier 3 is to be frozen again later. The moves are the first step of the order the user set (D194). Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Implemented and guarded: both moves are on main with their gates.",
    "detail": "D188 step 0's legacy inventory, built with D187's test audit: each registered model family's consumers, and what the modular path imports from older modules.",
    "facts": [
     [
@@ -20309,7 +20422,7 @@
     ],
     [
      "Lines of Python",
-     "3,528"
+     "3,704"
     ]
    ],
    "sources": [
@@ -20439,19 +20552,37 @@
     },
     {
      "path": "docs/DECISIONS.md",
-     "where": "Amended 18 November (the lead; to confirm with the user)"
+     "where": "Amended 18 November (the lead; confirmed by the user the same day"
     },
     {
-     "path": "src/cells/source_layout.py"
+     "path": "src/cells/records/source_layout.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on main (18 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on 18 November (merge d5d56d1b"
+    },
+    {
+     "path": "docs/SOURCE_LAYOUT_MOVES_DESIGN.md",
+     "where": "21. Move 2 made (18 November 2026, on d188-m2-prep at main bb69abd4)"
+    },
+    {
+     "path": "scripts/moves/move2.json"
+    },
+    {
+     "path": "tests/unit/test_continuity_loaders.py"
     }
    ],
    "files": [
     "scripts/legacy_inventory.py",
     "scripts/source_moves.py",
     "scripts/source_moves_plan.py",
-    "src/cells/source_layout.py"
+    "src/cells/records/source_layout.py"
    ],
-   "weight": 3528
+   "weight": 3704
   },
   {
    "id": "exec.state",
@@ -20464,11 +20595,11 @@
    "facts": [
     [
      "Files",
-     "5"
+     "6"
     ],
     [
      "Lines of Python",
-     "709"
+     "710"
     ]
    ],
    "sources": [
@@ -20478,13 +20609,14 @@
     }
    ],
    "files": [
-    "src/cells/core/errors.py",
-    "src/cells/core/grid.py",
-    "src/cells/core/output_paths.py",
-    "src/cells/core/resources.py",
-    "src/cells/core/state.py"
+    "src/cells/execution/__init__.py",
+    "src/cells/execution/errors.py",
+    "src/cells/execution/grid.py",
+    "src/cells/execution/output_paths.py",
+    "src/cells/execution/resources.py",
+    "src/cells/execution/state.py"
    ],
-   "weight": 709
+   "weight": 710
   },
   {
    "id": "exec.schedule",
@@ -20511,7 +20643,7 @@
     }
    ],
    "files": [
-    "src/cells/core/schedule.py"
+    "src/cells/execution/schedule.py"
    ],
    "weight": 237
   },
@@ -20545,7 +20677,7 @@
     }
    ],
    "files": [
-    "src/cells/core/phases.py"
+    "src/cells/execution/phases.py"
    ],
    "weight": 214
   },
@@ -20578,8 +20710,8 @@
     }
    ],
    "files": [
-    "src/cells/core/runner.py",
-    "src/cells/core/windows.py"
+    "src/cells/execution/runner.py",
+    "src/cells/execution/windows.py"
    ],
    "weight": 919
   },
@@ -20607,7 +20739,7 @@
     }
    ],
    "files": [
-    "src/cells/core/batch.py"
+    "src/cells/execution/batch.py"
    ],
    "weight": 546
   },
@@ -20626,7 +20758,7 @@
     ],
     [
      "Lines of Python",
-     "435"
+     "440"
     ]
    ],
    "sources": [
@@ -20635,9 +20767,9 @@
     }
    ],
    "files": [
-    "src/cells/core/batch_windows.py"
+    "src/cells/execution/batch_windows.py"
    ],
-   "weight": 435
+   "weight": 440
   },
   {
    "id": "exec.vector_windows",
@@ -20683,7 +20815,7 @@
     }
    ],
    "files": [
-    "src/cells/core/vector_windows.py"
+    "src/cells/execution/vector_windows.py"
    ],
    "weight": 1161
   },
@@ -20761,7 +20893,7 @@
     }
    ],
    "files": [
-    "src/cells/run_view.py"
+    "src/cells/records/run_view.py"
    ],
    "weight": 2532
   },
@@ -20990,7 +21122,7 @@
     }
    ],
    "files": [
-    "src/cells/core/row_checks.py",
+    "src/cells/execution/row_checks.py",
     "validation/execution/window_check_probe.py",
     "validation/execution/window_row_checks_runs.py"
    ],
@@ -21112,7 +21244,7 @@
     }
    ],
    "files": [
-    "src/cells/core/devices.py"
+    "src/cells/execution/devices.py"
    ],
    "weight": 35
   },
@@ -21122,16 +21254,16 @@
    "kind": "component",
    "group": "execution",
    "status": "established",
-   "plain": "Saves complete checkpoints, so a run can restart exactly or branch into alternative futures. Since 18 November 2026 both of its loaders, and with them the continuity route, refuse a checkpoint written before a declared source move and name the tag of the tree where it restores (D195, amended by the lead, to confirm with the user).",
+   "plain": "Saves complete checkpoints, so a run can restart exactly or branch into alternative futures. Since 18 November 2026 both of its loaders, and with them the continuity route, refuse a checkpoint written before a declared source move and name the tag of the tree where it restores (D195, amended by the lead and confirmed by the user the same day); the second source move, landed that day, is the move declared.",
    "detail": "Portable numeric artifacts, strict restoration, and non-overwriting output.",
    "facts": [
     [
      "Files",
-     "4"
+     "5"
     ],
     [
      "Lines of Python",
-     "981"
+     "988"
     ]
    ],
    "sources": [
@@ -21145,16 +21277,21 @@
     },
     {
      "path": "docs/DECISIONS.md",
-     "where": "Amended 18 November (the lead; to confirm with the user)"
+     "where": "Amended 18 November (the lead; confirmed by the user the same day"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
    "files": [
-    "src/cells/batch_io.py",
-    "src/cells/batch_window_io.py",
-    "src/cells/io.py",
-    "src/cells/window_io.py"
+    "src/cells/records/__init__.py",
+    "src/cells/records/batch_io.py",
+    "src/cells/records/batch_window_io.py",
+    "src/cells/records/io.py",
+    "src/cells/records/window_io.py"
    ],
-   "weight": 981
+   "weight": 988
   },
   {
    "id": "exec.continuity",
@@ -21163,7 +21300,7 @@
    "group": "execution",
    "status": "landed",
    "as_of": "2026-11-18",
-   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU vector windows, and on the GPU for its first case, whose extension landed on 14 November 2026. Since 18 November 2026 no admission carries a checkpoint across a declared source move: the continuity route refuses one written before such a move and names the tag of the tree where it restores (D195, amended by the lead, to confirm with the user).",
+   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU vector windows, and on the GPU for its first case, whose extension landed on 14 November 2026. Since 18 November 2026 no admission carries a checkpoint across a declared source move: the continuity route refuses one written before such a move and names the tag of the tree where it restores (D195, amended by the lead and confirmed by the user the same day).",
    "detail": "Checkpoint continuity: one recorded admission per resume across a source change.",
    "facts": [
     [
@@ -21197,11 +21334,15 @@
     },
     {
      "path": "docs/DECISIONS.md",
-     "where": "Amended 18 November (the lead; to confirm with the user)"
+     "where": "Amended 18 November (the lead; confirmed by the user the same day"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
    "files": [
-    "src/cells/continuity.py"
+    "src/cells/execution/continuity.py"
    ],
    "weight": 627
   },
@@ -21230,7 +21371,7 @@
     }
    ],
    "files": [
-    "src/cells/observers.py"
+    "src/cells/records/observers.py"
    ],
    "weight": 107
   },
@@ -21260,7 +21401,7 @@
     }
    ],
    "files": [
-    "src/cells/core/vertex_preparation.py"
+    "src/cells/definitions/vertex_preparation.py"
    ],
    "weight": 144
   },
@@ -21368,7 +21509,7 @@
    "group": "numerics",
    "status": "landed",
    "as_of": "2026-11-18",
-   "plain": "So that a run on ordinary processors gives the same bits however many processors it is given. The core found on 16 November 2026 that a run's bits followed the number of threads its linear-algebra libraries use, which follows the processors a run is given, and the user decided the same evening (D190) to run them on one thread. It merged into main just after midnight on 17 November 2026: every such library runs on one thread from the first import of the engine, and again at each of the eight places a run starts; the counts are read back, and a run is refused if any is not at one. Run manifests record each library's version, kernel and thread count, and checkpoints written before the pin still restore. With it, the 825-node world gives the same bits on 1, 2 and 4 processors. Runs of large worlds on several processors give up the threaded part of the step's factorization, 21 ms of the 825-node world's 91 ms step on one processor; one-processor and GPU runs are unchanged. Since move 2's prerequisites landed on 18 November 2026 the pin at import has one home, the engine package's first module, as D190 first said: all 530 modules measured are pinned, and a planted control unpins all 47 sampled. Implemented and guarded.",
+   "plain": "So that a run on ordinary processors gives the same bits however many processors it is given. The core found on 16 November 2026 that a run's bits followed the number of threads its linear-algebra libraries use, which follows the processors a run is given, and the user decided the same evening (D190) to run them on one thread. It merged into main just after midnight on 17 November 2026: every such library runs on one thread from the first import of the engine, and again at each of the eight places a run starts; the counts are read back, and a run is refused if any is not at one. Run manifests record each library's version, kernel and thread count, and checkpoints written before the pin still restore. With it, the 825-node world gives the same bits on 1, 2 and 4 processors. Runs of large worlds on several processors give up the threaded part of the step's factorization, 21 ms of the 825-node world's 91 ms step on one processor; one-processor and GPU runs are unchanged. Since move 2's prerequisites landed on 18 November 2026 the pin at import has one home, the engine package's first module, as D190 first said: all 530 modules measured are pinned, and a planted control unpins all 47 sampled. At move 2's landing gate the same day the pin held in every module, 556 of 556, and the pin's own module moved with the execution modules. Implemented and guarded.",
    "detail": "One BLAS thread for every run, so a CPU run's bits do not follow its allocation (D190).",
    "facts": [
     [
@@ -21399,10 +21540,14 @@
     {
      "path": "PROGRESS.md",
      "where": "Move 2's prerequisites on main (18 November 2026, early)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
    "files": [
-    "src/cells/core/blas_threads.py"
+    "src/cells/execution/blas_threads.py"
    ],
    "weight": 81
   },
@@ -21525,7 +21670,7 @@
     }
    ],
    "files": [
-    "src/cells/core/projective.py",
+    "src/cells/execution/projective.py",
     "src/cells/models/surface_pump_projective.py",
     "src/cells/numerics/projective.py"
    ],
@@ -21656,11 +21801,11 @@
    "facts": [
     [
      "Files",
-     "1"
+     "2"
     ],
     [
      "Lines of Python",
-     "51"
+     "52"
     ]
    ],
    "sources": [
@@ -21669,9 +21814,10 @@
     }
    ],
    "files": [
-    "src/cells/processes/electrochemistry.py"
+    "src/cells/laws/__init__.py",
+    "src/cells/laws/electrochemistry.py"
    ],
-   "weight": 51
+   "weight": 52
   },
   {
    "id": "laws.channels",
@@ -21683,11 +21829,11 @@
    "facts": [
     [
      "Files",
-     "19"
+     "20"
     ],
     [
      "Lines of Python",
-     "1,706"
+     "1,707"
     ]
    ],
    "sources": [
@@ -21700,7 +21846,7 @@
      "where": "Parity P4b, the heredity carrier channels"
     }
    ],
-   "weight": 1706
+   "weight": 1707
   },
   {
    "id": "laws.pumps",
@@ -21713,11 +21859,11 @@
    "facts": [
     [
      "Files",
-     "3"
+     "4"
     ],
     [
      "Lines of Python",
-     "353"
+     "354"
     ]
    ],
    "sources": [
@@ -21730,11 +21876,12 @@
     }
    ],
    "files": [
-    "src/cells/processes/calcium_atpase.py",
-    "src/cells/processes/kinetic_pump.py",
-    "src/cells/processes/kinetic_pump_binding.py"
+    "src/cells/laws/pumps/__init__.py",
+    "src/cells/laws/pumps/calcium_atpase.py",
+    "src/cells/laws/pumps/kinetic_pump.py",
+    "src/cells/laws/pumps/kinetic_pump_binding.py"
    ],
-   "weight": 353
+   "weight": 354
   },
   {
    "id": "laws.junctions",
@@ -21764,11 +21911,11 @@
     }
    ],
    "files": [
-    "src/cells/coupling/__init__.py",
-    "src/cells/coupling/passive.py",
-    "src/cells/coupling/selective.py",
-    "src/cells/processes/junction_formation.py",
-    "src/cells/processes/junction_gate.py"
+    "src/cells/laws/junctions/__init__.py",
+    "src/cells/laws/junctions/junction_formation.py",
+    "src/cells/laws/junctions/junction_gate.py",
+    "src/cells/laws/junctions/passive.py",
+    "src/cells/laws/junctions/selective.py"
    ],
    "weight": 250
   },
@@ -21783,11 +21930,11 @@
    "facts": [
     [
      "Files",
-     "1"
+     "2"
     ],
     [
      "Lines of Python",
-     "118"
+     "119"
     ]
    ],
    "sources": [
@@ -21796,9 +21943,10 @@
     }
    ],
    "files": [
-    "src/cells/processes/k_anion_symport.py"
+    "src/cells/laws/routes/__init__.py",
+    "src/cells/laws/routes/k_anion_symport.py"
    ],
-   "weight": 118
+   "weight": 119
   },
   {
    "id": "laws.reactions",
@@ -21811,11 +21959,11 @@
    "facts": [
     [
      "Files",
-     "2"
+     "3"
     ],
     [
      "Lines of Python",
-     "32"
+     "33"
     ]
    ],
    "sources": [
@@ -21824,10 +21972,11 @@
     }
    ],
    "files": [
-    "src/cells/processes/mass_action.py",
-    "src/cells/processes/reactions.py"
+    "src/cells/laws/reactions/__init__.py",
+    "src/cells/laws/reactions/mass_action.py",
+    "src/cells/laws/reactions/reactions.py"
    ],
-   "weight": 32
+   "weight": 33
   },
   {
    "id": "laws.calcium",
@@ -21856,8 +22005,8 @@
     }
    ],
    "files": [
-    "src/cells/processes/er_calcium.py",
-    "src/cells/processes/plasma_calcium.py"
+    "src/cells/laws/reactions/er_calcium.py",
+    "src/cells/laws/reactions/plasma_calcium.py"
    ],
    "weight": 115
   },
@@ -21913,11 +22062,11 @@
    "facts": [
     [
      "Files",
-     "1"
+     "2"
     ],
     [
      "Lines of Python",
-     "274"
+     "275"
     ]
    ],
    "sources": [
@@ -21931,9 +22080,10 @@
     }
    ],
    "files": [
-    "src/cells/processes/vertex_mechanics.py"
+    "src/cells/laws/mechanics/__init__.py",
+    "src/cells/laws/mechanics/vertex_mechanics.py"
    ],
-   "weight": 274
+   "weight": 275
   },
   {
    "id": "laws.topology",
@@ -22023,7 +22173,7 @@
     }
    ],
    "files": [
-    "src/cells/processes/hill_factors.py"
+    "src/cells/laws/reactions/hill_factors.py"
    ],
    "weight": 41
   },
@@ -22155,7 +22305,7 @@
     ],
     [
      "Lines of Python",
-     "270"
+     "265"
     ],
     [
      "Model identifiers",
@@ -22249,7 +22399,7 @@
    "files": [
     "src/cells/models/inner_laws.py"
    ],
-   "weight": 270
+   "weight": 265
   },
   {
    "id": "laws.kinds",
@@ -22314,8 +22464,8 @@
     }
    ],
    "files": [
-    "src/cells/core/kind_registry.py",
-    "src/cells/models/inner_kinds/__init__.py"
+    "src/cells/kinds/__init__.py",
+    "src/cells/registry/kind_registry.py"
    ],
    "weight": 534
   },
@@ -22441,6 +22591,82 @@
    "weight": 250
   },
   {
+   "id": "laws.origin_laws",
+   "label": "Origin-of-life laws (OL1)",
+   "kind": "component",
+   "group": "laws",
+   "status": "landed",
+   "as_of": "2026-11-18",
+   "plain": "Landed for development, not judged (18 November 2026). The four laws of the origin-of-life engine's first milestone (OL1), physical chemistry in an assembly: mass action for a step's encounter, in exact molecule counts (cells.stochastic_mass_action@1); catalysis as a factor on the state a step and its reverse share, so that a catalyst speeds or slows both alike and never moves an equilibrium (cells.transition_state_factor@1); and two terms of one free energy of the counts, ideal mixing, exact in the counts, and the membrane's regular mixing (cells.ideal_mixing@1, cells.regular_mixing@1). Each step comes as a forward and reverse pair, the reverse rate from the exact change of that free energy, so every pair keeps local detailed balance. Each law is declared on the family's own interfaces of seam F's template, with the works it cites, and the engine's declarations list all four. They follow the lead's rulings written into the design note. Against OL5's references, registered before any engine output, they passed 6 of 6 rows on 18 November 2026. Nothing is judged under a registered protocol, and nothing is compared with experiment. Implemented and guarded: on main with their tests, among them the laws' registration and the kernel's detailed balance, in tiers 1 and 2 of the engine's test tiers.",
+   "facts": [
+    [
+     "Files",
+     "4"
+    ],
+    [
+     "Lines of Python",
+     "694"
+    ],
+    [
+     "Laws it declares",
+     "4"
+    ]
+   ],
+   "members": [
+    {
+     "label": "cells.ideal_mixing@1",
+     "detail": "law, declared in ideal_mixing.py"
+    },
+    {
+     "label": "cells.regular_mixing@1",
+     "detail": "law, declared in regular_mixing.py"
+    },
+    {
+     "label": "cells.stochastic_mass_action@1",
+     "detail": "law, declared in mass_action.py"
+    },
+    {
+     "label": "cells.transition_state_factor@1",
+     "detail": "law, declared in transition_state.py"
+    }
+   ],
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2a The lead's rulings for OL1 (17 November 2026; D215)"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "2.1 The event-pair contract"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "2.4 Catalysis that keeps detailed balance"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_registration.py"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_kernel.py"
+    }
+   ],
+   "files": [
+    "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+    "src/cells/models/assembly_lineages_v2/mass_action.py",
+    "src/cells/models/assembly_lineages_v2/regular_mixing.py",
+    "src/cells/models/assembly_lineages_v2/transition_state.py"
+   ],
+   "weight": 694
+  },
+  {
    "id": "laws.transporters",
    "label": "Transporters and proton buffer",
    "kind": "component",
@@ -22524,11 +22750,11 @@
     }
    ],
    "files": [
-    "src/cells/models/inner_kinds/proton_buffer.py",
-    "src/cells/models/inner_kinds/transporter.py",
-    "src/cells/processes/atp_transporter.py",
-    "src/cells/processes/proton_pump.py",
-    "src/cells/processes/rapid_proton_buffer.py"
+    "src/cells/kinds/proton_buffer.py",
+    "src/cells/kinds/transporter.py",
+    "src/cells/laws/pumps/atp_transporter.py",
+    "src/cells/laws/pumps/proton_pump.py",
+    "src/cells/laws/reactions/rapid_proton_buffer.py"
    ],
    "weight": 1770
   },
@@ -22544,11 +22770,11 @@
    "facts": [
     [
      "Files",
-     "4"
+     "5"
     ],
     [
      "Lines of Python",
-     "679"
+     "680"
     ],
     [
      "Kinds it declares",
@@ -22590,12 +22816,13 @@
     }
    ],
    "files": [
-    "src/cells/models/inner_kinds/patch_damage.py",
-    "src/cells/models/inner_kinds/ph_condition.py",
-    "src/cells/processes/patch_damage.py",
-    "src/cells/processes/ph_condition.py"
+    "src/cells/kinds/patch_damage.py",
+    "src/cells/kinds/ph_condition.py",
+    "src/cells/laws/reactions/ph_condition.py",
+    "src/cells/laws/transport/__init__.py",
+    "src/cells/laws/transport/patch_damage.py"
    ],
-   "weight": 679
+   "weight": 680
   },
   {
    "id": "laws.species_identity",
@@ -22650,8 +22877,8 @@
     }
    ],
    "files": [
-    "src/cells/core/species_registry.py",
-    "src/cells/numerics/species_sums.py"
+    "src/cells/numerics/species_sums.py",
+    "src/cells/registry/species_registry.py"
    ],
    "weight": 542
   },
@@ -22693,7 +22920,7 @@
      "where": "D172's round landed on main"
     },
     {
-     "path": "src/cells/models/inner_kinds/transporter.py"
+     "path": "src/cells/kinds/transporter.py"
     },
     {
      "path": "PROGRESS.md",
@@ -22717,7 +22944,7 @@
    "group": "laws",
    "status": "landed",
    "as_of": "2026-11-18",
-   "plain": "A law for molecules that cross a membrane on their own, down their gradient: the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it. Since the rework landed on 16 November 2026 it is on main as one of the tissue model's passive routes, beside a proton leak that compartment pH uses. For an uncharged molecule its core computation is the membrane transport's own route at zero charge, and it books the heat it releases exactly, as the free energy lost by what it moved. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. Its independent reference, written by a separate agent that read no engine code, landed on 15 November 2026: in it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, and heat never decreases. The engine's operator for secretion and uptake is a driven route that books work, so it does not count as passive. Implemented and guarded: on a closed pair of compartments, a test on main shows it relaxing as the independent closed form says, conserving material, and booking as heat the engine's own decrease of free energy, to rounding. It has not been judged against its own reference, and its composition with water is still a target; the passive routes ran in FR-4's and FR-5's judged acceptances on 17 November 2026, which passed, and their scope line names the compartment operator as built at 32a1d439. Until a later step, the composite model refuses an operator that writes a row such a route books exactly. The minimal-cell track's vesicle tests are its first user. On 17 November 2026 the gap-junction work found that its exact heat booking refused a step when a route's share of heat was negative by rounding alone (FR-19). It was fixed that evening: a share is refused only beyond a rounding floor scaled by its own terms, admitted shares are booked as computed, every step admitted before is bitwise unchanged, and the law keeps its identifier (D148). A band near 1 mM that the first floor left open was closed on 18 November 2026, the floor's scale now (|μ̄_in| + |μ̄_out| + 2)·|m|.",
+   "plain": "A law for molecules that cross a membrane on their own, down their gradient: the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it. Since the rework landed on 16 November 2026 it is on main as one of the tissue model's passive routes, beside a proton leak that compartment pH uses. For an uncharged molecule its core computation is the membrane transport's own route at zero charge, and it books the heat it releases exactly, as the free energy lost by what it moved. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. Its independent reference, written by a separate agent that read no engine code, landed on 15 November 2026: in it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, and heat never decreases. The engine's operator for secretion and uptake is a driven route that books work, so it does not count as passive. Implemented and guarded: on a closed pair of compartments, a test on main shows it relaxing as the independent closed form says, conserving material, and booking as heat the engine's own decrease of free energy, to rounding. It has not been judged against its own reference, and its composition with water is still a target; the passive routes ran in FR-4's and FR-5's judged acceptances on 17 November 2026, which passed, and their scope line names the compartment operator as built at 32a1d439. Until a later step, the composite model refuses an operator that writes a row such a route books exactly. The minimal-cell track's vesicle tests are its first user. On 17 November 2026 the gap-junction work found that its exact heat booking refused a step when a route's share of heat was negative by rounding alone (FR-19). It was fixed that evening: a share is refused only beyond a rounding floor scaled by its own terms, admitted shares are booked as computed, every step admitted before is bitwise unchanged, and the law keeps its identifier (D148). A band near 1 mM that the first floor left open was closed on 18 November 2026, the floor's scale now (|μ̄_in| + |μ̄_out| + 2)·|m|, and crossrev's record of the kinds was renewed at that landing, 9 of 9.",
    "detail": "passive_neutral_permeation@1: the passive permeation law's kernel for neutral species (A5).",
    "facts": [
     [
@@ -22805,12 +23032,16 @@
     {
      "path": "PROGRESS.md",
      "where": "FR-4 and FR-5 judged: both passed (17 November 2026, 16:12–18:34 UTC)"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "closed on branch `passive-share-band` and landed by merge a7122a43 on 18 November"
     }
    ],
    "files": [
-    "src/cells/models/inner_kinds/passive_routes.py",
-    "src/cells/processes/passive_permeation.py",
-    "src/cells/processes/proton_leak.py"
+    "src/cells/kinds/passive_routes.py",
+    "src/cells/laws/routes/passive_permeation.py",
+    "src/cells/laws/transport/proton_leak.py"
    ],
    "weight": 844
   },
@@ -22905,7 +23136,7 @@
     ],
     [
      "Lines of Python",
-     "4,335"
+     "4,338"
     ],
     [
      "Model identifiers",
@@ -22966,7 +23197,7 @@
     "src/cells/models/surface_pump_v2.py",
     "src/cells/models/surface_pump_v3.py"
    ],
-   "weight": 4335
+   "weight": 4338
   },
   {
    "id": "models.water",
@@ -23188,7 +23419,7 @@
    "group": "models",
    "status": "designed",
    "as_of": "2026-11-18",
-   "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass follows the second source move. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, which goes ahead only if the user's answer on the hold of D145 admits a loop from species to control to production (D216, amended).",
+   "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass was to follow the second source move, which landed on 18 November 2026. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, which goes ahead only if the user's answer on the hold of D145 admits a loop from species to control to production (D216, amended). The pass started the same day, with the lead's rulings at launch: the owner table checked again on the moved tree, the files of the builder of OL2 and OL3 added to it, the owners seated within the seven, and gates added before the first landing under the operators, the kinds or the tissue model @3: quick worlds of the feature-request lane's judged acceptances, compared bit for bit at every core landing, and tier 3 once on the final tree, with G3 and G4.",
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -23229,6 +23460,10 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "Amended 18 November (the lead). FR-7's design note found that B1 as written covers"
+    },
+    {
+     "path": "docs/CORE_SEAMS_DESIGN.md",
+     "where": "18. The pass starts: the lead's rulings at launch (18 November 2026)"
     }
    ],
    "weight": 0
@@ -23239,7 +23474,7 @@
    "kind": "component",
    "group": "models",
    "status": "established",
-   "plain": "The older design: one module for each combination of calcium, fuel, water, repair, profiles and interventions. Kept frozen on purpose. At D172's landing on 16 November 2026, tier 3 of the tests found failures in some of these families that were there before the round, such as a missing refusal and an energy-accounting failure; they are open findings for the audit of the test suite (D187). The audit traced the missing refusal to a change of 9 November in field code these families share with the tissue model @3, so it reached @3 too. The core's fixes closed it on 16 November 2026: a definition whose floating or gauge component carries a charge is now refused when it is defined, and no registered world was affected. Since D188's first move most of these modules are legacy code, left out of this map; two that the active families build on stay in the core (D189, amended 17 November 2026), and the engine's declarations list their two model identifiers among the older families', by ID only.",
+   "plain": "The older design: one module for each combination of calcium, fuel, water, repair, profiles and interventions. Kept frozen on purpose. At D172's landing on 16 November 2026, tier 3 of the tests found failures in some of these families that were there before the round, such as a missing refusal and an energy-accounting failure; they are open findings for the audit of the test suite (D187). The audit traced the missing refusal to a change of 9 November in field code these families share with the tissue model @3, so it reached @3 too. The core's fixes closed it on 16 November 2026: a definition whose floating or gauge component carries a charge is now refused when it is defined, and no registered world was affected. Since D188's first move most of these modules are legacy code, left out of this map; two that the active families build on stay active (D189, amended 17 November 2026), and the engine's declarations list their two model identifiers among the older families', by ID only.",
    "facts": [
     [
      "Files",
@@ -23407,8 +23642,8 @@
    "kind": "component",
    "group": "models",
    "status": "landed",
-   "as_of": "2026-11-17",
-   "plain": "A general family for chemistry in assemblies, simulated exactly, one event at a time: an assembly holds counts of declared kinds of molecule, exchanges single molecules with a held phase, splits at random once it reaches a declared size, and one daughter continues its lineage. A ledger books the heat of each event and refuses a passive run whose books do not close, and every run writes a record that describes itself. It is the machinery Cells' own origin-of-life engine is to run on (D197), and GARD's law set runs on it for comparison. It merged on 17 November 2026 as the first part of GARD's G1, with its own tests, and its second part followed the same evening: the family's three laws and two operators, which split an assembly at its threshold size and continue one daughter's lineage, are registered under the family's own interfaces and frozen, and the engine's declarations list all five. Every bundle of its runs writes its relationship tables. Its runs are development runs of the engine, not judged. Implemented and guarded.",
+   "as_of": "2026-11-18",
+   "plain": "A general family for chemistry in assemblies, simulated exactly, one event at a time: an assembly holds counts of declared kinds of molecule, exchanges single molecules with a held phase, splits at random once it reaches a declared size, and one daughter continues its lineage. A ledger books the heat of each event and refuses a passive run whose books do not close, and every run writes a record that describes itself. It is the machinery Cells' own origin-of-life engine runs on (D197), and GARD's law set runs on it for comparison: the engine's first laws landed on 18 November 2026 as the family's second major, which edits none of this version's modules, reuses its folds, keys and streams, and leaves every one of its worlds bitwise unchanged. It merged on 17 November 2026 as the first part of GARD's G1, with its own tests, and its second part followed the same evening: the family's three laws and two operators, which split an assembly at its threshold size and continue one daughter's lineage, are registered under the family's own interfaces and frozen, and the engine's declarations list all five. Every bundle of its runs writes its relationship tables. Its runs are development runs of the engine, not judged. Implemented and guarded.",
    "facts": [
     [
      "Files",
@@ -23416,7 +23651,7 @@
     ],
     [
      "Lines of Python",
-     "6,133"
+     "6,150"
     ],
     [
      "Model identifiers",
@@ -23468,9 +23703,80 @@
     {
      "path": "PROGRESS.md",
      "where": "GARD's G1, part 2, on main (17 November 2026, evening)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
     }
    ],
-   "weight": 6133
+   "weight": 6150
+  },
+  {
+   "id": "models.assembly_lineages_v2",
+   "label": "Assemblies with phases and reactions (OL1)",
+   "kind": "component",
+   "group": "models",
+   "status": "landed",
+   "as_of": "2026-11-18",
+   "plain": "Landed for development, not judged (18 November 2026). The family the origin-of-life engine's first laws run on, cells.assembly_lineages@2: the second major of the assembly-lineage family. An assembly's molecules stand in places, the pool, the membrane and a lumen, and a step moves up to three molecules on each side between them; every step is reversible, under one free energy of the counts, in seconds, litres and a declared temperature. Each convention a world needs is a named token it must declare, with no default. Its ledgers book heat and work and close at every saved row to rounding, and a run repeated under the same stream identity is bitwise equal. The engine's declarations list it among the active models. The first major is frozen: version 2 edits none of its modules, reuses its folds, keys and streams, and leaves every one of its worlds bitwise unchanged. It keeps a package of its own for now (D215). It merged on 18 November 2026 with OL5's references and with a driver that runs the engine on their registered inputs. Before the verdict the lead ruled two of OL5's readings on the physics, before the builder was asked what its kernel did; under one of them the kernel had zeroed every step with an empty end state, which froze pool steps at such probe states, and it was fixed with a planted test. The references' harness first failed one row on a record rule, the ladder's stream identities repeating across rungs, though the row's physics passed; the driver was fixed with a planted test, the references were not amended, and both verdicts are kept. On the regenerated probe set the references passed 6 of 6 rows, and four planted errors applied to the engine's own records were all caught. Its landing gate held: all 113 saved worlds, tiers 1 and 2 with no changed outcome, GARD's first version bitwise unchanged, and the feature-request lane's bitwise set. Its scope: the stochastic family with general stoichiometry over places, regular mixing, catalysis on the common state and exact ledgers. Geometry, an osmotic lumen and division come in OL2 and OL3. Nothing is judged under a registered protocol, and nothing is compared with experiment. Implemented and guarded: on main with its tests in tiers 1 and 2 of the engine's test tiers.",
+   "facts": [
+    [
+     "Files",
+     "17"
+    ],
+    [
+     "Lines of Python",
+     "3,760"
+    ],
+    [
+     "Model identifiers",
+     "1"
+    ]
+   ],
+   "members": [
+    {
+     "label": "cells.assembly_lineages@2",
+     "detail": "__init__.py"
+    }
+   ],
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D215: The core may change while the first experiments run; gates do not"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2a The lead's rulings for OL1 (17 November 2026; D215)"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2b The lead's rulings for OL2 and OL3 (17 November 2026; reviewed with the advisor)"
+    },
+    {
+     "path": "validation/assembly_lineages_v2/FORMAT.md"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_spec.py"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_structure.py"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_kernel.py"
+    },
+    {
+     "path": "tests/unit/test_assembly_lineages_v2_ledger.py"
+    }
+   ],
+   "weight": 3760
   },
   {
    "id": "models.origin_engine",
@@ -23478,8 +23784,8 @@
    "kind": "component",
    "group": "models",
    "status": "designed",
-   "as_of": "2026-11-17",
-   "plain": "Cells' own engine for the origin of life, with laws from physical chemistry: catalysis that keeps detailed balance, physical assemblies and explicit sources of free energy, on the general machinery built for GARD (D197). Its first choices were decided on 17 November 2026 (D199): amphiphile assemblies first, then oligomers, then templating; selection through a finite shared pool and serial transfer; one free-energy function for every law; and two experimental anchors to be judged. The whole programme, milestones OL0 to OL9, is built in order. On the evening of 17 November 2026 the user started it (D212): its laws (OL1) and its independent references (OL5) start now, under D199, aimed at the user's first target, a simulation from first principles of lipid assemblies with lipids and chemicals going in and out, and fission: the protocell, in this viewer's words. OL1 first checks, in its design, how its laws fit the assembly family's kernel, frozen that day, without changing any of that family's worlds; OL5 writes its reference designs in files before any engine output exists. The lead's rulings for OL1, and for the exchange, the lumen, lysis, the floor and division of OL2 and OL3, are written into the design note. It was decided the same evening that the core may change while these first experiments run, and that gates do not (D215): OL1 keeps a package of its own for now, and at OL3 one shared run loop behind the first version's invariance gate is the default. The GARD limit is exact only under the declared measure of GARD's first build (D215, amending D199). Its design note is proposed; nothing of it is built yet.",
+   "as_of": "2026-11-18",
+   "plain": "Cells' own engine for the origin of life, with laws from physical chemistry: catalysis that keeps detailed balance, physical assemblies and explicit sources of free energy, on the general machinery built for GARD (D197). Its first choices were decided on 17 November 2026 (D199): amphiphile assemblies first, then oligomers, then templating; selection through a finite shared pool and serial transfer; one free-energy function for every law; and two experimental anchors to be judged. The whole programme, milestones OL0 to OL9, is built in order. On the evening of 17 November 2026 the user started it (D212): its laws (OL1) and its independent references (OL5) started then, under D199, aimed at the user's first target, a simulation from first principles of lipid assemblies with lipids and chemicals going in and out, and fission: the protocell, in this viewer's words. OL1 first checked, in its design, how its laws fit the assembly family's kernel, frozen that day, without changing any of that family's worlds; OL5 wrote its reference designs in files before any engine output existed. The lead's rulings for OL1, and for the exchange, the lumen, lysis, the floor and division of OL2 and OL3, are written into the design note. It was decided the same evening that the core may change while these first experiments run, and that gates do not (D215): OL1 keeps a package of its own for now, and at OL3 one shared run loop behind the first version's invariance gate is the default. The GARD limit is exact only under the declared measure of GARD's first build (D215, amending D199). OL1 landed on 18 November 2026, for development and not judged: the assembly family's second major, cells.assembly_lineages@2, with four laws, verified 6 of 6 against OL5's references; the laws, the family and the references are each a part of their own on this map. The same day the lead ruled on the design check of OL2 and OL3, the physical assemblies and their division, and on OL5's questions for their references; those references were registered before any of their engine output, and their code comes after the second source move, which landed that day. Designed: the design note's own status line still reads proposed, and of the engine only OL1 is built.",
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -23512,6 +23818,25 @@
     {
      "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
      "where": "0.2b The lead's rulings for OL2 and OL3 (17 November 2026; reviewed with the advisor)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The OL2/OL3 design check (lipids in and out, and fission; D212)"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2c The lead's rulings on OL2's and OL3's design check (18 November 2026)"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2d The lead's rulings on OL5's questions for OL2's and OL3's references (18 November 2026)"
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md"
     }
    ],
    "weight": 0
@@ -23673,8 +23998,8 @@
     }
    ],
    "files": [
-    "src/cells/models/operators/__init__.py",
-    "src/cells/models/operators/contract.py",
+    "src/cells/operators/__init__.py",
+    "src/cells/operators/contract.py",
     "src/cells/registry/operators.py"
    ],
    "weight": 1170
@@ -24031,7 +24356,7 @@
     }
    ],
    "files": [
-    "src/cells/processes/patch_electrodiffusion.py",
+    "src/cells/laws/routes/patch_electrodiffusion.py",
     "validation/compartment_ph_engine/compare_reference.py",
     "validation/compartment_ph_engine/definitions.py",
     "validation/compartment_ph_engine/dt_study.py",
@@ -24802,7 +25127,7 @@
     ],
     [
      "Lines of Python",
-     "244,517"
+     "244,522"
     ]
    ],
    "sources": [
@@ -24826,7 +25151,7 @@
      "where": "BETSE's role"
     }
    ],
-   "weight": 244517
+   "weight": 244522
   },
   {
    "id": "val.tissue",
@@ -24842,10 +25167,10 @@
     ],
     [
      "Lines of Python",
-     "92,585"
+     "92,588"
     ]
    ],
-   "weight": 92585
+   "weight": 92588
   },
   {
    "id": "val.division",
@@ -24861,7 +25186,7 @@
     ],
     [
      "Lines of Python",
-     "11,327"
+     "11,328"
     ]
    ],
    "sources": [
@@ -24869,7 +25194,7 @@
      "path": "validation/division/REFERENCES_USAGE.md"
     }
    ],
-   "weight": 11327
+   "weight": 11328
   },
   {
    "id": "val.morpho",
@@ -24885,10 +25210,10 @@
     ],
     [
      "Lines of Python",
-     "9,327"
+     "9,330"
     ]
    ],
-   "weight": 9327
+   "weight": 9330
   },
   {
    "id": "val.reactions",
@@ -25146,6 +25471,57 @@
    "weight": 4450
   },
   {
+   "id": "val.ool",
+   "label": "Origin-of-life references (OL5)",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-18",
+   "plain": "Independent references for the origin-of-life engine's components (OL5), written without reading the engine's code, in NumPy, SciPy and exact rational arithmetic, after GARD's references as a model. OL1's were registered on 17 November 2026, before any engine output: worlds, probe states, a closed menu of convention tokens, and for every row its planted controls, with the statistical power required computed before any record is read. Five amendments followed, each before any engine output. Before registering, their author read the OL1 builder's draft format, declarations and forms with no values, and their README says so. An adapter written once the family's format existed reads the engine's saved records, and on 18 November 2026 OL1's laws passed all 6 of their rows. OL2's and OL3's references, for lipids going in and out and fission, were registered the same day, before any OL2 or OL3 engine output, under the lead's rulings, with a sixth amendment for the replay conventions; no engine output exists for them yet, and OL4's follow. Their own tests are in tiers 1 and 2 of the engine's test tiers. Nothing is judged against them under a registered protocol.",
+   "facts": [
+    [
+     "Files",
+     "101"
+    ],
+    [
+     "Lines of Python",
+     "8,216"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/ool/references/README.md"
+    },
+    {
+     "path": "validation/ool/references/README.md",
+     "where": "OL2 and OL3, registered 18 November 2026"
+    },
+    {
+     "path": "validation/ool/references/README.md",
+     "where": "Amendment 6 (18 November 2026): §0.2d item 10, the replay conventions"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Verified against code-blind references."
+    },
+    {
+     "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+     "where": "0.2d The lead's rulings on OL5's questions for OL2's and OL3's references (18 November 2026)"
+    },
+    {
+     "path": "tests/unit/test_ool_references_harness.py"
+    },
+    {
+     "path": "tests/unit/test_ool_references_ol3.py"
+    }
+   ],
+   "weight": 8216
+  },
+  {
    "id": "val.fr_references",
    "label": "Feature-request references",
    "kind": "component",
@@ -25282,19 +25658,19 @@
    "facts": [
     [
      "Files",
-     "841"
+     "859"
     ],
     [
      "Lines of Python",
-     "220,158"
+     "223,512"
     ],
     [
      "Tier 1 test files",
-     "357"
+     "368"
     ],
     [
      "Tier 2 test files",
-     "157"
+     "163"
     ],
     [
      "Tier 3 test files",
@@ -25345,7 +25721,7 @@
      "where": "approved by the user (D189), retired at 6ac27c38"
     }
    ],
-   "weight": 220158
+   "weight": 223512
   },
   {
    "id": "val.results_gate",
@@ -25506,28 +25882,6 @@
    "weight": 237
   },
   {
-   "id": "laws.other",
-   "label": "Other laws",
-   "kind": "component",
-   "group": "laws",
-   "status": "established",
-   "plain": "Process modules not grouped elsewhere on this map.",
-   "facts": [
-    [
-     "Files",
-     "1"
-    ],
-    [
-     "Lines of Python",
-     "1"
-    ]
-   ],
-   "files": [
-    "src/cells/processes/__init__.py"
-   ],
-   "weight": 1
-  },
-  {
    "id": "val.other",
    "label": "Other validation areas",
    "kind": "component",
@@ -25541,10 +25895,10 @@
     ],
     [
      "Lines of Python",
-     "62,272"
+     "62,273"
     ]
    ],
-   "weight": 62272
+   "weight": 62273
   },
   {
    "id": "state.compartment",
@@ -26218,7 +26572,7 @@
      "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers"
     },
     {
-     "path": "src/cells/models/inner_kinds/transporter.py"
+     "path": "src/cells/kinds/transporter.py"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -26528,7 +26882,7 @@
      "where": "D167: The feature-request order and the staged move of old-family physics are adopted"
     },
     {
-     "path": "src/cells/processes/patch_damage.py"
+     "path": "src/cells/laws/transport/patch_damage.py"
     },
     {
      "path": "PROGRESS.md",
@@ -26980,7 +27334,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/sodium_channels.py"
+     "path": "src/cells/laws/channels/sodium_channels.py"
     }
    ],
    "keywords": "nav1p2_m3h_regularized@1 SCN2A SCN1B SCN2B SCN3B SCN4B 6J8E",
@@ -27609,7 +27963,7 @@
      "path": "docs/SODIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/sodium_catalog.py"
+     "path": "src/cells/laws/channels/sodium_catalog.py"
     }
    ],
    "keywords": "nav1p3_m3h_regularized@1 SCN3A SCN1B SCN2B SCN3B SCN4B",
@@ -28255,10 +28609,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/sodium_catalog.py"
+     "path": "src/cells/laws/channels/sodium_catalog.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "nav1p6_persistent_m@1 nav_ml_instantaneous@1 SCN8A SCN1B SCN2B SCN3B SCN4B",
@@ -28978,7 +29332,7 @@
      "path": "docs/SODIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/sodium_catalog.py"
+     "path": "src/cells/laws/channels/sodium_catalog.py"
     }
    ],
    "keywords": "navrat2_m3h_regularized@1 navrat1_m3h_regularized@1 navrat3_m3h_regularized@1 SCN1A SCN2A SCN3A SCN8A SCN1B SCN2B SCN3B SCN4B",
@@ -29609,7 +29963,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/kv1_channels.py"
+     "path": "src/cells/laws/channels/kv1_channels.py"
     }
    ],
    "keywords": "kv1p1_mh2@1 KCNA1 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -30388,7 +30742,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/kv1_channels.py"
+     "path": "src/cells/laws/channels/kv1_channels.py"
     }
    ],
    "keywords": "kv1p2_mh@1 KCNA2 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -31184,10 +31538,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/kv1_channels.py"
+     "path": "src/cells/laws/channels/kv1_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "kv1p3_mh@1 kv1p3_ml_dynamic_m@1 KCNA3 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -31962,7 +32316,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/kv1_channels.py"
+     "path": "src/cells/laws/channels/kv1_channels.py"
     }
    ],
    "keywords": "kv1p4_mh@1 KCNA4 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -32772,10 +33126,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/voltage_gates.py"
+     "path": "src/cells/laws/channels/voltage_gates.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "kv1p5_mh@1 kv1p5_ml_dynamic_m@1 kv1p5s_ml_slow_dynamic_m@1 KCNA5 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -33554,7 +33908,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/kv1_channels.py"
+     "path": "src/cells/laws/channels/kv1_channels.py"
     }
    ],
    "keywords": "kv1p6_mh@1 KCNA6 KCNAB1 KCNAB2 KCNAB3 2A79",
@@ -34226,10 +34580,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "kv2p1_mh@1 kv2p1_ml_dynamic_m@1 KCNB1",
@@ -34462,7 +34816,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "kv2p2_mh@1 KCNB2",
@@ -34720,7 +35074,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "kv3p1_m@1 KCNC1 7PHH",
@@ -35375,7 +35729,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "kv3p2_m2@1 KCNC2",
@@ -36030,7 +36384,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "kv3p3_m2h_long_tau@1 KCNC3",
@@ -36682,7 +37036,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "kv3p4_mh@1 KCNC4",
@@ -37365,7 +37719,7 @@
      "path": "docs/POTASSIUM_CHANNEL_CATALOG.md"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     }
    ],
    "keywords": "k_fast_mh@1 KCND2 KCND3",
@@ -37628,7 +37982,7 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "kv_ml1_dynamic_m@1",
@@ -37833,10 +38187,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/potassium_channels.py"
+     "path": "src/cells/laws/channels/potassium_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "kir2p1_mh2@1 kir_ml_instantaneous@1 KCNJ2 7ZDZ",
@@ -38332,7 +38686,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/hcn_channels.py"
+     "path": "src/cells/laws/channels/hcn_channels.py"
     }
    ],
    "keywords": "hcn1_m@1 HCN1 5U6O",
@@ -38754,13 +39108,13 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/hcn_channels.py"
+     "path": "src/cells/laws/channels/hcn_channels.py"
     },
     {
-     "path": "src/cells/processes/hcn_extra_channels.py"
+     "path": "src/cells/laws/channels/hcn_extra_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "hcn2_m@1 hcn2_camp_m@1 hcn2_ml_depolarization_activated_instantaneous@1 HCN2 5U6O",
@@ -39182,13 +39536,13 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/hcn_channels.py"
+     "path": "src/cells/laws/channels/hcn_channels.py"
     },
     {
-     "path": "src/cells/processes/hcn_extra_channels.py"
+     "path": "src/cells/laws/channels/hcn_extra_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "hcn4_m@1 hcn4_camp_m@1 hcn4_ml_depolarization_activated_instantaneous@1 HCN4 7NP3",
@@ -39551,7 +39905,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/hcn_extra_channels.py"
+     "path": "src/cells/laws/channels/hcn_extra_channels.py"
     }
    ],
    "keywords": "hcn_leak_open@1 HCN2",
@@ -40212,7 +40566,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     }
    ],
    "keywords": "cav1p2_m2h@1 CACNA1C CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY 5GJV",
@@ -41168,10 +41522,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "cav1p3_m2h@1 cav_l_ml_instantaneous@1 cav_l_ml2_instantaneous@1 CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
@@ -42140,7 +42494,7 @@
      "path": "docs/CALCIUM_CHANNEL_EXTRAS.md"
     },
     {
-     "path": "src/cells/processes/calcium_catalog_extra.py"
+     "path": "src/cells/laws/channels/calcium_catalog_extra.py"
     }
    ],
    "keywords": "ca_l2_m2h@1 ca_l3_shift15_m2h@1 CACNA1C CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 5GJV",
@@ -43183,7 +43537,7 @@
      "path": "docs/CALCIUM_CHANNEL_EXTRAS.md"
     },
     {
-     "path": "src/cells/processes/calcium_catalog_extra.py"
+     "path": "src/cells/laws/channels/calcium_catalog_extra.py"
     }
    ],
    "keywords": "cav_g_m2h_regularized@1 CACNA1C CACNA1D CACNA1A CACNA1B CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
@@ -44279,7 +44633,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     }
    ],
    "keywords": "cav2p1_m@1 CACNA1A CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
@@ -45358,10 +45712,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "cav2p2_m2h_regularized@1 cav_n_ml_instantaneous@1 CACNA1B CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
@@ -46423,7 +46777,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     }
    ],
    "keywords": "cav2p3_mh@1 CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
@@ -47260,10 +47614,10 @@
      "path": "docs/MORRIS_LECAR_CHANNELS.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     },
     {
-     "path": "src/cells/processes/morris_lecar_channels.py"
+     "path": "src/cells/laws/channels/morris_lecar_channels.py"
     }
    ],
    "keywords": "cav3p1_mh_piecewise_tau_m@1 cav_t_ml_instantaneous@1 CACNA1G 6KZO",
@@ -47556,7 +47910,7 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/cav_channels.py"
+     "path": "src/cells/laws/channels/cav_channels.py"
     }
    ],
    "keywords": "cav3p3_mh@1 CACNA1I 6KZO",
@@ -48068,7 +48422,7 @@
      "path": "docs/CALCIUM_ACTIVATED_POTASSIUM.md"
     },
     {
-     "path": "src/cells/processes/calcium_activated_potassium.py"
+     "path": "src/cells/laws/channels/calcium_activated_potassium.py"
     }
    ],
    "keywords": "cagpotassium_numeric_mM_scale@1 KCNMA1 KCNN1 KCNN2 KCNN3 KCNMB1 KCNMB2 KCNMB3 KCNMB4 6V38 6V22",
@@ -48931,16 +49285,16 @@
      "path": "docs/TISSUE_RETURN_CURRENT.md"
     },
     {
-     "path": "src/cells/processes/sodium_catalog.py"
+     "path": "src/cells/laws/channels/sodium_catalog.py"
     },
     {
-     "path": "src/cells/processes/potassium_catalog.py"
+     "path": "src/cells/laws/channels/potassium_catalog.py"
     },
     {
-     "path": "src/cells/processes/calcium_catalog_extra.py"
+     "path": "src/cells/laws/channels/calcium_catalog_extra.py"
     },
     {
-     "path": "src/cells/processes/leak_channels.py"
+     "path": "src/cells/laws/channels/leak_channels.py"
     }
    ],
    "keywords": "naleak_always_open@1 kleak_always_open@1 caleak_always_open@1 clleak_always_open@1 catleak_na_k@1 catleak2_na_k_ca@1 neutral_mobile_leak@1",
@@ -49062,7 +49416,7 @@
      "path": "docs/MULTISPECIES_MEMBRANE_SPEC.md"
     },
     {
-     "path": "src/cells/processes/electrochemistry.py"
+     "path": "src/cells/laws/electrochemistry.py"
     }
    ],
    "keywords": "constant_field@1",
@@ -49296,10 +49650,10 @@
      "path": "docs/CELL_REPLACEMENT.md"
     },
     {
-     "path": "src/cells/processes/junction_gate.py"
+     "path": "src/cells/laws/junctions/junction_gate.py"
     },
     {
-     "path": "src/cells/processes/junction_formation.py"
+     "path": "src/cells/laws/junctions/junction_formation.py"
     }
    ],
    "keywords": "junction_voltage_relaxation@1 symmetric_opposing_relaxation@1 delayed_first_order_junction_formation@1 GJA1 7Z22",
@@ -55093,10 +55447,10 @@
      "path": "docs/SOURCE_EMT_PAIR_SPEC.md"
     },
     {
-     "path": "src/cells/processes/kinetic_pump.py"
+     "path": "src/cells/laws/pumps/kinetic_pump.py"
     },
     {
-     "path": "src/cells/processes/electrochemistry.py"
+     "path": "src/cells/laws/electrochemistry.py"
     }
    ],
    "keywords": "nak_atp_mass_action_positive@1 nak_atp_affinity_tanh@1 ATP1A1 ATP1A2 ATP1A3 ATP1A4 ATP1B1 ATP1B2 ATP1B3 FXYD1 FXYD2 7E1Z 4HYT",
@@ -56203,10 +56557,10 @@
      "path": "docs/FINITE_CALCIUM_PUMPS.md"
     },
     {
-     "path": "src/cells/processes/plasma_calcium.py"
+     "path": "src/cells/laws/reactions/plasma_calcium.py"
     },
     {
-     "path": "src/cells/processes/calcium_atpase.py"
+     "path": "src/cells/laws/pumps/calcium_atpase.py"
     }
    ],
    "keywords": "plasma_calcium_pump_positive@1 ca_atp_mass_action_positive@1 finite_atp_pmca_positive@1 ATP2B1 ATP2B2 ATP2B3 ATP2B4 NPTN BSG 6A69",
@@ -56809,7 +57163,7 @@
      "path": "docs/FINITE_CALCIUM_PUMPS.md"
     },
     {
-     "path": "src/cells/processes/er_calcium.py"
+     "path": "src/cells/laws/reactions/er_calcium.py"
     }
    ],
    "keywords": "er_calcium_pump_positive@1 finite_atp_er_1ca_positive@1 ATP2A1 ATP2A2 ATP2A3 1SU4",
@@ -57199,7 +57553,7 @@
      "path": "docs/PLASMA_CALCIUM.md"
     },
     {
-     "path": "src/cells/processes/plasma_calcium.py"
+     "path": "src/cells/laws/reactions/plasma_calcium.py"
     }
    ],
    "keywords": "ncx_3na_1ca_symmetric_barrier@1 SLC8A1 SLC8A2 SLC8A3 8SGJ",
@@ -57695,7 +58049,7 @@
      "path": "docs/PLASMA_CALCIUM.md"
     },
     {
-     "path": "src/cells/processes/er_calcium.py"
+     "path": "src/cells/laws/reactions/er_calcium.py"
     }
    ],
    "keywords": "er_calcium_release@1 ip3_er_release@1 ITPR1 ITPR2 ITPR3 RYR1 RYR2 RYR3 6DQJ 3J8H",
@@ -58185,7 +58539,7 @@
      "path": "docs/PUMP_WATER_MODEL.md"
     },
     {
-     "path": "src/cells/processes/k_anion_symport.py"
+     "path": "src/cells/laws/routes/k_anion_symport.py"
     }
    ],
    "keywords": "kcc_reversible_tanh@1 k_anion_symport_mass_action@1 SLC12A4 SLC12A5 SLC12A6 SLC12A7 6KKR 6M23",
@@ -60425,6 +60779,20 @@
    "label": "outside_active, membrane_active"
   },
   {
+   "from": "exec.layout",
+   "to": "models.modular",
+   "kind": "delivers",
+   "weight": 1,
+   "label": "moved its pieces into folders by role (move 2, 18 November 2026)"
+  },
+  {
+   "from": "exec.layout",
+   "to": "models.resolved",
+   "kind": "delivers",
+   "weight": 1,
+   "label": "moved the older families into a folder of legacy code (move 1, 17 November 2026)"
+  },
+  {
    "from": "fr.loop_packages",
    "to": "fr.loop_planarian",
    "kind": "delivers",
@@ -60733,6 +61101,27 @@
    "label": "the round was accepted by its results comparison"
   },
   {
+   "from": "models.origin_engine",
+   "to": "laws.origin_laws",
+   "kind": "delivers",
+   "weight": 1,
+   "label": "its first laws (OL1), landed for development on 18 November 2026"
+  },
+  {
+   "from": "models.origin_engine",
+   "to": "models.assembly_lineages_v2",
+   "kind": "delivers",
+   "weight": 1,
+   "label": "the family its first laws run on (OL1)"
+  },
+  {
+   "from": "models.origin_engine",
+   "to": "val.ool",
+   "kind": "delivers",
+   "weight": 1,
+   "label": "its independent references (OL5)"
+  },
+  {
    "from": "compute.gh200",
    "to": "compute.ensemble",
    "kind": "extends",
@@ -60764,20 +61153,6 @@
    "kind": "extends",
    "weight": 1,
    "label": "that path already runs steps and their checks in one compiled program"
-  },
-  {
-   "from": "exec.layout",
-   "to": "models.modular",
-   "kind": "extends",
-   "weight": 1,
-   "label": "its pieces move into folders by role"
-  },
-  {
-   "from": "exec.layout",
-   "to": "models.resolved",
-   "kind": "extends",
-   "weight": 1,
-   "label": "the older families move into a folder of legacy code"
   },
   {
    "from": "exec.modules",
@@ -62799,13 +63174,13 @@
    "from": "exec.batch",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "exec.batch",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 4
+   "weight": 5
   },
   {
    "from": "exec.batch",
@@ -62859,13 +63234,13 @@
    "from": "exec.batch_windows",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "exec.batch_windows",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 3
+   "weight": 4
   },
   {
    "from": "exec.batch_windows",
@@ -62919,7 +63294,13 @@
    "from": "exec.cli",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
+  },
+  {
+   "from": "exec.cli",
+   "to": "exec.state",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "exec.cli",
@@ -62954,6 +63335,12 @@
   {
    "from": "exec.declarations",
    "to": "exec.cli",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.declarations",
+   "to": "exec.io",
    "kind": "uses",
    "weight": 1
   },
@@ -63027,7 +63414,13 @@
    "from": "exec.gpu_native",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
+  },
+  {
+   "from": "exec.gpu_native",
+   "to": "exec.state",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "exec.io",
@@ -63045,7 +63438,7 @@
    "from": "exec.io",
    "to": "exec.cli",
    "kind": "uses",
-   "weight": 4
+   "weight": 1
   },
   {
    "from": "exec.io",
@@ -63087,13 +63480,13 @@
    "from": "exec.io",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 5
+   "weight": 4
   },
   {
    "from": "exec.io",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 3
+   "weight": 5
   },
   {
    "from": "exec.io",
@@ -63187,6 +63580,12 @@
   },
   {
    "from": "exec.registry",
+   "to": "models.assembly_lineages_v2",
+   "kind": "uses",
+   "weight": 3
+  },
+  {
+   "from": "exec.registry",
    "to": "models.composite",
    "kind": "uses",
    "weight": 1
@@ -63253,6 +63652,12 @@
   },
   {
    "from": "exec.run_view",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.run_view",
    "to": "models.composite",
    "kind": "uses",
    "weight": 1
@@ -63297,13 +63702,13 @@
    "from": "exec.runner",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 4
+   "weight": 2
   },
   {
    "from": "exec.runner",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 7
+   "weight": 9
   },
   {
    "from": "exec.runner",
@@ -63357,7 +63762,7 @@
    "from": "exec.specs",
    "to": "laws.channels",
    "kind": "uses",
-   "weight": 12
+   "weight": 13
   },
   {
    "from": "exec.specs",
@@ -63369,7 +63774,7 @@
    "from": "exec.specs",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 3
+   "weight": 4
   },
   {
    "from": "exec.specs",
@@ -63379,15 +63784,9 @@
   },
   {
    "from": "exec.specs",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "exec.specs",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 3
+   "weight": 4
   },
   {
    "from": "exec.specs",
@@ -63397,7 +63796,19 @@
   },
   {
    "from": "exec.specs",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.specs",
    "to": "models.assembly_lineages",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.specs",
+   "to": "models.assembly_lineages_v2",
    "kind": "uses",
    "weight": 1
   },
@@ -63543,13 +63954,13 @@
    "from": "exec.vector_windows",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "exec.vector_windows",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 4
+   "weight": 5
   },
   {
    "from": "exec.vector_windows",
@@ -63571,7 +63982,7 @@
   },
   {
    "from": "laws.calcium",
-   "to": "laws.other",
+   "to": "laws.reactions",
    "kind": "uses",
    "weight": 1
   },
@@ -63580,12 +63991,6 @@
    "to": "laws.electrodiffusion",
    "kind": "uses",
    "weight": 5
-  },
-  {
-   "from": "laws.channels",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 12
   },
   {
    "from": "laws.cotransport",
@@ -63603,13 +64008,13 @@
    "from": "laws.declarations",
    "to": "laws.channels",
    "kind": "uses",
-   "weight": 3
+   "weight": 4
   },
   {
    "from": "laws.declarations",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "laws.declarations",
@@ -63619,15 +64024,9 @@
   },
   {
    "from": "laws.declarations",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.declarations",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "laws.declarations",
@@ -63690,6 +64089,42 @@
    "weight": 2
   },
   {
+   "from": "laws.origin_laws",
+   "to": "exec.modules",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "laws.origin_laws",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "laws.origin_laws",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 8
+  },
+  {
+   "from": "laws.origin_laws",
+   "to": "models.assembly_lineages",
+   "kind": "uses",
+   "weight": 8
+  },
+  {
+   "from": "laws.origin_laws",
+   "to": "models.assembly_lineages_v2",
+   "kind": "uses",
+   "weight": 8
+  },
+  {
+   "from": "laws.passive_permeation",
+   "to": "laws.cotransport",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "laws.passive_permeation",
    "to": "laws.electrodiffusion",
    "kind": "uses",
@@ -63703,7 +64138,7 @@
   },
   {
    "from": "laws.passive_permeation",
-   "to": "laws.other",
+   "to": "laws.route_factors",
    "kind": "uses",
    "weight": 1
   },
@@ -63745,9 +64180,9 @@
   },
   {
    "from": "laws.pumps",
-   "to": "laws.other",
+   "to": "laws.reactions",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "laws.route_factors",
@@ -63757,9 +64192,9 @@
   },
   {
    "from": "laws.route_factors",
-   "to": "laws.other",
+   "to": "laws.reactions",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
   },
   {
    "from": "laws.route_factors",
@@ -63787,15 +64222,9 @@
   },
   {
    "from": "laws.species_identity",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "laws.species_identity",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "laws.species_identity",
@@ -63823,12 +64252,6 @@
   },
   {
    "from": "laws.transporters",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "laws.transporters",
    "to": "laws.electrodiffusion",
    "kind": "uses",
    "weight": 5
@@ -63841,9 +64264,15 @@
   },
   {
    "from": "laws.transporters",
-   "to": "laws.other",
+   "to": "laws.pumps",
    "kind": "uses",
-   "weight": 2
+   "weight": 1
+  },
+  {
+   "from": "laws.transporters",
+   "to": "laws.reactions",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "laws.transporters",
@@ -63855,7 +64284,7 @@
    "from": "laws.transporters",
    "to": "laws.template",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "laws.transporters",
@@ -63885,7 +64314,7 @@
    "from": "models.assembly_lineages",
    "to": "exec.io",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "models.assembly_lineages",
@@ -63909,7 +64338,13 @@
    "from": "models.assembly_lineages",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 11
+   "weight": 10
+  },
+  {
+   "from": "models.assembly_lineages",
+   "to": "exec.state",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "models.assembly_lineages",
@@ -63936,6 +64371,72 @@
    "weight": 2
   },
   {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.devices",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.io",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.modules",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.run_view",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 8
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.state",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "laws.origin_laws",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "laws.species_identity",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 13
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "models.assembly_lineages",
+   "kind": "uses",
+   "weight": 8
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "num.blas_pin",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "models.composite",
    "to": "exec.registry",
    "kind": "uses",
@@ -63945,7 +64446,7 @@
    "from": "models.composite",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 6
+   "weight": 5
   },
   {
    "from": "models.composite",
@@ -63970,6 +64471,12 @@
    "to": "laws.species_identity",
    "kind": "uses",
    "weight": 1
+  },
+  {
+   "from": "models.composite",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 2
   },
   {
    "from": "models.composite",
@@ -64059,7 +64566,7 @@
    "from": "models.pump_tissue",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 7
+   "weight": 6
   },
   {
    "from": "models.pump_tissue",
@@ -64071,7 +64578,7 @@
    "from": "models.pump_tissue",
    "to": "laws.channels",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "models.pump_tissue",
@@ -64089,7 +64596,7 @@
    "from": "models.pump_tissue",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 4
+   "weight": 7
   },
   {
    "from": "models.pump_tissue",
@@ -64099,19 +64606,19 @@
   },
   {
    "from": "models.pump_tissue",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 3
-  },
-  {
-   "from": "models.pump_tissue",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 8
+   "weight": 11
   },
   {
    "from": "models.pump_tissue",
    "to": "laws.species_identity",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.pump_tissue",
+   "to": "laws.template",
    "kind": "uses",
    "weight": 1
   },
@@ -64233,7 +64740,7 @@
    "from": "models.resolved",
    "to": "laws.channels",
    "kind": "uses",
-   "weight": 12
+   "weight": 13
   },
   {
    "from": "models.resolved",
@@ -64245,19 +64752,13 @@
    "from": "models.resolved",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "models.resolved",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
+   "weight": 3
   },
   {
    "from": "models.resolved",
    "to": "laws.pumps",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "models.resolved",
@@ -64293,13 +64794,7 @@
    "from": "models.vertex",
    "to": "laws.mechanics",
    "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "models.vertex",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "models.water",
@@ -64419,13 +64914,7 @@
    "from": "num.mech_analysis",
    "to": "laws.mechanics",
    "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "num.mech_analysis",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 2
+   "weight": 4
   },
   {
    "from": "num.mech_analysis",
@@ -64503,13 +64992,7 @@
    "from": "num.projective",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "num.projective",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "num.projective",
@@ -64603,12 +65086,6 @@
   },
   {
    "from": "op.contract",
-   "to": "exec.specs",
-   "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "op.contract",
    "to": "laws.kinds",
    "kind": "uses",
    "weight": 2
@@ -64617,7 +65094,7 @@
    "from": "op.contract",
    "to": "laws.template",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "op.contract",
@@ -64917,13 +65394,7 @@
    "from": "op.k_anion_symport_mass_action@1",
    "to": "laws.cotransport",
    "kind": "uses",
-   "weight": 1
-  },
-  {
-   "from": "op.k_anion_symport_mass_action@1",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "op.k_anion_symport_mass_action@1",
@@ -65247,13 +65718,7 @@
    "from": "op.scheduled_cell_replacement@1",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 2
-  },
-  {
-   "from": "op.scheduled_cell_replacement@1",
-   "to": "laws.other",
-   "kind": "uses",
-   "weight": 1
+   "weight": 3
   },
   {
    "from": "op.scheduled_cell_replacement@1",
@@ -65497,6 +65962,12 @@
   },
   {
    "from": "op.scheduled_species_turnover@1",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_species_turnover@1",
    "to": "models.composite",
    "kind": "uses",
    "weight": 1
@@ -65559,7 +66030,7 @@
    "from": "op.species_regulated_availability@1",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 3
+   "weight": 2
   },
   {
    "from": "op.species_regulated_availability@1",
@@ -65569,7 +66040,7 @@
   },
   {
    "from": "op.species_regulated_availability@1",
-   "to": "laws.other",
+   "to": "laws.reactions",
    "kind": "uses",
    "weight": 1
   },
@@ -65578,6 +66049,12 @@
    "to": "laws.species_identity",
    "kind": "uses",
    "weight": 2
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "op.species_regulated_availability@1",

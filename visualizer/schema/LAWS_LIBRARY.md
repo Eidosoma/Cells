@@ -45,9 +45,9 @@ a tree that was not clean as well.
 ```json
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "read": "Read from the engine's declarations at main 79d23cd5",
-  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "79d23cd5", "dirty": false, "origin": "git checkout" },
-  "overlay_as_of": "2026-11-17",
+  "read": "Read from the engine's declarations at main b5d3faf0",
+  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "b5d3faf0", "dirty": false, "origin": "git checkout" },
+  "overlay_as_of": "2026-11-18",
   "boxes": "data/architecture/overlay.json: the Engine view's components, matched to each piece's module_path"
 }
 ```
@@ -75,7 +75,7 @@ The manifest states no date, and the view writes none.
 - **`declared`** is the manifest's piece, unchanged. Nothing else of the list says what a piece
   is.
 - **No `status`** is added. A level is shown only where the manifest's `status` gives one, with
-  its `status_source`. At main 79d23cd5 none does.
+  its `status_source`. At main b5d3faf0 none does.
 
 ### A law a design note names
 
@@ -146,8 +146,8 @@ Every source is the engine's own record or the viewer's own data; no third-party
 - **The manifest's revision.** A file the manifest names (a piece's `module_path`, a kernel's, a
   model's, a page in `doc`, a design note's) links at `stamp.manifest.revision`, in the
   repository of the scene's `source_base_url`: the file is there by construction. Where the
-  map's revision is another, the words beside the link say so ("line 93, as declared at main
-  79d23cd5"). The link names the file; the line is said in words.
+  map's revision is another, the words beside the link say so ("line 88, as declared at main
+  b5d3faf0"). The link names the file; the line is said in words.
 - **Not linked.** No page is linked while the manifest gives none, and no file outside the
   package is linked.
 - **The Engine view's boxes** are linked only where the page draws them, and no level of a box
@@ -178,10 +178,13 @@ mark is dashed, and no status token (`--st-*`) is used.
 The overlay's shelves name a `band`; on a wide screen each band is a row of columns, and a shelf
 marked `apart` stands a gap away from the shelves before it. On a tall screen the shelves break
 into bands of at most six families, a shelf never split. A family with no piece is not drawn, and
-a long family name is written smaller so that it fits its column. Today all four shelves stand
-on one band: the laws of the inner model, the kinds, the composite's operators by their part of
-the step (split, event and split, event, process, no part), and, apart, the laws named in design
-notes.
+a long family name is written smaller so that it fits its column. A shelf of one family is named
+by its family alone. Today all six shelves stand on one band: the laws of the inner model, a model
+family's own laws, the kinds, the composite's operators by their part of the step (split, event
+and split, event, process, no part), a model family's own operators, and, apart, the laws named
+in design notes. A model family's own laws and operators stand on shelves of their own because
+they are not the inner model's laws nor the composite's operators, and a shelf's name stands
+over every column on it (a test holds this).
 
 ## What the wall does not show
 

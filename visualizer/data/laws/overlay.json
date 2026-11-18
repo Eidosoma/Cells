@@ -1,11 +1,13 @@
 {
   "format": "cells.visualizer.laws_overlay@2",
-  "as_of": "2026-11-17",
-  "note": "The viewer's own layer of the Laws library (schema/LAWS_LIBRARY.md). What a piece is, which model holds it and where it is declared come from the engine's declarations (data/engine/declarations.json) alone. This file holds only how the wall shelves the declared pieces (by interface, an operator by its parts of the step), the models' short names on the picture and the Engine view's boxes for them, and the laws that design notes name and the declarations do not list. Every word here is the viewer's.",
+  "as_of": "2026-11-18",
+  "note": "The viewer's own layer of the Laws library (schema/LAWS_LIBRARY.md). What a piece is, which model holds it and where it is declared come from the engine's declarations (data/engine/declarations.json) alone. This file holds only how the wall shelves the declared pieces (by interface, an operator by its parts of the step, and a model family's own laws and operators each on a shelf of their own, since they are not the inner model's laws nor the composite's operators), the models' short names on the picture and the Engine view's boxes for them, and the laws that design notes name and the declarations do not list. Every word here is the viewer's.",
   "shelves": [
     { "id": "laws", "label": "Laws of the inner model", "band": 0 },
+    { "id": "family-laws", "label": "Laws of a model family's own interfaces", "band": 0 },
     { "id": "kinds", "label": "Kinds", "band": 0 },
     { "id": "operators", "label": "The composite's operators, by their part of the step", "band": 0 },
+    { "id": "family-operators", "label": "Operators of a model family's own interfaces", "band": 0 },
     { "id": "design", "label": "Named in a design note; not declared", "band": 0, "apart": true }
   ],
   "families": [
@@ -14,14 +16,14 @@
     { "id": "route", "label": "Route laws", "short": "Route", "shelf": "laws", "match": { "piece": "law", "interface": "cells.route_law@1" } },
     { "id": "junction", "label": "Junction laws", "short": "Junction", "shelf": "laws", "match": { "piece": "law", "interface": "cells.junction_law@1" } },
     { "id": "binding", "label": "Binding laws", "short": "Binding", "shelf": "laws", "match": { "piece": "law", "interface": "cells.binding_law@1" } },
-    { "id": "law", "label": "Laws of a model family", "short": "Family laws", "shelf": "laws", "match": { "piece": "law" } },
+    { "id": "law", "label": "Laws of a model family", "short": "Family laws", "shelf": "family-laws", "match": { "piece": "law" } },
     { "id": "kind", "label": "Kinds", "short": "Kinds", "shelf": "kinds", "match": { "piece": "kind", "interface": "cells.kind@1" } },
     { "id": "split", "label": "Operators with a split part", "short": "Split", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["split"] } },
     { "id": "event-split", "label": "Operators in the event map and with a split part", "short": "Event, split", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["event", "split"] } },
     { "id": "event", "label": "Operators in the event map", "short": "Event", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["event"] } },
     { "id": "process", "label": "Operators with an in-step process", "short": "Process", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["process"] } },
     { "id": "no-part", "label": "Operators with no part of the step", "short": "No part", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": [] } },
-    { "id": "operator", "label": "Operators of a model family", "short": "Family operators", "shelf": "operators", "match": { "piece": "operator" } },
+    { "id": "operator", "label": "Operators of a model family", "short": "Family operators", "shelf": "family-operators", "match": { "piece": "operator" } },
     { "id": "design-channel", "label": "Channel laws named in a design note", "short": "Channel", "shelf": "design" },
     { "id": "design-cycle", "label": "Cycle laws named in a design note", "short": "Cycle", "shelf": "design" },
     { "id": "design-junction", "label": "A junction law named in a design note", "short": "Junction", "shelf": "design" },

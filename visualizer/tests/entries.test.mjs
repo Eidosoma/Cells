@@ -174,7 +174,7 @@ test("the GARD entry is a model, not an organism, under Origin of life, and clai
   // Its runs are files of the assembly view's own contract (schema/ASSEMBLY_RUN.md); the reader holds each to its format, its model and its clock.
   for (const run of gard.runs) assert.ok(existsSync(path.join(ROOT, run.file)), `${run.file} is there`);
   // What Cells models of it: modelled, for comparison only. Both parts of GARD's build are on main (PROGRESS, 17 November 2026; D192, D197)
-  // and the engine's declarations (data/engine/declarations.json, written at main 79d23cd5) list its model with its laws and operators. Its runs are not judged.
+  // and the engine's declarations (data/engine/declarations.json, written at main b5d3faf0) list its model with its laws and operators. Its runs are not judged.
   assert.equal(gard.modelled.state, "modelled");
   assert.equal(gard.modelled.model, "cells.assembly_lineages@1", "the model the engine's declarations list");
   const declared = JSON.parse(readFileSync(path.join(ROOT, "data", "engine", "declarations.json"), "utf8")).models.find((item) => item.id === gard.modelled.model);

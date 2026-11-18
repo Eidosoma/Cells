@@ -247,7 +247,7 @@ function describePiece(library, piece, drawn, map) {
     eyebrow: `${family?.label || piece.family} · ${interfaceWords(d)}`,
     status: null,
     chips: [{ label: whereWords(piece) }, ...(d.provenance?.tag ? [{ label: capitalise(TAGS[d.provenance.tag] || d.provenance.tag).replace(/ \(.*\)$/, "") }] : [])],
-    plain: `A ${interfaceWords(d)}, hosted by ${d.declared_host || d.host}${d.family !== d.host ? `, in the registries of ${d.family}` : ""}. The engine declares it in ${d.module_path || d.module}${d.line ? `, at line ${d.line}` : ""}. Being declared is not a level: its status is said apart, where the declarations give one.`,
+    plain: `${/^[aeiou]/i.test(interfaceWords(d)) ? "An" : "A"} ${interfaceWords(d)}, hosted by ${d.declared_host || d.host}${d.family !== d.host ? `, in the registries of ${d.family}` : ""}. The engine declares it in ${d.module_path || d.module}${d.line ? `, at line ${d.line}` : ""}. Being declared is not a level: its status is said apart, where the declarations give one.`,
     facts,
     sections,
     opens,

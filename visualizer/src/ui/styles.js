@@ -110,16 +110,19 @@ cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px
 /* ---------------------------------------------------------------- panel */
 cells-panel { position: absolute; top: 64px; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(360px, calc(100% - 32px)); display: flex; flex-direction: column; overflow: hidden; }
 .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; padding: 16px 16px 10px; }
+/* A long word (an identifier, a file's path) wraps inside the panel: unwrapped, it widened the head past the close
+   button and the body past the panel's edge, where the rest was cut. */
+.panel-head > div { min-width: 0; }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.panel-head h2 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; font-weight: 600; text-wrap: balance; margin-top: 2px; }
+.panel-head h2 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; font-weight: 600; text-wrap: balance; margin-top: 2px; overflow-wrap: anywhere; }
 .icon-button { width: 30px; height: 30px; flex: none; border-radius: 50%; font-size: 20px; line-height: 1; color: var(--muted); }
 .icon-button:hover { background: color-mix(in srgb, var(--fg) 9%, transparent); color: var(--fg); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 500; box-shadow: inset 0 0 0 1px var(--line); }
 .chip-plain { color: var(--muted); }
-.panel-body { overflow-y: auto; padding: 0 16px 18px; display: grid; gap: 12px; align-content: start; min-height: 0; }
-.panel-plain { font-size: 15px; line-height: 1.5; }
-.panel-note { font-size: 13px; color: var(--muted); padding-left: 10px; border-left: 2px solid var(--line); }
+.panel-body { overflow-y: auto; padding: 0 16px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-height: 0; }
+.panel-plain { font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.panel-note { font-size: 13px; color: var(--muted); padding-left: 10px; border-left: 2px solid var(--line); overflow-wrap: anywhere; }
 .panel-detail { font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); line-height: 1.5; overflow-wrap: anywhere; }
 .panel-body h3 { font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
 .panel-body h4 { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }

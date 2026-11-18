@@ -643,8 +643,8 @@
    "declared_id": "resolved_pump_tissue@3",
    "doc": null,
    "id": "cells.resolved_pump_tissue@3",
-   "module": "cells.core.surface_pump_v3_spec",
-   "module_path": "src/cells/core/surface_pump_v3_spec.py",
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "module_path": "src/cells/definitions/surface_pump_v3_spec.py",
    "next_code": 5,
    "rows": [
     {
@@ -786,8 +786,8 @@
    "declared_id": "resolved_pump_composite@1",
    "doc": null,
    "id": "cells.resolved_pump_composite@1",
-   "module": "cells.core.pump_composite_spec",
-   "module_path": "src/cells/core/pump_composite_spec.py",
+   "module": "cells.definitions.pump_composite_spec",
+   "module_path": "src/cells/definitions/pump_composite_spec.py",
    "next_code": null,
    "rows": [
     {
@@ -930,8 +930,8 @@
    "declared_id": "resolved_pump_water@1",
    "doc": null,
    "id": "cells.resolved_pump_water@1",
-   "module": "cells.core.surface_pump_water_spec",
-   "module_path": "src/cells/core/surface_pump_water_spec.py",
+   "module": "cells.definitions.surface_pump_water_spec",
+   "module_path": "src/cells/definitions/surface_pump_water_spec.py",
    "next_code": null,
    "rows": [
     {
@@ -957,8 +957,8 @@
    "declared_id": "resolved_pump_water@2",
    "doc": null,
    "id": "cells.resolved_pump_water@2",
-   "module": "cells.core.surface_pump_water_v2_spec",
-   "module_path": "src/cells/core/surface_pump_water_v2_spec.py",
+   "module": "cells.definitions.surface_pump_water_v2_spec",
+   "module_path": "src/cells/definitions/surface_pump_water_v2_spec.py",
    "next_code": null,
    "rows": [
     {
@@ -993,8 +993,8 @@
    "declared_id": "resolved_pump_replacement@1",
    "doc": null,
    "id": "cells.resolved_pump_replacement@1",
-   "module": "cells.core.cell_replacement_spec",
-   "module_path": "src/cells/core/cell_replacement_spec.py",
+   "module": "cells.definitions.cell_replacement_spec",
+   "module_path": "src/cells/definitions/cell_replacement_spec.py",
    "next_code": null,
    "rows": [
     {
@@ -1063,11 +1063,50 @@
    "type": "family"
   },
   {
+   "declared_id": "cells.assembly_lineages@2",
+   "doc": null,
+   "id": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.spec",
+   "module_path": "src/cells/models/assembly_lineages_v2/spec.py",
+   "next_code": null,
+   "rows": [
+    {
+     "declared_id": "cells.ideal_mixing@1",
+     "id": "cells.ideal_mixing@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.regular_mixing@1",
+     "id": "cells.regular_mixing@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.stochastic_mass_action@1",
+     "id": "cells.stochastic_mass_action@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    },
+    {
+     "declared_id": "cells.transition_state_factor@1",
+     "id": "cells.transition_state_factor@1",
+     "piece": "law",
+     "role": "law",
+     "slot": null
+    }
+   ],
+   "type": "family"
+  },
+  {
    "declared_id": "apical_vertex_mechanics@1",
    "doc": null,
    "id": "cells.apical_vertex_mechanics@1",
-   "module": "cells.core.apical_vertex_spec",
-   "module_path": "src/cells/core/apical_vertex_spec.py",
+   "module": "cells.definitions.apical_vertex_spec",
+   "module_path": "src/cells/definitions/apical_vertex_spec.py",
    "next_code": null,
    "rows": [],
    "type": "family"
@@ -1076,8 +1115,8 @@
    "declared_id": "reaction_transport@1",
    "doc": null,
    "id": "cells.reaction_transport@1",
-   "module": "cells.core.specs",
-   "module_path": "src/cells/core/specs.py",
+   "module": "cells.definitions.specs",
+   "module_path": "src/cells/definitions/specs.py",
    "next_code": null,
    "rows": [],
    "type": "family"
@@ -1086,8 +1125,8 @@
    "declared_id": "resolved_pump_tissue@1",
    "doc": null,
    "id": "cells.resolved_pump_tissue@1",
-   "module": "cells.core.surface_pump_spec",
-   "module_path": "src/cells/core/surface_pump_spec.py",
+   "module": "cells.definitions.surface_pump_spec",
+   "module_path": "src/cells/definitions/surface_pump_spec.py",
    "next_code": null,
    "rows": [],
    "type": "family"
@@ -1096,8 +1135,8 @@
    "declared_id": "resolved_pump_tissue@2",
    "doc": null,
    "id": "cells.resolved_pump_tissue@2",
-   "module": "cells.core.surface_pump_v2_spec",
-   "module_path": "src/cells/core/surface_pump_v2_spec.py",
+   "module": "cells.definitions.surface_pump_v2_spec",
+   "module_path": "src/cells/definitions/surface_pump_v2_spec.py",
    "next_code": null,
    "rows": [],
    "type": "family"
@@ -1114,6 +1153,10 @@
   },
   {
    "interface": "cells.exchange_law@1",
+   "key": "energy"
+  },
+  {
+   "interface": "cells.free_energy_term@1",
    "key": "energy"
   },
   {
@@ -1150,6 +1193,14 @@
   },
   {
    "interface": "cells.rate_factor_law@1",
+   "key": "energy"
+  },
+  {
+   "interface": "cells.rate_factor_law@2",
+   "key": "energy"
+  },
+  {
+   "interface": "cells.reaction_law@1",
    "key": "energy"
   },
   {
@@ -1222,8 +1273,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.passive_routes",
-   "module_path": "src/cells/models/inner_kinds/passive_routes.py",
+   "module": "cells.kinds.passive_routes",
+   "module_path": "src/cells/kinds/passive_routes.py",
    "name": "passive_routes",
    "namespace": "cells",
    "owns": {
@@ -1312,8 +1363,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.patch_damage",
-   "module_path": "src/cells/models/inner_kinds/patch_damage.py",
+   "module": "cells.kinds.patch_damage",
+   "module_path": "src/cells/kinds/patch_damage.py",
    "name": "patch_damage",
    "namespace": "cells",
    "owns": {
@@ -1384,8 +1435,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.ph_condition",
-   "module_path": "src/cells/models/inner_kinds/ph_condition.py",
+   "module": "cells.kinds.ph_condition",
+   "module_path": "src/cells/kinds/ph_condition.py",
    "name": "ph_condition",
    "namespace": "cells",
    "owns": {},
@@ -1467,8 +1518,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.proton_buffer",
-   "module_path": "src/cells/models/inner_kinds/proton_buffer.py",
+   "module": "cells.kinds.proton_buffer",
+   "module_path": "src/cells/kinds/proton_buffer.py",
    "name": "rapid_proton_buffer",
    "namespace": "cells",
    "owns": {
@@ -1582,8 +1633,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.transporter",
-   "module_path": "src/cells/models/inner_kinds/transporter.py",
+   "module": "cells.kinds.transporter",
+   "module_path": "src/cells/kinds/transporter.py",
    "name": "transporter",
    "namespace": "cells",
    "owns": {
@@ -1670,14 +1721,14 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.processes.atp_transporter.domain_valid",
+     "function": "cells.laws.pumps.atp_transporter.domain_valid",
      "line": 109,
-     "module_path": "src/cells/processes/atp_transporter.py"
+     "module_path": "src/cells/laws/pumps/atp_transporter.py"
     },
     "kinetics": {
-     "function": "cells.processes.atp_transporter.kinetics",
+     "function": "cells.laws.pumps.atp_transporter.kinetics",
      "line": 71,
-     "module_path": "src/cells/processes/atp_transporter.py"
+     "module_path": "src/cells/laws/pumps/atp_transporter.py"
     }
    },
    "laws": null,
@@ -1687,8 +1738,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.transporter",
-   "module_path": "src/cells/models/inner_kinds/transporter.py",
+   "module": "cells.kinds.transporter",
+   "module_path": "src/cells/kinds/transporter.py",
    "name": "atp_driven_transporter_mass_action_positive",
    "namespace": "cells",
    "owns": null,
@@ -1698,7 +1749,7 @@
      "departures": [],
      "licence": "no numbers taken: the law is a form, its parameters a definition's values",
      "place": "docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2",
-     "source": "an ATP-driven transporter of a neutral role, in the Na/K law's mass-action form (processes/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+     "source": "an ATP-driven transporter of a neutral role, in the Na/K law's mass-action form (laws/pumps/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
      "works": []
     },
     "source": null,
@@ -1748,19 +1799,19 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.processes.calcium_atpase.domain_valid",
+     "function": "cells.laws.pumps.calcium_atpase.domain_valid",
      "line": 99,
-     "module_path": "src/cells/processes/calcium_atpase.py"
+     "module_path": "src/cells/laws/pumps/calcium_atpase.py"
     },
     "kinetics": {
-     "function": "cells.processes.calcium_atpase.kinetics",
+     "function": "cells.laws.pumps.calcium_atpase.kinetics",
      "line": 79,
-     "module_path": "src/cells/processes/calcium_atpase.py"
+     "module_path": "src/cells/laws/pumps/calcium_atpase.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 162,
+   "line": 157,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -1810,7 +1861,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 181,
+   "line": 176,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2040,6 +2091,106 @@
    "writes": null
   },
   {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@2",
+   "declared_id": "cells.ideal_mixing@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@2",
+   "fields": {
+    "data": [],
+    "formulas": {
+     "F_id": "sum_dilute sum_s [n_s (mu°_s,sol - ln X) + ln n_s!] + sum_i n_i mu°_i,bil - ln (N - c)! + sum_i ln n_i!, X = N_A V c0; held species: no term",
+     "empty_membrane": "the membrane's term is 0 at N = 0 under both measures",
+     "form": "discrete: ln n! exactly (free_energy_form discrete)",
+     "measure": "c = 0 (multinomial) or 1 (multinomial_less_one, @1's measure = multinomial + ln N)"
+    },
+    "part": "ideal",
+    "phases": [
+     "pool",
+     "membrane",
+     "lumen"
+    ]
+   },
+   "host": "cells.assembly_lineages@2",
+   "id": "cells.ideal_mixing@1",
+   "interface": "cells.free_energy_term@1",
+   "kernels": {
+    "data_to_dict": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.data_to_dict",
+     "line": 43,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "delta": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.delta",
+     "line": 80,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "layout": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.layout",
+     "line": 47,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "parse_data": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.parse_data",
+     "line": 38,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "state": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.state",
+     "line": 51,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "update": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.update",
+     "line": 55,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    },
+    "value": {
+     "function": "cells.models.assembly_lineages_v2.ideal_mixing.value",
+     "line": 64,
+     "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 109,
+   "models": [
+    "cells.assembly_lineages@2"
+   ],
+   "module": "cells.models.assembly_lineages_v2.ideal_mixing",
+   "module_path": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+   "name": "ideal_mixing",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "exact in the counts (ln n!), not Stirling's form: the discrete form in which the reverse rate derived from F is the products' mass action",
+      "the condensed measure is declared: the multinomial, or @1's (multinomial plus ln N)"
+     ],
+     "licence": "no numbers taken",
+     "place": "the pool and assembly terms of the one free-energy function",
+     "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.2 and §0.2a (standard statistical mechanics of ideal dilute solutions and ideal mixtures)",
+     "works": []
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_v2_ledger.py::test_the_ideal_term_is_exact_and_its_change_matches_its_value",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
    "changes": [],
    "controls": null,
    "declared_host": "resolved_pump_tissue@3",
@@ -2056,24 +2207,24 @@
    "interface": "cells.junction_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.processes.junction_gate.domain_valid",
+     "function": "cells.laws.junctions.junction_gate.domain_valid",
      "line": 73,
-     "module_path": "src/cells/processes/junction_gate.py"
+     "module_path": "src/cells/laws/junctions/junction_gate.py"
     },
     "kinetics": {
-     "function": "cells.processes.junction_gate.kinetics",
+     "function": "cells.laws.junctions.junction_gate.kinetics",
      "line": 37,
-     "module_path": "src/cells/processes/junction_gate.py"
+     "module_path": "src/cells/laws/junctions/junction_gate.py"
     },
     "rhs": {
-     "function": "cells.processes.junction_gate.rhs",
+     "function": "cells.laws.junctions.junction_gate.rhs",
      "line": 50,
-     "module_path": "src/cells/processes/junction_gate.py"
+     "module_path": "src/cells/laws/junctions/junction_gate.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 134,
+   "line": 129,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2143,18 +2294,18 @@
    "kernels": {
     "kinetics": {
      "function": "cells.models.inner_laws._kir2p1_kinetics",
-     "line": 80,
+     "line": 75,
      "module_path": "src/cells/models/inner_laws.py"
     },
     "opening": {
      "function": "cells.models.inner_laws._open_mh2",
-     "line": 67,
+     "line": 62,
      "module_path": "src/cells/models/inner_laws.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 104,
+   "line": 99,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2224,7 +2375,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 126,
+   "line": 121,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2295,18 +2446,18 @@
    "kernels": {
     "kinetics": {
      "function": "cells.models.inner_laws._kv1p5_kinetics",
-     "line": 76,
+     "line": 71,
      "module_path": "src/cells/models/inner_laws.py"
     },
     "opening": {
      "function": "cells.models.inner_laws._open_mh",
-     "line": 63,
+     "line": 58,
      "module_path": "src/cells/models/inner_laws.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 93,
+   "line": 88,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2356,7 +2507,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 190,
+   "line": 185,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2422,19 +2573,19 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.processes.kinetic_pump.domain_valid",
+     "function": "cells.laws.pumps.kinetic_pump.domain_valid",
      "line": 95,
-     "module_path": "src/cells/processes/kinetic_pump.py"
+     "module_path": "src/cells/laws/pumps/kinetic_pump.py"
     },
     "kinetics": {
-     "function": "cells.processes.kinetic_pump.kinetics",
+     "function": "cells.laws.pumps.kinetic_pump.kinetics",
      "line": 57,
-     "module_path": "src/cells/processes/kinetic_pump.py"
+     "module_path": "src/cells/laws/pumps/kinetic_pump.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 149,
+   "line": 144,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2503,7 +2654,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 127,
+   "line": 122,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2574,18 +2725,18 @@
    "kernels": {
     "kinetics": {
      "function": "cells.models.inner_laws._nav1p2_kinetics",
-     "line": 84,
+     "line": 79,
      "module_path": "src/cells/models/inner_laws.py"
     },
     "opening": {
      "function": "cells.models.inner_laws._open_m3h",
-     "line": 72,
+     "line": 67,
      "module_path": "src/cells/models/inner_laws.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 115,
+   "line": 110,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -2624,7 +2775,7 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
-    "basis": "Fick's law: the constant-field flux at valence 0 (processes/passive_permeation.py), with the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
+    "basis": "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
     "hosts": [
      "membrane",
      "junction"
@@ -2641,8 +2792,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.passive_routes",
-   "module_path": "src/cells/models/inner_kinds/passive_routes.py",
+   "module": "cells.kinds.passive_routes",
+   "module_path": "src/cells/kinds/passive_routes.py",
    "name": "passive_neutral_permeation",
    "namespace": "cells",
    "owns": null,
@@ -2700,14 +2851,14 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.processes.proton_pump.domain_valid",
+     "function": "cells.laws.pumps.proton_pump.domain_valid",
      "line": 174,
-     "module_path": "src/cells/processes/proton_pump.py"
+     "module_path": "src/cells/laws/pumps/proton_pump.py"
     },
     "kinetics": {
-     "function": "cells.processes.proton_pump.kinetics",
+     "function": "cells.laws.pumps.proton_pump.kinetics",
      "line": 89,
-     "module_path": "src/cells/processes/proton_pump.py"
+     "module_path": "src/cells/laws/pumps/proton_pump.py"
     }
    },
    "laws": null,
@@ -2717,8 +2868,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.transporter",
-   "module_path": "src/cells/models/inner_kinds/transporter.py",
+   "module": "cells.kinds.transporter",
+   "module_path": "src/cells/kinds/transporter.py",
    "name": "proton_atp_mass_action_positive",
    "namespace": "cells",
    "owns": null,
@@ -2728,7 +2879,7 @@
      "departures": [],
      "licence": "no numbers taken: the law is a form, its parameters a definition's values",
      "place": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §6",
-     "source": "an ATP-driven proton pump, in the Na/K law's mass-action form (processes/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+     "source": "an ATP-driven proton pump, in the Na/K law's mass-action form (laws/pumps/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
      "works": []
     },
     "source": null,
@@ -2763,7 +2914,7 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
-    "basis": "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each node's closure (processes/proton_leak.py)",
+    "basis": "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each node's closure (laws/transport/proton_leak.py)",
     "hosts": [
      "membrane"
     ]
@@ -2779,8 +2930,8 @@
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_kinds.passive_routes",
-   "module_path": "src/cells/models/inner_kinds/passive_routes.py",
+   "module": "cells.kinds.passive_routes",
+   "module_path": "src/cells/kinds/passive_routes.py",
    "name": "proton_constant_field_leak",
    "namespace": "cells",
    "owns": null,
@@ -2805,6 +2956,116 @@
    "status": null,
    "status_source": null,
    "test": null,
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@2",
+   "declared_id": "cells.regular_mixing@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@2",
+   "fields": {
+    "data": [
+     "chi_kT"
+    ],
+    "formulas": {
+     "F_reg": "(1/(2N)) sum_ij chi_ij n_i n_j over the membrane's species; 0 at N = 0",
+     "change": "S' = S + 2 d.y + d.chi d, N' = N + sum d over the membrane",
+     "chi": "symmetric (Maxwell), zero diagonal, finite, k_BT; unlisted pairs 0",
+     "role": "excess: the reverse rate carries exp(F_reg(n) - F_reg(n - nu))",
+     "state": "y = chi n, S = n.y, exactly by serial folds at the founder"
+    },
+    "part": "excess",
+    "phases": [
+     "membrane"
+    ]
+   },
+   "host": "cells.assembly_lineages@2",
+   "id": "cells.regular_mixing@1",
+   "interface": "cells.free_energy_term@1",
+   "kernels": {
+    "data_to_dict": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.data_to_dict",
+     "line": 74,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "delta": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.delta",
+     "line": 123,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "layout": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.layout",
+     "line": 78,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "parse_data": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.parse_data",
+     "line": 41,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "state": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.state",
+     "line": 87,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "update": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.update",
+     "line": 95,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    },
+    "value": {
+     "function": "cells.models.assembly_lineages_v2.regular_mixing.value",
+     "line": 113,
+     "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 153,
+   "models": [
+    "cells.assembly_lineages@2"
+   ],
+   "module": "cells.models.assembly_lineages_v2.regular_mixing",
+   "module_path": "src/cells/models/assembly_lineages_v2/regular_mixing.py",
+   "name": "regular_mixing",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "written in counts, (1/(2N)) sum chi n n, with a symmetric chi and a zero diagonal"
+     ],
+     "licence": "no numbers taken",
+     "place": "the regular solution: an excess free energy quadratic in the composition",
+     "source": "Hildebrand (1929), J Am Chem Soc 51:66; docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.2, §2.5 and probe E2",
+     "works": [
+      {
+       "authors": [
+        "J. H. Hildebrand"
+       ],
+       "doi": "10.1021/ja01376a009",
+       "title": "Solubility. XII. Regular solutions",
+       "url": null,
+       "year": 1929
+      }
+     ]
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_v2_ledger.py::test_the_regular_term_is_exact_and_its_change_matches_its_value",
    "units": {},
    "version": 1,
    "writes": null
@@ -2875,6 +3136,193 @@
   },
   {
    "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@2",
+   "declared_id": "cells.stochastic_mass_action@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@2",
+   "fields": {
+    "energy_role": "passive",
+    "energy_source": null,
+    "formulas": {
+     "extent": "E(m) = X_locus = N_A V_locus c0 for a dilute locus; N(m) - c + 1 for the membrane (membrane_kinetics count_on_m)",
+     "forward": "a+(n) = k_f E(m) prod_dilute ff(n_p, a_p)/X_p^a_p prod_held (c_s/c0)^a_s prod_membrane ff(n_i, a_i)/ff(N - c, r), m = min(n, n + nu)",
+     "kept": "rate 0 only for a pair whose step changes the membrane's count and one of whose end states has an empty membrane; every other step fires at its own rate",
+     "membrane_factor": "E(m)/ff(N - c, r) = (N - c - r* + 1)/ff(N - c, r), cancelled to 1/ff(N - c, r - 1) where r* = r >= 1 (sec. 0.2a): the last molecule's leave is k-.1 under last_molecule extinct",
+     "reverse": "the same law applied to the products, with k- = k_f exp(sum_p nu_p mu°_p), times exp(F_ex(n) - F_ex(n - nu)) for the excess terms; identical to the pair rule a-(n + nu) = s(m) theta+(n) exp(F(n + nu) - F(n) - w)",
+     "units": "k_f in 1/s (the activity form, D152's forward_rate_per_s)"
+    },
+    "split": "encounter"
+   },
+   "host": "cells.assembly_lineages@2",
+   "id": "cells.stochastic_mass_action@1",
+   "interface": "cells.reaction_law@1",
+   "kernels": {
+    "log_direction": {
+     "function": "cells.models.assembly_lineages_v2.mass_action.log_direction",
+     "line": 102,
+     "module_path": "src/cells/models/assembly_lineages_v2/mass_action.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 143,
+   "models": [
+    "cells.assembly_lineages@2"
+   ],
+   "module": "cells.models.assembly_lineages_v2.mass_action",
+   "module_path": "src/cells/models/assembly_lineages_v2/mass_action.py",
+   "name": "stochastic_mass_action",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "the reverse propensity is derived from the one free energy F, never declared",
+      "a membrane (condensed phase) has no volume until OL2: its reactants' activities are drawn without replacement, and the locus extent is evaluated on the pair's common state",
+      "the rate constant is D152's forward_rate_per_s, in the activity form"
+     ],
+     "licence": "no numbers taken",
+     "place": "the stochastic propensity k (N_A V)^(1-r) prod n!/(n-a)! of an elementary step; the event-pair rule; the lead's rulings for OL1",
+     "source": "Gillespie (1977), J Phys Chem 81:2340; docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.1, §0.2a and §2.1",
+     "works": [
+      {
+       "authors": [
+        "D. T. Gillespie"
+       ],
+       "doi": "10.1021/j100540a008",
+       "title": "Exact stochastic simulation of coupled chemical reactions",
+       "url": null,
+       "year": 1977
+      }
+     ]
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_v2_kernel.py::test_the_reverse_from_F_is_the_products_mass_action",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
+   "controls": null,
+   "declared_host": "cells.assembly_lineages@2",
+   "declared_id": "cells.transition_state_factor@1",
+   "doc": null,
+   "energy": null,
+   "family": "cells.assembly_lineages@2",
+   "fields": {
+    "catalysing_phases": [
+     "membrane"
+    ],
+    "data": [
+     "catalysing_phase",
+     "entries"
+    ],
+    "energy_role": "passive",
+    "energy_source": null,
+    "evaluated_on": "common_state",
+    "formulas": {
+     "catalysing_phase": "the membrane only (OL1, sec. 0.2a)",
+     "common_state": "m = min(n, n + nu) elementwise: z_r(m) = z_r(n) - sum_e beta_r,e (n_e - m_e), N_cat(m) = N - r*",
+     "empty_catalyst_phase": "g = 1 where the catalysing phase is empty at m (uncatalysed)",
+     "g_r(m)": "1 + sum_j beta_rj x_j(m), x_j = m_j / N_cat(m), beta_rj = exp(ddG_rj) - 1 > -1; the same factor for both directions of the pair",
+     "state": "z = beta n, exactly at the founder; one column of beta per entry moved"
+    }
+   },
+   "host": "cells.assembly_lineages@2",
+   "id": "cells.transition_state_factor@1",
+   "interface": "cells.rate_factor_law@2",
+   "kernels": {
+    "data_to_dict": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.data_to_dict",
+     "line": 99,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    },
+    "layout": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.layout",
+     "line": 106,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    },
+    "log_factor": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.log_factor",
+     "line": 130,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    },
+    "parse_data": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.parse_data",
+     "line": 53,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    },
+    "state": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.state",
+     "line": 118,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    },
+    "update": {
+     "function": "cells.models.assembly_lineages_v2.transition_state.update",
+     "line": 124,
+     "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
+    }
+   },
+   "laws": null,
+   "ledgers": null,
+   "line": 154,
+   "models": [
+    "cells.assembly_lineages@2"
+   ],
+   "module": "cells.models.assembly_lineages_v2.transition_state",
+   "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py",
+   "name": "transition_state_factor",
+   "namespace": "cells",
+   "owns": null,
+   "piece": "law",
+   "provenance": {
+    "citation": {
+     "departures": [
+      "single-contact stabilisation in an ideal mixture, evaluated on the pair's common state m: g = 1 + sum beta x(m), beta = exp(ddG) - 1"
+     ],
+     "licence": "no numbers taken",
+     "place": "a catalyst lowers the transition state's free energy by ddG, raising both directions' rates by the same factor",
+     "source": "Eyring (1935), J Chem Phys 3:107 (transition-state theory); docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.4 (b), §0.2a",
+     "works": [
+      {
+       "authors": [
+        "H. Eyring"
+       ],
+       "doi": "10.1063/1.1749604",
+       "title": "The activated complex in chemical reactions",
+       "url": null,
+       "year": 1935
+      }
+     ]
+    },
+    "source": null,
+    "tag": "cited"
+   },
+   "provides": null,
+   "reads": null,
+   "requires": null,
+   "signs": {},
+   "status": null,
+   "status_source": null,
+   "test": "tests/unit/test_assembly_lineages_v2_kernel.py::test_catalysis_is_kinetic_only_and_a_factor_at_each_direction_is_caught",
+   "units": {},
+   "version": 1,
+   "writes": null
+  },
+  {
+   "changes": null,
    "controls": [],
    "declared_host": "resolved_pump_composite@1",
    "declared_id": "cell_owned_compartments@1",
@@ -2905,8 +3353,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.compartments",
-   "module_path": "src/cells/models/operators/compartments.py",
+   "module": "cells.operators.compartments",
+   "module_path": "src/cells/operators/compartments.py",
    "name": "cell_owned_compartments",
    "namespace": "cells",
    "owns": {},
@@ -3037,8 +3485,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.bridge_closure",
-   "module_path": "src/cells/models/operators/bridge_closure.py",
+   "module": "cells.operators.bridge_closure",
+   "module_path": "src/cells/operators/bridge_closure.py",
    "name": "cytoplasmic_bridge_closure",
    "namespace": "cells",
    "owns": {
@@ -3187,8 +3635,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.current_injection",
-   "module_path": "src/cells/models/operators/current_injection.py",
+   "module": "cells.operators.current_injection",
+   "module_path": "src/cells/operators/current_injection.py",
    "name": "electrode_current_injection",
    "namespace": "cells",
    "owns": {
@@ -3308,8 +3756,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.osmotic_water",
-   "module_path": "src/cells/models/operators/osmotic_water.py",
+   "module": "cells.operators.osmotic_water",
+   "module_path": "src/cells/operators/osmotic_water.py",
    "name": "ideal_osmosis_linear_compliance_water",
    "namespace": "cells",
    "owns": {
@@ -3440,8 +3888,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.partition",
-   "module_path": "src/cells/models/operators/partition.py",
+   "module": "cells.operators.partition",
+   "module_path": "src/cells/operators/partition.py",
    "name": "isopotential_partition",
    "namespace": "cells",
    "owns": {
@@ -3628,8 +4076,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.k_anion_symport",
-   "module_path": "src/cells/models/operators/k_anion_symport.py",
+   "module": "cells.operators.k_anion_symport",
+   "module_path": "src/cells/operators/k_anion_symport.py",
    "name": "k_anion_symport_mass_action",
    "namespace": "cells",
    "owns": {
@@ -3736,8 +4184,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.species_reactions",
-   "module_path": "src/cells/models/operators/species_reactions.py",
+   "module": "cells.operators.species_reactions",
+   "module_path": "src/cells/operators/species_reactions.py",
    "name": "local_species_reactions",
    "namespace": "cells",
    "owns": {
@@ -3923,8 +4371,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.membrane_state",
-   "module_path": "src/cells/models/operators/membrane_state.py",
+   "module": "cells.operators.membrane_state",
+   "module_path": "src/cells/operators/membrane_state.py",
    "name": "membrane_entity_state",
    "namespace": "cells",
    "owns": {
@@ -4011,8 +4459,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.restricted_lumen",
-   "module_path": "src/cells/models/operators/restricted_lumen.py",
+   "module": "cells.operators.restricted_lumen",
+   "module_path": "src/cells/operators/restricted_lumen.py",
    "name": "restricted_cleft_lumen",
    "namespace": "cells",
    "owns": {
@@ -4140,8 +4588,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.restricted_lumen_v2",
-   "module_path": "src/cells/models/operators/restricted_lumen_v2.py",
+   "module": "cells.operators.restricted_lumen_v2",
+   "module_path": "src/cells/operators/restricted_lumen_v2.py",
    "name": "restricted_cleft_lumen",
    "namespace": "cells",
    "owns": {
@@ -4278,8 +4726,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.bath_schedule",
-   "module_path": "src/cells/models/operators/bath_schedule.py",
+   "module": "cells.operators.bath_schedule",
+   "module_path": "src/cells/operators/bath_schedule.py",
    "name": "scheduled_bath_composition",
    "namespace": "cells",
    "owns": {
@@ -4373,8 +4821,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.cell_replacement",
-   "module_path": "src/cells/models/operators/cell_replacement.py",
+   "module": "cells.operators.cell_replacement",
+   "module_path": "src/cells/operators/cell_replacement.py",
    "name": "scheduled_cell_replacement",
    "namespace": "cells",
    "owns": {
@@ -4534,8 +4982,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.cell_replacement_v2",
-   "module_path": "src/cells/models/operators/cell_replacement_v2.py",
+   "module": "cells.operators.cell_replacement_v2",
+   "module_path": "src/cells/operators/cell_replacement_v2.py",
    "name": "scheduled_cell_replacement",
    "namespace": "cells",
    "owns": {
@@ -4753,8 +5201,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.membrane_insertion",
-   "module_path": "src/cells/models/operators/membrane_insertion.py",
+   "module": "cells.operators.membrane_insertion",
+   "module_path": "src/cells/operators/membrane_insertion.py",
    "name": "scheduled_membrane_insertion",
    "namespace": "cells",
    "owns": {
@@ -4892,8 +5340,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.membrane_insertion_v2",
-   "module_path": "src/cells/models/operators/membrane_insertion_v2.py",
+   "module": "cells.operators.membrane_insertion_v2",
+   "module_path": "src/cells/operators/membrane_insertion_v2.py",
    "name": "scheduled_membrane_insertion",
    "namespace": "cells",
    "owns": {
@@ -5021,8 +5469,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.species_exchange",
-   "module_path": "src/cells/models/operators/species_exchange.py",
+   "module": "cells.operators.species_exchange",
+   "module_path": "src/cells/operators/species_exchange.py",
    "name": "scheduled_species_exchange",
    "namespace": "cells",
    "owns": {
@@ -5164,8 +5612,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.species_turnover",
-   "module_path": "src/cells/models/operators/species_turnover.py",
+   "module": "cells.operators.species_turnover",
+   "module_path": "src/cells/operators/species_turnover.py",
    "name": "scheduled_species_turnover",
    "namespace": "cells",
    "owns": {
@@ -5312,8 +5760,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.site_occupancy",
-   "module_path": "src/cells/models/operators/site_occupancy.py",
+   "module": "cells.operators.site_occupancy",
+   "module_path": "src/cells/operators/site_occupancy.py",
    "name": "site_occupancy",
    "namespace": "cells",
    "owns": {
@@ -5537,8 +5985,8 @@
    "models": [
     "cells.resolved_pump_composite@1"
    ],
-   "module": "cells.models.operators.species_regulated_availability",
-   "module_path": "src/cells/models/operators/species_regulated_availability.py",
+   "module": "cells.operators.species_regulated_availability",
+   "module_path": "src/cells/operators/species_regulated_availability.py",
    "name": "species_regulated_availability",
    "namespace": "cells",
    "owns": {
@@ -5629,5 +6077,5 @@
    "writes": {}
   }
  ],
- "revision": "79d23cd5f7e4491cfa52b288692906769df78ea4"
+ "revision": "b5d3faf064444db7dbc9321ec0f7e77c9ccc9ee2"
 }

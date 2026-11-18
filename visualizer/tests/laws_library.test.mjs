@@ -64,6 +64,55 @@ test("making the list again from the manifest gives the committed bytes", () => 
   assert.equal(run.stdout, readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 });
 
+// ------------------------------------------------------------ the names the wall's own files give the engine
+//
+// The engine's second source move (D188's move 2) gave 28 pieces and 9 models a new module and file. The list's
+// tests passed on the moved manifest unchanged, because nothing held a name the wall's own files write to the
+// manifest as it stands: a model's words keyed by its ID, a box of the map by its ID, a file a check expects in a
+// panel. These hold them, so that a name left behind by a move or a rename fails here, by name.
+const WALL_FILES = ["tools/extract_laws.py", "data/laws/overlay.json", "src/lenses/laws.js", "src/lenses/laws_card.js", "src/lenses/laws_data.js", "src/lenses/laws_layout.js", "src/lenses/laws_marks.js", "src/lenses/laws_styles.js", "src/lenses/law_port.js", "src/standalone/laws.page.json", "tools/check_laws.mjs", "tests/laws_library.test.mjs"];
+
+test("every engine file and module the wall's own files name is one the manifest names", () => {
+  const files = new Set(), modules = new Set();
+  for (const item of [...manifest.pieces, ...manifest.models]) {
+    if (item.module_path) files.add(item.module_path);
+    if (item.module) modules.add(item.module);
+    for (const kernel of Object.values(item.kernels || {})) {
+      if (kernel.module_path) files.add(kernel.module_path);
+      modules.add(kernel.function.split(".").slice(0, -1).join("."));
+    }
+  }
+  const named = [];
+  for (const file of WALL_FILES) {
+    const text = readFileSync(path.join(ROOT, file), "utf8");
+    for (const match of text.matchAll(/\bsrc\/cells\/[\w/]+\.py\b/g)) named.push([file, match[0], files.has(match[0])]);
+    // A dotted module of the engine: cells and two names or more, not an ID (a format's or a piece's, which ends in @<major>).
+    for (const match of text.matchAll(/(?<![\w.])cells(?:\.[a-z_][a-z0-9_]*){2,}(?![\w@])/g)) named.push([file, match[0], modules.has(match[0])]);
+  }
+  assert.ok(named.some(([file]) => file === "tools/check_laws.mjs"), "the click check names the file a piece's panel says it is declared in");
+  for (const [file, name, known] of named) assert.ok(known, `${file} names ${name}, which the manifest at ${manifest.revision.slice(0, 8)} does not name`);
+});
+
+test("the overlay's words are keyed by names the manifest and the map hold: each model it names, and each Engine view box", () => {
+  const models = new Set(manifest.models.map((model) => model.declared_id));
+  const map = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
+  const boxes = new Set((map.components || []).map((component) => component.id));
+  for (const [id, words] of Object.entries(overlay.models)) {
+    assert.ok(models.has(id), `the overlay gives words to ${id}, which the manifest does not list as a model`);
+    for (const box of words.boxes || []) assert.ok(boxes.has(box), `${id}: the map has no box ${box} (the list would drop it without a word)`);
+    assert.deepEqual(raw.models.find((model) => model.id === id).boxes.map((box) => box.id), words.boxes || [], `${id}: every box it names reaches the list`);
+  }
+  // Every family the overlay shelves stands on a shelf it lists, and every shelf it lists holds one at least.
+  const shelves = new Set(overlay.shelves.map((shelf) => shelf.id));
+  for (const family of overlay.families) assert.ok(shelves.has(family.shelf), `${family.id} stands on ${family.shelf}, which the overlay does not list`);
+  // A shelf's name over its columns is true of each of them: no model family's own law or operator stands under the inner model's or the composite's shelf.
+  for (const piece of library.pieces.filter((item) => item.where === "declared")) {
+    const shelf = library.familyById.get(piece.family).shelf;
+    if (shelf === "laws") assert.ok(namespaced(piece.declared.family) === manifest.models.find((model) => model.type === "inner").id, `${piece.id} is a model family's own law, under "Laws of the inner model"`);
+    if (shelf === "operators") assert.equal(piece.declared.interface, "cells.operator@1", `${piece.id} is not one of the composite's operators`);
+  }
+});
+
 test("the reader refuses another major of the manifest, a tree that was not clean, and a revision that is not whole", () => {
   mkdirSync(path.join(ROOT, "out"), { recursive: true });
   const scratch = mkdtempSync(path.join(ROOT, "out", "laws-reader-"));
@@ -494,8 +543,11 @@ test("search, family and where narrow the wall; the arrow keys step through what
   const families = new Map(raw.families.map((family) => [family.id, family.label]));
   const matches = (piece, words) => [piece.id, piece.declared?.id, piece.declared?.interface, piece.kind, piece.declared?.module_path, families.get(piece.family)].some((text) => text && String(text).toLowerCase().includes(words));
   const order = (keep) => raw.families.flatMap((family) => library.pieces.filter((piece) => piece.family === family.id && keep(piece))).map((piece) => `laws:${piece.id}`);
-  for (const words of ["calcium", "kir2", "proton", "operators/", "inner_kinds", "cycle_law"]) {
+  // Two words find pieces by their file: the composite's operators and the inner model's kinds, in their folders since the
+  // engine's second source move (src/cells/operators/, src/cells/kinds/). A word that finds nothing would hold nothing.
+  for (const words of ["calcium", "kir2", "proton", "src/cells/operators/", "src/cells/kinds/", "cycle_law"]) {
     lens.setQuery(words);
+    assert.ok(library.pieces.some((piece) => matches(piece, words)), `the search word ${words} finds no piece`);
     assert.deepEqual(lens.order(), order((piece) => matches(piece, words)), words);
     const found = lens.layout.bars.filter((bar) => bar.id && matches(byId.get(bar.id), words));
     for (const bar of found) {

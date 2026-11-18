@@ -129,7 +129,9 @@ derived from the saved junction topology. Adapters read saved files only.
 ## The engine's view
 
 The engine's run-view writer (`cells.run_view@1`: one `view.json` beside a run's files)
-**is on main since `050aa741` (16 November 2026):** `src/cells/run_view.py`, with its format
+**is on main since `050aa741` (16 November 2026):** `src/cells/records/run_view.py`
+(`src/cells/run_view.py` until the engine's second source move, D188, which left the format as it
+was; the five worlds kept from before and after it are the same files), with its format
 in `docs/RUN_VIEW_DESIGN.md` (§3, §4 and §9) and the loop's in `docs/LOOPING_REPLAY_DESIGN.md`
 (§2 and §3). It grew on the development branch `run-view-d154`, which main merged without a
 rebase, so the branch's revisions cited here (`fd008813`, `d7a11d5b`, `b08af640`) stay as they
@@ -146,7 +148,9 @@ worked example made from the development run of one cell that secretes a species
 format grew on 16 November. The adapter reads every shape. Each addition is read only where a
 view gives its key, so a view of an earlier shape is packaged exactly as before. Kept as
 fixtures (`tests/engine-views/`): small runs that the writer wrote at `fd008813` (three
-worlds) and at main's `050aa741` (five), made by `tools/make_engine_view_fixture.sh`; and the
+worlds), at main's `050aa741` (five) and at main's `b5d3faf0` (the same five after the engine's
+second source move: the same files but for the label the script plants, and packaged alike,
+as `tests/adapt_run_layouts.test.mjs` holds), made by `tools/make_engine_view_fixture.sh`; and the
 interim planarian loop, a development run with no verdict, as the writers at `d7a11d5b` and
 `b08af640` wrote it from execution snapshots (copied from the engine's lead's folder). The
 `b08af640` one is packaged for the page as a development run (`data/replays`, experiment
@@ -782,7 +786,8 @@ record at or before it; past the end of runs that ended before the clock, the wo
 ### A run written by the engine's shared output path
 
 The adapter `standard-history` reads a run folder that the engine's own writers made
-(`cells.io.write_run`, or `cells.window_io.write_windowed_run`): `resolved_config.json`
+(`cells.records.io.write_run`, or `cells.records.window_io.write_windowed_run`;
+`cells.io` and `cells.window_io` before the engine's second source move): `resolved_config.json`
 beside `trajectory.npz`, or beside `windows.jsonl` with one chunk of arrays for each
 window. It takes the readouts the run observed, `observed_<field>` at `observation_times`
 (the windows put end to end), and keeps the engine's own names for them: the record of
