@@ -17,6 +17,11 @@ failure, not a verdict:
 - metrics(criteria, results): no criterion's metric resolves to an empty list (resolved as
   evaluate resolves it);
 - refuse(problems): raises SystemExit("Refused: incomplete evidence ...") when there are any.
+
+The callers: the FR judges' entries (FR-1, FR-3, FR-4/5, FR-10 and FR-6's A5''), which refuse a
+judged run and record a development verdict's gaps; and MG0c's judge (mg0c_turing.judge) and
+development values (mg0c_protocol.development_values), which call the empty-metric guard before
+evaluate (the lead's recorded assignment; MG0c's registered protocol pins neither file's bytes).
 """
 
 from validation.morphogenesis.mg0a_gradient import _lookup
