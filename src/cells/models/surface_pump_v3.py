@@ -1373,6 +1373,79 @@ def check_definition(spec, *, structure=None):
                 structure=structure,
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
+    if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
+        _check_moved_rows(
+            compact,
+            structure,
+            kinds,
+            state,
+            p,
+            [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))],
+        )
+
+
+# The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
+# reference, by a fixed pattern over (species, node), so a rate that moves a row only away from the
+# initial concentrations is seen too.
+GUARD_PERTURBATION = 0.1
+
+
+def _perturbed(state, p):
+    """The guard's second state: the initial amounts raised by a fixed pattern (all positive)."""
+
+    def pattern(reference):
+        s, n = np.indices(np.shape(reference))
+        return GUARD_PERTURBATION * (1 + (7 * s + 3 * n) % 10) / 10 * np.asarray(reference)
+
+    return state._replace(
+        amount_increment=np.asarray(state.amount_increment) + pattern(p.amount_reference),
+        extracellular_amount_increment=np.asarray(state.extracellular_amount_increment)
+        + pattern(p.extracellular_amount_reference),
+    )
+
+
+def _check_moved_rows(spec, structure, kinds, state, p, controls):
+    """The operators owner's ruling (CORE_SEAMS §18, amended at f609dd7f; the lead's ruling 3 (a)):
+    a kind's rates move only the rows its `moved_rows` declares, since refusal 4 admits a kind by
+    them (a source kind, which declares none, moves nothing). Checked on the host at binding, with
+    no program change: each kind's rates at the stage read of the initial state and of a perturbed
+    state (_perturbed), at every change record's control after the routing door and at the initial
+    state's node potentials; a nonzero cell or outside change at a (species, node) its moved_rows
+    does not name refuses the definition, naming the kind and the row. Not exhaustive: a rate that
+    moves a row only at states neither reaches would pass; a run-time check is the later option."""
+    movers = [kind for kind in kinds if kind.rates is not None]
+    if not movers:
+        return
+    declarations, nodes = dict(spec.model.kinds), node_ids(spec)
+    species = list(spec.model.species_ids)
+    allowed = {}
+    for kind in movers:
+        mask = np.zeros((len(species), len(nodes)), dtype=bool)
+        declaration = declarations[kind_registry.qualified(kind.kind_id)]
+        declared = kind.moved_rows(declaration) if kind.moved_rows is not None else ()
+        for entry in declared:
+            mask[species.index(entry[0]), nodes.index(entry[1])] = True
+        allowed[kind.kind_id] = mask
+    with np.errstate(all="ignore"):
+        potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
+        for x in (state, _perturbed(state, p)):
+            read, _ = _stage_read(x, p, kinds, xp=np)
+            for control in controls:
+                routed, _ = _route(structure, kinds, read, control, p, xp=np)
+                for kind, rates in zip(
+                    movers, _kind_rates(movers, read, potentials, routed, p, xp=np), strict=True
+                ):
+                    moved = np.concatenate(
+                        (np.asarray(rates.cell), np.asarray(rates.outside)), axis=1
+                    )
+                    stray = np.argwhere((moved != 0) & ~allowed[kind.kind_id])
+                    if len(stray):
+                        row, node = stray[0]
+                        raise ConfigError(
+                            f"Kind {kind.kind_id}'s rates move {species[row]} at "
+                            f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
+                            "admits a kind by its moved_rows)"
+                        )
 
 
 def _check_kinds_solver(spec):
