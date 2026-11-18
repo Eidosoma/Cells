@@ -176,23 +176,19 @@ class _Model:
 
 
 def test_an_operator_naming_a_held_species_is_refused(monkeypatch):
-    """check_closure_rows on version 1's parsed world (without its pump and leak, so nothing moves
-    H in the step) with the general declaration in its kinds: the composite's operators reach the
-    registry's check, and a planted operator stands in for one. Planted: an operator naming H,
-    held at both nodes; the control names Na, which no closure holds."""
+    """check_stage_read_rows (which holds every stage read's rows, the general closure's too) on
+    version 1's parsed world, without its pump and leak, with the general declaration in its
+    kinds. A composite's operators reach the registry's check; here a planted operator stands in
+    for one, and the inner model is the parsed one. Planted: an operator naming H, held at both
+    nodes; the control names Na, which no closure holds."""
     raw = fr.development_world(fr.fr4_world())
     for key in ("transporters", "passive_routes"):
         raw["model"].pop(key)
     v1 = parse_spec(raw)
     declaration = proton_buffer._parse_general(general_entry(), v1.model)
-    spec = SimpleNamespace(
-        model=_Model(v1.model, ((KIND, declaration),)),
-        experiment=v1.experiment,
-        execution=v1.execution,
-    )
-    movers = registry.inner_movers(v1)  # Version 1's own join: no mover of H.
-    assert "H" not in movers[1]
-    monkeypatch.setattr(registry, "inner_movers", lambda _: movers)
+    inner = _Model(v1.model, ((KIND, declaration),))
+    spec = SimpleNamespace(model=SimpleNamespace(operators=()), experiment=v1.experiment)
+    monkeypatch.setattr(registry, "_inner_model", lambda _: inner)
 
     def operator(species):
         item = SimpleNamespace(id=species, catalogue=None, evidence=None)
@@ -201,14 +197,14 @@ def test_an_operator_naming_a_held_species_is_refused(monkeypatch):
         )
 
     monkeypatch.setattr(registry, "_entries", lambda _: ((operator("Na"), None),))
-    registry.check_closure_rows(spec)
+    registry.check_stage_read_rows(spec)
     monkeypatch.setattr(registry, "_entries", lambda _: ((operator("H"), None),))
     with pytest.raises(
         ConfigError,
-        match=r"species H is held by the closure rapid_binding@1 at cell_0: planted_reaction@1 "
-        "names or moves it",
+        match=r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
+        "planted_reaction@1 names or moves it",
     ):
-        registry.check_closure_rows(spec)
+        registry.check_stage_read_rows(spec)
 
 
 def _species(m, row):

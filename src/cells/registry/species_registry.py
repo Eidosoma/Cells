@@ -701,9 +701,10 @@ def check_closure_rows(spec):
       stored totals as concentrations;
     - a kind's in-step move is admitted only when its law's reads name the closure's read ID, so
       no mover reads a stored total (a route law declares no reads, so it is refused);
-    - an operator that names a held species (its species_identities) or moves one in the step is
-      refused. Operators that name no row (replacement, division, a lumen's fill, water) are
-      admitted: the closure re-solves from the totals they leave.
+    - an operator that names a held species, or moves one in the step, is refused by
+      check_stage_read_rows, which holds every stage read's rows, version 1's included. Operators
+      that name no row (replacement, division, insertion) are admitted: the closure re-solves from
+      the totals they leave. The water law and the lumen's fill are refused there too.
     Version 1's closure declares no closure_rows, so its worlds are not checked here.
 
     Why here and not in the closure's kind: the rule reads each kind move's law from the law
@@ -742,30 +743,87 @@ def check_closure_rows(spec):
                                 f"{list(reads)} lack {read}; a mover at a closure node reads the "
                                 "closure"
                             )
+
+
+# Operators that sum every stored row of a node as free particles (the second review's finding 3,
+# verified; the lead's ruling, 18 November 2026): the water law's osmolyte sum, and the lumen's
+# fill, whose bath work and dilution term sum the stored rows (restricted_cleft_lumen@2 reuses
+# @1's fill unmodified). Beside a stage read that stores totals (a closure: H_eq beside its
+# buffers' totals) they count every bound ligand twice.
+WATER_LAWS = ("ideal_osmosis_linear_compliance_water@1",)
+LUMEN_LAWS = ("restricted_cleft_lumen@1", "restricted_cleft_lumen@2")
+
+
+def check_stage_read_rows(spec):
+    """Operators beside a stage read that stores totals, refused at the definition (the second
+    review's finding 3, verified; the lead's ruling, option (a), 18 November 2026). Each declared
+    kind with a stage read names the rows it rewrites (its stage_rows: a closure's ligand and
+    binder rows at its nodes). Operators read the stored rows, so beside such a read:
+    - an operator that names a read species (its species_identities: a regulated availability's
+      state inputs, a reaction's, an exchange's, a turnover's or a site's species) or moves one in
+      the step is refused, since it would read or write the stored total (H_eq/V) as the free
+      species. This is per species, wherever the read holds it;
+    - the water operators (WATER_LAWS) are refused beside any such read: their osmolyte sum counts
+      the stored rows, so bound ligands count twice (a plant took up 17% more water);
+    - the lumen's fill (LUMEN_LAWS) is refused where a read holds rows at an outside node: its
+      dilution term sums the lumen's stored rows, and the closure reads the node at its declared
+      volume, not the lumen's.
+    A world without a stage read, or without operators, is not checked. Reading through the
+    closure (option (b)) waits until an experiment needs it."""
+    if not hasattr(spec.model, "operators"):
+        return  # No composite, no operators.
+    from cells.registry import kind_registry
+
+    m = _inner_model(spec)
+    registry = kind_registry.active()
+    reads = []
+    for kind_id, declaration in getattr(m, "kinds", ()):
+        kind = registry.lookup(kind_id)
+        if kind.stage_read is not None and kind.stage_rows is not None:
+            reads.append((kind_registry.qualified(kind_id), tuple(kind.stage_rows(declaration))))
+    if not reads:
+        return
+    outside = {o.id for o in m.extracellular}
+    for kind_id, rows in reads:
         nodes = {}
         for species, node in sorted(rows):
             nodes.setdefault(species, node)
+        outside_nodes = sorted({node for _, node in rows} & outside)
         for op, declaration in _entries(spec):
+            if op.LAW_ID in WATER_LAWS:
+                raise ConfigError(
+                    f"{op.LAW_ID} sums every stored row as free particles, so beside the stage "
+                    f"read of {kind_id}, which stores totals, it counts bound ligands twice: "
+                    "refused"
+                )
+            if op.LAW_ID in LUMEN_LAWS and outside_nodes:
+                raise ConfigError(
+                    f"{op.LAW_ID}'s fill sums the lumen's stored rows as free particles, and the "
+                    f"stage read of {kind_id} holds rows at outside node {outside_nodes[0]}, read "
+                    "at its declared volume: refused"
+                )
             named = [item.id for item in operator_identities(op, declaration)]
             if op.PROCESS:
                 named += [s for s, _ in op.moves_in_step(spec, declaration)]
             for species in named:
                 if species in nodes:
                     raise ConfigError(
-                        f"species {species} is held by the closure {read} at {nodes[species]}: "
-                        f"{op.LAW_ID} names or moves it, and an operator that names a held row is "
-                        "refused"
+                        f"species {species} is held by the stage read of {kind_id} at "
+                        f"{nodes[species]}: {op.LAW_ID} names or moves it, and would read or "
+                        "write its stored total as the free species: refused"
                     )
 
 
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
     model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
-    the movers at a general closure's rows, then operators' potentials."""
+    the movers at a general closure's rows, the operators beside a stage read, then operators'
+    potentials."""
     check_background(spec)
     check_two_form_rows(spec)
     check_forms(spec)
     check_closure_rows(spec)
+    check_stage_read_rows(spec)
     check_potentials(spec)
 
 
