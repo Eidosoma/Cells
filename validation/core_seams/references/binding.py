@@ -149,6 +149,21 @@ class System:
                                            Decimal(0)) / Z
             return g
 
+    def scale_at(self, u: dict, totals_B: dict, V) -> dict:
+        """V A_L at u: V x_L + Σ_B T_B ⟨|n_L|⟩_B (fmol), the convergence scale (amendment C2)."""
+        V = dec(V)
+        with context():
+            E, W = self._weights(u)
+            out = {L: V * self.c0 * E[L] for L in self.ligands}
+            for B in self.binders:
+                Z = sum(W[B], Decimal(0))
+                for L in self.ligands:
+                    out[L] += dec(totals_B[B]) * sum((w * abs(f["counts"].get(L, 0))
+                                                      for w, f in zip(W[B], self.forms[B],
+                                                                      strict=True)),
+                                                     Decimal(0)) / Z
+            return out
+
     def potential(self, u: dict, totals_L: dict, totals_B: dict, V):
         V = dec(V)
         with context():
@@ -188,7 +203,10 @@ def solve(system: System, totals_L: dict, totals_B: dict, V, max_iter: int = 400
         while it < max_iter:
             it += 1
             g, H = system.gradient_hessian(u, totals_L, totals_B, V)
-            rel = max(abs(g[L]) / max(abs(dec(totals_L[L])), Decimal("1e-300")) for L in Ls)
+            # amendment C2: the residual relative to V A_L (= |T_L| where every count is ≥ 0),
+            # which a cancelling total (T_L ≈ 0) can meet; |g|/|T_L| there cannot
+            scale = system.scale_at(u, totals_B, V)
+            rel = max(abs(g[L]) / scale[L] for L in Ls)
             A = [[H[L][M] for M in Ls] for L in Ls]
             step = exact.solve(A, [-g[L] for L in Ls])
             if rel < NEWTON_TOL and max(abs(s) for s in step) < NEWTON_TOL:
@@ -503,11 +521,14 @@ def sensitivities(system: System, sp: dict, totals_L: dict, totals_B: dict, V,
                     d = direct_f[f["id"]] + sum((f["counts"].get(M, 0) * du[M] for M in Ls),
                                                 Decimal(0)) - dlnZ - direct_lnZ
                     bound_f[(B, f["id"])] += abs(d) * dp
-        # (b) the residual's bound: worst case over signs of δg_L = ± rel |T_L|, per output
+        # (b) the residual's bound: worst case over signs of δg_L = ± rel V A_L, per output
+        # (amendment C2: A_L = x_L + Σ |n| c, the convergence scale of §19 as amended at 19:52
+        # UTC; it equals |T_L|/V wherever every count is ≥ 0)
+        scale = residual_scale(system, sp, Vd)
         res_x = {L: Decimal(0) for L in Ls}
         res_f = {(B, f["id"]): Decimal(0) for B in system.binders for f in system.forms[B]}
         for j, M in enumerate(Ls):
-            dgm = residual_rel * abs(dec(totals_L[M]))
+            dgm = residual_rel * scale[M]
             du = {L: -Hinv[i][j] for i, L in enumerate(Ls)}
             for L in Ls:
                 res_x[L] += abs(du[L]) * dgm
@@ -527,6 +548,21 @@ def sensitivities(system: System, sp: dict, totals_L: dict, totals_B: dict, V,
 # --------------------------------------------------------------------------------------------
 # P1's buffered node: the free amount against the stored equivalents
 # --------------------------------------------------------------------------------------------
+
+def residual_scale(system: System, sp: dict, V) -> dict:
+    """Amendment C2: each ligand's convergence scale V A_L (fmol), A_L = x_L + Σ_B Σ_f |n_{L,f}| c_f
+    at the speciation: |g_L| ≤ 1e-13 V A_L in place of 1e-13 |T_L| (§19 amended at 19:52 UTC)."""
+    V = dec(V)
+    with context():
+        out = {}
+        for L in system.ligands:
+            a = sp["x_mM"][L]
+            for B in system.binders:
+                for f in system.forms[B]:
+                    a += abs(f["counts"].get(L, 0)) * sp["forms_mM"][B][f["id"]]
+            out[L] = V * a
+        return out
+
 
 def p1_thresholds(system: System, ligand: str, totals_L: dict, totals_B: dict, V,
                   drawn_over_free=(Decimal("0.5"), Decimal(1), Decimal(2), Decimal(10),
@@ -570,3 +606,92 @@ def p1_thresholds(system: System, ligand: str, totals_L: dict, totals_B: dict, V
                 "ratio_stored_over_free": (T - floor) / n_free,
                 "ratio_linearised_over_free": 1 / dfree_dT,
                 "ladder": ladder}
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment C1 (CORE_SEAMS_DESIGN §19, amended 18 November 2026, 19:52 UTC): the booked term
+# --------------------------------------------------------------------------------------------
+
+def _rows(system: System, totals_L: dict, totals_B: dict) -> list:
+    """(row, T_r, μ°_r/RT) for every held row: each ligand with its free form's μ°, each binder
+    with its base form's."""
+    rows = [(L, dec(totals_L[L]), system.mu0_L[L]) for L in system.ligands]
+    rows += [(B, dec(totals_B[B]), system.forms[B][0]["mu0_RT"]) for B in system.binders]
+    return rows
+
+
+def standard_parts(system: System, totals_L: dict, totals_B: dict) -> dict:
+    """Each held row's standard part in @3's 1 mM frame, T_r μ°′_r (pJ), with
+    μ°′ = RT (μ°/RT − ln c°), c° in mM. Defined for any sign of T_r."""
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        ln_c0 = dln(system.c0)
+        return {r: T * RT * (mu - ln_c0) / 1000 for r, T, mu in _rows(system, totals_L, totals_B)}
+
+
+def ideal_terms(system: System, totals_L: dict, totals_B: dict, V) -> dict:
+    """@3's ideal per-row term RT T_r (ln(T_r/V) − 1) (pJ, n/V in mM), None where T_r ≤ 0."""
+    V = dec(V)
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        return {r: (RT * T * (dln(T / V) - 1) / 1000 if T > 0 else None)
+                for r, T, _mu in _rows(system, totals_L, totals_B)}
+
+
+def booked(system: System, sp: dict, totals_L: dict, totals_B: dict, V) -> dict:
+    """E_c = G* − Σ_r T_r μ°′_r; S_c = E_c − Σ_r ideal_r (= G* − Σ own_r); B4's formula
+    S_c + Σ_B T_B μ°′_B; E_c's gradient in @3's frame, RT ln(c_free/1 mM) per row; and the
+    absolute sum of the terms, for the rounding floor of a difference."""
+    V = dec(V)
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        G = free_energy(system, sp, V)
+        std = standard_parts(system, totals_L, totals_B)
+        ideal = ideal_terms(system, totals_L, totals_B, V)
+        std_total = sum(std.values(), Decimal(0))
+        E = G - std_total
+        defined = all(v is not None for v in ideal.values())
+        ideal_total = sum(ideal.values(), Decimal(0)) if defined else None
+        S = E - ideal_total if defined else None
+        B4 = S + sum((std[B] for B in system.binders), Decimal(0)) if defined else None
+        grad = {L: RT * dln(sp["x_mM"][L]) for L in system.ligands}
+        for B in system.binders:
+            grad[B] = RT * dln(sp["forms_mM"][B][system.forms[B][0]["id"]])
+        terms = Decimal(0)
+        for L in system.ligands:
+            c = sp["x_mM"][L]
+            terms += abs(V * c * system.mu0_L[L] * RT) + abs(V * c * RT * (dln(c / system.c0) - 1))
+        for B in system.binders:
+            for f in system.forms[B]:
+                c = sp["forms_mM"][B][f["id"]]
+                if c > 0:
+                    terms += abs(V * c * f["mu0_RT"] * RT) + \
+                        abs(V * c * RT * (dln(c / system.c0) - 1))
+        terms = terms / 1000 + sum((abs(v) for v in std.values()), Decimal(0))
+        return {"E_c_pJ": E, "S_c_pJ": S, "B4_term_pJ": B4, "G_star_pJ": G,
+                "standard_parts_pJ": std, "standard_total_pJ": std_total,
+                "ideal_rows_pJ": ideal, "ideal_total_pJ": ideal_total,
+                "identity_residual_pJ": (E - S - ideal_total) if defined else None,
+                "gradient_at3_J_per_mol": grad, "terms_abs_pJ": terms}
+
+
+def booked_gradient_by_differences(system: System, totals_L: dict, totals_B: dict, V,
+                                   rel=Decimal("1e-24")) -> dict:
+    """∂E_c/∂T_r for every row by central differences of re-solved speciations (J/mol)."""
+    out = {}
+    with context():
+        for row in system.ligands + system.binders:
+            T = dec(totals_L[row]) if row in system.ligands else dec(totals_B[row])
+            h = abs(T) * rel
+            vals = []
+            for sgn in (1, -1):
+                tl = {L: dec(v) for L, v in totals_L.items()}
+                tb = {B: dec(v) for B, v in totals_B.items()}
+                if row in tl:
+                    tl[row] = tl[row] + sgn * h
+                else:
+                    tb[row] = tb[row] + sgn * h
+                sp = solve(system, tl, tb, V)
+                vals.append(booked(system, sp, tl, tb, V)["E_c_pJ"])
+            out[row] = (vals[0] - vals[1]) / (2 * h) * 1000
+        return out
