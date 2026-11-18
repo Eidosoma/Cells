@@ -89,6 +89,44 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-3 judged: passed (18 November 2026, 03:20–03:32 UTC).** The registered protocol
+  `fr3-site-occupancy-v1` was judged once from the clean snapshot of its registration commit
+  1b838d75, on lane A (CPUs 0-3 and 16-19, under its lock). It is `site_occupancy@1`'s first
+  judged acceptance, and its references are the code-blind FR references agent's
+  (`validation/fr3/references`).
+  - **51 of 51 judged criteria.** Examples:
+    - Q1 to Q5 against R-ode at every record: the amounts within at most 0.10 of B_state (Q4's
+      high-occupancy worlds; elsewhere at most 1.2e-4), the heat and the work within at most
+      1.9e-3 of B_energy.
+    - q1_fast's third order on 1, 0.5 and 0.25 ms: 3.04 and 3.02 in the cell's and the ECS's
+      amounts and the bound sites, in the band [2.8, 3.2].
+    - Q2's equilibrium, depletion quadratic and heat to equilibrium at 5.2e-5, 6.8e-8 and 1.0e-9
+      of their tolerances; the Riccati form, wherever the references give it, at 0.10 of B_state.
+    - Q4: B(alpha)/B(1) - alpha within 4.1e-5 of M_Q4 = 1e-3; the kinetic factor (K) departs by
+      494 M_Q4 and the affinity factor (A) at 100 K_d by 490 M_Q4.
+    - Q5: the closure, the guard of record, at most 0.11 of its rounding bound, the ledgers 0.09
+      and the ligand's system total 0.33, with no heat violation; the background guard 11 x below
+      B_state. The five plants are caught on exactly their rows, at 3.1e5 x (work) to 5.3e11 x
+      (site free energy), and the engine refuses both material plants on its own.
+    - The controls at 66 x (k_int) to 4.7e4 x (alpha ignored) their arms' budgets.
+    - Q6: the restarts bitwise and K4's moved switch caught; the batch within 8.2e-15 of its scalar
+      runs and bitwise reversed; idle, the twins, the signature and all 35 refusal classes.
+  - **Reported, not judged:** the heat's and the work's orders on q1_fast, 1.97 and 1.99; the
+    references' order in eps, 0.97 and 1.00; the affinity factor at 0.01 K_d, 2.5 and 1.9 M_Q4
+    (zero power, the lead's ruling 5); the batch against its scalar runs, not bitwise. The
+    engine's own energy check refuses the heat-sign and site-free-energy plants but not the work
+    plant, which only the judge's closure catches (FR-18).
+  - **No harness failure:** all 43 parts are complete. Peak memory was 1.2 G of 3 G, and no part
+    used more than 12.9% of its runtime limit.
+  - **Against the merged rehearsal** (`pipeline/run-reh-8b6d1279`, on a registered dry-run copy on
+    lane A): all 43 parts are bitwise equal, and so is the judged derivation.
+  - **Scope:** `site_occupancy@1` as built at 1b838d75, version 1's face-free first acceptance (one
+    neutral, impermeant ligand; patch populations outward and inward; site-conserving
+    internalisation; a static alpha; ARS(2,2,2) at 1 ms). Not shown: contact populations in a run,
+    composition with D150's or D152's operators, faces, RK4, site occupancy beside a bath schedule
+    (refused), the per-law R-dG test and the references' zero-power cases.
+  - **Evidence:** `/mnt/workspaces/Cells/site-occupancy-fr3-20261118/judged/run-1b838d75/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
 - **FR-1 judged: passed (18 November 2026, 00:57–01:08 UTC).** The registered protocol
   `fr1-closed-compartment-v1` was judged once from the clean snapshot of its registration commit
   05a8d193, on lane A (CPUs 0-3, under its lock). It is exchange's first judged acceptance, and
