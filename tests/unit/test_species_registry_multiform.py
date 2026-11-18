@@ -343,6 +343,41 @@ def _spec(spec, declared):
     )
 
 
+def sheet_with_forms(valence=None):
+    """The heredity sheet (plain @3, no faces) with a trace row B (valence 0) that nothing moves,
+    declared with one form on the ligand K (derived valence +1), and the registry's keys at c0."""
+    raw = add_inventory_species(
+        rfx.heredity_sheet(radius=1, disc=0, dt=1e-3, end_time=0.02),
+        "B", trace_mM=1e-6, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20,
+    )  # fmt: skip
+    form = dict(id="KB", counts={"K": 1}, standard_mu_RT=-6.0)
+    if valence is not None:
+        form["valence"] = valence
+    m = raw["model"]
+    for entry in m["species"]:
+        if entry["id"] == "K":
+            entry["standard_mu_RT"] = 0.0
+        if entry["id"] == "B":
+            entry.update(standard_mu_RT=0.0, forms=[form])
+    m["standard_concentration_mM"] = C0
+    return raw
+
+
+def test_forms_pass_through_the_inner_models_parser_and_fingerprint():
+    """@3's own parse (the registry hook, then check_definition ahead of @3's checks): the forms
+    are parsed, written back by the model's to_dict as declared, and the fingerprint survives the
+    round trip; a consistent declared valence is part of the definition. Planted: a valence its
+    counts contradict is refused by the parser itself."""
+    spec = parse_spec(sheet_with_forms())
+    assert registry.declared(spec).entry("B").forms == (registry.Form("KB", (("K", 1),), -6.0),)
+    written = next(e for e in spec.to_dict()["model"]["species"] if e["id"] == "B")
+    assert written["forms"] == [dict(id="KB", counts={"K": 1}, standard_mu_RT=-6.0)]
+    assert parse_spec(spec.to_dict()).fingerprint == spec.fingerprint
+    assert parse_spec(sheet_with_forms(valence=1)).fingerprint != spec.fingerprint
+    with pytest.raises(ConfigError, match=r"form KB declares valence 0, .* give 1"):
+        parse_spec(sheet_with_forms(valence=0))
+
+
 def test_a_row_with_forms_is_inert_until_a_law_declares_its_forms():
     """The heredity sheet with a trace row B that nothing moves, and Na, which its membranes move.
     B with forms on the ligand K is admitted (the control); Na with forms is refused, naming the
