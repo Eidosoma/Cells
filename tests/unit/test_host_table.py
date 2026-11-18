@@ -11,7 +11,8 @@ Each claim at its cheapest level (D187), each with a planted error the check mus
 - host_scatter puts each entity's values at its host's two end nodes (a reference loop), and a
   transfer from end a to end b conserves; swapped ends fail the reference;
 - host_node_conductance is patch_node_conductance on patches, bitwise;
-- the host side resolves declared hosts and refuses any other ID;
+- the host side resolves declared hosts and refuses any other ID; a host's row belongs to one
+  spec's layout (its capacities), so the padded run's and the compact check's differ;
 - the table adds no layout field, and KindRates is the kind contract's object (§8.5, §18).
 """
 
@@ -212,6 +213,35 @@ def test_the_host_side_resolves_declared_hosts_and_refuses_others():
         with pytest.raises(ConfigError, match="not a declared host"):
             v3.host_index(spec, unknown)
     assert v3.host_ids(spec)[len(spec.model.membranes)] is None  # A padded membrane slot.
+
+
+def test_a_hosts_row_belongs_to_its_specs_layout():
+    """A junction's row follows the capacities: the padded run's and a compact copy's (the one
+    check_definition binds) differ, and each matches its own layout's table."""
+    from dataclasses import replace
+
+    padded = padded_sheet()
+    m = padded.model
+    compact = replace(
+        padded,
+        execution=replace(
+            padded.execution,
+            capacity=len(m.cells),
+            extracellular_capacity=len(m.extracellular),
+            membrane_capacity=len(m.membranes),
+            edge_capacity=len(m.junctions),
+            channel_capacity=len(m.channels),
+        ),
+    )
+    junction = m.junctions[0].id
+    rows = {}
+    for name, spec in (("padded", padded), ("compact", compact)):
+        _, p = v3.initial_values(spec)
+        assert matches_definition(v3.host_table(p, xp=np), spec)
+        rows[name] = v3.host_index(spec, junction)
+    assert rows == {"padded": 9, "compact": 7}  # membrane_capacity 9 against 7 patches.
+    _, p = v3.initial_values(compact)
+    assert not matches_definition(v3.host_table(p, xp=np), padded)  # Plant: the other spec's rows.
 
 
 def test_the_table_adds_no_layout_field_and_kind_rates_is_the_contracts():

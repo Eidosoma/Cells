@@ -1625,7 +1625,7 @@ class Host(NamedTuple):
 
     id: str
     kind: str  # One of HOST_KINDS.
-    index: int  # Its row of the host table.
+    index: int  # Its row of the host table of this spec's layout (it depends on the capacities).
     end_a: str  # A patch's cell, a junction's sender.
     end_b: str  # A patch's outside node, a junction's receiver.
 
@@ -1716,8 +1716,12 @@ def host_ids(spec):
 
 
 def declared_hosts(spec):
-    """{host ID: Host} of every declared patch and junction, on the host side (a kind's parse and
-    initial values resolve a declared host with it)."""
+    """{host ID: Host} of every declared patch and junction, on the host side.
+
+    A row belongs to one spec's layout: a junction's is membrane_capacity + its position, so it
+    follows the execution's capacities. A kind resolves its hosts' rows in `initial(spec, ...)`,
+    whose spec is the one its layout is built for, and never keeps a row in its declaration:
+    `parse` sees the definition's capacities, while check_definition binds a compact copy."""
     m, offset = spec.model, spec.execution.membrane_capacity
     out = {p.id: Host(p.id, "patch", i, p.inside, p.outside) for i, p in enumerate(m.membranes)}
     for i, j in enumerate(m.junctions):
@@ -1726,7 +1730,8 @@ def declared_hosts(spec):
 
 
 def host_index(spec, host_id):
-    """The host-table row of a declared patch or junction; ConfigError for any other ID."""
+    """The host-table row of a declared patch or junction in this spec's layout (declared_hosts:
+    resolve it in a kind's `initial`); ConfigError for any other ID."""
     host = declared_hosts(spec).get(host_id)
     if host is None:
         raise ConfigError(f"{host_id!r} is not a declared host (a membrane patch or a junction)")
