@@ -925,3 +925,29 @@ No hash is updated (D187).
   which exist only on the branch. The committed map refuses the branch for them, as §10 intends,
   so its owner applies the map extended by those two modules (to `execution/`).
 - **windows-next and fr45-transporter** are superseded on main, and are pruned after the move.
+
+**What the gate found after M2, fixed in follow-up commits (the move commit stays the tool's
+output):**
+- **Recorded text.** The dotted-name rule rewrote strings that saved data repeats and code
+  compares:
+  - a preparation recipe's provenance (`cells_flux`), which R1's 274-definition harness caught
+    as 8 refused definitions;
+  - the FR-4/5 protocols' execution-path ruling;
+  - the registered MG0c protocol's engine lines.
+  The registered JSON was never touched, because JSON is outside the scope. The code strings are
+  back to their pre-move bytes, each marked with a comment holding `source-moves: keep`. That is
+  a per-line keep, which the tool honours in apply, in `verify`'s old-reference scan and in a
+  second application. It is for an identifier that is never resolved as a module. A live
+  reference keeps its rewrite: an import, a dispatch name, a package to scan, a source path to
+  hash or read, a message.
+- **Paths the text rules cannot see,** each fixed by hand:
+  - components joined at run time (`root / "core" / "x.py"`, `MODELS / "operators"`);
+  - a folder prefix completed by concatenation (`"src/cells/models/operators/" + name`);
+  - a moved module's bare file name inside a message.
+- **Move 1's map on a merged head (base = head).** The carry-over proofs ran this check, and it
+  was refused twice:
+  - first, because D198's retire batch (330aeb55) removed 20 of move 1's 334 modules, which are
+    in neither place. The proofs now cut those 20 from the map they check;
+  - then, because the import check did not resolve namespace packages. Before the move,
+    `cells/records/` held only `relations.py`. The import check now resolves a folder of modules
+    without a package file, as Python does.
