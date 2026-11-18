@@ -393,8 +393,9 @@ positive up to the stored amount.
     - k_on swapped between ligands: up to about 1e3;
     - a planted binder with a form not reachable by unit steps, refused. Every registered binder
       is admitted.
-  - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged, and the
-    registry's new binder is appended.
+  - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged. The registry's
+    new binder is appended, and its form valences join the parse table
+    (`seam_c.parse.form_valences.coop2`), which covers every registry binder.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
