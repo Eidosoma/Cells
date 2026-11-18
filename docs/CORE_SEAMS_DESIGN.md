@@ -1292,3 +1292,44 @@ hand-backs:**
 - **The @3 owner** may make the one-line law-ID fix in `kinds/ph_condition.py:217`. It lands in the
   same merge window as G's "@" refusal in the run-view writer, a recorded exception while the kinds
   owner has not started.
+
+**Amended the same evening (the lead, about 17:40 UTC), on the F owner's questions:**
+- **Law registration (R1).** Law modules are inert: `LAW = …`, importing only `cells.modules` and
+  `cells.laws.*`. Each is listed as a law home in the model table, and the loader registers it,
+  recording its module. `cells.modules` becomes lazy (PEP 562) and keeps object identity.
+- **The guard.**
+  - `laws/` is enforced now.
+  - `kinds/` is held to a recorded per-file list. A new violation fails, and so does a stale entry.
+  - The kinds and binding owners delete their own entries in the F owner's guard test, a recorded
+    exception, as they rewrite their imports against names the surface adds on request.
+- **The Kv1 port pilot.** The F owner builds the law side, inert until @3's parser reads the
+  registry. That is a hand-off to the @3 owner, which also takes
+  `definitions/cell_replacement_spec.py` for it.
+  - Codes 5–9; `rk4_step_s` = 2.5 µs, from the legacy family's rule.
+  - The citation is BETSE v1.5.0's `vg_k.py` as read (BSD-2-Clause). The primaries are named as
+    BETSE names them, unread. No BETSE code is copied.
+- **The byte-keeping ruling** is superseded by the moves note's §20 (D198, 17 November), and no
+  live pin remains. The F owner's brief had it wrong. The per-law kernels are the single copy, and
+  `kv1_channels.py`'s dispatcher delegates to them (§8.6).
+- **Extended exception.** The F owner moves the passive kind's two declarations from
+  `kinds/passive_routes.py` into their law modules. Its edit there is only the replacement with
+  imports, before the kinds owner starts.
+- **Deferred.** `ph_conditioned_factor@1` and `bounding_patch_damage@1` go to B1. The ensemble's
+  dispatch through the model table comes back as a design note first.
+
+**Amended the same evening (the lead, about 18:00 UTC), on the user's go (D217–D220):**
+- **B1′ is admitted** (D218). It stays the operators owner's, after B1 and alongside composition's
+  M2–M5. Each production-feedback loop declares its evaluation timing and operating range, and is
+  verified whole: a reference, timestep refinement and a feedback-cut control. Two refusals are kept:
+  unsupported instantaneous cycles, and a population's availability times its own conducting
+  abundance.
+- **FR-2's split-and-merge kernel** is built inside B1's operator part (D217). That adds about 1–1.5
+  agent-days to the operators owner, which is on the critical path.
+- **The FR-18 energy-check probe** moves to right after B1's @3 part, since it now also gates FR-8's
+  choice of method (D217).
+- **Tier 3 before the first core landing.** What the rule protects is the frozen snapshot of the
+  core-fixes landing (e16e26bb), on which tier 3, G3 and G4 are running. Landings may proceed before
+  their classification finishes. A later tier-3 run compares against the record re-frozen from that
+  snapshot, so a landing's own tier-3 effects stay distinguishable.
+- **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
+  main before gating, so each gate is at its merged head.

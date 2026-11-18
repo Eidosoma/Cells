@@ -6955,3 +6955,146 @@ The user: "sounds good yes".
   owner (CORE_SEAMS §13's table). It goes ahead only if the user's answer on D145's hold admits a
   species → control → production loop. That is FR-7's note, question 2.
 
+
+## D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1
+
+2026-11-18, evening. The lead put the three design notes' questions as options, reviewed with the
+advisor. The user relayed the answers of the project's external reviewers ("Please take the
+following as my answers"), then gave the go ("Yes—go ahead with the previously recommended
+choices and qualifications"; "and go from me"), with two clarifications.
+
+- **FR-7, abundance to function** (ABUNDANCE_TO_FUNCTION_DESIGN):
+  - **The unit.** A membrane channel population is the first loop (U2). The junction channel (U1)
+    follows, with its contact and maturation requirements. The first loop establishes reusable
+    production, finite precursor consumption, delays, removal and material accounting. D145's
+    provisional unit is changed.
+  - **The estimate stays explicit:** 10–16 agent-days, excluding FR-2 and composition. The
+    abundance source can be prepared early. Its live integration needs composition's M1, the
+    interface for reading other operators' current state.
+  - **The first acceptance is numerical**, on synthetic minute-scale lifetimes labelled as
+    synthetic. It covers finite unit turnover, several declared lifetimes, and template clearance
+    measured from the run's trajectory:
+    - the clearance criterion is declared before the run;
+    - its threshold is meaningful for the template's remaining ability to drive the response;
+    - a declared rule covers falling back below it;
+    - every compartment that can still release template is included;
+    - literal zero is not required, and "not cleared" is a valid outcome.
+
+    Sourced lifetimes belong to the later biological comparison, and are distinct from a run's
+    recorded clearance time.
+  - **The closed loop.** The closed-loop capability is not called qualified until a genuinely closed
+    feedback case passes, with a control in which the feedback is cut. Persistence is measured, not
+    required. The linear chain from template to conductance is a first check only.
+- **FR-8, long-duration mode** (LONG_DURATION_MODE_DESIGN):
+  - **What is approved: stage 0 only.** That is FR-8's measurements M1–M5, plus a small numerical
+    harness: an existing single-cell or two-cell case on today's fine engine, benchmarked under M3,
+    with its trajectory and reference outputs kept.
+  - **Every measurement's criteria and tolerance budget are declared before its comparison.** They
+    cover cumulative trajectory error, intervention response, threshold timing, histories,
+    conservation and measured cost. The old parity caps stay as benchmarks where useful.
+  - **What waits.** The method, a new solver or a reduction, is chosen after stage 0's results and
+    the core's FR-18 energy-check probe. Neither the full solver build nor an exact charged booking
+    is approved in advance.
+  - **The first scientific consumer** is FR-7's loop at measured lifetimes. Stage 0 does not wait
+    for the full FR-7 loop.
+- **FR-2, membrane retrieval** (MEMBRANE_RETRIEVAL_DESIGN). Version 1 is membrane and channel
+  retrieval and recycling.
+  - **Energy.** Retrieval follows the membrane's charge (R2), and the split and merge share one
+    accounting. Version 1's scope reads "no new explicit machinery fuel draw in v1".
+    - Recorded still: carrier-ion chemical work, reservoir and electrode work, and merge heat.
+    - The machinery's omitted cost is a declared limit, so version 1 claims neither total
+      trafficking energy demand nor ATP-limited uptake.
+    - A later held or finite fuel coupling is designed once, in the common energy interface.
+  - **The receiving pool.** There is one lumped pool per cell, well mixed, and stated as such, since
+    pooling chemically or electrically different vesicles is not exact.
+    - It is indexed by compartment, owner and route, so one pool is a first configuration, not an
+      engine-wide restriction.
+    - Cohorts or discrete vesicles follow when a specified observable needs within-cell variation.
+  - **Staging.** Fluid-phase uptake comes in version 1.1. Internalised channel units start silent.
+  - **Remaining uptake work, kept visible:** FR-3's receptor and bound-cargo movement, exchange with
+    a changing area, and FR-4 and FR-5 on a growing compartment.
+  - **The lead's rulings on the note's questions 5–11:**
+    5. R2 is the charge rule, and R1 is refused as an artefact.
+    6. The split-and-merge kernel belongs to the operators owner, inside B1's operator part
+       (CORE_SEAMS §18). FR-2 starts when that lands.
+    7. P0's record lives in the new operator's own state.
+    8. Areas and capacitances are `reference` reads.
+    9. The name is `scheduled_membrane_trafficking@1`.
+    10. Pumps stay held on the plasma patch with their aggregate capacity.
+    11. Refusal 5 gains version 1.2, which admits a retrieval-charged lumen's anchor at import,
+        with a planted case.
+
+## D218: D145's hold, narrowed again: physical production feedback through the one routing door
+
+2026-11-18, evening, on the same go (D217). The coupling note's question 2 is answered: a species →
+control → production loop is within the narrowed hold.
+- **Admitted:** physical, state-mediated production feedback, only through the one coupling and
+  rate-routing mechanism (B1′, the operators owner's, after B1). The rest of the gene-regulation
+  hold stays in place.
+- **Conditions.** Each loop:
+  - declares its evaluation timing and its operating range;
+  - is verified whole, against a reference, under timestep refinement, and with a control in which
+    the feedback is cut.
+
+  The regulatory state's rate bound alone does not establish that an arbitrary production feedback
+  is stable.
+- **Refusals kept:**
+  - unsupported instantaneous algebraic cycles. Today's operator refuses instantaneous reads of
+    charged species;
+  - a population's availability multiplied by its own abundance where that abundance already sets
+    its conductance. This is planned in FR-7's abundance source and built with it.
+
+## D219: The gap-junction replication's next bundle and two judged comparisons
+
+2026-11-18, evening, on the same go (D217). The note's §8 and §6 questions are answered.
+- **The bundle,** next for a free seat:
+  - the correctly specified 25×25 threshold case;
+  - Figure 5a through the windowed execution and record path;
+  - BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and
+    revision are checked.
+
+  Before the 2D search, its registration states the geometry, the row-spread success criterion, the
+  horizon, the bracket, the refinement rule and the compute budget. A representative point's cost is
+  measured first, at a point that cannot show the threshold, and what it showed is disclosed.
+- **Judged comparisons approved (D138),** each under a registered protocol with code-blind
+  references:
+  - **The linear model's numerical qualification.** Figure 8 is judged against independently derived
+    physical balances, and the printed recursion's discrepancy is kept as a finding.
+  - **The "neither" threshold comparison.** Successful refinement and a predeclared convergence
+    condition are part of the verdict, and the threshold-to-log ratio alone is not the judge.
+    - The 1D line's value was already seen (neither-02), so its registration says its conditions
+      came after. Only the 2D field is a true pre-registration.
+    - The historical log is named, with the uncertainty about which revision produced it. Fresh
+      outputs from a pinned BITSEY revision are an additional reference.
+  - **Table 3.** Its logged inputs and the interventions as actually executed govern the
+    code-reproduction target. The printed table stays unchanged as a separate publication target,
+    with the mapping discrepancies reported. Interventions are named by what they do, with the
+    original labels kept as provenance.
+- **FR-15, FR-16 and FR-17** stay with the core owners whose files they touch, scheduled after those
+  owners' current work and not yet started:
+  - FR-15 with the kinds and @3 owners;
+  - FR-16 with the F owner, after its per-law extractions, and the @3 owner;
+  - FR-17 with numerics, its owner named when a seat frees. FR-1's condensation door is the
+    preferred route.
+
+## D220: Seats, the gate tooling and the self-replicator replication
+
+2026-11-18. Within the cap of seven (D171):
+- **The seat order.** Free seats go, in order, to:
+  1. the gap-junction bundle (D219), released or reassigned once its runs proceed unattended;
+  2. the binding owner;
+  3. the kinds owner, whose start is protected the moment the registry and the host table land;
+  4. the code-blind references for D219's two judged comparisons;
+  5. the gate tooling;
+  6. FR-8's stage 0, when capacity allows, without displacing a core owner whose prerequisites are
+     ready.
+
+  Blocked work stays tied to specific owner hand-offs and interfaces.
+- **The gate tooling** moves into the repository under `scripts/gates/`, with tests: the
+  cross-revision runner, FR's bitwise landing set, the tier record's three-way fold, the
+  definition-fingerprint check through a move map, and GARD's @1 invariance gate. The user approved
+  this the same afternoon: "yes lets have them in".
+- **The self-replicator replication.** The user asked for Liu et al. (Nature Catalysis 8, 1000–1009,
+  2025) to be replicated. The pasted text stays out of the repository: it is paraphrased, cited, and
+  its numbers are given as read. The authors' kinetic model runs out of process as a reference only
+  if its licence allows. A replication owner writes the docs-only replication note first.

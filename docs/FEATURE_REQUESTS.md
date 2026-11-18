@@ -217,6 +217,8 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
 
 **The design note (proposed, 18 November 2026):** [MEMBRANE_RETRIEVAL_DESIGN.md](MEMBRANE_RETRIEVAL_DESIGN.md), with the energy source answered once for D150's question 11, D152's question 10 and D151 (D216).
 
+**Answered 18 November (D217):** version 1 is retrieval and recycling, with "no new explicit machinery fuel draw in v1" and one lumped, well-mixed pool per cell. It starts when B1's operator part, with the split-and-merge kernel, lands (the note's §12).
+
 ## FR-3 — The site-occupancy primitive
 
 **Logged 14 November 2026, priority 2** (the request's label; the user: "then next one"). The request
@@ -450,7 +452,7 @@ use Cells' unit choice than ask for its own.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
 
-**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216).
+**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216). **Answered 18 November (D217, D218):** U2 first, then U1; the loop is admitted through B1′; qualification needs a closed loop with a feedback-cut control (the note's §9).
 
 ## FR-8 — A qualified long-duration mode
 
@@ -500,6 +502,8 @@ requester is writing a benchmark specification for its own composition):
   one coupled trajectory.
 
 **The design note (proposed, 18 November 2026):** [LONG_DURATION_MODE_DESIGN.md](LONG_DURATION_MODE_DESIGN.md), the long-time path for composite operators, written before the GH200 numbers and the benchmark specification (D216).
+
+**Answered 18 November (D217):** stage 0 only, that is M1–M5 and a small harness, with criteria declared before comparison. The method follows stage 0 and the FR-18 probe (the note's §11).
 
 ## FR-9 — Raise the 7-species cap
 
@@ -762,7 +766,8 @@ explored.
 - **First step, done:** the reason for `check_impermeant`'s refusal was found (F1 above). What remains
   is F2.
 - **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
-  features.
+  features. (18 November 2026, D219: scheduled with the kinds and @3 owners after their current
+  work. Not started.)
 
 ## FR-16 — Junction gating and availability
 
@@ -774,7 +779,8 @@ explored.
   needs min and mean as well.
 - **Why it is general:** connexin-specific gating and permselectivity are general junction
   physiology.
-- **Status:** requested; awaits the user's go.
+- **Status:** requested; awaits the user's go. (18 November 2026, D219: scheduled with the F owner,
+  after its per-law extractions, and with the @3 owner. Not started.)
 
 ## FR-17 — Field solves beyond 2048 nodes
 
@@ -790,7 +796,9 @@ explored.
   solver ID (D147; [CLOSED_COMPARTMENT_DESIGN](CLOSED_COMPARTMENT_DESIGN.md) §3.6, §8), and it also
   removes the 64-node cap's reason for compartment doors.
 - **Status:** requested; awaits the user's go. Its consumers are the 3D table and, unless
-  condensation serves them, mitochondria.
+  condensation serves them, mitochondria. (18 November 2026, D219: scheduled with numerics. Its
+  owner is named when a seat frees, and FR-1's condensation door is the preferred route. Not
+  started.)
 
 ## FR-18 — The composite's energy check at moderate step sizes
 
