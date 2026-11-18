@@ -62,13 +62,18 @@ BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows
 RK4_SODIUM_STEP_S = nav1p2_m3h_regularized.RK4_STEP_S
 RK4_POTASSIUM_STEP_S = kv1p5_mh.RK4_STEP_S
 # Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default
-# and is never listed; @3's own mover classes, and the bookings each admits beyond it (the
-# trapezoid for channels, as ruled there, and for junctions, today's junction_heat_booking). A
-# declared kind's routes are the class its namespaced ID names, admitting its heat_bookings.
+# and is never listed; @3's own mover classes, and the bookings each admits beyond it: the
+# trapezoid for channels, as ruled there, for junctions, today's junction_heat_booking, and for
+# membranes, pumps and calcium pumps, whose power is never negative (the lead, 18 November 2026).
+# A declared kind's routes are the class its namespaced ID names, admitting its heat_bookings.
 TABLEAU_HEAT_BOOKING = DEFAULT_JUNCTION_HEAT
 CHANNELS, JUNCTIONS = "channels", "junctions"
+MEMBRANES, PUMPS, CALCIUM_PUMPS = "membranes", "pumps", "calcium_pumps"
 OWN_HEAT_BOOKINGS = MappingProxyType(
-    {CHANNELS: (TRAPEZOID_JUNCTION_HEAT,), JUNCTIONS: (TRAPEZOID_JUNCTION_HEAT,)}
+    {
+        mover: (TRAPEZOID_JUNCTION_HEAT,)
+        for mover in (CHANNELS, JUNCTIONS, MEMBRANES, PUMPS, CALCIUM_PUMPS)
+    }
 )
 
 

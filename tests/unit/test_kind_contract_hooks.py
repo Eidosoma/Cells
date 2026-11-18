@@ -15,7 +15,8 @@ with a planted error it must catch (D187):
   repeated name, a malformed result);
 - InnerStructure.heat_bookings defaults to (), so today's structures are unchanged, and admits a
   sorted pair per mover class whose class admits it (planted, each refused: unsorted pairs, a
-  repeated class, the tableau listed, channels on the exact booking, junctions against
+  repeated class, the tableau listed, channels, membranes, pumps or calcium pumps on the exact
+  booking, junctions against
   junction_heat_booking, an undeclared kind, a kind that does not admit the booking, a
   malformed pair).
 """
@@ -174,6 +175,16 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
     trapezoid = dict(BASE, junction_heat_booking=TRAPEZOID)
     both = ((inner_laws.CHANNELS, TRAPEZOID), (inner_laws.JUNCTIONS, TRAPEZOID))
     assert inner_laws.InnerStructure(**trapezoid, heat_bookings=both).heat_bookings == both
+    # Each of @3's own classes admits the trapezoid, whose power is never negative (the lead).
+    own = tuple(sorted((mover, TRAPEZOID) for mover in inner_laws.OWN_HEAT_BOOKINGS))
+    assert {mover for mover, _ in own} == {
+        "calcium_pumps",
+        "channels",
+        "junctions",
+        "membranes",
+        "pumps",
+    }
+    assert inner_laws.InnerStructure(**trapezoid, heat_bookings=own).heat_bookings == own
     registry = kind_registry.KindRegistry()
     registry.register(planted(heat_bookings=(EXACT,)))
     kinds = ((PLANTED_ID, ()),)
@@ -188,6 +199,9 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
             ),
             "never listed": ((inner_laws.CHANNELS, spec3.DEFAULT_JUNCTION_HEAT),),
             "channels admit": ((inner_laws.CHANNELS, EXACT),),
+            "membranes admit": ((inner_laws.MEMBRANES, EXACT),),
+            "pumps admit": ((inner_laws.PUMPS, EXACT),),
+            "calcium_pumps admit": ((inner_laws.CALCIUM_PUMPS, EXACT),),
             "junctions book": ((inner_laws.JUNCTIONS, TRAPEZOID),),
             "nor a declared kind": (("tests.undeclared@1", EXACT),),
             "admits no heat booking": ((PLANTED_ID, TRAPEZOID),),
