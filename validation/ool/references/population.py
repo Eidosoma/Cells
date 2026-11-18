@@ -48,12 +48,14 @@ near-tie). ``replay`` compares a trace with the reference event by event.
 
 from __future__ import annotations
 
+import dataclasses
 import math
 from dataclasses import dataclass, field
 
 import numpy as np
 
 from . import partition as PT
+from .common import RecordFormatError
 from .ol2 import Law2, Vesicle2, World2
 
 DOMAIN_LINEAGE, DOMAIN_FISSION, DOMAIN_WORLD, DOMAIN_SCHEDULE = 1, 2, 5, 6
@@ -121,6 +123,9 @@ class HostStreams:
     def follow(self, what: str, index, mine):
         return mine
 
+    def first_counter(self, domain: int, key: int) -> int:
+        return 0
+
     def followed_daughter(self, attempt_index: int, k: int) -> int:
         return 0
 
@@ -148,13 +153,23 @@ class Recorded:
         self.used = set()
         self.missing = []
         self.ties = 0
+        self.first = {}
+        for d in trace.get("draws", []):
+            a = (d["domain"], d["key"])
+            self.first[a] = min(self.first.get(a, d["counter"]), d["counter"])
+
+    def first_counter(self, domain: int, key: int) -> int:
+        """A new lineage key's first counter is taken from the record (not claimed)."""
+        return self.first.get((domain, key), 0) if domain == DOMAIN_LINEAGE else 0
 
     def get(self, domain: int, key: int, counter: int, n: int) -> list:
         addr = (domain, key, counter)
         u = self.index.get(addr)
         if u is None or len(u) != n:
             self.missing.append(dict(address=list(addr), needed=n, recorded=None if u is None else len(u)))
-            raise _Mismatch(f"draw {addr} needed ({n} uniforms), recorded {None if u is None else len(u)}")
+            hint = " (every draw is recorded, discarded draws, the draw that ends the run and a Poisson gap past t_end " \
+                   "included)" if u is None else ""
+            raise _Mismatch(f"draw {addr} needed ({n} uniforms), recorded {None if u is None else len(u)}{hint}")
         self.used.add(addr)
         return list(u)
 
@@ -208,6 +223,18 @@ class _State:
     draws: dict = field(default_factory=dict)        # (domain, key) -> draws so far
 
 
+def ruled_order(channels) -> list:
+    """§0.2d 5: a group's channels in declared step order, forwards, then reverses."""
+    return [(i, 1) for i in range(len(channels))] + [(i, -1) for i in range(len(channels))]
+
+
+def channel_document(model) -> dict:
+    def doc(chs, order):
+        return [[chs[i].id, "forward" if s > 0 else "reverse"] for i, s in order]
+
+    return {"pool": doc(model.pch, model.porder), "vesicle": doc(model.vch, model.vorder)}
+
+
 def _fold(xs) -> float:
     acc = 0.0
     for x in xs:
@@ -254,32 +281,33 @@ def flat(group_rates: list, u2: float) -> tuple:
 class Model:
     """The reference world for one run specification (``planted`` names one wrong behaviour)."""
 
-    def __init__(self, spec: RunSpec, planted: str | None = None, law_planted: str | None = None):
+    def __init__(self, spec: RunSpec, planted: str | None = None, law_planted: str | None = None,
+                 lineage_order: list | None = None):
         self.spec = spec
         self.planted = planted
         self.law = Law2(spec.world, law_planted)
         self.vch = spec.world.vesicle_channels()
         self.pch = spec.world.pool_channels()
+        self.vorder = lineage_order or ruled_order(self.vch)
+        self.porder = ruled_order(self.pch)
 
     # ---------------------------------------------------------------- rates
     def group_rates(self, st: _State) -> list:
         law, p = self.law, st.pool
-        pool = [law.pool_rate(p, c, +1) for c in self.pch] + [law.pool_rate(p, c, -1) for c in self.pch]
-        out = [pool]
+        out = [[law.pool_rate(p, self.pch[i], s) for i, s in self.porder]]
         for v in st.slots:
-            if v is None:
-                out.append([])
-            else:
-                out.append([law.rate(v, p, c, +1) for c in self.vch] + [law.rate(v, p, c, -1) for c in self.vch])
+            out.append([] if v is None else [law.rate(v, p, self.vch[i], s) for i, s in self.vorder])
         return out
 
     def lineage_rates(self, st: _State) -> list:
         v = st.slots[0]
-        return [self.law.rate(v, st.pool, c, +1) for c in self.vch] + [self.law.rate(v, st.pool, c, -1) for c in self.vch]
+        return [self.law.rate(v, st.pool, self.vch[i], s) for i, s in self.vorder]
 
     # ---------------------------------------------------------------- draws
     def draw(self, src, st: _State, domain: int, key: int, n: int) -> tuple:
-        c = st.draws.get((domain, key), 0)
+        c = st.draws.get((domain, key))
+        if c is None:
+            c = src.first_counter(domain, key)
         u = src.get(domain, key, c, n)
         st.draws[(domain, key)] = c + 1
         return c, u
@@ -289,14 +317,16 @@ class Model:
         """Group g (0 the pool, 1 + j slot j), channel c of the group's order."""
         law = self.law
         if g == 0:
-            ch, sign = self.pch[c % len(self.pch)], (1 if c < len(self.pch) else -1)
+            i, sign = self.porder[c]
+            ch = self.pch[i]
             p2 = law.pool_after(st.pool, ch, sign)
             dF = law._dF_pool(st.pool, p2)
             st.pool = p2
             return dict(group=-1, channel=c, lysed=False, heat=-dF, reservoir_work=0.0)
         j = g - 1
         v = st.slots[j]
-        ch, sign = self.vch[c % len(self.vch)], (1 if c < len(self.vch) else -1)
+        i, sign = self.vorder[c]
+        ch = self.vch[i]
         v2, p2 = law.after(v, st.pool, ch, sign)
         w = law.work(ch, sign)
         if law.lyses(v2):
@@ -446,9 +476,10 @@ def _lumen_near_tie(sp: dict, u: list, N: int, k: int) -> bool:
     return bool(np.min(np.abs(lu[:, None] - np.asarray(cum[:-1])[None, :]), initial=1.0) <= TIE_RTOL)
 
 
-def simulate(spec: RunSpec, src, planted: str | None = None, law_planted: str | None = None) -> dict:
+def simulate(spec: RunSpec, src, planted: str | None = None, law_planted: str | None = None,
+             lineage_order: list | None = None) -> dict:
     """Run the reference from a draw source; returns a trace in the canonical layout."""
-    m = Model(spec, planted, law_planted)
+    m = Model(spec, planted, law_planted, lineage_order)
     m._gaps = []
     K = spec.slots
     slots = [None] * K
@@ -462,7 +493,7 @@ def simulate(spec: RunSpec, src, planted: str | None = None, law_planted: str | 
                  world_key=spec.world_key, environment={"threefry_partitionable": True},
                  initial=dict(slots=[None if v is None else dict(n=list(v.n), l=list(v.l), key=keys[j])
                                      for j, v in enumerate(st.slots)], pool=list(st.pool)),
-                 draws=[], schedule_draws=[], events=[], F_initial=F0)
+                 channels=channel_document(m), draws=[], schedule_draws=[], events=[], F_initial=F0)
     pending = {}
     for s in spec.schedules:
         pending[s.index] = m.next_times(st, src, pending, s)
@@ -678,10 +709,65 @@ def compare(mine: dict, theirs: dict, scale: float, limit: int = 5) -> list:
     return out
 
 
+def spec_for_trace(spec: RunSpec, trace: dict) -> RunSpec:
+    """The registered run with the trace's own carrier keys, after checking that the trace is
+    that run (mode, slots, t_end, schedules, the initial counts and pool); RecordFormatError if not."""
+    want = dict(mode=spec.mode, slots=spec.slots, t_end=spec.t_end, schedules=[s.document() for s in spec.schedules],
+                pool=list(spec.pool))
+    got = dict(mode=trace.get("mode"), slots=trace.get("slots"), t_end=trace.get("t_end"),
+               schedules=trace.get("schedules"), pool=trace.get("initial", {}).get("pool"))
+    for k in want:
+        if want[k] != got[k]:
+            raise RecordFormatError(f"the trace's {k} {got[k]!r} is not the registered run's {want[k]!r}")
+    slots = trace["initial"].get("slots", [])
+    if len(slots) != spec.slots:
+        raise RecordFormatError(f"the trace's initial slots: {len(slots)}, {spec.slots} registered")
+    founders = []
+    for j, s in enumerate(slots):
+        reg = spec.founders[j][0] if j < len(spec.founders) else None
+        if (s is None) != (reg is None) or (s is not None and (tuple(s["n"]), tuple(s["l"])) != (reg.n, reg.l)):
+            raise RecordFormatError(f"the trace's founder in slot {j} is not the registered one")
+        if s is not None:
+            founders.append((reg, int(s["key"])))
+    if "world_key" not in trace:
+        raise RecordFormatError("the trace has no world_key")
+    return dataclasses.replace(spec, world_key=int(trace["world_key"]), founders=founders)
+
+
+def declared_order(spec: RunSpec, trace: dict):
+    """The trace's channel table: in population mode it must be §0.2d 5's; a single lineage's
+    vesicle order may be any order of the steps and directions (OL1's declared fold order)."""
+    table = trace.get("channels")
+    if not isinstance(table, dict) or "vesicle" not in table or "pool" not in table:
+        raise RecordFormatError("the trace declares no channel table (pool and vesicle fold orders)")
+    m = Model(spec)
+    ruled = channel_document(m)
+    if table["pool"] != ruled["pool"]:
+        return None, "the pool group's order is not §0.2d 5's (declared steps forwards, then reverses)"
+    if spec.mode == "population":
+        if table["vesicle"] != ruled["vesicle"]:
+            return None, "a slot group's order is not §0.2d 5's (declared steps forwards, then reverses)"
+        return None, None
+    ids = {c.id: i for i, c in enumerate(m.vch)}
+    try:
+        order = [(ids[a], 1 if b == "forward" else -1) for a, b in table["vesicle"]]
+    except KeyError as exc:
+        raise RecordFormatError(f"the channel table names an undeclared step {exc}") from exc
+    if sorted(order) != sorted(ruled_order(m.vch)) or any(b not in ("forward", "reverse") for _, b in table["vesicle"]):
+        raise RecordFormatError("the lineage's channel table is not one entry per step and direction")
+    return order, None
+
+
 def replay(spec: RunSpec, trace: dict) -> dict:
-    """Rows OL2-4, OL3-2 and OL3-3: rerun the reference on the trace's own uniforms."""
+    """Rows OL2-3, OL2-4 and OL3-2 to OL3-5: rerun the reference on the trace's own uniforms,
+    with the trace's own carrier keys and declared channel table."""
+    spec = spec_for_trace(spec, trace)
+    order, problem = declared_order(spec, trace)
+    if problem:
+        return dict(passed=False, events=len(trace.get("events", [])), draws=len(trace.get("draws", [])),
+                    near_ties=0, differences=[dict(where="channels", problem=problem)])
     src = Recorded(trace)
-    mine = simulate(spec, src)
+    mine = simulate(spec, src, lineage_order=order)
     law = Law2(spec.world)
     scale = law.F_scale([None if s is None else Vesicle2(tuple(s["n"]), tuple(s["l"])) for s in trace["initial"]["slots"]],
                         tuple(trace["initial"]["pool"]))

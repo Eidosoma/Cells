@@ -4,6 +4,7 @@ on the stand-in (code-blind; no engine)."""
 
 from __future__ import annotations
 
+import copy
 import math
 
 import pytest
@@ -13,6 +14,7 @@ from validation.ool.references import ol3_checks as O3
 from validation.ool.references import population as P
 from validation.ool.references import registered2 as R2
 from validation.ool.references import standin2 as S2
+from validation.ool.references.common import RecordFormatError
 from validation.ool.references.ol2 import Law2, Vesicle2
 
 RUNS = R2.runs()
@@ -169,3 +171,53 @@ def test_harness_end_to_end_on_the_stand_in(tmp_path):
     (root / "kernel" / "ol2_wa" / "manifest.json").unlink()
     status, verdict = H2.run_rows(root, ["OL2-1"])
     assert status == 2 and "manifest" in verdict["OL2-1"]["problem"]
+
+
+def _rekey(tr: dict, f) -> dict:
+    t = copy.deepcopy(tr)
+    t["world_key"] = f(t["world_key"])
+    for s in t["initial"]["slots"] + t["final"]["slots"]:
+        if s:
+            s["key"] = f(s["key"])
+    for d in t["draws"]:
+        d["key"] = f(d["key"])
+    for e in t["events"]:
+        for a in e.get("attempts", []):
+            a["key"] = f(a["key"])
+            for d in a["daughters"]:
+                d["key"] = f(d["key"])
+        for s in e.get("slots_after") or []:
+            if s:
+                s["key"] = f(s["key"])
+    return t
+
+
+@pytest.mark.parametrize("run", ["ol3_shear_probe_run", "ol3_lineage_run", "ol2_shared_run"])
+def test_the_replay_uses_the_traces_own_keys_and_checks_it_is_the_registered_run(run):
+    spec = RUNS[run]
+    tr = _rekey(honest(run), lambda k: 7 * k + 3)                # an engine's keys are its own
+    assert P.replay(spec, tr)["passed"]
+    bad = copy.deepcopy(tr)
+    bad["initial"]["slots"][0]["n"][0] += 1
+    with pytest.raises(RecordFormatError):
+        P.replay(spec, bad)
+
+
+def test_every_draw_must_be_recorded_and_the_channel_table_is_checked():
+    spec = RUNS["ol3_population_run"]
+    tr = copy.deepcopy(honest("ol3_population_run"))
+    last = max((d for d in tr["schedule_draws"] if d["use"] == "gap"), key=lambda d: d["counter"])
+    assert last["time"] > spec.t_end
+    tr["schedule_draws"].remove(last)                              # the gap that lands past t_end
+    r = P.replay(spec, tr)
+    assert not r["passed"] and any("past t_end" in str(d) for d in r["differences"])
+    tr = copy.deepcopy(honest("ol3_population_run"))
+    tr["channels"]["vesicle"] = tr["channels"]["vesicle"][::-1]
+    assert not P.replay(spec, tr)["passed"]
+    del tr["channels"]
+    with pytest.raises(RecordFormatError):
+        P.replay(spec, tr)
+    lineage = RUNS["ol3_lineage_run"]                             # a lineage replays in its declared order
+    tr = P.simulate(lineage, P.HostStreams(lineage.seed), lineage_order=[(0, -1), (0, 1)])
+    assert tr["channels"]["vesicle"] == [["join_L1", "reverse"], ["join_L1", "forward"]]
+    assert P.replay(lineage, tr)["passed"]

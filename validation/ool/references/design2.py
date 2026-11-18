@@ -23,7 +23,7 @@ REGISTERED_MARGINS = {
     "OL2-1": {
         "check": "the named check's largest residual over the registered probe (both encounter tokens unless named); "
                  "tolerances: forward form 1e-12, identity and cycle closure 1e-8, geometry 1e-12, tension 1e-9",
-        "honest": {"kolmogorov": 5.7e-14, "identity": 7.1e-15, "forward_form": 0.0, "geometry": 0.0},
+        "honest": {"kolmogorov": 4.3e-14, "identity": 7.1e-15, "forward_form": 0.0, "geometry": 0.0},
         "extent_on_target": {"forward_form": 0.001},
         "radius_for_area": {"forward_form": 17.2, "note": "insertion_area only; the same form under diffusion_radius"},
         "dropped_c0": {"forward_form": 6.91},
@@ -128,9 +128,15 @@ READINGS = [
     "Admission is v <= k^(-1/2) with v = 6 sqrt(pi) V/A^(3/2) and V = min(V_osm, V_sph) (§4.3, D2); the registered "
     "parents keep a margin from the threshold.",
     "A transfer replaces the pool's finite places by the fresh pool; held places are unchanged.",
-    "Poisson gaps are drawn lazily, one per scheduled shear (counter c gives gap c + 1); a gap beyond t_end may or may "
-    "not be recorded.",
+    "Poisson gaps are drawn lazily, one per scheduled shear (counter c gives gap c + 1), the first measured from "
+    "t = 0.",
     "The time uniform is recorded as the value that enters -ln(u).",
+    "Every draw is recorded with its address and fate: discarded draws, the draw that ends the run at t_end, and the "
+    "Poisson gap that lands past t_end included (a missing one fails the replay, with that message).",
+    "The world's counter and each parent's fission counter start at 0; a new lineage key's first counter is taken "
+    "from the record (not claimed). The carrier keys themselves are the trace's own.",
+    "The trace declares its channel table: in population mode it must be §0.2d 5's (declared steps forwards, then "
+    "reverses, for the pool and for every slot); a single lineage replays in its own declared order.",
 ]
 
 

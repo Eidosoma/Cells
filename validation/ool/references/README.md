@@ -411,18 +411,23 @@ that keeps all, a discarded draw). A run that does not is inconclusive (exit 2),
 has a daughter beyond σ_max with probability 0.90 (Monte Carlo, 200,000 splits), so all eight
 parents miss with probability 10⁻⁸.
 
-**Zero-power entries and readings.** The design file lists eighteen zero-power entries and six
+**Zero-power entries and readings.** The design file lists eighteen zero-power entries and nine
 readings of mine, so that the builder can confirm them before output. The ones that bind a replay:
 - a shear acts on the assemblies living at its start;
 - an attempt draws its block before the floor is tested, and `slots_full` is tested before the
   draw;
-- the shear work counts every daughter as born, a birth-lysed one included.
+- the shear work counts every daughter as born, a birth-lysed one included;
+- the first Poisson time is measured from t = 0;
+- every draw is recorded, the world's and each parent's fission counters start at 0, and a slot
+  group's channels are the declared steps forwards, then reverses.
 
 **Use.** `python -m validation.ool.references.harness2 --records DIR --out verdict.json` runs the
 rows on records in the canonical layout, which an adapter writes from the engine's bundles once the
 family's format exists. The run rows need diagnostic records: every draw of domains 1, 2, 5 and 6
-with its address and uniforms, discarded draws included, and each event's changes and ledger
-terms. `python -m validation.ool.references.standin2 --out DIR` writes honest stand-in records,
+with its address, uniforms and fate (discarded draws, the draw that ends the run and a Poisson gap
+past t_end included), the channel table (its fold orders), and each event's changes and ledger
+terms. The replay takes the carrier keys from the trace and checks that the trace is the registered
+run (mode, slots, t_end, schedules, the founders' counts and the pool), with exit 2 if not. `python -m validation.ool.references.standin2 --out DIR` writes honest stand-in records,
 and `--planted FORM` (or `--law-planted`, `--partition-planted`) a planted set.
 
 Tests: `test_ool_references_ol2.py` (the registration, the geometry, the encounter rates, the floor,
