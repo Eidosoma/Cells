@@ -911,6 +911,26 @@ def amendment_c4(c: dict, rng) -> None:
         }}
 
 
+def amendment_a2(a: dict) -> None:
+    """Amendment A2 (the kinds owner's batch, item 3, Q7): a diagram law's declared cycles must be
+    exactly its simple cycles, each once, with a consistent direction. Two plants on D2, beside
+    the declared bases: cycle A declared twice, and cycle A with one edge's direction flipped, so
+    its signed edges no longer form one closed walk."""
+    d2 = law_d2()
+    dup = copy.deepcopy(d2)
+    dup["id"] = "d2_slip_exchanger__duplicate_cycle"
+    dup["cycles"] = [dup["cycles"][0]] + copy.deepcopy(dup["cycles"])
+    dup["note"] = "PLANTED (Q7): cycle A declared twice; refused, each cycle is declared once"
+    flip = copy.deepcopy(d2)
+    flip["id"] = "d2_slip_exchanger__inconsistent_direction"
+    flip["cycles"][0]["edges"][1][1] = -flip["cycles"][0]["edges"][1][1]
+    flip["note"] = ("PLANTED (Q7): cycle A's second edge traversed backwards, so its walk breaks; "
+                    "refused")
+    a["planted_laws"] += [dup, flip]
+    for w in (dup, flip):
+        a["plant_states"][w["id"]] = "d2_slip_exchanger"
+
+
 def build() -> dict:
     rng = np.random.default_rng(SEED)
     a = seam_a(rng)
@@ -927,6 +947,7 @@ def build() -> dict:
     amendment_c2(c)
     amendment_c3(c)
     amendment_c4(c, rng)
+    amendment_a2(a)
     return {
         "kind": "cells.core_seams_reference_inputs@1",
         "registered": REGISTERED,

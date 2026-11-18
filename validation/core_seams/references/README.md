@@ -459,6 +459,42 @@ positive up to the stored amount.
     only where the anchors fail, so S1–S6's primal rows are unchanged.
   - Earlier inputs and values are unchanged. S7, `validity`, and mgx's reachability and valences
     are added. One test added (binding: 11).
+- **18 November 2026, 23:14 UTC, amendment A2, seam A's reference needs, before the kinds owner's
+  first output of A.** The source is the kinds owner's batch (statement 1 §5), read as that file
+  alone; none of their code was read. Each item is evaluated by its stated formula on this
+  package's references (`api.engine_wegscheider_band`, `api.engine_guard`):
+  - **1. The bands.**
+    - **Wegscheider:** B per row is exactly 0, B_ψ within u Σ(|ζ⁺| + |ζ⁻|), and R0 within
+      B_W = 32 ε (T + N), decided algebraically. The engine evaluates no float64 stand-in, so the
+      place registered is the declared doubles' own residual: at most 0.0029 B_W on every
+      passing cycle. A constant off by 1e-6 sits at least 7.4e5 B_W outside.
+      - B_W is 30–43 ε of this package's terms, inside its window of 0.93 to 1.4e6.
+      - Every verdict agrees.
+    - **The guard:** A = u Σ_m Φ_m [(K_m + 10) X_m + (T_m + M + 12 + (K_m + 11) Y_m) |x_m|], as
+      stated. It reproduces every registered verdict: fb_shift fires at its 12 band-interior
+      states, the planted negative S at its 2, and every admitted law and control stays silent.
+      - At fb_shift, A is 3.4–30 ε of this package's scale, inside its 0.064–9.1e3 window. The
+        kinds owner found about 5 ε at band0_eq.
+      - The admitted laws' honest stand-in sits at G ≤ 0, inside A.
+  - **2. S for diagram laws:** S = j⁺/ω, k = N ω, and J⁻ = J⁺ e^{ΔG/RT} from the contract only.
+    This is the registered convention, confirmed as the engine's.
+  - **3. Q7:** the declared cycles must be exactly the diagram's simple cycles, each once, each
+    with a consistent direction.
+    - D2 as {A, B} and D4 as {K1, K2} are refused, and D3's basis is admitted.
+    - Two plants are added, refused by the completeness check, which now catches both: D2 with
+      cycle A declared twice, and D2 with one edge of A traversed backwards.
+  - **4. The planted negative S** cannot be declared in the engine's Hill-product form (carried as
+    log S). The engine's plant injects S − 0.05 into the factored flux, and its guard refuses it
+    (G/A up to 1.6e14). `planted_negative_S_n1`'s row registers that substitution.
+  - **5. Conventions; no number changes.**
+    - The engine's x sums no standard part for a transported species, which cancels exactly. So
+      its terms are fewer than `dG_RT_terms_abs`, and this package's floors are conservative.
+    - The stored rate is σ_m = Σ over moved rows of ν (μ°/RT − ln c0), with c0 in mM, in @3's
+      1 mM frame, as `stored_standard_pJ_per_s`.
+  - **6. Finding 4:** the engine's slope tests compare an analytic zero against the central
+    differences' absolute floor, as amendment F4 does here.
+  - **The files:** two planted laws added to the inputs and their verdicts to the values. Every
+    earlier input and value is unchanged. Three tests added (cycles: 16).
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 

@@ -582,3 +582,119 @@ def mover_verdict(mover, registry) -> dict:
         if charge != 0:
             reasons.append(f"charge in base forms is {charge}, not 0")
     return {"verdict": "refused" if reasons else "admitted", "reasons": reasons}
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment A2 (the kinds owner's reference-needs batch, statement 1 §5): the engine's bands,
+# evaluated by the stated formulas on this package's references (no engine code is read)
+# --------------------------------------------------------------------------------------------
+
+U_DOUBLE = 2.0 ** -53
+EPS_DOUBLE = 2.0 ** -52
+
+
+def engine_wegscheider_band(law: dict, cycle: dict, registry: dict) -> dict:
+    """The engine's parse-time decision, as stated: decided algebraically, never at a state.
+
+    - B per row = Σ_e s_e (order⁺ − order⁻) + ν, an integer, must be 0 exactly;
+    - B_ψ = Σ_e s_e (ζ⁺ − ζ⁻) − q, exact rationals of the declared doubles, admitted within
+      u Σ_e (|ζ⁺| + |ζ⁻|), u = 2⁻⁵³;
+    - R0 = Σ_e s_e (ln k0⁺ − ln k0⁻) + Σ_s Δ_s (μ°_s/RT − ln c0 + ln c°_law), at 50 digits from
+      the declared doubles, admitted within B_W = 32 ε (T + N), ε = 2⁻⁵², with
+      T = Σ_e (|ln k0⁺| + |ln k0⁻|) + Σ_s |Δ_s| (|μ°_s/RT| + |ln c0| + |ln c°_law|) over the
+      species the cycle converts, and N = 2 L (its rate constants).
+
+    Here c0 = c°_law = the registry's standard concentration (1000 mM)."""
+    from fractions import Fraction
+    aff = D.affine_residual(law, cycle, registry)
+    edges = {e["id"]: e for e in law["edges"]}
+    with context():
+        conv = {}
+        for s_, _e, n in cycle["nu"]:
+            conv[s_] = conv.get(s_, 0) + int(n)
+        conv = {k: v for k, v in conv.items() if v != 0}
+        c0 = dec(registry["standard_concentration_mM"])
+        lnc0 = abs(c0.ln())
+        T = Decimal(0)
+        R0 = Decimal(0)
+        zeta_abs = Fraction(0)
+        for eid, d in cycle["edges"]:
+            e = edges[eid]
+            lf, lb = dec(e["fwd"]["k0_per_s"]).ln(), dec(e["bwd"]["k0_per_s"]).ln()
+            T += abs(lf) + abs(lb)
+            R0 += int(d) * (lf - lb)
+            zeta_abs += abs(Fraction(float(e["fwd"].get("zeta", 0.0)))) + \
+                abs(Fraction(float(e["bwd"].get("zeta", 0.0))))
+        for s_, n in conv.items():
+            mu = dec(registry["species"][s_]["mu0_RT"])
+            T += abs(n) * (abs(mu) + 2 * lnc0)
+            R0 += n * mu                        # − ln c0 + ln c°_law = 0 here
+        N = 2 * len(cycle["edges"])
+        B_W = 32 * EPS_DOUBLE * (fl(T) + N)
+        mine = sum((abs(dec(edges[eid]["fwd"]["k0_per_s"]).ln()) +
+                    abs(dec(edges[eid]["bwd"]["k0_per_s"]).ln()) for eid, _d in cycle["edges"]),
+                   Decimal(0))
+        mine += sum((abs(int(n) * dec(registry["species"][s_]["mu0_RT"]))
+                     for s_, _e, n in cycle["nu"]), Decimal(0))
+        band_psi = U_DOUBLE * float(zeta_abs)
+        structural = not aff["b"]
+        psi_ok = abs(float(aff["b_psi"])) <= band_psi
+        return {"R0": fl(R0), "T": fl(T), "N": N, "B_W": B_W,
+                "R0_over_B_W": abs(fl(R0)) / B_W,
+                "B_W_in_eps_of_this_terms": B_W / (EPS_DOUBLE * fl(mine)),
+                "B": {f"{s_}@{e_}": int(v) for (s_, e_), v in sorted(aff["b"].items())},
+                "B_psi": str(aff["b_psi"]), "B_psi_band": band_psi,
+                "admitted": structural and psi_ok and abs(fl(R0)) <= B_W}
+
+
+def _ln_mM_terms(nu, ls) -> float:
+    return sum(abs(int(n)) * (abs(math.log(float(ls["c_mM"][e][s]))) + 1) for s, e, n in nu)
+
+
+def engine_guard(law: dict, population: dict, registry: dict, host_state: dict) -> dict:
+    """The engine's population guard as stated: G = fl(Σ_m fl(J_m x_m)) ≤ A in RT fmol/s, with
+
+        A = u Σ_m Φ_m [(K_m + 10) X_m + (T_m + M + 12 + (K_m + 11) Y_m) |x_m|],
+        X_m = |g°_m| + Σ_k |ν_mk| (|ln c_k| + 1) + |q_m ψ|   (c in mM, g° over converted species),
+        Y_m = max_t (X_mt + |ε_t ψ|) over a net-flow mode's terms (0 otherwise),
+        Φ_m = J⁺ + J⁻ (factored, diagram) or Σ_t a k |w_t| (1 + e^{y_t}) (net flow),
+
+    K_m the mode's rows, T_m its terms (1 otherwise), M the population's modes. G is this
+    package's exact Σ J_m x_m; the verdict is G > A. Also: A in ε of this package's own scale
+    Σ_m (J⁺ + J⁻) × (ΔG/RT's terms), the window of §A3."""
+    ls = C.law_state(population, host_state)
+    with context():
+        fl_ = C.mode_fluxes(law, registry, ls, population["capacity_fmol_per_s"],
+                            population.get("availability", 1.0))
+        G = sum((fl_[m["id"]]["J"] * fl_[m["id"]]["dG_RT"] for m in C.modes(law)), Decimal(0))
+        ps = fl(D.psi(ls, registry["temperature_K"]))
+    mods = C.modes(law)
+    M = len(mods)
+    A, mine = 0.0, 0.0
+
+    def X_of(nu):
+        conv = {}
+        for s_, _e, n in nu:
+            conv[s_] = conv.get(s_, 0) + int(n)
+        g0 = sum(n * float(registry["species"][s_]["mu0_RT"]) for s_, n in conv.items())
+        q = sum(int(registry["species"][s_]["valence"]) * int(n) for s_, e, n in nu if e == "P")
+        return abs(g0) + _ln_mM_terms(nu, ls) + abs(q * ps)
+
+    for m in mods:
+        q = fl_[m["id"]]
+        x = fl(q["dG_RT"])
+        K = len(m["nu"])
+        if law["kind"] == "net_flow":
+            terms = m["flux_terms"]
+            Tm = len(terms)
+            Y = max(X_of(t["cycle_nu"]) + abs(float(t.get("shift_psi", 0.0)) * ps) for t in terms)
+            Phi = fl(q["J_scale"])
+        else:
+            Tm, Y, Phi = 1, 0.0, fl(q["J_scale"])
+        A += Phi * ((K + 10) * X_of(m["nu"]) + (Tm + M + 12 + (K + 11) * Y) * abs(x))
+        mine += Phi * dG_terms_abs(m["nu"], registry, ls)
+    A *= U_DOUBLE
+    Gf = fl(G)
+    return {"G_RT_fmol_per_s": Gf, "A_RT_fmol_per_s": A, "fires": Gf > A,
+            "G_over_A": Gf / A if A > 0 else None,
+            "A_in_eps_of_this_scale": A / (EPS_DOUBLE * mine) if mine > 0 else None}

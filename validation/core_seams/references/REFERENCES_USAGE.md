@@ -214,6 +214,12 @@ alone must not decide it.
 A tolerance has power where it lies below a plant's largest margin over ten floors, and above ten
 floors. For seam A's rounding bands that is §19 item 2's.
 
+**The engine's stated bands** (amendment A2; the kinds owner's batch). `api.engine_wegscheider_band`
+evaluates B, B_ψ and R0 against B_W = 32 ε (T + N) for a declared cycle. `api.engine_guard`
+evaluates the guard's G against A. The design file places both (`power.A2_amendment_engine_band`,
+`power.A3_population_guard.engine_allowance`). Q7 requires the declared cycles to be exactly the
+simple cycles, each once, each a closed walk.
+
 **Zero cases: an absolute floor** (amendment F4). Compare every pair absolutely, |x − y| ≤ 10 τ,
 with τ built from the computation's term sums, never relatively with the zero pairs skipped:
 - **A slope** (`api.slope_pairs`) has τ = (terms + 8) u M/h, with u = ½ 10^(1 − PREC) and M the

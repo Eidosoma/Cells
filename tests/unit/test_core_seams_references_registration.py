@@ -64,7 +64,7 @@ def test_the_registered_power(registered):
             continue
         planted = "__" in lid
         assert w["verdict"] == ("refused" if planted else "admitted"), lid
-        if planted and "basis" not in lid:
+        if planted and not any(k in lid for k in ("basis", "duplicate", "inconsistent")):
             failing = [c for c in w["cycles"].values()
                        if not c["structurally_zero"] or c["r0_over_terms_eps"] > 64]
             assert failing and min(c["min_residual_eps_over_generic"] for c in failing) > 640
@@ -100,6 +100,14 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment A2: the engine's stated band and allowance reproduce every verdict
+    eb = p["A2_amendment_engine_band"]
+    assert eb["every_verdict_agrees"] and eb["passing_R0_over_B_W_max"] < 1e-2
+    assert eb["planted_constant_R0_over_B_W_min"] > 1e5
+    lo, hi = eb["this_window_eps"]
+    assert lo < eb["B_W_in_eps_of_this_terms"][0] and eb["B_W_in_eps_of_this_terms"][1] < hi
+    ea = p["A3_population_guard"]["engine_allowance"]
+    assert ea["every_verdict_agrees"] and ea["inside_the_window"]
     # amendment C4: every registered state is jointly valid; the per-ligand floors admit the
     # two planted invalid states
     c4 = p["C4_amendment_joint_validity"]

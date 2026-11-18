@@ -6256,6 +6256,585 @@
      }
     ],
     "note": "PLANTED: declares only the basis ['K1', 'K2']; its cycles share an edge, so it must be refused (\u00a716)"
+   },
+   {
+    "id": "d2_slip_exchanger__duplicate_cycle",
+    "kind": "diagram",
+    "rate_scale_per_s": 1000.0,
+    "states": [
+     "E_N",
+     "E_N.Y",
+     "E_P.Y",
+     "E_P",
+     "E_P.X3",
+     "E_N.X3"
+    ],
+    "edges": [
+     {
+      "id": "e01",
+      "from": 0,
+      "to": 1,
+      "fwd": {
+       "k0_per_s": 8007621023.863292,
+       "orders": [
+        [
+         "Y",
+         "N",
+         1
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 799.2386229227801,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e12",
+      "from": 1,
+      "to": 2,
+      "fwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e23",
+      "from": 2,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 899.9858764468293,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 500007.84654156264,
+       "orders": [
+        [
+         "Y",
+         "P",
+         1
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e34",
+      "from": 3,
+      "to": 4,
+      "fwd": {
+       "k0_per_s": 255314.046066425,
+       "orders": [
+        [
+         "X",
+         "P",
+         3
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 699.4187406554578,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e45",
+      "from": 4,
+      "to": 5,
+      "fwd": {
+       "k0_per_s": 196.2929327657591,
+       "orders": [],
+       "zeta": -0.375
+      },
+      "bwd": {
+       "k0_per_s": 1273.6067288695046,
+       "orders": [],
+       "zeta": 0.625
+      }
+     },
+     {
+      "id": "e50",
+      "from": 5,
+      "to": 0,
+      "fwd": {
+       "k0_per_s": 794.2251669709472,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 805816821.9988064,
+       "orders": [
+        [
+         "X",
+         "N",
+         3
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e03",
+      "from": 0,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 0.26857955936987105,
+       "orders": [],
+       "zeta": -1.0
+      },
+      "bwd": {
+       "k0_per_s": 1.4893166141848676e-05,
+       "orders": [],
+       "zeta": 1.0
+      }
+     }
+    ],
+    "cycles": [
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "B",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e03",
+        -1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ]
+      ]
+     },
+     {
+      "id": "C",
+      "edges": [
+       [
+        "e03",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     }
+    ],
+    "note": "PLANTED (Q7): cycle A declared twice; refused, each cycle is declared once"
+   },
+   {
+    "id": "d2_slip_exchanger__inconsistent_direction",
+    "kind": "diagram",
+    "rate_scale_per_s": 1000.0,
+    "states": [
+     "E_N",
+     "E_N.Y",
+     "E_P.Y",
+     "E_P",
+     "E_P.X3",
+     "E_N.X3"
+    ],
+    "edges": [
+     {
+      "id": "e01",
+      "from": 0,
+      "to": 1,
+      "fwd": {
+       "k0_per_s": 8007621023.863292,
+       "orders": [
+        [
+         "Y",
+         "N",
+         1
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 799.2386229227801,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e12",
+      "from": 1,
+      "to": 2,
+      "fwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e23",
+      "from": 2,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 899.9858764468293,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 500007.84654156264,
+       "orders": [
+        [
+         "Y",
+         "P",
+         1
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e34",
+      "from": 3,
+      "to": 4,
+      "fwd": {
+       "k0_per_s": 255314.046066425,
+       "orders": [
+        [
+         "X",
+         "P",
+         3
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 699.4187406554578,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e45",
+      "from": 4,
+      "to": 5,
+      "fwd": {
+       "k0_per_s": 196.2929327657591,
+       "orders": [],
+       "zeta": -0.375
+      },
+      "bwd": {
+       "k0_per_s": 1273.6067288695046,
+       "orders": [],
+       "zeta": 0.625
+      }
+     },
+     {
+      "id": "e50",
+      "from": 5,
+      "to": 0,
+      "fwd": {
+       "k0_per_s": 794.2251669709472,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 805816821.9988064,
+       "orders": [
+        [
+         "X",
+         "N",
+         3
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e03",
+      "from": 0,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 0.26857955936987105,
+       "orders": [],
+       "zeta": -1.0
+      },
+      "bwd": {
+       "k0_per_s": 1.4893166141848676e-05,
+       "orders": [],
+       "zeta": 1.0
+      }
+     }
+    ],
+    "cycles": [
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        -1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "B",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e03",
+        -1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ]
+      ]
+     },
+     {
+      "id": "C",
+      "edges": [
+       [
+        "e03",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     }
+    ],
+    "note": "PLANTED (Q7): cycle A's second edge traversed backwards, so its walk breaks; refused"
    }
   ],
   "parse_plants": [
@@ -13706,7 +14285,9 @@
    "d4_parallel_branches__conc": "d4_parallel_branches",
    "d4_parallel_branches__swap": "d4_parallel_branches",
    "d2_slip_exchanger__basis_AB": "d2_slip_exchanger",
-   "d4_parallel_branches__basis_K1K2": "d4_parallel_branches"
+   "d4_parallel_branches__basis_K1K2": "d4_parallel_branches",
+   "d2_slip_exchanger__duplicate_cycle": "d2_slip_exchanger",
+   "d2_slip_exchanger__inconsistent_direction": "d2_slip_exchanger"
   },
   "amendments": [
    {

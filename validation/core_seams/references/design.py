@@ -97,6 +97,15 @@ def wegscheider_verdict(law, reg, law_states) -> tuple:
     comp = D.cycle_set_complete(law)
     w = api.wegscheider(law, reg, law_states)
     reasons = []
+    # amendment A2 (Q7): each simple cycle declared once, each with a consistent direction
+    keys = [tuple(sorted(eid for eid, _d in c["edges"])) for c in law["cycles"]]
+    if len(keys) != len(set(keys)):
+        reasons.append("a cycle declared more than once")
+    for c in law["cycles"]:
+        try:
+            D.check_traversal(law, c)
+        except ValueError as e:
+            reasons.append(f"an inconsistent direction ({e})")
     if not comp["complete"]:
         reasons.append(f"the declared cycles are not the diagram's full set (missing "
                        f"{comp['missing']})")
@@ -343,6 +352,13 @@ def seam_a(inputs) -> tuple:
         verdict, w = wegscheider_verdict(law, reg, lsts)
         val["wegscheider"][law["id"]] = _weg_values(verdict, w)
         dia["weg"][law["id"]] = w
+    # amendment A2: the engine's stated band on every cycle, and its guard at every state
+    dia["engine_band"] = {law["id"]: {c["id"]: api.engine_wegscheider_band(law, c, reg)
+                                      for c in law["cycles"]}
+                          for law in A["laws"] + A["planted_laws"] if law["kind"] == "diagram"}
+    dia["engine_guard"] = {law["id"]: [api.engine_guard(law, A["populations"][law["id"]], reg, st)
+                                       for st in A["states"][law["id"]]]
+                           for law in A["laws"]}
     for plant in A["parse_plants"]:
         r = reg if plant["registry"] == "A" else _registry_c_as_rows(inputs)
         val["parse"][plant["id"]] = C.parse_checks(plant["nu"], r)
@@ -645,6 +661,42 @@ def power_a(inputs, va, da) -> dict:
                     "reasons": va["wegscheider"][lid]["reasons"], "cycles": cyc}
     power["A2_wegscheider"] = weg
 
+    # amendment A2: the engine's band (B, B_ψ, R0 against B_W), and Q7's rule, against the
+    # references' verdicts; the declared doubles' own residual's place inside B_W
+    verdicts = {k: v["verdict"] for k, v in va["wegscheider"].items()}
+    reasons = {k: v["reasons"] for k, v in va["wegscheider"].items()}
+    eb = {}
+    for lid, cyc in da["engine_band"].items():
+        q7 = not any(r.startswith(("the declared cycles", "a declared basis", "a cycle declared",
+                                   "an inconsistent")) for r in reasons[lid])
+        band = all(c["admitted"] for c in cyc.values())
+        eb[lid] = {"band_admits_every_cycle": band, "q7_complete_once_consistent": q7,
+                   "engine_admits": band and q7, "reference_verdict": verdicts[lid],
+                   "agree": (band and q7) == (verdicts[lid] == "admitted"),
+                   "cycles": {cid: {k: c[k] for k in ("R0_over_B_W", "B_W",
+                                                      "B_W_in_eps_of_this_terms", "B",
+                                                      "B_psi", "B_psi_band", "admitted")}
+                              for cid, c in cyc.items()}}
+    passing = [c["R0_over_B_W"] for lid, r in eb.items() if "__" not in lid
+               for c in r["cycles"].values()]
+    const = [c["R0_over_B_W"] for lid, r in eb.items() if lid.endswith(("__k_1pct", "__k_1e-6"))
+             for c in r["cycles"].values() if not c["admitted"]]
+    bw_eps = [c["B_W_in_eps_of_this_terms"] for r in eb.values() for c in r["cycles"].values()]
+    power["A2_amendment_engine_band"] = {
+        "laws": eb,
+        "every_verdict_agrees": all(r["agree"] for r in eb.values()),
+        "passing_R0_over_B_W_max": max(passing),
+        "planted_constant_R0_over_B_W_min": min(const),
+        "B_W_in_eps_of_this_terms": [min(bw_eps), max(bw_eps)],
+        "this_window_eps": [10 * max(c["r0_over_terms_eps"] for lid, r in da["weg"].items()
+                                     if "__" not in lid for c in r.values()),
+                            min(power["A2_wegscheider"][lid]["cycles"][cid]
+                                ["min_residual_eps_over_generic"]
+                                for lid in power["A2_wegscheider"] if lid.endswith("__k_1e-6")
+                                for cid, c in power["A2_wegscheider"][lid]["cycles"].items()
+                                if not c["structurally_zero"] or c["r0_over_terms_eps"] > 64)
+                            / 10]}
+
     # A3: the population guard (its rounding scale from the one-way magnitudes and ΔG's terms)
     guard = {}
     for gid in ("fb_shift", "fb_masked", "fb_basis"):
@@ -686,6 +738,36 @@ def power_a(inputs, va, da) -> dict:
                                                                        for x in rows),
                                     "standin_expm1_max_total": max(x["expm1_total"] for x in rows)}
                               for lid, rows in da["standin"].items()}
+    # amendment A2: the engine's stated allowance A at every state, its verdicts against the
+    # references', and A's place in this package's window
+    eg = {}
+    for lid, rows in da["engine_guard"].items():
+        tags = [s_["tag"] for s_ in va["laws"][lid]["states"]]
+        fires = [t for t, r in zip(tags, rows, strict=True) if r["fires"]]
+        a_eps = [r["A_in_eps_of_this_scale"] for r in rows
+                 if r["A_in_eps_of_this_scale"] is not None]
+        if lid in guard:
+            expected = guard[lid]["fires_at"]
+        elif lid == "planted_negative_S_n1":
+            expected = a1["planted_negative_S_n1"]["states_with_S_below_zero"]
+        else:
+            expected = []
+        eg[lid] = {"engine_fires_at": fires, "expected": expected, "agree": fires == expected,
+                   "A_in_eps_of_this_scale": [min(a_eps), max(a_eps)] if a_eps else None,
+                   "max_G_over_A": max((r["G_over_A"] for r in rows
+                                        if r["G_over_A"] is not None), default=None)}
+    guard["engine_allowance"] = {
+        "laws": eg, "every_verdict_agrees": all(r["agree"] for r in eg.values()),
+        "fb_shift_A_in_eps": eg["fb_shift"]["A_in_eps_of_this_scale"],
+        "this_window_eps": guard["fb_shift"]["verdicts_hold_for_a_band_in_eps"],
+        "inside_the_window": (guard["fb_shift"]["verdicts_hold_for_a_band_in_eps"][0] <
+                              eg["fb_shift"]["A_in_eps_of_this_scale"][0] and
+                              eg["fb_shift"]["A_in_eps_of_this_scale"][1] <
+                              guard["fb_shift"]["verdicts_hold_for_a_band_in_eps"][1]),
+        "substitution_planted_negative_S": (
+            "the engine's factored form is a Hill product carried as log S, so S − 0.05 cannot "
+            "be declared; its plant injects S − 0.05 into the factored flux's evaluation, and "
+            "the guard refuses it (the kinds owner's batch, item 4, at the lead's acceptance)")}
     power["A3_population_guard"] = guard
 
     # A4: one-way fluxes
