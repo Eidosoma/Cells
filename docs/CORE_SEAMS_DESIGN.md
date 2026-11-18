@@ -1114,3 +1114,75 @@ equivalents. It therefore refuses explicit steps far below the buffer's real cap
 the closure's free amount after equilibration. That fix belongs with C's multi-ligand closure, with
 a planted case. FR-4's and FR-5's declared worlds run at 0.5 ms without meeting it, so their margin
 is checked.
+
+## 18. The pass starts: the lead's rulings at launch (18 November 2026)
+
+Move 2 has landed (`d188-move2-landed-2026-11-18`), and core-fixes is carried across it. Owners cite
+this section for who edits what, as the origin-of-life agents cite that note's §0.2.
+
+**The owner table** is `docs/CORE_SEAMS_STEP0.md` §4.2, re-checked on the landed tree.
+- **The check.** It covered 130 files: no file has two owners, and every path the table names exists
+  at its post-move home (`/mnt/workspaces/Cells/core-pass-kickoff-20261118/owners2.json`).
+- **Amended with the OL2/OL3 builder's files:**
+  - `models/assembly_lineages_v2/` and @1's `models/assembly_lineages/` (its five shared-loop files,
+    by the origin-of-life note's §0.2c rule 16);
+  - `records/relations.py`, for the next relations version;
+  - `validation/assembly_lineages_v2/`;
+  - their tests.
+- **`registry/model_table.py` is the F owner's,** for its structure, its per-law homes and the
+  ensemble's runner dispatch (§15). The one exception is the rows of `cells.assembly_lineages@1`
+  and `@2`, which the OL2/OL3 builder edits. The F owner announces any change of structure to the
+  builder first.
+
+**The note's three readings are confirmed:**
+- the F owner counts inside the seven;
+- the F owner owns `registry/kind_registry.py` whole;
+- the per-law extractions and the guard are the F owner's.
+
+**Option (a) is taken.** The operators owner lands refusal 4 per move (version 1.3, in
+`operators/compartments.py` and its test) before composition's M1. That unblocks mitochondria's M1
+about eight days sooner.
+
+**The two cross-owner hand-offs:**
+- **`KindRates`.** The F owner puts the class in the kind contract, `registry/kind_registry.py`. The
+  @3 owner replaces its definition in `models/surface_pump_v3.py` with the import, in the same
+  merge window.
+- **P1's positivity predictor** (§17). The @3 owner edits `surface_pump_v3.imex_step`, which reads
+  the quantity it differentiates. The binding owner supplies the closure's free-amount function,
+  in its new multi-ligand closure module, and the planted buffered-node case.
+
+**Seats, within seven:**
+- **At launch:**
+  - the F, @3 and operators owners;
+  - the references agent, which registers A's and C's references before either seam's first
+    output;
+  - the OL2/OL3 builder;
+  - a verification owner, for tier 3, G3 and G4 on the final tree;
+  - the FR owner, for the gate worlds below.
+- **The binding owner** starts when the FR owner's gate worlds land.
+- **The kinds owner** starts when the verification owner finishes. Its work waits for F's registry
+  and the host table anyway.
+
+**Gates added before the first landing under `operators/`, `kinds/` or @3:**
+- **The FR worlds.** Quick worlds for last night's judged acceptances join
+  `validation/tissue/composite_crossrev.py` as a new set, compared bitwise at every core landing:
+  - FR-1's compartment, with exchange, turnover and reactions;
+  - FR-3's `site_occupancy@1`;
+  - FR-10's bath schedule;
+  - FR-6's A5″ state.
+
+  FR-4 and FR-5 are already covered by crossrev's kinds set and FR's landing set.
+- **Tier 3** runs once on the final tree, the core-fixes landing, together with G3 and G4 (D194).
+  The tier-3 diff is read through both maps, and `tests/tier3_record.json` is re-frozen from that
+  run, so that a later regression can be told from the moves' fallout.
+
+**FR-18, @3's energy check.**
+- The check is too strict at moderate steps, refusing the replication's junction worlds at
+  dt × rate 0.08–0.31. It is also too loose for small misbookings: FR-1's and FR-3's judges found
+  that it admits a 10⁻⁶ work plant.
+- It is a criterion-first scratch probe for the @3 owner, with no code until the lead rules. The
+  probe reads G1's and the judged worlds' steps and asks whether a tolerance from the step's own
+  error estimate admits FR-18's worlds and refuses the plant.
+
+**Every landing:** the tier record is folded with `scripts/test_tiers.py tiers --base`, and each
+landing is gated at its merged head.
