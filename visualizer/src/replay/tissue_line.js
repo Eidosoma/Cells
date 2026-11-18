@@ -46,7 +46,7 @@ export function lineOf(raw, id) {
   if (!entry?.tissue || !sweep) return null;
   const rows = new Map((raw.runs || []).map((run) => [run.id, run]));
   const tissue = entry.tissue;
-  const runs = sweep.arms.filter((arm) => arm.run && rows.has(arm.run)).map((arm) => ({ kind: "run", arm: arm.arm, id: arm.run, row: rows.get(arm.run), value: arm.parameter, end: tissue.ends?.[arm.arm] || null }));
+  const runs = sweep.arms.filter((arm) => arm.run && rows.has(arm.run)).map((arm) => ({ kind: "run", arm: arm.arm, id: arm.run, row: rows.get(arm.run), value: arm.parameter, end: tissue.ends?.[arm.arm] || null, place: arm.place || null }));
   const refused = (entry.refused_picks || []).filter((pick) => pick.sweep === sweep.id).map((pick) => ({ kind: "refused", arm: pick.arm, id: null, row: null, value: pick.parameter, end: null }));
   // In the order of the parameter's own values: a refused pick stands where its value puts it, between the runs.
   const slots = [...runs, ...refused].map((slot, order) => ({ slot, order })).sort((a, b) => a.slot.value - b.slot.value || a.order - b.order).map(({ slot }) => slot);
@@ -55,6 +55,8 @@ export function lineOf(raw, id) {
   for (const slot of slots) {
     slot.short = `${symbol} = ${valueWords(slot.value)}`;
     slot.label = `${slot.short} ${unit}`;
+    // Its place against the threshold, as the summary states it ("x2/2"), where it does.
+    slot.where = slot.place?.relative_to_x2 || null;
   }
   return {
     id: entry.id,
@@ -64,7 +66,9 @@ export function lineOf(raw, id) {
     slots,
     runs: slots.filter((slot) => slot.kind === "run"),
     refused: slots.filter((slot) => slot.kind === "refused"),
-    tumor: tissue.tumor || null,
+    // The tumour's cells as the summary states them (`tumor_cells`, as seeded), else as the overlay's words name them.
+    tumor: Array.isArray(sweep.tumor_cells) ? { cells: sweep.tumor_cells, label: "Tumor: its cells as seeded", source: "the run folder's summary, tumor_cells" } : tissue.tumor || null,
+    species: sweep.species || null,
     says: tissue.says || [],
     endsLabel: tissue.ends_label || "End states",
     endsSaid: tissue.ends_says || null, // whose words the end states are, as the entry says it (the card's line)
@@ -85,6 +89,30 @@ export function oneClock(runs) {
     }
   }
   return first;
+}
+
+/**
+ * The clock of runs shown together, where their saved times differ (one arm recorded a step in at a finer step than the
+ * others): the union of their times. No run is resampled: at any time each run shows its own record at or before it.
+ * Gives { t, count, start, end, indexAt(seconds) }, as the player reads a run's.
+ */
+export function unionClock(runs) {
+  if (!runs.length) throw new Error("no run to keep a clock for");
+  const all = runs.flatMap((run) => Array.from(run.t)).sort((a, b) => a - b);
+  const t = [];
+  for (const time of all) if (!t.length || time - t[t.length - 1] > TIME_SLACK) t.push(time);
+  const indexAt = (seconds) => {
+    const limit = seconds + TIME_SLACK;
+    if (!(limit > t[0])) return 0;
+    let low = 0, high = t.length - 1;
+    while (low < high) {
+      const middle = (low + high + 1) >> 1;
+      if (t[middle] <= limit) low = middle;
+      else high = middle - 1;
+    }
+    return low;
+  };
+  return { t, count: t.length, start: t[0], end: t[t.length - 1], indexAt };
 }
 
 const channel = (hex, at) => parseInt(hex.slice(at, at + 2), 16) / 255;
@@ -208,8 +236,8 @@ export function timeAxis(start, end, { scale = "log", step = null, gap = 0.075 }
   }
   ticks.push({ time: end, at: 1, words: clock(end - start), major: true });
   const words = log
-    ? `Time runs down each picture on a logarithmic scale, the picture's choice: a time t stands at log(1 + t / ${Number(step.toPrecision(6)).toLocaleString("en-US")} s), the runs' first saved step, so the first minutes are drawn wider than the last; the ticks give the times. Every saved record is drawn, each as a band from its time to the next.`
-    : "Time runs down each picture on an even scale: every second is as long. Every saved record is drawn, each as a band from its time to the next.";
+    ? `Time runs down each map on a logarithmic scale, the picture's choice: a time t stands at log(1 + t / ${Number(step.toPrecision(6)).toLocaleString("en-US")} s), a two-hundredth of the run, so the first minutes are drawn wider than the last; the ticks give the times. Every saved record is drawn, each as a band from its time to the next.`
+    : "Time runs down each map on an even scale: every second is as long. Every saved record is drawn, each as a band from its time to the next.";
   return { at, scale: log ? "log" : "even", step: log ? step : null, start, end, ticks, words };
 }
 

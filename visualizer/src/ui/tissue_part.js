@@ -18,6 +18,12 @@ export function isPart(raw, id) {
   return Boolean(entry?.part_of) && partsOf(raw, entry.part_of).some((item) => item.id === id);
 }
 
+/** The part the Experiments tab opens on: the one its first listed example names (`opens.part`), where it is a part the page can show; else null. */
+export function openingPart(raw) {
+  const named = (raw?.experiments || []).filter((item) => item.listed === true).map((item) => item.opens?.part).find(Boolean);
+  return named && isPart(raw, named) ? named : null;
+}
+
 /** The run a part's whole opens on (its first run), for the list's pressed row while the part is shown; null where none. */
 export function wholeRunOf(raw, id) {
   const entry = (raw?.experiments || []).find((item) => item.id === id);

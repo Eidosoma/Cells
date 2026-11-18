@@ -1430,6 +1430,8 @@ HISTORY_FIELDS = {
     "membrane_transferred": (("species", "membrane"), "Carried across the membrane", "transport"),
     "channel_transferred": (("channel",), "Carried through a channel population", "transport"),
     "junction_transferred": (("species", "junction"), "Carried through a junction", "transport"),
+    # A passive route's total (cells.passive_routes@1): what one route carried since the start, for each species, positive the way its sign says.
+    "passive_transferred": (("species", "passive_route"), "Carried along a passive route", "transport"),
     "face_transferred": (("species", "face"), "Carried across a face", "transport"),
     "reservoir_supplied": (("species", "outside"), "Supplied by a reservoir", "transport"),
     "pump_cycles": (("membrane",), "Pump cycles", "transport"),
@@ -1899,6 +1901,22 @@ def stated_quantity(name, folder, file, cells, times):
                 raise Refused(f"{where}: its criterion's lower threshold needs a value under the upper one, its word below it, and the word for between the two (criterion.lower, criterion.between)")
             record["marks"] = [{"value": lower["threshold"], "label": f"{lower['below']} below, {said['between']} between"}, {"value": said["threshold"], "label": f"{said['above']} above"}]
         record["criterion"] = {"words": said["words"], "source": said["source"]}
+        # What the driver states beside its criterion of the run as a whole, carried as given: the tumor's cells as seeded
+        # (`tumor_cells`, cells of the view), the run's species by name (`species`), the arm's place against a threshold (`place`).
+        if "tumor_cells" in data:
+            if not (isinstance(data["tumor_cells"], list) and data["tumor_cells"] and all(isinstance(cell, str) and cell in cells for cell in data["tumor_cells"])):
+                raise Refused(f"{where}: its tumor_cells are not cells of the run's view")
+            record["tumor_cells"] = list(data["tumor_cells"])
+        if "species" in data:
+            if not (isinstance(data["species"], dict) and all(isinstance(key, str) and isinstance(value, str) and value for key, value in data["species"].items())):
+                raise Refused(f"{where}: its species are not names of the run's species (species: id to name)")
+            # Named apart from a record's own `species` (the one species a record of a species is of).
+            record["species_names"] = dict(data["species"])
+        if "place" in data:
+            place = data["place"]
+            if not (isinstance(place, dict) and isinstance(place.get("relative_to_x2"), str) and place.get("side") in ("below", "at", "above") and isinstance(place.get("source"), str)):
+                raise Refused(f"{where}: its place does not say where the arm stands (relative_to_x2, side, source)")
+            record["place"] = {key: place[key] for key in ("D", "x2", "ratio_to_x2", "relative_to_x2", "side", "source") if key in place}
         if "states" in data:
             given = data["states"]
             if not (isinstance(given, list) and len(given) == len(stated_times) and all(isinstance(row, list) and len(row) == len(named) and all(isinstance(state, str) and state for state in row) for row in given)):
@@ -2163,6 +2181,12 @@ def adapt_engine_view(root, name, experiment, entry):
         not_recorded = [field for field in HISTORY_FIELDS if field not in subset["fields"] and field not in present and could_record(field)]
     labels = {**FIELD_LABELS, **VIEW_FIELD_LABELS}
     voltages, unread_voltages, referenced, sums, unsummed = {}, [], [], {}, []
+    # What the picture opens with stays in the run's own file. A part of an experiment whose picture opens on a quantity
+    # its driver states (`part_of`, `opens.record`) opens on that, so its voltages, like every other field, go in a file of
+    # their own, fetched when a layer shows them.
+    main_fields = () if entry.get("part_of") and (entry.get("opens") or {}).get("record") else HISTORY_MAIN
+    if not main_fields:
+        derivation.append("The voltages are packaged in a file of their own: this part's picture opens on the quantity its driver states (opens.record).")
     for field in [*HISTORY_FIELDS, *VIEW_FIELD_LABELS]:  # the page's own order of fields, then the merged views it reads
         for record in [item for item in listed if item["field"] == field and merged(item) == (field in VIEW_FIELD_LABELS)] + ([summed[field]] if field in summed else []):
             rows = range(count)
@@ -2252,12 +2276,22 @@ def adapt_engine_view(root, name, experiment, entry):
             else:
                 split = {identifier: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for identifier, old in species_rows} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
 
+            # A set whose entities each say which species they carry (a passive route's `carries`): only those species' totals
+            # are packaged, since no entity of the set can carry another; the derivation says which were left.
+            carried_by = sets.get(entity, {}).get("carries") if len(axes) == 2 else None
+            if isinstance(carried_by, list) and carried_by:
+                carried = {identifier for value in carried_by for identifier in ([value] if isinstance(value, str) else value or [])}
+                left = sorted(identifier for identifier in split if identifier not in carried)
+                if left and len(left) < len(split):
+                    split = {identifier: item for identifier, item in split.items() if identifier in carried}
+                    derivation.append(f"{field} is packaged for the species the {entity} set's entities carry ({', '.join(sorted(split))}); its rows for {', '.join(left)}, which none of them carries, are left out.")
+
             def declare(target, values_, species_id=None, part=None):
                 label = labels[field] if species_id is None else f"{labels[field]}: {species_id}"
                 extra = {"field": field, "species": species_id} if species_id is not None else {}
                 return describe(target, field if species_id is None else f"{field}.{species_id}", label, record["unit"], ["time", entity], "float32", (count, len(columns)), values_, set=entity, layer=record["layer"], owner=record["owner"], part=part, **stated, **extra)
 
-            if field in HISTORY_MAIN:
+            if field in main_fields:
                 records.append(declare(payload, split[None]))
                 continue
             slug = re.sub(r"[^a-z0-9]+", "-", field.lower()).strip("-")
@@ -2278,7 +2312,7 @@ def adapt_engine_view(root, name, experiment, entry):
         record = stated["record"]
         if any(item["id"] == record["id"] for item in records):
             raise Refused(f"{name}: its {file} states a quantity ({record['id']}) another file beside it already states")
-        extra = {key: record[key] for key in ("stated", "marks", "criterion") if key in record}
+        extra = {key: record[key] for key in ("stated", "marks", "criterion", "tumor_cells", "species_names", "place") if key in record}
         if stated["states"]:
             extra["states"] = record["id"] + ".state"
         records.append(describe(payload, record["id"], record["label"], record["unit"], ["time", "cell"], "float32", (count, len(cells)), stated["values"], set="cell", **extra))
@@ -2481,6 +2515,13 @@ def adapt_engine_view(root, name, experiment, entry):
         for key, values in (("direction", directions), ("kinds", kinds), ("at", places)):
             if values is not None:
                 item[key] = values
+        # Where each entity acts, as the view states it (`at`: one entity of one set, by its id), is the set's place on the
+        # picture where the view gives it no geometry of its own: a passive route stands on its junction.
+        targets = {next(iter(value)) for value in places} if places else set()
+        if places and "geometry" not in item and len(targets) == 1 and next(iter(targets)) in place and next(iter(targets)) in packaged:
+            target = next(iter(targets))
+            ids = sets[target].get("ids") or []
+            item["geometry"] = {"kind": "on", "set": target, "index": [place[target][ids.index(next(iter(value.values())))] for value in places]}
         said = []
         for k, entity in enumerate(item["ids"]):
             words = ", ".join(values[k] for values in (directions, kinds) if values)
@@ -2952,6 +2993,9 @@ def sweeps_of(path, rows):
             if refs and (reference is None or not (isinstance(refs, dict) and set(refs) <= set(ids) and all(finite(value) for value in refs.values()))):
                 raise Refused(f"{path.name}: arm {arm['arm']} gives a reference value the sweep does not name")
             item = {"arm": arm["arm"], "run": by_arm.get(arm["arm"]), "parameter": arm["parameter"], "readouts": {key: values[key] for key in ids if key in values}}
+            # The arm's place against a threshold, where the summary states it, carried as given (its label, side and source).
+            if isinstance(arm.get("place"), dict) and isinstance(arm["place"].get("relative_to_x2"), str) and isinstance(arm["place"].get("source"), str):
+                item["place"] = {key: arm["place"][key] for key in ("D", "x2", "ratio_to_x2", "relative_to_x2", "side", "source") if key in arm["place"]}
             if refs:
                 item["reference"] = {key: refs[key] for key in ids if key in refs}
             arms.append(item)
@@ -2962,6 +3006,11 @@ def sweeps_of(path, rows):
             out["reference"] = {key: reference[key] for key in ("label", "source") if isinstance(reference.get(key), str)}
         if isinstance(sweep.get("plain"), str):
             out["plain"] = sweep["plain"]
+        # What the summary states of the sweep's world as data: the tumor's cells as seeded, and the species by name.
+        if isinstance(sweep.get("tumor_cells"), list) and all(isinstance(cell, str) for cell in sweep["tumor_cells"]):
+            out["tumor_cells"] = list(sweep["tumor_cells"])
+        if isinstance(sweep.get("species"), dict) and all(isinstance(value, str) for value in sweep["species"].values()):
+            out["species"] = dict(sweep["species"])
         sweeps.append(out)
     return sweeps
 

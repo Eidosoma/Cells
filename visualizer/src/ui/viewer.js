@@ -31,7 +31,7 @@ import { renderAtlasNav } from "./atlas_nav.js";
 import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
 import { makeTissueLens } from "../lenses/tissue_line.js";
-import { isPart, partDoors, wholeRunOf } from "./tissue_part.js";
+import { isPart, partDoors, wholeRunOf, openingPart } from "./tissue_part.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
@@ -262,6 +262,10 @@ class CellsViewer extends HTMLElement {
     // A model system's view in the Experiments tab's place, from its list (`example=gard`; showExample).
     if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
     else if (isPart(this.model.raw.replays, query.get("part"))) this.state.part = query.get("part"); // a part of an example (showPart)
+    // The Experiments tab opens on the part its listed example names (its entry's `opens.part`), unless the address names
+    // something of the runs' own view: a run, a record, layers or their strength, or, in this tab, a part to choose that is
+    // not a cell of the part's.
+    else if (!["run", "record", "layers", "strength"].some((key) => query.get(key)) && !(wanted === "experiments" && query.get("select") && !query.get("select").startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the units Cells has laws for ("units") or the species' own proteins ("own").
@@ -340,7 +344,7 @@ class CellsViewer extends HTMLElement {
       if (!this.lenses.has(key)) {
         const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still") }) : null;
         made?.ready?.then((view) => view && this.swapLens(key, view));
-        const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null) }) : spec.make(this.stage, this.model, this.labels);
+        const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null), open: (id) => this.showPart(id) }) : spec.make(this.stage, this.model, this.labels);
         lens.onChrome = () => {
           if (this.current === lens) this.renderChrome();
         };

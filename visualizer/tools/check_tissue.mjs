@@ -1,27 +1,41 @@
 #!/usr/bin/env node
-// Checks the gap-junction example's tissue line (src/lenses/tissue_line.js) with real pointer input, through the
-// DevTools protocol, on its real runs: the run folder the page's selection names, packaged here by the page's own overlay
-// and selection, with one run of the example's networks. What it expects (the arms, their names and ends, the card's
-// lines, a stated state to press on) is read from the packaged catalogue, the overlay and the driver's own criterion
-// files, so that a new run folder is data alone. Where the runs' folder is not on this machine the check is skipped,
-// and says so.
+// Checks the gap-junction example's tumour tissue (src/lenses/tissue_line.js) with real pointer input, through the
+// DevTools protocol, on its real runs: the run folders the page's selection names for the line and the sheet, packaged
+// here by the page's own overlay and selection, with one run of the example's networks. What it expects (the arms, their
+// names and ends, the card's lines, a stated state to press on, the stated changes) is read from the packaged catalogue,
+// the overlay and the driver's own criterion files, so that a new run folder is data alone. Where the runs' folders are
+// not on this machine the check is skipped, and says so.
 //
-//   wide     1400 by 900, light: the example opens on its network; a real press on the door in its card shows the
-//            tissue line in the tab's place; the picks in D's order, any refused named with nothing drawn;
-//            the record's words in the card; each picture's colours as drawn are the scale's colour of the saved value;
-//            a real press on a picture moves the clock to that record and opens the cell, with the driver's state;
-//            the even time scale; the way back to the networks; the address opens it.
-//   phone    390 by 844, dark: one run above the other, the colours as drawn in the dark tokens, the card's picks.
-//   reduced  1400 by 900, light, less motion, not held still: nothing plays, and the pictures are whole at once.
+//   wide     1400 by 900, light: the tab opens on the line (the example's opens.part); its arms in D's order with their
+//            names, places and ends; the record's words in the card; the sheet's caption with its door over the line;
+//            each cell's colour as drawn is the scale's colour of the stated value; a real press on a map moves the clock
+//            and opens the cell, ringed on the picture, with the driver's state; the timeline's next change; the even
+//            scale; a run's details; the way back to the networks (the seven-cell network shown); a real press on the
+//            sheet's door shows the sheet with the line beside it; what the opening fetches; the theme; a narrow window;
+//            the bar's stamp at a laptop's widths.
+//   phone    390 by 844, dark: the way to the networks and back by real presses; the line and the sheet inside the window.
+//   reduced  1400 by 900, light, less motion, not held still: nothing plays.
+//   play     1280 by 720, light, motion: the clock plays the stated changes, each on the screen for its stretch, and the
+//            picture at each change differs from the picture before it.
+//   sheet    1280 by 720, light: the switch turned to the sheet (the example's opens.part, in this check's own packaged
+//            catalogue): the extension sentence in full on the first screen beside "Development work, not judged.", the
+//            sheet's own bracket, x2 named as the line's wherever a place is, the line beside it as the record the
+//            threshold comes from, no heading that reads it as the preprint's; what it fetches; and on a phone.
+//
+//   layout   at 1280 by 720, 1024 by 768, 1440 by 900, 400 by 860 and 360 by 780: in every state a press reaches (the
+//            line; at a change; a pressed cell; the sheet; the sheet at a change; the sheet with every arm; playing at a
+//            change) no two names on the picture meet, no name but a change's or a chosen cell's lies on a cell, every
+//            name is inside the window; and the tissues are large enough (a line's cell 28 px at 1280 by 720 and 36 at 1440
+//            by 900, three sheets 200 px each at 1280 by 720, six 130).
 //
 //   node tools/check_tissue.mjs [OUT_DIR]
 //
-// Set by the environment: CASE (wide, phone or reduced; wide unless set), WIDTH, HEIGHT and THEME (by the case unless
-// set), NAME (the pictures' prefix), EVIDENCE (the folder that holds the evidence folders). Chrome is what CHROME
-// names (tools/chrome_gpu.sh for the graphics card), in a place taken through tools/lib/browser_lock.mjs.
+// Set by the environment: CASE (wide, phone, reduced, play or sheet; wide unless set), WIDTH, HEIGHT and THEME (by the
+// case unless set), NAME (the pictures' prefix), EVIDENCE (the folder that holds the evidence folders). Chrome is what
+// CHROME names (tools/chrome_gpu.sh for the graphics card), in a place taken through tools/lib/browser_lock.mjs.
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,18 +43,22 @@ import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { createServer } from "./serve.mjs";
 import { lineOf } from "../src/replay/tissue_line.js";
 import { clock } from "../src/replay/format.js";
+import { DWELL } from "../src/replay/tissue_play.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CASE = process.env.CASE || "wide";
-const CASES = { wide: [1400, 900, "light"], phone: [390, 844, "dark"], reduced: [1400, 900, "light"] };
-if (!CASES[CASE]) throw new Error(`no case ${CASE}: wide, phone or reduced`);
+const CASES = { wide: [1400, 900, "light"], phone: [390, 844, "dark"], reduced: [1400, 900, "light"], play: [1280, 720, "light"], sheet: [1280, 720, "light"], layout: [1280, 720, "light"] };
+if (!CASES[CASE]) throw new Error(`no case ${CASE}: ${Object.keys(CASES).join(", ")}`);
 const WIDTH = Number(process.env.WIDTH || CASES[CASE][0]), HEIGHT = Number(process.env.HEIGHT || CASES[CASE][1]), THEME = process.env.THEME || CASES[CASE][2];
 const REDUCED = CASE === "reduced" || process.env.REDUCED === "1";
 const NAME = process.env.NAME || `tissue-${CASE}`;
 const OUT = path.resolve(process.argv[2] || path.join(ROOT, "out", "check-tissue"));
 const EVIDENCE = process.env.EVIDENCE || "/mnt/workspaces/Cells";
-const PART = "gap-junction-tissue-line", WHOLE = "gap-junction-linear-network";
+const PART = "gap-junction-tissue-line", SHEET = "gap-junction-tissue-sheet", WHOLE = "gap-junction-linear-network";
+// What the opening may fetch, and one arm (about 3 MB and 1 MB: the coordinator's budget, 18 November 2026).
+const OPENING_BYTES = 3.2e6, ARM_BYTES = 1.1e6;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const lower = (text) => (text ? text.charAt(0).toLowerCase() + text.slice(1) : "");
 const results = [];
 const check = (name, ok, detail = "") => {
   results.push(Boolean(ok));
@@ -50,10 +68,11 @@ const note = (text) => console.log(`note  ${text}`);
 
 // ---------------------------------------------------------------- the runs, as the page's overlay and selection package them
 const selection = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "selection.json"), "utf8"));
-const chosen = selection[PART];
-const picks = path.join(EVIDENCE, chosen.evidence_folder, ...(chosen.within || []));
-if (!existsSync(picks)) {
-  note(`the tissue line's runs are not on this machine (${picks}): the check is skipped`);
+const OVERLAY = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "overlay.json"), "utf8"));
+const folderOf = (part) => path.join(EVIDENCE, selection[part].evidence_folder, ...(selection[part].within || []));
+const missing = [PART, SHEET].filter((part) => !existsSync(folderOf(part)));
+if (missing.length) {
+  note(`the tissue's runs are not on this machine (${missing.map(folderOf).join(", ")}): the check is skipped`);
   console.log("0 of 0 checks passed (skipped)");
   process.exit(0);
 }
@@ -65,30 +84,39 @@ const adapt = (args) => {
   if (done.status !== 0) throw new Error(`adapt_run.py ${args.join(" ")} failed: ${done.stderr.slice(-600)}`);
   return done.stdout;
 };
-// One run of the example's networks (its seven cells), so that the example opens and its card holds the door; then the tissue line.
+// One run of the example's networks (its seven cells), so that the example and its card stand; then the line and the sheet.
 adapt(["--experiment", WHOLE, "--run", "figure5-network-g1"]);
 adapt(["--experiment", PART]);
-const index = JSON.parse(readFileSync(path.join(runs, "index.json"), "utf8"));
-// What the page should show, from the data: the line's slots as the catalogue states them, the overlay's words, and each
-// arm's criterion as the driver's file gives it.
-const LINE = lineOf(index, PART);
-const ENTRY = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "overlay.json"), "utf8")).experiments[PART];
+adapt(["--experiment", SHEET]);
+const indexFile = path.join(runs, "index.json");
+const index = JSON.parse(readFileSync(indexFile, "utf8"));
+// Which part the tab opens on is one field, the example's opens.part: the sheet case turns it in this check's own catalogue.
+const OPENS = index.experiments.find((item) => item.id === WHOLE)?.opens?.part;
+if (CASE === "sheet") {
+  index.experiments.find((item) => item.id === WHOLE).opens.part = SHEET;
+  writeFileSync(indexFile, JSON.stringify(index));
+}
+// What the page should show, from the data: each part's slots as the catalogue states them, the overlay's words, and
+// each arm's criterion as the driver's file gives it.
+const LINE = lineOf(index, PART), SHEETS = lineOf(index, SHEET);
+const ENTRY = OVERLAY.experiments[PART], SHEET_ENTRY = OVERLAY.experiments[SHEET];
+const stated = (line) => Object.fromEntries(line.runs.map((slot) => [slot.arm, JSON.parse(readFileSync(path.join(folderOf(line.id), slot.arm, "criterion.json"), "utf8"))]));
+const STATED = { ...stated(LINE), ...stated(SHEETS) };
 const ARMS = LINE.runs.map((slot) => slot.arm);
-const STATED = Object.fromEntries(ARMS.map((arm) => [arm, JSON.parse(readFileSync(path.join(picks, arm, "criterion.json"), "utf8"))]));
 const criterion = STATED[ARMS[0]].criterion;
-const LAST = STATED[ARMS[0]].times_s.length - 1;
-// A record to press on: the first where a cell's stated state is neither M nor E (the criterion's between), else the first
-// stated change, else the first record of the first arm's first cell.
+// A record to press on: the first where a line's cell is stated neither M nor E (the criterion's between).
 const PRESS = (() => {
   for (const arm of ARMS) for (const [row, states] of STATED[arm].states.entries()) { const cell = states.findIndex((word) => word !== "M" && word !== "E"); if (cell >= 0) return { arm, cell, record: row, state: states[cell] }; }
-  for (const arm of ARMS) for (let row = 1; row < STATED[arm].states.length; row++) { const cell = STATED[arm].states[row].findIndex((word, k) => word !== STATED[arm].states[row - 1][k]); if (cell >= 0) return { arm, cell, record: row, state: STATED[arm].states[row][cell] }; }
   return { arm: ARMS[0], cell: 0, record: 0, state: STATED[ARMS[0]].states[0][0] };
 })();
 PRESS.time = STATED[PRESS.arm].times_s[PRESS.record];
 PRESS.name = STATED[PRESS.arm].cells[PRESS.cell];
 PRESS.end = LINE.runs.find((slot) => slot.arm === PRESS.arm).end;
+const placeWords = (slot) => [slot.label, slot.where && /x2/.test(slot.where) ? slot.where : null].filter(Boolean).join(" · "); // a line's name on the picture and in the card
 const SIDE = { M: "below", E: "above" }; // the criterion's words for a state, to hold a colour's side beside the driver's state
-note(`the line: ${LINE.slots.map((slot) => `${slot.kind} ${slot.arm}`).join(", ")}; a press at ${PRESS.arm} ${PRESS.name}, record ${PRESS.record} (${PRESS.state})`);
+// The stated changes of the line's arms, record to record, as the driver's files give them.
+const changesOf = (arms) => arms.flatMap((arm) => { const c = STATED[arm], out = []; for (let k = 1; k < c.states.length; k++) c.states[k].forEach((state, n) => { if (state !== c.states[k - 1][n]) out.push({ arm, time: c.times_s[k], cell: n, from: c.states[k - 1][n], to: state }); }); return out; });
+note(`opens on ${OPENS}; the line: ${LINE.slots.map((slot) => slot.arm).join(", ")}; the sheet: ${SHEETS.slots.map((slot) => slot.arm).join(", ")}; a press at ${PRESS.arm} ${PRESS.name}, record ${PRESS.record} (${PRESS.state})`);
 
 // ---------------------------------------------------------------- the browser
 const release = await acquireBrowser({ wait: 60 * 60 * 1000 });
@@ -107,13 +135,22 @@ try {
   await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
   let nextId = 1;
   const waiting = new Map();
-  socket.onmessage = (event) => { const m = JSON.parse(event.data); const w = waiting.get(m.id); if (!w) return; waiting.delete(m.id); if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result); };
+  // What the page fetched of the runs' files, by file: the bytes that came over the wire.
+  const fetched = new Map(), urls = new Map();
+  socket.onmessage = (event) => {
+    const m = JSON.parse(event.data);
+    if (m.method === "Network.responseReceived") urls.set(m.params.requestId, m.params.response.url);
+    if (m.method === "Network.loadingFinished") { const url = urls.get(m.params.requestId); if (url && /\/runs\/[^/]+\.json$/.test(url)) fetched.set(path.basename(new URL(url).pathname), m.params.encodedDataLength); }
+    const w = waiting.get(m.id); if (!w) return; waiting.delete(m.id); if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
+  };
   const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => { const id = nextId++; waiting.set(id, { resolve, reject }); socket.send(JSON.stringify({ id, method, params, sessionId })); });
   const { targetId } = await send("Target.createTarget", { url: "about:blank" });
   const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
   const page = (method, params) => send(method, params, sessionId);
   await page("Runtime.enable");
   await page("Page.enable");
+  await page("Network.enable");
+  await page("Network.setCacheDisabled", { cacheDisabled: true });
   await page("Page.addScriptToEvaluateOnNewDocument", { source: `window.__pageErrors = []; addEventListener("error", (event) => __pageErrors.push(String(event.error?.stack || event.message)));` });
   await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: WIDTH < 760 });
   const media = [{ name: "prefers-color-scheme", value: THEME }];
@@ -141,7 +178,8 @@ try {
     }
     return false;
   };
-  const shown = `Boolean(${L}?.partId === ${JSON.stringify(PART)} && ${L}.runs?.length && ${L}.pieces)`;
+  const shownPart = (part) => `Boolean(${L}?.partId === ${JSON.stringify(part)} && ${L}.runs?.length && ${L}.pieces && !${L}.loading)`;
+  const networks = `Boolean(!${V}.state.part && ${L}?.run && ${L}.sheet && ${L}.run.id === ${L}.runId)`;
   const shot = async (name) => {
     await evaluate(`${V}.stage.invalidate()`);
     await sleep(1200);
@@ -151,62 +189,109 @@ try {
     await writeFile(file, Buffer.from(data, "base64"));
     note(`wrote ${file}`);
   };
-  /** What the picture shows now: the slots' names on it, the card's and the legend's words, where the pictures stand, the clock. */
+  /** What the picture shows now: its names, the card's and the legend's words, where each tissue stands, the clock. */
   const state = () => evaluate(`(() => {
     const v = ${V}, root = v.shadowRoot, lens = v.current, box = v.getBoundingClientRect();
-    const tags = (kind) => [...root.querySelectorAll(".label-" + kind)].filter((el) => !el.classList.contains("is-off")).map((el) => { const r = el.getBoundingClientRect(); return { text: el.textContent, x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), inside: r.left >= box.left - 1 && r.right <= box.right + 1 }; });
+    const words = (el) => { const lines = [...el.querySelectorAll(".tissue-line")].filter((line) => !line.hidden && getComputedStyle(line).visibility !== "hidden"); return lines.length ? lines.map((line) => line.textContent).join(" / ") : el.textContent; };
+    const tags = (kind) => [...root.querySelectorAll(".label-" + kind)].filter((el) => !el.classList.contains("is-off")).map((el) => { const r = el.getBoundingClientRect(); return { text: words(el), x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), inside: r.left >= box.left - 1 && r.right <= box.right + 1 && r.top >= box.top - 1 && r.bottom <= box.bottom + 1 }; });
     v.stage.camera.updateMatrixWorld();
-    const pictures = lens?.pieces ? [...lens.pieces.values()].map(({ place, item }) => { const a = new lens.root.position.constructor(place.x0, place.top, 0).project(v.stage.camera), b = new lens.root.position.constructor(place.x1, place.bottom, 0).project(v.stage.camera); return { arm: item.slot.arm, left: Math.round(((a.x + 1) / 2) * box.width), top: Math.round(((1 - a.y) / 2) * box.height), right: Math.round(((b.x + 1) / 2) * box.width), bottom: Math.round(((1 - b.y) / 2) * box.height) }; }) : [];
+    lens?.root?.updateMatrixWorld(true);
+    const V3 = lens?.root?.position.constructor;
+    const tissues = lens?.pieces ? [...lens.pieces.values()].filter((piece) => piece.item).map((piece) => { const xs = [], ys = []; for (const cell of [piece.sheet.cells[0], piece.sheet.cells[piece.sheet.cells.length - 1]]) { const p = v.stage.project(piece.group.localToWorld(new V3(cell.centre[0], piece.thick, cell.centre[1])), new V3()); xs.push(p.x); ys.push(p.y); } return { arm: piece.item.slot.arm, part: piece.item.group.id, left: Math.round(Math.min(...xs)), right: Math.round(Math.max(...xs)), top: Math.round(Math.min(...ys)), bottom: Math.round(Math.max(...ys)), cell: Math.round(piece.sheet.pitch * (v.stage.project(piece.group.localToWorld(new V3(1, 0, 0)), new V3()).x - v.stage.project(piece.group.localToWorld(new V3(0, 0, 0)), new V3()).x)) }; }) : [];
     const card = root.querySelector(".view");
     return {
-      part: lens?.partId || null, tab: v.state.lens, columns: lens?.columns ?? null, slots: lens?.line?.slots.map((slot) => slot.kind + ":" + slot.arm) || [],
-      heads: tags("tissue-head"), ends: tags("tissue-end"), refused: tags("tissue-refused"), ticks: tags("tissue-tick"), chosen: tags("tissue-state"),
+      part: lens?.partId || null, tab: v.state.lens, groups: (lens?.groups || []).map((group) => group.id), arms: (lens?.runs || []).map((item) => item.slot.arm),
+      heads: tags("tissue-head"), ends: tags("tissue-end"), refused: tags("tissue-refused"), ticks: tags("tissue-tick"), chosen: tags("tissue-state"), changes: tags("tissue-change"),
+      caption: tags("tissue-caption"), group: tags("tissue-group"), over: tags("tissue-over"), door: tags("tissue-door"), sibling: root.querySelector(".tissue-sibling-block")?.textContent || "", divider: Boolean(lens?.bracket),
       says: [...root.querySelectorAll(".tissue-says li")].map((li) => li.textContent),
-      slotsCard: [...root.querySelectorAll(".tissue-slot")].map((el) => [el.querySelector("b")?.textContent, el.querySelector("span")?.textContent]),
+      slotsCard: [...root.querySelectorAll(".tissue-slot")].map((el) => [el.dataset.arm, el.querySelector("b")?.textContent, el.querySelector("span")?.textContent]),
       criterion: root.querySelector(".tissue-criterion")?.textContent || "",
+      heading: [...root.querySelectorAll(".view .card-title")].map((el) => el.textContent).join(" | "), stamp: root.querySelector(".stamp")?.textContent || "",
       card: card?.textContent || "", legend: root.querySelector("cells-legend")?.textContent || "",
-      // The card's words that are the tissue line's own: not the tab's list (the page's names for its examples), not the criterion's own words.
       own: (() => { if (!card) return ""; const copy = card.cloneNode(true); for (const el of copy.querySelectorAll(".experiments, #cells-experiment, .tissue-criterion, .eyebrow")) el.remove(); for (const el of copy.querySelectorAll("details")) if (/Sources and licences/.test(el.querySelector("summary")?.textContent || "")) el.remove(); return copy.textContent; })(),
       list: [...root.querySelectorAll(".view .exp-row")].map((b) => [b.textContent, b.getAttribute("aria-pressed")]),
-      pictures, time: lens?.player?.time ?? null, playing: lens?.player?.playing ?? null, scale: lens?.scale || null, axis: lens?.axisNow?.words || "",
+      tissues, time: lens?.player?.time ?? null, playing: lens?.player?.playing ?? null, speed: lens?.player?.speed ?? null, scale: lens?.scale || null, axis: lens?.axisNow?.words || "",
       selected: v.state.selected, panel: root.querySelector("cells-panel")?.textContent || "", flight: Boolean(v.stage.rig.flight),
+      chosenRing: (() => { const piece = lens?.selected && lens.pieces?.get(lens.selected.arm); return piece?.chosen ? { visible: piece.chosen.visible, cell: lens.selected.cell } : null; })(),
       errors: window.__pageErrors,
     };
   })()`);
   /**
-   * The colours drawn at a cell's column of a picture, at a record's band: the camera looks close at the place (as
-   * close as the view lets a visitor come), the frame is drawn, and the pixel there is read back, beside the scale's
-   * colour of the saved value. A band drawn under four pixels even then is not read. The camera goes back after.
+   * The colours drawn on cells' tops at the record shown: the camera looks close at each cell (as close as the view lets
+   * a visitor come), the frame is drawn, and the pixel at a point of the cell's top clear of its dots and of the beads'
+   * lanes is read back, beside the scale's colour of the stated value. The camera goes back after.
    * [{ arm, cell, record, value, drawn, wanted, side }]
    */
   const drawn = (samples) => evaluate(`(() => {
-    const v = ${V}, lens = v.current, stage = v.stage, gl = stage.renderer.getContext(), box = v.getBoundingClientRect(), before = stage.rig.view();
-    const ratio = stage.renderer.getPixelRatio(), pixel = new Uint8Array(4), out = [];
-    for (const [arm, cell, record] of ${JSON.stringify(samples)}) {
-      const { place, item } = lens.pieces.get(arm), { from, to } = lens.bandsNow[record];
-      // Read a little above the band's middle: the picture's frame lies just under the last band.
-      const y = place.top - (from + 0.4 * (to - from)) * (place.top - place.bottom), x = place.x0 + item.cells.x[cell];
-      stage.rig.setView({ target: new lens.root.position.constructor(x, y, 0), distance: lens.home.distance * 0.18, azimuth: 0, polar: Math.PI / 2 });
+    const v = ${V}, lens = v.current, stage = v.stage, gl = stage.renderer.getContext(), ratio = stage.renderer.getPixelRatio(), pixel = new Uint8Array(4), out = [];
+    const V3 = lens.root.position.constructor, before = stage.rig.view();
+    lens.root.updateMatrixWorld(true);
+    for (const [arm, cell] of ${JSON.stringify(samples)}) {
+      const piece = lens.pieces.get(arm);
+      if (!piece?.item) continue;
+      // Between two of its dots (they stand a third of a turn apart round its middle) and off the beads' lanes.
+      const c = piece.sheet.cells[cell], r = c.radius * 0.62, turn = -Math.PI / 6;
+      const point = piece.group.localToWorld(new V3(c.centre[0] + Math.cos(turn) * r, piece.thick, c.centre[1] + Math.sin(turn) * r));
+      stage.rig.setView({ target: point.clone(), distance: lens.home.distance * 0.16, azimuth: lens.home.azimuth, polar: lens.home.polar });
       stage.draw();
-      const p = new lens.root.position.constructor(x, y, 0).project(stage.camera);
-      const px = Math.round(((p.x + 1) / 2) * stage.width * ratio), py = Math.round(((p.y + 1) / 2) * stage.height * ratio);
-      // How tall the band is drawn: one under two pixels is shared with its neighbours, and is not read.
-      const q = new lens.root.position.constructor(x, place.top - to * (place.top - place.bottom), 0).project(stage.camera), r0 = new lens.root.position.constructor(x, place.top - from * (place.top - place.bottom), 0).project(stage.camera);
-      if (Math.abs(q.y - r0.y) * stage.height / 2 < 4) continue;
-      gl.readPixels(px, py, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-      const value = item.record.at(record, item.cells.columns[cell]), rgb = lens.breaks.colour(value);
-      out.push({ arm, cell, record, value: Number(value.toFixed(3)), drawn: [...pixel.slice(0, 3)], wanted: rgb.map((c) => Math.round(c * 255)), side: lens.breaks.side(value) });
+      const p = stage.project(point, new V3());
+      gl.readPixels(Math.round(p.x * ratio), Math.round((stage.height - p.y) * ratio), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      const record = piece.item.run.indexAt(lens.player.time), value = piece.item.record.at(record, piece.item.cells.columns[cell]), rgb = lens.breaks.colour(value);
+      out.push({ arm, cell, record, value: Number(value.toFixed(3)), drawn: [...pixel.slice(0, 3)], wanted: rgb.map((x) => Math.round(x * 255)), side: lens.breaks.side(value) });
     }
     stage.rig.setView(before);
     stage.draw();
     return out;
   })()`);
   const close = (sample) => sample.drawn.every((c, k) => Math.abs(c - sample.wanted[k]) <= 3);
-  /** Every band read is the scale's colour of its value, and enough of them were read. */
-  const allClose = (colours, least = 6) => colours.length >= least && colours.every(close);
-  // Every sample: the tumor's first cell of each run at its first and last record, a healthy cell midway, and the cell pressed.
-  const SAMPLES = [...ARMS.flatMap((arm) => [[arm, 0, 0], [arm, 0, LAST], [arm, 10, Math.round(LAST / 2)]]), [PRESS.arm, PRESS.cell, PRESS.record]];
+  const allClose = (colours, least) => colours.length >= least && colours.every(close);
+  const lineSamples = ARMS.flatMap((arm) => [[arm, 0], [arm, 5], [arm, 12], [arm, 24]]);
   const forbidden = /replicat|reproduc|\bagree|\bmatch|modelled|qualified|simulated|Grodstein|preprint/i;
+  const EXTENSION = SHEET_ENTRY.tissue.says[1];
+  /** What came over the wire of the runs' files since the counter was cleared: in all, and each arm's (its run file and its parts). */
+  const bytes = () => {
+    const total = [...fetched.values()].reduce((sum, n) => sum + n, 0);
+    const arms = {};
+    for (const [file, n] of fetched) { const arm = file.replace(/\.json$/, "").split(".")[0]; arms[arm] = (arms[arm] || 0) + n; }
+    return { total, arms, files: [...fetched.keys()] };
+  };
+
+  /**
+   * The play watched whole from the start, at the speed it opens on (the stated changes): every frame, the changes named
+   * on the picture, and each arm's beads drawn. Returns { seen: [{ at, time, names, beads }], total } (seconds of watching
+   * the schedule gives). A shot is taken a third of the way in.
+   */
+  const watchPlay = async (name) => {
+    await evaluate(`(() => { const v = ${V}, lens = v.current; lens.player.pause(); lens.player.seek(lens.player.start); window.__seen = []; const look = () => { const names = [...v.shadowRoot.querySelectorAll(".label-tissue-change")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent); const beads = Object.fromEntries([...lens.pieces.values()].filter((piece) => piece.item).map((piece) => [piece.item.slot.arm, piece.stream ? (piece.stream.drawn?.beads || 0) + (piece.stream.drawn?.chevrons || 0) + (piece.stream.drawn?.streams || 0) : null])); window.__seen.push({ at: performance.now(), time: lens.player.time, names, beads }); if (lens.player.playing || window.__seen.length < 5) requestAnimationFrame(look); }; lens.player.play(); requestAnimationFrame(look); return true; })()`);
+    const total = await evaluate(`${L}.schedule.total`);
+    await sleep((total / 3) * 1000);
+    await shot(`${name}-playing`);
+    await until(`!${L}.player.playing`, Math.ceil((total + 30) * 4));
+    return { seen: await evaluate(`window.__seen`), total };
+  };
+  /** How long each name stood on the picture, in seconds of watching. */
+  const spansOf = (seen) => {
+    const spans = new Map();
+    for (let k = 1; k < seen.length; k++) for (const name of seen[k - 1].names) spans.set(name, (spans.get(name) || 0) + (seen[k].at - seen[k - 1].at) / 1000);
+    return spans;
+  };
+  /** The words the picture names a record's changes by: a line's cell by its number, a sheet's cells of one kind together by their ids. */
+  const changeWords = (arms) => {
+    const out = new Set();
+    for (const arm of arms) {
+      const c = STATED[arm], lined = LINE.runs.some((slot) => slot.arm === arm);
+      for (let k = 1; k < c.states.length; k++) {
+        // A line's changes of one record are named together, cell by cell; a sheet's of one record and kind together.
+        const groups = new Map(), each = [];
+        c.states[k].forEach((state, n) => { if (state !== c.states[k - 1][n]) { each.push(`cell ${n + 1}: ${c.states[k - 1][n]} to ${state}`); const key = `${c.states[k - 1][n]}>${state}`; if (!groups.has(key)) groups.set(key, { from: c.states[k - 1][n], to: state, cells: [] }); groups.get(key).cells.push(n); } });
+        if (lined && each.length) out.add(each.join("; "));
+        if (!lined) for (const { from, to, cells } of groups.values()) out.add(cells.length === 1 ? `${c.cells[cells[0]]}: ${from} to ${to}` : `${cells.map((n) => c.cells[n]).join(", ")}: ${from} to ${to}`);
+      }
+    }
+    return [...out];
+  };
+  /** The view's own work on a frame of the play, the labels' layout with it: the median and the most of 60 frames, in milliseconds (the page's budget is 8, shelves-frame's). */
+  const frameCost = () => evaluate(`(() => { const v = ${V}, lens = v.current, times = []; lens.player.seek(lens.player.start); lens.player.play(); for (let i = 0; i < 60; i++) { const t = performance.now(); lens.update(1 / 60, 0, 1000 / 60); v.labels.layout(); times.push(performance.now() - t); } lens.player.pause(); times.sort((a, b) => a - b); return { median: Math.round(times[30] * 100) / 100, most: Math.round(times[59] * 100) / 100 }; })()`);
 
   // A fresh browser's first page on the card loses its context about five seconds in: it is a throwaway.
   await page("Page.navigate", { url: `${base}?lens=engine` });
@@ -214,118 +299,139 @@ try {
   note(`case ${CASE}, ${WIDTH} by ${HEIGHT}, ${THEME}${REDUCED ? ", less motion" : ""}`);
 
   if (CASE === "wide") {
-    // The example opens on its seven cells; its card holds the door to its tissue line.
+    fetched.clear();
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    await until(`Boolean(${L}?.run && ${L}.sheet)`, 240);
-    const opened = await evaluate(`({ run: ${L}.runId, part: ${V}.state.part })`);
-    check("the Experiments view still opens on the example's network, not on its tissue line", opened.run === `${WHOLE}--figure5-network-g1` && !opened.part, JSON.stringify(opened));
-    const door = await placeOf(`root.querySelector('.view .tissue-door[data-part="${PART}"]')`);
-    check("the example's card holds the door to its tissue line, as a part of the example", Boolean(door), "");
-    if (door) await click(door.x, door.y, 1200);
-    check("a real press on the door shows the tissue line in the tab's place, the tab still pressed", await until(shown, 240), "");
+    check("the Experiments tab opens on the tumour tissue's line, the part the example's entry names (opens.part)", OPENS === PART && (await until(shownPart(PART), 240)), OPENS);
     await sleep(1500);
     let s = await state();
-    check(`the ${LINE.slots.length} picks stand in D's order (${LINE.runs.length} runs, ${LINE.refused.length} refused)`, JSON.stringify(s.slots) === JSON.stringify(LINE.slots.map((slot) => `${slot.kind}:${slot.arm}`)) && s.tab === "experiments", JSON.stringify(s.slots));
+    const got = bytes();
+    note(`the opening fetched ${got.total.toLocaleString("en-US")} bytes of runs: ${JSON.stringify(got.arms)}`);
+    check(`what the opening fetches of the runs stays under ${OPENING_BYTES / 1e6} MB, and each arm under ${ARM_BYTES / 1e6} MB: only the arms in view, and of each only what the picture draws`, got.total > 0 && got.total <= OPENING_BYTES && Object.values(got.arms).every((n) => n <= ARM_BYTES) && !got.files.some((file) => /\.(amount|junction-gate|junction-voltage-v|membrane-voltage-v)\.json$/.test(file)), JSON.stringify(got));
+    check(`the line's ${LINE.runs.length} arms stand in D's order, under one clock`, JSON.stringify(s.arms) === JSON.stringify(ARMS) && s.tab === "experiments" && JSON.stringify(s.groups) === JSON.stringify([PART]), JSON.stringify(s.arms));
     const heads = s.heads.map((tag) => tag.text);
-    check("each pick is named on the picture by its D, left to right in that order, inside the window", JSON.stringify(heads) === JSON.stringify(LINE.slots.map((slot) => slot.label)) && s.heads.every((tag, k) => tag.inside && (k === 0 || tag.x > s.heads[k - 1].x)), JSON.stringify(s.heads));
-    check(LINE.refused.length ? "the refused picks are said on the picture, with nothing drawn in them" : "no pick was refused: none is said, and every run is drawn", s.refused.length === LINE.refused.length && s.refused.every((tag) => tag.text === LINE.refusedWords) && s.pictures.length === LINE.runs.length, JSON.stringify([s.refused, s.pictures.map((p) => p.arm)]));
-    check("each run's end states stand under its picture, in the note's words", JSON.stringify(s.ends.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.end)), JSON.stringify(s.ends));
-    check("the runs stand side by side, each picture inside the room the cards leave it, clear of the timeline", s.columns === true && s.pictures.every((p) => p.left > 290 && p.right <= WIDTH - 4 && p.top > 56 && p.bottom < HEIGHT - 70), JSON.stringify(s.pictures));
+    check("each arm is named on the picture by its D and its place as the summary states it, top to bottom in D's order, inside the window", LINE.runs.every((slot, k) => heads[k] === placeWords(slot)) && s.heads.every((tag, k) => tag.inside && (k === 0 || tag.y > s.heads[k - 1].y)), JSON.stringify(heads));
+    check("each arm's end states stand by it, in the note's words; an arm with no routes says so", LINE.runs.every((slot) => s.ends.some((tag) => tag.text.startsWith(slot.end))) && s.ends.some((tag) => tag.text.includes(ENTRY.tissue.no_routes.replace(/^D = 0: /, ""))), JSON.stringify(s.ends.map((tag) => tag.text)));
+    check("each line stands inside the room the cards leave it, clear of the timeline, its cells large enough to see", s.tissues.every((t) => t.left > 290 && t.right <= WIDTH - 4 && t.top > 56 && t.bottom < HEIGHT - 90 && t.cell >= 14), JSON.stringify(s.tissues));
     check("the card says what the record lets it say, in its words", JSON.stringify(s.says) === JSON.stringify(ENTRY.tissue.says), JSON.stringify(s.says));
-    check("the card lists the picks with each run's end and each refusal", JSON.stringify(s.slotsCard) === JSON.stringify(LINE.slots.map((slot) => [slot.label, slot.kind === "refused" ? LINE.refusedWords : slot.end])), JSON.stringify(s.slotsCard));
+    check("the card lists the arms with each run's end", JSON.stringify(s.slotsCard.filter(([arm]) => ARMS.includes(arm)).map(([, label, end]) => [label, end])) === JSON.stringify(LINE.runs.map((slot) => [placeWords(slot), slot.end])), JSON.stringify(s.slotsCard));
     check("the criterion stands in the card in its own words, with its source, as the driver's file gives them", s.criterion.includes(`“${criterion.words}”`) && s.criterion.includes(criterion.source), s.criterion.slice(0, 120));
-    // The tissue line's own words: its card (but the tab's list, which names the example as the page does, and the criterion in its own words), its legend and its names on the picture.
-    // Its one sentence on the logged value and its one on what BITSEY is are the lead's (the card's lines, checked above word for word).
-    const own = [s.own, s.legend, ...[...s.heads, ...s.ends, ...s.refused, ...s.ticks].map((tag) => tag.text)].join(" ");
+    // The sheet one press away: a small door on the picture, and the card's block with its caption in full over its door.
+    check("the sheet is one press away: a small door on the picture, in sight, and the card's block with the sheet's caption in full", s.door.length === 1 && s.door[0].inside && s.door[0].text === SHEETS.short && s.caption.length === 0 && s.sibling.includes(SHEET_ENTRY.tissue.caption), JSON.stringify([s.door, s.sibling.slice(0, 80)]));
+    const own = [s.own, s.legend, ...[...s.heads, ...s.ends, ...s.ticks, ...s.caption, ...s.door].map((tag) => tag.text)].join(" ").split(EXTENSION).join(" ");
     const beyond = ENTRY.tissue.says.filter((line) => /BITSEY|logged/.test(line)).reduce((text, line) => text.replace(line, ""), own);
-    // The sentence on what BITSEY is names the preprint for whose code it is, and for that alone: the other forbidden words hold in it too.
     const judging = /replicat|reproduc|\bagree|\bmatch|modelled|qualified|simulated|Grodstein/i;
-    check("nothing the tissue line says (but the criterion's own words, and the lead's one sentence on the logged value and one on BITSEY) names the preprint, its authors or their code, or says replicated, agrees or matches", !forbidden.test(beyond) && !judging.test(own) && !/BITSEY|authors|logged/.test(beyond), (beyond.match(forbidden) || own.match(judging) || beyond.match(/BITSEY|authors|logged/) || [""])[0]);
-    check("the tab's list stands at the head of the card, the example's row pressed", s.list.length === 2 && s.list[0][1] === "true", JSON.stringify(s.list));
-    // The colours as drawn: the scale's colour of the saved value, at each sample's band.
-    const colours = await drawn(SAMPLES);
-    check("each picture's colour as drawn is the scale's colour of the value the driver states there, record by record", allClose(colours, 8), `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)))}`);
-    const sides = ARMS.flatMap((arm) => [0, LAST].map((record) => ({ arm, record, side: colours.find((c) => c.arm === arm && c.cell === 0 && c.record === record)?.side, stated: STATED[arm].states[record][0] })));
-    check("each run's first tumor cell, at its first and last record, is drawn on the side of the scale its stated state names", sides.every((item) => !SIDE[item.stated] || item.side === SIDE[item.stated]), JSON.stringify(sides));
+    check("nothing the tissue says (but the criterion's own words, the lead's one sentence on the logged value and one on BITSEY, and the sheet's sentence that it is not part of the replication) names the preprint, its authors or their code, or says replicated, agrees or matches", !forbidden.test(beyond) && !judging.test(own) && !/BITSEY|authors|logged/.test(beyond), (beyond.match(forbidden) || own.match(judging) || beyond.match(/BITSEY|authors|logged/) || [""])[0]);
+    // The colours as drawn, at the first record and at the last.
+    let colours = await drawn(lineSamples);
+    check("each cell's colour as drawn is the scale's colour of the value the driver states there, at the first record", allClose(colours, 12), JSON.stringify(colours.filter((c) => !close(c))));
+    const sides = colours.filter((c) => c.cell === 0).map((c) => ({ arm: c.arm, side: c.side, stated: STATED[c.arm].states[c.record]?.[0] }));
+    check("each line's first tumor cell is drawn on the side of the scale its stated state names", sides.every((item) => !SIDE[item.stated] || item.side === SIDE[item.stated]), JSON.stringify(sides));
+    await evaluate(`${L}.seek(${L}.clock.end)`);
+    await sleep(800);
+    const last = await drawn(lineSamples);
+    check("and at the last record", allClose(last, 12) && last.some((c, k) => c.wanted.join() !== colours[k]?.wanted.join()), JSON.stringify(last.filter((c) => !close(c))));
+    await evaluate(`${L}.seek(0)`);
     await shot("line");
-    // A real press on a picture, at a cell and record where the driver states a cell between its two states: the clock goes there, and the cell opens with the driver's state.
-    const target = await evaluate(`(() => { const v = ${V}, lens = v.current, { place, item } = lens.pieces.get(${JSON.stringify(PRESS.arm)}), t = lens.clockRun.t, k = ${PRESS.record}; const { from, to } = lens.bandsNow[k]; const p = new lens.root.position.constructor(place.x0 + item.cells.x[${PRESS.cell}], place.top - ((from + to) / 2) * (place.top - place.bottom), 0).project(v.stage.camera); const box = v.getBoundingClientRect(); return { x: box.left + ((p.x + 1) / 2) * box.width, y: box.top + ((1 - p.y) / 2) * box.height, time: t[k], tall: Math.abs(to - from) * (place.top - place.bottom) }; })()`);
+    // A real press on a map, at a cell and record where the driver states a cell between its two states.
+    const target = await evaluate(`(() => { const v = ${V}, lens = v.current, piece = lens.pieces.get(${JSON.stringify(PRESS.arm)}), V3 = lens.root.position.constructor; lens.root.updateMatrixWorld(true); const band = piece.bands[${PRESS.record}]; const local = new V3(((${PRESS.cell} + 0.5) / piece.item.cells.count) * piece.mapWidth, 0, ((band.from + band.to) / 2) * piece.mapDepth); const p = v.stage.project(piece.board.localToWorld(local), new V3()); return { x: p.x, y: p.y, time: piece.item.run.t[${PRESS.record}], tall: (band.to - band.from) }; })()`);
     await click(target.x, target.y, 1600);
     s = await state();
-    check(`a real press on a picture opens that cell and moves the clock to the record pressed (${PRESS.arm}, ${PRESS.name}, ${clock(PRESS.time)})`, s.selected === `tissue:${PRESS.arm}:${PRESS.cell}` && Math.abs(s.time - target.time) < 1e-6, JSON.stringify([s.selected, s.time, target.time]));
+    check(`a real press on a map opens that cell and moves the clock to the record pressed (${PRESS.arm}, ${PRESS.name}, ${clock(PRESS.time)})`, s.selected === `tissue:${PRESS.arm}:${PRESS.cell}` && Math.abs(s.time - target.time) < 1e-6, JSON.stringify([s.selected, s.time, target]));
     const said = new RegExp(`State there, as the driver states it\\s*${PRESS.state}`);
     check(`its panel gives its value and its state as the driver states it (${PRESS.state} there), and the note's end line`, said.test(s.panel) && s.panel.includes(`miR200 minus Zeb mRNA at ${clock(PRESS.time)}`) && s.panel.includes(PRESS.end), s.panel.slice(0, 260));
-    check("the chosen cell is named on the picture with the driver's state", s.chosen.length === 1 && s.chosen[0].text === `${PRESS.name} · ${PRESS.state}`, JSON.stringify(s.chosen));
+    check("the pressed cell is told apart on the picture: ringed, and named with the driver's state", s.chosenRing?.visible && s.chosenRing.cell === PRESS.cell && s.chosen.length === 1 && s.chosen[0].text === `${PRESS.name} · ${PRESS.state}`, JSON.stringify([s.chosenRing, s.chosen]));
     await shot("pressed");
-    // The even time scale, chosen on the card; the clock is moved off the bands read, and the cell let go.
+    // The timeline's next change: the clock goes to the first stated change, which is named over its cell.
     await evaluate(`${V}.select(null)`);
-    await evaluate(`${L}.seek(5000)`);
+    await evaluate(`${L}.seek(0)`);
+    await sleep(500);
+    const first = changesOf(ARMS).sort((a, b) => a.time - b.time)[0];
+    const next = await placeOf(`root.querySelector('cells-timeline .tl-step[data-step="next"]')`);
+    if (next) await click(next.x, next.y, 1200);
+    s = await state();
+    check(`a real press on the timeline's next change moves the clock to the first stated change, named over its cell (${first ? `cell ${first.cell + 1}: ${first.from} to ${first.to}, ${clock(first.time)}` : "none"})`, Boolean(next) && first && Math.abs(s.time - first.time) < 1e-3 && s.changes.some((tag) => tag.text === `cell ${first.cell + 1}: ${first.from} to ${first.to}`), JSON.stringify([s.time, s.changes.map((tag) => tag.text)]));
+    // The even time scale, chosen on the card.
     await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="time-scale"]'); select.value = "even"; select.dispatchEvent(new Event("change")); })()`);
     await sleep(1200);
     s = await state();
-    check("the card's time scale draws time down the pictures evenly, and the legend says so", s.scale === "even" && /on an even scale/.test(s.axis) && s.ticks.some((tag) => tag.text === "2 h"), JSON.stringify([s.scale, s.ticks.map((tag) => tag.text)]));
-    const evenColours = await drawn(SAMPLES);
-    check("on the even scale too, the colours as drawn are the scale's colours of the saved values, where a band is four pixels or more, looked at close", allClose(evenColours, 4), `${evenColours.length} bands read; ${JSON.stringify(evenColours.filter((sample) => !close(sample)))}`);
-    await shot("even");
-    // A run's details, from its line in the card's picks: a real press on "Run details" opens the run's own panel.
+    check("the card's time scale draws time down the maps evenly, and the legend says so", s.scale === "even" && /on an even scale/.test(s.axis) && s.ticks.some((tag) => /^[1-5] h$/.test(tag.text)), JSON.stringify([s.scale, s.ticks.map((tag) => tag.text)]));
+    // A run's details, from its line in the card's picks.
     const details = await placeOf(`[...root.querySelectorAll('.tissue-slot[data-arm="${ARMS[0]}"] .tissue-open')][0]`);
     if (details) await click(details.x, details.y, 1200);
     s = await state();
-    check("a real press on a pick's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === `run:${LINE.runs[0].id}` && s.panel.includes(ARMS[0]) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
-    // The way back: a real press on the example's row in the list at the head of the card.
+    check("a real press on an arm's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === `run:${LINE.runs[0].id}` && s.panel.includes(ARMS[0]) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
     await evaluate(`${V}.select(null)`);
     await sleep(600);
-    const back = await placeOf(`root.querySelector(".view .exp-row:not([data-door])")`);
+    // The way to the networks: the card's own button; the seven-cell network is shown.
+    const back = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
     if (back) await click(back.x, back.y, 1500);
-    await until(`Boolean(${L}?.run && ${L}.sheet)`, 120);
-    const after = await evaluate(`({ run: ${L}.runId || null, part: ${V}.state.part })`);
-    check("a real press on the example's row gives the tab back to its networks", Boolean(back) && after.run?.startsWith(`${WHOLE}--`) && !after.part, JSON.stringify(after));
-    // The address opens it, and a page that moves plays it.
-    await page("Page.navigate", { url: `${base}?lens=experiments&part=${PART}` });
-    check("the address (part=) opens the tissue line", await until(shown, 240), "");
-    await sleep(2500);
+    const atNetworks = await until(networks, 240);
+    const net = await evaluate(`({ run: ${L}.runId || null, cells: ${L}.sheet?.cells.length ?? 0 })`).catch(() => ({}));
+    check("a real press on the card's button shows the example's networks: the seven-cell network", Boolean(back) && atNetworks && net.run === `${WHOLE}--figure5-network-g1` && net.cells === 7, JSON.stringify(net));
+    // And back to the tissue by the example's card, then to the sheet by a real press on its door over the line.
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${PART}` });
+    await until(shownPart(PART), 240);
+    await sleep(1500);
+    fetched.clear();
+    const sheetDoor = await evaluate(`(() => { const el = ${V}.shadowRoot.querySelector(".label-tissue-door .tissue-door-button"); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+    if (sheetDoor) await click(sheetDoor.x, sheetDoor.y, 1500);
+    check("a real press on the sheet's door over the line shows the sheet, with the line beside it", Boolean(sheetDoor) && (await until(shownPart(SHEET), 240)), JSON.stringify(sheetDoor));
+    await sleep(1500);
     s = await state();
-    check("a page that may move plays the three runs under one clock as it opens", s.playing === true && s.time > 0, JSON.stringify([s.playing, s.time]));
-    // The timeline's own keys step the three runs' one clock, record by record.
-    await evaluate(`${L}.player.pause(); ${L}.player.seek(0)`);
-    await evaluate(`${V}.shadowRoot.querySelector("cells-timeline")?.shadowRoot?.querySelector('input[type="range"]')?.focus() || ${V}.timeline.range?.focus()`);
-    for (const _ of [0, 1, 2]) {
-      await page("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 });
-      await page("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 });
-      await sleep(300);
-    }
-    s = await state();
-    check("the timeline's arrow key steps the one clock record by record: three presses, the third record", s.time === 300, JSON.stringify(s.time));
-    // The page's theme turns dark while the line is shown: the pictures take the dark tokens.
+    check("the sheet's caption stands over it in full, in sight: \"Development work, not judged.\" and the extension sentence", s.caption.length === 1 && s.caption[0].text === SHEET_ENTRY.tissue.caption && s.caption[0].inside, JSON.stringify(s.caption));
+    note(`the sheet fetched ${bytes().total.toLocaleString("en-US")} bytes more (the line's arms in view were in already)`);
+    await shot("sheet");
+    // The page's theme turns dark while the line is shown: the cells take the dark tokens.
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    await until(shownPart(PART), 240);
+    await sleep(1200);
+    colours = await drawn(lineSamples);
     await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
     await sleep(1500);
-    const dark = await drawn(SAMPLES);
-    check("the theme turned dark: the colours as drawn are the scale's colours in the dark tokens", allClose(dark, 8) && dark.every((c) => { const light = colours.find((x) => x.arm === c.arm && x.cell === c.cell && x.record === c.record); return !light || light.wanted.join() !== c.wanted.join(); }), `${dark.length} bands read; ${JSON.stringify(dark.filter((sample) => !close(sample)).slice(0, 3))}`);
+    const dark = await drawn(lineSamples);
+    check("the theme turned dark: the colours as drawn are the scale's colours in the dark tokens", allClose(dark, 12) && dark.every((c, k) => c.wanted.join() !== colours[k]?.wanted.join()), JSON.stringify(dark.filter((c) => !close(c)).slice(0, 3)));
     await shot("dark");
-    // The window turns narrow: the runs stand one above the other, each inside the window.
+    await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
+    // The window turns narrow: the lines stand inside it.
     await page("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
     await sleep(2000);
     s = await state();
-    check("the window turned narrow: the runs stand one above the other, inside it", s.columns === false && s.pictures.every((p) => p.left >= 0 && p.right <= 390), JSON.stringify(s.pictures));
+    check("the window turned narrow: every line stands inside it", s.tissues.every((t) => t.left >= 0 && t.right <= 390), JSON.stringify(s.tissues));
     await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
     await sleep(1500);
-    s = await state();
-    check("and wide again: side by side", s.columns === true, "");
-    // The bar's stamp never drops onto the pictures' heads: at a laptop's widths it stays in the bar's one row, shortened where
-    // the row is short, its first words (the part's standing) kept, the List whole.
+    // The bar's stamp never drops onto the pictures' heads, at a laptop's widths, on the line and on the networks.
     for (const [width, height] of [[1280, 720], [1024, 768], [800, 760]]) {
       await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
       await sleep(1800);
-      const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom] : null; }; const stamp = root.querySelector(".stamp"), list = root.querySelector(".bar-end .pill-button"), s = box(stamp), b = box(root.querySelector(".bar")), heads = [...root.querySelectorAll(".label-tissue-head")].map(box).filter(Boolean); return { stamp: s, words: s ? stamp.textContent : "", inRow: !s || (s[1] >= b[1] && s[3] <= b[3]), over: s ? heads.filter((h) => !(h[2] <= s[0] || h[0] >= s[2] || h[3] <= s[1] || h[1] >= s[3])).length : 0, heads: heads.length, list: Boolean(list) && list.getBoundingClientRect().right <= innerWidth && list.scrollWidth <= list.clientWidth + 1, sideways: document.documentElement.scrollWidth > innerWidth + 1 }; })()`);
-      check(`${width} by ${height}: the stamp stands in the bar's row, over none of the pictures' heads, beginning with the part's standing, the List whole`, bar.inRow && bar.over === 0 && bar.heads > 0 && bar.list && !bar.sideways && (!bar.stamp || /^Development work, not judged/.test(bar.words)), JSON.stringify(bar));
+      const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom] : null; }; const stamp = root.querySelector(".stamp"), list = root.querySelector(".bar-end .pill-button"), s = box(stamp), b = box(root.querySelector(".bar")), heads = [...root.querySelectorAll(".label-tissue-head, .label-tissue-caption, .label-tissue-door")].map(box).filter(Boolean); return { stamp: s, words: s ? stamp.textContent : "", inRow: !s || (s[1] >= b[1] && s[3] <= b[3]), over: s ? heads.filter((h) => !(h[2] <= s[0] || h[0] >= s[2] || h[3] <= s[1] || h[1] >= s[3])).length : 0, heads: heads.length, list: Boolean(list) && list.getBoundingClientRect().right <= innerWidth && list.scrollWidth <= list.clientWidth + 1, sideways: document.documentElement.scrollWidth > innerWidth + 1 }; })()`);
+      check(`${width} by ${height}: the stamp stands in the bar's row, over none of the pictures' names, beginning with the part's standing, the List whole`, bar.inRow && bar.over === 0 && bar.heads > 0 && bar.list && !bar.sideways && (!bar.stamp || /^Development work, not judged/.test(bar.words)), JSON.stringify(bar));
     }
-    await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
-    await sleep(1200);
+    // An address that names something of the networks' own view still opens them: a run, or a run to choose.
+    const opensOn = [];
+    for (const query of [`run=${WHOLE}--figure5-network-g1`, `select=run:${WHOLE}--figure5-network-g1`, `example=gard`]) {
+      await page("Page.navigate", { url: `${base}?lens=experiments&still=1&${query}` });
+      await sleep(2500);
+      opensOn.push([query, await evaluate(`({ part: ${V}.state.part || null, example: ${V}.state.example || null, run: ${L}?.runId || null })`)]);
+    }
+    check("an address that names a run of the networks (run=, or select=run:) opens the networks, and example= its door, over the opening part", opensOn.every(([query, at]) => !at.part && (query.startsWith("example") ? at.example === "gard" : at.run === `${WHOLE}--figure5-network-g1`)), JSON.stringify(opensOn));
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1&run=${WHOLE}--figure5-network-g1` });
+    await until(networks, 240);
+    await page("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+    await sleep(1800);
+    const netBar = await evaluate(`(() => { const root = ${V}.shadowRoot, stamp = root.querySelector(".stamp"), bar = root.querySelector(".bar").getBoundingClientRect(), r = stamp.getBoundingClientRect(); return { words: stamp.textContent, inRow: r.top >= bar.top && r.bottom <= bar.bottom, lines: Math.round(r.height / parseFloat(getComputedStyle(stamp).lineHeight || "16")) }; })()`);
+    check("1280 by 720, the networks: the stamp's engine revision is its first eight characters, and the stamp stays in the bar's row", /engine [0-9a-f]{8}(\s|$)/.test(netBar.words) && !/[0-9a-f]{9,}/.test(netBar.words) && netBar.inRow, JSON.stringify(netBar));
+    s = await state();
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "phone") {
-    // The way in by real presses: the example's folded card opened, its door pressed.
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    await until(`Boolean(${L}?.run && ${L}.sheet)`, 240);
+    check("on a phone the tab opens on the tissue's line", await until(shownPart(PART), 240), "");
+    await sleep(1500);
+    let s = await state();
+    check("on a phone the lines stand one above the other, inside the window, their cells large enough to see", s.tissues.length === LINE.runs.length && s.tissues.every((t, k) => t.left >= 0 && t.right <= WIDTH && (k === 0 || t.top > s.tissues[k - 1].bottom) && t.cell >= 10), JSON.stringify(s.tissues));
+    check("on the picture the sheet's small door, inside the window", s.door.length === 1 && s.door[0].inside, JSON.stringify(s.door));
+    const colours = await drawn(lineSamples);
+    check("the colours as drawn are the scale's colours of the stated values, in the dark page's tokens", allClose(colours, 8), JSON.stringify(colours.filter((c) => !close(c)).slice(0, 3)));
+    await shot("line");
     const unfold = async () => {
       if (await evaluate(`${V}.state.viewOpen`)) return true;
       const fold = await placeOf(`root.querySelector(".view-toggle")`);
@@ -333,41 +439,190 @@ try {
       return Boolean(fold);
     };
     await unfold();
-    const door = await placeOf(`root.querySelector('.view .tissue-door[data-part="${PART}"]')`);
-    if (door) await click(door.x, door.y, 1200);
-    check("on a phone, a real press on the door in the example's opened card shows the tissue line", Boolean(door) && (await until(shown, 240)), "");
-    await sleep(1500);
-    // The way back by real presses: the card opened, its own button.
-    await unfold();
-    const back = await placeOf(`root.querySelector(".view .tissue-back")`);
-    if (back) await click(back.x, back.y, 1500);
-    const returned = await until(`Boolean(${L}?.run && ${L}.sheet && !${V}.state.part)`, 120);
-    check("and a real press on the card's \"Back to the example's networks\" gives the tab back to the networks", Boolean(back) && returned, "");
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${PART}` });
-    check("the address opens the tissue line on a phone", await until(shown, 240), "");
-    await sleep(1500);
-    let s = await state();
-    check("on a phone the runs stand one above the other, each picture inside the window's width", s.columns === false && s.pictures.length === LINE.runs.length && s.pictures.every((p, k) => p.left >= 0 && p.right <= WIDTH && (k === 0 || p.top > s.pictures[k - 1].bottom)), JSON.stringify(s.pictures));
-    check("each run is named by its D and its end, and each refused pick by its D and its refusal, on the picture", JSON.stringify(s.heads.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.label)) && s.refused.length === LINE.refused.length && s.refused.every((tag) => LINE.refused.some((slot) => tag.text.startsWith(`${slot.label} · `)) && tag.inside) && JSON.stringify(s.ends.map((tag) => tag.text)) === JSON.stringify(LINE.runs.map((slot) => slot.end)), JSON.stringify([s.heads, s.refused, s.ends.map((tag) => tag.text)]));
-    const colours = await drawn(SAMPLES);
-    check("the colours as drawn are the scale's colours of the saved values, in the dark page's tokens", allClose(colours, 4) && colours[0].wanted.join() !== "161,74,12", `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)).slice(0, 3))}`);
-    await shot("line");
-    // The folded card opens on a real press: the record's lines and the picks.
-    const fold = await placeOf(`root.querySelector(".view-toggle")`);
-    if (fold) await click(fold.x, fold.y, 1000);
     s = await state();
-    check("a real press opens the card: the record's lines and the picks", JSON.stringify(s.says) === JSON.stringify(ENTRY.tissue.says) && s.slotsCard.length === LINE.slots.length, JSON.stringify([s.says, s.slotsCard.length]));
+    check("a real press opens the card: the record's lines and the arms", JSON.stringify(s.says) === JSON.stringify(ENTRY.tissue.says) && s.slotsCard.length >= LINE.slots.length, JSON.stringify([s.says, s.slotsCard.length]));
     await shot("card");
+    const back = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
+    if (back) await click(back.x, back.y, 1500);
+    check("and a real press on the card's button gives the tab to the networks", Boolean(back) && (await until(networks, 240)), "");
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${SHEET}` });
+    check("the address opens the sheet on a phone", await until(shownPart(SHEET), 240), "");
+    await sleep(1500);
+    s = await state();
+    check("on a phone the sheet's caption stands in full inside the window, and every tissue inside its width", s.caption.length === 1 && s.caption[0].inside && s.caption[0].text === SHEET_ENTRY.tissue.caption && s.tissues.every((t) => t.left >= 0 && t.right <= WIDTH), JSON.stringify([s.caption, s.tissues]));
+    await shot("sheet");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "reduced") {
-    await page("Page.navigate", { url: `${base}?lens=experiments&part=${PART}` });
-    check("the address opens the tissue line with less motion asked for", await until(shown, 240), "");
+    await page("Page.navigate", { url: `${base}?lens=experiments` });
+    check("the tab opens on the tissue with less motion asked for", await until(shownPart(PART), 240), "");
     await sleep(3000);
     const s = await state();
     check("with less motion nothing plays: the clock stands at the first record, and the camera did not fly", s.playing === false && s.time === 0 && !s.flight, JSON.stringify([s.playing, s.time, s.flight]));
-    const colours = await drawn(SAMPLES);
-    check("the whole of each run is drawn at once, the last record as the first: no record waits for the clock", allClose(colours) && colours.some((c) => c.record === LAST), `${colours.length} bands read; ${JSON.stringify(colours.filter((sample) => !close(sample)))}`);
+    const colours = await drawn(lineSamples);
+    check("the cells are drawn at once in the scale's colours of the first record", allClose(colours, 12), JSON.stringify(colours.filter((c) => !close(c))));
     await shot("line");
+    check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
+  } else if (CASE === "play") {
+    await page("Page.navigate", { url: `${base}?lens=experiments` });
+    check("the tab opens on the tissue, and a page that may move plays it, following the stated changes", (await until(shownPart(PART), 240)) && (await until(`${L}.player.playing`, 80)), "");
+    const { seen, total } = await watchPlay("line");
+    const spans = spansOf(seen);
+    const named = changeWords(ARMS);
+    const short = named.filter((name) => !((spans.get(name) || 0) >= DWELL - 0.3));
+    const watched = (seen.at(-1).at - seen[0].at) / 1000;
+    check(`the whole play takes about a minute or less (${Math.round(watched)} s of watching, the schedule ${Math.round(total)} s)`, watched <= 80 && Math.abs(watched - total) < 12, JSON.stringify([watched, total]));
+    check(`each stated change of the line's arms is on the screen, named under its cell, for its stretch (${DWELL} s) or more: ${named.length} names`, named.length > 0 && short.length === 0, JSON.stringify(short.map((name) => [name, spans.get(name) || 0])));
+    // The beads: each arm whose run declares routes draws what they carried at some time of the play; one with no routes, none.
+    const most = {};
+    for (const frame of seen) for (const [arm, beads] of Object.entries(frame.beads)) most[arm] = beads === null ? null : Math.max(most[arm] ?? 0, beads);
+    const quiet = LINE.runs.filter((slot) => !JSON.parse(readFileSync(path.join(runs, `${slot.id}.json`), "utf8")).view.sets.some((set) => set.id === "passive_route")).map((slot) => slot.arm);
+    check(`during the play the beads run on every arm whose run declares routes, and on none of the ${quiet.length} with no routes`, ARMS.every((arm) => (quiet.includes(arm) ? most[arm] === null : most[arm] > 0)), JSON.stringify(most));
+    const cost = await frameCost();
+    note(`the line's play: the view's work on a frame, labels with it: ${JSON.stringify(cost)} ms`);
+    check("the view's own work on a frame of the play, the labels' layout with it, leaves room at 60 frames a second (a median under 8 ms)", cost.median < 8, JSON.stringify(cost));
+    // At each mark the picture differs from the picture at the record before it.
+    const marks = await evaluate(`${L}.marks.map((mark) => mark.time)`);
+    const same = [];
+    for (const time of marks) {
+      const before = await evaluate(`(() => { const lens = ${L}, t = lens.clock.t, k = lens.clock.indexAt(${time}); return t[Math.max(0, k - 1)]; })()`);
+      const picture = async (at) => { await evaluate(`${L}.player.pause(); ${L}.seek(${at}); ${V}.stage.draw(); true`); await sleep(300); return evaluate(`(() => { const v = ${V}, gl = v.stage.renderer.getContext(); v.stage.draw(); const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px); let sum = 0; for (let i = 0; i < px.length; i += 7) sum = (sum * 31 + px[i]) % 2147483647; return sum; })()`); };
+      if ((await picture(before)) === (await picture(time))) same.push(time);
+    }
+    check(`at each of the ${marks.length} marks the picture differs from the picture at the record before it`, marks.length > 0 && same.length === 0, JSON.stringify(same));
+    const s = await state();
+    check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
+  } else if (CASE === "layout") {
+    /** Where the names and the cells stand now, and whether any two names meet or a name lies on a cell. */
+    const crowd = () => evaluate(`(() => {
+      const v = ${V}, root = v.shadowRoot, lens = v.current, box = v.getBoundingClientRect(), V3 = lens.root.position.constructor;
+      lens.root.updateMatrixWorld(true);
+      v.stage.camera.updateMatrixWorld();
+      const labels = [...root.querySelectorAll(".label")].filter((el) => !el.classList.contains("is-off") && !el.hidden && el.getClientRects().length).map((el) => { const r = el.getBoundingClientRect(); return { kind: [...el.classList].find((c) => c.startsWith("label-")) || "", text: el.textContent.slice(0, 48), l: r.left, t: r.top, r: r.right, b: r.bottom }; });
+      const cells = [], sizes = { line: Infinity, sheet: Infinity, sheets: 0 };
+      for (const piece of lens.pieces?.values() || []) {
+        if (!piece.item) continue;
+        const project = (x, z) => v.stage.project(piece.group.localToWorld(new V3(x, piece.thick, z)), new V3());
+        for (const cell of piece.sheet.cells) {
+          const c = project(cell.centre[0], cell.centre[1]), e = project(cell.centre[0] + cell.radius, cell.centre[1]);
+          const radius = Math.abs(e.x - c.x);
+          cells.push({ l: c.x - radius, t: c.y - radius, r: c.x + radius, b: c.y + radius });
+          if (piece.item.lined && piece.item.group.role === "main") sizes.line = Math.min(sizes.line, 2 * radius);
+        }
+        if (!piece.item.lined) {
+          sizes.sheets++;
+          sizes.sheet = Math.min(sizes.sheet, Math.abs(project(piece.sheet.extent, 0).x - project(-piece.sheet.extent, 0).x));
+        }
+      }
+      const meet = (a, b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
+      const pairs = [];
+      for (let i = 0; i < labels.length; i++) for (let j = i + 1; j < labels.length; j++) if (meet(labels[i], labels[j])) pairs.push([labels[i].text, labels[j].text]);
+      const onCells = labels.filter((label) => !/tissue-change|tissue-state/.test(label.kind) && cells.some((cell) => meet(label, cell))).map((label) => label.text);
+      const outside = labels.filter((label) => label.l < box.left - 1 || label.r > box.right + 1 || label.t < box.top - 1 || label.b > box.bottom + 1).map((label) => label.text);
+      return { labels: labels.length, changes: labels.filter((label) => /tissue-change/.test(label.kind)).length, pairs: pairs.slice(0, 4), onCells: onCells.slice(0, 4), outside: outside.slice(0, 4), sizes: { line: Math.round(sizes.line), sheet: Math.round(sizes.sheet), sheets: sizes.sheets } };
+    })()`);
+    const firstChange = changesOf(ARMS).sort((a, b) => a.time - b.time)[0];
+    const sheetChange = changesOf(SHEETS.runs.map((slot) => slot.arm).filter((arm) => (SHEET_ENTRY.tissue.front || []).includes(arm))).sort((a, b) => a.time - b.time)[0];
+    const states = [
+      ["the line", `lens=experiments&still=1`, null],
+      ["the line at a change", `lens=experiments&still=1&time=${firstChange.time}`, null],
+      ["a pressed cell", `lens=experiments&still=1&time=${PRESS.time}&select=tissue:${PRESS.arm}:${PRESS.cell}`, null],
+      ["the sheet", `lens=experiments&still=1&part=${SHEET}`, null],
+      ["the sheet at a change", `lens=experiments&still=1&part=${SHEET}&time=${sheetChange.time}`, null],
+      ["the sheet with every arm", `lens=experiments&still=1&part=${SHEET}`, "all"],
+      ["playing at a change", `lens=experiments`, "play"],
+    ];
+    for (const [width, height] of [[1280, 720], [1024, 768], [1440, 900], [400, 860], [360, 780]]) {
+      await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: width < 760 });
+      for (const [name, query, then] of states) {
+        await page("Page.navigate", { url: `${base}?${query}` });
+        const part = query.includes(SHEET) ? SHEET : PART;
+        await until(shownPart(part), 240);
+        await sleep(1200);
+        if (then === "all") {
+          await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); if (!select) return false; select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);
+          await until(`${L}.runs.length === ${SHEETS.runs.length + LINE.runs.length} && !${L}.loading`, 240);
+          await sleep(1500);
+        } else if (then === "play") {
+          await evaluate(`(() => { const lens = ${L}; lens.player.pause(); lens.player.seek(${firstChange.time}); lens.player.play(); return true; })()`);
+          await sleep(700);
+        }
+        const c = await crowd();
+        const tag = `${width} by ${height}, ${name}`;
+        check(`${tag}: no two names meet, none but a change's or a chosen cell's lies on a cell, all inside the window (${c.labels} names${c.changes ? `, ${c.changes} of changes` : ""})`, c.labels > 0 && !c.pairs.length && !c.onCells.length && !c.outside.length && (!/change/.test(name) || c.changes > 0), JSON.stringify(c));
+        if (width === 1280 && name === "the line") check(`${tag}: a line's cell is drawn 28 px across or more (${c.sizes.line} px)`, c.sizes.line >= 28, JSON.stringify(c.sizes));
+        if (width === 1440 && name === "the line") check(`${tag}: a line's cell is drawn 36 px across or more (${c.sizes.line} px)`, c.sizes.line >= 36, JSON.stringify(c.sizes));
+        if (width === 1280 && name === "the sheet") check(`${tag}: each of the ${c.sizes.sheets} sheets is 200 px across or more (${c.sizes.sheet} px)`, c.sizes.sheets === 3 && c.sizes.sheet >= 200, JSON.stringify(c.sizes));
+        if (width === 1280 && name === "the sheet with every arm") check(`${tag}: each of the ${c.sizes.sheets} sheets is 130 px across or more (${c.sizes.sheet} px)`, c.sizes.sheets === 6 && c.sizes.sheet >= 130, JSON.stringify(c.sizes));
+        if ((width === 1280 || width === 360) && /line$|sheet$|every arm|pressed/.test(name)) await shot(`${width}-${name.replace(/[^a-z]+/gi, "-")}`);
+      }
+    }
+    const s = await state();
+    check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
+  } else if (CASE === "sheet") {
+    fetched.clear();
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    check("with the switch turned to the sheet (the example's opens.part, in this check's catalogue), the tab opens on the sheet", await until(shownPart(SHEET), 240), "");
+    await sleep(1800);
+    let s = await state();
+    const got = bytes();
+    note(`the opening fetched ${got.total.toLocaleString("en-US")} bytes of runs: ${JSON.stringify(got.arms)}`);
+    check(`what the sheet's opening fetches of the runs stays under ${OPENING_BYTES / 1e6} MB, each arm under ${ARM_BYTES / 1e6} MB`, got.total > 0 && got.total <= OPENING_BYTES && Object.values(got.arms).every((n) => n <= ARM_BYTES), JSON.stringify(got));
+    // 1. The extension sentence on the first screen, in full, beside "Development work, not judged."
+    check("1. the extension sentence stands on the first screen in full, beside \"Development work, not judged.\", over the sheet, not behind a fold or a press", s.caption.length === 1 && s.caption[0].text === `Development work, not judged. ${EXTENSION}` && s.caption[0].inside && s.caption[0].top >= 56 && s.tissues.filter((t) => t.part === SHEET).every((t) => t.top > s.caption[0].bottom), JSON.stringify(s.caption));
+    // 2. The sheet's own bracket, in the note's words; x2 named as the line's wherever a place is.
+    const bracket = SHEET_ENTRY.tissue.bracket;
+    check("2. the sheet shows its own observed bracket in the note's words, at a dashed line between the two arms it lies between", s.divider && s.over.length === 1 && s.over[0].inside && s.over[0].text.includes(lower(bracket.says)) && s.says.includes(SHEET_ENTRY.tissue.says[2]), JSON.stringify([s.divider, s.over]));
+    const places = s.heads.filter((tag) => /^x2/.test(tag.text));
+    check("2. over the sheets, once, x2 is named as the line's threshold, and each sheet is named by its place (\"x2/4\")", places.length >= 1 && s.over[0]?.text.includes(SHEET_ENTRY.tissue.place_says) && s.slotsCard.filter(([arm]) => SHEETS.runs.some((slot) => slot.arm === arm)).length === SHEETS.slots.length, JSON.stringify([places.map((tag) => tag.text), s.over]));
+    // 3. The line beside it, labelled as the record the threshold comes from.
+    const lineTissues = s.tissues.filter((t) => t.part === PART);
+    check("3. the line stays in sight beside the sheet, labelled as the record the threshold comes from (section 7.5)", lineTissues.length >= 1 && lineTissues.every((t) => t.top >= 56 && t.bottom <= HEIGHT - 90) && s.group.length === 1 && s.group[0].text === SHEET_ENTRY.tissue.beside.says && s.group[0].inside, JSON.stringify([lineTissues, s.group]));
+    // 4. No heading or caption reads the sheet as the preprint's experiment.
+    const words = [s.heading, s.stamp, ...[...s.heads, ...s.caption, ...s.group, ...s.over, ...s.ends].map((tag) => tag.text)].join(" ");
+    check("4. no heading or caption reads the sheet as the preprint's experiment: it is Cells' extension", /Cells' extension/.test(s.heading + s.stamp) && !/Grodstein|Levin|preprint|after .* \(2026\)/i.test(words), words.slice(0, 300));
+    check("the sheet's arms in view stand inside the room, their cells large enough to see", s.tissues.filter((t) => t.part === SHEET).every((t) => t.left > 290 && t.right <= WIDTH - 4 && t.bottom < HEIGHT - 90 && t.cell >= 10), JSON.stringify(s.tissues));
+    await shot("sheet");
+    // The play: past the sheets' 2,000 s each says its record ended, and shows its last record.
+    await evaluate(`${L}.seek(${L}.clock.end)`);
+    await sleep(1000);
+    s = await state();
+    check("past the sheets' end the words over them say, once, that each shows its last record, its run's record ending at 2,000 s", s.over.length === 1 && /Past 33 min 20 s each sheet shows its last record/.test(s.over[0].text) && s.over[0].inside, JSON.stringify(s.over));
+    // The sheet's own play: each stated change named on the picture for its stretch; the beads on every arm with routes.
+    const sheetArms = (await evaluate(`${L}.runs.map((item) => item.slot.arm)`));
+    const { seen, total } = await watchPlay("sheet");
+    const spans = spansOf(seen);
+    const named = changeWords(sheetArms);
+    const short = named.filter((name) => !((spans.get(name) || 0) >= DWELL - 0.3));
+    note(`the sheet's play: ${named.length} names, ${Math.round(total)} s of watching; the sheets' changes: ${JSON.stringify(sheetArms.filter((arm) => SHEETS.runs.some((slot) => slot.arm === arm)).map((arm) => [arm, changeWords([arm]).length]))}`);
+    check(`the sheet's play takes about a minute or less, and each stated change in view is named on the picture for its stretch (${DWELL} s) or more: ${named.length} names, the cells of a record and kind together`, total <= 80 && named.length > 0 && short.length === 0, JSON.stringify(short.map((name) => [name, spans.get(name) || 0])));
+    const most = {};
+    for (const frame of seen) for (const [arm, beads] of Object.entries(frame.beads)) most[arm] = beads === null ? null : Math.max(most[arm] ?? 0, beads);
+    check("during the sheet's play the beads run on every arm in view", sheetArms.every((arm) => most[arm] > 0), JSON.stringify(most));
+    const cost = await frameCost();
+    note(`the sheet's play: the view's work on a frame, labels with it: ${JSON.stringify(cost)} ms`);
+    check("the view's own work on a frame of the sheet's play, the labels' layout with it, leaves room at 60 frames a second (a median under 8 ms)", cost.median < 8, JSON.stringify(cost));
+    // Every arm in view, chosen on the card: the six sheets and the line's four, under one clock; D = 0 says it has no
+    // routes; the bracket stands between the two rows its arms are in.
+    await evaluate(`${L}.player.pause(); ${L}.seek(0); true`);
+    fetched.clear();
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);
+    await until(`${L}.runs.length === ${SHEETS.runs.length + LINE.runs.length} && !${L}.loading`, 240);
+    await sleep(2000);
+    s = await state();
+    note(`every arm fetched ${bytes().total.toLocaleString("en-US")} bytes more`);
+    const zero = SHEETS.runs.find((slot) => slot.value === 0);
+    check(`"All" on the card brings the ${SHEETS.runs.length} sheets into view, three to a row, the line folded away (the card opens it)`, JSON.stringify(s.tissues.map((t) => t.arm).sort()) === JSON.stringify(SHEETS.runs.map((slot) => slot.arm).sort()) && s.group.length === 0, JSON.stringify(s.tissues.map((t) => t.arm)));
+    check("the sheet with D = 0 says under it, with its end words, that it declares no routes", Boolean(zero) && s.ends.some((tag) => tag.text.includes(zero.end) && tag.text.includes(SHEET_ENTRY.tissue.no_routes.replace(/^D = 0: /, ""))), JSON.stringify(s.ends.map((tag) => tag.text)));
+    check("the dashed line stands between the rows its two arms are in, and the words over the sheets say what it is", s.divider && s.over.length === 1 && s.over[0].text.includes(lower(bracket.says)), JSON.stringify(s.over));
+    await shot("sheet-all");
+    // On a phone, the same first screen.
+    await page("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    await until(shownPart(SHEET), 240);
+    await sleep(2000);
+    s = await state();
+    check("on a phone too: the extension sentence in full inside the window, the bracket's words and the line's in sight", s.caption.length === 1 && s.caption[0].inside && s.caption[0].text === `Development work, not judged. ${EXTENSION}` && s.over.every((tag) => tag.inside) && s.group.length === 1 && s.group.every((tag) => tag.inside), JSON.stringify([s.caption, s.over, s.group]));
+    await shot("sheet-phone");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   }
   const font = await evaluate(`document.fonts.check('12px Inter') ? "the page's font" : "a stand-in font"`).catch(() => "unknown");

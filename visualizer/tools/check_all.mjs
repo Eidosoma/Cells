@@ -77,10 +77,13 @@ const SUITE = [
   { name: "junctions-reduced", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "network", NAME: "junctions-reduced", REDUCED: "1", THEME: "dark" }, minutes: 2 },
   { name: "junctions-levin", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin" }, minutes: 3 }, // the replication's real runs where they are on this machine, else skipped
   { name: "junctions-levin-phone", tool: "check_junctions.mjs", args: [pictures], env: { CASE: "levin", NAME: "junctions-levin-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 3 }, // the same, and GARD in the tab, on a phone
-  // The example's tissue line on its real runs (tools/check_tissue.mjs), skipped where they are not on this machine.
+  // The example's tumour tissue (the line and the sheet) on its real runs (tools/check_tissue.mjs), skipped where they are not on this machine.
   { name: "tissue-wide", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "wide", NAME: "tissue-wide" }, minutes: 3 },
   { name: "tissue-phone", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "phone", NAME: "tissue-phone" }, minutes: 2 },
   { name: "tissue-reduced", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "reduced", NAME: "tissue-reduced" }, minutes: 2 },
+  { name: "tissue-play", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "play", NAME: "tissue-play" }, minutes: 4 }, // the play of the stated changes, watched whole
+  { name: "tissue-sheet", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "sheet", NAME: "tissue-sheet" }, minutes: 3 }, // the switch turned to the sheet, in the check's own catalogue
+  { name: "tissue-layout", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "layout", NAME: "tissue-layout" }, minutes: 6 }, // no name meets another or lies on a cell, at five sizes in every state a press reaches
   // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
   flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
   flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),

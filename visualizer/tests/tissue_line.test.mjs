@@ -16,9 +16,9 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openReplay } from "../src/replay/source.js";
-import { lineOf, partsOf, wholeOf, oneClock, Breaks, rangeOf, timeAxis, bands, unitWords, valueWords, TIME_SCALES } from "../src/replay/tissue_line.js";
+import { lineOf, partsOf, wholeOf, oneClock, unionClock, Breaks, rangeOf, timeAxis, bands, unitWords, valueWords, TIME_SCALES } from "../src/replay/tissue_line.js";
 import { TISSUE_COLOURS, tissueTokens } from "../src/ui/tissue_styles.js";
-import { isPart, wholeRunOf } from "../src/ui/tissue_part.js";
+import { isPart, wholeRunOf, openingPart } from "../src/ui/tissue_part.js";
 import { cellsOf } from "../src/lenses/tissue_line.js";
 import { publishedReplays } from "../tools/lib/build_page.mjs";
 
@@ -224,6 +224,10 @@ test("runs are shown under one clock only where they share their saved times", (
   assert.throws(() => oneClock([run("a", [0, 100, 200]), run("b", [0, 100])]), /do not share their times/);
   assert.throws(() => oneClock([run("a", [0, 100, 200]), run("b", [0, 100, 300])]), /record 2 is at 200 s in a and 300 s in b/);
   assert.throws(() => oneClock([]));
+  // Runs whose saved times differ (an arm recorded at a finer step) share the union of their times; none is resampled.
+  const union = unionClock([run("a", [0, 0.125, 0.25, 100]), run("b", [0, 0.0625, 0.125, 2000])]);
+  assert.deepEqual([union.t, union.start, union.end], [[0, 0.0625, 0.125, 0.25, 100, 2000], 0, 2000]);
+  assert.deepEqual([union.indexAt(-1), union.indexAt(0.1), union.indexAt(150), union.indexAt(5000)], [0, 1, 4, 5]);
 });
 
 test("the cells stand where the run's view prescribes them along the line", () => {
@@ -238,17 +242,19 @@ test("the page's overlay and selection hold the tissue line as a part of the exa
   const entry = overlay.experiments["gap-junction-tissue-line"];
   assert.equal(entry.listed, undefined, "not a third example in the list: a part of the second");
   assert.equal(entry.part_of, "gap-junction-linear-network");
-  assert.deepEqual([entry.summary, entry.sidecar, entry.refused_picks, entry.opens.record], ["summary.json", "criterion.json", true, ["stated.mir200_minus_zeb_mrna"]]);
+  assert.deepEqual([entry.summary, entry.sidecar, entry.refused_picks, entry.opens.record], ["summary.json", ["criterion.json", "concentration_mir200.json", "concentration_zeb_mrna.json", "concentration_zeb_protein.json"], true, ["stated.mir200_minus_zeb_mrna"]]);
   // The lead's words for the rerun (17 November 2026, night): the arms, the threshold with its antecedent, and what BITSEY is.
   assert.deepEqual(entry.tissue.says, [
     "Development work, not judged.",
-    "Three runs, fixed before they ran, at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above); none was refused.",
+    "Four runs: D = 0, and three fixed before they ran at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above), recorded densely; none was refused.",
     "Its threshold, from the search rerun after an engine fix (FR-19): 7.1777e-15 m²/s. The search was a comparison with BITSEY's log saved at b2cb370, written by an earlier revision of its code: Cells' threshold is 0.99968 of the logged value, inside the band fixed before the run; development, not judged.",
     "BITSEY is the preprint's authors' public code and logs: it was not run, and its code is never copied into Cells.",
   ]);
-  assert.deepEqual(entry.tissue.ends, { "neither-d3.58887e-15": "6 M, 19 E: the tumor holds", "neither-d7.17773e-15": "25 E: normalized", "neither-d1.43555e-14": "25 E: normalized" }, "the end states are the note's table (section 7.5), for the three arms");
+  assert.deepEqual(entry.tissue.ends, { "neither-d0": "6 M, 19 E: the tumor holds", "neither-d3.58887e-15": "6 M, 19 E: the tumor holds", "neither-d7.17773e-15": "25 E: normalized", "neither-d1.43555e-14": "25 E: normalized" }, "the end states are the note's tables (sections 7.4 and 7.5; the dense runs end in the same states, section 7.6), for the four arms");
   for (const source of [...entry.sources, ...entry.tissue.sources, ...entry.outcome.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);
-  assert.ok(entry.tissue.sources.some((source) => source.path === "docs/GAP_JUNCTION_CANCER_REPLICATION.md" && source.revision.startsWith("17b7f9f8")) && entry.tissue.sources.some((source) => source.path === "PROGRESS.md" && source.revision.startsWith("295b3333")));
+  assert.ok(entry.tissue.sources.some((source) => source.path === "docs/GAP_JUNCTION_CANCER_REPLICATION.md" && source.revision.startsWith("a4ec17a2")) && entry.tissue.sources.some((source) => source.path === "PROGRESS.md" && source.revision.startsWith("776824f7")));
+  assert.equal(entry.tissue.tumor, undefined, "the tumour's cells are the packages' data (tumor_cells), not the overlay's words");
+  assert.equal(entry.tissue.species, undefined, "and so are the species' names (species)");
   // The page's own words (a source's path is the record's own name for its file, and is not checked here).
   const words = JSON.stringify([entry.label, entry.short, entry.plain, { ...entry.tissue, says: entry.tissue.says.filter((_, index) => index !== 3), sources: null }, entry.outcome.status, entry.outcome.text]);
   assert.doesNotMatch(words, /replicat|reproduc|agree|\bmatch|modelled|qualified|Grodstein|preprint|7\.18/i, "no comparison with the preprint's or its authors' numbers but the one sentence, and no word that judges");
@@ -258,6 +264,39 @@ test("the page's overlay and selection hold the tissue line as a part of the exa
   const logged = [entry.label, entry.short, entry.plain, ...entry.tissue.says, entry.outcome.text].filter((line) => /BITSEY|logged/.test(line));
   assert.deepEqual(logged, [entry.tissue.says[2], entry.tissue.says[3]]);
   assert.doesNotMatch(words, /the user|“|"include/i, "no sentence of the user's in a data file");
-  assert.deepEqual(selection["gap-junction-tissue-line"].within, ["runs", "picks-02", "viewer"]);
+  assert.deepEqual(selection["gap-junction-tissue-line"].within, ["runs", "dense-01", "viewer"]);
   assert.equal(selection["gap-junction-tissue-line"].runs, "index");
+});
+
+test("the sheet is Cells' extension, said in full with its own bracket, with the line beside it as the record of the threshold; the line opens first", () => {
+  const overlay = readJson(path.join(ROOT, "data", "replays", "overlay.json")), selection = readJson(path.join(ROOT, "data", "replays", "selection.json"));
+  const sheet = overlay.experiments["gap-junction-tissue-sheet"];
+  const extension = "The sheet is an extension beyond the replication, not part of it. Its coupled horizon is 2,000 s, a tenth of the line's, so each outcome is the state at 2,000 s.";
+  assert.equal(sheet.part_of, "gap-junction-linear-network");
+  assert.deepEqual(selection["gap-junction-tissue-sheet"].within, ["runs", "sheet-01", "viewer"]);
+  // The note's sentence, word for word, on the card and on the picture beside "Development work, not judged." (its caption).
+  assert.deepEqual(sheet.tissue.says.slice(0, 2), ["Development work, not judged.", extension]);
+  assert.equal(sheet.tissue.caption, `Development work, not judged. ${extension}`);
+  // Its own bracket in the note's words (section 7.6), and x2 named as the line's wherever an arm's place is.
+  assert.match(sheet.tissue.says[2], /^So, at 2,000 s, the sheet's threshold lies between x2\/8 and x2\/4 \(9\.0e-16 to 1\.8e-15 m²\/s\), four to eight times below the line's x2\./);
+  assert.deepEqual(sheet.tissue.bracket.between, ["sheet9-d8.97217e-16", "sheet9-d1.79443e-15"]);
+  assert.match(sheet.tissue.bracket.says, /between x2\/8 and x2\/4/);
+  assert.equal(sheet.tissue.place_says, "with x2 the line's threshold");
+  // The line beside it, as the record the threshold comes from (section 7.5).
+  assert.equal(sheet.tissue.beside.part, "gap-junction-tissue-line");
+  assert.match(sheet.tissue.beside.says, /^The tissue line, the record the threshold x2 comes from \(section 7\.5\)$/);
+  assert.deepEqual(sheet.tissue.ends, { "sheet9-d0": "the 3x3 patch M, 72 E", "sheet9-d4.48608e-16": "the 3x3 patch M, 72 E", "sheet9-d8.97217e-16": "the 3x3 patch M, 72 E", "sheet9-d1.79443e-15": "81 E: normalized", "sheet9-d3.58887e-15": "81 E: normalized", "sheet9-d7.17773e-15": "81 E: normalized" }, "the note's table (section 7.6)");
+  // No heading or caption reads the sheet as the preprint's experiment: it is Cells' extension of it.
+  for (const words of [sheet.label, sheet.short, sheet.plain]) assert.match(words, /Cells' extension/);
+  const all = JSON.stringify([sheet.label, sheet.short, sheet.plain, { ...sheet.tissue, sources: null }, { ...sheet.outcome, sources: null }]);
+  assert.doesNotMatch(all, /Grodstein|Levin|preprint|reproduc|agree|\bmatch|the user|“/i);
+  assert.doesNotMatch(all.replace(/extension beyond the replication, not part of it|not part of the replication/g, ""), /replicat/i, "the replication is named only to say the sheet is not part of it");
+  for (const source of [...sheet.sources, ...sheet.tissue.sources, ...sheet.outcome.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);
+  // Which part the tab opens on is one field, the example's opens.part: the line, until the user says otherwise.
+  const whole = overlay.experiments["gap-junction-linear-network"];
+  assert.equal(whole.opens.part, "gap-junction-tissue-line");
+  const raw = (part) => ({ experiments: [{ id: "gap-junction-linear-network", listed: true, opens: { part } }, { id: "gap-junction-tissue-line", part_of: "gap-junction-linear-network", tissue: {} }, { id: "gap-junction-tissue-sheet", part_of: "gap-junction-linear-network", tissue: {} }], runs: [{ id: "l--a", experiment: "gap-junction-tissue-line" }, { id: "s--a", experiment: "gap-junction-tissue-sheet" }] });
+  assert.equal(openingPart(raw("gap-junction-tissue-line")), "gap-junction-tissue-line");
+  assert.equal(openingPart(raw("gap-junction-tissue-sheet")), "gap-junction-tissue-sheet");
+  assert.equal(openingPart(raw("no-such-part")), null, "a part that is not packaged opens nothing: the networks");
 });

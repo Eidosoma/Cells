@@ -14,8 +14,8 @@
 // colour, and a cell's state is also written as the driver's letter where it is chosen.
 
 export const TISSUE_COLOURS = {
-  light: { below: ["#f6c095", "#e8853f", "#a14a0c"], between: "#cdd2d8", above: ["#8cb8ef", "#4a8ee0", "#174a8f"], frame: "#8a9aab", ground: "#ffffff" },
-  dark: { below: ["#743a10", "#c96a26", "#f6b98a"], between: "#444b53", above: ["#1c4f94", "#3c82d4", "#a9cdf5"], frame: "#5b6f84", ground: "#101d29" },
+  light: { below: ["#f6c095", "#e8853f", "#a14a0c"], between: "#cdd2d8", above: ["#8cb8ef", "#4a8ee0", "#174a8f"], frame: "#8a9aab", ground: "#ffffff", molecules: ["#0f9a87", "#7c55d0", "#c23b86"] },
+  dark: { below: ["#743a10", "#c96a26", "#f6b98a"], between: "#444b53", above: ["#1c4f94", "#3c82d4", "#a9cdf5"], frame: "#5b6f84", ground: "#101d29", molecules: ["#2cc7b2", "#a58cf0", "#ea6fb4"] },
 };
 
 const block = (colours) =>
@@ -24,6 +24,7 @@ const block = (colours) =>
     `--tissue-between: ${colours.between};`,
     ...colours.above.map((hex, k) => `--tissue-above-${k}: ${hex};`),
     `--tissue-frame: ${colours.frame}; --tissue-ground: ${colours.ground};`,
+    ...colours.molecules.map((hex, k) => `--tissue-molecule-${k}: ${hex};`),
   ].join(" ");
 
 export const tissueTokens = `
@@ -40,6 +41,7 @@ export const TISSUE_TOKENS = {
   between: "--tissue-between",
   above: [0, 1, 2].map((k) => `--tissue-above-${k}`),
   frame: "--tissue-frame",
+  molecules: [0, 1, 2].map((k) => `--tissue-molecule-${k}`),
   ground: "--tissue-ground",
 };
 
@@ -54,6 +56,8 @@ export function readTissueColours(host) {
     between: read(TISSUE_TOKENS.between, fallback.between),
     above: TISSUE_TOKENS.above.map((name, k) => read(name, fallback.above[k])),
     frame: read(TISSUE_TOKENS.frame, fallback.frame),
+    molecules: TISSUE_TOKENS.molecules.map((name, k) => read(name, fallback.molecules[k])),
+    accent: read("--accent", dark ? "#5b9dee" : "#1f6fd0"),
     ground: read(TISSUE_TOKENS.ground, fallback.ground),
     dark,
   };
@@ -91,14 +95,43 @@ export const tissueCss = `
 .key-tissue-bracket { height: 6px; margin-top: 4px; border: 1.5px solid var(--fg); border-bottom: 0; }
 .key-tissue-refused { height: 10px; border: 1.5px dashed var(--muted); border-radius: 3px; }
 .label-tissue-refused.is-vertical { writing-mode: vertical-rl; padding: 6px 1px; }
+.label-tissue-change { font-size: 11.5px; font-weight: 600; color: var(--bg-raised); background: var(--accent); border-radius: 4px; padding: 1px 6px; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 3px color-mix(in srgb, var(--fg) 30%, transparent); }
+.key-tissue-bars { height: 12px; background: linear-gradient(to right, var(--tissue-molecule-0) 0 30%, transparent 30% 35%, var(--tissue-molecule-1) 35% 65%, transparent 65% 70%, var(--tissue-molecule-2) 70%); border-radius: 2px; }
+.key-tissue-ring { width: 12px; height: 12px; margin-left: 4px; border: 2.5px solid var(--accent); border-radius: 50%; }
+.tissue-changes { margin: 8px 0 0; font-size: 12.5px; }
+.tissue-changes summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; color: var(--accent); }
+.tissue-changes ul { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; max-height: 220px; overflow: auto; }
+.tissue-changes .link-button { text-align: left; font-size: 12px; }
 /* Lying along its place (the runs stacked, on a phone): its words wrap where the window is narrower than the line. */
 .label-tissue-refused:not(.is-vertical) { white-space: normal; max-width: min(92vw, 420px); text-align: center; }
-/* The label layer sets a label's bottom on its point; these stand centred on it, or under it, by their own height. */
-.label-tissue-refused.is-centred { translate: 0 50%; }
-.label-tissue-state { translate: 0 100%; }
 .label-tissue-refused { font-size: 11.5px; color: var(--muted); background: color-mix(in srgb, var(--bg) 82%, transparent); border: 1px dashed var(--line); border-radius: 4px; padding: 1px 5px; white-space: nowrap; pointer-events: none; }
-/* A tick's words end at its point, left of the picture (the label layer centres a label on its point; this moves it half its width). */
-.label-tissue-tick { font-size: 10.5px; color: var(--muted); white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; translate: -50% 50%; min-width: 16px; text-align: right; } /* the label layer does not place a label under 12 px wide */
-.label-tissue-tumor { font-size: 11px; color: var(--fg); white-space: nowrap; pointer-events: none; }
+.label-tissue-tick { font-size: 10.5px; color: var(--muted); white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; min-width: 16px; text-align: left; } /* the label layer does not place a label under 12 px wide */
 .label-tissue-state { font-size: 11px; font-weight: 600; color: var(--fg); background: var(--bg-raised); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; white-space: nowrap; pointer-events: none; }
+/* The part's caption over its tissues, in full on the first screen (src/lenses/tissue_line.js keeps the room above them for it). */
+.label-tissue-caption { font-size: 12.5px; line-height: 1.4; color: var(--fg); background: color-mix(in srgb, var(--bg) 90%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; white-space: normal; width: max-content; max-width: min(calc(100vw - 32px), 620px); text-align: center; text-wrap: balance; pointer-events: none; }
+.tissue-door-button { margin: 0; color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.label-tissue-group { font-weight: 600; font-size: 12.5px; color: var(--fg); background: color-mix(in srgb, var(--bg) 82%, transparent); border-radius: 4px; padding: 1px 5px; white-space: normal; width: max-content; max-width: min(calc(100vw - 40px), 560px); pointer-events: none; }
+.key-tissue-threshold { height: 0; margin-top: 6px; border-top: 2px dashed var(--fg); }
+/* The example's other part with a caption of its own (the sheet, from the line): its caption, then its door. */
+.tissue-sibling-block { margin: 10px 0 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--accent) 7%, var(--bg-raised)); display: grid; gap: 4px; justify-items: start; }
+.tissue-sibling-block .card-text { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--fg); }
+.tissue-sibling-block .tissue-back { margin: 0; color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.tissue-front { color: var(--muted); font-size: 12px; }
+/* The tissue's names on the picture (src/lenses/tissue_line.js lays them out so that none meets another or a cell: each
+   stands with its middle bottom on its point, as the label layer places it, and no rule here moves it off that). */
+.label-tissue-head .tissue-line, .label-tissue-end .tissue-line, .label-tissue-over .tissue-line { display: block; }
+.label-tissue-head.is-stacked, .label-tissue-end.is-stacked { text-align: center; white-space: normal; width: max-content; }
+.label-tissue-head .is-place { font-size: 13px; }
+.label-tissue-head .is-value { font-size: 10.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.label-tissue-end .is-early, .label-tissue-over .is-early { font-style: italic; }
+.label-tissue-head.is-wrap, .label-tissue-end.is-wrap { white-space: normal; width: max-content; }
+.label-tissue-over { font-size: 12px; line-height: 1.4; color: var(--fg); text-align: center; white-space: normal; width: max-content; padding: 1px 6px; pointer-events: none; }
+/* The key over the tissues: the three dots in a cell, and a bead. */
+.label-tissue-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; width: max-content; font-size: 11.5px; line-height: 1.4; color: var(--muted); white-space: normal; pointer-events: none; padding: 1px 6px; }
+.label-tissue-key .tissue-key-item { white-space: normal; }
+.tissue-key-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; vertical-align: -1px; }
+.tissue-key-dot.is-bead { width: 8px; height: 8px; box-shadow: 0 0 0 1.5px var(--fg); }
+.label-tissue-door { pointer-events: auto; }
+.label-tissue-door .tissue-door-button { margin: 0; min-height: 32px; padding: 4px 12px; font-size: 12.5px; }
+.tissue-door-button { color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
 `;

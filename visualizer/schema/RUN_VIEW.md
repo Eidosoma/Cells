@@ -722,15 +722,38 @@ and by the sweep's chart. Made-up files of these shapes are written by
 **A part of an example.** An entry may name the listed example it belongs to
 (`"part_of": "<entry id>"`): it is not listed itself, its card's door stands in the
 example's card, and a published page carries its runs with the example's
-(`publishedReplays`). The tissue line of the gap-junction example is one
-(`src/lenses/tissue_line.js`, shown in the Experiments tab's place, `part=<entry id>` in
-the address). Its entry holds the record's words for the picture under `tissue`, each set
-with its source: `says` (the lines the page may say), `tumor` (`cells`, `label`, `source`),
-`ends` (each arm's end states, the record's table, by arm), `ends_label`, `ends_says` (whose
-words they are, for the card), `refused` (the
-words for a refused pick) and `sources`. Its runs come from the selection's run folder:
-its `index.json`, or where it has none, every package in it that holds a `view.json`, by
-name. They are shown under one clock only where they share their saved times.
+(`publishedReplays`). The gap-junction example's tumour tissue has two: the line and the
+sheet (`src/lenses/tissue_line.js`, shown in the Experiments tab's place, `part=<entry id>`
+in the address). The example's own entry names the part the tab opens on (`opens.part`,
+one field); an address that names a run, a record, layers or a part of the runs' view
+still opens the runs. A part's entry holds the record's words for the picture under
+`tissue`, each set with its source:
+
+- `says` (the lines the page may say), `ends` (each arm's end states, the record's table,
+  by arm), `ends_label`, `ends_says` (whose words they are, for the card), `refused` (the
+  words for a refused pick), `no_routes` (what a run with no routes is said to have) and
+  `sources`;
+- `caption` (words stood in full over the part's tissues on the first screen; another
+  part shows a small door to this one, and its card the same words over the door),
+  `place_says` (what an arm's place such as "x2/4" is against, said once over the
+  tissues), `bracket` (`between`: two arms, a dashed line drawn between them; `says`: what
+  the line is, said with `place_says`);
+- `front` (the arms in view as the page opens, the picture's choice, with `front_says`;
+  the card brings in the rest, fetched as they come into view) and `beside` (another part
+  drawn under this one, smaller, folded away while every arm is in view: its `part`,
+  `front`, `says` and `front_says`).
+
+The tumour's cells, the species' names and each arm's place are the packages' data, not
+the overlay's: the summary's sweep `tumor_cells` and `species`, each arm's `place`
+(`relative_to_x2`, `side`, `source`), carried into the catalogue's sweeps, and the same
+in `criterion.json`, carried on the stated record (`tumor_cells`, `species_names`,
+`place`). The overlay's `sidecar` may name several files beside each package (the
+criterion and the stated concentrations). A part whose picture opens on a stated quantity
+has its voltages in a file of their own, and of a passive route's totals only the species
+its routes carry are packaged. Its runs come from the selection's run folder: its
+`index.json`, or where it has none, every package in it that holds a `view.json`, by name.
+The runs in view share one clock, the union of their saved times; each shows its own
+record at or before it; past the end of runs that ended before the clock, the words over them say so.
 
 - **Refused picks.** With `"refused_picks": true` and a summary of one sweep, each folder
   beside the packages that holds `REFUSED.json` and no view is named in the catalogue entry
@@ -740,9 +763,11 @@ name. They are shown under one clock only where they share their saved times.
   place in the parameter's order, named, with nothing drawn in it.
 - **The picture's choices**, said on the picture: the colour of a value on a scale broken
   at the criterion's own thresholds (one hue below, a grey between, another above), and
-  time down each space–time picture on a logarithmic scale (a time t at log(1 + t / the
-  runs' first step)) or an even one; every saved record is a band from its time to the
-  next. No state is read from a colour; a cell's state is the driver's.
+  time down each line's map on a logarithmic scale (a time t at log(1 + t / a two-hundredth
+  of the run)) or an even one; every saved record is a band from its time to the next. The
+  clock follows the driver's stated changes (`src/replay/tissue_play.js`): each time of a
+  change is held 2.2 s of watching and the time between passes in a second or less. No
+  state is read from a colour; a cell's state is the driver's.
 
 ### A run written by the engine's shared output path
 

@@ -15,7 +15,8 @@
         ],
         "layers": [
           "junction-coupling"
-        ]
+        ],
+        "part": "gap-junction-tissue-line"
       },
       "units": "The two forms state [mR] in their own units: the Norton form's runs in mM, the as-written runs in µM (in each, the preprint's scaled unit is one of them). The page never converts one to the other.",
       "label": "Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026)",
@@ -60,66 +61,61 @@
       "development": true,
       "part_of": "gap-junction-linear-network",
       "summary": "summary.json",
-      "sidecar": "criterion.json",
+      "sidecar": [
+        "criterion.json",
+        "concentration_mir200.json",
+        "concentration_zeb_mrna.json",
+        "concentration_zeb_protein.json"
+      ],
       "refused_picks": true,
       "opens": {
         "record": [
           "stated.mir200_minus_zeb_mrna"
         ]
       },
-      "label": "The tissue line: 25 cells, the first six a tumor, at three strengths of coupling",
+      "label": "The tissue line: 25 cells, the first six a tumor, at four strengths of coupling",
       "short": "The tissue line",
-      "plain": "One tissue condition of the example runs on the engine: a line of 25 touching cells, the first six a tumor, where each cell runs the EMT switch (miR200, Zeb mRNA and ZEB) and only miR200 crosses the gap junctions, at one junction diffusion constant D for each run. Three values of D were fixed before they ran, at half, once and twice the threshold the search reported; all three ran to their end, none refused. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
+      "plain": "One tissue condition of the example runs on the engine: a line of 25 touching cells, the first six a tumor, where each cell runs the EMT switch (miR200, Zeb mRNA and ZEB) and only miR200 crosses the gap junctions, at one junction diffusion constant D for each run. Four runs, recorded densely: D = 0, and three values of D fixed before they ran, at half, once and twice the threshold the search reported; none was refused. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
       "tissue": {
         "says": [
           "Development work, not judged.",
-          "Three runs, fixed before they ran, at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above); none was refused.",
+          "Four runs: D = 0, and three fixed before they ran at half, once and twice the threshold the search reported (x2/2 below, x2 near, 2 x2 above), recorded densely; none was refused.",
           "Its threshold, from the search rerun after an engine fix (FR-19): 7.1777e-15 m²/s. The search was a comparison with BITSEY's log saved at b2cb370, written by an earlier revision of its code: Cells' threshold is 0.99968 of the logged value, inside the band fixed before the run; development, not judged.",
           "BITSEY is the preprint's authors' public code and logs: it was not run, and its code is never copied into Cells."
         ],
-        "tumor": {
-          "cells": [
-            "c0",
-            "c1",
-            "c2",
-            "c3",
-            "c4",
-            "c5"
-          ],
-          "label": "Tumor: the first six cells",
-          "source": "the runs' own view (space.source): a line of 25 touching cells, the tumor the first 6"
-        },
         "ends": {
+          "neither-d0": "6 M, 19 E: the tumor holds",
           "neither-d3.58887e-15": "6 M, 19 E: the tumor holds",
           "neither-d7.17773e-15": "25 E: normalized",
           "neither-d1.43555e-14": "25 E: normalized"
         },
         "ends_label": "End states (cells 1-25), in the note's words",
-        "ends_says": "Each run's end states are given in the note's own words (its section 7, linked under Sources), which describe them under the criterion as stated: development work, not judged.",
+        "ends_says": "Each run's end states are given in the note's own words (its tables in section 7, for D = 0 and for the three picks; the dense runs end in the same states, section 7.6), which describe them under the criterion as stated: development work, not judged.",
         "refused": "Refused by an engine check: no run to show.",
         "sources": [
           {
             "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-            "where": "In short; section 7.5, \"The rerun after FR-19's fix\" and the tissue line's three arms",
-            "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
+            "where": "In short; section 7.5, \"The rerun after FR-19's fix\"; section 7.6, the dense records",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
           },
           {
             "path": "PROGRESS.md",
-            "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
-            "revision": "295b3333240e4b5f0417684dcfd30dff450c7f0b"
+            "where": "The gap-junction tissue line, dense records, and the sheet (17 November 2026, night)",
+            "revision": "776824f77ed857cf72275d66b9f341f1cd69414b"
           }
-        ]
+        ],
+        "no_routes": "D = 0: it declares no routes"
       },
       "sources": [
         {
           "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-          "where": "In short; section 7.5, \"The rerun after FR-19's fix\" and the tissue line's three arms",
-          "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
+          "where": "In short; section 7.5, \"The rerun after FR-19's fix\"; section 7.6, the dense records",
+          "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
         },
         {
           "path": "PROGRESS.md",
           "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
-          "revision": "295b3333240e4b5f0417684dcfd30dff450c7f0b"
+          "revision": "776824f77ed857cf72275d66b9f341f1cd69414b"
         }
       ],
       "outcome": {
@@ -130,8 +126,113 @@
         "sources": [
           {
             "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
-            "where": "Section 7.5, the tissue line's three arms",
-            "revision": "17b7f9f88c41729127089b36ac7b271004d2b84d"
+            "where": "Section 7.5, the tissue line's three arms; section 7.6, the dense records",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+          }
+        ]
+      },
+      "engine_entities": [
+        "models.pump_tissue",
+        "cap.junctions"
+      ],
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
+    "gap-junction-tissue-sheet": {
+      "adapter": "standard-history",
+      "development": true,
+      "part_of": "gap-junction-linear-network",
+      "summary": "summary.json",
+      "sidecar": [
+        "criterion.json",
+        "concentration_mir200.json",
+        "concentration_zeb_mrna.json",
+        "concentration_zeb_protein.json"
+      ],
+      "refused_picks": true,
+      "opens": {
+        "record": [
+          "stated.mir200_minus_zeb_mrna"
+        ]
+      },
+      "label": "Cells' extension: a tissue sheet of 9 by 9 cells, a 3 by 3 tumor in the middle, at six strengths of coupling",
+      "short": "The tissue sheet, Cells' extension",
+      "plain": "Cells' extension of the example, not part of the replication: 9 by 9 touching cells with junctions to their four neighbours and a 3 by 3 tumor patch in the middle, with the line's switch, seeds and uncoupled 500 s, at six values of the junction diffusion constant D, with x2 the line's threshold. Each cell is coloured by its miR200 minus Zeb mRNA, as the experiment's driver states it beside each run.",
+      "tissue": {
+        "says": [
+          "Development work, not judged.",
+          "The sheet is an extension beyond the replication, not part of it. Its coupled horizon is 2,000 s, a tenth of the line's, so each outcome is the state at 2,000 s.",
+          "So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (9.0e-16 to 1.8e-15 m²/s), four to eight times below the line's x2. That is observed, at the sheet's shorter horizon; why it is lower is not measured here."
+        ],
+        "ends": {
+          "sheet9-d0": "the 3x3 patch M, 72 E",
+          "sheet9-d4.48608e-16": "the 3x3 patch M, 72 E",
+          "sheet9-d8.97217e-16": "the 3x3 patch M, 72 E",
+          "sheet9-d1.79443e-15": "81 E: normalized",
+          "sheet9-d3.58887e-15": "81 E: normalized",
+          "sheet9-d7.17773e-15": "81 E: normalized"
+        },
+        "ends_label": "State at 2,000 s (81 cells), in the note's words",
+        "ends_says": "Each run's state at 2,000 s is given in the note's own words (its table in section 7.6), which describe it under the criterion as stated: development work, not judged.",
+        "refused": "Refused by an engine check: no run to show.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7.6, \"The sheet\" and its table",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "The gap-junction tissue line, dense records, and the sheet (17 November 2026, night)",
+            "revision": "776824f77ed857cf72275d66b9f341f1cd69414b"
+          }
+        ],
+        "front": [
+          "sheet9-d8.97217e-16",
+          "sheet9-d1.79443e-15",
+          "sheet9-d7.17773e-15"
+        ],
+        "front_says": "Three of the sheet's six arms stand in view as the page opens (the picture's choice: x2/8 and x2/4, the two its threshold at 2,000 s lies between, and x2, the line's threshold); the card brings in all six.",
+        "caption": "Development work, not judged. The sheet is an extension beyond the replication, not part of it. Its coupled horizon is 2,000 s, a tenth of the line's, so each outcome is the state at 2,000 s.",
+        "place_says": "with x2 the line's threshold",
+        "bracket": {
+          "between": [
+            "sheet9-d8.97217e-16",
+            "sheet9-d1.79443e-15"
+          ],
+          "says": "At 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (section 7.6)"
+        },
+        "beside": {
+          "part": "gap-junction-tissue-line",
+          "front": [
+            "neither-d3.58887e-15",
+            "neither-d7.17773e-15"
+          ],
+          "says": "The tissue line, the record the threshold x2 comes from (section 7.5)",
+          "front_says": "Beside the sheet, two of the line's four arms (the picture's choice: x2/2 and x2, below and near the threshold the line's search reported); the card brings in all four."
+        },
+        "no_routes": "D = 0: it declares no routes"
+      },
+      "sources": [
+        {
+          "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+          "where": "Section 7.6, \"The sheet\" and its table",
+          "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development work, not judged; 17 November 2026",
+        "answer": null,
+        "text": "An extension beyond the replication, not part of it. The note's table (section 7.6) describes the state at 2,000 s under the criterion as stated: at D = 0, x2/16 and x2/8 \"the 3x3 patch M, 72 E\"; at x2/4, x2/2 and x2 \"81 E: normalized\". Development work, not judged.",
+        "sources": [
+          {
+            "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+            "where": "Section 7.6, the sheet's table",
+            "revision": "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06"
           }
         ]
       },

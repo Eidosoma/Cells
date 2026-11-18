@@ -96,11 +96,21 @@
     "runs": "index"
   },
   "gap-junction-tissue-line": {
-    "note": "The example's tissue line: the engine side's run folder of the three arms fixed after the threshold search was rerun (17 November 2026, night), at half, once and twice its threshold. It has no index.json, so its arms are its packages that hold a view.json; none was refused (a pick an engine check refused would hold a REFUSED.json and no view, and be named from it).",
+    "note": "The example's tissue line: the engine side's run folder of the line's four arms with dense records (17 November 2026, night): D = 0, and half, once and twice the threshold the search reported when it was rerun. It has no index.json, so its arms are its packages that hold a view.json; a pick an engine check refused would hold a REFUSED.json and no view, and be named from it.",
     "evidence_folder": "gap-junction-20261117",
     "within": [
       "runs",
-      "picks-02",
+      "dense-01",
+      "viewer"
+    ],
+    "runs": "index"
+  },
+  "gap-junction-tissue-sheet": {
+    "note": "The example's tissue sheet, an extension beyond the replication: the engine side's run folder of the 9 by 9 sheet's six arms (17 November 2026, night). It has no index.json, so its arms are its packages that hold a view.json.",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "sheet-01",
       "viewer"
     ],
     "runs": "index"

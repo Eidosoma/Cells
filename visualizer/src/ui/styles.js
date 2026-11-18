@@ -366,6 +366,16 @@ cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16p
 .tl-fill { width: 0; height: 100%; background: var(--accent); }
 .tl-marks { position: absolute; left: 0; top: 7px; width: 100%; height: 24px; overflow: visible; pointer-events: none; }
 .tl-tick { stroke: var(--muted); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* Stops (a binding's events with words, src/ui/timeline.js): a mark to press for each, and the previous and next beside play. */
+cells-timeline.has-stops { grid-template-columns: auto auto auto minmax(0, 1fr) auto; }
+.tl-step { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); }
+.tl-step:hover { border-color: var(--accent); }
+.tl-step svg { width: 16px; height: 16px; fill: currentColor; }
+.tl-stops { position: absolute; inset: 0; pointer-events: none; }
+.tl-stop { position: absolute; top: 3px; width: 12px; height: 26px; margin-left: -6px; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer; }
+.tl-stop::before { content: ""; position: absolute; left: 5px; top: 2px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--accent); }
+.tl-stop:hover::before, .tl-stop:focus-visible::before { left: 3px; width: 6px; }
+.tl-stop:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
 .tl-judged { stroke: var(--fg); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tl-invalid { fill: var(--st-unstated); }
 .tl-flag { position: absolute; top: -3px; transform: translateX(-50%); padding: 0 4px; border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em; color: var(--fg); background: color-mix(in srgb, var(--bg-raised) 90%, transparent); pointer-events: none; white-space: nowrap; }

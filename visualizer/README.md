@@ -424,26 +424,35 @@ chose them for the page):
   one shows a run of it: the run shown where that is one of its arms, else its first arm
   with a run. Checks also hold the chart on a made-up summary
   (`tests/engine-views/sweep-made-up/`).
-- **The gap-junction example's tissue line** (added on 17 November 2026; development work,
-  not judged): a line of 25 cells, the first six a tumor, run on the engine at three values
-  of the junction diffusion constant D, at half, once and twice the threshold the search
-  reported when it was rerun after an engine fix (the runs replaced the first picks on the
-  night of 17 November 2026). A door in the example's card shows it in the tab's
-  place (`part=gap-junction-tissue-line`; `src/lenses/tissue_line.js`; its card's own button
-  goes back): the three runs side by side under one clock (one above the other where the room
-  is taller than wide: a phone, or a wide window with a panel open), each its line of cells
-  above its own space–time picture, the same cells across and time down, every saved record
-  a band coloured by the miR200 minus Zeb mRNA its driver states beside the run
-  (`criterion.json`), on a scale broken at the criterion's two thresholds. A bar across each
-  picture is the clock; a press on a picture moves the clock to that record and opens the
-  cell. Time runs down on a logarithmic scale (the card offers an even one). A pick an
-  engine check refused would stand in its place in D's order, named from its
-  `REFUSED.json`, with nothing drawn in it (none was refused in this folder). The card gives
-  the record's lines (the search's threshold and its one comparison, in the note's words),
-  each run's end states from the note's table and the criterion in its own words; a cell's
-  state is the driver's. The run folder (`picks-02/viewer`) has no index, so its packages that hold
-  a view are its runs ("A part of an example" in `schema/RUN_VIEW.md`). Check:
-  `node tools/check_tissue.mjs` (`CASE=wide|phone|reduced`).
+- **The gap-junction example's tumour tissue** (added on 17 November 2026, redrawn on 18
+  November; development work, not judged). The Experiments tab opens on it: the example's
+  entry names the part it opens on (`opens.part`, one field: the line), and an address
+  that names a run, a record, layers, `part=` or `example=` still wins.
+  `src/lenses/tissue_line.js` draws each run's cells from straight above as the
+  Experiments view draws a run's (`src/layers/sheet.js`), standing where its view places
+  them, coloured by the miR200 minus Zeb mRNA its driver states beside the run
+  (`criterion.json`) on a scale broken at the criterion's two thresholds, the tumour
+  outlined (`tumor_cells`, as the summary states them), three dots in each cell for the
+  switch's three concentrations as stated (µM), and between neighbours the junction, with
+  what its route carried as the page's beads. The names are measured first and the
+  tissues laid out to the room around them, so that no name meets another or lies on a
+  cell. The line (`part=gap-junction-tissue-line`, `runs/dense-01/viewer`: D = 0, x2/2, x2
+  and 2 x2, recorded densely) stands with each arm's whole run as a map beside it (left
+  out on a phone), and a small door to the sheet. The sheet
+  (`part=gap-junction-tissue-sheet`, `runs/sheet-01/viewer`, 9 by 9 cells, three to a
+  row) is Cells' extension, not part of the replication: its caption says so in full over
+  it, the words over the sheets say once that x2 is the line's threshold and what the
+  dashed line between two sheets is (where its record places its own threshold), and the
+  line stands under it, smaller, as the record the threshold comes from (folded away when
+  every arm is in view). The clock follows the driver's stated changes
+  (`src/replay/tissue_play.js`): each is held 2.2 s and named by its cell, the hours
+  between pass fast, a play takes about a minute, and the timeline's marks are the
+  changes, with the previous and next ones a press away; with less motion nothing plays
+  by itself. A pressed cell is ringed and named with its state, and its panel charts it.
+  Only the arms in view and only what the picture draws are fetched (the voltages, gates
+  and amounts are in files of their own). Checks: `node tools/check_tissue.mjs`
+  (`CASE=wide|phone|reduced|play|sheet|layout`) and `tests/tissue_packages.test.mjs` (each
+  packaged value's band is the driver's state; the transfers run down the gradient).
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own in the list when one of its runs is shown (neither is listed, so each opens by its address and neither is published): the
   engine's first run made for the viewer (one cell that secretes a species; no verdict),

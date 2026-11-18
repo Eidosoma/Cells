@@ -135,7 +135,7 @@ const open = async (query) => {
     drawn = await evaluate(`Boolean(${V} && ${V}.current && ${S} && ${V}.current.active !== false)`).catch(() => false);
   }
   if (!drawn) throw new Error("the page did not draw its view within ten minutes");
-  await evaluate(`Promise.resolve(${V}.current.ready)`);
+  await evaluate(`Promise.resolve(${V}.current.ready).then(() => null)`); // a view's ready may resolve to the view itself, which is not a value to bring back
   // The page's letters come over the network. Until they are there a wider stand-in is shown, and
   // cards and labels have other sizes: a picture waits for them (up to a minute and a half).
   if (outDir) {
@@ -648,7 +648,7 @@ try {
       const seen = [];
       for (const [name, go] of walk) {
         await evaluate(go);
-        await evaluate(`Promise.resolve(${V}.current.ready)`);
+        await evaluate(`Promise.resolve(${V}.current.ready).then(() => null)`); // a view's ready may resolve to the view itself, which is not a value to bring back
         await rest();
         await sleep(400);
         seen.push(await atRest());

@@ -349,6 +349,21 @@ try {
     await open("lens=experiments");
     const shown = await evaluate(`${VIEWER}.state.lens`);
     check("experiments: the view is offered when replays have been made", shown === "experiments", `${shown}; make them with npm run adapt:runs`);
+    // The tab opens on the part its listed example names (the example's opens.part, the tumour tissue) where its runs are
+    // packaged: the networks are a real press away, on the card's own button.
+    const part = await evaluate(`${VIEWER}.state.part || null`);
+    if (shown === "experiments" && part) {
+      await evaluate(`Promise.resolve(${VIEWER}.current.ready).then(() => true)`);
+      await sleep(600);
+      const door = await evaluate(`(() => { const el = ${VIEWER}.shadowRoot.querySelector(".view .tissue-back:not(.tissue-sibling)"); if (!el) return null; el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (door) await click(door.x, door.y);
+      let back = false;
+      for (let tries = 0; tries < 240 && !back; tries++) {
+        await sleep(250);
+        back = await evaluate(`Boolean(!${VIEWER}.state.part && ${VIEWER}.current?.run && ${VIEWER}.current.sheet)`).catch(() => false);
+      }
+      check(`experiments: the tab opens on the example's part (${part}), and a real press on its card's button shows the example's networks`, Boolean(door) && back, JSON.stringify(door));
+    }
     if (shown === "experiments") {
       const spot = (selector) =>
         evaluate(`(() => {

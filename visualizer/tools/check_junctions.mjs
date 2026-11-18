@@ -98,6 +98,12 @@ if (CASE === "levin") {
   try {
     python("adapt_run.py", ["--evidence", EVIDENCE, "--experiment", "gap-junction-linear-network", "--out", levinRuns]);
     levin = true;
+    // The example's tumour tissue, as the page packages it beside the networks: the tab opens on it (the example's opens.part).
+    try {
+      python("adapt_run.py", ["--evidence", EVIDENCE, "--experiment", "gap-junction-tissue-line", "--out", levinRuns]);
+    } catch (error) {
+      note(`the tissue line's runs are not on this machine: the tab opens on the networks (${String(error.message).slice(0, 120)})`);
+    }
   } catch (error) {
     note(`the replication's runs are not on this machine (${EVIDENCE}): the case is skipped (${String(error.message).slice(0, 160)})`);
   }
@@ -234,9 +240,23 @@ try {
   } else if (CASE === "levin" && levin) {
     const R = "gap-junction-linear-network";
     const state = () => evaluate(`(async () => { await new Promise((r) => setTimeout(r, 1500)); const v = ${V}, lens = v.current, legend = lens.chrome().legend; return { outside: lens.surface?.outside?.tiles?.length ?? 0, unit: legend.scale?.unit ?? null, said: legend.scale?.said || "", units: v.shadowRoot.querySelector(".run-units")?.textContent || null, run: lens.runId, cells: lens.sheet?.cells.length ?? null, error: lens.error, colour: lens.switch.holder("colour"), height: lens.switch.holder("height"), on: lens.switch.on, links: lens.markOn("links")?.mark.counts || null, note: lens.scaleInfo?.()?.note || null, list: v.shadowRoot.querySelector("#cells-experiment") ? [...v.shadowRoot.querySelector("#cells-experiment").options].map((o) => o.textContent) : [...v.shadowRoot.querySelectorAll(".exp-row")].map((b) => b.textContent), sweep: v.shadowRoot.querySelector(".sweep .seg-label")?.textContent || null, shown: [...v.shadowRoot.querySelectorAll(".sweep-arm")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.arm), errors: window.__pageErrors }; })()`);
-    // The view opens on the listed experiment, its list the two examples.
+    // The view opens on the listed experiment's part its entry names (opens.part: the tumour tissue) where it is packaged;
+    // the networks are a real press away, on the card's own button (on a phone, in the card opened by a real press).
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    await until(`Boolean(${V}?.current?.run && ${V}.current.sheet)`, 240);
+    await until(`Boolean(${V}?.current?.run && ${V}.current.sheet) || Boolean(${V}?.state.part && ${V}.current?.runs?.length)`, 240);
+    const opened = await evaluate(`${V}.state.part || null`);
+    const tissue = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8")).experiments.some((item) => item.id === "gap-junction-tissue-line");
+    check(tissue ? "the Experiments tab opens on the example's tumour tissue, the part its entry names" : "the tissue is not packaged here: the tab opens on the networks", tissue ? opened === "gap-junction-tissue-line" : !opened, JSON.stringify(opened));
+    if (opened) {
+      if (WIDTH < 760 && !(await evaluate(`${V}.state.viewOpen`))) {
+        const fold = await placeOf(`root.querySelector(".view-toggle")`);
+        if (fold) await click(fold.x, fold.y, 900);
+      }
+      const back = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
+      if (back) await click(back.x, back.y, 1500);
+      check("a real press on the card's \"The example's networks and sweeps\" shows the networks", Boolean(back) && (await until(`Boolean(!${V}.state.part && ${V}.current?.run && ${V}.current.sheet)`, 240)), JSON.stringify(back));
+      if (WIDTH < 760 && (await evaluate(`${V}.state.viewOpen`))) await evaluate(`${V}.toggleViewCard(false)`);
+    }
     let s = await state();
     check("the Experiments view opens on the replication, and its list is the two examples: the replication and GARD", s.run?.startsWith(`${R}--`) && s.list.length === 2 && /^(Development run: )?Gap-junction networks of a linear model/.test(s.list[0]) && /GARD/.test(s.list[1]), JSON.stringify([s.run, s.list]));
     // Each arm opens on the quantity the experiment's driver states beside it (concentration.json), in its own unit, with Coupling on; else on the amount.
