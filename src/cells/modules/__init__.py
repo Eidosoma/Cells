@@ -25,7 +25,7 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   CYCLE_LAW, ROUTE_LAW, BINDING_LAW and JUNCTION_LAW (registry/laws.py);
 - the host table's readers (models/surface_pump_v3.py, the @3 owner's): HOST_KINDS, HostTable,
   Host, host_table, host_ends, host_voltage, host_scatter, host_node_conductance,
-  node_concentrations, declared_hosts and host_index;
+  node_concentrations, declared_hosts and host_index, with moved_nodes (each row's in-step movers);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (registry/kind_registry.py);
@@ -105,6 +105,7 @@ HOMES = MappingProxyType(
             "node_concentrations",
             "declared_hosts",
             "host_index",
+            "moved_nodes",
         ),
     }
 )
@@ -166,6 +167,7 @@ __all__ = (
     "node_concentrations",
     "declared_hosts",
     "host_index",
+    "moved_nodes",
 )
 
 

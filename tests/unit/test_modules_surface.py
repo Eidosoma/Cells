@@ -82,6 +82,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "node_concentrations",
         "declared_hosts",
         "host_index",
+        "moved_nodes",
     ),
 }
 # What the kinds import today, from @3's module: the same objects as the surface's.
