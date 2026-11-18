@@ -34,7 +34,11 @@ after FR-1 and FR-3. `REFERENCES_USAGE.md` is the interface.
 
 ## The registered world (`reference_inputs.json`, world `a5pp_prior`)
 
-A5's judged world, extended to two cells.
+It takes A5's judged numbers where §9.1 gives them: 2 pL cells, 4 pF patches, a 2e-9 m/s
+K-leak population, the X dose and the Hill law. The patch area, leaks, cytosol and bath come from
+the coupling references' synthetic builder (`reference_crosschecks.py`, a 300 K world, run here
+at 310 K). The clearance of 5/s is this package's choice. Whether @3's explicit-rate bound admits
+these leaks at 1 ms is for the FR lane to confirm.
 - **Cells:** two identical pump-free cells, a and b. Each is 2 pL on one constant-field patch of
   4 pF (area 4e-10 m²), facing a bath held at 0 V. The leaks are Na 1e-10, K 2e-9 and Cl 5e-10
   m/s. The cytosol is Na 12, K 140 and Cl 30 mM, the bath Na 140, K 5 and Cl 145 mM, and both
@@ -49,6 +53,15 @@ A5's judged world, extended to two cells.
   start lies on the grid.
 
 The values are synthetic, within A5's bracket.
+
+**Admitted by version 1** (§1.11, §1.12, §7.2):
+- a channel target, admitted since milestone 1 passed;
+- a state law matching its source;
+- a neutral, impermeant D150 regulator, declared in both cells the state reads;
+- K and n > 0 and b = 0.1 ∈ [0, 1);
+- s₀ ∈ [0, 1], given per cell;
+- dt·(k_on + k_off) = 0.006 ≤ 1 at 1 ms;
+- composition with D150's turnover.
 
 ## The registered design: claims, floor, controls and margins
 
@@ -91,8 +104,9 @@ operator's tests or fixtures (`validation/tissue/regulated_availability_*`), or 
 branches.
 
 **Read:**
-- the coupling design's §0, §4.3–§4.4, §7.2, §9–§10 and Appendix A;
-- FR-6 in `docs/FEATURE_REQUESTS.md`;
+- the coupling design's status header, §1.11–§1.12 (refusals and composition), §4.3–§4.4, §7.2,
+  §9–§10 and Appendix A through A.3;
+- FR-6 in `docs/FEATURE_REQUESTS.md`, and decisions D155 and D156 (their opening items) and D162;
 - the coupling references' usage note and their source (`cells_reference.py` and the
   cross-checks' world builders), which are references, not the operator.
 
