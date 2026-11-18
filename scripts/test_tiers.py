@@ -12,6 +12,12 @@ files are timed individually and grouped into tiers:
            the measurements' sources and provenance are appended. Refused, with nothing
            written, when a row would be dropped (its file has left tests/), when a measured
            file is not in tests/, or when a measured row failed (exit code, failures, errors)
+  merge    the three-way fold of a merge, when the branch's measurements are not at hand: the
+           branch's row delta against the merge base (rows it added, changed or removed) applied
+           to main's record, main's order kept and the branch's new rows inserted at their sorted
+           places; the branch's new measured sources and provenance appended. Refused, with
+           nothing written, when both sides changed the same row differently (a clash) or when
+           they changed another key differently
   run      run every file of the given tiers and compare outcomes with the record:
            a file is changed when its exit code, failed or error count differs from
            its row, its passed count falls below the row's or its skipped count rises
@@ -43,6 +49,8 @@ Example:
   python scripts/test_tiers.py tiers --measured RUN_DIR/measured.json --out tests/test_tiers.json
   python scripts/test_tiers.py fold --record tests/test_tiers.json \
       --measured LANDING/measure/measured.json --out tests/test_tiers.json
+  python scripts/test_tiers.py merge --base BASE.json --ours BRANCH.json --theirs MAIN.json \
+      --out tests/test_tiers.json
   python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 \
       --out RUN_DIR --cpus 4,5,6,7
   python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 3 \
@@ -335,6 +343,61 @@ def fold_rows(record, measured_records, sources, files):
         assert [r for r in rows if r["file"] not in latest] == [
             r for r in out["tiers"][tier] if r["file"] not in latest], tier
     return out
+
+
+def merge_rows(base, ours, theirs):
+    """theirs with ours' row delta against base (module docstring: merge), or SystemExit."""
+    def rows(doc):
+        return {r["file"]: (t, r) for t in doc["tiers"] for r in doc["tiers"][t]}
+
+    b, o, t = rows(base), rows(ours), rows(theirs)
+    clashes = []
+    for name in sorted(set(b) | set(o)):
+        mine, was = o.get(name), b.get(name)
+        if mine == was:
+            continue  # Unchanged on the branch.
+        now = t.get(name)
+        if now != was and now != mine:
+            clashes.append(name)  # Both sides changed it, differently.
+    for key in sorted(set(base) | set(ours) | set(theirs)):
+        if key in ("tiers", "measured", "measured_provenance"):
+            continue
+        if ours.get(key) != base.get(key) and theirs.get(key) not in (base.get(key), ours.get(key)):
+            clashes.append(f"key {key}")
+    if clashes:
+        raise SystemExit(f"merge refused: both sides changed {clashes} differently")
+    out = json.loads(json.dumps(theirs))
+    for key in set(ours) - {"tiers", "measured", "measured_provenance"}:
+        if ours[key] != base.get(key):
+            out[key] = ours[key]
+    for name in sorted(set(b) | set(o)):
+        mine, was = o.get(name), b.get(name)
+        if mine == was or t.get(name) == mine:
+            continue  # Unchanged on the branch, or the same change on both sides.
+        where = next((k for k, rs in out["tiers"].items() if any(r["file"] == name for r in rs)),
+                     None)  # Theirs' place, which is the base's (no clash).
+        if mine is not None and where == mine[0]:  # Changed within its tier: in place.
+            rs = out["tiers"][where]
+            rs[next(i for i, r in enumerate(rs) if r["file"] == name)] = mine[1]
+            continue
+        if where is not None:  # Removed on the branch, or moved to another tier.
+            out["tiers"][where] = [r for r in out["tiers"][where] if r["file"] != name]
+        if mine is not None:  # Added, or moved: at its sorted place in its tier.
+            target = out["tiers"].setdefault(mine[0], [])
+            target.insert(next((i for i, r in enumerate(target) if r["file"] > name),
+                               len(target)), mine[1])
+    for key in ("measured", "measured_provenance"):
+        for item in ours[key]:
+            if item not in base[key] and item not in out[key]:
+                out[key].append(item)
+    return out
+
+
+def merge(args):
+    docs = [json.loads(Path(p).read_text()) for p in (args.base, args.ours, args.theirs)]
+    out = merge_rows(*docs)
+    Path(args.out).write_text(json.dumps(out, indent=1) + "\n")
+    print({t: len(v) for t, v in out["tiers"].items()})
 
 
 def fold(args):
@@ -954,6 +1017,11 @@ def main(argv=None):
     fo.add_argument("--record", required=True, help="the current tier record (main's)")
     fo.add_argument("--measured", required=True, nargs="+", help="measure's records, later win")
     fo.add_argument("--out", required=True)
+    me = sub.add_parser("merge", help="the three-way fold of a merge, by row delta")
+    me.add_argument("--base", required=True, help="the merge base's record")
+    me.add_argument("--ours", required=True, help="the branch's record")
+    me.add_argument("--theirs", required=True, help="main's record")
+    me.add_argument("--out", required=True)
     r = sub.add_parser("run")
     r.add_argument("--tiers", required=True)
     r.add_argument("--tier", type=int, nargs="+", default=[1])
@@ -982,7 +1050,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.command == "diff" and not args.collected:
         args.collected = [str(Path(r) / "collected.json") for r in args.run]
-    commands = {"measure": measure, "tiers": tiers, "fold": fold, "run": run}
+    commands = {"measure": measure, "tiers": tiers, "fold": fold, "merge": merge, "run": run}
     commands |= {"collect": collect, "freeze": freeze, "diff": diff}
     return commands[args.command](args) or 0
 

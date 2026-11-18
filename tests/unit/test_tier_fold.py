@@ -140,3 +140,57 @@ def test_the_fold_command_writes_nothing_when_refused(tool, tmp_path, monkeypatc
     tool.main(["fold", "--record", str(tmp_path / "record.json"), "--measured",
                str(tmp_path / "m.json"), "--out", str(out)])
     assert json.loads(out.read_text())["tiers"]["1"][0]["counts"] == {"passed": 3}
+
+
+# ----------------------------------------------------------------------------------- merge
+
+
+def test_merge_keeps_both_sides_rows(tool):
+    """The branch added a row and re-measured one in place; main added two rows (one out of order):
+    all are kept, main's order stands, the branch's new row goes to its sorted place, and its
+    in-place change stays in place even after a new row lands ahead of it in the same tier."""
+    base = record([row("b", 1), row("d", 2)], [row("x", 30)])
+    ours = record([row("a_branch", 1), row("b", 1), row("d", 5, passed=4)], [row("x", 30)])
+    ours["measured"].append("m_branch")
+    ours["measured_provenance"].append({"r": "branch"})
+    theirs = record([row("b", 1), row("c_main", 1), row("d", 2), row("a2_main_out_of_order", 1)],
+                    [row("x", 30), row("y_main", 40)])
+    theirs["measured"].append("m_main")
+    theirs["measured_provenance"].append({"r": "main"})
+    out = tool.merge_rows(base, ours, theirs)
+    assert [r["file"] for r in out["tiers"]["1"]] == [
+        f("a_branch"), f("b"), f("c_main"), f("d"), f("a2_main_out_of_order")]
+    assert next(r for r in out["tiers"]["1"] if r["file"] == f("d"))["counts"] == {"passed": 4}
+    assert [r["file"] for r in out["tiers"]["2"]] == [f("x"), f("y_main")]
+    assert out["measured"] == ["m0", "m_main", "m_branch"]
+    assert out["measured_provenance"] == [{"r": 0}, {"r": "main"}, {"r": "branch"}]
+
+
+def test_merge_moves_removes_and_agrees(tool):
+    base = record([row("a", 1), row("gone", 2), row("same", 3)], [row("x", 30)])
+    ours = record([row("same", 4)], [row("a", 25), row("x", 30)])  # a moved; gone removed
+    theirs = record([row("a", 1), row("gone", 2), row("same", 4)], [row("x", 30)])
+    out = tool.merge_rows(base, ours, theirs)  # "same": the same change on both sides.
+    assert [r["file"] for r in out["tiers"]["1"]] == [f("same")]
+    assert [r["file"] for r in out["tiers"]["2"]] == [f("a"), f("x")]
+
+
+@pytest.mark.parametrize("plant", ["both_remeasured", "removed_and_changed", "key"])
+def test_a_clash_is_refused(tool, tmp_path, plant):
+    base = record([row("a", 1)])
+    ours, theirs = record([row("a", 2)]), record([row("a", 3)])  # The same file, differently.
+    if plant == "removed_and_changed":
+        ours = record([])
+    if plant == "key":
+        ours, theirs = record([row("a", 1)]), record([row("a", 1)])
+        ours["fast_seconds"], theirs["fast_seconds"] = 15.0, 25.0
+    with pytest.raises(SystemExit, match="merge refused"):
+        tool.merge_rows(base, ours, theirs)
+    paths = []
+    for name, doc in (("base", base), ("ours", ours), ("theirs", theirs)):
+        paths.append(tmp_path / f"{name}.json")
+        paths[-1].write_text(json.dumps(doc))
+    with pytest.raises(SystemExit, match="merge refused"):
+        tool.main(["merge", "--base", str(paths[0]), "--ours", str(paths[1]), "--theirs",
+                   str(paths[2]), "--out", str(tmp_path / "out.json")])
+    assert not (tmp_path / "out.json").exists()
