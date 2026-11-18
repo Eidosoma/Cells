@@ -123,6 +123,7 @@ The lead names each key and value here, so that neither side's draft leads. Thes
    - Its values:
      - `insertion_area`: extent k_ins·A(m);
      - `diffusion_radius`: extent 4πD_i·R(m).
+     - (18 November: with ρ0 and the units, §0.2d item 2.)
    - Each world declares one. An anchor's choice belongs to its OL7 protocol. (18 November: each
      world that declares a geometry, §0.2c rule 1.)
    - **A(m)** = Σ_i n_i(m)·a_L,i/2 over every member of the membrane phase. A membrane species
@@ -177,6 +178,8 @@ The lead names each key and value here, so that neither side's draft leads. Thes
 6. **Permeation:** a step between the pool and the lumen, with locus `membrane`.
    - Its encounter is `permeation_area`, with extent P_i·A(m).
    - Its activities are the pool's, by the pool's volume, and the lumen's, by V(m) (rule 2).
+     (18 November: an entry's θ⁺ is the pool's activity alone, and the lumen enters only through F,
+     §0.2c rule 2 and §0.2d item 4.)
 7. **The membrane split at unequal areas per molecule is held for OL3's design check.** Any rule
    must:
    - sum the daughters' areas exactly to the parent's;
@@ -226,9 +229,10 @@ that refine it.
    Worlds without a geometry keep `count_on_m` on every membrane-locus step. That covers OL1's
    worlds, the probes and the GARD limit.
 4. **Areas in integer quanta (Q9).** Each species' area per molecule per leaflet is k_i·q, with k_i
-   an integer and q a declared quantum. The rounding of its sourced area to q is declared. The
-   membrane's area is W(n) = Σ_i n_i k_i quanta, so A(m), the floor, the cuts and conservation are
-   exact integers.
+   an integer and q a declared quantum. The rounding of its sourced area to q is declared.
+   W(n) = Σ_i n_i k_i counts the molecules' footprints in quanta, and the bilayer's area is
+   A = q·W/2, rule 1's A(m). The floor, the cuts and conservation are in W, so all are exact
+   integers. (Wording corrected 18 November, at OL5's question: W is not the bilayer's area.)
 5. **The floor counts area (Q8).** `vesicle_floor` is required with a geometry and is given in
    quanta, with W_floor ≥ 1, not in molecules. It stands for the smallest closed vesicle, which is a
    geometric limit.
@@ -336,6 +340,136 @@ that refine it.
     - Totals are conserved per label.
     - With tracking off, every array is bitwise the same.
 
+### 0.2d The lead's rulings on OL5's questions for OL2's and OL3's references (18 November 2026)
+
+1. **Area (Q1).** A = q·W/2, as §0.2c rule 4 now reads. The floor W_floor and C3x's cuts are in W.
+2. **Encounter rates (Q2).** The forward rate of a join or an entry is a⁺ = k·E(m)·ρ0·θ⁺(n), times
+   any declared factor on m.
+   - ρ0 = N_A·c0, in molecules per m³ (c0 in mol/L, times 10³ L/m³).
+   - The constant k and the extent E(m) depend on the encounter token:
+
+     | Token | k | E(m) |
+     | --- | --- | --- |
+     | `insertion_area` | k_ins, in m/s | A(m), in m² |
+     | `diffusion_radius` | D_i, in m²/s | 4πR(m), in m |
+     | `permeation_area` | P_i, in m/s | A(m), in m² |
+
+   - θ⁺ is the pool's activity: n/X_pool for a finite place, c/c0 for a held one. So ρ0·θ⁺ is the
+     pool's number density.
+   - No constant absorbs c0; c0 enters through ρ0 alone.
+3. **The lumen's F (Q3).** Confirmed:
+   - F_lumen(n) = Σ_s [n_s(μ°_s − ln X_L) + ln n_s!] + N_A·c_ext·V(n), with X_L = N_A·c0·V(n);
+   - V is in L, c0 and c_ext in mol/L, and μ°_s is the species' standard potential in solution, in
+     k_BT;
+   - V(n) = min(V_osm(n), V_sph(A(n))), with V_osm = N_L/(N_A·c_ext). V_sph(A) = A^(3/2)/(6√π)
+     comes out in m³ from A in m², and is converted to L (times 10³) before the minimum;
+   - at an empty lumen V(n) = 0 and F_lumen = 0.
+4. **An entry's forward rate (Q4).** Confirmed: θ⁺ is the pool's activity alone. The lumen enters an
+   entry only through F, and its reverse, the exit, comes from the exact ΔF.
+5. **The two-level map (Q5).** Confirmed, with the guard:
+   - τ = −ln(u1)/a0, under OL1's convention for the time uniform;
+   - the group is the first, in slot order (the pool, then slots 0 to K − 1), whose running total
+     exceeds min(u2·a0, nextafter(a0, 0));
+   - the channel is the first, in the group's declared order (forwards, then reverses), whose running
+     total exceeds min(u3·a_g, nextafter(a_g, 0));
+   - every total is a serial fold in those orders.
+6. **Serial transfer and shear times (Q6).** The builder confirmed the draw maps and the schedule
+   streams against G1's stream layout the same day, so they are no longer provisional.
+   - A schedule's declared index is the carrier word in domain 6, and nothing else draws there.
+   - Each uniform of the transfer, and each Poisson gap, is its own draw: a block of one, with its
+     own counter.
+   - **The transfer** draws one uniform per living assembly, in slot order, and keeps the K_keep
+     smallest, with ties broken by slot. That is a uniform sample without replacement.
+     - It draws even when every assembly is kept, so every transfer advances its counter by the
+       number living.
+   - **Slots.** Kept assemblies keep their slots. A removed one's slot becomes free, and later
+     daughters take free slots in slot order.
+   - **Shear times** are declared, or drawn as a Poisson process of declared rate λ. The gaps are
+     −ln(u)/λ from successive uniforms, under the time uniform's convention. Both forms are replayed
+     bitwise.
+   - **Streams.** Each schedule draws on the `schedule` domain (6) under its own key, its declared
+     index, with the counter at its own draw count. So schedules never interleave.
+   - **The clock at a declared time (ruled).**
+     - The `world` draw's counter counts draws, not events.
+     - A draw whose time crosses the next declared schedule time is discarded. The clock moves to
+       that time, the scheduled event applies, and the next draw takes the next counter.
+     - The exponential's memorylessness makes this exact. Re-reading a discarded draw would bias
+       τ.
+     - Without a schedule, draws and events coincide, so OL1's worlds and every schedule-free world
+       are unchanged.
+     - The followed assembly's own event stream in a single-lineage world (domain 1, OL1's `age`
+       counter) follows the same rule when the world has a schedule.
+7. **Booking (Q7).**
+   - **Shear.** F carries the closure cost C_close = 8πκ + 4πκ̄ once per living vesicle (§0.2c rule
+     8). The shear work is therefore w_shear = Σ_j F(daughter_j) − F(parent), which already holds
+     (k − 1)·C_close; it is not added again.
+     - The fission is booked as §4.4 books it: as work from the shear's source.
+     - That the fission's own dissipation is not modelled is a declared limit (the lead's).
+   - **Lysis writes one ledger row per lysing event:** the triggering step and the release
+     together.
+     - The release moves the lysed vesicle's molecules to their pool places and drops its closure
+       cost, so its F terms become the pool's.
+     - The row books q = −(F(n_after) − F(n)) + w. Here n is the state before the event, and
+       n_after the state after the release.
+     - w is the event's booked work: the step's own, plus the reservoir work for any held place that
+       receives molecules, as for any step that produces into a held place.
+8. **Labels** stay out of the references for now. The engine's own tests carry their conservation
+   and tracking-off claims (§0.2c rule 17). A references row joins if a law for label draws is
+   claimed.
+9. **Partitionable threefry (the builder's addition).** A block draw gives the same values at any
+   block size only when JAX's threefry is partitionable. Examples are a partition's uniforms (rules
+   9 and 10 of §0.2c) and OL1's two per event.
+   - The pinned JAX has the flag on by default.
+   - The family refuses to start a run with the flag off.
+   - The run's environment record states the flag.
+   - No world's identity or records change, and the invariance comparison already exempts the
+     environment record.
+10. **Replay conventions.** These are OL5's seven readings, which the builder confirmed against its
+    design the same day. They bind the engine and the references alike.
+    1. **Which assemblies a shear event acts on.**
+       - The set is fixed when the event begins: the assemblies alive at its start, processed in slot
+         order. Daughters born during the event are not tested again in it.
+       - Two scheduled events at the same time apply in order of their schedule index, each to the
+          assemblies alive at its own start.
+       - A declared time equal to t_end applies. One later than t_end never does.
+    2. **An attempt runs in this order:**
+       1. the stress test, then v ≤ k^(−1/2);
+       2. in population mode, k − 1 free slots, or else the run stops `slots_full`;
+       3. the draw: rule 9's uniforms, then rule 10's;
+       4. the split and the floor test;
+       5. the fission is applied, or refused and recorded with the parent kept.
+
+       The fission counter counts draws. An assembly that fails the stress or the v test neither
+       draws nor advances its counter.
+    3. **A daughter that lyses at birth.**
+       - Every daughter counts as born, both for the shear work (its F at its own V, with its closure
+         cost) and for keys.
+       - Each takes its slot before any lysis at birth. A birth lysis then frees the slot.
+       - The birth lysis is booked as a lysis: one row, q = −(F(after release) − F(as born)) + w.
+    4. **The first Poisson shear time** is t₁ = −ln(u₀)/λ, measured from t = 0.
+    5. **A diagnostic record,** absent by default.
+       - It records every draw: its address (domain, key, counter), its uniforms and its fate. That
+         includes discarded draws, the draw that ends the run, a Poisson gap past t_end, every
+         transfer uniform, and each partition block's used prefix.
+       - It also records each event's changes, and its ledger terms by payer.
+       - OL1's `event_uniforms` keeps its meaning: committed events only.
+    6. **Every counter starts at 0:**
+       - the world counter (domain 5);
+       - each assembly's event counter, at its birth (domain 1, in single-lineage worlds);
+       - each parent's fission counter (domain 2);
+       - each schedule's counter (domain 6).
+
+       A new sub-lineage's starting key counter follows the relations rule, s′·2³² + 1 with s′
+       assigned in world event order. It is read from the `lives` table.
+    7. **A group's channels** are its declared steps forward, then the same steps reverse, as in
+       OL1.
+       - A step with any membrane or lumen place belongs to every slot's group.
+       - A pool-locus step belongs to the pool group.
+
+    **What the record carries.** Every single-lineage attempt records the daughter it follows: G1's
+    `fission_followed`, generalised to k. A missing field is a replay error; the replay never
+    assumes daughter 0.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.
@@ -375,8 +509,8 @@ that refine it.
     alphabet of κ (Hordijk, Kauffman and Steel 2011).
   - No species is ever created at run time, so shapes stay static.
 - **Geometry.** Lumped, and algebraic in the counts (§4.1): area from the amphiphiles, lumen volume
-  from the impermeant solutes, and from them the reduced volume and the tension. There are no
-  positions and no shapes; those are E4.
+  from the impermeant solutes (§0.2c rule 6), and from them the reduced volume and the tension.
+  There are no positions and no shapes; those are E4.
 - **Scale (S).**
   - **The problem.** A real 100 nm vesicle holds about 1.9 × 10⁵ amphiphiles, at an assumed
     0.3 nm² per molecule per leaflet. At an off rate of 0.1–1 s⁻¹, a minute of competition is
@@ -504,7 +638,7 @@ the reverse step, with its rate from F.
 - **The join's s is the encounter:**
   - reaction-limited insertion is k_ins A, which is ∝ N for a bilayer;
   - diffusion-limited uptake is 4πD_i R (Smoluchowski, from memory), which is ∝ N^(1/2) for a
-    vesicle and ∝ N^(1/3) for a droplet (**S**).
+    vesicle and ∝ N^(1/3) for a droplet (**S**). (Units and ρ0: §0.2d item 2.)
 
 **The CAC emerges from F.**
 - For one amphiphile and a large ideal vesicle, the pool is at equilibrium at
@@ -618,7 +752,9 @@ grows.
 
 - **Area:** A = Σ_i n_i a_L,i/2 for a bilayer, where a_L,i is the area per molecule in one leaflet.
 - **Lumen volume:** V = min(V_osm, V_sph(A)).
-  - V_osm = N_imp/c_ext: the impermeant lumen solutes over the outside osmolarity.
+  - V_osm = N_imp/c_ext: the impermeant lumen solutes over the outside osmolarity. (18 November:
+    the engine writes it as N_L/c_ext, with N_L over every lumen species and c_ext the outside's
+    total osmolarity, §0.2c rule 6. At permeation equilibrium that gives this volume.)
   - V_sph(A) = A^(3/2)/(6√π), the sphere of that area.
   - Water is treated as fast. That is an assumption, to be checked against each anchor's time
     scale.
@@ -626,9 +762,10 @@ grows.
 - **Tension:**
   - It is zero while V_osm < V_sph(A): the vesicle is floppy, and v < 1.
   - At V_osm ≥ V_sph(A), the lumen term of F gives Laplace's σ = Δp R/2, with
-    Δp = k_BT(N_imp/V − c_ext).
+    Δp = k_BT(N_imp/V − c_ext). (18 November: Δp = k_BT(N_L/V − c_ext), §0.2c rule 6.)
   - Beyond the maximal tension (about 10 dyn/cm for oleate) the vesicle lyses. Version 1 refuses
-    the state; lysis as an event comes later.
+    the state; lysis as an event comes later. (17–18 November: lysis is an event in OL2, §0.2b
+    rule 3 and §0.2c rule 8.)
 - **Solutes:** permeant ones equilibrate and do not count. Slowly permeating ones are exchange
   channels, as glycine is in Zhu and Szostak 2009.
 
@@ -664,7 +801,9 @@ grows.
 - **The split (S).** The membrane's composition at given daughter areas is multivariate
   hypergeometric; the lumen's contents are multinomial, with probabilities V_j/V; the pool is not
   touched. G1's stochastic partition kernel does both, with its streams and fission table,
-  extended to k daughters and two compartments per assembly.
+  extended to k daughters and two compartments per assembly. (18 November: the membrane splits by
+  C3x, §0.2c rule 9. The lumen's weights are V_sph(A_j)/Σ_l V_sph(A_l), §0.2c rule 10, because a
+  daughter's V_j depends on its own split.)
 - **The split's ΔF** is booked as shear work and reported per fission. It includes the closure cost
   of each new vesicle and the lumen's terms. The admission gate (v and stress) is kinetic, not
   energetic (**S**).
