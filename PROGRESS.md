@@ -33,6 +33,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     fr45-next (FR-5's source kinds and refusals among them), the run-view writer, core-fixes and the
     test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
     crossrev's new record). The next steps are D194's order, starting with D188's moves.
+    D188's move 2 landed on 18 November (merge d5d56d1b, tag `d188-move2-landed-2026-11-18`).
+    The core-seams pass's code follows it.
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
@@ -99,6 +101,77 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D188's move 2 landed on main (18 November 2026).** Merge d5d56d1b (d188-m2-prep e0a3e6a3),
+  tagged `d188-move2-landed-2026-11-18`. The tree before it is tagged `pre-d188-move2-2026-11-18`.
+  The evidence is in `/mnt/workspaces/Cells/d188-m2-move-20261118/`: the gate is `gate-e0a3e6a3/`,
+  and the first gate is `gate-f8a09e59/`.
+  - **What moved.** `scripts/source_moves.py apply scripts/moves/move2.json` moved 117 modules into
+    the target folders, with no hand edits in the move commit (dd8a56f2):
+    - `laws/`, with seven groups: channels, junctions, mechanics, pumps, reactions, routes and
+      transport;
+    - `kinds/`, `operators/`, `definitions/`, `execution/`, `registry/` and `records/`.
+
+    Two folders dissolved: `processes/` (D198) and `core/`. The BLAS pin's one home is now
+    `cells/__init__.py` (R6′). No law, kind, operator or model ID changed. `models/`, `numerics/`,
+    `analysis/`, `assays/`, `assembly/`, `assembly_pool/` and `ensemble/` stay where they are.
+  - **No checkpoint crosses the move (D195).** `cells.records.source_layout.MOVES` declares the move.
+    Both loaders and the continuity probe refuse an older checkpoint and name the tag. GARD's
+    frozen @1 lineage reader also refuses cleanly, without naming it. The user accepted that
+    exception on 18 November, and `docs/GARD_DESIGN.md` §5.1 names the tag.
+  - **The first gate, at f8a09e59, failed. That is disclosed here.**
+    - Tiers 1+2 changed six test files.
+    - R1's 274 saved definitions: 8 were refused at parse.
+    - The tier-3 continuity acceptance test failed 1 of 13.
+    - **The causes:**
+      - the move's dotted-name rule had rewritten five strings that are recorded data, not live
+        module references: a tissue-preparation provenance entry, FR-4/5's execution-path text,
+        and three MG0c `engine_models` lines;
+      - four files built moved paths from separate parts, which the text rules could not see.
+    - **The fixes,** each in its own follow-up commit:
+      - the five strings restored to their pre-move bytes, and marked with a new per-line
+        `source-moves: keep` marker (bd36c331, c75c288e), so a later application of the map
+        leaves them alone;
+      - the four paths fixed (53bd4566).
+    - **All 191 string-literal hunks the move made** in `src/` and `validation/` were reviewed and
+      decided, with 5 recorded and restored.
+  - **The landing gate, at e0a3e6a3:**
+    - tiers 1+2: 528 files, 0 changed against the record;
+    - G1: 113 of 113;
+    - crossrev: 9 of 9 identical, head against base and against the record;
+    - the collected IDs: the same tests through the map, 28 renamed;
+    - R1's 274 definitions: every fingerprint equal, with all 1857 control arrays bitwise;
+    - the 33 red files keep every outcome and failure line;
+    - FR's bitwise set passed;
+    - the pin holds for every module, 556 of 556;
+    - the D195 refusal rehearsal holds;
+    - the tier-3 continuity acceptance test: 13 of 13;
+    - GARD's @1 invariance: the freeze test, 3 passed; the 12 part-1 references with 0
+      differences; @1's 4,216 probe files with 0 arrays differing, JSON equal but for provenance;
+      G2's rows, 10 PASS. This was run through an adapted copy of the reference tool, which
+      imported a pre-move name;
+    - OL1's probe set at the moved head against probes-3e39bcc5: 0 arrays differing, and JSON equal
+      but for provenance and the file-hash index;
+    - R1's guard; the tool's selftests, 50 and 32; and `verify` of the move commit: 0 problems.
+  - **A weaker earlier record.** R1's original fingerprint harness recorded each digest's type, not
+    its value. Its "274 identical" for move 1, and for R1 itself, therefore compared less than it
+    says. The adapter in the move's evidence compares the values.
+  - **The carry-overs:**
+    - **packed-gpu-planner** carries cleanly with the map extended by its two modules. Its owner
+      has a note.
+    - **core-fixes** carries with one semantic fix: main renamed `LAWS` to `VERSION_1_LAWS` (seam F
+      step 1). It lands next, with its own gate.
+  - **Not covered by any gate:**
+    - the BETSE evidence verifiers, which compare saved module paths and hashes, so source identity
+      cannot survive the move;
+    - the frozen release verifiers;
+    - `reports/*.json` closeouts;
+    - `validation/geometry`'s source maps.
+
+    The two tier-3 pin tests now fail first at `src/cells/__init__.py`, where the frozen tier-3
+    record has `src/cells/core/er_spec.py`. R6′ caused that, not the move. After the move, 103 of
+    181 and 90 of 152 of their pinned paths are missing. Tier 3 is re-frozen later.
+  - **The visualizer:** main's fixture script imports the new homes. 36 `visualizer/` files name
+    moved modules, and CellsViz takes the rename list when it merges main.
 - **OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026).**
   Merges 3e6410fe (ol1-laws 3e39bcc5) and b4522c77 (OL5's references, ool-references a9f40130),
   tagged `ol1-landed-2026-11-18`. This is the foundation of D212's programme. It is the event-pair
