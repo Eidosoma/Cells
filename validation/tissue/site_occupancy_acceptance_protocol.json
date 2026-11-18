@@ -6,12 +6,10 @@
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates (§12) as development checks",
-  "needs_first": [
-   "the merged revision's rehearsal (fr3-protocol with main 55653b87 merged: D188 move 2's prerequisites changed the loaders), compared part by part with rehearsal 1",
-   "the landing gate (tier 1 and the collected test IDs: additions only)"
-  ],
-  "rehearsed": "every judged part, the references included, on a registered dry-run copy, at full horizons: rehearsal 1 (pipeline/run-reh-f9af9e68, snapshot f9af9e68, lane A): the judged entry passed every judged criterion on the copy, and its 43 records equal the development phase's of the same snapshot bit for bit, run times apart",
-  "judged_run_launcher": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/judged/judge-run.sh SNAPSHOT OUT 0,1,2,3,16,17,18,19 REHEARSAL_RUN (lane A's lock, no nice, D150's runtime limits on the larger of the rehearsal plan's estimate and the rehearsal's wall; it refuses a dry-run copy's status, then the judge's judged entry and a compare of every part against the rehearsal)",
+  "needs_first": [],
+  "landing_gate": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/gate/gate-8b6d1279 (a full snapshot of fr3-protocol at 8b6d1279 against main 55653b87, lane A under its lock): tier 1 on 355 files, 0 changed and no count increase; the collected test IDs additions only, FR-3's 102 new IDs from its four test files, none lost, the collection errors identical (5 and 5)",
+  "rehearsed": "every judged part, the references included, on a registered dry-run copy, at full horizons: rehearsal 1 (pipeline/run-reh-f9af9e68, snapshot f9af9e68, lane A): the judged entry passed every judged criterion on the copy, and its 43 records equal the development phase's of the same snapshot bit for bit, run times apart; and the merged revision's rehearsal (pipeline/run-reh-8b6d1279, fr3-protocol with main 55653b87 merged, a fresh dry-run copy): the judged entry passed every judged criterion, and all 43 records equal rehearsal 1's bit for bit, run times apart (main's loader changes moved no record)",
+  "judged_run_launcher": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/judged/judge-run.sh SNAPSHOT OUT 0,1,2,3,16,17,18,19 /mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-reh-8b6d1279 (lane A's lock, no nice, D150's runtime limits on the larger of the rehearsal plan's estimate and the rehearsal's wall; it refuses a dry-run copy's status, then the judge's judged entry and a compare of every part against the rehearsal)",
   "path": "the tools; development runs and the dt study; a rehearsal of every judged part on a registered dry-run copy, until it passes; the lead's registration; one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's, FR-5's, FR-10's and FR-1's)",
   "move_2": "registration and the judged run sit on the same side of D188's move 2 (the lead's rule of 17 November 2026); the lead is told before a registration is proposed"
  },
@@ -189,6 +187,10 @@
    {
     "path": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-reh-f9af9e68",
     "status": "rehearsal 1, from the clean snapshot of f9af9e68 on lane A (CPUs 0-3 and 16-19 under its lock, nice 10), 18 November 2026, 26 minutes: the development phase (every judged part and the dt study's rungs; its verdict passed) and every judged part under the judged entry on a registered dry-run copy (copies/, status 'registered for the rehearsal only'): the judged verdict on the copy passed every judged criterion, and all 43 rehearsal records equal the development phase's bit for bit, run times apart; no unit ended by its runtime limit or memory cap"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-reh-8b6d1279",
+    "status": "the merged revision's rehearsal, from the clean snapshot of 8b6d1279 (fr3-protocol with main 55653b87 merged: D188 move 2's prerequisites changed the loaders) on lane A, 18 November 2026, 11 minutes: every judged part under the judged entry on a fresh registered dry-run copy; the judged verdict passed every judged criterion, and all 43 records equal rehearsal 1's bit for bit, run times apart (compare-against-rehearsal-1/summary.json); no unit ended by a limit"
    }
   ],
   "note": "development evidence only: no judged run of this protocol exists"
