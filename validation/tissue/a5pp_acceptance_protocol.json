@@ -7,9 +7,11 @@
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists",
   "needs_first": [
-   "the generator (records only), the judge (reads records, never runs; the coupling protocol's arithmetic imported read-only from validation/tissue/regulated_availability_judge.py) and the drafter, in FR-1's form, with tool tests and planted judge mutants",
-   "the development run on the ladder, which fixes delta and the resolved-pair counts (disclosed), then a rehearsal on a registered dry-run copy until it passes"
+   "FR-3's judged record landed first (the lead's ruling 4), and main merged here (FR-3's files only: no src/cells change, so no record can move)"
   ],
+  "rehearsed": "every judged part, the references included, on a registered dry-run copy, at full horizons (pipeline/run-reh-6ecd4d9b, snapshot 6ecd4d9b on main 55653b87, lane B): the judged entry passed every judged criterion on the copy, and its 15 records equal the development phase's of the same snapshot bit for bit, run times apart, the basal-rule control at the registered delta included",
+  "landing_gate": "/mnt/workspaces/Cells/fr6-a5pp-20261118/gate/gate-6ecd4d9b (a full snapshot of 6ecd4d9b against main 55653b87, lane B under its lock): tier 1 on 353 files, 0 changed and no count increase; the collected test IDs additions only, FR-6's 27 new IDs from its two test files, none lost, the collection errors identical (5 and 5)",
+  "judged_run_launcher": "/mnt/workspaces/Cells/fr6-a5pp-20261118/judged/judge-run.sh SNAPSHOT OUT 8,9,10,11,24,25,26,27 /mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-reh-6ecd4d9b (lane B's lock, no nice, D150's runtime limits on the larger of the rehearsal plan's estimate and the rehearsal's wall; it refuses a dry-run copy's status, then the judge's judged entry and a compare of every part against the rehearsal)",
   "path": "the D150/MG0c path, as FR-1's and FR-3's",
   "move_2": "the lead's ruling 4: on the current, pre-move main if ready before OL1 lands (FR-3 first), otherwise after move 2 on the moved tree; rehearsed on that side"
  },
@@ -110,6 +112,10 @@
    {
     "path": "/mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-dev-49271f0e",
     "status": "the development run, from the clean snapshot of 49271f0e on lane B (CPUs 8-11 and 24-27 under its lock, nice 10), 18 November 2026, 7 minutes: every one of the 15 parts admitted and run with every host check. V errs by 6.07e-7, 1.49e-7, 3.68e-8 and 9.16e-9 V and the amounts by 1.95e-8, 4.79e-9, 1.19e-9 and 2.95e-10 fmol on the four rungs: orders 2.03, 2.01, 2.01 for both, every pair resolved (s and a_eff 2.00, reported); the start at 1.2e-16. The controls over the honest engine's own error, where judged: the prior 4.7e3 x (the mean, V at 1 ms) to 6.7e5 x, the bypass 8.9e3 x and more, k_on 39 x and k_off 41 x (V at 1 ms), the references' basal 26 x (the amounts at 1 ms; V 27 x and 109 x at 0.25 and 0.125 ms), the rule's basal at delta = 1e-4 caught by the band and 10.8 x (V at 0.125 ms; the amounts 43 x and 171 x at 0.25 and 0.125 ms). The dt^2 state budget (reported) used 0.59 to 0.65. The development verdict failed C0_ids alone: the declared list lacked the operators' step IDs (disclosures)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-reh-6ecd4d9b",
+    "status": "the rehearsal, from the clean snapshot of 6ecd4d9b on lane B, 18 November 2026, 13 minutes: the development phase (its verdict passed) and every judged part under the judged entry on a registered dry-run copy (registered_delta 1e-4, development_counts 3 and 3): the judged verdict passed every judged criterion, and all 15 rehearsal records equal the development phase's bit for bit, run times apart; no unit ended by a limit"
    }
   ],
   "note": "development evidence only: no run of this protocol exists"
