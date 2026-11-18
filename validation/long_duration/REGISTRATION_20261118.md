@@ -516,3 +516,19 @@ selection with a literal, and `compare()` never checks an arm's identity or step
 re-run. `judge-7d9d9723.json` is kept as superseded evidence and is not reported from. The
 adequacy verdicts do not depend on the faults with the arms in their registered order, and the
 estimates were not formed. That the re-run confirms both is a claim the re-run tests.
+
+### Amendment 4, 22:58 UTC on 18 November 2026: two deviations that were not amended before their runs
+
+Both are recorded here because a hand-back is not the record. Neither changes a criterion,
+budget or verdict.
+- **M4's direct composite call was taken at every 100th kept row,** not beside each row as
+  amendment 2 says (`m4_settling.DIRECT_EVERY`, commit `c5183aba`, before M4's runs of record).
+  - That call only shows amendment 2's gap, and it doubled the cost per row.
+  - The settling readouts that M4 judges were taken at every row, as registered.
+  - The gap was also checked directly on W0's initial row (`records-c5183aba/m4/gap-check.json`).
+- **M5's arms ran on device row checks** (commit `6c9f44ee`, before M5's runs of record).
+  - §7 does not fix the check mode. Device mode hands any window near a bound to the host's
+    `check_values`, so a refusal keeps the host's own message.
+  - ρ was evaluated at every accepted row by the sink from the check's own functions, as
+    registered.
+  - The host checks would have evaluated every row's ledgers a second time beside the sink's.
