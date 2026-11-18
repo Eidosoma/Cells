@@ -155,7 +155,8 @@
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-3e95a76f/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-aeee80b0/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-2e8c6fb3/measured.json",
-  "/mnt/workspaces/Cells/ol1-laws-20261117/measure-72689736/measured.json"
+  "/mnt/workspaces/Cells/ol1-laws-20261117/measure-72689736/measured.json",
+  "/mnt/workspaces/Cells/ol1-laws-20261117/measure-06ee359e/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1277,6 +1278,13 @@
    "root": ".claude/worktrees/ol1-laws",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T11:45:48+00:00"
+  },
+  {
+   "git_revision": "06ee359ec823f07b54e0e86a484399001bb0eadd",
+   "dirty": false,
+   "root": ".claude/worktrees/ol1-laws",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T11:57:55+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1647,10 +1655,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_spec.py",
-    "seconds": 1.67,
+    "seconds": 1.37,
     "exit_code": 0,
     "counts": {
-     "passed": 15
+     "passed": 16
     }
    },
    {
@@ -4463,7 +4471,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 43.57,
+    "seconds": 43.32,
     "exit_code": 0,
     "counts": {
      "passed": 9
