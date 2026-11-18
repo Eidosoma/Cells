@@ -22,9 +22,9 @@ import numpy as np
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.kinds import passive_routes
 from cells.models import inner_laws
 from cells.models import surface_pump_v3 as v3
-from cells.models.inner_kinds import passive_routes
 from cells.numerics.extracellular_field import scatter
 from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures

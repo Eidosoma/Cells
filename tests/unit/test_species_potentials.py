@@ -17,8 +17,8 @@ import math
 
 import pytest
 
-from cells.core import species_registry
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.registry import species_registry
 from validation.tissue import species_reactions_fixtures as rfx
 
 MU_RT = dict(S=0.0, E=0.0, C=-2.0, P=-1.0)  # The enzyme network's own, at its c0.

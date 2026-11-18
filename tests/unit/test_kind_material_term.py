@@ -12,9 +12,9 @@ no program changes.
 
 import numpy as np
 
-from cells.core import kind_registry
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models import surface_pump_v3
+from cells.registry import kind_registry
 from tests.unit.test_kind_rules import declaring, host_inputs, planted, registry
 
 BOUND = surface_pump_v3.EXPLICIT_STEP_BOUND
