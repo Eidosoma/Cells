@@ -89,6 +89,51 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-1 judged: passed (18 November 2026, 00:57–01:08 UTC).** The registered protocol
+  `fr1-closed-compartment-v1` was judged once from the clean snapshot of its registration commit
+  05a8d193, on lane A (CPUs 0-3, under its lock). It is exchange's first judged acceptance, and
+  its references are the code-blind FR references agent's (`validation/fr1/references`).
+  - **44 of 44 judged criteria.** Examples:
+    - C3 and C5 at rounding of their closed forms (at most 1.5e-2 and 7.9e-7 of the rounding
+      budget). C4, C6, C7 and C8 against their references at most 3.5e-3 of B_split, at second
+      order.
+    - C4's engine equals the palindrome's step map at rounding at every rung, and the splitting
+      term x*/x_eq - 1 is within 5.3e-6 of -a(a + 2b) dt^2/96.
+    - C9 is silent and live in all six programs (S1 bitwise, S2 at 9.3e-6).
+    - C10's work equals the free-energy change at rounding, and C6's energy matches R-energy with
+      sum dn != 0. C11's from-trace rows are within 7.4e-10 of their bound.
+    - C12: the restarts and the batch are bitwise. C13's plants are caught on exactly their rows,
+      at 9.0e6 x (move) and 21 x (work); K3 at 4.3e4 x and 3.3e7 x. K1 is 667 x B_split, K2 903 x.
+  - **No harness failure:** all 38 parts are complete. Peak memory was 1.3 G of 3 G, and no part
+    used more than 6.1% of its runtime limit.
+  - **Against the rehearsal** (`pipeline/run-5f6e857c`, on a registered dry-run copy on the timed
+    lane): all 38 parts are bitwise equal, across D214's two boundary fixes (in the judged snapshot,
+    not the rehearsal's).
+  - **Scope:** `cell_owned_compartments@1` with exchange@1, turnover@1 and local_species_reactions@1
+    as built at 05a8d193: the neutral first version, ARS at 1 ms and RK4 at 0.1 ms. V_b's
+    orientation is not shown, and a dropped -1 in G has power only in C6.
+  - **Evidence:** `/mnt/workspaces/Cells/closed-compartment-fr1-20261117/judged/run-05a8d193/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
+
+- **BETSE's calcium references run out of process (18 November 2026, early).** This fixes the
+  compliance finding from D211's inventory. Merged from `betse-reference-out-of-process` at
+  a2a32ac3.
+  - **The change:**
+    - `validation/betse/calcium_functions_native.py` runs pumpCaER, pumpCaATP,
+      EndoRetic.channels and Cav1p2 unmodified in venv-betse, as a child process;
+    - the tests refuse a capture whose BETSE sources differ from their pins;
+    - the three in-process exec helpers are deleted, and `qualify_cell.py` no longer copies BETSE
+      files.
+  - **Tests:** the four calcium tests keep their names and every original check. Each kernel is
+    also held to an independent form of its law: the Decimal ER pump, the PMCA term, Cav1.2's
+    kinetics and the ER release factor.
+  - **Before and after:** the nine affected tier-3 files have the same 320 test IDs and the same
+    outcomes. Tiers 1+2 show 0 of 513 files changed.
+  - **On a trial merge with main:** all nine files pass, run one process per file. A first run of
+    all nine in one process was killed at its 6 GB cap; no test failed.
+  - Evidence: `/mnt/workspaces/Cells/betse-reference-20261117/` (`before/`, `after/`,
+    `gate-a2a32ac3/`, `merged-check2/`).
+
 - **FR-19's band follow-up on main (18 November 2026, early).** Merged from `passive-share-band` at
   7bfe0c68.
   - **The fix:** the passive routes' heat-share floor now bounds the rounding by

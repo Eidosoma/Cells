@@ -1,5 +1,12 @@
 # A closed compartment owned by a cell (design)
 
+**Qualified, 18 November 2026.** The registered protocol `fr1-closed-compartment-v1`
+(`validation/tissue/compartment_acceptance_protocol.json`, registered at 05a8d193) was judged once
+from a clean snapshot of that commit: passed, 44 of 44 judged criteria (C1 to C13 with their
+controls), against the code-blind references (`validation/fr1/references`). It is exchange's first
+judged acceptance. Its scope is the neutral first version as built there (§3.3): no ion route and
+a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientation is not shown.
+
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** The silence claims S1–S5 are pending milestone 1, with their criteria fixed. This protocol is exchange's first judged acceptance.
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.

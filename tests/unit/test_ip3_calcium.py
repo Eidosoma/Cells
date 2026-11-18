@@ -7,7 +7,6 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
 
 import jax
 import numpy as np
@@ -31,9 +30,9 @@ from cells.legacy.core.ip3_calcium_spec import base_spec
 from cells.legacy.models import ip3_calcium as model
 from cells.legacy.processes import ip3_release as process
 from tests.batch_fixtures import definition
+from tests.reference_er_calcium import native_capture
 from tests.reference_ip3_calcium import (
     System,
-    native_functions,
     physical_energy_derivative,
     reference,
 )
@@ -68,10 +67,9 @@ def evidence(name, record=None, arrays=None):
 
 
 def test_native_ip3_network_branches_units_powers_and_device():
-    native = native_functions()["channels"]
     c = np.array([0, 1e-10, 0.00003, 0.00015, 0.001, 1.0])
     calcium = np.array([0.0001, 0.0003, 0.001, 0.003, 0.01, 0.1])
-    p = SimpleNamespace(
+    p = dict(
         act_Km_Ca=0.001,
         act_n_Ca=2,
         inh_Km_Ca=0.01,
@@ -80,47 +78,40 @@ def test_native_ip3_network_branches_units_powers_and_device():
         act_n_IP3=2,
         max_er=7e-7,
     )
-    ca_factor = (calcium / p.act_Km_Ca) ** 2 / (1 + (calcium / p.act_Km_Ca) ** 2)
-    ca_factor /= 1 + (calcium / p.inh_Km_Ca) ** 2
+    ca_factor = (calcium / p["act_Km_Ca"]) ** 2 / (1 + (calcium / p["act_Km_Ca"]) ** 2)
+    ca_factor /= 1 + (calcium / p["inh_Km_Ca"]) ** 2
     branches = ("molecules", "metabo", "grn", "priority", "missing", "absent")
-    for power in (1, 2, 4, 8):
-        p.act_n_IP3 = power
-        factor = np.asarray(process.open_fraction(c, p.act_Km_IP3, power, xp=np))
-        direct = (c / p.act_Km_IP3) ** power
+    powers = (1, 2, 4, 8)
+    # The pinned ER gate, run unmodified out of process (AGENTS.md), with IP3 from each source
+    # it searches: validation/betse/calcium_functions_native.py builds each branch's stand-ins.
+    cases = [
+        dict(
+            source=branch,
+            calcium=calcium.tolist(),
+            ip3=c.tolist(),
+            parameters=p | {"act_n_IP3": power},
+            base=2e-8,
+        )
+        for power in powers
+        for branch in branches
+    ]
+    native = iter(native_capture({"er_channels": cases})["er_channels"])
+    for power in powers:
+        factor = np.asarray(process.open_fraction(c, p["act_Km_IP3"], power, xp=np))
+        direct = (c / p["act_Km_IP3"]) ** power
         np.testing.assert_allclose(factor, direct / (1 + direct), rtol=3e-14, atol=3e-16)
         for branch in branches:
-            sim = SimpleNamespace(
-                iCa=0, cc_cells=calcium[None, :], cdl=len(c), molecules=None, metabo=None, grn=None
-            )
-            mol = SimpleNamespace(molecules={"IP3": object()}, cell_concs={"IP3": c})
-            network = SimpleNamespace(core=SimpleNamespace(cell_concs={"IP3": c}))
-            if branch == "molecules":
-                sim.molecules = mol
-            elif branch in ("metabo", "grn"):
-                # Empty higher-priority sources must fall through to the named network.
-                sim.molecules = SimpleNamespace(molecules={}, cell_concs={})
-                if branch == "grn":
-                    sim.metabo = SimpleNamespace(core=SimpleNamespace(cell_concs={}))
-                setattr(sim, branch, network)
-            elif branch == "priority":
-                sim.molecules = mol
-                sim.metabo = SimpleNamespace(core=SimpleNamespace(cell_concs={"IP3": c * 9}))
-                sim.grn = SimpleNamespace(core=SimpleNamespace(cell_concs={"IP3": c * 17}))
-            elif branch == "missing":
-                sim.grn = SimpleNamespace(core=SimpleNamespace(cell_concs={}))
-            er = SimpleNamespace(
-                Dm_channels=np.zeros((1, len(c))), Dm_er_base=np.full((1, len(c)), 2e-8)
-            )
-            native(er, sim, None, p)
+            row = next(native)
+            channels = np.asarray(row["Dm_channels"])
             expected = ca_factor * (
                 1 if branch == "absent" else 0 if branch == "missing" else factor
             )
-            np.testing.assert_allclose(
-                er.Dm_channels[0], p.max_er * expected, rtol=3e-14, atol=3e-22
+            np.testing.assert_allclose(channels[0], p["max_er"] * expected, rtol=3e-14, atol=3e-22)
+            np.testing.assert_array_equal(
+                np.asarray(row["Dm_er"]), np.asarray(row["Dm_er_base"]) + channels
             )
-            np.testing.assert_array_equal(er.Dm_er, er.Dm_er_base + er.Dm_channels)
         with jax.default_device(execution_device(BACKEND)):
-            actual = jax.jit(process.open_fraction)(c, p.act_Km_IP3, power)
+            actual = jax.jit(process.open_fraction)(c, p["act_Km_IP3"], power)
             assert actual.device.platform == BACKEND
             np.testing.assert_allclose(actual, factor, rtol=3e-14, atol=3e-16)
     with jax.default_device(execution_device(BACKEND)):
@@ -134,6 +125,7 @@ def test_native_ip3_network_branches_units_powers_and_device():
         {
             "status": "passed",
             "network_branches": list(branches),
+            "native_capture": "out of process: validation/betse/calcium_functions_native.py",
             "powers": [1, 2, 4, 8],
             "concentration_unit": "mM",
             "backend": BACKEND,
