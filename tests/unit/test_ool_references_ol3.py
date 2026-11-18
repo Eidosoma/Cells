@@ -5,6 +5,7 @@ on the stand-in (code-blind; no engine)."""
 from __future__ import annotations
 
 import copy
+import dataclasses
 import math
 
 import pytest
@@ -217,7 +218,66 @@ def test_every_draw_must_be_recorded_and_the_channel_table_is_checked():
     del tr["channels"]
     with pytest.raises(RecordFormatError):
         P.replay(spec, tr)
-    lineage = RUNS["ol3_lineage_run"]                             # a lineage replays in its declared order
+    lineage = RUNS["ol3_lineage_run"]                  # a lineage's order is ruled too (§0.2d 10.7, amendment 6)
     tr = P.simulate(lineage, P.HostStreams(lineage.seed), lineage_order=[(0, -1), (0, 1)])
     assert tr["channels"]["vesicle"] == [["join_L1", "reverse"], ["join_L1", "forward"]]
-    assert P.replay(lineage, tr)["passed"]
+    assert not P.replay(lineage, tr)["passed"]
+
+
+def test_a_single_lineage_split_must_record_its_followed_daughter():
+    spec = RUNS["ol3_lineage_run"]
+    tr = copy.deepcopy(honest("ol3_lineage_run"))
+    split = next(a for e in tr["events"] if e["kind"] == "shear" for a in e["attempts"] if a["outcome"] == "split")
+    assert split["followed"] == 0
+    for bad in (None, 2, "0"):                         # missing, out of range, not an integer: never daughter 0
+        if bad is None:
+            del split["followed"]
+        else:
+            split["followed"] = bad
+        with pytest.raises(RecordFormatError, match="fission_followed"):
+            P.replay(spec, tr)
+
+
+def test_every_counter_starts_at_zero():
+    tr = copy.deepcopy(honest("ol3_lineage_run"))
+    keys = sorted({d["key"] for d in tr["draws"]})
+    assert len(keys) > 1                               # the followed daughters' own keys
+    for d in tr["draws"]:
+        if d["key"] == keys[-1]:
+            d["counter"] += 1                         # a new key starting at 1
+    assert not P.stream_check(tr)["passed"]
+    assert not P.replay(RUNS["ol3_lineage_run"], tr)["passed"]
+
+
+def test_birth_lysed_daughters_take_their_slot_then_free_it():
+    tr = honest("ol3_shear_probe_run")
+    shear = [e for e in tr["events"] if e["kind"] == "shear"][-1]
+    lysed = [(a, d) for a in shear["attempts"] for d in a["daughters"] if d["lysed_at_birth"]]
+    assert lysed and all(d["slot"] >= 0 for _, d in lysed)
+    for a in shear["attempts"]:
+        if a["outcome"] == "split":
+            assert len({d["slot"] for d in a["daughters"]}) == len(a["daughters"])
+    alive = {j for j, s in enumerate(shear["slots_after"]) if s is not None}
+    last = shear["attempts"][-1] if shear["attempts"][-1]["outcome"] == "split" else shear["attempts"][-2]
+    assert all(d["slot"] not in alive for d in last["daughters"] if d["lysed_at_birth"])
+
+
+def test_simultaneous_schedules_and_a_time_at_t_end():
+    base = RUNS["ol3_shear_probe_run"]
+    both = dataclasses.replace(base, schedules=(P.Schedule(0, "shear", times=(0.01,), k=3),
+                                                P.Schedule(1, "shear", times=(0.01,), k=2)))
+    tr = P.simulate(both, P.HostStreams(both.seed))
+    shears = [e for e in tr["events"] if e["kind"] == "shear"]
+    assert [(e["t"], e["schedule"]) for e in shears] == [(0.01, 0), (0.01, 1)]
+    assert [d["fate"] for d in tr["draws"]] == ["discarded", "end"]      # no draw between the two
+    first, second = shears
+    assert all(len(a["daughters"]) == 3 for a in first["attempts"] if a["outcome"] == "split")
+    born = {d["slot"] for a in first["attempts"] for d in a["daughters"]}
+    tested = {a["slot"] for a in second["attempts"]} | set(second["not_admitted"])
+    assert born <= tested                    # the second acts on the assemblies alive at its own start
+    assert P.replay(both, tr)["passed"]
+    at_end = dataclasses.replace(base, schedules=(P.Schedule(0, "shear", times=(base.t_end,), k=2),
+                                                  P.Schedule(1, "shear", times=(base.t_end + 1e-3,), k=2)))
+    tr = P.simulate(at_end, P.HostStreams(at_end.seed))
+    assert [e["t"] for e in tr["events"] if e["kind"] == "shear"] == [base.t_end]      # applies; a later one never
+    assert tr["end_reason"] == "t_end" and P.replay(at_end, tr)["passed"]

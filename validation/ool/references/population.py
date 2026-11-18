@@ -25,16 +25,22 @@ the first whose running total exceeds min(u2 a0, nextafter(a0, 0)); the channel 
 group whose running total exceeds min(u3 a_g, nextafter(a_g, 0)). Single-lineage: the channel is
 the first whose prefix exceeds u2 a0 (OL1's map).
 
-**Events.** A step's end state beyond sigma_max lyses the vesicle (one ledger row, ``ol2``). A
-shear event (declared times, or a Poisson process of rate lambda with gaps -ln(u)/lambda) acts on
-every assembly living at the event's start, in slot order (§0.2c rule 12): an assembly with reduced
-volume v <= k^(-1/2) (§4.3, D2) attempts a fission; a run without k - 1 free slots stops
-``slots_full`` before the split (rule 13); the attempt draws its block and splits by C3x and the
-lumen rule (``partition``); a split with a daughter below W_floor is refused and the parent kept
-(rule 12). The shear work is Sum F(daughters) - F(parent) over every daughter as born; a daughter
-born beyond sigma_max lyses at birth (§0.2b rule 3), released as at lysis. New daughters take the
-lowest free slots. In single-lineage mode the recorded followed daughter continues and the others
-go to the sink. A transfer (declared times) draws one uniform per living assembly in slot order
+**Events** (§0.2d item 10, at c8b22371: the replay conventions, binding the engine and the
+references alike). A step's end state beyond sigma_max lyses the vesicle (one ledger row, ``ol2``).
+A shear event (declared times, or a Poisson process of rate lambda with gaps -ln(u)/lambda, the
+first t_1 = -ln(u_0)/lambda from t = 0) acts on the assemblies alive at its start, in slot order;
+daughters born in it are not tested again. Two scheduled events at the same time apply in order of
+schedule index, each to the assemblies alive at its own start, with no draw between them; a
+declared time equal to t_end applies, a later one never does. An attempt runs: the stress test
+(none is declared in the registered worlds), v <= k^(-1/2) (§4.3, D2); in population mode k - 1
+free slots, or the run stops ``slots_full``; the draw (rule 9's uniforms, then rule 10's); the split
+and the floor test; the fission applied, or refused and recorded with the parent kept. The fission
+counter counts draws. Every daughter counts as born (the shear work Sum F(daughters) - F(parent),
+and keys) and takes its slot (the first daughter the parent's, the others the lowest free, or the
+lowest of the free and the parent's: either set is accepted, the assignment within it not claimed);
+a daughter born beyond sigma_max then lyses at birth, freeing its slot, booked as a lysis. In
+single-lineage mode the recorded followed daughter (G1's ``fission_followed``, required) continues
+and the others go to the sink. A transfer (declared times) draws one uniform per living assembly in slot order
 and keeps the K_keep smallest, ties by slot; the removed assemblies' F and the old pool's F go to
 the sink, and the fresh pool's F is schedule work (§3.1-§3.3).
 
@@ -123,9 +129,6 @@ class HostStreams:
     def follow(self, what: str, index, mine):
         return mine
 
-    def first_counter(self, domain: int, key: int) -> int:
-        return 0
-
     def followed_daughter(self, attempt_index: int, k: int) -> int:
         return 0
 
@@ -146,21 +149,15 @@ class Recorded:
             self.index[(d["domain"], d["key"], d["counter"])] = d["u"]
         for d in trace.get("schedule_draws", []):
             self.index[(DOMAIN_SCHEDULE, d["schedule"], d["counter"])] = [d["u"]]
+        stopped = [a for e in trace.get("events", []) if e["kind"] == "shear" for a in e["attempts"]
+                   if a.get("outcome") == "slots_full"]
         self.attempts = [a for e in trace.get("events", []) if e["kind"] == "shear" for a in e["attempts"]
                          if a.get("outcome") != "slots_full"]
-        for a in self.attempts:
+        for a in self.attempts + [a for a in stopped if a.get("u")]:
             self.index[(DOMAIN_FISSION, a["key"], a["counter"])] = a["u"]
         self.used = set()
         self.missing = []
         self.ties = 0
-        self.first = {}
-        for d in trace.get("draws", []):
-            a = (d["domain"], d["key"])
-            self.first[a] = min(self.first.get(a, d["counter"]), d["counter"])
-
-    def first_counter(self, domain: int, key: int) -> int:
-        """A new lineage key's first counter is taken from the record (not claimed)."""
-        return self.first.get((domain, key), 0) if domain == DOMAIN_LINEAGE else 0
 
     def get(self, domain: int, key: int, counter: int, n: int) -> list:
         addr = (domain, key, counter)
@@ -187,21 +184,28 @@ class Recorded:
         return mine
 
     def followed_daughter(self, attempt_index: int, k: int) -> int:
-        return int(self.attempts[attempt_index].get("followed", 0))
+        """G1's ``fission_followed``, generalised to k: required on every single-lineage split; a
+        missing or out-of-range field is a record error, never daughter 0 (§0.2d 10)."""
+        a = self.attempts[attempt_index]
+        f = a.get("followed")
+        if not isinstance(f, int) or isinstance(f, bool) or not 0 <= f < k:
+            raise RecordFormatError(f"the single-lineage attempt (key {a.get('key')}, counter {a.get('counter')}) "
+                                    f"records no followed daughter in 0..{k - 1} (fission_followed): {f!r}")
+        return f
 
     def daughter_slots(self, attempt_index: int, parent_slot: int, free: list, mine: dict) -> dict:
-        """The recorded daughter-to-slot map, when its slot set is one of the two readings of 'later
-        daughters take free slots in slot order' (§0.2d 6): the parent's slot and the lowest free
-        ones, or the lowest of the free slots and the parent's. Which daughter takes which slot is
-        not claimed (the daughters are exchangeable under pi)."""
+        """The recorded daughter-to-slot map (every daughter, a birth-lysed one included, takes its
+        slot first; §0.2d 10.3), when its slot set is one of the two readings of 'later daughters
+        take free slots in slot order' (§0.2d 6): the parent's slot and the lowest free ones, or the
+        lowest of the free slots and the parent's. Which daughter takes which slot is not claimed
+        (the daughters are exchangeable under pi)."""
         if attempt_index >= len(self.attempts):
             return mine
-        rec = {d: int(x["slot"]) for d, x in enumerate(self.attempts[attempt_index].get("daughters", []))
-               if not x.get("lysed_at_birth") and int(x.get("slot", -1)) >= 0}
+        rec = {d: int(x.get("slot", -1)) for d, x in enumerate(self.attempts[attempt_index].get("daughters", []))}
         n = len(mine)
-        reading_b = {parent_slot, *free[: max(n - 1, 0)]} if n else set()
+        reading_b = {parent_slot, *free[: max(n - 1, 0)]}
         reading_a = set(sorted(free + [parent_slot])[:n])
-        if set(rec) == set(mine) and set(rec.values()) in (reading_a, reading_b):
+        if set(rec) == set(mine) and len(set(rec.values())) == n and set(rec.values()) in (reading_a, reading_b):
             return rec
         return mine
 
@@ -290,6 +294,8 @@ class Model:
         self.pch = spec.world.pool_channels()
         self.vorder = lineage_order or ruled_order(self.vch)
         self.porder = ruled_order(self.pch)
+        if spec.mode == "single_lineage" and self.pch:
+            raise ValueError("a single-lineage world with pool steps is not registered in the references")
 
     # ---------------------------------------------------------------- rates
     def group_rates(self, st: _State) -> list:
@@ -305,9 +311,7 @@ class Model:
 
     # ---------------------------------------------------------------- draws
     def draw(self, src, st: _State, domain: int, key: int, n: int) -> tuple:
-        c = st.draws.get((domain, key))
-        if c is None:
-            c = src.first_counter(domain, key)
+        c = st.draws.get((domain, key), 0)          # every counter starts at 0 (§0.2d 10.6)
         u = src.get(domain, key, c, n)
         st.draws[(domain, key)] = c + 1
         return c, u
@@ -389,9 +393,11 @@ class Model:
             drec = []
             followed = src.followed_daughter(ai, k) if self.spec.mode == "single_lineage" else None
             lysed = [law.lyses(dv) and self.planted != "birth_lysis_kept" for dv in daughters]
-            alive = [d for d in range(k) if not lysed[d]]
-            mine = dict(zip(alive, [j] + free[: max(len(alive) - 1, 0)]))
+            mine = dict(zip(range(k), [j] + free[: k - 1]))
             slot_of = src.daughter_slots(ai, j, free, mine) if self.spec.mode == "population" else mine
+            if self.spec.mode == "population":
+                for d, dv in enumerate(daughters):          # each takes its slot before any birth lysis
+                    st.slots[slot_of[d]], st.keys[slot_of[d]] = dv, keys[d]
             for d, dv in enumerate(daughters):
                 rec = dict(key=keys[d], n=list(dv.n), l=list(dv.l), lysed_at_birth=bool(lysed[d]))
                 if self.spec.mode == "single_lineage":
@@ -402,16 +408,14 @@ class Model:
                         end = "lysed"
                     else:
                         st.slots[0], st.keys[0] = dv, keys[d]
-                elif lysed[d]:
-                    b = law.lysis_booking(dv, st.pool, dv, st.pool, 0.0)
-                    heat += b["heat"]
-                    res += b["work"]
-                    st.pool = b["pool_after"]
-                    rec["slot"] = -1
                 else:
-                    s = slot_of[d]
-                    st.slots[s], st.keys[s] = dv, keys[d]
-                    rec["slot"] = s
+                    rec["slot"] = slot_of[d]
+                    if lysed[d]:                              # the birth lysis frees the slot
+                        b = law.lysis_booking(dv, st.pool, dv, st.pool, 0.0)
+                        heat += b["heat"]
+                        res += b["work"]
+                        st.pool = b["pool_after"]
+                        st.slots[slot_of[d]], st.keys[slot_of[d]] = None, None
                 drec.append(rec)
             att.update(outcome="split", daughters=drec, shear_work=w_shear, heat=heat, reservoir_work=res, sink=sink)
             if followed is not None:
@@ -505,6 +509,12 @@ def simulate(spec: RunSpec, src, planted: str | None = None, law_planted: str | 
                 end = "max_events"
                 break
             t_next, s_next = min(((pending[s.index][0], s.index) for s in spec.schedules), default=(math.inf, None))
+            if t_next <= st.t and t_next <= spec.t_end:
+                # a scheduled event due now (a simultaneous one, or one at t = 0): it applies before any
+                # draw, in order of schedule index (§0.2d 10.1)
+                end = _apply_schedule(m, st, spec, s_next, src, trace, pending, attempt_base)
+                attempt_base = _count_attempts(trace)
+                continue
             if spec.mode == "population":
                 rates = m.group_rates(st)
                 a0 = _fold(_fold(r) for r in rates)
@@ -699,9 +709,8 @@ def compare(mine: dict, theirs: dict, scale: float, limit: int = 5) -> list:
         bad(where="draws", reference=len(dm), recorded=len(dt))
     if mine.get("end_reason") == "replay_mismatch":
         bad(problem=mine.get("replay_problem"))
-    sm = [(d["schedule"], d["counter"], d["u"], d["use"]) for d in mine["schedule_draws"] if d.get("time", 0.0) <= mine["t_end"]]
-    st_ = [(d["schedule"], d["counter"], d["u"], d["use"]) for d in theirs.get("schedule_draws", [])
-           if d.get("time", 0.0) <= theirs.get("t_end", math.inf)]
+    sm = [(d["schedule"], d["counter"], d["u"], d["use"]) for d in mine["schedule_draws"]]
+    st_ = [(d.get("schedule"), d.get("counter"), d.get("u"), d.get("use")) for d in theirs.get("schedule_draws", [])]
     if sm != st_:
         bad(where="schedule_draws", reference=len(sm), recorded=len(st_))
     if mine["end_reason"] != theirs.get("end_reason"):
@@ -735,8 +744,9 @@ def spec_for_trace(spec: RunSpec, trace: dict) -> RunSpec:
 
 
 def declared_order(spec: RunSpec, trace: dict):
-    """The trace's channel table: in population mode it must be §0.2d 5's; a single lineage's
-    vesicle order may be any order of the steps and directions (OL1's declared fold order)."""
+    """The trace's channel table must be §0.2d 10.7's in both modes: a group's declared steps
+    forward, then the same steps reverse (the pool's steps in the pool group, every step with a
+    membrane or lumen place in every slot's group, and a single lineage's likewise)."""
     table = trace.get("channels")
     if not isinstance(table, dict) or "vesicle" not in table or "pool" not in table:
         raise RecordFormatError("the trace declares no channel table (pool and vesicle fold orders)")
@@ -744,9 +754,9 @@ def declared_order(spec: RunSpec, trace: dict):
     ruled = channel_document(m)
     if table["pool"] != ruled["pool"]:
         return None, "the pool group's order is not §0.2d 5's (declared steps forwards, then reverses)"
+    if table["vesicle"] != ruled["vesicle"]:
+        return None, "a slot group's (or the lineage's) order is not §0.2d 10.7's (declared steps forward, then reverse)"
     if spec.mode == "population":
-        if table["vesicle"] != ruled["vesicle"]:
-            return None, "a slot group's order is not §0.2d 5's (declared steps forwards, then reverses)"
         return None, None
     ids = {c.id: i for i, c in enumerate(m.vch)}
     try:
@@ -772,21 +782,11 @@ def replay(spec: RunSpec, trace: dict) -> dict:
     scale = law.F_scale([None if s is None else Vesicle2(tuple(s["n"]), tuple(s["l"])) for s in trace["initial"]["slots"]],
                         tuple(trace["initial"]["pool"]))
     diffs = compare(mine, trace, scale)
-    stopped = {(DOMAIN_FISSION, a["key"], a["counter"]) for e in trace.get("events", []) if e["kind"] == "shear"
-               for a in e["attempts"] if a.get("outcome") == "slots_full"}
-    unused = sorted(a for a in set(src.index) - src.used
-                    if not (a[0] == DOMAIN_SCHEDULE and _gap_beyond_end(trace, a)) and a not in stopped)
+    unused = sorted(set(src.index) - src.used)        # every recorded draw is the reference's (§0.2d 10.5)
     if unused:
         diffs.append(dict(where="unused_draws", count=len(unused), first=[list(x) for x in unused[:3]]))
     return dict(passed=not diffs, events=len(trace.get("events", [])), draws=len(trace.get("draws", [])),
                 near_ties=src.ties, differences=diffs[:6])
-
-
-def _gap_beyond_end(trace: dict, addr) -> bool:
-    for d in trace.get("schedule_draws", []):
-        if (DOMAIN_SCHEDULE, d["schedule"], d["counter"]) == addr:
-            return d.get("use") == "gap" and d.get("time", 0.0) > trace.get("t_end", math.inf)
-    return False
 
 
 def stream_check(trace: dict) -> dict:
@@ -800,8 +800,8 @@ def stream_check(trace: dict) -> dict:
         if d["domain"] not in (DOMAIN_WORLD, DOMAIN_LINEAGE):
             problems.append(dict(problem="selection draw outside domains 5 and 1", draw=[d["domain"], d["key"]]))
     for addr, cs in per.items():
-        if cs != list(range(cs[0], cs[0] + len(cs))):
-            problems.append(dict(problem="selection counters not consecutive", address=list(addr)))
+        if cs != list(range(len(cs))):
+            problems.append(dict(problem="selection counters not 0, 1, 2, ... (§0.2d 10.6)", address=list(addr)))
     sch = {s["index"]: s for s in trace.get("schedules", [])}
     per = {}
     for d in trace.get("schedule_draws", []):

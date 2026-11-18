@@ -14,13 +14,18 @@ format exists; ``standin2`` writes it directly). Each record directory ends with
   [S, C] (the event's end state beyond sigma_max), ``derived`` [S, 7] (W, A in m^2, R in m, V_osm,
   V_sph and V in L, sigma in N/m). Worlds ``ol2_wa``, ``ol2_wa_diffusion`` (their probe states)
   and ``ol2_closed``, ``ol2_two`` (their one-vesicle states).
-- ``runs/<run>/``: ``trace.json``, a ``population.TRACE_FORMAT`` trace: every draw of domains 1
-  and 5 with its address, uniforms and fate (event, discarded, end); every schedule draw (domain
-  6: schedule, counter, u, use); every event (steps with group, channel, lysis, heat, reservoir
-  work and the changed vesicle and pool after; shears with every attempt's address, block of
-  uniforms, outcome, daughters with slots, keys and birth lysis, and its shear work, heat,
-  reservoir work and sink; transfers with their draws, kept and removed slots, sink and schedule
-  work); the initial and final states; the end reason; the environment record.
+- ``runs/<run>/``: ``trace.json``, a ``population.TRACE_FORMAT`` trace, from the engine's
+  diagnostic record (§0.2d 10.5; OL1's ``event_uniforms``, committed events only, is not enough):
+  every draw of domains 1 and 5 with its address, uniforms and fate (event, discarded, end);
+  every schedule draw (domain 6: schedule, counter, u, use), a gap past t_end included; the
+  channel table (``channels``: the pool's and the vesicles' fold orders, §0.2d 10.7); every event
+  (steps with group, channel, lysis, heat, reservoir work and the changed vesicle and pool after;
+  shears with every attempt's address, block of uniforms (the used prefix), outcome, daughters
+  with slots (a birth-lysed daughter's too, §0.2d 10.3), keys and birth lysis, the followed
+  daughter on every single-lineage split (``followed``, G1's ``fission_followed``; required), and
+  its shear work, heat, reservoir work and sink; transfers with their draws, kept and removed
+  slots, sink and schedule work); the initial and final states with keys (from ``lives``); the end
+  reason; the environment record. Every counter starts at 0 (§0.2d 10.6).
 - ``partition/``: ``partition.npz`` with, per parent id, ``<id>_u`` [M, N + k + N_L],
   ``<id>_membrane`` [M, k, G] and ``<id>_lumen`` [M, k, G_L].
 - ``refusals/refusals.json``: {declaration id: {refused, message}}.

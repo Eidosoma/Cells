@@ -411,15 +411,9 @@ that keeps all, a discarded draw). A run that does not is inconclusive (exit 2),
 has a daughter beyond σ_max with probability 0.90 (Monte Carlo, 200,000 splits), so all eight
 parents miss with probability 10⁻⁸.
 
-**Zero-power entries and readings.** The design file lists eighteen zero-power entries and nine
-readings of mine, so that the builder can confirm them before output. The ones that bind a replay:
-- a shear acts on the assemblies living at its start;
-- an attempt draws its block before the floor is tested, and `slots_full` is tested before the
-  draw;
-- the shear work counts every daughter as born, a birth-lysed one included;
-- the first Poisson time is measured from t = 0;
-- every draw is recorded, the world's and each parent's fission counters start at 0, and a slot
-  group's channels are the declared steps forwards, then reverses.
+**Zero-power entries and readings.** The design file lists the zero-power entries and the
+readings. The seven readings that bind a replay were ruled as §0.2d item 10 on the same day
+(amendment 6, below).
 
 **Use.** `python -m validation.ool.references.harness2 --records DIR --out verdict.json` runs the
 rows on records in the canonical layout, which an adapter writes from the engine's bundles once the
@@ -437,6 +431,37 @@ the bookings, each planted run behaviour by its row, the partition probe, and th
 end: exit 0 honest, 1 planted or a refusal accepted, 2 a missing manifest). Evidence:
 `/mnt/workspaces/Cells/ool-references-20261117/evidence/` (`ol2_ol3_margins.*`,
 `ol2_ol3_coverage.*`, `ol3_birth_lysis.*`).
+
+### Amendment 6 (18 November 2026): §0.2d item 10, the replay conventions
+
+The lead ruled my seven replay readings as §0.2d item 10 (c8b22371 on `ol-rulings-20261118`),
+after the builder confirmed them against its design and made them more precise. This is still
+before any OL2 or OL3 engine output. No registered input changes: the worlds, runs, probe states,
+parents and refusals are the same files. The references now follow item 10's wording:
+- **The followed daughter.** Every single-lineage split must record the daughter it follows (G1's
+  `fission_followed`, generalised to k). A missing, out-of-range or non-integer field is a record
+  error (exit 2). The replay never assumes daughter 0.
+- **Counters.** Every counter starts at 0: domain 5, domain 1 at each assembly's birth, domain 2
+  and domain 6. A new lineage key's first counter is no longer read from the record. The keys
+  themselves still come from the record (the relations rule, via the `lives` table).
+- **Birth lysis.** Every daughter takes its slot before any birth lysis, which then frees it. A
+  birth-lysed daughter's slot is recorded and compared. This moves the daughters' slots at the
+  k = 2 shear of `ol3_shear_probe_run`'s reference trace, and nothing else.
+- **Simultaneous events and t_end.** A scheduled event due now applies before any draw. So two
+  events at one time take no draw between them, and apply in schedule-index order, each to the
+  assemblies alive at its own start. A declared time equal to t_end applies; a later one never
+  does. Neither case occurs in a registered run: every run's reference draws, schedule draws and
+  events are unchanged (checked against the traces before the amendment).
+- **Channel order.** A single lineage's channel table must be the ruled order too: the declared
+  steps forward, then the same steps reverse.
+- **Every recorded draw.** Every recorded draw must be one the reference makes. The exemptions for
+  a gap past t_end and for a block recorded at a `slots_full` stop are gone, since the ruled order
+  tests the slots before the draw.
+
+Tests added to `test_ool_references_ol3.py`: the followed daughter is required; a new key starting
+at 1 fails; birth-lysed daughters take a slot and free it; simultaneous schedules take no draw
+between them; a time at t_end applies and a later one does not. The lineage-order test now expects
+a permuted order to fail.
 
 ## What could not be confirmed from the sources
 

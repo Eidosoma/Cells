@@ -102,12 +102,12 @@ ZERO_POWER = [
     "Which daughter takes which slot: the daughters are exchangeable under pi; the replay follows the recorded map "
     "when its slot set is either reading (the parent's slot and the lowest free, or the lowest of the free and the "
     "parent's).",
-    "Which daughter a single lineage follows (G1's daughter_continuation@1) and the daughters' carrier keys (G1's "
-    "derivation): taken from the record; the checks are per key.",
-    "Whether the attempt stopped by slots_full drew its block: not claimed (§0.2c rule 13 says only that the run stops "
-    "before the split).",
-    "A total rate of zero with a schedule pending, two schedules at one time, daughters re-split in the shear event "
-    "that made them, and a shear's stress threshold: not exercised by the registered runs.",
+    "Which daughter a single lineage follows (G1's daughter_continuation@1, recorded as fission_followed and "
+    "required) and the daughters' carrier keys (the relations rule, read from the lives table): taken from the "
+    "record; the checks are per key.",
+    "Implemented as §0.2d 10 rules them, but not exercised by the registered runs: two scheduled events at one time, a "
+    "declared time equal to t_end, daughters not re-tested in the event that made them, a total rate of zero with a "
+    "schedule pending (no draw), and a shear's stress test (none is declared).",
     "The finite pool's c_ext drift (§0.2c rule 6): reported by the engine, not checked.",
     "The uniforms' own distribution in domains 1, 5 and 6: the replays check the maps from uniforms to events, and "
     "OL1's ensemble rows the generator; OL3-1's laws test domain 2's block draws end to end.",
@@ -120,23 +120,43 @@ ZERO_POWER = [
 ]
 
 READINGS = [
-    "The shear work is Sum F(daughter_j) - F(parent) over every daughter as born, a birth-lysed one included; its "
-    "release books q = -(F(after) - F(daughter as born)) + w_res (§0.2b rule 3, §0.2d 7).",
-    "A shear event acts on the assemblies living at its start, in slot order; a fission attempt draws its block, then "
-    "tests the daughters against the floor (§0.2c rule 12: the counter counts attempts); slots_full is tested before "
-    "the draw.",
-    "Admission is v <= k^(-1/2) with v = 6 sqrt(pi) V/A^(3/2) and V = min(V_osm, V_sph) (§4.3, D2); the registered "
-    "parents keep a margin from the threshold.",
-    "A transfer replaces the pool's finite places by the fresh pool; held places are unchanged.",
-    "Poisson gaps are drawn lazily, one per scheduled shear (counter c gives gap c + 1), the first measured from "
-    "t = 0.",
-    "The time uniform is recorded as the value that enters -ln(u).",
-    "Every draw is recorded with its address and fate: discarded draws, the draw that ends the run at t_end, and the "
-    "Poisson gap that lands past t_end included (a missing one fails the replay, with that message).",
-    "The world's counter and each parent's fission counter start at 0; a new lineage key's first counter is taken "
-    "from the record (not claimed). The carrier keys themselves are the trace's own.",
-    "The trace declares its channel table: in population mode it must be §0.2d 5's (declared steps forwards, then "
-    "reverses, for the pool and for every slot); a single lineage replays in its own declared order.",
+    "Ruled as §0.2d item 10 (c8b22371, 18 November 2026; the builder confirmed all seven): a shear event's set is "
+    "fixed at its start, in slot order, its daughters not tested again; simultaneous events apply in schedule-index "
+    "order, each to the assemblies alive at its own start; a declared time equal to t_end applies, a later one never.",
+    "Ruled (10.2): an attempt runs the stress test, v <= k^(-1/2), the k - 1 free slots (population; else "
+    "slots_full), the draw (rule 9's uniforms, then rule 10's), the split and the floor test, then applies or refuses; "
+    "the fission counter counts draws.",
+    "Ruled (10.3): every daughter counts as born, for the shear work (its F at its own V, with its closure cost) and "
+    "for keys; each takes its slot before any birth lysis, which then frees the slot and is booked as a lysis, "
+    "q = -(F(after release) - F(as born)) + w.",
+    "Ruled (10.4): the first Poisson shear time is t_1 = -ln(u_0)/lambda from t = 0; the gaps follow lazily, one per "
+    "scheduled shear.",
+    "Ruled (10.5): the diagnostic record holds every draw with its address, uniforms and fate (discarded draws, the "
+    "draw that ends the run, a gap past t_end, every transfer uniform, each partition block's used prefix), and each "
+    "event's changes and ledger terms by payer; OL1's event_uniforms (committed events only) is not enough.",
+    "Ruled (10.6): every counter starts at 0 (domains 5, 1 at each assembly's birth, 2 and 6); a new sub-lineage's "
+    "key follows the relations rule and is read from the lives table.",
+    "Ruled (10.7): a group's channels are its declared steps forward, then the same steps reverse, in both modes.",
+    "Ruled (10, the record): every single-lineage split records the daughter it follows (fission_followed, "
+    "generalised to k); a missing field is a record error (exit 2), never daughter 0.",
+    "Mine, unruled and unexercised beyond the registered runs: admission's v = 6 sqrt(pi) V/A^(3/2) with "
+    "V = min(V_osm, V_sph); a transfer replaces the pool's finite places and leaves held places; the time uniform is "
+    "recorded as the value that enters -ln(u).",
+]
+
+AMENDMENTS = [
+    {"id": 6, "date": "2026-11-18", "ruling": "§0.2d item 10 at c8b22371 (ol-rulings-20261118)",
+     "registered_inputs": "unchanged (worlds, runs, probe states, parents, refusals)",
+     "changes": [
+         "a missing or out-of-range followed daughter on a single-lineage split is a record error, never daughter 0",
+         "every counter starts at 0, a new lineage key's included (was: read from the record)",
+         "every daughter takes its slot before any birth lysis, which then frees it (was: a birth-lysed daughter took "
+         "none); this moves the daughters' slots in ol3_shear_probe_run's reference trace, and nothing else",
+         "a scheduled event due now applies before any draw, so simultaneous events take no draw between them; a "
+         "declared time equal to t_end applies (neither occurs in a registered run: every run's draws are unchanged)",
+         "a single lineage's channel table must be the ruled order too (was: any declared order)",
+         "every recorded draw must be the reference's: no exemption for a gap past t_end or a stopped attempt",
+     ]},
 ]
 
 
@@ -146,7 +166,7 @@ def design_document() -> dict:
         "format": "ool_references.design@1",
         "milestone": "OL2 and OL3",
         "registered": R2.REGISTERED_ON,
-        "design_note": R2.AUTHORITY,
+        "design_note": R2.AUTHORITY + "; §0.2d item 10 (the replay conventions) at c8b22371, amendment 6",
         "statistics": {"alpha": ALPHA, "min_power": MIN_POWER},
         "conventions": R2.CONVENTIONS,
         "tolerances": {"forward_rate_log": OC.FORWARD_RTOL, "identity_and_cycle_log": OC.LOG_ATOL,
@@ -175,6 +195,7 @@ def design_document() -> dict:
         "registered_margins": REGISTERED_MARGINS,
         "zero_power": ZERO_POWER,
         "readings": READINGS,
+        "amendments": AMENDMENTS,
     }
 
 
