@@ -4,8 +4,8 @@
 
 The world follows ``docs/INVENTORY_COUPLING_DESIGN.md`` §4.4's A5, with a regulatory state put
 between the regulator and the channel, and a per-cell prior (FR-6 item 3; §7.2 item 3: a
-per-cell s0). It takes A5's judged numbers where the design's §9.1 gives them (2 pL, 4 pF, a 2e-9 m/s K-leak
-population, the dose and the Hill law). The patch area, the leaks, the cytosol and the bath come
+per-cell s0). It takes A5's judged numbers where the design's §9.1 gives them (2 pL, 4 pF, a
+2e-9 m/s K-leak population, the dose and the Hill law). The patch area, the leaks, the cytosol and the bath come
 from the coupling references' synthetic builder (reference_crosschecks.py), and the clearance of
 5/s is this package's choice:
 - two identical pump-free cells, each of 2 pL on one constant-field patch of 4 pF facing a held
