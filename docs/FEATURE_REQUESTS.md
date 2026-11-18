@@ -382,7 +382,11 @@ an accepted design, with no code yet.** The inventory-coupling note (D155 item 1
      delivered template's effect on a cell's electrical behaviour runs through channel
      availability.
    - Leaks and pumps on the same path would cover the rest.
-   - *Mapping:* probe P1, the channel path, is in milestone 1 now. Leaks and pumps are the note's
+   - *Status (18 November):* **qualified for gate-free channel populations** by the coupling
+     operator's judged protocol `coupling_regulated_availability_v1` (A5; 15 November, 47 of 47:
+     V and the amounts at order 2.00, the factor exact to rounding, every control caught). Gated
+     populations are not covered.
+   - *Mapping:* probe P1, the channel path, was milestone 1's. Leaks and pumps are the note's
      next targets on the same path.
 2. **The routing door (§2): a factor on another operator's control,** specifically a turnover rate,
    an exchange rate and a reaction multiplier.
