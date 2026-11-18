@@ -768,6 +768,9 @@ def development_values(protocol, results):
     """Each criterion's development values and its development verdict (not judged). A control's
     caught_at_registered exists only in a run with the registered deltas loaded (rules.
     controls_evaluable): there the development's smallest caught deltas stand beside them."""
+    from validation.tissue import judge_harness  # The empty-metric guard (the review's finding 4).
+
+    judge_harness.refuse(judge_harness.metrics(protocol["criteria"], results))
     verdict = evaluate(dict(criteria=protocol["criteria"]), results)
     out = {}
     for v, c in zip(verdict["criteria"], protocol["criteria"], strict=True):
