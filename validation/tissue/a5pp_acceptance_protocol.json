@@ -2,7 +2,21 @@
  "schema": "cells.a5pp_protocol@1",
  "id": "fr6-a5pp-v1",
  "title": "FR-6's A5'': a gate-free K-leak population driven through species_regulated_availability@1's regulatory state with a per-cell prior, two cells given the same regulator dose, against R-cell with the state integrated alongside, with the controls that tell the two cells apart",
- "status": "PROPOSED (drafted 18 November 2026 by the FR owner on branch fr6-a5pp-protocol, from the lead's ruling (c) on FR-6 and the references' registered world and design, against the coupling operator as judged in coupling_regulated_availability_v1). Not registered; registration is the lead's",
+ "status": "registered by the lead (registrar), 18 November 2026, after the development run, the rehearsal and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 18 November 2026, after the development run, the rehearsal and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-18",
+  "basis": [
+   "the development run: /mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-dev-49271f0e (orders 2.03, 2.01, 2.01 with every pair resolved; every control above the honest engine's error where judged; C0_ids' drafting omission fixed and disclosed before registration)",
+   "the rehearsal: /mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-reh-6ecd4d9b (the judged entry on its rehearsal copy passed; all 15 records bitwise equal to the development phase's, the basal-rule control at the registered delta 1e-4 included)",
+   "the references: branch fr6-references, written code-blind with their own world and registered at ee1d8915 before any engine output; the protocol reads them only through validation/fr6/references/REFERENCES_USAGE.md",
+   "the lead's rulings on the draft's six questions (18 November), recorded in the protocol, including both basal controls",
+   "the landing gate: /mnt/workspaces/Cells/fr6-a5pp-20261118/gate/gate-6ecd4d9b (tier 1, 353 files, 0 changed; collected IDs, additions only, 27)",
+   "the disclosures in the protocol, each dated before any judged run"
+  ],
+  "judged_runs_before_registration": 0
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists",
