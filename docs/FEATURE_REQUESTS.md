@@ -215,6 +215,8 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
 - **What it touches.** S3's insertion and membrane-state operators, D150 and D152's energy-pool door,
   FR-1's compartment, and the composition walls (the species operators refuse insertion today).
 
+**The design note (proposed, 18 November 2026):** [MEMBRANE_RETRIEVAL_DESIGN.md](MEMBRANE_RETRIEVAL_DESIGN.md), with the energy source answered once for D150's question 11, D152's question 10 and D151 (D216).
+
 ## FR-3 — The site-occupancy primitive
 
 **Logged 14 November 2026, priority 2** (the request's label; the user: "then next one"). The request
