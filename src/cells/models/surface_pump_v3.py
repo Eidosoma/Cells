@@ -1591,6 +1591,148 @@ def patch_node_conductance(slope, p, *, xp=jnp):
     return inside + scatter(slope, zero, (n + p.membrane_outside,), xp=xp)
 
 
+# ------------------------------------------------------------------ the host table (seam A's)
+# docs/CORE_SEAMS_DESIGN.md §2 and §3. A host is an entity with two ends, each resolved at binding
+# to a node index (cells, then outside nodes). The core gives one table per structure: each host's
+# kind, its end-a node, its end-b node and its activity. Kinds read their ends through it, never
+# through a host's own fields, so a population sits on any host by its index.
+# - Layout data, not structure: the table is read from the layout, so a world of the same shapes
+#   with another topology reuses the executable (P5).
+# - No field of its own: it is read from the hosts' own layout fields (membrane_cell,
+#   membrane_outside, membrane_active; junction_sender, junction_receiver, junction_active). So a
+#   world that does not read it keeps its programs and bindings (A4). Under a composite it reads
+#   the adapter's view, so a patch or junction that a closer closes reads inactive there.
+# - The index space: the membrane slots (patches) first, then the edge slots (junctions), padded
+#   slots included and inactive. A patch's end a is its cell and its end b its outside node; a
+#   junction's end a is its sender and its end b its receiver.
+# - The voltage rule: phi(a) - phi(b) for a patch and for a junction, @3's membrane and junction
+#   voltages (numerics/surface_transport.transport). A route between two pools joins later as a
+#   host kind of its own, whose rule is zero, with no change to the kinds that read the table.
+HOST_KINDS = ("patch", "junction")  # In table order.
+
+
+class HostTable(NamedTuple):
+    """The host table of a layout (or of a composite's view), each field [host]."""
+
+    kind: object  # int64, an index of HOST_KINDS
+    end_a: object  # int64, a node index (cells, then outside nodes)
+    end_b: object  # int64, a node index
+    active: object  # bool: an inactive host (padding, or closed at the view) moves nothing
+
+
+class Host(NamedTuple):
+    """One declared host, resolved on the host side: its ID, kind, index and end nodes' IDs."""
+
+    id: str
+    kind: str  # One of HOST_KINDS.
+    index: int  # Its row of the host table.
+    end_a: str  # A patch's cell, a junction's sender.
+    end_b: str  # A patch's outside node, a junction's receiver.
+
+
+def host_table(p, *, xp=jnp):
+    """The host table of a layout p (or a composite's view of it): HostTable, each field [host]."""
+    n, m, e = p.active.size, p.membrane_active.size, p.junction_active.size
+    return HostTable(
+        kind=xp.concatenate(
+            (xp.zeros(m, dtype=np.int64), xp.full(e, HOST_KINDS.index("junction"), dtype=np.int64))
+        ),
+        end_a=xp.concatenate((p.membrane_cell, p.junction_sender)),
+        end_b=xp.concatenate((n + p.membrane_outside, p.junction_receiver)),
+        active=xp.concatenate((p.membrane_active, p.junction_active)),
+    )
+
+
+def host_ends(values, hosts, p, *, xp=jnp):
+    """(at end a, at end b), each [..., len(hosts)]: a node quantity values [..., node] (cells,
+    then outside nodes, such as node_concentrations) read at the two ends of each listed host.
+    hosts: host indices, layout data (a population's host, say)."""
+    table = host_table(p, xp=xp)
+    return values[..., table.end_a[hosts]], values[..., table.end_b[hosts]]
+
+
+def host_voltage(potentials, p, *, xp=jnp):
+    """[host] each host's voltage by its kind's rule (V), from node potentials [cells, then outside
+    nodes]: phi(end a) - phi(end b) for a patch and for a junction; 0 at an inactive host."""
+    table = host_table(p, xp=xp)
+    return xp.where(table.active, potentials[table.end_a] - potentials[table.end_b], 0.0)
+
+
+def host_scatter(at_a, at_b, hosts, p, *, xp=jnp):
+    """(cell [..., cell], outside [..., outside node]): per-entity node changes summed into the
+    nodes at its host's ends, at_a at end a and at_b at end b (each [..., len(hosts)]), in a kind's
+    rates form (KindRates.cell, KindRates.outside). An entity on an inactive host adds nothing.
+    A transfer f from end a to end b is at_a = -f, at_b = +f."""
+    table = host_table(p, xp=xp)
+    n, o = p.active.size, p.outside_active.size
+    active = table.active[hosts]
+    zero = xp.zeros((*at_a.shape[:-1], n + o), dtype=at_a.dtype)
+    nodes = scatter(xp.where(active, at_a, 0.0), zero, (table.end_a[hosts],), xp=xp)
+    nodes = nodes + scatter(xp.where(active, at_b, 0.0), zero, (table.end_b[hosts],), xp=xp)
+    return nodes[..., :n], nodes[..., n:]
+
+
+def host_node_conductance(slope, hosts, p, *, xp=jnp):
+    """[cells, then outside nodes] a per-entity conductance (S) at both ends of its host, for a
+    kind's stage_term (gap 5): patch_node_conductance for entities on any host. An entity on an
+    inactive host adds nothing."""
+    table = host_table(p, xp=xp)
+    n, o = p.active.size, p.outside_active.size
+    slope = xp.where(table.active[hosts], slope, 0.0)
+    zero = xp.zeros(n + o)
+    return scatter(slope, zero, (table.end_a[hosts],), xp=xp) + scatter(
+        slope, zero, (table.end_b[hosts],), xp=xp
+    )
+
+
+def node_concentrations(state, p, *, xp=jnp):
+    """[species, node] every node's concentrations (mM) at `state` (a stage's read state, say),
+    cells then outside nodes, as the rates read them; padded nodes read 1."""
+    ci, co = physical_amounts(state, p)
+    return xp.concatenate(
+        (
+            xp.where(p.active, ci / p.volume, 1.0),
+            xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+        ),
+        axis=1,
+    )
+
+
+def node_ids(spec):
+    """The node index space's IDs, cells then outside nodes, each padded slot None."""
+    m, x = spec.model, spec.execution
+    cells = [c.id for c in m.cells] + [None] * (x.capacity - len(m.cells))
+    outside = [o.id for o in m.extracellular]
+    return cells + outside + [None] * (x.extracellular_capacity - len(outside))
+
+
+def host_ids(spec):
+    """The host table's IDs in host order: the membrane slots' patches, then the edge slots'
+    junctions, each padded slot None."""
+    m, x = spec.model, spec.execution
+    patches = [p.id for p in m.membranes] + [None] * (x.membrane_capacity - len(m.membranes))
+    junctions = [j.id for j in m.junctions] + [None] * (x.edge_capacity - len(m.junctions))
+    return patches + junctions
+
+
+def declared_hosts(spec):
+    """{host ID: Host} of every declared patch and junction, on the host side (a kind's parse and
+    initial values resolve a declared host with it)."""
+    m, offset = spec.model, spec.execution.membrane_capacity
+    out = {p.id: Host(p.id, "patch", i, p.inside, p.outside) for i, p in enumerate(m.membranes)}
+    for i, j in enumerate(m.junctions):
+        out[j.id] = Host(j.id, "junction", offset + i, j.sender, j.receiver)
+    return out
+
+
+def host_index(spec, host_id):
+    """The host-table row of a declared patch or junction; ConfigError for any other ID."""
+    host = declared_hosts(spec).get(host_id)
+    if host is None:
+        raise ConfigError(f"{host_id!r} is not a declared host (a membrane patch or a junction)")
+    return host.index
+
+
 def check_steps(spec, steps, controls):
     """@2's step checks on this definition's own event grid (channel events included).
 
