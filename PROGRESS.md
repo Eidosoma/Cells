@@ -115,6 +115,30 @@ machine-readable inputs, results, checks and failures.
   - **Evidence:** `/mnt/workspaces/Cells/closed-compartment-fr1-20261117/judged/run-05a8d193/`
     (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
 
+- **Move 2's prerequisites on main (18 November 2026, early).** Merged from `d188-m2-prep` at
+  013c4c07. The move itself waits for OL1's landing.
+  - **D195 item 4:**
+    - `io.load_snapshot`, `batch_io.load_batch_snapshot` and the continuity probe refuse a
+      checkpoint whose recorded source map is from before a declared move, and name the tag where
+      it restores (`cells.source_layout`).
+    - GARD's frozen @1 lineage reader refuses any changed source without the tag (D195 amended).
+  - **R6′:** the BLAS one-thread pin has one home, `cells/__init__.py`. Measured: 530 of 530
+    modules pinned, and the planted control unpins all 47 sampled.
+  - **The planner's classifier:** a family is active when the model table has its row. GARD's @1
+    and OL1's @2 now classify active, where before GARD would have been drafted into `legacy/`.
+  - **Also:** the four tool fixes, and layout-independent strings and tests for the move.
+  - **The gate at 013c4c07:**
+    - tiers 1+2, 508 files, 0 changed;
+    - G1 113 of 113;
+    - crossrev nine of nine, kinds included, against the band-renewed record;
+    - collected IDs, the 19 added;
+    - R1's guard, the selftests (42 and 32 checks) and FR's bitwise set, all passed;
+    - FR-10's and FR-1's restart parts load current-layout checkpoints.
+  - **For the next tier-3 diff:** two tier-3 pin tests that already fail now fail first at
+    `src/cells/__init__.py` instead of `core/__init__.py`. That is a changed error, not a new
+    failure.
+  - Evidence: `/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/`.
+
 - **BETSE's calcium references run out of process (18 November 2026, early).** This fixes the
   compliance finding from D211's inventory. Merged from `betse-reference-out-of-process` at
   a2a32ac3.
