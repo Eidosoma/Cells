@@ -2,7 +2,22 @@
  "schema": "cells.site_occupancy_protocol@1",
  "id": "fr3-site-occupancy-v1",
  "title": "FR-3's first acceptance: site_occupancy@1 (binding sites as owned state) against its independent references in their registered face-free worlds: binding with internalisation against its full kinetics, equilibrium, binding kinetics, accessibility as a pure factor, accounting and energy, and idleness, restart, batch, refusals and planted controls",
- "status": "PROPOSED (drafted 18 November 2026 by the FR owner on branch fr3-protocol, from docs/SITE_OCCUPANCY_DESIGN.md §8.3's items Q1 to Q6 against the operator as built in milestone 1, §12, on the references' registered worlds). Not registered; registration is the lead's",
+ "status": "registered by the lead (registrar), 18 November 2026, after the development run, two rehearsals and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 18 November 2026, after the development run, two rehearsals and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-18",
+  "basis": [
+   "the development run: /mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-dev-bc287a20 (every judged criterion passed; the dt study confirms the declared 1 ms)",
+   "rehearsal 1: /mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-reh-f9af9e68 (the judged entry on its rehearsal copy passed; all 43 records bitwise equal to the development phase's)",
+   "the merged rehearsal: /mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-reh-8b6d1279 (after merging main 55653b87; the judged entry passed; all 43 records bitwise equal to rehearsal 1's)",
+   "the references: branch fr3-references, written code-blind with their own worlds and registered at 992ce385 before any engine output, with the dated amendment 8fcd7558; the protocol reads them only through validation/fr3/references/REFERENCES_USAGE.md",
+   "the lead's rulings on the draft's nine questions (18 November), recorded in the protocol",
+   "the landing gate: /mnt/workspaces/Cells/site-occupancy-fr3-20261118/gate/gate-8b6d1279 (tier 1, 355 files, 0 changed; collected IDs, additions only, 102)",
+   "the disclosures in the protocol, each dated before any judged run"
+  ],
+  "judged_runs_before_registration": 0
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates (§12) as development checks",
