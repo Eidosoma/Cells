@@ -1379,3 +1379,15 @@ registration:**
 - **The Kv1 pilot's @3 side.** `LAW_CODES`, `GATE_COUNTS` and `LAW_PERMEABILITIES` stay today's five
   by name, and a later law is checked with its structure. So the code-0 dispatch, the structure-free
   domain check and the replacement operator's tables are unchanged.
+
+**Amended the same evening (the lead, about 19:15 UTC):**
+- **The ensemble's dispatch through the model table (§15's follow-up): option (a).**
+  - A new `ensemble` column, "module:object" or None, names a family's EnsembleAdapter: the
+    ensemble's eight hooks and its kind. `ensemble/families.py` builds its models from the adapter
+    rows and falls back to today's chains.
+  - The F owner edits `ensemble/families.py`, and `plan.py` and `worker.py` only where the dispatch
+    needs them. This is a recorded exception, since `ensemble/` has no owner in the pass.
+  - GARD's adapter comes after, from the OL2/OL3 builder.
+- **`operators/site_occupancy.py`.** The FR owner fixes its memory estimate, from an external review
+  of 18 November, as a recorded assignment. The file then passes to the binding owner, since FR-3's
+  site binding is seam C's (§5.3).
