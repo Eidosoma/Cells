@@ -1363,3 +1363,19 @@ registration:**
   R-fuel's specification.
 - **Two blind spots are registered now,** by a dated amendment before A's first output: a
   finite-fuel population, so the stored rate has power, and a population with N = b.
+
+**Amended the same evening (the lead, about 19:00 UTC), on the @3 owner's second hand-back:**
+- **D's heat-booking classes** gain membranes, pumps and calcium pumps beside channels and
+  junctions. Each admits `trapezoid_nonnegative@1`, since their power is never negative. This is the
+  F owner's switch.
+- **Recorded exceptions for the @3 owner:**
+  - the carried `heat_bookings` line in `definitions/surface_pump_water_spec.py` and
+    `surface_pump_water_v2_spec.py`, two files with no owner;
+  - two lines of `kinds/ph_condition.py`. The kind is the word "factor", and the law ID moves
+    under `laws`.
+- **The moved-rows guard.** Each kind's rates are checked against its `moved_rows` at binding, on the
+  host, at the initial state and at a perturbed one. Programs do not change. A per-stage check
+  follows only if a real case needs it.
+- **The Kv1 pilot's @3 side.** `LAW_CODES`, `GATE_COUNTS` and `LAW_PERMEABILITIES` stay today's five
+  by name, and a later law is checked with its structure. So the code-0 dispatch, the structure-free
+  domain check and the replacement operator's tables are unchanged.
