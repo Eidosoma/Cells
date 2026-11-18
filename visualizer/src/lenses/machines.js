@@ -21,7 +21,8 @@ import { fitView, plaqueMesh } from "./laws_marks.js";
 import { buildMachine, describeMachinePart } from "./machine_parts.js";
 import { loadBeside } from "./protein_shelves.js";
 import { IONS, PREFIX, kindOf } from "./machines_data.js";
-import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, SWATCH, groupSwatch } from "./machines_card.js";
+import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, shapeWords, SHAPE_LEVEL, SWATCH, groupSwatch } from "./machines_card.js";
+import { loadShape, buildShape } from "./machine_shape.js";
 import { layoutOf, bodiesAt, membraneOf, partOfChain, CARD, TRAY, BENCH, UNIT_NM } from "./machines_layout.js";
 
 /** The look this view asks of the stage (core/look.js), as the Laws library's: natural colours under filmic light. */
@@ -42,7 +43,7 @@ export const MARKS = [
   { id: SWATCH.sized, label: "A shape: drawn to scale from a size in hand", description: "A simple shape at a size in hand, every one at the same scale (the scale bar on the bench is 100 nm): a size a paper or a species' file gives, or the viewer's own measure from a structure of the Protein Data Bank. Shapes, not structures.", when: (lens) => lens.counts.sized > 0 },
   { id: SWATCH.card, label: "A card: no size in hand, not to scale", description: "A machine whose size no source in hand gives: a card with its name, the same size for all. It is a label, not a shape.", when: (lens) => lens.counts.cards > 0 },
   { id: "mach-found", label: "Forward: found; faint: not found", description: "While a search is set, the machines it finds stand as they are and the rest fade.", when: (lens) => Boolean(lens.query) },
-  { id: SWATCH.chosen, label: "Blue light: your choice", description: "The machine you chose rises from its tray and is lit.", when: () => true },
+  { id: SWATCH.chosen, label: "Blue light: your choice", description: "The machine you chose rises from its tray and is lit; a part or a chain you chose in it is lit the same blue.", when: () => true },
 ];
 export const MACHINES_NOTE = "The bench, the trays and the scale bar's line are the room, and stand for nothing; a tray's colour is the group's.";
 
@@ -353,7 +354,9 @@ export class MachinesLens {
       this.built.set(entry.id, { level: 1, ids: new Set(), group: null, measured: true });
       return;
     }
-    const level = this.level;
+    const surface = this.level === SHAPE_LEVEL ? entry.item.size?.surface : null;
+    // At Shape, the ellipsoids of the level before stand until the surfaces are read (and stay where they cannot be).
+    const level = surface ? 3 : this.level;
     const group = new THREE.Group(), ids = new Set();
     const ball = (this.ballGeometry ??= new THREE.SphereGeometry(0.5, 24, 16));
     // A chain wears the hue of the named part that holds it (by its entity or by its chain), where the overlay gives that part one.
@@ -393,8 +396,60 @@ export class MachinesLens {
     if (shape.membrane && level >= 2) group.add(this.membraneSlab(entry));
     group.position.copy(this.standOffset(shape));
     holder.add(group);
-    this.built.set(entry.id, { level, ids, group, bodies: mesh, measured: true });
+    const built = { level: surface ? SHAPE_LEVEL : level, ids, group, bodies: mesh, measured: true };
+    this.built.set(entry.id, built);
     this.shadeParts(entry.id);
+    if (surface) this.drawSurface(entry, built, surface);
+  }
+
+  /**
+   * The Shape level: the machine's shape file (schema/MACHINE_SHAPES.md), asked for only where the catalogue says one is
+   * published, read once and kept; drawn by machine_shape.js as one mesh in the group that holds the ellipsoids, so that
+   * it sits where they sit. A surface is chosen as its chain (where the catalogue names the machine's chains) or its part.
+   * Where the file cannot be read, the ellipsoids stay and the panel says why.
+   */
+  async drawSurface(entry, built, surface) {
+    const found = await (this.surfaces ??= new Map()).get(surface.file) || (await loadShape(surface.file));
+    if (found.status === "found") this.surfaces.set(surface.file, found);
+    if (this.built.get(entry.id) !== built || this.disposed) return; // chosen otherwise meanwhile
+    if (found.status !== "found") {
+      built.surfaceWords = found.words;
+      this.onChrome?.();
+      this.onOpen?.();
+      return;
+    }
+    const shape = entry.shape, chains = new Set(shape.chains.map((chain) => chain.id));
+    const kind = kindOf(entry.id);
+    // A ribosome's subunits as two solids; `surfaceTones` (not offered on the page) draws their RNA and protein apart, for a look.
+    const drawn = buildShape(found.data, { kind, perNm: 1 / UNIT_NM, colour: this.surfaceColour(entry), tones: Boolean(this.surfaceTones) });
+    // What a surface is chosen as: its chain, where the catalogue names the chains; else its part; else the machine.
+    const idOf = (row) => (row?.chain && chains.has(row.id) ? row.chain : row?.part || null);
+    drawn.mesh.userData.pick = (hit) => idOf(drawn.surfaceAt(hit.faceIndex)) || entry.id;
+    built.ids = new Set(drawn.surfaces.map(idOf).filter(Boolean));
+    built.surface = drawn;
+    built.surfaceIdOf = idOf;
+    built.bodies.visible = false;
+    built.group.add(drawn.mesh);
+    this.shadeParts(entry.id);
+    this.stage.invalidate?.();
+    this.onChrome?.();
+  }
+
+  /** The colour of a surface: its part's hue as at Parts (or the group's, in two shades by part), its chains a little apart. */
+  surfaceColour(entry) {
+    const palette = this.stage.palette || {}, shape = entry.shape;
+    const ground = new THREE.Color(palette.bg || "#ffffff");
+    const seen = new Map();
+    return (partId, kind, row) => {
+      const index = shape.parts.findIndex((part) => part.id === partId);
+      const part = shape.parts[index];
+      const base = new THREE.Color(palette[part?.hue] || palette[GROUP_HUE[entry.group]] || palette.ghost || "#888888");
+      const within = seen.get(partId) ?? new Map();
+      seen.set(partId, within);
+      if (!within.has(row.id)) within.set(row.id, within.size);
+      const apart = (within.get(row.id) % 2) * 0.18 + (kind === "nucleic" ? 0.35 : 0);
+      return base.lerp(ground, Math.min(0.8, (part?.hue ? 0 : index % 2 ? 0.45 : 0) + apart));
+    };
   }
 
   /** The colour each body of a chosen measured machine wears, as hex (for the checks). */
@@ -451,12 +506,19 @@ export class MachinesLens {
     const ground = new THREE.Color(palette.bg || "#ffffff");
     const group = this.shapeMeshes.get(id)?.entry.group;
     const mesh = built.bodies;
+    // The part or chain chosen in it is lit in the page's accent, as the chosen machine is, so that it is told apart.
+    const chosen = this.selected === id ? this.selectedPart : null;
+    const lit = new THREE.Color(palette.accent || "#1f6fd0");
     mesh.material.color.set(0xffffff);
     mesh.userData.bodies.forEach((look, index) => {
       const base = new THREE.Color(palette[look.hue] || palette[GROUP_HUE[group]] || palette.ghost || "#888888");
-      mesh.setColorAt(index, base.lerp(ground, (look.hue ? 0.3 : 0.45) * Math.min(1, look.shade)));
+      mesh.setColorAt(index, chosen && look.id === chosen ? lit : base.lerp(ground, (look.hue ? 0.3 : 0.45) * Math.min(1, look.shade)));
     });
     mesh.instanceColor.needsUpdate = true;
+    if (built.surface) {
+      built.surface.recolour();
+      if (chosen) for (const row of built.surface.surfaces) if (built.surfaceIdOf(row) === chosen) built.surface.recolour(row, lit);
+    }
     for (const child of built.group.children) if (child.userData.slab) child.material.color.set(palette.bioMembrane || "#2fb3a3");
   }
 
@@ -562,7 +624,16 @@ export class MachinesLens {
       const panel = describeMachinePart(data, id.split(":").at(-1), { species: (this.model.raw.species || []).find((item) => item.id === this.species) || null });
       return panel ? { ...panel, doors: [...(panel.doors || []), { label: "Back to the machine", lens: "machines", value: owner }] } : null;
     }
-    return describeItem(this.catalogue, this.species, id, { scene: this.model.raw, level: this.built?.get(id)?.level ?? null });
+    const built = this.built?.get(id);
+    const panel = describeItem(this.catalogue, this.species, id, { scene: this.model.raw, level: built?.level ?? null });
+    // At the Shape level the panel says what the shape is, and whose; or, where its file could not be read, why not.
+    const surface = this.item(id)?.size?.surface;
+    if (panel && surface && built?.level === SHAPE_LEVEL) {
+      const owner = (this.model.raw.species || []).find((value) => value.id === surface.of)?.label || surface.of;
+      const whose = surface.of !== this.species ? ` It is the shape of ${owner}'s ${this.item(id).label.toLowerCase()}, as its size is ${owner}'s measure.` : "";
+      panel.facts = [...(panel.facts || []), ["Its shape", built.surfaceWords || `${shapeWords(surface)}${whose}`]];
+    }
+    return panel;
   }
 
   entities() {
@@ -597,10 +668,10 @@ export class MachinesLens {
         species: this.speciesChoice(),
         find: { label: "Find a machine", placeholder: "Find a machine or a gene", value: this.query },
         marks: groups.length > 1 ? { label: "Group", options: [["all", "All groups"], ...groups.map((group) => [group.id, group.label])], active: this.focusGroup || "all" } : null,
-        modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level) } : null,
+        modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level), oneRow: true } : null,
         notice: counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
         stats: [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
-        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine. The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares.`,
+        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the last tray are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
           { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length); from the flagellar motor's own file; and the viewer's own measures from entries of the Protein Data Bank (the ribosome), each naming its entry, its definition and its tool", licence: "each source's own, named in each panel; the Protein Data Bank's entries CC0 1.0" },
@@ -676,10 +747,8 @@ export class MachinesLens {
   homeView() {
     const { bounds } = this.layout;
     const shapes = this.layout.items.filter((item) => item.type === "shape");
-    if (!shapes.length) {
-      const box = new THREE.Box3(new THREE.Vector3(bounds.minX, 0, bounds.minZ), new THREE.Vector3(bounds.maxX, Math.min(bounds.maxY, 12), bounds.maxZ));
-      return this.fitOnScreen(box, 0.04);
-    }
+    const bench = new THREE.Box3(new THREE.Vector3(bounds.minX, 0, bounds.minZ), new THREE.Vector3(bounds.maxX, Math.min(bounds.maxY, 12), bounds.maxZ));
+    if (!shapes.length) return this.fitOnScreen(bench, 0.04);
     const box = new THREE.Box3();
     for (const shape of shapes) {
       box.expandByPoint(new THREE.Vector3(shape.x - shape.w / 2, 0, shape.z - shape.d / 2));
@@ -687,7 +756,9 @@ export class MachinesLens {
     }
     box.expandByVector(new THREE.Vector3(5, 0, 4));
     box.max.y += 2;
-    return this.fitOnScreen(box, 0.06);
+    // Where the shapes spread over most of the bench (the human's), the whole bench, so that no tray is cut at the edge.
+    const spread = Math.max((box.max.x - box.min.x) / (bounds.maxX - bounds.minX), (box.max.z - box.min.z) / (bounds.maxZ - bounds.minZ));
+    return spread >= 0.6 ? this.fitOnScreen(bench, 0.04) : this.fitOnScreen(box, 0.06);
   }
 
   fitOnScreen(box, margin) {
@@ -729,7 +800,10 @@ export class MachinesLens {
     this.selected = owner ? owner : next;
     this.selectedPart = owner ? id : null;
     // A machine with a file is drawn with its parts while it is chosen, as an outline again when it is let go.
-    const rebuild = [before, this.selected].filter((value, index, all) => value && all.indexOf(value) === index && ["machine", "measured"].includes(this.shapeMeshes?.get(value)?.entry.shape.kind));
+    // A measured machine that stays chosen is not rebuilt for a part or chain chosen in it: only its light moves.
+    const kindAt = (value) => this.shapeMeshes?.get(value)?.entry.shape.kind;
+    const rebuild = [before, this.selected].filter((value, index, all) => value && all.indexOf(value) === index && (kindAt(value) === "machine" || (kindAt(value) === "measured" && before !== this.selected)));
+    if (before === this.selected && kindAt(before) === "measured") this.shadeParts(before);
     if (before !== this.selected && !owner) {
       const levels = this.selected ? levelsOf(this.item(this.selected)) : null;
       this.level = levels?.find((value) => value.id > 1)?.id ?? 2;
@@ -742,6 +816,7 @@ export class MachinesLens {
   rebuildMachine(id) {
     const shown = this.shapeMeshes?.get(id);
     if (!shown) return;
+    this.built.get(id)?.surface?.dispose();
     for (const child of [...shown.holder.children]) {
       shown.holder.remove(child);
       disposeTree(child);

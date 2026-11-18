@@ -160,6 +160,40 @@ def measured_from_file(overlay, size, where, inputs, own_source, gathered=None):
     }
 
 
+SHAPES = ROOT / "data" / "catalogue" / "shapes"
+
+
+def shape_of(size, species, kind, where, inputs):
+    """The shape file a measured size is drawn by at the Shape level (schema/MACHINE_SHAPES.md), where one is published:
+    the file named as the size's measure (`shapes/<measure>.json`), else the species' own (`<species>.<kind>`), else,
+    for a size the species' file draws at another's measure, the shape of that same entry. Its entry must be the size's,
+    and every surface must name a chain or a part the size names: a shape never crosses to another entry."""
+    named = re.match(r"^data/catalogue/measures/([a-z0-9][a-z0-9_-]*\.[a-z0-9][a-z0-9_-]*)\.json$", size.get("from") or "")
+    candidates = [SHAPES / f"{named.group(1)}.json"] if named else [SHAPES / f"{species}.{kind}.json", *sorted(SHAPES.glob(f"*.{kind}.json"))]
+    entry, assembly = (size.get("entry") or "").split("-assembly")[0], ((size.get("entry") or "").split("-assembly") + [None])[1]
+    for path in candidates:
+        if not path.exists():
+            continue
+        data = read(path)
+        if data.get("entry") != entry or (data.get("assembly") or None) != assembly:
+            if named or path.name == f"{species}.{kind}.json":
+                raise Breach(f"{where}: {rel(path)} is a shape of {data.get('entry')}, not of the measured {size.get('entry')}")
+            continue
+        chains = {chain["id"] for chain in size.get("chains") or []}
+        parts = {part["id"] for part in size.get("parts") or []}
+        for mesh in data["meshes"]:
+            if mesh.get("chain") and chains and mesh["id"] not in chains:
+                raise Breach(f"{where}: {rel(path)} has a surface {mesh['id']} that is no chain of the measure")
+            if mesh.get("part") and parts and mesh["part"] not in parts:
+                raise Breach(f"{where}: {rel(path)} has a surface of the part {mesh['part']}, which the measure does not name")
+        inputs.add(rel(path))
+        counts = data.get("counts") or {}
+        return {"file": f"shapes/{path.name}", "of": path.name.split(".")[0], "entry": data["entry"], **({"assembly": data["assembly"]} if data.get("assembly") else {}),
+                "definition": data["definition"], "width_nm": data["parameters"]["width_nm"], "by": data["parameters"]["by"],
+                "triangles": counts.get("triangles"), **({"tones": True} if data.get("tones") else {})}
+    return None
+
+
 def build():
     overlay_path = ROOT / "data" / "catalogue" / "overlay.json"
     overlay = read(overlay_path)
@@ -252,6 +286,13 @@ def build():
                 raise Breach(f"{where}: listed twice")
             seen.add(item["kind"])
             entry = {"id": kind["id"], "species": species, "label": item.get("label") or kind.get("label")}
+            # A label of the species' own where its dossier's one term names the kind with a numeral the kind's label lacks
+            # (the human's "RNA polymerase II, core complex": RNA polymerase II, beside I and III).
+            terms = ((gathered.get(item["kind"]) or {}).get("named") or {}).get("terms") or []
+            if not item.get("label") and len(terms) == 1 and entry["label"]:
+                numbered = re.match(rf"^({re.escape(entry['label'])} (?:I{{1,3}}|IV|V))\b", terms[0][1], re.I)
+                if numbered:
+                    entry["label"] = entry["label"] + numbered.group(1)[len(entry["label"]):]
             # What names it: a capability's note of the species file, with that capability's sources, or a record of the viewer;
             # where the overlay names nothing, the dossier's sentence on the Gene Ontology and UniProt, with their sources.
             machine = gathered.get(item["kind"])
@@ -324,6 +365,10 @@ def build():
                 if not all(re.search(rf"(^|\D){n}(\D|$)", found["value"]) for n in numbers):
                     raise Breach(f"{where}: the fact {size['fact']!r} does not give {numbers}")
                 entry["size"] = {"shape": size["shape"], "long_nm": size["long_nm"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), "width": "the picture's choice: no source in hand gives it"}
+            if (entry.get("size") or {}).get("shape") == "measured":
+                shape = shape_of(entry["size"], species, kind["id"], where, inputs)
+                if shape:
+                    entry["size"]["surface"] = shape
             if item.get("no_size"):
                 entry["no_size"] = item["no_size"]
             # Its proteins as the dossier gives them, by tier (schema/MACHINE_DOSSIERS.md), and the entry the gathering would

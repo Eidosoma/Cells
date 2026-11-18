@@ -1285,7 +1285,8 @@ class CellsViewer extends HTMLElement {
       modes
         ? h(
             "div",
-            { class: "seg seg-wide", role: "group", "aria-label": modes.label },
+            // A view whose detail has more than two levels may ask for them in one row (the Machines catalogue's four).
+            { class: modes.oneRow ? "seg seg-wide seg-one-row" : "seg seg-wide", role: "group", "aria-label": modes.label, style: modes.oneRow ? `--seg-count: ${modes.options.length}` : null },
             modes.options.map(([value, label]) =>
               h(
                 "button",

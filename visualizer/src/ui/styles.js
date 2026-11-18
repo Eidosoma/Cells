@@ -516,6 +516,8 @@ cells-trace { display: grid; gap: 4px; }
 
 /* ---------------------------------------------------------------- a species' own proteins on shelves */
 .seg.seg-wide button { padding: 5px 4px; font-size: 12px; line-height: 1.2; white-space: normal; text-wrap: balance; }
+.seg.seg-one-row { grid-template-columns: repeat(var(--seg-count, 2), minmax(0, 1fr)); }
+.seg.seg-one-row button { padding: 5px 2px; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-notice { font-size: 12px; line-height: 1.4; padding: 6px 9px; border-radius: 7px; border-left: 2px solid var(--ghost); background: color-mix(in srgb, var(--fg) 6%, transparent); overflow-wrap: anywhere; }
 .card-open { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 5px 5px 5px 9px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); }
 .card-open-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.3; }

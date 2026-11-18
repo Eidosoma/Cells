@@ -9,50 +9,54 @@
    "title": "Cryo-EM structure of the human 80S ribosome with 4 um Tigecycline",
    "method": "ELECTRON MICROSCOPY",
    "resolution_A": "2.2",
-   "left_out": [
-    "Receptor of activated protein C kinase 1"
-   ],
+   "placed_by_the_caller": {
+    "70": {
+     "subunit": "small",
+     "description": "Receptor of activated protein C kinase 1"
+    }
+   },
+   "left_out": [],
    "whole": {
-    "atoms": 215800,
+    "atoms": 218236,
     "across_nm": [
-     29.4,
-     23.0,
+     29.7,
+     23.2,
      21.1
     ],
     "farthest_nm": [
-     30.4,
-     26.1,
+     30.5,
+     27.0,
      26.8
     ],
     "middle_98_percent_nm": [
-     25.5,
+     25.6,
      21.1,
-     19.5
+     19.6
     ],
-    "radius_of_gyration_nm": 9.59
+    "radius_of_gyration_nm": 9.66
    },
    "large": {
     "atoms": 142711,
     "centre_nm": [
      0.0,
-     -3.83,
+     -3.96,
      0.0
     ],
     "axes": [
      [
-      0.8283,
-      0.361,
-      0.4284
+      0.8782,
+      0.3594,
+      0.3157
      ],
      [
-      -0.2947,
-      -0.3697,
-      0.8812
+      -0.1879,
+      -0.3476,
+      0.9186
      ],
      [
-      0.4765,
-      -0.8562,
-      -0.1998
+      0.4399,
+      -0.866,
+      -0.2377
      ]
     ],
     "across_nm": [
@@ -68,42 +72,42 @@
     "radius_of_gyration_nm": 8.19
    },
    "small": {
-    "atoms": 73089,
+    "atoms": 75525,
     "centre_nm": [
      0.0,
-     7.48,
+     7.49,
      0.0
     ],
     "axes": [
      [
-      0.7943,
-      -0.0085,
-      -0.6074
+      -0.6898,
+      0.0652,
+      0.7211
      ],
      [
-      0.6062,
-      -0.053,
-      0.7935
+      0.723,
+      0.0102,
+      0.6907
      ],
      [
-      -0.0389,
-      -0.9986,
-      -0.0369
+      0.0376,
+      0.9978,
+      -0.0542
      ]
     ],
     "across_nm": [
-     27.0,
+     27.3,
      16.2,
-     11.3
+     11.6
     ],
     "farthest_nm": [
-     27.5,
+     27.7,
      19.8,
-     13.4
+     13.1
     ],
-    "radius_of_gyration_nm": 7.48
+    "radius_of_gyration_nm": 7.56
    },
-   "between_centres_nm": 11.3
+   "between_centres_nm": 11.5
   }
  }
 }

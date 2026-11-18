@@ -139,6 +139,17 @@ catalogue never says their count.
     of the atlas offers the machines its dossier makes it a part of, or names it with.
   - *A machine that stays a card* says why in one line (`no_size`, a dated decision): the human's
     nuclear pore, whose entry is an integrative model holding about a third of its proteins.
+- **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
+  measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
+  a species' file draws at another's measure, the shape of that same entry: Syn3A's and M.
+  pneumoniae's ribosomes take E. coli's), the size names it: its file as published
+  (`shapes/<name>.json`), whose it is, its entry and assembly, its definition and setting (a chain
+  at 1.0 nm; a ribosome's subunits as solids at 1.6 nm) and its triangles. The builder stops where
+  the shape's entry is not the measured one, or a surface names a chain or part the size does not.
+  The page asks for a shape file only where the size names one.
+- **A label of the species' own.** Where a species' dossier names a machine by one term that adds a
+  numeral to the kind's label, the species' entry takes it: the human's RNA polymerase is "RNA
+  polymerase II" (the Gene Ontology's "RNA polymerase II, core complex"), beside I and III.
 - **Parts are sub-assemblies, subunits are chains** (decided 17 November 2026). A measured
   machine's Parts are the handful of sub-assemblies a textbook names, each the set of genes the
   dossier's rows give it and in its own hue (the proteasome's core particle, base and lid, as the
@@ -180,7 +191,8 @@ catalogue never says their count.
   with a scale bar of 100 nm on the bench; a machine with no size in hand is a card with its name,
   the same size for all. A tray is as wide as its shapes, its cards (three across) or its name (in
   one line or two) need; its cards lie at its back and its shapes stand in front of them. The
-  opening view frames the shapes drawn to scale (the whole bench where there are none). While a
+  opening view frames the shapes drawn to scale (the whole bench where there are none, or where
+  the shapes spread over most of it, so that no tray is cut at the screen's edge). While a
   machine is chosen, every other machine, card and name on the bench is faint, and only its name
   is on the picture. The legend names each mark that is drawn and each group's colour.
 - **Drawing levels.** Among the others a machine is an outline. A machine with a file of its own
@@ -188,6 +200,21 @@ catalogue never says their count.
   when it is chosen, its subunits (level 3) by the card's Detail, as its closer view draws them.
   A measured machine or unit is drawn from its measure the same way. Every level is an
   illustration.
+- **The Shape level** (the fourth, after Subunits, on a machine whose size names a shape file).
+  Chosen at it, the machine's file is read once (`machine_shape.js`, `loadShape`) and drawn as one
+  mesh in the group that holds its ellipsoids, so that it sits where they sit; its ellipsoids stand
+  until the file is read, and stay where it cannot be, the panel saying why. Each surface wears its
+  part's hue (or the group's colour in two shades by part), its chains a little apart; a ribosome
+  is its two subunits as solids (its RNA and protein in two tones read less well: patches of protein
+  on the RNA). A press on a surface chooses its chain where the catalogue names the chains, else its
+  part; the chain's panel gives its protein, its door into the atlas and a door to its part. The
+  machine's panel says what the shape is: the viewer's own smooth surface of the entry's
+  coordinates, by its definition, at its setting, an illustration, not the structure and not a
+  measurement; the Protein Data Bank states no surface; and whose it is where it is another's.
+  The card's Detail stands in one row.
+- **The choice told apart.** A part or a chain chosen in a machine is lit in the page's accent, as
+  the chosen machine is: by its instance's colour at Parts and Subunits, by its surface's at Shape
+  (`recolour`); choosing it does not rebuild the machine. The legend's line for the choice says so.
 - **Light on a phone.** The outlines of every measured machine on the bench are one instanced
   mesh, the trays two, the cards two; a chosen measured machine's bodies are one more, picked by
   their instance, however many chains it has. The tests hold each bench to 40 draws and 40,000

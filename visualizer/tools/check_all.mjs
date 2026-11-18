@@ -120,6 +120,12 @@ const SUITE = [
   // The human's bench from its dossier, and the way from a chain to its protein in the atlas and back (wide and on a phone).
   { name: "catalogue-human", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human" }, minutes: 2 },
   { name: "catalogue-human-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-phone", WIDTH: "390", HEIGHT: "844" }, minutes: 2 },
+  // The Shape level on E. coli's machines: wide, at 1280 by 720 in the dark, and on phones of 400 and 360 px.
+  { name: "catalogue-shape", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape", WIDTH: "1440", HEIGHT: "900" }, minutes: 2 },
+  { name: "catalogue-shape-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-shape-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 2 },
+  { name: "catalogue-shape-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-human-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 2 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

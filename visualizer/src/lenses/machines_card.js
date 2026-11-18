@@ -70,6 +70,16 @@ function shareWords(size) {
   return size.kinds > 1 ? `Of each of its ${size.kinds} kinds of chain, ${range} of the sequence stands in the entry's coordinates.` : `Of its one kind of chain, ${range} of the sequence stands in the entry's coordinates.`;
 }
 
+/** The Shape level's number: after Subunits (3), whichever levels before it a machine has. */
+export const SHAPE_LEVEL = 4;
+
+/** What a machine's shape is, in the contract's words: whose surface, of which entry, by what definition, at what setting. */
+export function shapeWords(surface) {
+  const of = `Protein Data Bank entry ${surface.entry}${surface.assembly ? ` (its biological assembly ${surface.assembly})` : ""}`;
+  const by = surface.by === "parts" ? `each part as one solid, at ${Number(surface.width_nm).toFixed(1)} nm` : `a chain at ${Number(surface.width_nm).toFixed(1)} nm`;
+  return `The viewer's own smooth surface of ${of}'s coordinates (${by}), worked out by tools/shape_particle.py: ${surface.definition}. An illustration, not the structure and not a measurement; the Protein Data Bank states no surface.`;
+}
+
 /** The drawing levels a machine has (a catalogue item): its closer view's file's, or, measured from a structure, an outline and its parts. */
 export function levelsOf(item) {
   if (item?.entry?.closer?.levels) return item.entry.closer.levels;
@@ -79,6 +89,8 @@ export function levelsOf(item) {
   const levels = [{ id: 1, label: "Outline", says: size.outline === "whole" ? "The whole's ellipsoid, as one outline among the other machines." : chains ? "Its chains, in its group's colour, as one outline among the other machines." : "Its measured parts as one outline among the other machines." }];
   if (size.parts?.length > 1) levels.push({ id: 2, label: "Parts", says: chains ? "Each named part in a colour of its own, drawn as its chains, each at its measured size, centre and axes; a part's own ellipsoid is its size, in its panel." : "Each named part a body of its own, at its measured size, centre and axes." });
   if (size.chains?.length > 1) levels.push({ id: 3, label: "Subunits", says: "Each chain of the entry a body of its own, at its measured size, centre and axes, shaded by its kind." });
+  // Where a shape file is published for it (schema/MACHINE_SHAPES.md), a level after the others: the viewer's own surface.
+  if (size.surface) levels.push({ id: SHAPE_LEVEL, label: "Shape", says: shapeWords(size.surface) });
   return levels.length > 1 ? levels : null;
 }
 
@@ -91,6 +103,7 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
   const rows = new Map((item.entry?.gathered?.proteins || []).map((row) => [row[0], row]));
   const proteins = (part.proteins || []).map((id) => rows.get(id)).filter(Boolean);
   const protein = part.protein ? rows.get(part.protein) || [part.protein, null, ""] : null;
+  const holder = size.chains?.includes(part) ? partOfChainIn(size, part) : null;
   const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
   return {
     id: `${owner}:${part.id}`,
@@ -109,6 +122,8 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
     sections: proteins.length ? [{ title: "Its proteins", items: proteins.map(gatheredItem) }] : [],
     doors: [
       ...(protein ? [{ label: `Show ${protein[1] || protein[0]} in the Protein atlas`, lens: "proteins", show: "own", find: protein[0] }] : []),
+      // A chain's part, where a named part holds it.
+      ...(holder ? [{ label: `Its part: ${holder.label}`, lens: "machines", value: `${owner}:${holder.id}` }] : []),
       { label: "Back to the machine", lens: "machines", value: owner },
     ],
   };

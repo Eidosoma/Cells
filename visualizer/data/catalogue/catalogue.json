@@ -28,6 +28,12 @@
    "data/catalogue/measures/human.rna-polymerase-iii.json",
    "data/catalogue/measures/human.rna-polymerase.json",
    "data/catalogue/overlay.json",
+   "data/catalogue/shapes/ecoli.atp-synthase.json",
+   "data/catalogue/shapes/ecoli.hslv.json",
+   "data/catalogue/shapes/ecoli.lon.json",
+   "data/catalogue/shapes/ecoli.ribosome.json",
+   "data/catalogue/shapes/ecoli.rna-polymerase.json",
+   "data/catalogue/shapes/ecoli.translocon.json",
    "data/machines/ecoli.flagellar-motor.json",
    "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
@@ -735,7 +741,17 @@
      "syn3a:pdb5mdz",
      "syn3a:gilbert2021"
     ],
-    "whose": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template."
+    "whose": "No structure of Syn3A's own ribosome is among its file's sources: it is drawn at E. coli's measure. Gilbert and others 2021 took a ribosome to be about 20 nm across in their model of the cell, and found the ribosomes in their tomograms with a structure of E. coli's ribosome (the entry 5MDZ) as the template.",
+    "surface": {
+     "file": "shapes/ecoli.ribosome.json",
+     "of": "ecoli",
+     "entry": "7K00",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 1.6 nm wide weighted by its volume, on a grid 1.6 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 1.6,
+     "by": "parts",
+     "triangles": 4836,
+     "tones": true
+    }
    },
    "proteins": {
     "mark": "complex",
@@ -1288,7 +1304,17 @@
      "mpneumoniae:pdb7k00",
      "mpneumoniae:pdb5mdz"
     ],
-    "whose": "No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure."
+    "whose": "No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure.",
+    "surface": {
+     "file": "shapes/ecoli.ribosome.json",
+     "of": "ecoli",
+     "entry": "7K00",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 1.6 nm wide weighted by its volume, on a grid 1.6 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 1.6,
+     "by": "parts",
+     "triangles": 4836,
+     "tones": true
+    }
    }
   },
   {
@@ -1615,7 +1641,17 @@
     "sources": [
      "ecoli:pdb7k00",
      "ecoli:pdb5mdz"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.ribosome.json",
+     "of": "ecoli",
+     "entry": "7K00",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 1.6 nm wide weighted by its volume, on a grid 1.6 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped); for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 1.6,
+     "by": "parts",
+     "triangles": 4836,
+     "tones": true
+    }
    },
    "gathered": {
     "proteins": [
@@ -2740,7 +2776,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb6p1k"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.rna-polymerase.json",
+     "of": "ecoli",
+     "entry": "6P1K",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 6112
+    }
    },
    "gathered": {
     "proteins": [
@@ -3854,7 +3899,16 @@
     "sources": [
      "catalogue:pdb6oqr",
      "catalogue:pdb6oqs"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.atp-synthase.json",
+     "of": "ecoli",
+     "entry": "6OQR",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 9348
+    }
    },
    "gathered": {
     "proteins": [
@@ -4196,7 +4250,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb9rbf"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.translocon.json",
+     "of": "ecoli",
+     "entry": "9RBF",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 1284
+    }
    },
    "gathered": {
     "proteins": [
@@ -4986,7 +5049,17 @@
     "sources": [
      "catalogue:pdb1g4a",
      "catalogue:pdb1g4b"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.hslv.json",
+     "of": "ecoli",
+     "entry": "1G4A",
+     "assembly": "1",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 8136
+    }
    },
    "gathered": {
     "proteins": [
@@ -5300,7 +5373,16 @@
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb6u5z"
-    ]
+    ],
+    "surface": {
+     "file": "shapes/ecoli.lon.json",
+     "of": "ecoli",
+     "entry": "6U5Z",
+     "definition": "each chain as the closed surface that holds its own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide) in a cloud where each residue is spread as a Gaussian 1 nm wide, on a grid 1 nm apart; of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped (listed under dropped)",
+     "width_nm": 1.0,
+     "by": "chains",
+     "triangles": 5512
+    }
    },
    "gathered": {
     "proteins": [
@@ -6591,13 +6673,13 @@
     "from": "data/catalogue/measures/animals.ribosome.json",
     "whole": {
      "across_nm": [
-      29.4,
-      23.0,
+      29.7,
+      23.2,
       21.1
      ],
      "farthest_nm": [
-      30.4,
-      26.1,
+      30.5,
+      27.0,
       26.8
      ]
     },
@@ -6613,24 +6695,24 @@
       ],
       "centre_nm": [
        0.0,
-       -3.83,
+       -3.96,
        0.0
       ],
       "axes": [
        [
-        0.8283,
-        0.361,
-        0.4284
+        0.8782,
+        0.3594,
+        0.3157
        ],
        [
-        -0.2947,
-        -0.3697,
-        0.8812
+        -0.1879,
+        -0.3476,
+        0.9186
        ],
        [
-        0.4765,
-        -0.8562,
-        -0.1998
+        0.4399,
+        -0.866,
+        -0.2377
        ]
       ],
       "farthest_nm": [
@@ -6643,45 +6725,45 @@
       "id": "small",
       "label": "Small subunit (40S)",
       "across_nm": [
-       27.0,
+       27.3,
        16.2,
-       11.3
+       11.6
       ],
       "centre_nm": [
        0.0,
-       7.48,
+       7.49,
        0.0
       ],
       "axes": [
        [
-        0.7943,
-        -0.0085,
-        -0.6074
+        -0.6898,
+        0.0652,
+        0.7211
        ],
        [
-        0.6062,
-        -0.053,
-        0.7935
+        0.723,
+        0.0102,
+        0.6907
        ],
        [
-        -0.0389,
-        -0.9986,
-        -0.0369
+        0.0376,
+        0.9978,
+        -0.0542
        ]
       ],
       "farthest_nm": [
-       27.5,
+       27.7,
        19.8,
-       13.4
+       13.1
       ]
      }
     ],
     "chains": [],
-    "between_nm": 11.3,
+    "between_nm": 11.5,
     "kinds": null,
     "modelled": null,
     "beside": null,
-    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit as the measure's call places it (--small 70)",
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
@@ -10714,7 +10796,7 @@
   {
    "id": "rna-polymerase",
    "species": "human",
-   "label": "RNA polymerase",
+   "label": "RNA polymerase II",
    "named": {
     "text": "17 of the species' reviewed UniProt entries carry the Gene Ontology's term RNA polymerase II, core complex (GO:0005665) or a narrower one; 15 of them also carry UniProt's keyword DNA-directed RNA polymerase.",
     "by": "Gene Ontology",
@@ -22395,13 +22477,13 @@
     "from": "data/catalogue/measures/animals.ribosome.json",
     "whole": {
      "across_nm": [
-      29.4,
-      23.0,
+      29.7,
+      23.2,
       21.1
      ],
      "farthest_nm": [
-      30.4,
-      26.1,
+      30.5,
+      27.0,
       26.8
      ]
     },
@@ -22417,24 +22499,24 @@
       ],
       "centre_nm": [
        0.0,
-       -3.83,
+       -3.96,
        0.0
       ],
       "axes": [
        [
-        0.8283,
-        0.361,
-        0.4284
+        0.8782,
+        0.3594,
+        0.3157
        ],
        [
-        -0.2947,
-        -0.3697,
-        0.8812
+        -0.1879,
+        -0.3476,
+        0.9186
        ],
        [
-        0.4765,
-        -0.8562,
-        -0.1998
+        0.4399,
+        -0.866,
+        -0.2377
        ]
       ],
       "farthest_nm": [
@@ -22447,45 +22529,45 @@
       "id": "small",
       "label": "Small subunit (40S)",
       "across_nm": [
-       27.0,
+       27.3,
        16.2,
-       11.3
+       11.6
       ],
       "centre_nm": [
        0.0,
-       7.48,
+       7.49,
        0.0
       ],
       "axes": [
        [
-        0.7943,
-        -0.0085,
-        -0.6074
+        -0.6898,
+        0.0652,
+        0.7211
        ],
        [
-        0.6062,
-        -0.053,
-        0.7935
+        0.723,
+        0.0102,
+        0.6907
        ],
        [
-        -0.0389,
-        -0.9986,
-        -0.0369
+        0.0376,
+        0.9978,
+        -0.0542
        ]
       ],
       "farthest_nm": [
-       27.5,
+       27.7,
        19.8,
-       13.4
+       13.1
       ]
      }
     ],
     "chains": [],
-    "between_nm": 11.3,
+    "between_nm": 11.5,
     "kinds": null,
     "modelled": null,
     "beside": null,
-    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit as the measure's call places it (--small 70)",
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
@@ -22508,13 +22590,13 @@
     "from": "data/catalogue/measures/animals.ribosome.json",
     "whole": {
      "across_nm": [
-      29.4,
-      23.0,
+      29.7,
+      23.2,
       21.1
      ],
      "farthest_nm": [
-      30.4,
-      26.1,
+      30.5,
+      27.0,
       26.8
      ]
     },
@@ -22530,24 +22612,24 @@
       ],
       "centre_nm": [
        0.0,
-       -3.83,
+       -3.96,
        0.0
       ],
       "axes": [
        [
-        0.8283,
-        0.361,
-        0.4284
+        0.8782,
+        0.3594,
+        0.3157
        ],
        [
-        -0.2947,
-        -0.3697,
-        0.8812
+        -0.1879,
+        -0.3476,
+        0.9186
        ],
        [
-        0.4765,
-        -0.8562,
-        -0.1998
+        0.4399,
+        -0.866,
+        -0.2377
        ]
       ],
       "farthest_nm": [
@@ -22560,45 +22642,45 @@
       "id": "small",
       "label": "Small subunit (40S)",
       "across_nm": [
-       27.0,
+       27.3,
        16.2,
-       11.3
+       11.6
       ],
       "centre_nm": [
        0.0,
-       7.48,
+       7.49,
        0.0
       ],
       "axes": [
        [
-        0.7943,
-        -0.0085,
-        -0.6074
+        -0.6898,
+        0.0652,
+        0.7211
        ],
        [
-        0.6062,
-        -0.053,
-        0.7935
+        0.723,
+        0.0102,
+        0.6907
        ],
        [
-        -0.0389,
-        -0.9986,
-        -0.0369
+        0.0376,
+        0.9978,
+        -0.0542
        ]
       ],
       "farthest_nm": [
-       27.5,
+       27.7,
        19.8,
-       13.4
+       13.1
       ]
      }
     ],
     "chains": [],
-    "between_nm": 11.3,
+    "between_nm": 11.5,
     "kinds": null,
     "modelled": null,
     "beside": null,
-    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit as the measure's call places it (--small 70)",
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
@@ -22621,13 +22703,13 @@
     "from": "data/catalogue/measures/animals.ribosome.json",
     "whole": {
      "across_nm": [
-      29.4,
-      23.0,
+      29.7,
+      23.2,
       21.1
      ],
      "farthest_nm": [
-      30.4,
-      26.1,
+      30.5,
+      27.0,
       26.8
      ]
     },
@@ -22643,24 +22725,24 @@
       ],
       "centre_nm": [
        0.0,
-       -3.83,
+       -3.96,
        0.0
       ],
       "axes": [
        [
-        0.8283,
-        0.361,
-        0.4284
+        0.8782,
+        0.3594,
+        0.3157
        ],
        [
-        -0.2947,
-        -0.3697,
-        0.8812
+        -0.1879,
+        -0.3476,
+        0.9186
        ],
        [
-        0.4765,
-        -0.8562,
-        -0.1998
+        0.4399,
+        -0.866,
+        -0.2377
        ]
       ],
       "farthest_nm": [
@@ -22673,45 +22755,45 @@
       "id": "small",
       "label": "Small subunit (40S)",
       "across_nm": [
-       27.0,
+       27.3,
        16.2,
-       11.3
+       11.6
       ],
       "centre_nm": [
        0.0,
-       7.48,
+       7.49,
        0.0
       ],
       "axes": [
        [
-        0.7943,
-        -0.0085,
-        -0.6074
+        -0.6898,
+        0.0652,
+        0.7211
        ],
        [
-        0.6062,
-        -0.053,
-        0.7935
+        0.723,
+        0.0102,
+        0.6907
        ],
        [
-        -0.0389,
-        -0.9986,
-        -0.0369
+        0.0376,
+        0.9978,
+        -0.0542
        ]
       ],
       "farthest_nm": [
-       27.5,
+       27.7,
        19.8,
-       13.4
+       13.1
       ]
      }
     ],
     "chains": [],
-    "between_nm": 11.3,
+    "between_nm": 11.5,
     "kinds": null,
     "modelled": null,
     "beside": null,
-    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit as the measure's call places it (--small 70)",
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"
@@ -22734,13 +22816,13 @@
     "from": "data/catalogue/measures/animals.ribosome.json",
     "whole": {
      "across_nm": [
-      29.4,
-      23.0,
+      29.7,
+      23.2,
       21.1
      ],
      "farthest_nm": [
-      30.4,
-      26.1,
+      30.5,
+      27.0,
       26.8
      ]
     },
@@ -22756,24 +22838,24 @@
       ],
       "centre_nm": [
        0.0,
-       -3.83,
+       -3.96,
        0.0
       ],
       "axes": [
        [
-        0.8283,
-        0.361,
-        0.4284
+        0.8782,
+        0.3594,
+        0.3157
        ],
        [
-        -0.2947,
-        -0.3697,
-        0.8812
+        -0.1879,
+        -0.3476,
+        0.9186
        ],
        [
-        0.4765,
-        -0.8562,
-        -0.1998
+        0.4399,
+        -0.866,
+        -0.2377
        ]
       ],
       "farthest_nm": [
@@ -22786,45 +22868,45 @@
       "id": "small",
       "label": "Small subunit (40S)",
       "across_nm": [
-       27.0,
+       27.3,
        16.2,
-       11.3
+       11.6
       ],
       "centre_nm": [
        0.0,
-       7.48,
+       7.49,
        0.0
       ],
       "axes": [
        [
-        0.7943,
-        -0.0085,
-        -0.6074
+        -0.6898,
+        0.0652,
+        0.7211
        ],
        [
-        0.6062,
-        -0.053,
-        0.7935
+        0.723,
+        0.0102,
+        0.6907
        ],
        [
-        -0.0389,
-        -0.9986,
-        -0.0369
+        0.0376,
+        0.9978,
+        -0.0542
        ]
       ],
       "farthest_nm": [
-       27.5,
+       27.7,
        19.8,
-       13.4
+       13.1
       ]
      }
     ],
     "chains": [],
-    "between_nm": 11.3,
+    "between_nm": 11.5,
     "kinds": null,
     "modelled": null,
     "beside": null,
-    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; the measure leaves out RACK1, a protein of the small subunit: the tool puts a chain in a subunit by its description, and RACK1's names neither",
+    "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit as the measure's call places it (--small 70)",
     "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y. The Protein Data Bank states no size.",
     "sources": [
      "catalogue:pdb8yop"

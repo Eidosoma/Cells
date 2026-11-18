@@ -352,6 +352,14 @@ try {
     check("the page opens on lens=machines with the human", await open("lens=machines&entry=human", 3500));
     const bench = await evaluate(`(() => { const lens = ${L}, counts = lens.catalogue.counts("human"); return { trays: lens.layout.trays.length, groups: counts.groups, machines: counts.machines, sized: counts.sized, shapes: lens.layout.items.filter((i) => i.type === "shape").length, cost: lens.cost() }; })()`);
     check("the human's bench: a tray for each group, every measured machine and unit drawn to scale, and the frame within the ceiling (40 draws, 40,000 triangles)", bench.trays === bench.groups && bench.shapes === bench.sized && bench.sized >= 13 && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
+    // The opening view: no tray runs off the screen at its edge (the measured machines spread over most of the bench).
+    const edges = await evaluate(`(() => { const v = ${V}, lens = v.current, r = v.canvas.getBoundingClientRect(), out = [];
+      for (const tray of lens.layout.trays) for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        const p = lens.root.position.clone().set(tray.x + dx * tray.w / 2, 0, tray.z + dz * tray.d / 2); const q = v.stage.project(p, p.clone());
+        if (q.x < -2 || q.x > r.width + 2 || q.y < -2 || q.y > r.height + 2) out.push(tray.group);
+      }
+      return [...new Set(out)]; })()`);
+    check(`${WIDTH} by ${HEIGHT}: the opening view cuts no tray at the screen's edge`, edges.length === 0, JSON.stringify(edges));
     await shot(`${NAME}-bench`);
     // A real press on the proteasome's outline, at the middle of its box.
     const middleOf = (id) =>
@@ -398,6 +406,67 @@ try {
     s = await state();
     check("a real press on it brings the proteasome back, chosen, in Machines", s.lens === "machines" && s.selected === "machine:proteasome", JSON.stringify([s.lens, s.selected]));
     await shot(`${NAME}-back`);
+    await errorsAtEnd();
+  } else if (CASE === "shape") {
+    // ---------------------------------------------------------- the Shape level, on E. coli's measured machines
+    check("the page opens on lens=machines with E. coli", await open("lens=machines&entry=ecoli", 3500));
+    // Its Detail at Shape, by a real press (on a phone the card is unfolded first); the four levels in one row.
+    const toShape = async (id) => {
+      await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
+      await sleep(1800);
+      let button = await placeOf(`root.querySelector('[data-show="4"]')`);
+      if (!button) {
+        await press(".view-toggle", 900);
+        button = await placeOf(`root.querySelector('[data-show="4"]')`);
+      }
+      if (button) await click(button.x, button.y, 1200);
+      await until(`Boolean(${L}.built.get(${JSON.stringify(id)})?.surface)`, 60);
+      const row = await evaluate(`(() => { const buttons = [...${V}.shadowRoot.querySelectorAll('[data-show]')].map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0); return { count: buttons.length, rows: new Set(buttons.map((r) => Math.round(r.top))).size, narrowest: Math.round(Math.min(...buttons.map((r) => r.width))) }; })()`);
+      if (await evaluate(`Boolean(${V}.shadowRoot.querySelector(".view-toggle")) && ${V}.clientWidth < 760`)) await press(".view-toggle", 600);
+      return { button, row };
+    };
+    let shown = await toShape("machine:atp-synthase");
+    let built = await evaluate(`(() => { const b = ${L}.built.get("machine:atp-synthase"); return { level: b?.level, surface: Boolean(b?.surface), bodies: b?.bodies?.visible, cost: ${L}.cost() }; })()`);
+    check("a real press on Shape draws the ATP synthase's surfaces in the place of its ellipsoids, in one draw, within the ceiling", Boolean(shown.button) && built.level === 4 && built.surface && built.bodies === false && built.cost.draws <= 40 && built.cost.triangles <= 40000, JSON.stringify([shown.button, built]));
+    check("the Detail's four levels stand in one row", shown.row.count === 4 && shown.row.rows === 1, JSON.stringify(shown.row));
+    let s = await state();
+    check("its panel says what the shape is: the viewer's own surface of 6OQR's coordinates, an illustration, not a measurement", /The viewer's own smooth surface of Protein Data Bank entry 6OQR's coordinates \(a chain at 1\.0 nm\)/.test(s.panel) && /An illustration, not the structure and not a measurement/.test(s.panel), s.panel.slice(0, 200));
+    await shot(`${NAME}-atp`);
+    // A real press on one of its surfaces: the chain chosen, lit, its panel with its protein and its part.
+    const surfaceAt = await evaluate(`(() => { const v = ${V}, lens = v.current, built = lens.built.get("machine:atp-synthase"), size = lens.item("machine:atp-synthase").size, r = v.canvas.getBoundingClientRect();
+      for (const chain of size.chains) for (const t of [0, 0.25, -0.25]) for (let k = 0; k < 3; k++) {
+        const local = chain.centre_nm.map((n, i) => (n + t * chain.axes[k][i] * chain.across_nm[k] / 2) / 10);
+        const p = built.group.localToWorld(built.group.position.clone().set(...local)); const q = v.stage.project(p, p.clone());
+        const x = r.left + q.x, y = r.top + q.y, top = v.shadowRoot.elementFromPoint(x, y);
+        if (top !== v.canvas && !(top && top.tagName === "CANVAS")) continue;
+        const id = v.stage.pick(x, y, lens.pickRoots)?.id;
+        if (id && id.startsWith("machine:atp-synthase:chain-")) return { x, y, id };
+      }
+      return null; })()`);
+    if (surfaceAt) await click(surfaceAt.x, surfaceAt.y, 1500);
+    s = await state();
+    const lit = await evaluate(`(() => { const lens = ${L}, b = lens.built.get("machine:atp-synthase"), row = b?.surface?.surfaces.find((value) => value.chain === ${JSON.stringify(surfaceAt?.id || "")}); if (!row) return null; const c = b.surface.mesh.geometry.getAttribute("color"); const at = (n) => [c.getX(n), c.getY(n), c.getZ(n)].map((x) => Math.round(x * 255)); const accent = ${V}.stage.palette.accent; return { chosen: at(row.firstVertex), accent }; })()`);
+    // The mesh keeps its colours in linear light (three.js's working space): the accent's sRGB, made linear.
+    const linear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    const accentRgb = lit ? [1, 3, 5].map((i) => Math.round(linear(parseInt(lit.accent.slice(i, i + 2), 16) / 255) * 255)) : null;
+    check("a real press on a surface chooses its chain, lit in the page's accent, its panel with its protein and a door to its part", Boolean(surfaceAt) && s.selected === surfaceAt.id && /Its protein/.test(s.panel) && s.doors.some((door) => /^Its part:/.test(door)) && Boolean(lit) && lit.chosen.every((value, i) => Math.abs(value - accentRgb[i]) <= 3), JSON.stringify([surfaceAt, s.selected, lit, s.doors]));
+    await shot(`${NAME}-atp-chain`);
+    // The ribosome at Shape: its two subunits as solids; and the same in two tones, for the look only.
+    shown = await toShape("machine:ribosome");
+    built = await evaluate(`(() => { const b = ${L}.built.get("machine:ribosome"); return { surfaces: b?.surface?.surfaces.map((row) => row.partId) || [], cost: ${L}.cost() }; })()`);
+    check("the ribosome at Shape: its two subunits as solids, within the ceiling", JSON.stringify(built.surfaces.sort()) === JSON.stringify(["large", "small"]) && built.cost.draws <= 40 && built.cost.triangles <= 40000, JSON.stringify(built));
+    await shot(`${NAME}-ribosome`);
+    await evaluate(`(() => { const lens = ${L}; lens.surfaceTones = true; lens.rebuildMachine("machine:ribosome"); })()`);
+    await until(`Boolean(${L}.built.get("machine:ribosome")?.surface)`, 40);
+    await sleep(600);
+    await shot(`${NAME}-ribosome-tones`);
+    await evaluate(`(() => { const lens = ${L}; lens.surfaceTones = false; lens.rebuildMachine("machine:ribosome"); })()`);
+    // Syn3A's ribosome takes E. coli's shape, and says whose it is.
+    await evaluate(`${V}.setSpecies("syn3a")`);
+    await sleep(1500);
+    shown = await toShape("machine:ribosome");
+    s = await state();
+    check("Syn3A's ribosome at Shape is E. coli's shape, and its panel says whose", /It is the shape of E\. coli's ribosome, as its size is E\. coli's measure/.test(s.panel), s.panel.slice(0, 160));
     await errorsAtEnd();
   } else if (CASE === "phone") {
     check("the page opens on lens=machines with E. coli, on a phone", await open("lens=machines&entry=ecoli", 3500));
