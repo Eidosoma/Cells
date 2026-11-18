@@ -71,24 +71,39 @@ def judge_histories(test, ref, budget, floors):
 
 def crossings(times, values, level, after):
     """Times (s) at which values cross `level` after `after`, by linear interpolation between
-    the bracketing rows, with each crossing's direction and bracketing row spacing."""
+    the bracketing rows, with each crossing's direction and bracketing row spacing. A run of
+    rows exactly at the level is a crossing at its first row if the sign differs on either side
+    of it, and a tangency (no crossing) if it does not."""
     t, v = np.asarray(times, dtype=float), np.asarray(values, dtype=float) - level
     out = []
-    for i in range(len(t) - 1):
-        if t[i + 1] <= after:
+    i = 0
+    while i < len(t) - 1:
+        j = i + 1
+        if v[j] == 0.0 and v[i] != 0.0:
+            k = j
+            while k < len(v) and v[k] == 0.0:
+                k += 1
+            if k < len(v) and v[i] * v[k] < 0 and t[j] > after:
+                out.append(
+                    dict(
+                        time_s=float(t[j]),
+                        direction="up" if v[k] > v[i] else "down",
+                        spacing_s=0.0,
+                    )
+                )
+            i = max(k - 1, j)
             continue
-        if v[i] == 0.0 and t[i] > after:
-            out.append(dict(time_s=float(t[i]), direction="touch", spacing_s=0.0))
-        elif v[i] * v[i + 1] < 0:
-            at = t[i] + (0.0 - v[i]) * (t[i + 1] - t[i]) / (v[i + 1] - v[i])
+        if v[i] * v[j] < 0:
+            at = t[i] + (0.0 - v[i]) * (t[j] - t[i]) / (v[j] - v[i])
             if at > after:
                 out.append(
                     dict(
                         time_s=float(at),
-                        direction="up" if v[i + 1] > v[i] else "down",
-                        spacing_s=float(t[i + 1] - t[i]),
+                        direction="up" if v[j] > v[i] else "down",
+                        spacing_s=float(t[j] - t[i]),
                     )
                 )
+        i = j
     return out
 
 
