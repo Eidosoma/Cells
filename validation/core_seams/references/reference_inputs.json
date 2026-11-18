@@ -13938,6 +13938,36 @@
        }
       }
      ]
+    },
+    "coop2": {
+     "base_valence": -2,
+     "forms": [
+      {
+       "id": "coop2_base",
+       "mu0_RT": 0.75
+      },
+      {
+       "id": "coop2_H",
+       "mu0_RT": -1.552585092994046,
+       "counts": {
+        "H": 1
+       }
+      },
+      {
+       "id": "coop2_H2",
+       "mu0_RT": -31.48619130191664,
+       "counts": {
+        "H": 2
+       }
+      },
+      {
+       "id": "coop2_Mg",
+       "mu0_RT": -5.157755278982137,
+       "counts": {
+        "Mg": 1
+       }
+      }
+     ]
     }
    },
    "moieties": {
@@ -14990,6 +15020,30 @@
        "pi2": 20.0
       }
      }
+    },
+    {
+     "tag": "near_zero_H_total",
+     "free_mM": {
+      "H": 2.791027282207225e-07,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "nuc4": 5.0,
+      "nuc3": 0.5,
+      "pi2": 20.0
+     },
+     "amendment": "C2",
+     "totals": {
+      "ligands_fmol": {
+       "H": 1.3966824264600921e-10,
+       "Mg": 11.804683919736402
+      },
+      "binders_fmol": {
+       "nuc4": 10.0,
+       "nuc3": 1.0,
+       "pi2": 40.0
+      }
+     }
     }
    ],
    "S5": [
@@ -15665,6 +15719,438 @@
     "expected": "refused",
     "note": "PLANTED: a mover of a multi-form row that declares no forms"
    }
-  ]
+  ],
+  "envelope": {
+   "budget_pH": 0.001,
+   "cases": {
+    "E0_b4": {
+     "ligands": [
+      "H"
+     ],
+     "binders": [
+      "buf1"
+     ],
+     "volume_pL": 0.05,
+     "free_mM": {
+      "H": 6.309573444801929e-05
+     },
+     "binders_mM": {
+      "buf1": 40.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 0.7737295144804364
+      },
+      "binders_fmol": {
+       "buf1": 2.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "buf1",
+       "H",
+       100000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "one ligand and one two-form buffer: the general lag must equal B4's formula"
+    },
+    "E1_chain": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "coop2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 0.0001,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "coop2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 4.000100399999844,
+       "Mg": 1.4999996000001592
+      },
+      "binders_fmol": {
+       "coop2": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "coop2",
+       "H",
+       10000000.0
+      ],
+      [
+       "coop2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       3e-05
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "the cooperative chain: its slowest mode is slower than every single step; the true lag is outside the 1e-3 pH budget while a per-step minimum puts it inside"
+    },
+    "E1_chain_small": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "coop2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 0.0001,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "coop2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 4.000100399999844,
+       "Mg": 1.4999996000001592
+      },
+      "binders_fmol": {
+       "coop2": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "coop2",
+       "H",
+       10000000.0
+      ],
+      [
+       "coop2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       3e-06
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E1_chain at a tenth of the drive: the kinetic lag meets the first order at second order"
+    },
+    "E1_chain_kon10": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "coop2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 0.0001,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "coop2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 4.000100399999844,
+       "Mg": 1.4999996000001592
+      },
+      "binders_fmol": {
+       "coop2": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "coop2",
+       "H",
+       100000000.0
+      ],
+      [
+       "coop2",
+       "Mg",
+       100000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       3e-05
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E1_chain with every k_on ten times larger: the lag falls tenfold"
+    },
+    "E1_chain_kon100": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "coop2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 0.0001,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "coop2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 4.000100399999844,
+       "Mg": 1.4999996000001592
+      },
+      "binders_fmol": {
+       "coop2": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "coop2",
+       "H",
+       1000000000.0
+      ],
+      [
+       "coop2",
+       "Mg",
+       1000000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       3e-05
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E1_chain with every k_on a hundred times larger: the closure is the limit"
+    },
+    "E1_chain_two_drives": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "coop2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 0.0001,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "coop2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 4.000100399999844,
+       "Mg": 1.4999996000001592
+      },
+      "binders_fmol": {
+       "coop2": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "coop2",
+       "H",
+       10000000.0
+      ],
+      [
+       "coop2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       3e-06
+      ],
+      [
+       "Mg",
+       0.001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E1_chain driven in both ligands: the Mg\u00b2\u207a steps and the coupling through the base"
+    },
+    "E2_nuc4": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "nuc4"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 6.309573444801929e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "nuc4": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 0.10861513852126153,
+       "Mg": 5.087091028946772
+      },
+      "binders_fmol": {
+       "nuc4": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "nuc4",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc4",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.001
+      ],
+      [
+       "Mg",
+       0.001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "a two-ligand binder without a bottleneck: a per-step minimum is conservative here"
+    },
+    "E2_nuc4_binder_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "nuc4"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 6.309573444801929e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "nuc4": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 0.10861513852126153,
+       "Mg": 5.087091028946772
+      },
+      "binders_fmol": {
+       "nuc4": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "nuc4",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc4",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "nuc4",
+       0.001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E2 with its binder's base form moved in (a moved binder row)"
+    }
+   },
+   "planted_unreachable_binders": {
+    "unreach2": {
+     "base_valence": -2,
+     "forms": [
+      {
+       "id": "unreach2_base",
+       "mu0_RT": 0.0
+      },
+      {
+       "id": "unreach2_H2",
+       "counts": {
+        "H": 2
+       },
+       "mu0_RT": -20.0
+      }
+     ]
+    }
+   },
+   "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time"
+  }
  }
 }

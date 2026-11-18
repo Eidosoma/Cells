@@ -318,8 +318,14 @@ def test_ownership_refusals_when_a_composition_is_built():
     assert any("adds the column energy_balance_pJ_s, which inner owns" in e for e in errors)
     errors = pump_composite.structure_errors(pump3, (GhostReplacer(),))
     assert any("replaces no_such_column" in e for e in errors)
-    errors = pump_composite.structure_errors(pump3, (EarlyReader(),))
-    assert any("reads the view volume; no earlier operator provides it" in e for e in errors)
+    # A current read of a field no operator changes reads its declared value (C1,
+    # docs/OPERATOR_COMPOSITION_DESIGN.md §4.1); before a changer at its own stage it is refused
+    # (C2), after it admitted.
+    assert pump_composite.structure_errors(pump3, (EarlyReader(),)) == []
+    errors = pump_composite.structure_errors(pump3, (EarlyReader(), OPERATORS[WATER]))
+    assert errors == [
+        f"early_reader@1 reads the view volume at stage split before {WATER} changes it there"
+    ]
     assert pump_composite.structure_errors(pump3, (OPERATORS[WATER], EarlyReader())) == []
     errors = pump_composite.structure_errors(pump3, (OwnerWriter(), Owner()))  # Writer first.
     assert any("writes owned_pL, which is neither inner state nor accepted" in e for e in errors)

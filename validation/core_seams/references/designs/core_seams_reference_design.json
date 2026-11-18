@@ -4,7 +4,7 @@
  "status": "registered before any engine output for seams A and C (CORE_SEAMS_DESIGN \u00a719 item 7: the kinds and binding owners had not started)",
  "inputs": {
   "path": "validation/core_seams/references/reference_inputs.json",
-  "git_blob": "6d9ec5b03f2bc7749a668f576918424b14c0060f"
+  "git_blob": "a12ccbcc94c7359c9bbfe00749d9cb8c038c9e81"
  },
  "min_margin": 10.0,
  "verdict_band_eps": 64.0,
@@ -87,6 +87,24 @@
    "claim": "G* is the speciation minimum and \u2202G*/\u2202T is each row's free base form's potential; the booked term follows its ruling (\u00a719 item 3)",
    "reference": "G* at 60 digits; its gradient analytically and by central differences",
    "plants": ["the rows' own ideal potentials as the gradient", "a non-minimum speciation"]
+  },
+  {
+   "row": "C4b",
+   "claim": "Amendment C1: the booked term E_c = G* \u2212 \u03a3_r T_r \u03bc\u00b0\u2032_r over the closure's rows holds in either split, S_c with @3's ideal terms or E_c alone; its gradient is each row's free form's potential in @3's frame, RT ln(c_free/1 mM) (\u00a719 amended at 19:52 UTC)",
+   "reference": "E_c, S_c, @3's ideal terms, the standard parts and B4's formula at every state; E_c's gradient analytically and by central differences; the primal route (primal.py) as the second solve",
+   "plants": ["G* booked whole (\u03a3 \u0394T_r \u03bc\u00b0\u2032_r)", "B4's formula on moved binders (\u03a3_B \u0394T_B \u03bc\u00b0\u2032_B)", "S_c alone with @3's ideal terms masked (\u03a3 \u0394 ideal_r)"]
+  },
+  {
+   "row": "C1b",
+   "claim": "Amendment C2: the closure converges on |g_L| \u2264 1e-13 A_L, A_L = x_L + \u03a3|n| c, in place of |T_L|; identical where every count is \u2265 0 (\u00a719 amended at 19:52 UTC)",
+   "reference": "V A_L at every state (`residual_scale_fmol`), the solution floors restated on that scale, and S4's cancelling state, where |T_H| = 1e-9 V A_H",
+   "plants": ["the |T_L| scale at the cancelling state: a tolerance far below one ulp of the residual's terms, which no solver can meet"]
+  },
+  {
+   "row": "C6",
+   "claim": "Amendment C3: the envelope is the first-order lag of the linearised binding network, with k_on per (binder, ligand); it reduces to B4's for one two-form buffer; every form is reachable from its base by unit steps (\u00a719 amended at 19:52 UTC)",
+   "reference": "\u03b4 = \u2212K\u207b\u00b9 P D at 60 digits; the full nonlinear network under the drive by Radau and BDF, its lag measured against the closure at each state's own totals; eight cases, one a cooperative chain",
+   "plants": ["a per-step minimum \u03bb (non-conservative on the chain: the budget's verdict flips)", "a k_on that ignores the ligand", "k_on swapped between the ligands", "a binder with a form not reachable by unit steps"]
   },
   {
    "row": "C5",
@@ -3020,53 +3038,53 @@
    "S4": {
     "plants": {
      "K_1pct": {
-      "max": 43491880383.095856,
+      "max": 43420237479.32082,
       "at": "random_8",
-      "min": 5786178695.493259,
+      "min": 5786178690.533588,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "K_1e-6": {
-      "max": 4370953.005506043,
+      "max": 4363752.862334023,
       "at": "random_8",
-      "min": 580489.6988937954,
+      "min": 580489.6983962238,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "form_dropped": {
-      "max": 924823278774.5634,
+      "max": 924823277981.8434,
       "at": "acidic",
-      "min": 14954189.145790108,
+      "min": 14939958.97860323,
       "min_at": "high_pH_negative_total",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "count_off_by_one": {
-      "max": 84151020722269.14,
+      "max": 84012401204624.19,
       "at": "random_8",
-      "min": 5971081184737.633,
+      "min": 5971081179619.472,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "conservation_1e-10": {
-      "max": 641.398934275054,
-      "at": "high_pH_negative_total",
-      "min": 422.7333150227569,
+      "max": 678.2999966035469,
+      "at": "near_zero_H_total",
+      "min": 422.73331603749364,
       "min_at": "random_0",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      }
     },
-    "floor_residual_max": 1.6487342128732178e-12,
+    "floor_residual_max": 1.648734214286444e-12,
     "floor_input_max": 1.2205981333672856e-14,
     "manufactured_max_dln": 3.445610385644532e-16,
-    "residual_max_rel": 1.2638327186703778e-54,
-    "conservation_max_rel": 1.2638313561238913e-54,
+    "residual_max_rel": 1.2591783631502574e-54,
+    "conservation_max_rel": 2.5567992860909304e-50,
     "charge_max_abs_fmol_e": 7.84e-56,
-    "gradient_vs_differences_max_rel": 2.9484790214233885e-34,
+    "gradient_vs_differences_max_rel": 2.2717854692619454e-25,
     "newton_vs_bisection_max_rel": 6.800876057551109e-32,
     "joint_vs_separate_max_rel": 0.0,
     "gradient_plant": {
@@ -3208,6 +3226,661 @@
     "charge_plant_min_fmol_e": 2.0709727203683955e-07,
     "speciation_part_max_pJ": -15.530705878790116,
     "states_with_a_total_not_positive": []
+   }
+  },
+  "C1_amendment_booked_term_and_primal": {
+   "S1": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 226342281351092.72,
+      "at": "saturated_binder->trace_binder",
+      "min": 23108018590753.3,
+      "min_at": "random_7->random_8",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 166509838301447.16,
+      "at": "random_9->mostly_bound",
+      "min": 0.0,
+      "min_at": "mostly_bound->saturated_binder",
+      "weak_at": ["mostly_bound->saturated_binder"],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 111490392615367.97,
+      "at": "saturated_binder->trace_binder",
+      "min": 937474664662.1758,
+      "min_at": "random_7->random_8",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 2e-57,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.8226411952137845e-30,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 5.08912731e-52,
+    "primal_certificate_max": 7.124777e-52,
+    "primal_iterations_max": 14
+   },
+   "S2": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 214000604881660.62,
+      "at": "random_9->mostly_bound",
+      "min": 702532273057.1777,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 208134525270896.78,
+      "at": "random_9->mostly_bound",
+      "min": 19130254756844.703,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 100023729968835.2,
+      "at": "random_9->mostly_bound",
+      "min": 2600555768495.8174,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 4e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.4841495624813977e-30,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 1.41296591e-52,
+    "primal_certificate_max": 1.41693e-52,
+    "primal_iterations_max": 13
+   },
+   "S3": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 219699269217690.9,
+      "at": "random_7->random_8",
+      "min": 17360903055282.852,
+      "min_at": "random_3->random_4",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 62054456151688.12,
+      "at": "random_7->random_8",
+      "min": 0.0,
+      "min_at": "mg_mostly_bound->mg_saturating",
+      "weak_at": ["mg_mostly_bound->mg_saturating"],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 112048140214620.77,
+      "at": "mg_mostly_bound->mg_saturating",
+      "min": 1332566757985.7693,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-59,
+    "E_c_gradient_vs_differences_max_J_per_mol": 7.296205505387543e-29,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 2.14773e-55,
+    "primal_certificate_max": 6.29e-56,
+    "primal_iterations_max": 19
+   },
+   "S4": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 171375465578814.75,
+      "at": "random_8->random_9",
+      "min": 8587780661734.998,
+      "min_at": "random_5->random_6",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 126364762446610.31,
+      "at": "random_7->random_8",
+      "min": 9983861777436.754,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 24421871703402.105,
+      "at": "random_8->random_9",
+      "min": 3798147298075.6655,
+      "min_at": "random_5->random_6",
+      "weak_at": [],
+      "undefined_at": ["random_9->high_pH_negative_total", "high_pH_negative_total->acidic"]
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.7799764080766664e-20,
+    "states_where_S_c_is_undefined": ["high_pH_negative_total"],
+    "primal_vs_dual_max_abs_dln": 2.553733092e-51,
+    "primal_certificate_max": 2.5537694e-51,
+    "primal_iterations_max": 19
+   },
+   "S5": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 130252078331065.75,
+      "at": "random_4->random_5",
+      "min": 26441764356934.934,
+      "min_at": "random_9->ca_mostly_bound",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 111948728081049.16,
+      "at": "random_2->random_3",
+      "min": 6455935725904.6455,
+      "min_at": "random_9->ca_mostly_bound",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 62897307267981.3,
+      "at": "random_2->random_3",
+      "min": 9420681990285.54,
+      "min_at": "random_0->random_1",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 7.239539691188054e-29,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 2.480874792e-51,
+    "primal_certificate_max": 2.5011271e-51,
+    "primal_iterations_max": 15
+   },
+   "S6": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 176762478677372.56,
+      "at": "random_7->random_8",
+      "min": 9553065549166.69,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 63157790187412.98,
+      "at": "random_7->random_8",
+      "min": 8534373591508.993,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 37087489643707.66,
+      "at": "random_7->random_8",
+      "min": 6428594644180.586,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 4.9e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 9.015989623551858e-26,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 8.742435e-53,
+    "primal_certificate_max": 8.79763e-53,
+    "primal_iterations_max": 26
+   }
+  },
+  "C2_amendment_convergence_scale": {
+   "S1": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 5.803120547965098e-57
+   },
+   "S2": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 1.4607232007851465e-55
+   },
+   "S3": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 9.9222398388944e-56
+   },
+   "S4": {
+    "min_total_over_scale": 1.000000028489195e-09,
+    "at": "near_zero_H_total",
+    "states_where_the_scales_differ": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "high_pH_negative_total", "acidic", "near_zero_H_total"],
+    "old_scale_tolerance_ulps_at_min": 4.503599755674424e-07,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 1.2591783631502574e-54
+   },
+   "S5": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 3.793372612967444e-59
+   },
+   "S6": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 3.7306791744287726e-53
+   }
+  },
+  "C3_amendment_envelope": {
+   "E0_b4": {
+    "slowest_network_rate_per_s": 2452563.5901860166,
+    "min_step_rate_per_s": 2452563.5901860166,
+    "network_over_min_step": 1.0,
+    "first_order_floor_rel": 1.7763568394002505e-15,
+    "kinetic_vs_first_order_rel": {
+     "H": 6.575485547832827e-06
+    },
+    "radau_vs_bdf_max_dln": 2.755495935300763e-12,
+    "plants": {
+     "per_step_minimum": {
+      "H": {
+       "value": 1.0,
+       "over_floor": 562949953421312.0
+      }
+     }
+    },
+    "first_order_pH": 5.6129495958843825e-06,
+    "per_step_pH": 5.6129495958843825e-06,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 5.612912683282776e-06,
+    "b4_formula_vs_general_rel": 0.0
+   },
+   "E1_chain": {
+    "slowest_network_rate_per_s": 78.43306035262746,
+    "min_step_rate_per_s": 1020.0009920000033,
+    "network_over_min_step": 0.07689508242422102,
+    "first_order_floor_rel": 2.3101046040893752e-08,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.0037313103099294587,
+     "Mg": 0.0018637188442630626
+    },
+    "radau_vs_bdf_max_dln": 9.672141669570312e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 4.077549409231551e-09,
+       "over_floor": 0.17650929754494335
+      },
+      "Mg": {
+       "value": 0.002324663804665117,
+       "over_floor": 100630.23988394157
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.9999959183731,
+       "over_floor": 43244794809.28834
+      },
+      "Mg": {
+       "value": 996.6730115315303,
+       "over_floor": 43144064115.85032
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 12.749733415282368,
+       "over_floor": 551911519.1888988
+      },
+      "Mg": {
+       "value": 12.523876452077463,
+       "over_floor": 542134604.203963
+      }
+     }
+    },
+    "first_order_pH": 0.0016285308662344923,
+    "per_step_pH": 0.0001277305817455341,
+    "verdict_first_order": "outside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 0.0016224518299045477
+   },
+   "E1_chain_small": {
+    "slowest_network_rate_per_s": 78.43306035262746,
+    "min_step_rate_per_s": 1020.0009920000033,
+    "network_over_min_step": 0.07689508242422102,
+    "first_order_floor_rel": 2.3101046040893752e-08,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.00037490978987786416,
+     "Mg": 0.00018710860215342962
+    },
+    "radau_vs_bdf_max_dln": 5.3557130730223616e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 4.077549520253854e-09,
+       "over_floor": 0.17650930235088602
+      },
+      "Mg": {
+       "value": 0.002324663804665006,
+       "over_floor": 100630.23988393677
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.9999959183731,
+       "over_floor": 43244794809.28834
+      },
+      "Mg": {
+       "value": 996.6730115315304,
+       "over_floor": 43144064115.85033
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 12.74973341528237,
+       "over_floor": 551911519.1888989
+      },
+      "Mg": {
+       "value": 12.523876452077463,
+       "over_floor": 542134604.203963
+      }
+     }
+    },
+    "first_order_pH": 0.00016285308662344924,
+    "per_step_pH": 1.277305817455341e-05,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 0.00016279200650011198
+   },
+   "E1_chain_kon10": {
+    "slowest_network_rate_per_s": 784.3306032151517,
+    "min_step_rate_per_s": 10200.009920000033,
+    "network_over_min_step": 0.0768950823937188,
+    "first_order_floor_rel": 2.3101046050057322e-08,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.00037490979362719834,
+     "Mg": 0.00018708449293236562
+    },
+    "radau_vs_bdf_max_dln": 5.314120299921958e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 4.077549520253854e-09,
+       "over_floor": 0.17650930228086947
+      },
+      "Mg": {
+       "value": 0.002324663804665006,
+       "over_floor": 100630.23984401942
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.9999959183731,
+       "over_floor": 43244794792.13428
+      },
+      "Mg": {
+       "value": 996.6730115315304,
+       "over_floor": 43144064098.73622
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 12.74973341528237,
+       "over_floor": 551911518.9699703
+      },
+      "Mg": {
+       "value": 12.523876452077463,
+       "over_floor": 542134603.9889127
+      }
+     }
+    },
+    "first_order_pH": 0.00016285308662344924,
+    "per_step_pH": 1.277305817455341e-05,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 0.00016279200649950155
+   },
+   "E1_chain_kon100": {
+    "slowest_network_rate_per_s": 7843.306033960819,
+    "min_step_rate_per_s": 102000.09920000033,
+    "network_over_min_step": 0.07689508241145704,
+    "first_order_floor_rel": 2.3101046044728343e-08,
+    "kinetic_vs_first_order_rel": {
+     "H": 3.7609253414006005e-05,
+     "Mg": 1.8582467380734435e-05
+    },
+    "radau_vs_bdf_max_dln": 3.4561889339306347e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 4.077549520253854e-09,
+       "over_floor": 0.17650930232158688
+      },
+      "Mg": {
+       "value": 0.002324663804665117,
+       "over_floor": 100630.23986723775
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.999995918373,
+       "over_floor": 43244794802.11004
+      },
+      "Mg": {
+       "value": 996.6730115315303,
+       "over_floor": 43144064108.68875
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 12.74973341528237,
+       "over_floor": 551911519.097286
+      },
+      "Mg": {
+       "value": 12.523876452077465,
+       "over_floor": 542134604.1139731
+      }
+     }
+    },
+    "first_order_pH": 1.6285308662344925e-05,
+    "per_step_pH": 1.277305817455341e-06,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 1.628469593489193e-05
+   },
+   "E1_chain_two_drives": {
+    "slowest_network_rate_per_s": 78.43306035262746,
+    "min_step_rate_per_s": 1020.0009920000033,
+    "network_over_min_step": 0.07689508242422102,
+    "first_order_floor_rel": 2.3101046040893752e-08,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.00037490252049465767,
+     "Mg": 3.59098548299297e-05
+    },
+    "radau_vs_bdf_max_dln": 6.4192279870404636e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 1.0920737232300581e-05,
+       "over_floor": 472.73778048702036
+      },
+      "Mg": {
+       "value": 1.189403428299087,
+       "over_floor": 51486994.40681563
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 999.0109316579696,
+       "over_floor": 43245268196.49242
+      },
+      "Mg": {
+       "value": 191.59283172738614,
+       "over_floor": 8293686415.248304
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 12.750814070895677,
+       "over_floor": 551958298.6988568
+      },
+      "Mg": {
+       "value": 0.024477651223753095,
+       "over_floor": 1059590.5995088906
+      }
+     }
+    },
+    "first_order_pH": 0.00016209133307692252,
+    "per_step_pH": 1.2712234071932982e-05,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 0.0001620305100900905
+   },
+   "E2_nuc4": {
+    "slowest_network_rate_per_s": 9898.618454191803,
+    "min_step_rate_per_s": 9848.002395840229,
+    "network_over_min_step": 1.005139728476605,
+    "first_order_floor_rel": 7.825521555523203e-12,
+    "kinetic_vs_first_order_rel": {
+     "H": 5.394611070075328e-07,
+     "Mg": 1.845283628121308e-07
+    },
+    "radau_vs_bdf_max_dln": 6.946386175443421e-13,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.677584185056719,
+       "over_floor": 86586456921.64561
+      },
+      "Mg": {
+       "value": 0.998725380913689,
+       "over_floor": 127624130075.8791
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 320.2717215441192,
+       "over_floor": 40926565631663.68
+      },
+      "Mg": {
+       "value": 1.4110483703090813,
+       "over_floor": 180313651978.01703
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 0.0006391962163960441,
+       "over_floor": 81680973.19275844
+      },
+      "Mg": {
+       "value": 1.6787264975738438,
+       "over_floor": 214519439460.10977
+      }
+     }
+    },
+    "first_order_pH": 4.464565431426365e-07,
+    "per_step_pH": 0.000698465559855588,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 4.46448524322301e-07
+   },
+   "E2_nuc4_binder_drive": {
+    "slowest_network_rate_per_s": 9898.618454191803,
+    "min_step_rate_per_s": 9848.002395840229,
+    "network_over_min_step": 1.005139728476605,
+    "first_order_floor_rel": 7.825521555523203e-12,
+    "kinetic_vs_first_order_rel": {
+     "H": 1.1665285337691955e-07,
+     "Mg": 1.462040093436201e-07
+    },
+    "radau_vs_bdf_max_dln": 5.144294416310695e-13,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.9944551006912034,
+       "over_floor": 127078443735.07901
+      },
+      "Mg": {
+       "value": 0.9989347086924696,
+       "over_floor": 127650879446.80542
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 0.3099872550686671,
+       "over_floor": 39612344412.9906
+      },
+      "Mg": {
+       "value": 0.999167568044032,
+       "over_floor": 127680635847.05429
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 0.25916215732953835,
+       "over_floor": 33117557148.20354
+      },
+      "Mg": {
+       "value": 0.9998104633617071,
+       "over_floor": 127762789517.3386
+      }
+     }
+    },
+    "first_order_pH": 9.850288475873934e-09,
+    "per_step_pH": 3.800820527724182e-08,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 9.85031115999624e-09
+   },
+   "scalings": {
+    "E1_chain_over_kon10": 10.0,
+    "E1_chain_over_kon100": 100.0,
+    "E1_chain_over_small_drive": 10.0,
+    "second_order_ratio": 9.952555016354793
+   },
+   "reachability": {
+    "buf1": {
+     "verdict": "admitted"
+    },
+    "buf2": {
+     "verdict": "admitted"
+    },
+    "nuc4": {
+     "verdict": "admitted"
+    },
+    "nuc3": {
+     "verdict": "admitted"
+    },
+    "pi2": {
+     "verdict": "admitted"
+    },
+    "cab0": {
+     "verdict": "admitted"
+    },
+    "cabuf": {
+     "verdict": "admitted"
+    },
+    "coop2": {
+     "verdict": "admitted"
+    },
+    "unreach2": {
+     "verdict": "refused",
+     "reason": "unreach2: forms ['unreach2_H2'] are not reachable from the base by unit steps",
+     "planted": true
+    }
    }
   },
   "C3_movers": {
@@ -3362,6 +4035,36 @@
    "control": "amendment 1's N = b plants at the unit state",
    "why": "both ends are identical there (every activity 1, V = 0)",
    "remedy": "every other state of d2_slip_exchanger_Nb"
+  },
+  {
+   "control": "amendment C1: B4's formula on moved binders, at a pair whose binder totals are equal (S1 mostly_bound -> saturated_binder, S3 mg_mostly_bound -> mg_saturating)",
+   "why": "\u03a3_B \u0394T_B \u03bc\u00b0\u2032_B = 0 there: B4's formula is exact while binder rows do not move",
+   "remedy": "every other pair, where the binders' totals differ"
+  },
+  {
+   "control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
+   "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
+   "remedy": "E_c, which is defined there, and every other pair"
+  },
+  {
+   "control": "amendment C2: the convergence scale, where every count is \u2265 0",
+   "why": "V A_L = |T_L| there, so both criteria are the same (S1, S2, S3, S5, S6)",
+   "remedy": "S4, whose pi2_PO4 has a count of \u22121, and its cancelling state above all"
+  },
+  {
+   "control": "amendment C3: a per-step minimum \u03bb on a network without a bottleneck (E2)",
+   "why": "every mode is about as fast as its slowest step, so the per-step bound holds there",
+   "remedy": "E1's cooperative chain, where it is non-conservative"
+  },
+  {
+   "control": "amendment C3: a k_on that ignores the ligand, on E1's H\u207a lag under an H\u207a drive",
+   "why": "only the Mg\u00b2\u207a steps' k_on changes, and they barely carry the H\u207a lag: 4e-9 relative, below the first order's floor of 2.3e-8",
+   "remedy": "the Mg\u00b2\u207a lag in the same cases (2.3e-3), E1_chain_two_drives (1.19 on Mg\u00b2\u207a) and E2 (0.68 and 1.0)"
+  },
+  {
+   "control": "amendment C3: the kinetic lag in the first relaxation times",
+   "why": "the lag builds up from zero (the run starts at the closure's state)",
+   "remedy": "the later record times (8 and 16 slowest relaxation times)"
   },
   {
    "control": "bitwise agreement of the two layouts",

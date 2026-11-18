@@ -1187,6 +1187,27 @@ about eight days sooner.
 **Every landing:** the tier record is folded with `scripts/test_tiers.py tiers --base`, and each
 landing is gated at its merged head.
 
+**Amended the same evening (the lead, 21:54 UTC), on the operators owner's B1 questions:**
+- **Kind fields' axes and hosts (B1's lift).** F adds two optional declarations to the kind
+  contract, both checked in `declaration_errors`:
+  - the axis of each layout and control field;
+  - for each own axis, its host kind and its host-index layout field.
+
+  The composite's refusal is lifted only for kinds that declare these and all their roles.
+- **Kinds' rates on a closed host.** The core zeroes every kind entity's rates on an inactive
+  host, only where a closer is declared (C5's condition), so no other program changes. The @3
+  owner does this after 44550c4f lands. Until then the lift stays refused for kinds on closable
+  hosts.
+- **The division split.** B1 does the role-driven split and retirement on @3's slot axes through
+  the partition's existing maps. B2 adds the own-axis maps and the dividing world.
+- **@3's FIELD_ROLES** are converted to F's `PartitionRole` once, in the adapter's role table. The
+  six pump-history fields are excluded explicitly until M5's Q2, with the reason written beside
+  them.
+- **D's "stored" role** is a level: in neither ENERGY_FLOW_FIELDS nor DISSIPATION_FIELDS.
+- **E's operator hook:** `standard_free_energies(declaration)` returns
+  ((((species, ν), ...), ΔG°/RT, c0 in mM), ...), with default (). `species_potentials` stays. F's
+  kind hook takes the same form.
+
 ## 19. The lead's rulings for the references agent's plan (18 November 2026)
 
 These are the references agent's eight questions on seams A and C. The builders cite this section
