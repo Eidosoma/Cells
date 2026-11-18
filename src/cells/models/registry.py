@@ -62,6 +62,12 @@ def get_model(spec):
         from cells.models.assembly_lineages import model as lineages
 
         return lineages
+    from cells.models.assembly_lineages_v2.spec import AssemblyModel
+
+    if isinstance(spec, AssemblyModel):  # Version 2: its own event-driven runner shape.
+        from cells.models.assembly_lineages_v2 import model as assemblies
+
+        return assemblies
     model = legacy().model_for(spec)  # The older families (D188 R1).
     if model is not None:
         return model

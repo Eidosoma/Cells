@@ -39,6 +39,7 @@ from cells.core import specs
 from cells.core.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models.assembly_lineages import model as lineage_model
+from cells.models.assembly_lineages_v2 import model as assembly_model
 from cells.models.operators import OPERATORS
 from cells.registry import declarations, model_table
 from cells.registry import laws as law_registry
@@ -49,6 +50,7 @@ from tests.unit.test_pump_composite_contract import frozen_worlds
 SRC = Path(cells.__file__).resolve().parent
 ROOT = SRC.parents[1]
 LINEAGES = "cells.assembly_lineages@1"
+ASSEMBLIES = "cells.assembly_lineages@2"
 HOMES = {home for m in MODELS.values() for home in (*m.law_homes, *m.operator_homes)}
 
 
@@ -348,7 +350,7 @@ def table_errors(models, worlds):
     RUNNER (models/assembly_lineages/model.py's form), and the operators and inner model that
     frozen_definition gives a composition's real definition (`worlds`: frozen_worlds())."""
     out = []
-    runners = {LINEAGES: lineage_model.RUNNER}
+    runners = {LINEAGES: lineage_model.RUNNER, ASSEMBLIES: assembly_model.RUNNER}
     for key, model in models.items():
         if model.runner != runners.get(key):
             out.append(f"{key}: runner {model.runner!r}")

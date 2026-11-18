@@ -756,7 +756,9 @@ later experiment.
 - **R1.** Channels with general stoichiometry: up to three reactant molecules, with products in the
   membrane, the lumen or the pool. Falling-factorial propensities, scaled by physical volume.
 - **R2.** A free-energy provider per world structure, giving ΔF per channel, updated incrementally.
-  G1's ideal-mixing exchange is its first instance.
+  G1's ideal-mixing exchange is its first instance, but only with G1's ln N term. G1's measure is
+  −ln (N − 1)!: exact multinomial mixing (−ln N!) plus ln N, the token
+  `condensed_measure: multinomial_less_one` (§0.2a; D215).
 - **R3.** Physical units: a clock in seconds, volumes and a declared temperature.
 - **R4.** Derived continuous quantities (area, volume, tension), algebraic in the counts and
   evaluated in the kernel, with no ODE state.

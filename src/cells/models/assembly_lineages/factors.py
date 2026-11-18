@@ -7,7 +7,9 @@ computes from the assembly's state. It declares:
 - `energy_role`: "passive" when the factor of a transfer equals the factor of its reverse, so it
   leaves the exchange law's affinity unchanged; "driven" otherwise, with the unsourced cycle
   affinity reported. The kernel's check (balance.py) verifies the claim; a law declared passive
-  that fails it is refused;
+  that fails it is refused. A driven law has no declared source of free energy here, so it is
+  refused at registration (U2, D199; D215), with one labelled exception (DRIVEN_EXCEPTION): D192's
+  single-event form of GARD's catalysis, comparison only;
 - `data`: the world's per-world data it reads (law_data), parsed on the host and bound as layout,
   never closed over, so one compiled program serves every value (P5);
 - its kernels, in the xp style (NumPy on the host, jax.numpy on the device, the same arithmetic):
@@ -33,6 +35,7 @@ provenance is the template's: a tag (`cited`) with its Citation.
 """
 
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Callable, ClassVar
 
 from cells.core.specs import ConfigError
@@ -44,6 +47,12 @@ from cells.modules import Law
 from cells.registry import laws as law_registry
 
 ROLES = ("passive", "driven")
+# U2 (D199), applied to this family by D215: a driven law needs a declared source of free energy,
+# and this family declares none, so a driven rate-factor law is refused unless it carries this
+# label: D192's single-event form of GARD's catalysis, kept for comparison only.
+DRIVEN_EXCEPTION = MappingProxyType(
+    {"law_set": "gard", "form": "single-event", "comparison_only": True}
+)
 
 
 @dataclass(frozen=True)
@@ -74,6 +83,14 @@ class RateFactorLaw(Law):
             out.append(f"a rate-factor law is hosted by {MODEL_ID}")
         if self.energy_role not in ROLES:
             out.append(f"its energy_role is one of {', '.join(ROLES)}")
+        elif self.energy_role == "driven" and any(
+            getattr(self, key) != value for key, value in DRIVEN_EXCEPTION.items()
+        ):
+            out.append(
+                "a driven rate-factor law names no source of free energy, so it is refused (U2, "
+                "D199; D215); the one admitted exception is D192's single-event form of GARD's "
+                "catalysis, labelled law_set gard, form single-event, comparison_only"
+            )
         if not (isinstance(self.data, tuple) and all(isinstance(d, str) for d in self.data)):
             out.append("its data names the law_data fields it reads")
         kernels = ("parse_data", "data_to_dict", "layout", "state", "update", "factors", "probe")
