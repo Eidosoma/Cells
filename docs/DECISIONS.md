@@ -7117,6 +7117,16 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
     cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
     authors' MATLAB call passes. The attempt is recorded in the replication note's §5.4, and the
     route (U5, L11) is put to the user.
+  - **U5 and L11 answered** (the same evening). The user: "1. yes, install it 2. Yes, fine".
+    - **The install:** conda-forge's GNU Octave 9.4.0, which is built with SUNDIALS, through
+      micromamba 2.0.5 into its own folder under /mnt/workspaces, with no system change. The
+      release's published checksum is verified.
+    - **The adapter:** a run through a separate calling-convention adapter counts as unmodified.
+      The adapter passes the six extra parameters the MATLAB way, and the authors' file stays byte
+      for byte as downloaded.
+      - It is disclosed and qualified by two checks: it passes a test equation through bit for
+        bit, and the run's concentrations stay real and non-negative.
+      - The second check is needed because Octave ignores the code's `NonNegative` option.
   - Its outputs are numbers, cited.
   - Its code is never copied into Cells.
 - **The perturbation-and-recovery experiment** suggested in the user's reading summary is registered
