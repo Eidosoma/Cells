@@ -89,6 +89,12 @@
    "plants": ["the rows' own ideal potentials as the gradient", "a non-minimum speciation"]
   },
   {
+   "row": "C4b",
+   "claim": "Amendment C1: the booked term E_c = G* \u2212 \u03a3_r T_r \u03bc\u00b0\u2032_r over the closure's rows holds in either split, S_c with @3's ideal terms or E_c alone; its gradient is each row's free form's potential in @3's frame, RT ln(c_free/1 mM) (\u00a719 amended at 19:52 UTC)",
+   "reference": "E_c, S_c, @3's ideal terms, the standard parts and B4's formula at every state; E_c's gradient analytically and by central differences; the primal route (primal.py) as the second solve",
+   "plants": ["G* booked whole (\u03a3 \u0394T_r \u03bc\u00b0\u2032_r)", "B4's formula on moved binders (\u03a3_B \u0394T_B \u03bc\u00b0\u2032_B)", "S_c alone with @3's ideal terms masked (\u03a3 \u0394 ideal_r)"]
+  },
+  {
    "row": "C5",
    "claim": "P1's buffered node: a predictor must read the quantity it differentiates (\u00a717, \u00a718)",
    "reference": "rate-normalised thresholds (the free amount, the stored equivalents above their admissible floor, the linearised free amount) and the equilibrated free amount on a ladder of draws",
@@ -3210,6 +3216,212 @@
     "states_with_a_total_not_positive": []
    }
   },
+  "C1_amendment_booked_term_and_primal": {
+   "S1": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 226342281351092.72,
+      "at": "saturated_binder->trace_binder",
+      "min": 23108018590753.3,
+      "min_at": "random_7->random_8",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 166509838301447.16,
+      "at": "random_9->mostly_bound",
+      "min": 0.0,
+      "min_at": "mostly_bound->saturated_binder",
+      "weak_at": ["mostly_bound->saturated_binder"],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 111490392615367.97,
+      "at": "saturated_binder->trace_binder",
+      "min": 937474664662.1758,
+      "min_at": "random_7->random_8",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 2e-57,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.8226411952137845e-30,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 5.08912731e-52,
+    "primal_certificate_max": 7.124777e-52,
+    "primal_iterations_max": 14
+   },
+   "S2": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 214000604881660.62,
+      "at": "random_9->mostly_bound",
+      "min": 702532273057.1777,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 208134525270896.78,
+      "at": "random_9->mostly_bound",
+      "min": 19130254756844.703,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 100023729968835.2,
+      "at": "random_9->mostly_bound",
+      "min": 2600555768495.8174,
+      "min_at": "random_6->random_7",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 4e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.4841495624813977e-30,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 1.41296591e-52,
+    "primal_certificate_max": 1.41693e-52,
+    "primal_iterations_max": 13
+   },
+   "S3": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 219699269217690.9,
+      "at": "random_7->random_8",
+      "min": 17360903055282.852,
+      "min_at": "random_3->random_4",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 62054456151688.12,
+      "at": "random_7->random_8",
+      "min": 0.0,
+      "min_at": "mg_mostly_bound->mg_saturating",
+      "weak_at": ["mg_mostly_bound->mg_saturating"],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 112048140214620.77,
+      "at": "mg_mostly_bound->mg_saturating",
+      "min": 1332566757985.7693,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-59,
+    "E_c_gradient_vs_differences_max_J_per_mol": 7.296205505387543e-29,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 2.14773e-55,
+    "primal_certificate_max": 6.29e-56,
+    "primal_iterations_max": 19
+   },
+   "S4": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 171375465578814.75,
+      "at": "random_8->random_9",
+      "min": 8587780661734.998,
+      "min_at": "random_5->random_6",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 126364762446610.31,
+      "at": "random_7->random_8",
+      "min": 9983861777436.754,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 24421871703402.105,
+      "at": "random_8->random_9",
+      "min": 3798147298075.6655,
+      "min_at": "random_5->random_6",
+      "weak_at": [],
+      "undefined_at": ["random_9->high_pH_negative_total", "high_pH_negative_total->acidic"]
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 6.801171484139958e-30,
+    "states_where_S_c_is_undefined": ["high_pH_negative_total"],
+    "primal_vs_dual_max_abs_dln": 2.553733092e-51,
+    "primal_certificate_max": 2.5537694e-51,
+    "primal_iterations_max": 19
+   },
+   "S5": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 130252078331065.75,
+      "at": "random_4->random_5",
+      "min": 26441764356934.934,
+      "min_at": "random_9->ca_mostly_bound",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 111948728081049.16,
+      "at": "random_2->random_3",
+      "min": 6455935725904.6455,
+      "min_at": "random_9->ca_mostly_bound",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 62897307267981.3,
+      "at": "random_2->random_3",
+      "min": 9420681990285.54,
+      "min_at": "random_0->random_1",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 7.239539691188054e-29,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 2.480874792e-51,
+    "primal_certificate_max": 2.5011271e-51,
+    "primal_iterations_max": 15
+   },
+   "S6": {
+    "plants": {
+     "G_star_booked_whole": {
+      "max": 176762478677372.56,
+      "at": "random_7->random_8",
+      "min": 9553065549166.69,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "B4_formula_on_moved_binders": {
+      "max": 63157790187412.98,
+      "at": "random_7->random_8",
+      "min": 8534373591508.993,
+      "min_at": "random_1->random_2",
+      "weak_at": [],
+      "undefined_at": []
+     },
+     "S_c_alone_ideal_masked": {
+      "max": 37087489643707.66,
+      "at": "random_7->random_8",
+      "min": 6428594644180.586,
+      "min_at": "random_8->random_9",
+      "weak_at": [],
+      "undefined_at": []
+     }
+    },
+    "identity_E_c_minus_S_c_minus_ideal_max_pJ": 4.9e-58,
+    "E_c_gradient_vs_differences_max_J_per_mol": 9.015989623551858e-26,
+    "states_where_S_c_is_undefined": [],
+    "primal_vs_dual_max_abs_dln": 8.742435e-53,
+    "primal_certificate_max": 8.79763e-53,
+    "primal_iterations_max": 26
+   }
+  },
   "C3_movers": {
    "base_form_hydrolysis": {
     "verdict": "admitted",
@@ -3362,6 +3574,16 @@
    "control": "amendment 1's N = b plants at the unit state",
    "why": "both ends are identical there (every activity 1, V = 0)",
    "remedy": "every other state of d2_slip_exchanger_Nb"
+  },
+  {
+   "control": "amendment C1: B4's formula on moved binders, at a pair whose binder totals are equal (S1 mostly_bound -> saturated_binder, S3 mg_mostly_bound -> mg_saturating)",
+   "why": "\u03a3_B \u0394T_B \u03bc\u00b0\u2032_B = 0 there: B4's formula is exact while binder rows do not move",
+   "remedy": "every other pair, where the binders' totals differ"
+  },
+  {
+   "control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
+   "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
+   "remedy": "E_c, which is defined there, and every other pair"
   },
   {
    "control": "bitwise agreement of the two layouts",

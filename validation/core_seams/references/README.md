@@ -17,7 +17,8 @@ references.
 | `exact.py` | Exact SI constants, 60-digit decimals and forward-mode duals |
 | `diagrams.py` | Kinetic diagrams: Hill's cycles by spanning trees and by the matrix-tree minors, the master equation's steady state, and Wegscheider's residual (exact, affine and as a float64 stand-in) |
 | `cycles.py` | Cycle laws on a population: free energies, fluxes, rows per host end, heat, work, the stored rate, charge, exact slopes, and the parse-time checks |
-| `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, and P1's thresholds |
+| `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, P1's thresholds, and (amendment C1) the booked term |
+| `primal.py` | Amendment C1: the second route, the primal Gibbs minimum by Newton on reaction extents, sharing only the registry's inputs with the dual |
 | `api.py` | The entry points |
 | `worlds.py` | Writes the inputs (`--check` compares) |
 | `design.py` | Writes both design files in about a minute of one CPU (`--check` regenerates and compares) |
@@ -303,6 +304,40 @@ positive up to the stored amount.
     own weak cells are listed;
   - two tests added.
 - The tests' tier rows were folded the same day, after amendment 1 (see Tests).
+- **18 November 2026, 20:06 UTC, amendment C1, the booked term, before any output of the general
+  closure** (CORE_SEAMS_DESIGN §19, amended at 19:52 UTC on the binding owner's design statement
+  1, which this package read only as the ruling states it; branched from main, never from the
+  binding owner's branch):
+  - **The booked-term row,** at every state of S1–S6, from this package's own G*:
+    - E_c = G* − Σ_r T_r μ°′_r, the standard parts in @3's 1 mM frame;
+    - S_c = E_c − Σ_r ideal_r (= G* − Σ own_r, the registered `speciation_part_pJ`);
+    - @3's ideal terms, and B4's formula S_c + Σ_B T_B μ°′_B;
+    - E_c's gradient in @3's frame, RT ln(c_free/1 mM) per row, against differences to 9e-26
+      J/mol.
+
+    The identity E_c = S_c + Σ ideal holds to 2e-57 pJ, so both splits are referenced. At S4[10],
+    whose H total is negative, E_c and G* are defined and S_c is not.
+  - **Three plants,** each on consecutive pairs of one system's states. Each misses ΔE_c by
+    exactly its named sum:
+    - G* booked whole (Σ ΔT_r μ°′_r): at least 7e11 floors;
+    - B4's formula on moved binders (Σ_B ΔT_B μ°′_B): up to 2e14, and 0 where a pair's binder
+      totals are equal (listed in zero power);
+    - S_c alone with @3's ideal terms masked (Σ Δ ideal_r): at least 9e11, and undefined at
+      S4[10]'s pairs.
+
+    The floor is 8 eps of both states' terms.
+  - **The second route** (the lead's question). The engine and `binding.solve` share the dual
+    formulation. `primal.py` minimises the species-space Gibbs energy by Newton on the reaction
+    extents, with exact conservation by construction and a start built from the totals alone.
+    It forms no β and imports nothing from `binding`: it shares only the registry's μ°/RT and
+    the forms' counts.
+    - Its own certificate is every formation ΔG/RT ≤ 2.6e-51.
+    - It agrees with the dual to 2.6e-51 in ln of every species, at all 70 states, S4[10]
+      included.
+    - A planted K off by 1e-6 in its inputs is caught (a test).
+    - The earlier second routes, nested bisection and manufactured solutions, both share the
+      dual's formulation.
+  - Three tests added (binding: 9); the earlier inputs and values are unchanged.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 

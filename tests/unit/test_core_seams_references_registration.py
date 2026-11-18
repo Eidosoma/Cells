@@ -100,6 +100,14 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment C1: the booked term's plants, its identity and the primal route
+    for name, c in p["C1_amendment_booked_term_and_primal"].items():
+        assert c["identity_E_c_minus_S_c_minus_ideal_max_pJ"] < 1e-50, name
+        assert c["primal_vs_dual_max_abs_dln"] < 1e-45 and c["primal_certificate_max"] <= 1e-50
+        for plant, row in c["plants"].items():
+            assert row["max"] > 1e3 * design.MIN_MARGIN, (name, plant)
+        assert c["states_where_S_c_is_undefined"] == (["high_pH_negative_total"]
+                                                      if name == "S4" else [])
     assert {m: v["verdict"] for m, v in p["C3_movers"].items()} == \
         {m["id"]: m["expected"] for m in worlds.MOVERS}
     assert len(des["zero_power"]) >= 15 and des["readings"]

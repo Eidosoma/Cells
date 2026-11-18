@@ -119,3 +119,70 @@ def test_p1_today_predictor_turns_negative_while_the_free_amount_does_not():
 def test_mover_verdicts():
     got = {m["id"]: api.mover_verdict(m, REG)["verdict"] for m in worlds.MOVERS}
     assert got == {m["id"]: m["expected"] for m in worlds.MOVERS}
+
+
+def test_the_booked_term_holds_in_either_split_and_each_plant_is_its_named_sum(s4):
+    """Amendment C1 (§19 amended at 19:52 UTC): E_c = G* − Σ T μ°′ = S_c + Σ ideal; across two
+    states of one system each planted booking misses ΔE_c by exactly its named sum."""
+    sy, free, tB, TL = s4
+    tB2 = {"nuc4": 6.0, "nuc3": 1.5, "pi2": 9.0}
+    TL2 = {k: float(v) for k, v in B.manufacture(sy, {"H": 10 ** (3 - 6.8), "Mg": 0.9}, tB2,
+                                                 2.0).items()}
+    a = B.booked(sy, B.solve(sy, TL, tB, 2.0), TL, tB, 2.0)
+    b = B.booked(sy, B.solve(sy, TL2, tB2, 2.0), TL2, tB2, 2.0)
+    with exact.context():
+        for x in (a, b):
+            assert abs(x["E_c_pJ"] - x["S_c_pJ"] - x["ideal_total_pJ"]) < Decimal("1e-50")
+        dE = b["E_c_pJ"] - a["E_c_pJ"]
+        whole = (b["G_star_pJ"] - a["G_star_pJ"]) - dE
+        assert abs(whole - (b["standard_total_pJ"] - a["standard_total_pJ"])) < Decimal("1e-45")
+        b4 = (b["B4_term_pJ"] - a["B4_term_pJ"]) - (b["S_c_pJ"] - a["S_c_pJ"])
+        binders = sum(b["standard_parts_pJ"][r] - a["standard_parts_pJ"][r] for r in tB)
+        assert abs(b4 - binders) < Decimal("1e-45") and abs(binders) > Decimal("1e-3")
+        masked = (b["S_c_pJ"] - a["S_c_pJ"]) - dE
+        assert abs(masked + (b["ideal_total_pJ"] - a["ideal_total_pJ"])) < Decimal("1e-45")
+    # at a negative H total, E_c and G* are defined and S_c is not
+    TLn = {k: float(v) for k, v in B.manufacture(sy, {"H": 1e-8, "Mg": 0.5},
+                                                 {"nuc4": 5.0, "nuc3": 0.5, "pi2": 20.0},
+                                                 2.0).items()}
+    tBn = {"nuc4": 10.0, "nuc3": 1.0, "pi2": 40.0}
+    assert TLn["H"] < 0
+    n = B.booked(sy, B.solve(sy, TLn, tBn, 2.0), TLn, tBn, 2.0)
+    assert n["S_c_pJ"] is None and n["E_c_pJ"] is not None
+
+
+def test_E_c_gradient_is_the_free_potential_in_the_1_mM_frame(s4):
+    sy, _free, tB, TL = s4
+    sp = B.solve(sy, TL, tB, 2.0)
+    g3 = B.booked(sy, sp, TL, tB, 2.0)["gradient_at3_J_per_mol"]
+    gd = B.booked_gradient_by_differences(sy, TL, tB, 2.0)
+    with exact.context():
+        for r in g3:
+            assert abs(g3[r] - gd[r]) < Decimal("1e-20")
+        # planted: G*'s gradient (the registry's frame) is off by each row's μ°′
+        g = B.potentials(sy, sp)
+        assert abs(g["H"] - gd["H"]) > 1000
+
+
+def test_the_primal_route_agrees_with_the_dual_and_a_planted_K_does_not(s4):
+    """Amendment C1: the primal Gibbs minimum by Newton on extents (primal.py), sharing only the
+    registry's inputs with the dual, certifies itself and agrees with the dual solve."""
+    from validation.core_seams.references import primal
+    sy, _free, tB, TL = s4
+    sp = B.solve(sy, TL, tB, 2.0)
+    pr = primal.solve_primal(S4, REG, TL, tB, 2.0)
+    assert pr["certificate"] <= Decimal("1e-50")
+    with exact.context():
+        for L in sy.ligands:
+            assert abs((pr["x_mM"][L] / sp["x_mM"][L]).ln()) < Decimal("1e-45")
+        for Bn in sy.binders:
+            for f, c in sp["forms_mM"][Bn].items():
+                assert abs((pr["forms_mM"][Bn][f] / c).ln()) < Decimal("1e-45")
+        # planted: one form's K off by 1e-6 in the primal's inputs
+        reg = copy.deepcopy(REG)
+        f = next(f for f in reg["binders"]["nuc4"]["forms"] if f["id"] == "nuc4_MgH")
+        f["mu0_RT"] -= math.log1p(1e-6)
+        bad = primal.solve_primal(S4, reg, TL, tB, 2.0)
+        dev = max(abs((bad["forms_mM"]["nuc4"][k] / c).ln())
+                  for k, c in sp["forms_mM"]["nuc4"].items())
+        assert dev > Decimal("1e-8")

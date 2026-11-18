@@ -570,3 +570,92 @@ def p1_thresholds(system: System, ligand: str, totals_L: dict, totals_B: dict, V
                 "ratio_stored_over_free": (T - floor) / n_free,
                 "ratio_linearised_over_free": 1 / dfree_dT,
                 "ladder": ladder}
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment C1 (CORE_SEAMS_DESIGN §19, amended 18 November 2026, 19:52 UTC): the booked term
+# --------------------------------------------------------------------------------------------
+
+def _rows(system: System, totals_L: dict, totals_B: dict) -> list:
+    """(row, T_r, μ°_r/RT) for every held row: each ligand with its free form's μ°, each binder
+    with its base form's."""
+    rows = [(L, dec(totals_L[L]), system.mu0_L[L]) for L in system.ligands]
+    rows += [(B, dec(totals_B[B]), system.forms[B][0]["mu0_RT"]) for B in system.binders]
+    return rows
+
+
+def standard_parts(system: System, totals_L: dict, totals_B: dict) -> dict:
+    """Each held row's standard part in @3's 1 mM frame, T_r μ°′_r (pJ), with
+    μ°′ = RT (μ°/RT − ln c°), c° in mM. Defined for any sign of T_r."""
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        ln_c0 = dln(system.c0)
+        return {r: T * RT * (mu - ln_c0) / 1000 for r, T, mu in _rows(system, totals_L, totals_B)}
+
+
+def ideal_terms(system: System, totals_L: dict, totals_B: dict, V) -> dict:
+    """@3's ideal per-row term RT T_r (ln(T_r/V) − 1) (pJ, n/V in mM), None where T_r ≤ 0."""
+    V = dec(V)
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        return {r: (RT * T * (dln(T / V) - 1) / 1000 if T > 0 else None)
+                for r, T, _mu in _rows(system, totals_L, totals_B)}
+
+
+def booked(system: System, sp: dict, totals_L: dict, totals_B: dict, V) -> dict:
+    """E_c = G* − Σ_r T_r μ°′_r; S_c = E_c − Σ_r ideal_r (= G* − Σ own_r); B4's formula
+    S_c + Σ_B T_B μ°′_B; E_c's gradient in @3's frame, RT ln(c_free/1 mM) per row; and the
+    absolute sum of the terms, for the rounding floor of a difference."""
+    V = dec(V)
+    with context():
+        RT = exact.RT_J_per_mol(system.T_K)
+        G = free_energy(system, sp, V)
+        std = standard_parts(system, totals_L, totals_B)
+        ideal = ideal_terms(system, totals_L, totals_B, V)
+        std_total = sum(std.values(), Decimal(0))
+        E = G - std_total
+        defined = all(v is not None for v in ideal.values())
+        ideal_total = sum(ideal.values(), Decimal(0)) if defined else None
+        S = E - ideal_total if defined else None
+        B4 = S + sum((std[B] for B in system.binders), Decimal(0)) if defined else None
+        grad = {L: RT * dln(sp["x_mM"][L]) for L in system.ligands}
+        for B in system.binders:
+            grad[B] = RT * dln(sp["forms_mM"][B][system.forms[B][0]["id"]])
+        terms = Decimal(0)
+        for L in system.ligands:
+            c = sp["x_mM"][L]
+            terms += abs(V * c * system.mu0_L[L] * RT) + abs(V * c * RT * (dln(c / system.c0) - 1))
+        for B in system.binders:
+            for f in system.forms[B]:
+                c = sp["forms_mM"][B][f["id"]]
+                if c > 0:
+                    terms += abs(V * c * f["mu0_RT"] * RT) + \
+                        abs(V * c * RT * (dln(c / system.c0) - 1))
+        terms = terms / 1000 + sum((abs(v) for v in std.values()), Decimal(0))
+        return {"E_c_pJ": E, "S_c_pJ": S, "B4_term_pJ": B4, "G_star_pJ": G,
+                "standard_parts_pJ": std, "standard_total_pJ": std_total,
+                "ideal_rows_pJ": ideal, "ideal_total_pJ": ideal_total,
+                "identity_residual_pJ": (E - S - ideal_total) if defined else None,
+                "gradient_at3_J_per_mol": grad, "terms_abs_pJ": terms}
+
+
+def booked_gradient_by_differences(system: System, totals_L: dict, totals_B: dict, V,
+                                   rel=Decimal("1e-24")) -> dict:
+    """∂E_c/∂T_r for every row by central differences of re-solved speciations (J/mol)."""
+    out = {}
+    with context():
+        for row in system.ligands + system.binders:
+            T = dec(totals_L[row]) if row in system.ligands else dec(totals_B[row])
+            h = abs(T) * rel
+            vals = []
+            for sgn in (1, -1):
+                tl = {L: dec(v) for L, v in totals_L.items()}
+                tb = {B: dec(v) for B, v in totals_B.items()}
+                if row in tl:
+                    tl[row] = tl[row] + sgn * h
+                else:
+                    tb[row] = tb[row] + sgn * h
+                sp = solve(system, tl, tb, V)
+                vals.append(booked(system, sp, tl, tb, V)["E_c_pJ"])
+            out[row] = (vals[0] - vals[1]) / (2 * h) * 1000
+        return out

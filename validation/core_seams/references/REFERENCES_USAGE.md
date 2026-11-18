@@ -141,6 +141,14 @@ counted from each base form.
 | `floor_input_rounding`, `floor_residual_1e-13` | {x: {ligand: \|δ ln x\|}, forms: {"binder\|form": \|δ ln c\|}}: from ½ ulp on every input, and from a residual \|g\|/T ≤ 1e-13. Compare solutions against the second |
 | `manufactured_dln` | The registered solution against the manufactured free ligands |
 | `gradient_vs_differences_rel`, `newton_vs_bisection_rel` | Where computed (two states per system and every hard state) |
+| `booked_term` | Amendment C1, the closure's booked term in both splits. It holds `E_c_pJ` (= G* − Σ_r T_r μ°′_r) and `S_c_pJ` (= E_c − Σ ideal_r, = `speciation_part_pJ`; null where a total is ≤ 0). It also holds `ideal_rows_pJ` and `ideal_total_pJ` (@3's RT T (ln(T/V) − 1); null at T ≤ 0), `standard_parts_pJ` and `standard_total_pJ` (T μ°′ with μ°′ = μ° − RT ln c°, c° in mM), `B4_term_pJ` (S_c + Σ_B T_B μ°′_B), `identity_residual_pJ`, `gradient_at3_J_per_mol` (∂E_c/∂T_r = RT ln(c_free/1 mM)), and `terms_abs_pJ`, for rounding floors. A world-level check: the closure's phase-1 term (S_c) plus @3's ideal terms on its rows equals `E_c_pJ` |
+| `primal` | Amendment C1, the second route (`primal.py`): `max_abs_dln_vs_dual`, `certificate` (max formation \|ΔG/RT\|) and `iterations` |
+| `E_c_gradient_vs_differences_abs_J_per_mol` | Where computed |
+
+**`values.seam_c.systems.<S>.pairs`** (amendment C1): consecutive states (k, k + 1), each with
+`dE_c_pJ`, `dS_c_pJ`, `floor_pJ` (8 eps of both states' terms) and `plants_pJ`. The plants are
+G* booked whole, B4's formula on moved binders, and S_c alone with @3's ideal terms masked, each
+the exact amount by which that booking misses ΔE_c.
 
 **`values.seam_c.p1.<node>`** (amounts in fmol; divide by |J| for θ·dt in s):
 - `n_free_fmol` and `stored_fmol`;

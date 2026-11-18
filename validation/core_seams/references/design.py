@@ -399,7 +399,8 @@ def seam_c(inputs) -> tuple:
                 d["joint_vs_separate_rel"] = worst
             rows.append(rec)
             drows.append(d)
-        val["systems"][name] = {"spec": spec, "volume_pL": V, "states": rows}
+        val["systems"][name] = {"spec": spec, "volume_pL": V, "states": rows,
+                                "pairs": booked_pairs(rows)}
         dia["systems"][name] = drows
     for name, node in Cc["p1_nodes"].items():
         val["p1"][name] = api.p1(node, reg)
@@ -413,6 +414,35 @@ def seam_c(inputs) -> tuple:
         "form": "nuc4_Mg", "declared": -1,
         "derived": val["parse"]["form_valences"]["nuc4"]["nuc4_Mg"], "verdict": "refused"}
     return val, dia
+
+
+def booked_pairs(rows) -> list:
+    """Amendment C1: the three booked-term plants on consecutive registered states (k, k + 1) of
+    one system. Each plant's deviation of the booked change from ΔE_c (pJ):
+    - G* booked whole: Σ_r ΔT_r μ°′_r;
+    - B4's formula carried to moved binders: Σ_B ΔT_B μ°′_B (against S_c in B4's split);
+    - S_c alone with @3's ideal terms masked: Σ_r Δ ideal_r (None where a total is ≤ 0).
+
+    The floor is the rounding of the difference: 8 eps of both states' terms."""
+    out = []
+    for k in range(len(rows) - 1):
+        a, b = rows[k]["booked_term"], rows[k + 1]["booked_term"]
+        binders = [r for r in a["standard_parts_pJ"] if r in rows[k]["forms_mM"]]
+        whole = abs(b["standard_total_pJ"] - a["standard_total_pJ"])
+        b4 = abs(sum(b["standard_parts_pJ"][B] - a["standard_parts_pJ"][B] for B in binders))
+        masked = (abs(b["ideal_total_pJ"] - a["ideal_total_pJ"])
+                  if a["ideal_total_pJ"] is not None and b["ideal_total_pJ"] is not None
+                  else None)
+        floor = 8 * exact.EPS * (a["terms_abs_pJ"] + b["terms_abs_pJ"])
+        out.append({"pair": [k, k + 1], "tags": [rows[k]["tag"], rows[k + 1]["tag"]],
+                    "dE_c_pJ": b["E_c_pJ"] - a["E_c_pJ"],
+                    "dS_c_pJ": (b["S_c_pJ"] - a["S_c_pJ"]) if a["S_c_pJ"] is not None and
+                    b["S_c_pJ"] is not None else None,
+                    "floor_pJ": floor,
+                    "plants_pJ": {"G_star_booked_whole": whole,
+                                  "B4_formula_on_moved_binders": b4,
+                                  "S_c_alone_ideal_masked": masked}})
+    return out
 
 
 # --------------------------------------------------------------------------------------------
@@ -641,6 +671,35 @@ def power_c(inputs, vc, dc) -> dict:
                                                  if not r["every_total_positive"]],
         }
     power["C1_C2_C4_binding"] = cp
+    # amendment C1: the booked term's plants over consecutive pairs, its identity, its gradient in
+    # @3's frame, and the primal route's agreement with the dual
+    bt = {}
+    for name, srec in vc["systems"].items():
+        pairs = srec["pairs"]
+        tags = [f"{p['tags'][0]}->{p['tags'][1]}" for p in pairs]
+        plants = {}
+        for plant in ("G_star_booked_whole", "B4_formula_on_moved_binders",
+                      "S_c_alone_ideal_masked"):
+            devs = [(p["plants_pJ"][plant] / p["floor_pJ"]
+                     if p["plants_pJ"][plant] is not None else None) for p in pairs]
+            plants[plant] = summarise(tags, devs)
+            plants[plant]["undefined_at"] = [t for t, d in zip(tags, devs, strict=True)
+                                             if d is None]
+        rows = srec["states"]
+        ident = [abs(r["booked_term"]["identity_residual_pJ"]) for r in rows
+                 if r["booked_term"]["identity_residual_pJ"] is not None]
+        grad = [r["E_c_gradient_vs_differences_abs_J_per_mol"] for r in rows
+                if "E_c_gradient_vs_differences_abs_J_per_mol" in r]
+        bt[name] = {"plants": plants,
+                    "identity_E_c_minus_S_c_minus_ideal_max_pJ": max(ident) if ident else None,
+                    "E_c_gradient_vs_differences_max_J_per_mol": max(grad) if grad else None,
+                    "states_where_S_c_is_undefined": [r["tag"] for r in rows
+                                                      if r["booked_term"]["S_c_pJ"] is None],
+                    "primal_vs_dual_max_abs_dln": max(r["primal"]["max_abs_dln_vs_dual"]
+                                                      for r in rows),
+                    "primal_certificate_max": max(r["primal"]["certificate"] for r in rows),
+                    "primal_iterations_max": max(r["primal"]["iterations"] for r in rows)}
+    power["C1_amendment_booked_term_and_primal"] = bt
     power["C3_movers"] = vc["movers"]
     power["C2_parse"] = vc["parse"]["planted_declared_valence"]
     power["C5_p1"] = {k: {kk: v[kk] for kk in ("threshold_free_fmol", "threshold_stored_fmol",
@@ -725,6 +784,15 @@ CLAIMS = [
                             "form's potential; the booked term follows its ruling (§19 item 3)"),
      "reference": "G* at 60 digits; its gradient analytically and by central differences",
      "plants": ["the rows' own ideal potentials as the gradient", "a non-minimum speciation"]},
+    {"row": "C4b", "claim": ("Amendment C1: the booked term E_c = G* − Σ_r T_r μ°′_r over the "
+                             "closure's rows holds in either split, S_c with @3's ideal terms or "
+                             "E_c alone; its gradient is each row's free form's potential in @3's "
+                             "frame, RT ln(c_free/1 mM) (§19 amended at 19:52 UTC)"),
+     "reference": ("E_c, S_c, @3's ideal terms, the standard parts and B4's formula at every "
+                   "state; E_c's gradient analytically and by central differences; the primal "
+                   "route (primal.py) as the second solve"),
+     "plants": ["G* booked whole (Σ ΔT_r μ°′_r)", "B4's formula on moved binders (Σ_B ΔT_B μ°′_B)",
+                "S_c alone with @3's ideal terms masked (Σ Δ ideal_r)"]},
     {"row": "C5", "claim": ("P1's buffered node: a predictor must read the quantity it "
                             "differentiates (§17, §18)"),
      "reference": ("rate-normalised thresholds (the free amount, the stored equivalents above "
@@ -801,6 +869,14 @@ ZERO_POWER = [
     {"control": "amendment 1's N = b plants at the unit state",
      "why": "both ends are identical there (every activity 1, V = 0)",
      "remedy": "every other state of d2_slip_exchanger_Nb"},
+    {"control": ("amendment C1: B4's formula on moved binders, at a pair whose binder totals are "
+                 "equal (S1 mostly_bound -> saturated_binder, S3 mg_mostly_bound -> "
+                 "mg_saturating)"),
+     "why": "Σ_B ΔT_B μ°′_B = 0 there: B4's formula is exact while binder rows do not move",
+     "remedy": "every other pair, where the binders' totals differ"},
+    {"control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
+     "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
+     "remedy": "E_c, which is defined there, and every other pair"},
     {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
      "remedy": "the engine's own test; the references give the rates both must meet"},
     {"control": "a K plant on a form that holds little of its ligand",
