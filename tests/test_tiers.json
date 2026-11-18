@@ -145,6 +145,7 @@
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
   "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
+  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
   "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
   "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json"
@@ -1194,6 +1195,13 @@
    "utc": "2026-11-17T20:50:04+00:00"
   },
   {
+   "git_revision": "a085126b53f12ebad8b6264251c037500d8f0a68",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/d188-m2-prep-20261117/trees/head-a085126b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:33+00:00"
+  },
+  {
    "git_revision": "992ce38510770949ffc162ce468ce3e0df2e707c",
    "dirty": false,
    "root": ".claude/worktrees/fr3-references",
@@ -1812,6 +1820,14 @@
     }
    },
    {
+    "file": "tests/unit/test_blas_import_pin.py",
+    "seconds": 6.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
     "file": "tests/unit/test_blas_threads.py",
     "seconds": 3.22,
     "exit_code": 0,
@@ -2014,7 +2030,7 @@
    },
    {
     "file": "tests/unit/test_continuity_bypass.py",
-    "seconds": 16.16,
+    "seconds": 10.54,
     "exit_code": 0,
     "counts": {
      "passed": 17
@@ -2022,18 +2038,18 @@
    },
    {
     "file": "tests/unit/test_continuity_loaders.py",
-    "seconds": 15.0,
+    "seconds": 12.6,
     "exit_code": 0,
     "counts": {
-     "passed": 54
+     "passed": 60
     }
    },
    {
     "file": "tests/unit/test_continuity_tools.py",
-    "seconds": 7.99,
+    "seconds": 6.03,
     "exit_code": 0,
     "counts": {
-     "passed": 21
+     "passed": 22
     }
    },
    {
@@ -2824,7 +2840,7 @@
    },
    {
     "file": "tests/unit/test_legacy_entry.py",
-    "seconds": 5.28,
+    "seconds": 3.67,
     "exit_code": 0,
     "counts": {
      "passed": 19

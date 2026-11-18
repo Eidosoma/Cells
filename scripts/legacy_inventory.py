@@ -12,10 +12,13 @@ each family the inventory gives:
   - the G1 baseline worlds and crossrev sets that run it (model IDs in the saved G1 definitions);
   - the test files that import it (directly or through tests/ helper modules), with their tiers
     and costs (tests/test_tiers.json; tier 3 from tests/tier3_record.json, at its cap).
-A family is active when an entry point is in it or a G1 world (crossrev or protocol set) runs
-one of its model IDs; every other family is legacy (frozen). Every import from the active closure
-into a legacy family's modules is a coupling, listed with the names used: move 1 needs each one
-resolved, so that nothing outside legacy/ imports legacy code.
+A family is active when the static model table (registry/model_table.py) has its row
+(rule_family, shared with source_moves_plan.py classes; 17 November 2026, before it the rule was
+an entry point or a G1 world, which missed GARD's family); "decide" when only registered
+protocols name it; every other family is legacy (frozen). Entry points, G1 worlds and protocols
+are reported per family. Every import from the active closure into a legacy family's modules is a
+coupling, listed with the names used: move 1 needs each one resolved, so that nothing outside
+legacy/ imports legacy code.
 
 Static (ast): module-level and function-level imports, `from pkg import module`, names used as
 `alias.name`, and string literals naming a module (importlib). Read-only except --out.
@@ -399,6 +402,67 @@ def families(index):
     return out
 
 
+# ------------------------------------------------------------------ the ruling
+
+# The static model table: every active model, its definitions' module and its homes. A family is
+# active by its row, so a new family is active once it joins the table, as it must to run, and no
+# list of names needs to learn it (GARD's @1, OL1's @2; D196's legacy-removal list follows). One
+# rule for this inventory and the move planner (source_moves_plan.py classes).
+MODEL_TABLE = "cells.registry.model_table"
+
+
+def table_rows_of(text):
+    """{model ID: {"module", "homes"}} of a model table's source, read statically: each row's
+    definitions' module, and the modules it names besides (law and operator homes, and its
+    runner's module)."""
+    rows = {}
+    for node in ast.walk(ast.parse(text)):
+        if not isinstance(node, ast.Assign) or not any(
+            isinstance(t, ast.Name) and t.id == "MODELS" for t in node.targets
+        ):
+            continue
+        table = node.value.args[0] if isinstance(node.value, ast.Call) else node.value
+        for key, row in zip(table.keys, table.values, strict=True):
+            fields = {k.arg: ast.literal_eval(k.value) for k in row.keywords}
+            runner = fields.get("runner")
+            rows[ast.literal_eval(key)] = dict(
+                module=fields["module"],
+                homes=[
+                    *fields.get("law_homes", ()),
+                    *fields.get("operator_homes", ()),
+                    *([runner.partition(":")[0]] if runner else []),
+                ],
+            )
+    return rows
+
+
+def table_rows(index):
+    """The tree's model table (MODEL_TABLE), or none when the tree has no table."""
+    return table_rows_of(index[MODEL_TABLE].read_text()) if MODEL_TABLE in index else {}
+
+
+def family_rows(fam, rows):
+    """A family's rows in the model table: those keyed by one of its IDs, or naming its
+    definitions' module where that module defines no other family (core/specs.py defines many,
+    each matched by its ID; a namespaced ID such as cells.assembly_lineages@1 is matched by its
+    module, since the inventory's ID pattern is the bare one)."""
+    ids = set(fam["ids"]) | {i for i in fam["class_ids"].values() if i}
+    shared = fam["definition"] == SHARED
+    return sorted(
+        k for k, r in rows.items() if k in ids or (not shared and r["module"] == fam["definition"])
+    )
+
+
+def rule_family(fam, rows, protocol_rows):
+    """D189's ruling as a general rule: active by a model-table row; "decide" when registered
+    protocols name it (counted active); legacy otherwise."""
+    if family_rows(fam, rows):
+        return "active"
+    if any(set(r["ids"]) & set(fam["ids"]) and r["registered"] for r in protocol_rows):
+        return "decide"
+    return "legacy"
+
+
 # ------------------------------------------------------------------ consumers
 
 
@@ -478,6 +542,7 @@ def inventory(args):
     fams = families(index)
     worlds = g1_worlds(args.g1)
     rows = protocols()
+    table = table_rows(index)
     costs = test_costs()
     reach = test_reach(index, edges)
     entry_modules = {
@@ -497,11 +562,13 @@ def inventory(args):
             for r in rows
             if set(r["ids"]) & set(fam["ids"])
         ]
-        fam["active"] = bool(fam["entry"] or fam["g1"])
-        # Off the modular path but named by a registered protocol: listed for the user to rule
-        # on (kept legacy in the closures below, so its imports from the path show as couplings).
-        registered = any(p["registered"] for p in fam["protocols"])
-        fam["class"] = "active" if fam["active"] else ("decide" if registered else "legacy")
+        fam["rows"] = family_rows(fam, table)
+        # rule_family: active by its model-table row; "decide" when only registered protocols
+        # name it, listed for the user to rule on (kept legacy in the closures below, so its
+        # imports from the path show as couplings); legacy otherwise. Entry points and G1 are
+        # reported, not ruled on.
+        fam["class"] = rule_family(fam, table, rows)
+        fam["active"] = fam["class"] == "active"
     # The shared definitions module stays outside legacy/ whatever its classes' families are.
     legacy = {
         m
