@@ -9,7 +9,10 @@ criterion) into OUT_DIR/verdict.json.
 
 **The arithmetic is FR-4's and FR-5's,** imported read-only from validation/tissue/
 compartment_ph_judge.py (the lead's ruling of 17 November 2026; that judge serves two registered
-protocols and is never edited): the classes rule for orders with each difference's floor
+protocols. On 18 November 2026, at 9a67ce89, it gained harness 1.1's entry checks only, incomplete()
+and harnessed() called by its main(); an AST diff shows its arithmetic unchanged, and the v1
+verdicts are read from the frozen judged snapshots): the classes rule for orders with each
+difference's floor
 N eps max|q|, the ladder, the Richardson error (4/3) D(dt, dt/2) at the nominal p = 2, the energy
 residual over the integrated flows and its ladder, max-norm differences on shared records,
 admission, the merge and its refusals, and compare. That judge keys records by round(t), integer
@@ -380,8 +383,17 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = harnessed(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += harness.metrics(protocol["judge"]["criteria"],
+                                dict(parts=parts, derived=derived))
+    report = dict(version=harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

@@ -46,6 +46,12 @@ from validation.tissue import compartment_ph_judge as base
 from validation.tissue import judge_harness as harness
 from validation.tissue import regulated_availability_judge as coupling
 
+# The code-blind references' registered inputs and world (a5pp_acceptance_fixtures' INPUTS and
+# WORLD_ID), read directly: the judge reads records and registered files only.
+INPUTS = (Path(__file__).resolve().parents[2] / "validation" / "fr6" / "references"
+          / "reference_inputs.json")
+WORLD = "a5pp_prior"
+
 SPECIES = ("Na", "K", "Cl")
 
 
@@ -214,10 +220,9 @@ def incomplete(parts, protocol):
     rung part, every control's run at each rung and the references must hold the registered
     world's full record grid: the code-blind references' record_times_s, in the derivation's
     record units."""
-    from validation.tissue import a5pp_acceptance_fixtures as af  # The registered inputs only.
-
     d = protocol["judge"]["derivation"]
-    registered = [int(round(t / d["record_unit_s"])) for t in af.registered()["record_times_s"]]
+    world = json.loads(INPUTS.read_text())["worlds"][WORLD]
+    registered = [int(round(t / d["record_unit_s"])) for t in world["record_times_s"]]
     problems = []
     for name in (*d["rung_parts"], "references"):
         problems += harness.grid(name, (parts.get(name) or {}).get("record_ms"), registered)
@@ -257,8 +262,17 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = harnessed(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += harness.metrics(protocol["judge"]["criteria"],
+                                dict(parts=parts, derived=derived))
+    report = dict(version=harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

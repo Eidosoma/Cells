@@ -737,8 +737,19 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = harnessed(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    from validation.tissue import judge_harness
+
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += judge_harness.metrics(protocol["judge"]["criteria"],
+                                      dict(parts=parts, derived=derived))
+    report = dict(version=judge_harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

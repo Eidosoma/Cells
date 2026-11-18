@@ -8,7 +8,10 @@ the metrics below under the protocol's `judge.derivation`, and evaluates its mac
 missing metric fails its criterion) into OUT_DIR/verdict.json.
 
 **The arithmetic is FR-4's and FR-5's where it applies,** imported read-only from validation/
-tissue/compartment_ph_judge.py (that judge serves registered protocols and is never edited): the
+tissue/compartment_ph_judge.py (that judge serves registered protocols. On 18 November 2026, at
+9a67ce89, it gained harness 1.1's entry checks only, incomplete() and harnessed() called by its
+main(); an AST diff shows its arithmetic unchanged, and the v1 verdicts are read from the frozen
+judged snapshots): the
 classes rule for orders, admission, the merge and its refusals, and compare. Records align on
 integer milliseconds (record_ms), never by float equality.
 
@@ -61,6 +64,11 @@ from pathlib import Path
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
 from validation.tissue import judge_harness as harness
+
+# The code-blind references' registered inputs (site_occupancy_acceptance_fixtures.INPUTS), read
+# directly: the judge reads records and registered files only.
+INPUTS = (Path(__file__).resolve().parents[2] / "validation" / "fr3" / "references"
+          / "reference_inputs.json")
 
 EPS = base.EPS
 AMOUNT_PREFIXES = ("amount_", "B_", "R_", "internalised_")
@@ -603,16 +611,15 @@ def incomplete(parts, protocol):
       grid (the code-blind references' record_times_s, in the derivation's record units);
     - every control run holds the grid of the references world it is judged against (its arm);
     - every registered refusal class of Q6 has a refused and an admitted example."""
-    from validation.tissue import site_occupancy_acceptance_fixtures as fx  # Registered inputs.
-
     d = protocol["judge"]["derivation"]
+    inputs = json.loads(INPUTS.read_text())["worlds"]
     refs = (parts.get("references") or {}).get("worlds") or {}
     problems, grids = [], {}
     for name in d["engine_parts"]:
         world = d["world_of"][name]
         if world not in grids:
             grids[world] = [int(round(t / d["record_unit_s"]))
-                            for t in fx.registered(world)["record_times_s"]]
+                            for t in inputs[world]["record_times_s"]]
             found = (refs.get(world) or {}).get("record_ms")
             problems += harness.grid(f"references/{world}", found, grids[world])
         problems += harness.grid(name, (parts.get(name) or {}).get("record_ms"), grids[world])
@@ -655,8 +662,17 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = harnessed(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += harness.metrics(protocol["judge"]["criteria"],
+                                dict(parts=parts, derived=derived))
+    report = dict(version=harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

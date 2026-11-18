@@ -3,12 +3,14 @@ of 18 November 2026): incomplete evidence is a harness failure, refused before a
 
 - validation/tissue/judge_harness.py: a part's record times against its registered grid, a refusal
   class's examples on both sides, and a criterion's metric that resolves to an empty list.
-- FR-6's A5'' judge refuses, at its entry, a run whose rung lacks one voltage sample. Before the
-  harness it scored the 40 records it still shared with the references.
+- FR-6's A5'' judge refuses a judged run whose rung lacks one voltage sample. Before the harness it
+  scored the 40 records it still shared with the references. A development verdict over the same
+  records is written, with the gap recorded (quick and partial development runs stay admitted).
 - FR-10's judge refuses a registered refusal class without examples, and a W2 rung that lacks one
   record. Before the harness, all() passed the empty class.
+- FR-1, FR-3, FR-4 and FR-5 catch a dropped record, and FR-1 and FR-3 an empty class.
 The registered criteria and the shared evaluator are unchanged: each judge's verdict() still scores
-as it did.
+as it did. The judges read the registered inputs directly, as their fixtures do.
 """
 
 import copy
@@ -78,7 +80,8 @@ def run_main(module, protocol, parts, tmp_path):
 def test_a5pp_scores_complete_evidence(tmp_path):
     parts, protocol = a5pp_parts()
     assert a5pp.incomplete(parts, protocol) == []
-    assert run_main(a5pp, protocol, parts, tmp_path)["passed"]
+    record = run_main(a5pp, protocol, parts, tmp_path)
+    assert record["passed"] and record["harness"]["gaps"] == []
 
 
 def test_a5pp_refuses_a_dropped_voltage_sample(tmp_path):
@@ -90,8 +93,19 @@ def test_a5pp_refuses_a_dropped_voltage_sample(tmp_path):
         del values[at]
     assert a5pp.verdict(parts, protocol)[1]["passed"]  # Scoring alone passes on 40 records.
     with pytest.raises(SystemExit, match="incomplete evidence.*a5pp_rung_0p5ms"):
-        run_main(a5pp, protocol, parts, tmp_path)
-    assert not (tmp_path / "verdict").exists()
+        a5pp.harnessed(parts, protocol)  # A judged run's entry.
+    record = run_main(a5pp, protocol, parts, tmp_path)  # A development verdict records the gap.
+    (gap,) = record["harness"]["gaps"]
+    assert gap.startswith("a5pp_rung_0p5ms: 40 record times")
+
+
+def test_the_judges_read_their_fixtures_registered_inputs():
+    from validation.tissue import a5pp_acceptance_fixtures as af
+    from validation.tissue import site_occupancy_acceptance_fixtures as so
+    from validation.tissue import site_occupancy_acceptance_judge as fr3
+
+    assert (a5pp.INPUTS, a5pp.WORLD) == (af.INPUTS, af.WORLD_ID)
+    assert fr3.INPUTS == so.INPUTS
 
 
 # ------------------------------------------------------------------------------------- FR-10
@@ -122,7 +136,7 @@ def test_fr10_complete_evidence_holds_no_gap():
 
 
 @pytest.mark.parametrize("plant", ["empty_class", "missing_record"])
-def test_fr10_refuses_incomplete_evidence(plant, tmp_path):
+def test_fr10_refuses_incomplete_evidence(plant):
     protocol, parts = fr10_complete()
     if plant == "empty_class":
         first = next(iter(parts["refusals"]["classes"]))
@@ -133,8 +147,7 @@ def test_fr10_refuses_incomplete_evidence(plant, tmp_path):
         del rung["record_s"][100]
         parts["W2_rung_0p5ms"] = rung
     with pytest.raises(SystemExit, match="incomplete evidence"):
-        run_main(fr10, protocol, parts, tmp_path)
-    assert not (tmp_path / "verdict").exists()
+        fr10.harnessed(parts, protocol)  # A judged run's entry: refused before any derivation.
 
 
 # ------------------------------------------------------- the sibling judges: FR-1, FR-3, FR-4/5
